@@ -107,7 +107,7 @@ Outbound webhooks with delivery history, configurable alert rules with cooldowns
 ```
 mission-control/
 ├── src/
-│   ├── middleware.ts          # Auth gate + CSRF + network access control
+│   ├── proxy.ts               # Auth gate + CSRF + network access control
 │   ├── app/
 │   │   ├── page.tsx           # SPA shell — routes all panels
 │   │   ├── login/page.tsx     # Login page

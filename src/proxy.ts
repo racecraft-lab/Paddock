@@ -1,18 +1,14 @@
+import crypto from 'node:crypto'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-/** Edge-compatible constant-time string comparison. */
+/** Constant-time string comparison using Node.js crypto. */
 function safeCompare(a: string, b: string): boolean {
   if (typeof a !== 'string' || typeof b !== 'string') return false
-  const encoder = new TextEncoder()
-  const bufA = encoder.encode(a)
-  const bufB = encoder.encode(b)
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
   if (bufA.length !== bufB.length) return false
-  let result = 0
-  for (let i = 0; i < bufA.length; i++) {
-    result |= bufA[i] ^ bufB[i]
-  }
-  return result === 0
+  return crypto.timingSafeEqual(bufA, bufB)
 }
 
 function envFlag(name: string): boolean {
@@ -56,7 +52,7 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   return response
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Network access control.
   // In production: default-deny unless explicitly allowed.
   // In dev/test: allow all hosts unless overridden.
