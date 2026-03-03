@@ -31,8 +31,11 @@ export async function GET(request: NextRequest) {
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const db = getDatabase()
+  const workspaceId = auth.user.workspace_id ?? 1
   try {
-    const rules = db.prepare('SELECT * FROM alert_rules ORDER BY created_at DESC').all() as AlertRule[]
+    const rules = db
+      .prepare('SELECT * FROM alert_rules WHERE workspace_id = ? ORDER BY created_at DESC')
+      .all(workspaceId) as AlertRule[]
     return NextResponse.json({ rules })
   } catch {
     return NextResponse.json({ rules: [] })
@@ -50,6 +53,7 @@ export async function POST(request: NextRequest) {
   if (rateCheck) return rateCheck
 
   const db = getDatabase()
+  const workspaceId = auth.user.workspace_id ?? 1
 
   // Check for evaluate action first (peek at body without consuming)
   let rawBody: any
@@ -58,7 +62,7 @@ export async function POST(request: NextRequest) {
   }
 
   if (rawBody.action === 'evaluate') {
-    return evaluateRules(db)
+    return evaluateRules(db, workspaceId)
   }
 
   // Validate for create using schema
@@ -73,8 +77,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = db.prepare(`
-      INSERT INTO alert_rules (name, description, entity_type, condition_field, condition_operator, condition_value, action_type, action_config, cooldown_minutes, created_by)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO alert_rules (name, description, entity_type, condition_field, condition_operator, condition_value, action_type, action_config, cooldown_minutes, created_by, workspace_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       name,
       description || null,
@@ -85,7 +89,8 @@ export async function POST(request: NextRequest) {
       action_type || 'notification',
       JSON.stringify(action_config || {}),
       cooldown_minutes || 60,
-      auth.user?.username || 'system'
+      auth.user?.username || 'system',
+      workspaceId
     )
 
     // Audit log
@@ -97,7 +102,9 @@ export async function POST(request: NextRequest) {
       )
     } catch { /* audit table might not exist */ }
 
-    const rule = db.prepare('SELECT * FROM alert_rules WHERE id = ?').get(result.lastInsertRowid) as AlertRule
+    const rule = db
+      .prepare('SELECT * FROM alert_rules WHERE id = ? AND workspace_id = ?')
+      .get(result.lastInsertRowid, workspaceId) as AlertRule
     return NextResponse.json({ rule }, { status: 201 })
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create rule' }, { status: 500 })
@@ -115,12 +122,15 @@ export async function PUT(request: NextRequest) {
   if (rateCheck) return rateCheck
 
   const db = getDatabase()
+  const workspaceId = auth.user.workspace_id ?? 1
   const body = await request.json()
   const { id, ...updates } = body
 
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  const existing = db.prepare('SELECT * FROM alert_rules WHERE id = ?').get(id) as AlertRule | undefined
+  const existing = db
+    .prepare('SELECT * FROM alert_rules WHERE id = ? AND workspace_id = ?')
+    .get(id, workspaceId) as AlertRule | undefined
   if (!existing) return NextResponse.json({ error: 'Rule not found' }, { status: 404 })
 
   const allowed = ['name', 'description', 'enabled', 'entity_type', 'condition_field', 'condition_operator', 'condition_value', 'action_type', 'action_config', 'cooldown_minutes']
@@ -137,11 +147,13 @@ export async function PUT(request: NextRequest) {
   if (sets.length === 0) return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
 
   sets.push('updated_at = (unixepoch())')
-  values.push(id)
+  values.push(id, workspaceId)
 
-  db.prepare(`UPDATE alert_rules SET ${sets.join(', ')} WHERE id = ?`).run(...values)
+  db.prepare(`UPDATE alert_rules SET ${sets.join(', ')} WHERE id = ? AND workspace_id = ?`).run(...values)
 
-  const updated = db.prepare('SELECT * FROM alert_rules WHERE id = ?').get(id) as AlertRule
+  const updated = db
+    .prepare('SELECT * FROM alert_rules WHERE id = ? AND workspace_id = ?')
+    .get(id, workspaceId) as AlertRule
   return NextResponse.json({ rule: updated })
 }
 
@@ -156,12 +168,13 @@ export async function DELETE(request: NextRequest) {
   if (rateCheck) return rateCheck
 
   const db = getDatabase()
+  const workspaceId = auth.user.workspace_id ?? 1
   const body = await request.json()
   const { id } = body
 
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  const result = db.prepare('DELETE FROM alert_rules WHERE id = ?').run(id)
+  const result = db.prepare('DELETE FROM alert_rules WHERE id = ? AND workspace_id = ?').run(id, workspaceId)
 
   try {
     db.prepare('INSERT INTO audit_log (action, actor, detail) VALUES (?, ?, ?)').run(
@@ -177,10 +190,10 @@ export async function DELETE(request: NextRequest) {
 /**
  * Evaluate all enabled alert rules against current data
  */
-function evaluateRules(db: ReturnType<typeof getDatabase>) {
+function evaluateRules(db: ReturnType<typeof getDatabase>, workspaceId: number) {
   let rules: AlertRule[]
   try {
-    rules = db.prepare('SELECT * FROM alert_rules WHERE enabled = 1').all() as AlertRule[]
+    rules = db.prepare('SELECT * FROM alert_rules WHERE enabled = 1 AND workspace_id = ?').all(workspaceId) as AlertRule[]
   } catch {
     return NextResponse.json({ evaluated: 0, triggered: 0, results: [] })
   }
@@ -195,7 +208,7 @@ function evaluateRules(db: ReturnType<typeof getDatabase>) {
       continue
     }
 
-    const triggered = evaluateRule(db, rule, now)
+    const triggered = evaluateRule(db, rule, now, workspaceId)
     results.push({ rule_id: rule.id, rule_name: rule.name, triggered, reason: triggered ? 'Condition met' : 'Condition not met' })
 
     if (triggered) {
@@ -207,9 +220,9 @@ function evaluateRules(db: ReturnType<typeof getDatabase>) {
         const config = JSON.parse(rule.action_config || '{}')
         const recipient = config.recipient || 'system'
         db.prepare(`
-          INSERT INTO notifications (recipient, type, title, message, source_type, source_id)
-          VALUES (?, 'alert', ?, ?, 'alert_rule', ?)
-        `).run(recipient, `Alert: ${rule.name}`, rule.description || `Rule "${rule.name}" triggered`, rule.id)
+          INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
+          VALUES (?, 'alert', ?, ?, 'alert_rule', ?, ?)
+        `).run(recipient, `Alert: ${rule.name}`, rule.description || `Rule "${rule.name}" triggered`, rule.id, workspaceId)
       } catch { /* notification creation failed */ }
     }
   }
@@ -218,13 +231,13 @@ function evaluateRules(db: ReturnType<typeof getDatabase>) {
   return NextResponse.json({ evaluated: rules.length, triggered, results })
 }
 
-function evaluateRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, now: number): boolean {
+function evaluateRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, now: number, workspaceId: number): boolean {
   try {
     switch (rule.entity_type) {
-      case 'agent': return evaluateAgentRule(db, rule, now)
-      case 'task': return evaluateTaskRule(db, rule, now)
-      case 'session': return evaluateSessionRule(db, rule, now)
-      case 'activity': return evaluateActivityRule(db, rule, now)
+      case 'agent': return evaluateAgentRule(db, rule, now, workspaceId)
+      case 'task': return evaluateTaskRule(db, rule, now, workspaceId)
+      case 'session': return evaluateSessionRule(db, rule, now, workspaceId)
+      case 'activity': return evaluateActivityRule(db, rule, now, workspaceId)
       default: return false
     }
   } catch {
@@ -232,61 +245,61 @@ function evaluateRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, now: 
   }
 }
 
-function evaluateAgentRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, now: number): boolean {
+function evaluateAgentRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, now: number, workspaceId: number): boolean {
   const { condition_field, condition_operator, condition_value } = rule
 
   if (condition_operator === 'count_above' || condition_operator === 'count_below') {
-    const count = (db.prepare(`SELECT COUNT(*) as c FROM agents WHERE ${safeColumn('agents', condition_field)} = ?`).get(condition_value) as any)?.c || 0
+    const count = (db.prepare(`SELECT COUNT(*) as c FROM agents WHERE workspace_id = ? AND ${safeColumn('agents', condition_field)} = ?`).get(workspaceId, condition_value) as any)?.c || 0
     return condition_operator === 'count_above' ? count > parseInt(condition_value) : count < parseInt(condition_value)
   }
 
   if (condition_operator === 'age_minutes_above') {
     // Check agents where field value is older than N minutes (e.g., last_seen)
     const threshold = now - parseInt(condition_value) * 60
-    const count = (db.prepare(`SELECT COUNT(*) as c FROM agents WHERE status != 'offline' AND ${safeColumn('agents', condition_field)} < ?`).get(threshold) as any)?.c || 0
+    const count = (db.prepare(`SELECT COUNT(*) as c FROM agents WHERE workspace_id = ? AND status != 'offline' AND ${safeColumn('agents', condition_field)} < ?`).get(workspaceId, threshold) as any)?.c || 0
     return count > 0
   }
 
-  const agents = db.prepare(`SELECT ${safeColumn('agents', condition_field)} as val FROM agents WHERE status != 'offline'`).all() as any[]
+  const agents = db.prepare(`SELECT ${safeColumn('agents', condition_field)} as val FROM agents WHERE workspace_id = ? AND status != 'offline'`).all(workspaceId) as any[]
   return agents.some(a => compareValue(a.val, condition_operator, condition_value))
 }
 
-function evaluateTaskRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, _now: number): boolean {
+function evaluateTaskRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, _now: number, workspaceId: number): boolean {
   const { condition_field, condition_operator, condition_value } = rule
 
   if (condition_operator === 'count_above') {
-    const count = (db.prepare(`SELECT COUNT(*) as c FROM tasks WHERE ${safeColumn('tasks', condition_field)} = ?`).get(condition_value) as any)?.c || 0
+    const count = (db.prepare(`SELECT COUNT(*) as c FROM tasks WHERE workspace_id = ? AND ${safeColumn('tasks', condition_field)} = ?`).get(workspaceId, condition_value) as any)?.c || 0
     return count > parseInt(condition_value)
   }
 
   if (condition_operator === 'count_below') {
-    const count = (db.prepare(`SELECT COUNT(*) as c FROM tasks`).get() as any)?.c || 0
+    const count = (db.prepare(`SELECT COUNT(*) as c FROM tasks WHERE workspace_id = ?`).get(workspaceId) as any)?.c || 0
     return count < parseInt(condition_value)
   }
 
-  const tasks = db.prepare(`SELECT ${safeColumn('tasks', condition_field)} as val FROM tasks`).all() as any[]
+  const tasks = db.prepare(`SELECT ${safeColumn('tasks', condition_field)} as val FROM tasks WHERE workspace_id = ?`).all(workspaceId) as any[]
   return tasks.some(t => compareValue(t.val, condition_operator, condition_value))
 }
 
-function evaluateSessionRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, _now: number): boolean {
+function evaluateSessionRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, _now: number, workspaceId: number): boolean {
   // Session data comes from the gateway, not the DB, so we check the agents table for session info
   const { condition_operator, condition_value } = rule
 
   if (condition_operator === 'count_above') {
-    const count = (db.prepare(`SELECT COUNT(*) as c FROM agents WHERE status = 'busy'`).get() as any)?.c || 0
+    const count = (db.prepare(`SELECT COUNT(*) as c FROM agents WHERE workspace_id = ? AND status = 'busy'`).get(workspaceId) as any)?.c || 0
     return count > parseInt(condition_value)
   }
 
   return false
 }
 
-function evaluateActivityRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, now: number): boolean {
+function evaluateActivityRule(db: ReturnType<typeof getDatabase>, rule: AlertRule, now: number, workspaceId: number): boolean {
   const { condition_field, condition_operator, condition_value } = rule
 
   if (condition_operator === 'count_above') {
     // Count activities in the last hour
     const hourAgo = now - 3600
-    const count = (db.prepare(`SELECT COUNT(*) as c FROM activities WHERE created_at > ? AND ${safeColumn('activities', condition_field)} = ?`).get(hourAgo, condition_value) as any)?.c || 0
+    const count = (db.prepare(`SELECT COUNT(*) as c FROM activities WHERE workspace_id = ? AND created_at > ? AND ${safeColumn('activities', condition_field)} = ?`).get(workspaceId, hourAgo, condition_value) as any)?.c || 0
     return count > parseInt(condition_value)
   }
 

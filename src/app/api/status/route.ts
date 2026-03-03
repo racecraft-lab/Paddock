@@ -19,12 +19,12 @@ export async function GET(request: NextRequest) {
     const action = searchParams.get('action') || 'overview'
 
     if (action === 'overview') {
-      const status = await getSystemStatus()
+      const status = await getSystemStatus(auth.user.workspace_id ?? 1)
       return NextResponse.json(status)
     }
 
     if (action === 'dashboard') {
-      const data = await getDashboardData()
+      const data = await getDashboardData(auth.user.workspace_id ?? 1)
       return NextResponse.json(data)
     }
 
@@ -59,16 +59,16 @@ export async function GET(request: NextRequest) {
  * Aggregate all dashboard data in a single request.
  * Combines system health, DB stats, audit summary, and recent activity.
  */
-async function getDashboardData() {
+async function getDashboardData(workspaceId: number) {
   const [system, dbStats] = await Promise.all([
-    getSystemStatus(),
-    getDbStats(),
+    getSystemStatus(workspaceId),
+    getDbStats(workspaceId),
   ])
 
   return { ...system, db: dbStats }
 }
 
-function getDbStats() {
+function getDbStats(workspaceId: number) {
   try {
     const db = getDatabase()
     const now = Math.floor(Date.now() / 1000)
@@ -77,8 +77,8 @@ function getDbStats() {
 
     // Task breakdown
     const taskStats = db.prepare(`
-      SELECT status, COUNT(*) as count FROM tasks GROUP BY status
-    `).all() as Array<{ status: string; count: number }>
+      SELECT status, COUNT(*) as count FROM tasks WHERE workspace_id = ? GROUP BY status
+    `).all(workspaceId) as Array<{ status: string; count: number }>
     const tasksByStatus: Record<string, number> = {}
     let totalTasks = 0
     for (const row of taskStats) {
@@ -88,8 +88,8 @@ function getDbStats() {
 
     // Agent breakdown
     const agentStats = db.prepare(`
-      SELECT status, COUNT(*) as count FROM agents GROUP BY status
-    `).all() as Array<{ status: string; count: number }>
+      SELECT status, COUNT(*) as count FROM agents WHERE workspace_id = ? GROUP BY status
+    `).all(workspaceId) as Array<{ status: string; count: number }>
     const agentsByStatus: Record<string, number> = {}
     let totalAgents = 0
     for (const row of agentStats) {
@@ -107,10 +107,14 @@ function getDbStats() {
     ).get(day) as any).c
 
     // Activities (24h)
-    const activityDay = (db.prepare('SELECT COUNT(*) as c FROM activities WHERE created_at > ?').get(day) as any).c
+    const activityDay = (
+      db.prepare('SELECT COUNT(*) as c FROM activities WHERE created_at > ? AND workspace_id = ?').get(day, workspaceId) as any
+    ).c
 
     // Notifications (unread)
-    const unreadNotifs = (db.prepare('SELECT COUNT(*) as c FROM notifications WHERE read_at IS NULL').get() as any).c
+    const unreadNotifs = (
+      db.prepare('SELECT COUNT(*) as c FROM notifications WHERE read_at IS NULL AND workspace_id = ?').get(workspaceId) as any
+    ).c
 
     // Pipeline runs (active + recent)
     let pipelineActive = 0
@@ -179,7 +183,7 @@ function getDbStats() {
   }
 }
 
-async function getSystemStatus() {
+async function getSystemStatus(workspaceId: number) {
   const status: any = {
     timestamp: Date.now(),
     uptime: 0,
@@ -277,14 +281,16 @@ async function getSystemStatus() {
       // Match by: exact name, lowercase, or normalized (spaces→hyphens)
       const updateStmt = db.prepare(
         `UPDATE agents SET status = ?, last_seen = ?, updated_at = ?
-         WHERE LOWER(name) = LOWER(?)
-            OR LOWER(REPLACE(name, ' ', '-')) = LOWER(?)`
+         WHERE workspace_id = ?
+           AND (LOWER(name) = LOWER(?)
+           OR LOWER(REPLACE(name, ' ', '-')) = LOWER(?))`
       )
       for (const [agentName, info] of liveStatuses) {
         updateStmt.run(
           info.status,
           Math.floor(info.lastActivity / 1000),
           now,
+          workspaceId,
           agentName,
           agentName
         )

@@ -33,6 +33,7 @@ function parseGatewayJson(raw: string): any | null {
 
 function createChatReply(
   db: ReturnType<typeof getDatabase>,
+  workspaceId: number,
   conversationId: string,
   fromAgent: string,
   toAgent: string,
@@ -42,8 +43,8 @@ function createChatReply(
 ) {
   const replyInsert = db
     .prepare(`
-      INSERT INTO messages (conversation_id, from_agent, to_agent, content, message_type, metadata)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO messages (conversation_id, from_agent, to_agent, content, message_type, metadata, workspace_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `)
     .run(
       conversationId,
@@ -51,12 +52,13 @@ function createChatReply(
       toAgent,
       content,
       messageType,
-      metadata ? JSON.stringify(metadata) : null
+      metadata ? JSON.stringify(metadata) : null,
+      workspaceId
     )
 
   const row = db
-    .prepare('SELECT * FROM messages WHERE id = ?')
-    .get(replyInsert.lastInsertRowid) as Message
+    .prepare('SELECT * FROM messages WHERE id = ? AND workspace_id = ?')
+    .get(replyInsert.lastInsertRowid, workspaceId) as Message
 
   eventBus.broadcast('chat.message', {
     ...row,
@@ -102,6 +104,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const db = getDatabase()
+    const workspaceId = auth.user.workspace_id ?? 1
     const { searchParams } = new URL(request.url)
 
     const conversation_id = searchParams.get('conversation_id')
@@ -111,8 +114,8 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
     const since = searchParams.get('since')
 
-    let query = 'SELECT * FROM messages WHERE 1=1'
-    const params: any[] = []
+    let query = 'SELECT * FROM messages WHERE workspace_id = ?'
+    const params: any[] = [workspaceId]
 
     if (conversation_id) {
       query += ' AND conversation_id = ?'
@@ -145,8 +148,8 @@ export async function GET(request: NextRequest) {
     }))
 
     // Get total count for pagination
-    let countQuery = 'SELECT COUNT(*) as total FROM messages WHERE 1=1'
-    const countParams: any[] = []
+    let countQuery = 'SELECT COUNT(*) as total FROM messages WHERE workspace_id = ?'
+    const countParams: any[] = [workspaceId]
     if (conversation_id) {
       countQuery += ' AND conversation_id = ?'
       countParams.push(conversation_id)
@@ -182,6 +185,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const db = getDatabase()
+    const workspaceId = auth.user.workspace_id ?? 1
     const body = await request.json()
 
     const from = (body.from || '').trim()
@@ -199,8 +203,8 @@ export async function POST(request: NextRequest) {
     }
 
     const stmt = db.prepare(`
-      INSERT INTO messages (conversation_id, from_agent, to_agent, content, message_type, metadata)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO messages (conversation_id, from_agent, to_agent, content, message_type, metadata, workspace_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `)
 
     const result = stmt.run(
@@ -209,7 +213,8 @@ export async function POST(request: NextRequest) {
       to,
       content,
       message_type,
-      metadata ? JSON.stringify(metadata) : null
+      metadata ? JSON.stringify(metadata) : null,
+      workspaceId
     )
 
     const messageId = result.lastInsertRowid as number
@@ -223,7 +228,8 @@ export async function POST(request: NextRequest) {
       messageId,
       from,
       `Sent ${message_type} message${to ? ` to ${to}` : ' (broadcast)'}`,
-      { conversation_id, to, message_type }
+      { conversation_id, to, message_type },
+      workspaceId
     )
 
     // Create notification for recipient if specified
@@ -234,7 +240,8 @@ export async function POST(request: NextRequest) {
         `Message from ${from}`,
         content.substring(0, 200) + (content.length > 200 ? '...' : ''),
         'message',
-        messageId
+        messageId,
+        workspaceId
       )
 
       // Optionally forward to agent via gateway
@@ -242,8 +249,8 @@ export async function POST(request: NextRequest) {
         forwardInfo = { attempted: true, delivered: false }
 
         const agent = db
-          .prepare('SELECT * FROM agents WHERE lower(name) = lower(?)')
-          .get(to) as any
+          .prepare('SELECT * FROM agents WHERE lower(name) = lower(?) AND workspace_id = ?')
+          .get(to, workspaceId) as any
 
         let sessionKey: string | null = agent?.session_key || null
 
@@ -280,6 +287,7 @@ export async function POST(request: NextRequest) {
             try {
                 createChatReply(
                   db,
+                  workspaceId,
                   conversation_id,
                   COORDINATOR_AGENT,
                   from,
@@ -340,6 +348,7 @@ export async function POST(request: NextRequest) {
                 try {
                   createChatReply(
                     db,
+                    workspaceId,
                     conversation_id,
                     COORDINATOR_AGENT,
                     from,
@@ -363,6 +372,7 @@ export async function POST(request: NextRequest) {
             try {
               createChatReply(
                 db,
+                workspaceId,
                 conversation_id,
                 COORDINATOR_AGENT,
                 from,
@@ -401,6 +411,7 @@ export async function POST(request: NextRequest) {
                       : 'Unknown runtime error'
                   createChatReply(
                     db,
+                    workspaceId,
                     conversation_id,
                     COORDINATOR_AGENT,
                     from,
@@ -411,6 +422,7 @@ export async function POST(request: NextRequest) {
                 } else if (waitStatus === 'timeout') {
                   createChatReply(
                     db,
+                    workspaceId,
                     conversation_id,
                     COORDINATOR_AGENT,
                     from,
@@ -423,6 +435,7 @@ export async function POST(request: NextRequest) {
                   if (replyText) {
                     createChatReply(
                       db,
+                      workspaceId,
                       conversation_id,
                       COORDINATOR_AGENT,
                       from,
@@ -433,6 +446,7 @@ export async function POST(request: NextRequest) {
                   } else {
                     createChatReply(
                       db,
+                      workspaceId,
                       conversation_id,
                       COORDINATOR_AGENT,
                       from,
@@ -453,6 +467,7 @@ export async function POST(request: NextRequest) {
 
                 createChatReply(
                   db,
+                  workspaceId,
                   conversation_id,
                   COORDINATOR_AGENT,
                   from,
@@ -467,7 +482,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const created = db.prepare('SELECT * FROM messages WHERE id = ?').get(messageId) as Message
+    const created = db.prepare('SELECT * FROM messages WHERE id = ? AND workspace_id = ?').get(messageId, workspaceId) as Message
     const parsedMessage = {
       ...created,
       metadata: created.metadata ? JSON.parse(created.metadata) : null

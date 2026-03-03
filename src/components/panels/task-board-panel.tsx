@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { AgentAvatar } from '@/components/ui/agent-avatar'
+import { MarkdownRenderer } from '@/components/markdown-renderer'
 
 interface Task {
   id: number
@@ -360,13 +362,22 @@ export function TaskBoardPanel() {
                   </div>
                   
                   {task.description && (
-                    <p className="text-foreground/80 text-xs mb-2 line-clamp-2">
-                      {task.description}
-                    </p>
+                    <div className="mb-2 line-clamp-3 overflow-hidden">
+                      <MarkdownRenderer content={task.description} preview />
+                    </div>
                   )}
 
                   <div className="flex justify-between items-center text-xs text-muted-foreground">
-                    <span>{getAgentName(task.assigned_to)}</span>
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      {task.assigned_to ? (
+                        <>
+                          <AgentAvatar name={getAgentName(task.assigned_to)} size="xs" />
+                          <span className="truncate">{getAgentName(task.assigned_to)}</span>
+                        </>
+                      ) : (
+                        <span>Unassigned</span>
+                      )}
+                    </span>
                     <span className="font-medium">{formatTaskTimestamp(task.created_at)}</span>
                   </div>
 
@@ -620,7 +631,13 @@ function TaskDetailModal({
               </button>
             </div>
           </div>
-          <p className="text-foreground/80 mb-4">{task.description || 'No description'}</p>
+          {task.description ? (
+            <div className="mb-4">
+              <MarkdownRenderer content={task.description} />
+            </div>
+          ) : (
+            <p className="text-foreground/80 mb-4">No description</p>
+          )}
           <div className="flex gap-2 mt-4">
             {(['details', 'comments', 'quality'] as const).map(tab => (
               <button
@@ -647,7 +664,16 @@ function TaskDetailModal({
               </div>
               <div>
                 <span className="text-muted-foreground">Assigned to:</span>
-                <span className="text-foreground ml-2">{task.assigned_to || 'Unassigned'}</span>
+                <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
+                  {task.assigned_to ? (
+                    <>
+                      <AgentAvatar name={task.assigned_to} size="xs" />
+                      <span>{task.assigned_to}</span>
+                    </>
+                  ) : (
+                    <span>Unassigned</span>
+                  )}
+                </span>
               </div>
               <div>
                 <span className="text-muted-foreground">Created:</span>
