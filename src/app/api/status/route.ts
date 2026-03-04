@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import net from 'node:net'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { runCommand, runOpenClaw, runClawdbot } from '@/lib/command'
 import { config } from '@/lib/config'
@@ -9,6 +9,7 @@ import { getAllGatewaySessions, getAgentLiveStatuses } from '@/lib/sessions'
 import { requireRole } from '@/lib/auth'
 import { MODEL_CATALOG } from '@/lib/models'
 import { logger } from '@/lib/logger'
+import { detectProviderSubscriptions, getPrimarySubscription } from '@/lib/provider-subscriptions'
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
@@ -494,25 +495,14 @@ async function getCapabilities() {
     // claude_sessions table may not exist
   }
 
-  // Detect Claude subscription type from credentials
-  let subscription: { type: string; rateLimitTier?: string } | null = null
-  try {
-    const credsPath = path.join(config.claudeHome, '.credentials.json')
-    if (existsSync(credsPath)) {
-      const creds = JSON.parse(readFileSync(credsPath, 'utf-8'))
-      const oauth = creds.claudeAiOauth
-      if (oauth?.subscriptionType) {
-        subscription = {
-          type: oauth.subscriptionType,
-          rateLimitTier: oauth.rateLimitTier || undefined,
-        }
-      }
-    }
-  } catch {
-    // credentials file may not exist or be unreadable
-  }
+  const subscriptions = detectProviderSubscriptions().active
+  const primary = getPrimarySubscription()
+  const subscription = primary ? {
+    type: primary.type,
+    provider: primary.provider,
+  } : null
 
-  return { gateway, openclawHome, claudeHome, claudeSessions, subscription }
+  return { gateway, openclawHome, claudeHome, claudeSessions, subscription, subscriptions }
 }
 
 function isPortOpen(host: string, port: number): Promise<boolean> {
