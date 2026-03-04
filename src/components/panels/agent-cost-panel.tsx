@@ -1,10 +1,13 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { createClientLogger } from '@/lib/client-logger'
 import {
   PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
+
+const log = createClientLogger('AgentCostPanel')
 
 interface AgentCostData {
   stats: { totalTokens: number; totalCost: number; requestCount: number; avgTokensPerRequest: number; avgCostPerRequest: number }
@@ -34,7 +37,7 @@ export function AgentCostPanel() {
       const json = await res.json()
       setData(json)
     } catch (err) {
-      console.error('Failed to load agent costs:', err)
+      log.error('Failed to load agent costs:', err)
     } finally {
       setIsLoading(false)
     }

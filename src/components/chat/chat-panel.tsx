@@ -3,9 +3,12 @@
 import { useEffect, useCallback, useState, useRef } from 'react'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { createClientLogger } from '@/lib/client-logger'
 import { ConversationList } from './conversation-list'
 import { MessageList } from './message-list'
 import { ChatInput } from './chat-input'
+
+const log = createClientLogger('ChatPanel')
 
 export function ChatPanel() {
   const {
@@ -52,7 +55,7 @@ export function ChatPanel() {
         const data = await res.json()
         if (data.agents) setAgents(data.agents)
       } catch (err) {
-        console.error('Failed to load agents:', err)
+        log.error('Failed to load agents:', err)
       }
     }
     if (chatPanelOpen) loadAgents()
@@ -67,7 +70,7 @@ export function ChatPanel() {
       const data = await res.json()
       if (data.messages) setChatMessages(data.messages)
     } catch (err) {
-      console.error('Failed to load messages:', err)
+      log.error('Failed to load messages:', err)
     }
   }, [activeConversation, setChatMessages])
 
@@ -145,7 +148,7 @@ export function ChatPanel() {
         updatePendingMessage(tempId, { pendingStatus: 'failed' })
       }
     } catch (err) {
-      console.error('Failed to send message:', err)
+      log.error('Failed to send message:', err)
       updatePendingMessage(tempId, { pendingStatus: 'failed' })
     }
   }

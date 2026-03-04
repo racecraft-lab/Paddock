@@ -3,8 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { createClientLogger } from '@/lib/client-logger'
 import { AgentAvatar } from '@/components/ui/agent-avatar'
 import { MarkdownRenderer } from '@/components/markdown-renderer'
+
+const log = createClientLogger('TaskBoard')
 
 interface Task {
   id: number
@@ -869,7 +872,7 @@ function CreateTaskModal({
       onCreated()
       onClose()
     } catch (error) {
-      console.error('Error creating task:', error)
+      log.error('Error creating task:', error)
     }
   }
 
@@ -1011,7 +1014,7 @@ function EditTaskModal({
 
       onUpdated()
     } catch (error) {
-      console.error('Error updating task:', error)
+      log.error('Error updating task:', error)
     }
   }
 

@@ -1,6 +1,9 @@
 'use client'
 
 import { Component, type ErrorInfo, type ReactNode } from 'react'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('ErrorBoundary')
 
 interface Props {
   children: ReactNode
@@ -23,7 +26,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Panel error:', error, errorInfo)
+    log.error('Panel error:', error, errorInfo)
   }
 
   render() {

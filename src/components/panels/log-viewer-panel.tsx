@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('LogViewer')
 
 interface LogFilters {
   level?: string
@@ -36,7 +39,7 @@ export function LogViewerPanel() {
   }, [logFilters])
 
   const loadLogs = useCallback(async (tail = false) => {
-    console.log(`LogViewer: Loading logs (tail=${tail})`)
+    log.debug(`Loading logs (tail=${tail})`)
     setIsLoading(!tail) // Only show loading for initial load, not for tailing
 
     try {
@@ -53,37 +56,37 @@ export function LogViewerPanel() {
         ...(tail && currentLogs.length > 0 && { since: currentLogs[0]?.timestamp.toString() })
       })
 
-      console.log(`LogViewer: Fetching /api/logs?${params}`)
+      log.debug(`Fetching /api/logs?${params}`)
       const response = await fetch(`/api/logs?${params}`)
       const data = await response.json()
 
-      console.log(`LogViewer: Received ${data.logs?.length || 0} logs from API`)
+      log.debug(`Received ${data.logs?.length || 0} logs from API`)
 
       if (data.logs && data.logs.length > 0) {
         if (tail) {
           // Add new logs for tail mode - prepend to existing logs
           let newLogsAdded = 0
           const existingIds = new Set((currentLogs || []).map((l: any) => l?.id).filter(Boolean))
-          data.logs.reverse().forEach((log: any) => {
-            if (existingIds.has(log?.id)) return
-            addLog(log)
+          data.logs.reverse().forEach((entry: any) => {
+            if (existingIds.has(entry?.id)) return
+            addLog(entry)
             newLogsAdded++
           })
-          console.log(`LogViewer: Added ${newLogsAdded} new logs (tail mode)`)
+          log.debug(`Added ${newLogsAdded} new logs (tail mode)`)
         } else {
           // Replace logs for initial load or refresh
-          console.log(`LogViewer: Clearing existing logs and loading ${data.logs.length} logs`)
+          log.debug(`Clearing existing logs and loading ${data.logs.length} logs`)
           clearLogs() // Clear existing logs
-          data.logs.reverse().forEach((log: any) => {
-            addLog(log)
+          data.logs.reverse().forEach((entry: any) => {
+            addLog(entry)
           })
-          console.log(`LogViewer: Successfully added ${data.logs.length} logs to store`)
+          log.debug(`Successfully added ${data.logs.length} logs to store`)
         }
       } else {
-        console.log('LogViewer: No logs received from API')
+        log.debug('No logs received from API')
       }
     } catch (error) {
-      console.error('LogViewer: Failed to load logs:', error)
+      log.error('Failed to load logs:', error)
     } finally {
       setIsLoading(false)
     }
@@ -95,13 +98,13 @@ export function LogViewerPanel() {
       const data = await response.json()
       setAvailableSources(data.sources || [])
     } catch (error) {
-      console.error('Failed to load log sources:', error)
+      log.error('Failed to load log sources:', error)
     }
   }, [])
 
   // Load initial logs and sources
   useEffect(() => {
-    console.log('LogViewer: Initial load started')
+    log.debug('Initial load started')
     loadLogs()
     loadSources()
   }, [loadLogs, loadSources])
@@ -154,16 +157,16 @@ export function LogViewerPanel() {
     }
   }
 
-  const filteredLogs = logs.filter(log => {
-    if (logFilters.level && log.level !== logFilters.level) return false
-    if (logFilters.source && log.source !== logFilters.source) return false
-    if (logFilters.search && !log.message.toLowerCase().includes(logFilters.search.toLowerCase())) return false
-    if (logFilters.session && (!log.session || !log.session.includes(logFilters.session))) return false
+  const filteredLogs = logs.filter(entry => {
+    if (logFilters.level && entry.level !== logFilters.level) return false
+    if (logFilters.source && entry.source !== logFilters.source) return false
+    if (logFilters.search && !entry.message.toLowerCase().includes(logFilters.search.toLowerCase())) return false
+    if (logFilters.session && (!entry.session || !entry.session.includes(logFilters.session))) return false
     return true
   })
 
   // Debug logging
-  console.log(`LogViewer: Store has ${logs.length} logs, filtered to ${filteredLogs.length}`)
+  log.debug(`Store has ${logs.length} logs, filtered to ${filteredLogs.length}`)
 
   return (
     <div className="flex flex-col h-full p-6 space-y-4">

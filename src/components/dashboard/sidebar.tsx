@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useMissionControl } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('Sidebar')
 
 interface MenuItem {
   id: string
@@ -36,7 +39,7 @@ export function Sidebar() {
     fetch('/api/status?action=overview')
       .then(res => res.json())
       .then(data => setSystemStats(data))
-      .catch(err => console.error('Failed to fetch system status:', err))
+      .catch(err => log.error('Failed to fetch system status:', err))
   }, [])
 
   const activeSessions = sessions.filter(s => s.active).length
