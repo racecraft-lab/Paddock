@@ -12,6 +12,9 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
+    "test:e2e:openclaw:local": "E2E_GATEWAY_EXPECTED=0 playwright test -c playwright.openclaw.local.config.ts",
+    "test:e2e:openclaw:gateway": "E2E_GATEWAY_EXPECTED=1 playwright test -c playwright.openclaw.gateway.config.ts",
+    "test:e2e:openclaw": "pnpm test:e2e:openclaw:local && pnpm test:e2e:openclaw:gateway",
     "test:all": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e",
     "quality:gate": "pnpm test:all"
   },

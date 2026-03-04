@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClientLogger } from '@/lib/client-logger'
 import Link from 'next/link'
+
+const log = createClientLogger('AgentDetailTabs')
 
 interface Agent {
   id: number
@@ -374,7 +377,7 @@ export function SoulTab({
         setSelectedTemplate(templateName)
       }
     } catch (error) {
-      console.error('Failed to load template:', error)
+      log.error('Failed to load template:', error)
     }
   }
 
@@ -626,7 +629,7 @@ export function TasksTab({ agent }: { agent: Agent }) {
           setTasks(data.tasks || [])
         }
       } catch (error) {
-        console.error('Failed to fetch tasks:', error)
+        log.error('Failed to fetch tasks:', error)
       } finally {
         setLoading(false)
       }
@@ -725,7 +728,7 @@ export function ActivityTab({ agent }: { agent: Agent }) {
           setActivities(data.activities || [])
         }
       } catch (error) {
-        console.error('Failed to fetch activities:', error)
+        log.error('Failed to fetch activities:', error)
       } finally {
         setLoading(false)
       }

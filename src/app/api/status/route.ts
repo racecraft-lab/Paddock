@@ -475,7 +475,10 @@ async function performHealthCheck() {
 async function getCapabilities() {
   const gateway = await isPortOpen(config.gatewayHost, config.gatewayPort)
 
-  const openclawHome = !!(config.openclawHome && existsSync(config.openclawHome))
+  const openclawHome = Boolean(
+    (config.openclawStateDir && existsSync(config.openclawStateDir)) ||
+    (config.openclawConfigPath && existsSync(config.openclawConfigPath))
+  )
 
   const claudeProjectsPath = path.join(config.claudeHome, 'projects')
   const claudeHome = existsSync(claudeProjectsPath)

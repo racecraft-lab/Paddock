@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useMissionControl, CronJob } from '@/store'
+import { createClientLogger } from '@/lib/client-logger'
+const log = createClientLogger('CronManagement')
 import { buildDayKey, getCronOccurrences } from '@/lib/cron-occurrences'
 
 interface NewJobForm {
@@ -92,7 +94,7 @@ export function CronManagementPanel() {
       const data = await response.json()
       setCronJobs(data.jobs || [])
     } catch (error) {
-      console.error('Failed to load cron jobs:', error)
+      log.error('Failed to load cron jobs:', error)
     } finally {
       setIsLoading(false)
     }
@@ -126,7 +128,7 @@ export function CronManagementPanel() {
       const data = await response.json()
       setJobLogs(data.logs || [])
     } catch (error) {
-      console.error('Failed to load job logs:', error)
+      log.error('Failed to load job logs:', error)
       setJobLogs([])
     }
   }
@@ -150,7 +152,7 @@ export function CronManagementPanel() {
         alert(`Failed to toggle job: ${error.error}`)
       }
     } catch (error) {
-      console.error('Failed to toggle job:', error)
+      log.error('Failed to toggle job:', error)
       alert('Network error occurred')
     }
   }
@@ -175,7 +177,7 @@ export function CronManagementPanel() {
         alert(`Job failed:\n${result.error}\n${result.stderr}`)
       }
     } catch (error) {
-      console.error('Failed to trigger job:', error)
+      log.error('Failed to trigger job:', error)
       alert('Network error occurred')
     }
   }
@@ -214,7 +216,7 @@ export function CronManagementPanel() {
         alert(`Failed to add job: ${error.error}`)
       }
     } catch (error) {
-      console.error('Failed to add job:', error)
+      log.error('Failed to add job:', error)
       alert('Network error occurred')
     }
   }
@@ -244,7 +246,7 @@ export function CronManagementPanel() {
         alert(`Failed to remove job: ${error.error}`)
       }
     } catch (error) {
-      console.error('Failed to remove job:', error)
+      log.error('Failed to remove job:', error)
       alert('Network error occurred')
     }
   }

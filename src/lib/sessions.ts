@@ -23,16 +23,16 @@ export interface GatewaySession {
  * Read all sessions from OpenClaw agent session stores on disk.
  *
  * OpenClaw stores sessions per-agent at:
- *   {OPENCLAW_HOME}/agents/{agentName}/sessions/sessions.json
+ *   {OPENCLAW_STATE_DIR}/agents/{agentName}/sessions/sessions.json
  *
  * Each file is a JSON object keyed by session key (e.g. "agent:<agent>:main")
  * with session metadata as values.
  */
 export function getAllGatewaySessions(activeWithinMs = 60 * 60 * 1000): GatewaySession[] {
-  const openclawHome = config.openclawHome
-  if (!openclawHome) return []
+  const openclawStateDir = config.openclawStateDir
+  if (!openclawStateDir) return []
 
-  const agentsDir = path.join(openclawHome, 'agents')
+  const agentsDir = path.join(openclawStateDir, 'agents')
   if (!fs.existsSync(agentsDir)) return []
 
   const sessions: GatewaySession[] = []

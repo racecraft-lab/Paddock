@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "jobs": [
+    {
+      "id": "job-eng-daily",
+      "agentId": "engineering-bot",
+      "name": "daily engineering standup",
+      "enabled": true,
+      "createdAtMs": 1762550000000,
+      "updatedAtMs": 1762550600000,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 9 * * 1-5",
+        "tz": "UTC"
+      },
+      "payload": {
+        "kind": "message",
+        "message": "Post daily engineering summary",
+        "model": "openai/gpt-5"
+      },
+      "delivery": {
+        "mode": "dm",
+        "channel": "engineering"
+      },
+      "state": {
+        "nextRunAtMs": 1762602000000,
+        "lastRunAtMs": 1762515600000,
+        "lastStatus": "success"
+      }
+    },
+    {
+      "id": "job-research-hourly",
+      "agentId": "research-bot",
+      "name": "hourly trend scan",
+      "enabled": true,
+      "createdAtMs": 1762551000000,
+      "updatedAtMs": 1762551000000,
+      "schedule": {
+        "kind": "cron",
+        "expr": "0 * * * *",
+        "tz": "UTC"
+      },
+      "payload": {
+        "kind": "message",
+        "message": "Scan latest market/AI trends",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      "delivery": {
+        "mode": "dm",
+        "channel": "research"
+      },
+      "state": {
+        "nextRunAtMs": 1762594800000,
+        "lastRunAtMs": 1762591200000,
+        "lastStatus": "success"
+      }
+    }
+  ]
+}

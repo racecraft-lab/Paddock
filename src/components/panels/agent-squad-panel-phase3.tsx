@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { createClientLogger } from '@/lib/client-logger'
 import { AgentAvatar } from '@/components/ui/agent-avatar'
 import {
   OverviewTab,
@@ -12,6 +13,8 @@ import {
   ConfigTab,
   CreateAgentModal
 } from './agent-detail-tabs'
+
+const log = createClientLogger('AgentSquadPhase3')
 
 interface Agent {
   id: number
@@ -148,7 +151,7 @@ export function AgentSquadPanelPhase3() {
           : agent
       ))
     } catch (error) {
-      console.error('Failed to update agent status:', error)
+      log.error('Failed to update agent status:', error)
       setError('Failed to update agent status')
     }
   }
@@ -171,7 +174,7 @@ export function AgentSquadPanelPhase3() {
 
       await updateAgentStatus(agentName, 'idle', 'Manually woken via session')
     } catch (error) {
-      console.error('Failed to wake agent:', error)
+      log.error('Failed to wake agent:', error)
       setError('Failed to wake agent')
     }
   }
@@ -503,7 +506,7 @@ function AgentDetailModalPhase3({
           setSoulTemplates(data.templates || [])
         }
       } catch (error) {
-        console.error('Failed to load SOUL templates:', error)
+        log.error('Failed to load SOUL templates:', error)
       }
     }
     
@@ -522,7 +525,7 @@ function AgentDetailModalPhase3({
         setHeartbeatData(data)
       }
     } catch (error) {
-      console.error('Failed to perform heartbeat:', error)
+      log.error('Failed to perform heartbeat:', error)
     } finally {
       setLoadingHeartbeat(false)
     }
@@ -544,7 +547,7 @@ function AgentDetailModalPhase3({
       setEditing(false)
       onUpdate()
     } catch (error) {
-      console.error('Failed to update agent:', error)
+      log.error('Failed to update agent:', error)
     }
   }
 
@@ -564,7 +567,7 @@ function AgentDetailModalPhase3({
       setFormData(prev => ({ ...prev, soul_content: content }))
       onUpdate()
     } catch (error) {
-      console.error('Failed to update SOUL:', error)
+      log.error('Failed to update SOUL:', error)
     }
   }
 
@@ -585,7 +588,7 @@ function AgentDetailModalPhase3({
       setFormData(prev => ({ ...prev, working_memory: data.working_memory }))
       onUpdate()
     } catch (error) {
-      console.error('Failed to update memory:', error)
+      log.error('Failed to update memory:', error)
     }
   }
 
@@ -746,7 +749,7 @@ function QuickSpawnModal({
         alert(result.error || 'Failed to spawn agent')
       }
     } catch (error) {
-      console.error('Spawn failed:', error)
+      log.error('Spawn failed:', error)
       alert('Network error occurred')
     } finally {
       setIsSpawning(false)

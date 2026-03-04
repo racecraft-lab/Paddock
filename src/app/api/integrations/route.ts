@@ -108,8 +108,8 @@ function serializeEnv(lines: EnvLine[]): string {
 }
 
 function getEnvPath(): string | null {
-  if (!config.openclawHome) return null
-  return join(config.openclawHome, '.env')
+  if (!config.openclawStateDir) return null
+  return join(config.openclawStateDir, '.env')
 }
 
 async function readEnvFile(): Promise<{ lines: EnvLine[]; raw: string } | null> {
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
 
   const envData = await readEnvFile()
   if (!envData) {
-    return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+    return NextResponse.json({ error: 'OPENCLAW_STATE_DIR not configured' }, { status: 404 })
   }
 
   const envMap = new Map<string, string>()
@@ -261,7 +261,7 @@ export async function PUT(request: NextRequest) {
 
   const envData = await readEnvFile()
   if (!envData) {
-    return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+    return NextResponse.json({ error: 'OPENCLAW_STATE_DIR not configured' }, { status: 404 })
   }
 
   const { lines } = envData
@@ -324,7 +324,7 @@ export async function DELETE(request: NextRequest) {
 
   const envData = await readEnvFile()
   if (!envData) {
-    return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+    return NextResponse.json({ error: 'OPENCLAW_STATE_DIR not configured' }, { status: 404 })
   }
 
   const removed: string[] = []
@@ -408,7 +408,7 @@ async function handleTest(
 
   const envData = await readEnvFile()
   if (!envData) {
-    return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+    return NextResponse.json({ error: 'OPENCLAW_STATE_DIR not configured' }, { status: 404 })
   }
 
   const envMap = new Map<string, string>()
@@ -552,7 +552,7 @@ async function handlePull(
     // Write to .env
     const envData = await readEnvFile()
     if (!envData) {
-      return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+      return NextResponse.json({ error: 'OPENCLAW_STATE_DIR not configured' }, { status: 404 })
     }
 
     const { lines } = envData
@@ -621,7 +621,7 @@ async function handlePullAll(
 
   const envData = await readEnvFile()
   if (!envData) {
-    return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+    return NextResponse.json({ error: 'OPENCLAW_STATE_DIR not configured' }, { status: 404 })
   }
 
   const { lines } = envData

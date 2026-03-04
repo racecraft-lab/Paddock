@@ -113,7 +113,7 @@ export function GatewayConfigPanel() {
       <div className="p-6">
         <div className="bg-destructive/10 text-destructive rounded-lg p-4 text-sm">{error}</div>
         <p className="text-xs text-muted-foreground mt-2">
-          Ensure OPENCLAW_HOME is set and openclaw.json exists at the expected path.
+          Ensure `OPENCLAW_CONFIG_PATH` (or `OPENCLAW_STATE_DIR`) is set and the config file exists.
         </p>
       </div>
     )

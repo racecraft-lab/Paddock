@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useMissionControl } from '@/store'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('MemoryBrowser')
 
 interface MemoryFile {
   path: string
@@ -46,7 +49,7 @@ export function MemoryBrowserPanel() {
       // Auto-expand some common directories
       setExpandedFolders(new Set(['daily', 'knowledge']))
     } catch (error) {
-      console.error('Failed to load file tree:', error)
+      log.error('Failed to load file tree:', error)
     } finally {
       setIsLoading(false)
     }
@@ -83,7 +86,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to load file content')
       }
     } catch (error) {
-      console.error('Failed to load file content:', error)
+      log.error('Failed to load file content:', error)
       alert('Network error occurred')
     } finally {
       setIsLoading(false)
@@ -99,7 +102,7 @@ export function MemoryBrowserPanel() {
       const data = await response.json()
       setSearchResults(data.results || [])
     } catch (error) {
-      console.error('Search failed:', error)
+      log.error('Search failed:', error)
       setSearchResults([])
     } finally {
       setIsSearching(false)
@@ -165,7 +168,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to save file')
       }
     } catch (error) {
-      console.error('Failed to save file:', error)
+      log.error('Failed to save file:', error)
       alert('Network error occurred')
     } finally {
       setIsSaving(false)
@@ -192,7 +195,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to create file')
       }
     } catch (error) {
-      console.error('Failed to create file:', error)
+      log.error('Failed to create file:', error)
       alert('Network error occurred')
     }
   }
@@ -220,7 +223,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to delete file')
       }
     } catch (error) {
-      console.error('Failed to delete file:', error)
+      log.error('Failed to delete file:', error)
       alert('Network error occurred')
     }
   }
@@ -269,6 +272,30 @@ export function MemoryBrowserPanel() {
         )}
       </div>
     ))
+  }
+
+  const renderInlineFormatting = (text: string): React.ReactNode[] => {
+    const parts: React.ReactNode[] = []
+    const regex = /(\*\*.*?\*\*|\*.*?\*)/g
+    let lastIndex = 0
+    let match: RegExpExecArray | null
+    let key = 0
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index))
+      }
+      const m = match[0]
+      if (m.startsWith('**') && m.endsWith('**')) {
+        parts.push(<strong key={key++}>{m.slice(2, -2)}</strong>)
+      } else if (m.startsWith('*') && m.endsWith('*')) {
+        parts.push(<em key={key++}>{m.slice(1, -1)}</em>)
+      }
+      lastIndex = regex.lastIndex
+    }
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex))
+    }
+    return parts
   }
 
   const renderMarkdown = (content: string) => {
@@ -323,20 +350,10 @@ export function MemoryBrowserPanel() {
         elements.push(<div key={`${i}-space`} className="mb-2"></div>)
       } else if (trimmedLine.length > 0) {
         if (inList) inList = false
-        // Handle inline formatting — escape HTML entities first to prevent XSS
-        let content = trimmedLine
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;')
-        // Simple bold formatting
-        content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        // Simple italic formatting
-        content = content.replace(/\*(.*?)\*/g, '<em>$1</em>')
-        
         elements.push(
-          <p key={`${i}-p`} className="mb-2" dangerouslySetInnerHTML={{ __html: content }}></p>
+          <p key={`${i}-p`} className="mb-2">
+            {renderInlineFormatting(trimmedLine)}
+          </p>
         )
       }
     }

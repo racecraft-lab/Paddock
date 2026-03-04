@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('StandupPanel')
 
 interface StandupReport {
   date: string
@@ -133,7 +136,7 @@ export function StandupPanel() {
       const data = await response.json()
       setStandupHistory(data.history || [])
     } catch (err) {
-      console.error('Failed to fetch standup history:', err)
+      log.error('Failed to fetch standup history:', err)
     }
   }
 
