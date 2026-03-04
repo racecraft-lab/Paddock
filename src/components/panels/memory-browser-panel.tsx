@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { useMissionControl } from '@/store'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('MemoryBrowser')
 
 interface MemoryFile {
   path: string
@@ -46,7 +49,7 @@ export function MemoryBrowserPanel() {
       // Auto-expand some common directories
       setExpandedFolders(new Set(['daily', 'knowledge']))
     } catch (error) {
-      console.error('Failed to load file tree:', error)
+      log.error('Failed to load file tree:', error)
     } finally {
       setIsLoading(false)
     }
@@ -83,7 +86,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to load file content')
       }
     } catch (error) {
-      console.error('Failed to load file content:', error)
+      log.error('Failed to load file content:', error)
       alert('Network error occurred')
     } finally {
       setIsLoading(false)
@@ -99,7 +102,7 @@ export function MemoryBrowserPanel() {
       const data = await response.json()
       setSearchResults(data.results || [])
     } catch (error) {
-      console.error('Search failed:', error)
+      log.error('Search failed:', error)
       setSearchResults([])
     } finally {
       setIsSearching(false)
@@ -165,7 +168,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to save file')
       }
     } catch (error) {
-      console.error('Failed to save file:', error)
+      log.error('Failed to save file:', error)
       alert('Network error occurred')
     } finally {
       setIsSaving(false)
@@ -192,7 +195,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to create file')
       }
     } catch (error) {
-      console.error('Failed to create file:', error)
+      log.error('Failed to create file:', error)
       alert('Network error occurred')
     }
   }
@@ -220,7 +223,7 @@ export function MemoryBrowserPanel() {
         alert(data.error || 'Failed to delete file')
       }
     } catch (error) {
-      console.error('Failed to delete file:', error)
+      log.error('Failed to delete file:', error)
       alert('Network error occurred')
     }
   }

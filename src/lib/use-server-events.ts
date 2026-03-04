@@ -2,6 +2,9 @@
 
 import { useEffect, useRef } from 'react'
 import { useMissionControl } from '@/store'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('SSE')
 
 interface ServerEvent {
   type: string
@@ -73,7 +76,7 @@ export function useServerEvents() {
 
         const attempts = sseReconnectAttemptsRef.current
         if (attempts >= SSE_MAX_RECONNECT_ATTEMPTS) {
-          console.error(`SSE: max reconnect attempts (${SSE_MAX_RECONNECT_ATTEMPTS}) reached`)
+          log.error(`Max reconnect attempts (${SSE_MAX_RECONNECT_ATTEMPTS}) reached`)
           return
         }
 
@@ -82,7 +85,7 @@ export function useServerEvents() {
         const delay = Math.round(base + Math.random() * base * 0.5)
         sseReconnectAttemptsRef.current = attempts + 1
 
-        console.warn(`SSE: reconnecting in ${delay}ms (attempt ${attempts + 1}/${SSE_MAX_RECONNECT_ATTEMPTS})`)
+        log.warn(`Reconnecting in ${delay}ms (attempt ${attempts + 1}/${SSE_MAX_RECONNECT_ATTEMPTS})`)
         reconnectTimeoutRef.current = setTimeout(() => {
           if (mounted) connect()
         }, delay)

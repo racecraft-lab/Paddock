@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useMissionControl } from '@/store'
+import { createClientLogger } from '@/lib/client-logger'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+
+const log = createClientLogger('TokenDashboard')
 
 interface UsageStats {
   summary: {
@@ -39,7 +42,7 @@ export function TokenDashboardPanel() {
       const data = await response.json()
       setUsageStats(data)
     } catch (error) {
-      console.error('Failed to load usage stats:', error)
+      log.error('Failed to load usage stats:', error)
     } finally {
       setIsLoading(false)
     }
@@ -51,7 +54,7 @@ export function TokenDashboardPanel() {
       const data = await response.json()
       setTrendData(data)
     } catch (error) {
-      console.error('Failed to load trend data:', error)
+      log.error('Failed to load trend data:', error)
     }
   }, [selectedTimeframe])
 
@@ -80,7 +83,7 @@ export function TokenDashboardPanel() {
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (error) {
-      console.error('Export failed:', error)
+      log.error('Export failed:', error)
       alert('Export failed: ' + error)
     } finally {
       setIsExporting(false)

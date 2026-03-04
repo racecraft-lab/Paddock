@@ -3,6 +3,9 @@
 import { useState, useCallback } from 'react'
 import { useMissionControl, Conversation, Agent } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('ConversationList')
 
 function timeAgo(timestamp: number): string {
   const diff = Math.floor(Date.now() / 1000) - timestamp
@@ -64,7 +67,7 @@ export function ConversationList({ onNewConversation }: ConversationListProps) {
         )
       }
     } catch (err) {
-      console.error('Failed to load conversations:', err)
+      log.error('Failed to load conversations:', err)
     }
   }, [setConversations])
 

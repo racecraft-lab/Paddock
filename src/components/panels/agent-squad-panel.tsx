@@ -1,6 +1,9 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('AgentSquadPanel')
 
 interface Agent {
   id: number
@@ -103,7 +106,7 @@ export function AgentSquadPanel() {
           : agent
       ))
     } catch (error) {
-      console.error('Failed to update agent status:', error)
+      log.error('Failed to update agent status:', error)
       setError('Failed to update agent status')
     }
   }
@@ -355,7 +358,7 @@ function AgentDetailModal({
       setEditing(false)
       onUpdate()
     } catch (error) {
-      console.error('Failed to update agent:', error)
+      log.error('Failed to update agent:', error)
     }
   }
 
@@ -540,7 +543,7 @@ function CreateAgentModal({
       onCreated()
       onClose()
     } catch (error) {
-      console.error('Error creating agent:', error)
+      log.error('Error creating agent:', error)
     }
   }
 

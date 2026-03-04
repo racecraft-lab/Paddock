@@ -3,6 +3,9 @@
 import { useState, useCallback } from 'react'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('SessionDetails')
 
 export function SessionDetailsPanel() {
   const { 
@@ -20,7 +23,7 @@ export function SessionDetailsPanel() {
       const data = await response.json()
       setSessions(data.sessions || data)
     } catch (error) {
-      console.error('Failed to load sessions:', error)
+      log.error('Failed to load sessions:', error)
     }
   }, [setSessions])
 
