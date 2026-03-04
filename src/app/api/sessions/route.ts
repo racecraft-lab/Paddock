@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAllGatewaySessions } from '@/lib/sessions'
 import { syncClaudeSessions } from '@/lib/claude-sessions'
+import { scanCodexSessions } from '@/lib/codex-sessions'
 import { getDatabase } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
 import { logger } from '@/lib/logger'
@@ -49,10 +50,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ sessions })
     }
 
-    // Fallback: sync and read local Claude sessions from SQLite
+    // Fallback: sync and read local Claude + Codex sessions from disk/SQLite
     await syncClaudeSessions()
     const claudeSessions = getLocalClaudeSessions()
-    return NextResponse.json({ sessions: claudeSessions })
+    const codexSessions = getLocalCodexSessions()
+    const merged = mergeLocalSessions(claudeSessions, codexSessions)
+    return NextResponse.json({ sessions: merged })
   } catch (error) {
     logger.error({ err: error }, 'Sessions API error')
     return NextResponse.json({ sessions: [] })
@@ -89,12 +92,71 @@ function getLocalClaudeSessions() {
         toolUses: s.tool_uses || 0,
         estimatedCost: s.estimated_cost || 0,
         lastUserPrompt: s.last_user_prompt || null,
+        workingDir: s.project_path || null,
       }
     })
   } catch (err) {
     logger.warn({ err }, 'Failed to read local Claude sessions')
     return []
   }
+}
+
+function getLocalCodexSessions() {
+  try {
+    const rows = scanCodexSessions(100)
+
+    return rows.map((s) => {
+      const total = s.totalTokens || (s.inputTokens + s.outputTokens)
+      const lastMsg = s.lastMessageAt ? new Date(s.lastMessageAt).getTime() : 0
+      const firstMsg = s.firstMessageAt ? new Date(s.firstMessageAt).getTime() : 0
+      return {
+        id: s.sessionId,
+        key: s.projectSlug || s.sessionId,
+        agent: s.projectSlug || 'codex-local',
+        kind: 'codex-cli',
+        age: formatAge(lastMsg),
+        model: s.model || 'codex',
+        tokens: `${formatTokens(s.inputTokens || 0)}/${formatTokens(s.outputTokens || 0)}`,
+        channel: 'local',
+        flags: [],
+        active: s.isActive,
+        startTime: firstMsg,
+        lastActivity: lastMsg,
+        source: 'local' as const,
+        userMessages: s.userMessages || 0,
+        assistantMessages: s.assistantMessages || 0,
+        toolUses: 0,
+        estimatedCost: 0,
+        lastUserPrompt: null,
+        totalTokens: total,
+        workingDir: s.projectPath || null,
+      }
+    })
+  } catch (err) {
+    logger.warn({ err }, 'Failed to read local Codex sessions')
+    return []
+  }
+}
+
+function mergeLocalSessions(
+  claudeSessions: Array<Record<string, any>>,
+  codexSessions: Array<Record<string, any>>,
+) {
+  const merged = [...claudeSessions, ...codexSessions]
+  const deduped = new Map<string, Record<string, any>>()
+
+  for (const session of merged) {
+    const id = String(session?.id || '')
+    if (!id) continue
+    const existing = deduped.get(id)
+    const currentActivity = Number(session?.lastActivity || 0)
+    const existingActivity = Number(existing?.lastActivity || 0)
+    if (!existing || currentActivity > existingActivity) deduped.set(id, session)
+  }
+
+  return Array.from(deduped.values())
+    .sort((a, b) => Number(b?.lastActivity || 0) - Number(a?.lastActivity || 0))
+    .slice(0, 100)
 }
 
 function formatTokens(n: number): string {

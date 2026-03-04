@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { useMissionControl } from '@/store'
 
 interface Webhook {
   id: number
@@ -33,6 +34,16 @@ interface Delivery {
   created_at: number
 }
 
+interface SchedulerTask {
+  id: string
+  name: string
+  enabled: boolean
+  lastRun: number | null
+  nextRun: number | null
+  running: boolean
+  lastResult?: { ok: boolean; message: string; timestamp: number }
+}
+
 const AVAILABLE_EVENTS = [
   { value: '*', label: 'All events', description: 'Receive all event types' },
   { value: 'agent.error', label: 'Agent error', description: 'Agent enters error state' },
@@ -48,7 +59,10 @@ const AVAILABLE_EVENTS = [
 ]
 
 export function WebhookPanel() {
+  const { dashboardMode } = useMissionControl()
+  const isLocalMode = dashboardMode === 'local'
   const [webhooks, setWebhooks] = useState<Webhook[]>([])
+  const [webhookAutomations, setWebhookAutomations] = useState<SchedulerTask[]>([])
   const [deliveries, setDeliveries] = useState<Delivery[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -57,6 +71,7 @@ export function WebhookPanel() {
   const [testingId, setTestingId] = useState<number | null>(null)
   const [testResult, setTestResult] = useState<any>(null)
   const [newSecret, setNewSecret] = useState<string | null>(null)
+  const [runningAutomationId, setRunningAutomationId] = useState<string | null>(null)
 
   const fetchWebhooks = useCallback(async () => {
     try {
@@ -88,9 +103,30 @@ export function WebhookPanel() {
     } catch { /* silent */ }
   }, [selectedWebhook])
 
+  const fetchWebhookAutomations = useCallback(async () => {
+    if (!isLocalMode) {
+      setWebhookAutomations([])
+      return
+    }
+    try {
+      const res = await fetch('/api/scheduler')
+      if (!res.ok) return
+      const data = await res.json()
+      const tasks = Array.isArray(data.tasks) ? data.tasks : []
+      const webhookTasks = tasks.filter((task: SchedulerTask) =>
+        typeof task.id === 'string' && task.id.includes('webhook')
+      )
+      setWebhookAutomations(webhookTasks)
+    } catch {
+      // Keep UI usable if scheduler endpoint is unavailable.
+    }
+  }, [isLocalMode])
+
   useEffect(() => { fetchWebhooks() }, [fetchWebhooks])
   useEffect(() => { fetchDeliveries() }, [fetchDeliveries])
+  useEffect(() => { fetchWebhookAutomations() }, [fetchWebhookAutomations])
   useSmartPoll(fetchWebhooks, 60000, { pauseWhenDisconnected: true })
+  useSmartPoll(fetchWebhookAutomations, 60000, { pauseWhenDisconnected: true })
 
   async function handleCreate(form: { name: string; url: string; events: string[] }) {
     try {
@@ -139,6 +175,29 @@ export function WebhookPanel() {
       setTestResult({ error: 'Network error' })
     } finally {
       setTestingId(null)
+    }
+  }
+
+  async function handleRunAutomation(taskId: string) {
+    setRunningAutomationId(taskId)
+    try {
+      const res = await fetch('/api/scheduler', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task_id: taskId }),
+      })
+      const data = await res.json()
+      setTestResult({
+        success: !!data.ok && res.ok,
+        error: data.error || (!data.ok ? data.message : null),
+        duration_ms: undefined,
+        status_code: res.status,
+      })
+      await fetchWebhookAutomations()
+    } catch {
+      setTestResult({ success: false, error: 'Failed to run local automation' })
+    } finally {
+      setRunningAutomationId(null)
     }
   }
 
@@ -223,6 +282,41 @@ export function WebhookPanel() {
 
       {/* Webhook list */}
       <div className="space-y-2">
+        {isLocalMode && webhookAutomations.length > 0 && (
+          <div className="rounded-lg border border-cyan-500/30 bg-cyan-500/5 p-3">
+            <h3 className="text-sm font-semibold text-cyan-200">Local Webhook Automations</h3>
+            <p className="text-2xs text-cyan-300/80 mt-0.5 mb-2">
+              Local scheduler tasks that support webhook delivery and retries
+            </p>
+            <div className="space-y-2">
+              {webhookAutomations.map((task) => (
+                <div key={task.id} className="rounded border border-cyan-500/20 bg-background/30 p-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${task.running ? 'bg-blue-400' : task.enabled ? 'bg-green-500' : 'bg-muted-foreground/40'}`} />
+                        <span className="text-xs font-medium text-foreground truncate">{task.name}</span>
+                        <span className="px-1.5 py-0.5 text-[10px] rounded bg-cyan-500/15 text-cyan-300 font-mono">{task.id}</span>
+                      </div>
+                      <div className="text-2xs text-muted-foreground mt-1">
+                        {task.nextRun ? `Next run ${formatTime(task.nextRun / 1000)}` : 'No next run scheduled'}
+                        {task.lastResult?.message ? ` · ${task.lastResult.message}` : ''}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRunAutomation(task.id)}
+                      disabled={runningAutomationId === task.id}
+                      className="h-7 px-2.5 text-2xs font-medium text-cyan-300 hover:text-cyan-200 hover:bg-cyan-500/10 rounded transition-smooth disabled:opacity-50"
+                    >
+                      {runningAutomationId === task.id ? 'Running...' : 'Run'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {loading && webhooks.length === 0 ? (
           <div className="space-y-2">
             {[...Array(3)].map((_, i) => <div key={i} className="h-16 rounded-lg shimmer" />)}
