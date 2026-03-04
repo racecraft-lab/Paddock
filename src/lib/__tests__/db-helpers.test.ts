@@ -72,6 +72,14 @@ describe('parseMentions', () => {
     expect(db_helpers.parseMentions('@start and @end')).toEqual(['start', 'end'])
   })
 
+  it('supports hyphen, underscore, and dots in handles', () => {
+    expect(db_helpers.parseMentions('ping @agent-code_reviewer.v2 now')).toEqual(['agent-code_reviewer.v2'])
+  })
+
+  it('deduplicates repeated mentions case-insensitively', () => {
+    expect(db_helpers.parseMentions('@Alice please sync with @alice')).toEqual(['Alice'])
+  })
+
   it('returns empty array for empty string', () => {
     expect(db_helpers.parseMentions('')).toEqual([])
   })
