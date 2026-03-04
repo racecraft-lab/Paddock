@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/auth';
 import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, createTaskSchema, bulkUpdateTaskStatusSchema } from '@/lib/validation';
+import { resolveMentionRecipients } from '@/lib/mentions';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -180,6 +181,14 @@ export async function POST(request: NextRequest) {
     }
     
     const now = Math.floor(Date.now() / 1000);
+    const mentionResolution = resolveMentionRecipients(description || '', db, workspaceId);
+    if (mentionResolution.unresolved.length > 0) {
+      return NextResponse.json({
+        error: `Unknown mentions: ${mentionResolution.unresolved.map((m) => `@${m}`).join(', ')}`,
+        missing_mentions: mentionResolution.unresolved
+      }, { status: 400 });
+    }
+
     const createTaskTx = db.transaction(() => {
       const resolvedProjectId = resolveProjectId(db, workspaceId, project_id)
       db.prepare(`
@@ -232,6 +241,20 @@ export async function POST(request: NextRequest) {
 
     if (created_by) {
       db_helpers.ensureTaskSubscription(taskId, created_by, workspaceId)
+    }
+
+    for (const recipient of mentionResolution.recipients) {
+      db_helpers.ensureTaskSubscription(taskId, recipient, workspaceId);
+      if (recipient === created_by) continue;
+      db_helpers.createNotification(
+        recipient,
+        'mention',
+        'You were mentioned in a task description',
+        `${created_by} mentioned you in task "${title}"`,
+        'task',
+        taskId,
+        workspaceId
+      );
     }
 
     // Create notification if assigned

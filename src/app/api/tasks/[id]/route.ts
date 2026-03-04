@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/auth';
 import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, updateTaskSchema } from '@/lib/validation';
+import { resolveMentionRecipients } from '@/lib/mentions';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -126,6 +127,17 @@ export async function PUT(
     } = body;
     
     const now = Math.floor(Date.now() / 1000);
+    const descriptionMentionResolution = description !== undefined
+      ? resolveMentionRecipients(description || '', db, workspaceId)
+      : null;
+    if (descriptionMentionResolution && descriptionMentionResolution.unresolved.length > 0) {
+      return NextResponse.json({
+        error: `Unknown mentions: ${descriptionMentionResolution.unresolved.map((m) => `@${m}`).join(', ')}`,
+        missing_mentions: descriptionMentionResolution.unresolved
+      }, { status: 400 });
+    }
+
+    const previousDescriptionMentionRecipients = resolveMentionRecipients(currentTask.description || '', db, workspaceId).recipients;
     
     // Build dynamic update query
     const fieldsToUpdate = [];
@@ -273,6 +285,25 @@ export async function PUT(
 
     if (project_id !== undefined && project_id !== currentTask.project_id) {
       changes.push(`project: ${currentTask.project_id || 'none'} → ${project_id}`);
+    }
+
+    if (descriptionMentionResolution) {
+      const newMentionRecipients = new Set(descriptionMentionResolution.recipients);
+      const previousRecipients = new Set(previousDescriptionMentionRecipients);
+      for (const recipient of newMentionRecipients) {
+        if (previousRecipients.has(recipient)) continue;
+        db_helpers.ensureTaskSubscription(taskId, recipient, workspaceId);
+        if (recipient === auth.user.username) continue;
+        db_helpers.createNotification(
+          recipient,
+          'mention',
+          'You were mentioned in a task description',
+          `${auth.user.username} mentioned you in task "${title || currentTask.title}"`,
+          'task',
+          taskId,
+          workspaceId
+        );
+      }
     }
     
     // Log activity if there were meaningful changes

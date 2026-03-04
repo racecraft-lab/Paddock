@@ -5,6 +5,7 @@ import { runMigrations } from './migrations';
 import { eventBus } from './event-bus';
 import { hashPassword } from './password';
 import { logger } from './logger';
+import { parseMentions as parseMentionTokens } from './mentions';
 
 // Database file location
 const DB_PATH = config.dbPath;
@@ -368,15 +369,7 @@ export const db_helpers = {
    * Parse @mentions from text
    */
   parseMentions: (text: string): string[] => {
-    const mentionRegex = /@(\w+)/g;
-    const mentions: string[] = [];
-    let match;
-    
-    while ((match = mentionRegex.exec(text)) !== null) {
-      mentions.push(match[1]);
-    }
-    
-    return mentions;
+    return parseMentionTokens(text);
   },
 
   /**
