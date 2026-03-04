@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase, db_helpers } from '@/lib/db';
 import { readFileSync, existsSync, readdirSync, writeFileSync, mkdirSync } from 'fs';
-import { join, dirname } from 'path';
+import { join, dirname, isAbsolute, resolve } from 'path';
 import { config } from '@/lib/config';
 import { resolveWithin } from '@/lib/paths';
 import { requireRole } from '@/lib/auth';
 import { logger } from '@/lib/logger';
+
+function resolveAgentWorkspacePath(workspace: string): string {
+  if (isAbsolute(workspace)) return resolve(workspace)
+  if (!config.openclawStateDir) throw new Error('OPENCLAW_STATE_DIR not configured')
+  return resolveWithin(config.openclawStateDir, workspace)
+}
 
 /**
  * GET /api/agents/[id]/soul - Get agent's SOUL content
@@ -41,8 +47,8 @@ export async function GET(
 
     try {
       const agentConfig = agent.config ? JSON.parse(agent.config) : {}
-      if (agentConfig.workspace && config.openclawHome) {
-        const safeWorkspace = resolveWithin(config.openclawHome, agentConfig.workspace)
+      if (agentConfig.workspace) {
+        const safeWorkspace = resolveAgentWorkspacePath(agentConfig.workspace)
         const safeSoulPath = resolveWithin(safeWorkspace, 'soul.md')
         if (existsSync(safeSoulPath)) {
           soulContent = readFileSync(safeSoulPath, 'utf-8')
@@ -157,8 +163,8 @@ export async function PUT(
     let savedToWorkspace = false
     try {
       const agentConfig = agent.config ? JSON.parse(agent.config) : {}
-      if (agentConfig.workspace && config.openclawHome) {
-        const safeWorkspace = resolveWithin(config.openclawHome, agentConfig.workspace)
+      if (agentConfig.workspace) {
+        const safeWorkspace = resolveAgentWorkspacePath(agentConfig.workspace)
         const safeSoulPath = resolveWithin(safeWorkspace, 'soul.md')
         mkdirSync(dirname(safeSoulPath), { recursive: true })
         writeFileSync(safeSoulPath, newSoulContent || '', 'utf-8')

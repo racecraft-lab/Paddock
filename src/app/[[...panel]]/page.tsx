@@ -261,6 +261,8 @@ function ContentRouter({ tab }: { tab: string }) {
       return <OfficePanel />
     case 'super-admin':
       return <SuperAdminPanel />
+    case 'workspaces':
+      return <SuperAdminPanel />
     default:
       return <Dashboard />
   }

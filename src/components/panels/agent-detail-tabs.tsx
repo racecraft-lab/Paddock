@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { createClientLogger } from '@/lib/client-logger'
-const log = createClientLogger('AgentDetailTabs')
 import Link from 'next/link'
 
+const log = createClientLogger('AgentDetailTabs')
 
 interface Agent {
   id: number
@@ -672,7 +672,10 @@ export function TasksTab({ agent }: { agent: Agent }) {
                   <Link href={`/tasks?taskId=${task.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
                     {task.title}
                   </Link>
-                  <div className="text-xs text-muted-foreground mt-1">Task #{task.id}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {task.ticket_ref || `Task #${task.id}`}
+                    {task.project_name ? ` · ${task.project_name}` : ''}
+                  </div>
                   {task.description && (
                     <p className="text-foreground/80 text-sm mt-1">{task.description}</p>
                   )}

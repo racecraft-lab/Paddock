@@ -1,0 +1,15 @@
+{
+  "agent:engineering-bot:main": {
+    "sessionId": "sess-eng-main",
+    "updatedAt": 4102444800000,
+    "chatType": "dm",
+    "lastChannel": "engineering",
+    "model": {
+      "primary": "openai/gpt-5"
+    },
+    "totalTokens": 24500,
+    "inputTokens": 16100,
+    "outputTokens": 8400,
+    "contextTokens": 120000
+  }
+}

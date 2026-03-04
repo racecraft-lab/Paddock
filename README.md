@@ -342,7 +342,9 @@ See [`.env.example`](.env.example) for the complete list. Key variables:
 | `AUTH_PASS` | No | Initial admin password |
 | `AUTH_PASS_B64` | No | Base64-encoded admin password (overrides `AUTH_PASS` if set) |
 | `API_KEY` | No | API key for headless access |
-| `OPENCLAW_HOME` | Yes* | Path to `.openclaw` directory |
+| `OPENCLAW_CONFIG_PATH` | Yes* | Absolute path to `openclaw.json` (preferred) |
+| `OPENCLAW_STATE_DIR` | Yes* | OpenClaw state root (default: `~/.openclaw`) |
+| `OPENCLAW_HOME` | No | Legacy alias for state dir (fallback if `OPENCLAW_STATE_DIR` unset) |
 | `OPENCLAW_GATEWAY_HOST` | No | Gateway host (default: `127.0.0.1`) |
 | `OPENCLAW_GATEWAY_PORT` | No | Gateway WebSocket port (default: `18789`) |
 | `OPENCLAW_GATEWAY_TOKEN` | No | Server-side gateway auth token |
@@ -354,16 +356,42 @@ See [`.env.example`](.env.example) for the complete list. Key variables:
 | `MC_TRUSTED_PROXIES` | No | Comma-separated trusted proxy IPs for XFF parsing |
 | `MC_ALLOWED_HOSTS` | No | Host allowlist for production |
 
-*Memory browser, log viewer, and gateway config require `OPENCLAW_HOME`.
+*Memory browser, log viewer, and gateway config require OpenClaw config/state resolution (`OPENCLAW_CONFIG_PATH` and/or `OPENCLAW_STATE_DIR`).
 
 > **Memory Browser note:** OpenClaw does not store agent memory markdown files under
-> `$OPENCLAW_HOME/memory/` — that directory does not exist by default. Agent memory lives
+> `$OPENCLAW_STATE_DIR/memory/` — that directory does not exist by default. Agent memory lives
 > in each agent's workspace (e.g. `~/clawd-agents/{agent}/memory/`). Set
 > `OPENCLAW_MEMORY_DIR` to your agents root directory to make the Memory Browser show
 > daily logs, `MEMORY.md`, and other markdown files:
 > ```
 > OPENCLAW_MEMORY_DIR=/home/you/clawd-agents
 > ```
+
+### Workspace Creation Flow
+
+To add a new workspace/client instance in the UI:
+
+1. Open `Workspaces` from the left navigation.
+2. Expand `Show Create Client Instance`.
+3. Fill tenant/workspace fields (`slug`, `display_name`, optional ports/gateway owner).
+4. Click `Create + Queue`.
+5. Approve/run the generated provisioning job in the same panel.
+
+`Workspaces` and `Super Admin` currently point to the same provisioning control plane.
+
+### Projects and Ticket Prefixes
+
+Mission Control supports multi-project task organization per workspace:
+
+- Create/manage projects via Task Board → `Projects`.
+- Each project has its own ticket prefix and counter.
+- New tasks receive project-scoped ticket refs like `PA-001`, `PA-002`.
+- Task board supports filtering by project.
+
+### Memory Scope Clarification
+
+- **Agent profile → Memory tab**: per-agent working memory stored in Mission Control DB (`working_memory`).
+- **Memory Browser page**: workspace/local filesystem memory tree under `OPENCLAW_MEMORY_DIR`.
 
 ## Deployment
 
@@ -373,7 +401,7 @@ pnpm install --frozen-lockfile
 pnpm build
 
 # Run
-OPENCLAW_HOME=/path/to/.openclaw pnpm start
+OPENCLAW_CONFIG_PATH=/path/to/.openclaw/openclaw.json OPENCLAW_STATE_DIR=/path/to/.openclaw pnpm start
 ```
 
 Network access is restricted by default in production. Set `MC_ALLOWED_HOSTS` (comma-separated) or `MC_ALLOW_ANY_HOST=1` to control access.

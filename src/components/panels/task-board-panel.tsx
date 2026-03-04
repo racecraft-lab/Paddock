@@ -30,6 +30,11 @@ interface Task {
   tags?: string[]
   metadata?: any
   aegisApproved?: boolean
+  project_id?: number
+  project_ticket_no?: number
+  project_name?: string
+  project_prefix?: string
+  ticket_ref?: string
 }
 
 interface Agent {
@@ -56,6 +61,14 @@ interface Comment {
   replies?: Comment[]
 }
 
+interface Project {
+  id: number
+  name: string
+  slug: string
+  ticket_prefix: string
+  status: 'active' | 'archived'
+}
+
 const statusColumns = [
   { key: 'inbox', title: 'Inbox', color: 'bg-secondary text-foreground' },
   { key: 'assigned', title: 'Assigned', color: 'bg-blue-500/20 text-blue-400' },
@@ -78,11 +91,14 @@ export function TaskBoardPanel() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [agents, setAgents] = useState<Agent[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [projectFilter, setProjectFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [aegisMap, setAegisMap] = useState<Record<number, boolean>>({})
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showProjectManager, setShowProjectManager] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const dragCounter = useRef(0)
   const selectedTaskIdFromUrl = Number.parseInt(searchParams.get('taskId') || '', 10)
@@ -109,23 +125,31 @@ export function TaskBoardPanel() {
     aegisApproved: Boolean(aegisMap[t.id])
   }))
 
-  // Fetch tasks and agents
+  // Fetch tasks, agents, and projects
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const [tasksResponse, agentsResponse] = await Promise.all([
-        fetch('/api/tasks'),
-        fetch('/api/agents')
+      const tasksQuery = new URLSearchParams()
+      if (projectFilter !== 'all') {
+        tasksQuery.set('project_id', projectFilter)
+      }
+      const tasksUrl = tasksQuery.toString() ? `/api/tasks?${tasksQuery.toString()}` : '/api/tasks'
+
+      const [tasksResponse, agentsResponse, projectsResponse] = await Promise.all([
+        fetch(tasksUrl),
+        fetch('/api/agents'),
+        fetch('/api/projects')
       ])
 
-      if (!tasksResponse.ok || !agentsResponse.ok) {
+      if (!tasksResponse.ok || !agentsResponse.ok || !projectsResponse.ok) {
         throw new Error('Failed to fetch data')
       }
 
       const tasksData = await tasksResponse.json()
       const agentsData = await agentsResponse.json()
+      const projectsData = await projectsResponse.json()
 
       const tasksList = tasksData.tasks || []
       const taskIds = tasksList.map((task: Task) => task.id)
@@ -152,12 +176,13 @@ export function TaskBoardPanel() {
       storeSetTasks(tasksList)
       setAegisMap(newAegisMap)
       setAgents(agentsData.agents || [])
+      setProjects(projectsData.projects || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
-  }, [storeSetTasks])
+  }, [projectFilter, storeSetTasks])
 
   useEffect(() => {
     fetchData()
@@ -327,8 +352,28 @@ export function TaskBoardPanel() {
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center p-4 border-b border-border flex-shrink-0">
-        <h2 className="text-xl font-bold text-foreground">Task Board</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-foreground">Task Board</h2>
+          <select
+            value={projectFilter}
+            onChange={(e) => setProjectFilter(e.target.value)}
+            className="h-9 px-3 bg-surface-1 text-foreground border border-border rounded-md text-sm"
+          >
+            <option value="all">All Projects</option>
+            {projects.map((project) => (
+              <option key={project.id} value={String(project.id)}>
+                {project.name} ({project.ticket_prefix})
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowProjectManager(true)}
+            className="px-4 py-2 bg-secondary text-muted-foreground rounded-md hover:bg-surface-2 transition-smooth text-sm font-medium"
+          >
+            Projects
+          </button>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-smooth text-sm font-medium"
@@ -409,6 +454,11 @@ export function TaskBoardPanel() {
                       {task.title}
                     </h4>
                     <div className="flex items-center gap-2">
+                      {task.ticket_ref && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-primary/20 text-primary">
+                          {task.ticket_ref}
+                        </span>
+                      )}
                       {task.aegisApproved && (
                         <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-700 text-emerald-100">
                           Aegis Approved
@@ -444,6 +494,12 @@ export function TaskBoardPanel() {
                     </span>
                     <span className="font-medium">{formatTaskTimestamp(task.created_at)}</span>
                   </div>
+
+                  {task.project_name && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Project: {task.project_name}
+                    </div>
+                  )}
 
                   {task.tags && task.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
@@ -496,6 +552,7 @@ export function TaskBoardPanel() {
         <TaskDetailModal
           task={selectedTask}
           agents={agents}
+          projects={projects}
           onClose={() => {
             setSelectedTask(null)
             updateTaskUrl(null)
@@ -513,6 +570,7 @@ export function TaskBoardPanel() {
       {showCreateModal && (
         <CreateTaskModal
           agents={agents}
+          projects={projects}
           onClose={() => setShowCreateModal(false)}
           onCreated={fetchData}
         />
@@ -523,8 +581,16 @@ export function TaskBoardPanel() {
         <EditTaskModal
           task={editingTask}
           agents={agents}
+          projects={projects}
           onClose={() => setEditingTask(null)}
           onUpdated={() => { fetchData(); setEditingTask(null) }}
+        />
+      )}
+
+      {showProjectManager && (
+        <ProjectManagerModal
+          onClose={() => setShowProjectManager(false)}
+          onChanged={fetchData}
         />
       )}
     </div>
@@ -535,16 +601,21 @@ export function TaskBoardPanel() {
 function TaskDetailModal({
   task,
   agents,
+  projects,
   onClose,
   onUpdate,
   onEdit
 }: {
   task: Task
   agents: Agent[]
+  projects: Project[]
   onClose: () => void
   onUpdate: () => void
   onEdit: (task: Task) => void
 }) {
+  const resolvedProjectName =
+    task.project_name ||
+    projects.find((project) => project.id === task.project_id)?.name
   const [comments, setComments] = useState<Comment[]>([])
   const [loadingComments, setLoadingComments] = useState(false)
   const [commentText, setCommentText] = useState('')
@@ -728,6 +799,18 @@ function TaskDetailModal({
 
           {activeTab === 'details' && (
             <div id="tabpanel-details" role="tabpanel" aria-label="Details" className="grid grid-cols-2 gap-4 text-sm mt-4">
+              {task.ticket_ref && (
+                <div>
+                  <span className="text-muted-foreground">Ticket:</span>
+                  <span className="text-foreground ml-2 font-mono">{task.ticket_ref}</span>
+                </div>
+              )}
+              {resolvedProjectName && (
+                <div>
+                  <span className="text-muted-foreground">Project:</span>
+                  <span className="text-foreground ml-2">{resolvedProjectName}</span>
+                </div>
+              )}
               <div>
                 <span className="text-muted-foreground">Status:</span>
                 <span className="text-foreground ml-2">{task.status}</span>
@@ -903,10 +986,12 @@ function TaskDetailModal({
 // Create Task Modal Component (placeholder)
 function CreateTaskModal({ 
   agents, 
+  projects,
   onClose, 
   onCreated 
 }: { 
   agents: Agent[]
+  projects: Project[]
   onClose: () => void
   onCreated: () => void
 }) {
@@ -914,6 +999,7 @@ function CreateTaskModal({
     title: '',
     description: '',
     priority: 'medium' as Task['priority'],
+    project_id: projects[0]?.id ? String(projects[0].id) : '',
     assigned_to: '',
     tags: '',
   })
@@ -929,6 +1015,7 @@ function CreateTaskModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          project_id: formData.project_id ? Number(formData.project_id) : undefined,
           tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
           assigned_to: formData.assigned_to || undefined
         })
@@ -994,25 +1081,41 @@ function CreateTaskModal({
                   <option value="critical">Critical</option>
                 </select>
               </div>
-              
+
               <div>
-                <label htmlFor="create-assignee" className="block text-sm text-muted-foreground mb-1">Assign to</label>
+                <label htmlFor="create-project" className="block text-sm text-muted-foreground mb-1">Project</label>
                 <select
-                  id="create-assignee"
-                  value={formData.assigned_to}
-                  onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
+                  id="create-project"
+                  value={formData.project_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, project_id: e.target.value }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
                 >
-                  <option value="">Unassigned</option>
-                  {agents.map(agent => (
-                    <option key={agent.name} value={agent.name}>
-                      {agent.name} ({agent.role})
+                  {projects.map(project => (
+                    <option key={project.id} value={String(project.id)}>
+                      {project.name} ({project.ticket_prefix})
                     </option>
                   ))}
                 </select>
               </div>
             </div>
-            
+
+            <div>
+              <label htmlFor="create-assignee" className="block text-sm text-muted-foreground mb-1">Assign to</label>
+              <select
+                id="create-assignee"
+                value={formData.assigned_to}
+                onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
+                className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
+              >
+                <option value="">Unassigned</option>
+                {agents.map(agent => (
+                  <option key={agent.name} value={agent.name}>
+                    {agent.name} ({agent.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label htmlFor="create-tags" className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
               <input
@@ -1051,11 +1154,13 @@ function CreateTaskModal({
 function EditTaskModal({
   task,
   agents,
+  projects,
   onClose,
   onUpdated
 }: {
   task: Task
   agents: Agent[]
+  projects: Project[]
   onClose: () => void
   onUpdated: () => void
 }) {
@@ -1064,6 +1169,7 @@ function EditTaskModal({
     description: task.description || '',
     priority: task.priority,
     status: task.status,
+    project_id: task.project_id ? String(task.project_id) : (projects[0]?.id ? String(projects[0].id) : ''),
     assigned_to: task.assigned_to || '',
     tags: task.tags ? task.tags.join(', ') : '',
   })
@@ -1079,6 +1185,7 @@ function EditTaskModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          project_id: formData.project_id ? Number(formData.project_id) : undefined,
           tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
           assigned_to: formData.assigned_to || undefined
         })
@@ -1163,6 +1270,22 @@ function EditTaskModal({
             </div>
 
             <div>
+              <label htmlFor="edit-project" className="block text-sm text-muted-foreground mb-1">Project</label>
+              <select
+                id="edit-project"
+                value={formData.project_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, project_id: e.target.value }))}
+                className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
+              >
+                {projects.map(project => (
+                  <option key={project.id} value={String(project.id)}>
+                    {project.name} ({project.ticket_prefix})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
               <label htmlFor="edit-assignee" className="block text-sm text-muted-foreground mb-1">Assign to</label>
               <select
                 id="edit-assignee"
@@ -1208,6 +1331,168 @@ function EditTaskModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  )
+}
+
+function ProjectManagerModal({
+  onClose,
+  onChanged
+}: {
+  onClose: () => void
+  onChanged: () => Promise<void>
+}) {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState({ name: '', ticket_prefix: '', description: '' })
+
+  const load = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/projects?includeArchived=1')
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to load projects')
+      setProjects(data.projects || [])
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load projects')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const createProject = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.name.trim()) return
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          ticket_prefix: form.ticket_prefix,
+          description: form.description
+        })
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to create project')
+      setForm({ name: '', ticket_prefix: '', description: '' })
+      await load()
+      await onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create project')
+    }
+  }
+
+  const archiveProject = async (project: Project) => {
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: project.status === 'active' ? 'archived' : 'active' })
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to update project')
+      await load()
+      await onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update project')
+    }
+  }
+
+  const deleteProject = async (project: Project) => {
+    if (!confirm(`Delete project "${project.name}"? Existing tasks will be moved to General.`)) return
+    try {
+      const response = await fetch(`/api/projects/${project.id}?mode=delete`, { method: 'DELETE' })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to delete project')
+      await load()
+      await onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete project')
+    }
+  }
+
+  const dialogRef = useFocusTrap(onClose)
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="projects-title" className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 id="projects-title" className="text-xl font-bold text-foreground">Project Management</h3>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">×</button>
+          </div>
+
+          {error && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded p-2">{error}</div>}
+
+          <form onSubmit={createProject} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              placeholder="Project name"
+              className="bg-surface-1 text-foreground border border-border rounded-md px-3 py-2"
+              required
+            />
+            <input
+              type="text"
+              value={form.ticket_prefix}
+              onChange={(e) => setForm((prev) => ({ ...prev, ticket_prefix: e.target.value }))}
+              placeholder="Ticket prefix (e.g. PA)"
+              className="bg-surface-1 text-foreground border border-border rounded-md px-3 py-2"
+            />
+            <button type="submit" className="bg-primary text-primary-foreground rounded-md px-3 py-2 hover:bg-primary/90">
+              Add Project
+            </button>
+            <input
+              type="text"
+              value={form.description}
+              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+              placeholder="Description (optional)"
+              className="md:col-span-3 bg-surface-1 text-foreground border border-border rounded-md px-3 py-2"
+            />
+          </form>
+
+          {loading ? (
+            <div className="text-sm text-muted-foreground">Loading projects...</div>
+          ) : (
+            <div className="space-y-2">
+              {projects.map((project) => (
+                <div key={project.id} className="flex items-center justify-between border border-border rounded-md p-3">
+                  <div>
+                    <div className="text-sm font-medium text-foreground">{project.name}</div>
+                    <div className="text-xs text-muted-foreground">{project.ticket_prefix} · {project.slug} · {project.status}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    {project.slug !== 'general' && (
+                      <>
+                        <button
+                          onClick={() => archiveProject(project)}
+                          className="px-3 py-1 text-xs rounded border border-border hover:bg-secondary"
+                        >
+                          {project.status === 'active' ? 'Archive' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => deleteProject(project)}
+                          className="px-3 py-1 text-xs rounded border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
