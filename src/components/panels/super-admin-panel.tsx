@@ -461,6 +461,9 @@ export function SuperAdminPanel() {
         </button>
         {createExpanded && (
           <div className="p-4 space-y-3">
+            <div className="text-xs text-muted-foreground">
+              Add a new workspace/client instance here. Fill the form below and click <span className="text-foreground font-medium">Create + Queue</span>.
+            </div>
             {gatewayLoadError && (
               <div className="px-3 py-2 rounded-md text-xs border bg-amber-500/10 text-amber-300 border-amber-500/20">
                 Gateway list unavailable: {gatewayLoadError}. Using fallback owner value.

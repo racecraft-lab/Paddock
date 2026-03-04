@@ -277,8 +277,9 @@ export function getUserFromRequest(request: Request): User | null {
   }
 
   // Check API key - return synthetic user
-  const apiKey = request.headers.get('x-api-key')
-  if (apiKey && safeCompare(apiKey, process.env.API_KEY || '')) {
+  const configuredApiKey = (process.env.API_KEY || '').trim()
+  const apiKey = extractApiKeyFromHeaders(request.headers)
+  if (configuredApiKey && apiKey && safeCompare(apiKey, configuredApiKey)) {
     return {
       id: 0,
       username: 'api',
@@ -289,6 +290,24 @@ export function getUserFromRequest(request: Request): User | null {
       updated_at: 0,
       last_login_at: null,
     }
+  }
+
+  return null
+}
+
+function extractApiKeyFromHeaders(headers: Headers): string | null {
+  const direct = (headers.get('x-api-key') || '').trim()
+  if (direct) return direct
+
+  const authorization = (headers.get('authorization') || '').trim()
+  if (!authorization) return null
+
+  const [scheme, ...rest] = authorization.split(/\s+/)
+  if (!scheme || rest.length === 0) return null
+
+  const normalized = scheme.toLowerCase()
+  if (normalized === 'bearer' || normalized === 'apikey' || normalized === 'token') {
+    return rest.join(' ').trim() || null
   }
 
   return null

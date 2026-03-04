@@ -510,7 +510,12 @@ export function MemoryTab({
   return (
     <div className="p-6 space-y-4">
       <div className="flex justify-between items-center">
-        <h4 className="text-lg font-medium text-foreground">Working Memory</h4>
+        <div>
+          <h4 className="text-lg font-medium text-foreground">Working Memory</h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Agent-level scratchpad only. Use the global Memory page to browse all workspace memory files.
+          </p>
+        </div>
         <div className="flex gap-2">
           {!editing && (
             <>
