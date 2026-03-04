@@ -1337,7 +1337,7 @@ export function ConfigTab({
     })
   }
 
-  const handleSave = async (writeToGateway: boolean = false) => {
+  const handleSave = async () => {
     setSaving(true)
     setError(null)
     try {
@@ -1352,12 +1352,11 @@ export function ConfigTab({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gateway_config: showJson ? JSON.parse(jsonInput) : config,
-          write_to_gateway: writeToGateway,
+          write_to_gateway: true,
         }),
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to save')
-      if (data.warning) setError(data.warning)
       setEditing(false)
       onSave()
     } catch (err: any) {
@@ -1759,18 +1758,11 @@ export function ConfigTab({
       {editing && (
         <div className="flex gap-3 pt-2">
           <button
-            onClick={() => handleSave(false)}
+            onClick={handleSave}
             disabled={saving}
             className="flex-1 bg-primary text-primary-foreground py-2 rounded-md hover:bg-primary/90 disabled:opacity-50 transition-smooth"
           >
-            {saving ? 'Saving...' : 'Save to MC'}
-          </button>
-          <button
-            onClick={() => handleSave(true)}
-            disabled={saving}
-            className="flex-1 bg-green-600 text-white py-2 rounded-md hover:bg-green-700 disabled:opacity-50 transition-smooth"
-          >
-            Save to Gateway
+            {saving ? 'Saving...' : 'Save'}
           </button>
           <button
             onClick={() => {
