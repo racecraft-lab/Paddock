@@ -365,6 +365,32 @@ See [`.env.example`](.env.example) for the complete list. Key variables:
 > OPENCLAW_MEMORY_DIR=/home/you/clawd-agents
 > ```
 
+### Workspace Creation Flow
+
+To add a new workspace/client instance in the UI:
+
+1. Open `Workspaces` from the left navigation.
+2. Expand `Show Create Client Instance`.
+3. Fill tenant/workspace fields (`slug`, `display_name`, optional ports/gateway owner).
+4. Click `Create + Queue`.
+5. Approve/run the generated provisioning job in the same panel.
+
+`Workspaces` and `Super Admin` currently point to the same provisioning control plane.
+
+### Projects and Ticket Prefixes
+
+Mission Control supports multi-project task organization per workspace:
+
+- Create/manage projects via Task Board → `Projects`.
+- Each project has its own ticket prefix and counter.
+- New tasks receive project-scoped ticket refs like `PA-001`, `PA-002`.
+- Task board supports filtering by project.
+
+### Memory Scope Clarification
+
+- **Agent profile → Memory tab**: per-agent working memory stored in Mission Control DB (`working_memory`).
+- **Memory Browser page**: workspace/local filesystem memory tree under `OPENCLAW_MEMORY_DIR`.
+
 ## Deployment
 
 ```bash

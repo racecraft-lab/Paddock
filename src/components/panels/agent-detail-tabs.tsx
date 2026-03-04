@@ -669,7 +669,10 @@ export function TasksTab({ agent }: { agent: Agent }) {
                   <Link href={`/tasks?taskId=${task.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
                     {task.title}
                   </Link>
-                  <div className="text-xs text-muted-foreground mt-1">Task #{task.id}</div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {task.ticket_ref || `Task #${task.id}`}
+                    {task.project_name ? ` · ${task.project_name}` : ''}
+                  </div>
                   {task.description && (
                     <p className="text-foreground/80 text-sm mt-1">{task.description}</p>
                   )}
