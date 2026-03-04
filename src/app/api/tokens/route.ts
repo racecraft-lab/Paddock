@@ -6,6 +6,8 @@ import { requireRole } from '@/lib/auth'
 import { getAllGatewaySessions } from '@/lib/sessions'
 import { logger } from '@/lib/logger'
 import { getDatabase } from '@/lib/db'
+import { calculateTokenCost } from '@/lib/token-pricing'
+import { getProviderSubscriptionFlags } from '@/lib/provider-subscriptions'
 
 const DATA_PATH = config.tokensPath
 
@@ -38,36 +40,11 @@ interface ExportData {
   sessions: Record<string, TokenStats>
 }
 
-// Model pricing (cost per 1K tokens)
-const MODEL_PRICING: Record<string, number> = {
-  'anthropic/claude-3-5-haiku-latest': 0.25,
-  'claude-3-5-haiku': 0.25,
-  'anthropic/claude-sonnet-4-20250514': 3.0,
-  'claude-sonnet-4': 3.0,
-  'anthropic/claude-opus-4-5': 15.0,
-  'claude-opus-4-5': 15.0,
-  'groq/llama-3.1-8b-instant': 0.05,
-  'groq/llama-3.3-70b-versatile': 0.59,
-  'moonshot/kimi-k2.5': 1.0,
-  'minimax/minimax-m2.1': 0.3,
-  'ollama/deepseek-r1:14b': 0.0,
-  'ollama/qwen2.5-coder:7b': 0.0,
-  'ollama/qwen2.5-coder:14b': 0.0,
-}
-
 function extractAgentName(sessionId: string): string {
   const trimmed = sessionId.trim()
   if (!trimmed) return 'unknown'
   const [agent] = trimmed.split(':')
   return agent?.trim() || 'unknown'
-}
-
-function getModelCost(modelName: string): number {
-  if (MODEL_PRICING[modelName] !== undefined) return MODEL_PRICING[modelName]
-  for (const [model, cost] of Object.entries(MODEL_PRICING)) {
-    if (modelName.includes(model.split('/').pop() || '')) return cost
-  }
-  return 1.0
 }
 
 interface DbTokenUsageRow {
@@ -79,7 +56,7 @@ interface DbTokenUsageRow {
   created_at: number
 }
 
-function loadTokenDataFromDb(): TokenUsageRecord[] {
+function loadTokenDataFromDb(providerSubscriptions: Record<string, boolean>): TokenUsageRecord[] {
   try {
     const db = getDatabase()
     const rows = db.prepare(`
@@ -91,7 +68,6 @@ function loadTokenDataFromDb(): TokenUsageRecord[] {
 
     return rows.map((row) => {
       const totalTokens = row.input_tokens + row.output_tokens
-      const costPer1k = getModelCost(row.model)
       return {
         id: `db-${row.id}`,
         model: row.model,
@@ -101,7 +77,7 @@ function loadTokenDataFromDb(): TokenUsageRecord[] {
         inputTokens: row.input_tokens,
         outputTokens: row.output_tokens,
         totalTokens,
-        cost: (totalTokens / 1000) * costPer1k,
+        cost: calculateTokenCost(row.model, row.input_tokens, row.output_tokens, { providerSubscriptions }),
         operation: 'heartbeat',
       }
     })
@@ -111,7 +87,10 @@ function loadTokenDataFromDb(): TokenUsageRecord[] {
   }
 }
 
-function normalizeTokenRecord(record: Partial<TokenUsageRecord>): TokenUsageRecord | null {
+function normalizeTokenRecord(
+  record: Partial<TokenUsageRecord>,
+  providerSubscriptions: Record<string, boolean>,
+): TokenUsageRecord | null {
   if (!record.model || !record.sessionId) return null
   const inputTokens = Number(record.inputTokens ?? 0)
   const outputTokens = Number(record.outputTokens ?? 0)
@@ -126,7 +105,7 @@ function normalizeTokenRecord(record: Partial<TokenUsageRecord>): TokenUsageReco
     inputTokens,
     outputTokens,
     totalTokens,
-    cost: Number(record.cost ?? (totalTokens / 1000) * getModelCost(model)),
+    cost: Number(record.cost ?? calculateTokenCost(model, inputTokens, outputTokens, { providerSubscriptions })),
     operation: String(record.operation ?? 'chat_completion'),
     duration: record.duration,
   }
@@ -155,7 +134,7 @@ function dedupeTokenRecords(records: TokenUsageRecord[]): TokenUsageRecord[] {
   return deduped
 }
 
-async function loadTokenDataFromFile(): Promise<TokenUsageRecord[]> {
+async function loadTokenDataFromFile(providerSubscriptions: Record<string, boolean>): Promise<TokenUsageRecord[]> {
   try {
     ensureDirExists(dirname(DATA_PATH))
     await access(DATA_PATH)
@@ -164,7 +143,7 @@ async function loadTokenDataFromFile(): Promise<TokenUsageRecord[]> {
     if (!Array.isArray(parsed)) return []
 
     return parsed
-      .map((record: Partial<TokenUsageRecord>) => normalizeTokenRecord(record))
+      .map((record: Partial<TokenUsageRecord>) => normalizeTokenRecord(record, providerSubscriptions))
       .filter((record): record is TokenUsageRecord => record !== null)
   } catch {
     return []
@@ -175,33 +154,32 @@ async function loadTokenDataFromFile(): Promise<TokenUsageRecord[]> {
  * Load token data from persistent file, falling back to deriving from session stores.
  */
 async function loadTokenData(): Promise<TokenUsageRecord[]> {
-  const dbRecords = loadTokenDataFromDb()
-  const fileRecords = await loadTokenDataFromFile()
+  const providerSubscriptions = getProviderSubscriptionFlags()
+  const dbRecords = loadTokenDataFromDb(providerSubscriptions)
+  const fileRecords = await loadTokenDataFromFile(providerSubscriptions)
   const combined = dedupeTokenRecords([...dbRecords, ...fileRecords]).sort((a, b) => b.timestamp - a.timestamp)
   if (combined.length > 0) {
     return combined
   }
 
   // Final fallback: derive from in-memory sessions
-  return deriveFromSessions()
+  return deriveFromSessions(providerSubscriptions)
 }
 
 /**
  * Derive token usage records from OpenClaw session stores.
  * Each session has totalTokens, inputTokens, outputTokens, model, etc.
  */
-function deriveFromSessions(): TokenUsageRecord[] {
+function deriveFromSessions(providerSubscriptions: Record<string, boolean>): TokenUsageRecord[] {
   const sessions = getAllGatewaySessions(Infinity) // Get ALL sessions regardless of age
   const records: TokenUsageRecord[] = []
 
   for (const session of sessions) {
-    if (!session.totalTokens && !session.model) continue // Skip empty sessions
-
-    const totalTokens = session.totalTokens || 0
-    const inputTokens = session.inputTokens || Math.round(totalTokens * 0.7)
-    const outputTokens = session.outputTokens || totalTokens - inputTokens
-    const costPer1k = getModelCost(session.model || '')
-    const cost = (totalTokens / 1000) * costPer1k
+    const inputTokens = session.inputTokens || 0
+    const outputTokens = session.outputTokens || 0
+    const totalTokens = inputTokens + outputTokens
+    if (totalTokens <= 0 && !session.model) continue // Skip empty sessions
+    const cost = calculateTokenCost(session.model || '', inputTokens, outputTokens, { providerSubscriptions })
 
     records.push({
       id: `session-${session.agent}-${session.key}`,
@@ -510,8 +488,8 @@ export async function POST(request: NextRequest) {
     }
 
     const totalTokens = inputTokens + outputTokens
-    const costPer1k = getModelCost(model)
-    const cost = (totalTokens / 1000) * costPer1k
+    const providerSubscriptions = getProviderSubscriptionFlags()
+    const cost = calculateTokenCost(model, inputTokens, outputTokens, { providerSubscriptions })
 
     const record: TokenUsageRecord = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -528,7 +506,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Persist only manually posted usage records in the JSON file.
-    const existingData = await loadTokenDataFromFile()
+    const existingData = await loadTokenDataFromFile(providerSubscriptions)
     existingData.unshift(record)
 
     if (existingData.length > 10000) {
