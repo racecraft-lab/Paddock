@@ -83,6 +83,7 @@ See `.env.example` for the full list. Key variables:
 |----------|----------|---------|-------------|
 | `AUTH_USER` | Yes | `admin` | Admin username (seeded on first run) |
 | `AUTH_PASS` | Yes | - | Admin password |
+| `AUTH_PASS_B64` | No | - | Base64-encoded admin password (overrides `AUTH_PASS` if set) |
 | `API_KEY` | Yes | - | API key for headless access |
 | `PORT` | No | `3005` (direct) / `3000` (Docker) | Server port |
 | `OPENCLAW_HOME` | No | - | Path to OpenClaw installation |
@@ -98,6 +99,14 @@ sudo apt-get install -y python3 make g++
 rm -rf node_modules
 pnpm install
 ```
+
+### AUTH_PASS with "#" is not working
+
+In dotenv files, `#` starts a comment unless the value is quoted.
+
+Use one of these:
+- `AUTH_PASS="my#password"`
+- `AUTH_PASS_B64=$(echo -n 'my#password' | base64)`
 
 ### "pnpm-lock.yaml not found" during Docker build
 

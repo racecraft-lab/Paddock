@@ -44,6 +44,7 @@ pnpm dev                # http://localhost:3000
 ```
 
 Initial login is seeded from `AUTH_USER` / `AUTH_PASS` on first run.
+If `AUTH_PASS` contains `#`, quote it (e.g. `AUTH_PASS="my#password"`) or use `AUTH_PASS_B64`.
 
 ## Project Status
 
@@ -339,6 +340,7 @@ See [`.env.example`](.env.example) for the complete list. Key variables:
 |----------|----------|-------------|
 | `AUTH_USER` | No | Initial admin username (default: `admin`) |
 | `AUTH_PASS` | No | Initial admin password |
+| `AUTH_PASS_B64` | No | Base64-encoded admin password (overrides `AUTH_PASS` if set) |
 | `API_KEY` | No | API key for headless access |
 | `OPENCLAW_HOME` | Yes* | Path to `.openclaw` directory |
 | `OPENCLAW_GATEWAY_HOST` | No | Gateway host (default: `127.0.0.1`) |
