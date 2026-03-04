@@ -3,7 +3,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+
 import { createClientLogger } from '@/lib/client-logger'
+
+import { useFocusTrap } from '@/lib/use-focus-trap'
+
 import { AgentAvatar } from '@/components/ui/agent-avatar'
 import { MarkdownRenderer } from '@/components/markdown-renderer'
 
@@ -271,8 +275,8 @@ export function TaskBoardPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-live="polite">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" aria-hidden="true"></div>
         <span className="ml-2 text-muted-foreground">Loading tasks...</span>
       </div>
     )
@@ -301,11 +305,12 @@ export function TaskBoardPanel() {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 m-4 rounded-lg text-sm flex items-center justify-between">
+        <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 m-4 rounded-lg text-sm flex items-center justify-between">
           <span>{error}</span>
           <button
             onClick={() => setError(null)}
             className="text-red-400/60 hover:text-red-400 ml-2"
+            aria-label="Dismiss error"
           >
             ×
           </button>
@@ -313,10 +318,12 @@ export function TaskBoardPanel() {
       )}
 
       {/* Kanban Board */}
-      <div className="flex-1 flex gap-4 p-4 overflow-x-auto">
+      <div className="flex-1 flex gap-4 p-4 overflow-x-auto" role="region" aria-label="Task board">
         {statusColumns.map(column => (
           <div
             key={column.key}
+            role="region"
+            aria-label={`${column.title} column, ${tasksByStatus[column.key]?.length || 0} tasks`}
             className="flex-1 min-w-80 bg-card border border-border rounded-lg flex flex-col"
             onDragEnter={(e) => handleDragEnter(e, column.key)}
             onDragLeave={handleDragLeave}
@@ -337,8 +344,12 @@ export function TaskBoardPanel() {
                 <div
                   key={task.id}
                   draggable
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${task.title}, ${task.priority} priority, ${task.status}`}
                   onDragStart={(e) => handleDragStart(e, task)}
                   onClick={() => setSelectedTask(task)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTask(task) } }}
                   className={`bg-surface-1 rounded-lg p-3 cursor-pointer hover:bg-surface-2 transition-smooth border-l-4 ${priorityColors[task.priority]} ${
                     draggedTask?.id === task.id ? 'opacity-50' : ''
                   }`}
@@ -613,12 +624,14 @@ function TaskDetailModal({
     </div>
   )
 
+  const dialogRef = useFocusTrap(onClose)
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="task-detail-title" className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-xl font-bold text-foreground">{task.title}</h3>
+            <h3 id="task-detail-title" className="text-xl font-bold text-foreground">{task.title}</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(task)}
@@ -628,6 +641,7 @@ function TaskDetailModal({
               </button>
               <button
                 onClick={onClose}
+                aria-label="Close task details"
                 className="text-muted-foreground hover:text-foreground text-2xl transition-smooth"
               >
                 ×
@@ -641,10 +655,13 @@ function TaskDetailModal({
           ) : (
             <p className="text-foreground/80 mb-4">No description</p>
           )}
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-4" role="tablist" aria-label="Task detail tabs">
             {(['details', 'comments', 'quality'] as const).map(tab => (
               <button
                 key={tab}
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls={`tabpanel-${tab}`}
                 onClick={() => setActiveTab(tab)}
                 className={`px-3 py-2 text-sm rounded-md transition-smooth ${
                   activeTab === tab ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'
@@ -656,7 +673,7 @@ function TaskDetailModal({
           </div>
 
           {activeTab === 'details' && (
-            <div className="grid grid-cols-2 gap-4 text-sm mt-4">
+            <div id="tabpanel-details" role="tabpanel" aria-label="Details" className="grid grid-cols-2 gap-4 text-sm mt-4">
               <div>
                 <span className="text-muted-foreground">Status:</span>
                 <span className="text-foreground ml-2">{task.status}</span>
@@ -686,7 +703,7 @@ function TaskDetailModal({
           )}
 
           {activeTab === 'comments' && (
-            <div className="mt-6">
+            <div id="tabpanel-comments" role="tabpanel" aria-label="Comments" className="mt-6">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-lg font-semibold text-foreground">Comments</h4>
               <button
@@ -769,7 +786,7 @@ function TaskDetailModal({
           )}
 
           {activeTab === 'quality' && (
-            <div className="mt-6">
+            <div id="tabpanel-quality" role="tabpanel" aria-label="Quality Review" className="mt-6">
               <h5 className="text-sm font-medium text-foreground mb-2">Aegis Quality Review</h5>
               {reviewError && (
                 <div className="text-xs text-red-400 mb-2">{reviewError}</div>
@@ -876,16 +893,19 @@ function CreateTaskModal({
     }
   }
 
+  const dialogRef = useFocusTrap(onClose)
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg max-w-md w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="create-task-title" className="bg-card border border-border rounded-lg max-w-md w-full">
         <form onSubmit={handleSubmit} className="p-6">
-          <h3 className="text-xl font-bold text-foreground mb-4">Create New Task</h3>
+          <h3 id="create-task-title" className="text-xl font-bold text-foreground mb-4">Create New Task</h3>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Title</label>
+              <label htmlFor="create-title" className="block text-sm text-muted-foreground mb-1">Title</label>
               <input
+                id="create-title"
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -895,8 +915,9 @@ function CreateTaskModal({
             </div>
             
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Description</label>
+              <label htmlFor="create-description" className="block text-sm text-muted-foreground mb-1">Description</label>
               <textarea
+                id="create-description"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -906,8 +927,9 @@ function CreateTaskModal({
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Priority</label>
+                <label htmlFor="create-priority" className="block text-sm text-muted-foreground mb-1">Priority</label>
                 <select
+                  id="create-priority"
                   value={formData.priority}
                   onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as Task['priority'] }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -920,8 +942,9 @@ function CreateTaskModal({
               </div>
               
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Assign to</label>
+                <label htmlFor="create-assignee" className="block text-sm text-muted-foreground mb-1">Assign to</label>
                 <select
+                  id="create-assignee"
                   value={formData.assigned_to}
                   onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -937,8 +960,9 @@ function CreateTaskModal({
             </div>
             
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
+              <label htmlFor="create-tags" className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
               <input
+                id="create-tags"
                 type="text"
                 value={formData.tags}
                 onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
@@ -1018,16 +1042,19 @@ function EditTaskModal({
     }
   }
 
+  const dialogRef = useFocusTrap(onClose)
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg max-w-md w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="edit-task-title" className="bg-card border border-border rounded-lg max-w-md w-full">
         <form onSubmit={handleSubmit} className="p-6">
-          <h3 className="text-xl font-bold text-foreground mb-4">Edit Task</h3>
+          <h3 id="edit-task-title" className="text-xl font-bold text-foreground mb-4">Edit Task</h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Title</label>
+              <label htmlFor="edit-title" className="block text-sm text-muted-foreground mb-1">Title</label>
               <input
+                id="edit-title"
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -1037,8 +1064,9 @@ function EditTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Description</label>
+              <label htmlFor="edit-description" className="block text-sm text-muted-foreground mb-1">Description</label>
               <textarea
+                id="edit-description"
                 value={formData.description}
                 onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -1048,8 +1076,9 @@ function EditTaskModal({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Status</label>
+                <label htmlFor="edit-status" className="block text-sm text-muted-foreground mb-1">Status</label>
                 <select
+                  id="edit-status"
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Task['status'] }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -1064,8 +1093,9 @@ function EditTaskModal({
               </div>
 
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Priority</label>
+                <label htmlFor="edit-priority" className="block text-sm text-muted-foreground mb-1">Priority</label>
                 <select
+                  id="edit-priority"
                   value={formData.priority}
                   onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as Task['priority'] }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -1079,8 +1109,9 @@ function EditTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Assign to</label>
+              <label htmlFor="edit-assignee" className="block text-sm text-muted-foreground mb-1">Assign to</label>
               <select
+                id="edit-assignee"
                 value={formData.assigned_to}
                 onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
                 className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -1095,8 +1126,9 @@ function EditTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
+              <label htmlFor="edit-tags" className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
               <input
+                id="edit-tags"
                 type="text"
                 value={formData.tags}
                 onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}

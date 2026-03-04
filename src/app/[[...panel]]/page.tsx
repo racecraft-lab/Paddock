@@ -140,6 +140,9 @@ export default function Home() {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:text-sm focus:font-medium">
+        Skip to main content
+      </a>
       {/* Left: Icon rail navigation (hidden on mobile, shown as bottom bar instead) */}
       <NavRail />
 
@@ -149,7 +152,7 @@ export default function Home() {
         <LocalModeBanner />
         <UpdateBanner />
         <PromoBanner />
-        <main className="flex-1 overflow-auto pb-16 md:pb-0" role="main">
+        <main id="main-content" className="flex-1 overflow-auto pb-16 md:pb-0" role="main">
           <div aria-live="polite">
             <ErrorBoundary key={activeTab}>
               <ContentRouter tab={activeTab} />
