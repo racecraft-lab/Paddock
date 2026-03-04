@@ -83,6 +83,33 @@ const INSECURE_PASSWORDS = new Set([
   'testpass123',
 ])
 
+export function resolveSeedAuthPassword(env: NodeJS.ProcessEnv = process.env): string | null {
+  const b64 = env.AUTH_PASS_B64
+  if (b64 && b64.trim().length > 0) {
+    const normalized = b64.trim()
+    const base64Pattern = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
+    if (!base64Pattern.test(normalized)) {
+      logger.warn('AUTH_PASS_B64 is not valid base64; falling back to AUTH_PASS')
+      return env.AUTH_PASS || null
+    }
+
+    try {
+      const decoded = Buffer.from(normalized, 'base64').toString('utf8')
+      const canonical = Buffer.from(decoded, 'utf8').toString('base64')
+      if (canonical !== normalized) {
+        logger.warn('AUTH_PASS_B64 failed base64 verification; falling back to AUTH_PASS')
+        return env.AUTH_PASS || null
+      }
+      if (decoded.length > 0) return decoded
+      logger.warn('AUTH_PASS_B64 is set but decoded to an empty value; falling back to AUTH_PASS')
+    } catch {
+      logger.warn('AUTH_PASS_B64 is not valid base64; falling back to AUTH_PASS')
+    }
+  }
+
+  return env.AUTH_PASS || null
+}
+
 function seedAdminUserFromEnv(dbConn: Database.Database): void {
   // Skip seeding during `next build` — env vars may not be available yet
   if (process.env.NEXT_PHASE === 'phase-production-build') return
@@ -91,12 +118,12 @@ function seedAdminUserFromEnv(dbConn: Database.Database): void {
   if (count > 0) return
 
   const username = process.env.AUTH_USER || 'admin'
-  const password = process.env.AUTH_PASS
+  const password = resolveSeedAuthPassword()
 
   if (!password) {
     logger.warn(
       'AUTH_PASS is not set — skipping admin user seeding. ' +
-      'Set AUTH_PASS in your .env file to create the initial admin account.'
+      'Set AUTH_PASS (quote values containing #) or AUTH_PASS_B64 in your environment.'
     )
     return
   }
