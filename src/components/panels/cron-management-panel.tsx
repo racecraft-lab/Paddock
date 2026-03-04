@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useMissionControl, CronJob } from '@/store'
 import { createClientLogger } from '@/lib/client-logger'
-
 const log = createClientLogger('CronManagement')
+import { buildDayKey, getCronOccurrences } from '@/lib/cron-occurrences'
 
 interface NewJobForm {
   name: string
@@ -59,6 +59,7 @@ export function CronManagementPanel() {
   const [availableModels, setAvailableModels] = useState<string[]>([])
   const [calendarView, setCalendarView] = useState<CalendarViewMode>('week')
   const [calendarDate, setCalendarDate] = useState<Date>(startOfDay(new Date()))
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date>(startOfDay(new Date()))
   const [searchQuery, setSearchQuery] = useState('')
   const [agentFilter, setAgentFilter] = useState('all')
   const [stateFilter, setStateFilter] = useState<'all' | 'enabled' | 'disabled'>('all')
@@ -310,39 +311,69 @@ export function CronManagementPanel() {
     return matchesQuery && matchesAgent && matchesState
   })
 
-  const agendaJobs = [...filteredJobs].sort((a, b) => {
-    const aRun = typeof a.nextRun === 'number' ? a.nextRun : Number.POSITIVE_INFINITY
-    const bRun = typeof b.nextRun === 'number' ? b.nextRun : Number.POSITIVE_INFINITY
-    return aRun - bRun
-  })
-
   const dayStart = startOfDay(calendarDate)
   const dayEnd = addDays(dayStart, 1)
-  const dayJobs = filteredJobs
-    .filter((job) => typeof job.nextRun === 'number' && job.nextRun >= dayStart.getTime() && job.nextRun < dayEnd.getTime())
-    .sort((a, b) => (a.nextRun || 0) - (b.nextRun || 0))
 
   const weekStart = getWeekStart(calendarDate)
   const weekDays = Array.from({ length: 7 }, (_, idx) => addDays(weekStart, idx))
-  const jobsByWeekDay = weekDays.map((date) => {
-    const start = startOfDay(date).getTime()
-    const end = addDays(date, 1).getTime()
-    const jobs = filteredJobs
-      .filter((job) => typeof job.nextRun === 'number' && job.nextRun >= start && job.nextRun < end)
-      .sort((a, b) => (a.nextRun || 0) - (b.nextRun || 0))
-    return { date, jobs }
-  })
 
   const monthGridStart = getMonthStartGrid(calendarDate)
   const monthDays = Array.from({ length: 42 }, (_, idx) => addDays(monthGridStart, idx))
-  const jobsByMonthDay = monthDays.map((date) => {
-    const start = startOfDay(date).getTime()
-    const end = addDays(date, 1).getTime()
-    const jobs = filteredJobs
-      .filter((job) => typeof job.nextRun === 'number' && job.nextRun >= start && job.nextRun < end)
-      .sort((a, b) => (a.nextRun || 0) - (b.nextRun || 0))
-    return { date, jobs }
-  })
+
+  const calendarBounds = useMemo(() => {
+    if (calendarView === 'day') {
+      return { startMs: dayStart.getTime(), endMs: dayEnd.getTime() }
+    }
+    if (calendarView === 'week') {
+      return { startMs: weekStart.getTime(), endMs: addDays(weekStart, 7).getTime() }
+    }
+    if (calendarView === 'month') {
+      return { startMs: monthGridStart.getTime(), endMs: addDays(monthGridStart, 42).getTime() }
+    }
+    const agendaStart = Date.now()
+    return { startMs: agendaStart, endMs: addDays(startOfDay(new Date()), 30).getTime() }
+  }, [calendarView, dayEnd, dayStart, monthGridStart, weekStart])
+
+  const calendarOccurrences = useMemo(() => {
+    const rows: Array<{ job: CronJob; atMs: number; dayKey: string }> = []
+    for (const job of filteredJobs) {
+      const occurrences = getCronOccurrences(job.schedule, calendarBounds.startMs, calendarBounds.endMs, 1000)
+      for (const occurrence of occurrences) {
+        rows.push({ job, atMs: occurrence.atMs, dayKey: occurrence.dayKey })
+      }
+
+      if (occurrences.length === 0 && typeof job.nextRun === 'number' && job.nextRun >= calendarBounds.startMs && job.nextRun < calendarBounds.endMs) {
+        rows.push({ job, atMs: job.nextRun, dayKey: buildDayKey(new Date(job.nextRun)) })
+      }
+    }
+
+    rows.sort((a, b) => a.atMs - b.atMs)
+    return rows
+  }, [calendarBounds.endMs, calendarBounds.startMs, filteredJobs])
+
+  const occurrencesByDay = useMemo(() => {
+    const dayMap = new Map<string, Array<{ job: CronJob; atMs: number }>>()
+    for (const row of calendarOccurrences) {
+      const existing = dayMap.get(row.dayKey) || []
+      existing.push({ job: row.job, atMs: row.atMs })
+      dayMap.set(row.dayKey, existing)
+    }
+    return dayMap
+  }, [calendarOccurrences])
+
+  const dayJobs = occurrencesByDay.get(buildDayKey(dayStart)) || []
+
+  const jobsByWeekDay = weekDays.map((date) => ({
+    date,
+    jobs: occurrencesByDay.get(buildDayKey(date)) || [],
+  }))
+
+  const jobsByMonthDay = monthDays.map((date) => ({
+    date,
+    jobs: occurrencesByDay.get(buildDayKey(date)) || [],
+  }))
+
+  const selectedDayJobs = occurrencesByDay.get(buildDayKey(selectedCalendarDate)) || []
 
   const moveCalendar = (direction: -1 | 1) => {
     setCalendarDate((prev) => {
@@ -395,7 +426,7 @@ export function CronManagementPanel() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold">Calendar View</h2>
-                <p className="text-sm text-muted-foreground">Read-only schedule visibility across all cron jobs</p>
+                <p className="text-sm text-muted-foreground">Interactive schedule across all matching cron jobs</p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -469,23 +500,27 @@ export function CronManagementPanel() {
             {calendarView === 'agenda' && (
               <div className="border border-border rounded-lg overflow-hidden">
                 <div className="max-h-80 overflow-y-auto divide-y divide-border">
-                  {agendaJobs.length === 0 ? (
+                  {calendarOccurrences.length === 0 ? (
                     <div className="p-4 text-sm text-muted-foreground">No jobs match the current filters.</div>
                   ) : (
-                    agendaJobs.map((job) => (
-                      <div key={`agenda-${job.id || job.name}`} className="p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    calendarOccurrences.map((row) => (
+                      <button
+                        key={`agenda-${row.job.id || row.job.name}-${row.atMs}`}
+                        onClick={() => handleJobSelect(row.job)}
+                        className="w-full p-3 text-left flex flex-col md:flex-row md:items-center md:justify-between gap-2 hover:bg-secondary transition-colors"
+                      >
                         <div>
-                          <div className="font-medium text-foreground">{job.name}</div>
+                          <div className="font-medium text-foreground">{row.job.name}</div>
                           <div className="text-xs text-muted-foreground">
-                            {job.agentId || 'system'} · {job.enabled ? 'enabled' : 'disabled'} · {job.schedule}
+                            {row.job.agentId || 'system'} · {row.job.enabled ? 'enabled' : 'disabled'} · {row.job.schedule}
                           </div>
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {job.nextRun ? new Date(job.nextRun).toLocaleString() : 'No upcoming run'}
+                          {new Date(row.atMs).toLocaleString()}
                         </div>
-                      </div>
+                      </button>
                     ))
-                  )}
+                  )} 
                 </div>
               </div>
             )}
@@ -496,13 +531,17 @@ export function CronManagementPanel() {
                   <div className="text-sm text-muted-foreground">No scheduled jobs for this day.</div>
                 ) : (
                   <div className="space-y-2">
-                    {dayJobs.map((job) => (
-                      <div key={`day-${job.id || job.name}`} className="p-2 rounded border border-border bg-secondary/40">
-                        <div className="text-sm font-medium text-foreground">{job.name}</div>
+                    {dayJobs.map((row) => (
+                      <button
+                        key={`day-${row.job.id || row.job.name}-${row.atMs}`}
+                        onClick={() => handleJobSelect(row.job)}
+                        className="w-full p-2 rounded border border-border bg-secondary/40 hover:bg-secondary transition-colors text-left"
+                      >
+                        <div className="text-sm font-medium text-foreground">{row.job.name}</div>
                         <div className="text-xs text-muted-foreground">
-                          {job.nextRun ? new Date(job.nextRun).toLocaleTimeString() : 'Unknown time'} · {job.agentId || 'system'} · {job.enabled ? 'enabled' : 'disabled'}
+                          {new Date(row.atMs).toLocaleTimeString()} · {row.job.agentId || 'system'} · {row.job.enabled ? 'enabled' : 'disabled'}
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -512,21 +551,25 @@ export function CronManagementPanel() {
             {calendarView === 'week' && (
               <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
                 {jobsByWeekDay.map(({ date, jobs }) => (
-                  <div key={`week-${date.toISOString()}`} className="border border-border rounded-lg p-2 min-h-36">
+                  <button
+                    key={`week-${date.toISOString()}`}
+                    onClick={() => setSelectedCalendarDate(startOfDay(date))}
+                    className={`border border-border rounded-lg p-2 min-h-36 text-left ${isSameDay(date, selectedCalendarDate) ? 'bg-primary/10 border-primary/40' : 'hover:bg-secondary/50'}`}
+                  >
                     <div className={`text-xs font-medium mb-2 ${isSameDay(date, new Date()) ? 'text-primary' : 'text-muted-foreground'}`}>
                       {date.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' })}
                     </div>
                     <div className="space-y-1">
-                      {jobs.slice(0, 4).map((job) => (
-                        <div key={`week-job-${job.id || job.name}`} className="text-xs px-2 py-1 rounded bg-secondary text-foreground truncate" title={job.name}>
-                          {job.nextRun ? new Date(job.nextRun).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '--:--'} {job.name}
+                      {jobs.slice(0, 4).map((row) => (
+                        <div key={`week-job-${row.job.id || row.job.name}-${row.atMs}`} className="text-xs px-2 py-1 rounded bg-secondary text-foreground truncate" title={row.job.name}>
+                          {new Date(row.atMs).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} {row.job.name}
                         </div>
                       ))}
                       {jobs.length > 4 && (
                         <div className="text-xs text-muted-foreground">+{jobs.length - 4} more</div>
                       )}
                     </div>
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -538,15 +581,16 @@ export function CronManagementPanel() {
                   return (
                     <div
                       key={`month-${date.toISOString()}`}
-                      className={`border border-border rounded-lg p-2 min-h-24 ${inCurrentMonth ? 'bg-transparent' : 'bg-secondary/30'}`}
+                      onClick={() => setSelectedCalendarDate(startOfDay(date))}
+                      className={`border border-border rounded-lg p-2 min-h-24 cursor-pointer ${inCurrentMonth ? 'bg-transparent' : 'bg-secondary/30'} ${isSameDay(date, selectedCalendarDate) ? 'border-primary/40 bg-primary/10' : 'hover:bg-secondary/50'}`}
                     >
                       <div className={`text-xs mb-1 ${isSameDay(date, new Date()) ? 'text-primary font-semibold' : inCurrentMonth ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {date.getDate()}
                       </div>
                       <div className="space-y-1">
-                        {jobs.slice(0, 2).map((job) => (
-                          <div key={`month-job-${job.id || job.name}`} className="text-[11px] px-1.5 py-0.5 rounded bg-secondary text-foreground truncate" title={job.name}>
-                            {job.name}
+                        {jobs.slice(0, 2).map((row) => (
+                          <div key={`month-job-${row.job.id || row.job.name}-${row.atMs}`} className="text-[11px] px-1.5 py-0.5 rounded bg-secondary text-foreground truncate" title={row.job.name}>
+                            {row.job.name}
                           </div>
                         ))}
                         {jobs.length > 2 && <div className="text-[11px] text-muted-foreground">+{jobs.length - 2}</div>}
@@ -554,6 +598,35 @@ export function CronManagementPanel() {
                     </div>
                   )
                 })}
+              </div>
+            )}
+
+            {calendarView !== 'agenda' && (
+              <div className="border border-border rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-foreground">
+                    {selectedCalendarDate.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}
+                  </h3>
+                  <span className="text-xs text-muted-foreground">{selectedDayJobs.length} jobs</span>
+                </div>
+                {selectedDayJobs.length === 0 ? (
+                  <div className="text-sm text-muted-foreground">No jobs scheduled on this date.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {selectedDayJobs.map((row) => (
+                      <button
+                        key={`selected-day-${row.job.id || row.job.name}-${row.atMs}`}
+                        onClick={() => handleJobSelect(row.job)}
+                        className="w-full text-left p-2 rounded border border-border bg-secondary/40 hover:bg-secondary transition-colors"
+                      >
+                        <div className="text-sm font-medium text-foreground">{row.job.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {new Date(row.atMs).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })} · {row.job.agentId || 'system'}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

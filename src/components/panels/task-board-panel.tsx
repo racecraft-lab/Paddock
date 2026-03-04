@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 
@@ -73,6 +74,9 @@ const priorityColors: Record<string, string> = {
 
 export function TaskBoardPanel() {
   const { tasks: storeTasks, setTasks: storeSetTasks, selectedTask, setSelectedTask } = useMissionControl()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -81,6 +85,23 @@ export function TaskBoardPanel() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const dragCounter = useRef(0)
+  const selectedTaskIdFromUrl = Number.parseInt(searchParams.get('taskId') || '', 10)
+
+  const updateTaskUrl = useCallback((taskId: number | null, mode: 'push' | 'replace' = 'push') => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (typeof taskId === 'number' && Number.isFinite(taskId)) {
+      params.set('taskId', String(taskId))
+    } else {
+      params.delete('taskId')
+    }
+    const query = params.toString()
+    const href = query ? `${pathname}?${query}` : pathname
+    if (mode === 'replace') {
+      router.replace(href)
+      return
+    }
+    router.push(href)
+  }, [pathname, router, searchParams])
 
   // Augment store tasks with aegisApproved flag (computed, not stored)
   const tasks: Task[] = storeTasks.map(t => ({
@@ -141,6 +162,26 @@ export function TaskBoardPanel() {
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    if (!Number.isFinite(selectedTaskIdFromUrl)) {
+      if (selectedTask) setSelectedTask(null)
+      return
+    }
+
+    const match = tasks.find((task) => task.id === selectedTaskIdFromUrl)
+    if (match) {
+      if (selectedTask?.id !== match.id) {
+        setSelectedTask(match)
+      }
+      return
+    }
+
+    if (!loading) {
+      setError(`Task #${selectedTaskIdFromUrl} not found in current workspace`)
+      setSelectedTask(null)
+    }
+  }, [loading, selectedTask, selectedTaskIdFromUrl, setSelectedTask, tasks])
 
   // Poll as SSE fallback — pauses when SSE is delivering events
   useSmartPoll(fetchData, 30000, { pauseWhenSseConnected: true })
@@ -348,8 +389,17 @@ export function TaskBoardPanel() {
                   tabIndex={0}
                   aria-label={`${task.title}, ${task.priority} priority, ${task.status}`}
                   onDragStart={(e) => handleDragStart(e, task)}
-                  onClick={() => setSelectedTask(task)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTask(task) } }}
+                  onClick={() => {
+                    setSelectedTask(task)
+                    updateTaskUrl(task.id)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelectedTask(task)
+                      updateTaskUrl(task.id)
+                    }
+                  }}
                   className={`bg-surface-1 rounded-lg p-3 cursor-pointer hover:bg-surface-2 transition-smooth border-l-4 ${priorityColors[task.priority]} ${
                     draggedTask?.id === task.id ? 'opacity-50' : ''
                   }`}
@@ -446,11 +496,15 @@ export function TaskBoardPanel() {
         <TaskDetailModal
           task={selectedTask}
           agents={agents}
-          onClose={() => setSelectedTask(null)}
+          onClose={() => {
+            setSelectedTask(null)
+            updateTaskUrl(null)
+          }}
           onUpdate={fetchData}
           onEdit={(taskToEdit) => {
             setEditingTask(taskToEdit)
             setSelectedTask(null)
+            updateTaskUrl(null, 'replace')
           }}
         />
       )}

@@ -356,6 +356,9 @@ export function MemoryBrowserPanel() {
             ? 'Browse and manage local knowledge files and memory'
             : 'Explore knowledge files and memory structure'}
         </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          This page shows all workspace memory files. The agent profile Memory tab only edits that single agent&apos;s working memory.
+        </p>
         
         {/* Tab Navigation */}
         <div className="flex gap-2 mt-4">

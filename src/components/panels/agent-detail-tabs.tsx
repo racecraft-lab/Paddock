@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { createClientLogger } from '@/lib/client-logger'
-
 const log = createClientLogger('AgentDetailTabs')
+import Link from 'next/link'
+
 
 interface Agent {
   id: number
@@ -513,7 +514,12 @@ export function MemoryTab({
   return (
     <div className="p-6 space-y-4">
       <div className="flex justify-between items-center">
-        <h4 className="text-lg font-medium text-foreground">Working Memory</h4>
+        <div>
+          <h4 className="text-lg font-medium text-foreground">Working Memory</h4>
+          <p className="text-xs text-muted-foreground mt-1">
+            Agent-level scratchpad only. Use the global Memory page to browse all workspace memory files.
+          </p>
+        </div>
         <div className="flex gap-2">
           {!editing && (
             <>
@@ -663,7 +669,10 @@ export function TasksTab({ agent }: { agent: Agent }) {
             <div key={task.id} className="bg-surface-1/50 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h5 className="font-medium text-foreground">{task.title}</h5>
+                  <Link href={`/tasks?taskId=${task.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+                    {task.title}
+                  </Link>
+                  <div className="text-xs text-muted-foreground mt-1">Task #{task.id}</div>
                   {task.description && (
                     <p className="text-foreground/80 text-sm mt-1">{task.description}</p>
                   )}

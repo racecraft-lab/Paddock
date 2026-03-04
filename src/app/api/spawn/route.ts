@@ -8,6 +8,15 @@ import { heavyLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { validateBody, spawnAgentSchema } from '@/lib/validation'
 
+function getPreferredToolsProfile(): string {
+  return String(process.env.OPENCLAW_TOOLS_PROFILE || 'coding').trim() || 'coding'
+}
+
+async function runSpawnWithCompatibility(spawnPayload: Record<string, unknown>) {
+  const commandArg = `sessions_spawn(${JSON.stringify(spawnPayload)})`
+  return runClawdbot(['-c', commandArg], { timeoutMs: 10000 })
+}
+
 export async function POST(request: NextRequest) {
   const auth = requireRole(request, 'operator')
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
@@ -31,15 +40,38 @@ export async function POST(request: NextRequest) {
       task,
       model,
       label,
-      runTimeoutSeconds: timeout
+      runTimeoutSeconds: timeout,
+      tools: {
+        profile: getPreferredToolsProfile(),
+      },
     }
-    const commandArg = `sessions_spawn(${JSON.stringify(spawnPayload)})`
 
     try {
-      // Execute the spawn command
-      const { stdout, stderr } = await runClawdbot(['-c', commandArg], {
-        timeoutMs: 10000
-      })
+      // Execute the spawn command (OpenClaw 2026.3.2+ defaults tools.profile to messaging).
+      let stdout = ''
+      let stderr = ''
+      let compatibilityFallbackUsed = false
+      try {
+        const result = await runSpawnWithCompatibility(spawnPayload)
+        stdout = result.stdout
+        stderr = result.stderr
+      } catch (firstError: any) {
+        const rawErr = String(firstError?.stderr || firstError?.message || '').toLowerCase()
+        const likelySchemaMismatch =
+          rawErr.includes('unknown field') ||
+          rawErr.includes('unknown key') ||
+          rawErr.includes('invalid argument') ||
+          rawErr.includes('tools') ||
+          rawErr.includes('profile')
+        if (!likelySchemaMismatch) throw firstError
+
+        const fallbackPayload = { ...spawnPayload }
+        delete (fallbackPayload as any).tools
+        const fallback = await runSpawnWithCompatibility(fallbackPayload)
+        stdout = fallback.stdout
+        stderr = fallback.stderr
+        compatibilityFallbackUsed = true
+      }
 
       // Parse the response to extract session info
       let sessionInfo = null
@@ -63,7 +95,11 @@ export async function POST(request: NextRequest) {
         timeoutSeconds: timeout,
         createdAt: Date.now(),
         stdout: stdout.trim(),
-        stderr: stderr.trim()
+        stderr: stderr.trim(),
+        compatibility: {
+          toolsProfile: getPreferredToolsProfile(),
+          fallbackUsed: compatibilityFallbackUsed,
+        },
       })
 
     } catch (execError: any) {

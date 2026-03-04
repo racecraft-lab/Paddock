@@ -105,4 +105,23 @@ describe('requireRole', () => {
     )
     expect(result.user).toBeDefined()
   })
+
+  it('accepts Authorization Bearer API key', () => {
+    const result = requireRole(
+      makeRequest({ authorization: 'Bearer test-api-key-secret' }),
+      'admin',
+    )
+    expect(result.user).toBeDefined()
+    expect(result.user!.username).toBe('api')
+  })
+
+  it('rejects API key auth when API_KEY is not configured', () => {
+    process.env = { ...originalEnv, API_KEY: '' }
+    const result = requireRole(
+      makeRequest({ 'x-api-key': 'test-api-key-secret' }),
+      'viewer',
+    )
+    expect(result.status).toBe(401)
+    expect(result.user).toBeUndefined()
+  })
 })
