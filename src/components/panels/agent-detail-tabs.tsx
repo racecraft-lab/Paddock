@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 
 interface Agent {
   id: number
@@ -665,7 +666,10 @@ export function TasksTab({ agent }: { agent: Agent }) {
             <div key={task.id} className="bg-surface-1/50 rounded-lg p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h5 className="font-medium text-foreground">{task.title}</h5>
+                  <Link href={`/tasks?taskId=${task.id}`} className="font-medium text-foreground hover:text-primary transition-colors">
+                    {task.title}
+                  </Link>
+                  <div className="text-xs text-muted-foreground mt-1">Task #{task.id}</div>
                   {task.description && (
                     <p className="text-foreground/80 text-sm mt-1">{task.description}</p>
                   )}
