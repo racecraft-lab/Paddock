@@ -852,6 +852,7 @@ export function CreateAgentModal({
     dockerNetwork: 'none' as 'none' | 'bridge',
     session_key: '',
     write_to_gateway: true,
+    provision_openclaw_workspace: true,
   })
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -916,10 +917,12 @@ export function CreateAgentModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
+          openclaw_id: formData.id || undefined,
           role: formData.role,
           session_key: formData.session_key || undefined,
           template: selectedTemplate || undefined,
           write_to_gateway: formData.write_to_gateway,
+          provision_openclaw_workspace: formData.provision_openclaw_workspace,
           gateway_config: {
             model: { primary: primaryModel },
             identity: { name: formData.name, theme: formData.role, emoji: formData.emoji },
@@ -1198,6 +1201,16 @@ export function CreateAgentModal({
                   className="w-4 h-4 rounded border-border"
                 />
                 <span className="text-sm text-foreground">Add to gateway config (openclaw.json)</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.provision_openclaw_workspace}
+                  onChange={(e) => setFormData(prev => ({ ...prev, provision_openclaw_workspace: e.target.checked }))}
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm text-foreground">Provision full OpenClaw workspace (`openclaw agents add`)</span>
               </label>
             </div>
           )}
