@@ -89,7 +89,14 @@ export function AgentSquadPanelPhase3() {
     setSyncToast(null)
     try {
       const response = await fetch('/api/agents/sync', { method: 'POST' })
+      if (response.status === 401) {
+        window.location.assign('/login?next=%2Fagents')
+        return
+      }
       const data = await response.json()
+      if (response.status === 403) {
+        throw new Error('Admin access required for agent sync')
+      }
       if (!response.ok) throw new Error(data.error || 'Sync failed')
       setSyncToast(`Synced ${data.synced} agents (${data.created} new, ${data.updated} updated)`)
       fetchAgents()
@@ -109,7 +116,17 @@ export function AgentSquadPanelPhase3() {
       if (agents.length === 0) setLoading(true)
 
       const response = await fetch('/api/agents')
-      if (!response.ok) throw new Error('Failed to fetch agents')
+      if (response.status === 401) {
+        window.location.assign('/login?next=%2Fagents')
+        return
+      }
+      if (response.status === 403) {
+        throw new Error('Access denied')
+      }
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to fetch agents')
+      }
 
       const data = await response.json()
       setAgents(data.agents || [])

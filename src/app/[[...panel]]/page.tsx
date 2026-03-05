@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { NavRail } from '@/components/layout/nav-rail'
 import { HeaderBar } from '@/components/layout/header-bar'
 import { LiveFeed } from '@/components/layout/live-feed'
@@ -42,6 +42,7 @@ import { useServerEvents } from '@/lib/use-server-events'
 import { useMissionControl } from '@/store'
 
 export default function Home() {
+  const router = useRouter()
   const { connect } = useWebSocket()
   const { activeTab, setActiveTab, setCurrentUser, setDashboardMode, setGatewayAvailable, setSubscription, setUpdateAvailable, liveFeedOpen, toggleLiveFeed } = useMissionControl()
 
@@ -62,7 +63,13 @@ export default function Home() {
 
     // Fetch current user
     fetch('/api/auth/me')
-      .then(res => res.ok ? res.json() : null)
+      .then(async (res) => {
+        if (res.ok) return res.json()
+        if (res.status === 401) {
+          router.replace(`/login?next=${encodeURIComponent(pathname)}`)
+        }
+        return null
+      })
       .then(data => { if (data?.user) setCurrentUser(data.user) })
       .catch(() => {})
 
@@ -120,7 +127,7 @@ export default function Home() {
         const wsUrl = explicitWsUrl || `${gatewayProto}://${gatewayHost}:${gatewayPort}`
         connect(wsUrl, wsToken)
       })
-  }, [connect, setCurrentUser, setDashboardMode, setGatewayAvailable, setSubscription, setUpdateAvailable])
+  }, [connect, pathname, router, setCurrentUser, setDashboardMode, setGatewayAvailable, setSubscription, setUpdateAvailable])
 
   if (!isClient) {
     return (

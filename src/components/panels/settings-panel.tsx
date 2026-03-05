@@ -43,12 +43,17 @@ export function SettingsPanel() {
   const fetchSettings = useCallback(async () => {
     try {
       const res = await fetch('/api/settings')
+      if (res.status === 401) {
+        window.location.assign('/login?next=%2Fsettings')
+        return
+      }
       if (res.status === 403) {
         setError('Admin access required')
         return
       }
       if (!res.ok) {
-        setError('Failed to load settings')
+        const data = await res.json().catch(() => ({}))
+        setError(data.error || 'Failed to load settings')
         return
       }
       const data = await res.json()
