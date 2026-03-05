@@ -59,6 +59,8 @@ export function useWebSocket() {
   const pingCounterRef = useRef<number>(0)
   const pingSentTimestamps = useRef<Map<string, number>>(new Map())
   const missedPongsRef = useRef<number>(0)
+  // Compat flag for gateway versions that may not implement ping RPC.
+  const gatewaySupportsPingRef = useRef<boolean>(true)
 
   const {
     connection,
@@ -116,6 +118,7 @@ export function useWebSocket() {
 
     pingIntervalRef.current = setInterval(() => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || !handshakeCompleteRef.current) return
+      if (!gatewaySupportsPingRef.current) return
 
       // Check missed pongs
       if (missedPongsRef.current >= MAX_MISSED_PONGS) {
