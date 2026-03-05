@@ -217,6 +217,7 @@ All endpoints require authentication unless noted. Full reference below.
 | `POST` | `/api/agents/message` | operator | Send message to agent |
 | `GET` | `/api/tasks` | viewer | List tasks (filter: `?status=`, `?assigned_to=`, `?priority=`) |
 | `POST` | `/api/tasks` | operator | Create task |
+| `GET` | `/api/tasks/queue` | operator | Poll next task for an agent (`?agent=`, optional `?max_capacity=`) |
 | `GET` | `/api/tasks/[id]` | viewer | Task details |
 | `PUT` | `/api/tasks/[id]` | operator | Update task |
 | `DELETE` | `/api/tasks/[id]` | admin | Delete task |
