@@ -34,6 +34,7 @@ export default defineConfig({
       API_KEY: process.env.API_KEY || 'test-api-key-e2e-12345',
       AUTH_USER: process.env.AUTH_USER || 'testadmin',
       AUTH_PASS: process.env.AUTH_PASS || 'testpass1234!',
+      OPENCLAW_MEMORY_DIR: process.env.OPENCLAW_MEMORY_DIR || '.data/e2e-memory',
     },
   }
 })

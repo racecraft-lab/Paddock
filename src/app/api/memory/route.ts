@@ -44,17 +44,22 @@ async function resolveSafeMemoryPath(baseDir: string, relativePath: string): Pro
   const baseReal = await realpath(baseDir)
   const fullPath = resolveWithin(baseDir, relativePath)
 
-  // For non-existent paths, validate containment using the parent directory realpath.
-  // This also blocks symlinked parent segments that escape the base.
-  let parentReal: string
-  try {
-    parentReal = await realpath(dirname(fullPath))
-  } catch (err) {
-    const code = (err as NodeJS.ErrnoException).code
-    if (code === 'ENOENT') {
-      throw new Error('Parent directory not found')
+  // For non-existent targets, validate containment using the nearest existing ancestor.
+  // This allows nested creates (mkdir -p) while still blocking symlink escapes.
+  let current = dirname(fullPath)
+  let parentReal = ''
+  while (!parentReal) {
+    try {
+      parentReal = await realpath(current)
+    } catch (err) {
+      const code = (err as NodeJS.ErrnoException).code
+      if (code !== 'ENOENT') throw err
+      const next = dirname(current)
+      if (next === current) {
+        throw new Error('Parent directory not found')
+      }
+      current = next
     }
-    throw err
   }
   if (!isWithinBase(baseReal, parentReal)) {
     throw new Error('Path escapes base directory (symlink)')
