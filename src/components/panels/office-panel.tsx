@@ -107,6 +107,7 @@ interface PersistedOfficePrefs {
   version: 1
   viewMode: ViewMode
   sidebarFilter: SidebarFilter
+  showInactiveSessions: boolean
   mapZoom: number
   mapPan: { x: number; y: number }
   timeTheme: TimeTheme
@@ -215,6 +216,10 @@ function inferLocalRole(row: SessionAgentRow): string {
   if (/product|pm|roadmap|strategy/.test(context)) return 'product-manager'
   if (/codex|claude|agent/.test(context)) return 'software-engineer'
   return row.kind || 'local-session'
+}
+
+function isInactiveLocalSession(agent: Agent): boolean {
+  return Boolean((agent.config as any)?.localSession) && agent.status !== 'busy'
 }
 
 const MAP_COLS = 24
@@ -471,6 +476,7 @@ export function OfficePanel() {
   const [showSidebar, setShowSidebar] = useState(true)
   const [showMinimap, setShowMinimap] = useState(true)
   const [showEvents, setShowEvents] = useState(true)
+  const [showInactiveSessions, setShowInactiveSessions] = useState(false)
   const [loading, setLoading] = useState(true)
   const [localBootstrapping, setLocalBootstrapping] = useState(isLocalMode)
   const [sidebarFilter, setSidebarFilter] = useState<SidebarFilter>('all')
@@ -628,23 +634,28 @@ export function OfficePanel() {
     return []
   }, [agents, isLocalMode, localAgents, sessionAgents])
 
+  const visibleDisplayAgents = useMemo(() => {
+    if (!isLocalMode || showInactiveSessions) return displayAgents
+    return displayAgents.filter((agent) => !isInactiveLocalSession(agent))
+  }, [displayAgents, isLocalMode, showInactiveSessions])
+
   const counts = useMemo(() => {
     const c = { idle: 0, busy: 0, error: 0, offline: 0 }
-    for (const a of displayAgents) c[a.status] = (c[a.status] || 0) + 1
+    for (const a of visibleDisplayAgents) c[a.status] = (c[a.status] || 0) + 1
     return c
-  }, [displayAgents])
+  }, [visibleDisplayAgents])
 
   const roleGroups = useMemo(() => {
     const groups = new Map<string, Agent[]>()
-    for (const a of displayAgents) {
+    for (const a of visibleDisplayAgents) {
       const role = a.role || 'Unassigned'
       if (!groups.has(role)) groups.set(role, [])
       groups.get(role)!.push(a)
     }
     return groups
-  }, [displayAgents])
+  }, [visibleDisplayAgents])
 
-  const officeLayout = useMemo(() => buildOfficeLayout(displayAgents), [displayAgents])
+  const officeLayout = useMemo(() => buildOfficeLayout(visibleDisplayAgents), [visibleDisplayAgents])
 
   const currentSeatMap = useMemo(() => {
     const seatMap = new Map<number, SeatPosition>()
@@ -790,6 +801,7 @@ export function OfficePanel() {
       if (!prefs || prefs.version !== 1) return
       setViewMode(prefs.viewMode || 'office')
       setSidebarFilter(prefs.sidebarFilter || 'all')
+      setShowInactiveSessions(Boolean(prefs.showInactiveSessions))
       setMapZoom(Number.isFinite(prefs.mapZoom) ? clamp(prefs.mapZoom, 0.8, 2.2) : 1)
       setMapPan({
         x: Number.isFinite(prefs.mapPan?.x) ? prefs.mapPan.x : 0,
@@ -816,6 +828,7 @@ export function OfficePanel() {
       version: 1,
       viewMode,
       sidebarFilter,
+      showInactiveSessions,
       mapZoom,
       mapPan,
       timeTheme,
@@ -837,6 +850,7 @@ export function OfficePanel() {
     mapZoom,
     roomLayoutState,
     showEvents,
+    showInactiveSessions,
     showMinimap,
     showSidebar,
     sidebarFilter,
@@ -1381,7 +1395,7 @@ export function OfficePanel() {
       return 'Other'
     }
 
-    for (const a of displayAgents) {
+    for (const a of visibleDisplayAgents) {
       const category = getCategory(a)
       if (!groups.has(category)) groups.set(category, [])
       groups.get(category)!.push(a)
@@ -1398,11 +1412,11 @@ export function OfficePanel() {
         return a.localeCompare(b)
       })
     )
-  }, [displayAgents])
+  }, [visibleDisplayAgents])
 
   const statusGroups = useMemo(() => {
     const groups = new Map<string, Agent[]>()
-    for (const a of displayAgents) {
+    for (const a of visibleDisplayAgents) {
       const key = statusLabel[a.status] || a.status
       if (!groups.has(key)) groups.set(key, [])
       groups.get(key)!.push(a)
@@ -1419,7 +1433,7 @@ export function OfficePanel() {
         return a.localeCompare(b)
       })
     )
-  }, [displayAgents])
+  }, [visibleDisplayAgents])
 
   const orgGroups = useMemo(() => {
     if (orgSegmentMode === 'role') return roleGroups
@@ -1427,7 +1441,7 @@ export function OfficePanel() {
     return categoryGroups
   }, [categoryGroups, orgSegmentMode, roleGroups, statusGroups])
 
-  if ((loading || (isLocalMode && localBootstrapping)) && displayAgents.length === 0) {
+  if ((loading || (isLocalMode && localBootstrapping)) && visibleDisplayAgents.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
@@ -1474,7 +1488,7 @@ export function OfficePanel() {
         </div>
       </div>
 
-      {displayAgents.length === 0 ? (
+      {visibleDisplayAgents.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <div className="text-5xl mb-3">🏢</div>
           <p className="text-lg">The office is empty</p>
@@ -1486,7 +1500,7 @@ export function OfficePanel() {
           <div className="rounded-xl border border-border bg-[#1a1f2d] text-slate-100 p-3 h-fit">
             <div className="flex items-center justify-between mb-2">
               <div className="text-xs font-semibold tracking-wider">TEAMY</div>
-              <div className="text-[10px] text-slate-300">{displayAgents.length} online</div>
+              <div className="text-[10px] text-slate-300">{visibleDisplayAgents.length} online</div>
             </div>
             <div className="mb-2 flex flex-wrap gap-1.5">
               {([
@@ -1508,6 +1522,18 @@ export function OfficePanel() {
                 </button>
               ))}
             </div>
+            {isLocalMode && (
+              <button
+                onClick={() => setShowInactiveSessions((current) => !current)}
+                className={`mb-2 w-full rounded-md border px-2 py-1 text-[10px] transition-smooth ${
+                  showInactiveSessions
+                    ? 'border-amber-500/60 bg-amber-500/15 text-amber-200'
+                    : 'border-white/10 bg-black/20 text-slate-300 hover:bg-black/35'
+                }`}
+              >
+                {showInactiveSessions ? 'Hide Not Running Sessions' : 'Show Not Running Sessions'}
+              </button>
+            )}
             <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
               {filteredRosterRows.map(({ agent, minutesIdle, needsAttention }) => (
                 <button
