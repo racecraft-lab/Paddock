@@ -418,6 +418,24 @@ pnpm test:e2e         # Playwright E2E
 pnpm quality:gate     # All checks
 ```
 
+## Agent Diagnostics Contract
+
+`GET /api/agents/{id}/diagnostics` is self-scoped by default.
+
+- Self access:
+  - Session user where `username === agent.name`, or
+  - API-key request with `x-agent-name` matching `{id}` agent name
+- Cross-agent access:
+  - Allowed only with explicit `?privileged=1` and admin auth
+- Query validation:
+  - `hours` must be an integer between `1` and `720`
+  - `section` must be a comma-separated subset of `summary,tasks,errors,activity,trends,tokens`
+
+Trend alerts in the `trends.alerts` response are derived from current-vs-previous window comparisons:
+
+- `warning`: error spikes or severe activity drop
+- `info`: throughput drops or potential stall patterns
+
 ## Roadmap
 
 See [open issues](https://github.com/builderz-labs/mission-control/issues) for planned work and the [v1.0.0 release notes](https://github.com/builderz-labs/mission-control/releases/tag/v1.0.0) for what shipped.

@@ -1362,6 +1362,126 @@
         }
       }
     },
+    "/api/agents/{id}/diagnostics": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Get self diagnostics for an agent",
+        "description": "Self-scoped diagnostics by default. Cross-agent access requires `privileged=1` with admin credentials. Trend alerts are informational signals derived from current-vs-previous window deltas (error spikes, throughput drops, activity stalls).",
+        "operationId": "getAgentDiagnostics",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent numeric ID or name."
+          },
+          {
+            "name": "hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 720,
+              "default": 24
+            },
+            "description": "Diagnostics window in hours."
+          },
+          {
+            "name": "section",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated sections: summary,tasks,errors,activity,trends,tokens."
+          },
+          {
+            "name": "privileged",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            },
+            "description": "Set to `1` to allow explicit admin cross-agent diagnostics access."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Diagnostics payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "name": { "type": "string" },
+                        "role": { "type": "string" },
+                        "status": { "type": "string" }
+                      }
+                    },
+                    "timeframe": {
+                      "type": "object",
+                      "properties": {
+                        "hours": { "type": "integer" },
+                        "since": { "type": "integer" },
+                        "until": { "type": "integer" }
+                      }
+                    },
+                    "summary": { "type": "object" },
+                    "tasks": { "type": "object" },
+                    "errors": { "type": "object" },
+                    "activity": { "type": "object" },
+                    "trends": {
+                      "type": "object",
+                      "properties": {
+                        "current_period": { "type": "object" },
+                        "previous_period": { "type": "object" },
+                        "change": { "type": "object" },
+                        "alerts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "level": { "type": "string", "enum": ["info", "warning"] },
+                              "message": { "type": "string" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "tokens": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/api/agents/message": {
       "post": {
         "tags": [

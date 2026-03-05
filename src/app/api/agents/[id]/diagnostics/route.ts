@@ -3,6 +3,43 @@ import { getDatabase } from '@/lib/db';
 import { requireRole } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
+const ALLOWED_SECTIONS = ['summary', 'tasks', 'errors', 'activity', 'trends', 'tokens'] as const;
+type DiagnosticsSection = (typeof ALLOWED_SECTIONS)[number];
+
+function parseHoursParam(raw: string | null): { value?: number; error?: string } {
+  if (raw === null) return { value: 24 };
+  const parsed = Number(raw);
+  if (!Number.isInteger(parsed)) {
+    return { error: 'hours must be an integer between 1 and 720' };
+  }
+  if (parsed < 1 || parsed > 720) {
+    return { error: 'hours must be between 1 and 720' };
+  }
+  return { value: parsed };
+}
+
+function parseSectionsParam(raw: string | null): { value?: Set<DiagnosticsSection>; error?: string } {
+  if (!raw || raw.trim().length === 0) {
+    return { value: new Set(ALLOWED_SECTIONS) };
+  }
+
+  const requested = raw
+    .split(',')
+    .map((section) => section.trim())
+    .filter(Boolean);
+
+  if (requested.length === 0) {
+    return { error: 'section must include at least one valid value' };
+  }
+
+  const invalid = requested.filter((section) => !ALLOWED_SECTIONS.includes(section as DiagnosticsSection));
+  if (invalid.length > 0) {
+    return { error: `Invalid section value(s): ${invalid.join(', ')}` };
+  }
+
+  return { value: new Set(requested as DiagnosticsSection[]) };
+}
+
 /**
  * GET /api/agents/[id]/diagnostics - Agent Self-Diagnostics API
  *
@@ -48,9 +85,30 @@ export async function GET(
     }
 
     const { searchParams } = new URL(request.url);
-    const hours = Math.min(Math.max(parseInt(searchParams.get('hours') || '24', 10) || 24, 1), 720);
-    const sectionParam = searchParams.get('section') || 'summary,tasks,errors,activity,trends,tokens';
-    const sections = new Set(sectionParam.split(',').map(s => s.trim()));
+    const requesterAgentName = (request.headers.get('x-agent-name') || '').trim();
+    const privileged = searchParams.get('privileged') === '1';
+    const isSelfRequest = (requesterAgentName || auth.user.username) === agent.name;
+
+    // Self-only by default. Cross-agent access requires explicit privileged override.
+    if (!isSelfRequest && !(privileged && auth.user.role === 'admin')) {
+      return NextResponse.json(
+        { error: 'Diagnostics are self-scoped. Use privileged=1 with admin role for cross-agent access.' },
+        { status: 403 }
+      );
+    }
+
+    const parsedHours = parseHoursParam(searchParams.get('hours'));
+    if (parsedHours.error) {
+      return NextResponse.json({ error: parsedHours.error }, { status: 400 });
+    }
+
+    const parsedSections = parseSectionsParam(searchParams.get('section'));
+    if (parsedSections.error) {
+      return NextResponse.json({ error: parsedSections.error }, { status: 400 });
+    }
+
+    const hours = parsedHours.value as number;
+    const sections = parsedSections.value as Set<DiagnosticsSection>;
 
     const now = Math.floor(Date.now() / 1000);
     const since = now - hours * 3600;
