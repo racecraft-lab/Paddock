@@ -449,6 +449,32 @@ pnpm test:e2e         # Playwright E2E
 pnpm quality:gate     # All checks
 ```
 
+## Workload Signals Contract
+
+`GET /api/workload` returns a workload snapshot and one recommendation:
+
+- `normal`: system healthy, submit freely
+- `throttle`: reduce submission rate / defer non-critical work
+- `shed`: submit only critical work
+- `pause`: hold submissions until capacity returns
+
+Low-signal behavior:
+
+- `capacity.error_rate_5m` is clamped to `[0,1]`
+- `queue.estimated_wait_confidence` is `calculated` or `unknown`
+- queue breakdown maps include stable keys even when counts are zero
+
+Runtime-tunable thresholds:
+
+- `MC_WORKLOAD_QUEUE_DEPTH_NORMAL`
+- `MC_WORKLOAD_QUEUE_DEPTH_THROTTLE`
+- `MC_WORKLOAD_QUEUE_DEPTH_SHED`
+- `MC_WORKLOAD_BUSY_RATIO_THROTTLE`
+- `MC_WORKLOAD_BUSY_RATIO_SHED`
+- `MC_WORKLOAD_ERROR_RATE_THROTTLE`
+- `MC_WORKLOAD_ERROR_RATE_SHED`
+- `MC_WORKLOAD_RECENT_WINDOW_SECONDS`
+
 ## Agent Diagnostics Contract
 
 `GET /api/agents/{id}/diagnostics` is self-scoped by default.
