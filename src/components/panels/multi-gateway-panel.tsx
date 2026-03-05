@@ -93,13 +93,26 @@ export function MultiGatewayPanel() {
     fetchGateways()
   }
 
-  const connectTo = (gw: Gateway) => {
-    const wsUrl = buildGatewayWebSocketUrl({
-      host: gw.host,
-      port: gw.port,
-      browserProtocol: window.location.protocol,
-    })
-    connect(wsUrl, '') // token is handled by the gateway entry, not passed to frontend
+  const connectTo = async (gw: Gateway) => {
+    try {
+      const res = await fetch('/api/gateways/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: gw.id }),
+      })
+      if (!res.ok) return
+      const payload = await res.json()
+
+      const wsUrl = String(payload?.ws_url || buildGatewayWebSocketUrl({
+        host: gw.host,
+        port: gw.port,
+        browserProtocol: window.location.protocol,
+      }))
+      const token = String(payload?.token || '')
+      connect(wsUrl, token)
+    } catch {
+      // ignore: connection status will remain disconnected
+    }
   }
 
   const probeAll = async () => {

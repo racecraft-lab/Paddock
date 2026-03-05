@@ -38,6 +38,10 @@ export function buildGatewayWebSocketUrl(input: {
     try {
       const parsed = new URL(prefixed)
       parsed.protocol = normalizeProtocol(parsed.protocol)
+      // Users often paste dashboard/session URLs; websocket connect should target gateway root.
+      parsed.pathname = '/'
+      parsed.search = ''
+      parsed.hash = ''
       return parsed.toString().replace(/\/$/, '')
     } catch {
       return prefixed
