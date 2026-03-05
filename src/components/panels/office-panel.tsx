@@ -101,6 +101,13 @@ interface ThemePalette {
   glow: string
   corridor: string
   corridorStripe: string
+  atmosphere: string
+  shadowVeil: string
+  floorFilter: string
+  spriteFilter: string
+  roomTone: string
+  floorOpacityA: number
+  floorOpacityB: number
 }
 
 interface PersistedOfficePrefs {
@@ -879,41 +886,69 @@ export function OfficePanel() {
   const themePalette = useMemo<ThemePalette>(() => {
     if (timeTheme === 'dawn') {
       return {
-        shell: 'radial-gradient(circle at 20% 10%, rgba(214,141,89,0.55) 0, rgba(48,66,109,0.9) 45%, rgba(17,24,41,1) 100%)',
-        gridLine: 'rgba(255,198,151,0.13)',
-        haze: 'radial-gradient(circle at 50% 30%, rgba(255,188,137,0.2), transparent 62%)',
-        glow: 'linear-gradient(to bottom, rgba(255,255,255,0.06), transparent 34%, rgba(0,0,0,0.16))',
+        shell: 'radial-gradient(circle at 20% 10%, rgba(255,177,108,0.52) 0, rgba(78,82,132,0.9) 48%, rgba(19,24,41,1) 100%)',
+        gridLine: 'rgba(255,212,166,0.2)',
+        haze: 'radial-gradient(circle at 52% 26%, rgba(255,205,146,0.34), transparent 62%)',
+        glow: 'linear-gradient(to bottom, rgba(255,238,210,0.16), transparent 35%, rgba(0,0,0,0.2))',
         corridor: '#3f3f54',
         corridorStripe: '#ffca95',
+        atmosphere: 'radial-gradient(circle at 15% 8%, rgba(255,191,122,0.34), transparent 46%), radial-gradient(circle at 82% 18%, rgba(255,224,184,0.18), transparent 40%)',
+        shadowVeil: 'linear-gradient(to bottom, rgba(27,22,35,0.15), rgba(13,17,33,0.38))',
+        floorFilter: 'hue-rotate(-8deg) saturate(1.02) brightness(1.1) contrast(1.03)',
+        spriteFilter: 'hue-rotate(-4deg) saturate(1.04) brightness(1.05)',
+        roomTone: 'linear-gradient(to bottom right, rgba(255,219,167,0.2), rgba(82,67,96,0.12))',
+        floorOpacityA: 0.95,
+        floorOpacityB: 0.8,
       }
     }
     if (timeTheme === 'day') {
       return {
-        shell: 'radial-gradient(circle at 20% 10%, rgba(121,167,255,0.55) 0, rgba(33,62,112,0.9) 45%, rgba(13,22,40,1) 100%)',
-        gridLine: 'rgba(171,208,255,0.14)',
-        haze: 'radial-gradient(circle at 50% 30%, rgba(168,218,255,0.16), transparent 60%)',
-        glow: 'linear-gradient(to bottom, rgba(255,255,255,0.08), transparent 30%, rgba(0,0,0,0.12))',
+        shell: 'radial-gradient(circle at 20% 12%, rgba(164,203,255,0.48) 0, rgba(41,76,128,0.88) 46%, rgba(16,26,46,1) 100%)',
+        gridLine: 'rgba(183,218,255,0.24)',
+        haze: 'radial-gradient(circle at 52% 28%, rgba(196,236,255,0.25), transparent 58%)',
+        glow: 'linear-gradient(to bottom, rgba(255,255,255,0.14), transparent 30%, rgba(4,16,33,0.1))',
         corridor: '#3a4258',
         corridorStripe: '#b8d5ff',
+        atmosphere: 'radial-gradient(circle at 18% 5%, rgba(183,230,255,0.3), transparent 45%), radial-gradient(circle at 84% 16%, rgba(216,241,255,0.2), transparent 42%)',
+        shadowVeil: 'linear-gradient(to bottom, rgba(16,30,49,0.08), rgba(9,18,35,0.24))',
+        floorFilter: 'hue-rotate(6deg) saturate(1.08) brightness(1.2) contrast(1.04)',
+        spriteFilter: 'hue-rotate(4deg) saturate(1.08) brightness(1.08)',
+        roomTone: 'linear-gradient(to bottom right, rgba(196,236,255,0.18), rgba(81,116,171,0.08))',
+        floorOpacityA: 0.98,
+        floorOpacityB: 0.86,
       }
     }
     if (timeTheme === 'dusk') {
       return {
-        shell: 'radial-gradient(circle at 20% 10%, rgba(180,112,164,0.45) 0, rgba(35,43,84,0.92) 45%, rgba(10,14,28,1) 100%)',
-        gridLine: 'rgba(198,156,255,0.13)',
-        haze: 'radial-gradient(circle at 50% 30%, rgba(221,164,255,0.18), transparent 62%)',
-        glow: 'linear-gradient(to bottom, rgba(255,255,255,0.05), transparent 30%, rgba(0,0,0,0.2))',
+        shell: 'radial-gradient(circle at 20% 10%, rgba(222,129,187,0.44) 0, rgba(45,44,91,0.92) 47%, rgba(12,14,30,1) 100%)',
+        gridLine: 'rgba(224,169,255,0.2)',
+        haze: 'radial-gradient(circle at 48% 30%, rgba(247,172,220,0.24), transparent 62%)',
+        glow: 'linear-gradient(to bottom, rgba(255,220,245,0.1), transparent 30%, rgba(0,0,0,0.24))',
         corridor: '#413b58',
         corridorStripe: '#d7b0ff',
+        atmosphere: 'radial-gradient(circle at 14% 10%, rgba(255,160,198,0.27), transparent 44%), radial-gradient(circle at 85% 18%, rgba(198,150,255,0.18), transparent 40%)',
+        shadowVeil: 'linear-gradient(to bottom, rgba(29,20,46,0.18), rgba(9,9,24,0.42))',
+        floorFilter: 'hue-rotate(20deg) saturate(1.05) brightness(0.95) contrast(1.05)',
+        spriteFilter: 'hue-rotate(18deg) saturate(1.08) brightness(0.98)',
+        roomTone: 'linear-gradient(to bottom right, rgba(244,164,209,0.17), rgba(88,62,126,0.16))',
+        floorOpacityA: 0.9,
+        floorOpacityB: 0.75,
       }
     }
     return {
-      shell: 'radial-gradient(circle at 20% 10%, rgba(51,86,153,0.7) 0, rgba(13,20,36,0.95) 40%, rgba(9,13,24,1) 100%)',
-      gridLine: 'rgba(99,121,166,0.14)',
-      haze: 'radial-gradient(circle at 50% 30%, rgba(75,132,255,0.16), transparent 60%)',
-      glow: 'linear-gradient(to bottom, rgba(255,255,255,0.03), transparent 30%, rgba(0,0,0,0.18))',
+      shell: 'radial-gradient(circle at 22% 10%, rgba(57,93,161,0.72) 0, rgba(12,20,38,0.95) 42%, rgba(8,12,22,1) 100%)',
+      gridLine: 'rgba(115,139,191,0.2)',
+      haze: 'radial-gradient(circle at 50% 30%, rgba(89,148,255,0.19), transparent 60%)',
+      glow: 'linear-gradient(to bottom, rgba(240,248,255,0.05), transparent 30%, rgba(0,0,0,0.24))',
       corridor: '#303746',
       corridorStripe: '#9cc2ff',
+      atmosphere: 'radial-gradient(circle at 16% 7%, rgba(93,141,255,0.26), transparent 45%), radial-gradient(circle at 82% 15%, rgba(133,169,255,0.16), transparent 42%)',
+      shadowVeil: 'linear-gradient(to bottom, rgba(8,13,25,0.34), rgba(5,8,18,0.56))',
+      floorFilter: 'hue-rotate(26deg) saturate(0.9) brightness(0.72) contrast(1.1)',
+      spriteFilter: 'hue-rotate(18deg) saturate(0.94) brightness(0.84)',
+      roomTone: 'linear-gradient(to bottom right, rgba(94,133,207,0.17), rgba(19,27,52,0.24))',
+      floorOpacityA: 0.84,
+      floorOpacityB: 0.66,
     }
   }, [timeTheme])
 
@@ -1607,6 +1642,8 @@ export function OfficePanel() {
           >
             <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundImage: themePalette.haze }} />
             <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundImage: themePalette.glow }} />
+            <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundImage: themePalette.atmosphere, mixBlendMode: 'screen', opacity: 0.9 }} />
+            <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundImage: themePalette.shadowVeil }} />
 
             <div className="absolute left-[8%] top-[8%] rounded-md bg-black/55 border border-white/10 text-slate-100 text-xs px-2 py-1 font-mono z-30">
               MAIN FLOOR
@@ -1651,7 +1688,8 @@ export function OfficePanel() {
                       height: `${tile.h}%`,
                       backgroundImage: `url('/office-sprites/kenney/floorFull.png')`,
                       backgroundSize: '100% 100%',
-                      opacity: tile.sprite ? 0.9 : 0.76,
+                      opacity: tile.sprite ? themePalette.floorOpacityA : themePalette.floorOpacityB,
+                      filter: themePalette.floorFilter,
                     }}
                   />
                 ))}
@@ -1689,6 +1727,7 @@ export function OfficePanel() {
                     height: `${room.h}%`,
                     backgroundImage: `linear-gradient(to bottom right, rgba(255,255,255,0.04), rgba(0,0,0,0.1)), url('/office-sprites/kenney/floorFull.png')`,
                     backgroundSize: 'auto, 22% 22%',
+                    filter: themePalette.floorFilter,
                   }}
                   onClick={(event) => {
                     event.stopPropagation()
@@ -1712,7 +1751,7 @@ export function OfficePanel() {
                     })
                   }}
                 >
-                  <div className="absolute inset-0 bg-[linear-gradient(to_bottom_right,rgba(255,255,255,0.08),transparent_45%)] pointer-events-none" />
+                  <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: `${themePalette.roomTone}, linear-gradient(to bottom right, rgba(255,255,255,0.08), transparent 45%)` }} />
                   <div className="absolute left-2 top-1 rounded bg-black/55 border border-white/10 text-white text-[9px] px-1.5 py-0.5 font-mono uppercase tracking-wide">
                     {room.label}
                   </div>
@@ -1756,7 +1795,7 @@ export function OfficePanel() {
                     fill
                     unoptimized
                     className="object-contain opacity-95"
-                    style={{ imageRendering: 'pixelated' }}
+                    style={{ imageRendering: 'pixelated', filter: themePalette.spriteFilter }}
                     draggable={false}
                   />
                 </div>
@@ -1808,7 +1847,7 @@ export function OfficePanel() {
                         height={32}
                         unoptimized
                         className="w-16 h-9 object-contain opacity-95"
-                        style={{ imageRendering: 'pixelated' }}
+                        style={{ imageRendering: 'pixelated', filter: themePalette.spriteFilter }}
                         draggable={false}
                       />
                       <Image
@@ -1819,7 +1858,7 @@ export function OfficePanel() {
                         height={6}
                         unoptimized
                         className="absolute left-1/2 -translate-x-1/2 top-[6px] w-7 h-2 object-contain opacity-95"
-                        style={{ imageRendering: 'pixelated' }}
+                        style={{ imageRendering: 'pixelated', filter: themePalette.spriteFilter }}
                         draggable={false}
                       />
                     </div>
@@ -1851,6 +1890,7 @@ export function OfficePanel() {
                             return `${xPct}% ${yPct}%`
                           })(),
                           imageRendering: 'pixelated',
+                          filter: themePalette.spriteFilter,
                           transform: isMoving && Math.abs(direction.dx) > Math.abs(direction.dy) && direction.dx < 0 ? 'scaleX(-1)' : undefined,
                           transformOrigin: 'center',
                         }}
