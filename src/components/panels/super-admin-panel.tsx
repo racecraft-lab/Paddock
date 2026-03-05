@@ -63,16 +63,32 @@ interface GatewayOption {
   is_primary?: number
 }
 
+interface SchedulerTask {
+  id: string
+  name: string
+  enabled: boolean
+  lastRun: number | null
+  nextRun: number
+  running: boolean
+  lastResult?: {
+    ok: boolean
+    message: string
+    timestamp: number
+  }
+}
+
 const TENANT_PAGE_SIZE = 8
 const JOB_PAGE_SIZE = 8
 
 export function SuperAdminPanel() {
-  const { currentUser } = useMissionControl()
+  const { currentUser, dashboardMode } = useMissionControl()
+  const isLocal = dashboardMode === 'local'
 
   const [tenants, setTenants] = useState<TenantRow[]>([])
   const [jobs, setJobs] = useState<ProvisionJob[]>([])
   const [selectedJobId, setSelectedJobId] = useState<number | null>(null)
   const [selectedJobEvents, setSelectedJobEvents] = useState<ProvisionEvent[]>([])
+  const [localJobEvents, setLocalJobEvents] = useState<Record<number, ProvisionEvent[]>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null)
@@ -123,25 +139,96 @@ export function SuperAdminPanel() {
 
   const load = useCallback(async () => {
     try {
-      const [tenantsRes, jobsRes, gatewaysRes] = await Promise.all([
+      const [tenantsRes, jobsRes, gatewaysRes, schedulerRes] = await Promise.all([
         fetch('/api/super/tenants', { cache: 'no-store' }),
         fetch('/api/super/provision-jobs?limit=250', { cache: 'no-store' }),
         fetch('/api/gateways', { cache: 'no-store' }),
+        isLocal ? fetch('/api/scheduler', { cache: 'no-store' }) : Promise.resolve(null),
       ])
 
       const tenantsJson = await tenantsRes.json().catch(() => ({}))
       const jobsJson = await jobsRes.json().catch(() => ({}))
       const gatewaysJson = await gatewaysRes.json().catch(() => ({}))
+      const schedulerJson = schedulerRes ? await schedulerRes.json().catch(() => ({})) : {}
 
       if (!tenantsRes.ok) throw new Error(tenantsJson?.error || 'Failed to load tenants')
       if (!jobsRes.ok) throw new Error(jobsJson?.error || 'Failed to load provision jobs')
 
-      const tenantRows = Array.isArray(tenantsJson?.tenants) ? tenantsJson.tenants : []
-      const jobRows = Array.isArray(jobsJson?.jobs) ? jobsJson.jobs : []
+      let tenantRows = Array.isArray(tenantsJson?.tenants) ? tenantsJson.tenants : []
+      let jobRows = Array.isArray(jobsJson?.jobs) ? jobsJson.jobs : []
       const gatewayRows = Array.isArray(gatewaysJson?.gateways) ? gatewaysJson.gateways : []
+      const schedulerTasks: SchedulerTask[] = Array.isArray(schedulerJson?.tasks) ? schedulerJson.tasks : []
+      const localEvents: Record<number, ProvisionEvent[]> = {}
+
+      if (isLocal) {
+        if (tenantRows.length === 0) {
+          const primaryGateway = gatewayRows.find((gw: any) => Number(gw?.is_primary) === 1)
+          const now = Math.floor(Date.now() / 1000)
+          tenantRows = [{
+            id: -1,
+            slug: 'local-system',
+            display_name: 'Local Mission Control',
+            linux_user: currentUser?.username || 'local',
+            created_by: 'local',
+            owner_gateway: primaryGateway?.name || 'local',
+            status: 'active',
+            plan_tier: 'local',
+            gateway_port: Number(primaryGateway?.port || 0) || null,
+            dashboard_port: null,
+            created_at: now,
+            latest_job_id: null,
+            latest_job_status: null,
+          }]
+        }
+
+        if (jobRows.length === 0 && schedulerTasks.length > 0) {
+          jobRows = schedulerTasks.map((task, index) => {
+            const id = -1000 - index
+            const status = task.running
+              ? 'running'
+              : (!task.enabled ? 'cancelled' : (task.lastResult?.ok === false ? 'failed' : (task.lastRun ? 'completed' : 'queued')))
+            const eventRows: ProvisionEvent[] = []
+            if (task.lastResult) {
+              eventRows.push({
+                id: id * -10,
+                level: task.lastResult.ok ? 'info' : 'error',
+                step_key: task.id,
+                message: task.lastResult.message,
+                created_at: Math.floor(task.lastResult.timestamp / 1000),
+              })
+            }
+            eventRows.push({
+              id: id * -10 + 1,
+              level: 'info',
+              step_key: task.id,
+              message: `Next run: ${new Date(task.nextRun).toLocaleString()}`,
+              created_at: Math.floor(Date.now() / 1000),
+            })
+            localEvents[id] = eventRows
+
+            const lastRunSec = task.lastRun ? Math.floor(task.lastRun / 1000) : null
+            return {
+              id,
+              tenant_id: -1,
+              tenant_slug: 'local-system',
+              tenant_display_name: 'Local Mission Control',
+              job_type: 'automation',
+              status,
+              dry_run: 1,
+              requested_by: 'scheduler',
+              approved_by: null,
+              started_at: lastRunSec,
+              completed_at: status !== 'running' ? lastRunSec : null,
+              error_text: task.lastResult?.ok === false ? task.lastResult.message : null,
+              created_at: lastRunSec || Math.floor(task.nextRun / 1000),
+            } as ProvisionJob
+          })
+        }
+      }
 
       setTenants(tenantRows)
       setJobs(jobRows)
+      setLocalJobEvents(localEvents)
       setGatewayOptions(gatewayRows.map((g: any) => ({ id: Number(g.id), name: String(g.name), status: g.status, is_primary: g.is_primary })))
       setGatewayLoadError(gatewaysRes.ok ? null : (gatewaysJson?.error || 'Failed to load gateways'))
       setError(null)
@@ -150,9 +237,16 @@ export function SuperAdminPanel() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [currentUser?.username, isLocal])
 
   const loadJobDetail = useCallback(async (jobId: number) => {
+    if (isLocal && jobId < 0) {
+      setSelectedJobId(jobId)
+      setSelectedJobEvents(localJobEvents[jobId] || [])
+      setActiveTab('events')
+      return
+    }
+
     try {
       const res = await fetch(`/api/super/provision-jobs/${jobId}`, { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
@@ -163,7 +257,7 @@ export function SuperAdminPanel() {
     } catch (e: any) {
       showFeedback(false, e?.message || 'Failed to load job details')
     }
-  }, [])
+  }, [isLocal, localJobEvents])
 
   useEffect(() => {
     load()
@@ -406,7 +500,9 @@ export function SuperAdminPanel() {
         <div>
           <h2 className="text-lg font-semibold text-foreground">Super Mission Control</h2>
           <p className="text-sm text-muted-foreground">
-            Multi-tenant provisioning control plane with approval gates and safer destructive actions.
+            {isLocal
+              ? 'Local control plane view over scheduler automations and runtime state.'
+              : 'Multi-tenant provisioning control plane with approval gates and safer destructive actions.'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -645,21 +741,27 @@ export function SuperAdminPanel() {
                           )}
                         </td>
                         <td className="px-3 py-2 text-right relative">
-                          <button
-                            onClick={() => setOpenActionMenu((cur) => (cur === menuKey ? null : menuKey))}
-                            className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
-                          >
-                            Actions
-                          </button>
-                          {openActionMenu === menuKey && (
-                            <div className="absolute right-3 top-10 z-20 w-44 rounded-md border border-border bg-card shadow-xl text-left">
+                          {isLocal && tenant.id < 0 ? (
+                            <span className="text-[11px] text-muted-foreground">Local read-only</span>
+                          ) : (
+                            <>
                               <button
-                                onClick={() => openDecommissionDialog(tenant)}
-                                className="w-full px-3 py-2 text-xs text-red-300 hover:bg-red-500/10"
+                                onClick={() => setOpenActionMenu((cur) => (cur === menuKey ? null : menuKey))}
+                                className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
                               >
-                                Queue Decommission
+                                Actions
                               </button>
-                            </div>
+                              {openActionMenu === menuKey && (
+                                <div className="absolute right-3 top-10 z-20 w-44 rounded-md border border-border bg-card shadow-xl text-left">
+                                  <button
+                                    onClick={() => openDecommissionDialog(tenant)}
+                                    className="w-full px-3 py-2 text-xs text-red-300 hover:bg-red-500/10"
+                                  >
+                                    Queue Decommission
+                                  </button>
+                                </div>
+                              )}
+                            </>
                           )}
                         </td>
                       </tr>
@@ -758,42 +860,53 @@ export function SuperAdminPanel() {
                           <div>Appr: {job.approved_by || '-'}</div>
                         </td>
                         <td className="px-3 py-2 text-right relative">
-                          <button
-                            onClick={() => setOpenActionMenu((cur) => (cur === menuKey ? null : menuKey))}
-                            className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
-                          >
-                            Actions
-                          </button>
-                          {openActionMenu === menuKey && (
-                            <div className="absolute right-3 top-10 z-20 w-40 rounded-md border border-border bg-card shadow-xl text-left">
+                          {isLocal && job.id < 0 ? (
+                            <button
+                              onClick={() => loadJobDetail(job.id)}
+                              className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
+                            >
+                              View
+                            </button>
+                          ) : (
+                            <>
                               <button
-                                onClick={() => loadJobDetail(job.id)}
-                                className="w-full px-3 py-2 text-xs text-foreground hover:bg-secondary/40"
+                                onClick={() => setOpenActionMenu((cur) => (cur === menuKey ? null : menuKey))}
+                                className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
                               >
-                                View events
+                                Actions
                               </button>
-                              <button
-                                onClick={() => setJobState(job.id, 'approve')}
-                                disabled={busyJobId === job.id || !['queued', 'rejected', 'failed'].includes(job.status)}
-                                className="w-full px-3 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-40"
-                              >
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => setJobState(job.id, 'reject')}
-                                disabled={busyJobId === job.id || !['queued', 'approved', 'failed'].includes(job.status)}
-                                className="w-full px-3 py-2 text-xs text-amber-400 hover:bg-amber-500/10 disabled:opacity-40"
-                              >
-                                Reject
-                              </button>
-                              <button
-                                onClick={() => runJob(job.id)}
-                                disabled={busyJobId === job.id || job.status !== 'approved'}
-                                className="w-full px-3 py-2 text-xs text-primary hover:bg-primary/10 disabled:opacity-40"
-                              >
-                                {busyJobId === job.id ? 'Running...' : 'Run'}
-                              </button>
-                            </div>
+                              {openActionMenu === menuKey && (
+                                <div className="absolute right-3 top-10 z-20 w-40 rounded-md border border-border bg-card shadow-xl text-left">
+                                  <button
+                                    onClick={() => loadJobDetail(job.id)}
+                                    className="w-full px-3 py-2 text-xs text-foreground hover:bg-secondary/40"
+                                  >
+                                    View events
+                                  </button>
+                                  <button
+                                    onClick={() => setJobState(job.id, 'approve')}
+                                    disabled={busyJobId === job.id || !['queued', 'rejected', 'failed'].includes(job.status)}
+                                    className="w-full px-3 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-40"
+                                  >
+                                    Approve
+                                  </button>
+                                  <button
+                                    onClick={() => setJobState(job.id, 'reject')}
+                                    disabled={busyJobId === job.id || !['queued', 'approved', 'failed'].includes(job.status)}
+                                    className="w-full px-3 py-2 text-xs text-amber-400 hover:bg-amber-500/10 disabled:opacity-40"
+                                  >
+                                    Reject
+                                  </button>
+                                  <button
+                                    onClick={() => runJob(job.id)}
+                                    disabled={busyJobId === job.id || job.status !== 'approved'}
+                                    className="w-full px-3 py-2 text-xs text-primary hover:bg-primary/10 disabled:opacity-40"
+                                  >
+                                    {busyJobId === job.id ? 'Running...' : 'Run'}
+                                  </button>
+                                </div>
+                              )}
+                            </>
                           )}
                         </td>
                       </tr>

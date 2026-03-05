@@ -1,0 +1,4 @@
+Source: OpenGameArt - "Hero character sprite sheet" by Fry
+URL: https://opengameart.org/content/hero-character-sprite-sheet
+License: CC0 1.0 Universal
+Notes: Used for Virtual Office worker character rendering.

@@ -21,10 +21,13 @@ export async function POST(request: NextRequest) {
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const body = await request.json().catch(() => ({}))
-  const taskId = body.task_id
+  const taskId = typeof body?.task_id === 'string' ? body.task_id : ''
+  const allowedTaskIds = new Set(getSchedulerStatus().map((task) => task.id))
 
-  if (!taskId || !['auto_backup', 'auto_cleanup', 'agent_heartbeat'].includes(taskId)) {
-    return NextResponse.json({ error: 'task_id required: auto_backup, auto_cleanup, or agent_heartbeat' }, { status: 400 })
+  if (!taskId || !allowedTaskIds.has(taskId)) {
+    return NextResponse.json({
+      error: `task_id required: ${Array.from(allowedTaskIds).join(', ')}`,
+    }, { status: 400 })
   }
 
   const result = await triggerTask(taskId)

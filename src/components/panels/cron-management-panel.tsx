@@ -51,7 +51,8 @@ function formatDateLabel(date: Date): string {
 }
 
 export function CronManagementPanel() {
-  const { cronJobs, setCronJobs } = useMissionControl()
+  const { cronJobs, setCronJobs, dashboardMode } = useMissionControl()
+  const isLocalMode = dashboardMode === 'local'
   const [isLoading, setIsLoading] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedJob, setSelectedJob] = useState<CronJob | null>(null)
@@ -90,15 +91,40 @@ export function CronManagementPanel() {
   const loadCronJobs = useCallback(async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/cron?action=list')
-      const data = await response.json()
-      setCronJobs(data.jobs || [])
+      const cronResponse = await fetch('/api/cron?action=list')
+      const cronData = await cronResponse.json()
+      const cronList = Array.isArray(cronData.jobs) ? cronData.jobs : []
+
+      if (!isLocalMode) {
+        setCronJobs(cronList)
+        return
+      }
+
+      const schedulerResponse = await fetch('/api/scheduler')
+      const schedulerData = await schedulerResponse.json()
+      const schedulerTasks = Array.isArray(schedulerData.tasks) ? schedulerData.tasks : []
+      const mappedSchedulerJobs: CronJob[] = schedulerTasks.map((task: any) => ({
+        id: task.id,
+        name: task.name || task.id || 'scheduler-task',
+        schedule: 'system-managed automation',
+        command: `Built-in local automation (${task.id || 'unknown'})`,
+        agentId: 'mission-control-local',
+        delivery: 'local',
+        enabled: task.running ? true : !!task.enabled,
+        lastRun: typeof task.lastRun === 'number' ? task.lastRun : undefined,
+        nextRun: typeof task.nextRun === 'number' ? task.nextRun : undefined,
+        lastStatus: task.running
+          ? 'running'
+          : (task.lastResult?.ok === false ? 'error' : (task.lastResult?.ok === true ? 'success' : undefined)),
+      }))
+
+      setCronJobs([...cronList, ...mappedSchedulerJobs])
     } catch (error) {
       log.error('Failed to load cron jobs:', error)
     } finally {
       setIsLoading(false)
     }
-  }, [setCronJobs])
+  }, [isLocalMode, setCronJobs])
 
   useEffect(() => {
     loadCronJobs()
@@ -122,9 +148,44 @@ export function CronManagementPanel() {
     loadAvailableModels()
   }, [])
 
-  const loadJobLogs = async (jobName: string) => {
+  const loadJobLogs = async (job: CronJob) => {
+    const isLocalAutomation = (job.delivery === 'local' && job.agentId === 'mission-control-local')
+    if (isLocalAutomation) {
+      const logs: Array<{ timestamp: number; message: string; level: string }> = []
+      if (job.lastRun) {
+        logs.push({
+          timestamp: job.lastRun,
+          message: `Last run recorded for ${job.name}`,
+          level: job.lastStatus === 'error' ? 'error' : 'info',
+        })
+      }
+      if (job.lastError) {
+        logs.push({
+          timestamp: job.lastRun || Date.now(),
+          message: `Error: ${job.lastError}`,
+          level: 'error',
+        })
+      }
+      if (job.nextRun) {
+        logs.push({
+          timestamp: Date.now(),
+          message: `Next scheduled run: ${new Date(job.nextRun).toLocaleString()}`,
+          level: 'info',
+        })
+      }
+      if (logs.length === 0) {
+        logs.push({
+          timestamp: Date.now(),
+          message: 'No scheduler telemetry available yet for this local automation task',
+          level: 'info',
+        })
+      }
+      setJobLogs(logs)
+      return
+    }
+
     try {
-      const response = await fetch(`/api/cron?action=logs&job=${encodeURIComponent(jobName)}`)
+      const response = await fetch(`/api/cron?action=logs&job=${encodeURIComponent(job.name)}`)
       const data = await response.json()
       setJobLogs(data.logs || [])
     } catch (error) {
@@ -158,7 +219,24 @@ export function CronManagementPanel() {
   }
 
   const triggerJob = async (job: CronJob) => {
+    const isLocalAutomation = (job.delivery === 'local' && job.agentId === 'mission-control-local')
     try {
+      if (isLocalAutomation) {
+        const response = await fetch('/api/scheduler', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task_id: job.id }),
+        })
+        const result = await response.json()
+        if (response.ok && result.ok) {
+          alert(`Local automation executed: ${result.message}`)
+        } else {
+          alert(`Local automation failed: ${result.error || result.message || 'Unknown error'}`)
+        }
+        await loadCronJobs()
+        return
+      }
+
       const response = await fetch('/api/cron', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -253,7 +331,7 @@ export function CronManagementPanel() {
 
   const handleJobSelect = (job: CronJob) => {
     setSelectedJob(job)
-    loadJobLogs(job.name)
+    loadJobLogs(job)
   }
 
   const getStatusColor = (status?: string) => {
@@ -426,7 +504,11 @@ export function CronManagementPanel() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-semibold">Calendar View</h2>
-                <p className="text-sm text-muted-foreground">Interactive schedule across all matching cron jobs</p>
+                <p className="text-sm text-muted-foreground">
+                  {isLocalMode
+                    ? 'Read-only schedule visibility across local cron jobs and automations'
+                    : 'Interactive schedule across all matching cron jobs'}
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -647,10 +729,12 @@ export function CronManagementPanel() {
             </div>
           ) : (
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {cronJobs.map((job, index) => (
-                <div 
-                  key={`${job.name}-${index}`} 
-                  className={`border border-border rounded-lg p-4 cursor-pointer transition-colors ${
+                      {cronJobs.map((job, index) => {
+                        const isLocalAutomation = job.delivery === 'local' && job.agentId === 'mission-control-local'
+                        return (
+                        <div 
+                          key={`${job.name}-${index}`} 
+                          className={`border border-border rounded-lg p-4 cursor-pointer transition-colors ${
                     selectedJob?.name === job.name 
                       ? 'bg-primary/10 border-primary/30' 
                       : 'hover:bg-secondary'
@@ -665,13 +749,15 @@ export function CronManagementPanel() {
                         
                         {/* Job Type Tag */}
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-full border ${
+                          isLocalAutomation ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' :
                           job.name.includes('backup') ? 'bg-green-500/20 text-green-400 border-green-500/30' :
                           job.name.includes('alert') ? 'bg-orange-500/20 text-orange-400 border-orange-500/30' :
                           job.name.includes('brief') ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' :
                           job.name.includes('scan') ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' :
                           'bg-muted-foreground/10 text-muted-foreground border-muted-foreground/20'
                         }`}>
-                          {job.name.includes('backup') ? 'BACKUP' :
+                          {isLocalAutomation ? 'LOCAL AUTO' :
+                           job.name.includes('backup') ? 'BACKUP' :
                            job.name.includes('alert') ? 'ALERT' :
                            job.name.includes('brief') ? 'BRIEF' :
                            job.name.includes('scan') ? 'SCAN' :
@@ -712,11 +798,12 @@ export function CronManagementPanel() {
                           e.stopPropagation()
                           toggleJob(job)
                         }}
+                        disabled={isLocalAutomation}
                         className={`px-2 py-1 text-xs rounded ${
                           job.enabled 
                             ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' 
                             : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                        } transition-colors`}
+                        } transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         {job.enabled ? 'Disable' : 'Enable'}
                       </button>
@@ -734,6 +821,7 @@ export function CronManagementPanel() {
                           e.stopPropagation()
                           removeJob(job)
                         }}
+                        disabled={isLocalAutomation}
                         className="px-2 py-1 text-xs bg-red-500/20 text-red-400 hover:bg-red-500/30 rounded transition-colors"
                       >
                         Remove
@@ -741,7 +829,7 @@ export function CronManagementPanel() {
                     </div>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           )}
         </div>
@@ -763,6 +851,9 @@ export function CronManagementPanel() {
                     <div><span className="text-muted-foreground">Model:</span> <code className="font-mono text-xs">{selectedJob.model}</code></div>
                   )}
                   <div><span className="text-muted-foreground">Status:</span> {selectedJob.enabled ? '🟢 Enabled' : '🔴 Disabled'}</div>
+                  {selectedJob.delivery === 'local' && selectedJob.agentId === 'mission-control-local' && (
+                    <div><span className="text-muted-foreground">Source:</span> Local scheduler automation</div>
+                  )}
                   {selectedJob.nextRun && (
                     <div><span className="text-muted-foreground">Next run:</span> {new Date(selectedJob.nextRun).toLocaleString()}</div>
                   )}

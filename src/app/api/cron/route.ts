@@ -95,18 +95,6 @@ async function saveCronFile(data: OpenClawCronFile): Promise<boolean> {
   }
 }
 
-/** Deduplicate jobs by name — keep the latest (by createdAtMs) per unique name */
-function deduplicateJobs(jobs: OpenClawCronJob[]): OpenClawCronJob[] {
-  const latest = new Map<string, OpenClawCronJob>()
-  for (const job of jobs) {
-    const existing = latest.get(job.name)
-    if (!existing || (job.createdAtMs ?? 0) > (existing.createdAtMs ?? 0)) {
-      latest.set(job.name, job)
-    }
-  }
-  return [...latest.values()]
-}
-
 function mapLastStatus(status?: string): 'success' | 'error' | 'running' | undefined {
   if (!status) return undefined
   const s = status.toLowerCase()
@@ -157,7 +145,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ jobs: [] })
       }
 
-      const jobs = deduplicateJobs(cronFile.jobs).map(mapOpenClawJob)
+      const jobs = cronFile.jobs.map(mapOpenClawJob)
       return NextResponse.json({ jobs })
     }
 
