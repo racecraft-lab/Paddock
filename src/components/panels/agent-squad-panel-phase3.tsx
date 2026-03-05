@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { createClientLogger } from '@/lib/client-logger'
 import { AgentAvatar } from '@/components/ui/agent-avatar'
 import {
   OverviewTab,
@@ -12,6 +13,8 @@ import {
   ConfigTab,
   CreateAgentModal
 } from './agent-detail-tabs'
+
+const log = createClientLogger('AgentSquadPhase3')
 
 interface Agent {
   id: number
@@ -62,6 +65,13 @@ const statusColors: Record<string, string> = {
   error: 'bg-red-500',
 }
 
+const statusBadgeStyles: Record<string, string> = {
+  offline: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+  idle: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+  busy: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+  error: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+}
+
 const statusIcons: Record<string, string> = {
   offline: '-',
   idle: 'o',
@@ -86,7 +96,14 @@ export function AgentSquadPanelPhase3() {
     setSyncToast(null)
     try {
       const response = await fetch('/api/agents/sync', { method: 'POST' })
+      if (response.status === 401) {
+        window.location.assign('/login?next=%2Fagents')
+        return
+      }
       const data = await response.json()
+      if (response.status === 403) {
+        throw new Error('Admin access required for agent sync')
+      }
       if (!response.ok) throw new Error(data.error || 'Sync failed')
       setSyncToast(`Synced ${data.synced} agents (${data.created} new, ${data.updated} updated)`)
       fetchAgents()
@@ -106,7 +123,17 @@ export function AgentSquadPanelPhase3() {
       if (agents.length === 0) setLoading(true)
 
       const response = await fetch('/api/agents')
-      if (!response.ok) throw new Error('Failed to fetch agents')
+      if (response.status === 401) {
+        window.location.assign('/login?next=%2Fagents')
+        return
+      }
+      if (response.status === 403) {
+        throw new Error('Access denied')
+      }
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to fetch agents')
+      }
 
       const data = await response.json()
       setAgents(data.agents || [])
@@ -148,7 +175,7 @@ export function AgentSquadPanelPhase3() {
           : agent
       ))
     } catch (error) {
-      console.error('Failed to update agent status:', error)
+      log.error('Failed to update agent status:', error)
       setError('Failed to update agent status')
     }
   }
@@ -171,7 +198,7 @@ export function AgentSquadPanelPhase3() {
 
       await updateAgentStatus(agentName, 'idle', 'Manually woken via session')
     } catch (error) {
-      console.error('Failed to wake agent:', error)
+      log.error('Failed to wake agent:', error)
       setError('Failed to wake agent')
     }
   }
@@ -491,6 +518,17 @@ function AgentDetailModalPhase3({
   const [heartbeatData, setHeartbeatData] = useState<HeartbeatResponse | null>(null)
   const [loadingHeartbeat, setLoadingHeartbeat] = useState(false)
 
+  const formatLastSeen = (timestamp?: number) => {
+    if (!timestamp) return 'Never'
+    const diffMs = Date.now() - (timestamp * 1000)
+    const diffMinutes = Math.floor(diffMs / (1000 * 60))
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    if (diffMinutes < 1) return 'Just now'
+    if (diffMinutes < 60) return `${diffMinutes}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    return new Date(timestamp * 1000).toLocaleDateString()
+  }
+
   // Load SOUL templates
   useEffect(() => {
     const loadTemplates = async () => {
@@ -503,7 +541,7 @@ function AgentDetailModalPhase3({
           setSoulTemplates(data.templates || [])
         }
       } catch (error) {
-        console.error('Failed to load SOUL templates:', error)
+        log.error('Failed to load SOUL templates:', error)
       }
     }
     
@@ -522,7 +560,7 @@ function AgentDetailModalPhase3({
         setHeartbeatData(data)
       }
     } catch (error) {
-      console.error('Failed to perform heartbeat:', error)
+      log.error('Failed to perform heartbeat:', error)
     } finally {
       setLoadingHeartbeat(false)
     }
@@ -544,7 +582,7 @@ function AgentDetailModalPhase3({
       setEditing(false)
       onUpdate()
     } catch (error) {
-      console.error('Failed to update agent:', error)
+      log.error('Failed to update agent:', error)
     }
   }
 
@@ -564,7 +602,7 @@ function AgentDetailModalPhase3({
       setFormData(prev => ({ ...prev, soul_content: content }))
       onUpdate()
     } catch (error) {
-      console.error('Failed to update SOUL:', error)
+      log.error('Failed to update SOUL:', error)
     }
   }
 
@@ -585,49 +623,76 @@ function AgentDetailModalPhase3({
       setFormData(prev => ({ ...prev, working_memory: data.working_memory }))
       onUpdate()
     } catch (error) {
-      console.error('Failed to update memory:', error)
+      log.error('Failed to update memory:', error)
     }
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '#' },
-    { id: 'soul', label: 'SOUL', icon: '~' },
-    { id: 'memory', label: 'Memory', icon: '@' },
-    { id: 'tasks', label: 'Tasks', icon: '+' },
-    { id: 'config', label: 'Config', icon: '*' },
-    { id: 'activity', label: 'Activity', icon: '>' }
+    { id: 'overview', label: 'Overview', icon: 'O' },
+    { id: 'soul', label: 'SOUL', icon: 'S' },
+    { id: 'memory', label: 'Memory', icon: 'M' },
+    { id: 'tasks', label: 'Tasks', icon: 'T' },
+    { id: 'config', label: 'Config', icon: 'C' },
+    { id: 'activity', label: 'Activity', icon: 'A' }
   ]
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className="bg-card border border-border/80 rounded-xl shadow-2xl shadow-black/40 max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header */}
-        <div className="p-6 border-b border-border">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-xl font-bold text-foreground">{agent.name}</h3>
-              <p className="text-muted-foreground">{agent.role}</p>
+        <div className="p-6 border-b border-border bg-gradient-to-r from-surface-1 via-card to-surface-1">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex items-start gap-3 min-w-0">
+              <AgentAvatar name={agent.name} size="md" />
+              <div className="min-w-0">
+                <h3 className="text-2xl font-bold text-foreground leading-tight truncate">{agent.name}</h3>
+                <p className="text-muted-foreground mt-0.5 truncate">{agent.role}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <span className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border ${statusBadgeStyles[agent.status]}`}>
+                    <span className={`w-2 h-2 rounded-full ${statusColors[agent.status]}`} />
+                    {agent.status}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border border-border bg-surface-1 text-muted-foreground">
+                    Last seen {formatLastSeen(agent.last_seen)}
+                  </span>
+                  {agent.session_key && (
+                    <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
+                      Session active
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
             <div className="flex items-center gap-3">
-              <div className={`w-4 h-4 rounded-full ${statusColors[agent.status]}`}></div>
-              <span className="text-foreground">{agent.status}</span>
-              <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl transition-smooth">×</button>
+              <button
+                onClick={onClose}
+                aria-label="Close agent details"
+                className="h-9 w-9 inline-flex items-center justify-center rounded-md bg-secondary text-muted-foreground hover:bg-surface-2 hover:text-foreground transition-smooth"
+              >
+                ×
+              </button>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex gap-1 mt-4">
+          <div className="flex gap-1.5 mt-5 overflow-x-auto pb-1">
             {tabs.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2 text-sm rounded-md flex items-center gap-2 transition-smooth ${
+                className={`px-3.5 py-2 text-sm rounded-md border flex items-center gap-2 transition-smooth whitespace-nowrap ${
                   activeTab === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-muted-foreground hover:bg-surface-2'
+                    ? 'bg-primary/90 text-primary-foreground border-primary/60 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]'
+                    : 'bg-secondary/70 text-muted-foreground border-border/70 hover:bg-surface-2 hover:text-foreground'
                 }`}
               >
-                <span>{tab.icon}</span>
+                <span className="inline-flex h-4 w-4 items-center justify-center rounded-sm bg-black/20 text-[10px] font-semibold">{tab.icon}</span>
                 {tab.label}
               </button>
             ))}
@@ -746,7 +811,7 @@ function QuickSpawnModal({
         alert(result.error || 'Failed to spawn agent')
       }
     } catch (error) {
-      console.error('Spawn failed:', error)
+      log.error('Spawn failed:', error)
       alert('Network error occurred')
     } finally {
       setIsSpawning(false)

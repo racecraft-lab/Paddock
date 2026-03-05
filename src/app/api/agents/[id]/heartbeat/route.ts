@@ -180,7 +180,7 @@ export async function GET(
  * - connection_id: update direct_connections.last_heartbeat
  * - status: agent status override
  * - last_activity: activity description
- * - token_usage: { model, inputTokens, outputTokens } for inline token reporting
+ * - token_usage: { model, inputTokens, outputTokens, taskId? } for inline token reporting
  */
 export async function POST(
   request: NextRequest,
@@ -221,10 +221,35 @@ export async function POST(
 
     if (agent) {
       const sessionId = `${agent.name}:cli`;
+      const parsedTaskId =
+        token_usage.taskId != null && Number.isFinite(Number(token_usage.taskId))
+          ? Number(token_usage.taskId)
+          : null
+
+      let taskId: number | null = null
+      if (parsedTaskId && parsedTaskId > 0) {
+        const taskRow = db.prepare(
+          'SELECT id FROM tasks WHERE id = ? AND workspace_id = ?'
+        ).get(parsedTaskId, workspaceId) as { id?: number } | undefined
+        if (taskRow?.id) {
+          taskId = taskRow.id
+        } else {
+          logger.warn({ taskId: parsedTaskId, workspaceId, agent: agent.name }, 'Ignoring token usage with unknown taskId')
+        }
+      }
+
       db.prepare(
-        `INSERT INTO token_usage (model, session_id, input_tokens, output_tokens, created_at)
-         VALUES (?, ?, ?, ?, ?)`
-      ).run(token_usage.model, sessionId, token_usage.inputTokens, token_usage.outputTokens, now);
+        `INSERT INTO token_usage (model, session_id, input_tokens, output_tokens, created_at, workspace_id, task_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).run(
+        token_usage.model,
+        sessionId,
+        token_usage.inputTokens,
+        token_usage.outputTokens,
+        now,
+        workspaceId,
+        taskId
+      );
       tokenRecorded = true;
     }
   }

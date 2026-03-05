@@ -67,9 +67,9 @@ interface OpenClawCronFile {
 }
 
 function getCronFilePath(): string {
-  const openclawHome = config.openclawHome
-  if (!openclawHome) return ''
-  return path.join(openclawHome, 'cron', 'jobs.json')
+  const openclawStateDir = config.openclawStateDir
+  if (!openclawStateDir) return ''
+  return path.join(openclawStateDir, 'cron', 'jobs.json')
 }
 
 async function loadCronFile(): Promise<OpenClawCronFile | null> {

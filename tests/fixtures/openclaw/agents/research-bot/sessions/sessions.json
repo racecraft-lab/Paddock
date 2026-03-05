@@ -1,0 +1,15 @@
+{
+  "agent:research-bot:main": {
+    "sessionId": "sess-research-main",
+    "updatedAt": 4102444700000,
+    "chatType": "dm",
+    "lastChannel": "research",
+    "model": {
+      "primary": "anthropic/claude-sonnet-4-5"
+    },
+    "totalTokens": 12800,
+    "inputTokens": 8100,
+    "outputTokens": 4700,
+    "contextTokens": 64000
+  }
+}

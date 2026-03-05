@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: 'tests',
+  testIgnore: /openclaw-harness\.spec\.ts/,
   timeout: 60_000,
   expect: {
     timeout: 10_000
@@ -17,9 +18,23 @@ export default defineConfig({
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } }
   ],
   webServer: {
-    command: 'pnpm start',
+    command: 'node .next/standalone/server.js',
     url: 'http://127.0.0.1:3005',
     reuseExistingServer: true,
-    timeout: 30_000,
+    timeout: 120_000,
+    env: {
+      ...process.env,
+      HOSTNAME: process.env.HOSTNAME || '127.0.0.1',
+      PORT: process.env.PORT || '3005',
+      MC_DISABLE_RATE_LIMIT: process.env.MC_DISABLE_RATE_LIMIT || '1',
+      MC_WORKLOAD_QUEUE_DEPTH_THROTTLE: process.env.MC_WORKLOAD_QUEUE_DEPTH_THROTTLE || '1000',
+      MC_WORKLOAD_QUEUE_DEPTH_SHED: process.env.MC_WORKLOAD_QUEUE_DEPTH_SHED || '2000',
+      MC_WORKLOAD_ERROR_RATE_THROTTLE: process.env.MC_WORKLOAD_ERROR_RATE_THROTTLE || '1',
+      MC_WORKLOAD_ERROR_RATE_SHED: process.env.MC_WORKLOAD_ERROR_RATE_SHED || '1',
+      API_KEY: process.env.API_KEY || 'test-api-key-e2e-12345',
+      AUTH_USER: process.env.AUTH_USER || 'testadmin',
+      AUTH_PASS: process.env.AUTH_PASS || 'testpass1234!',
+      OPENCLAW_MEMORY_DIR: process.env.OPENCLAW_MEMORY_DIR || '.data/e2e-memory',
+    },
   }
 })

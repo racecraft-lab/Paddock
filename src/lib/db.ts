@@ -5,6 +5,7 @@ import { runMigrations } from './migrations';
 import { eventBus } from './event-bus';
 import { hashPassword } from './password';
 import { logger } from './logger';
+import { parseMentions as parseMentionTokens } from './mentions';
 
 // Database file location
 const DB_PATH = config.dbPath;
@@ -164,6 +165,11 @@ export interface Task {
   description?: string;
   status: 'inbox' | 'assigned' | 'in_progress' | 'review' | 'quality_review' | 'done';
   priority: 'low' | 'medium' | 'high' | 'urgent';
+  project_id?: number;
+  project_ticket_no?: number;
+  project_name?: string;
+  project_prefix?: string;
+  ticket_ref?: string;
   assigned_to?: string;
   created_by: string;
   created_at: number;
@@ -171,6 +177,13 @@ export interface Task {
   due_date?: number;
   estimated_hours?: number;
   actual_hours?: number;
+  outcome?: 'success' | 'failed' | 'partial' | 'abandoned';
+  error_message?: string;
+  resolution?: string;
+  feedback_rating?: number;
+  feedback_notes?: string;
+  retry_count?: number;
+  completed_at?: number;
   tags?: string; // JSON string
   metadata?: string; // JSON string
 }
@@ -363,15 +376,7 @@ export const db_helpers = {
    * Parse @mentions from text
    */
   parseMentions: (text: string): string[] => {
-    const mentionRegex = /@(\w+)/g;
-    const mentions: string[] = [];
-    let match;
-    
-    while ((match = mentionRegex.exec(text)) !== null) {
-      mentions.push(match[1]);
-    }
-    
-    return mentions;
+    return parseMentionTokens(text);
   },
 
   /**

@@ -1,5 +1,9 @@
 'use client'
 
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('DeviceIdentity')
+
 /**
  * Ed25519 device identity for OpenClaw gateway protocol v3 challenge-response.
  *
@@ -101,7 +105,7 @@ export async function getOrCreateDeviceIdentity(): Promise<DeviceIdentity> {
       }
     } catch {
       // Stored key corrupted — regenerate
-      console.warn('Device identity keys corrupted, regenerating...')
+      log.warn('Device identity keys corrupted, regenerating...')
     }
   }
 

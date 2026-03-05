@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useMissionControl } from '@/store'
 import { useWebSocket } from '@/lib/websocket'
+import { buildGatewayWebSocketUrl } from '@/lib/gateway-url'
 
 interface Gateway {
   id: number
@@ -35,12 +36,23 @@ interface DirectConnection {
   agent_role: string
 }
 
+interface GatewayHealthProbe {
+  id: number
+  name: string
+  status: 'online' | 'offline' | 'error'
+  latency: number | null
+  gateway_version?: string | null
+  compatibility_warning?: string
+  error?: string
+}
+
 export function MultiGatewayPanel() {
   const [gateways, setGateways] = useState<Gateway[]>([])
   const [directConnections, setDirectConnections] = useState<DirectConnection[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [probing, setProbing] = useState<number | null>(null)
+  const [healthByGatewayId, setHealthByGatewayId] = useState<Map<number, GatewayHealthProbe>>(new Map())
   const { connection } = useMissionControl()
   const { connect } = useWebSocket()
 
@@ -81,15 +93,38 @@ export function MultiGatewayPanel() {
     fetchGateways()
   }
 
-  const connectTo = (gw: Gateway) => {
-    const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const wsUrl = `${proto}://${gw.host}:${gw.port}`
-    connect(wsUrl, '') // token is handled by the gateway entry, not passed to frontend
+  const connectTo = async (gw: Gateway) => {
+    try {
+      const res = await fetch('/api/gateways/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: gw.id }),
+      })
+      if (!res.ok) return
+      const payload = await res.json()
+
+      const wsUrl = String(payload?.ws_url || buildGatewayWebSocketUrl({
+        host: gw.host,
+        port: gw.port,
+        browserProtocol: window.location.protocol,
+      }))
+      const token = String(payload?.token || '')
+      connect(wsUrl, token)
+    } catch {
+      // ignore: connection status will remain disconnected
+    }
   }
 
   const probeAll = async () => {
     try {
-      await fetch("/api/gateways/health", { method: "POST" })
+      const res = await fetch("/api/gateways/health", { method: "POST" })
+      const data = await res.json().catch(() => ({}))
+      const rows = Array.isArray(data?.results) ? data.results as GatewayHealthProbe[] : []
+      const mapped = new Map<number, GatewayHealthProbe>()
+      for (const row of rows) {
+        if (typeof row?.id === 'number') mapped.set(row.id, row)
+      }
+      setHealthByGatewayId(mapped)
     } catch { /* ignore */ }
     fetchGateways()
   }
@@ -172,8 +207,9 @@ export function MultiGatewayPanel() {
             <GatewayCard
               key={gw.id}
               gateway={gw}
+              health={healthByGatewayId.get(gw.id)}
               isProbing={probing === gw.id}
-              isCurrentlyConnected={connection.url?.includes(`:${gw.port}`) ?? false}
+              isCurrentlyConnected={(connection.url?.includes(gw.host) ?? false) || (connection.url?.includes(`:${gw.port}`) ?? false)}
               onSetPrimary={() => setPrimary(gw)}
               onDelete={() => deleteGateway(gw.id)}
               onConnect={() => connectTo(gw)}
@@ -250,8 +286,9 @@ export function MultiGatewayPanel() {
   )
 }
 
-function GatewayCard({ gateway, isProbing, isCurrentlyConnected, onSetPrimary, onDelete, onConnect, onProbe }: {
+function GatewayCard({ gateway, health, isProbing, isCurrentlyConnected, onSetPrimary, onDelete, onConnect, onProbe }: {
   gateway: Gateway
+  health?: GatewayHealthProbe
   isProbing: boolean
   isCurrentlyConnected: boolean
   onSetPrimary: () => void
@@ -269,6 +306,7 @@ function GatewayCard({ gateway, isProbing, isCurrentlyConnected, onSetPrimary, o
   const lastSeen = gateway.last_seen
     ? new Date(gateway.last_seen * 1000).toLocaleString()
     : 'Never probed'
+  const compatibilityWarning = health?.compatibility_warning
 
   return (
     <div className={`bg-card border rounded-lg p-4 transition-smooth ${
@@ -296,6 +334,16 @@ function GatewayCard({ gateway, isProbing, isCurrentlyConnected, onSetPrimary, o
             {gateway.latency != null && <span>Latency: {gateway.latency}ms</span>}
             <span>Last: {lastSeen}</span>
           </div>
+          {health?.gateway_version && (
+            <div className="mt-1 text-2xs text-muted-foreground">
+              Gateway version: <span className="font-mono text-foreground/80">{health.gateway_version}</span>
+            </div>
+          )}
+          {compatibilityWarning && (
+            <div className="mt-1.5 text-2xs rounded border border-amber-500/30 bg-amber-500/10 text-amber-300 px-2 py-1">
+              {compatibilityWarning}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
           <button

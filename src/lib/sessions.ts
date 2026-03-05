@@ -19,24 +19,12 @@ export interface GatewaySession {
   active: boolean
 }
 
-/**
- * Read all sessions from OpenClaw agent session stores on disk.
- *
- * OpenClaw stores sessions per-agent at:
- *   {OPENCLAW_HOME}/agents/{agentName}/sessions/sessions.json
- *
- * Each file is a JSON object keyed by session key (e.g. "agent:<agent>:main")
- * with session metadata as values.
- */
-export function getAllGatewaySessions(activeWithinMs = 60 * 60 * 1000): GatewaySession[] {
-  const openclawHome = config.openclawHome
-  if (!openclawHome) return []
+function getGatewaySessionStoreFiles(): string[] {
+  const openclawStateDir = config.openclawStateDir
+  if (!openclawStateDir) return []
 
-  const agentsDir = path.join(openclawHome, 'agents')
+  const agentsDir = path.join(openclawStateDir, 'agents')
   if (!fs.existsSync(agentsDir)) return []
-
-  const sessions: GatewaySession[] = []
-  const now = Date.now()
 
   let agentDirs: string[]
   try {
@@ -45,10 +33,33 @@ export function getAllGatewaySessions(activeWithinMs = 60 * 60 * 1000): GatewayS
     return []
   }
 
+  const files: string[] = []
   for (const agentName of agentDirs) {
     const sessionsFile = path.join(agentsDir, agentName, 'sessions', 'sessions.json')
     try {
-      if (!fs.statSync(sessionsFile).isFile()) continue
+      if (fs.statSync(sessionsFile).isFile()) files.push(sessionsFile)
+    } catch {
+      // Skip missing or unreadable session stores.
+    }
+  }
+  return files
+}
+
+/**
+ * Read all sessions from OpenClaw agent session stores on disk.
+ *
+ * OpenClaw stores sessions per-agent at:
+ *   {OPENCLAW_STATE_DIR}/agents/{agentName}/sessions/sessions.json
+ *
+ * Each file is a JSON object keyed by session key (e.g. "agent:<agent>:main")
+ * with session metadata as values.
+ */
+export function getAllGatewaySessions(activeWithinMs = 60 * 60 * 1000): GatewaySession[] {
+  const sessions: GatewaySession[] = []
+  const now = Date.now()
+  for (const sessionsFile of getGatewaySessionStoreFiles()) {
+    const agentName = path.basename(path.dirname(path.dirname(sessionsFile)))
+    try {
       const raw = fs.readFileSync(sessionsFile, 'utf-8')
       const data = JSON.parse(raw)
 
@@ -78,6 +89,64 @@ export function getAllGatewaySessions(activeWithinMs = 60 * 60 * 1000): GatewayS
   // Sort by most recently updated first
   sessions.sort((a, b) => b.updatedAt - a.updatedAt)
   return sessions
+}
+
+export function countStaleGatewaySessions(retentionDays: number): number {
+  if (!Number.isFinite(retentionDays) || retentionDays <= 0) return 0
+  const cutoff = Date.now() - retentionDays * 86400000
+  let stale = 0
+
+  for (const sessionsFile of getGatewaySessionStoreFiles()) {
+    try {
+      const raw = fs.readFileSync(sessionsFile, 'utf-8')
+      const data = JSON.parse(raw) as Record<string, any>
+      for (const entry of Object.values(data)) {
+        const updatedAt = Number((entry as any)?.updatedAt || 0)
+        if (updatedAt > 0 && updatedAt < cutoff) stale += 1
+      }
+    } catch {
+      // Ignore malformed session stores.
+    }
+  }
+
+  return stale
+}
+
+export function pruneGatewaySessionsOlderThan(retentionDays: number): { deleted: number; filesTouched: number } {
+  if (!Number.isFinite(retentionDays) || retentionDays <= 0) return { deleted: 0, filesTouched: 0 }
+  const cutoff = Date.now() - retentionDays * 86400000
+  let deleted = 0
+  let filesTouched = 0
+
+  for (const sessionsFile of getGatewaySessionStoreFiles()) {
+    try {
+      const raw = fs.readFileSync(sessionsFile, 'utf-8')
+      const data = JSON.parse(raw) as Record<string, any>
+      const nextEntries: Record<string, any> = {}
+      let fileDeleted = 0
+
+      for (const [key, entry] of Object.entries(data)) {
+        const updatedAt = Number((entry as any)?.updatedAt || 0)
+        if (updatedAt > 0 && updatedAt < cutoff) {
+          fileDeleted += 1
+          continue
+        }
+        nextEntries[key] = entry
+      }
+
+      if (fileDeleted > 0) {
+        const tempPath = `${sessionsFile}.tmp`
+        fs.writeFileSync(tempPath, `${JSON.stringify(nextEntries, null, 2)}\n`, 'utf-8')
+        fs.renameSync(tempPath, sessionsFile)
+        deleted += fileDeleted
+        filesTouched += 1
+      }
+    } catch {
+      // Ignore malformed/unwritable session stores.
+    }
+  }
+
+  return { deleted, filesTouched }
 }
 
 /**

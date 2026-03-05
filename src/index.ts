@@ -87,6 +87,11 @@ export interface Task {
   description?: string
   status: 'inbox' | 'assigned' | 'in_progress' | 'review' | 'quality_review' | 'done'
   priority: 'low' | 'medium' | 'high' | 'urgent'
+  project_id?: number
+  project_ticket_no?: number
+  project_name?: string
+  project_prefix?: string
+  ticket_ref?: string
   assigned_to?: string
   created_by: string
   created_at: number
@@ -94,6 +99,13 @@ export interface Task {
   due_date?: number
   estimated_hours?: number
   actual_hours?: number
+  outcome?: 'success' | 'failed' | 'partial' | 'abandoned'
+  error_message?: string
+  resolution?: string
+  feedback_rating?: number
+  feedback_notes?: string
+  retry_count?: number
+  completed_at?: number
   tags?: string[]
   metadata?: any
 }

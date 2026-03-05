@@ -3,11 +3,41 @@ import os from 'node:os'
 import path from 'node:path'
 
 const defaultDataDir = path.join(process.cwd(), '.data')
-const openclawHome =
+const defaultOpenClawStateDir = path.join(os.homedir(), '.openclaw')
+const explicitOpenClawConfigPath =
+  process.env.OPENCLAW_CONFIG_PATH ||
+  process.env.MISSION_CONTROL_OPENCLAW_CONFIG_PATH ||
+  ''
+const legacyOpenClawHome =
   process.env.OPENCLAW_HOME ||
   process.env.CLAWDBOT_HOME ||
   process.env.MISSION_CONTROL_OPENCLAW_HOME ||
   ''
+const openclawStateDir =
+  process.env.OPENCLAW_STATE_DIR ||
+  process.env.CLAWDBOT_STATE_DIR ||
+  legacyOpenClawHome ||
+  (explicitOpenClawConfigPath ? path.dirname(explicitOpenClawConfigPath) : defaultOpenClawStateDir)
+const openclawConfigPath =
+  explicitOpenClawConfigPath ||
+  path.join(openclawStateDir, 'openclaw.json')
+const openclawWorkspaceDir =
+  process.env.OPENCLAW_WORKSPACE_DIR ||
+  process.env.MISSION_CONTROL_WORKSPACE_DIR ||
+  (openclawStateDir ? path.join(openclawStateDir, 'workspace') : '')
+const defaultMemoryDir = (() => {
+  if (process.env.OPENCLAW_MEMORY_DIR) return process.env.OPENCLAW_MEMORY_DIR
+  // Prefer OpenClaw workspace memory context (daily notes + knowledge-base)
+  // when available; fallback to legacy sqlite memory path.
+  if (
+    openclawWorkspaceDir &&
+    (fs.existsSync(path.join(openclawWorkspaceDir, 'memory')) ||
+      fs.existsSync(path.join(openclawWorkspaceDir, 'knowledge-base')))
+  ) {
+    return openclawWorkspaceDir
+  }
+  return (openclawStateDir ? path.join(openclawStateDir, 'memory') : '') || path.join(defaultDataDir, 'memory')
+})()
 
 export const config = {
   claudeHome:
@@ -20,22 +50,26 @@ export const config = {
   tokensPath:
     process.env.MISSION_CONTROL_TOKENS_PATH ||
     path.join(defaultDataDir, 'mission-control-tokens.json'),
-  openclawHome,
+  // Keep openclawHome as a legacy alias for existing code paths.
+  openclawHome: openclawStateDir,
+  openclawStateDir,
+  openclawConfigPath,
   openclawBin: process.env.OPENCLAW_BIN || 'openclaw',
   clawdbotBin: process.env.CLAWDBOT_BIN || 'clawdbot',
   gatewayHost: process.env.OPENCLAW_GATEWAY_HOST || '127.0.0.1',
   gatewayPort: Number(process.env.OPENCLAW_GATEWAY_PORT || '18789'),
   logsDir:
     process.env.OPENCLAW_LOG_DIR ||
-    (openclawHome ? path.join(openclawHome, 'logs') : ''),
+    (openclawStateDir ? path.join(openclawStateDir, 'logs') : ''),
   tempLogsDir: process.env.CLAWDBOT_TMP_LOG_DIR || '',
-  memoryDir:
-    process.env.OPENCLAW_MEMORY_DIR ||
-    (openclawHome ? path.join(openclawHome, 'memory') : '') ||
-    path.join(defaultDataDir, 'memory'),
+  memoryDir: defaultMemoryDir,
+  memoryAllowedPrefixes:
+    defaultMemoryDir === openclawWorkspaceDir
+      ? ['memory/', 'knowledge-base/']
+      : [],
   soulTemplatesDir:
     process.env.OPENCLAW_SOUL_TEMPLATES_DIR ||
-    (openclawHome ? path.join(openclawHome, 'templates', 'souls') : ''),
+    (openclawStateDir ? path.join(openclawStateDir, 'templates', 'souls') : ''),
   homeDir: os.homedir(),
   // Data retention (days). 0 = keep forever.
   retention: {
@@ -45,6 +79,7 @@ export const config = {
     notifications: Number(process.env.MC_RETAIN_NOTIFICATIONS_DAYS || '60'),
     pipelineRuns: Number(process.env.MC_RETAIN_PIPELINE_RUNS_DAYS || '90'),
     tokenUsage: Number(process.env.MC_RETAIN_TOKEN_USAGE_DAYS || '90'),
+    gatewaySessions: Number(process.env.MC_RETAIN_GATEWAY_SESSIONS_DAYS || '90'),
   },
 }
 

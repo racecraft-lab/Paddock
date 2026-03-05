@@ -52,6 +52,22 @@ function applySecurityHeaders(response: NextResponse): NextResponse {
   return response
 }
 
+function extractApiKeyFromRequest(request: NextRequest): string {
+  const direct = (request.headers.get('x-api-key') || '').trim()
+  if (direct) return direct
+
+  const authorization = (request.headers.get('authorization') || '').trim()
+  if (!authorization) return ''
+
+  const [scheme, ...rest] = authorization.split(/\s+/)
+  if (!scheme || rest.length === 0) return ''
+  const normalized = scheme.toLowerCase()
+  if (normalized === 'bearer' || normalized === 'apikey' || normalized === 'token') {
+    return rest.join(' ').trim()
+  }
+  return ''
+}
+
 export function proxy(request: NextRequest) {
   // Network access control.
   // In production: default-deny unless explicitly allowed.
@@ -63,7 +79,8 @@ export function proxy(request: NextRequest) {
     .map((s) => s.trim())
     .filter(Boolean)
 
-  const isAllowedHost = allowAnyHost || allowedPatterns.some((p) => hostMatches(p, hostName))
+  const enforceAllowlist = !allowAnyHost && allowedPatterns.length > 0
+  const isAllowedHost = !enforceAllowlist || allowedPatterns.some((p) => hostMatches(p, hostName))
 
   if (!isAllowedHost) {
     return new NextResponse('Forbidden', { status: 403 })
@@ -97,8 +114,10 @@ export function proxy(request: NextRequest) {
 
   // API routes: accept session cookie OR API key
   if (pathname.startsWith('/api/')) {
-    const apiKey = request.headers.get('x-api-key')
-    if (sessionToken || (apiKey && safeCompare(apiKey, process.env.API_KEY || ''))) {
+    const configuredApiKey = (process.env.API_KEY || '').trim()
+    const apiKey = extractApiKeyFromRequest(request)
+    const hasValidApiKey = Boolean(configuredApiKey && apiKey && safeCompare(apiKey, configuredApiKey))
+    if (sessionToken || hasValidApiKey) {
       return applySecurityHeaders(NextResponse.next())
     }
 

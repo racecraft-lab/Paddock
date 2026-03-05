@@ -1,10 +1,18 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+
+import { createClientLogger } from '@/lib/client-logger'
+
+import { useFocusTrap } from '@/lib/use-focus-trap'
+
 import { AgentAvatar } from '@/components/ui/agent-avatar'
 import { MarkdownRenderer } from '@/components/markdown-renderer'
+
+const log = createClientLogger('TaskBoard')
 
 interface Task {
   id: number
@@ -22,6 +30,11 @@ interface Task {
   tags?: string[]
   metadata?: any
   aegisApproved?: boolean
+  project_id?: number
+  project_ticket_no?: number
+  project_name?: string
+  project_prefix?: string
+  ticket_ref?: string
 }
 
 interface Agent {
@@ -48,6 +61,22 @@ interface Comment {
   replies?: Comment[]
 }
 
+interface Project {
+  id: number
+  name: string
+  slug: string
+  ticket_prefix: string
+  status: 'active' | 'archived'
+}
+
+interface MentionOption {
+  handle: string
+  recipient: string
+  type: 'user' | 'agent'
+  display: string
+  role?: string
+}
+
 const statusColumns = [
   { key: 'inbox', title: 'Inbox', color: 'bg-secondary text-foreground' },
   { key: 'assigned', title: 'Assigned', color: 'bg-blue-500/20 text-blue-400' },
@@ -64,16 +93,188 @@ const priorityColors: Record<string, string> = {
   critical: 'border-red-500',
 }
 
+function useMentionTargets() {
+  const [mentionTargets, setMentionTargets] = useState<MentionOption[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      try {
+        const response = await fetch('/api/mentions?limit=200')
+        if (!response.ok) return
+        const data = await response.json()
+        if (!cancelled) setMentionTargets(data.mentions || [])
+      } catch {
+        // mention autocomplete is non-critical
+      }
+    }
+    run()
+    return () => { cancelled = true }
+  }, [])
+
+  return mentionTargets
+}
+
+function MentionTextarea({
+  id,
+  value,
+  onChange,
+  rows = 3,
+  placeholder,
+  className,
+  mentionTargets,
+}: {
+  id?: string
+  value: string
+  onChange: (next: string) => void
+  rows?: number
+  placeholder?: string
+  className?: string
+  mentionTargets: MentionOption[]
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [open, setOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [query, setQuery] = useState('')
+  const [range, setRange] = useState<{ start: number; end: number } | null>(null)
+
+  const filtered = mentionTargets
+    .filter((target) => {
+      if (!query) return true
+      const q = query.toLowerCase()
+      return target.handle.includes(q) || target.display.toLowerCase().includes(q)
+    })
+    .slice(0, 8)
+
+  const detectMentionQuery = (nextValue: string, caret: number) => {
+    const left = nextValue.slice(0, caret)
+    const match = left.match(/(?:^|[^\w.-])@([A-Za-z0-9._-]{0,63})$/)
+    if (!match) {
+      setOpen(false)
+      setQuery('')
+      setRange(null)
+      return
+    }
+    const matched = match[1] || ''
+    const start = caret - matched.length - 1
+    setQuery(matched)
+    setRange({ start, end: caret })
+    setActiveIndex(0)
+    setOpen(true)
+  }
+
+  const insertMention = (option: MentionOption) => {
+    if (!range) return
+    const next = `${value.slice(0, range.start)}@${option.handle} ${value.slice(range.end)}`
+    onChange(next)
+    setOpen(false)
+    setQuery('')
+    const cursor = range.start + option.handle.length + 2
+    requestAnimationFrame(() => {
+      const node = textareaRef.current
+      if (!node) return
+      node.focus()
+      node.setSelectionRange(cursor, cursor)
+    })
+  }
+
+  return (
+    <div className="relative">
+      <textarea
+        id={id}
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => {
+          const nextValue = e.target.value
+          onChange(nextValue)
+          detectMentionQuery(nextValue, e.target.selectionStart || 0)
+        }}
+        onClick={(e) => detectMentionQuery(value, (e.target as HTMLTextAreaElement).selectionStart || 0)}
+        onKeyUp={(e) => detectMentionQuery(value, (e.target as HTMLTextAreaElement).selectionStart || 0)}
+        onKeyDown={(e) => {
+          if (!open || filtered.length === 0) return
+          if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            setActiveIndex((prev) => (prev + 1) % filtered.length)
+            return
+          }
+          if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            setActiveIndex((prev) => (prev - 1 + filtered.length) % filtered.length)
+            return
+          }
+          if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault()
+            insertMention(filtered[activeIndex])
+            return
+          }
+          if (e.key === 'Escape') {
+            setOpen(false)
+          }
+        }}
+        rows={rows}
+        placeholder={placeholder}
+        className={className}
+      />
+      {open && filtered.length > 0 && (
+        <div className="absolute z-[60] mt-1 w-full bg-surface-1 border border-border rounded-md shadow-xl max-h-56 overflow-y-auto">
+          {filtered.map((option, index) => (
+            <button
+              key={`${option.type}-${option.handle}-${option.recipient}`}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault()
+                insertMention(option)
+              }}
+              className={`w-full text-left px-3 py-2 text-xs border-b last:border-b-0 border-border/40 ${
+                index === activeIndex ? 'bg-primary/20 text-primary' : 'text-foreground hover:bg-surface-2'
+              }`}
+            >
+              <div className="font-mono">@{option.handle}</div>
+              <div className="text-muted-foreground">
+                {option.display} • {option.type}{option.role ? ` • ${option.role}` : ''}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function TaskBoardPanel() {
   const { tasks: storeTasks, setTasks: storeSetTasks, selectedTask, setSelectedTask } = useMissionControl()
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [agents, setAgents] = useState<Agent[]>([])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [projectFilter, setProjectFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [aegisMap, setAegisMap] = useState<Record<number, boolean>>({})
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showProjectManager, setShowProjectManager] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const dragCounter = useRef(0)
+  const selectedTaskIdFromUrl = Number.parseInt(searchParams.get('taskId') || '', 10)
+
+  const updateTaskUrl = useCallback((taskId: number | null, mode: 'push' | 'replace' = 'push') => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (typeof taskId === 'number' && Number.isFinite(taskId)) {
+      params.set('taskId', String(taskId))
+    } else {
+      params.delete('taskId')
+    }
+    const query = params.toString()
+    const href = query ? `${pathname}?${query}` : pathname
+    if (mode === 'replace') {
+      router.replace(href)
+      return
+    }
+    router.push(href)
+  }, [pathname, router, searchParams])
 
   // Augment store tasks with aegisApproved flag (computed, not stored)
   const tasks: Task[] = storeTasks.map(t => ({
@@ -81,23 +282,31 @@ export function TaskBoardPanel() {
     aegisApproved: Boolean(aegisMap[t.id])
   }))
 
-  // Fetch tasks and agents
+  // Fetch tasks, agents, and projects
   const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const [tasksResponse, agentsResponse] = await Promise.all([
-        fetch('/api/tasks'),
-        fetch('/api/agents')
+      const tasksQuery = new URLSearchParams()
+      if (projectFilter !== 'all') {
+        tasksQuery.set('project_id', projectFilter)
+      }
+      const tasksUrl = tasksQuery.toString() ? `/api/tasks?${tasksQuery.toString()}` : '/api/tasks'
+
+      const [tasksResponse, agentsResponse, projectsResponse] = await Promise.all([
+        fetch(tasksUrl),
+        fetch('/api/agents'),
+        fetch('/api/projects')
       ])
 
-      if (!tasksResponse.ok || !agentsResponse.ok) {
+      if (!tasksResponse.ok || !agentsResponse.ok || !projectsResponse.ok) {
         throw new Error('Failed to fetch data')
       }
 
       const tasksData = await tasksResponse.json()
       const agentsData = await agentsResponse.json()
+      const projectsData = await projectsResponse.json()
 
       const tasksList = tasksData.tasks || []
       const taskIds = tasksList.map((task: Task) => task.id)
@@ -124,16 +333,37 @@ export function TaskBoardPanel() {
       storeSetTasks(tasksList)
       setAegisMap(newAegisMap)
       setAgents(agentsData.agents || [])
+      setProjects(projectsData.projects || [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
     }
-  }, [storeSetTasks])
+  }, [projectFilter, storeSetTasks])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    if (!Number.isFinite(selectedTaskIdFromUrl)) {
+      if (selectedTask) setSelectedTask(null)
+      return
+    }
+
+    const match = tasks.find((task) => task.id === selectedTaskIdFromUrl)
+    if (match) {
+      if (selectedTask?.id !== match.id) {
+        setSelectedTask(match)
+      }
+      return
+    }
+
+    if (!loading) {
+      setError(`Task #${selectedTaskIdFromUrl} not found in current workspace`)
+      setSelectedTask(null)
+    }
+  }, [loading, selectedTask, selectedTaskIdFromUrl, setSelectedTask, tasks])
 
   // Poll as SSE fallback — pauses when SSE is delivering events
   useSmartPoll(fetchData, 30000, { pauseWhenSseConnected: true })
@@ -268,8 +498,8 @@ export function TaskBoardPanel() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-64" role="status" aria-live="polite">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" aria-hidden="true"></div>
         <span className="ml-2 text-muted-foreground">Loading tasks...</span>
       </div>
     )
@@ -279,8 +509,28 @@ export function TaskBoardPanel() {
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-center p-4 border-b border-border flex-shrink-0">
-        <h2 className="text-xl font-bold text-foreground">Task Board</h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-xl font-bold text-foreground">Task Board</h2>
+          <select
+            value={projectFilter}
+            onChange={(e) => setProjectFilter(e.target.value)}
+            className="h-9 px-3 bg-surface-1 text-foreground border border-border rounded-md text-sm"
+          >
+            <option value="all">All Projects</option>
+            {projects.map((project) => (
+              <option key={project.id} value={String(project.id)}>
+                {project.name} ({project.ticket_prefix})
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="flex gap-2">
+          <button
+            onClick={() => setShowProjectManager(true)}
+            className="px-4 py-2 bg-secondary text-muted-foreground rounded-md hover:bg-surface-2 transition-smooth text-sm font-medium"
+          >
+            Projects
+          </button>
           <button
             onClick={() => setShowCreateModal(true)}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-smooth text-sm font-medium"
@@ -298,11 +548,12 @@ export function TaskBoardPanel() {
 
       {/* Error Display */}
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 m-4 rounded-lg text-sm flex items-center justify-between">
+        <div role="alert" className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 m-4 rounded-lg text-sm flex items-center justify-between">
           <span>{error}</span>
           <button
             onClick={() => setError(null)}
             className="text-red-400/60 hover:text-red-400 ml-2"
+            aria-label="Dismiss error"
           >
             ×
           </button>
@@ -310,10 +561,12 @@ export function TaskBoardPanel() {
       )}
 
       {/* Kanban Board */}
-      <div className="flex-1 flex gap-4 p-4 overflow-x-auto">
+      <div className="flex-1 flex gap-4 p-4 overflow-x-auto" role="region" aria-label="Task board">
         {statusColumns.map(column => (
           <div
             key={column.key}
+            role="region"
+            aria-label={`${column.title} column, ${tasksByStatus[column.key]?.length || 0} tasks`}
             className="flex-1 min-w-80 bg-card border border-border rounded-lg flex flex-col"
             onDragEnter={(e) => handleDragEnter(e, column.key)}
             onDragLeave={handleDragLeave}
@@ -334,8 +587,21 @@ export function TaskBoardPanel() {
                 <div
                   key={task.id}
                   draggable
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${task.title}, ${task.priority} priority, ${task.status}`}
                   onDragStart={(e) => handleDragStart(e, task)}
-                  onClick={() => setSelectedTask(task)}
+                  onClick={() => {
+                    setSelectedTask(task)
+                    updateTaskUrl(task.id)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelectedTask(task)
+                      updateTaskUrl(task.id)
+                    }
+                  }}
                   className={`bg-surface-1 rounded-lg p-3 cursor-pointer hover:bg-surface-2 transition-smooth border-l-4 ${priorityColors[task.priority]} ${
                     draggedTask?.id === task.id ? 'opacity-50' : ''
                   }`}
@@ -345,6 +611,11 @@ export function TaskBoardPanel() {
                       {task.title}
                     </h4>
                     <div className="flex items-center gap-2">
+                      {task.ticket_ref && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-primary/20 text-primary">
+                          {task.ticket_ref}
+                        </span>
+                      )}
                       {task.aegisApproved && (
                         <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-700 text-emerald-100">
                           Aegis Approved
@@ -380,6 +651,12 @@ export function TaskBoardPanel() {
                     </span>
                     <span className="font-medium">{formatTaskTimestamp(task.created_at)}</span>
                   </div>
+
+                  {task.project_name && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Project: {task.project_name}
+                    </div>
+                  )}
 
                   {task.tags && task.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
@@ -432,11 +709,16 @@ export function TaskBoardPanel() {
         <TaskDetailModal
           task={selectedTask}
           agents={agents}
-          onClose={() => setSelectedTask(null)}
+          projects={projects}
+          onClose={() => {
+            setSelectedTask(null)
+            updateTaskUrl(null)
+          }}
           onUpdate={fetchData}
           onEdit={(taskToEdit) => {
             setEditingTask(taskToEdit)
             setSelectedTask(null)
+            updateTaskUrl(null, 'replace')
           }}
         />
       )}
@@ -445,6 +727,7 @@ export function TaskBoardPanel() {
       {showCreateModal && (
         <CreateTaskModal
           agents={agents}
+          projects={projects}
           onClose={() => setShowCreateModal(false)}
           onCreated={fetchData}
         />
@@ -455,8 +738,16 @@ export function TaskBoardPanel() {
         <EditTaskModal
           task={editingTask}
           agents={agents}
+          projects={projects}
           onClose={() => setEditingTask(null)}
           onUpdated={() => { fetchData(); setEditingTask(null) }}
+        />
+      )}
+
+      {showProjectManager && (
+        <ProjectManagerModal
+          onClose={() => setShowProjectManager(false)}
+          onChanged={fetchData}
         />
       )}
     </div>
@@ -467,20 +758,26 @@ export function TaskBoardPanel() {
 function TaskDetailModal({
   task,
   agents,
+  projects,
   onClose,
   onUpdate,
   onEdit
 }: {
   task: Task
   agents: Agent[]
+  projects: Project[]
   onClose: () => void
   onUpdate: () => void
   onEdit: (task: Task) => void
 }) {
+  const { currentUser } = useMissionControl()
+  const commentAuthor = currentUser?.username || 'system'
+  const resolvedProjectName =
+    task.project_name ||
+    projects.find((project) => project.id === task.project_id)?.name
   const [comments, setComments] = useState<Comment[]>([])
   const [loadingComments, setLoadingComments] = useState(false)
   const [commentText, setCommentText] = useState('')
-  const [commentAuthor, setCommentAuthor] = useState('system')
   const [commentError, setCommentError] = useState<string | null>(null)
   const [broadcastMessage, setBroadcastMessage] = useState('')
   const [broadcastStatus, setBroadcastStatus] = useState<string | null>(null)
@@ -488,6 +785,7 @@ function TaskDetailModal({
   const [reviewStatus, setReviewStatus] = useState<'approved' | 'rejected'>('approved')
   const [reviewNotes, setReviewNotes] = useState('')
   const [reviewError, setReviewError] = useState<string | null>(null)
+  const mentionTargets = useMentionTargets()
   const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'quality'>('details')
   const [reviewer, setReviewer] = useState('aegis')
 
@@ -610,12 +908,14 @@ function TaskDetailModal({
     </div>
   )
 
+  const dialogRef = useFocusTrap(onClose)
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="task-detail-title" className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-xl font-bold text-foreground">{task.title}</h3>
+            <h3 id="task-detail-title" className="text-xl font-bold text-foreground">{task.title}</h3>
             <div className="flex gap-2">
               <button
                 onClick={() => onEdit(task)}
@@ -625,6 +925,7 @@ function TaskDetailModal({
               </button>
               <button
                 onClick={onClose}
+                aria-label="Close task details"
                 className="text-muted-foreground hover:text-foreground text-2xl transition-smooth"
               >
                 ×
@@ -638,10 +939,13 @@ function TaskDetailModal({
           ) : (
             <p className="text-foreground/80 mb-4">No description</p>
           )}
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-4" role="tablist" aria-label="Task detail tabs">
             {(['details', 'comments', 'quality'] as const).map(tab => (
               <button
                 key={tab}
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls={`tabpanel-${tab}`}
                 onClick={() => setActiveTab(tab)}
                 className={`px-3 py-2 text-sm rounded-md transition-smooth ${
                   activeTab === tab ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'
@@ -653,7 +957,19 @@ function TaskDetailModal({
           </div>
 
           {activeTab === 'details' && (
-            <div className="grid grid-cols-2 gap-4 text-sm mt-4">
+            <div id="tabpanel-details" role="tabpanel" aria-label="Details" className="grid grid-cols-2 gap-4 text-sm mt-4">
+              {task.ticket_ref && (
+                <div>
+                  <span className="text-muted-foreground">Ticket:</span>
+                  <span className="text-foreground ml-2 font-mono">{task.ticket_ref}</span>
+                </div>
+              )}
+              {resolvedProjectName && (
+                <div>
+                  <span className="text-muted-foreground">Project:</span>
+                  <span className="text-foreground ml-2">{resolvedProjectName}</span>
+                </div>
+              )}
               <div>
                 <span className="text-muted-foreground">Status:</span>
                 <span className="text-foreground ml-2">{task.status}</span>
@@ -683,7 +999,7 @@ function TaskDetailModal({
           )}
 
           {activeTab === 'comments' && (
-            <div className="mt-6">
+            <div id="tabpanel-comments" role="tabpanel" aria-label="Comments" className="mt-6">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-lg font-semibold text-foreground">Comments</h4>
               <button
@@ -711,23 +1027,20 @@ function TaskDetailModal({
             )}
 
             <form onSubmit={handleAddComment} className="mt-4 space-y-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Author</label>
-                <input
-                  type="text"
-                  value={commentAuthor}
-                  onChange={(e) => setCommentAuthor(e.target.value)}
-                  className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
-                />
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <span>Posting as</span>
+                <span className="font-medium text-foreground">{commentAuthor}</span>
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">New Comment</label>
-                <textarea
+                <MentionTextarea
                   value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
+                  onChange={setCommentText}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
                   rows={3}
+                  mentionTargets={mentionTargets}
                 />
+                <p className="text-[11px] text-muted-foreground mt-1">Use <span className="font-mono">@</span> to mention users and agents.</p>
               </div>
               <div className="flex justify-end">
                 <button
@@ -739,18 +1052,25 @@ function TaskDetailModal({
               </div>
             </form>
 
+            <div className="mt-5 bg-blue-500/5 border border-blue-500/15 rounded-lg p-3 text-xs text-muted-foreground space-y-1">
+              <div className="font-medium text-blue-300">How notifications work</div>
+              <div><strong className="text-foreground">Comments</strong> are persisted on the task and notify all subscribers. Subscribers are auto-added when they: create the task, are assigned to it, comment on it, or are @mentioned.</div>
+              <div><strong className="text-foreground">Broadcasts</strong> send a one-time notification to all current subscribers without creating a comment record.</div>
+            </div>
+
             <div className="mt-6 border-t border-border pt-4">
               <h5 className="text-sm font-medium text-foreground mb-2">Broadcast to Subscribers</h5>
               {broadcastStatus && (
                 <div className="text-xs text-muted-foreground mb-2">{broadcastStatus}</div>
               )}
               <form onSubmit={handleBroadcast} className="space-y-2">
-                <textarea
+                <MentionTextarea
                   value={broadcastMessage}
-                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  onChange={setBroadcastMessage}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50"
                   rows={2}
-                  placeholder="Send a message to all task subscribers..."
+                  placeholder="Send a message to all task subscribers... (use @ to mention)"
+                  mentionTargets={mentionTargets}
                 />
                 <div className="flex justify-end">
                   <button
@@ -766,7 +1086,7 @@ function TaskDetailModal({
           )}
 
           {activeTab === 'quality' && (
-            <div className="mt-6">
+            <div id="tabpanel-quality" role="tabpanel" aria-label="Quality Review" className="mt-6">
               <h5 className="text-sm font-medium text-foreground mb-2">Aegis Quality Review</h5>
               {reviewError && (
                 <div className="text-xs text-red-400 mb-2">{reviewError}</div>
@@ -829,10 +1149,12 @@ function TaskDetailModal({
 // Create Task Modal Component (placeholder)
 function CreateTaskModal({ 
   agents, 
+  projects,
   onClose, 
   onCreated 
 }: { 
   agents: Agent[]
+  projects: Project[]
   onClose: () => void
   onCreated: () => void
 }) {
@@ -840,9 +1162,11 @@ function CreateTaskModal({
     title: '',
     description: '',
     priority: 'medium' as Task['priority'],
+    project_id: projects[0]?.id ? String(projects[0].id) : '',
     assigned_to: '',
     tags: '',
   })
+  const mentionTargets = useMentionTargets()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -855,6 +1179,7 @@ function CreateTaskModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          project_id: formData.project_id ? Number(formData.project_id) : undefined,
           tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
           assigned_to: formData.assigned_to || undefined
         })
@@ -869,20 +1194,23 @@ function CreateTaskModal({
       onCreated()
       onClose()
     } catch (error) {
-      console.error('Error creating task:', error)
+      log.error('Error creating task:', error)
     }
   }
 
+  const dialogRef = useFocusTrap(onClose)
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg max-w-md w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="create-task-title" className="bg-card border border-border rounded-lg max-w-md w-full">
         <form onSubmit={handleSubmit} className="p-6">
-          <h3 className="text-xl font-bold text-foreground mb-4">Create New Task</h3>
+          <h3 id="create-task-title" className="text-xl font-bold text-foreground mb-4">Create New Task</h3>
           
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Title</label>
+              <label htmlFor="create-title" className="block text-sm text-muted-foreground mb-1">Title</label>
               <input
+                id="create-title"
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -892,19 +1220,23 @@ function CreateTaskModal({
             </div>
             
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Description</label>
-              <textarea
+              <label htmlFor="create-description" className="block text-sm text-muted-foreground mb-1">Description</label>
+              <MentionTextarea
+                id="create-description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(next) => setFormData(prev => ({ ...prev, description: next }))}
                 className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
                 rows={3}
+                mentionTargets={mentionTargets}
               />
+              <p className="text-[11px] text-muted-foreground mt-1">Tip: type <span className="font-mono">@</span> for mention autocomplete.</p>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Priority</label>
+                <label htmlFor="create-priority" className="block text-sm text-muted-foreground mb-1">Priority</label>
                 <select
+                  id="create-priority"
                   value={formData.priority}
                   onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as Task['priority'] }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -915,27 +1247,45 @@ function CreateTaskModal({
                   <option value="critical">Critical</option>
                 </select>
               </div>
-              
+
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Assign to</label>
+                <label htmlFor="create-project" className="block text-sm text-muted-foreground mb-1">Project</label>
                 <select
-                  value={formData.assigned_to}
-                  onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
+                  id="create-project"
+                  value={formData.project_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, project_id: e.target.value }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
                 >
-                  <option value="">Unassigned</option>
-                  {agents.map(agent => (
-                    <option key={agent.name} value={agent.name}>
-                      {agent.name} ({agent.role})
+                  {projects.map(project => (
+                    <option key={project.id} value={String(project.id)}>
+                      {project.name} ({project.ticket_prefix})
                     </option>
                   ))}
                 </select>
               </div>
             </div>
-            
+
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
+              <label htmlFor="create-assignee" className="block text-sm text-muted-foreground mb-1">Assign to</label>
+              <select
+                id="create-assignee"
+                value={formData.assigned_to}
+                onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
+                className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
+              >
+                <option value="">Unassigned</option>
+                {agents.map(agent => (
+                  <option key={agent.name} value={agent.name}>
+                    {agent.name} ({agent.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="create-tags" className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
               <input
+                id="create-tags"
                 type="text"
                 value={formData.tags}
                 onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
@@ -970,11 +1320,13 @@ function CreateTaskModal({
 function EditTaskModal({
   task,
   agents,
+  projects,
   onClose,
   onUpdated
 }: {
   task: Task
   agents: Agent[]
+  projects: Project[]
   onClose: () => void
   onUpdated: () => void
 }) {
@@ -983,9 +1335,11 @@ function EditTaskModal({
     description: task.description || '',
     priority: task.priority,
     status: task.status,
+    project_id: task.project_id ? String(task.project_id) : (projects[0]?.id ? String(projects[0].id) : ''),
     assigned_to: task.assigned_to || '',
     tags: task.tags ? task.tags.join(', ') : '',
   })
+  const mentionTargets = useMentionTargets()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -998,6 +1352,7 @@ function EditTaskModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          project_id: formData.project_id ? Number(formData.project_id) : undefined,
           tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
           assigned_to: formData.assigned_to || undefined
         })
@@ -1011,20 +1366,23 @@ function EditTaskModal({
 
       onUpdated()
     } catch (error) {
-      console.error('Error updating task:', error)
+      log.error('Error updating task:', error)
     }
   }
 
+  const dialogRef = useFocusTrap(onClose)
+
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-card border border-border rounded-lg max-w-md w-full">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="edit-task-title" className="bg-card border border-border rounded-lg max-w-md w-full">
         <form onSubmit={handleSubmit} className="p-6">
-          <h3 className="text-xl font-bold text-foreground mb-4">Edit Task</h3>
+          <h3 id="edit-task-title" className="text-xl font-bold text-foreground mb-4">Edit Task</h3>
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Title</label>
+              <label htmlFor="edit-title" className="block text-sm text-muted-foreground mb-1">Title</label>
               <input
+                id="edit-title"
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
@@ -1034,19 +1392,23 @@ function EditTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Description</label>
-              <textarea
+              <label htmlFor="edit-description" className="block text-sm text-muted-foreground mb-1">Description</label>
+              <MentionTextarea
+                id="edit-description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(next) => setFormData(prev => ({ ...prev, description: next }))}
                 className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
                 rows={3}
+                mentionTargets={mentionTargets}
               />
+              <p className="text-[11px] text-muted-foreground mt-1">Tip: type <span className="font-mono">@</span> for mention autocomplete.</p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Status</label>
+                <label htmlFor="edit-status" className="block text-sm text-muted-foreground mb-1">Status</label>
                 <select
+                  id="edit-status"
                   value={formData.status}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as Task['status'] }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -1061,8 +1423,9 @@ function EditTaskModal({
               </div>
 
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Priority</label>
+                <label htmlFor="edit-priority" className="block text-sm text-muted-foreground mb-1">Priority</label>
                 <select
+                  id="edit-priority"
                   value={formData.priority}
                   onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value as Task['priority'] }))}
                   className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -1076,8 +1439,25 @@ function EditTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Assign to</label>
+              <label htmlFor="edit-project" className="block text-sm text-muted-foreground mb-1">Project</label>
               <select
+                id="edit-project"
+                value={formData.project_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, project_id: e.target.value }))}
+                className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
+              >
+                {projects.map(project => (
+                  <option key={project.id} value={String(project.id)}>
+                    {project.name} ({project.ticket_prefix})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="edit-assignee" className="block text-sm text-muted-foreground mb-1">Assign to</label>
+              <select
+                id="edit-assignee"
                 value={formData.assigned_to}
                 onChange={(e) => setFormData(prev => ({ ...prev, assigned_to: e.target.value }))}
                 className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary/50"
@@ -1092,8 +1472,9 @@ function EditTaskModal({
             </div>
 
             <div>
-              <label className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
+              <label htmlFor="edit-tags" className="block text-sm text-muted-foreground mb-1">Tags (comma-separated)</label>
               <input
+                id="edit-tags"
                 type="text"
                 value={formData.tags}
                 onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
@@ -1119,6 +1500,168 @@ function EditTaskModal({
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  )
+}
+
+function ProjectManagerModal({
+  onClose,
+  onChanged
+}: {
+  onClose: () => void
+  onChanged: () => Promise<void>
+}) {
+  const [projects, setProjects] = useState<Project[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState({ name: '', ticket_prefix: '', description: '' })
+
+  const load = useCallback(async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/projects?includeArchived=1')
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to load projects')
+      setProjects(data.projects || [])
+      setError(null)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load projects')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  const createProject = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.name.trim()) return
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          ticket_prefix: form.ticket_prefix,
+          description: form.description
+        })
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to create project')
+      setForm({ name: '', ticket_prefix: '', description: '' })
+      await load()
+      await onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create project')
+    }
+  }
+
+  const archiveProject = async (project: Project) => {
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: project.status === 'active' ? 'archived' : 'active' })
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to update project')
+      await load()
+      await onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update project')
+    }
+  }
+
+  const deleteProject = async (project: Project) => {
+    if (!confirm(`Delete project "${project.name}"? Existing tasks will be moved to General.`)) return
+    try {
+      const response = await fetch(`/api/projects/${project.id}?mode=delete`, { method: 'DELETE' })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to delete project')
+      await load()
+      await onChanged()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete project')
+    }
+  }
+
+  const dialogRef = useFocusTrap(onClose)
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="projects-title" className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 id="projects-title" className="text-xl font-bold text-foreground">Project Management</h3>
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground text-2xl">×</button>
+          </div>
+
+          {error && <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded p-2">{error}</div>}
+
+          <form onSubmit={createProject} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+              placeholder="Project name"
+              className="bg-surface-1 text-foreground border border-border rounded-md px-3 py-2"
+              required
+            />
+            <input
+              type="text"
+              value={form.ticket_prefix}
+              onChange={(e) => setForm((prev) => ({ ...prev, ticket_prefix: e.target.value }))}
+              placeholder="Ticket prefix (e.g. PA)"
+              className="bg-surface-1 text-foreground border border-border rounded-md px-3 py-2"
+            />
+            <button type="submit" className="bg-primary text-primary-foreground rounded-md px-3 py-2 hover:bg-primary/90">
+              Add Project
+            </button>
+            <input
+              type="text"
+              value={form.description}
+              onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+              placeholder="Description (optional)"
+              className="md:col-span-3 bg-surface-1 text-foreground border border-border rounded-md px-3 py-2"
+            />
+          </form>
+
+          {loading ? (
+            <div className="text-sm text-muted-foreground">Loading projects...</div>
+          ) : (
+            <div className="space-y-2">
+              {projects.map((project) => (
+                <div key={project.id} className="flex items-center justify-between border border-border rounded-md p-3">
+                  <div>
+                    <div className="text-sm font-medium text-foreground">{project.name}</div>
+                    <div className="text-xs text-muted-foreground">{project.ticket_prefix} · {project.slug} · {project.status}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    {project.slug !== 'general' && (
+                      <>
+                        <button
+                          onClick={() => archiveProject(project)}
+                          className="px-3 py-1 text-xs rounded border border-border hover:bg-secondary"
+                        >
+                          {project.status === 'active' ? 'Archive' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => deleteProject(project)}
+                          className="px-3 py-1 text-xs rounded border border-red-500/30 text-red-400 hover:bg-red-500/10"
+                        >
+                          Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

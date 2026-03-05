@@ -10,9 +10,13 @@ import {
   cacheDeviceToken,
 } from '@/lib/device-identity'
 import { APP_VERSION } from '@/lib/version'
+import { createClientLogger } from '@/lib/client-logger'
+
+const log = createClientLogger('WebSocket')
 
 // Gateway protocol version (v3 required by OpenClaw 2026.x)
 const PROTOCOL_VERSION = 3
+const DEFAULT_GATEWAY_CLIENT_ID = process.env.NEXT_PUBLIC_GATEWAY_CLIENT_ID || 'openclaw-control-ui'
 
 // Heartbeat configuration
 const PING_INTERVAL_MS = 30_000
@@ -55,6 +59,8 @@ export function useWebSocket() {
   const pingCounterRef = useRef<number>(0)
   const pingSentTimestamps = useRef<Map<string, number>>(new Map())
   const missedPongsRef = useRef<number>(0)
+  // Compat flag for gateway versions that may not implement ping RPC.
+  const gatewaySupportsPingRef = useRef<boolean>(true)
 
   const {
     connection,
@@ -77,6 +83,8 @@ export function useWebSocket() {
       normalized.includes('origin not allowed') ||
       normalized.includes('device identity required') ||
       normalized.includes('device_auth_signature_invalid') ||
+      normalized.includes('invalid connect params') ||
+      normalized.includes('/client/id') ||
       normalized.includes('auth rate limit') ||
       normalized.includes('rate limited')
     )
@@ -93,6 +101,9 @@ export function useWebSocket() {
     }
     if (normalized.includes('device_auth_signature_invalid')) {
       return 'Gateway rejected device signature. Clear local device identity in the browser and reconnect.'
+    }
+    if (normalized.includes('invalid connect params') || normalized.includes('/client/id')) {
+      return 'Gateway rejected client identity params. Ensure NEXT_PUBLIC_GATEWAY_CLIENT_ID is set to openclaw-control-ui and reconnect.'
     }
     if (normalized.includes('auth rate limit') || normalized.includes('rate limited')) {
       return 'Gateway authentication is rate limited. Wait briefly, then reconnect.'
@@ -112,10 +123,11 @@ export function useWebSocket() {
 
     pingIntervalRef.current = setInterval(() => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || !handshakeCompleteRef.current) return
+      if (!gatewaySupportsPingRef.current) return
 
       // Check missed pongs
       if (missedPongsRef.current >= MAX_MISSED_PONGS) {
-        console.warn(`Missed ${MAX_MISSED_PONGS} pongs, triggering reconnect`)
+        log.warn(`Missed ${MAX_MISSED_PONGS} pongs, triggering reconnect`)
         addLog({
           id: `heartbeat-${Date.now()}`,
           timestamp: Date.now(),
@@ -179,7 +191,7 @@ export function useWebSocket() {
 
     const cachedToken = getCachedDeviceToken()
 
-    const clientId = 'gateway-client'
+    const clientId = DEFAULT_GATEWAY_CLIENT_ID
     const clientMode = 'ui'
     const role = 'operator'
     const scopes = ['operator.admin']
@@ -212,7 +224,7 @@ export function useWebSocket() {
           nonce,
         }
       } catch (err) {
-        console.warn('Device identity unavailable, proceeding without:', err)
+        log.warn('Device identity unavailable, proceeding without:', err)
       }
     }
 
@@ -238,7 +250,7 @@ export function useWebSocket() {
         deviceToken: cachedToken || undefined,
       }
     }
-    console.log('Sending connect handshake:', connectRequest)
+    log.info('Sending connect handshake')
     ws.send(JSON.stringify(connectRequest))
   }, [])
 
@@ -248,7 +260,7 @@ export function useWebSocket() {
 
     // Debug logging for development
     if (process.env.NODE_ENV === 'development') {
-      console.log('WebSocket message received:', message.type, message)
+      log.debug(`Message received: ${message.type}`)
     }
 
     switch (message.type) {
@@ -318,24 +330,24 @@ export function useWebSocket() {
         break
 
       default:
-        console.log('Unknown gateway message type:', message.type)
+        log.warn(`Unknown gateway message type: ${message.type}`)
     }
   }, [setLastMessage, setSessions, addLog, updateSpawnRequest, setCronJobs, addTokenUsage])
 
   // Handle gateway protocol frames
   const handleGatewayFrame = useCallback((frame: GatewayFrame, ws: WebSocket) => {
-    console.log('Gateway frame:', frame)
+    log.debug(`Gateway frame: ${frame.type}`)
 
     // Handle connect challenge
     if (frame.type === 'event' && frame.event === 'connect.challenge') {
-      console.log('Received connect challenge, sending handshake...')
+      log.info('Received connect challenge, sending handshake')
       sendConnectHandshake(ws, frame.payload?.nonce)
       return
     }
 
     // Handle connect response (handshake success)
     if (frame.type === 'res' && frame.ok && !handshakeCompleteRef.current) {
-      console.log('Handshake complete!')
+      log.info('Handshake complete')
       handshakeCompleteRef.current = true
       reconnectAttemptsRef.current = 0
       // Cache device token if returned by gateway
@@ -354,13 +366,20 @@ export function useWebSocket() {
 
     // Handle pong responses (any response to a ping ID counts — even errors prove the connection is alive)
     if (frame.type === 'res' && frame.id?.startsWith('ping-')) {
+      const rawPingError = frame.error?.message || JSON.stringify(frame.error || '')
+      if (!frame.ok && /unknown method:\s*ping/i.test(rawPingError)) {
+        gatewaySupportsPingRef.current = false
+        missedPongsRef.current = 0
+        pingSentTimestamps.current.clear()
+        log.info('Gateway ping RPC unavailable; using passive heartbeat mode')
+      }
       handlePong(frame.id)
       return
     }
 
     // Handle connect error
     if (frame.type === 'res' && !frame.ok) {
-      console.error('Gateway error:', frame.error)
+      log.error(`Gateway error: ${frame.error?.message || JSON.stringify(frame.error)}`)
       const rawMessage = frame.error?.message || JSON.stringify(frame.error)
       const help = getGatewayErrorHelp(rawMessage)
       const nonRetryable = isNonRetryableGatewayError(rawMessage)
@@ -509,14 +528,14 @@ export function useWebSocket() {
       wsRef.current = ws
 
       ws.onopen = () => {
-        console.log('WebSocket connected to', url.split('?')[0])
+        log.info(`Connected to ${url.split('?')[0]}`)
         // Don't set isConnected yet - wait for handshake
         setConnection({
           url: url.split('?')[0],
           reconnectAttempts: 0
         })
         // Wait for connect.challenge from server
-        console.log('Waiting for connect challenge...')
+        log.debug('Waiting for connect challenge')
       }
 
       ws.onmessage = (event) => {
@@ -524,7 +543,7 @@ export function useWebSocket() {
           const frame = JSON.parse(event.data) as GatewayFrame
           handleGatewayFrame(frame, ws)
         } catch (error) {
-          console.error('Failed to parse WebSocket message:', error)
+          log.error('Failed to parse WebSocket message:', error)
           addLog({
             id: `raw-${Date.now()}`,
             timestamp: Date.now(),
@@ -536,7 +555,7 @@ export function useWebSocket() {
       }
 
       ws.onclose = (event) => {
-        console.log('Disconnected from Gateway:', event.code, event.reason)
+        log.info(`Disconnected from Gateway: ${event.code} ${event.reason}`)
         setConnection({ isConnected: false })
         handshakeCompleteRef.current = false
         stopHeartbeat()
@@ -554,7 +573,7 @@ export function useWebSocket() {
         if (attempts < maxReconnectAttempts) {
           const base = Math.min(Math.pow(2, attempts) * 1000, 30000)
           const timeout = Math.round(base + Math.random() * base * 0.5)
-          console.log(`Reconnecting in ${timeout}ms... (attempt ${attempts + 1}/${maxReconnectAttempts})`)
+          log.info(`Reconnecting in ${timeout}ms (attempt ${attempts + 1}/${maxReconnectAttempts})`)
 
           reconnectAttemptsRef.current = attempts + 1
           setConnection({ reconnectAttempts: attempts + 1 })
@@ -562,7 +581,7 @@ export function useWebSocket() {
             connectRef.current(reconnectUrl.current, authTokenRef.current)
           }, timeout)
         } else {
-          console.error('Max reconnection attempts reached.')
+          log.error('Max reconnection attempts reached')
           addLog({
             id: `error-${Date.now()}`,
             timestamp: Date.now(),
@@ -574,7 +593,7 @@ export function useWebSocket() {
       }
 
       ws.onerror = (error) => {
-        console.error('WebSocket error:', error)
+        log.error('WebSocket error:', error)
         addLog({
           id: `error-${Date.now()}`,
           timestamp: Date.now(),
@@ -585,7 +604,7 @@ export function useWebSocket() {
       }
 
     } catch (error) {
-      console.error('Failed to connect to WebSocket:', error)
+      log.error('Failed to connect to WebSocket:', error)
       setConnection({ isConnected: false })
     }
   }, [setConnection, handleGatewayFrame, addLog, stopHeartbeat])

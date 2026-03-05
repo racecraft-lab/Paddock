@@ -113,6 +113,14 @@ Inter-agent communication via the comms API. Agents can send messages to each ot
 ### Integrations
 Outbound webhooks with delivery history, configurable alert rules with cooldowns, and multi-gateway connection management. Optional 1Password CLI integration for secret management.
 
+### Workspace Management
+Workspaces (tenant instances) are created and managed through the **Super Admin** panel, accessible from the sidebar under **Admin > Super Admin**. From there, admins can:
+- **Create** new client instances (slug, display name, Linux user, gateway port, plan tier)
+- **Monitor** provisioning jobs and their step-by-step progress
+- **Decommission** tenants with optional cleanup of state directories and Linux users
+
+Each workspace gets its own isolated environment with a dedicated OpenClaw gateway, state directory, and workspace root. See the [Super Admin API](#api-overview) endpoints under `/api/super/*` for programmatic access.
+
 ### Update Checker
 Automatic GitHub release check notifies you when a new version is available, displayed as a banner in the dashboard.
 
@@ -202,12 +210,14 @@ All endpoints require authentication unless noted. Full reference below.
 | `GET` | `/api/agents` | viewer | List agents with task stats |
 | `POST` | `/api/agents` | operator | Register/update agent |
 | `GET` | `/api/agents/[id]` | viewer | Agent details |
+| `GET` | `/api/agents/[id]/attribution` | viewer | Self-scope attribution/audit/cost report (`?privileged=1` admin override) |
 | `POST` | `/api/agents/sync` | operator | Sync agents from openclaw.json |
 | `GET/PUT` | `/api/agents/[id]/soul` | operator | Agent SOUL content (reads from workspace, writes to both) |
 | `GET/POST` | `/api/agents/comms` | operator | Agent inter-agent communication |
 | `POST` | `/api/agents/message` | operator | Send message to agent |
 | `GET` | `/api/tasks` | viewer | List tasks (filter: `?status=`, `?assigned_to=`, `?priority=`) |
 | `POST` | `/api/tasks` | operator | Create task |
+| `GET` | `/api/tasks/queue` | operator | Poll next task for an agent (`?agent=`, optional `?max_capacity=`) |
 | `GET` | `/api/tasks/[id]` | viewer | Task details |
 | `PUT` | `/api/tasks/[id]` | operator | Update task |
 | `DELETE` | `/api/tasks/[id]` | admin | Delete task |
@@ -216,6 +226,14 @@ All endpoints require authentication unless noted. Full reference below.
 | `POST` | `/api/tasks/[id]/broadcast` | operator | Broadcast task to agents |
 
 </details>
+
+### Attribution Contract (`/api/agents/[id]/attribution`)
+
+- Self-scope by default: requester identity must match target agent via `x-agent-name` (or matching authenticated username).
+- Admin override requires explicit `?privileged=1`.
+- Query params:
+  - `hours`: integer window `1..720` (default `24`)
+  - `section`: comma-separated subset of `identity,audit,mutations,cost` (default all)
 
 <details>
 <summary><strong>Monitoring</strong></summary>
@@ -272,8 +290,23 @@ All endpoints require authentication unless noted. Full reference below.
 | `GET` | `/api/webhooks/deliveries` | admin | Delivery history |
 | `GET/POST/PUT/DELETE` | `/api/alerts` | admin | Alert rules |
 | `GET/POST/PUT/DELETE` | `/api/gateways` | admin | Gateway connections |
+| `POST` | `/api/gateways/connect` | operator | Resolve websocket URL + token for selected gateway |
 | `GET/PUT/DELETE/POST` | `/api/integrations` | admin | Integration management |
 | `POST` | `/api/github` | admin | Trigger GitHub Issues sync |
+
+</details>
+
+<details>
+<summary><strong>Super Admin (Workspace/Tenant Management)</strong></summary>
+
+| Method | Path | Role | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/super/tenants` | admin | List all tenants with latest provisioning status |
+| `POST` | `/api/super/tenants` | admin | Create tenant and queue bootstrap job |
+| `POST` | `/api/super/tenants/[id]/decommission` | admin | Queue tenant decommission job |
+| `GET` | `/api/super/provision-jobs` | admin | List provisioning jobs (filter: `?tenant_id=`, `?status=`) |
+| `POST` | `/api/super/provision-jobs` | admin | Queue additional job for existing tenant |
+| `POST` | `/api/super/provision-jobs/[id]/action` | admin | Approve, reject, or cancel a provisioning job |
 
 </details>
 
@@ -342,26 +375,56 @@ See [`.env.example`](.env.example) for the complete list. Key variables:
 | `AUTH_PASS` | No | Initial admin password |
 | `AUTH_PASS_B64` | No | Base64-encoded admin password (overrides `AUTH_PASS` if set) |
 | `API_KEY` | No | API key for headless access |
-| `OPENCLAW_HOME` | Yes* | Path to `.openclaw` directory |
+| `OPENCLAW_CONFIG_PATH` | Yes* | Absolute path to `openclaw.json` (preferred) |
+| `OPENCLAW_STATE_DIR` | Yes* | OpenClaw state root (default: `~/.openclaw`) |
+| `OPENCLAW_HOME` | No | Legacy alias for state dir (fallback if `OPENCLAW_STATE_DIR` unset) |
 | `OPENCLAW_GATEWAY_HOST` | No | Gateway host (default: `127.0.0.1`) |
 | `OPENCLAW_GATEWAY_PORT` | No | Gateway WebSocket port (default: `18789`) |
 | `OPENCLAW_GATEWAY_TOKEN` | No | Server-side gateway auth token |
+| `OPENCLAW_TOOLS_PROFILE` | No | Tools profile for `sessions_spawn` (recommended: `coding`) |
 | `NEXT_PUBLIC_GATEWAY_TOKEN` | No | Browser-side gateway auth token (must use `NEXT_PUBLIC_` prefix) |
+| `NEXT_PUBLIC_GATEWAY_CLIENT_ID` | No | Gateway UI client ID for websocket handshake (default: `openclaw-control-ui`) |
 | `OPENCLAW_MEMORY_DIR` | No | Memory browser root (see note below) |
 | `MC_CLAUDE_HOME` | No | Path to `~/.claude` directory (default: `~/.claude`) |
 | `MC_TRUSTED_PROXIES` | No | Comma-separated trusted proxy IPs for XFF parsing |
 | `MC_ALLOWED_HOSTS` | No | Host allowlist for production |
 
-*Memory browser, log viewer, and gateway config require `OPENCLAW_HOME`.
+*Memory browser, log viewer, and gateway config require OpenClaw config/state resolution (`OPENCLAW_CONFIG_PATH` and/or `OPENCLAW_STATE_DIR`).
 
 > **Memory Browser note:** OpenClaw does not store agent memory markdown files under
-> `$OPENCLAW_HOME/memory/` — that directory does not exist by default. Agent memory lives
+> `$OPENCLAW_STATE_DIR/memory/` — that directory does not exist by default. Agent memory lives
 > in each agent's workspace (e.g. `~/clawd-agents/{agent}/memory/`). Set
 > `OPENCLAW_MEMORY_DIR` to your agents root directory to make the Memory Browser show
 > daily logs, `MEMORY.md`, and other markdown files:
 > ```
 > OPENCLAW_MEMORY_DIR=/home/you/clawd-agents
 > ```
+
+### Workspace Creation Flow
+
+To add a new workspace/client instance in the UI:
+
+1. Open `Workspaces` from the left navigation.
+2. Expand `Show Create Client Instance`.
+3. Fill tenant/workspace fields (`slug`, `display_name`, optional ports/gateway owner).
+4. Click `Create + Queue`.
+5. Approve/run the generated provisioning job in the same panel.
+
+`Workspaces` and `Super Admin` currently point to the same provisioning control plane.
+
+### Projects and Ticket Prefixes
+
+Mission Control supports multi-project task organization per workspace:
+
+- Create/manage projects via Task Board → `Projects`.
+- Each project has its own ticket prefix and counter.
+- New tasks receive project-scoped ticket refs like `PA-001`, `PA-002`.
+- Task board supports filtering by project.
+
+### Memory Scope Clarification
+
+- **Agent profile → Memory tab**: per-agent working memory stored in Mission Control DB (`working_memory`).
+- **Memory Browser page**: workspace/local filesystem memory tree under `OPENCLAW_MEMORY_DIR`.
 
 ## Deployment
 
@@ -371,7 +434,7 @@ pnpm install --frozen-lockfile
 pnpm build
 
 # Run
-OPENCLAW_HOME=/path/to/.openclaw pnpm start
+OPENCLAW_CONFIG_PATH=/path/to/.openclaw/openclaw.json OPENCLAW_STATE_DIR=/path/to/.openclaw pnpm start
 ```
 
 Network access is restricted by default in production. Set `MC_ALLOWED_HOSTS` (comma-separated) or `MC_ALLOW_ANY_HOST=1` to control access.
@@ -387,6 +450,50 @@ pnpm test             # Vitest unit tests
 pnpm test:e2e         # Playwright E2E
 pnpm quality:gate     # All checks
 ```
+
+## Workload Signals Contract
+
+`GET /api/workload` returns a workload snapshot and one recommendation:
+
+- `normal`: system healthy, submit freely
+- `throttle`: reduce submission rate / defer non-critical work
+- `shed`: submit only critical work
+- `pause`: hold submissions until capacity returns
+
+Low-signal behavior:
+
+- `capacity.error_rate_5m` is clamped to `[0,1]`
+- `queue.estimated_wait_confidence` is `calculated` or `unknown`
+- queue breakdown maps include stable keys even when counts are zero
+
+Runtime-tunable thresholds:
+
+- `MC_WORKLOAD_QUEUE_DEPTH_NORMAL`
+- `MC_WORKLOAD_QUEUE_DEPTH_THROTTLE`
+- `MC_WORKLOAD_QUEUE_DEPTH_SHED`
+- `MC_WORKLOAD_BUSY_RATIO_THROTTLE`
+- `MC_WORKLOAD_BUSY_RATIO_SHED`
+- `MC_WORKLOAD_ERROR_RATE_THROTTLE`
+- `MC_WORKLOAD_ERROR_RATE_SHED`
+- `MC_WORKLOAD_RECENT_WINDOW_SECONDS`
+
+## Agent Diagnostics Contract
+
+`GET /api/agents/{id}/diagnostics` is self-scoped by default.
+
+- Self access:
+  - Session user where `username === agent.name`, or
+  - API-key request with `x-agent-name` matching `{id}` agent name
+- Cross-agent access:
+  - Allowed only with explicit `?privileged=1` and admin auth
+- Query validation:
+  - `hours` must be an integer between `1` and `720`
+  - `section` must be a comma-separated subset of `summary,tasks,errors,activity,trends,tokens`
+
+Trend alerts in the `trends.alerts` response are derived from current-vs-previous window comparisons:
+
+- `warning`: error spikes or severe activity drop
+- `info`: throughput drops or potential stall patterns
 
 ## Roadmap
 

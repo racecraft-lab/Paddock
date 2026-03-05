@@ -676,6 +676,127 @@ const migrations: Migration[] = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_workspace_id ON webhook_deliveries(workspace_id)`)
       db.exec(`CREATE INDEX IF NOT EXISTS idx_token_usage_workspace_id ON token_usage(workspace_id)`)
     }
+  },
+  {
+    id: '024_projects_support',
+    up: (db) => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS projects (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          name TEXT NOT NULL,
+          slug TEXT NOT NULL,
+          description TEXT,
+          ticket_prefix TEXT NOT NULL,
+          ticket_counter INTEGER NOT NULL DEFAULT 0,
+          status TEXT NOT NULL DEFAULT 'active',
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          UNIQUE(workspace_id, slug),
+          UNIQUE(workspace_id, ticket_prefix)
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_projects_workspace_status ON projects(workspace_id, status)`)
+
+      const taskCols = db.prepare(`PRAGMA table_info(tasks)`).all() as Array<{ name: string }>
+      if (!taskCols.some((c) => c.name === 'project_id')) {
+        db.exec(`ALTER TABLE tasks ADD COLUMN project_id INTEGER`)
+      }
+      if (!taskCols.some((c) => c.name === 'project_ticket_no')) {
+        db.exec(`ALTER TABLE tasks ADD COLUMN project_ticket_no INTEGER`)
+      }
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_workspace_project ON tasks(workspace_id, project_id)`)
+
+      const workspaceRows = db.prepare(`SELECT id FROM workspaces ORDER BY id ASC`).all() as Array<{ id: number }>
+      const ensureDefaultProject = db.prepare(`
+        INSERT OR IGNORE INTO projects (workspace_id, name, slug, description, ticket_prefix, ticket_counter, status, created_at, updated_at)
+        VALUES (?, 'General', 'general', 'Default project for uncategorized tasks', 'TASK', 0, 'active', unixepoch(), unixepoch())
+      `)
+      const getDefaultProject = db.prepare(`
+        SELECT id, ticket_counter FROM projects
+        WHERE workspace_id = ? AND slug = 'general'
+        LIMIT 1
+      `)
+      const setTaskProject = db.prepare(`
+        UPDATE tasks SET project_id = ?
+        WHERE workspace_id = ? AND (project_id IS NULL OR project_id = 0)
+      `)
+      const listProjectTasks = db.prepare(`
+        SELECT id FROM tasks
+        WHERE workspace_id = ? AND project_id = ?
+        ORDER BY created_at ASC, id ASC
+      `)
+      const setTaskNo = db.prepare(`UPDATE tasks SET project_ticket_no = ? WHERE id = ?`)
+      const setProjectCounter = db.prepare(`UPDATE projects SET ticket_counter = ?, updated_at = unixepoch() WHERE id = ?`)
+
+      for (const workspace of workspaceRows) {
+        ensureDefaultProject.run(workspace.id)
+        const defaultProject = getDefaultProject.get(workspace.id) as { id: number; ticket_counter: number } | undefined
+        if (!defaultProject) continue
+
+        setTaskProject.run(defaultProject.id, workspace.id)
+
+        const projectRows = db.prepare(`
+          SELECT id FROM projects
+          WHERE workspace_id = ?
+          ORDER BY id ASC
+        `).all(workspace.id) as Array<{ id: number }>
+
+        for (const project of projectRows) {
+          const tasks = listProjectTasks.all(workspace.id, project.id) as Array<{ id: number }>
+          let counter = 0
+          for (const task of tasks) {
+            counter += 1
+            setTaskNo.run(counter, task.id)
+          }
+          setProjectCounter.run(counter, project.id)
+        }
+      }
+    }
+  },
+  {
+    id: '025_token_usage_task_attribution',
+    up: (db) => {
+      const hasTokenUsageTable = db
+        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'token_usage'`)
+        .get() as { ok?: number } | undefined
+
+      if (!hasTokenUsageTable?.ok) return
+
+      const cols = db.prepare(`PRAGMA table_info(token_usage)`).all() as Array<{ name: string }>
+      const hasCol = (name: string) => cols.some((c) => c.name === name)
+
+      if (!hasCol('task_id')) {
+        db.exec(`ALTER TABLE token_usage ADD COLUMN task_id INTEGER`)
+      }
+
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_token_usage_task_id ON token_usage(task_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_token_usage_workspace_task_time ON token_usage(workspace_id, task_id, created_at)`)
+    }
+  },
+  {
+    id: '026_task_outcome_tracking',
+    up: (db) => {
+      const hasTasks = db
+        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'tasks'`)
+        .get() as { ok?: number } | undefined
+      if (!hasTasks?.ok) return
+
+      const taskCols = db.prepare(`PRAGMA table_info(tasks)`).all() as Array<{ name: string }>
+      const hasCol = (name: string) => taskCols.some((c) => c.name === name)
+
+      if (!hasCol('outcome')) db.exec(`ALTER TABLE tasks ADD COLUMN outcome TEXT`)
+      if (!hasCol('error_message')) db.exec(`ALTER TABLE tasks ADD COLUMN error_message TEXT`)
+      if (!hasCol('resolution')) db.exec(`ALTER TABLE tasks ADD COLUMN resolution TEXT`)
+      if (!hasCol('feedback_rating')) db.exec(`ALTER TABLE tasks ADD COLUMN feedback_rating INTEGER`)
+      if (!hasCol('feedback_notes')) db.exec(`ALTER TABLE tasks ADD COLUMN feedback_notes TEXT`)
+      if (!hasCol('retry_count')) db.exec(`ALTER TABLE tasks ADD COLUMN retry_count INTEGER NOT NULL DEFAULT 0`)
+      if (!hasCol('completed_at')) db.exec(`ALTER TABLE tasks ADD COLUMN completed_at INTEGER`)
+
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_outcome ON tasks(outcome)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_completed_at ON tasks(completed_at)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_workspace_outcome ON tasks(workspace_id, outcome, completed_at)`)
+    }
   }
 ]
 

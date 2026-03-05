@@ -31,6 +31,8 @@ export interface User {
   created_at: number
   updated_at: number
   last_login_at: number | null
+  /** Agent name when request is made on behalf of a specific agent (via X-Agent-Name header) */
+  agent_name?: string | null
 }
 
 export interface UserSession {
@@ -268,17 +270,21 @@ export function deleteUser(id: number): boolean {
  * For API key auth, returns a synthetic "api" user.
  */
 export function getUserFromRequest(request: Request): User | null {
+  // Extract agent identity header (optional, for attribution)
+  const agentName = (request.headers.get('x-agent-name') || '').trim() || null
+
   // Check session cookie
   const cookieHeader = request.headers.get('cookie') || ''
   const sessionToken = parseCookie(cookieHeader, 'mc-session')
   if (sessionToken) {
     const user = validateSession(sessionToken)
-    if (user) return user
+    if (user) return { ...user, agent_name: agentName }
   }
 
   // Check API key - return synthetic user
-  const apiKey = request.headers.get('x-api-key')
-  if (apiKey && safeCompare(apiKey, process.env.API_KEY || '')) {
+  const configuredApiKey = (process.env.API_KEY || '').trim()
+  const apiKey = extractApiKeyFromHeaders(request.headers)
+  if (configuredApiKey && apiKey && safeCompare(apiKey, configuredApiKey)) {
     return {
       id: 0,
       username: 'api',
@@ -288,7 +294,26 @@ export function getUserFromRequest(request: Request): User | null {
       created_at: 0,
       updated_at: 0,
       last_login_at: null,
+      agent_name: agentName,
     }
+  }
+
+  return null
+}
+
+function extractApiKeyFromHeaders(headers: Headers): string | null {
+  const direct = (headers.get('x-api-key') || '').trim()
+  if (direct) return direct
+
+  const authorization = (headers.get('authorization') || '').trim()
+  if (!authorization) return null
+
+  const [scheme, ...rest] = authorization.split(/\s+/)
+  if (!scheme || rest.length === 0) return null
+
+  const normalized = scheme.toLowerCase()
+  if (normalized === 'bearer' || normalized === 'apikey' || normalized === 'token') {
+    return rest.join(' ').trim() || null
   }
 
   return null

@@ -31,11 +31,19 @@ export const createTaskSchema = z.object({
   description: z.string().max(5000).optional(),
   status: z.enum(['inbox', 'assigned', 'in_progress', 'review', 'quality_review', 'done']).default('inbox'),
   priority: z.enum(['critical', 'high', 'medium', 'low']).default('medium'),
+  project_id: z.number().int().positive().optional(),
   assigned_to: z.string().max(100).optional(),
   created_by: z.string().max(100).optional(),
   due_date: z.number().optional(),
   estimated_hours: z.number().min(0).optional(),
   actual_hours: z.number().min(0).optional(),
+  outcome: z.enum(['success', 'failed', 'partial', 'abandoned']).optional(),
+  error_message: z.string().max(5000).optional(),
+  resolution: z.string().max(5000).optional(),
+  feedback_rating: z.number().int().min(1).max(5).optional(),
+  feedback_notes: z.string().max(5000).optional(),
+  retry_count: z.number().int().min(0).optional(),
+  completed_at: z.number().optional(),
   tags: z.array(z.string()).default([] as string[]),
   metadata: z.record(z.string(), z.unknown()).default({} as Record<string, unknown>),
 })
@@ -44,6 +52,7 @@ export const updateTaskSchema = createTaskSchema.partial()
 
 export const createAgentSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
+  openclaw_id: z.string().regex(/^[a-z0-9][a-z0-9-]*$/, 'openclaw_id must be kebab-case').max(100).optional(),
   role: z.string().min(1, 'Role is required').max(100).optional(),
   session_key: z.string().max(200).optional(),
   soul_content: z.string().max(50000).optional(),
@@ -52,6 +61,8 @@ export const createAgentSchema = z.object({
   template: z.string().max(100).optional(),
   gateway_config: z.record(z.string(), z.unknown()).optional(),
   write_to_gateway: z.boolean().optional(),
+  provision_openclaw_workspace: z.boolean().optional(),
+  openclaw_workspace_path: z.string().min(1).max(500).optional(),
 })
 
 export const bulkUpdateTaskStatusSchema = z.object({

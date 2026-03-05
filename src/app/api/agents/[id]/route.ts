@@ -44,12 +44,12 @@ export async function GET(
 }
 
 /**
- * PUT /api/agents/[id] - Update agent config with optional gateway write-back
+ * PUT /api/agents/[id] - Update agent config with unified MC + gateway save
  *
  * Body: {
  *   role?: string
  *   gateway_config?: object   - OpenClaw agent config fields to update
- *   write_to_gateway?: boolean - If true, also write to openclaw.json
+ *   write_to_gateway?: boolean - Defaults to true when gateway_config exists
  * }
  */
 export async function PUT(
@@ -86,56 +86,78 @@ export async function PUT(
       newConfig = { ...existingConfig, ...gateway_config }
     }
 
-    // Build update
-    const fields: string[] = ['updated_at = ?']
-    const values: any[] = [now]
-
-    if (role !== undefined) {
-      fields.push('role = ?')
-      values.push(role)
+    const shouldWriteToGateway = Boolean(
+      gateway_config &&
+      (write_to_gateway === undefined || write_to_gateway === null || write_to_gateway === true)
+    )
+    const openclawId = existingConfig.openclawId || agent.name.toLowerCase().replace(/\s+/g, '-')
+    const getWriteBackPayload = (source: Record<string, any>) => {
+      const writeBack: any = { id: openclawId }
+      if (source.model) writeBack.model = source.model
+      if (source.identity) writeBack.identity = source.identity
+      if (source.sandbox) writeBack.sandbox = source.sandbox
+      if (source.tools) writeBack.tools = source.tools
+      if (source.subagents) writeBack.subagents = source.subagents
+      if (source.memorySearch) writeBack.memorySearch = source.memorySearch
+      return writeBack
     }
 
-    if (gateway_config) {
-      fields.push('config = ?')
-      values.push(JSON.stringify(newConfig))
-    }
-
-    values.push(agent.id, workspaceId)
-    db.prepare(`UPDATE agents SET ${fields.join(', ')} WHERE id = ? AND workspace_id = ?`).run(...values)
-
-    // Write back to openclaw.json if requested
-    if (write_to_gateway && gateway_config) {
+    // Unified save: gateway first, then DB. If DB fails after gateway write, attempt rollback.
+    if (shouldWriteToGateway) {
       try {
-        const openclawId = existingConfig.openclawId || agent.name.toLowerCase().replace(/\s+/g, '-')
-
-        // Build the config to write back (full OpenClaw format)
-        const writeBack: any = { id: openclawId }
-        if (gateway_config.model) writeBack.model = gateway_config.model
-        if (gateway_config.identity) writeBack.identity = gateway_config.identity
-        if (gateway_config.sandbox) writeBack.sandbox = gateway_config.sandbox
-        if (gateway_config.tools) writeBack.tools = gateway_config.tools
-        if (gateway_config.subagents) writeBack.subagents = gateway_config.subagents
-        if (gateway_config.memorySearch) writeBack.memorySearch = gateway_config.memorySearch
-
-        await writeAgentToConfig(writeBack)
-
-        const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
-        logAuditEvent({
-          action: 'agent_config_writeback',
-          actor: auth.user.username,
-          actor_id: auth.user.id,
-          target_type: 'agent',
-          target_id: agent.id,
-          detail: { agent_name: agent.name, openclaw_id: openclawId, fields: Object.keys(gateway_config) },
-          ip_address: ipAddress,
-        })
+        await writeAgentToConfig(getWriteBackPayload(gateway_config))
       } catch (err: any) {
-        // Config update succeeded in DB but gateway write failed
-        return NextResponse.json({
-          warning: `Agent updated in MC but gateway write failed: ${err.message}`,
-          agent: { ...agent, config: newConfig, role: role || agent.role, updated_at: now },
-        })
+        return NextResponse.json(
+          { error: `Save failed: unable to update gateway config: ${err.message}` },
+          { status: 502 }
+        )
       }
+    }
+
+    try {
+      // Build update
+      const fields: string[] = ['updated_at = ?']
+      const values: any[] = [now]
+
+      if (role !== undefined) {
+        fields.push('role = ?')
+        values.push(role)
+      }
+
+      if (gateway_config) {
+        fields.push('config = ?')
+        values.push(JSON.stringify(newConfig))
+      }
+
+      values.push(agent.id, workspaceId)
+      db.prepare(`UPDATE agents SET ${fields.join(', ')} WHERE id = ? AND workspace_id = ?`).run(...values)
+    } catch (err: any) {
+      if (shouldWriteToGateway) {
+        try {
+          // Best-effort rollback to preserve consistency if DB update fails after gateway write.
+          await writeAgentToConfig(getWriteBackPayload(existingConfig))
+        } catch (rollbackErr: any) {
+          logger.error({ err: rollbackErr, agent: agent.name }, 'Failed to rollback gateway config after DB failure')
+          return NextResponse.json(
+            { error: `Save failed after gateway update and rollback failed: ${err.message}` },
+            { status: 500 }
+          )
+        }
+      }
+      return NextResponse.json({ error: `Save failed: ${err.message}` }, { status: 500 })
+    }
+
+    if (shouldWriteToGateway) {
+      const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+      logAuditEvent({
+        action: 'agent_config_writeback',
+        actor: auth.user.username,
+        actor_id: auth.user.id,
+        target_type: 'agent',
+        target_id: agent.id,
+        detail: { agent_name: agent.name, openclaw_id: openclawId, fields: Object.keys(gateway_config || {}) },
+        ip_address: ipAddress,
+      })
     }
 
     // Log activity
@@ -144,8 +166,8 @@ export async function PUT(
       'agent',
       agent.id,
       auth.user.username,
-      `Config updated for agent ${agent.name}${write_to_gateway ? ' (+ gateway)' : ''}`,
-      { fields: Object.keys(gateway_config || {}), write_to_gateway },
+      `Config updated for agent ${agent.name}${shouldWriteToGateway ? ' (+ gateway)' : ''}`,
+      { fields: Object.keys(gateway_config || {}), write_to_gateway: shouldWriteToGateway },
       workspaceId
     )
 

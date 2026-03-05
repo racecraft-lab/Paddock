@@ -2,13 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireRole } from '@/lib/auth'
 import { logAuditEvent } from '@/lib/db'
 import { config } from '@/lib/config'
-import { join } from 'path'
 import { validateBody, gatewayConfigUpdateSchema } from '@/lib/validation'
 import { mutationLimiter } from '@/lib/rate-limit'
 
 function getConfigPath(): string | null {
-  if (!config.openclawHome) return null
-  return join(config.openclawHome, 'openclaw.json')
+  return config.openclawConfigPath || null
 }
 
 /**
@@ -20,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const configPath = getConfigPath()
   if (!configPath) {
-    return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+    return NextResponse.json({ error: 'OPENCLAW_CONFIG_PATH not configured' }, { status: 404 })
   }
 
   try {
@@ -60,7 +58,7 @@ export async function PUT(request: NextRequest) {
 
   const configPath = getConfigPath()
   if (!configPath) {
-    return NextResponse.json({ error: 'OPENCLAW_HOME not configured' }, { status: 404 })
+    return NextResponse.json({ error: 'OPENCLAW_CONFIG_PATH not configured' }, { status: 404 })
   }
 
   const result = await validateBody(request, gatewayConfigUpdateSchema)
