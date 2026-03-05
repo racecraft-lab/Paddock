@@ -6,6 +6,7 @@ import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, createTaskSchema, bulkUpdateTaskStatusSchema } from '@/lib/validation';
 import { resolveMentionRecipients } from '@/lib/mentions';
+import { normalizeTaskCreateStatus } from '@/lib/task-status';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
     const {
       title,
       description,
-      status = 'inbox',
+      status,
       priority = 'medium',
       project_id,
       assigned_to,
@@ -173,6 +174,7 @@ export async function POST(request: NextRequest) {
       tags = [],
       metadata = {}
     } = body;
+    const normalizedStatus = normalizeTaskCreateStatus(status, assigned_to)
     
     // Check for duplicate title
     const existingTask = db.prepare('SELECT id FROM tasks WHERE title = ? AND workspace_id = ?').get(title, workspaceId);
@@ -212,7 +214,7 @@ export async function POST(request: NextRequest) {
       const dbResult = insertStmt.run(
         title,
         description,
-        status,
+        normalizedStatus,
         priority,
         resolvedProjectId,
         row.ticket_counter,
@@ -234,7 +236,7 @@ export async function POST(request: NextRequest) {
     // Log activity
     db_helpers.logActivity('task_created', 'task', taskId, created_by, `Created task: ${title}`, {
       title,
-      status,
+      status: normalizedStatus,
       priority,
       assigned_to
     }, workspaceId);
