@@ -1016,6 +1016,86 @@
         }
       }
     },
+    "/api/agents/{id}/attribution": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Get attribution report for an agent",
+        "description": "Self-scope by default. Requester must match target agent (`x-agent-name` or username), unless admin uses `?privileged=1`.",
+        "operationId": "getAgentAttribution",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "hours",
+            "in": "query",
+            "required": false,
+            "description": "Time window in hours, integer range 1..720. Defaults to 24.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 720,
+              "default": 24
+            }
+          },
+          {
+            "name": "section",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated subset of identity,audit,mutations,cost. Defaults to all.",
+            "schema": {
+              "type": "string",
+              "example": "identity,audit"
+            }
+          },
+          {
+            "name": "privileged",
+            "in": "query",
+            "required": false,
+            "description": "Set to 1 for admin override of self-scope checks.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            }
+          },
+          {
+            "name": "x-agent-name",
+            "in": "header",
+            "required": false,
+            "description": "Attribution identity header used for self-scope authorization.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Attribution report"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/api/agents/{id}/heartbeat": {
       "get": {
         "tags": [

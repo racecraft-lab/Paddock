@@ -202,6 +202,7 @@ All endpoints require authentication unless noted. Full reference below.
 | `GET` | `/api/agents` | viewer | List agents with task stats |
 | `POST` | `/api/agents` | operator | Register/update agent |
 | `GET` | `/api/agents/[id]` | viewer | Agent details |
+| `GET` | `/api/agents/[id]/attribution` | viewer | Self-scope attribution/audit/cost report (`?privileged=1` admin override) |
 | `POST` | `/api/agents/sync` | operator | Sync agents from openclaw.json |
 | `GET/PUT` | `/api/agents/[id]/soul` | operator | Agent SOUL content (reads from workspace, writes to both) |
 | `GET/POST` | `/api/agents/comms` | operator | Agent inter-agent communication |
@@ -216,6 +217,14 @@ All endpoints require authentication unless noted. Full reference below.
 | `POST` | `/api/tasks/[id]/broadcast` | operator | Broadcast task to agents |
 
 </details>
+
+### Attribution Contract (`/api/agents/[id]/attribution`)
+
+- Self-scope by default: requester identity must match target agent via `x-agent-name` (or matching authenticated username).
+- Admin override requires explicit `?privileged=1`.
+- Query params:
+  - `hours`: integer window `1..720` (default `24`)
+  - `section`: comma-separated subset of `identity,audit,mutations,cost` (default all)
 
 <details>
 <summary><strong>Monitoring</strong></summary>

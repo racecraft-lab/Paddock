@@ -3,6 +3,8 @@ import { getDatabase } from '@/lib/db';
 import { requireRole } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
+const ALLOWED_SECTIONS = new Set(['identity', 'audit', 'mutations', 'cost']);
+
 /**
  * GET /api/agents/[id]/attribution - Agent-Level Identity & Attribution
  *
@@ -46,9 +48,28 @@ export async function GET(
     }
 
     const { searchParams } = new URL(request.url);
-    const hours = Math.min(Math.max(parseInt(searchParams.get('hours') || '24', 10) || 24, 1), 720);
-    const sectionParam = searchParams.get('section') || 'identity,audit,mutations,cost';
-    const sections = new Set(sectionParam.split(',').map(s => s.trim()));
+    const privileged = searchParams.get('privileged') === '1';
+    const isSelfByHeader = auth.user.agent_name === agent.name;
+    const isSelfByUsername = auth.user.username === agent.name;
+    const isSelf = isSelfByHeader || isSelfByUsername;
+    const isPrivileged = auth.user.role === 'admin' && privileged;
+    if (!isSelf && !isPrivileged) {
+      return NextResponse.json(
+        { error: 'Forbidden: attribution is self-scope by default. Admin can use ?privileged=1 override.' },
+        { status: 403 }
+      );
+    }
+
+    const hoursRaw = searchParams.get('hours');
+    const hours = parseHours(hoursRaw);
+    if (!hours) {
+      return NextResponse.json({ error: 'Invalid hours. Expected integer 1..720.' }, { status: 400 });
+    }
+
+    const sections = parseSections(searchParams.get('section'));
+    if ('error' in sections) {
+      return NextResponse.json({ error: sections.error }, { status: 400 });
+    }
 
     const now = Math.floor(Date.now() / 1000);
     const since = now - hours * 3600;
@@ -56,21 +77,22 @@ export async function GET(
     const result: Record<string, any> = {
       agent_name: agent.name,
       timeframe: { hours, since, until: now },
+      access_scope: isSelf ? 'self' : 'privileged',
     };
 
-    if (sections.has('identity')) {
+    if (sections.sections.has('identity')) {
       result.identity = buildIdentity(db, agent, workspaceId);
     }
 
-    if (sections.has('audit')) {
+    if (sections.sections.has('audit')) {
       result.audit = buildAuditTrail(db, agent.name, workspaceId, since);
     }
 
-    if (sections.has('mutations')) {
+    if (sections.sections.has('mutations')) {
       result.mutations = buildMutations(db, agent.name, workspaceId, since);
     }
 
-    if (sections.has('cost')) {
+    if (sections.sections.has('cost')) {
       result.cost = buildCostAttribution(db, agent.name, workspaceId, since);
     }
 
@@ -83,7 +105,7 @@ export async function GET(
 
 /** Agent identity and profile info */
 function buildIdentity(db: any, agent: any, workspaceId: number) {
-  const config = agent.config ? JSON.parse(agent.config) : {};
+  const config = safeParseJson(agent.config, {});
 
   // Count total tasks ever assigned
   const taskStats = db.prepare(`
@@ -155,11 +177,11 @@ function buildAuditTrail(db: any, agentName: string, workspaceId: number, since:
     by_type: byType,
     activities: activities.map(a => ({
       ...a,
-      data: a.data ? JSON.parse(a.data) : null,
+      data: safeParseJson(a.data, null),
     })),
     audit_log_entries: auditEntries.map(e => ({
       ...e,
-      detail: e.detail ? JSON.parse(e.detail) : null,
+      detail: safeParseJson(e.detail, null),
     })),
   };
 }
@@ -201,16 +223,16 @@ function buildMutations(db: any, agentName: string, workspaceId: number, since: 
   return {
     task_mutations: taskMutations.map(m => ({
       ...m,
-      data: m.data ? JSON.parse(m.data) : null,
+      data: safeParseJson(m.data, null),
     })),
     comments: comments.map(c => ({
       ...c,
-      mentions: c.mentions ? JSON.parse(c.mentions) : [],
+      mentions: safeParseJson(c.mentions, []),
       content_preview: c.content?.substring(0, 200) || '',
     })),
     status_changes: statusChanges.map(s => ({
       ...s,
-      data: s.data ? JSON.parse(s.data) : null,
+      data: safeParseJson(s.data, null),
     })),
     summary: {
       task_mutations_count: taskMutations.length,
@@ -292,5 +314,43 @@ function buildCostAttribution(db: any, agentName: string, workspaceId: number, s
     };
   } catch {
     return { by_model: [], total: { input_tokens: 0, output_tokens: 0, requests: 0 }, daily_trend: [] };
+  }
+}
+
+function parseHours(hoursRaw: string | null): number | null {
+  if (!hoursRaw || hoursRaw.trim() === '') return 24;
+  if (!/^\d+$/.test(hoursRaw)) return null;
+  const hours = Number(hoursRaw);
+  if (!Number.isInteger(hours) || hours < 1 || hours > 720) return null;
+  return hours;
+}
+
+function parseSections(
+  sectionRaw: string | null
+): { sections: Set<string> } | { error: string } {
+  const value = (sectionRaw || 'identity,audit,mutations,cost').trim();
+  const parsed = value
+    .split(',')
+    .map((section) => section.trim())
+    .filter(Boolean);
+
+  if (parsed.length === 0) {
+    return { error: 'Invalid section. Expected one or more of identity,audit,mutations,cost.' };
+  }
+
+  const invalid = parsed.filter((section) => !ALLOWED_SECTIONS.has(section));
+  if (invalid.length > 0) {
+    return { error: `Invalid section value(s): ${invalid.join(', ')}` };
+  }
+
+  return { sections: new Set(parsed) };
+}
+
+function safeParseJson<T>(raw: string | null | undefined, fallback: T): T {
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
   }
 }
