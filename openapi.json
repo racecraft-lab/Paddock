@@ -4626,6 +4626,93 @@
         }
       }
     },
+    "/api/workload": {
+      "get": {
+        "tags": [
+          "Monitoring"
+        ],
+        "summary": "Get real-time workload recommendation",
+        "description": "Returns system workload metrics and an actionable recommendation: `normal`, `throttle`, `shed`, or `pause`. Thresholds are runtime-configurable via `MC_WORKLOAD_*` environment variables.",
+        "operationId": "getWorkloadSignals",
+        "responses": {
+          "200": {
+            "description": "Workload snapshot and recommendation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": { "type": "integer" },
+                    "workspace_id": { "type": "integer" },
+                    "capacity": {
+                      "type": "object",
+                      "properties": {
+                        "active_tasks": { "type": "integer" },
+                        "tasks_last_5m": { "type": "integer" },
+                        "errors_last_5m": { "type": "integer" },
+                        "error_rate_5m": { "type": "number", "minimum": 0, "maximum": 1 },
+                        "completions_last_hour": { "type": "integer" },
+                        "avg_completion_rate_per_hour": { "type": "number" }
+                      }
+                    },
+                    "queue": {
+                      "type": "object",
+                      "properties": {
+                        "total_pending": { "type": "integer" },
+                        "by_status": { "type": "object", "additionalProperties": { "type": "integer" } },
+                        "by_priority": { "type": "object", "additionalProperties": { "type": "integer" } },
+                        "oldest_pending_age_seconds": { "type": ["integer", "null"] },
+                        "estimated_wait_seconds": { "type": ["integer", "null"] },
+                        "estimated_wait_confidence": { "type": "string", "enum": ["calculated", "unknown"] }
+                      }
+                    },
+                    "agents": {
+                      "type": "object",
+                      "properties": {
+                        "total": { "type": "integer" },
+                        "online": { "type": "integer" },
+                        "busy": { "type": "integer" },
+                        "idle": { "type": "integer" },
+                        "offline": { "type": "integer" },
+                        "busy_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+                        "load_distribution": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "agent": { "type": "string" },
+                              "assigned": { "type": "integer" },
+                              "in_progress": { "type": "integer" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "recommendation": {
+                      "type": "object",
+                      "properties": {
+                        "action": { "type": "string", "enum": ["normal", "throttle", "shed", "pause"] },
+                        "reason": { "type": "string" },
+                        "details": { "type": "array", "items": { "type": "string" } },
+                        "submit_ok": { "type": "boolean" },
+                        "suggested_delay_ms": { "type": "integer" }
+                      }
+                    },
+                    "thresholds": {
+                      "type": "object",
+                      "description": "Effective runtime thresholds after environment overrides."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
     "/api/events": {
       "get": {
         "tags": [

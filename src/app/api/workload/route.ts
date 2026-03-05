@@ -56,16 +56,27 @@ export async function GET(request: NextRequest) {
 }
 
 // Configurable thresholds for recommendation engine
-const THRESHOLDS = {
-  queue_depth_normal: 20,
-  queue_depth_throttle: 50,
-  queue_depth_shed: 100,
-  busy_agent_ratio_throttle: 0.8,
-  busy_agent_ratio_shed: 0.95,
-  error_rate_throttle: 0.1,
-  error_rate_shed: 0.25,
-  recent_window_seconds: 300, // 5 minutes for recent activity
-};
+function numEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw || raw.trim().length === 0) return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function buildThresholds() {
+  return {
+    queue_depth_normal: numEnv('MC_WORKLOAD_QUEUE_DEPTH_NORMAL', 20),
+    queue_depth_throttle: numEnv('MC_WORKLOAD_QUEUE_DEPTH_THROTTLE', 50),
+    queue_depth_shed: numEnv('MC_WORKLOAD_QUEUE_DEPTH_SHED', 100),
+    busy_agent_ratio_throttle: numEnv('MC_WORKLOAD_BUSY_RATIO_THROTTLE', 0.8),
+    busy_agent_ratio_shed: numEnv('MC_WORKLOAD_BUSY_RATIO_SHED', 0.95),
+    error_rate_throttle: numEnv('MC_WORKLOAD_ERROR_RATE_THROTTLE', 0.1),
+    error_rate_shed: numEnv('MC_WORKLOAD_ERROR_RATE_SHED', 0.25),
+    recent_window_seconds: Math.max(1, Math.floor(numEnv('MC_WORKLOAD_RECENT_WINDOW_SECONDS', 300))),
+  };
+}
+
+const THRESHOLDS = buildThresholds();
 
 interface CapacityMetrics {
   active_tasks: number;
@@ -82,6 +93,7 @@ interface QueueMetrics {
   by_priority: Record<string, number>;
   oldest_pending_age_seconds: number | null;
   estimated_wait_seconds: number | null;
+  estimated_wait_confidence: 'calculated' | 'unknown';
 }
 
 interface AgentMetrics {
@@ -124,11 +136,13 @@ function buildCapacityMetrics(db: any, workspaceId: number, now: number): Capaci
     `SELECT COUNT(*) as c FROM tasks WHERE workspace_id = ? AND status = 'done' AND updated_at >= ?`
   ).get(workspaceId, dayAgo) as any).c;
 
+  const safeErrorRate = totalLast5m > 0 ? errorsLast5m / totalLast5m : 0;
+
   return {
     active_tasks: activeTasks,
     tasks_last_5m: tasksLast5m,
     errors_last_5m: errorsLast5m,
-    error_rate_5m: totalLast5m > 0 ? Math.round((errorsLast5m / totalLast5m) * 10000) / 10000 : 0,
+    error_rate_5m: Math.max(0, Math.min(1, Math.round(safeErrorRate * 10000) / 10000)),
     completions_last_hour: completionsLastHour,
     avg_completion_rate_per_hour: Math.round((completionsLastDay / 24) * 100) / 100,
   };
@@ -165,12 +179,23 @@ function buildQueueMetrics(db: any, workspaceId: number): QueueMetrics {
     ? Math.round((totalPending / completionsLastHour) * 3600)
     : null;
 
+  const statusMap = Object.fromEntries(byStatus.map(r => [r.status, r.count]));
+  for (const status of pendingStatuses) {
+    if (typeof statusMap[status] !== 'number') statusMap[status] = 0;
+  }
+
+  const priorityMap = Object.fromEntries(byPriority.map(r => [r.priority, r.count]));
+  for (const priority of ['low', 'medium', 'high', 'critical', 'urgent']) {
+    if (typeof priorityMap[priority] !== 'number') priorityMap[priority] = 0;
+  }
+
   return {
     total_pending: totalPending,
-    by_status: Object.fromEntries(byStatus.map(r => [r.status, r.count])),
-    by_priority: Object.fromEntries(byPriority.map(r => [r.priority, r.count])),
+    by_status: statusMap,
+    by_priority: priorityMap,
     oldest_pending_age_seconds: oldestAge,
     estimated_wait_seconds: estimatedWait,
+    estimated_wait_confidence: estimatedWait === null ? 'unknown' : 'calculated',
   };
 }
 
@@ -260,9 +285,9 @@ function computeRecommendation(
   }
 
   // No online agents = pause
-  if (agents.online === 0 && agents.total > 0) {
+  if (agents.online === 0) {
     level = 'pause';
-    reasons.push('No agents online');
+    reasons.push(agents.total > 0 ? 'No agents online' : 'No agents registered');
   }
 
   const delayMap: Record<RecommendationLevel, number> = {
