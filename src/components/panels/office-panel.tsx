@@ -107,7 +107,7 @@ interface PersistedOfficePrefs {
   version: 1
   viewMode: ViewMode
   sidebarFilter: SidebarFilter
-  showInactiveSessions: boolean
+  localSessionFilter?: 'running' | 'not-running'
   mapZoom: number
   mapPan: { x: number; y: number }
   timeTheme: TimeTheme
@@ -476,7 +476,7 @@ export function OfficePanel() {
   const [showSidebar, setShowSidebar] = useState(true)
   const [showMinimap, setShowMinimap] = useState(true)
   const [showEvents, setShowEvents] = useState(true)
-  const [showInactiveSessions, setShowInactiveSessions] = useState(false)
+  const [localSessionFilter, setLocalSessionFilter] = useState<'running' | 'not-running'>('running')
   const [loading, setLoading] = useState(true)
   const [localBootstrapping, setLocalBootstrapping] = useState(isLocalMode)
   const [sidebarFilter, setSidebarFilter] = useState<SidebarFilter>('all')
@@ -635,9 +635,12 @@ export function OfficePanel() {
   }, [agents, isLocalMode, localAgents, sessionAgents])
 
   const visibleDisplayAgents = useMemo(() => {
-    if (!isLocalMode || showInactiveSessions) return displayAgents
+    if (!isLocalMode) return displayAgents
+    if (localSessionFilter === 'not-running') {
+      return displayAgents.filter((agent) => isInactiveLocalSession(agent))
+    }
     return displayAgents.filter((agent) => !isInactiveLocalSession(agent))
-  }, [displayAgents, isLocalMode, showInactiveSessions])
+  }, [displayAgents, isLocalMode, localSessionFilter])
 
   const counts = useMemo(() => {
     const c = { idle: 0, busy: 0, error: 0, offline: 0 }
@@ -801,7 +804,9 @@ export function OfficePanel() {
       if (!prefs || prefs.version !== 1) return
       setViewMode(prefs.viewMode || 'office')
       setSidebarFilter(prefs.sidebarFilter || 'all')
-      setShowInactiveSessions(Boolean(prefs.showInactiveSessions))
+      setLocalSessionFilter(
+        prefs.localSessionFilter === 'not-running' ? 'not-running' : 'running',
+      )
       setMapZoom(Number.isFinite(prefs.mapZoom) ? clamp(prefs.mapZoom, 0.8, 2.2) : 1)
       setMapPan({
         x: Number.isFinite(prefs.mapPan?.x) ? prefs.mapPan.x : 0,
@@ -828,7 +833,7 @@ export function OfficePanel() {
       version: 1,
       viewMode,
       sidebarFilter,
-      showInactiveSessions,
+      localSessionFilter,
       mapZoom,
       mapPan,
       timeTheme,
@@ -848,9 +853,9 @@ export function OfficePanel() {
     mapPan,
     mapPropsState,
     mapZoom,
+    localSessionFilter,
     roomLayoutState,
     showEvents,
-    showInactiveSessions,
     showMinimap,
     showSidebar,
     sidebarFilter,
@@ -1523,16 +1528,28 @@ export function OfficePanel() {
               ))}
             </div>
             {isLocalMode && (
-              <button
-                onClick={() => setShowInactiveSessions((current) => !current)}
-                className={`mb-2 w-full rounded-md border px-2 py-1 text-[10px] transition-smooth ${
-                  showInactiveSessions
-                    ? 'border-amber-500/60 bg-amber-500/15 text-amber-200'
-                    : 'border-white/10 bg-black/20 text-slate-300 hover:bg-black/35'
-                }`}
-              >
-                {showInactiveSessions ? 'Hide Not Running Sessions' : 'Show Not Running Sessions'}
-              </button>
+              <div className="mb-2 flex gap-1.5">
+                <button
+                  onClick={() => setLocalSessionFilter('running')}
+                  className={`flex-1 rounded border px-2 py-1 text-[10px] transition-smooth ${
+                    localSessionFilter === 'running'
+                      ? 'bg-primary/25 border-primary/40 text-primary-foreground'
+                      : 'bg-black/20 border-white/10 text-slate-300 hover:bg-black/35'
+                  }`}
+                >
+                  Running
+                </button>
+                <button
+                  onClick={() => setLocalSessionFilter('not-running')}
+                  className={`flex-1 rounded border px-2 py-1 text-[10px] transition-smooth ${
+                    localSessionFilter === 'not-running'
+                      ? 'bg-amber-500/15 border-amber-500/60 text-amber-200'
+                      : 'bg-black/20 border-white/10 text-slate-300 hover:bg-black/35'
+                  }`}
+                >
+                  Not Running
+                </button>
+              </div>
             )}
             <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
               {filteredRosterRows.map(({ agent, minutesIdle, needsAttention }) => (
