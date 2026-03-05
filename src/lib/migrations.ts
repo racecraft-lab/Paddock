@@ -755,7 +755,27 @@ const migrations: Migration[] = [
     }
   },
   {
-    id: '025_task_outcome_tracking',
+    id: '025_token_usage_task_attribution',
+    up: (db) => {
+      const hasTokenUsageTable = db
+        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'token_usage'`)
+        .get() as { ok?: number } | undefined
+
+      if (!hasTokenUsageTable?.ok) return
+
+      const cols = db.prepare(`PRAGMA table_info(token_usage)`).all() as Array<{ name: string }>
+      const hasCol = (name: string) => cols.some((c) => c.name === name)
+
+      if (!hasCol('task_id')) {
+        db.exec(`ALTER TABLE token_usage ADD COLUMN task_id INTEGER`)
+      }
+
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_token_usage_task_id ON token_usage(task_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_token_usage_workspace_task_time ON token_usage(workspace_id, task_id, created_at)`)
+    }
+  },
+  {
+    id: '026_task_outcome_tracking',
     up: (db) => {
       const hasTasks = db
         .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'tasks'`)
