@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useMissionControl } from '@/store'
 import { useWebSocket } from '@/lib/websocket'
+import { buildGatewayWebSocketUrl } from '@/lib/gateway-url'
 
 interface Gateway {
   id: number
@@ -93,8 +94,11 @@ export function MultiGatewayPanel() {
   }
 
   const connectTo = (gw: Gateway) => {
-    const proto = window.location.protocol === 'https:' ? 'wss' : 'ws'
-    const wsUrl = `${proto}://${gw.host}:${gw.port}`
+    const wsUrl = buildGatewayWebSocketUrl({
+      host: gw.host,
+      port: gw.port,
+      browserProtocol: window.location.protocol,
+    })
     connect(wsUrl, '') // token is handled by the gateway entry, not passed to frontend
   }
 
@@ -192,7 +196,7 @@ export function MultiGatewayPanel() {
               gateway={gw}
               health={healthByGatewayId.get(gw.id)}
               isProbing={probing === gw.id}
-              isCurrentlyConnected={connection.url?.includes(`:${gw.port}`) ?? false}
+              isCurrentlyConnected={(connection.url?.includes(gw.host) ?? false) || (connection.url?.includes(`:${gw.port}`) ?? false)}
               onSetPrimary={() => setPrimary(gw)}
               onDelete={() => deleteGateway(gw.id)}
               onConnect={() => connectTo(gw)}

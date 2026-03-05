@@ -83,6 +83,8 @@ export function useWebSocket() {
       normalized.includes('origin not allowed') ||
       normalized.includes('device identity required') ||
       normalized.includes('device_auth_signature_invalid') ||
+      normalized.includes('invalid connect params') ||
+      normalized.includes('/client/id') ||
       normalized.includes('auth rate limit') ||
       normalized.includes('rate limited')
     )
@@ -99,6 +101,9 @@ export function useWebSocket() {
     }
     if (normalized.includes('device_auth_signature_invalid')) {
       return 'Gateway rejected device signature. Clear local device identity in the browser and reconnect.'
+    }
+    if (normalized.includes('invalid connect params') || normalized.includes('/client/id')) {
+      return 'Gateway rejected client identity params. Ensure NEXT_PUBLIC_GATEWAY_CLIENT_ID is set to openclaw-control-ui and reconnect.'
     }
     if (normalized.includes('auth rate limit') || normalized.includes('rate limited')) {
       return 'Gateway authentication is rate limited. Wait briefly, then reconnect.'
