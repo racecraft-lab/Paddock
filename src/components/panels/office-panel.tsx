@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useMissionControl, Agent } from '@/store'
 
 type ViewMode = 'office' | 'org-chart'
+type OrgSegmentMode = 'category' | 'role' | 'status'
 
 interface Desk {
   agent: Agent
@@ -75,6 +76,7 @@ export function OfficePanel() {
   const { agents } = useMissionControl()
   const [localAgents, setLocalAgents] = useState<Agent[]>([])
   const [viewMode, setViewMode] = useState<ViewMode>('office')
+  const [orgSegmentMode, setOrgSegmentMode] = useState<OrgSegmentMode>('category')
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -122,6 +124,64 @@ export function OfficePanel() {
     }
     return groups
   }, [displayAgents])
+
+  const categoryGroups = useMemo(() => {
+    const groups = new Map<string, Agent[]>()
+    const getCategory = (agent: Agent): string => {
+      const name = (agent.name || '').toLowerCase()
+      if (name.startsWith('habi-')) return 'Habi Lanes'
+      if (name.startsWith('ops-')) return 'Ops Automation'
+      if (name.includes('canary')) return 'Canary'
+      if (name.startsWith('main')) return 'Core'
+      if (name.startsWith('remote-')) return 'Remote'
+      return 'Other'
+    }
+
+    for (const a of displayAgents) {
+      const category = getCategory(a)
+      if (!groups.has(category)) groups.set(category, [])
+      groups.get(category)!.push(a)
+    }
+
+    const order = ['Habi Lanes', 'Ops Automation', 'Core', 'Canary', 'Remote', 'Other']
+    return new Map(
+      [...groups.entries()].sort(([a], [b]) => {
+        const ai = order.indexOf(a)
+        const bi = order.indexOf(b)
+        const av = ai === -1 ? Number.MAX_SAFE_INTEGER : ai
+        const bv = bi === -1 ? Number.MAX_SAFE_INTEGER : bi
+        if (av !== bv) return av - bv
+        return a.localeCompare(b)
+      })
+    )
+  }, [displayAgents])
+
+  const statusGroups = useMemo(() => {
+    const groups = new Map<string, Agent[]>()
+    for (const a of displayAgents) {
+      const key = statusLabel[a.status] || a.status
+      if (!groups.has(key)) groups.set(key, [])
+      groups.get(key)!.push(a)
+    }
+
+    const order = ['Working', 'Available', 'Error', 'Away']
+    return new Map(
+      [...groups.entries()].sort(([a], [b]) => {
+        const ai = order.indexOf(a)
+        const bi = order.indexOf(b)
+        const av = ai === -1 ? Number.MAX_SAFE_INTEGER : ai
+        const bv = bi === -1 ? Number.MAX_SAFE_INTEGER : bi
+        if (av !== bv) return av - bv
+        return a.localeCompare(b)
+      })
+    )
+  }, [displayAgents])
+
+  const orgGroups = useMemo(() => {
+    if (orgSegmentMode === 'role') return roleGroups
+    if (orgSegmentMode === 'status') return statusGroups
+    return categoryGroups
+  }, [categoryGroups, orgSegmentMode, roleGroups, statusGroups])
 
   if (loading && displayAgents.length === 0) {
     return (
@@ -237,11 +297,40 @@ export function OfficePanel() {
         </div>
       ) : (
         <div className="space-y-6">
-          {[...roleGroups.entries()].map(([role, members]) => (
-            <div key={role} className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              Segmented by{' '}
+              <span className="font-medium text-foreground">
+                {orgSegmentMode === 'category' ? 'category' : orgSegmentMode}
+              </span>
+            </div>
+            <div className="flex rounded-md overflow-hidden border border-border">
+              <button
+                onClick={() => setOrgSegmentMode('category')}
+                className={`px-3 py-1 text-sm transition-smooth ${orgSegmentMode === 'category' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+              >
+                Category
+              </button>
+              <button
+                onClick={() => setOrgSegmentMode('role')}
+                className={`px-3 py-1 text-sm transition-smooth ${orgSegmentMode === 'role' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+              >
+                Role
+              </button>
+              <button
+                onClick={() => setOrgSegmentMode('status')}
+                className={`px-3 py-1 text-sm transition-smooth ${orgSegmentMode === 'status' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+              >
+                Status
+              </button>
+            </div>
+          </div>
+
+          {[...orgGroups.entries()].map(([segment, members]) => (
+            <div key={segment} className="bg-card border border-border rounded-xl p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-6 bg-primary rounded-full" />
-                <h3 className="font-semibold text-foreground">{role}</h3>
+                <h3 className="font-semibold text-foreground">{segment}</h3>
                 <span className="text-xs text-muted-foreground ml-1">({members.length})</span>
               </div>
               <div className="flex flex-wrap gap-3">

@@ -113,6 +113,14 @@ Inter-agent communication via the comms API. Agents can send messages to each ot
 ### Integrations
 Outbound webhooks with delivery history, configurable alert rules with cooldowns, and multi-gateway connection management. Optional 1Password CLI integration for secret management.
 
+### Workspace Management
+Workspaces (tenant instances) are created and managed through the **Super Admin** panel, accessible from the sidebar under **Admin > Super Admin**. From there, admins can:
+- **Create** new client instances (slug, display name, Linux user, gateway port, plan tier)
+- **Monitor** provisioning jobs and their step-by-step progress
+- **Decommission** tenants with optional cleanup of state directories and Linux users
+
+Each workspace gets its own isolated environment with a dedicated OpenClaw gateway, state directory, and workspace root. See the [Super Admin API](#api-overview) endpoints under `/api/super/*` for programmatic access.
+
 ### Update Checker
 Automatic GitHub release check notifies you when a new version is available, displayed as a banner in the dashboard.
 
@@ -287,6 +295,20 @@ All endpoints require authentication unless noted. Full reference below.
 </details>
 
 <details>
+<summary><strong>Super Admin (Workspace/Tenant Management)</strong></summary>
+
+| Method | Path | Role | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/super/tenants` | admin | List all tenants with latest provisioning status |
+| `POST` | `/api/super/tenants` | admin | Create tenant and queue bootstrap job |
+| `POST` | `/api/super/tenants/[id]/decommission` | admin | Queue tenant decommission job |
+| `GET` | `/api/super/provision-jobs` | admin | List provisioning jobs (filter: `?tenant_id=`, `?status=`) |
+| `POST` | `/api/super/provision-jobs` | admin | Queue additional job for existing tenant |
+| `POST` | `/api/super/provision-jobs/[id]/action` | admin | Approve, reject, or cancel a provisioning job |
+
+</details>
+
+<details>
 <summary><strong>Direct CLI</strong></summary>
 
 | Method | Path | Role | Description |
@@ -426,6 +448,24 @@ pnpm test             # Vitest unit tests
 pnpm test:e2e         # Playwright E2E
 pnpm quality:gate     # All checks
 ```
+
+## Agent Diagnostics Contract
+
+`GET /api/agents/{id}/diagnostics` is self-scoped by default.
+
+- Self access:
+  - Session user where `username === agent.name`, or
+  - API-key request with `x-agent-name` matching `{id}` agent name
+- Cross-agent access:
+  - Allowed only with explicit `?privileged=1` and admin auth
+- Query validation:
+  - `hours` must be an integer between `1` and `720`
+  - `section` must be a comma-separated subset of `summary,tasks,errors,activity,trends,tokens`
+
+Trend alerts in the `trends.alerts` response are derived from current-vs-previous window comparisons:
+
+- `warning`: error spikes or severe activity drop
+- `info`: throughput drops or potential stall patterns
 
 ## Roadmap
 
