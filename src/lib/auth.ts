@@ -31,6 +31,8 @@ export interface User {
   created_at: number
   updated_at: number
   last_login_at: number | null
+  /** Agent name when request is made on behalf of a specific agent (via X-Agent-Name header) */
+  agent_name?: string | null
 }
 
 export interface UserSession {
@@ -268,12 +270,15 @@ export function deleteUser(id: number): boolean {
  * For API key auth, returns a synthetic "api" user.
  */
 export function getUserFromRequest(request: Request): User | null {
+  // Extract agent identity header (optional, for attribution)
+  const agentName = (request.headers.get('x-agent-name') || '').trim() || null
+
   // Check session cookie
   const cookieHeader = request.headers.get('cookie') || ''
   const sessionToken = parseCookie(cookieHeader, 'mc-session')
   if (sessionToken) {
     const user = validateSession(sessionToken)
-    if (user) return user
+    if (user) return { ...user, agent_name: agentName }
   }
 
   // Check API key - return synthetic user
@@ -289,6 +294,7 @@ export function getUserFromRequest(request: Request): User | null {
       created_at: 0,
       updated_at: 0,
       last_login_at: null,
+      agent_name: agentName,
     }
   }
 
