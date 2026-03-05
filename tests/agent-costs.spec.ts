@@ -97,4 +97,64 @@ test.describe('Agent Costs API', () => {
     const res = await request.get('/api/tokens?action=agent-costs&timeframe=all')
     expect(res.status()).toBe(401)
   })
+
+  test('GET action=task-costs returns task-level attribution and unattributed rollup', async ({ request }) => {
+    const agentName = `e2e-taskcost-agent-${Date.now()}`
+    const createTaskRes = await request.post('/api/tasks', {
+      headers: API_KEY_HEADER,
+      data: {
+        title: `E2E Task Cost ${Date.now()}`,
+        description: 'Task cost attribution test',
+        assigned_to: agentName,
+      },
+    })
+    expect(createTaskRes.status()).toBe(201)
+    const createdTask = await createTaskRes.json()
+    const taskId = createdTask.task.id as number
+
+    const postAttributed = await request.post('/api/tokens', {
+      headers: API_KEY_HEADER,
+      data: {
+        model: 'claude-sonnet-4',
+        sessionId: `${agentName}:chat`,
+        inputTokens: 300,
+        outputTokens: 100,
+        taskId,
+      },
+    })
+    expect(postAttributed.status()).toBe(200)
+
+    const postUnattributed = await request.post('/api/tokens', {
+      headers: API_KEY_HEADER,
+      data: {
+        model: 'claude-haiku-3.5',
+        sessionId: `${agentName}:chat`,
+        inputTokens: 50,
+        outputTokens: 50,
+      },
+    })
+    expect(postUnattributed.status()).toBe(200)
+
+    const res = await request.get('/api/tokens?action=task-costs&timeframe=hour', {
+      headers: API_KEY_HEADER,
+    })
+    const responseText = await res.text()
+    expect(res.status(), responseText).toBe(200)
+    const body = JSON.parse(responseText)
+
+    expect(body).toHaveProperty('summary')
+    expect(body).toHaveProperty('tasks')
+    expect(body).toHaveProperty('agents')
+    expect(body).toHaveProperty('projects')
+    expect(body).toHaveProperty('unattributed')
+    expect(Array.isArray(body.tasks)).toBe(true)
+
+    const matchingTask = body.tasks.find((task: any) => task.taskId === taskId)
+    expect(matchingTask).toBeTruthy()
+    expect(matchingTask.title).toBe(createdTask.task.title)
+    expect(matchingTask.stats.totalTokens).toBe(400)
+    expect(matchingTask.stats.requestCount).toBeGreaterThanOrEqual(1)
+    expect(body.agents[agentName].taskIds).toContain(taskId)
+    expect(body.unattributed.requestCount).toBeGreaterThanOrEqual(1)
+  })
 })
