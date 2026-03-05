@@ -108,6 +108,7 @@ interface ThemePalette {
   roomTone: string
   floorOpacityA: number
   floorOpacityB: number
+  accentGlow: string
 }
 
 interface PersistedOfficePrefs {
@@ -899,6 +900,7 @@ export function OfficePanel() {
         roomTone: 'linear-gradient(to bottom right, rgba(255,219,167,0.2), rgba(82,67,96,0.12))',
         floorOpacityA: 0.95,
         floorOpacityB: 0.8,
+        accentGlow: 'rgba(255,183,120,0.32)',
       }
     }
     if (timeTheme === 'day') {
@@ -916,6 +918,7 @@ export function OfficePanel() {
         roomTone: 'linear-gradient(to bottom right, rgba(196,236,255,0.18), rgba(81,116,171,0.08))',
         floorOpacityA: 0.98,
         floorOpacityB: 0.86,
+        accentGlow: 'rgba(176,232,255,0.3)',
       }
     }
     if (timeTheme === 'dusk') {
@@ -933,6 +936,7 @@ export function OfficePanel() {
         roomTone: 'linear-gradient(to bottom right, rgba(244,164,209,0.17), rgba(88,62,126,0.16))',
         floorOpacityA: 0.9,
         floorOpacityB: 0.75,
+        accentGlow: 'rgba(232,141,206,0.27)',
       }
     }
     return {
@@ -949,8 +953,24 @@ export function OfficePanel() {
       roomTone: 'linear-gradient(to bottom right, rgba(94,133,207,0.17), rgba(19,27,52,0.24))',
       floorOpacityA: 0.84,
       floorOpacityB: 0.66,
+      accentGlow: 'rgba(116,152,255,0.26)',
     }
   }, [timeTheme])
+
+  const nightSparkles = useMemo(
+    () =>
+      Array.from({ length: 14 }, (_, idx) => {
+        const seed = hashNumber(`night-${idx}`)
+        return {
+          id: idx,
+          x: 6 + (seed % 88),
+          y: 6 + ((seed >> 3) % 38),
+          delay: (seed % 7) * 0.4,
+          size: 2 + (seed % 3),
+        }
+      }),
+    [],
+  )
 
   const heatmapPoints = useMemo(() => {
     return renderedWorkers.map((worker) => {
@@ -1644,6 +1664,72 @@ export function OfficePanel() {
             <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundImage: themePalette.glow }} />
             <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundImage: themePalette.atmosphere, mixBlendMode: 'screen', opacity: 0.9 }} />
             <div className="absolute inset-0 pointer-events-none z-0" style={{ backgroundImage: themePalette.shadowVeil }} />
+            {timeTheme === 'dawn' && (
+              <div
+                className="absolute inset-0 pointer-events-none z-[2]"
+                style={{
+                  background: `linear-gradient(115deg, transparent 8%, ${themePalette.accentGlow} 24%, transparent 42%)`,
+                  mixBlendMode: 'screen',
+                  animation: 'mcSunSweep 17s ease-in-out infinite',
+                }}
+              />
+            )}
+            {timeTheme === 'day' && (
+              <>
+                <div
+                  className="absolute inset-0 pointer-events-none z-[2]"
+                  style={{
+                    background: `linear-gradient(112deg, transparent 10%, ${themePalette.accentGlow} 24%, transparent 44%)`,
+                    mixBlendMode: 'screen',
+                    animation: 'mcSunSweep 16s ease-in-out infinite',
+                  }}
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none z-[2]"
+                  style={{
+                    background: 'linear-gradient(96deg, transparent 24%, rgba(255,255,255,0.15) 38%, transparent 58%)',
+                    mixBlendMode: 'screen',
+                    animation: 'mcSunSweepReverse 20s ease-in-out infinite',
+                  }}
+                />
+              </>
+            )}
+            {timeTheme === 'dusk' && (
+              <div
+                className="absolute inset-0 pointer-events-none z-[2]"
+                style={{
+                  background: `radial-gradient(circle at 50% 22%, ${themePalette.accentGlow} 0, transparent 56%)`,
+                  mixBlendMode: 'screen',
+                  animation: 'mcDuskPulse 7.5s ease-in-out infinite',
+                }}
+              />
+            )}
+            {timeTheme === 'night' && (
+              <>
+                <div
+                  className="absolute inset-0 pointer-events-none z-[2]"
+                  style={{
+                    background: `radial-gradient(circle at 18% 12%, ${themePalette.accentGlow} 0, transparent 44%), radial-gradient(circle at 82% 16%, rgba(138,178,255,0.2) 0, transparent 42%)`,
+                    mixBlendMode: 'screen',
+                    animation: 'mcNightBloom 8.5s ease-in-out infinite',
+                  }}
+                />
+                {nightSparkles.map((spark) => (
+                  <div
+                    key={`spark-${spark.id}`}
+                    className="absolute pointer-events-none z-[2] rounded-full bg-white/80"
+                    style={{
+                      left: `${spark.x}%`,
+                      top: `${spark.y}%`,
+                      width: `${spark.size}px`,
+                      height: `${spark.size}px`,
+                      boxShadow: '0 0 8px rgba(180,210,255,0.9)',
+                      animation: `mcTwinkle 2.6s ease-in-out ${spark.delay}s infinite`,
+                    }}
+                  />
+                ))}
+              </>
+            )}
 
             <div className="absolute left-[8%] top-[8%] rounded-md bg-black/55 border border-white/10 text-slate-100 text-xs px-2 py-1 font-mono z-30">
               MAIN FLOOR
@@ -2262,6 +2348,33 @@ export function OfficePanel() {
           </div>
         </div>
       )}
+      <style jsx>{`
+        @keyframes mcSunSweep {
+          0% { transform: translateX(-10%) translateY(-2%); opacity: 0.34; }
+          50% { transform: translateX(8%) translateY(2%); opacity: 0.56; }
+          100% { transform: translateX(-10%) translateY(-2%); opacity: 0.34; }
+        }
+        @keyframes mcSunSweepReverse {
+          0% { transform: translateX(8%) translateY(2%); opacity: 0.18; }
+          50% { transform: translateX(-8%) translateY(-2%); opacity: 0.32; }
+          100% { transform: translateX(8%) translateY(2%); opacity: 0.18; }
+        }
+        @keyframes mcDuskPulse {
+          0% { opacity: 0.28; transform: scale(1); }
+          50% { opacity: 0.52; transform: scale(1.03); }
+          100% { opacity: 0.28; transform: scale(1); }
+        }
+        @keyframes mcNightBloom {
+          0% { opacity: 0.25; }
+          50% { opacity: 0.5; }
+          100% { opacity: 0.25; }
+        }
+        @keyframes mcTwinkle {
+          0% { opacity: 0.25; transform: scale(0.9); }
+          50% { opacity: 1; transform: scale(1.15); }
+          100% { opacity: 0.25; transform: scale(0.9); }
+        }
+      `}</style>
     </div>
   )
 }
