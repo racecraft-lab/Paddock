@@ -289,6 +289,7 @@ All endpoints require authentication unless noted. Full reference below.
 | `GET` | `/api/webhooks/deliveries` | admin | Delivery history |
 | `GET/POST/PUT/DELETE` | `/api/alerts` | admin | Alert rules |
 | `GET/POST/PUT/DELETE` | `/api/gateways` | admin | Gateway connections |
+| `POST` | `/api/gateways/connect` | operator | Resolve websocket URL + token for selected gateway |
 | `GET/PUT/DELETE/POST` | `/api/integrations` | admin | Integration management |
 | `POST` | `/api/github` | admin | Trigger GitHub Issues sync |
 
@@ -381,7 +382,7 @@ See [`.env.example`](.env.example) for the complete list. Key variables:
 | `OPENCLAW_GATEWAY_TOKEN` | No | Server-side gateway auth token |
 | `OPENCLAW_TOOLS_PROFILE` | No | Tools profile for `sessions_spawn` (recommended: `coding`) |
 | `NEXT_PUBLIC_GATEWAY_TOKEN` | No | Browser-side gateway auth token (must use `NEXT_PUBLIC_` prefix) |
-| `NEXT_PUBLIC_GATEWAY_CLIENT_ID` | No | Gateway UI client ID for websocket handshake (default: `control-ui`) |
+| `NEXT_PUBLIC_GATEWAY_CLIENT_ID` | No | Gateway UI client ID for websocket handshake (default: `openclaw-control-ui`) |
 | `OPENCLAW_MEMORY_DIR` | No | Memory browser root (see note below) |
 | `MC_CLAUDE_HOME` | No | Path to `~/.claude` directory (default: `~/.claude`) |
 | `MC_TRUSTED_PROXIES` | No | Comma-separated trusted proxy IPs for XFF parsing |

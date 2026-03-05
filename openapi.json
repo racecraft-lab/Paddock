@@ -3408,6 +3408,63 @@
         }
       }
     },
+    "/api/gateways/connect": {
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Resolve websocket connect payload for a gateway",
+        "operationId": "connectGateway",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "id"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resolved websocket URL and token metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "ws_url": { "type": "string" },
+                    "token": { "type": "string" },
+                    "token_set": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/api/github": {
       "get": {
         "tags": [

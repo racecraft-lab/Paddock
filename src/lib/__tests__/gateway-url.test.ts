@@ -33,4 +33,12 @@ describe('buildGatewayWebSocketUrl', () => {
       browserProtocol: 'https:',
     })).toBe('wss://gateway.example.com:8443')
   })
+
+  it('drops path/query/hash when full dashboard URL is pasted', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: 'https://bill.tail8b4599.ts.net:4443/sessions?foo=bar#frag',
+      port: 18789,
+      browserProtocol: 'https:',
+    })).toBe('wss://bill.tail8b4599.ts.net:4443')
+  })
 })
