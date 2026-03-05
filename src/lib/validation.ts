@@ -37,6 +37,13 @@ export const createTaskSchema = z.object({
   due_date: z.number().optional(),
   estimated_hours: z.number().min(0).optional(),
   actual_hours: z.number().min(0).optional(),
+  outcome: z.enum(['success', 'failed', 'partial', 'abandoned']).optional(),
+  error_message: z.string().max(5000).optional(),
+  resolution: z.string().max(5000).optional(),
+  feedback_rating: z.number().int().min(1).max(5).optional(),
+  feedback_notes: z.string().max(5000).optional(),
+  retry_count: z.number().int().min(0).optional(),
+  completed_at: z.number().optional(),
   tags: z.array(z.string()).default([] as string[]),
   metadata: z.record(z.string(), z.unknown()).default({} as Record<string, unknown>),
 })
