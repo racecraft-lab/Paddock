@@ -21,6 +21,12 @@ export default defineConfig({
     command: 'pnpm start',
     url: 'http://127.0.0.1:3005',
     reuseExistingServer: true,
-    timeout: 30_000,
+    timeout: 120_000,
+    env: {
+      ...process.env,
+      API_KEY: process.env.API_KEY || 'test-api-key-e2e-12345',
+      AUTH_USER: process.env.AUTH_USER || 'testadmin',
+      AUTH_PASS: process.env.AUTH_PASS || 'testpass1234!',
+    },
   }
 })
