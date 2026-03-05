@@ -5958,6 +5958,90 @@
         }
       }
     },
+    "/api/tasks/queue": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Poll next task for an agent",
+        "operationId": "pollTaskQueue",
+        "parameters": [
+          {
+            "name": "agent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent name. Optional when x-agent-name header is provided."
+          },
+          {
+            "name": "max_capacity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "default": 1
+            }
+          },
+          {
+            "name": "x-agent-name",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent attribution header used when `agent` query param is omitted."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Queue poll result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "oneOf": [
+                        { "$ref": "#/components/schemas/Task" },
+                        { "type": "null" }
+                      ]
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "continue_current",
+                        "assigned",
+                        "at_capacity",
+                        "no_tasks_available"
+                      ]
+                    },
+                    "agent": {
+                      "type": "string"
+                    },
+                    "timestamp": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
     "/api/tasks/{id}": {
       "get": {
         "tags": [
