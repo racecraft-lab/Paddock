@@ -16,7 +16,7 @@ const log = createClientLogger('WebSocket')
 
 // Gateway protocol version (v3 required by OpenClaw 2026.x)
 const PROTOCOL_VERSION = 3
-const DEFAULT_GATEWAY_CLIENT_ID = process.env.NEXT_PUBLIC_GATEWAY_CLIENT_ID || 'control-ui'
+const DEFAULT_GATEWAY_CLIENT_ID = process.env.NEXT_PUBLIC_GATEWAY_CLIENT_ID || 'openclaw-control-ui'
 
 // Heartbeat configuration
 const PING_INTERVAL_MS = 30_000
@@ -59,6 +59,8 @@ export function useWebSocket() {
   const pingCounterRef = useRef<number>(0)
   const pingSentTimestamps = useRef<Map<string, number>>(new Map())
   const missedPongsRef = useRef<number>(0)
+  // Compat flag for gateway versions that may not implement ping RPC.
+  const gatewaySupportsPingRef = useRef<boolean>(true)
 
   const {
     connection,
@@ -116,6 +118,7 @@ export function useWebSocket() {
 
     pingIntervalRef.current = setInterval(() => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN || !handshakeCompleteRef.current) return
+      if (!gatewaySupportsPingRef.current) return
 
       // Check missed pongs
       if (missedPongsRef.current >= MAX_MISSED_PONGS) {
@@ -358,6 +361,13 @@ export function useWebSocket() {
 
     // Handle pong responses (any response to a ping ID counts — even errors prove the connection is alive)
     if (frame.type === 'res' && frame.id?.startsWith('ping-')) {
+      const rawPingError = frame.error?.message || JSON.stringify(frame.error || '')
+      if (!frame.ok && /unknown method:\s*ping/i.test(rawPingError)) {
+        gatewaySupportsPingRef.current = false
+        missedPongsRef.current = 0
+        pingSentTimestamps.current.clear()
+        log.info('Gateway ping RPC unavailable; using passive heartbeat mode')
+      }
       handlePong(frame.id)
       return
     }

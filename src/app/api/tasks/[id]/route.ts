@@ -6,6 +6,7 @@ import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, updateTaskSchema } from '@/lib/validation';
 import { resolveMentionRecipients } from '@/lib/mentions';
+import { normalizeTaskUpdateStatus } from '@/lib/task-status';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -115,7 +116,7 @@ export async function PUT(
     const {
       title,
       description,
-      status,
+      status: requestedStatus,
       priority,
       project_id,
       assigned_to,
@@ -125,6 +126,12 @@ export async function PUT(
       tags,
       metadata
     } = body;
+    const normalizedStatus = normalizeTaskUpdateStatus({
+      currentStatus: currentTask.status,
+      requestedStatus,
+      assignedTo: assigned_to,
+      assignedToProvided: assigned_to !== undefined,
+    })
     
     const now = Math.floor(Date.now() / 1000);
     const descriptionMentionResolution = description !== undefined
@@ -152,15 +159,15 @@ export async function PUT(
       fieldsToUpdate.push('description = ?');
       updateParams.push(description);
     }
-    if (status !== undefined) {
-      if (status === 'done' && !hasAegisApproval(db, taskId, workspaceId)) {
+    if (normalizedStatus !== undefined) {
+      if (normalizedStatus === 'done' && !hasAegisApproval(db, taskId, workspaceId)) {
         return NextResponse.json(
           { error: 'Aegis approval is required to move task to done.' },
           { status: 403 }
         )
       }
       fieldsToUpdate.push('status = ?');
-      updateParams.push(status);
+      updateParams.push(normalizedStatus);
     }
     if (priority !== undefined) {
       fieldsToUpdate.push('priority = ?');
@@ -240,8 +247,8 @@ export async function PUT(
     // Track changes and log activities
     const changes: string[] = [];
     
-    if (status && status !== currentTask.status) {
-      changes.push(`status: ${currentTask.status} → ${status}`);
+    if (normalizedStatus !== undefined && normalizedStatus !== currentTask.status) {
+      changes.push(`status: ${currentTask.status} → ${normalizedStatus}`);
       
       // Create notification for status change if assigned
       if (currentTask.assigned_to) {
@@ -249,7 +256,7 @@ export async function PUT(
           currentTask.assigned_to,
           'status_change',
           'Task Status Updated',
-          `Task "${currentTask.title}" status changed to ${status}`,
+          `Task "${currentTask.title}" status changed to ${normalizedStatus}`,
           'task',
           taskId,
           workspaceId
@@ -322,7 +329,7 @@ export async function PUT(
             priority: currentTask.priority,
             assigned_to: currentTask.assigned_to
           },
-          newValues: { title, status, priority, assigned_to }
+          newValues: { title, status: normalizedStatus ?? currentTask.status, priority, assigned_to }
         },
         workspaceId
       );

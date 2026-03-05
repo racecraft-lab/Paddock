@@ -517,7 +517,7 @@ export function MemoryTab({
         <div>
           <h4 className="text-lg font-medium text-foreground">Working Memory</h4>
           <p className="text-xs text-muted-foreground mt-1">
-            Agent-level scratchpad only. Use the global Memory page to browse all workspace memory files.
+            This is <strong className="text-foreground">agent-level</strong> scratchpad memory (stored as WORKING.md in the database), not the workspace memory folder.
           </p>
         </div>
         <div className="flex gap-2">
@@ -541,6 +541,14 @@ export function MemoryTab({
             </>
           )}
         </div>
+      </div>
+
+      {/* Info Banner */}
+      <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-xs text-blue-300">
+        <strong className="text-blue-200">Agent Memory vs Workspace Memory:</strong>{' '}
+        This tab edits only this agent&apos;s private working memory (a scratchpad stored in the database).
+        To browse or edit all workspace memory files (daily logs, knowledge base, MEMORY.md, etc.), visit the{' '}
+        <Link href="/memory" className="text-blue-400 underline hover:text-blue-300">Memory Browser</Link> page.
       </div>
 
       {/* Memory Content */}
@@ -852,6 +860,7 @@ export function CreateAgentModal({
     dockerNetwork: 'none' as 'none' | 'bridge',
     session_key: '',
     write_to_gateway: true,
+    provision_openclaw_workspace: true,
   })
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -916,10 +925,12 @@ export function CreateAgentModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
+          openclaw_id: formData.id || undefined,
           role: formData.role,
           session_key: formData.session_key || undefined,
           template: selectedTemplate || undefined,
           write_to_gateway: formData.write_to_gateway,
+          provision_openclaw_workspace: formData.provision_openclaw_workspace,
           gateway_config: {
             model: { primary: primaryModel },
             identity: { name: formData.name, theme: formData.role, emoji: formData.emoji },
@@ -1198,6 +1209,16 @@ export function CreateAgentModal({
                   className="w-4 h-4 rounded border-border"
                 />
                 <span className="text-sm text-foreground">Add to gateway config (openclaw.json)</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.provision_openclaw_workspace}
+                  onChange={(e) => setFormData(prev => ({ ...prev, provision_openclaw_workspace: e.target.checked }))}
+                  className="w-4 h-4 rounded border-border"
+                />
+                <span className="text-sm text-foreground">Provision full OpenClaw workspace (`openclaw agents add`)</span>
               </label>
             </div>
           )}
