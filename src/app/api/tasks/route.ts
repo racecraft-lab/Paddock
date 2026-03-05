@@ -171,6 +171,14 @@ export async function POST(request: NextRequest) {
       created_by = user?.username || 'system',
       due_date,
       estimated_hours,
+      actual_hours,
+      outcome,
+      error_message,
+      resolution,
+      feedback_rating,
+      feedback_notes,
+      retry_count = 0,
+      completed_at,
       tags = [],
       metadata = {}
     } = body;
@@ -191,6 +199,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
+    const resolvedCompletedAt = completed_at ?? (normalizedStatus === 'done' ? now : null)
+
     const createTaskTx = db.transaction(() => {
       const resolvedProjectId = resolveProjectId(db, workspaceId, project_id)
       db.prepare(`
@@ -207,8 +217,10 @@ export async function POST(request: NextRequest) {
       const insertStmt = db.prepare(`
         INSERT INTO tasks (
           title, description, status, priority, project_id, project_ticket_no, assigned_to, created_by,
-          created_at, updated_at, due_date, estimated_hours, tags, metadata, workspace_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          created_at, updated_at, due_date, estimated_hours, actual_hours,
+          outcome, error_message, resolution, feedback_rating, feedback_notes, retry_count, completed_at,
+          tags, metadata, workspace_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `)
 
       const dbResult = insertStmt.run(
@@ -224,6 +236,14 @@ export async function POST(request: NextRequest) {
         now,
         due_date,
         estimated_hours,
+        actual_hours,
+        outcome,
+        error_message,
+        resolution,
+        feedback_rating,
+        feedback_notes,
+        retry_count,
+        resolvedCompletedAt,
         JSON.stringify(tags),
         JSON.stringify(metadata),
         workspaceId
@@ -238,7 +258,8 @@ export async function POST(request: NextRequest) {
       title,
       status: normalizedStatus,
       priority,
-      assigned_to
+      assigned_to,
+      ...(outcome ? { outcome } : {})
     }, workspaceId);
 
     if (created_by) {
@@ -317,6 +338,11 @@ export async function PUT(request: NextRequest) {
       SET status = ?, updated_at = ?
       WHERE id = ? AND workspace_id = ?
     `);
+    const updateDoneStmt = db.prepare(`
+      UPDATE tasks
+      SET status = ?, updated_at = ?, completed_at = COALESCE(completed_at, ?)
+      WHERE id = ? AND workspace_id = ?
+    `);
 
     const actor = auth.user.username
 
@@ -329,7 +355,11 @@ export async function PUT(request: NextRequest) {
           throw new Error(`Aegis approval required for task ${task.id}`)
         }
 
-        updateStmt.run(task.status, now, task.id, workspaceId);
+        if (task.status === 'done') {
+          updateDoneStmt.run(task.status, now, now, task.id, workspaceId);
+        } else {
+          updateStmt.run(task.status, now, task.id, workspaceId);
+        }
 
         // Log status change if different
         if (oldTask && oldTask.status !== task.status) {

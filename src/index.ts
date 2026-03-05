@@ -99,6 +99,13 @@ export interface Task {
   due_date?: number
   estimated_hours?: number
   actual_hours?: number
+  outcome?: 'success' | 'failed' | 'partial' | 'abandoned'
+  error_message?: string
+  resolution?: string
+  feedback_rating?: number
+  feedback_notes?: string
+  retry_count?: number
+  completed_at?: number
   tags?: string[]
   metadata?: any
 }
