@@ -2,11 +2,12 @@
 
 import { useMissionControl } from '@/store'
 import { useEffect, useState } from 'react'
+import { Button } from '@/components/ui/button'
 
 export function LiveFeed() {
   const { logs, sessions, activities, connection, dashboardMode, toggleLiveFeed } = useMissionControl()
   const isLocal = dashboardMode === 'local'
-  const [expanded, setExpanded] = useState(true)
+  const [expanded, setExpanded] = useState(false)
   const [hasCollapsed, setHasCollapsed] = useState(false)
 
   // Combine logs, activities, and (in local mode) session events into a unified feed
@@ -44,15 +45,16 @@ export function LiveFeed() {
   if (!expanded) {
     return (
       <div className="w-10 bg-card border-l border-border flex flex-col items-center py-3 shrink-0">
-        <button
+        <Button
+          variant="ghost"
+          size="icon-sm"
           onClick={() => setExpanded(true)}
-          className="w-8 h-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth flex items-center justify-center"
           title="Show live feed"
         >
           <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M10 3l-5 5 5 5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </button>
+        </Button>
         {/* Mini indicators */}
         <div className="mt-4 flex flex-col gap-2 items-center">
           {feedItems.slice(0, 5).map((item) => (
@@ -80,24 +82,28 @@ export function LiveFeed() {
           <span className="text-2xs text-muted-foreground font-mono-tight">{feedItems.length}</span>
         </div>
         <div className="flex items-center gap-0.5">
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => { setExpanded(false); setHasCollapsed(true) }}
-            className="w-6 h-6 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth flex items-center justify-center"
+            className="w-6 h-6"
             title="Collapse feed"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={toggleLiveFeed}
-            className="w-6 h-6 rounded text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth flex items-center justify-center"
+            className="w-6 h-6"
             title="Close feed"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
 

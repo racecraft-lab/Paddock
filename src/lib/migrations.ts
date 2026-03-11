@@ -2,9 +2,15 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import type Database from 'better-sqlite3'
 
-type Migration = {
+export type Migration = {
   id: string
   up: (db: Database.Database) => void
+}
+
+// Plugin hook: extensions can register additional migrations without modifying this file.
+const extraMigrations: Migration[] = []
+export function registerMigrations(newMigrations: Migration[]): void {
+  extraMigrations.push(...newMigrations)
 }
 
 const migrations: Migration[] = [
@@ -799,32 +805,441 @@ const migrations: Migration[] = [
     }
   },
   {
-    id: '027_agent_api_keys',
+    id: '027_enhanced_projects',
     up: (db) => {
-      const hasAgents = db
-        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'agents'`)
+      const hasProjects = db
+        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'projects'`)
         .get() as { ok?: number } | undefined
-      if (!hasAgents?.ok) return
+      if (!hasProjects?.ok) return
 
+      const cols = db.prepare(`PRAGMA table_info(projects)`).all() as Array<{ name: string }>
+      const hasCol = (name: string) => cols.some((c) => c.name === name)
+
+      if (!hasCol('github_repo')) db.exec(`ALTER TABLE projects ADD COLUMN github_repo TEXT`)
+      if (!hasCol('deadline')) db.exec(`ALTER TABLE projects ADD COLUMN deadline INTEGER`)
+      if (!hasCol('color')) db.exec(`ALTER TABLE projects ADD COLUMN color TEXT`)
+      if (!hasCol('metadata')) db.exec(`ALTER TABLE projects ADD COLUMN metadata TEXT`)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS project_agent_assignments (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          project_id INTEGER NOT NULL,
+          agent_name TEXT NOT NULL,
+          role TEXT DEFAULT 'member',
+          assigned_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+          UNIQUE(project_id, agent_name)
+        );
+        CREATE INDEX IF NOT EXISTS idx_paa_project ON project_agent_assignments(project_id);
+        CREATE INDEX IF NOT EXISTS idx_paa_agent ON project_agent_assignments(agent_name);
+      `)
+    }
+  },
+  {
+    id: '028_github_sync_v2',
+    up: (db) => {
+      // Tasks: promote GitHub fields from metadata JSON to proper columns
+      const taskCols = db.prepare(`PRAGMA table_info(tasks)`).all() as Array<{ name: string }>
+      const hasTaskCol = (name: string) => taskCols.some((c) => c.name === name)
+
+      if (!hasTaskCol('github_issue_number')) db.exec(`ALTER TABLE tasks ADD COLUMN github_issue_number INTEGER`)
+      if (!hasTaskCol('github_repo')) db.exec(`ALTER TABLE tasks ADD COLUMN github_repo TEXT`)
+      if (!hasTaskCol('github_synced_at')) db.exec(`ALTER TABLE tasks ADD COLUMN github_synced_at INTEGER`)
+      if (!hasTaskCol('github_branch')) db.exec(`ALTER TABLE tasks ADD COLUMN github_branch TEXT`)
+      if (!hasTaskCol('github_pr_number')) db.exec(`ALTER TABLE tasks ADD COLUMN github_pr_number INTEGER`)
+      if (!hasTaskCol('github_pr_state')) db.exec(`ALTER TABLE tasks ADD COLUMN github_pr_state TEXT`)
+
+      // Unique index for dedup (partial — only rows with issue numbers)
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_github_issue
+          ON tasks(workspace_id, github_repo, github_issue_number)
+          WHERE github_issue_number IS NOT NULL
+      `)
+
+      // Projects: sync control columns
+      const projCols = db.prepare(`PRAGMA table_info(projects)`).all() as Array<{ name: string }>
+      const hasProjCol = (name: string) => projCols.some((c) => c.name === name)
+
+      if (!hasProjCol('github_sync_enabled')) db.exec(`ALTER TABLE projects ADD COLUMN github_sync_enabled INTEGER NOT NULL DEFAULT 0`)
+      if (!hasProjCol('github_labels_initialized')) db.exec(`ALTER TABLE projects ADD COLUMN github_labels_initialized INTEGER NOT NULL DEFAULT 0`)
+      if (!hasProjCol('github_default_branch')) db.exec(`ALTER TABLE projects ADD COLUMN github_default_branch TEXT DEFAULT 'main'`)
+
+      // Enhanced sync history columns
+      const syncCols = db.prepare(`PRAGMA table_info(github_syncs)`).all() as Array<{ name: string }>
+      const hasSyncCol = (name: string) => syncCols.some((c) => c.name === name)
+
+      if (!hasSyncCol('project_id')) db.exec(`ALTER TABLE github_syncs ADD COLUMN project_id INTEGER`)
+      if (!hasSyncCol('changes_pushed')) db.exec(`ALTER TABLE github_syncs ADD COLUMN changes_pushed INTEGER NOT NULL DEFAULT 0`)
+      if (!hasSyncCol('changes_pulled')) db.exec(`ALTER TABLE github_syncs ADD COLUMN changes_pulled INTEGER NOT NULL DEFAULT 0`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_github_syncs_project ON github_syncs(project_id)`)
+
+      // Data migration: copy existing metadata JSON values into new columns
+      db.exec(`
+        UPDATE tasks
+        SET github_repo = json_extract(metadata, '$.github_repo'),
+            github_issue_number = json_extract(metadata, '$.github_issue_number'),
+            github_synced_at = CAST(strftime('%s', json_extract(metadata, '$.github_synced_at')) AS INTEGER)
+        WHERE json_extract(metadata, '$.github_repo') IS NOT NULL
+          AND github_repo IS NULL
+      `)
+    }
+  },
+  {
+    id: '029_link_workspaces_to_tenants',
+    up: (db) => {
+      const hasWorkspaces = db
+        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'workspaces'`)
+        .get() as { ok?: number } | undefined
+      if (!hasWorkspaces?.ok) return
+
+      const hasTenants = db
+        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'tenants'`)
+        .get() as { ok?: number } | undefined
+      if (!hasTenants?.ok) return
+
+      const workspaceCols = db.prepare(`PRAGMA table_info(workspaces)`).all() as Array<{ name: string }>
+      const hasWorkspaceTenantId = workspaceCols.some((c) => c.name === 'tenant_id')
+      if (!hasWorkspaceTenantId) {
+        db.exec(`ALTER TABLE workspaces ADD COLUMN tenant_id INTEGER`)
+      }
+
+      const tenantCount = (db.prepare(`SELECT COUNT(*) as c FROM tenants`).get() as { c: number } | undefined)?.c || 0
+      let defaultTenantId: number
+      if (tenantCount > 0) {
+        const existing = db.prepare(`
+          SELECT id
+          FROM tenants
+          ORDER BY CASE WHEN status = 'active' THEN 0 ELSE 1 END, id ASC
+          LIMIT 1
+        `).get() as { id: number } | undefined
+        if (!existing?.id) throw new Error('Failed to resolve default tenant')
+        defaultTenantId = existing.id
+      } else {
+        const rawHost = String(process.env.MC_HOSTNAME || 'default').trim().toLowerCase()
+        const slug = rawHost.replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 32) || 'default'
+        const linuxUser = (String(process.env.USER || 'local').trim().toLowerCase().replace(/[^a-z0-9_-]+/g, '-') || 'local').slice(0, 30)
+        const home = String(process.env.HOME || '/tmp').trim() || '/tmp'
+        const insert = db.prepare(`
+          INSERT INTO tenants (slug, display_name, linux_user, plan_tier, status, openclaw_home, workspace_root, config, created_by, owner_gateway)
+          VALUES (?, ?, ?, 'standard', 'active', ?, ?, '{}', 'system', ?)
+        `).run(
+          slug,
+          'Local Owner',
+          linuxUser,
+          `${home}/.openclaw`,
+          `${home}/workspace`,
+          process.env.MC_DEFAULT_OWNER_GATEWAY || process.env.MC_DEFAULT_GATEWAY_NAME || 'primary'
+        )
+        defaultTenantId = Number(insert.lastInsertRowid)
+      }
+
+      db.prepare(`UPDATE workspaces SET tenant_id = ? WHERE tenant_id IS NULL`).run(defaultTenantId)
+
+      // Ensure session rows can carry tenant context derived from workspace.
+      const sessionCols = db.prepare(`PRAGMA table_info(user_sessions)`).all() as Array<{ name: string }>
+      if (!sessionCols.some((c) => c.name === 'tenant_id')) {
+        db.exec(`ALTER TABLE user_sessions ADD COLUMN tenant_id INTEGER`)
+      }
+      db.exec(`
+        UPDATE user_sessions
+        SET tenant_id = (
+          SELECT w.tenant_id
+          FROM users u
+          JOIN workspaces w ON w.id = COALESCE(user_sessions.workspace_id, u.workspace_id, 1)
+          WHERE u.id = user_sessions.user_id
+          LIMIT 1
+        )
+        WHERE tenant_id IS NULL
+      `)
+      db.prepare(`UPDATE user_sessions SET tenant_id = ? WHERE tenant_id IS NULL`).run(defaultTenantId)
+
+      const workspaceFk = db.prepare(`PRAGMA foreign_key_list(workspaces)`).all() as Array<{ table: string; from: string; to: string }>
+      const hasTenantFk = workspaceFk.some((fk) => fk.table === 'tenants' && fk.from === 'tenant_id' && fk.to === 'id')
+      const tenantCol = (db.prepare(`PRAGMA table_info(workspaces)`).all() as Array<{ name: string; notnull: number }>).find((c) => c.name === 'tenant_id')
+      const tenantColNotNull = tenantCol?.notnull === 1
+
+      if (!hasTenantFk || !tenantColNotNull) {
+        db.exec(`ALTER TABLE workspaces RENAME TO workspaces__legacy`)
+        db.exec(`
+          CREATE TABLE workspaces (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            slug TEXT NOT NULL UNIQUE,
+            name TEXT NOT NULL,
+            tenant_id INTEGER NOT NULL,
+            created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+            updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+            FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
+          )
+        `)
+        db.prepare(`
+          INSERT INTO workspaces (id, slug, name, tenant_id, created_at, updated_at)
+          SELECT id, slug, name, COALESCE(tenant_id, ?), created_at, updated_at
+          FROM workspaces__legacy
+        `).run(defaultTenantId)
+        db.exec(`DROP TABLE workspaces__legacy`)
+      }
+
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_workspaces_slug ON workspaces(slug)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_workspaces_tenant_id ON workspaces(tenant_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_user_sessions_tenant_id ON user_sessions(tenant_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_user_sessions_workspace_tenant ON user_sessions(workspace_id, tenant_id)`)
+    }
+  },
+  {
+    id: '032_adapter_configs',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS adapter_configs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          framework TEXT NOT NULL,
+          config TEXT DEFAULT '{}',
+          enabled INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE
+        )
+      `)
+      db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_adapter_configs_workspace_framework ON adapter_configs(workspace_id, framework)`)
+    }
+  },
+  {
+    id: '033_skills',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS skills (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          source TEXT NOT NULL,
+          path TEXT NOT NULL,
+          description TEXT,
+          content_hash TEXT,
+          registry_slug TEXT,
+          registry_version TEXT,
+          security_status TEXT DEFAULT 'unchecked',
+          installed_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          UNIQUE(source, name)
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_skills_name ON skills(name)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_skills_source ON skills(source)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_skills_registry_slug ON skills(registry_slug)`)
+    }
+  },
+  {
+    id: '034_agents_source',
+    up(db: Database.Database) {
+      const cols = db.prepare(`PRAGMA table_info(agents)`).all() as Array<{ name: string }>
+      if (!cols.some(c => c.name === 'source')) {
+        db.exec(`ALTER TABLE agents ADD COLUMN source TEXT DEFAULT 'manual'`)
+      }
+      if (!cols.some(c => c.name === 'content_hash')) {
+        db.exec(`ALTER TABLE agents ADD COLUMN content_hash TEXT`)
+      }
+      if (!cols.some(c => c.name === 'workspace_path')) {
+        db.exec(`ALTER TABLE agents ADD COLUMN workspace_path TEXT`)
+      }
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_agents_source ON agents(source)`)
+    }
+  },
+  {
+    id: '035_api_keys_v2',
+    up(db: Database.Database) {
+      // Previous migrations (027/030) may have created an api_keys table with a different schema.
+      // Drop and recreate with the full user-scoped schema.
+      const existing = db
+        .prepare(`SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = 'api_keys'`)
+        .get() as { ok?: number } | undefined
+
+      if (existing?.ok) {
+        db.exec(`DROP TABLE api_keys`)
+      }
+
+      db.exec(`
+        CREATE TABLE api_keys (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          label TEXT NOT NULL,
+          key_prefix TEXT NOT NULL,
+          key_hash TEXT NOT NULL UNIQUE,
+          role TEXT NOT NULL DEFAULT 'viewer',
+          scopes TEXT,
+          expires_at INTEGER,
+          last_used_at INTEGER,
+          last_used_ip TEXT,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          tenant_id INTEGER NOT NULL DEFAULT 1,
+          is_revoked INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_key_hash ON api_keys(key_hash)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys(user_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_workspace_id ON api_keys(workspace_id)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_api_keys_prefix ON api_keys(key_prefix)`)
+    }
+  },
+  {
+    id: '036_recurring_tasks_index',
+    up(db: Database.Database) {
+      // Index to efficiently find recurring task templates
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_tasks_recurring
+        ON tasks(workspace_id)
+        WHERE json_extract(metadata, '$.recurrence.enabled') = 1
+      `)
+    }
+  },
+  {
+    id: '037_security_audit',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS security_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          event_type TEXT NOT NULL,
+          severity TEXT NOT NULL DEFAULT 'info',
+          source TEXT,
+          agent_name TEXT,
+          detail TEXT,
+          ip_address TEXT,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          tenant_id INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch())
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_security_events_event_type ON security_events(event_type)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_security_events_severity ON security_events(severity)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_security_events_created_at ON security_events(created_at)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_security_events_agent_name ON security_events(agent_name)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_security_events_workspace_id ON security_events(workspace_id)`)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS agent_trust_scores (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          agent_name TEXT NOT NULL,
+          trust_score REAL NOT NULL DEFAULT 1.0,
+          auth_failures INTEGER NOT NULL DEFAULT 0,
+          injection_attempts INTEGER NOT NULL DEFAULT 0,
+          rate_limit_hits INTEGER NOT NULL DEFAULT 0,
+          secret_exposures INTEGER NOT NULL DEFAULT 0,
+          successful_tasks INTEGER NOT NULL DEFAULT 0,
+          failed_tasks INTEGER NOT NULL DEFAULT 0,
+          last_anomaly_at INTEGER,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          UNIQUE(agent_name, workspace_id)
+        )
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS mcp_call_log (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          agent_name TEXT,
+          mcp_server TEXT,
+          tool_name TEXT,
+          success INTEGER NOT NULL DEFAULT 1,
+          duration_ms INTEGER,
+          error TEXT,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch())
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_mcp_call_log_agent_name ON mcp_call_log(agent_name)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_mcp_call_log_created_at ON mcp_call_log(created_at)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_mcp_call_log_tool_name ON mcp_call_log(tool_name)`)
+    }
+  },
+  {
+    id: '038_agent_evals',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS eval_runs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          agent_name TEXT NOT NULL,
+          eval_layer TEXT NOT NULL,
+          score REAL,
+          passed INTEGER,
+          detail TEXT,
+          golden_dataset_id INTEGER,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch())
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_eval_runs_agent_name ON eval_runs(agent_name)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_eval_runs_eval_layer ON eval_runs(eval_layer)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_eval_runs_created_at ON eval_runs(created_at)`)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS eval_golden_sets (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          description TEXT,
+          entries TEXT NOT NULL DEFAULT '[]',
+          created_by TEXT,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          UNIQUE(name, workspace_id)
+        )
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS eval_traces (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          agent_name TEXT NOT NULL,
+          task_id INTEGER,
+          trace TEXT NOT NULL DEFAULT '[]',
+          convergence_score REAL,
+          total_steps INTEGER,
+          optimal_steps INTEGER,
+          workspace_id INTEGER NOT NULL DEFAULT 1,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch())
+        )
+      `)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_eval_traces_agent_name ON eval_traces(agent_name)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_eval_traces_task_id ON eval_traces(task_id)`)
+    }
+  },
+  {
+    id: '039_session_costs',
+    up(db: Database.Database) {
+      const columns = db.prepare(`PRAGMA table_info(token_usage)`).all() as Array<{ name: string }>
+      const existing = new Set(columns.map((c) => c.name))
+
+      if (!existing.has('cost_usd')) {
+        db.exec(`ALTER TABLE token_usage ADD COLUMN cost_usd REAL`)
+      }
+      if (!existing.has('agent_name')) {
+        db.exec(`ALTER TABLE token_usage ADD COLUMN agent_name TEXT`)
+      }
+      if (!existing.has('task_id')) {
+        db.exec(`ALTER TABLE token_usage ADD COLUMN task_id INTEGER`)
+      }
+    }
+  },
+  {
+    id: '040_agent_api_keys',
+    up(db: Database.Database) {
       db.exec(`
         CREATE TABLE IF NOT EXISTS agent_api_keys (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           agent_id INTEGER NOT NULL,
           workspace_id INTEGER NOT NULL DEFAULT 1,
           name TEXT NOT NULL,
-          key_hash TEXT NOT NULL UNIQUE,
+          key_hash TEXT NOT NULL,
           key_prefix TEXT NOT NULL,
-          scopes TEXT NOT NULL DEFAULT '["viewer"]',
+          scopes TEXT NOT NULL DEFAULT '[]',
           expires_at INTEGER,
           revoked_at INTEGER,
-          created_by TEXT,
           last_used_at INTEGER,
+          created_by TEXT,
           created_at INTEGER NOT NULL DEFAULT (unixepoch()),
           updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
-          FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE CASCADE
-        );
+          UNIQUE(workspace_id, key_hash)
+        )
       `)
-
       db.exec(`CREATE INDEX IF NOT EXISTS idx_agent_api_keys_agent_id ON agent_api_keys(agent_id)`)
       db.exec(`CREATE INDEX IF NOT EXISTS idx_agent_api_keys_workspace_id ON agent_api_keys(workspace_id)`)
       db.exec(`CREATE INDEX IF NOT EXISTS idx_agent_api_keys_expires_at ON agent_api_keys(expires_at)`)
@@ -845,7 +1260,7 @@ export function runMigrations(db: Database.Database) {
     db.prepare('SELECT id FROM schema_migrations').all().map((row: any) => row.id)
   )
 
-  for (const migration of migrations) {
+  for (const migration of [...migrations, ...extraMigrations]) {
     if (applied.has(migration.id)) continue
     db.transaction(() => {
       migration.up(db)

@@ -5,6 +5,8 @@ import { getAllGatewaySessions } from '@/lib/sessions'
 import { eventBus } from '@/lib/event-bus'
 import { requireRole } from '@/lib/auth'
 import { logger } from '@/lib/logger'
+import { scanForInjection, sanitizeForPrompt } from '@/lib/injection-guard'
+import { callOpenClawGateway } from '@/lib/openclaw-gateway'
 
 type ForwardInfo = {
   attempted: boolean
@@ -12,6 +14,19 @@ type ForwardInfo = {
   reason?: string
   session?: string
   runId?: string
+}
+
+type ToolEvent = {
+  name: string
+  input?: string
+  output?: string
+  status?: string
+}
+
+type ChatAttachmentInput = {
+  name?: string
+  type?: string
+  dataUrl?: string
 }
 
 const COORDINATOR_AGENT =
@@ -31,6 +46,35 @@ function parseGatewayJson(raw: string): any | null {
   }
 }
 
+function toGatewayAttachments(value: unknown): Array<{ type: 'image'; mimeType: string; fileName?: string; content: string }> | undefined {
+  if (!Array.isArray(value)) return undefined
+
+  const attachments = value.flatMap((entry) => {
+    const file = entry as ChatAttachmentInput
+    if (!file || typeof file !== 'object' || typeof file.dataUrl !== 'string') return []
+    const match = /^data:([^;]+);base64,(.+)$/.exec(file.dataUrl)
+    if (!match) return []
+    if (!match[1].startsWith('image/')) return []
+    return [{
+      type: 'image' as const,
+      mimeType: match[1],
+      fileName: typeof file.name === 'string' ? file.name : undefined,
+      content: match[2],
+    }]
+  })
+
+  return attachments.length > 0 ? attachments : undefined
+}
+
+function safeParseMetadata(raw: string | null | undefined): any | null {
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
 function createChatReply(
   db: ReturnType<typeof getDatabase>,
   workspaceId: number,
@@ -38,7 +82,7 @@ function createChatReply(
   fromAgent: string,
   toAgent: string,
   content: string,
-  messageType: 'text' | 'status' = 'status',
+  messageType: 'text' | 'status' | 'tool_call' = 'status',
   metadata: Record<string, any> | null = null
 ) {
   const replyInsert = db
@@ -62,7 +106,7 @@ function createChatReply(
 
   eventBus.broadcast('chat.message', {
     ...row,
-    metadata: row.metadata ? JSON.parse(row.metadata) : null,
+    metadata: safeParseMetadata(row.metadata),
   })
 }
 
@@ -91,7 +135,106 @@ function extractReplyText(waitPayload: any): string | null {
     }
   }
 
+  if (Array.isArray(waitPayload.output)) {
+    const parts: string[] = []
+    for (const item of waitPayload.output) {
+      if (!item || typeof item !== 'object') continue
+      if (typeof item.text === 'string' && item.text.trim()) parts.push(item.text.trim())
+      if (item.type === 'message' && Array.isArray(item.content)) {
+        for (const block of item.content) {
+          if (!block || typeof block !== 'object') continue
+          const blockType = String(block.type || '')
+          if ((blockType === 'text' || blockType === 'output_text' || blockType === 'input_text') && typeof block.text === 'string' && block.text.trim()) {
+            parts.push(block.text.trim())
+          }
+        }
+      }
+    }
+    if (parts.length > 0) return parts.join('\n').slice(0, 8000)
+  }
+
   return null
+}
+
+function normalizeToolEvent(raw: any): ToolEvent | null {
+  if (!raw || typeof raw !== 'object') return null
+  const name = String(raw.name || raw.tool || raw.toolName || raw.function || raw.call || '').trim()
+  if (!name) return null
+
+  const inputRaw = raw.input ?? raw.args ?? raw.arguments ?? raw.params
+  const outputRaw = raw.output ?? raw.result ?? raw.response
+  const statusRaw =
+    raw.status ??
+    (raw.isError === true ? 'error' : undefined) ??
+    (raw.ok === false ? 'error' : undefined) ??
+    (raw.success === true ? 'ok' : undefined)
+
+  const input =
+    typeof inputRaw === 'string'
+      ? inputRaw.slice(0, 2000)
+      : inputRaw !== undefined
+        ? JSON.stringify(inputRaw).slice(0, 2000)
+        : undefined
+  const output =
+    typeof outputRaw === 'string'
+      ? outputRaw.slice(0, 4000)
+      : outputRaw !== undefined
+        ? JSON.stringify(outputRaw).slice(0, 4000)
+        : undefined
+  const status = statusRaw !== undefined ? String(statusRaw).slice(0, 60) : undefined
+  return { name, input, output, status }
+}
+
+function extractToolEvents(waitPayload: any): ToolEvent[] {
+  if (!waitPayload || typeof waitPayload !== 'object') return []
+
+  const candidates = [
+    waitPayload.toolCalls,
+    waitPayload.tools,
+    waitPayload.calls,
+    waitPayload.events,
+    waitPayload.output?.toolCalls,
+    waitPayload.output?.tools,
+    waitPayload.output?.events,
+  ]
+
+  const events: ToolEvent[] = []
+  for (const list of candidates) {
+    if (!Array.isArray(list)) continue
+    for (const item of list) {
+      const evt = normalizeToolEvent(item)
+      if (evt) events.push(evt)
+      if (events.length >= 20) return events
+    }
+  }
+
+  // OpenAI Responses-style output array
+  if (Array.isArray(waitPayload.output)) {
+    for (const item of waitPayload.output) {
+      if (!item || typeof item !== 'object') continue
+      const itemType = String(item.type || '').toLowerCase()
+      if (itemType === 'function_call' || itemType === 'tool_call') {
+        const evt = normalizeToolEvent({
+          name: item.name || item.tool_name || item.toolName,
+          arguments: item.arguments || item.input,
+          output: item.output || item.result,
+          status: item.status,
+        })
+        if (evt) events.push(evt)
+      } else if (itemType === 'message' && Array.isArray(item.content)) {
+        for (const block of item.content) {
+          const blockType = String(block?.type || '').toLowerCase()
+          if (blockType === 'tool_use' || blockType === 'tool_call' || blockType === 'function_call') {
+            const evt = normalizeToolEvent(block)
+            if (evt) events.push(evt)
+          }
+        }
+      }
+      if (events.length >= 20) return events
+    }
+  }
+
+  return events
 }
 
 /**
@@ -144,7 +287,7 @@ export async function GET(request: NextRequest) {
 
     const parsed = messages.map((msg) => ({
       ...msg,
-      metadata: msg.metadata ? JSON.parse(msg.metadata) : null
+      metadata: safeParseMetadata(msg.metadata),
     }))
 
     // Get total count for pagination
@@ -189,7 +332,11 @@ export async function POST(request: NextRequest) {
     const workspaceId = auth.user.workspace_id ?? 1
     const body = await request.json()
 
-    const from = auth.user.display_name || auth.user.username || 'system'
+    const requestedFrom = typeof body.from === 'string' ? body.from.trim() : ''
+    const isCoordinatorOverride = requestedFrom.toLowerCase() === COORDINATOR_AGENT.toLowerCase()
+    const from = isCoordinatorOverride
+      ? COORDINATOR_AGENT
+      : (auth.user.display_name || auth.user.username || 'system')
     const to = body.to ? (body.to as string).trim() : null
     const content = (body.content || '').trim()
     const message_type = body.message_type || 'text'
@@ -201,6 +348,21 @@ export async function POST(request: NextRequest) {
         { error: '"content" is required' },
         { status: 400 }
       )
+    }
+
+    // Scan content for injection when it will be forwarded to an agent
+    if (body.forward && to) {
+      const injectionReport = scanForInjection(content, { context: 'prompt' })
+      if (!injectionReport.safe) {
+        const criticals = injectionReport.matches.filter(m => m.severity === 'critical')
+        if (criticals.length > 0) {
+          logger.warn({ to, rules: criticals.map(m => m.rule) }, 'Blocked chat message: injection detected')
+          return NextResponse.json(
+            { error: 'Message blocked: potentially unsafe content detected', injection: criticals.map(m => ({ rule: m.rule, description: m.description })) },
+            { status: 422 }
+          )
+        }
+      }
     }
 
     const stmt = db.prepare(`
@@ -253,7 +415,10 @@ export async function POST(request: NextRequest) {
           .prepare('SELECT * FROM agents WHERE lower(name) = lower(?) AND workspace_id = ?')
           .get(to, workspaceId) as any
 
-        let sessionKey: string | null = agent?.session_key || null
+        // Use explicit session key from caller if provided, then DB, then on-disk lookup
+        let sessionKey: string | null = typeof body.sessionKey === 'string' && body.sessionKey
+          ? body.sessionKey
+          : agent?.session_key || null
 
         // Fallback: derive session from on-disk gateway session stores
         if (!sessionKey) {
@@ -302,32 +467,53 @@ export async function POST(request: NextRequest) {
           }
         } else {
           try {
-            const invokeParams: any = {
-              message: `Message from ${from}: ${content}`,
-              idempotencyKey: `mc-${messageId}-${Date.now()}`,
-              deliver: false,
-            }
-            if (sessionKey) invokeParams.sessionKey = sessionKey
-            else invokeParams.agentId = openclawAgentId
+            const idempotencyKey = `mc-${messageId}-${Date.now()}`
 
-            const invokeResult = await runOpenClaw(
-              [
-                'gateway',
-                'call',
-                'agent',
-                '--timeout',
-                '10000',
-                '--params',
-                JSON.stringify(invokeParams),
-                '--json',
-              ],
-              { timeoutMs: 12000 }
-            )
-            const acceptedPayload = parseGatewayJson(invokeResult.stdout)
-            forwardInfo.delivered = true
-            forwardInfo.session = sessionKey || openclawAgentId || undefined
-            if (typeof acceptedPayload?.runId === 'string' && acceptedPayload.runId) {
-              forwardInfo.runId = acceptedPayload.runId
+            if (sessionKey) {
+              const acceptedPayload = await callOpenClawGateway<any>(
+                'chat.send',
+                {
+                  sessionKey,
+                  message: content,
+                  idempotencyKey,
+                  deliver: false,
+                  attachments: toGatewayAttachments(body.attachments),
+                },
+                12000,
+              )
+              const status = String(acceptedPayload?.status || '').toLowerCase()
+              forwardInfo.delivered = status === 'started' || status === 'ok' || status === 'in_flight'
+              forwardInfo.session = sessionKey
+              if (typeof acceptedPayload?.runId === 'string' && acceptedPayload.runId) {
+                forwardInfo.runId = acceptedPayload.runId
+              }
+            } else {
+              const invokeParams: any = {
+                message: `Message from ${from}: ${content}`,
+                idempotencyKey,
+                deliver: false,
+              }
+              invokeParams.agentId = openclawAgentId
+
+              const invokeResult = await runOpenClaw(
+                [
+                  'gateway',
+                  'call',
+                  'agent',
+                  '--timeout',
+                  '10000',
+                  '--params',
+                  JSON.stringify(invokeParams),
+                  '--json',
+                ],
+                { timeoutMs: 12000 }
+              )
+              const acceptedPayload = parseGatewayJson(invokeResult.stdout)
+              forwardInfo.delivered = true
+              forwardInfo.session = openclawAgentId || undefined
+              if (typeof acceptedPayload?.runId === 'string' && acceptedPayload.runId) {
+                forwardInfo.runId = acceptedPayload.runId
+              }
             }
           } catch (err) {
             // OpenClaw may return accepted JSON on stdout but still emit a late stderr warning.
@@ -404,6 +590,29 @@ export async function POST(request: NextRequest) {
 
                 const waitPayload = parseGatewayJson(waitResult.stdout)
                 const waitStatus = String(waitPayload?.status || '').toLowerCase()
+                const toolEvents = extractToolEvents(waitPayload)
+
+                if (toolEvents.length > 0) {
+                  for (const evt of toolEvents) {
+                    createChatReply(
+                      db,
+                      workspaceId,
+                      conversation_id,
+                      COORDINATOR_AGENT,
+                      from,
+                      evt.name,
+                      'tool_call',
+                      {
+                        event: 'tool_call',
+                        toolName: evt.name,
+                        input: evt.input || null,
+                        output: evt.output || null,
+                        status: evt.status || null,
+                        runId: forwardInfo.runId || null,
+                      }
+                    )
+                  }
+                }
 
                 if (waitStatus === 'error') {
                   const reason =
@@ -486,7 +695,10 @@ export async function POST(request: NextRequest) {
     const created = db.prepare('SELECT * FROM messages WHERE id = ? AND workspace_id = ?').get(messageId, workspaceId) as Message
     const parsedMessage = {
       ...created,
-      metadata: created.metadata ? JSON.parse(created.metadata) : null
+      metadata: {
+        ...(safeParseMetadata(created.metadata) || {}),
+        forwardInfo: forwardInfo || undefined,
+      },
     }
 
     // Broadcast to SSE clients

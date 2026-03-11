@@ -27,8 +27,10 @@ const MODEL_PRICING: Record<string, { input: number; output: number }> = {
 
 const DEFAULT_PRICING = { input: 3 / 1_000_000, output: 15 / 1_000_000 }
 
-// Session is "active" if last message was within this window
-const ACTIVE_THRESHOLD_MS = 5 * 60 * 1000
+// Session is "active" if last activity was within this window.
+// Local CLI sessions can remain interactive without emitting frequent logs.
+const ACTIVE_THRESHOLD_MS = 90 * 60 * 1000
+const FUTURE_TOLERANCE_MS = 60 * 1000
 
 interface SessionStats {
   sessionId: string
@@ -69,7 +71,14 @@ interface JSONLEntry {
 }
 
 /** Parse a single JSONL file and extract session stats */
-function parseSessionFile(filePath: string, projectSlug: string): SessionStats | null {
+function clampTimestamp(ms: number): number {
+  if (!Number.isFinite(ms) || ms <= 0) return 0
+  const now = Date.now()
+  if (ms > now + FUTURE_TOLERANCE_MS) return now
+  return ms
+}
+
+function parseSessionFile(filePath: string, projectSlug: string, fileMtimeMs: number): SessionStats | null {
   try {
     const content = readFileSync(filePath, 'utf-8')
     const lines = content.split('\n').filter(Boolean)
@@ -168,10 +177,12 @@ function parseSessionFile(filePath: string, projectSlug: string): SessionStats |
       cacheCreationTokens * pricing.input * 1.25 +
       outputTokens * pricing.output
 
-    // Determine if active
-    const isActive = lastMessageAt
-      ? (Date.now() - new Date(lastMessageAt).getTime()) < ACTIVE_THRESHOLD_MS
-      : false
+    const parsedFirstMs = firstMessageAt ? clampTimestamp(new Date(firstMessageAt).getTime()) : 0
+    const parsedLastMs = lastMessageAt ? clampTimestamp(new Date(lastMessageAt).getTime()) : 0
+    const mtimeMs = clampTimestamp(fileMtimeMs)
+    const effectiveLastMs = Math.max(parsedLastMs, mtimeMs)
+    const effectiveFirstMs = parsedFirstMs || mtimeMs
+    const isActive = effectiveLastMs > 0 && (Date.now() - effectiveLastMs) < ACTIVE_THRESHOLD_MS
 
     // Store total input tokens (including cache) for display
     const totalInputTokens = inputTokens + cacheReadTokens + cacheCreationTokens
@@ -188,8 +199,8 @@ function parseSessionFile(filePath: string, projectSlug: string): SessionStats |
       inputTokens: totalInputTokens,
       outputTokens,
       estimatedCost: Math.round(estimatedCost * 10000) / 10000,
-      firstMessageAt,
-      lastMessageAt,
+      firstMessageAt: effectiveFirstMs ? new Date(effectiveFirstMs).toISOString() : null,
+      lastMessageAt: effectiveLastMs ? new Date(effectiveLastMs).toISOString() : null,
       lastUserPrompt,
       isActive,
     }
@@ -235,7 +246,7 @@ export function scanClaudeSessions(): SessionStats[] {
 
     for (const file of files) {
       const filePath = join(projectDir, file)
-      const parsed = parseSessionFile(filePath, projectSlug)
+      const parsed = parseSessionFile(filePath, projectSlug, statSync(filePath).mtimeMs)
       if (parsed) sessions.push(parsed)
     }
   }
@@ -243,8 +254,17 @@ export function scanClaudeSessions(): SessionStats[] {
   return sessions
 }
 
-/** Scan and upsert sessions into the database */
-export async function syncClaudeSessions(): Promise<{ ok: boolean; message: string }> {
+// Throttle full disk scans — at most once per 30 seconds
+let lastSyncAt = 0
+let lastSyncResult: { ok: boolean; message: string } = { ok: true, message: 'Not yet scanned' }
+const SYNC_THROTTLE_MS = 30_000
+
+/** Scan and upsert sessions into the database (throttled to avoid repeated disk scans) */
+export async function syncClaudeSessions(force = false): Promise<{ ok: boolean; message: string }> {
+  const now = Date.now()
+  if (!force && lastSyncAt > 0 && (now - lastSyncAt) < SYNC_THROTTLE_MS) {
+    return lastSyncResult
+  }
   try {
     const sessions = scanClaudeSessions()
     if (sessions.length === 0) {
@@ -296,12 +316,13 @@ export async function syncClaudeSessions(): Promise<{ ok: boolean; message: stri
     })()
 
     const active = sessions.filter(s => s.isActive).length
-    return {
-      ok: true,
-      message: `Scanned ${upserted} session(s), ${active} active`,
-    }
+    lastSyncAt = Date.now()
+    lastSyncResult = { ok: true, message: `Scanned ${upserted} session(s), ${active} active` }
+    return lastSyncResult
   } catch (err: any) {
     logger.error({ err }, 'Claude session sync failed')
-    return { ok: false, message: `Scan failed: ${err.message}` }
+    lastSyncAt = Date.now()
+    lastSyncResult = { ok: false, message: `Scan failed: ${err.message}` }
+    return lastSyncResult
   }
 }

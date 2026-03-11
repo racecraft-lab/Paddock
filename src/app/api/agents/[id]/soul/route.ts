@@ -4,6 +4,7 @@ import { readFileSync, existsSync, readdirSync, writeFileSync, mkdirSync } from 
 import { join, dirname, isAbsolute, resolve } from 'path';
 import { config } from '@/lib/config';
 import { resolveWithin } from '@/lib/paths';
+import { getAgentWorkspaceCandidates, readAgentWorkspaceFile } from '@/lib/agent-workspace';
 import { requireRole } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
@@ -47,13 +48,11 @@ export async function GET(
 
     try {
       const agentConfig = agent.config ? JSON.parse(agent.config) : {}
-      if (agentConfig.workspace) {
-        const safeWorkspace = resolveAgentWorkspacePath(agentConfig.workspace)
-        const safeSoulPath = resolveWithin(safeWorkspace, 'soul.md')
-        if (existsSync(safeSoulPath)) {
-          soulContent = readFileSync(safeSoulPath, 'utf-8')
-          source = 'workspace'
-        }
+      const candidates = getAgentWorkspaceCandidates(agentConfig, agent.name)
+      const match = readAgentWorkspaceFile(candidates, ['soul.md', 'SOUL.md'])
+      if (match.exists) {
+        soulContent = match.content
+        source = 'workspace'
       }
     } catch (err) {
       logger.warn({ err, agent: agent.name }, 'Failed to read soul.md from workspace')
@@ -163,8 +162,9 @@ export async function PUT(
     let savedToWorkspace = false
     try {
       const agentConfig = agent.config ? JSON.parse(agent.config) : {}
-      if (agentConfig.workspace) {
-        const safeWorkspace = resolveAgentWorkspacePath(agentConfig.workspace)
+      const candidates = getAgentWorkspaceCandidates(agentConfig, agent.name)
+      const safeWorkspace = candidates[0]
+      if (safeWorkspace) {
         const safeSoulPath = resolveWithin(safeWorkspace, 'soul.md')
         mkdirSync(dirname(safeSoulPath), { recursive: true })
         writeFileSync(safeSoulPath, newSoulContent || '', 'utf-8')

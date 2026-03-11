@@ -70,6 +70,8 @@ export interface TokenUsage {
   outputTokens: number
   totalTokens: number
   cost: number
+  cacheReadTokens?: number
+  cacheWriteTokens?: number
 }
 
 export interface ModelConfig {

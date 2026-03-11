@@ -1,6 +1,8 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 
 interface UserRecord {
@@ -56,6 +58,8 @@ export function UserManagementPanel() {
 
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null)
   const [processingRequestId, setProcessingRequestId] = useState<number | null>(null)
+  const [reviewingRequestId, setReviewingRequestId] = useState<number | null>(null)
+  const [reviewForm, setReviewForm] = useState<{ role: 'admin' | 'operator' | 'viewer'; note: string }>({ role: 'viewer', note: '' })
 
   const showFeedback = (ok: boolean, text: string) => {
     setFeedback({ ok, text })
@@ -171,27 +175,25 @@ export function UserManagementPanel() {
     }
   }
 
-  const reviewRequest = async (req: AccessRequest, action: 'approve' | 'reject') => {
-    const role = action === 'approve'
-      ? (window.prompt(`Role for ${req.email}? (admin/operator/viewer)`, 'viewer') || 'viewer').toLowerCase()
-      : 'viewer'
-    const note = window.prompt(`Optional note for ${action}`) || ''
-
-    if (action === 'approve' && !['admin', 'operator', 'viewer'].includes(role)) {
-      showFeedback(false, 'Invalid role')
-      return
-    }
-
-    setProcessingRequestId(req.id)
+  const submitReview = async (requestId: number, action: 'approve' | 'reject') => {
+    setProcessingRequestId(requestId)
     try {
       const res = await fetch('/api/auth/access-requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ request_id: req.id, action, role, note: note || undefined }),
+        body: JSON.stringify({
+          request_id: requestId,
+          action,
+          role: reviewForm.role,
+          note: reviewForm.note || undefined,
+        }),
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || `Failed to ${action} request`)
-      showFeedback(true, `Request ${action}d for ${req.email}`)
+      const req = requests.find(r => r.id === requestId)
+      showFeedback(true, `Request ${action}d for ${req?.email || 'user'}`)
+      setReviewingRequestId(null)
+      setReviewForm({ role: 'viewer', note: '' })
       await fetchAll()
     } catch (e: any) {
       showFeedback(false, e?.message || `Failed to ${action} request`)
@@ -229,12 +231,12 @@ export function UserManagementPanel() {
           <h2 className="text-lg font-semibold text-foreground">Users</h2>
           <p className="text-sm text-muted-foreground">{users.length} registered users · {pendingRequests.length} pending approvals</p>
         </div>
-        <button
+        <Button
           onClick={() => setShowCreate(!showCreate)}
-          className="h-8 px-3 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-smooth"
+          size="sm"
         >
           {showCreate ? 'Cancel' : '+ Add Local User'}
-        </button>
+        </Button>
       </div>
 
       {feedback && (
@@ -245,7 +247,12 @@ export function UserManagementPanel() {
 
       {pendingRequests.length > 0 && (
         <div className="border border-amber-500/30 rounded-lg overflow-hidden">
-          <div className="px-4 py-3 bg-amber-500/10 border-b border-amber-500/20 text-sm font-medium text-amber-200">Pending Google Access Requests</div>
+          <div className="px-4 py-3 bg-amber-500/10 border-b border-amber-500/20 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="text-sm font-medium text-amber-200">
+              {pendingRequests.length} Pending Access Request{pendingRequests.length !== 1 ? 's' : ''}
+            </span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -260,28 +267,92 @@ export function UserManagementPanel() {
                 {pendingRequests.map((req) => (
                   <tr key={req.id} className="border-b border-border/40 last:border-0">
                     <td className="px-3 py-2">
-                      <div className="font-medium text-foreground">{req.display_name || req.email}</div>
-                      <div className="text-xs text-muted-foreground">{req.email}</div>
+                      <div className="flex items-center gap-2.5">
+                        {req.avatar_url ? (
+                          <Image
+                            src={req.avatar_url}
+                            alt=""
+                            width={32}
+                            height={32}
+                            unoptimized
+                            referrerPolicy="no-referrer"
+                            className="w-8 h-8 rounded-full shrink-0"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium text-muted-foreground shrink-0">
+                            {(req.display_name || req.email)?.[0]?.toUpperCase() || '?'}
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium text-foreground">{req.display_name || req.email}</div>
+                          <div className="text-xs text-muted-foreground">{req.email}</div>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">{req.attempt_count}</td>
                     <td className="px-3 py-2 text-xs text-muted-foreground">{formatDate(req.last_attempt_at)}</td>
                     <td className="px-3 py-2 text-right">
-                      <div className="inline-flex gap-2">
-                        <button
-                          onClick={() => reviewRequest(req, 'approve')}
-                          disabled={processingRequestId === req.id}
-                          className="h-7 px-2 rounded border border-emerald-500/30 text-emerald-400 text-xs disabled:opacity-50 hover:bg-emerald-500/10"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => reviewRequest(req, 'reject')}
-                          disabled={processingRequestId === req.id}
-                          className="h-7 px-2 rounded border border-red-500/30 text-red-400 text-xs disabled:opacity-50 hover:bg-red-500/10"
-                        >
-                          Reject
-                        </button>
-                      </div>
+                      {reviewingRequestId === req.id ? (
+                        <div className="flex items-center gap-2 justify-end">
+                          <select
+                            value={reviewForm.role}
+                            onChange={(e) => setReviewForm(f => ({ ...f, role: e.target.value as any }))}
+                            className="h-7 px-2 rounded bg-secondary border border-border text-xs text-foreground"
+                          >
+                            <option value="viewer">Viewer</option>
+                            <option value="operator">Operator</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                          <input
+                            value={reviewForm.note}
+                            onChange={(e) => setReviewForm(f => ({ ...f, note: e.target.value }))}
+                            placeholder="Note (optional)"
+                            className="h-7 px-2 rounded bg-secondary border border-border text-xs text-foreground w-32"
+                          />
+                          <Button
+                            onClick={() => submitReview(req.id, 'approve')}
+                            disabled={processingRequestId === req.id}
+                            variant="success"
+                            size="xs"
+                          >
+                            {processingRequestId === req.id ? '...' : 'Confirm'}
+                          </Button>
+                          <Button
+                            onClick={() => submitReview(req.id, 'reject')}
+                            disabled={processingRequestId === req.id}
+                            variant="destructive"
+                            size="xs"
+                          >
+                            Reject
+                          </Button>
+                          <Button
+                            onClick={() => { setReviewingRequestId(null); setReviewForm({ role: 'viewer', note: '' }) }}
+                            variant="ghost"
+                            size="xs"
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="inline-flex gap-2">
+                          <Button
+                            onClick={() => { setReviewingRequestId(req.id); setReviewForm({ role: 'viewer', note: '' }) }}
+                            disabled={processingRequestId === req.id}
+                            variant="success"
+                            size="xs"
+                          >
+                            Review
+                          </Button>
+                          <Button
+                            onClick={() => submitReview(req.id, 'reject')}
+                            disabled={processingRequestId === req.id}
+                            variant="destructive"
+                            size="xs"
+                          >
+                            Reject
+                          </Button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -305,9 +376,9 @@ export function UserManagementPanel() {
             </select>
           </div>
           <div className="flex justify-end">
-            <button onClick={handleCreate} disabled={!createForm.username || !createForm.password || creating} className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">
+            <Button onClick={handleCreate} disabled={!createForm.username || !createForm.password || creating} size="sm">
               {creating ? 'Creating...' : 'Create User'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -343,8 +414,8 @@ export function UserManagementPanel() {
                       <input type="password" value={editForm.password} onChange={(e) => setEditForm((f) => ({ ...f, password: e.target.value }))} placeholder="New password (optional)" className="h-8 px-2 rounded bg-secondary border border-border text-sm text-foreground w-full" disabled={(u.provider || 'local') !== 'local'} />
                     </td>
                     <td className="px-4 py-2.5 text-right space-x-2">
-                      <button onClick={handleEdit} disabled={saving} className="h-7 px-2 rounded bg-primary text-primary-foreground text-xs">Save</button>
-                      <button onClick={() => setEditingId(null)} className="h-7 px-2 rounded border border-border text-xs">Cancel</button>
+                      <Button onClick={handleEdit} disabled={saving} size="xs">Save</Button>
+                      <Button onClick={() => setEditingId(null)} variant="outline" size="xs">Cancel</Button>
                     </td>
                   </>
                 ) : (
@@ -352,8 +423,16 @@ export function UserManagementPanel() {
                     <td className="px-4 py-2.5">
                       <div className="flex items-center gap-2">
                         <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-semibold text-primary overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          {u.avatar_url ? <img src={u.avatar_url} alt={u.display_name} className="w-7 h-7 object-cover" /> : u.display_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
+                          {u.avatar_url ? (
+                            <Image
+                              src={u.avatar_url}
+                              alt={u.display_name}
+                              width={28}
+                              height={28}
+                              unoptimized
+                              className="w-7 h-7 object-cover"
+                            />
+                          ) : u.display_name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)}
                         </div>
                         <div>
                           <div className="text-sm font-medium text-foreground">{u.display_name}</div>
@@ -369,9 +448,9 @@ export function UserManagementPanel() {
                     </td>
                     <td className="px-4 py-2.5 text-xs text-muted-foreground hidden md:table-cell">{formatDate(u.last_login_at)}</td>
                     <td className="px-4 py-2.5 text-right space-x-2">
-                      <button onClick={() => startEdit(u)} className="h-7 px-2 rounded border border-border text-xs">Edit</button>
+                      <Button onClick={() => startEdit(u)} variant="outline" size="xs">Edit</Button>
                       {u.id !== currentUser?.id && (
-                        <button onClick={() => handleDelete(u)} className="h-7 px-2 rounded-md bg-destructive/20 text-destructive text-xs hover:bg-destructive/30">Delete</button>
+                        <Button onClick={() => handleDelete(u)} variant="destructive" size="xs">Delete</Button>
                       )}
                     </td>
                   </>

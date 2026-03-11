@@ -39,6 +39,7 @@ export async function POST(request: Request) {
         email: user.email || null,
         avatar_url: user.avatar_url || null,
         workspace_id: user.workspace_id ?? 1,
+        tenant_id: user.tenant_id ?? 1,
       },
     })
 

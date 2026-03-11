@@ -3,6 +3,7 @@ import { getDatabase } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
 import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { ensureTenantWorkspaceAccess, ForbiddenError } from '@/lib/workspaces'
 
 function slugify(input: string): string {
   return input
@@ -25,18 +26,39 @@ export async function GET(request: NextRequest) {
   try {
     const db = getDatabase()
     const workspaceId = auth.user.workspace_id ?? 1
+    const tenantId = auth.user.tenant_id ?? 1
+    const forwardedFor = (request.headers.get('x-forwarded-for') || '').split(',')[0]?.trim() || null
+    ensureTenantWorkspaceAccess(db, tenantId, workspaceId, {
+      actor: auth.user.username,
+      actorId: auth.user.id,
+      route: '/api/projects',
+      ipAddress: forwardedFor,
+      userAgent: request.headers.get('user-agent'),
+    })
     const includeArchived = new URL(request.url).searchParams.get('includeArchived') === '1'
 
-    const projects = db.prepare(`
-      SELECT id, workspace_id, name, slug, description, ticket_prefix, ticket_counter, status, created_at, updated_at
-      FROM projects
-      WHERE workspace_id = ?
-        ${includeArchived ? '' : "AND status = 'active'"}
-      ORDER BY name COLLATE NOCASE ASC
-    `).all(workspaceId)
+    const rows = db.prepare(`
+      SELECT p.id, p.workspace_id, p.name, p.slug, p.description, p.ticket_prefix, p.ticket_counter, p.status,
+             p.github_repo, p.deadline, p.color, p.github_sync_enabled, p.github_labels_initialized, p.github_default_branch, p.created_at, p.updated_at,
+             (SELECT COUNT(*) FROM tasks t WHERE t.project_id = p.id) as task_count,
+             (SELECT GROUP_CONCAT(paa.agent_name) FROM project_agent_assignments paa WHERE paa.project_id = p.id) as assigned_agents_csv
+      FROM projects p
+      WHERE p.workspace_id = ?
+        ${includeArchived ? '' : "AND p.status = 'active'"}
+      ORDER BY p.name COLLATE NOCASE ASC
+    `).all(workspaceId) as Array<Record<string, unknown>>
+
+    const projects = rows.map(row => ({
+      ...row,
+      assigned_agents: row.assigned_agents_csv ? String(row.assigned_agents_csv).split(',') : [],
+      assigned_agents_csv: undefined,
+    }))
 
     return NextResponse.json({ projects })
   } catch (error) {
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     logger.error({ err: error }, 'GET /api/projects error')
     return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 })
   }
@@ -52,12 +74,24 @@ export async function POST(request: NextRequest) {
   try {
     const db = getDatabase()
     const workspaceId = auth.user.workspace_id ?? 1
+    const tenantId = auth.user.tenant_id ?? 1
+    const forwardedFor = (request.headers.get('x-forwarded-for') || '').split(',')[0]?.trim() || null
+    ensureTenantWorkspaceAccess(db, tenantId, workspaceId, {
+      actor: auth.user.username,
+      actorId: auth.user.id,
+      route: '/api/projects',
+      ipAddress: forwardedFor,
+      userAgent: request.headers.get('user-agent'),
+    })
     const body = await request.json()
 
     const name = String(body?.name || '').trim()
     const description = typeof body?.description === 'string' ? body.description.trim() : ''
     const prefixInput = String(body?.ticket_prefix || body?.ticketPrefix || '').trim()
     const slugInput = String(body?.slug || '').trim()
+    const githubRepo = typeof body?.github_repo === 'string' ? body.github_repo.trim() || null : null
+    const deadline = typeof body?.deadline === 'number' ? body.deadline : null
+    const color = typeof body?.color === 'string' ? body.color.trim() || null : null
 
     if (!name) return NextResponse.json({ error: 'Project name is required' }, { status: 400 })
 
@@ -76,18 +110,22 @@ export async function POST(request: NextRequest) {
     }
 
     const result = db.prepare(`
-      INSERT INTO projects (workspace_id, name, slug, description, ticket_prefix, status, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 'active', unixepoch(), unixepoch())
-    `).run(workspaceId, name, slug, description || null, ticketPrefix)
+      INSERT INTO projects (workspace_id, name, slug, description, ticket_prefix, github_repo, deadline, color, status, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', unixepoch(), unixepoch())
+    `).run(workspaceId, name, slug, description || null, ticketPrefix, githubRepo, deadline, color)
 
     const project = db.prepare(`
-      SELECT id, workspace_id, name, slug, description, ticket_prefix, ticket_counter, status, created_at, updated_at
+      SELECT id, workspace_id, name, slug, description, ticket_prefix, ticket_counter, status,
+             github_repo, deadline, color, github_sync_enabled, github_labels_initialized, github_default_branch, created_at, updated_at
       FROM projects
       WHERE id = ?
     `).get(Number(result.lastInsertRowid))
 
     return NextResponse.json({ project }, { status: 201 })
   } catch (error) {
+    if (error instanceof ForbiddenError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
     logger.error({ err: error }, 'POST /api/projects error')
     return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
   }

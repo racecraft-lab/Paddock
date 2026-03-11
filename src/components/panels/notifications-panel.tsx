@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { Loader } from '@/components/ui/loader'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 
 interface Notification {
@@ -51,33 +53,44 @@ export function NotificationsPanel() {
 
   const markAllRead = async () => {
     if (!recipient) return
-    await fetch('/api/notifications', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ recipient, markAllRead: true })
-    })
-    fetchNotifications()
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient, markAllRead: true })
+      })
+      if (!res.ok) throw new Error('Failed to mark all as read')
+      fetchNotifications()
+    } catch {
+      // Silent — notification state will resync on next poll
+    }
   }
 
   const markRead = async (id: number) => {
-    await fetch('/api/notifications', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ids: [id] })
-    })
-    fetchNotifications()
+    try {
+      const res = await fetch('/api/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: [id] })
+      })
+      if (!res.ok) throw new Error('Failed to mark as read')
+      fetchNotifications()
+    } catch {
+      // Silent — notification state will resync on next poll
+    }
   }
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-between items-center p-4 border-b border-border flex-shrink-0">
         <h2 className="text-xl font-bold text-foreground">Notifications</h2>
-        <button
+        <Button
           onClick={markAllRead}
-          className="px-3 py-1.5 bg-secondary text-foreground rounded-md text-sm hover:bg-secondary/80 transition-smooth"
+          variant="secondary"
+          size="sm"
         >
           Mark All Read
-        </button>
+        </Button>
       </div>
 
       <div className="p-4 border-b border-border flex-shrink-0">
@@ -99,8 +112,7 @@ export function NotificationsPanel() {
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {loading ? (
           <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
-            <span className="ml-2 text-muted-foreground text-sm">Loading...</span>
+            <Loader variant="inline" label="Loading" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground/50">
@@ -124,12 +136,14 @@ export function NotificationsPanel() {
                   <div className="text-xs text-muted-foreground/60">{n.type}</div>
                 </div>
                 {!n.read_at && (
-                  <button
+                  <Button
                     onClick={() => markRead(n.id)}
-                    className="text-xs text-primary hover:text-primary/80 transition-smooth flex-shrink-0 ml-2"
+                    variant="link"
+                    size="xs"
+                    className="flex-shrink-0 ml-2"
                   >
                     Mark read
-                  </button>
+                  </Button>
                 )}
               </div>
               <div className="text-sm text-foreground/80 mt-2 whitespace-pre-wrap">{n.message}</div>

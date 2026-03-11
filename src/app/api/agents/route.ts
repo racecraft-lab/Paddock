@@ -64,7 +64,8 @@ export async function GET(request: NextRequest) {
         COUNT(*) as total,
         SUM(CASE WHEN status = 'assigned' THEN 1 ELSE 0 END) as assigned,
         SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress,
-        SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as completed
+        SUM(CASE WHEN status = 'quality_review' THEN 1 ELSE 0 END) as quality_review,
+        SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END) as done
       FROM tasks
       WHERE assigned_to = ? AND workspace_id = ?
     `);
@@ -78,7 +79,9 @@ export async function GET(request: NextRequest) {
           total: taskStats.total || 0,
           assigned: taskStats.assigned || 0,
           in_progress: taskStats.in_progress || 0,
-          completed: taskStats.completed || 0
+          quality_review: taskStats.quality_review || 0,
+          done: taskStats.done || 0,
+          completed: taskStats.done || 0
         }
       };
     });
@@ -185,7 +188,7 @@ export async function POST(request: NextRequest) {
 
       try {
         await runOpenClaw(
-          ['agents', 'add', openclawId, '--name', name, '--workspace', workspacePath, '--non-interactive'],
+          ['agents', 'add', openclawId, '--workspace', workspacePath, '--non-interactive'],
           { timeoutMs: 20000 }
         );
       } catch (provisionError: any) {
@@ -244,7 +247,7 @@ export async function POST(request: NextRequest) {
     const parsedAgent = {
       ...createdAgent,
       config: JSON.parse(createdAgent.config || '{}'),
-      taskStats: { total: 0, assigned: 0, in_progress: 0, completed: 0 }
+      taskStats: { total: 0, assigned: 0, in_progress: 0, quality_review: 0, done: 0, completed: 0 }
     };
 
     // Broadcast to SSE clients

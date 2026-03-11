@@ -35,6 +35,12 @@ aegis/
 # Playwright
 test-results/
 playwright-report/
+.tmp/
+.playwright-mcp/
+
+# Local QA screenshots
+/e2e-debug-*.png
+/e2e-channels-*.png
 
 # Claude Code context files
 CLAUDE.md

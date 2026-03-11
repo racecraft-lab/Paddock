@@ -10,12 +10,44 @@ describe('buildGatewayWebSocketUrl', () => {
     })).toBe('ws://127.0.0.1:18789')
   })
 
-  it('omits 18789 for remote hosts on https browser context', () => {
+  it('uses ws:// for localhost even when browser is HTTPS (no TLS on local gateway)', () => {
     expect(buildGatewayWebSocketUrl({
-      host: 'cb-vcn.tail47c878.ts.net',
+      host: '127.0.0.1',
       port: 18789,
       browserProtocol: 'https:',
-    })).toBe('wss://cb-vcn.tail47c878.ts.net')
+    })).toBe('ws://127.0.0.1:18789')
+  })
+
+  it('uses ws:// for "localhost" hostname even when browser is HTTPS', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: 'localhost',
+      port: 18789,
+      browserProtocol: 'https:',
+    })).toBe('ws://localhost:18789')
+  })
+
+  it('uses ws:// for empty host (defaults to 127.0.0.1)', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: '',
+      port: 18789,
+      browserProtocol: 'https:',
+    })).toBe('ws://127.0.0.1:18789')
+  })
+
+  it('uses ws:// for prefixed localhost URL even with https scheme', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: 'https://127.0.0.1:18789',
+      port: 18789,
+      browserProtocol: 'https:',
+    })).toBe('ws://127.0.0.1:18789')
+  })
+
+  it('omits 18789 for remote hosts on https browser context', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: 'node-01.tailnet123.ts.net',
+      port: 18789,
+      browserProtocol: 'https:',
+    })).toBe('wss://node-01.tailnet123.ts.net')
   })
 
   it('keeps explicit websocket URL host value unchanged aside from protocol normalization', () => {
@@ -34,11 +66,35 @@ describe('buildGatewayWebSocketUrl', () => {
     })).toBe('wss://gateway.example.com:8443')
   })
 
-  it('drops path/query/hash when full dashboard URL is pasted', () => {
+  it('preserves token query while dropping unrelated path/query/hash from pasted dashboard URL', () => {
     expect(buildGatewayWebSocketUrl({
-      host: 'https://bill.tail8b4599.ts.net:4443/sessions?foo=bar#frag',
+      host: 'https://node-02.tailnet456.ts.net:4443/sessions?foo=bar&token=abc123#frag',
       port: 18789,
       browserProtocol: 'https:',
-    })).toBe('wss://bill.tail8b4599.ts.net:4443')
+    })).toBe('wss://node-02.tailnet456.ts.net:4443?token=abc123')
+  })
+
+  it('preserves explicit proxy path when configured', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: 'https://gateway.example.com/gw',
+      port: 18789,
+      browserProtocol: 'https:',
+    })).toBe('wss://gateway.example.com/gw')
+  })
+
+  it('uses wss:// for remote Tailscale hosts on HTTPS', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: 'myhost.tailabcdef.ts.net',
+      port: 18789,
+      browserProtocol: 'https:',
+    })).toBe('wss://myhost.tailabcdef.ts.net')
+  })
+
+  it('uses ws:// for remote hosts on HTTP', () => {
+    expect(buildGatewayWebSocketUrl({
+      host: 'gateway.example.com',
+      port: 9090,
+      browserProtocol: 'http:',
+    })).toBe('ws://gateway.example.com:9090')
   })
 })

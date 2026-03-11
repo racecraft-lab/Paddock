@@ -1,11 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
+import { Loader } from '@/components/ui/loader'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { createClientLogger } from '@/lib/client-logger'
 
 const log = createClientLogger('LogViewer')
+
+const MAX_LOG_BUFFER = 1000
 
 interface LogFilters {
   level?: string
@@ -14,15 +18,28 @@ interface LogFilters {
   session?: string
 }
 
+function downloadFile(content: string, filename: string, mime: string) {
+  const blob = new Blob([content], { type: mime })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export function LogViewerPanel() {
   const { logs, logFilters, setLogFilters, clearLogs, addLog } = useMissionControl()
   const [isAutoScroll, setIsAutoScroll] = useState(true)
   const [availableSources, setAvailableSources] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [logFilePath, setLogFilePath] = useState<string | null>(null)
   const logContainerRef = useRef<HTMLDivElement>(null)
   const autoScrollRef = useRef<boolean>(true)
   const logsRef = useRef(logs)
   const logFiltersRef = useRef(logFilters)
+
+  const isBufferFull = logs.length >= MAX_LOG_BUFFER
 
   // Update ref when autoScroll state changes
   useEffect(() => {
@@ -102,12 +119,25 @@ export function LogViewerPanel() {
     }
   }, [])
 
+  // Try to fetch log file path from gateway status
+  const loadLogFilePath = useCallback(async () => {
+    try {
+      const response = await fetch('/api/status')
+      const data = await response.json()
+      const path = data?.config?.logFile || data?.logFile || null
+      setLogFilePath(path)
+    } catch {
+      // Gateway may not expose this — silently ignore
+    }
+  }, [])
+
   // Load initial logs and sources
   useEffect(() => {
     log.debug('Initial load started')
     loadLogs()
     loadSources()
-  }, [loadLogs, loadSources])
+    loadLogFilePath()
+  }, [loadLogs, loadSources, loadLogFilePath])
 
   // Smart polling for log tailing (10s, visibility-aware, logs mostly come via WS)
   const pollLogs = useCallback(() => {
@@ -165,6 +195,20 @@ export function LogViewerPanel() {
     return true
   })
 
+  const handleExportText = useCallback(() => {
+    const lines = filteredLogs.map(entry => {
+      const ts = new Date(entry.timestamp).toISOString()
+      return `[${ts}] [${entry.level.toUpperCase()}] [${entry.source}] ${entry.message}`
+    })
+    const filename = `logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.log`
+    downloadFile(lines.join('\n'), filename, 'text/plain')
+  }, [filteredLogs])
+
+  const handleExportJson = useCallback(() => {
+    const filename = `logs-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`
+    downloadFile(JSON.stringify(filteredLogs, null, 2), filename, 'application/json')
+  }, [filteredLogs])
+
   // Debug logging
   log.debug(`Store has ${logs.length} logs, filtered to ${filteredLogs.length}`)
 
@@ -174,6 +218,9 @@ export function LogViewerPanel() {
         <h1 className="text-3xl font-bold text-foreground">Log Viewer</h1>
         <p className="text-muted-foreground mt-2">
           Real-time streaming logs from ClawdBot gateway and system
+          {logFilePath && (
+            <span className="ml-3 font-mono text-xs text-muted-foreground/70">{logFilePath}</span>
+          )}
         </p>
       </div>
 
@@ -245,43 +292,58 @@ export function LogViewerPanel() {
 
           {/* Controls */}
           <div className="flex items-end space-x-2">
-            <button
+            <Button
               onClick={() => setIsAutoScroll(!isAutoScroll)}
-              className={`px-3 py-2 text-sm rounded-md font-medium transition-colors ${
-                isAutoScroll
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                  : 'bg-secondary text-muted-foreground border border-border'
-              }`}
+              variant={isAutoScroll ? 'success' : 'outline'}
             >
               {isAutoScroll ? 'Auto' : 'Manual'}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleScrollToBottom}
-              className="px-3 py-2 text-sm bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-md font-medium hover:bg-blue-500/30 transition-colors"
+              className="bg-blue-500/20 text-blue-400 border border-blue-500/30 hover:bg-blue-500/30"
             >
               Bottom
-            </button>
+            </Button>
           </div>
 
-          {/* Clear Logs */}
-          <div className="flex items-end">
-            <button
+          {/* Export & Clear */}
+          <div className="flex items-end space-x-2">
+            <Button
+              onClick={handleExportText}
+              disabled={filteredLogs.length === 0}
+              className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 disabled:opacity-40"
+            >
+              Export .log
+            </Button>
+            <Button
+              onClick={handleExportJson}
+              disabled={filteredLogs.length === 0}
+              className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30 disabled:opacity-40"
+            >
+              Export JSON
+            </Button>
+            <Button
               onClick={clearLogs}
-              className="px-3 py-2 text-sm bg-red-500/20 text-red-400 border border-red-500/30 rounded-md font-medium hover:bg-red-500/30 transition-colors"
+              variant="destructive"
             >
               Clear
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Log Stats */}
       <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <div>
-          Showing {filteredLogs.length} of {logs.length} logs
+        <div className="flex items-center gap-3">
+          <span>Showing {filteredLogs.length} of {logs.length} logs</span>
+          {isBufferFull && (
+            <span className="px-2 py-0.5 rounded text-xs bg-yellow-500/15 text-yellow-400 border border-yellow-500/25">
+              Showing last {MAX_LOG_BUFFER} entries (buffer full)
+            </span>
+          )}
         </div>
         <div>
-          Auto-scroll: {isAutoScroll ? 'ON' : 'OFF'} • 
+          Auto-scroll: {isAutoScroll ? 'ON' : 'OFF'} •
           Last updated: {logs.length > 0 ? new Date(logs[0]?.timestamp).toLocaleTimeString() : 'Never'}
         </div>
       </div>
@@ -293,10 +355,7 @@ export function LogViewerPanel() {
           className="h-full overflow-auto p-4 space-y-2 font-mono text-sm"
         >
           {isLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-              <span className="ml-3 text-muted-foreground">Loading logs...</span>
-            </div>
+            <Loader variant="panel" label="Loading logs" />
           ) : filteredLogs.length === 0 ? (
             <div className="flex items-center justify-center h-32 text-muted-foreground">
               No logs match the current filters

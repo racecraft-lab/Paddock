@@ -9,7 +9,7 @@ import { config } from './config'
 import { getDatabase, db_helpers, logAuditEvent } from './db'
 import { eventBus } from './event-bus'
 import { join, isAbsolute, resolve } from 'path'
-import { existsSync, readFileSync } from 'fs'
+import { existsSync, readFileSync, statSync } from 'fs'
 import { resolveWithin } from './paths'
 import { logger } from './logger'
 import { parseJsonRelaxed } from './json-relaxed'
@@ -139,6 +139,8 @@ function resolveAgentWorkspacePath(workspace: string): string {
   return resolveWithin(config.openclawStateDir, workspace)
 }
 
+const MAX_WORKSPACE_FILE_BYTES = 1024 * 1024 // 1 MB
+
 /** Safely read a file from an agent's workspace directory */
 function readWorkspaceFile(workspace: string | undefined, filename: string): string | null {
   if (!workspace) return null
@@ -146,6 +148,11 @@ function readWorkspaceFile(workspace: string | undefined, filename: string): str
     const safeWorkspace = resolveAgentWorkspacePath(workspace)
     const safePath = resolveWithin(safeWorkspace, filename)
     if (existsSync(safePath)) {
+      const size = statSync(safePath).size
+      if (size > MAX_WORKSPACE_FILE_BYTES) {
+        logger.warn({ workspace, filename, size }, `Workspace file exceeds ${MAX_WORKSPACE_FILE_BYTES} byte limit, skipping`)
+        return null
+      }
       return readFileSync(safePath, 'utf-8')
     }
   } catch (err) {
@@ -351,16 +358,58 @@ export async function writeAgentToConfig(agentConfig: any): Promise<void> {
   if (!parsed.agents) parsed.agents = {}
   if (!parsed.agents.list) parsed.agents.list = []
 
+  const normalizedAgentConfig = normalizeAgentConfigForOpenClaw(agentConfig)
+
   // Find existing by id
-  const idx = parsed.agents.list.findIndex((a: any) => a.id === agentConfig.id)
+  const idx = parsed.agents.list.findIndex((a: any) => a.id === normalizedAgentConfig.id)
   if (idx >= 0) {
     // Deep merge: preserve fields not in update
-    parsed.agents.list[idx] = deepMerge(parsed.agents.list[idx], agentConfig)
+    parsed.agents.list[idx] = normalizeAgentConfigForOpenClaw(
+      deepMerge(parsed.agents.list[idx], normalizedAgentConfig),
+    )
   } else {
-    parsed.agents.list.push(agentConfig)
+    parsed.agents.list.push(normalizedAgentConfig)
   }
 
   await writeFile(configPath, JSON.stringify(parsed, null, 2) + '\n')
+}
+
+export async function removeAgentFromConfig(match: {
+  id?: string | null
+  name?: string | null
+}): Promise<{ removed: boolean }> {
+  const configPath = getConfigPath()
+  if (!configPath) throw new Error('OPENCLAW_CONFIG_PATH not configured')
+
+  const id = String(match.id || '').trim()
+  const name = String(match.name || '').trim()
+  if (!id && !name) {
+    return { removed: false }
+  }
+
+  const { readFile, writeFile } = require('fs/promises')
+  const raw = await readFile(configPath, 'utf-8')
+  const parsed = parseJsonRelaxed<any>(raw)
+  const existingList = Array.isArray(parsed?.agents?.list) ? parsed.agents.list : []
+
+  const nextList = existingList.filter((agent: any) => {
+    const agentId = String(agent?.id || '').trim()
+    const agentName = String(agent?.name || '').trim()
+    const identityName = String(agent?.identity?.name || '').trim()
+
+    if (id && agentId === id) return false
+    if (name && (agentName === name || identityName === name)) return false
+    return true
+  })
+
+  if (nextList.length === existingList.length) {
+    return { removed: false }
+  }
+
+  if (!parsed.agents) parsed.agents = {}
+  parsed.agents.list = nextList
+  await writeFile(configPath, JSON.stringify(parsed, null, 2) + '\n')
+  return { removed: true }
 }
 
 /** Deep merge two objects (target <- source), preserving target fields not in source */
@@ -381,4 +430,36 @@ function deepMerge(target: any, source: any): any {
     }
   }
   return result
+}
+
+function normalizeModelConfig(model: unknown): unknown {
+  if (!model || typeof model !== 'object' || Array.isArray(model)) return model
+
+  const current = { ...(model as Record<string, unknown>) }
+  let primary = current.primary
+
+  while (primary && typeof primary === 'object' && !Array.isArray(primary)) {
+    const nestedPrimary = (primary as Record<string, unknown>).primary
+    if (typeof nestedPrimary !== 'string') break
+    primary = nestedPrimary
+  }
+
+  const normalizedFallbacks = Array.isArray(current.fallbacks)
+    ? [...new Set(current.fallbacks.map((value) => String(value || '').trim()).filter(Boolean))]
+    : current.fallbacks
+
+  return {
+    ...current,
+    ...(typeof primary === 'string' ? { primary } : {}),
+    ...(Array.isArray(normalizedFallbacks) ? { fallbacks: normalizedFallbacks } : {}),
+  }
+}
+
+function normalizeAgentConfigForOpenClaw(agentConfig: any): any {
+  if (!agentConfig || typeof agentConfig !== 'object') return agentConfig
+  if (!('model' in agentConfig)) return agentConfig
+  return {
+    ...agentConfig,
+    model: normalizeModelConfig(agentConfig.model),
+  }
 }

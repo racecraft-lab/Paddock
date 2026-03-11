@@ -3,8 +3,9 @@ import { basename, join } from 'path'
 import { config } from './config'
 import { logger } from './logger'
 
-const ACTIVE_THRESHOLD_MS = 5 * 60 * 1000
+const ACTIVE_THRESHOLD_MS = 90 * 60 * 1000
 const DEFAULT_FILE_SCAN_LIMIT = 120
+const FUTURE_TOLERANCE_MS = 60 * 1000
 
 export interface CodexSessionStats {
   sessionId: string
@@ -84,7 +85,15 @@ function listRecentCodexSessionFiles(limit: number): ParsedFile[] {
   return files.slice(0, Math.max(1, limit))
 }
 
-function parseCodexSessionFile(filePath: string): CodexSessionStats | null {
+function clampTimestamp(ms: number): number {
+  if (!Number.isFinite(ms) || ms <= 0) return 0
+  const now = Date.now()
+  // Guard against timezone/clock skew in session logs.
+  if (ms > now + FUTURE_TOLERANCE_MS) return now
+  return ms
+}
+
+function parseCodexSessionFile(filePath: string, fileMtimeMs: number): CodexSessionStats | null {
   let content: string
   try {
     content = readFileSync(filePath, 'utf-8')
@@ -176,8 +185,12 @@ function parseCodexSessionFile(filePath: string): CodexSessionStats | null {
   const projectSlug = projectPath
     ? basename(projectPath)
     : 'codex-local'
-  const lastMessageMs = lastMessageAt ? new Date(lastMessageAt).getTime() : 0
-  const isActive = lastMessageMs > 0 && (Date.now() - lastMessageMs) < ACTIVE_THRESHOLD_MS
+  const parsedFirstMs = firstMessageAt ? clampTimestamp(new Date(firstMessageAt).getTime()) : 0
+  const parsedLastMs = lastMessageAt ? clampTimestamp(new Date(lastMessageAt).getTime()) : 0
+  const mtimeMs = clampTimestamp(fileMtimeMs)
+  const effectiveLastMs = Math.max(parsedLastMs, mtimeMs)
+  const effectiveFirstMs = parsedFirstMs || mtimeMs
+  const isActive = effectiveLastMs > 0 && (Date.now() - effectiveLastMs) < ACTIVE_THRESHOLD_MS
 
   return {
     sessionId,
@@ -189,8 +202,8 @@ function parseCodexSessionFile(filePath: string): CodexSessionStats | null {
     inputTokens,
     outputTokens,
     totalTokens,
-    firstMessageAt,
-    lastMessageAt: lastMessageAt || firstMessageAt,
+    firstMessageAt: effectiveFirstMs ? new Date(effectiveFirstMs).toISOString() : null,
+    lastMessageAt: effectiveLastMs ? new Date(effectiveLastMs).toISOString() : null,
     isActive,
   }
 }
@@ -201,7 +214,7 @@ export function scanCodexSessions(limit = DEFAULT_FILE_SCAN_LIMIT): CodexSession
     const sessions: CodexSessionStats[] = []
 
     for (const file of files) {
-      const parsed = parseCodexSessionFile(file.path)
+      const parsed = parseCodexSessionFile(file.path, file.mtimeMs)
       if (parsed) sessions.push(parsed)
     }
 

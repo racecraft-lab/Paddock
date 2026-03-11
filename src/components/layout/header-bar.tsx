@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { useMissionControl } from '@/store'
+import { createPortal } from 'react-dom'
+import { useMissionControl, type ConnectionStatus } from '@/store'
+import { extractWsHost } from '@/lib/agent-card-helpers'
 import { useWebSocket } from '@/lib/websocket'
-import { useNavigateToPanel } from '@/lib/navigation'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { useNavigateToPanel, usePrefetchPanel } from '@/lib/navigation'
+import { Button } from '@/components/ui/button'
+import { ThemeSelector } from '@/components/ui/theme-selector'
 import { DigitalClock } from '@/components/ui/digital-clock'
-import { APP_VERSION } from '@/lib/version'
+import { getNavigationMetrics, navigationMetricEventName } from '@/lib/navigation-metrics'
 
 interface SearchResult {
   type: string
@@ -16,61 +18,199 @@ interface SearchResult {
   subtitle?: string
   excerpt?: string
   created_at: number
+  panel?: string
+  source?: 'command' | 'entity'
 }
 
+const QUICK_NAV_COMMANDS: Array<{ panel: string; title: string; aliases: string[] }> = [
+  { panel: 'overview', title: 'Go to Overview', aliases: ['home', 'dashboard'] },
+  { panel: 'chat', title: 'Go to Chat', aliases: ['sessions', 'messages'] },
+  { panel: 'tasks', title: 'Go to Tasks', aliases: ['task board', 'tickets'] },
+  { panel: 'agents', title: 'Go to Agents', aliases: ['agent squad', 'workers'] },
+  { panel: 'activity', title: 'Go to Activity Feed', aliases: ['events', 'feed'] },
+  { panel: 'notifications', title: 'Go to Notifications', aliases: ['alerts inbox'] },
+  { panel: 'tokens', title: 'Go to Token Usage', aliases: ['cost', 'spend'] },
+  { panel: 'logs', title: 'Go to Logs', aliases: ['log viewer'] },
+  { panel: 'memory', title: 'Go to Memory Browser', aliases: ['knowledge', 'notes'] },
+  { panel: 'integrations', title: 'Go to Integrations', aliases: ['providers', 'api keys'] },
+  { panel: 'settings', title: 'Go to Settings', aliases: ['preferences', 'config'] },
+  { panel: 'gateways', title: 'Go to Gateways', aliases: ['gateway manager'] },
+  { panel: 'github', title: 'Go to GitHub Sync', aliases: ['github', 'sync'] },
+  { panel: 'office', title: 'Go to Office', aliases: ['workspace', 'team'] },
+  { panel: 'skills', title: 'Go to Skills', aliases: ['skill packs', 'agent skills'] },
+]
+
 export function HeaderBar() {
-  const { activeTab, connection, sessions, chatPanelOpen, setChatPanelOpen, notifications, unreadNotificationCount, currentUser, setCurrentUser } = useMissionControl()
+  const { connection, sessions, unreadNotificationCount, activeTenant, activeProject, dashboardMode } = useMissionControl()
   const { isConnected, reconnect } = useWebSocket()
   const navigateToPanel = useNavigateToPanel()
+  const prefetchPanel = usePrefetchPanel()
 
   const activeSessions = sessions.filter(s => s.active).length
-  const tabLabels: Record<string, string> = {
-    overview: 'Overview',
-    agents: 'Agent Squad',
-    tasks: 'Task Board',
-    sessions: 'Sessions',
-    documents: 'Documents',
-    activity: 'Activity Feed',
-    notifications: 'Notifications',
-    standup: 'Daily Standup',
-    logs: 'Log Viewer',
-    spawn: 'Spawn Agent',
-    cron: 'Cron Jobs',
-    memory: 'Memory Browser',
-    tokens: 'Token Usage',
-    history: 'Agent History',
-    audit: 'Audit Trail',
-    webhooks: 'Webhooks',
-    alerts: 'Alert Rules',
-    gateways: 'Gateway Manager',
-    users: 'Users',
-    workspaces: 'Workspaces',
-    'gateway-config': 'Gateway Config',
-    settings: 'Settings',
-  }
 
   // Search state
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [searchLoading, setSearchLoading] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const searchRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+  const resultButtonRefs = useRef<Array<HTMLButtonElement | null>>([])
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  const getQuickNavResults = useCallback((q: string): SearchResult[] => {
+    const normalized = q.trim().toLowerCase()
+    if (!normalized) {
+      return QUICK_NAV_COMMANDS.slice(0, 6).map((cmd, index) => ({
+        type: 'panel',
+        id: -(index + 1),
+        title: cmd.title,
+        subtitle: `/${cmd.panel}`,
+        excerpt: 'Quick navigation',
+        created_at: Date.now(),
+        panel: cmd.panel,
+        source: 'command',
+      }))
+    }
+
+    const ranked: Array<(SearchResult & { _score: number }) | null> = QUICK_NAV_COMMANDS
+      .map((cmd, index) => {
+        const haystack = `${cmd.title} ${cmd.panel} ${cmd.aliases.join(' ')}`.toLowerCase()
+        if (!haystack.includes(normalized)) return null
+        const exactPanel = cmd.panel === normalized
+        const startsTitle = cmd.title.toLowerCase().startsWith(normalized)
+        const score = exactPanel ? 3 : startsTitle ? 2 : 1
+        return {
+          type: 'panel',
+          id: -(index + 1),
+          title: cmd.title,
+          subtitle: `/${cmd.panel}`,
+          excerpt: cmd.aliases.length ? `Aliases: ${cmd.aliases.join(', ')}` : 'Quick navigation',
+          created_at: Date.now(),
+          panel: cmd.panel,
+          source: 'command' as const,
+          _score: score,
+        }
+      })
+    return ranked
+      .filter((row): row is SearchResult & { _score: number } => Boolean(row))
+      .sort((a, b) => b._score - a._score)
+      .map(({ _score, ...row }) => row)
+      .slice(0, 8)
+  }, [])
+
+  const openCommandPalette = useCallback(() => {
+    setSearchOpen(true)
+    setSearchResults(getQuickNavResults(''))
+    setSelectedIndex(0)
+    setTimeout(() => searchInputRef.current?.focus(), 50)
+  }, [getQuickNavResults])
+
+  const handleResultClick = useCallback((result: SearchResult) => {
+    if (result.panel) {
+      prefetchPanel(result.panel)
+      navigateToPanel(result.panel)
+      setSearchOpen(false)
+      setSearchQuery('')
+      setSearchResults([])
+      return
+    }
+    const typeToTab: Record<string, string> = {
+      task: 'tasks', agent: 'agents', activity: 'activity',
+      audit: 'audit', message: 'agents', notification: 'notifications',
+      webhook: 'webhooks', pipeline: 'agents', alert_rule: 'alerts',
+    }
+    navigateToPanel(typeToTab[result.type] || 'overview')
+    setSearchOpen(false)
+    setSearchQuery('')
+    setSearchResults([])
+  }, [navigateToPanel, prefetchPanel])
 
   // Keyboard shortcut: Cmd/Ctrl+K
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null
+      const isTypingTarget =
+        !!target &&
+        (
+          target instanceof HTMLInputElement ||
+          target instanceof HTMLTextAreaElement ||
+          target.isContentEditable
+        )
+
+      if (searchOpen) {
+        if (e.key === 'Tab') {
+          const focusables = [
+            searchInputRef.current,
+            ...resultButtonRefs.current,
+          ].filter((el): el is HTMLInputElement | HTMLButtonElement => el !== null)
+          if (focusables.length > 0) {
+            e.preventDefault()
+            const activeEl = document.activeElement as (HTMLInputElement | HTMLButtonElement | null)
+            const currentIndex = focusables.findIndex((el) => el === activeEl)
+            const nextIndex = e.shiftKey
+              ? (currentIndex <= 0 ? focusables.length - 1 : currentIndex - 1)
+              : (currentIndex >= focusables.length - 1 ? 0 : currentIndex + 1)
+            focusables[nextIndex]?.focus()
+          }
+          return
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          const next = Math.min(selectedIndex + 1, Math.max(0, searchResults.length - 1))
+          setSelectedIndex(next)
+          resultButtonRefs.current[next]?.focus()
+          return
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          const next = Math.max(selectedIndex - 1, 0)
+          setSelectedIndex(next)
+          resultButtonRefs.current[next]?.focus()
+          return
+        }
+        if (e.key === 'Home') {
+          e.preventDefault()
+          setSelectedIndex(0)
+          resultButtonRefs.current[0]?.focus()
+          return
+        }
+        if (e.key === 'End') {
+          e.preventDefault()
+          const last = Math.max(0, searchResults.length - 1)
+          setSelectedIndex(last)
+          resultButtonRefs.current[last]?.focus()
+          return
+        }
+        if (e.key === 'Enter') {
+          const selected = searchResults[selectedIndex]
+          if (selected) {
+            e.preventDefault()
+            handleResultClick(selected)
+            return
+          }
+        }
+      }
+      if (!isTypingTarget && e.key === '/') {
+        e.preventDefault()
+        openCommandPalette()
+        return
+      }
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
-        setSearchOpen(true)
-        setTimeout(() => searchInputRef.current?.focus(), 50)
+        openCommandPalette()
       }
       if (e.key === 'Escape') setSearchOpen(false)
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [])
+  }, [handleResultClick, openCommandPalette, searchOpen, searchResults, selectedIndex])
 
   // Close on outside click
   useEffect(() => {
@@ -84,43 +224,62 @@ export function HeaderBar() {
     return () => document.removeEventListener('mousedown', handler)
   }, [searchOpen])
 
+  // Prevent background scroll while command palette is open.
+  useEffect(() => {
+    if (!searchOpen) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [searchOpen])
+
+  useEffect(() => {
+    if (!searchOpen) return
+    resultButtonRefs.current[selectedIndex]?.scrollIntoView({ block: 'nearest' })
+  }, [searchOpen, selectedIndex, searchResults])
+
   const doSearch = useCallback(async (q: string) => {
-    if (q.length < 2) { setSearchResults([]); return }
+    const quickResults = getQuickNavResults(q)
+    if (q.length < 2) {
+      setSearchResults(quickResults)
+      setSelectedIndex(0)
+      return
+    }
     setSearchLoading(true)
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&limit=12`)
       const data = await res.json()
-      setSearchResults(data.results || [])
+      const entityResults: SearchResult[] = (data.results || []).map((r: SearchResult) => ({ ...r, source: 'entity' }))
+      const merged = [...quickResults, ...entityResults].slice(0, 16)
+      setSearchResults(merged)
+      setSelectedIndex(0)
     } catch {
-      setSearchResults([])
+      setSearchResults(quickResults)
+      setSelectedIndex(0)
     } finally {
       setSearchLoading(false)
     }
-  }, [])
+  }, [getQuickNavResults])
 
   const handleSearchInput = (value: string) => {
     setSearchQuery(value)
+    setSelectedIndex(0)
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current)
     searchTimeoutRef.current = setTimeout(() => doSearch(value), 250)
   }
 
-  const handleResultClick = (result: SearchResult) => {
-    const typeToTab: Record<string, string> = {
-      task: 'tasks', agent: 'agents', activity: 'activity',
-      audit: 'audit', message: 'agents', notification: 'notifications',
-      webhook: 'webhooks', pipeline: 'agents', alert_rule: 'alerts',
-    }
-    navigateToPanel(typeToTab[result.type] || 'overview')
-    setSearchOpen(false)
-    setSearchQuery('')
-    setSearchResults([])
-  }
+  useEffect(() => {
+    resultButtonRefs.current = resultButtonRefs.current.slice(0, searchResults.length)
+  }, [searchResults.length])
 
   const typeIcons: Record<string, string> = {
+    panel: '>',
     task: 'T', agent: 'A', activity: 'E', audit: 'S',
     message: 'M', notification: 'N', webhook: 'W', pipeline: 'P',
   }
   const typeColors: Record<string, string> = {
+    panel: 'bg-primary/20 text-primary',
     task: 'bg-blue-500/20 text-blue-400',
     agent: 'bg-purple-500/20 text-purple-400',
     activity: 'bg-green-500/20 text-green-400',
@@ -132,228 +291,277 @@ export function HeaderBar() {
   }
 
   return (
-    <header role="banner" aria-label="Application header" className="h-12 bg-card/80 backdrop-blur-sm border-b border-border px-4 flex items-center justify-between shrink-0">
-      {/* Left: Page title + breadcrumb */}
-      <div className="flex items-center gap-3">
-        <h1 className="text-sm font-semibold text-foreground">
-          {tabLabels[activeTab] || 'Mission Control'}
-        </h1>
-        <span className="text-2xs text-muted-foreground font-mono-tight">
-          v{APP_VERSION}
-        </span>
-      </div>
+    <header role="banner" aria-label="Application header" className="relative z-50 h-14 bg-card/80 backdrop-blur-sm border-b border-border px-3 md:px-4 shrink-0">
+      <div className="h-full flex items-center gap-2 md:gap-3">
+        {/* Left: Page title + context */}
+        <div className="flex min-w-0 items-center gap-2.5 shrink-0">
+          {activeProject ? (
+            <Button
+              variant="outline"
+              size="xs"
+              onClick={() => navigateToPanel('tasks')}
+              onMouseEnter={() => prefetchPanel('tasks')}
+              onFocus={() => prefetchPanel('tasks')}
+              className="hidden lg:flex items-center gap-1 text-2xs bg-secondary/50 min-w-0 max-w-[320px]"
+              title={`Scoped to project: ${activeProject.name}`}
+            >
+              <span className="text-muted-foreground/60 truncate">{activeTenant?.display_name || 'Default'}</span>
+              <span className="text-muted-foreground/40">/</span>
+              <span className="font-medium text-foreground truncate">{activeProject.name}</span>
+            </Button>
+          ) : activeTenant ? (
+            <div className="hidden lg:flex items-center gap-1 px-2 py-1 rounded-md bg-secondary/40 text-2xs">
+              <span className="text-muted-foreground">Workspace</span>
+              <span className="text-muted-foreground/40">/</span>
+              <span className="font-medium text-foreground truncate max-w-[220px]">{activeTenant.display_name}</span>
+            </div>
+          ) : null}
 
-      {/* Center: Search trigger + Quick stats (desktop only) */}
-      <div className="hidden md:flex items-center gap-4">
-        <button
-          onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
-          className="flex items-center gap-2 h-7 px-3 rounded-md bg-secondary/50 border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
-        >
-          <SearchIcon />
-          <span>Search...</span>
-          <kbd className="text-2xs px-1 py-0.5 rounded bg-muted border border-border font-mono ml-2">&#8984;K</kbd>
-        </button>
-
-        <Stat label="Sessions" value={`${activeSessions}/${sessions.length}`} />
-        <ConnectionBadge connection={connection} onReconnect={reconnect} />
-        <SseBadge connected={connection.sseConnected ?? false} />
-      </div>
-
-      {/* Mobile connection dot (visible below md only) */}
-      <MobileConnectionDot connection={connection} onReconnect={reconnect} />
-
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2">
-        <div className="hidden md:block">
-          <DigitalClock />
+          <ModeBadge connection={connection} onReconnect={reconnect} />
         </div>
 
-        {/* Mobile search trigger */}
-        <button
-          onClick={() => { setSearchOpen(true); setTimeout(() => searchInputRef.current?.focus(), 50) }}
-          className="md:hidden h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth flex items-center justify-center"
-          title="Search"
-        >
-          <SearchIcon />
-        </button>
-
-        {/* Chat toggle */}
-        <button
-          onClick={() => setChatPanelOpen(!chatPanelOpen)}
-          className={`h-8 px-2.5 rounded-md text-xs font-medium transition-smooth flex items-center gap-1.5 ${
-            chatPanelOpen
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-          }`}
-        >
-          <ChatIcon />
-          Chat
-        </button>
-
-        {/* Notifications */}
-        <button
-          onClick={() => navigateToPanel('notifications')}
-          className="h-8 w-8 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth flex items-center justify-center relative"
-        >
-          <BellIcon />
-          {unreadNotificationCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-2xs flex items-center justify-center font-medium">
-              {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+        {/* Center: wide command search (desktop) */}
+        <div className="hidden md:flex items-center justify-center flex-1 min-w-0 max-w-[28rem] lg:max-w-[34rem] xl:max-w-[42rem]">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={openCommandPalette}
+            className="h-10 w-full justify-between bg-secondary/35 hover:border-primary/40 hover:bg-secondary/50 px-3"
+          >
+            <span className="flex items-center gap-2 min-w-0">
+              <SearchIcon />
+              <span className="truncate text-sm text-muted-foreground">Jump to page, task, agent...</span>
             </span>
-          )}
-        </button>
+            <span className="hidden xl:flex items-center gap-1 ml-2 shrink-0">
+              <kbd className="text-2xs px-1.5 py-0.5 rounded bg-muted border border-border font-mono">&#8984;K</kbd>
+              <kbd className="text-2xs px-1.5 py-0.5 rounded bg-muted border border-border font-mono">/</kbd>
+            </span>
+          </Button>
+        </div>
 
-        <ThemeToggle />
+        {/* Right: status + actions */}
+        <div className="flex items-center justify-end gap-1.5 md:gap-2 min-w-0 shrink-0 ml-auto">
+          <div className="hidden xl:flex items-center gap-3">
+            <Stat label="Sessions" value={`${activeSessions}/${sessions.length}`} />
+            <NavigationLatencyStat />
+            <SseBadge connected={connection.sseConnected ?? false} />
+            <DigitalClock />
+          </div>
 
-        {/* User menu */}
-        {currentUser && (
-          <UserMenu user={currentUser} onLogout={() => setCurrentUser(null)} />
-        )}
+          {/* Mobile search trigger */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={openCommandPalette}
+            className="md:hidden"
+            title="Search"
+          >
+            <SearchIcon />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => navigateToPanel('notifications')}
+            onMouseEnter={() => prefetchPanel('notifications')}
+            onFocus={() => prefetchPanel('notifications')}
+            className="relative"
+          >
+            <BellIcon />
+            {unreadNotificationCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full bg-primary text-primary-foreground text-2xs flex items-center justify-center font-medium">
+                {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+              </span>
+            )}
+          </Button>
+
+          <ThemeSelector />
+        </div>
       </div>
 
-      {/* Search overlay (renders at fixed position, works on all breakpoints) */}
-      {searchOpen && (
-        <div ref={searchRef} className="fixed inset-0 z-50">
-          <div className="absolute inset-0" onClick={() => setSearchOpen(false)} />
-          <div className="absolute top-12 left-1/2 -translate-x-1/2 w-[min(24rem,calc(100vw-2rem))] bg-card border border-border rounded-lg shadow-xl overflow-hidden">
-            <div className="p-2 border-b border-border">
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                onChange={e => handleSearchInput(e.target.value)}
-                placeholder="Search tasks, agents, activity..."
-                className="w-full h-8 px-3 rounded-md bg-secondary border-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                autoFocus
-              />
-            </div>
-            <div className="max-h-80 overflow-y-auto">
-              {searchLoading ? (
-                <div className="p-4 text-center text-xs text-muted-foreground">Searching...</div>
-              ) : searchResults.length > 0 ? (
-                searchResults.map((r, i) => (
-                  <button
-                    key={`${r.type}-${r.id}-${i}`}
-                    onClick={() => handleResultClick(r)}
-                    className="w-full text-left px-3 py-2 hover:bg-secondary/50 transition-colors flex items-start gap-2.5"
-                  >
-                    <span className={`text-2xs font-medium w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 ${typeColors[r.type] || 'bg-muted text-muted-foreground'}`}>
-                      {typeIcons[r.type] || '?'}
-                    </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-foreground truncate">{r.title}</div>
-                      {r.subtitle && <div className="text-2xs text-muted-foreground truncate">{r.subtitle}</div>}
-                      {r.excerpt && <div className="text-2xs text-muted-foreground/70 truncate mt-0.5">{r.excerpt}</div>}
-                    </div>
-                  </button>
-                ))
-              ) : searchQuery.length >= 2 ? (
-                <div className="p-4 text-center text-xs text-muted-foreground">No results found</div>
-              ) : (
-                <div className="p-4 text-center text-xs text-muted-foreground">Type to search across all entities</div>
-              )}
+      {/* Search overlay (portal to body to avoid clipping/stacking context bugs) */}
+      {searchOpen && isMounted && createPortal(
+        <div
+          ref={searchRef}
+          className="fixed inset-0 z-[9999] isolate"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Command search"
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/30 to-black/30" onClick={() => setSearchOpen(false)} />
+          <div className="absolute inset-0 flex items-center justify-center p-4">
+            <div className="command-palette-in w-full max-w-[44rem] max-h-[min(78vh,40rem)] bg-card border border-border rounded-lg shadow-2xl overflow-hidden">
+              <div className="p-2 border-b border-border">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => handleSearchInput(e.target.value)}
+                  placeholder="Search tasks, agents, activity, or type a page command..."
+                  className="w-full h-9 px-3 rounded-md bg-secondary border-0 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  autoFocus
+                  role="combobox"
+                  aria-expanded={searchOpen}
+                  aria-controls="mc-command-results"
+                  aria-activedescendant={searchResults[selectedIndex] ? `mc-command-result-${selectedIndex}` : undefined}
+                />
+              </div>
+              <div id="mc-command-results" role="listbox" className="bg-card max-h-[calc(min(78vh,40rem)-3.25rem)] overflow-y-auto">
+                {searchLoading ? (
+                  <div className="p-4 text-center text-xs text-muted-foreground">Searching...</div>
+                ) : searchResults.length > 0 ? (
+                  searchResults.map((r, i) => (
+                    <Button
+                      key={`${r.type}-${r.id}-${i}`}
+                      ref={(el) => { resultButtonRefs.current[i] = el }}
+                      variant="ghost"
+                      onClick={() => handleResultClick(r)}
+                      onMouseEnter={() => setSelectedIndex(i)}
+                      id={`mc-command-result-${i}`}
+                      role="option"
+                      aria-selected={i === selectedIndex}
+                      tabIndex={i === selectedIndex ? 0 : -1}
+                      className={`w-full text-left px-3 py-2 h-auto rounded-none justify-start items-start gap-2.5 hover:bg-secondary/80 ${
+                        i === selectedIndex ? 'bg-secondary' : 'bg-card'
+                      }`}
+                    >
+                      <span className={`text-2xs font-medium w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 ${typeColors[r.type] || 'bg-muted text-muted-foreground'}`}>
+                        {typeIcons[r.type] || '?'}
+                      </span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-foreground truncate">{r.title}</div>
+                        {r.subtitle && <div className="text-2xs text-muted-foreground truncate">{r.subtitle}</div>}
+                        {r.excerpt && <div className="text-2xs text-muted-foreground/70 truncate mt-0.5">{r.excerpt}</div>}
+                      </div>
+                    </Button>
+                  ))
+                ) : searchQuery.length >= 2 ? (
+                  <div className="p-4 text-center text-xs text-muted-foreground">No results found</div>
+                ) : (
+                  <div className="p-4 text-center text-xs text-muted-foreground">Type to search entities or jump pages instantly</div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   )
 }
 
-function MobileConnectionDot({
+/** Top-left mode + connection badge — visible on all screen sizes. */
+function ModeBadge({
   connection,
   onReconnect,
 }: {
-  connection: { isConnected: boolean; reconnectAttempts: number }
+  connection: ConnectionStatus
   onReconnect: () => void
 }) {
   const { dashboardMode } = useMissionControl()
   const isLocal = dashboardMode === 'local'
-  const isReconnecting = !connection.isConnected && connection.reconnectAttempts > 0
-
-  let dotClass: string
-  let title: string
-
-  if (isLocal) {
-    dotClass = 'bg-blue-500'
-    title = 'Local Mode'
-  } else if (connection.isConnected) {
-    dotClass = 'bg-green-500'
-    title = 'Gateway connected'
-  } else if (isReconnecting) {
-    dotClass = 'bg-amber-500 animate-pulse'
-    title = `Reconnecting (${connection.reconnectAttempts})`
-  } else {
-    dotClass = 'bg-red-500 animate-pulse'
-    title = 'Gateway disconnected — tap to reconnect'
-  }
-
-  return (
-    <button
-      onClick={!isLocal && !connection.isConnected ? onReconnect : undefined}
-      className={`md:hidden flex items-center justify-center h-8 w-8 rounded-md ${
-        isLocal || connection.isConnected ? 'cursor-default' : 'hover:bg-secondary cursor-pointer'
-      } transition-smooth`}
-      title={title}
-    >
-      <span className={`w-2 h-2 rounded-full ${dotClass}`} />
-    </button>
-  )
-}
-
-function ConnectionBadge({
-  connection,
-  onReconnect,
-}: {
-  connection: { isConnected: boolean; reconnectAttempts: number; latency?: number }
-  onReconnect: () => void
-}) {
-  const { dashboardMode } = useMissionControl()
-  const isLocal = dashboardMode === 'local'
-  const isReconnecting = !connection.isConnected && connection.reconnectAttempts > 0
+  const [showTooltip, setShowTooltip] = useState(false)
 
   if (isLocal) {
     return (
-      <div className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-md cursor-default">
-        <span className="text-muted-foreground">Gateway</span>
-        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-        <span className="font-medium font-mono-tight text-blue-400">Local</span>
+      <div className="flex items-center gap-1.5 px-2 py-1 rounded-md text-2xs bg-void-cyan/10 border border-void-cyan/25">
+        <span className="w-1.5 h-1.5 rounded-full bg-void-cyan" />
+        <span className="font-medium text-void-cyan">Local</span>
       </div>
     )
   }
 
-  let dotClass: string
-  let label: string
+  const isConnected = connection.isConnected
+  const isReconnecting = !isConnected && connection.reconnectAttempts > 0
 
-  if (connection.isConnected) {
+  let dotClass: string
+  let borderClass: string
+  let textClass: string
+  let statusLabel: string
+
+  if (isConnected) {
     dotClass = 'bg-green-500'
-    label = connection.latency != null ? `${connection.latency}ms` : 'Online'
+    borderClass = 'border-green-500/25 bg-green-500/10'
+    textClass = 'text-green-400'
+    statusLabel = connection.latency != null ? `${connection.latency}ms` : 'Connected'
   } else if (isReconnecting) {
     dotClass = 'bg-amber-500 animate-pulse'
-    label = `Connecting... (${connection.reconnectAttempts})`
+    borderClass = 'border-amber-500/25 bg-amber-500/10'
+    textClass = 'text-amber-400'
+    statusLabel = `Retry ${connection.reconnectAttempts}`
   } else {
     dotClass = 'bg-red-500 animate-pulse'
-    label = 'Disconnected'
+    borderClass = 'border-red-500/25 bg-red-500/10'
+    textClass = 'text-red-400'
+    statusLabel = 'Offline'
   }
 
+  const wsHost = extractWsHost(connection.url)
+
   return (
-    <button
-      onClick={!connection.isConnected ? onReconnect : undefined}
-      className={`flex items-center gap-1.5 text-xs px-2 py-1 rounded-md transition-smooth ${
-        connection.isConnected
-          ? 'cursor-default'
-          : 'hover:bg-secondary cursor-pointer'
-      }`}
-      title={connection.isConnected ? 'Gateway connected' : 'Click to reconnect'}
+    <div
+      className="relative"
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
     >
-      <span className="text-muted-foreground">Gateway</span>
-      <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
-      <span className={`font-medium font-mono-tight ${
-        connection.isConnected ? 'text-green-400' : isReconnecting ? 'text-amber-400' : 'text-red-400'
-      }`}>
-        {label}
-      </span>
-    </button>
+      <button
+        onClick={!isConnected ? onReconnect : undefined}
+        className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-2xs border ${borderClass} ${
+          !isConnected ? 'cursor-pointer hover:brightness-125' : 'cursor-default'
+        } transition-all`}
+      >
+        <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+        <span className={`font-medium ${textClass}`}>GW</span>
+        <span className={`font-mono ${textClass} opacity-80`}>{statusLabel}</span>
+      </button>
+
+      {showTooltip && (
+        <div className="absolute top-full left-0 mt-1.5 z-50 w-56 rounded-lg border border-border bg-card/95 backdrop-blur-md p-3 shadow-xl text-xs">
+          <div className="font-medium text-foreground mb-2">Gateway Connection</div>
+          <div className="space-y-1.5 text-muted-foreground">
+            <div className="flex justify-between">
+              <span>Status</span>
+              <span className={isConnected ? 'text-green-400' : isReconnecting ? 'text-amber-400' : 'text-red-400'}>
+                {isConnected ? 'Connected' : isReconnecting ? 'Reconnecting' : 'Disconnected'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Host</span>
+              <span className="font-mono text-foreground/80 truncate ml-2">{wsHost}</span>
+            </div>
+            {connection.latency != null && (
+              <div className="flex justify-between">
+                <span>Latency</span>
+                <span className="font-mono text-foreground/80">{connection.latency}ms</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span>WebSocket</span>
+              <span className={isConnected ? 'text-green-400' : 'text-red-400'}>
+                {isConnected ? 'Live' : 'Down'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>SSE</span>
+              <span className={connection.sseConnected ? 'text-green-400' : 'text-muted-foreground/50'}>
+                {connection.sseConnected ? 'Live' : 'Off'}
+              </span>
+            </div>
+            {!isConnected && connection.reconnectAttempts > 0 && (
+              <div className="flex justify-between">
+                <span>Retries</span>
+                <span className="text-amber-400">{connection.reconnectAttempts}</span>
+              </div>
+            )}
+          </div>
+          {!isConnected && (
+            <div className="mt-2 pt-2 border-t border-border/40 text-muted-foreground/60 text-[10px]">
+              Click to reconnect
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -368,6 +576,31 @@ function Stat({ label, value, status }: { label: string; value: string; status?:
   )
 }
 
+function NavigationLatencyStat() {
+  const [latestMs, setLatestMs] = useState<number | null>(null)
+  const [avgMs, setAvgMs] = useState<number | null>(null)
+
+  useEffect(() => {
+    const initial = getNavigationMetrics()
+    setLatestMs(initial.latestMs)
+    setAvgMs(initial.avgMs)
+
+    const eventName = navigationMetricEventName()
+    const update = () => {
+      const metrics = getNavigationMetrics()
+      setLatestMs(metrics.latestMs)
+      setAvgMs(metrics.avgMs)
+    }
+    window.addEventListener(eventName, update as EventListener)
+    return () => window.removeEventListener(eventName, update as EventListener)
+  }, [])
+
+  if (latestMs == null) return null
+  const latest = `${Math.round(latestMs)}ms`
+  const avg = avgMs == null ? '' : ` (${Math.round(avgMs)} avg)`
+  return <Stat label="Nav" value={`${latest}${avg}`} />
+}
+
 function SseBadge({ connected }: { connected: boolean }) {
   return (
     <div className="flex items-center gap-1.5 text-xs">
@@ -377,192 +610,6 @@ function SseBadge({ connected }: { connected: boolean }) {
         {connected ? 'Live' : 'Off'}
       </span>
     </div>
-  )
-}
-
-function ChatIcon() {
-  return (
-    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 3h12v8H6l-3 3v-3H2V3z" />
-    </svg>
-  )
-}
-
-function UserMenu({ user, onLogout }: { user: { username: string; display_name: string; role: string }; onLogout: () => void }) {
-  const [open, setOpen] = useState(false)
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
-  const router = useRouter()
-
-  const initials = user.display_name
-    .split(' ')
-    .map(n => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
-  async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    onLogout()
-    router.push('/login')
-  }
-
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="h-8 w-8 rounded-full bg-primary/20 text-primary text-xs font-semibold flex items-center justify-center hover:bg-primary/30 transition-smooth"
-        title={`${user.display_name} (${user.role})`}
-      >
-        {initials}
-      </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-1 w-48 rounded-lg bg-card border border-border shadow-lg z-50 py-1">
-            <div className="px-3 py-2 border-b border-border">
-              <p className="text-sm font-medium text-foreground">{user.display_name}</p>
-              <p className="text-xs text-muted-foreground">{user.role}</p>
-            </div>
-            <button
-              onClick={() => { setOpen(false); setShowPasswordDialog(true) }}
-              className="w-full px-3 py-2 text-sm text-left text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth"
-            >
-              Change password
-            </button>
-            <button
-              onClick={handleLogout}
-              className="w-full px-3 py-2 text-sm text-left text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth"
-            >
-              Sign out
-            </button>
-          </div>
-        </>
-      )}
-
-      {showPasswordDialog && (
-        <PasswordDialog onClose={() => setShowPasswordDialog(false)} />
-      )}
-    </div>
-  )
-}
-
-function PasswordDialog({ onClose }: { onClose: () => void }) {
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-
-    if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters')
-      return
-    }
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await fetch('/api/auth/me', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error || 'Failed to change password')
-        return
-      }
-      setSuccess(true)
-      setTimeout(onClose, 1500)
-    } catch {
-      setError('Network error')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <>
-      <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-        <div className="bg-card border border-border rounded-lg shadow-xl w-80 pointer-events-auto" onClick={e => e.stopPropagation()}>
-          <div className="px-4 py-3 border-b border-border">
-            <h3 className="text-sm font-semibold text-foreground">Change Password</h3>
-          </div>
-
-          {success ? (
-            <div className="px-4 py-6 text-center">
-              <p className="text-sm text-green-400 font-medium">Password changed successfully</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="p-4 space-y-3">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Current password</label>
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
-                  className="w-full h-8 px-2.5 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  required
-                  autoFocus
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">New password</label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  className="w-full h-8 px-2.5 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  required
-                  minLength={8}
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">Confirm new password</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
-                  className="w-full h-8 px-2.5 rounded-md bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  required
-                  minLength={8}
-                />
-              </div>
-
-              {error && (
-                <p className="text-xs text-red-400">{error}</p>
-              )}
-
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="flex-1 h-8 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border transition-smooth"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 h-8 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth disabled:opacity-50"
-                >
-                  {loading ? 'Saving...' : 'Save'}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </div>
-    </>
   )
 }
 

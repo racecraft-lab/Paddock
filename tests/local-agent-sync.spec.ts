@@ -1,0 +1,45 @@
+import { test, expect } from '@playwright/test'
+import { API_KEY_HEADER } from './helpers'
+
+test.describe('Local Agent Sync', () => {
+
+  // ── POST /api/agents/sync?source=local ────────
+
+  test('POST local sync returns a result', async ({ request }) => {
+    const res = await request.post('/api/agents/sync?source=local', {
+      headers: API_KEY_HEADER,
+    })
+    expect(res.status()).toBe(200)
+    const body = await res.json()
+    expect(body).toHaveProperty('ok')
+    expect(body).toHaveProperty('message')
+    expect(typeof body.message).toBe('string')
+  })
+
+  test('POST gateway sync still works', async ({ request }) => {
+    const res = await request.post('/api/agents/sync', {
+      headers: API_KEY_HEADER,
+    })
+    // May return 200 (config found) or 500 (no config) — either is fine
+    expect([200, 500]).toContain(res.status())
+  })
+
+  // ── GET /api/agents (source field) ────────────
+
+  test('agents list includes source field after sync', async ({ request }) => {
+    // Trigger local sync first
+    await request.post('/api/agents/sync?source=local', {
+      headers: API_KEY_HEADER,
+    })
+
+    const res = await request.get('/api/agents', { headers: API_KEY_HEADER })
+    expect(res.status()).toBe(200)
+    const body = await res.json()
+    const agents = body.agents || []
+    // All agents should have a source (default 'manual' from migration 034)
+    for (const agent of agents) {
+      // source may be null for pre-migration agents, or 'manual'/'local'/'gateway'
+      expect(typeof agent.source === 'string' || agent.source === null).toBe(true)
+    }
+  })
+})

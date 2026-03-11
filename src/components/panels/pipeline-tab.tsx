@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
 
 interface WorkflowTemplate {
   id: number
@@ -222,12 +223,13 @@ export function PipelineTab() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">{pipelines.length} pipelines</span>
-        <button
+        <Button
           onClick={() => formMode !== 'hidden' ? closeForm() : setFormMode('create')}
-          className="text-xs text-primary hover:underline"
+          variant="link"
+          size="xs"
         >
           {formMode !== 'hidden' ? 'Cancel' : '+ New Pipeline'}
-        </button>
+        </Button>
       </div>
 
       {/* Create/Edit form */}
@@ -264,15 +266,15 @@ export function PipelineTab() {
                   <option value="stop">Stop on fail</option>
                   <option value="continue">Continue on fail</option>
                 </select>
-                <button onClick={() => moveStep(i, -1)} className="text-muted-foreground hover:text-foreground" title="Move up">
+                <Button onClick={() => moveStep(i, -1)} variant="ghost" size="icon-xs" className="w-5 h-5" title="Move up">
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3"><path d="M8 3v10M4 7l4-4 4 4" /></svg>
-                </button>
-                <button onClick={() => moveStep(i, 1)} className="text-muted-foreground hover:text-foreground" title="Move down">
+                </Button>
+                <Button onClick={() => moveStep(i, 1)} variant="ghost" size="icon-xs" className="w-5 h-5" title="Move down">
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3"><path d="M8 13V3M4 9l4 4 4-4" /></svg>
-                </button>
-                <button onClick={() => removeStep(i)} className="text-red-400 hover:text-red-300">
+                </Button>
+                <Button onClick={() => removeStep(i)} variant="ghost" size="icon-xs" className="w-5 h-5 text-red-400 hover:text-red-300">
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3 h-3"><path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" /></svg>
-                </button>
+                </Button>
               </div>
             ))}
 
@@ -290,13 +292,13 @@ export function PipelineTab() {
           </div>
 
           <div className="flex justify-end">
-            <button
+            <Button
               onClick={savePipeline}
               disabled={!formName || formSteps.length < 2}
-              className="h-7 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50"
+              size="xs"
             >
               {formMode === 'edit' ? 'Update' : 'Save Pipeline'}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -312,9 +314,10 @@ export function PipelineTab() {
           {pipelines.map(p => (
             <div key={p.id} className="rounded-md bg-secondary/30 hover:bg-secondary/50 transition-smooth group">
               <div className="flex items-center gap-2 p-2">
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}
-                  className="flex-1 min-w-0 text-left"
+                  className="flex-1 min-w-0 text-left h-auto p-0 rounded-none"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-foreground truncate">{p.name}</span>
@@ -339,25 +342,25 @@ export function PipelineTab() {
                       </div>
                     ))}
                   </div>
-                </button>
+                </Button>
                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-smooth shrink-0">
-                  <button
+                  <Button
                     onClick={() => runPipeline(p.id)}
                     disabled={spawning === p.id}
-                    className="h-7 px-2 rounded-md bg-primary text-primary-foreground text-xs font-medium disabled:opacity-50"
+                    size="xs"
                   >
                     {spawning === p.id ? '...' : 'Run'}
-                  </button>
-                  <button onClick={() => startEdit(p)} className="h-7 px-1.5 rounded-md bg-secondary text-foreground text-xs hover:bg-secondary/80" title="Edit">
+                  </Button>
+                  <Button onClick={() => startEdit(p)} variant="secondary" size="icon-xs" title="Edit">
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5">
                       <path d="M11.5 1.5l3 3-9 9H2.5v-3z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                  </button>
-                  <button onClick={() => deletePipeline(p.id)} className="h-7 px-1.5 rounded-md bg-destructive/20 text-destructive text-xs hover:bg-destructive/30" title="Delete">
+                  </Button>
+                  <Button onClick={() => deletePipeline(p.id)} variant="destructive" size="icon-xs" title="Delete">
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-3.5 h-3.5">
                       <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" />
                     </svg>
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -383,15 +386,15 @@ export function PipelineTab() {
                         <RunStepsViz steps={run.steps_snapshot} />
                         {run.status === 'running' && (
                           <div className="flex gap-1 mt-1.5">
-                            <button onClick={() => advanceRun(run.id, true)} className="h-6 px-2 rounded bg-green-500/20 text-green-400 text-2xs hover:bg-green-500/30">
+                            <Button onClick={() => advanceRun(run.id, true)} variant="success" size="xs" className="bg-green-500/20 text-green-400 hover:bg-green-500/30 h-6 text-2xs">
                               Mark Step Done
-                            </button>
-                            <button onClick={() => advanceRun(run.id, false)} className="h-6 px-2 rounded bg-red-500/20 text-red-400 text-2xs hover:bg-red-500/30">
+                            </Button>
+                            <Button onClick={() => advanceRun(run.id, false)} variant="destructive" size="xs" className="bg-red-500/20 text-red-400 hover:bg-red-500/30 h-6 text-2xs">
                               Mark Step Failed
-                            </button>
-                            <button onClick={() => cancelRun(run.id)} className="h-6 px-2 rounded bg-secondary text-muted-foreground text-2xs hover:bg-secondary/80">
+                            </Button>
+                            <Button onClick={() => cancelRun(run.id)} variant="secondary" size="xs" className="h-6 text-2xs">
                               Cancel
-                            </button>
+                            </Button>
                           </div>
                         )}
                       </div>
@@ -498,15 +501,15 @@ function ActiveRunCard({ run, onAdvance, onCancel }: {
       </div>
       <RunStepsViz steps={run.steps_snapshot} />
       <div className="flex gap-1 mt-2">
-        <button onClick={() => onAdvance(run.id, true)} className="h-6 px-2 rounded bg-green-500/20 text-green-400 text-2xs hover:bg-green-500/30">
+        <Button onClick={() => onAdvance(run.id, true)} variant="success" size="xs" className="bg-green-500/20 text-green-400 hover:bg-green-500/30 h-6 text-2xs">
           Step Done
-        </button>
-        <button onClick={() => onAdvance(run.id, false)} className="h-6 px-2 rounded bg-red-500/20 text-red-400 text-2xs hover:bg-red-500/30">
+        </Button>
+        <Button onClick={() => onAdvance(run.id, false)} variant="destructive" size="xs" className="bg-red-500/20 text-red-400 hover:bg-red-500/30 h-6 text-2xs">
           Step Failed
-        </button>
-        <button onClick={() => onCancel(run.id)} className="h-6 px-2 rounded bg-secondary text-muted-foreground text-2xs hover:bg-secondary/80 ml-auto">
+        </Button>
+        <Button onClick={() => onCancel(run.id)} variant="secondary" size="xs" className="h-6 text-2xs ml-auto">
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   )

@@ -5,6 +5,9 @@ import { requireRole } from '@/lib/auth'
 import { validateBody, createMessageSchema } from '@/lib/validation'
 import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { scanForInjection } from '@/lib/injection-guard'
+import { scanForSecrets } from '@/lib/secret-scanner'
+import { logSecurityEvent } from '@/lib/security-events'
 
 export async function POST(request: NextRequest) {
   const auth = requireRole(request, 'operator')
@@ -18,6 +21,24 @@ export async function POST(request: NextRequest) {
     if ('error' in result) return result.error
     const { to, message } = result.data
     const from = auth.user.display_name || auth.user.username || 'system'
+
+    // Scan message for injection — this gets forwarded directly to an agent
+    const injectionReport = scanForInjection(message, { context: 'prompt' })
+    if (!injectionReport.safe) {
+      const criticals = injectionReport.matches.filter(m => m.severity === 'critical')
+      if (criticals.length > 0) {
+        logger.warn({ to, rules: criticals.map(m => m.rule) }, 'Blocked agent message: injection detected')
+        return NextResponse.json(
+          { error: 'Message blocked: potentially unsafe content detected', injection: criticals.map(m => ({ rule: m.rule, description: m.description })) },
+          { status: 422 }
+        )
+      }
+    }
+
+    const secretHits = scanForSecrets(message)
+    if (secretHits.length > 0) {
+      try { logSecurityEvent({ event_type: 'secret_exposure', severity: 'critical', source: 'agent-message', agent_name: from, detail: JSON.stringify({ count: secretHits.length, types: secretHits.map(s => s.type) }), workspace_id: auth.user.workspace_id ?? 1, tenant_id: 1 }) } catch {}
+    }
 
     const db = getDatabase()
     const workspaceId = auth.user.workspace_id ?? 1;

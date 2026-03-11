@@ -14,6 +14,7 @@ import {
   updateIssueState,
   type GitHubIssue,
 } from '@/lib/github'
+import { initializeLabels, pullFromGitHub } from '@/lib/github-sync-engine'
 
 /**
  * GET /api/github?action=issues&repo=owner/repo&state=open&labels=bug
@@ -83,6 +84,10 @@ export async function POST(request: NextRequest) {
         return await handleClose(body, auth.user.username, auth.user.workspace_id ?? 1)
       case 'status':
         return handleStatus(auth.user.workspace_id ?? 1)
+      case 'init-labels':
+        return await handleInitLabels(body, auth.user.workspace_id ?? 1)
+      case 'sync-project':
+        return await handleSyncProject(body, auth.user.username, auth.user.workspace_id ?? 1)
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
     }
@@ -415,6 +420,67 @@ async function handleGitHubStats() {
     topLanguages,
     recentRepos,
   })
+}
+
+// ── Init Labels: create MC labels on repo ────────────────────────
+
+async function handleInitLabels(
+  body: { repo?: string },
+  workspaceId: number
+) {
+  const repo = body.repo || process.env.GITHUB_DEFAULT_REPO
+  if (!repo) {
+    return NextResponse.json({ error: 'repo is required' }, { status: 400 })
+  }
+
+  await initializeLabels(repo)
+
+  // Mark project labels as initialized
+  const db = getDatabase()
+  db.prepare(`
+    UPDATE projects
+    SET github_labels_initialized = 1, updated_at = unixepoch()
+    WHERE github_repo = ? AND workspace_id = ?
+  `).run(repo, workspaceId)
+
+  return NextResponse.json({ ok: true, repo })
+}
+
+// ── Sync Project: pull from GitHub for a project ─────────────────
+
+async function handleSyncProject(
+  body: { project_id?: number },
+  actor: string,
+  workspaceId: number
+) {
+  if (typeof body.project_id !== 'number') {
+    return NextResponse.json({ error: 'project_id is required' }, { status: 400 })
+  }
+
+  const db = getDatabase()
+  const project = db.prepare(`
+    SELECT id, github_repo, github_sync_enabled, github_default_branch
+    FROM projects
+    WHERE id = ? AND workspace_id = ? AND status = 'active'
+  `).get(body.project_id, workspaceId) as any | undefined
+
+  if (!project) {
+    return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+  }
+  if (!project.github_repo || !project.github_sync_enabled) {
+    return NextResponse.json({ error: 'GitHub sync not enabled for this project' }, { status: 400 })
+  }
+
+  const result = await pullFromGitHub(project, workspaceId)
+
+  db_helpers.logActivity(
+    'github_sync', 'project', project.id, actor,
+    `Manual sync: pulled ${result.pulled}, pushed ${result.pushed}`,
+    { repo: project.github_repo, ...result },
+    workspaceId
+  )
+
+  return NextResponse.json({ ok: true, ...result })
 }
 
 // ── Priority mapping helper ─────────────────────────────────────

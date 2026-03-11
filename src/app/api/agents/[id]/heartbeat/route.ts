@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDatabase, db_helpers } from '@/lib/db';
 import { requireRole } from '@/lib/auth';
+import { agentHeartbeatLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 
 /**
@@ -188,6 +189,9 @@ export async function POST(
 ) {
   const auth = requireRole(request, 'operator');
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const rateLimited = agentHeartbeatLimiter(request);
+  if (rateLimited) return rateLimited;
 
   let body: any = {};
   try {

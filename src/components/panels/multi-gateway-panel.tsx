@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 import { useWebSocket } from '@/lib/websocket'
 import { buildGatewayWebSocketUrl } from '@/lib/gateway-url'
@@ -46,9 +47,19 @@ interface GatewayHealthProbe {
   error?: string
 }
 
+interface DiscoveredGateway {
+  user: string
+  port: number
+  bind: string
+  mode: string
+  active: boolean
+  tailscale?: { mode: string }
+}
+
 export function MultiGatewayPanel() {
   const [gateways, setGateways] = useState<Gateway[]>([])
   const [directConnections, setDirectConnections] = useState<DirectConnection[]>([])
+  const [discoveredGateways, setDiscoveredGateways] = useState<DiscoveredGateway[]>([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [probing, setProbing] = useState<number | null>(null)
@@ -73,7 +84,40 @@ export function MultiGatewayPanel() {
     } catch { /* ignore */ }
   }, [])
 
-  useEffect(() => { fetchGateways(); fetchDirectConnections() }, [fetchGateways, fetchDirectConnections])
+  const fetchDiscovered = useCallback(async () => {
+    try {
+      const res = await fetch('/api/gateways/discover')
+      const data = await res.json()
+      setDiscoveredGateways(data.gateways || [])
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => { fetchGateways(); fetchDirectConnections(); fetchDiscovered() }, [fetchGateways, fetchDirectConnections, fetchDiscovered])
+
+  const gatewayMatchesConnection = useCallback((gw: Gateway): boolean => {
+    const url = connection.url
+    if (!url) return false
+    const normalizedConn = url.toLowerCase()
+    const normalizedHost = String(gw.host || '').toLowerCase()
+
+    if (normalizedHost && normalizedConn.includes(normalizedHost)) return true
+    if (normalizedConn.includes(`:${gw.port}`)) return true
+
+    try {
+      const derivedWs = buildGatewayWebSocketUrl({
+        host: gw.host,
+        port: gw.port,
+        browserProtocol: window.location.protocol,
+      }).toLowerCase()
+      return normalizedConn.includes(derivedWs)
+    } catch {
+      return false
+    }
+  }, [connection.url])
+
+  const shouldShowConnectionSummary =
+    gateways.length === 0 ||
+    !gateways.some(gatewayMatchesConnection)
 
   const setPrimary = async (gw: Gateway) => {
     await fetch('/api/gateways', {
@@ -157,36 +201,39 @@ export function MultiGatewayPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={probeAll}
-            className="h-8 px-3 rounded-md text-xs font-medium bg-secondary text-foreground hover:bg-secondary/80 transition-smooth"
+            variant="secondary"
+            size="sm"
           >
             Probe All
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowAdd(!showAdd)}
-            className="h-8 px-3 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth"
+            size="sm"
           >
             + Add Gateway
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Current connection info */}
-      <div className="bg-card border border-border rounded-lg p-4">
-        <div className="flex items-center gap-3">
-          <span className={`w-2.5 h-2.5 rounded-full ${connection.isConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
-          <div>
-            <div className="text-sm font-medium text-foreground">
-              {connection.isConnected ? 'Connected' : 'Disconnected'}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {connection.url || 'No active connection'}
-              {connection.latency != null && ` (${connection.latency}ms)`}
+      {/* Current connection info (shown only for unmanaged/unknown connections). */}
+      {shouldShowConnectionSummary && (
+        <div className="bg-card border border-border rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <span className={`w-2.5 h-2.5 rounded-full ${connection.isConnected ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+            <div>
+              <div className="text-sm font-medium text-foreground">
+                {connection.isConnected ? 'Connected' : 'Disconnected'}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {connection.url || 'No active connection'}
+                {connection.latency != null && ` (${connection.latency}ms)`}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Add Form */}
       {showAdd && (
@@ -209,13 +256,89 @@ export function MultiGatewayPanel() {
               gateway={gw}
               health={healthByGatewayId.get(gw.id)}
               isProbing={probing === gw.id}
-              isCurrentlyConnected={(connection.url?.includes(gw.host) ?? false) || (connection.url?.includes(`:${gw.port}`) ?? false)}
+              isCurrentlyConnected={gatewayMatchesConnection(gw)}
               onSetPrimary={() => setPrimary(gw)}
               onDelete={() => deleteGateway(gw.id)}
               onConnect={() => connectTo(gw)}
               onProbe={() => probeGateway(gw)}
             />
           ))}
+        </div>
+      )}
+
+      {/* Discovered OS-Level Gateways (exclude already-registered ones) */}
+      {discoveredGateways.filter(dg => !gateways.some(gw => gw.port === dg.port)).length > 0 && (
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-sm font-semibold text-foreground">Discovered Gateways</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                OpenClaw gateways found on this machine
+              </p>
+            </div>
+            <Button
+              onClick={fetchDiscovered}
+              variant="secondary"
+              size="xs"
+              className="text-2xs"
+            >
+              Refresh
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {discoveredGateways
+              .filter(dg => !gateways.some(gw => gw.port === dg.port))
+              .map(dg => (
+                <div key={`${dg.user}-${dg.port}`} className="bg-card border border-border rounded-lg p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-2 h-2 rounded-full ${dg.active ? 'bg-green-500' : 'bg-red-500'}`} />
+                        <span className="text-sm font-semibold text-foreground">{dg.user}</span>
+                        <span className={`text-2xs px-1.5 py-0.5 rounded font-medium ${
+                          dg.active
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }`}>
+                          {dg.active ? 'RUNNING' : 'STOPPED'}
+                        </span>
+                        {dg.tailscale?.mode && (
+                          <span className="text-2xs px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-400 border border-violet-500/30 font-medium">
+                            TS:{dg.tailscale.mode}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 mt-1.5 text-xs text-muted-foreground">
+                        <span className="font-mono">127.0.0.1:{dg.port}</span>
+                        <span>Bind: {dg.bind}</span>
+                        <span>Mode: {dg.mode}</span>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={async () => {
+                        await fetch('/api/gateways', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: dg.user,
+                            host: '127.0.0.1',
+                            port: dg.port,
+                            is_primary: false,
+                          }),
+                        })
+                        fetchGateways()
+                        fetchDiscovered()
+                      }}
+                      variant="secondary"
+                      size="xs"
+                      className="text-2xs"
+                    >
+                      Register
+                    </Button>
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
       )}
 
@@ -228,12 +351,14 @@ export function MultiGatewayPanel() {
               CLI tools connected directly without a gateway
             </p>
           </div>
-          <button
+          <Button
             onClick={fetchDirectConnections}
-            className="h-7 px-2.5 rounded-md text-2xs font-medium bg-secondary text-foreground hover:bg-secondary/80 transition-smooth"
+            variant="secondary"
+            size="xs"
+            className="text-2xs"
           >
             Refresh
-          </button>
+          </Button>
         </div>
         {directConnections.length === 0 ? (
           <div className="text-center py-8 bg-card border border-border rounded-lg">
@@ -269,12 +394,14 @@ export function MultiGatewayPanel() {
                     </div>
                   </div>
                   {conn.status === 'connected' && (
-                    <button
+                    <Button
                       onClick={() => disconnectCli(conn.connection_id)}
-                      className="h-7 px-2.5 rounded-md text-2xs font-medium text-red-400 hover:bg-red-500/10 transition-smooth"
+                      variant="ghost"
+                      size="xs"
+                      className="text-2xs text-red-400 hover:bg-red-500/10"
                     >
                       Disconnect
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -315,7 +442,7 @@ function GatewayCard({ gateway, health, isProbing, isCurrentlyConnected, onSetPr
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${statusColors[gateway.status] || statusColors.unknown}`} />
+            <span className={`w-2 h-2 rounded-full ${isCurrentlyConnected ? 'bg-green-500' : (statusColors[gateway.status] || statusColors.unknown)}`} />
             <h3 className="text-sm font-semibold text-foreground">{gateway.name}</h3>
             {gateway.is_primary ? (
               <span className="text-2xs px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30 font-medium">
@@ -346,41 +473,48 @@ function GatewayCard({ gateway, health, isProbing, isCurrentlyConnected, onSetPr
           )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-          <button
+          <Button
             onClick={onProbe}
             disabled={isProbing}
-            className="h-7 px-2.5 rounded-md text-2xs font-medium bg-secondary text-foreground hover:bg-secondary/80 transition-smooth disabled:opacity-50"
+            variant="secondary"
+            size="xs"
+            className="text-2xs"
             title="Probe gateway"
           >
             {isProbing ? 'Probing...' : 'Probe'}
-          </button>
+          </Button>
           {!isCurrentlyConnected && (
-            <button
+            <Button
               onClick={onConnect}
-              className="h-7 px-2.5 rounded-md text-2xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-smooth"
+              size="xs"
+              className="text-2xs bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
               title="Connect to this gateway"
             >
               Connect
-            </button>
+            </Button>
           )}
           {!gateway.is_primary && (
             <>
-              <button
+              <Button
                 onClick={onSetPrimary}
-                className="h-7 px-2.5 rounded-md text-2xs font-medium bg-secondary text-foreground hover:bg-secondary/80 transition-smooth"
+                variant="secondary"
+                size="xs"
+                className="text-2xs"
                 title="Set as primary"
               >
                 Set Primary
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={onDelete}
-                className="w-7 h-7 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-smooth flex items-center justify-center"
+                variant="ghost"
+                size="icon-xs"
+                className="hover:text-red-400 hover:bg-red-500/10"
                 title="Remove gateway"
               >
                 <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" />
                 </svg>
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -475,12 +609,12 @@ function AddGatewayForm({ onAdded, onCancel }: { onAdded: () => void; onCancel: 
       {error && <p className="text-xs text-red-400">{error}</p>}
 
       <div className="flex gap-2 pt-1">
-        <button type="button" onClick={onCancel} className="h-8 px-4 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border transition-smooth">
+        <Button type="button" onClick={onCancel} variant="outline" size="sm">
           Cancel
-        </button>
-        <button type="submit" disabled={saving} className="h-8 px-4 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth disabled:opacity-50">
+        </Button>
+        <Button type="submit" disabled={saving} size="sm">
           {saving ? 'Adding...' : 'Add Gateway'}
-        </button>
+        </Button>
       </div>
     </form>
   )

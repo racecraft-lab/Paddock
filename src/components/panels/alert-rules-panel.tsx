@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
 
 interface AlertRule {
   id: number
@@ -118,10 +119,12 @@ export function AlertRulesPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={evaluateAll}
             disabled={evaluating || rules.length === 0}
-            className="h-8 px-3 rounded-md text-xs font-medium bg-secondary text-foreground hover:bg-secondary/80 transition-smooth disabled:opacity-50 flex items-center gap-1.5"
+            variant="secondary"
+            size="sm"
+            className="flex items-center gap-1.5"
           >
             {evaluating ? (
               <>
@@ -134,13 +137,13 @@ export function AlertRulesPanel() {
                 Evaluate Now
               </>
             )}
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => setShowCreate(!showCreate)}
-            className="h-8 px-3 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth"
+            size="sm"
           >
             + New Rule
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -165,9 +168,9 @@ export function AlertRulesPanel() {
         <div className="bg-card border border-border rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-foreground">Evaluation Results</h3>
-            <button onClick={() => setEvalResults(null)} className="text-xs text-muted-foreground hover:text-foreground">
+            <Button onClick={() => setEvalResults(null)} variant="ghost" size="xs">
               Dismiss
-            </button>
+            </Button>
           </div>
           <div className="space-y-1.5">
             {evalResults.map(r => (
@@ -253,15 +256,17 @@ function RuleCard({ rule, onToggle, onDelete }: { rule: AlertRule; onToggle: () 
               rule.enabled ? 'left-5.5 right-0.5' : 'left-0.5'
             }`} style={{ left: rule.enabled ? '22px' : '2px' }} />
           </button>
-          <button
+          <Button
             onClick={onDelete}
-            className="w-7 h-7 rounded-md text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-smooth flex items-center justify-center"
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
             title="Delete rule"
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M3 4h10M6 4V3h4v1M5 4v8.5a.5.5 0 00.5.5h5a.5.5 0 00.5-.5V4" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -419,20 +424,21 @@ function CreateRuleForm({ onCreated, onCancel }: { onCreated: () => void; onCanc
       {error && <p className="text-xs text-red-400">{error}</p>}
 
       <div className="flex gap-2 pt-1">
-        <button
+        <Button
           type="button"
           onClick={onCancel}
-          className="h-8 px-4 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border transition-smooth"
+          variant="outline"
+          size="sm"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           type="submit"
           disabled={saving}
-          className="h-8 px-4 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth disabled:opacity-50"
+          size="sm"
         >
           {saving ? 'Creating...' : 'Create Rule'}
-        </button>
+        </Button>
       </div>
     </form>
   )

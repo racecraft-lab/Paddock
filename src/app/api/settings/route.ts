@@ -34,6 +34,20 @@ const settingDefinitions: Record<string, { category: string; description: string
   'general.auto_cleanup': { category: 'general', description: 'Enable automatic data cleanup', default: 'false' },
   'general.auto_backup': { category: 'general', description: 'Enable automatic daily backups', default: 'false' },
   'general.backup_retention_count': { category: 'general', description: 'Number of backup files to keep', default: '10' },
+
+  // Subscription overrides
+  'subscription.plan_override': { category: 'general', description: 'Override auto-detected subscription plan (e.g. max, max_5x, pro)', default: '' },
+  'subscription.codex_plan': { category: 'general', description: 'Codex/OpenAI subscription plan (e.g. chatgpt, plus, pro)', default: '' },
+
+  // Interface
+  'general.interface_mode': { category: 'general', description: 'Interface complexity (essential or full)', default: 'essential' },
+
+  // Onboarding
+  'onboarding.completed': { category: 'onboarding', description: 'Whether onboarding has been completed', default: 'false' },
+  'onboarding.completed_at': { category: 'onboarding', description: 'Timestamp when onboarding was completed', default: '' },
+  'onboarding.skipped': { category: 'onboarding', description: 'Whether onboarding was skipped', default: 'false' },
+  'onboarding.completed_steps': { category: 'onboarding', description: 'JSON array of completed step IDs', default: '[]' },
+  'onboarding.checklist_dismissed': { category: 'onboarding', description: 'Whether the onboarding checklist has been dismissed', default: 'false' },
 }
 
 /**

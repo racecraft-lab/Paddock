@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { validateBody, createTaskSchema, bulkUpdateTaskStatusSchema } from '@/lib/validation';
 import { resolveMentionRecipients } from '@/lib/mentions';
 import { normalizeTaskCreateStatus } from '@/lib/task-status';
+import { pushTaskToGitHub } from '@/lib/github-sync-engine';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -303,6 +304,19 @@ export async function POST(request: NextRequest) {
       WHERE t.id = ? AND t.workspace_id = ?
     `).get(taskId, workspaceId) as Task;
     const parsedTask = mapTaskRow(createdTask);
+
+    // Fire-and-forget outbound GitHub sync for new tasks
+    if (parsedTask.project_id) {
+      const project = db.prepare(`
+        SELECT id, github_repo, github_sync_enabled FROM projects
+        WHERE id = ? AND workspace_id = ?
+      `).get(parsedTask.project_id, workspaceId) as any
+      if (project?.github_sync_enabled && project?.github_repo) {
+        pushTaskToGitHub(parsedTask as any, project).catch(err =>
+          logger.error({ err, taskId }, 'Outbound GitHub sync failed for new task')
+        )
+      }
+    }
 
     // Broadcast to SSE clients
     eventBus.broadcast('task.created', parsedTask);

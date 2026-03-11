@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/auth'
 import { validateBody, createWorkflowSchema } from '@/lib/validation'
 import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { scanForInjection } from '@/lib/injection-guard'
 
 export interface WorkflowTemplate {
   id: number
@@ -62,6 +63,19 @@ export async function POST(request: NextRequest) {
     if ('error' in result) return result.error
     const { name, description, model, task_prompt, timeout_seconds, agent_role, tags } = result.data
 
+    // Scan task_prompt for injection — this gets sent directly to AI agents
+    const injectionReport = scanForInjection(task_prompt, { context: 'prompt' })
+    if (!injectionReport.safe) {
+      const criticals = injectionReport.matches.filter(m => m.severity === 'critical')
+      if (criticals.length > 0) {
+        logger.warn({ name, rules: criticals.map(m => m.rule) }, 'Blocked workflow: injection detected in task_prompt')
+        return NextResponse.json(
+          { error: 'Task prompt blocked: potentially unsafe content detected', injection: criticals.map(m => ({ rule: m.rule, description: m.description })) },
+          { status: 422 }
+        )
+      }
+    }
+
     const db = getDatabase()
     const user = auth.user
     const workspaceId = auth.user.workspace_id ?? 1
@@ -110,6 +124,9 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   const auth = requireRole(request, 'operator')
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+
+  const rateCheck = mutationLimiter(request)
+  if (rateCheck) return rateCheck
 
   try {
     const db = getDatabase()
@@ -168,6 +185,9 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const auth = requireRole(request, 'operator')
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+
+  const rateCheck = mutationLimiter(request)
+  if (rateCheck) return rateCheck
 
   try {
     const db = getDatabase()

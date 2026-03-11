@@ -21,31 +21,46 @@ export async function GET(request: NextRequest) {
     const since = searchParams.get("since")
     const agent = searchParams.get("agent")
 
-    // Filter out human/system messages - only agent-to-agent
+    // Session-thread comms feed used by coordinator + runtime sessions
+    const commsPredicate = `
+      (
+        conversation_id LIKE 'a2a:%'
+        OR conversation_id LIKE 'coord:%'
+        OR conversation_id LIKE 'session:%'
+        OR conversation_id LIKE 'agent_%'
+        OR (json_valid(metadata) AND json_extract(metadata, '$.channel') = 'coordinator-inbox')
+      )
+    `
+
     const humanNames = ["human", "system", "operator"]
     const humanPlaceholders = humanNames.map(() => "?").join(",")
 
-    // 1. Get inter-agent messages
-    let messagesQuery = `
-      SELECT * FROM messages
+    // 1. Get timeline messages (page latest rows but render chronologically)
+    let messagesWhere = `
+      FROM messages
       WHERE workspace_id = ?
-        AND to_agent IS NOT NULL
-        AND from_agent NOT IN (${humanPlaceholders})
-        AND to_agent NOT IN (${humanPlaceholders})
+        AND ${commsPredicate}
     `
-    const messagesParams: any[] = [workspaceId, ...humanNames, ...humanNames]
+    const messagesParams: any[] = [workspaceId]
 
     if (since) {
-      messagesQuery += " AND created_at > ?"
-      messagesParams.push(parseInt(since))
+      messagesWhere += " AND created_at > ?"
+      messagesParams.push(parseInt(since, 10))
     }
     if (agent) {
-      messagesQuery += " AND (from_agent = ? OR to_agent = ?)"
+      messagesWhere += " AND (from_agent = ? OR to_agent = ?)"
       messagesParams.push(agent, agent)
     }
 
-    // Deterministic chronological ordering prevents visual jumps in UI
-    messagesQuery += " ORDER BY created_at ASC, id ASC LIMIT ? OFFSET ?"
+    const messagesQuery = `
+      SELECT * FROM (
+        SELECT *
+        ${messagesWhere}
+        ORDER BY created_at DESC, id DESC
+        LIMIT ? OFFSET ?
+      ) recent
+      ORDER BY created_at ASC, id ASC
+    `
     messagesParams.push(limit, offset)
 
     const messages = db.prepare(messagesQuery).all(...messagesParams) as Message[]
@@ -58,14 +73,15 @@ export async function GET(request: NextRequest) {
         MAX(created_at) as last_message_at
       FROM messages
       WHERE workspace_id = ?
+        AND ${commsPredicate}
         AND to_agent IS NOT NULL
-        AND from_agent NOT IN (${humanPlaceholders})
-        AND to_agent NOT IN (${humanPlaceholders})
+        AND lower(from_agent) NOT IN (${humanPlaceholders})
+        AND lower(to_agent) NOT IN (${humanPlaceholders})
     `
     const graphParams: any[] = [workspaceId, ...humanNames, ...humanNames]
     if (since) {
       graphQuery += " AND created_at > ?"
-      graphParams.push(parseInt(since))
+      graphParams.push(parseInt(since, 10))
     }
     graphQuery += " GROUP BY from_agent, to_agent ORDER BY message_count DESC"
 
@@ -75,15 +91,19 @@ export async function GET(request: NextRequest) {
     const statsQuery = `
       SELECT agent, SUM(sent) as sent, SUM(received) as received FROM (
         SELECT from_agent as agent, COUNT(*) as sent, 0 as received
-        FROM messages WHERE workspace_id = ? AND to_agent IS NOT NULL
-          AND from_agent NOT IN (${humanPlaceholders})
-          AND to_agent NOT IN (${humanPlaceholders})
+        FROM messages WHERE workspace_id = ?
+          AND ${commsPredicate}
+          AND to_agent IS NOT NULL
+          AND lower(from_agent) NOT IN (${humanPlaceholders})
+          AND lower(to_agent) NOT IN (${humanPlaceholders})
         GROUP BY from_agent
         UNION ALL
         SELECT to_agent as agent, 0 as sent, COUNT(*) as received
-        FROM messages WHERE workspace_id = ? AND to_agent IS NOT NULL
-          AND from_agent NOT IN (${humanPlaceholders})
-          AND to_agent NOT IN (${humanPlaceholders})
+        FROM messages WHERE workspace_id = ?
+          AND ${commsPredicate}
+          AND to_agent IS NOT NULL
+          AND lower(from_agent) NOT IN (${humanPlaceholders})
+          AND lower(to_agent) NOT IN (${humanPlaceholders})
         GROUP BY to_agent
       ) GROUP BY agent ORDER BY (sent + received) DESC
     `
@@ -94,14 +114,12 @@ export async function GET(request: NextRequest) {
     let countQuery = `
       SELECT COUNT(*) as total FROM messages
       WHERE workspace_id = ?
-        AND to_agent IS NOT NULL
-        AND from_agent NOT IN (${humanPlaceholders})
-        AND to_agent NOT IN (${humanPlaceholders})
+        AND ${commsPredicate}
     `
-    const countParams: any[] = [workspaceId, ...humanNames, ...humanNames]
+    const countParams: any[] = [workspaceId]
     if (since) {
       countQuery += " AND created_at > ?"
-      countParams.push(parseInt(since))
+      countParams.push(parseInt(since, 10))
     }
     if (agent) {
       countQuery += " AND (from_agent = ? OR to_agent = ?)"
@@ -112,15 +130,13 @@ export async function GET(request: NextRequest) {
     let seededCountQuery = `
       SELECT COUNT(*) as seeded FROM messages
       WHERE workspace_id = ?
-        AND to_agent IS NOT NULL
-        AND from_agent NOT IN (${humanPlaceholders})
-        AND to_agent NOT IN (${humanPlaceholders})
+        AND ${commsPredicate}
         AND conversation_id LIKE ?
     `
-    const seededParams: any[] = [workspaceId, ...humanNames, ...humanNames, "conv-multi-%"]
+    const seededParams: any[] = [workspaceId, "conv-multi-%"]
     if (since) {
       seededCountQuery += " AND created_at > ?"
-      seededParams.push(parseInt(since))
+      seededParams.push(parseInt(since, 10))
     }
     if (agent) {
       seededCountQuery += " AND (from_agent = ? OR to_agent = ?)"
@@ -142,7 +158,6 @@ export async function GET(request: NextRequest) {
         try {
           parsedMetadata = JSON.parse(msg.metadata)
         } catch {
-          // Keep endpoint resilient even if one legacy row has bad metadata
           parsedMetadata = null
         }
       }

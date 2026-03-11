@@ -48,6 +48,32 @@ PORT=3000 pnpm start
 
 **Important:** The production build bundles platform-specific native binaries. You must run `pnpm install` and `pnpm build` on the same OS and architecture as the target server. A build created on macOS will not work on Linux.
 
+## Production (Standalone)
+
+Use this for bare-metal deployments that run Next's standalone server directly.
+This path is preferred over ad hoc `node .next/standalone/server.js` because it
+syncs `.next/static` and `public/` into the standalone bundle before launch.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pnpm start:standalone
+```
+
+For a full in-place update on the target host:
+
+```bash
+BRANCH=fix/refactor PORT=3000 pnpm deploy:standalone
+```
+
+What `deploy:standalone` does:
+- fetches and fast-forwards the requested branch
+- reinstalls dependencies with the lockfile
+- rebuilds from a clean `.next/`
+- stops the old process bound to the target port
+- starts the standalone server through `scripts/start-standalone.sh`
+- verifies that the rendered login page references a CSS asset and that the CSS is served as `text/css`
+
 ## Production (Docker)
 
 ```bash

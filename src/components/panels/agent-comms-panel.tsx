@@ -1,52 +1,27 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
-import { useMissionControl } from '@/store'
+import { useMissionControl, type LogEntry, type Session } from '@/store'
+
+import type { AggregateEvent } from '@/app/api/sessions/transcript/aggregate/route'
 
 const COORDINATOR_AGENT = (process.env.NEXT_PUBLIC_COORDINATOR_AGENT || 'coordinator').toLowerCase()
 
-interface CommsMessage {
-  id: number
-  conversation_id: string
-  from_agent: string
-  to_agent: string
-  content: string
-  message_type: string
-  metadata: any
-  created_at: number
-}
+// ── Feed categories (mirrors OpenClaw TUI FeedCategory) ──
 
-interface GraphEdge {
-  from_agent: string
-  to_agent: string
-  message_count: number
-  last_message_at: number
-}
+type FeedCategory = 'chat' | 'tools' | 'trace' | 'system' | 'safety'
+type FeedFilter = 'all' | FeedCategory
 
-interface AgentStat {
-  agent: string
-  sent: number
-  received: number
-}
-
-interface CommsData {
-  messages: CommsMessage[]
-  total: number
-  graph: {
-    edges: GraphEdge[]
-    agentStats: AgentStat[]
-  }
-  source?: {
-    mode: "seeded" | "live" | "mixed" | "empty"
-    seededCount: number
-    liveCount: number
-  }
-}
-
-interface AgentOption {
-  name: string
-  role?: string
+interface FeedEvent {
+  id: string
+  ts: number
+  category: FeedCategory
+  source: string
+  message: string
+  level?: 'info' | 'warn' | 'error' | 'debug'
+  data?: any
 }
 
 // Agent identity: color + emoji (matches openclaw.json)
@@ -66,6 +41,9 @@ const AGENT_IDENTITY: Record<string, { color: string; emoji: string; label: stri
   'frontend-dev': { color: '#38bdf8', emoji: '🧩', label: 'Frontend Dev' },
   'backend-dev':  { color: '#34d399', emoji: '⚙️', label: 'Backend Dev' },
   'solana-dev':   { color: '#fbbf24', emoji: '🦀', label: 'Solana Dev' },
+  gateway:        { color: '#94a3b8', emoji: '🌐', label: 'Gateway' },
+  system:         { color: '#64748b', emoji: '⚙️', label: 'System' },
+  websocket:      { color: '#a78bfa', emoji: '🔌', label: 'WebSocket' },
 }
 
 function getIdentity(name: string) {
@@ -76,122 +54,282 @@ function getIdentity(name: string) {
   }
 }
 
-function formatTime(ts: number): string {
-  return new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+function formatTs(ts: number): string {
+  const d = new Date(ts)
+  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
-function formatDate(ts: number): string {
-  const d = new Date(ts * 1000)
-  const today = new Date()
-  if (d.toDateString() === today.toDateString()) return 'Today'
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday'
-  return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' })
+const CATEGORY_META: Record<FeedCategory, { label: string; color: string }> = {
+  chat:   { label: 'chat',   color: '#a78bfa' },
+  tools:  { label: 'tools',  color: '#22d3ee' },
+  trace:  { label: 'trace',  color: '#94a3b8' },
+  system: { label: 'system', color: '#64748b' },
+  safety: { label: 'safety', color: '#f87171' },
 }
 
-function timeAgo(ts: number): string {
-  const diff = Math.floor(Date.now() / 1000) - ts
-  if (diff < 60) return 'just now'
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+const FILTER_OPTIONS: { value: FeedFilter; label: string }[] = [
+  { value: 'all',    label: 'All' },
+  { value: 'chat',   label: 'Chat' },
+  { value: 'tools',  label: 'Tools' },
+  { value: 'trace',  label: 'Trace' },
+  { value: 'system', label: 'System' },
+  { value: 'safety', label: 'Safety' },
+]
+
+// ── Map store data into unified FeedEvents ──
+
+function logsToFeed(logs: LogEntry[]): FeedEvent[] {
+  return logs.map(log => {
+    let category: FeedCategory = 'trace'
+    const src = (log.source || '').toLowerCase()
+    const msg = (log.message || '').toLowerCase()
+
+    if (src === 'gateway' || src === 'websocket') {
+      if (msg.includes('tool') || msg.includes('spawn')) category = 'tools'
+      else if (log.level === 'error' || msg.includes('security') || msg.includes('blocked')) category = 'safety'
+      else category = 'trace'
+    } else if (msg.includes('safety') || msg.includes('blocked') || msg.includes('injection')) {
+      category = 'safety'
+    } else if (msg.includes('tool')) {
+      category = 'tools'
+    }
+
+    return {
+      id: log.id,
+      ts: log.timestamp,
+      category,
+      source: log.source || 'system',
+      message: log.message,
+      level: log.level,
+      data: log.data,
+    }
+  })
+}
+
+interface CommsMessage {
+  id: number
+  conversation_id: string
+  from_agent: string
+  to_agent: string
+  content: string
+  message_type: string
+  metadata: any
+  created_at: number
+}
+
+interface CommsData {
+  messages: CommsMessage[]
+  total: number
+  graph: {
+    edges: { from_agent: string; to_agent: string; message_count: number; last_message_at: number }[]
+    agentStats: { agent: string; sent: number; received: number }[]
+  }
+  source?: { mode: 'seeded' | 'live' | 'mixed' | 'empty'; seededCount: number; liveCount: number }
+}
+
+function commsToFeed(messages: CommsMessage[]): FeedEvent[] {
+  return messages.map(msg => {
+    const isToolCall = msg.message_type === 'tool_call' || Boolean(msg.metadata?.toolName)
+    const toId = getIdentity(msg.to_agent)
+    return {
+      id: `comms-${msg.id}`,
+      ts: msg.created_at * 1000,
+      category: isToolCall ? 'tools' : 'chat',
+      source: msg.from_agent,
+      message: isToolCall
+        ? `tool: ${msg.metadata?.toolName || msg.content}`
+        : `@${toId.label} ${msg.content}`,
+      data: msg.metadata,
+    }
+  })
+}
+
+function transcriptToFeed(events: AggregateEvent[]): FeedEvent[] {
+  return events.map(e => {
+    let category: FeedCategory = 'chat'
+    if (e.type === 'tool_use' || e.type === 'tool_result') category = 'tools'
+    else if (e.type === 'thinking') category = 'trace'
+    else if (e.role === 'system') category = 'system'
+
+    return {
+      id: e.id,
+      ts: e.ts,
+      category,
+      source: e.agentName,
+      message: e.type === 'tool_use' ? `tool: ${e.content}`
+        : e.type === 'tool_result' ? `result: ${e.content}`
+        : e.type === 'thinking' ? `[thinking] ${e.content}`
+        : e.content,
+      data: e.metadata,
+    }
+  })
+}
+
+interface ActivityRecord {
+  id: number
+  type: string
+  actor: string
+  description: string
+  data: any
+  created_at: number
+}
+
+function activitiesToFeed(activities: ActivityRecord[]): FeedEvent[] {
+  return activities.map(a => ({
+    id: `activity-${a.id}`,
+    ts: a.created_at * 1000,
+    category: 'system' as FeedCategory,
+    source: a.actor || 'system',
+    message: a.description || a.type,
+    level: 'info' as const,
+    data: a.data,
+  }))
+}
+
+// ── Main component ──
+
+interface Target {
+  type: 'agent' | 'session'
+  name: string
+  sessionKey?: string
 }
 
 export function AgentCommsPanel() {
-  const [data, setData] = useState<CommsData | null>(null)
+  const [filter, setFilter] = useState<FeedFilter>('all')
+  const [commsData, setCommsData] = useState<CommsData | null>(null)
+  const [transcriptData, setTranscriptData] = useState<AggregateEvent[]>([])
+  const [transcriptSessionCount, setTranscriptSessionCount] = useState(0)
+  const [activityEvents, setActivityEvents] = useState<ActivityRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<string>('all')
-  const [view, setView] = useState<'chat' | 'graph'>('chat')
-  const [agentOptions, setAgentOptions] = useState<AgentOption[]>([])
-  const [toAgent, setToAgent] = useState('')
+  const [autoScroll, setAutoScroll] = useState(true)
   const [draft, setDraft] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<string | null>(null)
-  const [composerMode, setComposerMode] = useState<'coordinator' | 'agent'>('coordinator')
-  const { currentUser } = useMissionControl()
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [target, setTarget] = useState<Target | null>(null)
+  const feedEndRef = useRef<HTMLDivElement>(null)
+  const feedContainerRef = useRef<HTMLDivElement>(null)
 
+  const {
+    logs,
+    sessions,
+    connection,
+    currentUser,
+  } = useMissionControl()
+
+  // Fetch DB-backed comms messages
   const fetchComms = useCallback(async () => {
     try {
-      const params = new URLSearchParams({ limit: '200' })
-      if (filter !== 'all') params.set('agent', filter)
-      const res = await fetch(`/api/agents/comms?${params}`)
+      const res = await fetch('/api/agents/comms?limit=200')
       if (!res.ok) throw new Error('Failed to fetch')
       const json = await res.json()
-      setData(json)
+      setCommsData(json)
       setError(null)
     } catch (err: any) {
       setError(err.message)
     } finally {
       setLoading(false)
     }
-  }, [filter])
+  }, [])
 
   useSmartPoll(fetchComms, 15000)
-  useSmartPoll(async () => {
+
+  // Fetch aggregated transcript events from all gateway sessions
+  const fetchTranscripts = useCallback(async () => {
     try {
-      const res = await fetch('/api/agents?limit=200')
+      const res = await fetch('/api/sessions/transcript/aggregate?limit=200')
       if (!res.ok) return
       const json = await res.json()
-      const rows = Array.isArray(json?.agents) ? json.agents : []
-      const names = rows
-        .map((a: any) => ({ name: String(a.name || ''), role: a.role ? String(a.role) : undefined }))
-        .filter((a: AgentOption) => a.name.length > 0)
-      setAgentOptions(names)
+      setTranscriptData(json.events || [])
+      setTranscriptSessionCount(json.sessionCount || 0)
     } catch {
-      // noop
+      // Silent — transcript is supplementary data
     }
-  }, 60000)
+  }, [])
 
-  const sourceMode = data?.source?.mode || "empty"
-  const agents = data?.graph.agentStats.map(s => s.agent) || []
-  const allAgents = Array.from(new Set([
-    ...agentOptions.map(a => a.name),
-    ...agents,
-    COORDINATOR_AGENT,
-  ])).sort()
+  useSmartPoll(fetchTranscripts, 20000)
 
+  // Fetch memory/agent activity events
+  const fetchActivities = useCallback(async () => {
+    try {
+      const res = await fetch('/api/activities?type=agent_memory_updated,agent_memory_cleared,memory_file_saved,memory_file_created,memory_file_deleted&limit=50')
+      if (!res.ok) return
+      const json = await res.json()
+      setActivityEvents(json.activities || [])
+    } catch {
+      // Silent — activities are supplementary
+    }
+  }, [])
+
+  useSmartPoll(fetchActivities, 30000)
+
+  // Merge all sources into a single chronological feed
+  const feedEvents = useMemo(() => {
+    const fromLogs = logsToFeed(logs)
+    const fromComms = commsToFeed(commsData?.messages || [])
+    const fromTranscripts = transcriptToFeed(transcriptData)
+    const fromActivities = activitiesToFeed(activityEvents)
+    const merged = [...fromLogs, ...fromComms, ...fromTranscripts, ...fromActivities]
+    // Deduplicate by id
+    const seen = new Set<string>()
+    const deduped = merged.filter(e => { if (seen.has(e.id)) return false; seen.add(e.id); return true })
+    deduped.sort((a, b) => a.ts - b.ts)
+    return deduped
+  }, [logs, commsData?.messages, transcriptData, activityEvents])
+
+  const filteredFeed = useMemo(() => {
+    if (filter === 'all') return feedEvents
+    return feedEvents.filter(e => e.category === filter)
+  }, [feedEvents, filter])
+
+  // Auto-scroll to bottom when new events arrive
   useEffect(() => {
-    if (!toAgent && allAgents.length > 0) {
-      const firstTarget = allAgents.find((name) => name !== COORDINATOR_AGENT) || allAgents[0]
-      setToAgent(firstTarget)
+    if (autoScroll && feedContainerRef.current) {
+      feedContainerRef.current.scrollTo({ top: feedContainerRef.current.scrollHeight, behavior: 'smooth' })
     }
-  }, [allAgents, toAgent])
+  }, [filteredFeed.length, autoScroll])
 
-  async function sendComposedMessage() {
+  // Detect manual scroll-up to pause auto-scroll
+  const handleScroll = useCallback(() => {
+    const el = feedContainerRef.current
+    if (!el) return
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60
+    setAutoScroll(atBottom)
+  }, [])
+
+  // Send message to selected target (or coordinator fallback)
+  async function sendMessage() {
     const content = draft.trim()
     if (!content || sending) return
 
-    const isCoordinator = composerMode === 'coordinator'
+    const toAgent = target?.name || COORDINATOR_AGENT
     const from = currentUser?.username || currentUser?.display_name || 'operator'
-    const to = isCoordinator ? COORDINATOR_AGENT : toAgent
-
-    if (!to) return
-
     setSending(true)
     setSendError(null)
     try {
-      const conversation_id = isCoordinator
-        ? `coord:${from}:${COORDINATOR_AGENT}`
-        : `user:${from}:${to}`
-
       const res = await fetch('/api/chat/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from,
-          to,
+          to: toAgent,
           content,
           message_type: 'text',
-          conversation_id,
+          conversation_id: target ? `agent_${toAgent}` : `coord:${from}:${COORDINATOR_AGENT}`,
           forward: true,
-          metadata: isCoordinator ? { channel: 'coordinator-inbox' } : undefined,
+          ...(target?.sessionKey ? { sessionKey: target.sessionKey } : {}),
+          metadata: target ? undefined : { channel: 'coordinator-inbox' },
         }),
       })
       const payload = await res.json().catch(() => ({}))
       if (!res.ok) {
+        if (res.status === 422 && payload?.injection) {
+          const rules = payload.injection.map((i: any) => i.description || i.rule).join('; ')
+          throw new Error(`Message blocked: content triggered safety filter (${rules})`)
+        }
+        if (res.status === 403) {
+          throw new Error('You need operator access to send messages')
+        }
         throw new Error(payload?.error || 'Failed to send')
       }
 
@@ -209,12 +347,21 @@ export function AgentCommsPanel() {
     }
   }
 
-  if (loading && !data) {
+  const sourceMode = commsData?.source?.mode || 'empty'
+  const agents = commsData?.graph.agentStats.map(s => s.agent) || []
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { chat: 0, tools: 0, trace: 0, system: 0, safety: 0 }
+    for (const e of feedEvents) counts[e.category] = (counts[e.category] || 0) + 1
+    return counts
+  }, [feedEvents])
+
+  if (loading && !commsData && logs.length === 0) {
     return (
       <div className="p-6 flex items-center justify-center">
         <div className="flex items-center gap-2 text-muted-foreground">
           <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm">Loading agent comms...</span>
+          <span className="text-sm">Connecting to feed...</span>
         </div>
       </div>
     )
@@ -222,73 +369,72 @@ export function AgentCommsPanel() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header bar */}
+      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <span className="text-base">💬</span>
-            <h2 className="text-sm font-semibold text-foreground"># agent-comms</h2>
+            <span className="text-base">📡</span>
+            <h2 className="text-sm font-semibold text-foreground"># agent-feed</h2>
           </div>
           <span className="text-xs text-muted-foreground/60">
-            {data?.total || 0} messages
+            {filteredFeed.length} events
           </span>
+          {/* Connection indicator */}
           <span
             className={`text-[10px] px-2 py-0.5 rounded-full border ${
-              sourceMode === "live"
-                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                : sourceMode === "mixed"
-                  ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                  : sourceMode === "seeded"
-                    ? "bg-sky-500/10 text-sky-400 border-sky-500/30"
-                    : "bg-muted text-muted-foreground border-border/40"
+              connection.isConnected
+                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                : connection.sseConnected
+                  ? 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+                  : 'bg-muted text-muted-foreground border-border/40'
             }`}
-            title={
-              sourceMode === "live"
-                ? "Only live agent communications"
-                : sourceMode === "mixed"
-                  ? "Contains both seeded and live communications"
-                  : sourceMode === "seeded"
-                    ? "Only seeded demo communications"
-                    : "No communications yet"
-            }
           >
-            {sourceMode === "live" ? "Live" : sourceMode === "mixed" ? "Mixed" : sourceMode === "seeded" ? "Seeded" : "Empty"}
+            {connection.isConnected ? 'Gateway' : connection.sseConnected ? 'SSE' : 'Polling'}
           </span>
+          {sourceMode !== 'empty' && (
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                sourceMode === 'live'
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                  : sourceMode === 'mixed'
+                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                    : 'bg-sky-500/10 text-sky-400 border-sky-500/30'
+              }`}
+            >
+              {sourceMode === 'live' ? 'Live' : sourceMode === 'mixed' ? 'Mixed' : 'Seeded'}
+            </span>
+          )}
         </div>
+      </div>
 
-        <div className="flex items-center gap-2">
-          {/* View toggle */}
-          <div className="flex bg-surface-1 rounded-lg p-0.5 border border-border/50">
-            <button
-              onClick={() => setView('chat')}
-              className={`px-2.5 py-1 text-[11px] rounded-md transition-smooth ${
-                view === 'chat' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Chat
-            </button>
-            <button
-              onClick={() => setView('graph')}
-              className={`px-2.5 py-1 text-[11px] rounded-md transition-smooth ${
-                view === 'graph' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Graph
-            </button>
-          </div>
-
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="bg-surface-1 border border-border/50 rounded-lg px-2 py-1 text-[11px] text-foreground"
+      {/* Filter bar — matches TUI FeedFilter */}
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-border/30 flex-shrink-0 overflow-x-auto">
+        {FILTER_OPTIONS.map(opt => (
+          <Button
+            key={opt.value}
+            onClick={() => setFilter(opt.value)}
+            variant="ghost"
+            size="xs"
+            className={`text-[11px] rounded-full ${
+              filter === opt.value
+                ? 'bg-primary/15 text-primary'
+                : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-surface-1'
+            }`}
           >
-            <option value="all">All</option>
-            {agents.map(a => {
-              const id = getIdentity(a)
-              return <option key={a} value={a}>{id.emoji} {id.label}</option>
-            })}
-          </select>
-        </div>
+            {opt.label}
+            {opt.value !== 'all' && categoryCounts[opt.value] > 0 && (
+              <span className="ml-1 text-[9px] opacity-60">{categoryCounts[opt.value]}</span>
+            )}
+          </Button>
+        ))}
+
+        {/* Session count */}
+        {(sessions.length > 0 || transcriptSessionCount > 0) && (
+          <div className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            {sessions.filter(s => s.active).length}/{transcriptSessionCount || sessions.length} sessions
+          </div>
+        )}
       </div>
 
       {error && (
@@ -297,34 +443,85 @@ export function AgentCommsPanel() {
         </div>
       )}
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        {view === 'graph' ? (
-          <div className="p-4">
-            <CommGraph edges={data?.graph.edges || []} agentStats={data?.graph.agentStats || []} />
+      {/* Live sessions strip */}
+      {sessions.length > 0 && (
+        <div className="px-4 py-2 border-b border-border/20 flex-shrink-0">
+          <div className="flex items-center gap-2 overflow-x-auto">
+            {sessions.map(s => {
+              const agentName = s.key.split(':')[1] || s.kind
+              const isSelected = target?.type === 'session' && target.sessionKey === s.key
+              return (
+                <SessionChip
+                  key={s.id}
+                  session={s}
+                  selected={isSelected}
+                  onClick={() => {
+                    if (isSelected) setTarget(null)
+                    else setTarget({ type: 'session', name: agentName, sessionKey: s.key })
+                  }}
+                />
+              )
+            })}
           </div>
+        </div>
+      )}
+
+      {/* Feed stream */}
+      <div
+        ref={feedContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto min-h-0 max-h-[500px]"
+      >
+        {filteredFeed.length === 0 ? (
+          <EmptyState filter={filter} />
         ) : (
-          <ChatView messages={data?.messages || []} />
+          <div className="px-2 md:px-4 py-2 space-y-px font-mono text-[12px] leading-[1.6]">
+            {filteredFeed.map(event => (
+              <FeedLine key={event.id} event={event} />
+            ))}
+          </div>
         )}
-        <div ref={messagesEndRef} />
+        <div ref={feedEndRef} />
       </div>
+
+      {/* Auto-scroll indicator */}
+      {!autoScroll && filteredFeed.length > 0 && (
+        <div className="flex justify-center py-1 border-t border-border/20">
+          <Button
+            onClick={() => {
+              setAutoScroll(true)
+              feedContainerRef.current?.scrollTo({ top: feedContainerRef.current.scrollHeight, behavior: 'smooth' })
+            }}
+            variant="ghost"
+            size="xs"
+            className="text-[10px] text-muted-foreground/60"
+          >
+            Scroll to latest
+          </Button>
+        </div>
+      )}
 
       {/* Online agents bar */}
       {agents.length > 0 && (
         <div className="flex items-center gap-1 px-4 py-2 border-t border-border/30 flex-shrink-0 overflow-x-auto">
           {agents.map(a => {
             const id = getIdentity(a)
+            const isSelected = target?.type === 'agent' && target.name === a
             return (
               <button
+                type="button"
                 key={a}
-                onClick={() => setFilter(filter === a ? 'all' : a)}
-                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] transition-smooth whitespace-nowrap ${
-                  filter === a
-                    ? 'bg-primary/15 text-primary'
-                    : 'text-muted-foreground/60 hover:text-muted-foreground hover:bg-surface-1'
+                onClick={() => {
+                  if (isSelected) setTarget(null)
+                  else setTarget({ type: 'agent', name: a })
+                }}
+                className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] border cursor-pointer transition-all ${
+                  isSelected
+                    ? 'ring-1 ring-primary bg-primary/10 border-primary/40 text-primary'
+                    : 'bg-surface-1 border-border/50 text-muted-foreground/70 hover:border-border hover:text-muted-foreground'
                 }`}
               >
-                <span className="text-xs">{id.emoji}</span>
+                <span>{id.emoji}</span>
                 <span>{id.label}</span>
               </button>
             )
@@ -332,51 +529,22 @@ export function AgentCommsPanel() {
         </div>
       )}
 
-      {/* Interactive composer */}
+      {/* Composer */}
       <div className="border-t border-border/40 p-3 md:p-4 bg-surface-1/60 flex-shrink-0">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex bg-surface-1 rounded-lg p-0.5 border border-border/50">
+        {target && (
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <span className="text-[10px] text-muted-foreground/60">To:</span>
             <button
-              onClick={() => setComposerMode('coordinator')}
-              className={`px-2.5 py-1 text-[11px] rounded-md transition-smooth ${
-                composerMode === 'coordinator' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              type="button"
+              onClick={() => setTarget(null)}
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors cursor-pointer"
             >
-              Coordinator
+              <span>{getIdentity(target.name).emoji}</span>
+              <span>{getIdentity(target.name).label}</span>
+              <span className="ml-0.5 opacity-60">x</span>
             </button>
-            <button
-              onClick={() => setComposerMode('agent')}
-              className={`px-2.5 py-1 text-[11px] rounded-md transition-smooth ${
-                composerMode === 'agent' ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Agent↔Agent
-            </button>
-          </div>
-        </div>
-
-        {composerMode === 'agent' ? (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs text-muted-foreground">
-              You ({currentUser?.display_name || currentUser?.username || 'operator'}) →
-            </span>
-            <select
-              value={toAgent}
-              onChange={(e) => setToAgent(e.target.value)}
-              className="bg-card border border-border/50 rounded-md px-2 py-1 text-xs text-foreground"
-            >
-              <option value="">choose agent...</option>
-              {allAgents.filter(a => a !== COORDINATOR_AGENT).map(a => (
-                <option key={`to-${a}`} value={a}>{getIdentity(a).emoji} {getIdentity(a).label}</option>
-              ))}
-            </select>
-          </div>
-        ) : (
-          <div className="mb-2 text-xs text-muted-foreground">
-            You ({currentUser?.display_name || currentUser?.username || 'operator'}) → {getIdentity(COORDINATOR_AGENT).label}
           </div>
         )}
-
         <div className="flex items-end gap-2">
           <textarea
             value={draft}
@@ -384,34 +552,22 @@ export function AgentCommsPanel() {
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault()
-                sendComposedMessage()
+                sendMessage()
               }
             }}
-            placeholder={composerMode === 'coordinator'
-              ? 'Write to the coordinator. It will coordinate downstream agents...'
-              : 'Type agent-to-agent message... (Enter to send, Shift+Enter newline)'}
+            placeholder={target ? `Message ${getIdentity(target.name).label}... (Enter to send)` : 'Select a session or agent above, or type to broadcast...'}
             className="flex-1 resize-none bg-card border border-border/50 rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
             rows={2}
           />
-          <button
-            onClick={sendComposedMessage}
-            disabled={
-              sending ||
-              !draft.trim() ||
-              (composerMode === 'agent' && !toAgent)
-            }
-            className="h-9 px-3 rounded-md bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed"
+          <Button
+            onClick={sendMessage}
+            disabled={sending || !draft.trim()}
+            size="sm"
+            className="h-9"
           >
-            {sending ? 'Sending...' : 'Send'}
-          </button>
+            {sending ? '...' : 'Send'}
+          </Button>
         </div>
-
-        {composerMode === 'coordinator' && (
-          <div className="mt-2 text-[11px] text-muted-foreground/70">
-            Coordinator messages are sent directly to the coordinator for orchestration.
-          </div>
-        )}
-
         {sendError && (
           <div className="mt-2 text-[11px] text-red-400">{sendError}</div>
         )}
@@ -420,211 +576,86 @@ export function AgentCommsPanel() {
   )
 }
 
-// ── Group Chat View ──
+// ── Feed line (single event row — TUI-style) ──
 
-function ChatView({ messages }: { messages: CommsMessage[] }) {
-  if (messages.length === 0) return <EmptyState />
+function FeedLine({ event }: { event: FeedEvent }) {
+  const cat = CATEGORY_META[event.category]
+  const identity = getIdentity(event.source)
 
-  // Stable chronological order even if API results are mixed
-  const sorted = [...messages].sort((a, b) =>
-    a.created_at === b.created_at ? a.id - b.id : a.created_at - b.created_at
-  )
-
-  // Group by date, then detect consecutive same-sender
-  const groups: { date: string; messages: CommsMessage[] }[] = []
-  let currentDate = ''
-
-  for (const msg of sorted) {
-    const date = formatDate(msg.created_at)
-    if (date !== currentDate) {
-      currentDate = date
-      groups.push({ date, messages: [] })
-    }
-    groups[groups.length - 1].messages.push(msg)
-  }
+  const levelColor = event.level === 'error' ? 'text-red-400'
+    : event.level === 'warn' ? 'text-amber-400'
+    : ''
 
   return (
-    <div className="px-2 md:px-4 py-3 space-y-3">
-      {groups.map(group => (
-        <div key={group.date}>
-          {/* Date divider */}
-          <div className="flex items-center gap-3 my-4">
-            <div className="h-px flex-1 bg-border/40" />
-            <span className="text-[10px] font-medium text-muted-foreground/50 bg-background px-2">{group.date}</span>
-            <div className="h-px flex-1 bg-border/40" />
-          </div>
+    <div className={`group flex items-start gap-2 px-2 py-0.5 rounded hover:bg-surface-1/50 transition-colors ${levelColor}`}>
+      {/* Timestamp */}
+      <span className="text-[10px] text-muted-foreground/40 tabular-nums flex-shrink-0 pt-[2px]">
+        {formatTs(event.ts)}
+      </span>
 
-          {/* Messages */}
-          <div className="space-y-0.5">
-            {group.messages.map((msg, i) => {
-              const prev = i > 0 ? group.messages[i - 1] : null
-              const sameSender = prev?.from_agent === msg.from_agent
-              const closeInTime = prev && (msg.created_at - prev.created_at) < 180 // 3 min
-              const collapse = sameSender && closeInTime
+      {/* Category tag */}
+      <span
+        className="text-[9px] px-1.5 py-px rounded-full flex-shrink-0 mt-[2px]"
+        style={{ backgroundColor: cat.color + '18', color: cat.color }}
+      >
+        {cat.label}
+      </span>
 
-              return (
-                <ChatMessage
-                  key={msg.id}
-                  message={msg}
-                  collapsed={!!collapse}
-                />
-              )
-            })}
-          </div>
-        </div>
-      ))}
+      {/* Source */}
+      <span
+        className="text-[11px] font-semibold flex-shrink-0"
+        style={{ color: identity.color }}
+      >
+        {identity.label}
+      </span>
+
+      {/* Message */}
+      <span className="text-[12px] text-foreground/80 break-words min-w-0">
+        {event.message}
+      </span>
     </div>
   )
 }
 
-function ChatMessage({ message, collapsed }: { message: CommsMessage; collapsed: boolean }) {
-  const identity = getIdentity(message.from_agent)
-  const toIdentity = getIdentity(message.to_agent)
-  const isHandoff = message.message_type === 'handoff'
+// ── Session chip (live gateway session) ──
 
-  // Inject @mention of target at start if it's a directed message
-  const mentionPrefix = message.to_agent ? `@${message.to_agent}` : null
-
+function SessionChip({ session, selected, onClick }: { session: Session; selected?: boolean; onClick?: () => void }) {
   return (
-    <div className={`group flex gap-2.5 px-2 py-0.5 rounded-lg hover:bg-surface-1/50 transition-smooth ${collapsed ? '' : 'mt-3'}`}>
-      {/* Avatar or spacer */}
-      <div className="w-9 flex-shrink-0">
-        {!collapsed && (
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center text-lg"
-            style={{ backgroundColor: identity.color + '20' }}
-          >
-            {identity.emoji}
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        {!collapsed && (
-          <div className="flex items-baseline gap-1.5 mb-0.5">
-            <span
-              className="text-[13px] font-semibold cursor-default"
-              style={{ color: identity.color }}
-            >
-              {identity.label}
-            </span>
-            {isHandoff && (
-              <span className="text-[9px] px-1.5 py-px rounded-full font-medium"
-                style={{ backgroundColor: '#f59e0b20', color: '#f59e0b' }}
-              >
-                handoff
-              </span>
-            )}
-            <span className="text-[10px] text-muted-foreground/40 tabular-nums">
-              {formatTime(message.created_at)}
-            </span>
-          </div>
-        )}
-
-        <div className="text-[13px] text-foreground/90 leading-[1.45] break-words">
-          {mentionPrefix && (
-            <span
-              className="font-medium rounded px-0.5 cursor-default"
-              style={{
-                color: toIdentity.color,
-                backgroundColor: toIdentity.color + '15',
-              }}
-            >
-              @{toIdentity.label}
-            </span>
-          )}{' '}
-          {message.content}
-        </div>
-
-        {/* Metadata (if any) */}
-        {message.metadata && Object.keys(message.metadata).length > 0 && (
-          <div className="mt-1.5 flex flex-wrap gap-1">
-            {Object.entries(message.metadata).map(([k, v]) => (
-              <span key={k} className="text-[10px] px-1.5 py-0.5 rounded bg-surface-1 border border-border/50 text-muted-foreground/60">
-                {k}: {String(v)}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Hover timestamp for collapsed messages */}
-      {collapsed && (
-        <span className="text-[10px] text-muted-foreground/0 group-hover:text-muted-foreground/40 tabular-nums self-center transition-smooth flex-shrink-0">
-          {formatTime(message.created_at)}
-        </span>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[10px] border transition-all cursor-pointer ${
+        selected
+          ? 'ring-1 ring-primary bg-primary/10 border-primary/40 text-primary'
+          : session.active
+            ? 'bg-emerald-500/8 border-emerald-500/25 text-emerald-300 hover:border-emerald-500/50'
+            : 'bg-surface-1 border-border/50 text-muted-foreground/60 hover:border-border'
+      }`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full ${session.active ? 'bg-emerald-500 animate-pulse' : 'bg-muted-foreground/30'}`} />
+      <span className="font-medium">{session.kind}</span>
+      <span className="text-muted-foreground/40">{session.model}</span>
+      <span className="text-muted-foreground/30">{session.age}</span>
+      {session.tokens && (
+        <span className="text-muted-foreground/30">{session.tokens} tok</span>
       )}
-    </div>
+    </button>
   )
 }
 
-// ── Communication Graph View ──
+// ── Empty state ──
 
-function CommGraph({ edges, agentStats }: { edges: GraphEdge[]; agentStats: AgentStat[] }) {
-  if (agentStats.length === 0) return <EmptyState />
-
-  const maxMessages = Math.max(...agentStats.map(s => s.sent + s.received), 1)
-
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-        {agentStats.map(stat => {
-          const id = getIdentity(stat.agent)
-          const total = stat.sent + stat.received
-          const pct = Math.max((total / maxMessages) * 100, 8)
-
-          return (
-            <div key={stat.agent} className="rounded-lg p-3 space-y-2 bg-surface-1 border border-border/50">
-              <div className="flex items-center gap-2">
-                <span className="text-base">{id.emoji}</span>
-                <span className="text-xs font-medium" style={{ color: id.color }}>{id.label}</span>
-              </div>
-              <div className="flex items-center gap-3 text-[11px] text-muted-foreground/60">
-                <span>{stat.sent} sent</span>
-                <span>{stat.received} recv</span>
-              </div>
-              <div className="h-1 bg-border/30 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: id.color }} />
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      <div>
-        <h3 className="text-xs font-medium text-muted-foreground/60 mb-2 uppercase tracking-wider">Channels</h3>
-        <div className="space-y-1">
-          {edges.map((edge, i) => {
-            const from = getIdentity(edge.from_agent)
-            const to = getIdentity(edge.to_agent)
-            return (
-              <div key={i} className="flex items-center gap-2 py-1.5 px-3 rounded-lg hover:bg-surface-1 transition-smooth">
-                <span className="text-sm">{from.emoji}</span>
-                <span className="text-xs font-medium" style={{ color: from.color }}>{from.label}</span>
-                <svg className="w-3.5 h-3.5 text-muted-foreground/30 flex-shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <path d="M3 8h10M10 5l3 3-3 3" />
-                </svg>
-                <span className="text-sm">{to.emoji}</span>
-                <span className="text-xs font-medium" style={{ color: to.color }}>{to.label}</span>
-                <span className="ml-auto text-[10px] text-muted-foreground/40 tabular-nums">{edge.message_count}</span>
-                <span className="text-[10px] text-muted-foreground/30">{timeAgo(edge.last_message_at)}</span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function EmptyState() {
+function EmptyState({ filter }: { filter: FeedFilter }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="text-4xl mb-3">💬</div>
-      <p className="text-sm font-medium text-muted-foreground">No messages yet</p>
-      <p className="text-xs text-muted-foreground/50 mt-1 max-w-[280px]">
-        When agents talk to each other, their conversations will show up here like a group chat.
+      <div className="text-4xl mb-3">📡</div>
+      <p className="text-sm font-medium text-muted-foreground">
+        {filter === 'all' ? 'No feed events yet' : `No ${filter} events`}
+      </p>
+      <p className="text-xs text-muted-foreground/50 mt-1 max-w-[320px]">
+        {filter === 'all'
+          ? 'Connect to the gateway or wait for agent activity. Events from sessions, tools, chat, and traces will stream here in real time.'
+          : `Switch to "All" to see events from other categories, or wait for ${filter} events to arrive.`}
       </p>
     </div>
   )

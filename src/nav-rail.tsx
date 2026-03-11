@@ -1,7 +1,9 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { useMissionControl } from '@/store'
+import { Button } from '@/components/ui/button'
 
 interface NavItem {
   id: string
@@ -23,7 +25,7 @@ const navGroups: NavGroup[] = [
       { id: 'overview', label: 'Overview', icon: <OverviewIcon />, priority: true },
       { id: 'agents', label: 'Agents', icon: <AgentsIcon />, priority: true },
       { id: 'tasks', label: 'Tasks', icon: <TasksIcon />, priority: true },
-      { id: 'sessions', label: 'Sessions', icon: <SessionsIcon />, priority: false },
+      { id: 'chat', label: 'Chat', icon: <SessionsIcon />, priority: false },
     ],
   },
   {
@@ -88,16 +90,24 @@ export function NavRail() {
       >
         {/* Header: Logo + toggle */}
         <div className={`flex items-center shrink-0 ${sidebarExpanded ? 'px-3 py-3 gap-2.5' : 'flex-col py-3 gap-2'}`}>
-          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shrink-0">
-            <span className="text-primary-foreground font-bold text-xs">MC</span>
+          <div className="w-9 h-9 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center shrink-0">
+            <Image
+              src="/brand/mc-logo-128.png"
+              alt="Mission Control logo"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover"
+            />
           </div>
           {sidebarExpanded && (
             <span className="text-sm font-semibold text-foreground truncate flex-1">Mission Control</span>
           )}
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={toggleSidebar}
             title={sidebarExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-            className="w-7 h-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-smooth shrink-0"
+            className="shrink-0"
           >
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
               {sidebarExpanded ? (
@@ -106,7 +116,7 @@ export function NavRail() {
                 <polyline points="6,3 11,8 6,13" />
               )}
             </svg>
-          </button>
+          </Button>
         </div>
 
         {/* Nav groups */}
@@ -120,9 +130,10 @@ export function NavRail() {
 
               {/* Group header (expanded mode, only for groups with labels) */}
               {sidebarExpanded && group.label && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => toggleGroup(group.id)}
-                  className="w-full flex items-center justify-between px-3 mt-3 mb-1 group/header"
+                  className="w-full flex items-center justify-between px-3 mt-3 mb-1 h-auto py-0 rounded-none hover:bg-transparent group/header"
                 >
                   <span className="text-[10px] tracking-wider text-muted-foreground/60 font-semibold select-none">
                     {group.label}
@@ -140,7 +151,7 @@ export function NavRail() {
                   >
                     <polyline points="4,6 8,10 12,6" />
                   </svg>
-                </button>
+                </Button>
               )}
 
               {/* Group items */}
@@ -185,18 +196,19 @@ export function NavRail() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border safe-area-bottom">
         <div className="flex items-center justify-around px-2 py-1">
           {allNavItems.filter(i => i.priority).map((item) => (
-            <button
+            <Button
               key={item.id}
+              variant="ghost"
               onClick={() => setActiveTab(item.id)}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-smooth min-w-0 ${
+              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 h-auto rounded-lg min-w-0 ${
                 activeTab === item.id
-                  ? 'text-primary'
-                  : 'text-muted-foreground'
+                  ? 'text-primary hover:text-primary'
+                  : ''
               }`}
             >
               <div className="w-5 h-5">{item.icon}</div>
               <span className="text-2xs font-medium truncate">{item.label}</span>
-            </button>
+            </Button>
           ))}
           {/* More menu for non-priority items */}
           <MobileMoreMenu items={allNavItems.filter(i => !i.priority)} activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -214,12 +226,13 @@ function NavButton({ item, active, expanded, onClick }: {
 }) {
   if (expanded) {
     return (
-      <button
+      <Button
+        variant="ghost"
         onClick={onClick}
-        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-lg text-left transition-smooth relative ${
+        className={`w-full flex items-center gap-2 px-2 py-1.5 h-auto rounded-lg text-left justify-start relative ${
           active
-            ? 'bg-primary/15 text-primary'
-            : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+            ? 'bg-primary/15 text-primary hover:bg-primary/20'
+            : ''
         }`}
       >
         {active && (
@@ -227,18 +240,20 @@ function NavButton({ item, active, expanded, onClick }: {
         )}
         <div className="w-5 h-5 shrink-0">{item.icon}</div>
         <span className="text-sm truncate">{item.label}</span>
-      </button>
+      </Button>
     )
   }
 
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon-lg"
       onClick={onClick}
       title={item.label}
-      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-smooth group relative ${
+      className={`rounded-lg group relative ${
         active
-          ? 'bg-primary/15 text-primary'
-          : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
+          ? 'bg-primary/15 text-primary hover:bg-primary/20'
+          : ''
       }`}
     >
       <div className="w-5 h-5">{item.icon}</div>
@@ -250,7 +265,7 @@ function NavButton({ item, active, expanded, onClick }: {
       {active && (
         <span className="absolute left-0 w-0.5 h-5 bg-primary rounded-r" />
       )}
-    </button>
+    </Button>
   )
 }
 
@@ -263,10 +278,11 @@ function MobileMoreMenu({ items, activeTab, setActiveTab }: {
 
   return (
     <div className="relative">
-      <button
+      <Button
+        variant="ghost"
         onClick={() => setOpen(!open)}
-        className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-smooth ${
-          items.some(i => i.id === activeTab) ? 'text-primary' : 'text-muted-foreground'
+        className={`flex flex-col items-center gap-0.5 px-3 py-1.5 h-auto rounded-lg ${
+          items.some(i => i.id === activeTab) ? 'text-primary hover:text-primary' : ''
         }`}
       >
         <div className="w-5 h-5">
@@ -277,28 +293,29 @@ function MobileMoreMenu({ items, activeTab, setActiveTab }: {
           </svg>
         </div>
         <span className="text-2xs font-medium">More</span>
-      </button>
+      </Button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute bottom-full mb-2 right-0 w-44 bg-popover border border-border rounded-lg shadow-lg z-50 py-1 fade-in">
             {items.map((item) => (
-              <button
+              <Button
                 key={item.id}
+                variant="ghost"
                 onClick={() => {
                   setActiveTab(item.id)
                   setOpen(false)
                 }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs transition-smooth ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 h-auto text-xs rounded-none justify-start ${
                   activeTab === item.id
-                    ? 'text-primary bg-primary/10'
-                    : 'text-foreground hover:bg-secondary'
+                    ? 'text-primary bg-primary/10 hover:bg-primary/15'
+                    : 'text-foreground'
                 }`}
               >
                 <div className="w-4 h-4">{item.icon}</div>
                 {item.label}
-              </button>
+              </Button>
             ))}
           </div>
         </>

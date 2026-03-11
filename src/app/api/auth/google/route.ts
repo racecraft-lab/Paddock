@@ -1,9 +1,10 @@
 import { randomBytes } from 'crypto'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createSession } from '@/lib/auth'
 import { getDatabase, logAuditEvent } from '@/lib/db'
 import { verifyGoogleIdToken } from '@/lib/google-auth'
 import { getMcSessionCookieOptions } from '@/lib/session-cookie'
+import { loginLimiter } from '@/lib/rate-limit'
 
 function upsertAccessRequest(input: {
   email: string
@@ -25,7 +26,10 @@ function upsertAccessRequest(input: {
   `).run(input.email.toLowerCase(), input.providerUserId, input.displayName, input.avatarUrl || null)
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const rateCheck = loginLimiter(request)
+  if (rateCheck) return rateCheck
+
   try {
     const body = await request.json().catch(() => ({}))
     const credential = String(body?.credential || '')
@@ -38,8 +42,10 @@ export async function POST(request: Request) {
     const avatar = profile.picture ? String(profile.picture) : null
 
     const row = db.prepare(`
-      SELECT id, username, display_name, role, provider, email, avatar_url, is_approved, created_at, updated_at, last_login_at, workspace_id
-      FROM users
+      SELECT u.id, u.username, u.display_name, u.role, u.provider, u.email, u.avatar_url, u.is_approved,
+             u.created_at, u.updated_at, u.last_login_at, u.workspace_id, COALESCE(w.tenant_id, 1) as tenant_id
+      FROM users u
+      LEFT JOIN workspaces w ON w.id = u.workspace_id
       WHERE (provider = 'google' AND provider_user_id = ?) OR lower(email) = ?
       ORDER BY id ASC
       LIMIT 1
@@ -90,6 +96,7 @@ export async function POST(request: Request) {
         email,
         avatar_url: avatar,
         workspace_id: row.workspace_id ?? 1,
+        tenant_id: row.tenant_id ?? 1,
       },
     })
 

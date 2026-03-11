@@ -77,5 +77,7 @@ test.describe('Login Flow', () => {
     expect(meRes.status()).toBe(200)
     const body = await meRes.json()
     expect(body.user?.username).toBe(TEST_USER)
+    expect(typeof body.user?.workspace_id).toBe('number')
+    expect(typeof body.user?.tenant_id).toBe('number')
   })
 })

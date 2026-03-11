@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
 import path from 'node:path'
 import os from 'node:os'
 import { config } from '@/lib/config'
@@ -71,25 +72,48 @@ function findNestedString(root: unknown, keys: string[]): string | null {
 }
 
 function detectAnthropicFromFile(): ProviderSubscription | null {
+  // Try credentials file first (legacy Claude Code 1.x)
   const credsPath = path.join(config.claudeHome, '.credentials.json')
   const creds = parseJsonFile(credsPath) as Record<string, unknown> | null
-  if (!creds || typeof creds !== 'object') return null
-
-  const oauth = creds.claudeAiOauth as Record<string, unknown> | undefined
-  const subscriptionType = typeof oauth?.subscriptionType === 'string' ? oauth.subscriptionType : ''
-  if (!isPositiveSubscription(subscriptionType)) return null
-
-  return {
-    provider: 'anthropic',
-    type: normalizeType(subscriptionType),
-    source: 'file',
+  if (creds && typeof creds === 'object') {
+    const oauth = creds.claudeAiOauth as Record<string, unknown> | undefined
+    const subscriptionType = typeof oauth?.subscriptionType === 'string' ? oauth.subscriptionType : ''
+    if (isPositiveSubscription(subscriptionType)) {
+      return { provider: 'anthropic', type: normalizeType(subscriptionType), source: 'file' }
+    }
   }
+
+  // Fallback: Claude Code 2.x stores OAuth in keychain — use CLI to query
+  try {
+    const raw = execFileSync('claude', ['auth', 'status'], {
+      encoding: 'utf-8',
+      timeout: 5000,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, HOME: os.homedir() },
+    })
+    const status = JSON.parse(raw.trim())
+    const subType = typeof status?.subscriptionType === 'string' ? status.subscriptionType : ''
+    if (isPositiveSubscription(subType)) {
+      return { provider: 'anthropic', type: normalizeType(subType), source: 'file' }
+    }
+  } catch {
+    // claude CLI not available or auth check failed
+  }
+
+  return null
 }
 
 function detectOpenAIFromFile(): ProviderSubscription | null {
   for (const credsPath of OPENAI_CREDENTIAL_PATHS) {
-    const creds = parseJsonFile(credsPath)
+    const creds = parseJsonFile(credsPath) as Record<string, unknown> | null
     if (!creds) continue
+
+    // Codex stores auth_mode: "chatgpt" to indicate ChatGPT subscription auth
+    const authMode = typeof creds.auth_mode === 'string' ? creds.auth_mode : ''
+    if (authMode === 'chatgpt') {
+      return { provider: 'openai', type: 'chatgpt', source: 'file' }
+    }
+
     const plan = findNestedString(creds, [
       'subscriptionType',
       'subscription_type',

@@ -8,8 +8,13 @@ interface MarkdownRendererProps {
   preview?: boolean
 }
 
+function stripHtml(content: string): string {
+  return content.replace(/<[^>]*>/g, '')
+}
+
 function getPreviewContent(content: string): string {
-  const firstParagraph = content.trim().split(/\n\s*\n/)[0] || ''
+  const cleaned = stripHtml(content)
+  const firstParagraph = cleaned.trim().split(/\n\s*\n/)[0] || ''
   if (firstParagraph.length <= 240) return firstParagraph
   return `${firstParagraph.slice(0, 240)}...`
 }
@@ -17,7 +22,8 @@ function getPreviewContent(content: string): string {
 export function MarkdownRenderer({ content, preview = false }: MarkdownRendererProps) {
   if (!content?.trim()) return null
 
-  const markdownContent = preview ? getPreviewContent(content) : content
+  const cleaned = stripHtml(content)
+  const markdownContent = preview ? getPreviewContent(content) : cleaned
 
   return (
     <div className={`prose prose-invert max-w-none ${preview ? 'text-xs' : 'text-sm'}`}>

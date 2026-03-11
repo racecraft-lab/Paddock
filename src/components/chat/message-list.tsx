@@ -1,8 +1,9 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { useMissionControl, ChatMessage } from '@/store'
 import { MessageBubble } from './message-bubble'
+import { Button } from '@/components/ui/button'
 
 function formatDateGroup(timestamp: number): string {
   const date = new Date(timestamp * 1000)
@@ -49,22 +50,48 @@ export function MessageList() {
   const { chatMessages, activeConversation, isSendingMessage, updatePendingMessage, removePendingMessage, addChatMessage } = useMissionControl()
   const bottomRef = useRef<HTMLDivElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+  const [showNewMessages, setShowNewMessages] = useState(false)
+  const prevMessageCountRef = useRef(0)
 
-  // Auto-scroll to bottom on new messages
-  useEffect(() => {
+  const isNearBottom = useCallback(() => {
     const container = containerRef.current
-    if (!container) return
+    if (!container) return true
+    return container.scrollHeight - container.scrollTop - container.clientHeight < 120
+  }, [])
 
-    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120
-    if (isNearBottom) {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  // Auto-scroll to bottom on new messages (only if near bottom)
+  useEffect(() => {
+    const conversationMessages = chatMessages.filter(m => m.conversation_id === activeConversation)
+    const newCount = conversationMessages.length
+
+    if (newCount > prevMessageCountRef.current) {
+      if (isNearBottom()) {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      } else {
+        setShowNewMessages(true)
+      }
     }
-  }, [chatMessages])
+    prevMessageCountRef.current = newCount
+  }, [chatMessages, activeConversation, isNearBottom])
 
   // Scroll to bottom on conversation change
   useEffect(() => {
     bottomRef.current?.scrollIntoView()
+    setShowNewMessages(false)
+    prevMessageCountRef.current = 0
   }, [activeConversation])
+
+  // Track scroll position to hide "new messages" indicator
+  const handleScroll = useCallback(() => {
+    if (isNearBottom()) {
+      setShowNewMessages(false)
+    }
+  }, [isNearBottom])
+
+  const scrollToBottom = useCallback(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    setShowNewMessages(false)
+  }, [])
 
   // Retry a failed message
   const handleRetry = async (msg: ChatMessage) => {
@@ -103,7 +130,7 @@ export function MessageList() {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center px-6">
-          <div className="w-12 h-12 rounded-xl bg-surface-2 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-lg bg-surface-2 flex items-center justify-center mx-auto mb-3">
             <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
               <path d="M14 10c0 .37-.1.7-.28 1-.53.87-2.2 3-5.72 3-4.42 0-6-3-6-4V4a2 2 0 012-2h8a2 2 0 012 2v6z" />
               <path d="M6 7h.01M10 7h.01" />
@@ -124,7 +151,7 @@ export function MessageList() {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center px-6">
-          <div className="w-12 h-12 rounded-xl bg-surface-2 flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 rounded-lg bg-surface-2 flex items-center justify-center mx-auto mb-3">
             <svg width="20" height="20" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/40">
               <path d="M12 3H4a1 1 0 00-1 1v6l3-2h6a1 1 0 001-1V4a1 1 0 00-1-1z" />
               <path d="M7 11v1a1 1 0 001 1h5l2 2v-6a1 1 0 00-1-1h-1" />
@@ -140,7 +167,7 @@ export function MessageList() {
   const groups = groupMessagesByDate(conversationMessages)
 
   return (
-    <div ref={containerRef} className="flex-1 overflow-y-auto px-4 py-3">
+    <div ref={containerRef} className="relative flex-1 overflow-y-auto px-4 py-3" onScroll={handleScroll}>
       {groups.map((group) => (
         <div key={group.date}>
           {/* Date separator */}
@@ -162,18 +189,20 @@ export function MessageList() {
                   />
                   <div className="flex items-center gap-2 px-3 pb-2">
                     <span className="text-[10px] text-red-400">Failed to send</span>
-                    <button
+                    <Button
                       onClick={() => handleRetry(msg)}
-                      className="text-[10px] text-primary hover:text-primary/80 font-medium transition-smooth"
+                      variant="link"
+                      className="text-[10px] text-primary h-auto p-0"
                     >
                       Retry
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => removePendingMessage(msg.id)}
-                      className="text-[10px] text-muted-foreground hover:text-foreground font-medium transition-smooth"
+                      variant="ghost"
+                      className="text-[10px] text-muted-foreground h-auto p-0"
                     >
                       Remove
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -201,7 +230,7 @@ export function MessageList() {
               <div className="w-1 h-1 rounded-full bg-muted-foreground/50 animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           </div>
-          <div className="bg-surface-2 rounded-xl rounded-tl-sm px-3 py-2">
+          <div className="bg-surface-2 rounded-lg rounded-tl-sm px-3 py-2">
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }} />
               <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -212,6 +241,19 @@ export function MessageList() {
       )}
 
       <div ref={bottomRef} />
+
+      {/* New messages indicator */}
+      {showNewMessages && (
+        <button
+          onClick={scrollToBottom}
+          className="sticky bottom-3 left-1/2 -translate-x-1/2 z-10 bg-primary text-primary-foreground px-4 py-1.5 rounded-full text-xs font-medium shadow-lg hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+        >
+          New messages
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3v10M4 9l4 4 4-4" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }

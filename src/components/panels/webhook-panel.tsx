@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { useMissionControl } from '@/store'
 
@@ -217,12 +218,12 @@ export function WebhookPanel() {
             {webhooks.length} webhook{webhooks.length !== 1 ? 's' : ''} configured
           </p>
         </div>
-        <button
+        <Button
           onClick={() => setShowCreate(true)}
-          className="h-8 px-3 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth"
+          size="sm"
         >
           + Add Webhook
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -238,12 +239,13 @@ export function WebhookPanel() {
           <code className="block text-xs font-mono bg-secondary rounded px-2 py-1.5 text-foreground break-all select-all">
             {newSecret}
           </code>
-          <button
+          <Button
+            variant="link"
+            size="xs"
             onClick={() => setNewSecret(null)}
-            className="text-xs text-muted-foreground hover:text-foreground transition-smooth"
           >
             Dismiss
-          </button>
+          </Button>
         </div>
       )}
 
@@ -260,9 +262,9 @@ export function WebhookPanel() {
                 <span className="text-red-400">Test failed</span>
               )}
             </p>
-            <button onClick={() => setTestResult(null)} className="text-xs text-muted-foreground">
+            <Button variant="link" size="xs" onClick={() => setTestResult(null)}>
               Dismiss
-            </button>
+            </Button>
           </div>
           <div className="text-xs text-muted-foreground space-y-0.5">
             {testResult.status_code && <p>Status: <span className="font-mono">{testResult.status_code}</span></p>}
@@ -303,13 +305,15 @@ export function WebhookPanel() {
                         {task.lastResult?.message ? ` · ${task.lastResult.message}` : ''}
                       </div>
                     </div>
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="xs"
                       onClick={() => handleRunAutomation(task.id)}
                       disabled={runningAutomationId === task.id}
-                      className="h-7 px-2.5 text-2xs font-medium text-cyan-300 hover:text-cyan-200 hover:bg-cyan-500/10 rounded transition-smooth disabled:opacity-50"
+                      className="text-cyan-300 hover:text-cyan-200 hover:bg-cyan-500/10 text-2xs"
                     >
                       {runningAutomationId === task.id ? 'Running...' : 'Run'}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -368,30 +372,36 @@ export function WebhookPanel() {
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => handleTest(wh.id)}
                     disabled={testingId === wh.id}
-                    className="h-7 px-2 text-2xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded transition-smooth disabled:opacity-50"
                     title="Send test event"
+                    className="text-2xs"
                   >
                     {testingId === wh.id ? 'Testing...' : 'Test'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => handleToggle(wh.id, !wh.enabled)}
-                    className={`h-7 px-2 text-2xs font-medium rounded transition-smooth ${
+                    className={`text-2xs ${
                       wh.enabled
                         ? 'text-amber-400 hover:bg-amber-500/10'
                         : 'text-green-400 hover:bg-green-500/10'
                     }`}
                   >
                     {wh.enabled ? 'Disable' : 'Enable'}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => handleDelete(wh.id)}
-                    className="h-7 px-2 text-2xs font-medium text-red-400 hover:bg-red-500/10 rounded transition-smooth"
+                    className="text-red-400 hover:bg-red-500/10 text-2xs"
                   >
                     Delete
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -494,37 +504,38 @@ function CreateWebhookForm({
         <label className="block text-xs text-muted-foreground mb-1.5">Events</label>
         <div className="flex flex-wrap gap-1.5">
           {AVAILABLE_EVENTS.map((ev) => (
-            <button
+            <Button
               key={ev.value}
               type="button"
+              variant={selectedEvents.includes(ev.value) ? 'default' : 'secondary'}
+              size="xs"
               onClick={() => toggleEvent(ev.value)}
               title={ev.description}
-              className={`h-6 px-2 rounded text-2xs font-medium transition-smooth ${
-                selectedEvents.includes(ev.value)
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-muted-foreground hover:text-foreground'
-              }`}
+              className="h-6 text-2xs"
             >
               {ev.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       <div className="flex gap-2 pt-1">
-        <button
+        <Button
+          variant="outline"
+          size="sm"
           onClick={onCancel}
-          className="flex-1 h-8 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary border border-border transition-smooth"
+          className="flex-1"
         >
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
+          size="sm"
           onClick={() => onSubmit({ name, url, events: selectedEvents })}
           disabled={!name || !url}
-          className="flex-1 h-8 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth disabled:opacity-50"
+          className="flex-1"
         >
           Create Webhook
-        </button>
+        </Button>
       </div>
     </div>
   )

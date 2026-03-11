@@ -2,6 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 import { createClientLogger } from '@/lib/client-logger'
+import { Button } from '@/components/ui/button'
 
 const log = createClientLogger('ErrorBoundary')
 
@@ -46,12 +47,12 @@ export class ErrorBoundary extends Component<Props, State> {
           <p className="text-sm text-muted-foreground mb-4 max-w-md">
             {this.state.error?.message || 'An unexpected error occurred in this panel.'}
           </p>
-          <button
+          <Button
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            className="rounded-lg"
           >
             Try again
-          </button>
+          </Button>
         </div>
       )
     }

@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import type { MouseEvent, WheelEvent } from 'react'
 import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+import { Loader } from '@/components/ui/loader'
 import { useMissionControl, Agent } from '@/store'
 import { buildOfficeLayout } from '@/lib/office-layout'
 
@@ -127,31 +129,31 @@ interface PersistedOfficePrefs {
 }
 
 const statusGlow: Record<string, string> = {
-  idle: 'shadow-green-500/40 border-green-500/60',
-  busy: 'shadow-yellow-500/40 border-yellow-500/60',
-  error: 'shadow-red-500/40 border-red-500/60',
-  offline: 'shadow-gray-500/20 border-gray-600/40',
+  idle: 'shadow-[0_0_12px_hsl(var(--void-mint)/0.3)] border-void-mint/60',
+  busy: 'shadow-[0_0_12px_hsl(var(--void-amber)/0.3)] border-void-amber/60',
+  error: 'shadow-[0_0_12px_hsl(var(--void-crimson)/0.3)] border-void-crimson/60',
+  offline: 'shadow-[0_0_8px_hsl(var(--border)/0.2)] border-border/40',
 }
 
 const statusDot: Record<string, string> = {
-  idle: 'bg-green-500',
-  busy: 'bg-yellow-500',
-  error: 'bg-red-500',
-  offline: 'bg-gray-500',
+  idle: 'bg-void-mint',
+  busy: 'bg-void-amber',
+  error: 'bg-void-crimson',
+  offline: 'bg-muted-foreground/40',
 }
 
 const statusLabel: Record<string, string> = {
-  idle: 'Available',
-  busy: 'Working',
-  error: 'Error',
-  offline: 'Away',
+  idle: 'Standby',
+  busy: 'Active',
+  error: 'Alert',
+  offline: 'Offline',
 }
 
 const statusEmoji: Record<string, string> = {
-  idle: '☕',
-  busy: '💻',
-  error: '⚠️',
-  offline: '💤',
+  idle: '',
+  busy: '',
+  error: '',
+  offline: '',
 }
 
 function getInitials(name: string): string {
@@ -203,10 +205,10 @@ function easeInOut(progress: number): number {
 }
 
 function getStatusEmote(status: Agent['status']): string {
-  if (status === 'busy') return '💼'
-  if (status === 'idle') return '☕'
-  if (status === 'error') return '⚠️'
-  return '💤'
+  if (status === 'busy') return '\u25CF'  // filled circle
+  if (status === 'idle') return '\u25CB'  // open circle
+  if (status === 'error') return '\u25B2'  // triangle
+  return '\u2013'  // dash
 }
 
 function inferLocalRole(row: SessionAgentRow): string {
@@ -234,25 +236,25 @@ const MAP_COLS = 24
 const MAP_ROWS = 16
 
 const ROOM_LAYOUT: MapRoom[] = [
-  { id: 'eng', label: 'Engineering', x: 16, y: 22, w: 28, h: 22, style: 'bg-[#2a3558]' },
-  { id: 'product', label: 'Product', x: 48, y: 22, w: 24, h: 22, style: 'bg-[#213a4d]' },
-  { id: 'ops', label: 'Operations', x: 16, y: 49, w: 24, h: 24, style: 'bg-[#2f2f52]' },
-  { id: 'research', label: 'Research', x: 44, y: 49, w: 22, h: 24, style: 'bg-[#2b334c]' },
-  { id: 'lounge', label: 'Lounge', x: 70, y: 49, w: 16, h: 24, style: 'bg-[#2e4438]' },
+  { id: 'eng', label: 'Engine Bay', x: 16, y: 22, w: 28, h: 22, style: 'bg-[#0c1628]' },
+  { id: 'product', label: 'Bridge', x: 48, y: 22, w: 24, h: 22, style: 'bg-[#0a1a2a]' },
+  { id: 'ops', label: 'Ops Deck', x: 16, y: 49, w: 24, h: 24, style: 'bg-[#10132a]' },
+  { id: 'research', label: 'Lab', x: 44, y: 49, w: 22, h: 24, style: 'bg-[#0d1526]' },
+  { id: 'lounge', label: 'Crew Quarters', x: 70, y: 49, w: 16, h: 24, style: 'bg-[#0c1a1a]' },
 ]
 
 const MAP_PROPS: MapProp[] = [
-  { id: 'desk-a', x: 22, y: 30, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'desk-b', x: 33, y: 30, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'desk-c', x: 52, y: 30, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'desk-d', x: 61, y: 30, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'desk-e', x: 22, y: 58, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'desk-f', x: 31, y: 58, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'desk-g', x: 48, y: 58, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'desk-h', x: 57, y: 58, w: 8, h: 2.8, style: 'bg-[#33465f]', border: 'border-[#8aa9d8]/60' },
-  { id: 'plant-l', x: 14, y: 47, w: 3, h: 5, style: 'bg-emerald-400/60', border: 'border-emerald-200/35' },
-  { id: 'plant-r', x: 84, y: 47, w: 3, h: 5, style: 'bg-emerald-400/60', border: 'border-emerald-200/35' },
-  { id: 'kitchen', x: 72, y: 57, w: 12, h: 10, style: 'bg-[#334137]', border: 'border-[#88d4a3]/35' },
+  { id: 'desk-a', x: 22, y: 30, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'desk-b', x: 33, y: 30, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'desk-c', x: 52, y: 30, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'desk-d', x: 61, y: 30, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'desk-e', x: 22, y: 58, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'desk-f', x: 31, y: 58, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'desk-g', x: 48, y: 58, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'desk-h', x: 57, y: 58, w: 8, h: 2.8, style: 'bg-[#0f1c30]', border: 'border-void-cyan/25' },
+  { id: 'plant-l', x: 14, y: 47, w: 3, h: 5, style: 'bg-void-mint/30', border: 'border-void-mint/20' },
+  { id: 'plant-r', x: 84, y: 47, w: 3, h: 5, style: 'bg-void-mint/30', border: 'border-void-mint/20' },
+  { id: 'kitchen', x: 72, y: 57, w: 12, h: 10, style: 'bg-[#0c1a1a]', border: 'border-void-mint/20' },
 ]
 
 const LOUNGE_WAYPOINTS = [
@@ -887,73 +889,73 @@ export function OfficePanel() {
   const themePalette = useMemo<ThemePalette>(() => {
     if (timeTheme === 'dawn') {
       return {
-        shell: 'radial-gradient(circle at 20% 10%, rgba(255,177,108,0.52) 0, rgba(78,82,132,0.9) 48%, rgba(19,24,41,1) 100%)',
-        gridLine: 'rgba(255,212,166,0.2)',
-        haze: 'radial-gradient(circle at 52% 26%, rgba(255,205,146,0.34), transparent 62%)',
-        glow: 'linear-gradient(to bottom, rgba(255,238,210,0.16), transparent 35%, rgba(0,0,0,0.2))',
-        corridor: '#3f3f54',
-        corridorStripe: '#ffca95',
-        atmosphere: 'radial-gradient(circle at 15% 8%, rgba(255,191,122,0.34), transparent 46%), radial-gradient(circle at 82% 18%, rgba(255,224,184,0.18), transparent 40%)',
-        shadowVeil: 'linear-gradient(to bottom, rgba(27,22,35,0.15), rgba(13,17,33,0.38))',
-        floorFilter: 'hue-rotate(-8deg) saturate(1.02) brightness(1.1) contrast(1.03)',
-        spriteFilter: 'hue-rotate(-4deg) saturate(1.04) brightness(1.05)',
-        roomTone: 'linear-gradient(to bottom right, rgba(255,219,167,0.2), rgba(82,67,96,0.12))',
-        floorOpacityA: 0.95,
-        floorOpacityB: 0.8,
-        accentGlow: 'rgba(255,183,120,0.32)',
+        shell: 'radial-gradient(circle at 20% 10%, rgba(245,158,11,0.25) 0, rgba(15,20,28,0.92) 48%, rgba(7,9,12,1) 100%)',
+        gridLine: 'rgba(245,158,11,0.1)',
+        haze: 'radial-gradient(circle at 52% 26%, rgba(245,158,11,0.15), transparent 62%)',
+        glow: 'linear-gradient(to bottom, rgba(245,158,11,0.08), transparent 35%, rgba(0,0,0,0.2))',
+        corridor: '#14181e',
+        corridorStripe: 'rgba(245,158,11,0.4)',
+        atmosphere: 'radial-gradient(circle at 15% 8%, rgba(245,158,11,0.18), transparent 46%), radial-gradient(circle at 82% 18%, rgba(52,211,153,0.1), transparent 40%)',
+        shadowVeil: 'linear-gradient(to bottom, rgba(7,9,12,0.15), rgba(7,9,12,0.38))',
+        floorFilter: 'hue-rotate(160deg) saturate(0.7) brightness(0.65) contrast(1.1)',
+        spriteFilter: 'hue-rotate(155deg) saturate(0.8) brightness(0.8)',
+        roomTone: 'linear-gradient(to bottom right, rgba(245,158,11,0.1), rgba(7,9,12,0.12))',
+        floorOpacityA: 0.7,
+        floorOpacityB: 0.55,
+        accentGlow: 'rgba(245,158,11,0.18)',
       }
     }
     if (timeTheme === 'day') {
       return {
-        shell: 'radial-gradient(circle at 20% 12%, rgba(164,203,255,0.48) 0, rgba(41,76,128,0.88) 46%, rgba(16,26,46,1) 100%)',
-        gridLine: 'rgba(183,218,255,0.24)',
-        haze: 'radial-gradient(circle at 52% 28%, rgba(196,236,255,0.25), transparent 58%)',
-        glow: 'linear-gradient(to bottom, rgba(255,255,255,0.14), transparent 30%, rgba(4,16,33,0.1))',
-        corridor: '#3a4258',
-        corridorStripe: '#b8d5ff',
-        atmosphere: 'radial-gradient(circle at 18% 5%, rgba(183,230,255,0.3), transparent 45%), radial-gradient(circle at 84% 16%, rgba(216,241,255,0.2), transparent 42%)',
-        shadowVeil: 'linear-gradient(to bottom, rgba(16,30,49,0.08), rgba(9,18,35,0.24))',
-        floorFilter: 'hue-rotate(6deg) saturate(1.08) brightness(1.2) contrast(1.04)',
-        spriteFilter: 'hue-rotate(4deg) saturate(1.08) brightness(1.08)',
-        roomTone: 'linear-gradient(to bottom right, rgba(196,236,255,0.18), rgba(81,116,171,0.08))',
-        floorOpacityA: 0.98,
-        floorOpacityB: 0.86,
-        accentGlow: 'rgba(176,232,255,0.3)',
+        shell: 'radial-gradient(circle at 20% 12%, rgba(52,211,153,0.2) 0, rgba(15,20,28,0.9) 46%, rgba(7,9,12,1) 100%)',
+        gridLine: 'rgba(52,211,153,0.12)',
+        haze: 'radial-gradient(circle at 52% 28%, rgba(52,211,153,0.12), transparent 58%)',
+        glow: 'linear-gradient(to bottom, rgba(52,211,153,0.06), transparent 30%, rgba(0,0,0,0.1))',
+        corridor: '#101820',
+        corridorStripe: 'rgba(52,211,153,0.35)',
+        atmosphere: 'radial-gradient(circle at 18% 5%, rgba(52,211,153,0.14), transparent 45%), radial-gradient(circle at 84% 16%, rgba(34,211,238,0.08), transparent 42%)',
+        shadowVeil: 'linear-gradient(to bottom, rgba(7,9,12,0.08), rgba(7,9,12,0.24))',
+        floorFilter: 'hue-rotate(165deg) saturate(0.8) brightness(0.75) contrast(1.08)',
+        spriteFilter: 'hue-rotate(158deg) saturate(0.85) brightness(0.85)',
+        roomTone: 'linear-gradient(to bottom right, rgba(52,211,153,0.08), rgba(7,9,12,0.08))',
+        floorOpacityA: 0.75,
+        floorOpacityB: 0.6,
+        accentGlow: 'rgba(52,211,153,0.15)',
       }
     }
     if (timeTheme === 'dusk') {
       return {
-        shell: 'radial-gradient(circle at 20% 10%, rgba(222,129,187,0.44) 0, rgba(45,44,91,0.92) 47%, rgba(12,14,30,1) 100%)',
-        gridLine: 'rgba(224,169,255,0.2)',
-        haze: 'radial-gradient(circle at 48% 30%, rgba(247,172,220,0.24), transparent 62%)',
-        glow: 'linear-gradient(to bottom, rgba(255,220,245,0.1), transparent 30%, rgba(0,0,0,0.24))',
-        corridor: '#413b58',
-        corridorStripe: '#d7b0ff',
-        atmosphere: 'radial-gradient(circle at 14% 10%, rgba(255,160,198,0.27), transparent 44%), radial-gradient(circle at 85% 18%, rgba(198,150,255,0.18), transparent 40%)',
-        shadowVeil: 'linear-gradient(to bottom, rgba(29,20,46,0.18), rgba(9,9,24,0.42))',
-        floorFilter: 'hue-rotate(20deg) saturate(1.05) brightness(0.95) contrast(1.05)',
-        spriteFilter: 'hue-rotate(18deg) saturate(1.08) brightness(0.98)',
-        roomTone: 'linear-gradient(to bottom right, rgba(244,164,209,0.17), rgba(88,62,126,0.16))',
-        floorOpacityA: 0.9,
-        floorOpacityB: 0.75,
-        accentGlow: 'rgba(232,141,206,0.27)',
+        shell: 'radial-gradient(circle at 20% 10%, rgba(167,139,250,0.25) 0, rgba(15,20,28,0.92) 47%, rgba(7,9,12,1) 100%)',
+        gridLine: 'rgba(167,139,250,0.1)',
+        haze: 'radial-gradient(circle at 48% 30%, rgba(167,139,250,0.12), transparent 62%)',
+        glow: 'linear-gradient(to bottom, rgba(167,139,250,0.06), transparent 30%, rgba(0,0,0,0.24))',
+        corridor: '#12141e',
+        corridorStripe: 'rgba(167,139,250,0.35)',
+        atmosphere: 'radial-gradient(circle at 14% 10%, rgba(167,139,250,0.14), transparent 44%), radial-gradient(circle at 85% 18%, rgba(34,211,238,0.08), transparent 40%)',
+        shadowVeil: 'linear-gradient(to bottom, rgba(7,9,12,0.18), rgba(7,9,12,0.42))',
+        floorFilter: 'hue-rotate(175deg) saturate(0.65) brightness(0.6) contrast(1.12)',
+        spriteFilter: 'hue-rotate(168deg) saturate(0.75) brightness(0.75)',
+        roomTone: 'linear-gradient(to bottom right, rgba(167,139,250,0.08), rgba(7,9,12,0.16))',
+        floorOpacityA: 0.65,
+        floorOpacityB: 0.5,
+        accentGlow: 'rgba(167,139,250,0.14)',
       }
     }
     return {
-      shell: 'radial-gradient(circle at 22% 10%, rgba(57,93,161,0.72) 0, rgba(12,20,38,0.95) 42%, rgba(8,12,22,1) 100%)',
-      gridLine: 'rgba(115,139,191,0.2)',
-      haze: 'radial-gradient(circle at 50% 30%, rgba(89,148,255,0.19), transparent 60%)',
-      glow: 'linear-gradient(to bottom, rgba(240,248,255,0.05), transparent 30%, rgba(0,0,0,0.24))',
-      corridor: '#303746',
-      corridorStripe: '#9cc2ff',
-      atmosphere: 'radial-gradient(circle at 16% 7%, rgba(93,141,255,0.26), transparent 45%), radial-gradient(circle at 82% 15%, rgba(133,169,255,0.16), transparent 42%)',
-      shadowVeil: 'linear-gradient(to bottom, rgba(8,13,25,0.34), rgba(5,8,18,0.56))',
-      floorFilter: 'hue-rotate(26deg) saturate(0.9) brightness(0.72) contrast(1.1)',
-      spriteFilter: 'hue-rotate(18deg) saturate(0.94) brightness(0.84)',
-      roomTone: 'linear-gradient(to bottom right, rgba(94,133,207,0.17), rgba(19,27,52,0.24))',
-      floorOpacityA: 0.84,
-      floorOpacityB: 0.66,
-      accentGlow: 'rgba(116,152,255,0.26)',
+      shell: 'radial-gradient(circle at 22% 10%, rgba(34,211,238,0.15) 0, rgba(7,9,12,0.95) 42%, rgba(7,9,12,1) 100%)',
+      gridLine: 'rgba(34,211,238,0.08)',
+      haze: 'radial-gradient(circle at 50% 30%, rgba(34,211,238,0.08), transparent 60%)',
+      glow: 'linear-gradient(to bottom, rgba(34,211,238,0.04), transparent 30%, rgba(0,0,0,0.24))',
+      corridor: '#0d1420',
+      corridorStripe: 'rgba(34,211,238,0.3)',
+      atmosphere: 'radial-gradient(circle at 16% 7%, rgba(34,211,238,0.1), transparent 45%), radial-gradient(circle at 82% 15%, rgba(167,139,250,0.08), transparent 42%)',
+      shadowVeil: 'linear-gradient(to bottom, rgba(7,9,12,0.34), rgba(7,9,12,0.56))',
+      floorFilter: 'hue-rotate(170deg) saturate(0.6) brightness(0.5) contrast(1.2)',
+      spriteFilter: 'hue-rotate(160deg) saturate(0.7) brightness(0.7)',
+      roomTone: 'linear-gradient(to bottom right, rgba(34,211,238,0.06), rgba(7,9,12,0.24))',
+      floorOpacityA: 0.6,
+      floorOpacityB: 0.4,
+      accentGlow: 'rgba(34,211,238,0.12)',
     }
   }, [timeTheme])
 
@@ -1502,14 +1504,7 @@ export function OfficePanel() {
   }, [categoryGroups, orgSegmentMode, roleGroups, statusGroups])
 
   if ((loading || (isLocalMode && localBootstrapping)) && visibleDisplayAgents.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-        <span className="ml-3 text-muted-foreground">
-          {isLocalMode ? 'Scanning local sessions...' : 'Loading office...'}
-        </span>
-      </div>
-    )
+    return <Loader variant="panel" label={isLocalMode ? 'Scanning local sessions...' : 'Loading office...'} />
   }
 
   return (
@@ -1517,50 +1512,57 @@ export function OfficePanel() {
       <div className="border-b border-border pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Virtual Office</h1>
-            <p className="text-muted-foreground mt-1">See your agents at work in real time</p>
+            <h1 className="text-3xl font-bold text-foreground">Command Deck</h1>
+            <p className="text-muted-foreground mt-1">Monitor your crew in real time</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-3 text-xs text-muted-foreground mr-4">
-              {counts.busy > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500" />{counts.busy} working</span>}
-              {counts.idle > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" />{counts.idle} idle</span>}
-              {counts.error > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" />{counts.error} error</span>}
-              {counts.offline > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-500" />{counts.offline} away</span>}
+              {counts.busy > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-void-amber" />{counts.busy} active</span>}
+              {counts.idle > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-void-mint" />{counts.idle} standby</span>}
+              {counts.error > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-void-crimson" />{counts.error} alert</span>}
+              {counts.offline > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/40" />{counts.offline} offline</span>}
             </div>
             <div className="flex rounded-md overflow-hidden border border-border">
-              <button
+              <Button
+                variant={viewMode === 'office' ? 'default' : 'secondary'}
+                size="sm"
                 onClick={() => setViewMode('office')}
-                className={`px-3 py-1 text-sm transition-smooth ${viewMode === 'office' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+                className="rounded-none"
               >
-                Office
-              </button>
-              <button
+                Deck
+              </Button>
+              <Button
+                variant={viewMode === 'org-chart' ? 'default' : 'secondary'}
+                size="sm"
                 onClick={() => setViewMode('org-chart')}
-                className={`px-3 py-1 text-sm transition-smooth ${viewMode === 'org-chart' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+                className="rounded-none"
               >
-                Org Chart
-              </button>
+                Crew Chart
+              </Button>
             </div>
-            <button onClick={fetchAgents} className="px-3 py-1.5 text-sm bg-secondary text-muted-foreground rounded-md hover:bg-surface-2 transition-smooth">
+            <Button variant="secondary" size="sm" onClick={fetchAgents}>
               Refresh
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       {visibleDisplayAgents.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
-          <div className="text-5xl mb-3">🏢</div>
-          <p className="text-lg">The office is empty</p>
-          <p className="text-sm mt-1">Add agents to see them appear here</p>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="w-12 h-12 mx-auto mb-3 text-void-cyan/30">
+            <path d="M8 1l6 4v6l-6 4-6-4V5l6-4z" />
+            <path d="M8 1v14M2 5l6 4 6-4" />
+          </svg>
+          <p className="text-lg">The deck is empty</p>
+          <p className="text-sm mt-1">Deploy agents to see them appear here</p>
         </div>
       ) : viewMode === 'office' ? (
         <div className={`grid grid-cols-1 ${showSidebar ? 'xl:grid-cols-[220px_1fr]' : 'xl:grid-cols-1'} gap-4`}>
           {showSidebar && (
-          <div className="rounded-xl border border-border bg-[#1a1f2d] text-slate-100 p-3 h-fit">
+          <div className="void-panel text-foreground p-3 h-fit">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-xs font-semibold tracking-wider">TEAMY</div>
-              <div className="text-[10px] text-slate-300">{visibleDisplayAgents.length} online</div>
+              <div className="text-xs font-semibold font-mono tracking-wider text-void-cyan">CREW</div>
+              <div className="text-[10px] text-muted-foreground">{visibleDisplayAgents.length} online</div>
             </div>
             <div className="mb-2 flex flex-wrap gap-1.5">
               {([
@@ -1569,53 +1571,61 @@ export function OfficePanel() {
                 { key: 'idle', label: 'Idle' },
                 { key: 'attention', label: 'Needs Attention' },
               ] as Array<{ key: SidebarFilter; label: string }>).map((item) => (
-                <button
+                <Button
                   key={item.key}
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setSidebarFilter(item.key)}
-                  className={`px-2 py-1 rounded text-[10px] border transition-smooth ${
+                  className={`h-auto px-2 py-1 text-[10px] font-mono border ${
                     sidebarFilter === item.key
-                      ? 'bg-primary/25 border-primary/40 text-primary-foreground'
-                      : 'bg-black/20 border-white/10 text-slate-300 hover:bg-black/35'
+                      ? 'bg-void-cyan/15 border-void-cyan/30 text-void-cyan'
+                      : 'bg-secondary border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   {item.label}
-                </button>
+                </Button>
               ))}
             </div>
             {isLocalMode && (
               <div className="mb-2 flex gap-1.5">
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setLocalSessionFilter('running')}
-                  className={`flex-1 rounded border px-2 py-1 text-[10px] transition-smooth ${
+                  className={`flex-1 h-auto px-2 py-1 text-[10px] font-mono border ${
                     localSessionFilter === 'running'
-                      ? 'bg-primary/25 border-primary/40 text-primary-foreground'
-                      : 'bg-black/20 border-white/10 text-slate-300 hover:bg-black/35'
+                      ? 'bg-void-cyan/15 border-void-cyan/30 text-void-cyan'
+                      : 'bg-secondary border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   Running
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setLocalSessionFilter('not-running')}
-                  className={`flex-1 rounded border px-2 py-1 text-[10px] transition-smooth ${
+                  className={`flex-1 h-auto px-2 py-1 text-[10px] font-mono border ${
                     localSessionFilter === 'not-running'
-                      ? 'bg-amber-500/15 border-amber-500/60 text-amber-200'
-                      : 'bg-black/20 border-white/10 text-slate-300 hover:bg-black/35'
+                      ? 'bg-void-amber/15 border-void-amber/30 text-void-amber'
+                      : 'bg-secondary border-border text-muted-foreground hover:bg-muted'
                   }`}
                 >
                   Not Running
-                </button>
+                </Button>
               </div>
             )}
             <div className="space-y-2 max-h-[560px] overflow-y-auto pr-1">
               {filteredRosterRows.map(({ agent, minutesIdle, needsAttention }) => (
-                <button
+                <Button
                   key={agent.id}
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setSelectedAgent(agent)
                     const worker = renderedWorkers.find((item) => item.agent.id === agent.id)
                     if (worker) focusMapPoint(worker.x, worker.y)
                   }}
-                  className={`w-full flex items-center gap-2 rounded-lg p-2 text-left transition-smooth ${
+                  className={`w-full flex items-center gap-2 rounded-lg p-2 text-left h-auto ${
                     needsAttention
                       ? 'bg-amber-500/12 border border-amber-400/60 hover:bg-amber-500/20'
                       : 'bg-black/20 border border-white/5 hover:bg-black/35'
@@ -1637,7 +1647,7 @@ export function OfficePanel() {
                       {agent.status === 'busy' ? 'active' : `${minutesIdle}m idle`}
                     </span>
                   </span>
-                </button>
+                </Button>
               ))}
               {filteredRosterRows.length === 0 && (
                 <div className="text-[11px] text-slate-400 px-1 py-2">No workers in this filter.</div>
@@ -1648,9 +1658,9 @@ export function OfficePanel() {
 
           <div
             ref={mapViewportRef}
-            className="relative rounded-xl border border-slate-700/70 overflow-hidden min-h-[560px] cursor-grab active:cursor-grabbing shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
+            className="relative rounded-lg border border-border overflow-hidden min-h-[560px] cursor-grab active:cursor-grabbing shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
             style={{
-              backgroundColor: '#0b1220',
+              backgroundColor: 'hsl(var(--background))',
               backgroundImage: `${themePalette.shell}, linear-gradient(90deg, ${themePalette.gridLine} 1px, transparent 1px), linear-gradient(${themePalette.gridLine} 1px, transparent 1px)`,
               backgroundSize: 'auto, 64px 64px, 64px 64px',
             }}
@@ -1731,31 +1741,33 @@ export function OfficePanel() {
               </>
             )}
 
-            <div className="absolute left-[8%] top-[8%] rounded-md bg-black/55 border border-white/10 text-slate-100 text-xs px-2 py-1 font-mono z-30">
-              MAIN FLOOR
+            <div className="absolute left-[8%] top-[8%] rounded-md bg-card/80 backdrop-blur-sm border border-void-cyan/20 text-void-cyan text-xs px-2 py-1 font-mono z-30">
+              MAIN DECK
             </div>
-            <div className="absolute right-3 top-3 z-30 flex items-center gap-1 rounded-md bg-black/50 border border-white/10 text-white/90 px-2 py-1">
-              <button onClick={() => setMapZoom((z) => Math.max(0.8, Number((z - 0.1).toFixed(2))))} className="text-xs px-1.5 py-0.5 hover:bg-white/10 rounded">-</button>
-              <span className="text-[11px] w-10 text-center">{Math.round(mapZoom * 100)}%</span>
-              <button onClick={() => setMapZoom((z) => Math.min(2.2, Number((z + 0.1).toFixed(2))))} className="text-xs px-1.5 py-0.5 hover:bg-white/10 rounded">+</button>
-              <button onClick={resetMapView} className="text-[11px] px-1.5 py-0.5 hover:bg-white/10 rounded">Reset</button>
+            <div className="absolute right-3 top-3 z-30 flex items-center gap-1 rounded-md bg-card/80 backdrop-blur-sm border border-border text-foreground/90 px-2 py-1">
+              <Button variant="ghost" size="xs" onClick={() => setMapZoom((z) => Math.max(0.8, Number((z - 0.1).toFixed(2))))} className="h-auto px-1.5 py-0.5 text-xs hover:bg-void-cyan/10">-</Button>
+              <span className="text-[11px] font-mono w-10 text-center">{Math.round(mapZoom * 100)}%</span>
+              <Button variant="ghost" size="xs" onClick={() => setMapZoom((z) => Math.min(2.2, Number((z + 0.1).toFixed(2))))} className="h-auto px-1.5 py-0.5 text-xs hover:bg-void-cyan/10">+</Button>
+              <Button variant="ghost" size="xs" onClick={resetMapView} className="h-auto px-1.5 py-0.5 text-[11px] hover:bg-void-cyan/10">Reset</Button>
             </div>
-            <div className="absolute right-3 top-12 z-30 flex items-center gap-1 rounded-md bg-black/50 border border-white/10 text-white/90 px-2 py-1">
+            <div className="absolute right-3 top-12 z-30 flex items-center gap-1 rounded-md bg-card/80 backdrop-blur-sm border border-border text-foreground/90 px-2 py-1">
               {(['dawn', 'day', 'dusk', 'night'] as TimeTheme[]).map((item) => (
-                <button
+                <Button
                   key={item}
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setTimeTheme(item)}
-                  className={`text-[10px] px-1.5 py-0.5 rounded uppercase ${timeTheme === item ? 'bg-white/20 text-white' : 'hover:bg-white/10 text-slate-300'}`}
+                  className={`h-auto px-1.5 py-0.5 text-[10px] font-mono uppercase ${timeTheme === item ? 'bg-void-cyan/20 text-void-cyan' : 'hover:bg-void-cyan/10 text-muted-foreground'}`}
                 >
                   {item}
-                </button>
+                </Button>
               ))}
             </div>
-            <div className="absolute left-3 top-3 z-30 flex items-center gap-1 rounded-md bg-black/50 border border-white/10 text-white/90 px-2 py-1">
-              <button onClick={() => setShowSidebar((v) => !v)} className="text-[10px] px-1.5 py-0.5 rounded hover:bg-white/10">{showSidebar ? 'Hide Sidebar' : 'Show Sidebar'}</button>
-              <button onClick={() => setShowMinimap((v) => !v)} className="text-[10px] px-1.5 py-0.5 rounded hover:bg-white/10">{showMinimap ? 'Hide Minimap' : 'Show Minimap'}</button>
-              <button onClick={() => setShowEvents((v) => !v)} className="text-[10px] px-1.5 py-0.5 rounded hover:bg-white/10">{showEvents ? 'Hide Events' : 'Show Events'}</button>
-              <button onClick={resetOfficeLayout} className="text-[10px] px-1.5 py-0.5 rounded hover:bg-white/10">Reset Layout</button>
+            <div className="absolute left-3 top-3 z-30 flex items-center gap-1 rounded-md bg-card/80 backdrop-blur-sm border border-border text-foreground/90 px-2 py-1">
+              <Button variant="ghost" size="xs" onClick={() => setShowSidebar((v) => !v)} className="h-auto px-1.5 py-0.5 text-[10px] font-mono hover:bg-void-cyan/10">{showSidebar ? 'Hide Crew' : 'Show Crew'}</Button>
+              <Button variant="ghost" size="xs" onClick={() => setShowMinimap((v) => !v)} className="h-auto px-1.5 py-0.5 text-[10px] font-mono hover:bg-void-cyan/10">{showMinimap ? 'Hide Radar' : 'Show Radar'}</Button>
+              <Button variant="ghost" size="xs" onClick={() => setShowEvents((v) => !v)} className="h-auto px-1.5 py-0.5 text-[10px] font-mono hover:bg-void-cyan/10">{showEvents ? 'Hide Log' : 'Show Log'}</Button>
+              <Button variant="ghost" size="xs" onClick={resetOfficeLayout} className="h-auto px-1.5 py-0.5 text-[10px] font-mono hover:bg-void-cyan/10">Reset Layout</Button>
             </div>
 
             <div
@@ -1766,7 +1778,7 @@ export function OfficePanel() {
                 {floorTiles.map((tile) => (
                   <div
                     key={tile.id}
-                    className="absolute border border-[#7fa4ff]/[0.06]"
+                    className="absolute border border-void-cyan/[0.06]"
                     style={{
                       left: `${tile.x}%`,
                       top: `${tile.y}%`,
@@ -1782,7 +1794,7 @@ export function OfficePanel() {
               </div>
 
               {/* Corridor base */}
-              <div className="absolute left-[14%] top-[45%] w-[72%] h-[6%] border-y border-[#95b8ff]/25 shadow-[0_0_30px_rgba(61,139,255,0.25)]" style={{ backgroundColor: themePalette.corridor }} />
+              <div className="absolute left-[14%] top-[45%] w-[72%] h-[6%] border-y border-void-cyan/15 shadow-[0_0_30px_hsl(var(--void-cyan)/0.1)]" style={{ backgroundColor: themePalette.corridor }} />
               <div className="absolute left-[14%] top-[47.6%] w-[72%] h-[0.7%]" style={{ backgroundColor: themePalette.corridorStripe }} />
 
               <div className="absolute inset-0 pointer-events-none z-[1]">
@@ -1805,7 +1817,7 @@ export function OfficePanel() {
               {roomLayoutState.map((room) => (
                 <div
                   key={room.id}
-                  className={`absolute border border-[#8ea6d9]/35 ${room.style} shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_8px_24px_rgba(0,0,0,0.3)]`}
+                  className={`absolute border border-void-cyan/15 ${room.style} shadow-[inset_0_0_0_1px_hsl(var(--void-cyan)/0.04),0_8px_24px_rgba(0,0,0,0.3)]`}
                   style={{
                     left: `${room.x}%`,
                     top: `${room.y}%`,
@@ -1838,7 +1850,7 @@ export function OfficePanel() {
                   }}
                 >
                   <div className="absolute inset-0 pointer-events-none" style={{ backgroundImage: `${themePalette.roomTone}, linear-gradient(to bottom right, rgba(255,255,255,0.08), transparent 45%)` }} />
-                  <div className="absolute left-2 top-1 rounded bg-black/55 border border-white/10 text-white text-[9px] px-1.5 py-0.5 font-mono uppercase tracking-wide">
+                  <div className="absolute left-2 top-1 rounded bg-card/70 backdrop-blur-sm border border-void-cyan/15 text-void-cyan/80 text-[9px] px-1.5 py-0.5 font-mono uppercase tracking-wide">
                     {room.label}
                   </div>
                 </div>
@@ -1950,9 +1962,10 @@ export function OfficePanel() {
                     </div>
                   </div>
 
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => setSelectedAgent(agent)}
-                    className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500 hover:scale-110"
+                    className="absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500 hover:scale-110 h-auto p-0 rounded-none hover:bg-transparent"
                     style={{ left: `${x}%`, top: `${y}%` }}
                   >
                     <div className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/70 border border-white/10 text-white text-[11px] px-2 py-0.5 shadow-[0_0_12px_rgba(0,0,0,0.4)]">
@@ -1984,7 +1997,7 @@ export function OfficePanel() {
                       <div className={`absolute left-[8px] top-[14px] w-4 h-3 ${hashColor(agent.name)} border border-black/60`} />
                     </div>
                     {!isMoving && <div className="text-[9px] text-slate-300 font-mono mt-0.5">#{seatLabel}</div>}
-                  </button>
+                  </Button>
 
                   {agentActionOverrides.has(agent.id) && (
                     <div
@@ -2016,7 +2029,7 @@ export function OfficePanel() {
 
             {showMinimap && (
             <div
-              className="absolute right-3 bottom-3 z-30 w-44 h-28 rounded-md border border-white/15 bg-[#0b1220]/85 backdrop-blur-sm p-1.5"
+              className="absolute right-3 bottom-3 z-30 w-44 h-28 rounded-md border border-void-cyan/15 bg-card/85 backdrop-blur-sm p-1.5"
               onMouseDown={(event) => event.stopPropagation()}
               onClick={(event) => {
                 event.stopPropagation()
@@ -2027,20 +2040,21 @@ export function OfficePanel() {
                 focusMapPoint(x, y)
               }}
             >
-              <div className="text-[9px] text-slate-300 uppercase tracking-wider mb-1">Minimap</div>
-              <div className="relative w-full h-[calc(100%-16px)] rounded-sm overflow-hidden border border-white/10 bg-[#111a2f]">
+              <div className="text-[9px] text-void-cyan/60 font-mono uppercase tracking-wider mb-1">Radar</div>
+              <div className="relative w-full h-[calc(100%-16px)] rounded-sm overflow-hidden border border-void-cyan/10 bg-background">
                 {roomLayoutState.map((room) => (
                   <div
                     key={`mini-${room.id}`}
-                    className="absolute border border-white/15 bg-white/10"
+                    className="absolute border border-void-cyan/15 bg-void-cyan/5"
                     style={{ left: `${room.x}%`, top: `${room.y}%`, width: `${room.w}%`, height: `${room.h}%` }}
                   />
                 ))}
-                <div className="absolute left-[14%] top-[47%] w-[72%] h-[4%] bg-[#6f80a7]" />
+                <div className="absolute left-[14%] top-[47%] w-[72%] h-[4%] bg-void-cyan/20" />
                 {renderedWorkers.map((worker) => (
-                  <button
+                  <Button
                     key={`mini-worker-${worker.agent.id}`}
-                    className={`absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 ${hashColor(worker.agent.name)} border border-black/40`}
+                    variant="ghost"
+                    className={`absolute w-2.5 h-2.5 rounded-full -translate-x-1/2 -translate-y-1/2 ${hashColor(worker.agent.name)} border border-black/40 h-auto p-0 min-w-0 hover:bg-transparent`}
                     style={{ left: `${worker.x}%`, top: `${worker.y}%` }}
                     onClick={(event) => {
                       event.stopPropagation()
@@ -2056,44 +2070,44 @@ export function OfficePanel() {
 
             {showEvents && (
             <div
-              className="absolute left-3 bottom-3 z-30 w-72 rounded-md border border-white/15 bg-[#0b1220]/88 backdrop-blur-sm p-2.5 space-y-2"
+              className="absolute left-3 bottom-3 z-30 w-72 rounded-md border border-void-cyan/15 bg-card/88 backdrop-blur-sm p-2.5 space-y-2"
               onWheel={(event) => event.stopPropagation()}
             >
-              <div className="text-[10px] text-slate-300 uppercase tracking-wider">Office Events</div>
-              <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-300" />Busy Heat</span>
-                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-300" />Idle Heat</span>
-                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-300" />Other</span>
+              <div className="text-[10px] text-void-cyan/60 font-mono uppercase tracking-wider">Deck Log</div>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-void-amber" />Active</span>
+                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-void-mint" />Standby</span>
+                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-void-cyan" />Other</span>
               </div>
               <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1" onWheel={(event) => event.stopPropagation()}>
                 {officeEvents.length === 0 && (
-                  <div className="text-[11px] text-slate-500">No events yet. Click a room/desk or run an action.</div>
+                  <div className="text-[11px] text-muted-foreground">No events yet. Click a zone or run an action.</div>
                 )}
                 {officeEvents.map((event) => (
-                  <div key={event.id} className="text-[11px] rounded px-2 py-1 bg-black/35 border border-white/10">
+                  <div key={event.id} className="text-[11px] rounded px-2 py-1 bg-secondary/50 border border-border">
                     <div className="flex items-center justify-between gap-2">
                       <span
-                        className={`uppercase text-[9px] ${
+                        className={`uppercase font-mono text-[9px] ${
                           event.severity === 'good'
-                            ? 'text-emerald-300'
+                            ? 'text-void-mint'
                             : event.severity === 'warn'
-                              ? 'text-amber-300'
-                              : 'text-sky-300'
+                              ? 'text-void-amber'
+                              : 'text-void-cyan'
                         }`}
                       >
                         {event.kind}
                       </span>
-                      <span className="text-slate-500 text-[9px]">{formatLastSeen(Math.floor(event.at / 1000))}</span>
+                      <span className="text-muted-foreground text-[9px]">{formatLastSeen(Math.floor(event.at / 1000))}</span>
                     </div>
-                    <div className="text-slate-200">{event.message}</div>
+                    <div className="text-foreground/80">{event.message}</div>
                   </div>
                 ))}
               </div>
               {selectedHotspot && (
-                <div className="rounded border border-white/10 bg-black/35 p-2">
+                <div className="rounded border border-void-cyan/15 bg-secondary/50 p-2">
                   <div className="flex items-center justify-between">
-                    <div className="text-[11px] font-semibold text-white">{selectedHotspot.label}</div>
-                    <div className="text-[9px] uppercase text-slate-400">{selectedHotspot.kind}</div>
+                    <div className="text-[11px] font-semibold text-foreground">{selectedHotspot.label}</div>
+                    <div className="text-[9px] font-mono uppercase text-void-cyan/60">{selectedHotspot.kind}</div>
                   </div>
                   <div className="mt-1.5 space-y-1">
                     {selectedHotspot.stats.map((line) => (
@@ -2101,19 +2115,19 @@ export function OfficePanel() {
                     ))}
                   </div>
                   <div className="mt-2 grid grid-cols-3 gap-1">
-                    <button onClick={() => nudgeSelectedHotspot(0, -1)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Up</button>
-                    <button onClick={() => nudgeSelectedHotspot(-1, 0)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Left</button>
-                    <button onClick={() => nudgeSelectedHotspot(1, 0)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Right</button>
-                    <button onClick={() => nudgeSelectedHotspot(0, 1)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Down</button>
-                    <button onClick={() => nudgeSelectedHotspot(-0.5, 0)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Fine -X</button>
-                    <button onClick={() => nudgeSelectedHotspot(0.5, 0)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Fine +X</button>
+                    <Button variant="outline" size="xs" onClick={() => nudgeSelectedHotspot(0, -1)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Up</Button>
+                    <Button variant="outline" size="xs" onClick={() => nudgeSelectedHotspot(-1, 0)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Left</Button>
+                    <Button variant="outline" size="xs" onClick={() => nudgeSelectedHotspot(1, 0)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Right</Button>
+                    <Button variant="outline" size="xs" onClick={() => nudgeSelectedHotspot(0, 1)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Down</Button>
+                    <Button variant="outline" size="xs" onClick={() => nudgeSelectedHotspot(-0.5, 0)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Fine -X</Button>
+                    <Button variant="outline" size="xs" onClick={() => nudgeSelectedHotspot(0.5, 0)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Fine +X</Button>
                   </div>
                   {selectedHotspot.kind === 'room' && (
                     <div className="mt-1.5 grid grid-cols-2 gap-1">
-                      <button onClick={() => resizeSelectedRoom(1, 0)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Wider</button>
-                      <button onClick={() => resizeSelectedRoom(-1, 0)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Narrower</button>
-                      <button onClick={() => resizeSelectedRoom(0, 1)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Taller</button>
-                      <button onClick={() => resizeSelectedRoom(0, -1)} className="text-[10px] rounded border border-white/10 py-1 hover:bg-white/10">Shorter</button>
+                      <Button variant="outline" size="xs" onClick={() => resizeSelectedRoom(1, 0)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Wider</Button>
+                      <Button variant="outline" size="xs" onClick={() => resizeSelectedRoom(-1, 0)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Narrower</Button>
+                      <Button variant="outline" size="xs" onClick={() => resizeSelectedRoom(0, 1)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Taller</Button>
+                      <Button variant="outline" size="xs" onClick={() => resizeSelectedRoom(0, -1)} className="h-auto py-1 text-[10px] border-white/10 hover:bg-white/10">Shorter</Button>
                     </div>
                   )}
                 </div>
@@ -2132,29 +2146,35 @@ export function OfficePanel() {
               </span>
             </div>
             <div className="flex rounded-md overflow-hidden border border-border">
-              <button
+              <Button
+                variant={orgSegmentMode === 'category' ? 'default' : 'secondary'}
+                size="sm"
                 onClick={() => setOrgSegmentMode('category')}
-                className={`px-3 py-1 text-sm transition-smooth ${orgSegmentMode === 'category' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+                className="rounded-none"
               >
                 Category
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={orgSegmentMode === 'role' ? 'default' : 'secondary'}
+                size="sm"
                 onClick={() => setOrgSegmentMode('role')}
-                className={`px-3 py-1 text-sm transition-smooth ${orgSegmentMode === 'role' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+                className="rounded-none"
               >
                 Role
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={orgSegmentMode === 'status' ? 'default' : 'secondary'}
+                size="sm"
                 onClick={() => setOrgSegmentMode('status')}
-                className={`px-3 py-1 text-sm transition-smooth ${orgSegmentMode === 'status' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground hover:bg-surface-2'}`}
+                className="rounded-none"
               >
                 Status
-              </button>
+              </Button>
             </div>
           </div>
 
           {[...orgGroups.entries()].map(([segment, members]) => (
-            <div key={segment} className="bg-card border border-border rounded-xl p-5">
+            <div key={segment} className="bg-card border border-border rounded-lg p-5">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-1 h-6 bg-primary rounded-full" />
                 <h3 className="font-semibold text-foreground">{segment}</h3>
@@ -2188,7 +2208,7 @@ export function OfficePanel() {
 
       {selectedAgent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedAgent(null)}>
-          <div className="bg-card border border-border rounded-xl max-w-sm w-full p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center gap-3">
                 <div className={`w-14 h-14 rounded-full ${hashColor(selectedAgent.name)} flex items-center justify-center text-white font-bold text-lg ring-2 ring-offset-2 ring-offset-card ${selectedAgent.status === 'busy' ? 'ring-yellow-500' : selectedAgent.status === 'idle' ? 'ring-green-500' : selectedAgent.status === 'error' ? 'ring-red-500' : 'ring-gray-600'}`}>
@@ -2199,7 +2219,7 @@ export function OfficePanel() {
                   <p className="text-sm text-muted-foreground">{selectedAgent.role}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedAgent(null)} className="text-muted-foreground hover:text-foreground text-xl">×</button>
+              <Button variant="ghost" size="icon-xs" onClick={() => setSelectedAgent(null)} className="text-muted-foreground hover:text-foreground text-xl w-6 h-6">×</Button>
             </div>
 
             <div className="space-y-3 text-sm">
@@ -2246,36 +2266,44 @@ export function OfficePanel() {
               <div className="pt-1">
                 <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Quick Actions</div>
                 <div className="grid grid-cols-3 gap-1.5">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => executeAgentAction(selectedAgent, 'focus')}
-                    className="h-8 px-2 rounded border border-border bg-secondary text-[11px] hover:bg-surface-2"
+                    className="text-[11px]"
                   >
                     Focus
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => executeAgentAction(selectedAgent, 'pair')}
-                    className="h-8 px-2 rounded border border-border bg-secondary text-[11px] hover:bg-surface-2"
+                    className="text-[11px]"
                   >
                     Pair
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => executeAgentAction(selectedAgent, 'break')}
-                    className="h-8 px-2 rounded border border-border bg-secondary text-[11px] hover:bg-surface-2"
+                    className="text-[11px]"
                   >
                     Break
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {isLocalMode && (
                 <div className="pt-1">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="md"
                     onClick={() => openFlightDeck(selectedAgent)}
                     disabled={flightDeckLaunching}
-                    className="w-full h-9 px-3 rounded-md border border-border bg-secondary text-foreground text-xs hover:bg-surface-2 transition-smooth"
+                    className="w-full text-xs"
                   >
                     {flightDeckLaunching ? 'Opening Flight Deck...' : 'Open in Flight Deck'}
-                  </button>
+                  </Button>
                   <div className="text-[10px] text-muted-foreground mt-1">
                     Private/pro companion app for session deep-dive
                   </div>
@@ -2288,7 +2316,7 @@ export function OfficePanel() {
 
       {showFlightDeckModal && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[60] p-4" onClick={() => setShowFlightDeckModal(false)}>
-          <div className="bg-card border border-border rounded-xl max-w-md w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card border border-border rounded-lg max-w-md w-full p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">Flight Deck Required</h3>
@@ -2296,12 +2324,14 @@ export function OfficePanel() {
                   Flight Deck is the private/pro companion app for Mission Control.
                 </p>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon-xs"
                 onClick={() => setShowFlightDeckModal(false)}
-                className="text-muted-foreground hover:text-foreground text-xl"
+                className="text-muted-foreground hover:text-foreground text-xl w-6 h-6"
               >
                 ×
-              </button>
+              </Button>
             </div>
 
             <div className="mt-4 rounded-lg border border-border bg-secondary/40 p-3 text-sm text-muted-foreground">
@@ -2310,12 +2340,12 @@ export function OfficePanel() {
             </div>
 
             <div className="mt-5 flex items-center justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => setShowFlightDeckModal(false)}
-                className="h-9 px-3 rounded-md border border-border text-sm text-foreground hover:bg-secondary/60 transition-smooth"
               >
                 Maybe Later
-              </button>
+              </Button>
               <a
                 href={flightDeckDownloadUrl}
                 target="_blank"

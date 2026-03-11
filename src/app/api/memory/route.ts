@@ -3,10 +3,12 @@ import { readdir, readFile, stat, lstat, realpath, writeFile, mkdir, unlink } fr
 import { existsSync, mkdirSync } from 'fs'
 import { join, dirname, sep } from 'path'
 import { config } from '@/lib/config'
+import { db_helpers } from '@/lib/db'
 import { resolveWithin } from '@/lib/paths'
 import { requireRole } from '@/lib/auth'
 import { readLimiter, mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+import { validateSchema, extractWikiLinks } from '@/lib/memory-utils'
 
 const MEMORY_PATH = config.memoryDir
 const MEMORY_ALLOWED_PREFIXES = (config.memoryAllowedPrefixes || []).map((p) => p.replace(/\\/g, '/'))
@@ -85,7 +87,11 @@ async function resolveSafeMemoryPath(baseDir: string, relativePath: string): Pro
   return fullPath
 }
 
-async function buildFileTree(dirPath: string, relativePath: string = ''): Promise<MemoryFile[]> {
+async function buildFileTree(
+  dirPath: string,
+  relativePath: string = '',
+  maxDepth: number = Number.POSITIVE_INFINITY,
+): Promise<MemoryFile[]> {
   try {
     const items = await readdir(dirPath, { withFileTypes: true })
     const files: MemoryFile[] = []
@@ -101,7 +107,10 @@ async function buildFileTree(dirPath: string, relativePath: string = ''): Promis
         const stats = await stat(itemPath)
         
         if (item.isDirectory()) {
-          const children = await buildFileTree(itemPath, itemRelativePath)
+          const children =
+            maxDepth > 0
+              ? await buildFileTree(itemPath, itemRelativePath, maxDepth - 1)
+              : undefined
           files.push({
             path: itemRelativePath,
             name: item.name,
@@ -147,11 +156,25 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const path = searchParams.get('path')
     const action = searchParams.get('action')
+    const depthParam = Number.parseInt(searchParams.get('depth') || '', 10)
+    const maxDepth = Number.isFinite(depthParam) ? Math.max(0, Math.min(depthParam, 8)) : Number.POSITIVE_INFINITY
 
     if (action === 'tree') {
       // Return the file tree
       if (!MEMORY_PATH) {
         return NextResponse.json({ tree: [] })
+      }
+      if (path) {
+        if (!isPathAllowed(path)) {
+          return NextResponse.json({ error: 'Path not allowed' }, { status: 403 })
+        }
+        const fullPath = await resolveSafeMemoryPath(MEMORY_PATH, path)
+        const stats = await stat(fullPath).catch(() => null)
+        if (!stats?.isDirectory()) {
+          return NextResponse.json({ error: 'Directory not found' }, { status: 404 })
+        }
+        const tree = await buildFileTree(fullPath, path, maxDepth)
+        return NextResponse.json({ tree })
       }
       if (MEMORY_ALLOWED_PREFIXES.length) {
         const tree: MemoryFile[] = []
@@ -167,7 +190,7 @@ export async function GET(request: NextRequest) {
               name: folder,
               type: 'directory',
               modified: stats.mtime.getTime(),
-              children: await buildFileTree(fullPath, folder),
+              children: await buildFileTree(fullPath, folder, maxDepth),
             })
           } catch {
             // Skip unreadable roots
@@ -175,7 +198,7 @@ export async function GET(request: NextRequest) {
         }
         return NextResponse.json({ tree })
       }
-      const tree = await buildFileTree(MEMORY_PATH)
+      const tree = await buildFileTree(MEMORY_PATH, '', maxDepth)
       return NextResponse.json({ tree })
     }
 
@@ -192,12 +215,19 @@ export async function GET(request: NextRequest) {
       try {
         const content = await readFile(fullPath, 'utf-8')
         const stats = await stat(fullPath)
-        
+
+        // Extract wiki-links and schema validation for .md files
+        const isMarkdown = path.endsWith('.md')
+        const wikiLinks = isMarkdown ? extractWikiLinks(content) : []
+        const schemaResult = isMarkdown ? validateSchema(content) : null
+
         return NextResponse.json({
           content,
           size: stats.size,
           modified: stats.mtime.getTime(),
-          path
+          path,
+          wikiLinks,
+          schema: schemaResult,
         })
       } catch (error) {
         return NextResponse.json({ error: 'File not found' }, { status: 404 })
@@ -321,8 +351,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Content is required for save action' }, { status: 400 })
       }
 
+      // Validate schema if present (warn but don't block save)
+      const schemaResult = path.endsWith('.md') ? validateSchema(content) : null
+      const schemaWarnings = schemaResult?.errors ?? []
+
       await writeFile(fullPath, content, 'utf-8')
-      return NextResponse.json({ success: true, message: 'File saved successfully' })
+      try {
+        db_helpers.logActivity('memory_file_saved', 'memory', 0, auth.user.username || 'unknown', `Updated ${path}`, { path, size: content.length })
+      } catch { /* best-effort */ }
+      return NextResponse.json({
+        success: true,
+        message: 'File saved successfully',
+        schemaWarnings,
+      })
     }
 
     if (action === 'create') {
@@ -345,6 +386,9 @@ export async function POST(request: NextRequest) {
       }
 
       await writeFile(fullPath, content || '', 'utf-8')
+      try {
+        db_helpers.logActivity('memory_file_created', 'memory', 0, auth.user.username || 'unknown', `Created ${path}`, { path })
+      } catch { /* best-effort */ }
       return NextResponse.json({ success: true, message: 'File created successfully' })
     }
 
@@ -387,6 +431,9 @@ export async function DELETE(request: NextRequest) {
       }
 
       await unlink(fullPath)
+      try {
+        db_helpers.logActivity('memory_file_deleted', 'memory', 0, auth.user.username || 'unknown', `Deleted ${path}`, { path })
+      } catch { /* best-effort */ }
       return NextResponse.json({ success: true, message: 'File deleted successfully' })
     }
 

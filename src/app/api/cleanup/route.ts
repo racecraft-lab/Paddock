@@ -20,19 +20,22 @@ export async function GET(request: NextRequest) {
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   const db = getDatabase()
+  const workspaceId = auth.user.workspace_id ?? 1
   const now = Math.floor(Date.now() / 1000)
   const ret = config.retention
 
   const preview = []
 
-  for (const { table, column, days, label } of getRetentionTargets()) {
+  for (const { table, column, days, label, scoped } of getRetentionTargets()) {
     if (days <= 0) {
       preview.push({ table: label, retention_days: 0, stale_count: 0, note: 'Retention disabled (keep forever)' })
       continue
     }
     const cutoff = now - days * 86400
     try {
-      const row = db.prepare(`SELECT COUNT(*) as c FROM ${table} WHERE ${column} < ?`).get(cutoff) as any
+      const wsClause = scoped ? ' AND workspace_id = ?' : ''
+      const params: any[] = scoped ? [cutoff, workspaceId] : [cutoff]
+      const row = db.prepare(`SELECT COUNT(*) as c FROM ${table} WHERE ${column} < ?${wsClause}`).get(...params) as any
       preview.push({
         table: label,
         retention_days: days,
@@ -89,17 +92,20 @@ export async function POST(request: NextRequest) {
   const dryRun = body.dry_run === true
 
   const db = getDatabase()
+  const workspaceId = auth.user.workspace_id ?? 1
   const now = Math.floor(Date.now() / 1000)
   const results: CleanupResult[] = []
   let totalDeleted = 0
 
-  for (const { table, column, days, label } of getRetentionTargets()) {
+  for (const { table, column, days, label, scoped } of getRetentionTargets()) {
     if (days <= 0) continue
     const cutoff = now - days * 86400
+    const wsClause = scoped ? ' AND workspace_id = ?' : ''
+    const params: any[] = scoped ? [cutoff, workspaceId] : [cutoff]
 
     try {
       if (dryRun) {
-        const row = db.prepare(`SELECT COUNT(*) as c FROM ${table} WHERE ${column} < ?`).get(cutoff) as any
+        const row = db.prepare(`SELECT COUNT(*) as c FROM ${table} WHERE ${column} < ?${wsClause}`).get(...params) as any
         results.push({
           table: label,
           deleted: row.c,
@@ -108,7 +114,7 @@ export async function POST(request: NextRequest) {
         })
         totalDeleted += row.c
       } else {
-        const res = db.prepare(`DELETE FROM ${table} WHERE ${column} < ?`).run(cutoff)
+        const res = db.prepare(`DELETE FROM ${table} WHERE ${column} < ?${wsClause}`).run(...params)
         results.push({
           table: label,
           deleted: res.changes,
@@ -183,9 +189,9 @@ export async function POST(request: NextRequest) {
 function getRetentionTargets() {
   const ret = config.retention
   return [
-    { table: 'activities', column: 'created_at', days: ret.activities, label: 'Activities' },
-    { table: 'audit_log', column: 'created_at', days: ret.auditLog, label: 'Audit Log' },
-    { table: 'notifications', column: 'created_at', days: ret.notifications, label: 'Notifications' },
-    { table: 'pipeline_runs', column: 'created_at', days: ret.pipelineRuns, label: 'Pipeline Runs' },
+    { table: 'activities', column: 'created_at', days: ret.activities, label: 'Activities', scoped: true },
+    { table: 'audit_log', column: 'created_at', days: ret.auditLog, label: 'Audit Log', scoped: false }, // instance-global, admin-only
+    { table: 'notifications', column: 'created_at', days: ret.notifications, label: 'Notifications', scoped: true },
+    { table: 'pipeline_runs', column: 'created_at', days: ret.pipelineRuns, label: 'Pipeline Runs', scoped: true },
   ]
 }

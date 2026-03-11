@@ -46,18 +46,93 @@ function hasOpenClaw32ToolsProfileRisk(version: string | null): boolean {
   return minor >= 2
 }
 
-function isBlockedUrl(urlStr: string): boolean {
+/** Check whether an IPv4 address falls within a CIDR block. */
+function ipv4InCidr(ip: string, cidr: string): boolean {
+  const [base, bits] = cidr.split('/')
+  const mask = ~((1 << (32 - Number(bits))) - 1) >>> 0
+  const ipNum = ipv4ToNum(ip)
+  const baseNum = ipv4ToNum(base)
+  if (ipNum === null || baseNum === null) return false
+  return (ipNum & mask) === (baseNum & mask)
+}
+
+function ipv4ToNum(ip: string): number | null {
+  const parts = ip.split('.')
+  if (parts.length !== 4) return null
+  let num = 0
+  for (const p of parts) {
+    const n = Number(p)
+    if (!Number.isFinite(n) || n < 0 || n > 255) return null
+    num = (num << 8) | n
+  }
+  return num >>> 0
+}
+
+const BLOCKED_PRIVATE_CIDRS = [
+  '10.0.0.0/8',
+  '172.16.0.0/12',
+  '192.168.0.0/16',
+  '169.254.0.0/16',
+  '127.0.0.0/8',
+]
+
+const BLOCKED_HOSTNAMES = new Set([
+  'metadata.google.internal',
+  'metadata.internal',
+  'instance-data',
+])
+
+function isBlockedUrl(urlStr: string, userConfiguredHosts: Set<string>): boolean {
   try {
     const url = new URL(urlStr)
     const hostname = url.hostname
-    // Block link-local / cloud metadata endpoints
-    if (hostname.startsWith('169.254.')) return true
+
+    // Allow user-configured gateway hosts (operators intentionally target their own infra)
+    if (userConfiguredHosts.has(hostname)) return false
+
     // Block well-known cloud metadata hostnames
-    if (hostname === 'metadata.google.internal') return true
+    if (BLOCKED_HOSTNAMES.has(hostname)) return true
+
+    // Block private/reserved IPv4 ranges
+    if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) {
+      for (const cidr of BLOCKED_PRIVATE_CIDRS) {
+        if (ipv4InCidr(hostname, cidr)) return true
+      }
+    }
+
     return false
   } catch {
     return true // Block malformed URLs
   }
+}
+
+function buildGatewayProbeUrl(host: string, port: number): string | null {
+  const rawHost = String(host || '').trim()
+  if (!rawHost) return null
+
+  const hasProtocol =
+    rawHost.startsWith('ws://') ||
+    rawHost.startsWith('wss://') ||
+    rawHost.startsWith('http://') ||
+    rawHost.startsWith('https://')
+
+  if (hasProtocol) {
+    try {
+      const parsed = new URL(rawHost)
+      if (parsed.protocol === 'ws:') parsed.protocol = 'http:'
+      if (parsed.protocol === 'wss:') parsed.protocol = 'https:'
+      if (!parsed.port && Number.isFinite(port) && port > 0) {
+        parsed.port = String(port)
+      }
+      if (!parsed.pathname) parsed.pathname = '/'
+      return parsed.toString()
+    } catch {
+      return null
+    }
+  }
+
+  if (!Number.isFinite(port) || port <= 0) return null
+  return `http://${rawHost}:${port}/`
 }
 
 /**
@@ -71,6 +146,15 @@ export async function POST(request: NextRequest) {
   const db = getDatabase()
   const gateways = db.prepare("SELECT * FROM gateways ORDER BY is_primary DESC, name ASC").all() as GatewayEntry[]
 
+  // Build set of user-configured gateway hosts so the SSRF filter allows them
+  const configuredHosts = new Set<string>()
+  for (const gw of gateways) {
+    const h = (gw.host || '').trim()
+    if (h) {
+      try { configuredHosts.add(new URL(h.includes('://') ? h : `http://${h}`).hostname) } catch { configuredHosts.add(h) }
+    }
+  }
+
   // Prepare update statements once (avoids N+1)
   const updateOnlineStmt = db.prepare(
     "UPDATE gateways SET status = ?, latency = ?, last_seen = (unixepoch()), updated_at = (unixepoch()) WHERE id = ?"
@@ -82,9 +166,13 @@ export async function POST(request: NextRequest) {
   const results: HealthResult[] = []
 
   for (const gw of gateways) {
-    const probeUrl = "http://" + gw.host + ":" + gw.port + "/"
+    const probeUrl = buildGatewayProbeUrl(gw.host, gw.port)
+    if (!probeUrl) {
+      results.push({ id: gw.id, name: gw.name, status: 'error', latency: null, agents: [], sessions_count: 0, error: 'Invalid gateway address' })
+      continue
+    }
 
-    if (isBlockedUrl(probeUrl)) {
+    if (isBlockedUrl(probeUrl, configuredHosts)) {
       results.push({ id: gw.id, name: gw.name, status: 'error', latency: null, agents: [], sessions_count: 0, error: 'Blocked URL' })
       continue
     }
@@ -106,8 +194,6 @@ export async function POST(request: NextRequest) {
         ? 'OpenClaw 2026.3.2+ defaults tools.profile=messaging; Mission Control should enforce coding profile when spawning.'
         : undefined
 
-      updateOnlineStmt.run(status, latency, gw.id)
-
       results.push({
         id: gw.id,
         name: gw.name,
@@ -119,8 +205,6 @@ export async function POST(request: NextRequest) {
         compatibility_warning: compatibilityWarning,
       })
     } catch (err: any) {
-      updateOfflineStmt.run("offline", gw.id)
-
       results.push({
         id: gw.id,
         name: gw.name,
@@ -132,6 +216,17 @@ export async function POST(request: NextRequest) {
       })
     }
   }
+
+  // Persist all probe results in a single transaction
+  db.transaction(() => {
+    for (const r of results) {
+      if (r.status === 'online' || r.status === 'error') {
+        updateOnlineStmt.run(r.status, r.latency, r.id)
+      } else {
+        updateOfflineStmt.run(r.status, r.id)
+      }
+    }
+  })()
 
   return NextResponse.json({ results, probed_at: Date.now() })
 }

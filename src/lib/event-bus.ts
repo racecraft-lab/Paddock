@@ -28,6 +28,7 @@ export type EventType =
   | 'agent.synced'
   | 'agent.status_changed'
   | 'audit.security'
+  | 'security.event'
   | 'connection.created'
   | 'connection.disconnected'
   | 'github.synced'

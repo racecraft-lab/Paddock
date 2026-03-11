@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserFromRequest, updateUser, requireRole } from '@/lib/auth'
+import { getUserFromRequest, updateUser, requireRole, destroyAllUserSessions, createSession } from '@/lib/auth'
 import { logAuditEvent } from '@/lib/db'
 import { verifyPassword } from '@/lib/password'
+import { getMcSessionCookieOptions } from '@/lib/session-cookie'
 import { logger } from '@/lib/logger'
 
 export async function GET(request: Request) {
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
       email: user.email || null,
       avatar_url: user.avatar_url || null,
       workspace_id: user.workspace_id ?? 1,
+      tenant_id: user.tenant_id ?? 1,
     },
   })
 }
@@ -87,14 +89,17 @@ export async function PATCH(request: NextRequest) {
     }
 
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const userAgent = request.headers.get('user-agent') || undefined
     if (updates.password) {
       logAuditEvent({ action: 'password_change', actor: user.username, actor_id: user.id, ip_address: ipAddress })
+      // Revoke all existing sessions and issue a fresh one for this request
+      destroyAllUserSessions(user.id)
     }
     if (updates.display_name) {
       logAuditEvent({ action: 'profile_update', actor: user.username, actor_id: user.id, detail: { display_name: updates.display_name }, ip_address: ipAddress })
     }
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       user: {
         id: updated.id,
@@ -105,8 +110,21 @@ export async function PATCH(request: NextRequest) {
         email: updated.email || null,
         avatar_url: updated.avatar_url || null,
         workspace_id: updated.workspace_id ?? 1,
+        tenant_id: updated.tenant_id ?? 1,
       },
     })
+
+    // Issue a fresh session cookie after password change (old ones were just revoked)
+    if (updates.password) {
+      const { token, expiresAt } = createSession(user.id, ipAddress, userAgent, user.workspace_id ?? 1)
+      const isSecureRequest = request.headers.get('x-forwarded-proto') === 'https'
+        || new URL(request.url).protocol === 'https:'
+      response.cookies.set('mc-session', token, {
+        ...getMcSessionCookieOptions({ maxAgeSeconds: expiresAt - Math.floor(Date.now() / 1000), isSecureRequest }),
+      })
+    }
+
+    return response
   } catch (error) {
     logger.error({ err: error }, 'PATCH /api/auth/me error')
     return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })

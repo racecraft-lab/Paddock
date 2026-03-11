@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
         avatar_url: newUser.avatar_url || null,
         is_approved: newUser.is_approved ?? 1,
         workspace_id: newUser.workspace_id ?? 1,
+        tenant_id: newUser.tenant_id ?? 1,
       }
     }, { status: 201 })
   } catch (error: any) {
@@ -130,6 +131,7 @@ export async function PUT(request: NextRequest) {
         avatar_url: updated.avatar_url || null,
         is_approved: updated.is_approved ?? 1,
         workspace_id: updated.workspace_id ?? 1,
+        tenant_id: updated.tenant_id ?? 1,
       }
     })
   } catch (error) {

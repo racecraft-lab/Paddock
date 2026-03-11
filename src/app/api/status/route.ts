@@ -11,6 +11,9 @@ import { requireRole } from '@/lib/auth'
 import { MODEL_CATALOG } from '@/lib/models'
 import { logger } from '@/lib/logger'
 import { detectProviderSubscriptions, getPrimarySubscription } from '@/lib/provider-subscriptions'
+import { APP_VERSION } from '@/lib/version'
+import { isHermesInstalled, scanHermesSessions } from '@/lib/hermes-sessions'
+import { registerMcAsDashboard } from '@/lib/gateway-runtime'
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
@@ -46,7 +49,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (action === 'capabilities') {
-      const capabilities = await getCapabilities()
+      const capabilities = await getCapabilities(request)
       return NextResponse.json(capabilities)
     }
 
@@ -68,6 +71,58 @@ async function getDashboardData(workspaceId: number) {
   ])
 
   return { ...system, db: dbStats }
+}
+
+async function getMemorySnapshot() {
+  const totalBytes = os.totalmem()
+  let availableBytes = os.freemem()
+
+  if (process.platform === 'darwin') {
+    try {
+      const { stdout } = await runCommand('vm_stat', [], { timeoutMs: 3000 })
+      const pageSizeMatch = stdout.match(/page size of (\d+) bytes/i)
+      const pageSize = parseInt(pageSizeMatch?.[1] || '4096', 10)
+      const pageLabels = ['Pages free', 'Pages inactive', 'Pages speculative', 'Pages purgeable']
+
+      const availablePages = pageLabels.reduce((sum, label) => {
+        const escapedLabel = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const match = stdout.match(new RegExp(`${escapedLabel}:\\s+([\\d.]+)`, 'i'))
+        const pages = parseInt((match?.[1] || '0').replace(/\./g, ''), 10)
+        return sum + (Number.isFinite(pages) ? pages : 0)
+      }, 0)
+
+      const vmAvailableBytes = availablePages * pageSize
+      if (vmAvailableBytes > 0) {
+        availableBytes = Math.min(vmAvailableBytes, totalBytes)
+      }
+    } catch {
+      // Fall back to os.freemem()
+    }
+  } else {
+    try {
+      const { stdout } = await runCommand('free', ['-b'], { timeoutMs: 3000 })
+      const memLine = stdout.split('\n').find((line) => line.startsWith('Mem:'))
+      if (memLine) {
+        const parts = memLine.trim().split(/\s+/)
+        const available = parseInt(parts[6] || parts[3] || '0', 10)
+        if (Number.isFinite(available) && available > 0) {
+          availableBytes = Math.min(available, totalBytes)
+        }
+      }
+    } catch {
+      // Fall back to os.freemem()
+    }
+  }
+
+  const usedBytes = Math.max(0, totalBytes - availableBytes)
+  const usagePercent = totalBytes > 0 ? Math.round((usedBytes / totalBytes) * 100) : 0
+
+  return {
+    totalBytes,
+    availableBytes,
+    usedBytes,
+    usagePercent,
+  }
 }
 
 function getDbStats(workspaceId: number) {
@@ -219,26 +274,11 @@ async function getSystemStatus(workspaceId: number) {
 
   try {
     // Memory info (cross-platform)
-    if (process.platform === 'darwin') {
-      const totalBytes = os.totalmem()
-      const freeBytes = os.freemem()
-      const totalMB = Math.round(totalBytes / (1024 * 1024))
-      const usedMB = Math.round((totalBytes - freeBytes) / (1024 * 1024))
-      const availableMB = Math.round(freeBytes / (1024 * 1024))
-      status.memory = { total: totalMB, used: usedMB, available: availableMB }
-    } else {
-      const { stdout: memOutput } = await runCommand('free', ['-m'], {
-        timeoutMs: 3000
-      })
-      const memLine = memOutput.split('\n').find(line => line.startsWith('Mem:'))
-      if (memLine) {
-        const parts = memLine.split(/\s+/)
-        status.memory = {
-          total: parseInt(parts[1]) || 0,
-          used: parseInt(parts[2]) || 0,
-          available: parseInt(parts[6]) || 0
-        }
-      }
+    const snapshot = await getMemorySnapshot()
+    status.memory = {
+      total: Math.round(snapshot.totalBytes / (1024 * 1024)),
+      used: Math.round(snapshot.usedBytes / (1024 * 1024)),
+      available: Math.round(snapshot.availableBytes / (1024 * 1024)),
     }
   } catch (error) {
     logger.error({ err: error }, 'Error getting memory info')
@@ -413,9 +453,67 @@ async function getAvailableModels() {
 
 async function performHealthCheck() {
   const health: any = {
-    overall: 'healthy',
+    status: 'healthy',
+    version: APP_VERSION,
+    uptime: process.uptime(),
     checks: [],
     timestamp: Date.now()
+  }
+
+  // Check DB connectivity
+  try {
+    const db = getDatabase()
+    const start = Date.now()
+    db.prepare('SELECT 1').get()
+    const elapsed = Date.now() - start
+
+    let dbStatus: string
+    if (elapsed > 1000) {
+      dbStatus = 'warning'
+    } else {
+      dbStatus = 'healthy'
+    }
+
+    health.checks.push({
+      name: 'Database',
+      status: dbStatus,
+      message: dbStatus === 'healthy' ? `DB reachable (${elapsed}ms)` : `DB slow (${elapsed}ms)`
+    })
+  } catch (error) {
+    health.checks.push({
+      name: 'Database',
+      status: 'unhealthy',
+      message: 'DB connectivity failed'
+    })
+  }
+
+  // Check process memory
+  try {
+    const mem = process.memoryUsage()
+    const rssMB = Math.round(mem.rss / (1024 * 1024))
+    let memStatus = 'healthy'
+    if (mem.rss > 800 * 1024 * 1024) {
+      memStatus = 'critical'
+    } else if (mem.rss > 400 * 1024 * 1024) {
+      memStatus = 'warning'
+    }
+
+    health.checks.push({
+      name: 'Process Memory',
+      status: memStatus,
+      message: `RSS: ${rssMB}MB, Heap: ${Math.round(mem.heapUsed / (1024 * 1024))}/${Math.round(mem.heapTotal / (1024 * 1024))}MB`,
+      detail: {
+        rss: mem.rss,
+        heapUsed: mem.heapUsed,
+        heapTotal: mem.heapTotal,
+      }
+    })
+  } catch (error) {
+    health.checks.push({
+      name: 'Process Memory',
+      status: 'error',
+      message: 'Failed to check process memory'
+    })
   }
 
   // Check gateway connection
@@ -445,7 +543,7 @@ async function performHealthCheck() {
     // On macOS capacity is col 4 ("85%"), on Linux use% is col 4 as well
     const pctField = parts.find(p => p.endsWith('%')) || '0%'
     const usagePercent = parseInt(pctField.replace('%', '') || '0')
-    
+
     health.checks.push({
       name: 'Disk Space',
       status: usagePercent < 90 ? 'healthy' : usagePercent < 95 ? 'warning' : 'critical',
@@ -461,19 +559,7 @@ async function performHealthCheck() {
 
   // Check memory usage (cross-platform)
   try {
-    let usagePercent: number
-    if (process.platform === 'darwin') {
-      const totalBytes = os.totalmem()
-      const freeBytes = os.freemem()
-      usagePercent = Math.round(((totalBytes - freeBytes) / totalBytes) * 100)
-    } else {
-      const { stdout } = await runCommand('free', ['-m'], { timeoutMs: 3000 })
-      const memLine = stdout.split('\n').find((line) => line.startsWith('Mem:'))
-      const parts = (memLine || '').split(/\s+/)
-      const total = parseInt(parts[1] || '0')
-      const available = parseInt(parts[6] || '0')
-      usagePercent = Math.round(((total - available) / total) * 100)
-    }
+    const usagePercent = (await getMemorySnapshot()).usagePercent
 
     health.checks.push({
       name: 'Memory Usage',
@@ -492,18 +578,43 @@ async function performHealthCheck() {
   const hasError = health.checks.some((check: any) => check.status === 'error')
   const hasCritical = health.checks.some((check: any) => check.status === 'critical')
   const hasWarning = health.checks.some((check: any) => check.status === 'warning')
+  const hasDegraded = health.checks.some((check: any) =>
+    check.name === 'Database' && check.status === 'warning'
+  )
 
   if (hasError || hasCritical) {
-    health.overall = 'unhealthy'
+    health.status = 'unhealthy'
+  } else if (hasDegraded) {
+    health.status = 'degraded'
   } else if (hasWarning) {
-    health.overall = 'warning'
+    health.status = 'warning'
   }
 
   return health
 }
 
-async function getCapabilities() {
-  const gateway = await isPortOpen(config.gatewayHost, config.gatewayPort)
+async function getCapabilities(request?: NextRequest) {
+  // Probe configured gateways (if any) or fall back to the default port.
+  // A DB row alone isn't enough — the gateway must actually be reachable.
+  let gatewayReachable = false
+  try {
+    const db = getDatabase()
+    const table = db.prepare(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='gateways'"
+    ).get() as { name?: string } | undefined
+    if (table?.name) {
+      const rows = db.prepare('SELECT host, port FROM gateways').all() as { host: string; port: number }[]
+      if (rows.length > 0) {
+        const probes = rows.map(r => isPortOpen(r.host, Number(r.port)))
+        const results = await Promise.all(probes)
+        gatewayReachable = results.some(Boolean)
+      }
+    }
+  } catch {
+    // ignore — fall through to default probe
+  }
+
+  const gateway = gatewayReachable || await isPortOpen(config.gatewayHost, config.gatewayPort)
 
   const openclawHome = Boolean(
     (config.openclawStateDir && existsSync(config.openclawStateDir)) ||
@@ -531,7 +642,62 @@ async function getCapabilities() {
     provider: primary.provider,
   } : null
 
-  return { gateway, openclawHome, claudeHome, claudeSessions, subscription, subscriptions }
+  // Apply subscription overrides from settings
+  try {
+    const settingsDb = getDatabase()
+    const planOverride = settingsDb.prepare("SELECT value FROM settings WHERE key = 'subscription.plan_override'").get() as { value: string } | undefined
+    if (planOverride?.value && subscription) {
+      subscription.type = planOverride.value
+    }
+    const codexPlan = settingsDb.prepare("SELECT value FROM settings WHERE key = 'subscription.codex_plan'").get() as { value: string } | undefined
+    if (codexPlan?.value) {
+      subscriptions['openai'] = { provider: 'openai', type: codexPlan.value, source: 'env' as const }
+    }
+  } catch {
+    // settings table may not exist yet
+  }
+
+  const processUser = process.env.MC_DEFAULT_ORG_NAME || os.userInfo().username
+
+  // Interface mode preference
+  let interfaceMode = 'essential'
+  try {
+    const settingsDb = getDatabase()
+    const modeRow = settingsDb.prepare("SELECT value FROM settings WHERE key = 'general.interface_mode'").get() as { value: string } | undefined
+    if (modeRow?.value === 'full' || modeRow?.value === 'essential') {
+      interfaceMode = modeRow.value
+    }
+  } catch {
+    // settings table may not exist yet
+  }
+
+  const hermesInstalled = isHermesInstalled()
+  let hermesSessions = 0
+  if (hermesInstalled) {
+    try {
+      hermesSessions = scanHermesSessions(50).filter(s => s.isActive).length
+    } catch { /* ignore */ }
+  }
+
+  // Auto-register MC as default dashboard when gateway + openclaw home detected
+  let dashboardRegistration: { registered: boolean; alreadySet: boolean } | null = null
+  if (gateway && openclawHome) {
+    try {
+      let mcUrl = process.env.MC_BASE_URL || ''
+      if (!mcUrl && request) {
+        const host = request.headers.get('host')
+        const proto = request.headers.get('x-forwarded-proto') || 'http'
+        if (host) mcUrl = `${proto}://${host}`
+      }
+      if (mcUrl) {
+        dashboardRegistration = registerMcAsDashboard(mcUrl)
+      }
+    } catch (err) {
+      logger.error({ err }, 'Dashboard registration failed')
+    }
+  }
+
+  return { gateway, openclawHome, claudeHome, claudeSessions, hermesInstalled, hermesSessions, subscription, subscriptions, processUser, interfaceMode, dashboardRegistration }
 }
 
 function isPortOpen(host: string, port: number): Promise<boolean> {

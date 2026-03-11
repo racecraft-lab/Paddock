@@ -1,6 +1,9 @@
 'use client'
 
+import Image from 'next/image'
+import { useState } from 'react'
 import { ChatMessage } from '@/store'
+import { detectTextDirection } from '@/lib/chat-utils'
 
 const AGENT_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   coordinator: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-500/20' },
@@ -28,6 +31,12 @@ function getAgentTheme(name: string) {
 function formatTime(timestamp: number): string {
   const date = new Date(timestamp * 1000)
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
 }
 
 // Simple markdown-lite: bold, italic, code, links
@@ -76,10 +85,85 @@ interface MessageBubbleProps {
   isGrouped: boolean
 }
 
+function ToolCallBubble({ message }: { message: ChatMessage }) {
+  const [expanded, setExpanded] = useState(false)
+  const meta = asRecord(message.metadata)
+  const toolName = typeof meta.toolName === 'string' ? meta.toolName : 'unknown_tool'
+  const toolArgs = meta.toolArgs
+  const toolOutput = meta.toolOutput
+  const toolStatus = meta.toolStatus === 'running' || meta.toolStatus === 'success' || meta.toolStatus === 'error'
+    ? meta.toolStatus
+    : undefined
+  const durationMs = typeof meta.durationMs === 'number' ? meta.durationMs : undefined
+  const theme = getAgentTheme(message.from_agent)
+
+  const statusIcon = toolStatus === 'running' ? '...' : toolStatus === 'error' ? 'x' : '>'
+  const statusColor = toolStatus === 'running'
+    ? 'text-yellow-400'
+    : toolStatus === 'error'
+    ? 'text-red-400'
+    : 'text-green-400'
+
+  return (
+    <div className="flex gap-2 mt-2">
+      <div className="w-7 flex-shrink-0" />
+      <div className="max-w-[85%] min-w-0">
+        <button
+          onClick={() => setExpanded(e => !e)}
+          className="flex items-center gap-2 w-full text-left group"
+        >
+          <span className={`font-mono text-xs font-bold ${statusColor}`}>{statusIcon}</span>
+          <span className="font-mono text-xs text-muted-foreground">
+            <span className={`font-medium ${theme.text}`}>{message.from_agent}</span>
+            {' called '}
+            <span className="text-foreground font-semibold">{toolName}</span>
+          </span>
+          {toolStatus === 'running' && (
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+          )}
+          {durationMs != null && toolStatus !== 'running' && (
+            <span className="text-[10px] text-muted-foreground/50">{durationMs}ms</span>
+          )}
+          <svg
+            className={`w-3 h-3 text-muted-foreground/40 transition-transform ${expanded ? 'rotate-90' : ''}`}
+            viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+          >
+            <path d="M5 3l6 5-6 5" />
+          </svg>
+        </button>
+
+        {expanded && (
+          <div className="mt-1 ml-5 space-y-1">
+            {toolArgs != null && (
+              <div>
+                <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">Args</div>
+                <pre className="bg-black/20 rounded-md px-2 py-1.5 text-[11px] font-mono text-muted-foreground overflow-x-auto max-h-32 whitespace-pre-wrap">
+                  {typeof toolArgs === 'string' ? toolArgs : JSON.stringify(toolArgs, null, 2)}
+                </pre>
+              </div>
+            )}
+            {toolOutput != null && (
+              <div>
+                <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">Output</div>
+                <pre className={`rounded-md px-2 py-1.5 text-[11px] font-mono overflow-x-auto max-h-48 whitespace-pre-wrap ${
+                  toolStatus === 'error' ? 'bg-red-500/10 text-red-300' : 'bg-black/20 text-muted-foreground'
+                }`}>
+                  {typeof toolOutput === 'string' ? toolOutput : JSON.stringify(toolOutput, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function MessageBubble({ message, isHuman, isGrouped }: MessageBubbleProps) {
   const isSystem = message.message_type === 'system'
   const isHandoff = message.message_type === 'handoff'
   const isCommand = message.message_type === 'command'
+  const isToolCall = message.message_type === 'tool_call'
   const theme = getAgentTheme(message.from_agent)
 
   if (isSystem) {
@@ -103,6 +187,10 @@ export function MessageBubble({ message, isHuman, isGrouped }: MessageBubbleProp
         </div>
       </div>
     )
+  }
+
+  if (isToolCall) {
+    return <ToolCallBubble message={message} />
   }
 
   return (
@@ -139,17 +227,40 @@ export function MessageBubble({ message, isHuman, isGrouped }: MessageBubbleProp
         )}
 
         {/* Bubble */}
-        <div className={`rounded-xl px-3 py-2 text-sm leading-relaxed ${
+        <div className={`rounded-lg px-3 py-2 text-sm leading-relaxed ${
           isHuman
             ? 'bg-primary text-primary-foreground rounded-tr-sm'
             : isCommand
             ? `${theme.bg} border ${theme.border} font-mono text-xs rounded-tl-sm`
             : `bg-surface-2 text-foreground ${isGrouped ? 'rounded-tl-sm' : 'rounded-tl-sm'}`
         }`}>
+          {/* Attachment thumbnails */}
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-1.5">
+              {message.attachments.map((att, idx) => (
+                att.type.startsWith('image/') ? (
+                  <Image
+                    key={idx}
+                    src={att.dataUrl}
+                    alt={att.name}
+                    width={200}
+                    height={160}
+                    unoptimized
+                    className="max-w-[200px] max-h-[160px] rounded-md object-cover border border-border/30"
+                  />
+                ) : (
+                  <div key={idx} className="flex items-center gap-1.5 bg-black/20 rounded-md px-2 py-1 text-xs text-muted-foreground">
+                    <span className="font-medium">{att.name}</span>
+                    <span className="text-[10px] text-muted-foreground/50">{att.size < 1024 ? `${att.size} B` : att.size < 1024 * 1024 ? `${(att.size / 1024).toFixed(1)} KB` : `${(att.size / (1024 * 1024)).toFixed(1)} MB`}</span>
+                  </div>
+                )
+              ))}
+            </div>
+          )}
           {isCommand ? (
             <pre className="whitespace-pre-wrap">{message.content}</pre>
           ) : (
-            <div className="whitespace-pre-wrap break-words">{renderContent(message.content)}</div>
+            <div className="whitespace-pre-wrap break-words" dir={detectTextDirection(message.content)}>{renderContent(message.content)}</div>
           )}
         </div>
       </div>

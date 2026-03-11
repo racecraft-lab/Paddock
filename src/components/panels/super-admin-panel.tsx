@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 
 type SuperTab = 'tenants' | 'jobs' | 'events'
@@ -534,24 +535,25 @@ export function SuperAdminPanel() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <Button
+            size="sm"
             onClick={() => setCreateExpanded(true)}
-            className="h-8 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-smooth"
           >
             + Add Workspace
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={load}
-            className="h-8 px-3 rounded-md border border-border text-sm text-foreground hover:bg-secondary/60 transition-smooth"
           >
             Refresh
-          </button>
+          </Button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-lg border border-border bg-card px-4 py-3">
-          <div className="text-xs text-muted-foreground">Active Tenants</div>
+          <div className="text-xs text-muted-foreground">Active Orgs</div>
           <div className="text-xl font-semibold text-foreground mt-1">{kpis.active}</div>
         </div>
         <div className="rounded-lg border border-border bg-card px-4 py-3">
@@ -559,7 +561,7 @@ export function SuperAdminPanel() {
           <div className="text-xl font-semibold text-foreground mt-1">{kpis.pending}</div>
         </div>
         <div className="rounded-lg border border-border bg-card px-4 py-3">
-          <div className="text-xs text-muted-foreground">Errored Tenants</div>
+          <div className="text-xs text-muted-foreground">Errored Orgs</div>
           <div className="text-xl font-semibold text-red-400 mt-1">{kpis.errored}</div>
         </div>
         <div className="rounded-lg border border-border bg-card px-4 py-3">
@@ -588,13 +590,15 @@ export function SuperAdminPanel() {
       <div className="rounded-lg border border-primary/30 bg-card overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <h3 className="text-sm font-medium text-foreground">Create New Workspace</h3>
-          <button
+          <Button
+            variant="ghost"
+            size="icon-xs"
             onClick={() => setCreateExpanded(false)}
-            className="text-muted-foreground hover:text-foreground text-lg leading-none transition-smooth"
             aria-label="Close create form"
+            className="text-lg w-6 h-6"
           >
             ×
-          </button>
+          </Button>
         </div>
           <div className="p-4 space-y-3">
             <div className="text-xs text-muted-foreground">
@@ -668,12 +672,11 @@ export function SuperAdminPanel() {
                 />
                 Dry-run
               </label>
-              <button
+              <Button
                 onClick={createTenant}
-                className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-smooth"
               >
                 Create + Queue
-              </button>
+              </Button>
             </div>
           </div>
       </div>
@@ -682,17 +685,19 @@ export function SuperAdminPanel() {
       <div className="rounded-lg border border-border bg-card overflow-hidden">
         <div className="px-3 py-2 border-b border-border flex items-center gap-2">
           {(['tenants', 'jobs', 'events'] as SuperTab[]).map((tab) => (
-            <button
+            <Button
               key={tab}
+              variant={activeTab === tab ? 'secondary' : 'ghost'}
+              size="sm"
               onClick={() => setActiveTab(tab)}
-              className={`h-8 px-3 rounded-md text-sm capitalize ${
+              className={`capitalize ${
                 activeTab === tab
                   ? 'bg-primary/20 text-primary border border-primary/30'
-                  : 'text-muted-foreground border border-transparent hover:bg-secondary/40'
+                  : 'border border-transparent'
               }`}
             >
-              {tab}
-            </button>
+              {tab === 'tenants' ? 'Organizations' : tab}
+            </Button>
           ))}
         </div>
 
@@ -703,7 +708,7 @@ export function SuperAdminPanel() {
                 <input
                   value={tenantSearch}
                   onChange={(e) => setTenantSearch(e.target.value)}
-                  placeholder="Search tenants"
+                  placeholder="Search organizations"
                   className="h-8 w-56 px-3 rounded-md bg-secondary border border-border text-xs text-foreground"
                 />
                 <select
@@ -761,9 +766,9 @@ export function SuperAdminPanel() {
                         </td>
                         <td className="px-3 py-2 text-xs">
                           {latest ? (
-                            <button onClick={() => loadJobDetail(latest.id)} className="text-primary hover:underline">
+                            <Button variant="link" size="xs" onClick={() => loadJobDetail(latest.id)} className="p-0 h-auto">
                               #{latest.id} · {latest.status}
-                            </button>
+                            </Button>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
@@ -773,20 +778,23 @@ export function SuperAdminPanel() {
                             <span className="text-[11px] text-muted-foreground">Local read-only</span>
                           ) : (
                             <>
-                              <button
+                              <Button
+                                variant="outline"
+                                size="xs"
                                 onClick={() => setOpenActionMenu((cur) => (cur === menuKey ? null : menuKey))}
-                                className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
                               >
                                 Actions
-                              </button>
+                              </Button>
                               {openActionMenu === menuKey && (
                                 <div className="absolute right-3 top-10 z-20 w-44 rounded-md border border-border bg-card shadow-xl text-left">
-                                  <button
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => openDecommissionDialog(tenant)}
-                                    className="w-full px-3 py-2 text-xs text-red-300 hover:bg-red-500/10"
+                                    className="w-full justify-start text-xs text-red-300 hover:bg-red-500/10 rounded-none"
                                   >
                                     Queue Decommission
-                                  </button>
+                                  </Button>
                                 </div>
                               )}
                             </>
@@ -797,7 +805,7 @@ export function SuperAdminPanel() {
                   })}
                   {pagedTenants.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="px-3 py-6 text-center text-xs text-muted-foreground">No matching tenants.</td>
+                      <td colSpan={6} className="px-3 py-6 text-center text-xs text-muted-foreground">No matching organizations.</td>
                     </tr>
                   )}
                 </tbody>
@@ -805,21 +813,23 @@ export function SuperAdminPanel() {
             </div>
 
             <div className="flex items-center justify-end gap-2 text-xs">
-              <button
+              <Button
+                variant="outline"
+                size="xs"
                 disabled={tenantPage <= 1}
                 onClick={() => setTenantPage((p) => Math.max(1, p - 1))}
-                className="h-7 px-2 rounded border border-border disabled:opacity-50"
               >
                 Prev
-              </button>
+              </Button>
               <span className="text-muted-foreground">Page {tenantPage} / {tenantPages}</span>
-              <button
+              <Button
+                variant="outline"
+                size="xs"
                 disabled={tenantPage >= tenantPages}
                 onClick={() => setTenantPage((p) => Math.min(tenantPages, p + 1))}
-                className="h-7 px-2 rounded border border-border disabled:opacity-50"
               >
                 Next
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -876,9 +886,9 @@ export function SuperAdminPanel() {
                     return (
                       <tr key={job.id} className={`border-b border-border/50 last:border-0 ${selectedJobId === job.id ? 'bg-primary/10' : 'hover:bg-secondary/20'}`}>
                         <td className="px-3 py-2">
-                          <button onClick={() => loadJobDetail(job.id)} className="text-primary hover:underline text-xs">
+                          <Button variant="link" size="xs" onClick={() => loadJobDetail(job.id)} className="p-0 h-auto">
                             #{job.id}
-                          </button>
+                          </Button>
                           <div className="text-[11px] text-muted-foreground">{job.job_type} {job.dry_run ? '(dry)' : '(live)'}</div>
                         </td>
                         <td className="px-3 py-2 text-muted-foreground text-xs">{job.tenant_slug || job.tenant_id}</td>
@@ -889,49 +899,59 @@ export function SuperAdminPanel() {
                         </td>
                         <td className="px-3 py-2 text-right relative">
                           {isLocal && job.id < 0 ? (
-                            <button
+                            <Button
+                              variant="outline"
+                              size="xs"
                               onClick={() => loadJobDetail(job.id)}
-                              className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
                             >
                               View
-                            </button>
+                            </Button>
                           ) : (
                             <>
-                              <button
+                              <Button
+                                variant="outline"
+                                size="xs"
                                 onClick={() => setOpenActionMenu((cur) => (cur === menuKey ? null : menuKey))}
-                                className="h-7 px-2 rounded border border-border text-xs hover:bg-secondary/60"
                               >
                                 Actions
-                              </button>
+                              </Button>
                               {openActionMenu === menuKey && (
                                 <div className="absolute right-3 top-10 z-20 w-40 rounded-md border border-border bg-card shadow-xl text-left">
-                                  <button
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => loadJobDetail(job.id)}
-                                    className="w-full px-3 py-2 text-xs text-foreground hover:bg-secondary/40"
+                                    className="w-full justify-start text-xs rounded-none"
                                   >
                                     View events
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => Number(job.dry_run) === 1 ? approveAndRunJob(job.id) : setJobState(job.id, 'approve')}
                                     disabled={busyJobId === job.id || !['queued', 'rejected', 'failed'].includes(job.status)}
-                                    className="w-full px-3 py-2 text-xs text-emerald-400 hover:bg-emerald-500/10 disabled:opacity-40"
+                                    className="w-full justify-start text-xs text-emerald-400 hover:bg-emerald-500/10 rounded-none"
                                   >
                                     {Number(job.dry_run) === 1 ? 'Approve + Run' : 'Approve'}
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => setJobState(job.id, 'reject')}
                                     disabled={busyJobId === job.id || !['queued', 'approved', 'failed'].includes(job.status)}
-                                    className="w-full px-3 py-2 text-xs text-amber-400 hover:bg-amber-500/10 disabled:opacity-40"
+                                    className="w-full justify-start text-xs text-amber-400 hover:bg-amber-500/10 rounded-none"
                                   >
                                     Reject
-                                  </button>
-                                  <button
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => runJob(job.id)}
                                     disabled={busyJobId === job.id || job.status !== 'approved'}
-                                    className="w-full px-3 py-2 text-xs text-primary hover:bg-primary/10 disabled:opacity-40"
+                                    className="w-full justify-start text-xs text-primary hover:bg-primary/10 rounded-none"
                                   >
                                     {busyJobId === job.id ? 'Running...' : 'Run'}
-                                  </button>
+                                  </Button>
                                 </div>
                               )}
                             </>
@@ -950,21 +970,23 @@ export function SuperAdminPanel() {
             </div>
 
             <div className="flex items-center justify-end gap-2 text-xs">
-              <button
+              <Button
+                variant="outline"
+                size="xs"
                 disabled={jobPage <= 1}
                 onClick={() => setJobPage((p) => Math.max(1, p - 1))}
-                className="h-7 px-2 rounded border border-border disabled:opacity-50"
               >
                 Prev
-              </button>
+              </Button>
               <span className="text-muted-foreground">Page {jobPage} / {jobPages}</span>
-              <button
+              <Button
+                variant="outline"
+                size="xs"
                 disabled={jobPage >= jobPages}
                 onClick={() => setJobPage((p) => Math.min(jobPages, p + 1))}
-                className="h-7 px-2 rounded border border-border disabled:opacity-50"
               >
                 Next
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -1088,22 +1110,25 @@ export function SuperAdminPanel() {
             </div>
 
             <div className="px-4 py-3 border-t border-border flex items-center justify-end gap-2">
-              <button
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={closeDecommissionDialog}
                 disabled={decommissionDialog.submitting}
-                className="h-8 px-3 rounded-md border border-border text-sm text-foreground hover:bg-secondary/60 disabled:opacity-50"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
                 onClick={queueDecommissionFromDialog}
                 disabled={!canSubmitDecommission || decommissionDialog.submitting}
-                className="h-8 px-3 rounded-md border border-red-500/40 bg-red-500/20 text-red-300 text-sm disabled:opacity-50 hover:bg-red-500/30"
+                className="bg-red-500/20 text-red-300 border border-red-500/40 hover:bg-red-500/30"
               >
                 {decommissionDialog.submitting
                   ? 'Queueing...'
                   : (decommissionDialog.dryRun ? 'Queue Dry-run Decommission' : 'Queue Live Decommission')}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

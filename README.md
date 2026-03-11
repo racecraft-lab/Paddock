@@ -24,20 +24,47 @@ Manage agent fleets, track tasks, monitor costs, and orchestrate workflows — a
 
 Running AI agents at scale means juggling sessions, tasks, costs, and reliability across multiple models and channels. Mission Control gives you:
 
-- **28 panels** — Tasks, agents, logs, tokens, memory, cron, alerts, webhooks, pipelines, and more
+- **32 panels** — Tasks, agents, skills, logs, tokens, memory, security, cron, alerts, webhooks, pipelines, and more
 - **Real-time everything** — WebSocket + SSE push updates, smart polling that pauses when you're away
 - **Zero external dependencies** — SQLite database, single `pnpm start` to run, no Redis/Postgres/Docker required
 - **Role-based access** — Viewer, operator, and admin roles with session + API key auth
-- **Quality gates** — Built-in review system that blocks task completion without sign-off
+- **Quality gates** — Built-in Aegis review system that blocks task completion without sign-off
+- **Recurring tasks** — Natural language scheduling ("every morning at 9am") with cron-based template spawning
+- **Claude Code bridge** — Read-only integration surfaces Claude Code team tasks and configs on the dashboard
+- **Skills Hub** — Browse, install, and security-scan agent skills from ClawdHub and skills.sh registries
 - **Multi-gateway** — Connect to multiple agent gateways simultaneously (OpenClaw, and more coming soon)
 
 ## Quick Start
 
-> **Requires [pnpm](https://pnpm.io/installation)** — Mission Control uses pnpm for dependency management. Install it with `npm install -g pnpm` or `corepack enable`.
+### One-Command Install (Docker)
 
 ```bash
 git clone https://github.com/builderz-labs/mission-control.git
 cd mission-control
+bash install.sh --docker
+```
+
+The installer auto-generates secure credentials, starts the container, and runs an OpenClaw fleet health check. Open `http://localhost:3000` and log in with the printed credentials.
+
+### One-Command Install (Local)
+
+```bash
+git clone https://github.com/builderz-labs/mission-control.git
+cd mission-control
+bash install.sh --local
+```
+
+Requires Node.js 22.x (LTS) and pnpm (auto-installed via corepack if missing).
+
+### Manual Setup
+
+> **Requires [pnpm](https://pnpm.io/installation)** and **Node.js 22.x (LTS)**.
+> Mission Control is validated against Node 22 across local dev, CI, Docker, and standalone deploys. Use `nvm use 22` (or your version manager equivalent) before installing or starting the app.
+
+```bash
+git clone https://github.com/builderz-labs/mission-control.git
+cd mission-control
+nvm use 22
 pnpm install
 cp .env.example .env    # edit with your values
 pnpm dev                # http://localhost:3000
@@ -45,6 +72,25 @@ pnpm dev                # http://localhost:3000
 
 Initial login is seeded from `AUTH_USER` / `AUTH_PASS` on first run.
 If `AUTH_PASS` contains `#`, quote it (e.g. `AUTH_PASS="my#password"`) or use `AUTH_PASS_B64`.
+
+### Docker Hardening (Production)
+
+For production deployments, use the hardened compose overlay:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.hardened.yml up -d
+```
+
+This adds read-only filesystem, capability dropping, log rotation, HSTS, and network isolation. See [Security Hardening](docs/SECURITY-HARDENING.md) for the full checklist.
+
+### Station Doctor
+
+Run diagnostics on your installation:
+
+```bash
+bash scripts/station-doctor.sh
+bash scripts/security-audit.sh
+```
 
 ## Project Status
 
@@ -65,7 +111,22 @@ If `AUTH_PASS` contains `#`, quote it (e.g. `AUTH_PASS="my#password"`) or use `A
 - Ed25519 device identity for secure gateway handshake
 - Agent SOUL system with workspace file sync and templates
 - Agent inter-agent messaging and comms
-- Update available banner with GitHub release check
+- Skills Hub with ClawdHub and skills.sh registry integration (search, install, security scan)
+- Bidirectional skill sync — disk ↔ DB with SHA-256 change detection
+- Local agent discovery from `~/.agents/`, `~/.codex/agents/`, `~/.claude/agents/`
+- Natural language recurring tasks — schedule parser converts "every 2 hours" to cron, spawns dated child tasks
+- Claude Code task bridge — read-only scanner surfaces team tasks and configs from `~/.claude/tasks/` and `~/.claude/teams/`
+- Skill security scanner (prompt injection, credential leaks, data exfiltration, obfuscated content)
+- Update available banner with GitHub release check and one-click self-update
+- Framework adapter layer for multi-agent registration (OpenClaw, CrewAI, LangGraph, AutoGen, Claude SDK, generic)
+- Multi-project task organization with per-project ticket prefixes
+- Per-agent rate limiting with `x-agent-name` identity-based quotas
+- Agent self-registration endpoint for autonomous agent onboarding
+- Security audit panel with posture scoring, secret detection, trust scoring, and MCP call auditing
+- Four-layer agent eval framework (output, trace, component, drift detection)
+- Agent optimization endpoint with token efficiency, tool patterns, and fleet benchmarks
+- Hook profiles (minimal/standard/strict) for tunable security strictness
+- Guided onboarding wizard with credential setup, agent discovery, and security scan
 
 ### Known Limitations
 
@@ -81,10 +142,10 @@ If `AUTH_PASS` contains `#`, quote it (e.g. `AUTH_PASS="my#password"`) or use `A
 ## Features
 
 ### Agent Management
-Monitor agent status, spawn new sessions, view heartbeats, and manage the full agent lifecycle from registration to retirement.
+Monitor agent status, configure models, view heartbeats, and manage the full agent lifecycle from registration to retirement. Agent detail modal with compact overview, inline model selector, and editable sub-agent configuration.
 
 ### Task Board
-Kanban board with six columns (inbox → backlog → todo → in-progress → review → done), drag-and-drop, priority levels, assignments, and threaded comments.
+Kanban board with six columns (inbox → assigned → in progress → review → quality review → done), drag-and-drop, priority levels, assignments, threaded comments, and inline sub-agent spawning.
 
 ### Real-time Monitoring
 Live activity feed, session inspector, and log viewer with filtering. WebSocket connection to OpenClaw gateway for instant event delivery.
@@ -93,7 +154,10 @@ Live activity feed, session inspector, and log viewer with filtering. WebSocket 
 Token usage dashboard with per-model breakdowns, trend charts, and cost analysis powered by Recharts.
 
 ### Background Automation
-Scheduled tasks for database backups, stale record cleanup, and agent heartbeat monitoring. Configurable via UI or API.
+Scheduled tasks for database backups, stale record cleanup, agent heartbeat monitoring, and recurring task spawning. Configurable via UI or API.
+
+### Natural Language Recurring Tasks
+Create recurring tasks with natural language like "every morning at 9am" or "every 2 hours". The built-in schedule parser (zero dependencies) converts expressions to cron and stores them in task metadata. A template-clone pattern keeps the original task as a template and spawns dated child tasks (e.g., "Daily Report - Mar 07") on schedule. Each spawned task gets its own Aegis quality gate.
 
 ### Direct CLI Integration
 Connect Claude Code, Codex, or any CLI tool directly to Mission Control without requiring a gateway. Register connections, send heartbeats with inline token reporting, and auto-register agents.
@@ -101,28 +165,52 @@ Connect Claude Code, Codex, or any CLI tool directly to Mission Control without 
 ### Claude Code Session Tracking
 Automatically discovers and tracks local Claude Code sessions by scanning `~/.claude/projects/`. Extracts token usage, model info, message counts, cost estimates, and active status from JSONL transcripts. Scans every 60 seconds via the background scheduler.
 
+### Claude Code Task Bridge
+Read-only integration that surfaces Claude Code team tasks and team configs on the Mission Control dashboard. Scans `~/.claude/tasks/<team>/<N>.json` for structured task data (subject, status, owner, blockers) and `~/.claude/teams/<name>/config.json` for team metadata (members, lead agent, model assignments). Visible in both the Task Board (collapsible section) and Cron Management (teams overview) panels.
+
 ### GitHub Issues Sync
 Inbound sync from GitHub repositories with label and assignee mapping. Synced issues appear on the task board alongside agent-created tasks.
+
+### Skills Hub
+Browse, install, and manage agent skills from local directories and external registries (ClawdHub, skills.sh). Bidirectional sync detects manual additions on disk and pushes UI edits back to `SKILL.md` files. Built-in security scanner checks for prompt injection, credential leaks, data exfiltration, obfuscated content, and dangerous shell commands before installation. Supports 5 skill roots: `~/.agents/skills`, `~/.codex/skills`, project-local `.agents/skills` and `.codex/skills`, and `~/.openclaw/skills` for gateway mode.
+
+### Local Agent Discovery
+Automatically discovers agent definitions from `~/.agents/`, `~/.codex/agents/`, and `~/.claude/agents/` directories. Detection looks for marker files (AGENT.md, soul.md, identity.md, config.json). Discovered agents sync bidirectionally — edit in the UI and changes write back to disk.
 
 ### Agent SOUL System
 Define agent personality, capabilities, and behavioral guidelines via SOUL markdown files. Edit in the UI or directly in workspace `soul.md` files — changes sync bidirectionally between disk and database.
 
 ### Agent Messaging
-Inter-agent communication via the comms API. Agents can send messages to each other, enabling coordinated multi-agent workflows.
+Session-threaded inter-agent communication via the comms API (`a2a:*`, `coord:*`, `session:*`) with coordinator inbox support and runtime tool-call visibility in the `agent-comms` feed.
+
+### Onboarding Wizard
+Guided first-run setup wizard that walks new users through five steps: Welcome (system capabilities detection), Credentials (verify AUTH_PASS and API_KEY strength), Agent Setup (gateway connection or local Claude Code discovery), Security Scan (automated configuration audit with pass/fail checks), and Get Started (quick links to key panels). Automatically appears on first login and can be re-launched from Settings. Progress is persisted per-user so you can resume where you left off.
+
+### Security Audit & Agent Trust
+Dedicated security audit panel with real-time posture scoring (0-100), secret detection across agent messages, MCP tool call auditing, injection attempt tracking, and per-agent trust scores. Hook profiles (minimal/standard/strict) let operators tune security strictness per deployment. Auth failures, rate limit hits, and injection attempts are logged automatically as security events.
+
+### Agent Eval Framework
+Four-layer evaluation stack for agent quality: output evals (task completion scoring against golden datasets), trace evals (convergence scoring — >3.0 indicates looping), component evals (tool reliability with p50/p95/p99 latency from MCP call logs), and drift detection (10% threshold vs 4-week rolling baseline). Manage golden datasets and trigger eval runs via API or UI.
+
+### Agent Optimization
+API endpoint agents can call for self-improvement recommendations. Analyzes token efficiency (tokens/task vs fleet average), tool usage patterns (success/failure rates, redundant calls), and generates prioritized recommendations. Fleet benchmarks provide percentile rankings across all agents.
 
 ### Integrations
 Outbound webhooks with delivery history, configurable alert rules with cooldowns, and multi-gateway connection management. Optional 1Password CLI integration for secret management.
 
 ### Workspace Management
-Workspaces (tenant instances) are created and managed through the **Super Admin** panel, accessible from the sidebar under **Admin > Super Admin**. From there, admins can:
+Workspaces (tenant instances) are managed via the `/api/super/*` API endpoints. Admins can:
 - **Create** new client instances (slug, display name, Linux user, gateway port, plan tier)
 - **Monitor** provisioning jobs and their step-by-step progress
 - **Decommission** tenants with optional cleanup of state directories and Linux users
 
-Each workspace gets its own isolated environment with a dedicated OpenClaw gateway, state directory, and workspace root. See the [Super Admin API](#api-overview) endpoints under `/api/super/*` for programmatic access.
+Each workspace gets its own isolated environment with a dedicated OpenClaw gateway, state directory, and workspace root.
 
 ### Update Checker
-Automatic GitHub release check notifies you when a new version is available, displayed as a banner in the dashboard.
+Automatic GitHub release check notifies you when a new version is available, displayed as a banner in the dashboard. Admins can trigger a one-click update directly from the banner — the server runs `git pull`, `pnpm install`, and `pnpm build`, then prompts for a restart. Dirty working trees are rejected, and all updates are logged to the audit trail.
+
+### Framework Adapters
+Built-in adapter layer for multi-agent registration across frameworks. Supported adapters: OpenClaw, CrewAI, LangGraph, AutoGen, Claude SDK, and a generic fallback. Each adapter normalizes agent registration, heartbeats, and task reporting to a common interface.
 
 ## Architecture
 
@@ -133,22 +221,35 @@ mission-control/
 │   ├── app/
 │   │   ├── page.tsx           # SPA shell — routes all panels
 │   │   ├── login/page.tsx     # Login page
-│   │   └── api/               # 66 REST API routes
+│   │   └── api/               # 101 REST API routes
 │   ├── components/
 │   │   ├── layout/            # NavRail, HeaderBar, LiveFeed
 │   │   ├── dashboard/         # Overview dashboard
-│   │   ├── panels/            # 28 feature panels
+│   │   ├── panels/            # 32 feature panels
 │   │   └── chat/              # Agent chat UI
 │   ├── lib/
 │   │   ├── auth.ts            # Session + API key auth, RBAC
 │   │   ├── db.ts              # SQLite (better-sqlite3, WAL mode)
 │   │   ├── claude-sessions.ts  # Local Claude Code session scanner
-│   │   ├── migrations.ts      # 21 schema migrations
+│   │   ├── claude-tasks.ts     # Claude Code team task/config scanner
+│   │   ├── schedule-parser.ts  # Natural language → cron expression parser
+│   │   ├── recurring-tasks.ts  # Recurring task template spawner
+│   │   ├── migrations.ts      # 39 schema migrations
 │   │   ├── scheduler.ts       # Background task scheduler
 │   │   ├── webhooks.ts        # Outbound webhook delivery
 │   │   ├── websocket.ts       # Gateway WebSocket client
 │   │   ├── device-identity.ts # Ed25519 device identity for gateway auth
-│   │   └── agent-sync.ts      # OpenClaw config → MC database sync
+│   │   ├── agent-sync.ts      # OpenClaw config → MC database sync
+│   │   ├── skill-sync.ts      # Bidirectional disk ↔ DB skill sync
+│   │   ├── skill-registry.ts  # ClawdHub + skills.sh registry client & security scanner
+│   │   ├── local-agent-sync.ts # Local agent discovery from ~/.agents, ~/.codex, ~/.claude
+│   │   ├── secret-scanner.ts   # Regex-based secret detection (AWS, GitHub, Stripe, JWT, PEM, DB URIs)
+│   │   ├── security-events.ts  # Security event logger + agent trust scoring
+│   │   ├── mcp-audit.ts        # MCP tool call auditing
+│   │   ├── agent-evals.ts      # Four-layer agent eval framework
+│   │   ├── agent-optimizer.ts  # Agent optimization engine
+│   │   ├── hook-profiles.ts    # Security strictness profiles (minimal/standard/strict)
+│   │   └── adapters/          # Framework adapters (openclaw, crewai, langgraph, autogen, claude-sdk, generic)
 │   └── store/index.ts         # Zustand state management
 └── .data/                     # Runtime data (SQLite DB, token logs)
 ```
@@ -166,7 +267,7 @@ mission-control/
 | Real-time | WebSocket + Server-Sent Events |
 | Auth | scrypt hashing, session tokens, RBAC |
 | Validation | Zod 4 |
-| Testing | Vitest + Playwright (148 E2E tests) |
+| Testing | Vitest (282 unit) + Playwright (295 E2E) |
 
 ## Authentication
 
@@ -211,7 +312,9 @@ All endpoints require authentication unless noted. Full reference below.
 | `POST` | `/api/agents` | operator | Register/update agent |
 | `GET` | `/api/agents/[id]` | viewer | Agent details |
 | `GET` | `/api/agents/[id]/attribution` | viewer | Self-scope attribution/audit/cost report (`?privileged=1` admin override) |
-| `POST` | `/api/agents/sync` | operator | Sync agents from openclaw.json |
+| `POST` | `/api/agents/sync` | operator | Sync agents from openclaw.json or local disk (`?source=local`) |
+| `POST` | `/api/agents/register` | viewer | Agent self-registration (idempotent, rate-limited) |
+| `GET/POST` | `/api/adapters` | viewer/operator | List adapters / Framework-agnostic agent action dispatch |
 | `GET/PUT` | `/api/agents/[id]/soul` | operator | Agent SOUL content (reads from workspace, writes to both) |
 | `GET/POST` | `/api/agents/comms` | operator | Agent inter-agent communication |
 | `POST` | `/api/agents/message` | operator | Send message to agent |
@@ -234,6 +337,19 @@ All endpoints require authentication unless noted. Full reference below.
 - Query params:
   - `hours`: integer window `1..720` (default `24`)
   - `section`: comma-separated subset of `identity,audit,mutations,cost` (default all)
+
+<details>
+<summary><strong>Security & Evals</strong></summary>
+
+| Method | Path | Role | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/security-audit` | admin | Security posture, events, trust scores, MCP audit (`?timeframe=day`) |
+| `GET` | `/api/security-scan` | admin | Static security configuration scan |
+| `GET` | `/api/agents/optimize` | operator | Agent optimization recommendations (`?agent=&hours=24`) |
+| `GET` | `/api/agents/evals` | operator | Agent eval results (`?agent=`, `?action=history&weeks=4`) |
+| `POST` | `/api/agents/evals` | operator | Trigger eval run (`action: 'run'`) or manage golden datasets (`action: 'golden-set'`) |
+
+</details>
 
 <details>
 <summary><strong>Monitoring</strong></summary>
@@ -259,6 +375,7 @@ All endpoints require authentication unless noted. Full reference below.
 | `GET/PUT` | `/api/settings` | admin | App settings |
 | `GET/PUT` | `/api/gateway-config` | admin | OpenClaw gateway config |
 | `GET/POST` | `/api/cron` | admin | Cron management |
+| `GET/POST` | `/api/onboarding` | viewer | Onboarding wizard state and step progression |
 
 </details>
 
@@ -297,7 +414,7 @@ All endpoints require authentication unless noted. Full reference below.
 </details>
 
 <details>
-<summary><strong>Super Admin (Workspace/Tenant Management)</strong></summary>
+<summary><strong>Workspace/Tenant Management</strong></summary>
 
 | Method | Path | Role | Description |
 |--------|------|------|-------------|
@@ -307,6 +424,23 @@ All endpoints require authentication unless noted. Full reference below.
 | `GET` | `/api/super/provision-jobs` | admin | List provisioning jobs (filter: `?tenant_id=`, `?status=`) |
 | `POST` | `/api/super/provision-jobs` | admin | Queue additional job for existing tenant |
 | `POST` | `/api/super/provision-jobs/[id]/action` | admin | Approve, reject, or cancel a provisioning job |
+
+</details>
+
+<details>
+<summary><strong>Skills</strong></summary>
+
+| Method | Path | Role | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/skills` | viewer | List skills (DB-backed with filesystem fallback) |
+| `GET` | `/api/skills?mode=content&source=…&name=…` | viewer | Read SKILL.md content with inline security report |
+| `GET` | `/api/skills?mode=check&source=…&name=…` | viewer | On-demand security scan |
+| `POST` | `/api/skills` | operator | Create skill |
+| `PUT` | `/api/skills` | operator | Update skill content |
+| `DELETE` | `/api/skills` | operator | Delete skill |
+| `GET` | `/api/skills/registry?source=…&q=…` | viewer | Search external registry (ClawdHub, skills.sh) |
+| `POST` | `/api/skills/registry` | admin | Install skill from registry |
+| `PUT` | `/api/skills/registry` | viewer | Security-check content without installing |
 
 </details>
 
@@ -351,6 +485,8 @@ All endpoints require authentication unless noted. Full reference below.
 |--------|------|------|-------------|
 | `GET` | `/api/claude/sessions` | viewer | List discovered sessions (filter: `?active=1`, `?project=`) |
 | `POST` | `/api/claude/sessions` | operator | Trigger manual session scan |
+| `GET` | `/api/claude-tasks` | viewer | List Claude Code team tasks and configs (`?force=true` to bypass cache) |
+| `GET` | `/api/schedule-parse` | viewer | Parse natural language schedule (`?input=every+2+hours`) |
 
 </details>
 
@@ -402,15 +538,11 @@ See [`.env.example`](.env.example) for the complete list. Key variables:
 
 ### Workspace Creation Flow
 
-To add a new workspace/client instance in the UI:
+To add a new workspace/client instance, use the `/api/super/tenants` endpoint or the Workspaces panel (if enabled):
 
-1. Open `Workspaces` from the left navigation.
-2. Expand `Show Create Client Instance`.
-3. Fill tenant/workspace fields (`slug`, `display_name`, optional ports/gateway owner).
-4. Click `Create + Queue`.
-5. Approve/run the generated provisioning job in the same panel.
-
-`Workspaces` and `Super Admin` currently point to the same provisioning control plane.
+1. Provide tenant/workspace fields (`slug`, `display_name`, optional ports/gateway owner).
+2. The system queues a bootstrap provisioning job.
+3. Approve/run the provisioning job via `/api/super/provision-jobs/[id]/action`.
 
 ### Projects and Ticket Prefixes
 
@@ -529,8 +661,16 @@ See [open issues](https://github.com/builderz-labs/mission-control/issues) for p
 
 **Up next:**
 
+- [x] Workspace isolation for multi-team usage ([#75](https://github.com/builderz-labs/mission-control/issues/75))
+- [x] Framework adapter layer — multi-agent registration across OpenClaw, CrewAI, LangGraph, AutoGen, Claude SDK, and generic
+- [x] Self-update mechanism — admin-only one-click update with audit logging
+- [x] Multi-project task organization with per-project ticket prefixes
+- [x] Skills Hub — browse, install, and security-scan skills from ClawdHub and skills.sh registries
+- [x] Bidirectional skill sync — disk ↔ DB with SHA-256 change detection (60s scheduler)
+- [x] Local agent discovery — auto-detect agents from `~/.agents/`, `~/.codex/agents/`, `~/.claude/agents/`
+- [x] Natural language recurring tasks with cron-based template spawning
+- [x] Claude Code task bridge — read-only team task and config integration
 - [ ] Agent-agnostic gateway support — connect any orchestration framework (OpenClaw, ZeroClaw, OpenFang, NeoBot, IronClaw, etc.), not just OpenClaw
-- [ ] Workspace isolation for multi-team usage ([#75](https://github.com/builderz-labs/mission-control/issues/75))
 - [ ] **[Flight Deck](https://github.com/splitlabs/flight-deck)** — native desktop companion app (Tauri v2) with real PTY terminal grid, stall inbox with native OS notifications, and system tray HUD. Currently in private beta.
 - [ ] First-class per-agent cost breakdowns — dedicated panel with per-agent token usage and spend (currently derivable from per-session data)
 - [ ] OAuth approval UI improvements
@@ -543,6 +683,16 @@ Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup inst
 ## Security
 
 To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## ❤️ Support the Project
+
+If you find this project useful, consider supporting my open-source work.
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-orange?logo=buymeacoffee)](https://buymeacoffee.com/nyk_builderz)
+
+**Solana donations**
+
+`BYLu8XD8hGDUtdRBWpGWu5HKoiPrWqCxYFSh4oxXuvPg`
 
 ## License
 

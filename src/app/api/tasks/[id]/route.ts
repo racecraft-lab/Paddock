@@ -7,6 +7,7 @@ import { logger } from '@/lib/logger';
 import { validateBody, updateTaskSchema } from '@/lib/validation';
 import { resolveMentionRecipients } from '@/lib/mentions';
 import { normalizeTaskUpdateStatus } from '@/lib/task-status';
+import { pushTaskToGitHub } from '@/lib/github-sync-engine';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -384,6 +385,22 @@ export async function PUT(
       WHERE t.id = ? AND t.workspace_id = ?
     `).get(taskId, workspaceId) as Task;
     const parsedTask = mapTaskRow(updatedTask);
+
+    // Fire-and-forget outbound GitHub sync for relevant changes
+    const syncRelevantChanges = changes.some(c =>
+      c.startsWith('status:') || c.startsWith('priority:') || c.includes('title') || c.includes('assigned')
+    )
+    if (syncRelevantChanges && (updatedTask as any).github_repo) {
+      const project = db.prepare(`
+        SELECT id, github_repo, github_sync_enabled FROM projects
+        WHERE id = ? AND workspace_id = ?
+      `).get((updatedTask as any).project_id, workspaceId) as any
+      if (project?.github_sync_enabled) {
+        pushTaskToGitHub(updatedTask as any, project).catch(err =>
+          logger.error({ err, taskId }, 'Outbound GitHub sync failed')
+        )
+      }
+    }
 
     // Broadcast to SSE clients
     eventBus.broadcast('task.updated', parsedTask);

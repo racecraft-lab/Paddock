@@ -1,6 +1,9 @@
 import { APIRequestContext } from '@playwright/test'
 
-export const API_KEY_HEADER = { 'x-api-key': 'test-api-key-e2e-12345' }
+export const API_KEY_HEADER: Record<string, string> = {
+  'x-api-key': 'test-api-key-e2e-12345',
+  'Content-Type': 'application/json',
+}
 
 function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -115,6 +118,28 @@ export async function deleteTestAlert(request: APIRequestContext, id: number) {
     headers: API_KEY_HEADER,
     data: { id },
   })
+}
+
+// --- Project helpers ---
+
+export async function createTestProject(
+  request: APIRequestContext,
+  overrides: Record<string, unknown> = {}
+) {
+  const suffix = uid()
+  const name = `e2e-project-${suffix}`
+  // Derive a unique ticket prefix from the suffix to avoid collisions
+  const ticket_prefix = overrides.ticket_prefix ?? `T${suffix.replace(/\D/g, '').slice(-5)}`
+  const res = await request.post('/api/projects', {
+    headers: API_KEY_HEADER,
+    data: { name, ticket_prefix, ...overrides },
+  })
+  const body = await res.json()
+  return { id: body.project?.id as number, name, res, body }
+}
+
+export async function deleteTestProject(request: APIRequestContext, id: number) {
+  return request.delete(`/api/projects/${id}?mode=delete`, { headers: API_KEY_HEADER })
 }
 
 // --- User helpers ---

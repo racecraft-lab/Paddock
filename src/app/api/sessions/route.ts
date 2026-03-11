@@ -2,64 +2,203 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAllGatewaySessions } from '@/lib/sessions'
 import { syncClaudeSessions } from '@/lib/claude-sessions'
 import { scanCodexSessions } from '@/lib/codex-sessions'
-import { getDatabase } from '@/lib/db'
+import { scanHermesSessions } from '@/lib/hermes-sessions'
+import { getDatabase, db_helpers } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
+import { runClawdbot } from '@/lib/command'
+import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
+
+const LOCAL_SESSION_ACTIVE_WINDOW_MS = 90 * 60 * 1000
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   try {
+    const { searchParams } = new URL(request.url)
+    const includeLocal = searchParams.get('include_local') === '1'
     const gatewaySessions = getAllGatewaySessions()
+    const mappedGatewaySessions = mapGatewaySessions(gatewaySessions)
 
-    // If gateway sessions exist, deduplicate and return those
-    if (gatewaySessions.length > 0) {
-      // Deduplicate by sessionId — OpenClaw tracks cron runs under the same
-      // session ID as the parent session, causing duplicate React keys (#80).
-      // Keep the most recently updated entry when duplicates exist.
-      const sessionMap = new Map<string, (typeof gatewaySessions)[0]>()
-      for (const s of gatewaySessions) {
-        const id = s.sessionId || `${s.agent}:${s.key}`
-        const existing = sessionMap.get(id)
-        if (!existing || s.updatedAt > existing.updatedAt) {
-          sessionMap.set(id, s)
-        }
-      }
-
-      const sessions = Array.from(sessionMap.values()).map((s) => {
-        const total = s.totalTokens || 0
-        const context = s.contextTokens || 35000
-        const pct = context > 0 ? Math.round((total / context) * 100) : 0
-        return {
-          id: s.sessionId || `${s.agent}:${s.key}`,
-          key: s.key,
-          agent: s.agent,
-          kind: s.chatType || 'unknown',
-          age: formatAge(s.updatedAt),
-          model: s.model,
-          tokens: `${formatTokens(total)}/${formatTokens(context)} (${pct}%)`,
-          channel: s.channel,
-          flags: [],
-          active: s.active,
-          startTime: s.updatedAt,
-          lastActivity: s.updatedAt,
-          source: 'gateway' as const,
-        }
-      })
-      return NextResponse.json({ sessions })
+    // Preserve existing behavior by default: when gateway sessions are present,
+    // return only gateway-backed sessions unless include_local=1 is requested.
+    if (mappedGatewaySessions.length > 0 && !includeLocal) {
+      return NextResponse.json({ sessions: mappedGatewaySessions })
     }
 
-    // Fallback: sync and read local Claude + Codex sessions from disk/SQLite
+    // Local Claude + Codex sessions from disk/SQLite
     await syncClaudeSessions()
     const claudeSessions = getLocalClaudeSessions()
     const codexSessions = getLocalCodexSessions()
-    const merged = mergeLocalSessions(claudeSessions, codexSessions)
+    const hermesSessions = getLocalHermesSessions()
+    const localMerged = mergeLocalSessions(claudeSessions, codexSessions, hermesSessions)
+
+    if (mappedGatewaySessions.length === 0) {
+      return NextResponse.json({ sessions: localMerged })
+    }
+
+    const merged = dedupeAndSortSessions([...mappedGatewaySessions, ...localMerged])
     return NextResponse.json({ sessions: merged })
   } catch (error) {
     logger.error({ err: error }, 'Sessions API error')
     return NextResponse.json({ sessions: [] })
   }
+}
+
+const VALID_THINKING_LEVELS = ['off', 'minimal', 'low', 'medium', 'high', 'xhigh'] as const
+const VALID_VERBOSE_LEVELS = ['off', 'on', 'full'] as const
+const VALID_REASONING_LEVELS = ['off', 'on', 'stream'] as const
+const SESSION_KEY_RE = /^[a-zA-Z0-9:_.-]+$/
+
+export async function POST(request: NextRequest) {
+  const auth = requireRole(request, 'operator')
+  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+
+  const rateCheck = mutationLimiter(request)
+  if (rateCheck) return rateCheck
+
+  try {
+    const { searchParams } = new URL(request.url)
+    const action = searchParams.get('action')
+    const body = await request.json()
+    const { sessionKey } = body
+
+    if (!sessionKey || !SESSION_KEY_RE.test(sessionKey)) {
+      return NextResponse.json({ error: 'Invalid session key' }, { status: 400 })
+    }
+
+    let rpcFn: string
+    let logDetail: string
+
+    switch (action) {
+      case 'set-thinking': {
+        const { level } = body
+        if (!VALID_THINKING_LEVELS.includes(level)) {
+          return NextResponse.json({ error: `Invalid thinking level. Must be: ${VALID_THINKING_LEVELS.join(', ')}` }, { status: 400 })
+        }
+        rpcFn = `session_setThinking("${sessionKey}", "${level}")`
+        logDetail = `Set thinking=${level} on ${sessionKey}`
+        break
+      }
+      case 'set-verbose': {
+        const { level } = body
+        if (!VALID_VERBOSE_LEVELS.includes(level)) {
+          return NextResponse.json({ error: `Invalid verbose level. Must be: ${VALID_VERBOSE_LEVELS.join(', ')}` }, { status: 400 })
+        }
+        rpcFn = `session_setVerbose("${sessionKey}", "${level}")`
+        logDetail = `Set verbose=${level} on ${sessionKey}`
+        break
+      }
+      case 'set-reasoning': {
+        const { level } = body
+        if (!VALID_REASONING_LEVELS.includes(level)) {
+          return NextResponse.json({ error: `Invalid reasoning level. Must be: ${VALID_REASONING_LEVELS.join(', ')}` }, { status: 400 })
+        }
+        rpcFn = `session_setReasoning("${sessionKey}", "${level}")`
+        logDetail = `Set reasoning=${level} on ${sessionKey}`
+        break
+      }
+      case 'set-label': {
+        const { label } = body
+        if (typeof label !== 'string' || label.length > 100) {
+          return NextResponse.json({ error: 'Label must be a string up to 100 characters' }, { status: 400 })
+        }
+        rpcFn = `session_setLabel("${sessionKey}", ${JSON.stringify(label)})`
+        logDetail = `Set label="${label}" on ${sessionKey}`
+        break
+      }
+      default:
+        return NextResponse.json({ error: 'Invalid action. Must be: set-thinking, set-verbose, set-reasoning, set-label' }, { status: 400 })
+    }
+
+    const result = await runClawdbot(['-c', rpcFn], { timeoutMs: 10000 })
+
+    db_helpers.logActivity(
+      'session_control',
+      'session',
+      0,
+      auth.user.username,
+      logDetail,
+      { session_key: sessionKey, action }
+    )
+
+    return NextResponse.json({ success: true, action, sessionKey, stdout: result.stdout.trim() })
+  } catch (error: any) {
+    logger.error({ err: error }, 'Session POST error')
+    return NextResponse.json({ error: error.message || 'Session action failed' }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const auth = requireRole(request, 'operator')
+  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+
+  const rateCheck = mutationLimiter(request)
+  if (rateCheck) return rateCheck
+
+  try {
+    const body = await request.json()
+    const { sessionKey } = body
+
+    if (!sessionKey || !SESSION_KEY_RE.test(sessionKey)) {
+      return NextResponse.json({ error: 'Invalid session key' }, { status: 400 })
+    }
+
+    const result = await runClawdbot(
+      ['-c', `session_delete("${sessionKey}")`],
+      { timeoutMs: 10000 }
+    )
+
+    db_helpers.logActivity(
+      'session_control',
+      'session',
+      0,
+      auth.user.username,
+      `Deleted session ${sessionKey}`,
+      { session_key: sessionKey, action: 'delete' }
+    )
+
+    return NextResponse.json({ success: true, sessionKey, stdout: result.stdout.trim() })
+  } catch (error: any) {
+    logger.error({ err: error }, 'Session DELETE error')
+    return NextResponse.json({ error: error.message || 'Session deletion failed' }, { status: 500 })
+  }
+}
+
+function mapGatewaySessions(gatewaySessions: ReturnType<typeof getAllGatewaySessions>) {
+  // Deduplicate by sessionId — OpenClaw tracks cron runs under the same
+  // session ID as the parent session, causing duplicate React keys (#80).
+  // Keep the most recently updated entry when duplicates exist.
+  const sessionMap = new Map<string, (typeof gatewaySessions)[0]>()
+  for (const s of gatewaySessions) {
+    const id = s.sessionId || `${s.agent}:${s.key}`
+    const existing = sessionMap.get(id)
+    if (!existing || s.updatedAt > existing.updatedAt) {
+      sessionMap.set(id, s)
+    }
+  }
+
+  return Array.from(sessionMap.values()).map((s) => {
+    const total = s.totalTokens || 0
+    const context = s.contextTokens || 35000
+    const pct = context > 0 ? Math.round((total / context) * 100) : 0
+    return {
+      id: s.sessionId || `${s.agent}:${s.key}`,
+      key: s.key,
+      agent: s.agent,
+      kind: s.chatType || 'unknown',
+      age: formatAge(s.updatedAt),
+      model: s.model,
+      tokens: `${formatTokens(total)}/${formatTokens(context)} (${pct}%)`,
+      channel: s.channel,
+      flags: [],
+      active: s.active,
+      startTime: s.updatedAt,
+      lastActivity: s.updatedAt,
+      source: 'gateway' as const,
+    }
+  })
 }
 
 /** Read Claude Code sessions from the local SQLite database */
@@ -73,19 +212,24 @@ function getLocalClaudeSessions() {
     return rows.map((s) => {
       const total = (s.input_tokens || 0) + (s.output_tokens || 0)
       const lastMsg = s.last_message_at ? new Date(s.last_message_at).getTime() : 0
+      // Trust scanner state first, but fall back to derived recency so UI doesn't
+      // show stale "xh ago" when the active flag lags behind disk updates.
+      const derivedActive = lastMsg > 0 && (Date.now() - lastMsg) < LOCAL_SESSION_ACTIVE_WINDOW_MS
+      const isActive = s.is_active === 1 || derivedActive
+      const effectiveLastActivity = isActive ? Date.now() : lastMsg
       return {
         id: s.session_id,
         key: s.project_slug || s.session_id,
         agent: s.project_slug || 'local',
         kind: 'claude-code',
-        age: formatAge(lastMsg),
+        age: isActive ? 'now' : formatAge(lastMsg),
         model: s.model || 'unknown',
         tokens: `${formatTokens(s.input_tokens || 0)}/${formatTokens(s.output_tokens || 0)}`,
         channel: 'local',
         flags: s.git_branch ? [s.git_branch] : [],
-        active: s.is_active === 1,
+        active: isActive,
         startTime: s.first_message_at ? new Date(s.first_message_at).getTime() : 0,
-        lastActivity: lastMsg,
+        lastActivity: effectiveLastActivity,
         source: 'local' as const,
         userMessages: s.user_messages || 0,
         assistantMessages: s.assistant_messages || 0,
@@ -109,19 +253,20 @@ function getLocalCodexSessions() {
       const total = s.totalTokens || (s.inputTokens + s.outputTokens)
       const lastMsg = s.lastMessageAt ? new Date(s.lastMessageAt).getTime() : 0
       const firstMsg = s.firstMessageAt ? new Date(s.firstMessageAt).getTime() : 0
+      const effectiveLastActivity = s.isActive ? Date.now() : lastMsg
       return {
         id: s.sessionId,
         key: s.projectSlug || s.sessionId,
         agent: s.projectSlug || 'codex-local',
         kind: 'codex-cli',
-        age: formatAge(lastMsg),
+        age: s.isActive ? 'now' : formatAge(lastMsg),
         model: s.model || 'codex',
         tokens: `${formatTokens(s.inputTokens || 0)}/${formatTokens(s.outputTokens || 0)}`,
         channel: 'local',
         flags: [],
         active: s.isActive,
         startTime: firstMsg,
-        lastActivity: lastMsg,
+        lastActivity: effectiveLastActivity,
         source: 'local' as const,
         userMessages: s.userMessages || 0,
         assistantMessages: s.assistantMessages || 0,
@@ -138,20 +283,65 @@ function getLocalCodexSessions() {
   }
 }
 
+function getLocalHermesSessions() {
+  try {
+    const rows = scanHermesSessions(100)
+
+    return rows.map((s) => {
+      const total = s.inputTokens + s.outputTokens
+      const lastMsg = s.lastMessageAt ? new Date(s.lastMessageAt).getTime() : 0
+      const firstMsg = s.firstMessageAt ? new Date(s.firstMessageAt).getTime() : 0
+      const effectiveLastActivity = s.isActive ? Date.now() : lastMsg
+      return {
+        id: s.sessionId,
+        key: s.title || s.sessionId,
+        agent: 'hermes',
+        kind: 'hermes',
+        age: s.isActive ? 'now' : formatAge(lastMsg),
+        model: s.model || 'hermes',
+        tokens: `${formatTokens(s.inputTokens)}/${formatTokens(s.outputTokens)}`,
+        channel: s.source || 'cli',
+        flags: s.source && s.source !== 'cli' ? [s.source] : [],
+        active: s.isActive,
+        startTime: firstMsg,
+        lastActivity: effectiveLastActivity,
+        source: 'local' as const,
+        userMessages: s.messageCount,
+        assistantMessages: 0,
+        toolUses: s.toolCallCount,
+        estimatedCost: 0,
+        lastUserPrompt: s.title || null,
+        totalTokens: total,
+        workingDir: null,
+      }
+    })
+  } catch (err) {
+    logger.warn({ err }, 'Failed to read local Hermes sessions')
+    return []
+  }
+}
+
 function mergeLocalSessions(
   claudeSessions: Array<Record<string, any>>,
   codexSessions: Array<Record<string, any>>,
+  hermesSessions: Array<Record<string, any>> = [],
 ) {
-  const merged = [...claudeSessions, ...codexSessions]
+  const merged = [...claudeSessions, ...codexSessions, ...hermesSessions]
+  return dedupeAndSortSessions(merged)
+}
+
+function dedupeAndSortSessions(merged: Array<Record<string, any>>) {
   const deduped = new Map<string, Record<string, any>>()
 
   for (const session of merged) {
     const id = String(session?.id || '')
+    const source = String(session?.source || '')
+    const key = `${source}:${id}`
     if (!id) continue
-    const existing = deduped.get(id)
+    const existing = deduped.get(key)
     const currentActivity = Number(session?.lastActivity || 0)
     const existingActivity = Number(existing?.lastActivity || 0)
-    if (!existing || currentActivity > existingActivity) deduped.set(id, session)
+    if (!existing || currentActivity > existingActivity) deduped.set(key, session)
   }
 
   return Array.from(deduped.values())
@@ -168,6 +358,7 @@ function formatTokens(n: number): string {
 function formatAge(timestamp: number): string {
   if (!timestamp) return '-'
   const diff = Date.now() - timestamp
+  if (diff <= 0) return 'now'
   const mins = Math.floor(diff / 60000)
   const hours = Math.floor(mins / 60)
   const days = Math.floor(hours / 24)

@@ -1,6 +1,14 @@
 import { createHash, randomBytes, timingSafeEqual } from 'crypto'
 import { getDatabase } from './db'
 import { hashPassword, verifyPassword } from './password'
+import { logSecurityEvent } from './security-events'
+
+// Plugin hook: extensions can register a custom API key resolver without modifying this file.
+type AuthResolverHook = (apiKey: string, agentName: string | null) => User | null
+let _authResolverHook: AuthResolverHook | null = null
+export function registerAuthResolver(hook: AuthResolverHook): void {
+  _authResolverHook = hook
+}
 
 /**
  * Constant-time string comparison to prevent timing attacks.
@@ -24,6 +32,7 @@ export interface User {
   display_name: string
   role: 'admin' | 'operator' | 'viewer'
   workspace_id: number
+  tenant_id: number
   provider?: 'local' | 'google'
   email?: string | null
   avatar_url?: string | null
@@ -33,12 +42,6 @@ export interface User {
   last_login_at: number | null
   /** Agent name when request is made on behalf of a specific agent (via X-Agent-Name header) */
   agent_name?: string | null
-  /** Auth principal kind used for this request */
-  principal_type?: 'user' | 'system_api_key' | 'agent_api_key'
-  /** Agent id when authenticated via dedicated agent API key */
-  agent_id?: number | null
-  /** Scopes resolved for API key principals */
-  auth_scopes?: string[] | null
 }
 
 export interface UserSession {
@@ -46,6 +49,7 @@ export interface UserSession {
   token: string
   user_id: number
   workspace_id: number
+  tenant_id: number
   expires_at: number
   created_at: number
   ip_address: string | null
@@ -62,6 +66,7 @@ interface SessionQueryRow {
   avatar_url: string | null
   is_approved: number
   workspace_id: number
+  tenant_id: number
   created_at: number
   updated_at: number
   last_login_at: number | null
@@ -78,40 +83,48 @@ interface UserQueryRow {
   avatar_url: string | null
   is_approved: number
   workspace_id: number
+  tenant_id?: number
   created_at: number
   updated_at: number
   last_login_at: number | null
   password_hash: string
 }
 
-interface AgentApiKeyRow {
-  id: number
-  agent_id: number
-  workspace_id: number
-  name: string
-  scopes: string
-  expires_at: number | null
-  revoked_at: number | null
-  key_hash: string
-  agent_name: string
-}
-
 // Session management
 const SESSION_DURATION = 7 * 24 * 60 * 60 // 7 days in seconds
 
-function getDefaultWorkspaceId(): number {
+function getDefaultWorkspaceContext(): { workspaceId: number; tenantId: number } {
   try {
     const db = getDatabase()
-    const row = db.prepare(`SELECT id FROM workspaces WHERE slug = 'default' LIMIT 1`).get() as { id?: number } | undefined
-    return row?.id || 1
+    const row = db.prepare(`
+      SELECT id, tenant_id
+      FROM workspaces
+      ORDER BY CASE WHEN slug = 'default' THEN 0 ELSE 1 END, id ASC
+      LIMIT 1
+    `).get() as { id?: number; tenant_id?: number } | undefined
+    return {
+      workspaceId: row?.id || 1,
+      tenantId: row?.tenant_id || 1,
+    }
   } catch {
-    return 1
+    return { workspaceId: 1, tenantId: 1 }
   }
 }
 
 export function getWorkspaceIdFromRequest(request: Request): number {
   const user = getUserFromRequest(request)
-  return user?.workspace_id || getDefaultWorkspaceId()
+  return user?.workspace_id || getDefaultWorkspaceContext().workspaceId
+}
+
+export function getTenantIdFromRequest(request: Request): number {
+  const user = getUserFromRequest(request)
+  return user?.tenant_id || getDefaultWorkspaceContext().tenantId
+}
+
+function resolveTenantForWorkspace(workspaceId: number): number {
+  const db = getDatabase()
+  const row = db.prepare(`SELECT tenant_id FROM workspaces WHERE id = ? LIMIT 1`).get(workspaceId) as { tenant_id?: number } | undefined
+  return row?.tenant_id || getDefaultWorkspaceContext().tenantId
 }
 
 export function createSession(
@@ -124,12 +137,13 @@ export function createSession(
   const token = randomBytes(32).toString('hex')
   const now = Math.floor(Date.now() / 1000)
   const expiresAt = now + SESSION_DURATION
-  const resolvedWorkspaceId = workspaceId ?? ((db.prepare('SELECT workspace_id FROM users WHERE id = ?').get(userId) as { workspace_id?: number } | undefined)?.workspace_id || getDefaultWorkspaceId())
+  const resolvedWorkspaceId = workspaceId ?? ((db.prepare('SELECT workspace_id FROM users WHERE id = ?').get(userId) as { workspace_id?: number } | undefined)?.workspace_id || getDefaultWorkspaceContext().workspaceId)
+  const resolvedTenantId = resolveTenantForWorkspace(resolvedWorkspaceId)
 
   db.prepare(`
-    INSERT INTO user_sessions (token, user_id, expires_at, ip_address, user_agent, workspace_id)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(token, userId, expiresAt, ipAddress || null, userAgent || null, resolvedWorkspaceId)
+    INSERT INTO user_sessions (token, user_id, expires_at, ip_address, user_agent, workspace_id, tenant_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(token, userId, expiresAt, ipAddress || null, userAgent || null, resolvedWorkspaceId, resolvedTenantId)
 
   // Update user's last login
   db.prepare('UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?').run(now, now, userId)
@@ -146,10 +160,14 @@ export function validateSession(token: string): (User & { sessionId: number }) |
   const now = Math.floor(Date.now() / 1000)
 
   const row = db.prepare(`
-    SELECT u.id, u.username, u.display_name, u.role, u.provider, u.email, u.avatar_url, u.is_approved, COALESCE(s.workspace_id, u.workspace_id, 1) as workspace_id, u.created_at, u.updated_at, u.last_login_at,
+    SELECT u.id, u.username, u.display_name, u.role, u.provider, u.email, u.avatar_url, u.is_approved,
+           COALESCE(s.workspace_id, u.workspace_id, 1) as workspace_id,
+           COALESCE(s.tenant_id, w.tenant_id, 1) as tenant_id,
+           u.created_at, u.updated_at, u.last_login_at,
            s.id as session_id
     FROM user_sessions s
     JOIN users u ON u.id = s.user_id
+    LEFT JOIN workspaces w ON w.id = COALESCE(s.workspace_id, u.workspace_id, 1)
     WHERE s.token = ? AND s.expires_at > ?
   `).get(token, now) as SessionQueryRow | undefined
 
@@ -160,7 +178,8 @@ export function validateSession(token: string): (User & { sessionId: number }) |
     username: row.username,
     display_name: row.display_name,
     role: row.role,
-    workspace_id: row.workspace_id || getDefaultWorkspaceId(),
+    workspace_id: row.workspace_id || getDefaultWorkspaceContext().workspaceId,
+    tenant_id: row.tenant_id || getDefaultWorkspaceContext().tenantId,
     provider: row.provider || 'local',
     email: row.email ?? null,
     avatar_url: row.avatar_url ?? null,
@@ -182,20 +201,42 @@ export function destroyAllUserSessions(userId: number): void {
   db.prepare('DELETE FROM user_sessions WHERE user_id = ?').run(userId)
 }
 
+// Dummy hash used for constant-time rejection when user doesn't exist.
+// This ensures authenticateUser takes the same time whether or not the username is valid,
+// preventing timing-based username enumeration.
+const DUMMY_HASH = '0000000000000000000000000000000000000000000000000000000000000000:0000000000000000000000000000000000000000000000000000000000000000'
+
 // User management
 export function authenticateUser(username: string, password: string): User | null {
   const db = getDatabase()
   const row = db.prepare('SELECT * FROM users WHERE username = ?').get(username) as UserQueryRow | undefined
-  if (!row) return null
-  if ((row.provider || 'local') !== 'local') return null
-  if ((row.is_approved ?? 1) !== 1) return null
-  if (!verifyPassword(password, row.password_hash)) return null
+  if (!row) {
+    // Always run verifyPassword to prevent timing-based username enumeration
+    verifyPassword(password, DUMMY_HASH)
+    try { logSecurityEvent({ event_type: 'auth_failure', severity: 'warning', source: 'auth', detail: JSON.stringify({ username, reason: 'user_not_found' }), workspace_id: 1, tenant_id: 1 }) } catch {}
+    return null
+  }
+  if ((row.provider || 'local') !== 'local') {
+    verifyPassword(password, DUMMY_HASH)
+    try { logSecurityEvent({ event_type: 'auth_failure', severity: 'warning', source: 'auth', detail: JSON.stringify({ username, reason: 'wrong_provider' }), workspace_id: 1, tenant_id: 1 }) } catch {}
+    return null
+  }
+  if ((row.is_approved ?? 1) !== 1) {
+    verifyPassword(password, DUMMY_HASH)
+    try { logSecurityEvent({ event_type: 'auth_failure', severity: 'warning', source: 'auth', detail: JSON.stringify({ username, reason: 'not_approved' }), workspace_id: 1, tenant_id: 1 }) } catch {}
+    return null
+  }
+  if (!verifyPassword(password, row.password_hash)) {
+    try { logSecurityEvent({ event_type: 'auth_failure', severity: 'warning', source: 'auth', detail: JSON.stringify({ username, reason: 'invalid_password' }), workspace_id: 1, tenant_id: 1 }) } catch {}
+    return null
+  }
   return {
     id: row.id,
     username: row.username,
     display_name: row.display_name,
     role: row.role,
-    workspace_id: row.workspace_id || getDefaultWorkspaceId(),
+    workspace_id: row.workspace_id || getDefaultWorkspaceContext().workspaceId,
+    tenant_id: resolveTenantForWorkspace(row.workspace_id || getDefaultWorkspaceContext().workspaceId),
     provider: row.provider || 'local',
     email: row.email ?? null,
     avatar_url: row.avatar_url ?? null,
@@ -208,13 +249,25 @@ export function authenticateUser(username: string, password: string): User | nul
 
 export function getUserById(id: number): User | null {
   const db = getDatabase()
-  const row = db.prepare('SELECT id, username, display_name, role, workspace_id, provider, email, avatar_url, is_approved, created_at, updated_at, last_login_at FROM users WHERE id = ?').get(id) as User | undefined
-  return row || null
+  const row = db.prepare(`
+    SELECT u.id, u.username, u.display_name, u.role, u.workspace_id, COALESCE(w.tenant_id, 1) as tenant_id,
+           u.provider, u.email, u.avatar_url, u.is_approved, u.created_at, u.updated_at, u.last_login_at
+    FROM users u
+    LEFT JOIN workspaces w ON w.id = u.workspace_id
+    WHERE u.id = ?
+  `).get(id) as User | undefined
+  return row ? { ...row, tenant_id: row.tenant_id || getDefaultWorkspaceContext().tenantId } : null
 }
 
 export function getAllUsers(): User[] {
   const db = getDatabase()
-  return db.prepare('SELECT id, username, display_name, role, workspace_id, provider, email, avatar_url, is_approved, created_at, updated_at, last_login_at FROM users ORDER BY created_at').all() as User[]
+  return db.prepare(`
+    SELECT u.id, u.username, u.display_name, u.role, u.workspace_id, COALESCE(w.tenant_id, 1) as tenant_id,
+           u.provider, u.email, u.avatar_url, u.is_approved, u.created_at, u.updated_at, u.last_login_at
+    FROM users u
+    LEFT JOIN workspaces w ON w.id = u.workspace_id
+    ORDER BY u.created_at
+  `).all() as User[]
 }
 
 export function createUser(
@@ -228,7 +281,7 @@ export function createUser(
   if (password.length < 12) throw new Error('Password must be at least 12 characters')
   const passwordHash = hashPassword(password)
   const provider = options?.provider || 'local'
-  const workspaceId = options?.workspace_id || getDefaultWorkspaceId()
+  const workspaceId = options?.workspace_id || getDefaultWorkspaceContext().workspaceId
   const result = db.prepare(`
     INSERT INTO users (username, display_name, password_hash, role, provider, provider_user_id, email, avatar_url, is_approved, approved_by, approved_at, workspace_id)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -296,106 +349,103 @@ export function getUserFromRequest(request: Request): User | null {
   const sessionToken = parseCookie(cookieHeader, 'mc-session')
   if (sessionToken) {
     const user = validateSession(sessionToken)
-    if (user) return { ...user, agent_name: agentName, principal_type: 'user', auth_scopes: null, agent_id: null }
+    if (user) return { ...user, agent_name: agentName }
   }
 
+  // Check API key - DB override first, then env var
   const apiKey = extractApiKeyFromHeaders(request.headers)
-  if (!apiKey) return null
+  const configuredApiKey = resolveActiveApiKey()
 
-  // Check dedicated agent API key first.
-  const agentPrincipal = validateAgentApiKey(apiKey)
-  if (agentPrincipal) return agentPrincipal
-
-  // Check system API key - return synthetic user.
-  const configuredApiKey = (process.env.API_KEY || '').trim()
-  if (configuredApiKey && safeCompare(apiKey, configuredApiKey)) {
+  if (configuredApiKey && apiKey && safeCompare(apiKey, configuredApiKey)) {
     return {
       id: 0,
       username: 'api',
       display_name: 'API Access',
       role: 'admin',
-      workspace_id: getDefaultWorkspaceId(),
+      workspace_id: getDefaultWorkspaceContext().workspaceId,
+      tenant_id: getDefaultWorkspaceContext().tenantId,
       created_at: 0,
       updated_at: 0,
       last_login_at: null,
       agent_name: agentName,
-      principal_type: 'system_api_key',
-      auth_scopes: ['admin'],
-      agent_id: null,
     }
+  }
+
+  // Agent-scoped API keys
+  if (apiKey) {
+    try {
+      const db = getDatabase()
+      const keyHash = hashApiKey(apiKey)
+      const now = Math.floor(Date.now() / 1000)
+      const row = db.prepare(`
+        SELECT id, agent_id, workspace_id, scopes, expires_at, revoked_at
+        FROM agent_api_keys
+        WHERE key_hash = ?
+        LIMIT 1
+      `).get(keyHash) as {
+        id: number
+        agent_id: number
+        workspace_id: number
+        scopes: string
+        expires_at: number | null
+        revoked_at: number | null
+      } | undefined
+
+      if (row && !row.revoked_at && (!row.expires_at || row.expires_at > now)) {
+        const scopes = parseAgentScopes(row.scopes)
+        const agent = db
+          .prepare('SELECT id, name FROM agents WHERE id = ? AND workspace_id = ?')
+          .get(row.agent_id, row.workspace_id) as { id: number; name: string } | undefined
+
+        if (agent) {
+          if (agentName && agentName !== agent.name && !scopes.has('admin')) {
+            return null
+          }
+
+          db.prepare('UPDATE agent_api_keys SET last_used_at = ?, updated_at = ? WHERE id = ?').run(now, now, row.id)
+
+          return {
+            id: -row.id,
+            username: `agent:${agent.name}`,
+            display_name: agent.name,
+            role: deriveRoleFromScopes(scopes),
+            workspace_id: row.workspace_id,
+            tenant_id: getDefaultWorkspaceContext().tenantId,
+            created_at: 0,
+            updated_at: now,
+            last_login_at: now,
+            agent_name: agent.name,
+          }
+        }
+      }
+    } catch {
+      // ignore missing table / startup race
+    }
+  }
+
+  // Plugin hook: allow Pro (or other extensions) to resolve custom API keys
+  if (apiKey && _authResolverHook) {
+    const resolved = _authResolverHook(apiKey, agentName)
+    if (resolved) return resolved
   }
 
   return null
 }
 
-function hashApiKey(rawKey: string): string {
-  return createHash('sha256').update(rawKey).digest('hex')
-}
-
-function toRoleFromScopes(scopes: string[]): User['role'] {
-  if (scopes.includes('admin')) return 'admin'
-  if (scopes.includes('operator')) return 'operator'
-  return 'viewer'
-}
-
-function parseScopes(raw: string): string[] {
-  try {
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return ['viewer']
-    const scopes = parsed.map((value) => String(value).trim()).filter(Boolean)
-    return scopes.length > 0 ? scopes : ['viewer']
-  } catch {
-    return ['viewer']
-  }
-}
-
-function validateAgentApiKey(rawApiKey: string): User | null {
+/**
+ * Resolve the active API key: check DB settings override first, then env var.
+ */
+function resolveActiveApiKey(): string {
   try {
     const db = getDatabase()
-    const now = Math.floor(Date.now() / 1000)
-    const keyHash = hashApiKey(rawApiKey)
-
-    const row = db.prepare(`
-      SELECT k.id, k.agent_id, k.workspace_id, k.name, k.scopes, k.expires_at, k.revoked_at, k.key_hash, a.name as agent_name
-      FROM agent_api_keys k
-      JOIN agents a ON a.id = k.agent_id
-      WHERE k.key_hash = ?
-        AND k.revoked_at IS NULL
-        AND (k.expires_at IS NULL OR k.expires_at > ?)
-        AND a.workspace_id = k.workspace_id
-      LIMIT 1
-    `).get(keyHash, now) as AgentApiKeyRow | undefined
-
-    if (!row) return null
-    if (!safeCompare(keyHash, row.key_hash)) return null
-
-    const scopes = parseScopes(row.scopes)
-    const role = toRoleFromScopes(scopes)
-
-    // Authentication should not fail if best-effort key usage bookkeeping hits a transient lock.
-    try {
-      db.prepare(`UPDATE agent_api_keys SET last_used_at = ?, updated_at = ? WHERE id = ?`).run(now, now, row.id)
-    } catch {
-      // no-op
-    }
-
-    return {
-      id: row.agent_id,
-      username: row.agent_name,
-      display_name: row.agent_name,
-      role,
-      workspace_id: row.workspace_id,
-      created_at: 0,
-      updated_at: 0,
-      last_login_at: null,
-      agent_name: row.agent_name,
-      principal_type: 'agent_api_key',
-      auth_scopes: scopes,
-      agent_id: row.agent_id,
-    }
+    const row = db.prepare(
+      "SELECT value FROM settings WHERE key = 'security.api_key'"
+    ).get() as { value: string } | undefined
+    if (row?.value) return row.value
   } catch {
-    return null
+    // DB not ready yet — fall back to env
   }
+  return (process.env.API_KEY || '').trim()
 }
 
 function extractApiKeyFromHeaders(headers: Headers): string | null {
@@ -414,6 +464,26 @@ function extractApiKeyFromHeaders(headers: Headers): string | null {
   }
 
   return null
+}
+
+function hashApiKey(rawKey: string): string {
+  return createHash('sha256').update(rawKey).digest('hex')
+}
+
+function parseAgentScopes(raw: string): Set<string> {
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return new Set(parsed.map((scope) => String(scope)))
+  } catch {
+    // ignore parse errors
+  }
+  return new Set()
+}
+
+function deriveRoleFromScopes(scopes: Set<string>): User['role'] {
+  if (scopes.has('admin')) return 'admin'
+  if (scopes.has('operator')) return 'operator'
+  return 'viewer'
 }
 
 /**

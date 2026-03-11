@@ -49,8 +49,14 @@ async function handleActivitiesRequest(request: NextRequest, workspaceId: number
     const params: any[] = [workspaceId];
     
     if (type) {
-      query += ' AND type = ?';
-      params.push(type);
+      const types = type.split(',').map(t => t.trim()).filter(Boolean);
+      if (types.length === 1) {
+        query += ' AND type = ?';
+        params.push(types[0]);
+      } else if (types.length > 1) {
+        query += ` AND type IN (${types.map(() => '?').join(',')})`;
+        params.push(...types);
+      }
     }
     
     if (actor) {
@@ -132,8 +138,14 @@ async function handleActivitiesRequest(request: NextRequest, workspaceId: number
     const countParams: any[] = [workspaceId];
     
     if (type) {
-      countQuery += ' AND type = ?';
-      countParams.push(type);
+      const types = type.split(',').map(t => t.trim()).filter(Boolean);
+      if (types.length === 1) {
+        countQuery += ' AND type = ?';
+        countParams.push(types[0]);
+      } else if (types.length > 1) {
+        countQuery += ` AND type IN (${types.map(() => '?').join(',')})`;
+        countParams.push(...types);
+      }
     }
     
     if (actor) {

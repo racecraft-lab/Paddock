@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 
 interface AuditEvent {
@@ -28,6 +29,28 @@ const actionLabels: Record<string, string> = {
   role_denied: 'Access denied',
   backup_create: 'Created backup',
   backup_delete: 'Deleted backup',
+  settings_update: 'Updated settings',
+  auto_backup: 'Auto backup',
+  heartbeat_check: 'Heartbeat check',
+  agent_config_sync: 'Agent config synced',
+  local_agent_sync: 'Local agents synced',
+  integration_test: 'Integration test',
+  agent_register: 'Agent registered',
+  agent_update: 'Agent updated',
+  agent_create: 'Agent created',
+  agent_delete: 'Agent deleted',
+  token_rotate: 'Token rotated',
+  gateway_config_update: 'Gateway config updated',
+  login_google: 'Google login',
+  google_disconnect: 'Google disconnected',
+  workspace_create: 'Workspace created',
+  workspace_update: 'Workspace updated',
+  workspace_delete: 'Workspace deleted',
+  cleanup: 'Cleanup ran',
+  export: 'Data exported',
+  access_request: 'Access requested',
+  access_approve: 'Access approved',
+  access_deny: 'Access denied',
 }
 
 const actionColors: Record<string, string> = {
@@ -42,6 +65,28 @@ const actionColors: Record<string, string> = {
   role_denied: 'text-red-500',
   backup_create: 'text-green-400',
   backup_delete: 'text-amber-400',
+  settings_update: 'text-indigo-400',
+  auto_backup: 'text-green-400',
+  heartbeat_check: 'text-muted-foreground',
+  agent_config_sync: 'text-cyan-400',
+  local_agent_sync: 'text-cyan-400',
+  integration_test: 'text-amber-400',
+  agent_register: 'text-green-400',
+  agent_update: 'text-blue-400',
+  agent_create: 'text-green-400',
+  agent_delete: 'text-red-400',
+  token_rotate: 'text-amber-400',
+  gateway_config_update: 'text-indigo-400',
+  login_google: 'text-green-400',
+  google_disconnect: 'text-amber-400',
+  workspace_create: 'text-green-400',
+  workspace_update: 'text-blue-400',
+  workspace_delete: 'text-red-400',
+  cleanup: 'text-muted-foreground',
+  export: 'text-blue-400',
+  access_request: 'text-amber-400',
+  access_approve: 'text-green-400',
+  access_deny: 'text-red-400',
 }
 
 const actionIcons: Record<string, string> = {
@@ -56,6 +101,28 @@ const actionIcons: Record<string, string> = {
   role_denied: '!',
   backup_create: 'B',
   backup_delete: 'B',
+  settings_update: 'S',
+  auto_backup: 'A',
+  heartbeat_check: '.',
+  agent_config_sync: 'c',
+  local_agent_sync: 'c',
+  integration_test: 'T',
+  agent_register: '+',
+  agent_update: '~',
+  agent_create: '+',
+  agent_delete: '-',
+  token_rotate: 'R',
+  gateway_config_update: 'G',
+  login_google: '>',
+  google_disconnect: '<',
+  workspace_create: '+',
+  workspace_update: '~',
+  workspace_delete: '-',
+  cleanup: 'C',
+  export: 'E',
+  access_request: '?',
+  access_approve: 'v',
+  access_deny: 'x',
 }
 
 export function AuditTrailPanel() {
@@ -117,6 +184,24 @@ export function AuditTrailPanel() {
       return parts.join(', ')
     }
     if (event.action === 'profile_update') return `name: ${event.detail.display_name}`
+    if (event.action === 'settings_update' && event.detail.updated_keys) {
+      const keys = Array.isArray(event.detail.updated_keys) ? event.detail.updated_keys.join(', ') : event.detail.updated_keys
+      return `changed: ${keys}`
+    }
+    if (event.action === 'auto_backup' && event.detail.size) return `size: ${event.detail.size}`
+    if (event.action === 'heartbeat_check' && event.detail.marked_offline) {
+      return `marked offline: ${event.detail.marked_offline}`
+    }
+    if ((event.action === 'agent_register' || event.action === 'agent_create') && event.detail.name) {
+      return `agent: ${event.detail.name}`
+    }
+    if (event.action === 'cleanup') {
+      const parts: string[] = []
+      if (event.detail.sessions_removed) parts.push(`sessions: ${event.detail.sessions_removed}`)
+      if (event.detail.events_removed) parts.push(`events: ${event.detail.events_removed}`)
+      return parts.length ? `removed ${parts.join(', ')}` : null
+    }
+    if (event.action === 'export' && event.detail.type) return `type: ${event.detail.type}`
     return null
   }
 
@@ -138,12 +223,13 @@ export function AuditTrailPanel() {
           <h2 className="text-base font-semibold text-foreground">Audit Trail</h2>
           <p className="text-xs text-muted-foreground mt-0.5">{total} event{total !== 1 ? 's' : ''} logged</p>
         </div>
-        <button
+        <Button
           onClick={() => { setPage(0); fetchEvents() }}
-          className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-smooth"
+          variant="ghost"
+          size="xs"
         >
           Refresh
-        </button>
+        </Button>
       </div>
 
       {/* Filters */}
@@ -154,17 +240,51 @@ export function AuditTrailPanel() {
           className="h-8 px-2 text-xs rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
         >
           <option value="">All actions</option>
-          <option value="login">Login</option>
-          <option value="login_failed">Failed login</option>
-          <option value="logout">Logout</option>
-          <option value="password_change">Password change</option>
-          <option value="profile_update">Profile update</option>
-          <option value="user_create">User created</option>
-          <option value="user_update">User updated</option>
-          <option value="user_delete">User deleted</option>
-          <option value="role_denied">Access denied</option>
-          <option value="backup_create">Backup created</option>
-          <option value="backup_delete">Backup deleted</option>
+          <optgroup label="Auth">
+            <option value="login">Login</option>
+            <option value="login_failed">Failed login</option>
+            <option value="logout">Logout</option>
+            <option value="login_google">Google login</option>
+            <option value="google_disconnect">Google disconnected</option>
+            <option value="password_change">Password change</option>
+            <option value="profile_update">Profile update</option>
+          </optgroup>
+          <optgroup label="Users">
+            <option value="user_create">User created</option>
+            <option value="user_update">User updated</option>
+            <option value="user_delete">User deleted</option>
+            <option value="role_denied">Access denied</option>
+            <option value="access_request">Access requested</option>
+            <option value="access_approve">Access approved</option>
+            <option value="access_deny">Access denied</option>
+          </optgroup>
+          <optgroup label="Agents">
+            <option value="agent_register">Agent registered</option>
+            <option value="agent_create">Agent created</option>
+            <option value="agent_update">Agent updated</option>
+            <option value="agent_delete">Agent deleted</option>
+            <option value="agent_config_sync">Config synced</option>
+            <option value="local_agent_sync">Local agents synced</option>
+          </optgroup>
+          <optgroup label="System">
+            <option value="settings_update">Settings updated</option>
+            <option value="auto_backup">Auto backup</option>
+            <option value="backup_create">Backup created</option>
+            <option value="backup_delete">Backup deleted</option>
+            <option value="heartbeat_check">Heartbeat check</option>
+            <option value="integration_test">Integration test</option>
+            <option value="cleanup">Cleanup</option>
+            <option value="export">Export</option>
+          </optgroup>
+          <optgroup label="Config">
+            <option value="token_rotate">Token rotated</option>
+            <option value="gateway_config_update">Gateway config updated</option>
+          </optgroup>
+          <optgroup label="Workspaces">
+            <option value="workspace_create">Workspace created</option>
+            <option value="workspace_update">Workspace updated</option>
+            <option value="workspace_delete">Workspace deleted</option>
+          </optgroup>
         </select>
         <input
           type="text"
@@ -237,23 +357,25 @@ export function AuditTrailPanel() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-2">
-          <button
+          <Button
             onClick={() => setPage(p => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-smooth disabled:opacity-30"
+            variant="ghost"
+            size="xs"
           >
             Previous
-          </button>
+          </Button>
           <span className="text-xs text-muted-foreground">
             Page {page + 1} of {totalPages}
           </span>
-          <button
+          <Button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-smooth disabled:opacity-30"
+            variant="ghost"
+            size="xs"
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 import { createClientLogger } from '@/lib/client-logger'
 
 const log = createClientLogger('StandupPanel')
@@ -262,22 +263,20 @@ export function StandupPanel() {
         <div className="flex items-center gap-3">
           {/* View Toggle */}
           <div className="flex bg-secondary rounded-lg p-1">
-            <button
+            <Button
               onClick={() => setView('current')}
-              className={`px-3 py-1 text-sm rounded-md transition-smooth ${
-                view === 'current' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              variant={view === 'current' ? 'default' : 'ghost'}
+              size="sm"
             >
               Current
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setView('history')}
-              className={`px-3 py-1 text-sm rounded-md transition-smooth ${
-                view === 'history' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
+              variant={view === 'history' ? 'default' : 'ghost'}
+              size="sm"
             >
               History
-            </button>
+            </Button>
           </div>
 
           {view === 'current' && (
@@ -289,22 +288,24 @@ export function StandupPanel() {
                 className="bg-surface-1 text-foreground rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary/50 border border-border"
               />
 
-              <button
+              <Button
                 onClick={() => generateStandup()}
                 disabled={loading}
-                className="px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-smooth flex items-center gap-2"
+                size="sm"
+                className="flex items-center gap-2"
               >
                 {loading && <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground" />}
                 {loading ? 'Generating...' : 'Generate'}
-              </button>
+              </Button>
 
               {standupReport && (
-                <button
+                <Button
                   onClick={exportStandup}
-                  className="px-3 py-1.5 text-sm bg-green-500/20 text-green-400 border border-green-500/30 rounded-md hover:bg-green-500/30 transition-smooth"
+                  variant="success"
+                  size="sm"
                 >
                   Export
-                </button>
+                </Button>
               )}
             </>
           )}
@@ -315,7 +316,7 @@ export function StandupPanel() {
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 m-4 rounded-lg text-sm flex items-center justify-between">
           <span>{error}</span>
-          <button onClick={() => setError(null)} className="text-red-400/60 hover:text-red-400 ml-2">×</button>
+          <Button onClick={() => setError(null)} variant="ghost" size="icon-xs" className="text-red-400/60 hover:text-red-400 ml-2 w-5 h-5">×</Button>
         </div>
       )}
 
@@ -502,7 +503,7 @@ export function StandupPanel() {
           ) : (
             // Empty state for current view
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <div className="w-14 h-14 rounded-xl bg-surface-2 flex items-center justify-center mx-auto mb-4">
+              <div className="w-14 h-14 rounded-lg bg-surface-2 flex items-center justify-center mx-auto mb-4">
                 <svg width="24" height="24" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-muted-foreground/40">
                   <path d="M2 12V4h3l2-2h2l2 2h3v8H2z" />
                   <path d="M5 8h6M8 5v6" />
@@ -510,13 +511,12 @@ export function StandupPanel() {
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">No Standup Generated</h3>
               <p className="text-sm text-muted-foreground mb-4">Select a date and generate a report</p>
-              <button
+              <Button
                 onClick={() => generateStandup()}
                 disabled={loading}
-                className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 transition-smooth"
               >
                 Generate Today&apos;s Standup
-              </button>
+              </Button>
             </div>
           )
         ) : (

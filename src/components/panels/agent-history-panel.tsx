@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 
@@ -143,14 +144,12 @@ export function AgentHistoryPanel() {
       {/* Agent selector */}
       <div className="flex gap-2 flex-wrap">
         {agents.map(a => (
-          <button
+          <Button
             key={a.name}
             onClick={() => { setSelectedAgent(a.name); setPage(0) }}
-            className={`h-8 px-3 rounded-md text-xs font-medium transition-smooth flex items-center gap-1.5 ${
-              selectedAgent === a.name
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-muted-foreground hover:text-foreground'
-            }`}
+            variant={selectedAgent === a.name ? 'default' : 'secondary'}
+            size="sm"
+            className="flex items-center gap-1.5"
           >
             <span className={`w-1.5 h-1.5 rounded-full ${
               a.status === 'busy' ? 'bg-green-500' :
@@ -159,7 +158,7 @@ export function AgentHistoryPanel() {
               'bg-muted-foreground/30'
             }`} />
             {a.name}
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -308,23 +307,25 @@ export function AgentHistoryPanel() {
                 {/* Pagination */}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between pt-2">
-                    <button
+                    <Button
                       onClick={() => setPage(p => Math.max(0, p - 1))}
                       disabled={page === 0}
-                      className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-smooth disabled:opacity-30"
+                      variant="ghost"
+                      size="xs"
                     >
                       Newer
-                    </button>
+                    </Button>
                     <span className="text-xs text-muted-foreground">
                       Page {page + 1} of {totalPages}
                     </span>
-                    <button
+                    <Button
                       onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                       disabled={page >= totalPages - 1}
-                      className="h-7 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md transition-smooth disabled:opacity-30"
+                      variant="ghost"
+                      size="xs"
                     >
                       Older
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>

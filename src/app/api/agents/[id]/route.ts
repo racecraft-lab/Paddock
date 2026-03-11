@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDatabase, db_helpers, logAuditEvent } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
-import { writeAgentToConfig, enrichAgentConfigFromWorkspace } from '@/lib/agent-sync'
+import { writeAgentToConfig, enrichAgentConfigFromWorkspace, removeAgentFromConfig } from '@/lib/agent-sync'
 import { eventBus } from '@/lib/event-bus'
 import { logger } from '@/lib/logger'
+import { runOpenClaw } from '@/lib/command'
 
 /**
  * GET /api/agents/[id] - Get a single agent by ID or name
@@ -102,20 +103,9 @@ export async function PUT(
       return writeBack
     }
 
-    // Unified save: gateway first, then DB. If DB fails after gateway write, attempt rollback.
-    if (shouldWriteToGateway) {
-      try {
-        await writeAgentToConfig(getWriteBackPayload(gateway_config))
-      } catch (err: any) {
-        return NextResponse.json(
-          { error: `Save failed: unable to update gateway config: ${err.message}` },
-          { status: 502 }
-        )
-      }
-    }
-
+    // Unified save: DB first (transactional, easy to revert), then gateway file.
+    // If gateway write fails after DB succeeds, revert DB to keep consistency.
     try {
-      // Build update
       const fields: string[] = ['updated_at = ?']
       const values: any[] = [now]
 
@@ -132,19 +122,31 @@ export async function PUT(
       values.push(agent.id, workspaceId)
       db.prepare(`UPDATE agents SET ${fields.join(', ')} WHERE id = ? AND workspace_id = ?`).run(...values)
     } catch (err: any) {
-      if (shouldWriteToGateway) {
-        try {
-          // Best-effort rollback to preserve consistency if DB update fails after gateway write.
-          await writeAgentToConfig(getWriteBackPayload(existingConfig))
-        } catch (rollbackErr: any) {
-          logger.error({ err: rollbackErr, agent: agent.name }, 'Failed to rollback gateway config after DB failure')
-          return NextResponse.json(
-            { error: `Save failed after gateway update and rollback failed: ${err.message}` },
-            { status: 500 }
-          )
-        }
-      }
       return NextResponse.json({ error: `Save failed: ${err.message}` }, { status: 500 })
+    }
+
+    if (shouldWriteToGateway) {
+      try {
+        await writeAgentToConfig(getWriteBackPayload(gateway_config))
+      } catch (err: any) {
+        // Gateway write failed — revert DB to previous state
+        try {
+          const revertFields: string[] = ['updated_at = ?']
+          const revertValues: any[] = [agent.updated_at]
+          revertFields.push('role = ?')
+          revertValues.push(agent.role)
+          revertFields.push('config = ?')
+          revertValues.push(agent.config || '{}')
+          revertValues.push(agent.id, workspaceId)
+          db.prepare(`UPDATE agents SET ${revertFields.join(', ')} WHERE id = ? AND workspace_id = ?`).run(...revertValues)
+        } catch (revertErr: any) {
+          logger.error({ err: revertErr, agent: agent.name }, 'Failed to revert DB after gateway write failure')
+        }
+        return NextResponse.json(
+          { error: `Save failed: unable to update gateway config: ${err.message}` },
+          { status: 502 }
+        )
+      }
     }
 
     if (shouldWriteToGateway) {
@@ -205,6 +207,13 @@ export async function DELETE(
     const db = getDatabase()
     const { id } = await params
     const workspaceId = auth.user.workspace_id ?? 1;
+    let removeWorkspace = false
+    try {
+      const body = await request.json()
+      removeWorkspace = Boolean(body?.remove_workspace)
+    } catch {
+      // Optional body
+    }
 
     let agent
     if (isNaN(Number(id))) {
@@ -217,6 +226,38 @@ export async function DELETE(
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 })
     }
 
+    if (removeWorkspace) {
+      const agentConfig = agent.config ? JSON.parse(agent.config) : {}
+      const openclawId =
+        String(agentConfig?.openclawId || agent.name || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9._-]+/g, '-')
+          .replace(/^-+|-+$/g, '') || agent.name
+      try {
+        await runOpenClaw(['agents', 'delete', openclawId, '--force'], { timeoutMs: 30000 })
+      } catch (err: any) {
+        logger.error({ err, openclawId, agent: agent.name }, 'Failed to remove OpenClaw agent/workspace')
+        return NextResponse.json(
+          { error: `Failed to remove OpenClaw workspace for ${agent.name}: ${err?.message || 'unknown error'}` },
+          { status: 502 }
+        )
+      }
+    }
+
+    let configCleanupWarning: string | null = null
+    try {
+      const agentConfig = agent.config ? JSON.parse(agent.config) : {}
+      const openclawId =
+        String(agentConfig?.openclawId || agent.name || '')
+          .toLowerCase()
+          .replace(/[^a-z0-9._-]+/g, '-')
+          .replace(/^-+|-+$/g, '') || agent.name
+      await removeAgentFromConfig({ id: openclawId, name: agent.name })
+    } catch (err: any) {
+      configCleanupWarning = `OpenClaw config cleanup skipped for ${agent.name}: ${err?.message || 'unknown error'}`
+      logger.warn({ err, agent: agent.name }, 'Failed to remove OpenClaw agent config entry')
+    }
+
     db.prepare('DELETE FROM agents WHERE id = ? AND workspace_id = ?').run(agent.id, workspaceId)
 
     db_helpers.logActivity(
@@ -225,13 +266,18 @@ export async function DELETE(
       agent.id,
       auth.user.username,
       `Deleted agent: ${agent.name}`,
-      { name: agent.name, role: agent.role },
+      { name: agent.name, role: agent.role, remove_workspace: removeWorkspace },
       workspaceId
     )
 
     eventBus.broadcast('agent.deleted', { id: agent.id, name: agent.name })
 
-    return NextResponse.json({ success: true, deleted: agent.name })
+    return NextResponse.json({
+      success: true,
+      deleted: agent.name,
+      remove_workspace: removeWorkspace,
+      ...(configCleanupWarning ? { warning: configCleanupWarning } : {}),
+    })
   } catch (error) {
     logger.error({ err: error }, 'DELETE /api/agents/[id] error')
     return NextResponse.json({ error: 'Failed to delete agent' }, { status: 500 })

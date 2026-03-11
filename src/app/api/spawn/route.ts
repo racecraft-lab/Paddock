@@ -7,6 +7,8 @@ import { join } from 'path'
 import { heavyLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { validateBody, spawnAgentSchema } from '@/lib/validation'
+import { scanForInjection } from '@/lib/injection-guard'
+import { logAuditEvent } from '@/lib/db'
 
 function getPreferredToolsProfile(): string {
   return String(process.env.OPENCLAW_TOOLS_PROFILE || 'coding').trim() || 'coding'
@@ -28,6 +30,25 @@ export async function POST(request: NextRequest) {
     const result = await validateBody(request, spawnAgentSchema)
     if ('error' in result) return result.error
     const { task, model, label, timeoutSeconds } = result.data
+
+    // Scan the task prompt and label for injection before sending to an agent
+    const fieldsToScan = [
+      { name: 'task', value: task },
+      ...(label ? [{ name: 'label', value: label }] : []),
+    ]
+    for (const field of fieldsToScan) {
+      const injectionReport = scanForInjection(field.value, { context: 'prompt' })
+      if (!injectionReport.safe) {
+        const criticals = injectionReport.matches.filter(m => m.severity === 'critical')
+        if (criticals.length > 0) {
+          logger.warn({ field: field.name, rules: criticals.map(m => m.rule) }, `Blocked spawn: injection detected in ${field.name}`)
+          return NextResponse.json(
+            { error: `${field.name} blocked: potentially unsafe content detected`, injection: criticals.map(m => ({ rule: m.rule, description: m.description })) },
+            { status: 422 }
+          )
+        }
+      }
+    }
 
     const timeout = timeoutSeconds
 
@@ -57,13 +78,13 @@ export async function POST(request: NextRequest) {
         stderr = result.stderr
       } catch (firstError: any) {
         const rawErr = String(firstError?.stderr || firstError?.message || '').toLowerCase()
-        const likelySchemaMismatch =
-          rawErr.includes('unknown field') ||
-          rawErr.includes('unknown key') ||
-          rawErr.includes('invalid argument') ||
-          rawErr.includes('tools') ||
-          rawErr.includes('profile')
-        if (!likelySchemaMismatch) throw firstError
+        // Only retry without tools.profile when the error specifically indicates the
+        // gateway doesn't recognize the tools/profile fields. Other errors (auth,
+        // network, model not found, etc.) should propagate immediately.
+        const isToolsSchemaError =
+          (rawErr.includes('unknown field') || rawErr.includes('unknown key') || rawErr.includes('invalid argument')) &&
+          (rawErr.includes('tools') || rawErr.includes('profile'))
+        if (!isToolsSchemaError) throw firstError
 
         const fallbackPayload = { ...spawnPayload }
         delete (fallbackPayload as any).tools
@@ -84,6 +105,22 @@ export async function POST(request: NextRequest) {
       } catch (parseError) {
         logger.error({ err: parseError }, 'Failed to parse session info')
       }
+
+      const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+      logAuditEvent({
+        action: 'agent_spawn',
+        actor: auth.user.username,
+        actor_id: auth.user.id,
+        detail: {
+          spawnId,
+          model,
+          label,
+          task_summary: task.length > 120 ? task.slice(0, 120) + '...' : task,
+          toolsProfile: getPreferredToolsProfile(),
+          compatibilityFallbackUsed,
+        },
+        ip_address: ipAddress,
+      })
 
       return NextResponse.json({
         success: true,
@@ -130,6 +167,9 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
+
+  const rateCheck = heavyLimiter(request)
+  if (rateCheck) return rateCheck
 
   try {
     const { searchParams } = new URL(request.url)
