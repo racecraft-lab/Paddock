@@ -676,7 +676,7 @@ See [open issues](https://github.com/builderz-labs/mission-control/issues) for p
 - [ ] OAuth approval UI improvements
 - [ ] API token rotation UI
 
-## Contributing
+[## Contributing
 
 Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and guidelines.
 
@@ -696,4 +696,4 @@ If you find this project useful, consider supporting my open-source work.
 
 ## License
 
-[MIT](LICENSE) © 2026 [Builderz Labs](https://github.com/builderz-labs)
+[MIT](LICENSE) © 2026 [Builderz Labs](https://github.com/builderz-labs)](https://github.com/builderz-labs/mission-control)
