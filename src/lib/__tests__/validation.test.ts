@@ -59,7 +59,7 @@ describe('createTaskSchema', () => {
     const result = createTaskSchema.safeParse({
       title: 'Route this task',
       metadata: {
-        implementation_repo: 'torreypjones/cloudstack-razor',
+        implementation_repo: 'builderz-labs/mission-control',
         code_location: '/apps/api',
       },
     })

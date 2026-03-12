@@ -47,14 +47,14 @@ test.describe('Tasks CRUD', () => {
   test('POST persists implementation target metadata for deterministic repo routing', async ({ request }) => {
     const { id, res, body } = await createTestTask(request, {
       metadata: {
-        implementation_repo: 'torreypjones/cloudstack-razor',
+        implementation_repo: 'builderz-labs/mission-control',
         code_location: '/apps/api',
       },
     })
     cleanup.push(id)
 
     expect(res.status()).toBe(201)
-    expect(body.task.metadata.implementation_repo).toBe('torreypjones/cloudstack-razor')
+    expect(body.task.metadata.implementation_repo).toBe('builderz-labs/mission-control')
     expect(body.task.metadata.code_location).toBe('/apps/api')
   })
 
@@ -180,7 +180,7 @@ test.describe('Tasks CRUD', () => {
 
   test('PUT updates implementation target metadata and GET returns persisted values', async ({ request }) => {
     const { id } = await createTestTask(request, {
-      metadata: { implementation_repo: 'torreypjones/cloudstack-razor', code_location: '/apps/api' },
+      metadata: { implementation_repo: 'builderz-labs/mission-control', code_location: '/apps/api' },
     })
     cleanup.push(id)
 
