@@ -3,6 +3,7 @@ import { getDatabase, db_helpers } from '@/lib/db';
 import { requireRole } from '@/lib/auth';
 import { agentHeartbeatLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { resolveTaskImplementationTarget } from '@/lib/task-routing';
 
 /**
  * GET /api/agents/[id]/heartbeat - Agent heartbeat check
@@ -80,8 +81,8 @@ export async function GET(
       AND status IN ('assigned', 'in_progress')
       ORDER BY priority DESC, created_at ASC
       LIMIT 10
-    `).all(agent.name, workspaceId);
-    
+    `).all(agent.name, workspaceId) as any[];
+
     if (assignedTasks.length > 0) {
       workItems.push({
         type: 'assigned_tasks',
@@ -91,7 +92,8 @@ export async function GET(
           title: t.title,
           status: t.status,
           priority: t.priority,
-          due_date: t.due_date
+          due_date: t.due_date,
+          ...resolveTaskImplementationTarget(t),
         }))
       });
     }

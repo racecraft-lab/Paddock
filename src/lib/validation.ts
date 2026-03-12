@@ -26,6 +26,11 @@ export async function validateBody<T>(
   }
 }
 
+const taskMetadataSchema = z.object({
+  implementation_repo: z.string().min(1, 'implementation_repo cannot be empty').max(200).optional(),
+  code_location: z.string().min(1, 'code_location cannot be empty').max(500).optional(),
+}).catchall(z.unknown())
+
 export const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(500),
   description: z.string().max(5000).optional(),
@@ -45,7 +50,7 @@ export const createTaskSchema = z.object({
   retry_count: z.number().int().min(0).optional(),
   completed_at: z.number().int().min(0).max(4102444800).optional(),
   tags: z.array(z.string().min(1).max(100)).max(50).default([] as string[]),
-  metadata: z.record(z.string(), z.unknown()).default({} as Record<string, unknown>),
+  metadata: taskMetadataSchema.default({} as Record<string, unknown>),
 })
 
 export const updateTaskSchema = createTaskSchema.partial()
