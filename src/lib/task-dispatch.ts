@@ -13,10 +13,23 @@ interface DispatchableTask {
   workspace_id: number
   agent_name: string
   agent_id: number
+  agent_config: string | null
   ticket_prefix: string | null
   project_ticket_no: number | null
   project_id: number | null
   tags?: string[]
+}
+
+/** Extract the gateway agent identifier from the agent's config JSON.
+ *  Falls back to agent_name (display name) if openclawId is not set. */
+function resolveGatewayAgentId(task: DispatchableTask): string {
+  if (task.agent_config) {
+    try {
+      const cfg = JSON.parse(task.agent_config)
+      if (typeof cfg.openclawId === 'string' && cfg.openclawId) return cfg.openclawId
+    } catch { /* ignore */ }
+  }
+  return task.agent_name
 }
 
 function buildTaskPrompt(task: DispatchableTask, rejectionFeedback?: string | null): string {
@@ -94,9 +107,20 @@ interface ReviewableTask {
   description: string | null
   resolution: string | null
   assigned_to: string | null
+  agent_config: string | null
   workspace_id: number
   ticket_prefix: string | null
   project_ticket_no: number | null
+}
+
+function resolveGatewayAgentIdForReview(task: ReviewableTask): string {
+  if (task.agent_config) {
+    try {
+      const cfg = JSON.parse(task.agent_config)
+      if (typeof cfg.openclawId === 'string' && cfg.openclawId) return cfg.openclawId
+    } catch { /* ignore */ }
+  }
+  return task.assigned_to || 'jarv'
 }
 
 function buildReviewPrompt(task: ReviewableTask): string {
@@ -154,9 +178,10 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
 
   const tasks = db.prepare(`
     SELECT t.id, t.title, t.description, t.resolution, t.assigned_to, t.workspace_id,
-           p.ticket_prefix, t.project_ticket_no
+           p.ticket_prefix, t.project_ticket_no, a.config as agent_config
     FROM tasks t
     LEFT JOIN projects p ON p.id = t.project_id AND p.workspace_id = t.workspace_id
+    LEFT JOIN agents a ON a.name = t.assigned_to AND a.workspace_id = t.workspace_id
     WHERE t.status = 'review'
     ORDER BY t.updated_at ASC
     LIMIT 3
@@ -181,8 +206,8 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
 
     try {
       const prompt = buildReviewPrompt(task)
-      // Use the assigned agent or fall back to a default reviewer agent
-      const reviewAgent = task.assigned_to || 'jarv'
+      // Resolve the gateway agent ID from config, falling back to assigned_to or default
+      const reviewAgent = resolveGatewayAgentIdForReview(task)
 
       const invokeParams = {
         message: prompt,
@@ -290,7 +315,7 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
   const db = getDatabase()
 
   const tasks = db.prepare(`
-    SELECT t.*, a.name as agent_name, a.id as agent_id,
+    SELECT t.*, a.name as agent_name, a.id as agent_id, a.config as agent_config,
            p.ticket_prefix, t.project_ticket_no
     FROM tasks t
     JOIN agents a ON a.name = t.assigned_to AND a.workspace_id = t.workspace_id
@@ -350,9 +375,10 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
       const prompt = buildTaskPrompt(task, rejectionFeedback)
 
       // Step 1: Invoke via gateway
+      const gatewayAgentId = resolveGatewayAgentId(task)
       const invokeParams = {
         message: prompt,
-        agentId: task.agent_name,
+        agentId: gatewayAgentId,
         idempotencyKey: `task-dispatch-${task.id}-${Date.now()}`,
         deliver: false,
       }
