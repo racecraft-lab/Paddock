@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { authenticateUser, createSession } from '@/lib/auth'
-import { logAuditEvent } from '@/lib/db'
+import { logAuditEvent, needsFirstTimeSetup } from '@/lib/db'
 import { getMcSessionCookieName, getMcSessionCookieOptions, isRequestSecure } from '@/lib/session-cookie'
 import { loginLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
@@ -22,6 +22,19 @@ export async function POST(request: Request) {
     const user = authenticateUser(username, password)
     if (!user) {
       logAuditEvent({ action: 'login_failed', actor: username, ip_address: ipAddress, user_agent: userAgent })
+
+      // When no users exist at all, give actionable feedback instead of "Invalid credentials"
+      if (needsFirstTimeSetup()) {
+        return NextResponse.json(
+          {
+            error: 'No admin account has been created yet',
+            code: 'NO_USERS',
+            hint: 'Visit /setup to create your admin account',
+          },
+          { status: 401 }
+        )
+      }
+
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
     }
 

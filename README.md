@@ -44,7 +44,7 @@ cd mission-control
 bash install.sh --docker
 ```
 
-The installer auto-generates secure credentials, starts the container, and runs an OpenClaw fleet health check. Open `http://localhost:3000` and log in with the printed credentials.
+The installer auto-generates secure credentials, starts the container, and runs an OpenClaw fleet health check. Open `http://localhost:3000` to create your admin account.
 
 ### One-Command Install (Local)
 
@@ -66,12 +66,12 @@ git clone https://github.com/builderz-labs/mission-control.git
 cd mission-control
 nvm use 22            # or: nvm use 24
 pnpm install
-cp .env.example .env    # edit with your values
-pnpm dev                # http://localhost:3000
+pnpm dev                # http://localhost:3000/setup
 ```
 
-Initial login is seeded from `AUTH_USER` / `AUTH_PASS` on first run.
-If `AUTH_PASS` contains `#`, quote it (e.g. `AUTH_PASS="my#password"`) or use `AUTH_PASS_B64`.
+On first run, visit `http://localhost:3000/setup` to create your admin account. Secrets (`AUTH_SECRET`, `API_KEY`) are auto-generated and persisted to `.data/`.
+
+For CI/automation, set `AUTH_USER` and `AUTH_PASS` env vars to seed the admin from environment instead.
 
 ## Gateway Optional Mode (Standalone Deployment)
 
@@ -98,6 +98,14 @@ Requires active gateway:
 - Gateway log streaming
 
 For production VPS setups, you can also proxy gateway WebSockets over 443. See `docs/deployment.md`.
+
+### Docker Zero-Config
+
+```bash
+docker compose up
+```
+
+No `.env` file needed. The container auto-generates `AUTH_SECRET` and `API_KEY` on first boot and persists them across restarts. Visit `http://localhost:3000` to create your admin account.
 
 ### Docker Hardening (Production)
 

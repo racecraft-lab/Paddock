@@ -29,6 +29,7 @@ type LoginRequestBody =
 type LoginErrorPayload = {
   code?: string
   error?: string
+  hint?: string
 }
 
 function readLoginErrorPayload(value: unknown): LoginErrorPayload {
@@ -37,6 +38,7 @@ function readLoginErrorPayload(value: unknown): LoginErrorPayload {
   return {
     code: typeof record.code === 'string' ? record.code : undefined,
     error: typeof record.error === 'string' ? record.error : undefined,
+    hint: typeof record.hint === 'string' ? record.hint : undefined,
   }
 }
 
@@ -62,12 +64,27 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [pendingApproval, setPendingApproval] = useState(false)
+  const [needsSetup, setNeedsSetup] = useState(false)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [googleReady, setGoogleReady] = useState(false)
   const googleCallbackRef = useRef<((response: GoogleCredentialResponse) => void) | null>(null)
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ''
+
+  // Check if first-time setup is needed on page load — auto-redirect to /setup
+  useEffect(() => {
+    fetch('/api/setup')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.needsSetup) {
+          window.location.href = '/setup'
+        }
+      })
+      .catch(() => {
+        // Ignore — setup check is best-effort
+      })
+  }, [])
 
   const completeLogin = useCallback(async (path: string, body: LoginRequestBody) => {
     const res = await fetch(path, {
@@ -80,6 +97,14 @@ export default function LoginPage() {
       const data = readLoginErrorPayload(await res.json().catch(() => null))
       if (data.code === 'PENDING_APPROVAL') {
         setPendingApproval(true)
+        setNeedsSetup(false)
+        setError('')
+        setLoading(false)
+        setGoogleLoading(false)
+        return false
+      }
+      if (data.code === 'NO_USERS') {
+        setNeedsSetup(true)
         setError('')
         setLoading(false)
         setGoogleLoading(false)
@@ -87,6 +112,7 @@ export default function LoginPage() {
       }
       setError(data.error || 'Login failed')
       setPendingApproval(false)
+      setNeedsSetup(false)
       setLoading(false)
       setGoogleLoading(false)
       return false
@@ -198,6 +224,29 @@ export default function LoginPage() {
               className="mt-3 text-xs"
             >
               Try again
+            </Button>
+          </div>
+        )}
+
+        {needsSetup && (
+          <div className="mb-4 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 text-center">
+            <div className="flex justify-center mb-2">
+              <svg className="w-8 h-8 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+            </div>
+            <div className="text-sm font-medium text-blue-200">No admin account created yet</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Set up your admin account to get started with Mission Control.
+            </p>
+            <Button
+              onClick={() => { window.location.href = '/setup' }}
+              size="sm"
+              className="mt-3"
+            >
+              Create Admin Account
             </Button>
           </div>
         )}
