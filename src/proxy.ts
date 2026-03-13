@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import os from 'node:os'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { buildMissionControlCsp, buildNonceRequestHeaders } from '@/lib/csp'
 import { MC_SESSION_COOKIE_NAME, LEGACY_MC_SESSION_COOKIE_NAME } from '@/lib/session-cookie'
 
 /** Constant-time string comparison using Node.js crypto. */
@@ -83,26 +84,14 @@ function hostMatches(pattern: string, hostname: string): boolean {
   return h === p
 }
 
-function buildCsp(nonce: string, googleEnabled: boolean): string {
-  return [
-    `default-src 'self'`,
-    `base-uri 'self'`,
-    `object-src 'none'`,
-    `frame-ancestors 'none'`,
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' blob:${googleEnabled ? ' https://accounts.google.com' : ''}`,
-    `style-src 'self' 'nonce-${nonce}'`,
-    `connect-src 'self' ws: wss: http://127.0.0.1:* http://localhost:* https://cdn.jsdelivr.net`,
-    `img-src 'self' data: blob:${googleEnabled ? ' https://*.googleusercontent.com https://lh3.googleusercontent.com' : ''}`,
-    `font-src 'self' data:`,
-    `frame-src 'self'${googleEnabled ? ' https://accounts.google.com' : ''}`,
-    `worker-src 'self' blob:`,
-  ].join('; ')
-}
-
 function nextResponseWithNonce(request: NextRequest): { response: NextResponse; nonce: string } {
   const nonce = crypto.randomBytes(16).toString('base64')
-  const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-nonce', nonce)
+  const googleEnabled = !!(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID)
+  const requestHeaders = buildNonceRequestHeaders({
+    headers: request.headers,
+    nonce,
+    googleEnabled,
+  })
   const response = NextResponse.next({
     request: {
       headers: requestHeaders,
@@ -120,7 +109,7 @@ function addSecurityHeaders(response: NextResponse, _request: NextRequest, nonce
 
   const googleEnabled = !!(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID)
   const effectiveNonce = nonce || crypto.randomBytes(16).toString('base64')
-  response.headers.set('Content-Security-Policy', buildCsp(effectiveNonce, googleEnabled))
+  response.headers.set('Content-Security-Policy', buildMissionControlCsp({ nonce: effectiveNonce, googleEnabled }))
 
   return response
 }
