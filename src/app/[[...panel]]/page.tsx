@@ -38,6 +38,7 @@ import { ExecApprovalPanel } from '@/components/panels/exec-approval-panel'
 import { ChatPagePanel } from '@/components/panels/chat-page-panel'
 import { ChatPanel } from '@/components/chat/chat-panel'
 import { getPluginPanel } from '@/lib/plugins'
+import { shouldRedirectDashboardToHttps } from '@/lib/browser-security'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { LocalModeBanner } from '@/components/layout/local-mode-banner'
 import { UpdateBanner } from '@/components/layout/update-banner'
@@ -63,10 +64,6 @@ interface GatewaySummary {
 function renderPluginPanel(panelId: string) {
   const pluginPanel = getPluginPanel(panelId)
   return pluginPanel ? createElement(pluginPanel) : <Dashboard />
-}
-
-function isLocalHost(hostname: string): boolean {
-  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
 }
 
 export default function Home() {
@@ -148,9 +145,11 @@ export default function Home() {
   useEffect(() => {
     setIsClient(true)
 
-    // OpenClaw control-ui device identity requires a secure browser context.
-    // Redirect remote HTTP sessions to HTTPS automatically to avoid handshake failures.
-    if (window.location.protocol === 'http:' && !isLocalHost(window.location.hostname)) {
+    if (shouldRedirectDashboardToHttps({
+      protocol: window.location.protocol,
+      hostname: window.location.hostname,
+      forceHttps: process.env.NEXT_PUBLIC_FORCE_HTTPS === '1',
+    })) {
       const secureUrl = new URL(window.location.href)
       secureUrl.protocol = 'https:'
       window.location.replace(secureUrl.toString())
