@@ -8,8 +8,9 @@ All notable changes to Mission Control are documented in this file.
 - HTTP and Tailscale login broken by unconditional HTTPS redirect — replaced with opt-in `NEXT_PUBLIC_FORCE_HTTPS=1` (#309)
 - CSP nonce mismatch blocking inline scripts after login — nonce now propagated into SSR request headers (#308, #311)
 - Layout inline theme script missing `nonce` attribute, causing CSP violations on chunk loading (#308, #311)
+- Task dispatch sending agent display name instead of gateway ID — now resolves `openclawId` from config (#310)
 - Session cookie `Secure` flag forced in production even over HTTP — now derived from actual request protocol (#304)
-- Node 24 compatibility alongside Node 22 (#303)
+- Node version check changed from allowlist (22, 24) to floor (>=22) for future compatibility
 
 ### Changed
 - CSP generation and browser-security helpers extracted to `src/lib/csp.ts` and `src/lib/browser-security.ts`
@@ -17,6 +18,7 @@ All notable changes to Mission Control are documented in this file.
 ### Contributors
 - @0xNyk
 - @polaris-dxz
+- @jaserNo1
 
 ## [2.0.0] - 2026-03-11
 
