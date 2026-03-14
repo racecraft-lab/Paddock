@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 
@@ -22,6 +23,8 @@ interface OpenClawDoctorFixProgress {
 type BannerState = 'idle' | 'fixing' | 'success' | 'error'
 
 export function OpenClawDoctorBanner() {
+  const t = useTranslations('doctorBanner')
+  const tc = useTranslations('common')
   const [doctor, setDoctor] = useState<OpenClawDoctorStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const doctorDismissedAt = useMissionControl(s => s.doctorDismissedAt)
@@ -54,13 +57,13 @@ export function OpenClawDoctorBanner() {
   async function handleFix() {
     setState('fixing')
     setErrorMsg(null)
-    setFixProgress('Running OpenClaw doctor fixes…')
+    setFixProgress(t('runningFixes'))
 
     const progressMessages = [
-      'Running OpenClaw doctor fixes…',
-      'Cleaning session stores…',
-      'Archiving orphan transcripts…',
-      'Rechecking current instance health…',
+      t('runningFixes'),
+      t('cleaningSessionStores'),
+      t('archivingOrphanTranscripts'),
+      t('recheckingHealth'),
     ]
     let progressIndex = 0
     const progressTimer = window.setInterval(() => {
@@ -75,7 +78,7 @@ export function OpenClawDoctorBanner() {
 
       if (!res.ok) {
         setState('error')
-        setErrorMsg(data.detail || data.error || 'OpenClaw doctor fix failed')
+        setErrorMsg(data.detail || data.error || t('fixFailed'))
         if (data.status) {
           setDoctor(data.status)
         }
@@ -91,7 +94,7 @@ export function OpenClawDoctorBanner() {
     } catch {
       window.clearInterval(progressTimer)
       setState('error')
-      setErrorMsg('Network error — could not reach the server.')
+      setErrorMsg(t('networkError'))
       setFixProgress('')
     }
   }
@@ -123,14 +126,14 @@ export function OpenClawDoctorBanner() {
   const busy = state === 'fixing'
   const headline =
     state === 'success'
-      ? 'OpenClaw doctor fix completed'
+      ? t('fixCompleted')
       : doctor.category === 'config'
-        ? 'OpenClaw config drift detected'
+        ? t('configDrift')
         : doctor.category === 'state'
-          ? 'OpenClaw state integrity warning'
+          ? t('stateIntegrity')
           : doctor.category === 'security'
-            ? 'OpenClaw security warning'
-            : 'OpenClaw doctor warnings'
+            ? t('securityWarning')
+            : t('doctorWarnings')
 
   return (
     <div className="mx-4 mt-3 mb-0">
@@ -150,7 +153,7 @@ export function OpenClawDoctorBanner() {
                 </p>
               ))}
               {extraCount > 0 && (
-                <p className="text-2xs opacity-75">+ {extraCount} more issue{extraCount === 1 ? '' : 's'}</p>
+                <p className="text-2xs opacity-75">{tc('moreIssues', { count: extraCount })}</p>
               )}
             </div>
           )}
@@ -168,21 +171,21 @@ export function OpenClawDoctorBanner() {
               disabled={busy}
               className={`shrink-0 rounded px-2.5 py-1 text-2xs font-medium transition-colors ${tone.button}`}
             >
-              {busy ? 'Running Fix…' : 'Run Doctor Fix'}
+              {busy ? t('runningFix') : t('runDoctorFix')}
             </button>
           )}
           <button
             onClick={() => setShowDetails(value => !value)}
             className={`shrink-0 rounded border px-2 py-1 text-2xs font-medium transition-colors ${tone.secondary}`}
           >
-            {showDetails ? 'Hide Details' : 'Show Details'}
+            {showDetails ? tc('hideDetails') : tc('showDetails')}
           </button>
           <Button
             variant="ghost"
             size="icon-xs"
             onClick={dismissDoctor}
             className="shrink-0 hover:bg-transparent"
-            title="Dismiss"
+            title={tc('dismiss')}
           >
             <svg className="h-3.5 w-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M4 4l8 8M12 4l-8 8" />

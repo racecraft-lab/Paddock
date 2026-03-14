@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { createPortal } from 'react-dom'
 import { useState, useEffect, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
 import { useMissionControl } from '@/store'
@@ -53,6 +54,7 @@ function modeColors(isGateway: boolean) {
 export function OnboardingWizard() {
   const { showOnboarding, setShowOnboarding, dashboardMode, gatewayAvailable, interfaceMode, setInterfaceMode } = useMissionControl()
   const navigateToPanel = useNavigateToPanel()
+  const t = useTranslations('onboarding')
   const [step, setStep] = useState(0)
   const [slideDir, setSlideDir] = useState<'left' | 'right'>('left')
   const [animating, setAnimating] = useState(false)
@@ -257,8 +259,8 @@ export function OnboardingWizard() {
         }`}>
           {completionMessage && (
             <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/95 backdrop-blur-sm">
-              <div className={`text-2xl font-bold mb-2 ${isGateway ? 'text-void-cyan' : 'text-void-amber'}`}>Station Online</div>
-              <p className="text-sm text-muted-foreground">Your station is ready for agents.</p>
+              <div className={`text-2xl font-bold mb-2 ${isGateway ? 'text-void-cyan' : 'text-void-amber'}`}>{t('stationOnline')}</div>
+              <p className="text-sm text-muted-foreground">{t('stationReady')}</p>
             </div>
           )}
           {STEPS[step]?.id === 'welcome' && (
@@ -287,6 +289,8 @@ function StepWelcome({ isGateway, capabilities, onNext, onSkip }: {
   onSkip: () => void
 }) {
   const mc = modeColors(isGateway)
+  const t = useTranslations('onboarding.welcome')
+  const tc = useTranslations('common')
 
   return (
     <>
@@ -301,11 +305,9 @@ function StepWelcome({ isGateway, capabilities, onNext, onSkip }: {
           />
         </div>
         <div>
-          <h2 className="text-xl font-semibold mb-2">Welcome to Mission Control</h2>
+          <h2 className="text-xl font-semibold mb-2">{t('title')}</h2>
           <p className="text-sm text-muted-foreground max-w-sm">
-            Your station for AI agents. When agents dock here, they gain persistent memory,
-            task management, coordinated workflows, and full observability.
-            We&apos;ve scanned your setup — here&apos;s what&apos;s online.
+            {t('description')}
           </p>
         </div>
 
@@ -314,26 +316,26 @@ function StepWelcome({ isGateway, capabilities, onNext, onSkip }: {
           <StatusChip
             ok={capabilities.claudeSessions > 0}
             label={capabilities.claudeSessions > 0
-              ? `${capabilities.claudeSessions} active session${capabilities.claudeSessions !== 1 ? 's' : ''} detected`
-              : 'No active Claude sessions'}
+              ? t('activeSessionsDetected', { count: capabilities.claudeSessions })
+              : t('noActiveSessions')}
           />
           <StatusChip
             ok={capabilities.gatewayConnected}
-            label={capabilities.gatewayConnected ? 'Gateway connected' : 'Local mode — no gateway'}
+            label={capabilities.gatewayConnected ? t('gatewayConnected') : t('localModeNoGateway')}
           />
           <StatusChip
             ok={capabilities.agentCount > 0}
             label={capabilities.agentCount > 0
-              ? `${capabilities.agentCount} agent${capabilities.agentCount !== 1 ? 's' : ''} registered`
-              : 'No agents yet'}
+              ? t('agentsRegistered', { count: capabilities.agentCount })
+              : t('noAgentsYet')}
           />
           {capabilities.gatewayConnected && capabilities.dashboardRegistration && (
             <StatusChip
               ok={capabilities.dashboardRegistration.registered || capabilities.dashboardRegistration.alreadySet}
               label={
                 (capabilities.dashboardRegistration.registered || capabilities.dashboardRegistration.alreadySet)
-                  ? 'Gateway: Mission Control registered'
-                  : 'Gateway registration pending'
+                  ? t('gatewayRegistered')
+                  : t('gatewayRegistrationPending')
               }
             />
           )}
@@ -341,7 +343,7 @@ function StepWelcome({ isGateway, capabilities, onNext, onSkip }: {
 
         {/* Mode cards — both visible, detected mode highlighted */}
         <div className="w-full">
-          <p className="text-xs text-muted-foreground text-center mb-2">Available modes</p>
+          <p className="text-xs text-muted-foreground text-center mb-2">{t('availableModes')}</p>
           <div className="grid grid-cols-2 gap-3">
             {/* Local mode card */}
             <div className={`relative p-3 rounded-lg border text-left transition-colors ${
@@ -351,19 +353,19 @@ function StepWelcome({ isGateway, capabilities, onNext, onSkip }: {
             }`}>
               {!isGateway && (
                 <span className="absolute -top-2 right-2 text-2xs px-1.5 py-0.5 rounded-full bg-void-amber/20 text-void-amber border border-void-amber/30">
-                  Detected
+                  {tc('detected')}
                 </span>
               )}
               <p className={`text-xs font-medium mb-1.5 ${!isGateway ? 'text-void-amber' : 'text-muted-foreground'}`}>
-                Local Mode
+                {t('localMode')}
               </p>
               <ul className={`text-2xs space-y-0.5 ${!isGateway ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
-                <li>Monitor Claude Code sessions on this machine</li>
-                <li>Task tracking and cost monitoring</li>
-                <li>Session history</li>
+                <li>{t('monitorClaude')}</li>
+                <li>{t('taskTracking')}</li>
+                <li>{t('sessionHistory')}</li>
               </ul>
               {isGateway && (
-                <p className="text-2xs text-muted-foreground/40 mt-1.5 italic">Single-pilot ops</p>
+                <p className="text-2xs text-muted-foreground/40 mt-1.5 italic">{t('singlePilot')}</p>
               )}
             </div>
 
@@ -375,19 +377,19 @@ function StepWelcome({ isGateway, capabilities, onNext, onSkip }: {
             }`}>
               {isGateway && (
                 <span className="absolute -top-2 right-2 text-2xs px-1.5 py-0.5 rounded-full bg-void-cyan/20 text-void-cyan border border-void-cyan/30">
-                  Detected
+                  {tc('detected')}
                 </span>
               )}
               <p className={`text-xs font-medium mb-1.5 ${isGateway ? 'text-void-cyan' : 'text-muted-foreground'}`}>
-                Gateway Mode
+                {t('gatewayMode')}
               </p>
               <ul className={`text-2xs space-y-0.5 ${isGateway ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
-                <li>Orchestrate multiple agents across machines</li>
-                <li>Memory, skills, and inter-agent comms</li>
-                <li>Webhook integrations</li>
+                <li>{t('orchestrateAgents')}</li>
+                <li>{t('memorySkills')}</li>
+                <li>{t('webhookIntegrations')}</li>
               </ul>
               {!isGateway && (
-                <p className="text-2xs text-muted-foreground/40 mt-1.5 italic">Requires gateway</p>
+                <p className="text-2xs text-muted-foreground/40 mt-1.5 italic">{t('requiresGateway')}</p>
               )}
             </div>
           </div>
@@ -395,10 +397,10 @@ function StepWelcome({ isGateway, capabilities, onNext, onSkip }: {
       </div>
       <div className="flex items-center justify-between pt-4 border-t border-border/30">
         <Button variant="ghost" size="sm" onClick={onSkip} className="text-xs text-muted-foreground">
-          Skip setup
+          {t('skipSetup')}
         </Button>
         <Button onClick={onNext} size="sm" className={`${mc.bgBtn} ${mc.text} border ${mc.border} ${mc.hoverBg}`}>
-          Get started
+          {t('getStarted')}
         </Button>
       </div>
     </>
@@ -420,6 +422,8 @@ function StepInterfaceMode({ isGateway, onNext, onBack }: {
   onBack: () => void
 }) {
   const mc = modeColors(isGateway)
+  const t = useTranslations('onboarding.interfaceMode')
+  const tc = useTranslations('common')
   const { interfaceMode, setInterfaceMode } = useMissionControl()
   const [selected, setSelected] = useState<'essential' | 'full'>(interfaceMode)
 
@@ -438,9 +442,9 @@ function StepInterfaceMode({ isGateway, onNext, onBack }: {
   return (
     <>
       <div className="flex-1">
-        <h2 className="text-lg font-semibold mb-1">Choose Your Station Layout</h2>
+        <h2 className="text-lg font-semibold mb-1">{t('title')}</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Essential shows the core panels operators need most. Full unlocks every system on the station — memory, automation, security auditing, and more. You can switch anytime.
+          {t('description')}
         </p>
 
         <div className="grid grid-cols-2 gap-3">
@@ -455,19 +459,19 @@ function StepInterfaceMode({ isGateway, onNext, onBack }: {
           >
             {selected === 'essential' && (
               <span className="absolute -top-2 right-2 text-2xs px-1.5 py-0.5 rounded-full bg-void-amber/20 text-void-amber border border-void-amber/30">
-                Selected
+                {tc('selected')}
               </span>
             )}
             <p className={`text-sm font-medium mb-2 ${selected === 'essential' ? 'text-void-amber' : 'text-foreground'}`}>
-              Essential
+              {t('essential')}
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              Streamlined ops — the panels you&apos;ll use daily: fleet overview, agents, tasks, chat, activity feed, logs, and settings.
+              {t('essentialDescription')}
             </p>
             <ul className="text-2xs text-muted-foreground/70 space-y-0.5">
-              <li>Fleet overview, Agents, Tasks, Chat</li>
-              <li>Activity feed, Logs, Settings</li>
-              <li>7 panels total</li>
+              <li>{t('essentialPanels1')}</li>
+              <li>{t('essentialPanels2')}</li>
+              <li>{t('essentialTotal')}</li>
             </ul>
           </button>
 
@@ -482,28 +486,28 @@ function StepInterfaceMode({ isGateway, onNext, onBack }: {
           >
             {selected === 'full' && (
               <span className="absolute -top-2 right-2 text-2xs px-1.5 py-0.5 rounded-full bg-void-cyan/20 text-void-cyan border border-void-cyan/30">
-                Selected
+                {tc('selected')}
               </span>
             )}
             <p className={`text-sm font-medium mb-2 ${selected === 'full' ? 'text-void-cyan' : 'text-foreground'}`}>
-              Full
+              {t('full')}
             </p>
             <p className="text-xs text-muted-foreground mb-3">
-              Full station access — adds memory browser, cron scheduling, webhooks, alerts, security audit, cost tracking, and gateway config.
+              {t('fullDescription')}
             </p>
             <ul className="text-2xs text-muted-foreground/70 space-y-0.5">
-              <li>Everything in Essential plus</li>
-              <li>Memory, Cron, Webhooks, Audit</li>
-              <li>All station systems unlocked</li>
+              <li>{t('fullIncludes')}</li>
+              <li>{t('fullPanels')}</li>
+              <li>{t('fullTotal')}</li>
             </ul>
           </button>
         </div>
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-border/30">
-        <Button variant="ghost" size="sm" onClick={onBack} className="text-xs text-muted-foreground">Back</Button>
+        <Button variant="ghost" size="sm" onClick={onBack} className="text-xs text-muted-foreground">{tc('back')}</Button>
         <Button onClick={onNext} size="sm" className={`${mc.bgBtn} ${mc.text} border ${mc.border} ${mc.hoverBg}`}>
-          Continue
+          {tc('continue')}
         </Button>
       </div>
     </>
@@ -517,6 +521,8 @@ function StepGatewayLink({ isGateway, registration, onNext, onBack }: {
   onBack: () => void
 }) {
   const mc = modeColors(isGateway)
+  const t = useTranslations('onboarding.gatewayLink')
+  const tc = useTranslations('common')
   const [healthOk, setHealthOk] = useState<boolean | null>(null)
   const [testing, setTesting] = useState(false)
 
@@ -537,10 +543,9 @@ function StepGatewayLink({ isGateway, registration, onNext, onBack }: {
   return (
     <>
       <div className="flex-1">
-        <h2 className="text-lg font-semibold mb-1">Gateway Link</h2>
+        <h2 className="text-lg font-semibold mb-1">{t('title')}</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Mission Control registers its origin with the OpenClaw gateway so it can connect
-          via WebSocket and manage agents remotely.
+          {t('description')}
         </p>
 
         <div className="space-y-3">
@@ -551,11 +556,11 @@ function StepGatewayLink({ isGateway, registration, onNext, onBack }: {
               [{configured ? '+' : '~'}]
             </span>
             <div>
-              <p className="text-sm font-medium">Gateway origin registered</p>
+              <p className="text-sm font-medium">{t('originRegistered')}</p>
               <p className="text-xs text-muted-foreground">
                 {configured
-                  ? 'Mission Control origin added to gateway allowedOrigins'
-                  : 'Registration pending — will be configured on next capabilities check'}
+                  ? t('originAdded')
+                  : t('registrationPending')}
               </p>
             </div>
           </div>
@@ -567,11 +572,11 @@ function StepGatewayLink({ isGateway, registration, onNext, onBack }: {
               [{configured ? '+' : '-'}]
             </span>
             <div>
-              <p className="text-sm font-medium">Device auth configured</p>
+              <p className="text-sm font-medium">{t('deviceAuthConfigured')}</p>
               <p className="text-xs text-muted-foreground">
                 {configured
-                  ? 'Device auth disabled — MC authenticates via gateway token'
-                  : 'Will be configured alongside origin registration'}
+                  ? t('deviceAuthDisabled')
+                  : t('deviceAuthWillConfigure')}
               </p>
             </div>
           </div>
@@ -584,22 +589,22 @@ function StepGatewayLink({ isGateway, registration, onNext, onBack }: {
               onClick={testConnection}
               disabled={testing}
             >
-              {testing ? 'Testing...' : 'Test Connection'}
+              {testing ? t('testing') : t('testConnection')}
             </Button>
             {healthOk === true && (
-              <span className="text-xs text-green-400">Gateway reachable</span>
+              <span className="text-xs text-green-400">{t('gatewayReachable')}</span>
             )}
             {healthOk === false && (
-              <span className="text-xs text-red-400">Gateway unreachable</span>
+              <span className="text-xs text-red-400">{t('gatewayUnreachable')}</span>
             )}
           </div>
         </div>
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-border/30">
-        <Button variant="ghost" size="sm" onClick={onBack} className="text-xs text-muted-foreground">Back</Button>
+        <Button variant="ghost" size="sm" onClick={onBack} className="text-xs text-muted-foreground">{tc('back')}</Button>
         <Button onClick={onNext} size="sm" className={`${mc.bgBtn} ${mc.text} border ${mc.border} ${mc.hoverBg}`}>
-          Continue
+          {tc('continue')}
         </Button>
       </div>
     </>
@@ -622,20 +627,21 @@ function StepCredentials({
   onClose: () => void
 }) {
   const mc = modeColors(isGateway)
+  const t = useTranslations('onboarding.credentials')
+  const tc = useTranslations('common')
   const allGood = status?.authOk && status?.apiKeyOk
 
   return (
     <>
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-1">Secure Your Station</h2>
+        <h2 className="text-lg font-semibold mb-1">{t('title')}</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          The admin password protects your station console. The API key is a docking credential —
-          agents present it when they register, so only authorized agents can dock.
+          {t('description')}
         </p>
 
         {!status ? (
           <div className="py-4">
-            <Loader variant="inline" label="Checking credentials..." />
+            <Loader variant="inline" label={t('checkingCredentials')} />
           </div>
         ) : (
           <div className="space-y-3">
@@ -644,9 +650,9 @@ function StepCredentials({
                 [{status.authOk ? '+' : 'x'}]
               </span>
               <div>
-                <p className="text-sm font-medium">Admin Password</p>
+                <p className="text-sm font-medium">{t('adminPassword')}</p>
                 <p className="text-xs text-muted-foreground">
-                  {status.authOk ? 'Password is strong and non-default' : 'Using a default or weak password — change AUTH_PASS in .env'}
+                  {status.authOk ? t('passwordStrong') : t('passwordWeak')}
                 </p>
               </div>
             </div>
@@ -656,11 +662,11 @@ function StepCredentials({
                 [{status.apiKeyOk ? '+' : 'x'}]
               </span>
               <div>
-                <p className="text-sm font-medium">API Key</p>
+                <p className="text-sm font-medium">{t('apiKey')}</p>
                 <p className="text-xs text-muted-foreground">
                   {status.apiKeyOk
-                    ? 'Configured — agents can dock using this key'
-                    : 'Not set — agents won\'t be able to dock without a configured key. Run: bash scripts/generate-env.sh --force'}
+                    ? t('apiKeyConfigured')
+                    : t('apiKeyNotSet')}
                 </p>
               </div>
             </div>
@@ -672,15 +678,15 @@ function StepCredentials({
                 className="text-xs"
                 onClick={() => { onClose(); navigateToPanel('settings') }}
               >
-                Open Settings
+                {t('openSettings')}
               </Button>
             )}
 
             <div className="pt-2">
               <div className="mb-2">
-                <p className="text-sm font-medium">Security Scan</p>
+                <p className="text-sm font-medium">{t('securityScan')}</p>
                 <p className="text-xs text-muted-foreground">
-                  Verify network, runtime, and OpenClaw hardening before you launch the station.
+                  {t('securityScanDescription')}
                 </p>
               </div>
               <div className="rounded-lg border border-border/40 bg-surface-1/40 p-3">
@@ -692,9 +698,9 @@ function StepCredentials({
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-border/30">
-        <Button variant="ghost" size="sm" onClick={onBack} className="text-xs text-muted-foreground">Back</Button>
+        <Button variant="ghost" size="sm" onClick={onBack} className="text-xs text-muted-foreground">{tc('back')}</Button>
         <Button onClick={onFinish} size="sm" className={`${mc.bgBtn} ${mc.text} border ${mc.border} ${mc.hoverBg}`}>
-          {allGood ? 'Launch Station' : 'Launch anyway'}
+          {allGood ? t('launchStation') : t('launchAnyway')}
         </Button>
       </div>
     </>

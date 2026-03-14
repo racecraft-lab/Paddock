@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { LanguageSwitcherSelect } from '@/components/ui/language-switcher'
 
 type SetupStep = 'form' | 'creating'
 
@@ -11,12 +13,14 @@ interface ProgressStep {
   status: 'pending' | 'active' | 'done' | 'error'
 }
 
-const INITIAL_PROGRESS: ProgressStep[] = [
-  { label: 'Validating credentials', status: 'pending' },
-  { label: 'Creating admin account', status: 'pending' },
-  { label: 'Configuring session', status: 'pending' },
-  { label: 'Launching dashboard', status: 'pending' },
-]
+function getInitialProgress(t: (key: string) => string): ProgressStep[] {
+  return [
+    { label: t('validatingCredentials'), status: 'pending' },
+    { label: t('creatingAdminAccount'), status: 'pending' },
+    { label: t('configuringSession'), status: 'pending' },
+    { label: t('launchingDashboard'), status: 'pending' },
+  ]
+}
 
 function ProgressIndicator({ steps }: { steps: ProgressStep[] }) {
   return (
@@ -57,13 +61,15 @@ function ProgressIndicator({ steps }: { steps: ProgressStep[] }) {
 }
 
 export default function SetupPage() {
+  const t = useTranslations('auth')
+  const tc = useTranslations('common')
   const [username, setUsername] = useState('admin')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [error, setError] = useState('')
   const [step, setStep] = useState<SetupStep>('form')
-  const [progress, setProgress] = useState<ProgressStep[]>(INITIAL_PROGRESS)
+  const [progress, setProgress] = useState<ProgressStep[]>(() => getInitialProgress(t))
   const [checking, setChecking] = useState(true)
   const [setupAvailable, setSetupAvailable] = useState(false)
 
@@ -79,10 +85,10 @@ export default function SetupPage() {
         setChecking(false)
       })
       .catch(() => {
-        setError('Failed to check setup status')
+        setError(t('failedToCheckSetup'))
         setChecking(false)
       })
-  }, [])
+  }, [t])
 
   const updateProgress = useCallback((index: number, status: ProgressStep['status']) => {
     setProgress((prev) => prev.map((s, i) => (i === index ? { ...s, status } : s)))
@@ -93,16 +99,16 @@ export default function SetupPage() {
     setError('')
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setError(t('passwordsDoNotMatch'))
       return
     }
     if (password.length < 12) {
-      setError('Password must be at least 12 characters')
+      setError(t('passwordTooShort'))
       return
     }
 
     setStep('creating')
-    setProgress(INITIAL_PROGRESS)
+    setProgress(getInitialProgress(t))
 
     // Step 1: Validating
     updateProgress(0, 'active')
@@ -125,11 +131,11 @@ export default function SetupPage() {
       if (!res.ok) {
         const data = await res.json().catch(() => null)
         updateProgress(1, 'error')
-        setError(data?.error || 'Setup failed')
+        setError(data?.error || t('setupFailed'))
         // Allow retry after a brief pause
         await new Promise((r) => setTimeout(r, 1500))
         setStep('form')
-        setProgress(INITIAL_PROGRESS)
+        setProgress(getInitialProgress(t))
         return
       }
 
@@ -149,19 +155,19 @@ export default function SetupPage() {
       window.location.href = '/'
     } catch {
       updateProgress(1, 'error')
-      setError('Network error')
+      setError(t('networkError'))
       await new Promise((r) => setTimeout(r, 1500))
       setStep('form')
-      setProgress(INITIAL_PROGRESS)
+      setProgress(getInitialProgress(t))
     }
-  }, [username, password, confirmPassword, displayName, updateProgress])
+  }, [username, password, confirmPassword, displayName, updateProgress, t])
 
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-          Checking setup status...
+          {t('checkingSetupStatus')}
         </div>
       </div>
     )
@@ -173,6 +179,9 @@ export default function SetupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcherSelect />
+      </div>
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center mb-3">
@@ -186,12 +195,12 @@ export default function SetupPage() {
             />
           </div>
           <h1 className="text-xl font-semibold text-foreground">
-            {step === 'form' ? 'Welcome to Mission Control' : 'Setting up Mission Control'}
+            {step === 'form' ? t('welcomeToMC') : t('settingUpMC')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
             {step === 'form'
-              ? 'Create your admin account to get started'
-              : 'Creating your admin account...'}
+              ? t('createAdminToStart')
+              : t('creatingAdmin')}
           </p>
         </div>
 
@@ -217,7 +226,7 @@ export default function SetupPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-foreground mb-1.5">
-                  Username
+                  {t('username')}
                 </label>
                 <input
                   id="username"
@@ -232,13 +241,13 @@ export default function SetupPage() {
                   minLength={2}
                   maxLength={64}
                   pattern="[a-z0-9_.\-]+"
-                  title="Lowercase letters, numbers, dots, hyphens, and underscores only"
+                  title={t('usernameHint')}
                 />
               </div>
 
               <div>
                 <label htmlFor="displayName" className="block text-sm font-medium text-foreground mb-1.5">
-                  Display Name <span className="text-muted-foreground font-normal">(optional)</span>
+                  {t('displayName')} <span className="text-muted-foreground font-normal">({tc('optional')})</span>
                 </label>
                 <input
                   id="displayName"
@@ -253,7 +262,7 @@ export default function SetupPage() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1.5">
-                  Password
+                  {t('password')}
                 </label>
                 <input
                   id="password"
@@ -261,21 +270,21 @@ export default function SetupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-smooth"
-                  placeholder="At least 12 characters"
+                  placeholder={t('atLeast12Chars')}
                   autoComplete="new-password"
                   required
                   minLength={12}
                 />
                 {password.length > 0 && password.length < 12 && (
                   <p className="mt-1 text-xs text-amber-400">
-                    {12 - password.length} more character{12 - password.length !== 1 ? 's' : ''} needed
+                    {t('moreCharsNeeded', { count: 12 - password.length })}
                   </p>
                 )}
               </div>
 
               <div>
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-1.5">
-                  Confirm Password
+                  {t('confirmPassword')}
                 </label>
                 <input
                   id="confirmPassword"
@@ -283,13 +292,13 @@ export default function SetupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full h-10 px-3 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-smooth"
-                  placeholder="Repeat your password"
+                  placeholder={t('repeatPassword')}
                   autoComplete="new-password"
                   required
                   minLength={12}
                 />
                 {confirmPassword.length > 0 && password !== confirmPassword && (
-                  <p className="mt-1 text-xs text-destructive">Passwords do not match</p>
+                  <p className="mt-1 text-xs text-destructive">{t('passwordsDoNotMatch')}</p>
                 )}
               </div>
 
@@ -298,12 +307,12 @@ export default function SetupPage() {
                 size="lg"
                 className="w-full rounded-lg"
               >
-                Create Admin Account
+                {t('createAdminAccount')}
               </Button>
             </form>
 
             <p className="text-center text-xs text-muted-foreground mt-6">
-              This page is only available during first-time setup.
+              {t('firstTimeSetupOnly')}
             </p>
           </>
         )}

@@ -1,6 +1,6 @@
 'use client'
 
-import { createElement, useEffect, useState } from 'react'
+import { createElement, useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { NavRail } from '@/components/layout/nav-rail'
 import { HeaderBar } from '@/components/layout/header-bar'
@@ -39,6 +39,7 @@ import { ChatPagePanel } from '@/components/panels/chat-page-panel'
 import { ChatPanel } from '@/components/chat/chat-panel'
 import { getPluginPanel } from '@/lib/plugins'
 import { shouldRedirectDashboardToHttps } from '@/lib/browser-security'
+import { useTranslations } from 'next-intl'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { LocalModeBanner } from '@/components/layout/local-mode-banner'
 import { UpdateBanner } from '@/components/layout/update-banner'
@@ -61,6 +62,20 @@ interface GatewaySummary {
   is_primary: number
 }
 
+const STEP_KEYS = ['auth', 'capabilities', 'config', 'connect', 'agents', 'sessions', 'projects', 'memory', 'skills'] as const
+
+const bootLabelKeys: Record<string, string> = {
+  auth: 'authenticatingOperator',
+  capabilities: 'detectingStationMode',
+  config: 'loadingControlConfig',
+  connect: 'connectingRuntimeLinks',
+  agents: 'syncingAgentRegistry',
+  sessions: 'loadingActiveSessions',
+  projects: 'hydratingWorkspaceBoard',
+  memory: 'mappingMemoryGraph',
+  skills: 'indexingSkillCatalog',
+}
+
 function renderPluginPanel(panelId: string) {
   const pluginPanel = getPluginPanel(panelId)
   return pluginPanel ? createElement(pluginPanel) : <Dashboard />
@@ -69,6 +84,9 @@ function renderPluginPanel(panelId: string) {
 export default function Home() {
   const router = useRouter()
   const { connect } = useWebSocket()
+  const tb = useTranslations('boot')
+  const tp = useTranslations('page')
+  const tc = useTranslations('common')
   const { activeTab, setActiveTab, setCurrentUser, setDashboardMode, setGatewayAvailable, setCapabilitiesChecked, setSubscription, setDefaultOrgName, setUpdateAvailable, setOpenclawUpdate, showOnboarding, setShowOnboarding, liveFeedOpen, toggleLiveFeed, showProjectManagerModal, setShowProjectManagerModal, fetchProjects, setChatPanelOpen, bootComplete, setBootComplete, setAgents, setSessions, setProjects, setInterfaceMode, setMemoryGraphAgents, setSkillsData } = useMissionControl()
 
   // Sync URL → Zustand activeTab
@@ -97,20 +115,21 @@ export default function Home() {
   // Connect to SSE for real-time local DB events (tasks, agents, chat, etc.)
   useServerEvents()
   const [isClient, setIsClient] = useState(false)
-  const [initSteps, setInitSteps] = useState<Array<{ key: string; label: string; status: 'pending' | 'done' }>>([
-    { key: 'auth',         label: 'Authenticating operator',    status: 'pending' },
-    { key: 'capabilities', label: 'Detecting station mode',     status: 'pending' },
-    { key: 'config',       label: 'Loading control config',     status: 'pending' },
-    { key: 'connect',      label: 'Connecting runtime links',   status: 'pending' },
-    { key: 'agents',       label: 'Syncing agent registry',     status: 'pending' },
-    { key: 'sessions',     label: 'Loading active sessions',    status: 'pending' },
-    { key: 'projects',     label: 'Hydrating workspace board',  status: 'pending' },
-    { key: 'memory',       label: 'Mapping memory graph',       status: 'pending' },
-    { key: 'skills',       label: 'Indexing skill catalog',     status: 'pending' },
-  ])
+  const [stepStatuses, setStepStatuses] = useState<Record<string, 'pending' | 'done'>>(
+    () => Object.fromEntries(STEP_KEYS.map(k => [k, 'pending']))
+  )
+
+  const initSteps = useMemo(() =>
+    STEP_KEYS.map(key => ({
+      key,
+      label: tb(bootLabelKeys[key] as Parameters<typeof tb>[0]),
+      status: stepStatuses[key] || 'pending' as const,
+    })),
+    [tb, stepStatuses]
+  )
 
   const markStep = (key: string) => {
-    setInitSteps(prev => prev.map(s => s.key === key ? { ...s, status: 'done' } : s))
+    setStepStatuses(prev => ({ ...prev, [key]: 'done' }))
   }
 
   useEffect(() => {
@@ -350,7 +369,7 @@ export default function Home() {
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:text-sm focus:font-medium">
-        Skip to main content
+        {tc('skipToMainContent')}
       </a>
 
       {/* Left: Icon rail navigation (hidden on mobile, shown as bottom bar instead) */}
@@ -380,7 +399,7 @@ export default function Home() {
           </div>
           <footer className="px-4 pb-4 pt-2">
             <p className="text-2xs text-muted-foreground/50 text-center">
-              Built with care by <a href="https://x.com/nyk_builderz" target="_blank" rel="noopener noreferrer" className="text-muted-foreground/70 hover:text-primary transition-colors duration-200">nyk</a>.
+              {tc('builtWithCareBy')} <a href="https://x.com/nyk_builderz" target="_blank" rel="noopener noreferrer" className="text-muted-foreground/70 hover:text-primary transition-colors duration-200">nyk</a>.
             </p>
           </footer>
         </main>
@@ -398,7 +417,7 @@ export default function Home() {
         <button
           onClick={toggleLiveFeed}
           className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-30 w-6 h-12 items-center justify-center bg-card border border-r-0 border-border rounded-l-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
-          title="Show live feed"
+          title={tp('showLiveFeed')}
         >
           <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
             <path d="M10 3l-5 5 5 5" strokeLinecap="round" strokeLinejoin="round" />
@@ -430,16 +449,18 @@ const ESSENTIAL_PANELS = new Set([
 ])
 
 function ContentRouter({ tab }: { tab: string }) {
+  const tp = useTranslations('page')
   const { dashboardMode, interfaceMode, setInterfaceMode } = useMissionControl()
   const navigateToPanel = useNavigateToPanel()
   const isLocal = dashboardMode === 'local'
+  const panelName = tab.replace(/-/g, ' ')
 
   // Guard: show nudge for non-essential panels in essential mode
   if (interfaceMode === 'essential' && !ESSENTIAL_PANELS.has(tab)) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center gap-4">
         <p className="text-sm text-muted-foreground">
-          <span className="font-medium text-foreground capitalize">{tab.replace(/-/g, ' ')}</span> is available in Full mode.
+          {tp('availableInFullMode', { panel: panelName })}
         </p>
         <div className="flex items-center gap-2">
           <Button
@@ -450,14 +471,14 @@ function ContentRouter({ tab }: { tab: string }) {
               try { await fetch('/api/settings', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ settings: { 'general.interface_mode': 'full' } }) }) } catch {}
             }}
           >
-            Switch to Full
+            {tp('switchToFull')}
           </Button>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigateToPanel('overview')}
           >
-            Go to Overview
+            {tp('goToOverview')}
           </Button>
         </div>
       </div>
@@ -553,13 +574,14 @@ function ContentRouter({ tab }: { tab: string }) {
 }
 
 function LocalModeUnavailable({ panel }: { panel: string }) {
+  const tp = useTranslations('page')
   return (
     <div className="flex flex-col items-center justify-center py-24 text-center">
       <p className="text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{panel}</span> requires an OpenClaw gateway connection.
+        {tp('requiresGateway', { panel })}
       </p>
       <p className="text-xs text-muted-foreground mt-1">
-        Configure a gateway to enable this panel.
+        {tp('configureGateway')}
       </p>
     </div>
   )

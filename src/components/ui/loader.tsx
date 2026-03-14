@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { APP_VERSION } from '@/lib/version'
 
 interface InitStep {
@@ -64,6 +65,7 @@ function LoaderDots({ size = 'md' }: { size?: 'sm' | 'md' }) {
 }
 
 function PageLoader({ steps }: { steps?: InitStep[] }) {
+  const t = useTranslations('boot')
   useEffect(() => {
     const createdLinks: HTMLLinkElement[] = []
 
@@ -151,10 +153,10 @@ function PageLoader({ steps }: { steps?: InitStep[] }) {
         {/* Title */}
         <div className="flex flex-col items-center gap-1">
           <h1 className="font-mono text-sm tracking-[0.2em] uppercase text-foreground font-medium">
-            Mission Control
+            {t('missionControl')}
           </h1>
           <p className="text-2xs text-muted-foreground/60">
-            Agent Orchestration
+            {t('agentOrchestration')}
           </p>
         </div>
 
