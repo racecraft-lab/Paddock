@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { useMissionControl } from '@/store'
 
 interface OpenClawDoctorStatus {
   level: 'healthy' | 'warning' | 'error'
@@ -23,7 +24,8 @@ type BannerState = 'idle' | 'fixing' | 'success' | 'error'
 export function OpenClawDoctorBanner() {
   const [doctor, setDoctor] = useState<OpenClawDoctorStatus | null>(null)
   const [loading, setLoading] = useState(true)
-  const [dismissed, setDismissed] = useState(false)
+  const doctorDismissedAt = useMissionControl(s => s.doctorDismissedAt)
+  const dismissDoctor = useMissionControl(s => s.dismissDoctor)
   const [state, setState] = useState<BannerState>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showDetails, setShowDetails] = useState(false)
@@ -38,7 +40,6 @@ export function OpenClawDoctorBanner() {
       }
       const data = await res.json()
       setDoctor(data)
-      setDismissed(false)
     } catch {
       setDoctor(null)
     } finally {
@@ -94,6 +95,9 @@ export function OpenClawDoctorBanner() {
       setFixProgress('')
     }
   }
+
+  const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+  const dismissed = doctorDismissedAt != null && (Date.now() - doctorDismissedAt) < TWENTY_FOUR_HOURS
 
   if (loading || dismissed || !doctor || doctor.healthy) return null
 
@@ -176,7 +180,7 @@ export function OpenClawDoctorBanner() {
           <Button
             variant="ghost"
             size="icon-xs"
-            onClick={() => setDismissed(true)}
+            onClick={dismissDoctor}
             className="shrink-0 hover:bg-transparent"
             title="Dismiss"
           >

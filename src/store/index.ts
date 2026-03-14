@@ -394,6 +394,10 @@ interface MissionControlStore {
   setOpenclawUpdate: (info: { installed: string; latest: string; releaseUrl: string; releaseNotes: string; updateCommand: string } | null) => void
   dismissOpenclawUpdate: (version: string) => void
 
+  // OpenClaw Doctor banner dismiss (persisted with 24h expiry)
+  doctorDismissedAt: number | null
+  dismissDoctor: () => void
+
   // WebSocket & Connection
   connection: ConnectionStatus
   lastMessage: unknown
@@ -631,6 +635,20 @@ export const useMissionControl = create<MissionControlStore>()(
     dismissOpenclawUpdate: (version) => {
       try { localStorage.setItem('mc-openclaw-update-dismissed', version) } catch {}
       set({ openclawUpdateDismissedVersion: version })
+    },
+
+    // OpenClaw Doctor banner dismiss
+    doctorDismissedAt: (() => {
+      if (typeof window === 'undefined') return null
+      try {
+        const raw = localStorage.getItem('mc-doctor-dismissed-at')
+        return raw ? Number(raw) : null
+      } catch { return null }
+    })(),
+    dismissDoctor: () => {
+      const now = Date.now()
+      try { localStorage.setItem('mc-doctor-dismissed-at', String(now)) } catch {}
+      set({ doctorDismissedAt: now })
     },
 
     // Connection state
