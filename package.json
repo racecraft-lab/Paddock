@@ -1,6 +1,6 @@
 {
   "name": "mission-control",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "OpenClaw Mission Control — open-source agent orchestration dashboard",
   "scripts": {
     "verify:node": "node scripts/check-node-version.mjs",

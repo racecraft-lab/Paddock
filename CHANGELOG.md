@@ -6,16 +6,73 @@ All notable changes to Mission Control are documented in this file.
 
 ## [Unreleased]
 
-### Fixed
-- SQLite `SQLITE_BUSY` contention — added `busy_timeout` pragma and guarded build-phase eager DB initialisation (#337)
-- Skill registry path traversal and SSRF — extended `SECURITY_RULES` with directory traversal patterns and private-IP/metadata URL detection (#338, #336)
-
-### Tests
-- Vitest coverage threshold enforcement — added coverage for pure utility modules to satisfy the 60% global threshold; threshold now passes in CI (#339)
-
 ---
 
-## [2.0.1] - 2026-03-13
+## [2.0.1] - 2026-03-18
+
+Mission Control 2.0.1 is the first patch release after the v2 launch. It rolls up the full set of fixes and follow-on features that landed after `v2.0.0`, including HTTP/Tailscale login hardening, zero-config onboarding, internationalization, gateway/runtime stability fixes, deeper task-routing automation, and the latest OpenClaw compatibility updates.
+
+### Added
+- First-time setup wizard and zero-config startup flow for fresh installs
+- Full i18n coverage across the application with 10 language packs and panel-level translations
+- Trusted reverse proxy and header-auth support for more flexible self-hosted deployments
+- Gateway health history logging and timeline visibility
+- Port-based Tailscale Serve proxy detection and stronger public websocket URL handling
+- Task implementation-target persistence, session targeting, and complexity-based model-tier routing
+- GNAP sync for git-native task persistence
+- Hybrid dashboard mode for simultaneous gateway and local session visibility
+- Workspace skill root discovery, filtering, and per-agent skill-root display
+- Windows PowerShell installer support
+- `awaiting_owner` task status detection
+
+### Changed
+- Node runtime policy now accepts all versions `>=22` instead of a narrow allowlist
+- CSP and browser-security helpers were factored into dedicated modules for clearer hardening boundaries
+- Docker/image release automation now supports the official Docker Hub image when repository secrets are configured
+- Release metadata and docs now point to the Builderz Labs repository as the canonical source
+
+### Fixed
+- HTTP and Tailscale login regressions caused by unconditional HTTPS redirects and CSP nonce propagation gaps
+- Fresh HTTP Docker installs failing login because secure-cookie behavior did not follow the actual request protocol
+- Gateway auth and credential detection for mixed token/password setups
+- Task dispatch using display names instead of gateway agent IDs
+- Docker and gateway-optional regressions across Compose startup, health probes, public assets, `OPENCLAW_HOME`, and read-only config handling
+- SQLite `SQLITE_BUSY` contention by adding `busy_timeout` and guarding build-phase eager initialization
+- Doctor banner dismissal persistence, cron panel crash handling, and null-safe model config editing
+- Gateway connectivity and onboarding probe issues, including POST-based wizard health checks and explicit public websocket URL preference
+- Notification refresh timing, agent empty-state UX, duplicate task-title/delete handling, and several panel/runtime regressions
+- Memory diagnostics scoping, gateway notification delivery, session labels, and multiple i18n namespace gaps
+- Password generation now uses a CSPRNG in the Windows installer
+- Reagraph CSP rendering regression caused by nonce handling in `style-src`
+- `/api/spawn` now supports OpenClaw agents that rely on configured default models instead of requiring a runtime `model`
+- Gateway dashboard registration now has explicit regression coverage preserving device-auth posture
+
+### Security
+- Removed `unsafe-inline` in favor of nonce-based CSP handling
+- Strengthened skill-registry SSRF and path-traversal detection rules
+- Stopped forcing `dangerouslyDisableDeviceAuth` during Mission Control gateway registration
+
+### Tests
+- Coverage for pure utility modules to keep the Vitest threshold passing in CI
+- Gateway health history E2E and supporting utility tests
+- Docker-mode integration coverage for gateway connectivity regressions
+- Regression coverage for spawn-schema compatibility and gateway dashboard registration behavior
+
+### Contributors
+- @0xNyk
+- @Brixyy
+- @clintbaxley
+- @dk-blackfuel
+- @firefloc-nox
+- @HonzysClawdbot
+- @hectorse.88
+- @jonathan-squaredlemons
+- @jonboirama
+- @joshua-mo-143
+- @jrrcdev
+- @lucascr
+- @RazorFin
+- @topshelfmedia
 
 ### Fixed
 - HTTP and Tailscale login broken by unconditional HTTPS redirect — replaced with opt-in `NEXT_PUBLIC_FORCE_HTTPS=1` (#309)

@@ -690,7 +690,7 @@ Trend alerts in the `trends.alerts` response are derived from current-vs-previou
 
 ## Roadmap
 
-See [open issues](https://github.com/builderz-labs/mission-control/issues) for planned work and the [v2.0.0 release notes](docs/releases/2.0.0.md) for the latest major release summary.
+See [open issues](https://github.com/builderz-labs/mission-control/issues) for planned work and the [v2.0.1 release notes](docs/releases/2.0.1.md) for the latest release summary.
 
 **Completed:**
 
