@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import type Database from 'better-sqlite3'
@@ -1270,7 +1271,22 @@ const migrations: Migration[] = [
     }
   },
   {
-    id: '043_spawn_history',
+    id: '043_hash_session_tokens',
+    up(db: Database.Database) {
+      // Migrate existing plaintext session tokens to SHA-256 hashes.
+      // After this migration, session tokens are stored as hashes — raw tokens
+      // are only returned to the client on creation. Existing sessions will be
+      // invalidated (users need to re-login).
+      const rows = db.prepare('SELECT id, token FROM user_sessions').all() as Array<{ id: number; token: string }>
+      const update = db.prepare('UPDATE user_sessions SET token = ? WHERE id = ?')
+      for (const row of rows) {
+        const hashed = createHash('sha256').update(row.token).digest('hex')
+        update.run(hashed, row.id)
+      }
+    }
+  },
+  {
+    id: '044_spawn_history',
     up(db: Database.Database) {
       db.exec([
         `CREATE TABLE IF NOT EXISTS spawn_history (`,
@@ -1296,7 +1312,7 @@ const migrations: Migration[] = [
     }
   },
   {
-    id: '044_task_dispatch_attempts',
+    id: '045_task_dispatch_attempts',
     up(db: Database.Database) {
       const cols = db.prepare(`PRAGMA table_info(tasks)`).all() as Array<{ name: string }>
       if (!cols.some(c => c.name === 'dispatch_attempts')) {

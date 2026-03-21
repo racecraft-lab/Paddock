@@ -26,6 +26,25 @@ async function gatewayFetch(
   }
 }
 
+/**
+ * Try multiple candidate paths in order, return the first successful response.
+ * Supports both legacy (/api/*) and current (/healthz, /health, /ready) gateway routes.
+ */
+async function gatewayProbe(
+  candidates: string[],
+  options?: { timeoutMs?: number }
+): Promise<{ res: Response; path: string } | null> {
+  for (const path of candidates) {
+    try {
+      const res = await gatewayFetch(path, { timeoutMs: options?.timeoutMs ?? 3000 })
+      if (res.ok) return { res, path }
+    } catch {
+      // try next candidate
+    }
+  }
+  return null
+}
+
 export async function GET(request: Request) {
   const auth = requireRole(request, 'admin')
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
@@ -36,24 +55,28 @@ export async function GET(request: Request) {
   try {
     switch (action) {
       case 'status': {
-        try {
-          const res = await gatewayFetch('/api/status')
-          const data = await res.json()
-          return NextResponse.json(data)
-        } catch (err) {
-          logger.warn({ err }, 'debug: gateway unreachable for status')
+        const probe = await gatewayProbe(['/api/status', '/healthz', '/health'])
+        if (!probe) {
           return NextResponse.json({ gatewayReachable: false })
+        }
+        try {
+          const data = await probe.res.json()
+          return NextResponse.json({ ...data, gatewayReachable: true, probedPath: probe.path })
+        } catch {
+          return NextResponse.json({ gatewayReachable: true, probedPath: probe.path })
         }
       }
 
       case 'health': {
-        try {
-          const res = await gatewayFetch('/api/health')
-          const data = await res.json()
-          return NextResponse.json(data)
-        } catch (err) {
-          logger.warn({ err }, 'debug: gateway unreachable for health')
+        const probe = await gatewayProbe(['/api/health', '/health', '/healthz', '/ready'])
+        if (!probe) {
           return NextResponse.json({ healthy: false, error: 'Gateway unreachable' })
+        }
+        try {
+          const data = await probe.res.json()
+          return NextResponse.json({ ...data, healthy: true, probedPath: probe.path })
+        } catch {
+          return NextResponse.json({ healthy: true, probedPath: probe.path })
         }
       }
 
@@ -70,15 +93,12 @@ export async function GET(request: Request) {
 
       case 'heartbeat': {
         const start = performance.now()
-        try {
-          const res = await gatewayFetch('/api/heartbeat', { timeoutMs: 3000 })
-          const latencyMs = Math.round(performance.now() - start)
-          const ok = res.ok
-          return NextResponse.json({ ok, latencyMs, timestamp: Date.now() })
-        } catch {
-          const latencyMs = Math.round(performance.now() - start)
-          return NextResponse.json({ ok: false, latencyMs, timestamp: Date.now() })
+        const probe = await gatewayProbe(['/api/heartbeat', '/healthz', '/ready'], { timeoutMs: 3000 })
+        const latencyMs = Math.round(performance.now() - start)
+        if (probe) {
+          return NextResponse.json({ ok: true, latencyMs, timestamp: Date.now(), probedPath: probe.path })
         }
+        return NextResponse.json({ ok: false, latencyMs, timestamp: Date.now() })
       }
 
       default:
@@ -89,6 +109,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
   }
 }
+
+// Restrict proxy calls to known safe gateway paths to prevent SSRF
+const ALLOWED_GATEWAY_PATHS = [
+  // Legacy gateway routes
+  '/api/status', '/api/health', '/api/models', '/api/heartbeat', '/api/agents', '/api/config',
+  // Current OpenClaw gateway routes
+  '/healthz', '/health', '/ready',
+]
 
 export async function POST(request: Request) {
   const auth = requireRole(request, 'admin')
@@ -114,8 +142,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'method must be GET or POST' }, { status: 400 })
   }
 
-  if (!path || typeof path !== 'string' || !path.startsWith('/api/')) {
-    return NextResponse.json({ error: 'path must start with /api/' }, { status: 400 })
+  if (!path || typeof path !== 'string' || !path.startsWith('/')) {
+    return NextResponse.json({ error: 'path must start with /' }, { status: 400 })
+  }
+
+  const normalizedPath = path.split('?')[0]
+  if (!ALLOWED_GATEWAY_PATHS.some(allowed => normalizedPath === allowed || normalizedPath.startsWith(allowed + '/'))) {
+    return NextResponse.json({ error: 'Path not in allowed gateway paths' }, { status: 403 })
   }
 
   try {

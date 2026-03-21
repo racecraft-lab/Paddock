@@ -141,7 +141,7 @@ function seedAdminUserFromEnv(dbConn: Database.Database): void {
 
   if (INSECURE_PASSWORDS.has(password)) {
     logger.warn(
-      `AUTH_PASS matches a known insecure default ("${password}"). ` +
+      'AUTH_PASS matches a known insecure default. ' +
       'Please set a strong, unique password in your .env file. ' +
       'Skipping admin user seeding until credentials are changed.'
     )
