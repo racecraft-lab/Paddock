@@ -207,7 +207,7 @@ test.describe('MCP Server Integration', () => {
     test('mc_create_task creates a task', async ({ request }) => {
       const { content, isError } = await mcpTool('mc_create_task', { title: 'MCP e2e test task' })
       expect(isError).toBe(false)
-      if (content?.task?.id) taskIds.push(content.task.id)
+      if ((content as any)?.task?.id) taskIds.push((content as any).task.id)
     })
 
     test('mc_add_comment succeeds', async ({ request }) => {
