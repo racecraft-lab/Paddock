@@ -146,17 +146,19 @@ function renderHeader(cols, baseUrl, healthData, refreshMs) {
   if (healthData?._error) {
     status = ansi.red('UNREACHABLE');
   } else {
-    // Show healthy if core checks pass, even when gateway is down
+    // Show healthy if essential checks pass (DB + Disk), even when
+    // gateway is down or dev-mode memory is high
     const checks = healthData?.checks || [];
-    const coreChecks = checks.filter(c => c.name !== 'Gateway');
-    const coreHealthy = coreChecks.length > 0 && coreChecks.every(c => c.status === 'healthy');
-    const gwCheck = checks.find(c => c.name === 'Gateway');
-    const gwDown = gwCheck && gwCheck.status !== 'healthy';
+    const essentialNames = new Set(['Database', 'Disk Space']);
+    const essentialChecks = checks.filter(c => essentialNames.has(c.name));
+    const essentialOk = essentialChecks.length > 0 && essentialChecks.every(c => c.status === 'healthy');
+    const warnings = checks.filter(c => !essentialNames.has(c.name) && c.status !== 'healthy');
+    const warningNames = warnings.map(c => c.name.toLowerCase()).join(', ');
 
-    if (coreHealthy && !gwDown) {
+    if (essentialOk && warnings.length === 0) {
       status = ansi.green('healthy');
-    } else if (coreHealthy && gwDown) {
-      status = ansi.yellow('healthy') + ansi.dim(' (no gateway)');
+    } else if (essentialOk) {
+      status = ansi.yellow('operational') + ansi.dim(` (${warningNames})`);
     } else {
       status = statusColor(healthData?.status || 'unknown');
     }
