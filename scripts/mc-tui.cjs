@@ -93,6 +93,8 @@ const ansi = {
   hideCursor: () => process.stdout.write(`${ESC}?25l`),
   showCursor: () => process.stdout.write(`${ESC}?25h`),
   clearLine: () => process.stdout.write(`${ESC}2K`),
+  enterAltScreen: () => process.stdout.write(`${ESC}?1049h`),
+  exitAltScreen: () => process.stdout.write(`${ESC}?1049l`),
 };
 
 function getTermSize() {
@@ -140,9 +142,25 @@ function renderHeader(cols, baseUrl, healthData, refreshMs) {
   const bar = ansi.bgBlue(pad(title, cols));
   process.stdout.write(bar + '\n');
 
-  const status = healthData?._error
-    ? ansi.red('UNREACHABLE')
-    : statusColor(healthData?.status || 'unknown');
+  let status;
+  if (healthData?._error) {
+    status = ansi.red('UNREACHABLE');
+  } else {
+    // Show healthy if core checks pass, even when gateway is down
+    const checks = healthData?.checks || [];
+    const coreChecks = checks.filter(c => c.name !== 'Gateway');
+    const coreHealthy = coreChecks.length > 0 && coreChecks.every(c => c.status === 'healthy');
+    const gwCheck = checks.find(c => c.name === 'Gateway');
+    const gwDown = gwCheck && gwCheck.status !== 'healthy';
+
+    if (coreHealthy && !gwDown) {
+      status = ansi.green('healthy');
+    } else if (coreHealthy && gwDown) {
+      status = ansi.yellow('healthy') + ansi.dim(' (no gateway)');
+    } else {
+      status = statusColor(healthData?.status || 'unknown');
+    }
+  }
   const url = ansi.dim(baseUrl);
   const refresh = ansi.dim(`refresh: ${refreshMs / 1000}s`);
   const time = ansi.dim(new Date().toLocaleTimeString());
@@ -323,6 +341,7 @@ Keys:
     process.stdin.setRawMode(true);
   }
 
+  ansi.enterAltScreen();
   ansi.hideCursor();
 
   let running = true;
@@ -334,7 +353,7 @@ Keys:
   function cleanup() {
     running = false;
     ansi.showCursor();
-    ansi.clear();
+    ansi.exitAltScreen();
     process.exit(0);
   }
   process.on('SIGINT', cleanup);
@@ -411,6 +430,7 @@ Keys:
 
 main().catch(err => {
   ansi.showCursor();
+  ansi.exitAltScreen();
   console.error('TUI error:', err.message);
   process.exit(1);
 });
