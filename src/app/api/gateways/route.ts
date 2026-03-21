@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
   ensureTable(db)
   const body = await request.json()
 
-  const { name, host, port, token, is_primary } = body
+  const { name, host, port, token, is_primary, agents } = body
 
   if (!name || !host || !port) {
     return NextResponse.json({ error: 'name, host, and port are required' }, { status: 400 })
@@ -96,14 +96,37 @@ export async function POST(request: NextRequest) {
       INSERT INTO gateways (name, host, port, token, is_primary) VALUES (?, ?, ?, ?, ?)
     `).run(name, host, port, token || '', is_primary ? 1 : 0)
 
+    // Auto-register agents reported by the gateway (k8s sidecar support)
+    let agentsRegistered = 0
+    if (Array.isArray(agents) && agents.length > 0) {
+      const workspaceId = auth.user?.workspace_id ?? 1
+      const now = Math.floor(Date.now() / 1000)
+      const upsertAgent = db.prepare(`
+        INSERT INTO agents (name, role, status, last_seen, source, workspace_id, updated_at)
+        VALUES (?, ?, 'idle', ?, 'gateway', ?, ?)
+        ON CONFLICT(name) DO UPDATE SET
+          status = 'idle',
+          last_seen = excluded.last_seen,
+          source = 'gateway',
+          updated_at = excluded.updated_at
+      `)
+      for (const agent of agents.slice(0, 50)) {
+        if (typeof agent?.name !== 'string' || !agent.name.trim()) continue
+        const agentName = agent.name.trim().substring(0, 100)
+        const agentRole = typeof agent?.role === 'string' ? agent.role.trim().substring(0, 100) : 'agent'
+        upsertAgent.run(agentName, agentRole, now, workspaceId, now)
+        agentsRegistered++
+      }
+    }
+
     try {
       db.prepare('INSERT INTO audit_log (action, actor, detail) VALUES (?, ?, ?)').run(
-        'gateway_added', auth.user?.username || 'system', `Added gateway: ${name} (${host}:${port})`
+        'gateway_added', auth.user?.username || 'system', `Added gateway: ${name} (${host}:${port})${agentsRegistered ? `, registered ${agentsRegistered} agent(s)` : ''}`
       )
     } catch { /* audit might not exist */ }
 
     const gw = db.prepare('SELECT * FROM gateways WHERE id = ?').get(result.lastInsertRowid) as GatewayEntry
-    return NextResponse.json({ gateway: redactToken(gw) }, { status: 201 })
+    return NextResponse.json({ gateway: redactToken(gw), agents_registered: agentsRegistered }, { status: 201 })
   } catch (err: any) {
     if (err.message?.includes('UNIQUE')) {
       return NextResponse.json({ error: 'A gateway with that name already exists' }, { status: 409 })
@@ -145,15 +168,39 @@ export async function PUT(request: NextRequest) {
     }
   }
 
-  if (sets.length === 0) return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+  if (sets.length === 0 && !Array.isArray(updates.agents)) return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
 
-  sets.push('updated_at = (unixepoch())')
-  values.push(id)
+  if (sets.length > 0) {
+    sets.push('updated_at = (unixepoch())')
+    values.push(id)
+    db.prepare(`UPDATE gateways SET ${sets.join(', ')} WHERE id = ?`).run(...values)
+  }
 
-  db.prepare(`UPDATE gateways SET ${sets.join(', ')} WHERE id = ?`).run(...values)
+  // Auto-register agents reported by the gateway (k8s sidecar support)
+  let agentsRegistered = 0
+  if (Array.isArray(updates.agents) && updates.agents.length > 0) {
+    const workspaceId = auth.user?.workspace_id ?? 1
+    const now = Math.floor(Date.now() / 1000)
+    const upsertAgent = db.prepare(`
+      INSERT INTO agents (name, role, status, last_seen, source, workspace_id, updated_at)
+      VALUES (?, ?, 'idle', ?, 'gateway', ?, ?)
+      ON CONFLICT(name, workspace_id) DO UPDATE SET
+        status = 'idle',
+        last_seen = excluded.last_seen,
+        source = 'gateway',
+        updated_at = excluded.updated_at
+    `)
+    for (const agent of updates.agents.slice(0, 50)) {
+      if (typeof agent?.name !== 'string' || !agent.name.trim()) continue
+      const agentName = agent.name.trim().substring(0, 100)
+      const agentRole = typeof agent?.role === 'string' ? agent.role.trim().substring(0, 100) : 'agent'
+      upsertAgent.run(agentName, agentRole, now, workspaceId, now)
+      agentsRegistered++
+    }
+  }
 
   const updated = db.prepare('SELECT * FROM gateways WHERE id = ?').get(id) as GatewayEntry
-  return NextResponse.json({ gateway: redactToken(updated) })
+  return NextResponse.json({ gateway: redactToken(updated), agents_registered: agentsRegistered })
 }
 
 /**

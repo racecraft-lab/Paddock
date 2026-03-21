@@ -10,7 +10,7 @@ import { pruneGatewaySessionsOlderThan, getAgentLiveStatuses } from './sessions'
 import { eventBus } from './event-bus'
 import { syncSkillsFromDisk } from './skill-sync'
 import { syncLocalAgents } from './local-agent-sync'
-import { dispatchAssignedTasks, runAegisReviews } from './task-dispatch'
+import { dispatchAssignedTasks, runAegisReviews, requeueStaleTasks } from './task-dispatch'
 import { spawnRecurringTasks } from './recurring-tasks'
 
 const BACKUP_DIR = join(dirname(config.dbPath), 'backups')
@@ -389,6 +389,15 @@ export function initScheduler() {
     running: false,
   })
 
+  tasks.set('stale_task_requeue', {
+    name: 'Stale Task Requeue',
+    intervalMs: TICK_MS, // Every 60s — check for stale in_progress tasks
+    lastRun: null,
+    nextRun: now + 25_000, // First check 25s after startup
+    enabled: true,
+    running: false,
+  })
+
   // Start the tick loop
   tickInterval = setInterval(tick, TICK_MS)
   logger.info('Scheduler initialized - backup at ~3AM, cleanup at ~4AM, heartbeat every 5m, webhook/claude/skill/local-agent/gateway-agent sync every 60s')
@@ -423,8 +432,9 @@ async function tick() {
       : id === 'task_dispatch' ? 'general.task_dispatch'
       : id === 'aegis_review' ? 'general.aegis_review'
       : id === 'recurring_task_spawn' ? 'general.recurring_task_spawn'
+      : id === 'stale_task_requeue' ? 'general.stale_task_requeue'
       : 'general.agent_heartbeat'
-    const defaultEnabled = id === 'agent_heartbeat' || id === 'webhook_retry' || id === 'claude_session_scan' || id === 'skill_sync' || id === 'local_agent_sync' || id === 'gateway_agent_sync' || id === 'task_dispatch' || id === 'aegis_review' || id === 'recurring_task_spawn'
+    const defaultEnabled = id === 'agent_heartbeat' || id === 'webhook_retry' || id === 'claude_session_scan' || id === 'skill_sync' || id === 'local_agent_sync' || id === 'gateway_agent_sync' || id === 'task_dispatch' || id === 'aegis_review' || id === 'recurring_task_spawn' || id === 'stale_task_requeue'
     if (!isSettingEnabled(settingKey, defaultEnabled)) continue
 
     task.running = true
@@ -442,6 +452,7 @@ async function tick() {
         : id === 'task_dispatch' ? await dispatchAssignedTasks()
         : id === 'aegis_review' ? await runAegisReviews()
         : id === 'recurring_task_spawn' ? await spawnRecurringTasks()
+        : id === 'stale_task_requeue' ? await requeueStaleTasks()
         : await runCleanup()
       task.lastResult = { ...result, timestamp: now }
     } catch (err: any) {
@@ -477,8 +488,9 @@ export function getSchedulerStatus() {
       : id === 'task_dispatch' ? 'general.task_dispatch'
       : id === 'aegis_review' ? 'general.aegis_review'
       : id === 'recurring_task_spawn' ? 'general.recurring_task_spawn'
+      : id === 'stale_task_requeue' ? 'general.stale_task_requeue'
       : 'general.agent_heartbeat'
-    const defaultEnabled = id === 'agent_heartbeat' || id === 'webhook_retry' || id === 'claude_session_scan' || id === 'skill_sync' || id === 'local_agent_sync' || id === 'gateway_agent_sync' || id === 'task_dispatch' || id === 'aegis_review' || id === 'recurring_task_spawn'
+    const defaultEnabled = id === 'agent_heartbeat' || id === 'webhook_retry' || id === 'claude_session_scan' || id === 'skill_sync' || id === 'local_agent_sync' || id === 'gateway_agent_sync' || id === 'task_dispatch' || id === 'aegis_review' || id === 'recurring_task_spawn' || id === 'stale_task_requeue'
     result.push({
       id,
       name: task.name,
@@ -506,6 +518,7 @@ export async function triggerTask(taskId: string): Promise<{ ok: boolean; messag
   if (taskId === 'task_dispatch') return dispatchAssignedTasks()
   if (taskId === 'aegis_review') return runAegisReviews()
   if (taskId === 'recurring_task_spawn') return spawnRecurringTasks()
+  if (taskId === 'stale_task_requeue') return requeueStaleTasks()
   return { ok: false, message: `Unknown task: ${taskId}` }
 }
 

@@ -1294,6 +1294,16 @@ const migrations: Migration[] = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_spawn_history_created ON spawn_history(created_at)`)
       db.exec(`CREATE INDEX IF NOT EXISTS idx_spawn_history_status ON spawn_history(status)`)
     }
+  },
+  {
+    id: '044_task_dispatch_attempts',
+    up(db: Database.Database) {
+      const cols = db.prepare(`PRAGMA table_info(tasks)`).all() as Array<{ name: string }>
+      if (!cols.some(c => c.name === 'dispatch_attempts')) {
+        db.exec(`ALTER TABLE tasks ADD COLUMN dispatch_attempts INTEGER NOT NULL DEFAULT 0`)
+      }
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_stale_inprogress ON tasks(status, updated_at) WHERE status = 'in_progress'`)
+    }
   }
 ]
 

@@ -306,21 +306,43 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
           previous_status: 'quality_review',
         })
       } else {
-        // Rejected: push back to in_progress with feedback
-        db.prepare('UPDATE tasks SET status = ?, error_message = ?, updated_at = ? WHERE id = ?')
-          .run('in_progress', `Aegis rejected: ${verdict.notes}`, Math.floor(Date.now() / 1000), task.id)
+        // Rejected: check dispatch_attempts to decide next status
+        const now = Math.floor(Date.now() / 1000)
+        const currentAttempts = (db.prepare('SELECT dispatch_attempts FROM tasks WHERE id = ?').get(task.id) as { dispatch_attempts: number } | undefined)?.dispatch_attempts ?? 0
+        const newAttempts = currentAttempts + 1
+        const maxAegisRetries = 3
 
-        eventBus.broadcast('task.status_changed', {
-          id: task.id,
-          status: 'in_progress',
-          previous_status: 'quality_review',
-        })
+        if (newAttempts >= maxAegisRetries) {
+          // Too many rejections — move to failed
+          db.prepare('UPDATE tasks SET status = ?, error_message = ?, dispatch_attempts = ?, updated_at = ? WHERE id = ?')
+            .run('failed', `Aegis rejected ${newAttempts} times. Last: ${verdict.notes}`, newAttempts, now, task.id)
+
+          eventBus.broadcast('task.status_changed', {
+            id: task.id,
+            status: 'failed',
+            previous_status: 'quality_review',
+            error_message: `Aegis rejected ${newAttempts} times`,
+            reason: 'max_aegis_retries_exceeded',
+          })
+        } else {
+          // Requeue to assigned for re-dispatch with feedback
+          db.prepare('UPDATE tasks SET status = ?, error_message = ?, dispatch_attempts = ?, updated_at = ? WHERE id = ?')
+            .run('assigned', `Aegis rejected: ${verdict.notes}`, newAttempts, now, task.id)
+
+          eventBus.broadcast('task.status_changed', {
+            id: task.id,
+            status: 'assigned',
+            previous_status: 'quality_review',
+            error_message: `Aegis rejected: ${verdict.notes}`,
+            reason: 'aegis_rejection',
+          })
+        }
 
         // Add rejection as a comment so the agent sees it on next dispatch
         db.prepare(`
           INSERT INTO comments (task_id, author, content, created_at, workspace_id)
           VALUES (?, 'aegis', ?, ?, ?)
-        `).run(task.id, `Quality Review Rejected:\n${verdict.notes}`, Math.floor(Date.now() / 1000), task.workspace_id)
+        `).run(task.id, `Quality Review Rejected (attempt ${newAttempts}/${maxAegisRetries}):\n${verdict.notes}`, now, task.workspace_id)
       }
 
       db_helpers.logActivity(
@@ -360,6 +382,86 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
   return {
     ok: errors === 0,
     message: `Reviewed ${tasks.length}: ${approved} approved, ${rejected} rejected${errors ? `, ${errors} error(s)` : ''}`,
+  }
+}
+
+/**
+ * Requeue stale tasks stuck in 'in_progress' whose assigned agent is offline.
+ * Prevents tasks from being permanently stuck when agents crash or disconnect.
+ */
+export async function requeueStaleTasks(): Promise<{ ok: boolean; message: string }> {
+  const db = getDatabase()
+  const now = Math.floor(Date.now() / 1000)
+  const staleThreshold = now - 10 * 60 // 10 minutes
+  const maxDispatchRetries = 5
+
+  const staleTasks = db.prepare(`
+    SELECT t.id, t.title, t.assigned_to, t.dispatch_attempts, t.workspace_id,
+           a.status as agent_status, a.last_seen as agent_last_seen
+    FROM tasks t
+    LEFT JOIN agents a ON a.name = t.assigned_to AND a.workspace_id = t.workspace_id
+    WHERE t.status = 'in_progress'
+      AND t.updated_at < ?
+  `).all(staleThreshold) as Array<{
+    id: number; title: string; assigned_to: string | null; dispatch_attempts: number
+    workspace_id: number; agent_status: string | null; agent_last_seen: number | null
+  }>
+
+  if (staleTasks.length === 0) {
+    return { ok: true, message: 'No stale tasks found' }
+  }
+
+  let requeued = 0
+  let failed = 0
+
+  for (const task of staleTasks) {
+    // Only requeue if the agent is offline or unknown
+    const agentOffline = !task.agent_status || task.agent_status === 'offline'
+    if (!agentOffline) continue
+
+    const newAttempts = (task.dispatch_attempts ?? 0) + 1
+
+    if (newAttempts >= maxDispatchRetries) {
+      db.prepare('UPDATE tasks SET status = ?, error_message = ?, dispatch_attempts = ?, updated_at = ? WHERE id = ?')
+        .run('failed', `Task stuck in_progress ${newAttempts} times — agent "${task.assigned_to}" offline. Moved to failed.`, newAttempts, now, task.id)
+
+      eventBus.broadcast('task.status_changed', {
+        id: task.id,
+        status: 'failed',
+        previous_status: 'in_progress',
+        error_message: `Stale task — agent offline after ${newAttempts} attempts`,
+        reason: 'stale_task_max_retries',
+      })
+
+      failed++
+    } else {
+      db.prepare('UPDATE tasks SET status = ?, error_message = ?, dispatch_attempts = ?, updated_at = ? WHERE id = ?')
+        .run('assigned', `Requeued: agent "${task.assigned_to}" went offline while task was in_progress`, newAttempts, now, task.id)
+
+      // Add a comment explaining the requeue
+      db.prepare(`
+        INSERT INTO comments (task_id, author, content, created_at, workspace_id)
+        VALUES (?, 'scheduler', ?, ?, ?)
+      `).run(task.id, `Task requeued (attempt ${newAttempts}/${maxDispatchRetries}): agent "${task.assigned_to}" went offline while task was in_progress.`, now, task.workspace_id)
+
+      eventBus.broadcast('task.status_changed', {
+        id: task.id,
+        status: 'assigned',
+        previous_status: 'in_progress',
+        error_message: `Agent "${task.assigned_to}" went offline`,
+        reason: 'stale_task_requeue',
+      })
+
+      requeued++
+    }
+  }
+
+  const total = requeued + failed
+  return {
+    ok: true,
+    message: total === 0
+      ? `Found ${staleTasks.length} stale task(s) but agents still online`
+      : `Requeued ${requeued}, failed ${failed} of ${staleTasks.length} stale task(s)`,
   }
 }
 
@@ -559,15 +661,36 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
       const errorMsg = err.message || 'Unknown error'
       logger.error({ taskId: task.id, agent: task.agent_name, err }, 'Task dispatch failed')
 
-      // Revert to assigned so it can be retried on the next tick
-      db.prepare('UPDATE tasks SET status = ?, error_message = ?, updated_at = ? WHERE id = ?')
-        .run('assigned', errorMsg.substring(0, 5000), Math.floor(Date.now() / 1000), task.id)
+      // Increment dispatch_attempts and decide next status
+      const currentAttempts = (db.prepare('SELECT dispatch_attempts FROM tasks WHERE id = ?').get(task.id) as { dispatch_attempts: number } | undefined)?.dispatch_attempts ?? 0
+      const newAttempts = currentAttempts + 1
+      const maxDispatchRetries = 5
 
-      eventBus.broadcast('task.status_changed', {
-        id: task.id,
-        status: 'assigned',
-        previous_status: 'in_progress',
-      })
+      if (newAttempts >= maxDispatchRetries) {
+        // Too many failures — move to failed
+        db.prepare('UPDATE tasks SET status = ?, error_message = ?, dispatch_attempts = ?, updated_at = ? WHERE id = ?')
+          .run('failed', `Dispatch failed ${newAttempts} times. Last: ${errorMsg.substring(0, 5000)}`, newAttempts, Math.floor(Date.now() / 1000), task.id)
+
+        eventBus.broadcast('task.status_changed', {
+          id: task.id,
+          status: 'failed',
+          previous_status: 'in_progress',
+          error_message: `Dispatch failed ${newAttempts} times`,
+          reason: 'max_dispatch_retries_exceeded',
+        })
+      } else {
+        // Revert to assigned so it can be retried on the next tick
+        db.prepare('UPDATE tasks SET status = ?, error_message = ?, dispatch_attempts = ?, updated_at = ? WHERE id = ?')
+          .run('assigned', errorMsg.substring(0, 5000), newAttempts, Math.floor(Date.now() / 1000), task.id)
+
+        eventBus.broadcast('task.status_changed', {
+          id: task.id,
+          status: 'assigned',
+          previous_status: 'in_progress',
+          error_message: errorMsg.substring(0, 500),
+          reason: 'dispatch_failed',
+        })
+      }
 
       db_helpers.logActivity(
         'task_dispatch_failed',
