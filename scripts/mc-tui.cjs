@@ -300,8 +300,7 @@ function renderAgentsList(cols, maxRows) {
     const role = pad(truncate(a.role, roleW), roleW);
     const st = statusColor(a.status || 'unknown');
     const stPad = pad(st, statusW + 9);
-    const seenTs = a.last_seen || a.updated_at || a.created_at;
-    const lastSeen = seenTs ? ansi.dim(timeSince(seenTs)) : ansi.dim('never');
+    const lastSeen = a.last_seen ? ansi.dim(timeSince(a.last_seen)) : ansi.dim('\u2014');
     const line = `  ${name} ${role} ${stPad} ${lastSeen}`;
     process.stdout.write(selected ? ansi.inverse(stripAnsi(line).padEnd(cols)) + '\n' : line + '\n');
   }
