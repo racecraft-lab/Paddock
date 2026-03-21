@@ -20,6 +20,11 @@ generate_secret() {
 
 SECRETS_FILE="/app/.data/.generated-secrets"
 
+# Ensure secrets file has restrictive permissions if it exists
+if [ -f "$SECRETS_FILE" ]; then
+  chmod 600 "$SECRETS_FILE"
+fi
+
 # Load previously generated secrets if they exist
 if [ -f "$SECRETS_FILE" ]; then
   printf '[entrypoint] Loading persisted secrets from .data\n'

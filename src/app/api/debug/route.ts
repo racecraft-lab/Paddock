@@ -118,6 +118,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'path must start with /api/' }, { status: 400 })
   }
 
+  // Restrict to known safe gateway API paths to prevent SSRF
+  const ALLOWED_GATEWAY_PATHS = ['/api/status', '/api/health', '/api/models', '/api/heartbeat', '/api/agents', '/api/config']
+  const normalizedPath = path.split('?')[0]
+  if (!ALLOWED_GATEWAY_PATHS.some(allowed => normalizedPath === allowed || normalizedPath.startsWith(allowed + '/'))) {
+    return NextResponse.json({ error: 'Path not in allowed gateway API paths' }, { status: 403 })
+  }
+
   try {
     const res = await gatewayFetch(path, {
       method,
