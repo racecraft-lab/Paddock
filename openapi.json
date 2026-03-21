@@ -1251,6 +1251,59 @@
             "$ref": "#/components/responses/NotFound"
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Clear agent memory",
+        "operationId": "deleteAgentMemory",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Agent ID or name"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Memory cleared",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "working_memory": {
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
       }
     },
     "/api/agents/{id}/soul": {
@@ -1583,21 +1636,6 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Rule created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "rule": {
-                      "$ref": "#/components/schemas/AlertRule"
-                    }
-                  }
-                }
-              }
-            }
-          },
           "200": {
             "description": "Rules evaluated",
             "content": {
@@ -1630,6 +1668,21 @@
                           }
                         }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Rule created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rule": {
+                      "$ref": "#/components/schemas/AlertRule"
                     }
                   }
                 }
@@ -2170,6 +2223,67 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Update current user profile",
+        "operationId": "updateCurrentUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "current_password": {
+                    "type": "string"
+                  },
+                  "new_password": {
+                    "type": "string",
+                    "minLength": 8
+                  },
+                  "display_name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profile updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "Incorrect password or API key user"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }
@@ -8908,6 +9022,432 @@
           },
           "500": {
             "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Rotate API key",
+        "operationId": "rotateApiKey",
+        "responses": {
+          "200": {
+            "description": "API key rotated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "masked_key": {
+                      "type": "string"
+                    },
+                    "rotated_at": {
+                      "type": "integer"
+                    },
+                    "rotated_by": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    },
+    "/api/tokens/by-agent": {
+      "get": {
+        "tags": [
+          "Tokens"
+        ],
+        "summary": "Get per-agent token cost breakdown",
+        "operationId": "getTokensByAgent",
+        "parameters": [
+          {
+            "name": "days",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 30,
+              "minimum": 1,
+              "maximum": 365
+            },
+            "description": "Time window in days"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Per-agent cost breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agents": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "agent": {
+                            "type": "string"
+                          },
+                          "total_input_tokens": {
+                            "type": "integer"
+                          },
+                          "total_output_tokens": {
+                            "type": "integer"
+                          },
+                          "total_tokens": {
+                            "type": "integer"
+                          },
+                          "total_cost": {
+                            "type": "number"
+                          },
+                          "session_count": {
+                            "type": "integer"
+                          },
+                          "request_count": {
+                            "type": "integer"
+                          },
+                          "last_active": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "models": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "total_cost": {
+                          "type": "number"
+                        },
+                        "total_tokens": {
+                          "type": "integer"
+                        },
+                        "agent_count": {
+                          "type": "integer"
+                        },
+                        "days": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/agents/register": {
+      "post": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Agent self-registration",
+        "operationId": "registerAgent",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]{0,62}$"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "coder",
+                      "reviewer",
+                      "tester",
+                      "devops",
+                      "researcher",
+                      "assistant",
+                      "agent"
+                    ],
+                    "default": "agent"
+                  },
+                  "capabilities": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "framework": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agent already exists, status updated"
+          },
+          "201": {
+            "description": "Agent registered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agent": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "registered": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "Agent name conflict"
+          },
+          "429": {
+            "description": "Rate limited"
+          }
+        }
+      }
+    },
+    "/api/tasks/outcomes": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Get task outcome analytics",
+        "operationId": "getTaskOutcomes",
+        "parameters": [
+          {
+            "name": "timeframe",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "day",
+                "week",
+                "month",
+                "all"
+              ],
+              "default": "all"
+            },
+            "description": "Time window filter"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task outcome summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timeframe": {
+                      "type": "string"
+                    },
+                    "summary": {
+                      "type": "object",
+                      "properties": {
+                        "total_done": {
+                          "type": "integer"
+                        },
+                        "with_outcome": {
+                          "type": "integer"
+                        },
+                        "by_outcome": {
+                          "type": "object"
+                        },
+                        "avg_retry_count": {
+                          "type": "number"
+                        },
+                        "avg_time_to_resolution_seconds": {
+                          "type": "number"
+                        },
+                        "success_rate": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "by_agent": {
+                      "type": "object"
+                    },
+                    "by_priority": {
+                      "type": "object"
+                    },
+                    "common_errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "error_message": {
+                            "type": "string"
+                          },
+                          "count": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    },
+                    "record_count": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/tasks/regression": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Get task regression metrics",
+        "operationId": "getTaskRegression",
+        "parameters": [
+          {
+            "name": "beta_start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Cutover timestamp (unix seconds or ISO)"
+          },
+          {
+            "name": "lookback_seconds",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 604800
+            },
+            "description": "Baseline window lookback in seconds"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Regression comparison metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metric_definitions": {
+                      "type": "object"
+                    },
+                    "params": {
+                      "type": "object",
+                      "properties": {
+                        "beta_start": {
+                          "type": "integer"
+                        },
+                        "lookback_seconds": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "windows": {
+                      "type": "object",
+                      "properties": {
+                        "baseline": {
+                          "type": "object"
+                        },
+                        "post": {
+                          "type": "object"
+                        }
+                      }
+                    },
+                    "deltas": {
+                      "type": "object",
+                      "properties": {
+                        "p95_latency_seconds": {
+                          "type": "number",
+                          "nullable": true
+                        },
+                        "intervention_rate": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid beta_start"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "description": "Rate limited"
           }
         }
       }

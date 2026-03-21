@@ -1,7 +1,6 @@
 # API contract parity baseline ignore list
 # One operation per line: METHOD /api/path
 # Keep this list shrinking over time; remove entries when route/spec parity is fixed.
-DELETE /api/agents/{id}/memory
 DELETE /api/backup
 DELETE /api/integrations
 DELETE /api/memory
@@ -38,12 +37,7 @@ GET /api/security-scan
 GET /api/spawn
 GET /api/super/os-users
 GET /api/system-monitor
-GET /api/tasks/outcomes
-GET /api/tasks/regression
-GET /api/tokens/by-agent
-PATCH /api/auth/me
 POST /api/agents/evals
-POST /api/agents/register
 POST /api/auth/google/disconnect
 POST /api/channels
 POST /api/github/sync
@@ -61,6 +55,5 @@ POST /api/security-scan/fix
 POST /api/standup
 POST /api/super/os-users
 POST /api/super/provision-jobs/{id}
-POST /api/tokens/rotate
 PUT /api/integrations
 PUT /api/notifications
