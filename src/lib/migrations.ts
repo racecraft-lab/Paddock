@@ -1,3 +1,4 @@
+import { createHash } from 'crypto'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import type Database from 'better-sqlite3'
@@ -1267,6 +1268,21 @@ const migrations: Migration[] = [
     id: '042_agent_hidden',
     up(db: Database.Database) {
       db.exec(`ALTER TABLE agents ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0`)
+    }
+  },
+  {
+    id: '043_hash_session_tokens',
+    up(db: Database.Database) {
+      // Migrate existing plaintext session tokens to SHA-256 hashes.
+      // After this migration, session tokens are stored as hashes — raw tokens
+      // are only returned to the client on creation. Existing sessions will be
+      // invalidated (users need to re-login).
+      const rows = db.prepare('SELECT id, token FROM user_sessions').all() as Array<{ id: number; token: string }>
+      const update = db.prepare('UPDATE user_sessions SET token = ? WHERE id = ?')
+      for (const row of rows) {
+        const hashed = createHash('sha256').update(row.token).digest('hex')
+        update.run(hashed, row.id)
+      }
     }
   }
 ]

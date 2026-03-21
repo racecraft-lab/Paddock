@@ -71,8 +71,8 @@ export function createRateLimiter(options: RateLimiterOptions) {
   if (cleanupInterval.unref) cleanupInterval.unref()
 
   return function checkRateLimit(request: Request): NextResponse | null {
-    // Allow disabling non-critical rate limiting for E2E tests
-    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical) return null
+    // Allow disabling non-critical rate limiting for E2E tests (never in production)
+    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && process.env.NODE_ENV !== 'production') return null
     const ip = extractClientIp(request)
     const now = Date.now()
     const entry = store.get(ip)
@@ -143,7 +143,7 @@ export function createAgentRateLimiter(options: RateLimiterOptions) {
   if (cleanupInterval.unref) cleanupInterval.unref()
 
   return function checkAgentRateLimit(request: Request): NextResponse | null {
-    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical) return null
+    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && process.env.NODE_ENV !== 'production') return null
 
     const agentName = (request.headers.get('x-agent-name') || '').trim()
     const key = agentName || `ip:${extractClientIp(request)}`
