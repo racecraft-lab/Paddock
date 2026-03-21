@@ -275,3 +275,83 @@ Internet
 - Mission Control listens on localhost or a private network
 - OpenClaw Gateway is bound to loopback only
 - Agent workspaces are isolated per-agent directories
+
+---
+
+## Agent Auth: Least-Privilege Key Guidance
+
+### The Problem
+
+The global API key (`API_KEY` env var) grants full `admin` access. When agents use it, they can:
+- Create/delete other agents
+- Modify any task or project
+- Rotate the API key itself
+- Access all workspaces
+
+This violates least-privilege. A compromised agent session leaks admin access.
+
+### Recommended: Agent-Scoped Keys
+
+Create per-agent keys with limited scopes:
+
+```bash
+# Create a scoped key for agent "Aegis" (via CLI)
+pnpm mc raw --method POST --path /api/agents/5/keys --body '{
+  "name": "aegis-worker",
+  "scopes": ["viewer", "agent:self", "agent:diagnostics", "tasks:write"],
+  "expires_in_days": 30
+}' --json
+```
+
+Scoped keys:
+- Can only act as the agent they belong to (no cross-agent access)
+- Have explicit scope lists (viewer, agent:self, tasks:write, etc.)
+- Auto-expire after a set period
+- Can be revoked without affecting other agents
+- Are logged separately in the audit trail
+
+### Auth Hierarchy
+
+| Method | Role | Use Case |
+|--------|------|----------|
+| Agent-scoped key (`mca_...`) | Per-scope | Autonomous agents (recommended) |
+| Global API key | admin | Admin scripts, CI/CD, initial setup |
+| Session cookie | Per-user role | Human operators via web UI |
+| Proxy header | Per-user role | SSO/gateway-authenticated users |
+
+### Monitoring Global Key Usage
+
+Mission Control logs a security event (`global_api_key_used`) every time the global API key is used. Monitor these in the audit log:
+
+```bash
+pnpm mc raw --method GET --path '/api/security-audit?event_type=global_api_key_used&timeframe=day' --json
+```
+
+Goal: drive global key usage to zero in production by replacing with scoped agent keys.
+
+### Rate Limiting by Agent Identity
+
+Agent-facing endpoints use per-agent rate limiters (keyed by `x-agent-name` header):
+- Heartbeat: 30/min per agent
+- Task polling: 20/min per agent
+- Self-registration: 5/min per IP
+
+This prevents a runaway agent from consuming the entire rate limit budget.
+
+---
+
+## Rate Limit Backend Strategy
+
+Current: in-memory `Map` per process (suitable for single-instance deployments).
+
+For multi-instance deployments, the rate limiter supports a pluggable backend via the `createRateLimiter` factory. Future options:
+- **Redis**: shared state across instances (use Upstash or self-hosted)
+- **SQLite WAL**: leverage the existing DB for cross-process coordination
+- **Edge KV**: for edge-deployed instances
+
+The current implementation includes:
+- Periodic cleanup (60s interval)
+- Capacity-bounded maps (default 10K entries, LRU eviction)
+- Trusted proxy IP parsing (`MC_TRUSTED_PROXIES`)
+
+No action needed for single-instance deployments. For multi-instance, implement a custom `RateLimitStore` interface when scaling beyond 1 node.

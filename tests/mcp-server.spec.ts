@@ -58,7 +58,7 @@ async function mcpRequest(method: string, params: object = {}, id = 1): Promise<
 }
 
 /** Call an MCP tool and return the parsed content */
-async function mcpTool(name: string, args: object = {}): Promise<{ content: string; isError?: boolean }> {
+async function mcpTool(name: string, args: object = {}): Promise<{ content: any; isError?: boolean }> {
   const response = await mcpRequest('tools/call', { name, arguments: args }, 99)
   const text = response?.result?.content?.[0]?.text || ''
   let parsed: any

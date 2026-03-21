@@ -423,6 +423,20 @@ export function getUserFromRequest(request: Request): User | null {
   const configuredApiKey = resolveActiveApiKey()
 
   if (configuredApiKey && apiKey && safeCompare(apiKey, configuredApiKey)) {
+    // FR-D2: Log warning when global admin API key is used.
+    // Prefer agent-scoped keys (POST /api/agents/{id}/keys) for least-privilege access.
+    try {
+      logSecurityEvent({
+        event_type: 'global_api_key_used',
+        severity: 'info',
+        source: 'auth',
+        agent_name: agentName || undefined,
+        detail: JSON.stringify({ hint: 'Consider using agent-scoped API keys for least-privilege access' }),
+        ip_address: request.headers.get('x-real-ip') || 'unknown',
+        workspace_id: getDefaultWorkspaceContext().workspaceId,
+        tenant_id: getDefaultWorkspaceContext().tenantId,
+      })
+    } catch { /* startup race */ }
     return {
       id: 0,
       username: 'api',
