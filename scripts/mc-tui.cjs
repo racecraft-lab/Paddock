@@ -89,7 +89,7 @@ const ansi = {
   red: (s) => `${ESC}31m${s}${ESC}0m`,
   cyan: (s) => `${ESC}36m${s}${ESC}0m`,
   magenta: (s) => `${ESC}35m${s}${ESC}0m`,
-  bgBlue: (s) => `${ESC}44m${ESC}97m${s}${ESC}0m`,
+  bgBlue: (s) => `${ESC}48;5;17m${ESC}97m${s}${ESC}0m`,
   bgCyan: (s) => `${ESC}46m${ESC}30m${s}${ESC}0m`,
   inverse: (s) => `${ESC}7m${s}${ESC}0m`,
   hideCursor: () => process.stdout.write(`${ESC}?25l`),
@@ -147,13 +147,14 @@ function stripAnsi(s) {
 // ---------------------------------------------------------------------------
 
 async function fetchDashboardData(baseUrl, apiKey, cookie) {
-  const [health, agents, tasks, tokens] = await Promise.all([
+  const [health, agents, tasks, tokens, sessions] = await Promise.all([
     api(baseUrl, apiKey, cookie, 'GET', '/api/status?action=health'),
     api(baseUrl, apiKey, cookie, 'GET', '/api/agents'),
     api(baseUrl, apiKey, cookie, 'GET', '/api/tasks?limit=30'),
     api(baseUrl, apiKey, cookie, 'GET', '/api/tokens?action=stats&timeframe=day'),
+    api(baseUrl, apiKey, cookie, 'GET', '/api/sessions?limit=50'),
   ]);
-  return { health, agents, tasks, tokens };
+  return { health, agents, tasks, tokens, sessions };
 }
 
 async function fetchAgentSessions(baseUrl, apiKey, cookie, agentName) {
@@ -250,11 +251,19 @@ function renderDashboard() {
     renderTasksList(cols, panelRows);
   }
 
-  // Costs bar
+  // Costs bar — prefer token_usage table, fall back to session estimates
   const tokensData = state.data.tokens;
   const summary = tokensData?.summary || {};
-  const cost = summary.totalCost != null ? `$${summary.totalCost.toFixed(4)}` : '-';
-  const tokens = summary.totalTokens != null ? formatNumber(summary.totalTokens) : '-';
+  let costVal = summary.totalCost || 0;
+  let tokenVal = summary.totalTokens || 0;
+  // If token_usage table is empty, sum from active sessions
+  if (costVal === 0 && state.data.sessions?.sessions) {
+    for (const s of state.data.sessions.sessions) {
+      if (s.estimatedCost) costVal += s.estimatedCost;
+    }
+  }
+  const cost = costVal > 0 ? `$${costVal.toFixed(2)}` : '$0.00';
+  const tokens = tokenVal > 0 ? formatNumber(tokenVal) : '-';
   process.stdout.write(`\n ${ansi.dim('24h:')} ${ansi.bold(cost)}  ${ansi.dim('tokens:')} ${tokens}\n`);
 
   // Footer
@@ -291,7 +300,8 @@ function renderAgentsList(cols, maxRows) {
     const role = pad(truncate(a.role, roleW), roleW);
     const st = statusColor(a.status || 'unknown');
     const stPad = pad(st, statusW + 9);
-    const lastSeen = a.last_seen ? ansi.dim(timeSince(a.last_seen)) : ansi.dim('never');
+    const seenTs = a.last_seen || a.updated_at || a.created_at;
+    const lastSeen = seenTs ? ansi.dim(timeSince(seenTs)) : ansi.dim('never');
     const line = `  ${name} ${role} ${stPad} ${lastSeen}`;
     process.stdout.write(selected ? ansi.inverse(stripAnsi(line).padEnd(cols)) + '\n' : line + '\n');
   }
