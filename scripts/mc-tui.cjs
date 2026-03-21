@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /*
- Mission Control TUI (v1)
+ Mission Control TUI (v2)
  - Zero dependencies (ANSI escape codes)
- - Dashboard with agents/tasks/sessions panels
- - Keyboard-driven refresh and navigation
- - Trigger operations: wake agent, queue poll
- - Graceful degradation when endpoints unavailable
+ - Arrow key navigation between agents/tasks
+ - Enter to drill into agent detail with sessions
+ - Esc to go back, q to quit
+ - Auto-refresh dashboard
 
  Usage:
    node scripts/mc-tui.cjs [--url <base>] [--api-key <key>] [--profile <name>] [--refresh <ms>]
@@ -17,7 +17,7 @@ const os = require('node:os');
 const readline = require('node:readline');
 
 // ---------------------------------------------------------------------------
-// Config (shared with mc-cli.cjs)
+// Config
 // ---------------------------------------------------------------------------
 
 function parseArgs(argv) {
@@ -90,6 +90,8 @@ const ansi = {
   cyan: (s) => `${ESC}36m${s}${ESC}0m`,
   magenta: (s) => `${ESC}35m${s}${ESC}0m`,
   bgBlue: (s) => `${ESC}44m${ESC}97m${s}${ESC}0m`,
+  bgCyan: (s) => `${ESC}46m${ESC}30m${s}${ESC}0m`,
+  inverse: (s) => `${ESC}7m${s}${ESC}0m`,
   hideCursor: () => process.stdout.write(`${ESC}?25l`),
   showCursor: () => process.stdout.write(`${ESC}?25h`),
   clearLine: () => process.stdout.write(`${ESC}2K`),
@@ -119,162 +121,6 @@ function statusColor(status) {
   return status;
 }
 
-// ---------------------------------------------------------------------------
-// Data fetching
-// ---------------------------------------------------------------------------
-
-async function fetchDashboardData(baseUrl, apiKey, cookie) {
-  const [health, agents, tasks, tokens] = await Promise.all([
-    api(baseUrl, apiKey, cookie, 'GET', '/api/status?action=health'),
-    api(baseUrl, apiKey, cookie, 'GET', '/api/agents'),
-    api(baseUrl, apiKey, cookie, 'GET', '/api/tasks?limit=15'),
-    api(baseUrl, apiKey, cookie, 'GET', '/api/tokens?action=stats&timeframe=day'),
-  ]);
-  return { health, agents, tasks, tokens };
-}
-
-// ---------------------------------------------------------------------------
-// Rendering
-// ---------------------------------------------------------------------------
-
-function renderHeader(cols, baseUrl, healthData, refreshMs) {
-  const title = ' MISSION CONTROL ';
-  const bar = ansi.bgBlue(pad(title, cols));
-  process.stdout.write(bar + '\n');
-
-  let status;
-  if (healthData?._error) {
-    status = ansi.red('UNREACHABLE');
-  } else {
-    // Show healthy if essential checks pass (DB + Disk), even when
-    // gateway is down or dev-mode memory is high
-    const checks = healthData?.checks || [];
-    const essentialNames = new Set(['Database', 'Disk Space']);
-    const essentialChecks = checks.filter(c => essentialNames.has(c.name));
-    const essentialOk = essentialChecks.length > 0 && essentialChecks.every(c => c.status === 'healthy');
-    const warnings = checks.filter(c => !essentialNames.has(c.name) && c.status !== 'healthy');
-    const warningNames = warnings.map(c => c.name.toLowerCase()).join(', ');
-
-    if (essentialOk && warnings.length === 0) {
-      status = ansi.green('healthy');
-    } else if (essentialOk) {
-      status = ansi.yellow('operational') + ansi.dim(` (${warningNames})`);
-    } else {
-      status = statusColor(healthData?.status || 'unknown');
-    }
-  }
-  const url = ansi.dim(baseUrl);
-  const refresh = ansi.dim(`refresh: ${refreshMs / 1000}s`);
-  const time = ansi.dim(new Date().toLocaleTimeString());
-  process.stdout.write(` ${status}  ${url}  ${refresh}  ${time}\n`);
-}
-
-function renderAgentsPanel(agentsData, cols, maxRows) {
-  process.stdout.write('\n' + ansi.bold(ansi.cyan(' AGENTS')) + '\n');
-
-  if (agentsData?._error) {
-    process.stdout.write(ansi.dim(`  (unavailable: ${agentsData._error})\n`));
-    return;
-  }
-
-  const agents = agentsData?.agents || agentsData || [];
-  if (!Array.isArray(agents) || agents.length === 0) {
-    process.stdout.write(ansi.dim('  (no agents)\n'));
-    return;
-  }
-
-  const nameW = 18;
-  const roleW = 14;
-  const statusW = 12;
-  const header = ansi.dim(`  ${pad('Name', nameW)} ${pad('Role', roleW)} ${pad('Status', statusW)} Last Seen`);
-  process.stdout.write(header + '\n');
-
-  const sorted = [...agents].sort((a, b) => {
-    const order = { online: 0, active: 0, idle: 1, sleeping: 2, offline: 3 };
-    return (order[a.status] ?? 4) - (order[b.status] ?? 4);
-  });
-
-  for (let i = 0; i < Math.min(sorted.length, maxRows); i++) {
-    const a = sorted[i];
-    const name = pad(truncate(a.name, nameW), nameW);
-    const role = pad(truncate(a.role, roleW), roleW);
-    const status = pad(statusColor(a.status || 'unknown'), statusW + 9); // +9 for ANSI codes
-    const lastSeen = a.last_heartbeat
-      ? ansi.dim(timeSince(a.last_heartbeat))
-      : ansi.dim('never');
-    process.stdout.write(`  ${name} ${role} ${status} ${lastSeen}\n`);
-  }
-
-  if (sorted.length > maxRows) {
-    process.stdout.write(ansi.dim(`  ... and ${sorted.length - maxRows} more\n`));
-  }
-}
-
-function renderTasksPanel(tasksData, cols, maxRows) {
-  process.stdout.write('\n' + ansi.bold(ansi.magenta(' TASKS')) + '\n');
-
-  if (tasksData?._error) {
-    process.stdout.write(ansi.dim(`  (unavailable: ${tasksData._error})\n`));
-    return;
-  }
-
-  const tasks = tasksData?.tasks || tasksData || [];
-  if (!Array.isArray(tasks) || tasks.length === 0) {
-    process.stdout.write(ansi.dim('  (no tasks)\n'));
-    return;
-  }
-
-  const idW = 5;
-  const titleW = Math.min(35, cols - 40);
-  const statusW = 14;
-  const assignW = 14;
-  const header = ansi.dim(`  ${pad('ID', idW)} ${pad('Title', titleW)} ${pad('Status', statusW)} ${pad('Assigned', assignW)}`);
-  process.stdout.write(header + '\n');
-
-  for (let i = 0; i < Math.min(tasks.length, maxRows); i++) {
-    const t = tasks[i];
-    const id = pad(String(t.id || ''), idW);
-    const title = pad(truncate(t.title, titleW), titleW);
-    const status = pad(statusColor(t.status || ''), statusW + 9);
-    const assigned = pad(truncate(t.assigned_to || '-', assignW), assignW);
-    process.stdout.write(`  ${id} ${title} ${status} ${assigned}\n`);
-  }
-
-  const total = tasksData?.total || tasks.length;
-  if (total > maxRows) {
-    process.stdout.write(ansi.dim(`  ... ${total} total tasks\n`));
-  }
-}
-
-function renderTokensPanel(tokensData) {
-  process.stdout.write('\n' + ansi.bold(ansi.yellow(' COSTS (24h)')) + '\n');
-
-  if (tokensData?._error) {
-    process.stdout.write(ansi.dim(`  (unavailable: ${tokensData._error})\n`));
-    return;
-  }
-
-  const summary = tokensData?.summary || {};
-  const cost = summary.totalCost != null ? `$${summary.totalCost.toFixed(4)}` : '-';
-  const tokens = summary.totalTokens != null ? formatNumber(summary.totalTokens) : '-';
-  const requests = summary.requestCount != null ? formatNumber(summary.requestCount) : '-';
-
-  process.stdout.write(`  Cost: ${ansi.bold(cost)}  Tokens: ${tokens}  Requests: ${requests}\n`);
-}
-
-function renderFooter(cols, selectedPanel, actionMessage) {
-  process.stdout.write('\n');
-  if (actionMessage) {
-    process.stdout.write(ansi.green(` ${actionMessage}\n`));
-  }
-  const keys = ansi.dim(' [r]efresh  [a]gents  [t]asks  [w]ake agent  [q]uit');
-  process.stdout.write(keys + '\n');
-}
-
-// ---------------------------------------------------------------------------
-// Utilities
-// ---------------------------------------------------------------------------
-
 function timeSince(ts) {
   const now = Date.now();
   const then = typeof ts === 'number' ? (ts < 1e12 ? ts * 1000 : ts) : new Date(ts).getTime();
@@ -291,26 +137,287 @@ function formatNumber(n) {
   return String(n);
 }
 
+// Strip ANSI codes for length calculation
+function stripAnsi(s) {
+  return s.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
 // ---------------------------------------------------------------------------
-// Actions
+// Data fetching
 // ---------------------------------------------------------------------------
 
-async function wakeAgent(baseUrl, apiKey, cookie, agentsData) {
-  const agents = agentsData?.agents || agentsData || [];
-  const sleeping = agents.filter(a => a.status === 'sleeping' || a.status === 'idle' || a.status === 'offline');
+async function fetchDashboardData(baseUrl, apiKey, cookie) {
+  const [health, agents, tasks, tokens] = await Promise.all([
+    api(baseUrl, apiKey, cookie, 'GET', '/api/status?action=health'),
+    api(baseUrl, apiKey, cookie, 'GET', '/api/agents'),
+    api(baseUrl, apiKey, cookie, 'GET', '/api/tasks?limit=30'),
+    api(baseUrl, apiKey, cookie, 'GET', '/api/tokens?action=stats&timeframe=day'),
+  ]);
+  return { health, agents, tasks, tokens };
+}
 
-  if (sleeping.length === 0) return 'No sleeping/idle agents to wake';
+async function fetchAgentSessions(baseUrl, apiKey, cookie, agentName) {
+  const sessions = await api(baseUrl, apiKey, cookie, 'GET', '/api/sessions');
+  if (sessions?._error) return sessions;
+  const all = sessions?.sessions || [];
+  // Match sessions by agent name (sessions use project path as agent key)
+  const matched = all.filter(s => {
+    const key = s.agent || s.key || '';
+    const name = key.split('/').pop() || key;
+    return name === agentName || key.includes(agentName);
+  });
+  return { sessions: matched.length > 0 ? matched : all.slice(0, 10) };
+}
 
-  // Wake the first sleeping agent
-  const target = sleeping[0];
-  const result = await api(baseUrl, apiKey, cookie, 'POST', `/api/agents/${target.id}/wake`);
-  if (result?._error) return `Wake failed: ${result._error}`;
-  return `Woke agent: ${target.name}`;
+async function fetchTranscript(baseUrl, apiKey, cookie, sessionId, limit) {
+  return api(baseUrl, apiKey, cookie, 'GET',
+    `/api/sessions/transcript?kind=claude-code&id=${encodeURIComponent(sessionId)}&limit=${limit}`);
+}
+
+// ---------------------------------------------------------------------------
+// Views
+// ---------------------------------------------------------------------------
+
+// State
+const state = {
+  view: 'dashboard',  // 'dashboard' | 'agent-detail'
+  panel: 'agents',    // 'agents' | 'tasks'
+  cursorAgent: 0,
+  cursorTask: 0,
+  scrollOffset: 0,
+  selectedAgent: null,
+  agentSessions: null,
+  agentTranscript: null,
+  transcriptSessionIdx: 0,
+  transcriptScroll: 0,
+  data: { health: {}, agents: {}, tasks: {}, tokens: {} },
+  actionMessage: '',
+};
+
+function getAgentsList() {
+  const raw = state.data.agents?.agents || state.data.agents || [];
+  if (!Array.isArray(raw)) return [];
+  return [...raw].sort((a, b) => {
+    const order = { online: 0, active: 0, idle: 1, sleeping: 2, offline: 3 };
+    return (order[a.status] ?? 4) - (order[b.status] ?? 4);
+  });
+}
+
+function getTasksList() {
+  const raw = state.data.tasks?.tasks || state.data.tasks || [];
+  return Array.isArray(raw) ? raw : [];
+}
+
+// --- Dashboard View ---
+
+function renderDashboard() {
+  const { cols, rows } = getTermSize();
+  ansi.clear();
+
+  // Header
+  const title = ' MISSION CONTROL ';
+  process.stdout.write(ansi.bgBlue(pad(title, cols)) + '\n');
+
+  const healthData = state.data.health;
+  let status;
+  if (healthData?._error) {
+    status = ansi.red('UNREACHABLE');
+  } else {
+    const checks = healthData?.checks || [];
+    const essentialNames = new Set(['Database', 'Disk Space']);
+    const essentialChecks = checks.filter(c => essentialNames.has(c.name));
+    const essentialOk = essentialChecks.length > 0 && essentialChecks.every(c => c.status === 'healthy');
+    const warnings = checks.filter(c => !essentialNames.has(c.name) && c.status !== 'healthy');
+    const warningNames = warnings.map(c => c.name.toLowerCase()).join(', ');
+    if (essentialOk && warnings.length === 0) status = ansi.green('healthy');
+    else if (essentialOk) status = ansi.yellow('operational') + ansi.dim(` (${warningNames})`);
+    else status = statusColor(healthData?.status || 'unknown');
+  }
+  process.stdout.write(` ${status}  ${ansi.dim(baseUrl)}  ${ansi.dim(new Date().toLocaleTimeString())}\n`);
+
+  // Panel tabs
+  const agentTab = state.panel === 'agents' ? ansi.bgCyan(' AGENTS ') : ansi.dim(' AGENTS ');
+  const taskTab = state.panel === 'tasks' ? ansi.bgCyan(' TASKS ') : ansi.dim(' TASKS ');
+  process.stdout.write(`\n ${agentTab}  ${taskTab}\n`);
+
+  const headerRows = 5;
+  const footerRows = 4;
+  const panelRows = Math.max(4, rows - headerRows - footerRows);
+
+  if (state.panel === 'agents') {
+    renderAgentsList(cols, panelRows);
+  } else {
+    renderTasksList(cols, panelRows);
+  }
+
+  // Costs bar
+  const tokensData = state.data.tokens;
+  const summary = tokensData?.summary || {};
+  const cost = summary.totalCost != null ? `$${summary.totalCost.toFixed(4)}` : '-';
+  const tokens = summary.totalTokens != null ? formatNumber(summary.totalTokens) : '-';
+  process.stdout.write(`\n ${ansi.dim('24h:')} ${ansi.bold(cost)}  ${ansi.dim('tokens:')} ${tokens}\n`);
+
+  // Footer
+  if (state.actionMessage) process.stdout.write(ansi.green(` ${state.actionMessage}\n`));
+  const hint = state.panel === 'agents'
+    ? ' \u2191\u2193 navigate  enter detail  tab switch  [r]efresh  [w]ake  [q]uit'
+    : ' \u2191\u2193 navigate  tab switch  [r]efresh  [q]uit';
+  process.stdout.write(ansi.dim(hint) + '\n');
+}
+
+function renderAgentsList(cols, maxRows) {
+  const agents = getAgentsList();
+  if (agents.length === 0) { process.stdout.write(ansi.dim('  (no agents)\n')); return; }
+
+  const nameW = Math.min(22, Math.floor(cols * 0.25));
+  const roleW = Math.min(16, Math.floor(cols * 0.15));
+  const statusW = 12;
+  process.stdout.write(ansi.dim(`  ${pad('Name', nameW)} ${pad('Role', roleW)} ${pad('Status', statusW)} Last Seen\n`));
+
+  // Ensure cursor is visible
+  if (state.cursorAgent >= agents.length) state.cursorAgent = agents.length - 1;
+  if (state.cursorAgent < 0) state.cursorAgent = 0;
+
+  const listRows = maxRows - 1; // minus header
+  // Scroll window
+  let start = 0;
+  if (state.cursorAgent >= start + listRows) start = state.cursorAgent - listRows + 1;
+  if (state.cursorAgent < start) start = state.cursorAgent;
+
+  for (let i = start; i < Math.min(agents.length, start + listRows); i++) {
+    const a = agents[i];
+    const selected = i === state.cursorAgent;
+    const name = pad(truncate(a.name, nameW), nameW);
+    const role = pad(truncate(a.role, roleW), roleW);
+    const st = statusColor(a.status || 'unknown');
+    const stPad = pad(st, statusW + 9);
+    const lastSeen = a.last_seen ? ansi.dim(timeSince(a.last_seen)) : ansi.dim('never');
+    const line = `  ${name} ${role} ${stPad} ${lastSeen}`;
+    process.stdout.write(selected ? ansi.inverse(stripAnsi(line).padEnd(cols)) + '\n' : line + '\n');
+  }
+
+  if (agents.length > listRows) {
+    process.stdout.write(ansi.dim(`  ${agents.length} total, showing ${start + 1}-${Math.min(agents.length, start + listRows)}\n`));
+  }
+}
+
+function renderTasksList(cols, maxRows) {
+  const tasks = getTasksList();
+  if (tasks.length === 0) { process.stdout.write(ansi.dim('  (no tasks)\n')); return; }
+
+  const idW = 5;
+  const titleW = Math.min(35, Math.floor(cols * 0.35));
+  const statusW = 14;
+  const assignW = 16;
+  process.stdout.write(ansi.dim(`  ${pad('ID', idW)} ${pad('Title', titleW)} ${pad('Status', statusW)} ${pad('Assigned', assignW)}\n`));
+
+  if (state.cursorTask >= tasks.length) state.cursorTask = tasks.length - 1;
+  if (state.cursorTask < 0) state.cursorTask = 0;
+
+  const listRows = maxRows - 1;
+  let start = 0;
+  if (state.cursorTask >= start + listRows) start = state.cursorTask - listRows + 1;
+  if (state.cursorTask < start) start = state.cursorTask;
+
+  for (let i = start; i < Math.min(tasks.length, start + listRows); i++) {
+    const t = tasks[i];
+    const selected = i === state.cursorTask;
+    const id = pad(String(t.id || ''), idW);
+    const title = pad(truncate(t.title, titleW), titleW);
+    const st = statusColor(t.status || '');
+    const stPad = pad(st, statusW + 9);
+    const assigned = pad(truncate(t.assigned_to || '-', assignW), assignW);
+    const line = `  ${id} ${title} ${stPad} ${assigned}`;
+    process.stdout.write(selected ? ansi.inverse(stripAnsi(line).padEnd(cols)) + '\n' : line + '\n');
+  }
+}
+
+// --- Agent Detail View ---
+
+function renderAgentDetail() {
+  const { cols, rows } = getTermSize();
+  ansi.clear();
+
+  const agent = state.selectedAgent;
+  if (!agent) { state.view = 'dashboard'; renderDashboard(); return; }
+
+  // Header
+  process.stdout.write(ansi.bgBlue(pad(` ${agent.name} `, cols)) + '\n');
+  process.stdout.write(` Role: ${ansi.cyan(agent.role || '-')}  Status: ${statusColor(agent.status || 'unknown')}  ${ansi.dim(agent.last_activity || '')}\n`);
+
+  // Sessions
+  process.stdout.write('\n' + ansi.bold(ansi.cyan(' SESSIONS')) + '\n');
+
+  const sessions = state.agentSessions?.sessions || [];
+  if (state.agentSessions?._error) {
+    process.stdout.write(ansi.dim(`  (unavailable: ${state.agentSessions._error})\n`));
+  } else if (sessions.length === 0) {
+    process.stdout.write(ansi.dim('  (no sessions found)\n'));
+  } else {
+    for (let i = 0; i < Math.min(sessions.length, 5); i++) {
+      const s = sessions[i];
+      const selected = i === state.transcriptSessionIdx;
+      const active = s.active ? ansi.green('*') : ' ';
+      const age = s.startTime ? timeSince(s.startTime) : '';
+      const cost = s.estimatedCost != null ? `$${s.estimatedCost.toFixed(2)}` : '';
+      const model = s.model || '';
+      const branch = (s.flags || [])[0] || '';
+      const prompt = truncate(s.lastUserPrompt || '', Math.max(20, cols - 70));
+      const line = `  ${active} ${pad(truncate(s.id || '', 12), 12)} ${pad(model, 18)} ${pad(age, 8)} ${pad(cost, 8)} ${ansi.dim(branch)}`;
+      process.stdout.write(selected ? ansi.inverse(stripAnsi(line).padEnd(cols)) + '\n' : line + '\n');
+    }
+  }
+
+  // Transcript
+  process.stdout.write('\n' + ansi.bold(ansi.magenta(' CHAT')) + '\n');
+
+  const transcript = state.agentTranscript?.messages || [];
+  if (state.agentTranscript?._error) {
+    process.stdout.write(ansi.dim(`  (unavailable: ${state.agentTranscript._error})\n`));
+  } else if (transcript.length === 0) {
+    process.stdout.write(ansi.dim('  (no messages — press enter on a session to load)\n'));
+  } else {
+    const chatRows = Math.max(4, rows - 16);
+    const messages = [];
+    for (const msg of transcript) {
+      const role = msg.role || 'unknown';
+      for (const part of (msg.parts || [])) {
+        if (part.type === 'text' && part.text) {
+          messages.push({ role, text: part.text });
+        } else if (part.type === 'tool_use') {
+          messages.push({ role, text: ansi.dim(`[tool: ${part.name || part.id || '?'}]`) });
+        } else if (part.type === 'tool_result') {
+          const preview = typeof part.content === 'string' ? truncate(part.content, 80) : '[result]';
+          messages.push({ role, text: ansi.dim(`[result: ${preview}]`) });
+        }
+      }
+    }
+
+    // Scroll from bottom
+    const visible = messages.slice(-(chatRows + state.transcriptScroll), messages.length - state.transcriptScroll || undefined);
+    for (const m of visible.slice(-chatRows)) {
+      const roleLabel = m.role === 'user' ? ansi.green('you') : m.role === 'assistant' ? ansi.cyan('ai ') : ansi.dim(pad(m.role, 3));
+      const lines = m.text.split('\n');
+      const firstLine = truncate(lines[0], cols - 8);
+      process.stdout.write(`  ${roleLabel} ${firstLine}\n`);
+      // Show continuation lines (up to 2 more)
+      for (let j = 1; j < Math.min(lines.length, 3); j++) {
+        process.stdout.write(`      ${truncate(lines[j], cols - 8)}\n`);
+      }
+    }
+  }
+
+  // Footer
+  process.stdout.write('\n');
+  if (state.actionMessage) process.stdout.write(ansi.green(` ${state.actionMessage}\n`));
+  process.stdout.write(ansi.dim(' \u2191\u2193 sessions  enter load chat  pgup/pgdn scroll  esc back  [q]uit') + '\n');
 }
 
 // ---------------------------------------------------------------------------
 // Main loop
 // ---------------------------------------------------------------------------
+
+let baseUrl, apiKey, cookie, refreshMs;
 
 async function main() {
   const flags = parseArgs(process.argv.slice(2));
@@ -321,21 +428,29 @@ async function main() {
 Usage:
   node scripts/mc-tui.cjs [--url <base>] [--api-key <key>] [--profile <name>] [--refresh <ms>]
 
-Keys:
-  r       Refresh now
-  a       Focus agents panel
-  t       Focus tasks panel
-  w       Wake first sleeping agent
-  q/Esc   Quit
+Keys (Dashboard):
+  up/down     Navigate agents or tasks list
+  enter       Open agent detail (sessions + chat)
+  tab         Switch between agents and tasks panels
+  r           Refresh now
+  w           Wake first sleeping agent
+  q/Esc       Quit
+
+Keys (Agent Detail):
+  up/down     Navigate sessions
+  enter       Load chat transcript for selected session
+  pgup/pgdn   Scroll chat
+  esc         Back to dashboard
+  q           Quit
 `);
     process.exit(0);
   }
 
   const profile = loadProfile(String(flags.profile || 'default'));
-  const baseUrl = flags.url ? String(flags.url) : profile.url;
-  const apiKey = flags['api-key'] ? String(flags['api-key']) : profile.apiKey;
-  const cookie = profile.cookie;
-  const refreshMs = Number(flags.refresh || 5000);
+  baseUrl = flags.url ? String(flags.url) : profile.url;
+  apiKey = flags['api-key'] ? String(flags['api-key']) : profile.apiKey;
+  cookie = profile.cookie;
+  refreshMs = Number(flags.refresh || 5000);
 
   // Raw mode for keyboard input
   if (process.stdin.isTTY) {
@@ -347,11 +462,7 @@ Keys:
   ansi.hideCursor();
 
   let running = true;
-  let data = { health: {}, agents: {}, tasks: {}, tokens: {} };
-  let actionMessage = '';
-  let selectedPanel = 'agents';
 
-  // Graceful shutdown
   function cleanup() {
     running = false;
     ansi.showCursor();
@@ -361,73 +472,172 @@ Keys:
   process.on('SIGINT', cleanup);
   process.on('SIGTERM', cleanup);
 
+  function render() {
+    if (state.view === 'dashboard') renderDashboard();
+    else if (state.view === 'agent-detail') renderAgentDetail();
+  }
+
   // Keyboard handler
   process.stdin.on('keypress', async (str, key) => {
     if (!key) return;
-    if (key.name === 'q' || (key.name === 'escape')) {
-      cleanup();
-      return;
-    }
-    if (key.name === 'c' && key.ctrl) {
-      cleanup();
-      return;
-    }
-    if (key.name === 'r') {
-      actionMessage = 'Refreshing...';
-      render();
-      data = await fetchDashboardData(baseUrl, apiKey, cookie);
-      actionMessage = 'Refreshed';
-      render();
-      setTimeout(() => { actionMessage = ''; render(); }, 2000);
-    }
-    if (key.name === 'a') { selectedPanel = 'agents'; render(); }
-    if (key.name === 't') { selectedPanel = 'tasks'; render(); }
-    if (key.name === 'w') {
-      actionMessage = 'Waking agent...';
-      render();
-      actionMessage = await wakeAgent(baseUrl, apiKey, cookie, data.agents);
-      render();
-      // Refresh after wake
-      data = await fetchDashboardData(baseUrl, apiKey, cookie);
-      render();
-      setTimeout(() => { actionMessage = ''; render(); }, 3000);
+
+    // Global keys
+    if (key.name === 'q') { cleanup(); return; }
+    if (key.name === 'c' && key.ctrl) { cleanup(); return; }
+
+    if (state.view === 'dashboard') {
+      await handleDashboardKey(key, render);
+    } else if (state.view === 'agent-detail') {
+      await handleAgentDetailKey(key, render);
     }
   });
 
-  function render() {
-    const { cols, rows } = getTermSize();
-    ansi.clear();
-
-    renderHeader(cols, baseUrl, data.health, refreshMs);
-
-    // Calculate available rows for panels
-    const headerRows = 3;
-    const footerRows = 3;
-    const panelHeaderRows = 6; // section headers + token panel
-    const available = Math.max(4, rows - headerRows - footerRows - panelHeaderRows);
-    const agentRows = Math.floor(available * 0.45);
-    const taskRows = Math.floor(available * 0.55);
-
-    renderAgentsPanel(data.agents, cols, agentRows);
-    renderTasksPanel(data.tasks, cols, taskRows);
-    renderTokensPanel(data.tokens);
-    renderFooter(cols, selectedPanel, actionMessage);
-  }
-
-  // Initial fetch and render
-  actionMessage = 'Loading...';
+  // Initial load
+  state.actionMessage = 'Loading...';
   render();
-  data = await fetchDashboardData(baseUrl, apiKey, cookie);
-  actionMessage = '';
+  state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+  state.actionMessage = '';
   render();
 
   // Auto-refresh loop
   while (running) {
     await new Promise(resolve => setTimeout(resolve, refreshMs));
     if (!running) break;
-    data = await fetchDashboardData(baseUrl, apiKey, cookie);
-    if (actionMessage === '') render(); // Don't overwrite action messages
+    if (state.view === 'dashboard') {
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      if (state.actionMessage === '') render();
+    }
   }
+}
+
+async function handleDashboardKey(key, render) {
+  if (key.name === 'escape') { cleanup(); return; }
+
+  if (key.name === 'tab') {
+    state.panel = state.panel === 'agents' ? 'tasks' : 'agents';
+    render();
+    return;
+  }
+
+  // Also support a/t to switch panels
+  if (key.name === 'a') { state.panel = 'agents'; render(); return; }
+  if (key.name === 't') { state.panel = 'tasks'; render(); return; }
+
+  if (key.name === 'up') {
+    if (state.panel === 'agents') state.cursorAgent = Math.max(0, state.cursorAgent - 1);
+    else state.cursorTask = Math.max(0, state.cursorTask - 1);
+    render();
+    return;
+  }
+
+  if (key.name === 'down') {
+    if (state.panel === 'agents') {
+      const max = getAgentsList().length - 1;
+      state.cursorAgent = Math.min(max, state.cursorAgent + 1);
+    } else {
+      const max = getTasksList().length - 1;
+      state.cursorTask = Math.min(max, state.cursorTask + 1);
+    }
+    render();
+    return;
+  }
+
+  if (key.name === 'return' && state.panel === 'agents') {
+    const agents = getAgentsList();
+    if (agents.length === 0) return;
+    state.selectedAgent = agents[state.cursorAgent];
+    state.view = 'agent-detail';
+    state.transcriptSessionIdx = 0;
+    state.transcriptScroll = 0;
+    state.agentTranscript = null;
+    state.actionMessage = 'Loading sessions...';
+    render();
+    state.agentSessions = await fetchAgentSessions(baseUrl, apiKey, cookie, state.selectedAgent.name);
+    state.actionMessage = '';
+    render();
+    return;
+  }
+
+  if (key.name === 'r') {
+    state.actionMessage = 'Refreshing...';
+    render();
+    state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+    state.actionMessage = 'Refreshed';
+    render();
+    setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    return;
+  }
+
+  if (key.name === 'w') {
+    const agents = state.data.agents?.agents || [];
+    const sleeping = agents.filter(a => a.status === 'sleeping' || a.status === 'idle' || a.status === 'offline');
+    if (sleeping.length === 0) { state.actionMessage = 'No agents to wake'; render(); return; }
+    state.actionMessage = 'Waking agent...';
+    render();
+    const target = sleeping[0];
+    const result = await api(baseUrl, apiKey, cookie, 'POST', `/api/agents/${target.id}/wake`);
+    state.actionMessage = result?._error ? `Wake failed: ${result._error}` : `Woke agent: ${target.name}`;
+    render();
+    state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+    render();
+    setTimeout(() => { state.actionMessage = ''; render(); }, 3000);
+  }
+}
+
+async function handleAgentDetailKey(key, render) {
+  if (key.name === 'escape') {
+    state.view = 'dashboard';
+    state.selectedAgent = null;
+    state.agentSessions = null;
+    state.agentTranscript = null;
+    render();
+    return;
+  }
+
+  const sessions = state.agentSessions?.sessions || [];
+
+  if (key.name === 'up') {
+    state.transcriptSessionIdx = Math.max(0, state.transcriptSessionIdx - 1);
+    render();
+    return;
+  }
+
+  if (key.name === 'down') {
+    state.transcriptSessionIdx = Math.min(Math.max(0, sessions.length - 1), state.transcriptSessionIdx + 1);
+    render();
+    return;
+  }
+
+  if (key.name === 'return') {
+    if (sessions.length === 0) return;
+    const session = sessions[state.transcriptSessionIdx];
+    if (!session?.id) return;
+    state.actionMessage = 'Loading chat...';
+    state.transcriptScroll = 0;
+    render();
+    state.agentTranscript = await fetchTranscript(baseUrl, apiKey, cookie, session.id, 20);
+    state.actionMessage = '';
+    render();
+    return;
+  }
+
+  // Page up/down for chat scroll
+  if (key.name === 'pageup' || (key.shift && key.name === 'up')) {
+    state.transcriptScroll = Math.min(state.transcriptScroll + 5, 100);
+    render();
+    return;
+  }
+  if (key.name === 'pagedown' || (key.shift && key.name === 'down')) {
+    state.transcriptScroll = Math.max(0, state.transcriptScroll - 5);
+    render();
+    return;
+  }
+}
+
+function cleanup() {
+  ansi.showCursor();
+  ansi.exitAltScreen();
+  process.exit(0);
 }
 
 main().catch(err => {
