@@ -3601,6 +3601,57 @@
         }
       }
     },
+    "/api/frameworks": {
+      "get": {
+        "tags": [
+          "Config"
+        ],
+        "summary": "List supported frameworks",
+        "description": "Returns all supported agent frameworks with connection info and optional templates.",
+        "operationId": "listFrameworks",
+        "parameters": [
+          {
+            "name": "framework",
+            "in": "query",
+            "description": "Filter to a specific framework (e.g., langgraph)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "templates",
+            "in": "query",
+            "description": "Include available templates when set to 'true'",
+            "schema": { "type": "string", "enum": ["true", "false"] }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Framework list or single framework detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "frameworks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "name": { "type": "string" },
+                          "description": { "type": "string" }
+                        }
+                      }
+                    },
+                    "framework": { "type": "object" },
+                    "templates": { "type": "array" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/gateways": {
       "get": {
         "tags": [
