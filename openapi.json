@@ -633,6 +633,23 @@
       }
     },
     "/api/agents/sync": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Preview agent sync diff",
+        "operationId": "previewAgentSyncDiff",
+        "responses": {
+          "200": {
+            "description": "Sync diff preview",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
       "post": {
         "tags": [
           "Agents"
@@ -2526,6 +2543,39 @@
       }
     },
     "/api/backup": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List existing backups",
+        "operationId": "listBackups",
+        "responses": {
+          "200": {
+            "description": "Backup list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "backups": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": { "type": "string" },
+                          "size": { "type": "integer" },
+                          "created_at": { "type": "integer" }
+                        }
+                      }
+                    },
+                    "dir": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
       "post": {
         "tags": [
           "Admin"
@@ -2560,6 +2610,44 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           }
+        }
+      },
+      "delete": {
+        "tags": ["Admin"],
+        "summary": "Delete a specific backup",
+        "operationId": "deleteBackup",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Backup deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
     },
@@ -2874,6 +2962,32 @@
       }
     },
     "/api/cleanup": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Preview retention policy and stale data counts",
+        "operationId": "previewCleanup",
+        "responses": {
+          "200": {
+            "description": "Retention preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "retention": { "type": "object" },
+                    "preview": {
+                      "type": "array",
+                      "items": { "type": "object" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
       "post": {
         "tags": [
           "Admin"
@@ -3946,6 +4060,90 @@
             "$ref": "#/components/responses/Forbidden"
           }
         }
+      },
+      "put": {
+        "tags": ["Admin"],
+        "summary": "Update environment variables for integrations",
+        "operationId": "updateIntegrationVars",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["vars"],
+                "properties": {
+                  "vars": {
+                    "type": "object",
+                    "additionalProperties": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Variables updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "updated": { "type": "array", "items": { "type": "string" } },
+                    "count": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin"],
+        "summary": "Remove environment variables for integrations",
+        "operationId": "deleteIntegrationVars",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["keys"],
+                "properties": {
+                  "keys": {
+                    "oneOf": [
+                      { "type": "string" },
+                      { "type": "array", "items": { "type": "string" } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Variables removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "removed": { "type": "array", "items": { "type": "string" } },
+                    "count": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
       }
     },
     "/api/logs": {
@@ -4017,6 +4215,47 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           }
+        }
+      },
+      "post": {
+        "tags": ["Monitoring"],
+        "summary": "Add a custom log entry",
+        "operationId": "addLogEntry",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action", "message"],
+                "properties": {
+                  "action": { "type": "string" },
+                  "message": { "type": "string" },
+                  "level": { "type": "string", "enum": ["info", "warn", "error", "debug"] },
+                  "source": { "type": "string" },
+                  "session": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Log entry added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "entry": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       }
     },
@@ -4102,6 +4341,46 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           }
+        }
+      },
+      "delete": {
+        "tags": ["Admin"],
+        "summary": "Delete a memory file",
+        "operationId": "deleteMemoryFile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action", "path"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["delete"] },
+                  "path": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "File deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
     },
@@ -4292,9 +4571,112 @@
             "$ref": "#/components/responses/Unauthorized"
           }
         }
+      },
+      "put": {
+        "tags": ["Monitoring"],
+        "summary": "Mark notifications as read",
+        "operationId": "markNotificationsRead",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": { "type": "array", "items": { "type": "integer" } },
+                  "recipient": { "type": "string" },
+                  "markAllRead": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notifications marked as read",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "markedAsRead": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "delete": {
+        "tags": ["Monitoring"],
+        "summary": "Delete notifications",
+        "operationId": "deleteNotifications",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": { "type": "array", "items": { "type": "integer" } },
+                  "recipient": { "type": "string" },
+                  "olderThan": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notifications deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "deleted": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
       }
     },
     "/api/notifications/deliver": {
+      "get": {
+        "tags": ["Monitoring"],
+        "summary": "Get notification delivery status and statistics",
+        "operationId": "getDeliveryStatus",
+        "parameters": [
+          { "name": "agent", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delivery statistics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "statistics": { "type": "object" },
+                    "agents_with_pending": { "type": "array", "items": { "type": "object" } },
+                    "recent_deliveries": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
       "post": {
         "tags": [
           "Monitoring"
@@ -4687,6 +5069,32 @@
       }
     },
     "/api/pipelines/run": {
+      "get": {
+        "tags": ["Pipelines"],
+        "summary": "List pipeline runs",
+        "operationId": "listPipelineRuns",
+        "parameters": [
+          { "name": "pipeline_id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pipeline runs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "runs": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
       "post": {
         "tags": [
           "Pipelines"
@@ -5677,6 +6085,30 @@
       }
     },
     "/api/spawn": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get spawn history",
+        "operationId": "getSpawnHistory",
+        "parameters": [
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 50 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Spawn history",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "history": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
       "post": {
         "tags": [
           "Admin"
@@ -5792,6 +6224,40 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Generate daily standup report",
+        "operationId": "generateStandupReport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "date": { "type": "string", "format": "date" },
+                  "agents": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Standup report generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "standup": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       }
     },
@@ -6009,6 +6475,48 @@
           "404": {
             "$ref": "#/components/responses/NotFound"
           }
+        }
+      },
+      "post": {
+        "tags": ["Super Admin"],
+        "summary": "Change provision job approval state",
+        "operationId": "updateProvisionJobState",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["approve", "reject", "cancel"] },
+                  "reason": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Job state updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
     },
@@ -9449,6 +9957,1050 @@
           "429": {
             "description": "Rate limited"
           }
+        }
+      }
+    },
+    "/api/agents/evals": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get agent evaluation results",
+        "operationId": "getAgentEvals",
+        "parameters": [
+          { "name": "agent", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "action", "in": "query", "schema": { "type": "string", "enum": ["history"] } },
+          { "name": "weeks", "in": "query", "schema": { "type": "integer", "default": 4 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Eval results",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Agents"],
+        "summary": "Run agent evaluations or manage golden sets",
+        "operationId": "runAgentEvals",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["run", "golden-set"] },
+                  "agent": { "type": "string" },
+                  "layer": { "type": "string" },
+                  "name": { "type": "string" },
+                  "entries": { "type": "array", "items": { "type": "object" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Eval results or golden set saved",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/agents/optimize": {
+      "get": {
+        "tags": ["Agents"],
+        "summary": "Get agent optimization analysis",
+        "operationId": "getAgentOptimization",
+        "parameters": [
+          { "name": "agent", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "hours", "in": "query", "schema": { "type": "integer", "default": 24 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Optimization analysis",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/channels": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get channel statuses from gateway",
+        "operationId": "getChannelStatuses",
+        "parameters": [
+          { "name": "action", "in": "query", "schema": { "type": "string", "enum": ["probe"] } },
+          { "name": "channel", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Channel statuses",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Perform channel action (link, logout, profile)",
+        "operationId": "channelAction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string" },
+                  "force": { "type": "boolean" },
+                  "accountId": { "type": "string" },
+                  "profile": { "type": "object" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action result",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/claude-tasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get Claude Code teams and tasks",
+        "operationId": "getClaudeTasks",
+        "parameters": [
+          { "name": "force", "in": "query", "schema": { "type": "string", "enum": ["true", "false"] } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Claude Code tasks",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/gateways/discover": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Discover gateway instances via systemd",
+        "operationId": "discoverGateways",
+        "responses": {
+          "200": {
+            "description": "Discovered gateways",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "gateways": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "user": { "type": "string" },
+                          "port": { "type": "integer" },
+                          "active": { "type": "boolean" },
+                          "description": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/gateways/health/history": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get gateway health probe history",
+        "operationId": "getGatewayHealthHistory",
+        "responses": {
+          "200": {
+            "description": "Health history by gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "gatewayId": { "type": "integer" },
+                          "name": { "type": "string", "nullable": true },
+                          "entries": { "type": "array", "items": { "type": "object" } }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/github/sync": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get GitHub sync status for all projects",
+        "operationId": "getGithubSyncStatus",
+        "responses": {
+          "200": {
+            "description": "Sync status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "syncs": { "type": "array", "items": { "type": "object" } },
+                    "poller": { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Trigger GitHub sync",
+        "operationId": "triggerGithubSync",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["trigger", "trigger-all"] },
+                  "project_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sync result",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/gnap": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get GNAP sync status",
+        "operationId": "getGnapStatus",
+        "responses": {
+          "200": {
+            "description": "GNAP status",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "GNAP management actions (init, sync)",
+        "operationId": "gnapAction",
+        "parameters": [
+          { "name": "action", "in": "query", "required": true, "schema": { "type": "string", "enum": ["init", "sync"] } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Action result",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/hermes": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get Hermes agent status",
+        "operationId": "getHermesStatus",
+        "responses": {
+          "200": {
+            "description": "Hermes status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "installed": { "type": "boolean" },
+                    "gatewayRunning": { "type": "boolean" },
+                    "hookInstalled": { "type": "boolean" },
+                    "activeSessions": { "type": "integer" },
+                    "cronJobCount": { "type": "integer" },
+                    "memoryEntries": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Manage Hermes hook (install, uninstall)",
+        "operationId": "hermesHookAction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["install-hook", "uninstall-hook"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Hook action result",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/hermes/memory": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get Hermes memory file contents",
+        "operationId": "getHermesMemory",
+        "responses": {
+          "200": {
+            "description": "Hermes memory data",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/hermes/tasks": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get Hermes cron jobs",
+        "operationId": "getHermesTasks",
+        "parameters": [
+          { "name": "force", "in": "query", "schema": { "type": "string", "enum": ["true", "false"] } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hermes tasks",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/index": {
+      "get": {
+        "tags": ["Docs"],
+        "summary": "API endpoint catalog",
+        "operationId": "getApiIndex",
+        "responses": {
+          "200": {
+            "description": "Endpoint catalog",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": { "type": "string" },
+                    "total_endpoints": { "type": "integer" },
+                    "endpoints": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/local/agents-doc": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Discover and read local AGENTS.md",
+        "operationId": "getLocalAgentsDoc",
+        "responses": {
+          "200": {
+            "description": "AGENTS.md content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "found": { "type": "boolean" },
+                    "path": { "type": "string", "nullable": true },
+                    "content": { "type": "string", "nullable": true },
+                    "candidates": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/local/flight-deck": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Check Flight Deck local installation status",
+        "operationId": "getFlightDeckStatus",
+        "responses": {
+          "200": {
+            "description": "Installation status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "installed": { "type": "boolean" },
+                    "installPath": { "type": "string", "nullable": true },
+                    "appUrl": { "type": "string" },
+                    "downloadUrl": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Launch Flight Deck for agent/session",
+        "operationId": "launchFlightDeck",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "agent": { "type": "string" },
+                  "session": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Flight Deck launched",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/local/terminal": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Open a local Terminal window",
+        "operationId": "openLocalTerminal",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["cwd"],
+                "properties": {
+                  "cwd": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Terminal opened",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/memory/context": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Generate context payload for agent session start",
+        "operationId": "getMemoryContext",
+        "responses": {
+          "200": {
+            "description": "Context payload",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/memory/graph": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get agent memory graph data (RAG vector DB stats)",
+        "operationId": "getMemoryGraph",
+        "parameters": [
+          { "name": "agent", "in": "query", "schema": { "type": "string", "default": "all" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Memory graph data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agents": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/memory/health": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Run memory workspace health diagnostics",
+        "operationId": "getMemoryHealth",
+        "responses": {
+          "200": {
+            "description": "Health report",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "overall": { "type": "string" },
+                    "overallScore": { "type": "integer" },
+                    "categories": { "type": "array", "items": { "type": "object" } },
+                    "generatedAt": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/memory/links": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get wiki-link graph for memory files",
+        "operationId": "getMemoryLinks",
+        "parameters": [
+          { "name": "file", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Link graph or file links",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/memory/process": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Run memory processing pipeline (reflect, reweave, generate-moc)",
+        "operationId": "processMemory",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["reflect", "reweave", "generate-moc"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Processing result",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/nodes": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "List gateway nodes or paired devices",
+        "operationId": "listNodes",
+        "parameters": [
+          { "name": "action", "in": "query", "schema": { "type": "string", "enum": ["list", "devices"], "default": "list" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Nodes or devices",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Device management actions (approve, reject, rotate-token, revoke-token)",
+        "operationId": "deviceAction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["approve", "reject", "rotate-token", "revoke-token"] },
+                  "requestId": { "type": "string" },
+                  "deviceId": { "type": "string" },
+                  "role": { "type": "string" },
+                  "scopes": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Action result",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/projects/{id}/agents": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "List agent assignments for a project",
+        "operationId": "listProjectAgents",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent assignments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "assignments": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Assign agent to project",
+        "operationId": "assignProjectAgent",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["agent_name"],
+                "properties": {
+                  "agent_name": { "type": "string" },
+                  "role": { "type": "string", "default": "member" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agent assigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "success": { "type": "boolean" } }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Unassign agent from project",
+        "operationId": "unassignProjectAgent",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "agent_name", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent unassigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "success": { "type": "boolean" } }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/schedule-parse": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Parse natural language schedule expression to cron",
+        "operationId": "parseSchedule",
+        "parameters": [
+          { "name": "input", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Parsed schedule",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cronExpr": { "type": "string" },
+                    "humanReadable": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" }
+        }
+      }
+    },
+    "/api/security-audit": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Get security audit dashboard",
+        "operationId": "getSecurityAudit",
+        "parameters": [
+          { "name": "timeframe", "in": "query", "schema": { "type": "string", "enum": ["hour", "day", "week", "month"], "default": "day" } },
+          { "name": "event_type", "in": "query", "schema": { "type": "string" } },
+          { "name": "severity", "in": "query", "schema": { "type": "string" } },
+          { "name": "agent", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Security audit data",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/security-scan": {
+      "get": {
+        "tags": ["Admin"],
+        "summary": "Run infrastructure security scan",
+        "operationId": "runSecurityScan",
+        "responses": {
+          "200": {
+            "description": "Security scan results",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/security-scan/agent": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Agent-callable security scan and fix",
+        "operationId": "agentSecurityScanFix",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action"],
+                "properties": {
+                  "action": { "type": "string", "enum": ["scan", "fix", "scan-and-fix"] },
+                  "fixScope": { "type": "string", "enum": ["safe", "safe+restart", "all"] },
+                  "ids": { "type": "array", "items": { "type": "string" } },
+                  "force": { "type": "boolean" },
+                  "dryRun": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scan and fix results",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/security-scan/fix": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Auto-fix security scan issues",
+        "operationId": "fixSecurityIssues",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Fix results",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/api/super/os-users": {
+      "get": {
+        "tags": ["Super Admin"],
+        "summary": "Discover OS-level user accounts",
+        "operationId": "listOsUsers",
+        "responses": {
+          "200": {
+            "description": "OS users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "users": { "type": "array", "items": { "type": "object" } },
+                    "platform": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      },
+      "post": {
+        "tags": ["Super Admin"],
+        "summary": "Create OS user and register as tenant",
+        "operationId": "createOsUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "display_name"],
+                "properties": {
+                  "username": { "type": "string" },
+                  "display_name": { "type": "string" },
+                  "password": { "type": "string" },
+                  "gateway_mode": { "type": "boolean" },
+                  "install_openclaw": { "type": "boolean" },
+                  "install_claude": { "type": "boolean" },
+                  "install_codex": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created",
+            "content": { "application/json": { "schema": { "type": "object" } } }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "description": "User already exists" }
+        }
+      }
+    },
+    "/api/system-monitor": {
+      "get": {
+        "tags": ["Monitoring"],
+        "summary": "Get system resource metrics (CPU, memory, disk, GPU, network, processes)",
+        "operationId": "getSystemMonitor",
+        "responses": {
+          "200": {
+            "description": "System metrics snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "timestamp": { "type": "integer" },
+                    "cpu": { "type": "object" },
+                    "memory": { "type": "object" },
+                    "disk": { "type": "array", "items": { "type": "object" } },
+                    "gpu": { "type": "array", "items": { "type": "object" }, "nullable": true },
+                    "network": { "type": "array", "items": { "type": "object" } },
+                    "processes": { "type": "array", "items": { "type": "object" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/auth/google/disconnect": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Disconnect Google OAuth from account",
+        "operationId": "disconnectGoogle",
+        "responses": {
+          "200": {
+            "description": "Google disconnected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/api/releases/update": {
+      "post": {
+        "tags": ["Releases"],
+        "summary": "Update Mission Control to a specific version",
+        "operationId": "updateRelease",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["targetVersion"],
+                "properties": {
+                  "targetVersion": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "previousVersion": { "type": "string" },
+                    "newVersion": { "type": "string" },
+                    "tag": { "type": "string" },
+                    "restartRequired": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "description": "Working tree has uncommitted changes" }
         }
       }
     }
