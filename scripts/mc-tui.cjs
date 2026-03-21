@@ -142,6 +142,42 @@ function stripAnsi(s) {
   return s.replace(/\x1b\[[0-9;]*m/g, '');
 }
 
+async function postJson(baseUrl, apiKey, cookie, route, data) {
+  const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
+  if (apiKey) headers['x-api-key'] = apiKey;
+  if (cookie) headers['Cookie'] = cookie;
+  const url = `${baseUrl.replace(/\/+$/, '')}${route}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify(data), signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return { _error: `HTTP ${res.status}` };
+    return await res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    return { _error: err?.name === 'AbortError' ? 'timeout' : (err?.message || 'network error') };
+  }
+}
+
+async function putJson(baseUrl, apiKey, cookie, route, data) {
+  const headers = { Accept: 'application/json', 'Content-Type': 'application/json' };
+  if (apiKey) headers['x-api-key'] = apiKey;
+  if (cookie) headers['Cookie'] = cookie;
+  const url = `${baseUrl.replace(/\/+$/, '')}${route}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(data), signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return { _error: `HTTP ${res.status}` };
+    return await res.json();
+  } catch (err) {
+    clearTimeout(timer);
+    return { _error: err?.name === 'AbortError' ? 'timeout' : (err?.message || 'network error') };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Data fetching
 // ---------------------------------------------------------------------------
@@ -193,6 +229,11 @@ const state = {
   transcriptScroll: 0,
   data: { health: {}, agents: {}, tasks: {}, tokens: {} },
   actionMessage: '',
+  // Input mode for task creation/editing
+  inputMode: null,    // null | 'new-task' | 'edit-title' | 'edit-status' | 'edit-assign' | 'confirm-delete'
+  inputBuffer: '',
+  inputLabel: '',
+  editingTaskId: null,
 };
 
 function getAgentsList() {
@@ -266,11 +307,26 @@ function renderDashboard() {
   const tokens = tokenVal > 0 ? formatNumber(tokenVal) : '-';
   process.stdout.write(`\n ${ansi.dim('24h:')} ${ansi.bold(cost)}  ${ansi.dim('tokens:')} ${tokens}\n`);
 
+  // Input bar
+  if (state.inputMode) {
+    const label = state.inputLabel || 'Input';
+    const cursor = state.inputBuffer + '\u2588'; // block cursor
+    process.stdout.write(`\n ${ansi.bold(ansi.yellow(label + ':'))} ${cursor}\n`);
+    if (state.inputMode === 'confirm-delete') {
+      process.stdout.write(ansi.dim(' y/n to confirm') + '\n');
+    } else if (state.inputMode === 'edit-status') {
+      process.stdout.write(ansi.dim(' inbox/assigned/in_progress/done/failed  esc cancel') + '\n');
+    } else {
+      process.stdout.write(ansi.dim(' enter submit  esc cancel') + '\n');
+    }
+    return; // don't show normal footer when in input mode
+  }
+
   // Footer
   if (state.actionMessage) process.stdout.write(ansi.green(` ${state.actionMessage}\n`));
   const hint = state.panel === 'agents'
     ? ' \u2191\u2193 navigate  enter detail  tab switch  [r]efresh  [w]ake  [q]uit'
-    : ' \u2191\u2193 navigate  tab switch  [r]efresh  [q]uit';
+    : ' \u2191\u2193 navigate  [n]ew  enter edit  [s]tatus  [d]elete  tab switch  [r]efresh  [q]uit';
   process.stdout.write(ansi.dim(hint) + '\n');
 }
 
@@ -439,8 +495,11 @@ Usage:
 
 Keys (Dashboard):
   up/down     Navigate agents or tasks list
-  enter       Open agent detail (sessions + chat)
+  enter       Open agent detail / edit task title
   tab         Switch between agents and tasks panels
+  n           New task (tasks panel)
+  s           Change task status (tasks panel)
+  d           Delete task (tasks panel)
   r           Refresh now
   w           Wake first sleeping agent
   q/Esc       Quit
@@ -495,7 +554,7 @@ Keys (Agent Detail):
     if (key.name === 'c' && key.ctrl) { cleanup(); return; }
 
     if (state.view === 'dashboard') {
-      await handleDashboardKey(key, render);
+      await handleDashboardKey(key, str, render);
     } else if (state.view === 'agent-detail') {
       await handleAgentDetailKey(key, render);
     }
@@ -519,7 +578,123 @@ Keys (Agent Detail):
   }
 }
 
-async function handleDashboardKey(key, render) {
+async function handleInputKey(key, str, render) {
+  if (key.name === 'escape') {
+    state.inputMode = null;
+    state.inputBuffer = '';
+    state.editingTaskId = null;
+    render();
+    return;
+  }
+
+  if (state.inputMode === 'confirm-delete') {
+    if (key.name === 'y') {
+      const taskId = state.editingTaskId;
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.editingTaskId = null;
+      state.actionMessage = 'Deleting...';
+      render();
+      const result = await api(baseUrl, apiKey, cookie, 'DELETE', `/api/tasks/${taskId}`);
+      state.actionMessage = result?._error ? `Delete failed: ${result._error}` : 'Task deleted';
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    } else {
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.editingTaskId = null;
+      state.actionMessage = 'Cancelled';
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 1500);
+    }
+    return;
+  }
+
+  if (key.name === 'return') {
+    const value = state.inputBuffer.trim();
+    if (!value) { state.inputMode = null; state.inputBuffer = ''; render(); return; }
+
+    if (state.inputMode === 'new-task') {
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.actionMessage = 'Creating task...';
+      render();
+      const res = await postJson(baseUrl, apiKey, cookie, '/api/tasks', { title: value });
+      state.actionMessage = res?._error ? `Create failed: ${res._error}` : `Created: ${value}`;
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    } else if (state.inputMode === 'edit-title') {
+      const taskId = state.editingTaskId;
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.editingTaskId = null;
+      state.actionMessage = 'Updating...';
+      render();
+      const res = await putJson(baseUrl, apiKey, cookie, `/api/tasks/${taskId}`, { title: value });
+      state.actionMessage = res?._error ? `Update failed: ${res._error}` : 'Title updated';
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    } else if (state.inputMode === 'edit-status') {
+      const valid = ['inbox', 'assigned', 'in_progress', 'review', 'done', 'failed'];
+      if (!valid.includes(value)) {
+        state.actionMessage = `Invalid status. Use: ${valid.join(', ')}`;
+        state.inputMode = null;
+        state.inputBuffer = '';
+        state.editingTaskId = null;
+        render();
+        setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+        return;
+      }
+      const taskId = state.editingTaskId;
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.editingTaskId = null;
+      state.actionMessage = 'Updating status...';
+      render();
+      const res = await putJson(baseUrl, apiKey, cookie, `/api/tasks/${taskId}`, { status: value });
+      state.actionMessage = res?._error ? `Update failed: ${res._error}` : `Status → ${value}`;
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    } else if (state.inputMode === 'edit-assign') {
+      const taskId = state.editingTaskId;
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.editingTaskId = null;
+      state.actionMessage = 'Assigning...';
+      render();
+      const res = await putJson(baseUrl, apiKey, cookie, `/api/tasks/${taskId}`, { assigned_to: value, status: 'assigned' });
+      state.actionMessage = res?._error ? `Assign failed: ${res._error}` : `Assigned to ${value}`;
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    }
+    return;
+  }
+
+  if (key.name === 'backspace') {
+    state.inputBuffer = state.inputBuffer.slice(0, -1);
+    render();
+    return;
+  }
+
+  // Printable character
+  if (str && str.length === 1 && !key.ctrl && !key.meta) {
+    state.inputBuffer += str;
+    render();
+  }
+}
+
+async function handleDashboardKey(key, str, render) {
+  // If in input mode, route all keys there
+  if (state.inputMode) {
+    await handleInputKey(key, str, render);
+    return;
+  }
+
   if (key.name === 'escape') { cleanup(); return; }
 
   if (key.name === 'tab') {
@@ -549,6 +724,50 @@ async function handleDashboardKey(key, render) {
     }
     render();
     return;
+  }
+
+  // Task management keys (only in tasks panel)
+  if (state.panel === 'tasks') {
+    if (key.name === 'n') {
+      state.inputMode = 'new-task';
+      state.inputBuffer = '';
+      state.inputLabel = 'New task title';
+      render();
+      return;
+    }
+    if (key.name === 'return') {
+      const tasks = getTasksList();
+      if (tasks.length === 0) return;
+      const task = tasks[state.cursorTask];
+      state.inputMode = 'edit-title';
+      state.inputBuffer = task.title || '';
+      state.inputLabel = `Edit title [#${task.id}]`;
+      state.editingTaskId = task.id;
+      render();
+      return;
+    }
+    if (key.name === 's') {
+      const tasks = getTasksList();
+      if (tasks.length === 0) return;
+      const task = tasks[state.cursorTask];
+      state.inputMode = 'edit-status';
+      state.inputBuffer = task.status || '';
+      state.inputLabel = `Status [#${task.id}]`;
+      state.editingTaskId = task.id;
+      render();
+      return;
+    }
+    if (key.name === 'd' || key.name === 'x') {
+      const tasks = getTasksList();
+      if (tasks.length === 0) return;
+      const task = tasks[state.cursorTask];
+      state.inputMode = 'confirm-delete';
+      state.inputBuffer = '';
+      state.inputLabel = `Delete "${truncate(task.title, 40)}"?`;
+      state.editingTaskId = task.id;
+      render();
+      return;
+    }
   }
 
   if (key.name === 'return' && state.panel === 'agents') {
