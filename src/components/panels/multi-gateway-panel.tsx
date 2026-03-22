@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 import { useWebSocket } from '@/lib/websocket'
-import { buildGatewayWebSocketUrl } from '@/lib/gateway-url'
 
 interface Gateway {
   id: number
@@ -130,19 +129,11 @@ export function MultiGatewayPanel() {
     const normalizedConn = url.toLowerCase()
     const normalizedHost = String(gw.host || '').toLowerCase()
 
-    if (normalizedHost && normalizedConn.includes(normalizedHost)) return true
+    // Skip localhost matching — server rewrites localhost to browser hostname,
+    // so the connection URL won't contain "127.0.0.1". Port matching handles it.
+    if (normalizedHost && normalizedHost !== '127.0.0.1' && normalizedHost !== 'localhost' && normalizedConn.includes(normalizedHost)) return true
     if (normalizedConn.includes(`:${gw.port}`)) return true
-
-    try {
-      const derivedWs = buildGatewayWebSocketUrl({
-        host: gw.host,
-        port: gw.port,
-        browserProtocol: window.location.protocol,
-      }).toLowerCase()
-      return normalizedConn.includes(derivedWs)
-    } catch {
-      return false
-    }
+    return false
   }, [connection.url])
 
   const shouldShowConnectionSummary =
@@ -179,11 +170,10 @@ export function MultiGatewayPanel() {
       if (!res.ok) return
       const payload = await res.json()
 
-      const wsUrl = String(payload?.ws_url || buildGatewayWebSocketUrl({
-        host: gw.host,
-        port: gw.port,
-        browserProtocol: window.location.protocol,
-      }))
+      // Use server-resolved URL only — it respects NEXT_PUBLIC_GATEWAY_URL,
+      // Tailscale Serve, and reverse-proxy configurations.
+      const wsUrl = payload?.ws_url
+      if (!wsUrl) return
       const token = String(payload?.token || '')
       connect(wsUrl, token)
     } catch {
