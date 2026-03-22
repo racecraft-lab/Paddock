@@ -284,3 +284,12 @@ Then point UI to:
 ```bash
 NEXT_PUBLIC_GATEWAY_URL=wss://your-domain.com/gateway-ws
 ```
+
+## Next Steps
+
+Once deployed, set up your agents and orchestration:
+
+- **[Quickstart](quickstart.md)** — Register your first agent and complete a task in 5 minutes
+- **[Agent Setup](agent-setup.md)** — SOUL personalities, heartbeats, config sync, agent sources
+- **[Orchestration Patterns](orchestration.md)** — Auto-dispatch, quality review, multi-agent workflows
+- **[CLI Reference](cli-agent-control.md)** — Full CLI command list for headless/scripted usage

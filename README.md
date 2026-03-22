@@ -2,9 +2,9 @@
 
 # Mission Control
 
-**The open-source dashboard for AI agent orchestration.**
+**Open-source dashboard for AI agent orchestration.**
 
-Manage agent fleets, track tasks, monitor costs, and orchestrate workflows — all from a single pane of glass.
+Manage AI agent fleets, dispatch tasks, track costs, and coordinate multi-agent workflows — self-hosted, zero external dependencies, powered by SQLite.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
@@ -145,6 +145,42 @@ Run diagnostics on your installation:
 bash scripts/station-doctor.sh
 bash scripts/security-audit.sh
 ```
+
+## Getting Started with Agents
+
+Once Mission Control is running, set up your first agent in under 5 minutes:
+
+```bash
+export MC_URL=http://localhost:3000
+export MC_API_KEY=your-api-key   # shown in Settings after first login
+
+# Register an agent
+curl -X POST "$MC_URL/api/agents/register" \
+  -H "Authorization: Bearer $MC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "scout", "role": "researcher"}'
+
+# Create a task
+curl -X POST "$MC_URL/api/tasks" \
+  -H "Authorization: Bearer $MC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Research competitors", "assigned_to": "scout", "priority": "medium"}'
+
+# Poll the queue as the agent
+curl "$MC_URL/api/tasks/queue?agent=scout" \
+  -H "Authorization: Bearer $MC_API_KEY"
+```
+
+No gateway or OpenClaw needed — this works with pure HTTP.
+
+For the full walkthrough, see the **[Quickstart Guide](docs/quickstart.md)**.
+
+| Guide | What you'll learn |
+|-------|-------------------|
+| [Quickstart](docs/quickstart.md) | Register an agent, create a task, complete it — 5 minutes |
+| [Agent Setup](docs/agent-setup.md) | SOUL personalities, config, heartbeats, agent sources |
+| [Orchestration](docs/orchestration.md) | Multi-agent workflows, auto-dispatch, quality review gates |
+| [CLI Reference](docs/cli-agent-control.md) | Full CLI command list for headless/scripted usage |
 
 ## Project Status
 
