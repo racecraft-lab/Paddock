@@ -183,14 +183,15 @@ async function putJson(baseUrl, apiKey, cookie, route, data) {
 // ---------------------------------------------------------------------------
 
 async function fetchDashboardData(baseUrl, apiKey, cookie) {
-  const [health, agents, tasks, tokens, sessions] = await Promise.all([
+  const [health, agents, tasks, tokens, sessions, activities] = await Promise.all([
     api(baseUrl, apiKey, cookie, 'GET', '/api/status?action=health'),
     api(baseUrl, apiKey, cookie, 'GET', '/api/agents'),
     api(baseUrl, apiKey, cookie, 'GET', '/api/tasks?limit=30'),
     api(baseUrl, apiKey, cookie, 'GET', '/api/tokens?action=stats&timeframe=day'),
     api(baseUrl, apiKey, cookie, 'GET', '/api/sessions?limit=50'),
+    api(baseUrl, apiKey, cookie, 'GET', '/api/activities?limit=15'),
   ]);
-  return { health, agents, tasks, tokens, sessions };
+  return { health, agents, tasks, tokens, sessions, activities };
 }
 
 async function fetchAgentSessions(baseUrl, apiKey, cookie, agentName) {
@@ -230,10 +231,15 @@ const state = {
   data: { health: {}, agents: {}, tasks: {}, tokens: {} },
   actionMessage: '',
   // Input mode for task creation/editing
-  inputMode: null,    // null | 'new-task' | 'edit-title' | 'edit-status' | 'edit-assign' | 'confirm-delete'
+  inputMode: null,    // null | 'new-task' | 'new-task-desc' | 'new-task-priority' | 'new-task-assign' | 'edit-title' | 'edit-status' | 'edit-assign' | 'edit-priority' | 'confirm-delete'
   inputBuffer: '',
   inputLabel: '',
   editingTaskId: null,
+  newTaskData: {},
+  // Task detail view
+  selectedTask: null,
+  taskComments: [],
+  taskReviews: [],
 };
 
 function getAgentsList() {
@@ -326,7 +332,7 @@ function renderDashboard() {
   if (state.actionMessage) process.stdout.write(ansi.green(` ${state.actionMessage}\n`));
   const hint = state.panel === 'agents'
     ? ' \u2191\u2193 navigate  enter detail  tab switch  [r]efresh  [w]ake  [q]uit'
-    : ' \u2191\u2193 navigate  [n]ew  enter edit  [s]tatus  [d]elete  tab switch  [r]efresh  [q]uit';
+    : ' \u2191\u2193 navigate  [n]ew  enter detail  [e]dit  [a]ssign  [p]riority  [s]tatus  [d]elete  tab  [r]efresh  [q]uit';
   process.stdout.write(ansi.dim(hint) + '\n');
 }
 
@@ -368,32 +374,254 @@ function renderAgentsList(cols, maxRows) {
 
 function renderTasksList(cols, maxRows) {
   const tasks = getTasksList();
-  if (tasks.length === 0) { process.stdout.write(ansi.dim('  (no tasks)\n')); return; }
+  const activities = (state.data?.activities?.activities || []);
 
-  const idW = 5;
-  const titleW = Math.min(35, Math.floor(cols * 0.35));
-  const statusW = 14;
-  const assignW = 16;
-  process.stdout.write(ansi.dim(`  ${pad('ID', idW)} ${pad('Title', titleW)} ${pad('Status', statusW)} ${pad('Assigned', assignW)}\n`));
+  // Split space: tasks get 60% (min 5 rows), feed gets the rest
+  const taskRows = tasks.length === 0 ? 1 : Math.max(5, Math.floor(maxRows * 0.55));
+  const feedRows = Math.max(3, maxRows - taskRows - 2); // 2 for feed header + gap
 
-  if (state.cursorTask >= tasks.length) state.cursorTask = tasks.length - 1;
-  if (state.cursorTask < 0) state.cursorTask = 0;
+  if (tasks.length === 0) {
+    process.stdout.write(ansi.dim('  (no tasks)\n'));
+  } else {
+    const idW = 5;
+    const titleW = Math.min(35, Math.floor(cols * 0.35));
+    const statusW = 14;
+    const assignW = 16;
+    const priW = 10;
+    process.stdout.write(ansi.dim(`  ${pad('ID', idW)} ${pad('Title', titleW)} ${pad('Status', statusW)} ${pad('Pri', priW)} ${pad('Assigned', assignW)}\n`));
 
-  const listRows = maxRows - 1;
-  let start = 0;
-  if (state.cursorTask >= start + listRows) start = state.cursorTask - listRows + 1;
-  if (state.cursorTask < start) start = state.cursorTask;
+    if (state.cursorTask >= tasks.length) state.cursorTask = tasks.length - 1;
+    if (state.cursorTask < 0) state.cursorTask = 0;
 
-  for (let i = start; i < Math.min(tasks.length, start + listRows); i++) {
-    const t = tasks[i];
-    const selected = i === state.cursorTask;
-    const id = pad(String(t.id || ''), idW);
-    const title = pad(truncate(t.title, titleW), titleW);
-    const st = statusColor(t.status || '');
-    const stPad = pad(st, statusW + 9);
-    const assigned = pad(truncate(t.assigned_to || '-', assignW), assignW);
-    const line = `  ${id} ${title} ${stPad} ${assigned}`;
-    process.stdout.write(selected ? ansi.inverse(stripAnsi(line).padEnd(cols)) + '\n' : line + '\n');
+    const listRows = taskRows - 1;
+    let start = 0;
+    if (state.cursorTask >= start + listRows) start = state.cursorTask - listRows + 1;
+    if (state.cursorTask < start) start = state.cursorTask;
+
+    for (let i = start; i < Math.min(tasks.length, start + listRows); i++) {
+      const t = tasks[i];
+      const selected = i === state.cursorTask;
+      const id = pad(String(t.id || ''), idW);
+      const title = pad(truncate(t.title, titleW), titleW);
+      const st = statusColor(t.status || '');
+      const stPad = pad(st, statusW + 9);
+      const pri = priorityColor(t.priority || 'medium');
+      const priPad = pad(pri, priW + 9);
+      const assigned = pad(truncate(t.assigned_to || '-', assignW), assignW);
+      const line = `  ${id} ${title} ${stPad} ${priPad} ${assigned}`;
+      process.stdout.write(selected ? ansi.inverse(stripAnsi(line).padEnd(cols)) + '\n' : line + '\n');
+    }
+  }
+
+  // Activity feed
+  process.stdout.write('\n' + ansi.bold(ansi.cyan(' ACTIVITY')) + '\n');
+  if (activities.length === 0) {
+    process.stdout.write(ansi.dim('  (no recent activity)\n'));
+  } else {
+    const shown = activities.slice(0, feedRows);
+    for (const act of shown) {
+      const ts = formatTime(act.created_at);
+      const icon = activityIcon(act.type);
+      const desc = truncate(act.description || act.type, cols - 20);
+      process.stdout.write(`  ${ansi.dim(ts)} ${icon} ${desc}\n`);
+    }
+  }
+}
+
+function priorityColor(priority) {
+  switch (priority) {
+    case 'critical': return ansi.red(priority);
+    case 'high': return ansi.yellow(priority);
+    case 'medium': return priority;
+    case 'low': return ansi.dim(priority);
+    default: return priority;
+  }
+}
+
+function activityIcon(type) {
+  switch (type) {
+    case 'task_created': return ansi.green('+');
+    case 'task_updated': return ansi.yellow('~');
+    case 'task_completed': return ansi.green('\u2713');
+    case 'task_deleted': return ansi.red('x');
+    case 'agent_created': return ansi.cyan('+');
+    case 'quality_review': return ansi.magenta('\u2605');
+    case 'comment_added': return ansi.blue('\u25cf');
+    default: return ansi.dim('\u25cb');
+  }
+}
+
+function formatTime(ts) {
+  if (!ts) return '     ';
+  const d = new Date(typeof ts === 'number' && ts < 1e12 ? ts * 1000 : ts);
+  return d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+}
+
+// --- Task Detail View ---
+
+function renderTaskDetail() {
+  const { cols, rows } = getTermSize();
+  ansi.clear();
+
+  const task = state.selectedTask;
+  if (!task) { state.view = 'dashboard'; renderDashboard(); return; }
+
+  const ticket = task.ticket_ref || `#${task.id}`;
+
+  // Header
+  process.stdout.write(ansi.bgBlue(pad(` ${ticket} `, cols)) + '\n');
+  process.stdout.write(` ${ansi.bold(task.title || '(untitled)')}\n`);
+  process.stdout.write('\n');
+
+  // Status row
+  const st = statusColor(task.status || 'inbox');
+  const pri = priorityColor(task.priority || 'medium');
+  const assigned = task.assigned_to || ansi.dim('unassigned');
+  process.stdout.write(` Status: ${st}  Priority: ${pri}  Assigned: ${assigned}\n`);
+
+  // Dates
+  const created = task.created_at ? new Date(task.created_at * 1000).toLocaleString() : '-';
+  const updated = task.updated_at ? new Date(task.updated_at * 1000).toLocaleString() : '-';
+  const completedAt = task.completed_at ? new Date(task.completed_at * 1000).toLocaleString() : null;
+  process.stdout.write(` Created: ${ansi.dim(created)}  Updated: ${ansi.dim(updated)}${completedAt ? `  Completed: ${ansi.dim(completedAt)}` : ''}\n`);
+  if (task.created_by) process.stdout.write(` Created by: ${ansi.dim(task.created_by)}\n`);
+
+  // Description
+  if (task.description) {
+    process.stdout.write('\n' + ansi.bold(ansi.cyan(' DESCRIPTION')) + '\n');
+    const descLines = task.description.split('\n').slice(0, 6);
+    for (const line of descLines) {
+      process.stdout.write(`  ${truncate(line, cols - 4)}\n`);
+    }
+    if (task.description.split('\n').length > 6) process.stdout.write(ansi.dim('  ...\n'));
+  }
+
+  // Resolution
+  if (task.resolution) {
+    process.stdout.write('\n' + ansi.bold(ansi.green(' RESOLUTION')) + '\n');
+    const resLines = task.resolution.split('\n').slice(0, 4);
+    for (const line of resLines) {
+      process.stdout.write(`  ${truncate(line, cols - 4)}\n`);
+    }
+  }
+
+  // Quality Reviews
+  if (state.taskReviews.length > 0) {
+    process.stdout.write('\n' + ansi.bold(ansi.magenta(' REVIEWS')) + '\n');
+    for (const rev of state.taskReviews.slice(0, 3)) {
+      const verdict = rev.status === 'approved' ? ansi.green('APPROVED') : ansi.red('REJECTED');
+      const reviewer = rev.reviewer || 'unknown';
+      const ts = rev.created_at ? new Date(rev.created_at * 1000).toLocaleTimeString() : '';
+      process.stdout.write(`  ${verdict} by ${reviewer} ${ansi.dim(ts)}\n`);
+      if (rev.notes) process.stdout.write(`  ${ansi.dim(truncate(rev.notes, cols - 6))}\n`);
+    }
+  }
+
+  // Comments
+  process.stdout.write('\n' + ansi.bold(ansi.blue(' COMMENTS')) + ` ${ansi.dim(`(${state.taskComments.length})`)}\n`);
+  if (state.taskComments.length === 0) {
+    process.stdout.write(ansi.dim('  (no comments)\n'));
+  } else {
+    const maxComments = Math.max(3, rows - 25);
+    for (const c of state.taskComments.slice(0, maxComments)) {
+      const author = c.author || 'unknown';
+      const ts = c.created_at ? new Date(c.created_at * 1000).toLocaleTimeString() : '';
+      process.stdout.write(`  ${ansi.bold(author)} ${ansi.dim(ts)}\n`);
+      const contentLines = (c.content || '').split('\n').slice(0, 3);
+      for (const line of contentLines) {
+        process.stdout.write(`  ${ansi.dim(truncate(line, cols - 6))}\n`);
+      }
+    }
+  }
+
+  // Footer
+  if (state.actionMessage) process.stdout.write('\n' + ansi.green(` ${state.actionMessage}`) + '\n');
+  process.stdout.write('\n' + ansi.dim(' esc back  [s]tatus  [a]ssign  [p]riority  [c]omment  [r]efresh  [q]uit') + '\n');
+}
+
+async function handleTaskDetailKey(key, str, render) {
+  if (key.name === 'escape' || key.name === 'backspace') {
+    state.view = 'dashboard';
+    state.selectedTask = null;
+    render();
+    return;
+  }
+
+  // Input mode handling (reuse dashboard input handler)
+  if (state.inputMode) {
+    await handleInputKey(key, str, render);
+    // After input completes, refresh task detail
+    if (!state.inputMode && state.view === 'task-detail' && state.selectedTask) {
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      // Refresh the selected task from updated data
+      const tasks = getTasksList();
+      const updated = tasks.find(t => t.id === state.selectedTask.id);
+      if (updated) state.selectedTask = updated;
+      const [comments, reviews] = await Promise.all([
+        api(baseUrl, apiKey, cookie, 'GET', `/api/tasks/${state.selectedTask.id}/comments`),
+        api(baseUrl, apiKey, cookie, 'GET', `/api/quality-review?taskId=${state.selectedTask.id}`),
+      ]);
+      state.taskComments = comments?.comments || [];
+      state.taskReviews = reviews?.reviews || [];
+      render();
+    }
+    return;
+  }
+
+  const task = state.selectedTask;
+  if (!task) return;
+
+  if (str === 's' || str === 'S') {
+    state.inputMode = 'edit-status';
+    state.inputBuffer = task.status || '';
+    state.inputLabel = `Status [${task.ticket_ref || '#' + task.id}]`;
+    state.editingTaskId = task.id;
+    render();
+    return;
+  }
+  if (str === 'a' || str === 'A') {
+    const agentNames = (state.data?.agents?.agents || state.data?.agents || []).map(ag => ag.name).filter(Boolean);
+    state.inputMode = 'edit-assign';
+    state.inputBuffer = task.assigned_to || '';
+    state.inputLabel = agentNames.length > 0
+      ? `Assign [${task.ticket_ref || '#' + task.id}]: ${agentNames.join(', ')}`
+      : `Assign [${task.ticket_ref || '#' + task.id}] to agent`;
+    state.editingTaskId = task.id;
+    render();
+    return;
+  }
+  if (str === 'p' || str === 'P') {
+    state.inputMode = 'edit-priority';
+    state.inputBuffer = task.priority || 'medium';
+    state.inputLabel = `Priority [${task.ticket_ref || '#' + task.id}] (low/medium/high/critical)`;
+    state.editingTaskId = task.id;
+    render();
+    return;
+  }
+  if (str === 'c' || str === 'C') {
+    state.inputMode = 'add-comment';
+    state.inputBuffer = '';
+    state.inputLabel = `Comment [${task.ticket_ref || '#' + task.id}]`;
+    state.editingTaskId = task.id;
+    render();
+    return;
+  }
+  if (str === 'r' || str === 'R') {
+    state.actionMessage = 'Refreshing...';
+    render();
+    state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+    const tasks = getTasksList();
+    const updated = tasks.find(t => t.id === task.id);
+    if (updated) state.selectedTask = updated;
+    const [comments, reviews] = await Promise.all([
+      api(baseUrl, apiKey, cookie, 'GET', `/api/tasks/${task.id}/comments`),
+      api(baseUrl, apiKey, cookie, 'GET', `/api/quality-review?taskId=${task.id}`),
+    ]);
+    state.taskComments = comments?.comments || [];
+    state.taskReviews = reviews?.reviews || [];
+    state.actionMessage = '';
+    render();
+    return;
   }
 }
 
@@ -497,8 +725,13 @@ Keys (Dashboard):
   up/down     Navigate agents or tasks list
   enter       Open agent detail / edit task title
   tab         Switch between agents and tasks panels
-  n           New task (tasks panel)
+  n           New task (title → description → priority → assign)
+  enter       Open task detail (tasks panel)
+  e           Edit task title (tasks panel)
   s           Change task status (tasks panel)
+  a           Assign task to agent (tasks panel)
+  p           Change task priority (tasks panel)
+  c           Add comment (task detail view)
   d           Delete task (tasks panel)
   r           Refresh now
   w           Wake first sleeping agent
@@ -543,6 +776,7 @@ Keys (Agent Detail):
   function render() {
     if (state.view === 'dashboard') renderDashboard();
     else if (state.view === 'agent-detail') renderAgentDetail();
+    else if (state.view === 'task-detail') renderTaskDetail();
   }
 
   // Keyboard handler
@@ -557,6 +791,8 @@ Keys (Agent Detail):
       await handleDashboardKey(key, str, render);
     } else if (state.view === 'agent-detail') {
       await handleAgentDetailKey(key, render);
+    } else if (state.view === 'task-detail') {
+      await handleTaskDetailKey(key, str, render);
     }
   });
 
@@ -613,18 +849,53 @@ async function handleInputKey(key, str, render) {
 
   if (key.name === 'return') {
     const value = state.inputBuffer.trim();
-    if (!value) { state.inputMode = null; state.inputBuffer = ''; render(); return; }
+    // Allow empty Enter to skip optional steps in multi-step task creation
+    const skippableSteps = ['new-task-desc', 'new-task-priority', 'new-task-assign'];
+    if (!value && !skippableSteps.includes(state.inputMode)) {
+      state.inputMode = null; state.inputBuffer = ''; state.newTaskData = {}; render(); return;
+    }
 
     if (state.inputMode === 'new-task') {
+      // Multi-step: title → description → priority → assign
+      state.newTaskData = state.newTaskData || {};
+      state.newTaskData.title = value;
+      state.inputMode = 'new-task-desc';
+      state.inputBuffer = '';
+      state.inputLabel = 'Description (enter to skip)';
+      render();
+      return;
+    } else if (state.inputMode === 'new-task-desc') {
+      state.newTaskData.description = value || null;
+      state.inputMode = 'new-task-priority';
+      state.inputBuffer = 'medium';
+      state.inputLabel = 'Priority (low/medium/high/critical)';
+      render();
+      return;
+    } else if (state.inputMode === 'new-task-priority') {
+      const validPri = ['low', 'medium', 'high', 'critical'];
+      state.newTaskData.priority = validPri.includes(value) ? value : 'medium';
+      // Show available agents for assignment
+      const agentNames = (state.data?.agents || []).map(a => a.name).filter(Boolean);
+      state.inputMode = 'new-task-assign';
+      state.inputBuffer = '';
+      state.inputLabel = agentNames.length > 0
+        ? `Assign to (enter to skip): ${agentNames.join(', ')}`
+        : 'Assign to agent name (enter to skip)';
+      render();
+      return;
+    } else if (state.inputMode === 'new-task-assign') {
+      if (value) state.newTaskData.assigned_to = value;
       state.inputMode = null;
       state.inputBuffer = '';
       state.actionMessage = 'Creating task...';
       render();
-      const res = await postJson(baseUrl, apiKey, cookie, '/api/tasks', { title: value });
-      state.actionMessage = res?._error ? `Create failed: ${res._error}` : `Created: ${value}`;
+      const res = await postJson(baseUrl, apiKey, cookie, '/api/tasks', state.newTaskData);
+      const ticket = res?.task?.ticket_ref || res?.task?.title || state.newTaskData.title;
+      state.actionMessage = res?._error ? `Create failed: ${res._error}` : `Created: ${ticket}${state.newTaskData.assigned_to ? ` → ${state.newTaskData.assigned_to}` : ''}`;
+      state.newTaskData = {};
       state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
       render();
-      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+      setTimeout(() => { state.actionMessage = ''; render(); }, 3000);
     } else if (state.inputMode === 'edit-title') {
       const taskId = state.editingTaskId;
       state.inputMode = null;
@@ -668,6 +939,39 @@ async function handleInputKey(key, str, render) {
       render();
       const res = await putJson(baseUrl, apiKey, cookie, `/api/tasks/${taskId}`, { assigned_to: value, status: 'assigned' });
       state.actionMessage = res?._error ? `Assign failed: ${res._error}` : `Assigned to ${value}`;
+      state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    } else if (state.inputMode === 'add-comment') {
+      const taskId = state.editingTaskId;
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.editingTaskId = null;
+      state.actionMessage = 'Adding comment...';
+      render();
+      const res = await postJson(baseUrl, apiKey, cookie, `/api/tasks/${taskId}/comments`, { content: value });
+      state.actionMessage = res?._error ? `Comment failed: ${res._error}` : 'Comment added';
+      render();
+      setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+    } else if (state.inputMode === 'edit-priority') {
+      const validPri = ['low', 'medium', 'high', 'critical'];
+      if (!validPri.includes(value)) {
+        state.actionMessage = `Invalid priority. Use: ${validPri.join(', ')}`;
+        state.inputMode = null;
+        state.inputBuffer = '';
+        state.editingTaskId = null;
+        render();
+        setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
+        return;
+      }
+      const taskId = state.editingTaskId;
+      state.inputMode = null;
+      state.inputBuffer = '';
+      state.editingTaskId = null;
+      state.actionMessage = 'Updating priority...';
+      render();
+      const res = await putJson(baseUrl, apiKey, cookie, `/api/tasks/${taskId}`, { priority: value });
+      state.actionMessage = res?._error ? `Update failed: ${res._error}` : `Priority → ${value}`;
       state.data = await fetchDashboardData(baseUrl, apiKey, cookie);
       render();
       setTimeout(() => { state.actionMessage = ''; render(); }, 2000);
@@ -739,6 +1043,27 @@ async function handleDashboardKey(key, str, render) {
       const tasks = getTasksList();
       if (tasks.length === 0) return;
       const task = tasks[state.cursorTask];
+      state.selectedTask = task;
+      state.view = 'task-detail';
+      state.taskComments = [];
+      state.taskReviews = [];
+      state.actionMessage = 'Loading...';
+      render();
+      // Fetch comments and reviews
+      const [comments, reviews] = await Promise.all([
+        api(baseUrl, apiKey, cookie, 'GET', `/api/tasks/${task.id}/comments`),
+        api(baseUrl, apiKey, cookie, 'GET', `/api/quality-review?taskId=${task.id}`),
+      ]);
+      state.taskComments = comments?.comments || [];
+      state.taskReviews = reviews?.reviews || [];
+      state.actionMessage = '';
+      render();
+      return;
+    }
+    if (str === 'e' || str === 'E') {
+      const tasks = getTasksList();
+      if (tasks.length === 0) return;
+      const task = tasks[state.cursorTask];
       state.inputMode = 'edit-title';
       state.inputBuffer = task.title || '';
       state.inputLabel = `Edit title [#${task.id}]`;
@@ -753,6 +1078,31 @@ async function handleDashboardKey(key, str, render) {
       state.inputMode = 'edit-status';
       state.inputBuffer = task.status || '';
       state.inputLabel = `Status [#${task.id}]`;
+      state.editingTaskId = task.id;
+      render();
+      return;
+    }
+    if (str === 'a' || str === 'A') {
+      const tasks = getTasksList();
+      if (tasks.length === 0) return;
+      const task = tasks[state.cursorTask];
+      const agentNames = (state.data?.agents || []).map(ag => ag.name).filter(Boolean);
+      state.inputMode = 'edit-assign';
+      state.inputBuffer = task.assigned_to || '';
+      state.inputLabel = agentNames.length > 0
+        ? `Assign [#${task.id}]: ${agentNames.join(', ')}`
+        : `Assign [#${task.id}] to agent`;
+      state.editingTaskId = task.id;
+      render();
+      return;
+    }
+    if (str === 'p' || str === 'P') {
+      const tasks = getTasksList();
+      if (tasks.length === 0) return;
+      const task = tasks[state.cursorTask];
+      state.inputMode = 'edit-priority';
+      state.inputBuffer = task.priority || 'medium';
+      state.inputLabel = `Priority [#${task.id}] (low/medium/high/critical)`;
       state.editingTaskId = task.id;
       render();
       return;
