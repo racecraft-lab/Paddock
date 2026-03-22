@@ -115,6 +115,82 @@ See `.env.example` for the full list. Key variables:
 | `OPENCLAW_HOME` | No | - | Path to OpenClaw installation |
 | `MC_ALLOWED_HOSTS` | No | `localhost,127.0.0.1` | Allowed hosts in production |
 
+## Kubernetes Sidecar Deployment
+
+When running Mission Control alongside a gateway as containers in the same pod (sidecar pattern), agents are not discovered via the filesystem. Instead, use the gateway's agent registration API.
+
+### Architecture
+
+```
+┌──────────────── Pod ────────────────┐
+│  ┌─────────┐     ┌───────────────┐  │
+│  │   MC    │◄───►│   Gateway     │  │
+│  │ :3000   │     │   :18789      │  │
+│  └─────────┘     └───────────────┘  │
+│       ▲                  ▲          │
+│       │ localhost         │          │
+│       └──────────────────┘          │
+└─────────────────────────────────────┘
+```
+
+### Required Configuration
+
+**Environment variables** for the MC container:
+
+```bash
+AUTH_USER=admin
+AUTH_PASS=<secure-password>
+API_KEY=<your-api-key>
+OPENCLAW_GATEWAY_HOST=127.0.0.1
+NEXT_PUBLIC_GATEWAY_PORT=18789
+```
+
+### Agent Registration
+
+The gateway must register its agents with MC on startup. Include the `agents` array in the gateway registration request:
+
+```bash
+curl -X POST http://localhost:3000/api/gateways \
+  -H "Authorization: Bearer <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "sidecar-gateway",
+    "host": "127.0.0.1",
+    "port": 18789,
+    "is_primary": true,
+    "agents": [
+      { "name": "developer-1", "role": "developer" },
+      { "name": "researcher-1", "role": "researcher" }
+    ]
+  }'
+```
+
+To update the agent list on reconnect, use `PUT /api/gateways` with the same `agents` field.
+
+Alternatively, each agent can register itself via the direct connection endpoint:
+
+```bash
+curl -X POST http://localhost:3000/api/connect \
+  -H "Authorization: Bearer <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tool_name": "openclaw-gateway",
+    "agent_name": "developer-1",
+    "agent_role": "developer"
+  }'
+```
+
+### Health Checks
+
+Agents must send heartbeats to stay visible:
+
+```bash
+curl http://localhost:3000/api/agents/<agent-id>/heartbeat \
+  -H "Authorization: Bearer <API_KEY>"
+```
+
+Without heartbeats, agents will be marked offline after 10 minutes (configurable via `general.agent_timeout_minutes` setting).
+
 ## Troubleshooting
 
 ### "Module not found: better-sqlite3"
@@ -208,3 +284,12 @@ Then point UI to:
 ```bash
 NEXT_PUBLIC_GATEWAY_URL=wss://your-domain.com/gateway-ws
 ```
+
+## Next Steps
+
+Once deployed, set up your agents and orchestration:
+
+- **[Quickstart](quickstart.md)** — Register your first agent and complete a task in 5 minutes
+- **[Agent Setup](agent-setup.md)** — SOUL personalities, heartbeats, config sync, agent sources
+- **[Orchestration Patterns](orchestration.md)** — Auto-dispatch, quality review, multi-agent workflows
+- **[CLI Reference](cli-agent-control.md)** — Full CLI command list for headless/scripted usage

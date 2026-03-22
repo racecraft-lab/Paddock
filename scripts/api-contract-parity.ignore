@@ -1,0 +1,3 @@
+# API contract parity baseline ignore list
+# One operation per line: METHOD /api/path
+# Keep this list shrinking over time; remove entries when route/spec parity is fixed.

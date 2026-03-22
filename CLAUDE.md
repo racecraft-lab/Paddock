@@ -72,6 +72,31 @@ Database path: `MISSION_CONTROL_DB_PATH` (defaults to `.data/mission-control.db`
 - **Icons**: No icon libraries -- use raw text/emoji in components
 - **Standalone output**: `next.config.js` sets `output: 'standalone'`
 
+## Agent Control Interfaces
+
+Mission Control provides three interfaces for autonomous agents:
+
+### MCP Server (recommended for agents)
+```bash
+# Add to any Claude Code agent:
+claude mcp add mission-control -- node /path/to/mission-control/scripts/mc-mcp-server.cjs
+
+# Environment config:
+MC_URL=http://127.0.0.1:3000 MC_API_KEY=<key>
+```
+35 tools: agents, tasks, sessions, memory, soul, comments, tokens, skills, cron, status.
+See `docs/cli-agent-control.md` for full tool list.
+
+### CLI
+```bash
+pnpm mc agents list --json
+pnpm mc tasks queue --agent Aegis --max-capacity 2 --json
+pnpm mc events watch --types agent,task
+```
+
+### REST API
+OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
+
 ## Common Pitfalls
 
 - **Standalone mode**: Use `node .next/standalone/server.js`, not `pnpm start` (which requires full `node_modules`)

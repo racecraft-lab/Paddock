@@ -27,8 +27,16 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
 
+      - name: Configure git identity
+        run: |
+          git config --global user.email "ci@mission-control.dev"
+          git config --global user.name "CI"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: API contract parity
+        run: pnpm api:parity
 
       - name: Lint
         run: pnpm lint

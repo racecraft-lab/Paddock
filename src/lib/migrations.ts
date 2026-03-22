@@ -1284,6 +1284,42 @@ const migrations: Migration[] = [
         update.run(hashed, row.id)
       }
     }
+  },
+  {
+    id: '044_spawn_history',
+    up(db: Database.Database) {
+      db.exec([
+        `CREATE TABLE IF NOT EXISTS spawn_history (`,
+        `  id INTEGER PRIMARY KEY AUTOINCREMENT,`,
+        `  agent_id INTEGER,`,
+        `  agent_name TEXT NOT NULL,`,
+        `  spawn_type TEXT NOT NULL DEFAULT 'claude-code',`,
+        `  session_id TEXT,`,
+        `  trigger TEXT,`,
+        `  status TEXT NOT NULL DEFAULT 'started',`,
+        `  exit_code INTEGER,`,
+        `  error TEXT,`,
+        `  duration_ms INTEGER,`,
+        `  workspace_id INTEGER NOT NULL DEFAULT 1,`,
+        `  created_at INTEGER NOT NULL DEFAULT (unixepoch()),`,
+        `  finished_at INTEGER,`,
+        `  FOREIGN KEY (agent_id) REFERENCES agents(id) ON DELETE SET NULL`,
+        `)`,
+      ].join('\n'))
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_spawn_history_agent ON spawn_history(agent_name)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_spawn_history_created ON spawn_history(created_at)`)
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_spawn_history_status ON spawn_history(status)`)
+    }
+  },
+  {
+    id: '045_task_dispatch_attempts',
+    up(db: Database.Database) {
+      const cols = db.prepare(`PRAGMA table_info(tasks)`).all() as Array<{ name: string }>
+      if (!cols.some(c => c.name === 'dispatch_attempts')) {
+        db.exec(`ALTER TABLE tasks ADD COLUMN dispatch_attempts INTEGER NOT NULL DEFAULT 0`)
+      }
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_stale_inprogress ON tasks(status, updated_at) WHERE status = 'in_progress'`)
+    }
   }
 ]
 
