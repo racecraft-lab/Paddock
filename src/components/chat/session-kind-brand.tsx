@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 
-type SessionKind = 'claude-code' | 'codex-cli' | 'gateway'
+type SessionKind = 'claude-code' | 'codex-cli' | 'hermes' | 'gateway'
 
 const SESSION_KIND_META: Record<SessionKind, {
   label: string
@@ -14,19 +14,26 @@ const SESSION_KIND_META: Record<SessionKind, {
   'claude-code': {
     label: 'Claude Code',
     shortLabel: 'CC',
-    pillClassName: 'bg-[hsl(18_58%_42%_/0.14)] text-[hsl(18_58%_42%)] font-mono',
+    pillClassName: 'bg-primary/15 text-primary/80',
   },
   'codex-cli': {
     label: 'Codex CLI',
     shortLabel: 'CX',
-    pillClassName: 'bg-[hsl(40_28%_60%_/0.18)] text-[hsl(28_18%_18%)] font-mono',
+    pillClassName: 'bg-amber-500/15 text-amber-400/80',
     imageSrc: '/brand/codex-logo.png',
     imageAlt: 'Codex logo',
+  },
+  hermes: {
+    label: 'Hermes Agent',
+    shortLabel: 'HM',
+    pillClassName: 'bg-cyan-500/15 text-cyan-300/80',
+    imageSrc: '/brand/hermes-logo.png',
+    imageAlt: 'Hermes logo',
   },
   gateway: {
     label: 'Gateway',
     shortLabel: 'GW',
-    pillClassName: 'bg-[hsl(120_20%_86%)] text-[hsl(28_18%_18%)] font-mono',
+    pillClassName: 'bg-muted text-muted-foreground',
   },
 }
 
@@ -69,7 +76,7 @@ export function SessionKindAvatar({
 
   return (
     <div
-      className={`${sizeClassName} rounded-full bg-surface-2 flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0 font-mono`}
+      className={`${sizeClassName} rounded-full bg-surface-2 flex items-center justify-center text-[10px] font-bold text-muted-foreground shrink-0`}
       title={meta.label}
       aria-label={meta.label}
     >

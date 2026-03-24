@@ -93,8 +93,7 @@ function readClaudeTranscript(sessionId: string, limit: number): TranscriptMessa
       continue
     }
 
-    const lines = raw.split('\
-').filter(Boolean)
+    const lines = raw.split('\n').filter(Boolean)
     for (const line of lines) {
       let parsed: any
       try {
@@ -185,7 +184,7 @@ function readCodexTranscript(sessionId: string, limit: number): TranscriptMessag
     }
 
     let matchedSession = file.includes(sessionId)
-    const lines = raw.split(/\r?\n/).filter(Boolean)
+    const lines = raw.split('\n').filter(Boolean)
     for (const line of lines) {
       let parsed: any
       try {
@@ -211,7 +210,11 @@ function readCodexTranscript(sessionId: string, limit: number): TranscriptMessag
           } else if (Array.isArray(payload?.content)) {
             for (const block of payload.content) {
               const blockType = String(block?.type || '')
-              if ((blockType === 'text' || blockType === 'input_text' || blockType === 'output_text') && typeof block?.text === 'string') {
+              // Codex CLI emits message content as input_text/output_text.
+              if (
+                (blockType === 'text' || blockType === 'input_text' || blockType === 'output_text')
+                && typeof block?.text === 'string'
+              ) {
                 const part = textPart(block.text)
                 if (part) parts.push(part)
               }
@@ -223,43 +226,121 @@ function readCodexTranscript(sessionId: string, limit: number): TranscriptMessag
     }
   }
 
-  const sorted = out.slice().sort((a, b) => messageTimestampMs(a) - messageTimestampMs(b))
+  const sorted = out
+    .slice()
+    .sort((a, b) => messageTimestampMs(a) - messageTimestampMs(b))
   return sorted.slice(-limit)
 }
 
-export function readHermesTranscriptFromDbPath(dbPath: string, sessionId: string, limit: number): TranscriptMessage[] {
-  const db = new Database(dbPath)
+type HermesMessageRow = {
+  role: string
+  content: string | null
+  tool_call_id: string | null
+  tool_calls: string | null
+  tool_name: string | null
+  timestamp: number
+}
+
+function epochSecondsToISO(epoch: number | null | undefined): string | undefined {
+  if (!epoch || !Number.isFinite(epoch) || epoch <= 0) return undefined
+  return new Date(epoch * 1000).toISOString()
+}
+
+function readHermesTranscriptFromDbPath(dbPath: string, sessionId: string, limit: number): TranscriptMessage[] {
+  if (!dbPath || !fs.existsSync(dbPath)) return []
+
+  let db: Database.Database | null = null
   try {
-    const rows = db.prepare('SELECT role, content, tool_calls, tool_call_id, tool_name, timestamp FROM messages WHERE session_id = ? ORDER BY timestamp ASC LIMIT ?').all(sessionId, limit) as Array<{ role: string; content: string | null; tool_calls: string | null; tool_call_id: string | null; tool_name: string | null; timestamp: number }>
-    const out: TranscriptMessage[] = []
+    db = new Database(dbPath, { readonly: true, fileMustExist: true })
+
+    const rows = db.prepare(`
+      SELECT role, content, tool_call_id, tool_calls, tool_name, timestamp
+      FROM messages
+      WHERE session_id = ?
+      ORDER BY timestamp ASC
+      LIMIT ?
+    `).all(sessionId, Math.max(1, limit * 4)) as HermesMessageRow[]
+
+    const messages: TranscriptMessage[] = []
+
     for (const row of rows) {
-      const ts = new Date(row.timestamp * 1000).toISOString()
+      const timestamp = epochSecondsToISO(row.timestamp)
+      const parts: MessageContentPart[] = []
+
       if (row.role === 'assistant' && row.tool_calls) {
         try {
-          const calls = JSON.parse(row.tool_calls)
-          for (const call of calls) {
-            pushMessage(out, 'assistant', [{ type: 'tool_use', id: call.id || call.call_id || '', name: call.function?.name || row.tool_name || 'unknown', input: call.function?.arguments || '{}' }], ts)
+          const toolCalls = JSON.parse(row.tool_calls) as Array<Record<string, unknown>>
+          for (const call of toolCalls) {
+            const fn = call.function
+            const fnRecord = fn && typeof fn === 'object' ? fn as Record<string, unknown> : null
+            const name = typeof fnRecord?.name === 'string'
+              ? fnRecord.name
+              : typeof call.tool_name === 'string'
+                ? String(call.tool_name)
+                : typeof row.tool_name === 'string'
+                  ? row.tool_name
+                  : 'tool'
+            const id = typeof call.call_id === 'string'
+              ? call.call_id
+              : typeof call.id === 'string'
+                ? call.id
+                : ''
+            const input = typeof fnRecord?.arguments === 'string'
+              ? fnRecord.arguments
+              : JSON.stringify(fnRecord?.arguments || {})
+            parts.push({
+              type: 'tool_use',
+              id,
+              name,
+              input: String(input).slice(0, 4000),
+            })
           }
-          continue
-        } catch {}
+        } catch {
+          // Ignore malformed tool call payloads and fall back to text content if present.
+        }
       }
+
+      const text = textPart(row.content)
+      if (text) parts.push(text)
+
       if (row.role === 'tool') {
-        pushMessage(out, 'system', [{ type: 'tool_result', toolUseId: row.tool_call_id || '', content: row.content || '', isError: false }], ts)
+        pushMessage(messages, 'system', [{
+          type: 'tool_result',
+          toolUseId: row.tool_call_id || '',
+          content: String(row.content || '').trim().slice(0, 8000),
+          isError: row.content?.includes('"success": false') || row.content?.includes('"error"'),
+        }], timestamp)
         continue
       }
-      const role = row.role === 'assistant' ? 'assistant' : row.role === 'system' ? 'system' : 'user'
-      const part = textPart(row.content)
-      if (part) pushMessage(out, role as any, [part], ts)
+
+      if (row.role === 'assistant') {
+        pushMessage(messages, 'assistant', parts, timestamp)
+        continue
+      }
+
+      if (row.role === 'user') {
+        pushMessage(messages, 'user', parts, timestamp)
+      }
     }
-    return out
+
+    return messages.slice(-limit)
+  } catch (error) {
+    logger.warn({ err: error, dbPath, sessionId }, 'Failed to read Hermes transcript')
+    return []
   } finally {
-    db.close()
+    try { db?.close() } catch { /* noop */ }
   }
 }
+
+function readHermesTranscript(sessionId: string, limit: number): TranscriptMessage[] {
+  const dbPath = path.join(config.homeDir, '.hermes', 'state.db')
+  return readHermesTranscriptFromDbPath(dbPath, sessionId, limit)
+}
+
 /**
  * GET /api/sessions/transcript
  * Query params:
- *   kind=claude-code|codex-cli
+ *   kind=claude-code|codex-cli|hermes
  *   id=<session-id>
  *   limit=40
  */
@@ -273,13 +354,15 @@ export async function GET(request: NextRequest) {
     const sessionId = searchParams.get('id') || ''
     const limit = Math.min(parseInt(searchParams.get('limit') || '40', 10), 200)
 
-    if (!sessionId || (kind !== 'claude-code' && kind !== 'codex-cli')) {
+    if (!sessionId || (kind !== 'claude-code' && kind !== 'codex-cli' && kind !== 'hermes')) {
       return NextResponse.json({ error: 'kind and id are required' }, { status: 400 })
     }
 
     const messages = kind === 'claude-code'
       ? readClaudeTranscript(sessionId, limit)
-      : readCodexTranscript(sessionId, limit)
+      : kind === 'codex-cli'
+        ? readCodexTranscript(sessionId, limit)
+        : readHermesTranscript(sessionId, limit)
 
     return NextResponse.json({ messages })
   } catch (error) {
@@ -289,6 +372,4 @@ export async function GET(request: NextRequest) {
 }
 
 export const dynamic = 'force-dynamic'
-
-
-export const __testables = { readHermesTranscriptFromDbPath: readHermesTranscriptFromDbPath }
+export const __testables = { readHermesTranscriptFromDbPath }
