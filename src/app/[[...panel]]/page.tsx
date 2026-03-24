@@ -2,10 +2,9 @@
 
 import { createElement, useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { OpsStrip } from '@/components/layout/ops-strip'
-import { BridgePage } from '@/components/pages/bridge-page'
-import { LabPage } from '@/components/pages/lab-page'
-import { OpenClawPage } from '@/components/pages/openclaw-page'
+import { NavRail } from '@/components/layout/nav-rail'
+import { HeaderBar } from '@/components/layout/header-bar'
+import { LiveFeed } from '@/components/layout/live-feed'
 import { Dashboard } from '@/components/dashboard/dashboard'
 import { LogViewerPanel } from '@/components/panels/log-viewer-panel'
 import { CronManagementPanel } from '@/components/panels/cron-management-panel'
@@ -89,7 +88,7 @@ export default function Home() {
   const tb = useTranslations('boot')
   const tp = useTranslations('page')
   const tc = useTranslations('common')
-  const { activeTab, setActiveTab, setCurrentUser, setDashboardMode, setGatewayAvailable, setLocalSessionsAvailable, setCapabilitiesChecked, setSubscription, setDefaultOrgName, setUpdateAvailable, setOpenclawUpdate, showOnboarding, setShowOnboarding, showProjectManagerModal, setShowProjectManagerModal, fetchProjects, setChatPanelOpen, bootComplete, setBootComplete, setAgents, setSessions, setProjects, setInterfaceMode, setMemoryGraphAgents, setSkillsData, setActivities, setTasks } = useMissionControl()
+  const { activeTab, setActiveTab, setCurrentUser, setDashboardMode, setGatewayAvailable, setLocalSessionsAvailable, setCapabilitiesChecked, setSubscription, setDefaultOrgName, setUpdateAvailable, setOpenclawUpdate, showOnboarding, setShowOnboarding, liveFeedOpen, toggleLiveFeed, showProjectManagerModal, setShowProjectManagerModal, fetchProjects, setChatPanelOpen, bootComplete, setBootComplete, setAgents, setSessions, setProjects, setInterfaceMode, setMemoryGraphAgents, setSkillsData } = useMissionControl()
 
   // Sync URL → Zustand activeTab
   const pathname = usePathname()
@@ -364,18 +363,6 @@ export default function Home() {
           if (skillsData?.skills) setSkillsData(skillsData.skills, skillsData.groups || [], skillsData.total || 0)
         })
         .finally(() => { markStep('skills') }),
-      fetch('/api/activities?limit=200')
-        .then(r => r.ok ? r.json() : null)
-        .then((activitiesData) => {
-          if (activitiesData?.activities) setActivities(activitiesData.activities)
-        })
-        .catch(() => {}),
-      fetch('/api/tasks?limit=100')
-        .then(r => r.ok ? r.json() : null)
-        .then((tasksData) => {
-          if (tasksData?.tasks) setTasks(tasksData.tasks)
-        })
-        .catch(() => {}),
     ]).catch(() => { /* panels will lazy-load as fallback */ })
 
   // eslint-disable-next-line react-hooks/exhaustive-deps -- boot once on mount, not on every pathname change
@@ -386,38 +373,68 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background overflow-hidden">
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:text-sm focus:font-medium">
         {tc('skipToMainContent')}
       </a>
 
-      {/* Top: Ops Strip (replaces HeaderBar + NavRail) */}
-      {!showOnboarding && (
-        <>
-          <OpsStrip />
-          <LocalModeBanner />
-          <UpdateBanner />
-          <OpenClawUpdateBanner />
-          <OpenClawDoctorBanner />
-        </>
+      {/* Left: Icon rail navigation (hidden on mobile, shown as bottom bar instead) */}
+      {!showOnboarding && <NavRail />}
+
+      {/* Center: Header + Content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {!showOnboarding && (
+          <>
+            <HeaderBar />
+            <LocalModeBanner />
+            <UpdateBanner />
+            <OpenClawUpdateBanner />
+            <OpenClawDoctorBanner />
+          </>
+        )}
+        <main
+          id="main-content"
+          className={`flex-1 overflow-auto pb-16 md:pb-0 ${showOnboarding ? 'pointer-events-none select-none blur-[2px] opacity-30' : ''}`}
+          role="main"
+          aria-hidden={showOnboarding}
+        >
+          <div aria-live="polite" className="flex flex-col min-h-full">
+            <ErrorBoundary key={activeTab}>
+              <ContentRouter tab={activeTab} />
+            </ErrorBoundary>
+          </div>
+          <footer className="px-4 pb-4 pt-2">
+            <p className="text-2xs text-muted-foreground/50 text-center">
+              {tc('builtWithCareBy')} <a href="https://x.com/nyk_builderz" target="_blank" rel="noopener noreferrer" className="text-muted-foreground/70 hover:text-primary transition-colors duration-200">nyk</a>.
+            </p>
+          </footer>
+        </main>
+      </div>
+
+      {/* Right: Live feed (hidden on mobile) */}
+      {!showOnboarding && liveFeedOpen && (
+        <div className="hidden lg:flex h-full">
+          <LiveFeed />
+        </div>
       )}
 
-      {/* Main content area */}
-      <main
-        id="main-content"
-        className={`flex-1 overflow-hidden ${showOnboarding ? 'pointer-events-none select-none blur-[2px] opacity-30' : ''}`}
-        role="main"
-        aria-hidden={showOnboarding}
-      >
-        <ErrorBoundary key={activeTab}>
-          <ContentRouter tab={activeTab} />
-        </ErrorBoundary>
-      </main>
+      {/* Floating button to reopen LiveFeed when closed */}
+      {!showOnboarding && !liveFeedOpen && (
+        <button
+          onClick={toggleLiveFeed}
+          className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-30 w-6 h-12 items-center justify-center bg-card border border-r-0 border-border rounded-l-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200"
+          title={tp('showLiveFeed')}
+        >
+          <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M10 3l-5 5 5 5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
 
       {/* Chat panel overlay */}
       {!showOnboarding && <ChatPanel />}
 
-      {/* Global exec approval overlay */}
+      {/* Global exec approval overlay (shown regardless of active panel) */}
       {!showOnboarding && <ExecApprovalOverlay />}
 
       {/* Global Project Manager Modal */}
@@ -434,7 +451,7 @@ export default function Home() {
 }
 
 const ESSENTIAL_PANELS = new Set([
-  'overview', 'lab', 'openclaw', 'agents', 'tasks', 'chat', 'activity', 'logs', 'settings',
+  'overview', 'agents', 'tasks', 'chat', 'activity', 'logs', 'settings',
 ])
 
 function ContentRouter({ tab }: { tab: string }) {
@@ -476,11 +493,16 @@ function ContentRouter({ tab }: { tab: string }) {
 
   switch (tab) {
     case 'overview':
-      return <BridgePage />
-    case 'lab':
-      return <LabPage />
-    case 'openclaw':
-      return <OpenClawPage />
+      return (
+        <>
+          <Dashboard />
+          {!isLocal && (
+            <div className="mt-4 mx-4 mb-4 rounded-lg border border-border bg-card overflow-hidden">
+              <AgentCommsPanel />
+            </div>
+          )}
+        </>
+      )
     case 'tasks':
       return <TaskBoardPanel />
     case 'agents':

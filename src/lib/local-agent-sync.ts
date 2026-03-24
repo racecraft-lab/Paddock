@@ -103,6 +103,7 @@ function getLocalAgentRoots(): string[] {
     join(home, '.agents'),
     join(home, '.codex', 'agents'),
     join(home, '.claude', 'agents'),
+    join(home, '.hermes', 'skills'),
   ]
 }
 
