@@ -333,6 +333,18 @@ bash scripts/station-doctor.sh     # Installation health check
 bash scripts/security-audit.sh     # Security configuration audit
 ```
 
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| "Internal server error" on login | `pnpm rebuild better-sqlite3` (Node version mismatch) |
+| Docker: gateway not connecting | Set `OPENCLAW_GATEWAY_HOST=host.docker.internal` in `.env` |
+| Docker: browser WebSocket fails | Leave `NEXT_PUBLIC_GATEWAY_HOST` empty (auto-detected) or set to a browser-reachable hostname |
+| 404 on all pages | Clear Next.js cache: `rm -rf .next && pnpm dev` |
+| `AUTH_PASS` with `#` ignored | Quote it: `AUTH_PASS="my#pass"` or use `AUTH_PASS_B64` |
+
+See [docs/deployment.md](docs/deployment.md) for detailed troubleshooting.
+
 ## Security
 
 - **Change all default credentials** before deploying
