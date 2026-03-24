@@ -32,6 +32,7 @@ export async function resolveSafeMemoryPath(baseDir: string, relativePath: strin
   const fullPath = resolveWithin(baseDir, relativePath)
 
   // For non-existent targets, validate containment using the nearest existing ancestor.
+  // This allows nested creates (mkdir -p) while still blocking symlink escapes.
   let current = dirname(fullPath)
   let parentReal = ''
   while (!parentReal) {
