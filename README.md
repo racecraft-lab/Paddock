@@ -352,6 +352,20 @@ See [docs/deployment.md](docs/deployment.md) for detailed troubleshooting.
 - **Do not expose to the public internet** without configuring `MC_ALLOWED_HOSTS` and TLS
 - See [SECURITY.md](SECURITY.md) for vulnerability reporting
 
+
+---
+
+## Built with Mission Control
+
+Teams and projects using Mission Control in production. [Add yours!](https://github.com/builderz-labs/mission-control/issues/new?title=Showcase:%20[Your%20Project]&labels=showcase)
+
+| Project | Description |
+|---------|-------------|
+| [MUTX](https://x.com/mutxdev) | Agent infrastructure platform — ported and extended Mission Control for multi-agent orchestration |
+| [Builderz](https://builderz.dev) | AI agent fleet management across 32+ shipped products |
+
+> **Using Mission Control?** We'd love to feature you. Open an issue with the `showcase` label or tweet [@nyk_builderz](https://x.com/nyk_builderz).
+
 ## Roadmap
 
 See [open issues](https://github.com/builderz-labs/mission-control/issues) for planned work.
@@ -373,6 +387,19 @@ If you find this project useful, consider supporting the open-source work:
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-orange?logo=buymeacoffee)](https://buymeacoffee.com/nyk_builderz)
 
 **Solana:** `BYLu8XD8hGDUtdRBWpGWu5HKoiPrWqCxYFSh4oxXuvPg`
+
+
+---
+
+<div align="center">
+
+**Need agent infrastructure built for your team?**
+
+[Builderz](https://builderz.dev) builds production AI agent systems, trading infrastructure, and Solana applications — 32+ products shipped across 15 countries.
+
+[Get in touch](https://builderz.dev) | [@nyk_builderz](https://x.com/nyk_builderz)
+
+</div>
 
 <p align="center">
   <a href="https://star-history.com/#builderz-labs/mission-control&Date">
