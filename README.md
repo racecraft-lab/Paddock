@@ -10,6 +10,10 @@ Manage AI agent fleets, dispatch tasks, track costs, and coordinate multi-agent 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/Tests-577%20(282%20unit%20%2B%20295%20E2E)-brightgreen)](https://github.com/builderz-labs/mission-control)
+[![GitHub stars](https://img.shields.io/github/stars/builderz-labs/mission-control?style=social)](https://github.com/builderz-labs/mission-control/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/builderz-labs/mission-control?style=social)](https://github.com/builderz-labs/mission-control/network/members)
+[![Last commit](https://img.shields.io/github/last-commit/builderz-labs/mission-control)](https://github.com/builderz-labs/mission-control/commits/main)
+[![Open issues](https://img.shields.io/github/issues/builderz-labs/mission-control)](https://github.com/builderz-labs/mission-control/issues)
 
 ![Mission Control Dashboard](docs/mission-control-overview.png)
 
@@ -18,6 +22,25 @@ Manage AI agent fleets, dispatch tasks, track costs, and coordinate multi-agent 
 ---
 
 > **Alpha Software** — Mission Control is under active development. APIs, database schemas, and configuration formats may change between releases. Review the [security considerations](#security) before deploying to production.
+
+## Contents
+
+- [Quick Start](#quick-start)
+- [Why teams adopt Mission Control](#why-teams-adopt-mission-control)
+- [Use-case recipes](#use-case-recipes)
+- [Getting Started with Agents](#getting-started-with-agents)
+- [Documentation](#documentation)
+- [Features](#features)
+- [Architecture](#architecture)
+- [API Reference](#api-reference)
+- [Development](#development)
+- [Troubleshooting](#troubleshooting)
+- [Security](#security)
+- [Built with Mission Control](#built-with-mission-control)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [Support](#support)
+- [License](#license)
 
 <table>
 <tr><td><b>32 panels</b></td><td>Tasks, agents, skills, logs, tokens, memory, security, cron, alerts, webhooks, pipelines, and more — all from a single SPA shell.</td></tr>
@@ -86,6 +109,36 @@ docker compose -f docker-compose.yml -f docker-compose.hardened.yml up -d
 
 ---
 
+## Why teams adopt Mission Control
+
+- Predictable orchestration: one dashboard for task flow, dispatch, quality gates, and audit trails.
+- Faster operator response: real-time agent/task/security telemetry without stitching tools together.
+- Local-first deployment: SQLite-backed stack with no mandatory Redis/Postgres dependency.
+- Security by default: RBAC, trust scoring, secret detection, and hardened deployment profile.
+
+## Use-case recipes
+
+1) Stand up a local control center in 5 minutes
+- Run `bash install.sh --local`
+- Open `/setup`
+- Create your first agent and task from the UI
+
+2) Run multi-agent workflows with quality gates
+- Register specialist agents (research, coding, reviewer)
+- Enable orchestration rules and quality review
+- Track handoffs end-to-end in the Kanban board
+
+3) Operate production safely
+- Deploy with `docker-compose.hardened.yml`
+- Configure `MC_ALLOWED_HOSTS` and TLS reverse proxy
+- Monitor trust score + security audit panels continuously
+
+4) Integrate existing CLI agents without re-platforming
+- Connect Claude Code/Codex via CLI integration
+- Keep your current workflows while adding centralized observability and controls
+
+---
+
 ## Getting Started with Agents
 
 Register your first agent in under 5 minutes — no gateway required:
@@ -96,19 +149,19 @@ export MC_API_KEY=your-api-key   # shown in Settings after first login
 
 # Register an agent
 curl -X POST "$MC_URL/api/agents/register" \
-  -H "Authorization: Bearer $MC_API_KEY" \
+  -H "Authorization: Bearer <MC_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"name": "scout", "role": "researcher"}'
 
 # Create a task
 curl -X POST "$MC_URL/api/tasks" \
-  -H "Authorization: Bearer $MC_API_KEY" \
+  -H "Authorization: Bearer <MC_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"title": "Research competitors", "assigned_to": "scout", "priority": "medium"}'
 
 # Poll the queue as the agent
 curl "$MC_URL/api/tasks/queue?agent=scout" \
-  -H "Authorization: Bearer $MC_API_KEY"
+  -H "Authorization: Bearer <MC_API_KEY>"
 ```
 
 For the full walkthrough, see the **[Quickstart Guide](docs/quickstart.md)**.
@@ -138,6 +191,15 @@ NEXT_PUBLIC_GATEWAY_OPTIONAL=true pnpm start
 ```
 
 Task board, projects, agents, sessions, scheduler, webhooks, alerts, and cost tracking all work without a gateway. Real-time session updates and agent messaging require an active gateway connection.
+
+### Project health files
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow and development standards
+- [SECURITY.md](SECURITY.md) — vulnerability disclosure and security policy
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — community conduct expectations
+- [CHANGELOG.md](CHANGELOG.md) — release history
+- [RELEASE.md](RELEASE.md) — release process and checklist
+- [LICENSE](LICENSE) — MIT license
 
 ---
 
