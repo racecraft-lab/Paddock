@@ -100,7 +100,7 @@ function PageLoader({ steps }: { steps?: InitStep[] }) {
 
   return (
     <div
-      className={`flex items-center justify-center min-h-screen bg-background void-bg transition-opacity duration-300 ${allDone ? 'opacity-0' : 'opacity-100'}`}
+      className="flex items-center justify-center min-h-screen bg-background void-bg"
     >
       <div className="flex flex-col items-center gap-8 w-64">
         {/* Animated logo sequence: OpenClaw + Claude converge → morph into MC mark */}
@@ -160,23 +160,25 @@ function PageLoader({ steps }: { steps?: InitStep[] }) {
           </p>
         </div>
 
-        {/* Progress section — appears after logo animation, only while loading */}
+        {/* Progress section — visible immediately, updates in real-time */}
         {steps ? (
           <div
             className="w-full flex flex-col items-center gap-3 opacity-0"
-            style={{ animation: 'mcFadeIn 0.6s ease-out 2.4s forwards' }}
+            style={{ animation: 'mcFadeIn 0.4s ease-out 0.8s forwards' }}
           >
             {/* Progress bar */}
-            <div className="w-full h-0.5 bg-border/50 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary shimmer-bar rounded-full transition-all duration-500 ease-out"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="w-full">
+              <div className="w-full h-1 bg-border/30 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary shimmer-bar rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
             </div>
 
-            {/* Active step label — crossfades on step change */}
+            {/* Active step label — only shows the current step being loaded */}
             <div className="h-5 flex items-center justify-center">
-              {activeStep && (
+              {activeStep ? (
                 <div
                   key={activeStep.key}
                   className="flex items-center gap-2"
@@ -187,7 +189,16 @@ function PageLoader({ steps }: { steps?: InitStep[] }) {
                     {activeStep.label}
                   </span>
                 </div>
-              )}
+              ) : allDone ? (
+                <div className="flex items-center gap-2">
+                  <svg className="w-3 h-3 text-green-500" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M3 8.5l3.5 3.5 6.5-8" />
+                  </svg>
+                  <span className="font-mono text-2xs tracking-wide text-green-400/70">
+                    Ready
+                  </span>
+                </div>
+              ) : null}
             </div>
           </div>
         ) : (
@@ -196,7 +207,7 @@ function PageLoader({ steps }: { steps?: InitStep[] }) {
         )}
 
         {/* Version */}
-        <span className="text-2xs font-mono text-muted-foreground/40">
+        <span className="text-2xs font-mono text-muted-foreground/30">
           v{APP_VERSION}
         </span>
       </div>

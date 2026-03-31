@@ -135,8 +135,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!bootComplete && initSteps.every(s => s.status === 'done')) {
-      const t = setTimeout(() => setBootComplete(), 400)
-      return () => clearTimeout(t)
+      setBootComplete()
     }
   }, [initSteps, bootComplete, setBootComplete])
 
@@ -339,24 +338,30 @@ export default function Home() {
           if (agentsData?.agents) setAgents(agentsData.agents)
         })
         .finally(() => { markStep('agents') }),
-      fetch('/api/sessions')
-        .then(r => r.ok ? r.json() : null)
-        .then((sessionsData) => {
-          if (sessionsData?.sessions) setSessions(sessionsData.sessions)
-        })
-        .finally(() => { markStep('sessions') }),
+      // Sessions can be slow with many JSONL files — don't block boot
+      (() => {
+        markStep('sessions')
+        return fetch('/api/sessions')
+          .then(r => r.ok ? r.json() : null)
+          .then((sessionsData) => {
+            if (sessionsData?.sessions) setSessions(sessionsData.sessions)
+          })
+      })(),
       fetch('/api/projects')
         .then(r => r.ok ? r.json() : null)
         .then((projectsData) => {
           if (projectsData?.projects) setProjects(projectsData.projects)
         })
         .finally(() => { markStep('projects') }),
-      fetch('/api/memory/graph?agent=all')
-        .then(r => r.ok ? r.json() : null)
-        .then((graphData) => {
-          if (graphData?.agents) setMemoryGraphAgents(graphData.agents)
-        })
-        .finally(() => { markStep('memory') }),
+      // Memory graph can be slow — don't block boot
+      (() => {
+        markStep('memory')
+        return fetch('/api/memory/graph?agent=all')
+          .then(r => r.ok ? r.json() : null)
+          .then((graphData) => {
+            if (graphData?.agents) setMemoryGraphAgents(graphData.agents)
+          })
+      })(),
       fetch('/api/skills')
         .then(r => r.ok ? r.json() : null)
         .then((skillsData) => {
@@ -403,11 +408,7 @@ export default function Home() {
               <ContentRouter tab={activeTab} />
             </ErrorBoundary>
           </div>
-          <footer className="px-4 pb-4 pt-2">
-            <p className="text-2xs text-muted-foreground/50 text-center">
-              {tc('builtWithCareBy')} <a href="https://x.com/nyk_builderz" target="_blank" rel="noopener noreferrer" className="text-muted-foreground/70 hover:text-primary transition-colors duration-200">nyk</a>.
-            </p>
-          </footer>
+{/* Footer removed — attribution moved to nav sidebar */}
         </main>
       </div>
 

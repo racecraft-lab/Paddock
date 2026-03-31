@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireRole } from '@/lib/auth'
 import { detectAllRuntimes, detectRuntime, startInstall, getInstallJob, getActiveJobs, generateDockerSidecar } from '@/lib/agent-runtimes'
 import type { RuntimeId, DeploymentMode } from '@/lib/agent-runtimes'
+import { clearHermesDetectionCache } from '@/lib/hermes-sessions'
 import { logAuditEvent } from '@/lib/db'
 import { logger } from '@/lib/logger'
 
@@ -13,6 +14,8 @@ export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
+  // Clear caches so freshly-installed runtimes are detected immediately
+  clearHermesDetectionCache()
   const runtimes = detectAllRuntimes()
   const activeJobs = getActiveJobs()
   const isDocker = existsSync('/.dockerenv')

@@ -6,6 +6,7 @@ interface CommandOptions {
   env?: NodeJS.ProcessEnv
   timeoutMs?: number
   input?: string
+  onData?: (chunk: string) => void
 }
 
 interface CommandResult {
@@ -37,11 +38,15 @@ export function runCommand(
     }
 
     child.stdout.on('data', (data) => {
-      stdout += data.toString()
+      const chunk = data.toString()
+      stdout += chunk
+      options.onData?.(chunk)
     })
 
     child.stderr.on('data', (data) => {
-      stderr += data.toString()
+      const chunk = data.toString()
+      stderr += chunk
+      options.onData?.(chunk)
     })
 
     child.on('error', (error) => {

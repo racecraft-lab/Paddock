@@ -15,6 +15,8 @@ const SESSION_KIND_META: Record<SessionKind, {
     label: 'Claude Code',
     shortLabel: 'CC',
     pillClassName: 'bg-primary/15 text-primary/80',
+    imageSrc: '/brand/claude-logo.png',
+    imageAlt: 'Claude logo',
   },
   'codex-cli': {
     label: 'Codex CLI',

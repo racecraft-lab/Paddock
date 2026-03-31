@@ -30,12 +30,17 @@ LABEL org.opencontainers.image.version="${MC_VERSION}"
 
 WORKDIR /app
 ENV NODE_ENV=production
+# curl, CA certs, python3, git needed for agent runtime installers (OpenClaw, Hermes)
+# procps provides `ps` and `uptime` used by system-monitor APIs
+RUN apt-get update && apt-get install -y curl ca-certificates python3 git make g++ procps --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 COPY --from=build /app/public ./public
-# Copy schema.sql needed by migration 001_init at runtime
 COPY --from=build /app/src/lib/schema.sql ./src/lib/schema.sql
+# node-pty is a native addon; Next standalone tracing can omit built artifacts.
+# Copy the fully installed package (including native binary artifacts) from deps stage.
+COPY --from=deps /app/node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty ./node_modules/.pnpm/node-pty@1.1.0/node_modules/node-pty
 # Create data directory with correct ownership for SQLite
 RUN mkdir -p .data && chown nextjs:nodejs .data
 RUN echo 'const http=require("http");const r=http.get("http://localhost:"+(process.env.PORT||3000)+"/api/status?action=health",s=>{process.exit(s.statusCode===200?0:1)});r.on("error",()=>process.exit(1));r.setTimeout(4000,()=>{r.destroy();process.exit(1)})' > /app/healthcheck.js

@@ -81,7 +81,8 @@ export async function GET(request: NextRequest) {
     
     // Build dynamic query
     let query = `
-      SELECT t.*, p.name as project_name, p.ticket_prefix as project_prefix
+      SELECT t.*, p.name as project_name, p.ticket_prefix as project_prefix,
+        (SELECT COUNT(*) FROM comments c WHERE c.task_id = t.id AND c.workspace_id = t.workspace_id) as comment_count
       FROM tasks t
       LEFT JOIN projects p
         ON p.id = t.project_id AND p.workspace_id = t.workspace_id

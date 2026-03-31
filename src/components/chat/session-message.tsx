@@ -113,9 +113,9 @@ function ToolResultPart({ content, isError }: { content: string; isError?: boole
   return (
     <details open={open} onToggle={(e) => setOpen((e.target as HTMLDetailsElement).open)}>
       <summary className={`cursor-pointer select-none font-mono-tight text-[11px] ${colorClass} hover:brightness-125`}>
-        {icon} {isError ? 'error' : 'result'} ({content.length} chars)
+        {'\u25B8'}{icon} result ({content.length} chars)
       </summary>
-      <div className="mt-1 max-h-40 overflow-y-auto rounded bg-black/20 p-2">
+      <div className="mt-1 max-h-40 overflow-y-auto rounded bg-black/20 px-3 py-1.5">
         <pre className="font-mono-tight text-[11px] text-muted-foreground/70 whitespace-pre-wrap break-words">
           {content}
         </pre>

@@ -526,6 +526,15 @@ interface MissionControlStore {
   setChatPanelOpen: (open: boolean) => void
   markConversationRead: (conversationId: string) => void
 
+  // Terminal split panes + attention
+  splitPanes: Array<{ id: string; sessionId: string; sessionKind: string; sessionName?: string }>
+  setSplitPanes: (panes: Array<{ id: string; sessionId: string; sessionKind: string; sessionName?: string }>) => void
+  addSplitPane: (sessionId: string, sessionKind: string, sessionName?: string) => void
+  removeSplitPane: (paneId: string) => void
+  clearSplitPanes: () => void
+  sessionAttention: Record<string, 'waiting' | 'error'>
+  setSessionAttention: (sessionId: string, level: 'waiting' | 'error' | null) => void
+
   // Auth
   currentUser: CurrentUser | null
   setCurrentUser: (user: CurrentUser | null) => void
@@ -1143,6 +1152,36 @@ export const useMissionControl = create<MissionControlStore>()(
             : msg
         )
       })),
+
+    // Terminal split panes + attention
+    splitPanes: [],
+    setSplitPanes: (panes) => set({ splitPanes: panes }),
+    addSplitPane: (sessionId, sessionKind, sessionName) =>
+      set((state) => {
+        if (state.splitPanes.length >= 4) return state
+        if (state.splitPanes.some((p) => p.sessionId === sessionId)) return state
+        return {
+          splitPanes: [
+            ...state.splitPanes,
+            { id: `pane-${Date.now()}`, sessionId, sessionKind, sessionName },
+          ],
+        }
+      }),
+    removeSplitPane: (paneId) =>
+      set((state) => ({
+        splitPanes: state.splitPanes.filter((p) => p.id !== paneId),
+      })),
+    clearSplitPanes: () => set({ splitPanes: [] }),
+    sessionAttention: {},
+    setSessionAttention: (sessionId, level) =>
+      set((state) => {
+        if (!level) {
+          const next = { ...state.sessionAttention }
+          delete next[sessionId]
+          return { sessionAttention: next }
+        }
+        return { sessionAttention: { ...state.sessionAttention, [sessionId]: level } }
+      }),
 
     // Mission Control Phase 2 - Standup
     standupReports: [],

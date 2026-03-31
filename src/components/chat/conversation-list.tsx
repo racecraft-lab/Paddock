@@ -133,8 +133,12 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
     activeConversation,
     setActiveConversation,
     markConversationRead,
+    sessionAttention,
+    setSessionAttention,
+    addSplitPane,
   } = useMissionControl()
   const [search, setSearch] = useState('')
+  const [initialLoading, setInitialLoading] = useState(conversations.length === 0)
 
   // Context menu state
   const [ctxMenu, setCtxMenu] = useState<{ convId: string; x: number; y: number } | null>(null)
@@ -316,8 +320,10 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
       setConversations(
         providerSessions.sort((a: Conversation, b: Conversation) => b.updatedAt - a.updatedAt)
       )
+      setInitialLoading(false)
     } catch (err) {
       log.error('Failed to load conversations:', err)
+      setInitialLoading(false)
     }
   }, [setConversations])
 
@@ -326,6 +332,11 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
   const handleSelect = (convId: string) => {
     setActiveConversation(convId)
     markConversationRead(convId)
+    // Clear attention when user views the session
+    const conv = conversations.find((c) => c.id === convId)
+    if (conv?.session?.sessionId) {
+      setSessionAttention(conv.session.sessionId, null)
+    }
   }
 
   const filteredConversations = conversations.filter((c) => {
@@ -339,55 +350,66 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
     )
   })
 
-  const gatewayRows = filteredConversations.filter((c) => c.source === 'session' && c.session?.sessionKind === 'gateway')
-  const activeGatewayRows = gatewayRows.filter((c) => c.session?.active)
-  const inactiveGatewayRows = gatewayRows.filter((c) => !c.session?.active)
-  const localRows = filteredConversations.filter((c) => c.source === 'session' && (c.session?.sessionKind === 'claude-code' || c.session?.sessionKind === 'codex-cli' || c.session?.sessionKind === 'hermes'))
-  const activeLocalRows = localRows.filter((c) => c.session?.active)
-  const inactiveLocalRows = localRows.filter((c) => !c.session?.active)
+  const allSessions = filteredConversations.filter((c) => c.source === 'session')
+  const activeRows = allSessions.filter((c) => c.session?.active)
+  const recentRows = allSessions.filter((c) => !c.session?.active)
 
   function renderConversationItem(conv: Conversation) {
     const displayName = conv.name || conv.id.replace('agent_', '')
     const isSessionRow = conv.id.startsWith('session:')
     const isSelected = activeConversation === conv.id
     const isEditing = editingId === conv.id
+    const session = conv.session
+    const attentionLevel = session?.sessionId ? sessionAttention[session.sessionId] : undefined
+
+    // Extract working directory leaf name for compact display
+    const workDirLeaf = session?.workingDir
+      ? session.workingDir.split('/').filter(Boolean).pop() || session.workingDir
+      : null
+
+    // Derive last prompt preview
+    const promptPreview = session?.lastUserPrompt
+      ? (session.lastUserPrompt.length > 60 ? session.lastUserPrompt.slice(0, 60) + '...' : session.lastUserPrompt)
+      : null
 
     return (
-      <Button
+      <button
         key={conv.id}
+        type="button"
         onClick={() => handleSelect(conv.id)}
-        onDoubleClick={() => { if (conv.session?.prefKey) startRename(conv) }}
+        onDoubleClick={() => { if (session?.prefKey) startRename(conv) }}
         onContextMenu={(e) => handleContextMenu(e, conv)}
-        variant="ghost"
-        className={`w-full justify-start h-auto px-3 py-2.5 rounded-none ${
+        className={`w-full text-left px-3 py-2 transition-colors group ${
           isSelected
             ? 'bg-accent/60 border-l-2 border-primary'
-            : 'border-l-2 border-transparent'
+            : 'border-l-2 border-transparent hover:bg-accent/30'
         }`}
       >
-        <div className="flex items-center gap-2 w-full">
-          {/* Mini avatar */}
-          <div className="relative flex-shrink-0">
+        <div className="flex items-start gap-2.5 w-full">
+          {/* Avatar with status ring + attention indicator */}
+          <div className={`relative flex-shrink-0 mt-0.5 ${
+            attentionLevel ? 'ring-2 ring-offset-1 ring-offset-card rounded-full ring-blue-400 animate-pulse' : ''
+          }`}>
             <SessionKindAvatar
-              kind={conv.session?.sessionKind || 'gateway'}
+              kind={session?.sessionKind || 'gateway'}
               fallback={displayName.charAt(0).toUpperCase()}
             />
-            {isSessionRow && conv.session?.active && (
-              <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${STATUS_COLORS.busy}`} />
+            {isSessionRow && session?.active && (
+              <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${
+                attentionLevel === 'error' ? STATUS_COLORS.error : STATUS_COLORS.busy
+              }`} />
             )}
-            {!isSessionRow && (
+            {isSessionRow && !session?.active && (
               <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card ${STATUS_COLORS.offline}`} />
             )}
           </div>
 
-          <div className="flex-1 min-w-0 text-left">
-            <div className="flex items-center justify-between">
+          <div className="flex-1 min-w-0">
+            {/* Row 1: Name + time */}
+            <div className="flex items-center justify-between gap-1">
               <div className="flex items-center gap-1.5 min-w-0">
-                {conv.session?.colorTag && TAG_COLORS[conv.session.colorTag] && (
-                  <span className={`h-2 w-2 rounded-full ${TAG_COLORS[conv.session.colorTag]}`} />
-                )}
-                {isSessionRow && conv.session?.sessionKind && conv.session.sessionKind !== 'gateway' && (
-                  <SessionKindPill kind={conv.session.sessionKind} />
+                {session?.colorTag && TAG_COLORS[session.colorTag] && (
+                  <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${TAG_COLORS[session.colorTag]}`} />
                 )}
                 {isEditing ? (
                   <input
@@ -409,9 +431,9 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-1 flex-shrink-0 ml-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 {conv.unreadCount > 0 && (
-                  <span className="bg-primary text-primary-foreground text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
+                  <span className="bg-blue-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center font-medium">
                     {conv.unreadCount}
                   </span>
                 )}
@@ -420,16 +442,40 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
                 </span>
               </div>
             </div>
-            {conv.lastMessage && !isEditing && (
-              <p className="text-[11px] text-muted-foreground/60 truncate mt-0.5">
-                {conv.lastMessage.from_agent === 'human'
-                  ? `You: ${conv.lastMessage.content}`
-                  : conv.lastMessage.content}
+
+            {/* Row 2: Metadata badges (working dir, model, kind) */}
+            {!isEditing && (
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                {isSessionRow && session?.sessionKind && session.sessionKind !== 'gateway' && (
+                  <SessionKindPill kind={session.sessionKind} />
+                )}
+                {workDirLeaf && (
+                  <span className="text-[10px] text-muted-foreground/50 font-mono truncate max-w-[8rem]" title={session?.workingDir || ''}>
+                    {workDirLeaf}
+                  </span>
+                )}
+                {session?.model && (
+                  <span className="text-[10px] text-muted-foreground/30 hidden group-hover:inline">
+                    {session.model}
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Row 3: Last prompt or status preview */}
+            {!isEditing && promptPreview && (
+              <p className="text-[10px] text-muted-foreground/40 truncate mt-0.5 leading-relaxed">
+                $ {promptPreview}
+              </p>
+            )}
+            {!isEditing && !promptPreview && conv.lastMessage && (
+              <p className="text-[10px] text-muted-foreground/40 truncate mt-0.5">
+                {conv.lastMessage.content}
               </p>
             )}
           </div>
         </div>
-      </Button>
+      </button>
     )
   }
 
@@ -459,42 +505,38 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
       <div className="flex-1 overflow-y-auto">
         {filteredConversations.length === 0 ? (
           <div className="p-4 text-center text-xs text-muted-foreground/50">
-            No conversations yet
+            {initialLoading ? (
+              <div className="flex items-center justify-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                <span>Loading sessions...</span>
+              </div>
+            ) : (
+              'No sessions found'
+            )}
           </div>
         ) : (
           <>
-            {activeGatewayRows.length > 0 && (
+            {activeRows.length > 0 && (
               <div>
-                <div className="px-3 pt-2 py-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-green-400/70">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Active
+                <div className="px-3 pt-2.5 pb-1 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-green-400/70">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                    Active
+                    <span className="text-green-400/40 font-mono">{activeRows.length}</span>
+                  </div>
                 </div>
-                {activeGatewayRows.map(renderConversationItem)}
+                {activeRows.map(renderConversationItem)}
               </div>
             )}
-            {activeLocalRows.length > 0 && (
+            {recentRows.length > 0 && (
               <div>
-                <div className="px-3 pt-2 py-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-green-400/70">
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                  Active Local
+                <div className="px-3 pt-2.5 pb-1 flex items-center justify-between">
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground/40">
+                    Recent
+                    <span className="ml-1 font-mono">{recentRows.length}</span>
+                  </span>
                 </div>
-                {activeLocalRows.map(renderConversationItem)}
-              </div>
-            )}
-            {inactiveGatewayRows.length > 0 && (
-              <div>
-                <div className="px-3 pt-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground/40">
-                  Recent
-                </div>
-                {inactiveGatewayRows.map(renderConversationItem)}
-              </div>
-            )}
-            {inactiveLocalRows.length > 0 && (
-              <div>
-                <div className="px-3 pt-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground/40">
-                  Recent Local
-                </div>
-                {inactiveLocalRows.map(renderConversationItem)}
+                {recentRows.map(renderConversationItem)}
               </div>
             )}
           </>

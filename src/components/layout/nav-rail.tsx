@@ -443,6 +443,18 @@ export function NavRail() {
           </div>
         )}
 
+        {/* Attribution */}
+        {sidebarExpanded && (
+          <div className="px-3 pb-1">
+            <p className="text-[10px] text-muted-foreground/30 text-center">
+              Built with care by{' '}
+              <a href="https://x.com/nyk_builderz" target="_blank" rel="noopener noreferrer" className="text-muted-foreground/50 hover:text-primary transition-colors">
+                nyk
+              </a>
+            </p>
+          </div>
+        )}
+
         {/* Context switcher (profile-style, bottom of sidebar) */}
         <ContextSwitcher
           currentUser={currentUser}

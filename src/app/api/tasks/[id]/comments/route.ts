@@ -201,14 +201,48 @@ export async function POST(
       workspaceId
     );
     
+    // Auto-assign: if task is unassigned and a mentioned target is an agent, assign it
+    let autoAssignedTo: string | null = null;
+    if (!task.assigned_to) {
+      const mentionedAgent = mentionResolution.resolved.find((m) => m.type === 'agent');
+      if (mentionedAgent) {
+        autoAssignedTo = mentionedAgent.recipient;
+        const newStatus = task.status === 'inbox' ? 'assigned' : task.status;
+        db.prepare('UPDATE tasks SET assigned_to = ?, status = ?, updated_at = ? WHERE id = ? AND workspace_id = ?')
+          .run(autoAssignedTo, newStatus, now, taskId, workspaceId);
+
+        db_helpers.ensureTaskSubscription(taskId, autoAssignedTo, workspaceId);
+        db_helpers.createNotification(
+          autoAssignedTo,
+          'assignment',
+          'Task Assigned',
+          `You have been assigned to task: ${task.title} (via @mention by ${author})`,
+          'task',
+          taskId,
+          workspaceId
+        );
+
+        db_helpers.logActivity(
+          'task_assigned',
+          'task',
+          taskId,
+          author,
+          `Auto-assigned task "${task.title}" to ${autoAssignedTo} via @mention`,
+          { assigned_to: autoAssignedTo, trigger: 'mention' },
+          workspaceId
+        );
+      }
+    }
+
     // Ensure subscriptions for author, mentions, and assignee
     db_helpers.ensureTaskSubscription(taskId, author, workspaceId);
     const mentionRecipients = mentionResolution.recipients;
     mentionRecipients.forEach((mentionedRecipient) => {
       db_helpers.ensureTaskSubscription(taskId, mentionedRecipient, workspaceId);
     });
-    if (task.assigned_to) {
-      db_helpers.ensureTaskSubscription(taskId, task.assigned_to, workspaceId);
+    const effectiveAssignee = autoAssignedTo || task.assigned_to;
+    if (effectiveAssignee) {
+      db_helpers.ensureTaskSubscription(taskId, effectiveAssignee, workspaceId);
     }
 
     // Notify subscribers
@@ -236,12 +270,13 @@ export async function POST(
       .prepare('SELECT * FROM comments WHERE id = ? AND workspace_id = ?')
       .get(commentId, workspaceId) as Comment;
     
-    return NextResponse.json({ 
+    return NextResponse.json({
       comment: {
         ...createdComment,
         mentions: createdComment.mentions ? JSON.parse(createdComment.mentions) : [],
         replies: [] // New comments have no replies initially
-      }
+      },
+      ...(autoAssignedTo ? { auto_assigned_to: autoAssignedTo } : {}),
     }, { status: 201 });
   } catch (error) {
     logger.error({ err: error }, 'POST /api/tasks/[id]/comments error');

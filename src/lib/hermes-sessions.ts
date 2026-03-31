@@ -59,12 +59,34 @@ function hasHermesCliBinary(): boolean {
     return hermesBinaryCache.installed
   }
 
-  const candidates = [process.env.HERMES_BIN, 'hermes-agent', 'hermes'].filter((v): v is string => Boolean(v && v.trim()))
+  // Check common install locations including the data directory's local bin.
+  // In Docker, HOME=/nonexistent so we also check dataDir as effective HOME.
+  const dataDir = require('node:path').resolve(config.dataDir || '.data')
+  const homeDir = config.homeDir || process.env.HOME || ''
+  const candidates = [
+    process.env.HERMES_BIN,
+    join(dataDir, '.local', 'bin', 'hermes'),
+    join(dataDir, '.hermes', 'hermes-agent', 'venv', 'bin', 'hermes'),
+    join(homeDir, '.local', 'bin', 'hermes'),
+    join(homeDir, '.hermes', 'hermes-agent', 'venv', 'bin', 'hermes'),
+    'hermes-agent',
+    'hermes',
+  ].filter((v): v is string => Boolean(v && v.trim()))
   const installed = candidates.some((bin) => {
     try {
-      const res = spawnSync(bin, ['--version'], { stdio: 'ignore', timeout: 1200 })
-      return res.status === 0
-    } catch {
+      // First check if the file exists (fast path for absolute paths)
+      if (bin.startsWith('/') && !existsSync(bin)) {
+        logger.debug({ bin }, 'hermes candidate not found on disk')
+        return false
+      }
+      const res = spawnSync(bin, ['--version'], { stdio: 'pipe', timeout: 5000 })
+      const found = res.status === 0
+      if (found) {
+        logger.info({ bin, stdout: (res.stdout || '').toString().trim().slice(0, 60) }, 'hermes binary detected')
+      }
+      return found
+    } catch (err) {
+      logger.debug({ bin, err }, 'hermes candidate check failed')
       return false
     }
   })

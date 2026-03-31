@@ -10,8 +10,53 @@ export interface DashboardWidget {
 
 export const WIDGET_CATALOG: DashboardWidget[] = [
   {
+    id: 'briefing-bar',
+    label: 'Briefing Bar',
+    description: 'At-a-glance operational summary — what needs attention now',
+    category: 'metrics',
+    modes: ['local', 'full'],
+    defaultSize: 'full',
+    component: 'BriefingBarWidget',
+  },
+  {
+    id: 'activity-timeline',
+    label: 'Activity Timeline',
+    description: 'Real-time mission log — agent events, task updates, errors',
+    category: 'events',
+    modes: ['local', 'full'],
+    defaultSize: 'md',
+    component: 'ActivityTimelineWidget',
+  },
+  {
+    id: 'fleet-status',
+    label: 'Fleet Status',
+    description: 'Per-runtime activity sparklines, session counts, and cost',
+    category: 'sessions',
+    modes: ['local', 'full'],
+    defaultSize: 'md',
+    component: 'FleetStatusWidget',
+  },
+  {
+    id: 'task-pipeline',
+    label: 'Task Pipeline',
+    description: 'Visual task flow — inbox to done with bottleneck highlighting',
+    category: 'tasks',
+    modes: ['local', 'full'],
+    defaultSize: 'full',
+    component: 'TaskPipelineWidget',
+  },
+  {
+    id: 'system-health',
+    label: 'System Health',
+    description: 'Compact health bar — CPU, memory, disk, uptime (expandable)',
+    category: 'health',
+    modes: ['local', 'full'],
+    defaultSize: 'full',
+    component: 'SystemHealthWidget',
+  },
+  {
     id: 'metric-cards',
-    label: 'Key Metrics',
+    label: 'Key Metrics (Classic)',
     description: 'Top-line stats — sessions, load, tokens, cost',
     category: 'metrics',
     modes: ['local', 'full'],
@@ -102,23 +147,20 @@ export const WIDGET_CATALOG: DashboardWidget[] = [
 ]
 
 export const LOCAL_DEFAULT_LAYOUT = [
-  'metric-cards',
-  'runtime-health',
-  'session-workbench',
-  'event-stream',
-  'task-flow',
-  'github-signal',
+  'briefing-bar',
+  'activity-timeline',
+  'fleet-status',
+  'task-pipeline',
+  'system-health',
   'quick-actions',
 ]
 
 export const GATEWAY_DEFAULT_LAYOUT = [
-  'metric-cards',
-  'gateway-health',
-  'session-workbench',
-  'event-stream',
-  'task-flow',
-  'security-audit',
-  'maintenance',
+  'briefing-bar',
+  'activity-timeline',
+  'fleet-status',
+  'task-pipeline',
+  'system-health',
   'quick-actions',
 ]
 

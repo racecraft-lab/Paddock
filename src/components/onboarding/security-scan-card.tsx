@@ -191,8 +191,42 @@ export function SecurityScanCard({ compact = false, autoScan = false }: { compac
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <Loader variant="inline" label="Scanning..." />
+      <div className="py-6 space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="relative shrink-0">
+            <div className="w-10 h-10 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-4 h-4 text-emerald-400" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M8 1v3M8 12v3M1 8h3M12 8h3M3.5 3.5l2 2M10.5 10.5l2 2M3.5 12.5l2-2M10.5 5.5l2-2" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Scanning security...</p>
+            <p className="text-xs text-muted-foreground/60">Checking credentials, network, runtime, and OS</p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          {Object.entries(CATEGORY_LABELS).map(([key, meta], i) => (
+            <div
+              key={key}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary/20 border border-border/10"
+              style={{ animation: `fadeIn 0.3s ease-out ${i * 0.15}s both` }}
+            >
+              <span className="w-5 h-5 rounded bg-surface-2 flex items-center justify-center text-xs font-mono text-muted-foreground/50">
+                {meta.icon}
+              </span>
+              <span className="flex-1 text-xs text-muted-foreground/50">{meta.label}</span>
+              <div className="w-12 h-1 rounded-full bg-border/20 overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500/40 rounded-full animate-[indeterminate_1.5s_infinite_ease-in-out]"
+                  style={{ animationDelay: `${i * 0.2}s` }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     )
   }

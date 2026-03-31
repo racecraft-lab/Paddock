@@ -44,6 +44,7 @@ interface Task {
   github_branch?: string
   github_pr_number?: number
   github_pr_state?: string
+  comment_count?: number
 }
 
 interface Agent {
@@ -1064,6 +1065,14 @@ export function TaskBoardPanel() {
                       )}
                     </span>
                     <div className="flex items-center gap-1.5 shrink-0">
+                      {task.comment_count != null && task.comment_count > 0 && (
+                        <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground/70" title={`${task.comment_count} comment${task.comment_count !== 1 ? 's' : ''}`}>
+                          <svg className="w-3 h-3" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M2 3h12a1 1 0 011 1v7a1 1 0 01-1 1H5l-3 3V4a1 1 0 011-1z" />
+                          </svg>
+                          {task.comment_count}
+                        </span>
+                      )}
                       {task.status !== 'done' && (
                         <DunkItButton taskId={task.id} onDunked={() => fetchData()} />
                       )}
@@ -1271,7 +1280,7 @@ function TaskDetailModal({
       if (!response.ok) throw new Error('Failed to add comment')
       setCommentText('')
       await fetchComments()
-      onUpdate()
+      onUpdate() // refreshes task data (picks up auto-assignment from @mention)
     } catch (error) {
       setCommentError('Failed to add comment')
     }
@@ -1397,19 +1406,53 @@ function TaskDetailModal({
 
   const dialogRef = useFocusTrap(onClose)
 
+  const statusColors: Record<string, string> = {
+    inbox: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/25',
+    assigned: 'bg-blue-500/15 text-blue-400 border-blue-500/25',
+    in_progress: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
+    review: 'bg-purple-500/15 text-purple-400 border-purple-500/25',
+    quality_review: 'bg-purple-500/15 text-purple-400 border-purple-500/25',
+    done: 'bg-green-500/15 text-green-400 border-green-500/25',
+    awaiting_owner: 'bg-orange-500/15 text-orange-400 border-orange-500/25',
+  }
+
+  const priorityBadgeColors: Record<string, string> = {
+    critical: 'bg-red-500/15 text-red-400 border-red-500/25',
+    urgent: 'bg-red-500/15 text-red-400 border-red-500/25',
+    high: 'bg-orange-500/15 text-orange-400 border-orange-500/25',
+    medium: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/25',
+    low: 'bg-green-500/15 text-green-400 border-green-500/25',
+  }
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="task-detail-title" className="bg-card border border-border rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-4">
-            <h3 id="task-detail-title" className="text-xl font-bold text-foreground">{task.title}</h3>
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={() => onEdit(task)} className="text-primary hover:bg-primary/20">
-                {t('edit')}
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="task-detail-title" className="bg-card border border-border rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/30">
+        {/* Header */}
+        <div className="px-6 pt-5 pb-4 border-b border-border/50">
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                {task.ticket_ref && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-mono shrink-0">{task.ticket_ref}</span>
+                )}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${statusColors[task.status] || statusColors.inbox}`}>
+                  {task.status.replace(/_/g, ' ')}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${priorityBadgeColors[task.priority] || priorityBadgeColors.medium}`}>
+                  {t(`priority_${task.priority}` as any)}
+                </span>
+              </div>
+              <h3 id="task-detail-title" className="text-lg font-semibold text-foreground leading-tight">{task.title}</h3>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon-sm" onClick={() => onEdit(task)} className="text-muted-foreground hover:text-foreground" aria-label={t('edit')}>
+                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M11.5 1.5l3 3-9 9H2.5v-3z" /><path d="M9.5 3.5l3 3" /></svg>
               </Button>
               <Button
-                variant="destructive"
-                size="sm"
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-red-400"
+                aria-label={t('delete')}
                 onClick={async () => {
                   if (!confirm(t('deleteTaskConfirm', { title: task.title }))) return
                   try {
@@ -1418,169 +1461,180 @@ function TaskDetailModal({
                       const errorData = await res.json().catch(() => ({ error: 'Failed to delete task' }))
                       throw new Error(errorData.error || 'Failed to delete task')
                     }
-                    // Close modal immediately on successful deletion
-                    // SSE will handle the task.deleted event and remove the task from the UI
                     onClose()
                   } catch (error) {
-                    // Show error to user
                     const errorMessage = error instanceof Error ? error.message : 'Failed to delete task'
                     alert(errorMessage)
-                    // Don't close modal on error
                   }
                 }}
               >
-                {t('delete')}
+                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5.5 4V3a1 1 0 011-1h3a1 1 0 011 1v1M6.5 7v4M9.5 7v4M4.5 4l.5 9a1 1 0 001 1h4a1 1 0 001-1l.5-9" /></svg>
               </Button>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={onClose}
-                aria-label={t('closeTaskDetails')}
-                className="text-xl"
-              >
-                ×
+              <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={t('closeTaskDetails')} className="text-muted-foreground hover:text-foreground">
+                <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
               </Button>
             </div>
           </div>
           {task.description ? (
-            <div className="mb-4">
+            <div className="mt-3 text-sm text-foreground/80">
               <MarkdownRenderer content={task.description} />
             </div>
           ) : (
-            <p className="text-foreground/80 mb-4">{t('noDescription')}</p>
+            <p className="mt-2 text-xs text-muted-foreground/50 italic">{t('noDescription')}</p>
           )}
-          <div className="flex gap-2 mt-4" role="tablist" aria-label={t('taskDetailTabs')}>
+        </div>
+
+        {/* Content */}
+        <div className="px-6 py-4">
+          <div className="flex gap-1.5 mb-4" role="tablist" aria-label={t('taskDetailTabs')}>
             {(['details', 'comments', 'quality'] as const).map(tab => (
-              <Button
+              <button
                 key={tab}
+                type="button"
                 role="tab"
-                size="sm"
-                variant={activeTab === tab ? 'default' : 'secondary'}
                 aria-selected={activeTab === tab}
                 aria-controls={`tabpanel-${tab}`}
                 onClick={() => setActiveTab(tab)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  activeTab === tab
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`}
               >
                 {tab === 'details' ? t('tabDetails') : tab === 'comments' ? t('tabComments') : t('tabQualityReview')}
-              </Button>
+                {tab === 'comments' && comments.length > 0 && (
+                  <span className="ml-1.5 text-[10px] text-muted-foreground/60">{comments.length}</span>
+                )}
+              </button>
             ))}
             {task.metadata?.dispatch_session_id && (
-              <Button
+              <button
+                type="button"
                 role="tab"
-                size="sm"
-                variant={activeTab === 'session' ? 'default' : 'secondary'}
                 aria-selected={activeTab === 'session'}
                 aria-controls="tabpanel-session"
                 onClick={() => setActiveTab('session')}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors inline-flex items-center ${
+                  activeTab === 'session'
+                    ? 'bg-secondary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                }`}
               >
                 {t('tabSession')}
                 {task.status === 'in_progress' && (
                   <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
                 )}
-              </Button>
+              </button>
             )}
           </div>
 
           {activeTab === 'details' && (
-            <div id="tabpanel-details" role="tabpanel" aria-label={t('tabDetails')} className="grid grid-cols-2 gap-4 text-sm mt-4">
-              {task.ticket_ref && (
-                <div>
-                  <span className="text-muted-foreground">{t('ticket')}:</span>
-                  <span className="text-foreground ml-2 font-mono">{task.ticket_ref}</span>
-                </div>
-              )}
-              {resolvedProjectName && (
-                <div>
-                  <span className="text-muted-foreground">{t('project')}:</span>
-                  <span className="text-foreground ml-2">{resolvedProjectName}</span>
-                </div>
-              )}
-              <div>
-                <span className="text-muted-foreground">{t('status')}:</span>
-                <span className="text-foreground ml-2">{task.status}</span>
+            <div id="tabpanel-details" role="tabpanel" aria-label={t('tabDetails')} className="space-y-4">
+              {/* Assignment row */}
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/30 border border-border/30">
+                <span className="text-xs text-muted-foreground shrink-0">{t('assignedTo')}</span>
+                <select
+                  className="flex-1 text-xs bg-card border border-border rounded-md px-2 py-1.5 text-foreground cursor-pointer focus:ring-1 focus:ring-primary/50 focus:border-primary/50 outline-none transition-colors"
+                  value={task.assigned_to || ''}
+                  onChange={async (e) => {
+                    const newAssignee = e.target.value || null
+                    try {
+                      const res = await fetch(`/api/tasks/${task.id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ assigned_to: newAssignee }),
+                      })
+                      if (!res.ok) throw new Error('Failed to assign')
+                      onUpdate()
+                    } catch {
+                      // silently fail — onUpdate will refresh state
+                    }
+                  }}
+                >
+                  <option value="">{t('unassigned')}</option>
+                  {agents.map((agent) => (
+                    <option key={agent.id} value={agent.name}>{agent.name}</option>
+                  ))}
+                </select>
+                {task.assigned_to && <AgentAvatar name={task.assigned_to} size="xs" />}
               </div>
-              <div>
-                <span className="text-muted-foreground">{t('priority')}:</span>
-                <span className="text-foreground ml-2">{t(`priority_${task.priority}` as any)}</span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{t('assignedTo')}:</span>
-                <span className="text-foreground ml-2 inline-flex items-center gap-1.5">
-                  {task.assigned_to ? (
-                    <>
-                      <AgentAvatar name={task.assigned_to} size="xs" />
-                      <span>{task.assigned_to}</span>
-                    </>
-                  ) : (
-                    <span>{t('unassigned')}</span>
-                  )}
-                </span>
-              </div>
-              <div>
-                <span className="text-muted-foreground">{t('created')}:</span>
-                <span className="text-foreground ml-2">{new Date(task.created_at * 1000).toLocaleDateString()}</span>
-              </div>
-              {(task.github_issue_number || task.github_branch || task.github_pr_number) && (
-                <>
-                  <div className="col-span-2 mt-2 pt-2 border-t border-border/50">
-                    <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">GitHub</span>
+
+              {/* Metadata grid */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                {resolvedProjectName && (
+                  <div className="space-y-0.5">
+                    <span className="text-muted-foreground/60 uppercase tracking-wider text-[10px]">{t('project')}</span>
+                    <div className="text-foreground font-medium">{resolvedProjectName}</div>
                   </div>
-                  {task.github_issue_number && task.github_repo && (
-                    <div>
-                      <span className="text-muted-foreground">{t('issue')}:</span>
+                )}
+                <div className="space-y-0.5">
+                  <span className="text-muted-foreground/60 uppercase tracking-wider text-[10px]">{t('created')}</span>
+                  <div className="text-foreground">{new Date(task.created_at * 1000).toLocaleDateString()}</div>
+                </div>
+                {task.due_date && (
+                  <div className="space-y-0.5">
+                    <span className="text-muted-foreground/60 uppercase tracking-wider text-[10px]">Due</span>
+                    <div className="text-foreground">{new Date(task.due_date * 1000).toLocaleDateString()}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* GitHub section */}
+              {(task.github_issue_number || task.github_branch || task.github_pr_number) && (
+                <div className="pt-3 border-t border-border/30 space-y-2">
+                  <span className="text-muted-foreground/60 uppercase tracking-wider text-[10px]">GitHub</span>
+                  <div className="flex flex-wrap gap-2">
+                    {task.github_issue_number && task.github_repo && (
                       <a
                         href={`https://github.com/${task.github_repo}/issues/${task.github_issue_number}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline ml-2 font-mono"
+                        className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-secondary/50 border border-border/30 text-foreground/80 hover:text-primary hover:border-primary/30 transition-colors font-mono"
                       >
-                        {task.github_repo}#{task.github_issue_number}
+                        <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                        #{task.github_issue_number}
                       </a>
-                    </div>
-                  )}
-                  {task.github_branch && (
-                    <div>
-                      <span className="text-muted-foreground">{t('branch')}:</span>
-                      <span className="text-foreground ml-2 font-mono text-xs">{task.github_branch}</span>
-                    </div>
-                  )}
-                  {task.github_pr_number && task.github_repo && (
-                    <div>
-                      <span className="text-muted-foreground">{t('pr')}:</span>
+                    )}
+                    {task.github_pr_number && task.github_repo && (
                       <a
                         href={`https://github.com/${task.github_repo}/pull/${task.github_pr_number}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`ml-2 font-mono hover:underline ${
-                          task.github_pr_state === 'merged' ? 'text-purple-400' :
-                          task.github_pr_state === 'closed' ? 'text-red-400' :
-                          'text-green-400'
+                        className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border font-mono transition-colors ${
+                          task.github_pr_state === 'merged' ? 'bg-purple-500/10 border-purple-500/25 text-purple-400' :
+                          task.github_pr_state === 'closed' ? 'bg-red-500/10 border-red-500/25 text-red-400' :
+                          'bg-green-500/10 border-green-500/25 text-green-400'
                         }`}
                       >
-                        #{task.github_pr_number} ({task.github_pr_state || 'open'})
+                        <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor"><path d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.251 2.251 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.251 2.251 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"/></svg>
+                        PR #{task.github_pr_number}
                       </a>
-                    </div>
-                  )}
-                </>
-              )}
-              {task.metadata?.dispatch_session_id && (
-                <>
-                  <div className="col-span-2 mt-2 pt-2 border-t border-border/50">
-                    <span className="text-muted-foreground text-xs font-medium uppercase tracking-wider">Agent Session</span>
-                  </div>
-                  <div className="col-span-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setActiveTab('session')}
-                      className="font-mono text-xs"
-                    >
-                      View Session {task.metadata.dispatch_session_id.slice(0, 8)}...
-                    </Button>
-                    {task.status === 'in_progress' && (
-                      <span className="ml-2 text-xs text-green-400 animate-pulse">{t('live')}</span>
+                    )}
+                    {task.github_branch && (
+                      <span className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md bg-secondary/50 border border-border/30 text-foreground/60 font-mono">
+                        <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor"><path d="M11.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122V6A2.5 2.5 0 0110 8.5H6a1 1 0 00-1 1v1.128a2.251 2.251 0 11-1.5 0V5.372a2.25 2.25 0 111.5 0v1.836A2.492 2.492 0 016 7h4a1 1 0 001-1v-.628A2.25 2.25 0 019.5 3.25zM4.25 12a.75.75 0 100 1.5.75.75 0 000-1.5zM3.5 3.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0z"/></svg>
+                        {task.github_branch}
+                      </span>
                     )}
                   </div>
-                </>
+                </div>
+              )}
+
+              {/* Agent session */}
+              {task.metadata?.dispatch_session_id && (
+                <div className="pt-3 border-t border-border/30">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setActiveTab('session')}
+                    className="font-mono text-xs"
+                  >
+                    View Session {task.metadata.dispatch_session_id.slice(0, 8)}...
+                    {task.status === 'in_progress' && (
+                      <span className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
+                    )}
+                  </Button>
+                </div>
               )}
             </div>
           )}

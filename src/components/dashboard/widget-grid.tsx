@@ -16,8 +16,18 @@ import { GithubSignalWidget } from './widgets/github-signal-widget'
 import { SecurityAuditWidget } from './widgets/security-audit-widget'
 import { MaintenanceWidget } from './widgets/maintenance-widget'
 import { QuickActionsWidget } from './widgets/quick-actions-widget'
+import { BriefingBarWidget } from './widgets/briefing-bar-widget'
+import { ActivityTimelineWidget } from './widgets/activity-timeline-widget'
+import { FleetStatusWidget } from './widgets/fleet-status-widget'
+import { TaskPipelineWidget } from './widgets/task-pipeline-widget'
+import { SystemHealthWidget } from './widgets/system-health-widget'
 
 const WIDGET_COMPONENTS: Record<string, React.ComponentType<{ data: DashboardData }>> = {
+  'briefing-bar': BriefingBarWidget,
+  'activity-timeline': ActivityTimelineWidget,
+  'fleet-status': FleetStatusWidget,
+  'task-pipeline': TaskPipelineWidget,
+  'system-health': SystemHealthWidget,
   'metric-cards': MetricCardsWidget,
   'runtime-health': RuntimeHealthWidget,
   'gateway-health': GatewayHealthWidget,

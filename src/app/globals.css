@@ -335,6 +335,12 @@
     100% { background-position: 200% 0; }
   }
 
+  @keyframes indeterminate {
+    0% { transform: translateX(-100%); width: 40%; }
+    50% { width: 60%; }
+    100% { transform: translateX(250%); width: 40%; }
+  }
+
   /* Slide-in for panels */
   .slide-in-right {
     animation: slideInRight 0.2s ease-out;

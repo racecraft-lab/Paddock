@@ -5291,6 +5291,65 @@
         }
       }
     },
+    "/api/pty/attach": {
+      "get": {
+        "tags": ["API"],
+        "summary": "List active PTY sessions and tmux sessions",
+        "operationId": "get_api_pty_attach",
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["API"],
+        "summary": "Check PTY support for a session and get WebSocket path",
+        "operationId": "post_api_pty_attach",
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Unauthorized" }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["sessionId", "kind"],
+                "properties": {
+                  "sessionId": { "type": "string" },
+                  "kind": { "type": "string" },
+                  "mode": { "type": "string", "enum": ["readonly", "interactive"] }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pty/setup": {
+      "get": {
+        "tags": ["API"],
+        "summary": "Check terminal prerequisites (tmux availability)",
+        "operationId": "get_api_pty_setup",
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "description": "Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["API"],
+        "summary": "Install tmux (opt-in, admin only)",
+        "operationId": "post_api_pty_setup",
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "description": "Bad request" },
+          "401": { "description": "Unauthorized" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
     "/api/projects": {
       "get": {
         "tags": [
