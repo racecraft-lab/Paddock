@@ -69,7 +69,13 @@
     "creatingAdminAccount": "正在创建管理员账户",
     "configuringSession": "正在配置会话",
     "launchingDashboard": "正在启动仪表板",
-    "usernameHint": "仅允许小写字母、数字、点、连字符和下划线"
+    "usernameHint": "仅允许小写字母、数字、点、连字符和下划线",
+    "gatewayUrl": "网关 URL",
+    "gatewayUrlPlaceholder": "ws://127.0.0.1:18789",
+    "testConnection": "测试连接",
+    "connectionSuccess": "连接成功",
+    "connectionFailed": "连接失败",
+    "advancedSettings": "高级设置"
   },
   "nav": {
     "overview": "概览",
@@ -726,6 +732,7 @@
     "tabPipelines": "管道",
     "tabFleet": "集群",
     "selectAgent": "选择代理...",
+    "noAgentsRegistered": "暂无注册的代理",
     "commandPlaceholder": "向代理发送命令或消息...",
     "send": "发送",
     "noTemplates": "暂无工作流模板",
