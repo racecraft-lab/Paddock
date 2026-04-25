@@ -4,15 +4,15 @@ Open-source dashboard for AI agent orchestration. Manage agent fleets, track tas
 
 **Stack**: Next.js 16, React 19, TypeScript 5, SQLite (better-sqlite3), Tailwind CSS 3, Zustand, pnpm
 
-## HAL Deployment Notes
+## OpenClaw Node Deployment Notes
 
-- These notes apply to HAL Mission Control worktrees: `<live-worktree>` (live `main`) and `<dev-worktree>` (dev branch).
-- HAL Mission Control should run from `racecraft-lab/mission-control` `main`.
-- Active HAL systemd unit: `mission-control.service`
-- Active HAL startup wrapper: `~/.local/bin/mc-start.sh`
+- These notes apply to OpenClaw node Mission Control worktrees: `<live-worktree>` (live `main`) and `<dev-worktree>` (dev branch).
+- Mission Control should run from `racecraft-lab/mission-control` `main`.
+- Active systemd unit: `mission-control.service`
+- Active startup wrapper: `~/.local/bin/mc-start.sh`
 - The wrapper resolves `AUTH_PASS`, `API_KEY`, `AUTH_SECRET`, `OPENCLAW_GATEWAY_TOKEN`, and `GITHUB_TOKEN` from 1Password at startup.
-- Active HAL service worktree: `<live-worktree>` on `main`; `<dev-worktree>` is the dev worktree on `<feature-branch>`.
-- OpenClaw is a separate deploy surface on HAL. The gateway should run from `<openclaw-release-symlink>`, which should point at the clean tagged HAL release tree, not from a Homebrew global package path.
+- Active service worktree: `<live-worktree>` on `main`; `<dev-worktree>` is the dev worktree on `<feature-branch>`.
+- OpenClaw is a separate deploy surface on the operator node. The gateway should run from `<openclaw-release-symlink>`, which should point at the clean tagged release tree, not from a Homebrew global package path.
 - If you change startup assumptions, verify both:
   - `systemctl --user status --no-pager mission-control.service`
   - `systemctl --user status --no-pager openclaw-gateway.service`
