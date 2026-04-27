@@ -4,13 +4,22 @@ import { access, readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = process.argv[2] || path.join(process.cwd(), 'test-results')
-const expectedMetadata = Number.parseInt(process.env.SPEC002_ARGOS_EXPECTED_METADATA || '9', 10)
-const expectedTests = Number.parseInt(process.env.SPEC002_ARGOS_EXPECTED_TESTS || '4', 10)
+const expectedMetadata = Number.parseInt(process.env.SPEC002_ARGOS_EXPECTED_METADATA || '11', 10)
+const expectedTests = Number.parseInt(process.env.SPEC002_ARGOS_EXPECTED_TESTS || '5', 10)
 const requiredTestTag = process.env.SPEC002_ARGOS_REQUIRED_TEST_TAG || '@spec-002'
-const requiredScreenshotTags = (process.env.SPEC002_ARGOS_REQUIRED_SCREENSHOT_TAGS || 'spec-002,product-line-switcher')
+const requiredScreenshotTags = (process.env.SPEC002_ARGOS_REQUIRED_SCREENSHOT_TAGS || 'spec-002')
   .split(',')
   .map((tag) => tag.trim())
   .filter(Boolean)
+const requiredDomainCounts = (process.env.SPEC002_ARGOS_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2')
+  .split(',')
+  .map((entry) => entry.trim())
+  .filter(Boolean)
+  .map((entry) => {
+    const [tag, rawCount] = entry.split(':')
+    return { tag: tag?.trim(), count: Number.parseInt(rawCount, 10) }
+  })
+  .filter((entry) => entry.tag && Number.isFinite(entry.count) && entry.count > 0)
 
 async function pathExists(filePath) {
   try {
@@ -85,6 +94,7 @@ if (!await pathExists(root)) {
 const metadataFiles = await collectMetadataFiles(root)
 const failures = []
 const uniqueTests = new Set()
+const domainCounts = new Map()
 
 for (const filePath of metadataFiles) {
   const screenshotPath = filePath.slice(0, -'.argos.json'.length)
@@ -100,9 +110,23 @@ for (const filePath of metadataFiles) {
     continue
   }
 
+  if (
+    metadata.sdk?.name !== '@argos-ci/playwright'
+    || metadata.automationLibrary?.name !== '@playwright/test'
+  ) {
+    continue
+  }
+
   failures.push(...validateMetadata(metadata, filePath))
   if (Array.isArray(metadata.test?.titlePath)) {
     uniqueTests.add(metadata.test.titlePath.join(' > '))
+  }
+  if (Array.isArray(metadata.tags)) {
+    for (const { tag } of requiredDomainCounts) {
+      if (metadata.tags.includes(tag)) {
+        domainCounts.set(tag, (domainCounts.get(tag) || 0) + 1)
+      }
+    }
   }
 }
 
@@ -111,6 +135,12 @@ if (metadataFiles.length < expectedMetadata) {
 }
 if (uniqueTests.size < expectedTests) {
   failures.push(`expected at least ${expectedTests} unique Argos-backed Playwright tests, found ${uniqueTests.size}`)
+}
+for (const { tag, count } of requiredDomainCounts) {
+  const actual = domainCounts.get(tag) || 0
+  if (actual < count) {
+    failures.push(`expected at least ${count} Argos screenshot metadata files tagged ${tag}, found ${actual}`)
+  }
 }
 
 if (failures.length > 0) {

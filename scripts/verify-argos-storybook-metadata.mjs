@@ -4,12 +4,21 @@ import { access, readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = process.argv[2] || path.join(process.cwd(), 'screenshots')
-const expectedMetadata = Number.parseInt(process.env.SPEC002_ARGOS_STORYBOOK_EXPECTED_METADATA || '16', 10)
-const expectedStories = Number.parseInt(process.env.SPEC002_ARGOS_STORYBOOK_EXPECTED_STORIES || '8', 10)
+const expectedMetadata = Number.parseInt(process.env.SPEC002_ARGOS_STORYBOOK_EXPECTED_METADATA || '18', 10)
+const expectedStories = Number.parseInt(process.env.SPEC002_ARGOS_STORYBOOK_EXPECTED_STORIES || '10', 10)
 const requiredStoryTags = (process.env.SPEC002_ARGOS_STORYBOOK_REQUIRED_TAGS || 'spec-002,visual')
   .split(',')
   .map((tag) => tag.trim())
   .filter(Boolean)
+const requiredDomainStoryCounts = (process.env.SPEC002_ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS || 'product-line-switcher:8,feature-flag-admin:2')
+  .split(',')
+  .map((entry) => entry.trim())
+  .filter(Boolean)
+  .map((entry) => {
+    const [tag, rawCount] = entry.split(':')
+    return { tag: tag?.trim(), count: Number.parseInt(rawCount, 10) }
+  })
+  .filter((entry) => entry.tag && Number.isFinite(entry.count) && entry.count > 0)
 
 async function pathExists(filePath) {
   try {
@@ -68,6 +77,7 @@ const metadataFiles = await collectMetadataFiles(root)
 const failures = []
 const uniqueStories = new Set()
 const uniqueStoriesWithTestMetadata = new Set()
+const domainStories = new Map()
 
 for (const filePath of metadataFiles) {
   const screenshotPath = filePath.slice(0, -'.argos.json'.length)
@@ -83,9 +93,25 @@ for (const filePath of metadataFiles) {
     continue
   }
 
+  if (
+    metadata.sdk?.name !== '@argos-ci/storybook'
+    || metadata.automationLibrary?.name !== '@storybook/addon-vitest'
+  ) {
+    continue
+  }
+
   failures.push(...validateMetadata(metadata, filePath))
   if (typeof metadata.story?.id === 'string') {
     uniqueStories.add(metadata.story.id)
+    if (Array.isArray(metadata.story?.tags)) {
+      for (const { tag } of requiredDomainStoryCounts) {
+        if (metadata.story.tags.includes(tag)) {
+          const stories = domainStories.get(tag) || new Set()
+          stories.add(metadata.story.id)
+          domainStories.set(tag, stories)
+        }
+      }
+    }
   }
   if (
     typeof metadata.story?.id === 'string'
@@ -105,6 +131,12 @@ if (uniqueStories.size < expectedStories) {
 }
 if (uniqueStoriesWithTestMetadata.size < expectedStories) {
   failures.push(`expected at least ${expectedStories} Storybook stories with test/source metadata, found ${uniqueStoriesWithTestMetadata.size}`)
+}
+for (const { tag, count } of requiredDomainStoryCounts) {
+  const actual = domainStories.get(tag)?.size || 0
+  if (actual < count) {
+    failures.push(`expected at least ${count} Argos-backed Storybook stories tagged ${tag}, found ${actual}`)
+  }
 }
 
 if (failures.length > 0) {

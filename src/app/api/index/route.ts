@@ -109,6 +109,9 @@ const endpoints: Endpoint[] = [
 
   // ── Settings ──────────────────────────────────────
   { path: '/api/settings', methods: ['GET', 'PATCH'], description: 'System settings', tag: 'Settings', auth: 'viewer/admin' },
+  { path: '/api/feature-flags', methods: ['GET'], description: 'Feature flag registry and evaluated workspace state', tag: 'Settings', auth: 'admin' },
+  { path: '/api/feature-flags/:key', methods: ['PATCH'], description: 'Update one known feature flag for one workspace', tag: 'Settings', auth: 'admin' },
+  { path: '/api/feature-flags/:key/preflight', methods: ['POST'], description: 'Check whether a feature flag can be enabled', tag: 'Settings', auth: 'admin' },
   { path: '/api/integrations', methods: ['GET', 'PATCH'], description: 'Integration configuration', tag: 'Settings', auth: 'viewer/admin' },
   { path: '/api/skills', methods: ['GET', 'POST', 'PUT', 'DELETE'], description: 'Installed skills index and disk CRUD', tag: 'Settings', auth: 'viewer/operator' },
 
