@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
+import { createArgosReporterOptions } from '@argos-ci/playwright/reporter'
+
+const uploadToArgos = process.env.CI === 'true'
+const recordArgosTraces = process.env.SPEC002_ARGOS_TRACES === '1'
 
 export default defineConfig({
   testDir: 'tests',
@@ -12,10 +16,19 @@ export default defineConfig({
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report/docker' }],
+    [
+      '@argos-ci/playwright/reporter',
+      createArgosReporterOptions({
+        uploadToArgos,
+        buildName: 'spec-002-playwright',
+      }),
+    ],
   ],
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://127.0.0.1:3301',
-    trace: 'retain-on-failure',
+    bypassCSP: true,
+    screenshot: 'only-on-failure',
+    trace: recordArgosTraces ? 'on' : 'retain-on-failure',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },

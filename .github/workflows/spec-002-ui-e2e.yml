@@ -3,6 +3,31 @@ name: SPEC-002 UI E2E
 on:
   pull_request:
     paths:
+      - '.github/workflows/spec-002-ui-e2e.yml'
+      - 'src/components/layout/**'
+      - 'src/components/ui/theme-selector.tsx'
+      - 'src/store/**'
+      - 'src/types/product-line.ts'
+      - 'src/lib/feature-flags.ts'
+      - 'src/lib/workspaces.ts'
+      - 'src/app/api/**'
+      - 'tests/product-line-*.spec.ts'
+      - 'tests/workspace-switcher-*.spec.ts'
+      - 'tests/helpers.ts'
+      - 'scripts/e2e-docker.sh'
+      - 'scripts/seed-e2e-workspace-switcher.cjs'
+      - 'playwright*.config.ts'
+      - 'Dockerfile'
+      - 'docker-entrypoint.sh'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'specs/002-product-line-switcher/**'
+      - '.specify/memory/constitution.md'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/spec-002-ui-e2e.yml'
       - 'src/components/layout/**'
       - 'src/components/ui/theme-selector.tsx'
       - 'src/store/**'
@@ -28,6 +53,7 @@ env:
 
 permissions:
   contents: read
+  actions: read
   issues: write
   pull-requests: write
 
@@ -39,6 +65,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -61,6 +89,10 @@ jobs:
         id: e2e
         continue-on-error: true
         env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SPEC002_ARGOS_SCREENSHOTS: '1'
+          SPEC002_ARGOS_TRACES: '1'
           SPEC002_SCREENSHOTS: '1'
         run: pnpm test:e2e:docker
 

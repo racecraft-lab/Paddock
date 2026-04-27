@@ -71,9 +71,10 @@ through the API.
 
 1. Confirm `tests/product-line-switcher-ui.spec.ts` attaches screenshots for Facility task-board state, scope menu options, selected Product Line task-board state, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile menus, and cross-tab Product Line sync.
 2. Confirm `pnpm test:visual:storybook` covers the focused SPEC-002 component and shell states through Storybook + Argos: switcher default/menu/loading/error states, desktop header integration, 320/375/390 px mobile scope menus, Facility task-board shell, and selected Product Line task-board shell.
-3. Review screenshots through the Argos Storybook build and GitHub Actions artifacts before updating the PR branch. Local generated screenshots live under ignored `screenshots/` or `test-results/` paths and must not be committed by default.
-4. If e2e output, Storybook visual output, Argos diffs, or screenshots show a user-visible defect, clipped or overlapping controls, wrong seeded data, inaccessible controls, or a broken Product Line journey, remediate the defect and rerun the relevant command before pushing.
-5. Do not update or mark the PR ready with known UI user journey bugs.
+3. Confirm the Docker-backed SPEC-002 Playwright workflow uploads named journey screenshots and traces through the Argos Playwright reporter on pull requests and `main` pushes so the Argos Tests/debugging view contains the real user journey evidence and maintains a baseline, not only the Storybook component snapshots.
+4. Review screenshots through the Argos Storybook build, Argos Playwright test run, and GitHub Actions artifacts before updating the PR branch. Local generated screenshots live under ignored `screenshots/` or `test-results/` paths and must not be committed by default.
+5. If e2e output, Storybook visual output, Argos diffs, Argos test evidence, or screenshots show a user-visible defect, clipped or overlapping controls, wrong seeded data, inaccessible controls, or a broken Product Line journey, remediate the defect and rerun the relevant command before pushing.
+6. Do not update or mark the PR ready with known UI user journey bugs.
 
 ## State-Management Check
 

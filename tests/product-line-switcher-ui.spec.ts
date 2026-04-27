@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test'
+import { argosScreenshot } from '@argos-ci/playwright'
 import {
   dismissOnboardingForE2E,
   loginAsE2EAdmin,
@@ -16,15 +17,25 @@ function escapeRegExp(input: string) {
 }
 
 async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: string) {
-  if (process.env.SPEC002_SCREENSHOTS !== '1') return
-  const dir = process.env.SPEC002_SCREENSHOT_DIR || path.join(process.cwd(), 'test-results', 'spec-002-screenshots')
-  const screenshotPath = path.join(dir, `${name.replace(/[^a-z0-9-]+/gi, '-')}.png`)
-  await fs.mkdir(dir, { recursive: true })
-  await page.screenshot({ path: screenshotPath, fullPage: true })
-  await testInfo.attach(`spec-002-${name}`, {
-    path: screenshotPath,
-    contentType: 'image/png',
-  })
+  const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
+
+  if (process.env.SPEC002_SCREENSHOTS === '1') {
+    const dir = process.env.SPEC002_SCREENSHOT_DIR || path.join(process.cwd(), 'test-results', 'spec-002-screenshots')
+    const screenshotPath = path.join(dir, `${normalizedName}.png`)
+    await fs.mkdir(dir, { recursive: true })
+    await page.screenshot({ path: screenshotPath, fullPage: true })
+    await testInfo.attach(`spec-002-${name}`, {
+      path: screenshotPath,
+      contentType: 'image/png',
+    })
+  }
+
+  if (process.env.SPEC002_ARGOS_SCREENSHOTS === '1') {
+    await argosScreenshot(page, `spec-002-${normalizedName}`, {
+      fullPage: true,
+      tag: ['spec-002', 'product-line-switcher'],
+    })
+  }
 }
 
 async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof loginAsE2EAdmin>[1]) {
