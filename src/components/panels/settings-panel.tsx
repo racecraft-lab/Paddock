@@ -8,6 +8,7 @@ import { useMissionControl } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
 import { SecurityScanCard } from '@/components/onboarding/security-scan-card'
 import { AgentRuntimesSection } from '@/components/settings/agent-runtimes-section'
+import { FeatureFlagsSection } from '@/components/settings/feature-flags-section'
 import { Loader } from '@/components/ui/loader'
 import { clearOnboardingDismissedThisSession, clearOnboardingReplayFromStart } from '@/lib/onboarding-session'
 import { resolveCoordinatorDeliveryTarget, type CoordinatorAgentRecord } from '@/lib/coordinator-routing'
@@ -81,10 +82,11 @@ const categoryLabels: Record<string, { label: string; icon: string; description:
   chat: { label: 'Chat', icon: '💬', description: 'Coordinator routing and chat behavior settings' },
   gateway: { label: 'Gateway', icon: '🔌', description: 'OpenClaw gateway connection settings' },
   profiles: { label: 'Security Profiles', icon: 'shield', description: 'Hook profile controls security scanning strictness' },
+  featureFlags: { label: 'Feature Flags', icon: 'flags', description: 'Roadmap-scoped rollout controls' },
   custom: { label: 'Custom', icon: '🔧', description: 'User-defined settings' },
 }
 
-const categoryOrder = ['general', 'security', 'profiles', 'retention', 'chat', 'gateway', 'custom']
+const categoryOrder = ['general', 'security', 'profiles', 'featureFlags', 'retention', 'chat', 'gateway', 'custom']
 
 // Dropdown options for subscription plan settings
 const subscriptionDropdowns: Record<string, { label: string; value: string }[]> = {
@@ -399,7 +401,7 @@ export function SettingsPanel() {
     )
   }
 
-  const categories = categoryOrder.filter(c => c === 'security' || c === 'profiles' || (grouped[c]?.length > 0))
+  const categories = categoryOrder.filter(c => c === 'security' || c === 'profiles' || c === 'featureFlags' || (grouped[c]?.length > 0))
 
   return (
     <div className="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
@@ -855,9 +857,13 @@ export function SettingsPanel() {
         <InterfaceModeSelector />
       )}
 
+      {activeCategory === 'featureFlags' && (
+        <FeatureFlagsSection showFeedback={showFeedback} />
+      )}
+
       {/* Settings list for active category */}
       <div className="space-y-3">
-        {activeCategory !== 'security' && (grouped[activeCategory] || []).map(setting => {
+        {activeCategory !== 'security' && activeCategory !== 'featureFlags' && (grouped[activeCategory] || []).map(setting => {
           const currentValue = edits[setting.key] ?? setting.value
           const isChanged = edits[setting.key] !== undefined && edits[setting.key] !== setting.value
           const isBooleanish = setting.value === 'true' || setting.value === 'false'
