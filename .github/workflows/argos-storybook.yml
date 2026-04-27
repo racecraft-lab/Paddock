@@ -38,6 +38,9 @@ on:
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 permissions:
   contents: read
   actions: read
@@ -55,7 +58,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6
+        uses: pnpm/action-setup@v4
         with:
           version: 10
 
