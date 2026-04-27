@@ -21,22 +21,24 @@ vi.mock('@/lib/auth', () => ({
 }))
 
 vi.mock('better-sqlite3', () => ({
-  default: vi.fn((dbPath?: string) => ({
-    prepare: (query: string) => ({
-      get: (...args: any[]) => {
-        if (query.includes('sqlite_master') && args[0] === 'message') return { name: 'message' }
-        if (query.includes('sqlite_master') && args[0] === 'part') return mockHasPart ? { name: 'part' } : undefined
-        return undefined
-      },
-      all: (...args: any[]) => {
-        const name = dbPath ? String(dbPath).split('/').pop() || '' : ''
-        if (query.includes('FROM message')) return dbRowsByName[name] || []
-        if (query.includes('FROM part')) return partRowsByMessageId[args[0]] || []
-        return []
-      },
-    }),
-    close: vi.fn(),
-  })),
+  default: vi.fn(function MockDatabase(dbPath?: string) {
+    return {
+      prepare: (query: string) => ({
+        get: (...args: any[]) => {
+          if (query.includes('sqlite_master') && args[0] === 'message') return { name: 'message' }
+          if (query.includes('sqlite_master') && args[0] === 'part') return mockHasPart ? { name: 'part' } : undefined
+          return undefined
+        },
+        all: (...args: any[]) => {
+          const name = dbPath ? String(dbPath).split('/').pop() || '' : ''
+          if (query.includes('FROM message')) return dbRowsByName[name] || []
+          if (query.includes('FROM part')) return partRowsByMessageId[args[0]] || []
+          return []
+        },
+      }),
+      close: vi.fn(),
+    }
+  }),
 }))
 
 describe('OpenCode transcript helper', () => {

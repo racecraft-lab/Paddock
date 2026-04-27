@@ -1,0 +1,87 @@
+name: Argos Storybook Visuals
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/argos-storybook.yml'
+      - '.storybook/**'
+      - 'src/**/*.stories.tsx'
+      - 'src/components/layout/**'
+      - 'src/components/panels/task-board-panel.tsx'
+      - 'src/components/ui/**'
+      - 'src/store/**'
+      - 'src/types/product-line.ts'
+      - 'src/lib/feature-flags.ts'
+      - 'messages/en.json'
+      - 'src/app/globals.css'
+      - 'tailwind.config.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vitest.storybook.config.ts'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/argos-storybook.yml'
+      - '.storybook/**'
+      - 'src/**/*.stories.tsx'
+      - 'src/components/layout/**'
+      - 'src/components/panels/task-board-panel.tsx'
+      - 'src/components/ui/**'
+      - 'src/store/**'
+      - 'src/types/product-line.ts'
+      - 'src/lib/feature-flags.ts'
+      - 'messages/en.json'
+      - 'src/app/globals.css'
+      - 'tailwind.config.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vitest.storybook.config.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+jobs:
+  argos-storybook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Storybook visual tests
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+        run: pnpm test:visual:storybook
+
+      - name: Upload Storybook visual screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-argos-screenshots
+          path: screenshots/
+          if-no-files-found: ignore
+          retention-days: 14

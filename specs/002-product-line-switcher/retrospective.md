@@ -30,6 +30,7 @@
 - Initial GitHub PR review check found no human comments and no review threads.
 - The screenshot-drift bot reminder was remediated by triggering the canonical `run-visual-diff` workflow; visual diff passed, so no screenshot baseline commit was needed.
 - Final GitHub check poll passed for CodeQL, Screenshot Drift Check, visual diff, and quality-gate.
+- Storybook + Argos follow-up coverage replaces committed SPEC-002 PNGs for focused component and shell visual review while preserving Docker-backed Playwright coverage for real user journey behavior.
 
 ## What Worked
 
@@ -48,3 +49,4 @@
 - Keep the roadmap PR-merge caveat until PR #16 is reviewed and merged.
 - Human review is still required before marking the PR ready for merge.
 - Do not expand SPEC-002 into multi-facility tenants, product-line skill ownership, session/transcript ownership, or tenant-routed gateway selection; those remain deferred to the documented V2 roadmap boundaries.
+- Do not commit generated visual screenshots by default. Use Argos, Playwright artifacts, and SPEC-002A archive policy for durable review provenance.

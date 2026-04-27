@@ -4,6 +4,7 @@ node_modules/
 # Next.js
 .next/
 out/
+storybook-static/
 
 # Production
 build/
@@ -42,6 +43,7 @@ aegis/
 # Playwright
 test-results/
 playwright-report/
+screenshots/
 .tmp/
 .playwright-mcp/
 

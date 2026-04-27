@@ -25,15 +25,15 @@ A maintainer can merge a completed feature and run a documented archive flow tha
 
 ### User Story 2 - Keep Human Screenshot Review Without Repository Bloat (Priority: P1)
 
-A reviewer can inspect the screenshots required for UI journey review from the PR description or CI artifacts, while long-lived repository history keeps only curated evidence summaries or intentionally retained images.
+A reviewer can inspect the screenshots required for UI journey review from Argos, the PR description, or CI artifacts, while long-lived repository history keeps only curated evidence summaries or intentionally retained images.
 
 **Why this priority**: Human-in-the-loop screenshot review is now a constitutional quality gate, but committed screenshots should be the exception rather than the only way to preserve reviewability.
 
-**Independent Test**: Run the SPEC-002 Playwright journey in CI and verify the PR evidence points to screenshots or an artifact bundle, while a guard reports whether committed screenshots exceed the approved policy.
+**Independent Test**: Run the SPEC-002 Playwright journey and Storybook visual suite in CI and verify the PR evidence points to Argos builds or artifact bundles, while a guard reports whether committed screenshots exceed the approved policy.
 
 **Acceptance Scenarios**:
 
-1. **Given** a PR with new UI journey tests, **When** CI completes, **Then** the PR description includes a screenshot review section with links to the relevant images or artifact bundle.
+1. **Given** a PR with new UI journey tests, **When** CI completes, **Then** the PR description includes a screenshot review section with links to the relevant Argos build, images, or artifact bundle.
 2. **Given** `specs/**/screenshots` contains binary screenshots above the approved count or size cap, **When** the repository guard runs, **Then** it fails with the offending files and remediation instructions.
 3. **Given** a small curated screenshot set has an approved manifest, **When** the repository guard runs, **Then** it allows those files and records why they are permanent evidence.
 
@@ -74,6 +74,7 @@ A SpecKit executor preparing SPEC-003 or any later spec can follow documented co
 - **FR-006**: The repository MUST define count and size limits for committed screenshot evidence under `specs/**/screenshots`.
 - **FR-007**: CI MUST include a guard that fails when committed screenshots exceed the approved policy or lack a manifest/allowlist.
 - **FR-008**: PR evidence requirements MUST include screenshot links or artifact bundle links for every new or changed UI journey covered by Playwright.
+- **FR-015**: Storybook + Argos SHOULD be used for focused component and shell visual states touched by specs so generated screenshots do not need to be committed to source control.
 - **FR-009**: The constitution MUST be updated to mandate archive/evidence retention discipline for spec artifacts, screenshots, and post-merge memory.
 - **FR-010**: SpecKit workflow templates or project workflow docs MUST require the archive/evidence policy before later feature specs are opened or updated.
 - **FR-011**: The implementation MUST include a local and CI-runnable verification path for the archive guard and any adopted archive command.

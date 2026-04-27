@@ -25,6 +25,9 @@
     "test:e2e:openclaw:local": "pnpm run verify:node && E2E_GATEWAY_EXPECTED=0 playwright test -c playwright.openclaw.local.config.ts",
     "test:e2e:openclaw:gateway": "pnpm run verify:node && E2E_GATEWAY_EXPECTED=1 playwright test -c playwright.openclaw.gateway.config.ts",
     "test:e2e:openclaw": "pnpm test:e2e:openclaw:local && pnpm test:e2e:openclaw:gateway",
+    "storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 storybook dev --host 127.0.0.1 --port 6006",
+    "build-storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
+    "test:visual:storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --config vitest.storybook.config.ts",
     "test:all": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e",
     "quality:gate": "pnpm test:all",
     "screenshots:capture": "node scripts/capture-screenshots.mjs",
@@ -68,7 +71,10 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@argos-ci/storybook": "^5.3.2",
     "@playwright/test": "^1.51.0",
+    "@storybook/addon-vitest": "^10.3.5",
+    "@storybook/nextjs-vite": "^10.3.5",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
@@ -80,7 +86,9 @@
     "@types/react-dom": "^19.0.3",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/browser": "^4.1.5",
+    "@vitest/browser-playwright": "^4.1.5",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint-import-resolver-typescript": "3.10.1",
     "eslint-plugin-import": "2.32.0",
     "jsdom": "^26.0.0",
@@ -88,9 +96,11 @@
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",
     "safe-regex": "^2.1.1",
+    "storybook": "^10.3.5",
     "typescript-eslint": "8.54.0",
+    "vite": "^7.3.2",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^2.1.5"
+    "vitest": "^4.1.5"
   },
   "engines": {
     "node": ">=22"

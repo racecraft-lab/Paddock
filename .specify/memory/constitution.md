@@ -320,6 +320,10 @@ Operationalized as:
   loop review. Required screenshots cover the important before, during, and
   after states, including responsive states when mobile or narrow layouts are
   part of the acceptance criteria.
+- When component-level or shell-level visual states can be represented in
+  Storybook, those states SHOULD be covered by Storybook visual tests and
+  uploaded to Argos for pull-request review. Generated screenshots remain CI
+  artifacts and MUST NOT be committed to source control by default.
 - Before a PR is updated or opened, an agent MUST review failing e2e output
   and attached screenshots. Failing tests, visible defects, clipped or
   overlapping controls, wrong data, inaccessible controls, and broken user
@@ -332,7 +336,9 @@ Operationalized as:
   ignored when screenshots show a user-visible defect in the changed journey.
 
 Compliance evidence names the Playwright spec files, the Docker or local app
-command used, and where screenshot artifacts are stored for reviewer access.
+command used, the Storybook/Argos visual build when applicable, and where
+screenshot artifacts are stored for reviewer access. Committed binary
+screenshots require an explicit manifest-backed exception.
 
 ## Tech Stack Constraints
 
@@ -532,7 +538,8 @@ Compliance checkpoints:
 - Every PR: `pnpm test:all` green, constitution principles self-checked
   by PR description, and applicable extensions (`speckit.verify`,
   `speckit.cleanup`, `speckit.review`) run where the extension hook
-  fires. UI PRs also include real Playwright journey results, screenshot
+  fires. UI PRs also include real Playwright journey results, Storybook/Argos
+  visual evidence for component or shell states when applicable, screenshot
   artifacts, and an explicit note that known UI journey defects were reviewed
   and remediated before PR update.
 - Every spec: `/speckit.analyze` produces no CRITICAL findings against

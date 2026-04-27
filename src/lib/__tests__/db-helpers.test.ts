@@ -16,12 +16,14 @@ const { mockBroadcast, mockRun, mockGet, mockPrepare } = vi.hoisted(() => {
 // Mock better-sqlite3 native module to avoid needing compiled bindings
 vi.mock('better-sqlite3', () => {
   return {
-    default: vi.fn(() => ({
-      prepare: mockPrepare,
-      pragma: vi.fn(),
-      exec: vi.fn(),
-      close: vi.fn(),
-    })),
+    default: vi.fn(function MockDatabase() {
+      return {
+        prepare: mockPrepare,
+        pragma: vi.fn(),
+        exec: vi.fn(),
+        close: vi.fn(),
+      }
+    }),
   }
 })
 
