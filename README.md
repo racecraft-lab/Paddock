@@ -15,8 +15,6 @@ Manage AI agent fleets, dispatch tasks, track costs, and coordinate multi-agent 
 [![Last commit](https://img.shields.io/github/last-commit/builderz-labs/mission-control)](https://github.com/builderz-labs/mission-control/commits/main)
 [![Open issues](https://img.shields.io/github/issues/builderz-labs/mission-control)](https://github.com/builderz-labs/mission-control/issues)
 
-![Mission Control Dashboard](docs/mission-control-overview.png)
-
 </div>
 
 ---
@@ -209,13 +207,9 @@ Task board, projects, agents, sessions, scheduler, webhooks, alerts, and cost tr
 
 Monitor agent status, configure models, view heartbeats, and manage the full agent lifecycle from registration to retirement. Local agent discovery from `~/.agents/`, `~/.codex/agents/`, and `~/.claude/agents/`. Agent SOUL system with bidirectional workspace sync.
 
-![Mission Control Agents Panel](docs/mission-control-agents.png)
-
 ### Task Board
 
 Kanban board with six columns (inbox → assigned → in progress → review → quality review → done), drag-and-drop, priority levels, assignments, threaded comments, and inline sub-agent spawning. Multi-project support with per-project ticket prefixes.
-
-![Mission Control Tasks Panel](docs/mission-control-tasks.png)
 
 ### Memory Knowledge Graph
 
@@ -250,8 +244,6 @@ Create recurring tasks with natural language like "every morning at 9am" or "eve
 ### Activity Feed
 
 Real-time activity stream across all agents, tasks, and system events. Filter by event type, agent, or time range.
-
-![Mission Control Activity Panel](docs/mission-control-activity.png)
 
 ### Integrations
 

@@ -18,6 +18,12 @@
   - Tested independently
   - Deployed independently
   - Demonstrated to users independently
+  For user-facing UI features, each Independent Test must name the real
+  Playwright browser journey and screenshot states that prove the journey
+  works in the running app. Static HTML fixtures and component-only tests are
+  supporting evidence, not acceptance evidence for new UI behavior.
+  If Argos is used, the Independent Test should also name the CI metadata gate
+  that proves screenshots include test/story identity and spec-scoped tags.
 -->
 
 ### User Story 1 - [Brief Title] (Priority: P1)

@@ -2,16 +2,18 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const { mockPragma, MockDatabase } = vi.hoisted(() => {
   const mockPragma = vi.fn()
-  const MockDatabase = vi.fn(() => ({
-    pragma: mockPragma,
-    prepare: vi.fn(() => ({
-      run: vi.fn(() => ({ lastInsertRowid: 1, changes: 1 })),
-      get: vi.fn(() => ({ count: 0 })),
-      all: vi.fn(() => []),
-    })),
-    exec: vi.fn(),
-    close: vi.fn(),
-  }))
+  const MockDatabase = vi.fn(function MockDatabase() {
+    return {
+      pragma: mockPragma,
+      prepare: vi.fn(() => ({
+        run: vi.fn(() => ({ lastInsertRowid: 1, changes: 1 })),
+        get: vi.fn(() => ({ count: 0 })),
+        all: vi.fn(() => []),
+      })),
+      exec: vi.fn(),
+      close: vi.fn(),
+    }
+  })
   return { mockPragma, MockDatabase }
 })
 

@@ -4,6 +4,7 @@ node_modules/
 # Next.js
 .next/
 out/
+storybook-static/
 
 # Production
 build/
@@ -13,12 +14,6 @@ dist/
 .DS_Store
 *.pem
 .env*.local
-
-# Screenshot tooling
-.mc-auth.json
-docs/_captures/
-docs/_diffs/
-playwright-output/
 
 # npm (project uses pnpm)
 package-lock.json
@@ -42,6 +37,7 @@ aegis/
 # Playwright
 test-results/
 playwright-report/
+screenshots/
 .tmp/
 .playwright-mcp/
 

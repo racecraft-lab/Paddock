@@ -15,34 +15,36 @@ vi.mock('@/lib/config', () => ({
 }))
 
 vi.mock('better-sqlite3', () => ({
-  default: vi.fn((dbPath?: string) => ({
-    prepare: (query: string) => ({
-      get: (...args: any[]) => {
-        const name = dbPath ? String(dbPath).split('/').pop() || '' : ''
-        const rows = dbRowsByName[name] || dbRowsByName.default || {}
-        if (query.includes('sqlite_master') && args[0] === 'session') return { name: 'session' }
-        if (query.includes('sqlite_master') && args[0] === 'project') return { name: 'project' }
-        if (query.includes('sqlite_master') && args[0] === 'message') return { name: 'message' }
-        if (query.includes('SELECT id, worktree FROM project')) {
-          const project = rows.project || []
-          return project.find((row: any) => row.id === args[0]) || { id: args[0], worktree: '/tmp/opencode-project' }
-        }
-        return undefined
-      },
-      all: () => {
-        const name = dbPath ? String(dbPath).split('/').pop() || '' : ''
-        const rows = dbRowsByName[name] || dbRowsByName.default || {}
-        if (query.includes('PRAGMA table_info(session)')) {
-          const sample = rows.session?.[0] || {}
-          return Object.keys(sample).map((key, index) => ({ cid: index, name: key }))
-        }
-        if (query.includes('FROM session')) return rows.session || []
-        if (query.includes('FROM message')) return rows.message || []
-        return []
-      },
-    }),
-    close: vi.fn(),
-  })),
+  default: vi.fn(function MockDatabase(dbPath?: string) {
+    return {
+      prepare: (query: string) => ({
+        get: (...args: any[]) => {
+          const name = dbPath ? String(dbPath).split('/').pop() || '' : ''
+          const rows = dbRowsByName[name] || dbRowsByName.default || {}
+          if (query.includes('sqlite_master') && args[0] === 'session') return { name: 'session' }
+          if (query.includes('sqlite_master') && args[0] === 'project') return { name: 'project' }
+          if (query.includes('sqlite_master') && args[0] === 'message') return { name: 'message' }
+          if (query.includes('SELECT id, worktree FROM project')) {
+            const project = rows.project || []
+            return project.find((row: any) => row.id === args[0]) || { id: args[0], worktree: '/tmp/opencode-project' }
+          }
+          return undefined
+        },
+        all: () => {
+          const name = dbPath ? String(dbPath).split('/').pop() || '' : ''
+          const rows = dbRowsByName[name] || dbRowsByName.default || {}
+          if (query.includes('PRAGMA table_info(session)')) {
+            const sample = rows.session?.[0] || {}
+            return Object.keys(sample).map((key, index) => ({ cid: index, name: key }))
+          }
+          if (query.includes('FROM session')) return rows.session || []
+          if (query.includes('FROM message')) return rows.message || []
+          return []
+        },
+      }),
+      close: vi.fn(),
+    }
+  }),
 }))
 
 describe('scanOpenCodeSessions', () => {
