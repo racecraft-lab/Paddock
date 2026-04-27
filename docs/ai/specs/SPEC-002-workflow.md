@@ -758,7 +758,8 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 - Focused remediation verification passed for tenant access, workspace switcher failure/empty state, Product Line store/cache scope, and Product Line API/SSE route contracts.
 - Code review remediation preserved Facility/global agent visibility inside Product Line views, distinguished workspace-load failure from true empty Product Line state, and enforced JSON body scope carriers plus query/body conflicts through `resolveWorkspaceScopeFromRequest`.
 - Post-review UI hardening added a CI-runnable Docker e2e harness, real Product Line UI journey tests, screenshot artifact publication, and remediation for standalone asset serving, task-board aria labeling, mobile header overflow, accessible header controls, banner action wrapping, and Docker seed sequencing.
-- Argos Playwright test-debugging coverage now uploads the Docker-backed SPEC-002 journey's named screenshots and traces to the Argos Tests view on pull requests and `main` pushes, while Storybook remains the focused component/shell visual baseline path.
+- Argos Playwright visual coverage now uploads the Docker-backed SPEC-002 journey's named screenshots and traces to Argos visual builds on pull requests and `main` pushes, while Storybook remains the focused component/shell visual baseline path.
+- Argos docs crawl covered Playwright SDK, Storybook SDK, Storybook Vitest/Test Runner quickstarts, baseline builds, GitHub integration, build splitting, subset builds, responsive viewports, screenshot metadata, and Tests Dashboard guidance; the evidence gate now treats Argos `Builds` as the PR review surface and reserves the project-level `Tests` tab for reliability/flakiness history after accepted reference-branch builds exist.
 - Guardrail greps found no inline runtime `FEATURE_*` reads outside `src/lib/feature-flags.ts`; gateway and deferred-boundary matches in the implementation diff are documentation guardrails, not new runtime coupling.
 - Open-file/process cleanup check under Codex PID 53107 found only the baseline MCP helper set (`repoprompt_cli`, Jira issue link, GitHub inline comment, PAL, Tavily, mcp-ical, QMD bridge, Computer Use) and no lingering Spec 002 dev server, Playwright worker, or build/test process.
 
@@ -767,7 +768,7 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 - Draft PR #16 opened at https://github.com/racecraft-lab/mission-control/pull/16.
 - Initial PR review check found no human comments and no review threads.
 - Legacy screenshot-drift and visual-diff workflows were replaced by Argos Storybook review plus short-lived Playwright artifacts.
-- Argos Playwright reporter integration was added for the Docker UI e2e path so SPEC-002 has Argos Tests/debugging evidence and a `main` baseline for the real user journey, not only Storybook snapshots.
+- Argos Playwright reporter integration was added for the Docker UI e2e path so SPEC-002 has Argos visual-build evidence for the real user journey, not only Storybook snapshots. The project-level Argos `Tests` tab is not expected to populate from PR-only newly added snapshots before accepted/reference-branch reliability history exists.
 - Final GitHub check poll passed: CodeQL, Argos Storybook, Docker UI e2e, and quality-gate.
 - Retrospective artifact: `specs/002-product-line-switcher/retrospective.md`.
 

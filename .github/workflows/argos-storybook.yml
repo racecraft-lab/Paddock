@@ -77,6 +77,7 @@ jobs:
       - name: Run Storybook visual tests
         env:
           ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm test:visual:storybook
 
       - name: Upload Storybook visual screenshots

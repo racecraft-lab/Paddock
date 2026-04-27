@@ -71,10 +71,21 @@ through the API.
 
 1. Confirm `tests/product-line-switcher-ui.spec.ts` attaches screenshots for Facility task-board state, scope menu options, selected Product Line task-board state, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile menus, and cross-tab Product Line sync.
 2. Confirm `pnpm test:visual:storybook` covers the focused SPEC-002 component and shell states through Storybook + Argos: switcher default/menu/loading/error states, desktop header integration, 320/375/390 px mobile scope menus, Facility task-board shell, and selected Product Line task-board shell.
-3. Confirm the Docker-backed SPEC-002 Playwright workflow uploads named journey screenshots and traces through the Argos Playwright reporter on pull requests and `main` pushes so the Argos Tests/debugging view contains the real user journey evidence and maintains a baseline, not only the Storybook component snapshots.
-4. Review screenshots through the Argos Storybook build, Argos Playwright test run, and GitHub Actions artifacts before updating the PR branch. Local generated screenshots live under ignored `screenshots/` or `test-results/` paths and must not be committed by default.
-5. If e2e output, Storybook visual output, Argos diffs, Argos test evidence, or screenshots show a user-visible defect, clipped or overlapping controls, wrong seeded data, inaccessible controls, or a broken Product Line journey, remediate the defect and rerun the relevant command before pushing.
-6. Do not update or mark the PR ready with known UI user journey bugs.
+3. Confirm the Docker-backed SPEC-002 Playwright workflow uploads named journey screenshots and traces through the Argos Playwright reporter on pull requests and `main` pushes so Argos visual builds contain the real user journey evidence, not only the Storybook component snapshots.
+4. Confirm both Argos workflows export `ARGOS_TOKEN` and `GITHUB_TOKEN` on CI so uploaded builds can link to GitHub PR metadata.
+5. Confirm Storybook visual coverage follows the Argos Storybook Vitest path, which Argos recommends over Storybook Test Runner when the project already uses Storybook v8+ Vitest integration.
+6. Review screenshots through the Argos Storybook build, Argos Playwright visual build, and GitHub Actions artifacts before updating the PR branch. Local generated screenshots live under ignored `screenshots/` or `test-results/` paths and must not be committed by default.
+7. Treat the Argos project-level `Tests` tab as historical reliability/flakiness analytics over accepted reference-build history. For a PR with newly added screenshots, reviewers should use Argos `Builds`, PR checks/comments, and GitHub Actions artifacts until `main` has an accepted/baselined run for the same build names.
+8. If e2e output, Storybook visual output, Argos diffs, Argos build evidence, or screenshots show a user-visible defect, clipped or overlapping controls, wrong seeded data, inaccessible controls, or a broken Product Line journey, remediate the defect and rerun the relevant command before pushing.
+9. Do not update or mark the PR ready with known UI user journey bugs.
+
+Argos documentation crawl checkpoints:
+
+- [Playwright SDK](https://argos-ci.com/docs/playwright): use the reporter plus `argosScreenshot`; traces/failure screenshots upload through the reporter.
+- [Storybook SDK](https://argos-ci.com/docs/storybook) and [Storybook Quickstart](https://argos-ci.com/docs/quickstart/storybook): prefer Storybook Vitest for this repo; the [Storybook Test Runner quickstart](https://argos-ci.com/docs/quickstart/storybook-test-runner) is for projects using Test Runner instead of Vitest.
+- [Baseline build](https://argos-ci.com/docs/baseline-build): same build name plus accepted/orphan/reference-branch history drives comparison baseline selection.
+- [Tests Dashboard](https://argos-ci.com/docs/tests-dashboard): this is a project-level reliability/flakiness dashboard, not the first PR review surface for newly added snapshots.
+- [GitHub integration](https://argos-ci.com/docs/github), [build splitting](https://argos-ci.com/docs/build-splitting), [subset builds](https://argos-ci.com/docs/subset-builds), [responsive viewports](https://argos-ci.com/docs/viewports), and [screenshot metadata](https://argos-ci.com/docs/screenshot-metadata) were checked for SPEC-002 workflow fit.
 
 ## State-Management Check
 
