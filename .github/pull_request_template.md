@@ -7,6 +7,9 @@ Low / Medium / High (pick one)
 # Tests
 List commands run and results.
 
+# Visual Evidence
+For UI changes, link the relevant Argos Storybook build and any short-lived Playwright/CI screenshot artifacts. Do not commit generated screenshots unless an explicit artifact-retention exception is documented.
+
 # Contribution Checklist
 - [ ] Tests added/updated for behavior changes
 - [ ] Lint/typecheck/build passing

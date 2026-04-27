@@ -1,7 +1,15 @@
 node_modules
+.pnpm-store
 .git
 .data
 .next
+out
+storybook-static
+.tsbuild
+.tmp
+test-results
+playwright-report
+screenshots
 .env
 *.md
 .github
