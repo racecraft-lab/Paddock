@@ -101,6 +101,7 @@ run_playwright() {
   SPEC002_SCREENSHOTS="${SPEC002_SCREENSHOTS:-1}" \
   SPEC002_ARGOS_SCREENSHOTS="${SPEC002_ARGOS_SCREENSHOTS:-0}" \
   SPEC002_ARGOS_TRACES="${SPEC002_ARGOS_TRACES:-0}" \
+  ARGOS_UPLOAD_TO_ARGOS="${ARGOS_UPLOAD_TO_ARGOS:-0}" \
   ARGOS_TOKEN="${ARGOS_TOKEN:-}" \
   MC_E2E_WORKSPACE_SWITCHER_PRESEEDED="$preseeded" \
   E2E_BASE_URL="http://127.0.0.1:${PORT}" \
@@ -118,7 +119,8 @@ if [ "$#" -eq 0 ]; then
   start_container "$FLAG_OFF_CONTAINER" "$FLAG_OFF_DATA_DIR"
 
   echo "[e2e-docker] running clean flag-off regression suite."
-  run_playwright "$FLAG_OFF_DATA_DIR" 0 tests/workspace-switcher-flag-off.spec.ts
+  ARGOS_UPLOAD_TO_ARGOS=0 SPEC002_ARGOS_SCREENSHOTS=0 SPEC002_ARGOS_TRACES=0 \
+    run_playwright "$FLAG_OFF_DATA_DIR" 0 tests/workspace-switcher-flag-off.spec.ts
 
   docker rm -f "$FLAG_OFF_CONTAINER" >/dev/null
 

@@ -18,6 +18,7 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
+      - 'scripts/verify-argos-storybook-metadata.mjs'
   push:
     branches:
       - main
@@ -37,6 +38,7 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
+      - 'scripts/verify-argos-storybook-metadata.mjs'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -75,10 +77,22 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Storybook visual tests
+        id: storybook
+        continue-on-error: true
         env:
           ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: pnpm test:visual:storybook
+
+      - name: Verify Argos Storybook metadata
+        id: storybook-metadata
+        if: always()
+        continue-on-error: true
+        env:
+          SPEC002_ARGOS_STORYBOOK_EXPECTED_METADATA: '16'
+          SPEC002_ARGOS_STORYBOOK_EXPECTED_STORIES: '8'
+          SPEC002_ARGOS_STORYBOOK_REQUIRED_TAGS: 'spec-002,visual'
+        run: pnpm test:visual:argos-metadata
 
       - name: Upload Storybook visual screenshots
         if: always()
@@ -88,3 +102,7 @@ jobs:
           path: screenshots/
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Fail on Storybook or Argos metadata defects
+        if: steps.storybook.outcome != 'success' || steps.storybook-metadata.outcome != 'success'
+        run: exit 1

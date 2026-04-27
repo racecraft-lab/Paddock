@@ -29,8 +29,10 @@
 - Route scope resolution now honors JSON body scope carriers and rejects conflicting query/body carriers through `resolveWorkspaceScopeFromRequest`.
 - Initial GitHub PR review check found no human comments and no review threads.
 - The legacy screenshot-drift and visual-diff workflows were removed in favor of Argos Storybook review plus short-lived Playwright artifacts.
-- The Docker-backed SPEC-002 Playwright journey now also uploads named screenshots and traces through the Argos Playwright reporter on pull requests and `main` pushes so Argos visual builds contain the real user journey evidence.
-- The Argos docs crawl corrected the review surface: SPEC-002 PR evidence lives in Argos `Builds`, PR checks/comments, and short-lived GitHub artifacts until `main` has accepted reference-build history for the same build names; the project-level `Tests` tab is reliability/flakiness analytics, not the first-review surface for newly added snapshots.
+- The Docker-backed SPEC-002 Playwright journey now uploads named screenshots and traces through the Argos Playwright reporter on pull requests and `main` pushes so Argos visual builds contain the real user journey evidence.
+- The SPEC-002 UI e2e workflow now verifies Argos Playwright screenshot metadata before passing: at least 9 screenshot metadata files, 4 Playwright tests, source locations, `@spec-002` test tags, and `spec-002` screenshot tags must exist. The clean flag-off regression run is explicitly prevented from uploading an empty Argos build.
+- The Argos Storybook workflow now verifies Argos Storybook screenshot metadata before passing: at least 16 screenshot metadata files, 8 Storybook stories, source locations, and `spec-002` / `visual` story tags must exist.
+- The Argos docs crawl corrected the review surface and added an observability gate: SPEC-002 PR evidence lives in Argos `Builds`, PR checks/comments, and short-lived GitHub artifacts for first review; after accepted `main` reference builds exist, an empty Argos `Tests` tab is a defect to remediate.
 - Final GitHub check poll passed for CodeQL, Argos Storybook, Docker UI e2e, and quality-gate.
 - Storybook + Argos follow-up coverage replaces committed SPEC-002 PNGs for focused component and shell visual review while preserving Docker-backed Playwright coverage for real user journey behavior.
 
@@ -51,4 +53,4 @@
 - Keep the roadmap PR-merge caveat until PR #16 is reviewed and merged.
 - Human review is still required before marking the PR ready for merge.
 - Do not expand SPEC-002 into multi-facility tenants, product-line skill ownership, session/transcript ownership, or tenant-routed gateway selection; those remain deferred to the documented V2 roadmap boundaries.
-- Do not commit generated visual screenshots by default. Use Argos Storybook, Argos Playwright visual builds, PR checks/comments, Playwright artifacts, and SPEC-002A archive policy for durable review provenance.
+- Do not commit generated visual screenshots by default. Use Argos Storybook, Argos Playwright visual builds, Argos test metadata gates, PR checks/comments, Playwright artifacts, and SPEC-002A archive policy for durable review provenance.

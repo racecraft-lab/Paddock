@@ -16,6 +16,7 @@ on:
       - 'tests/helpers.ts'
       - 'scripts/e2e-docker.sh'
       - 'scripts/seed-e2e-workspace-switcher.cjs'
+      - 'scripts/verify-argos-test-metadata.mjs'
       - 'playwright*.config.ts'
       - 'Dockerfile'
       - 'docker-entrypoint.sh'
@@ -40,6 +41,7 @@ on:
       - 'tests/helpers.ts'
       - 'scripts/e2e-docker.sh'
       - 'scripts/seed-e2e-workspace-switcher.cjs'
+      - 'scripts/verify-argos-test-metadata.mjs'
       - 'playwright*.config.ts'
       - 'Dockerfile'
       - 'docker-entrypoint.sh'
@@ -91,10 +93,21 @@ jobs:
         env:
           ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARGOS_UPLOAD_TO_ARGOS: '1'
           SPEC002_ARGOS_SCREENSHOTS: '1'
           SPEC002_ARGOS_TRACES: '1'
           SPEC002_SCREENSHOTS: '1'
         run: pnpm test:e2e:docker
+
+      - name: Verify Argos test metadata
+        id: argos-metadata
+        if: always()
+        continue-on-error: true
+        env:
+          SPEC002_ARGOS_EXPECTED_METADATA: '9'
+          SPEC002_ARGOS_EXPECTED_TESTS: '4'
+          SPEC002_ARGOS_REQUIRED_TEST_TAG: '@spec-002'
+        run: pnpm test:e2e:argos-metadata
 
       - name: Upload Playwright artifacts
         if: always()
@@ -114,12 +127,16 @@ jobs:
           script: |
             const marker = '<!-- spec-002-ui-e2e -->';
             const outcome = '${{ steps.e2e.outcome }}';
+            const metadataOutcome = '${{ steps.argos-metadata.outcome }}';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
               marker,
               `SPEC-002 Docker-backed Playwright UI journey: **${outcome}**`,
+              `Argos Playwright test metadata gate: **${metadataOutcome}**`,
               '',
               `Review screenshots and traces in the \`spec-002-ui-e2e-artifacts\` artifact: ${runUrl}`,
+              '',
+              'Argos metadata gate: CI must find at least 9 Argos screenshot metadata files across 4 Playwright tests with the `@spec-002` test tag before this check can pass.',
               '',
               'Covered states: Facility task board, scope menu options, selected Product Line task board, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile scope menus, and cross-tab Product Line sync.'
             ].join('\n');
@@ -133,6 +150,6 @@ jobs:
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
             }
 
-      - name: Fail on E2E defects
-        if: steps.e2e.outcome != 'success'
+      - name: Fail on E2E or Argos metadata defects
+        if: steps.e2e.outcome != 'success' || steps.argos-metadata.outcome != 'success'
         run: exit 1

@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test'
 import { createArgosReporterOptions } from '@argos-ci/playwright/reporter'
 
-const uploadToArgos = process.env.CI === 'true'
+const uploadToArgos = process.env.ARGOS_UPLOAD_TO_ARGOS === '1'
+  || (process.env.CI === 'true' && process.env.ARGOS_UPLOAD_TO_ARGOS !== '0')
 const recordArgosTraces = process.env.SPEC002_ARGOS_TRACES === '1'
 
 export default defineConfig({

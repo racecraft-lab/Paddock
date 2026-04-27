@@ -134,6 +134,7 @@ Implement the RC Factory Phase 1 Product Line switcher:
 - [x] P1-AC14: Mode-sensitive fetch/cache keys include `scopeKey`; transitions ignore stale in-flight responses and scoped mutation completions.
 - [x] P1-AC15: URL state is scope-owned and invalid/unowned entity params are stripped rather than resolved against stale persisted state.
 - [x] P1-AC16: Deferred boundaries are enforced for skills, local/gateway sessions/transcripts, SC-15/V2 gateway readiness, and multi-facility tenant modeling.
+- [x] SC-018: Argos Playwright and Storybook visual evidence carries test/story identity, source location, and SPEC-002 tags; non-visual flag-OFF e2e does not upload empty Argos builds.
 
 ---
 
@@ -713,13 +714,14 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 | P1-AC14 | Cache/request tests prove `scopeKey`, scoped invalidation, stale in-flight response rejection, and stale mutation completion rejection | Pass | `src/store/product-line-cache-url.test.ts`; `src/store/product-line-scope.test.ts`; `src/components/panels/product-line-panels.test.ts` |
 | P1-AC15 | URL tests prove valid scope adoption, invalid scope reset, and unowned entity param stripping | Pass | `src/store/product-line-cache-url.test.ts`; `tests/product-line-route-discovery.spec.ts`; `tests/product-line-scope-matrix.spec.ts` |
 | P1-AC16 | Deferred-boundary and SC-15/V2-001 grep/tests prove no product-line skill ownership, session/transcript mapping, tenant-routed gateway selection, or multi-facility modeling | Pass | `src/components/panels/facility-global-boundaries.test.ts`; diff grep found no new runtime gateway globals or downstream-boundary implementations |
+| SC-018 | Argos Playwright and Storybook screenshots include metadata with test/story identity, source location, and SPEC-002 tags; flag-OFF e2e does not upload an empty Argos build | Pass | `tests/product-line-switcher-ui.spec.ts`; `src/components/layout/spec-002-visual.stories.tsx`; `scripts/verify-argos-test-metadata.mjs`; `scripts/verify-argos-storybook-metadata.mjs`; `scripts/e2e-docker.sh`; `.github/workflows/spec-002-ui-e2e.yml`; `.github/workflows/argos-storybook.yml`; `pnpm test:e2e:argos-metadata`; `pnpm test:visual:argos-metadata` |
 
 ---
 
 ## Post-Implementation Checklist
 
 - [x] All generated tasks are marked complete in `specs/002-product-line-switcher/tasks.md`.
-- [x] The Acceptance Evidence Ledger above has a result row for each P1-AC1 through P1-AC16.
+- [x] The Acceptance Evidence Ledger above has a result row for each P1-AC1 through P1-AC16 plus post-review SC-018.
 - [x] `src/lib/feature-flags.ts` implements the Feature Flag Resolution Policy, including normal `FEATURE_*=1` non-enablement and the `PILOT_PRODUCT_LINE_A_E2E=1` exception.
 - [x] `tsconfig.spec-strict.json` and `eslint.config.mjs` include the three new TS/TSX modules in strict scope.
 - [x] `src/store/index.ts` contains `setActiveProductLine(productLine | null, options)`, Product Line scope persistence, validation, scoped cache/state invalidation, URL cleanup, and BroadcastChannel sync only for the new scope slice.
@@ -759,7 +761,9 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 - Code review remediation preserved Facility/global agent visibility inside Product Line views, distinguished workspace-load failure from true empty Product Line state, and enforced JSON body scope carriers plus query/body conflicts through `resolveWorkspaceScopeFromRequest`.
 - Post-review UI hardening added a CI-runnable Docker e2e harness, real Product Line UI journey tests, screenshot artifact publication, and remediation for standalone asset serving, task-board aria labeling, mobile header overflow, accessible header controls, banner action wrapping, and Docker seed sequencing.
 - Argos Playwright visual coverage now uploads the Docker-backed SPEC-002 journey's named screenshots and traces to Argos visual builds on pull requests and `main` pushes, while Storybook remains the focused component/shell visual baseline path.
-- Argos docs crawl covered Playwright SDK, Storybook SDK, Storybook Vitest/Test Runner quickstarts, baseline builds, GitHub integration, build splitting, subset builds, responsive viewports, screenshot metadata, and Tests Dashboard guidance; the evidence gate now treats Argos `Builds` as the PR review surface and reserves the project-level `Tests` tab for reliability/flakiness history after accepted reference-branch builds exist.
+- The SPEC-002 Docker UI workflow now fails if Argos Playwright screenshot metadata is missing test identity, source location, or the `@spec-002` test tag; the clean flag-off regression run is also prevented from uploading an empty Argos build.
+- The Argos Storybook workflow now fails if Argos Storybook screenshot metadata is missing story/test identity, source location, or the `spec-002` and `visual` story tags.
+- Argos docs crawl covered Playwright SDK, Storybook SDK, Storybook Vitest/Test Runner quickstarts, baseline builds, GitHub integration, build splitting, subset builds, responsive viewports, screenshot metadata, and Tests Dashboard guidance; the evidence gate now treats Argos `Builds` as the PR first-review surface and treats an empty Argos `Tests` tab after accepted `main` reference history exists as an observability defect.
 - Guardrail greps found no inline runtime `FEATURE_*` reads outside `src/lib/feature-flags.ts`; gateway and deferred-boundary matches in the implementation diff are documentation guardrails, not new runtime coupling.
 - Open-file/process cleanup check under Codex PID 53107 found only the baseline MCP helper set (`repoprompt_cli`, Jira issue link, GitHub inline comment, PAL, Tavily, mcp-ical, QMD bridge, Computer Use) and no lingering Spec 002 dev server, Playwright worker, or build/test process.
 
@@ -768,7 +772,7 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 - Draft PR #16 opened at https://github.com/racecraft-lab/mission-control/pull/16.
 - Initial PR review check found no human comments and no review threads.
 - Legacy screenshot-drift and visual-diff workflows were replaced by Argos Storybook review plus short-lived Playwright artifacts.
-- Argos Playwright reporter integration was added for the Docker UI e2e path so SPEC-002 has Argos visual-build evidence for the real user journey, not only Storybook snapshots. The project-level Argos `Tests` tab is not expected to populate from PR-only newly added snapshots before accepted/reference-branch reliability history exists.
+- Argos Playwright reporter integration was added for the Docker UI e2e path so SPEC-002 has Argos visual-build evidence for the real user journey, not only Storybook snapshots. The workflows now also verify Argos Playwright and Storybook metadata locally before CI can pass, and accepted `main` reference builds are required to produce Argos `Tests` rows for SPEC-002.
 - Final GitHub check poll passed: CodeQL, Argos Storybook, Docker UI e2e, and quality-gate.
 - Retrospective artifact: `specs/002-product-line-switcher/retrospective.md`.
 

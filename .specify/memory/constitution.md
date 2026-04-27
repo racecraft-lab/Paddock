@@ -1,8 +1,8 @@
 <!--
 Sync Impact Report
-Version change: 1.2.0 -> 1.3.0
-Modified principles: IV. Test-First Development; added XIV. Real UI Journey Quality Gate
-Added sections: XIV. Real UI Journey Quality Gate
+Version change: 1.3.0 -> 1.3.1
+Modified principles: XIV. Real UI Journey Quality Gate
+Added sections: None
 Removed sections: None
 Templates requiring updates:
 - .specify/templates/plan-template.md: updated
@@ -324,6 +324,11 @@ Operationalized as:
   Storybook, those states SHOULD be covered by Storybook visual tests and
   uploaded to Argos for pull-request review. Generated screenshots remain CI
   artifacts and MUST NOT be committed to source control by default.
+- When Playwright journey screenshots or Storybook visual states are uploaded
+  to Argos, CI MUST verify the generated Argos screenshot metadata includes
+  test/story identity, source location, and spec-scoped tags sufficient for
+  Argos Tests dashboard rows after accepted reference builds exist. Non-visual
+  e2e runs MUST NOT upload empty Argos builds.
 - Before a PR is updated or opened, an agent MUST review failing e2e output
   and attached screenshots. Failing tests, visible defects, clipped or
   overlapping controls, wrong data, inaccessible controls, and broken user
@@ -547,4 +552,4 @@ Compliance checkpoints:
 - Every migration: rollback file present; upstream-compat checklist
   satisfied.
 
-**Version**: 1.3.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-27
+**Version**: 1.3.1 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-27

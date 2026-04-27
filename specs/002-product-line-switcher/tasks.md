@@ -142,6 +142,8 @@
 - [x] T052 [P] Add Docker-backed e2e execution in `scripts/e2e-docker.sh`, `playwright.docker.config.ts`, and package scripts so SPEC-002 e2e runs against the existing production Docker build with mounted SQLite seed data
 - [x] T053 [P] Add CI screenshot artifact publication in `.github/workflows/spec-002-ui-e2e.yml` so PR reviewers can inspect the new Playwright screenshots and traces
 - [x] T054 Review initial SPEC-002 e2e failures and screenshot artifacts, remediate any visible or failing UI user journey defects, rerun focused and Docker e2e, and only then push the PR branch
+- [x] T055 Add a CI Argos metadata gate that verifies SPEC-002 Playwright screenshots include Argos test identity, source location, and spec-scoped Playwright tags, and prevents non-visual e2e runs from uploading empty Argos builds
+- [x] T056 Add a CI Argos metadata gate that verifies SPEC-002 Storybook screenshots include Argos story/test identity, source location, and spec-scoped Storybook tags
 
 ## Dependencies & Execution Order
 

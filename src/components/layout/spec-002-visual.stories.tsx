@@ -286,7 +286,7 @@ function Spec002VisualSurface({ surface }: Spec002StoryArgs) {
 const meta = {
   title: 'SPEC-002/Product Line Visual States',
   component: Spec002VisualSurface,
-  tags: ['visual'],
+  tags: ['spec-002', 'visual'],
   loaders: [
     async ({ args }) => {
       configureSpec002State((args as Spec002StoryArgs).scenario)

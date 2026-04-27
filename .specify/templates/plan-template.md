@@ -42,6 +42,10 @@ For user-facing UI changes, the generated plan MUST also define:
   deterministic seed data when Docker is available.
 - Screenshot artifacts for human-in-the-loop review covering important
   before, during, after, and responsive states.
+- If Playwright or Storybook screenshots are uploaded to Argos, CI metadata
+  gates that verify Argos screenshot metadata includes test/story identity,
+  source location, and spec-scoped tags; non-visual e2e runs must not upload
+  empty Argos builds.
 - A defect-remediation gate: failing e2e output and screenshots are reviewed
   before PR update, and known UI journey bugs are fixed before the PR is
   opened, updated, or marked ready.

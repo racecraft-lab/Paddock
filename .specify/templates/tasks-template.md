@@ -11,8 +11,9 @@ description: "Task list template for feature implementation"
 **Tests**: The examples below include test tasks. Tests are required when the
 feature specification or constitution requires them. User-facing UI changes
 MUST include real Playwright e2e journey tasks, Docker-backed seed-data
-execution when Docker is available, screenshot artifact capture, and an
-e2e/screenshot defect review before any PR update.
+execution when Docker is available, screenshot artifact capture, Argos
+metadata verification when Argos uploads are used, and an e2e/screenshot
+defect review before any PR update.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -91,6 +92,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
 - [ ] T011A [P] [US1] Real Playwright UI journey with deterministic seed data in tests/e2e/[journey].spec.ts, attaching review screenshots for before/during/after states
 - [ ] T011B [US1] Docker-backed Playwright run using the repository Docker build and seeded data; review screenshots and remediate known UI journey defects before PR update
+- [ ] T011C [US1] Argos metadata gate for Playwright and/or Storybook visual uploads that verifies screenshot metadata includes test/story identity, source location, and spec-scoped tags
 
 ### Implementation for User Story 1
 

@@ -11,6 +11,8 @@ import {
 
 const SWITCHER_NAME = /change facility or product line scope/i
 const LISTBOX_NAME = /facility and product line scopes/i
+const ARGOS_SCREENSHOT_TAGS = ['spec-002', 'product-line-switcher']
+const ARGOS_TEST_TAGS = ['@spec-002', '@product-line-switcher']
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -33,7 +35,7 @@ async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: stri
   if (process.env.SPEC002_ARGOS_SCREENSHOTS === '1') {
     await argosScreenshot(page, `spec-002-${normalizedName}`, {
       fullPage: true,
-      tag: ['spec-002', 'product-line-switcher'],
+      tag: ARGOS_SCREENSHOT_TAGS,
     })
   }
 }
@@ -79,7 +81,7 @@ test.describe.serial('SPEC-002 Product Line switcher real UI journey', () => {
     await prepareAuthenticatedPage(page, request)
   })
 
-  test('switches Facility and Product Line scopes against seeded task data', async ({ page }, testInfo) => {
+  test('switches Facility and Product Line scopes against seeded task data', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/tasks')
     await expect(page).not.toHaveURL(/\/login/)
     await expect(page.getByRole('region', { name: /task board/i })).toBeVisible()
@@ -105,7 +107,7 @@ test.describe.serial('SPEC-002 Product Line switcher real UI journey', () => {
     await attachReviewScreenshot(page, testInfo, 'facility-aggregate-task-board-after-switch')
   })
 
-  test('supports keyboard navigation and focus return on the real listbox', async ({ page }, testInfo) => {
+  test('supports keyboard navigation and focus return on the real listbox', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/tasks')
     const trigger = page.getByRole('button', { name: SWITCHER_NAME })
     await expect(trigger).toBeVisible()
@@ -126,7 +128,7 @@ test.describe.serial('SPEC-002 Product Line switcher real UI journey', () => {
     await expect(trigger).toBeFocused()
   })
 
-  test('keeps the switcher and header controls usable on narrow mobile widths', async ({ page }, testInfo) => {
+  test('keeps the switcher and header controls usable on narrow mobile widths', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
     for (const width of [320, 375, 390]) {
       await page.setViewportSize({ width, height: 844 })
       await page.goto('/tasks')
@@ -147,7 +149,7 @@ test.describe.serial('SPEC-002 Product Line switcher real UI journey', () => {
     }
   })
 
-  test('broadcasts selected Product Line scope to another real app tab', async ({ page }, testInfo) => {
+  test('broadcasts selected Product Line scope to another real app tab', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
     const pageB = await page.context().newPage()
     await page.goto('/tasks')
     await pageB.goto('/tasks')
