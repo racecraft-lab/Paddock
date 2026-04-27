@@ -8,6 +8,7 @@ on:
       - 'src/**/*.stories.tsx'
       - 'src/components/layout/**'
       - 'src/components/panels/task-board-panel.tsx'
+      - 'src/components/settings/**'
       - 'src/components/ui/**'
       - 'src/store/**'
       - 'src/types/product-line.ts'
@@ -28,6 +29,7 @@ on:
       - 'src/**/*.stories.tsx'
       - 'src/components/layout/**'
       - 'src/components/panels/task-board-panel.tsx'
+      - 'src/components/settings/**'
       - 'src/components/ui/**'
       - 'src/store/**'
       - 'src/types/product-line.ts'
@@ -89,9 +91,10 @@ jobs:
         if: always()
         continue-on-error: true
         env:
-          SPEC002_ARGOS_STORYBOOK_EXPECTED_METADATA: '16'
-          SPEC002_ARGOS_STORYBOOK_EXPECTED_STORIES: '8'
+          SPEC002_ARGOS_STORYBOOK_EXPECTED_METADATA: '18'
+          SPEC002_ARGOS_STORYBOOK_EXPECTED_STORIES: '10'
           SPEC002_ARGOS_STORYBOOK_REQUIRED_TAGS: 'spec-002,visual'
+          SPEC002_ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS: 'product-line-switcher:8,feature-flag-admin:2'
         run: pnpm test:visual:argos-metadata
 
       - name: Upload Storybook visual screenshots

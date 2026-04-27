@@ -1,4 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
+import { createArgosReporterOptions } from '@argos-ci/playwright/reporter'
+
+const uploadToArgos = process.env.ARGOS_UPLOAD_TO_ARGOS === '1'
 
 export default defineConfig({
   testDir: 'tests',
@@ -9,7 +12,16 @@ export default defineConfig({
   },
   fullyParallel: false,
   workers: 1,
-  reporter: [['list']],
+  reporter: [
+    ['list'],
+    [
+      '@argos-ci/playwright/reporter',
+      createArgosReporterOptions({
+        uploadToArgos,
+        buildName: 'spec-002-playwright-local',
+      }),
+    ],
+  ],
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://127.0.0.1:3005',
     trace: 'retain-on-failure'

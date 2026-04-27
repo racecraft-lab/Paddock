@@ -226,7 +226,11 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
             const nextValue = !flag.evaluated_value
 
             return (
-              <div key={flag.definition.key} className="bg-card border border-border rounded-lg p-4 space-y-3">
+              <div
+                key={flag.definition.key}
+                data-testid={`feature-flag-card-${flag.definition.key}`}
+                className="bg-card border border-border rounded-lg p-4 space-y-3"
+              >
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
@@ -256,6 +260,7 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
                       disabled={savingKey === flag.definition.key || (nextValue && blocked) || flag.env_locked}
                       variant={flag.evaluated_value ? 'outline' : 'default'}
                       size="sm"
+                      aria-label={`${flag.evaluated_value ? 'Disable' : 'Enable'} ${flag.definition.label}`}
                     >
                       {savingKey === flag.definition.key
                         ? 'Saving...'

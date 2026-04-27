@@ -3730,11 +3730,11 @@
         "operationId": "listFeatureFlags",
         "parameters": [
           {
-            "name": "workspace",
+            "name": "workspace_id",
             "in": "query",
-            "description": "Workspace slug to evaluate feature flags for",
+            "description": "Workspace id to evaluate feature flags for",
             "schema": {
-              "type": "string"
+              "type": "integer"
             }
           }
         ],
@@ -3803,15 +3803,16 @@
               "schema": {
                 "type": "object",
                 "required": [
-                  "enabled"
+                  "value",
+                  "workspace_id"
                 ],
                 "properties": {
-                  "enabled": {
+                  "value": {
                     "type": "boolean"
                   },
-                  "workspace": {
-                    "type": "string",
-                    "description": "Workspace slug to update"
+                  "workspace_id": {
+                    "type": "integer",
+                    "description": "Workspace id to update"
                   },
                   "reason": {
                     "type": "string",
@@ -3830,13 +3831,13 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "ok": {
-                      "type": "boolean"
+                    "updated": {
+                      "type": "string"
+                    },
+                    "workspace_id": {
+                      "type": "integer"
                     },
                     "flag": {
-                      "type": "object"
-                    },
-                    "preflight": {
                       "type": "object"
                     }
                   }
@@ -3887,13 +3888,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "workspace": {
-                    "type": "string",
-                    "description": "Workspace slug to evaluate"
-                  },
-                  "enabled": {
-                    "type": "boolean",
-                    "description": "Target enabled state"
+                  "workspace_id": {
+                    "type": "integer",
+                    "description": "Workspace id to evaluate"
                   }
                 }
               }
@@ -3908,14 +3905,23 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "ok": {
-                      "type": "boolean"
-                    },
-                    "workspace": {
+                    "key": {
                       "type": "string"
                     },
-                    "preflight": {
-                      "type": "object"
+                    "can_enable": {
+                      "type": "boolean"
+                    },
+                    "blockers": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "checks": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
                     }
                   }
                 }

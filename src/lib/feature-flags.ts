@@ -110,11 +110,15 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     evidence: {
       playwright: [
         'tests/product-line-switcher-ui.spec.ts',
+        'tests/feature-flags-admin-ui.spec.ts',
         'tests/workspace-switcher-flag-off.spec.ts',
         'tests/product-line-scope-api.spec.ts',
         'tests/product-line-events.spec.ts',
       ],
-      storybook: ['src/components/layout/spec-002-visual.stories.tsx'],
+      storybook: [
+        'src/components/layout/spec-002-visual.stories.tsx',
+        'src/components/settings/feature-flags-section.stories.tsx',
+      ],
       argos: ['spec-002-storybook', 'spec-002-playwright'],
     },
   },
