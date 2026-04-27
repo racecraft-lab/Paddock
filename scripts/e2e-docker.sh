@@ -139,6 +139,7 @@ if [ "$#" -eq 0 ]; then
   echo "[e2e-docker] running seeded Product Line e2e suite."
   run_playwright "$FLAG_ON_DATA_DIR" 1 \
     tests/product-line-switcher-ui.spec.ts \
+    tests/feature-flags-admin-ui.spec.ts \
     tests/product-line-scope-api.spec.ts \
     tests/product-line-scope-matrix.spec.ts \
     tests/product-line-events.spec.ts
