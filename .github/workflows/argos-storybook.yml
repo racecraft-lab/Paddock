@@ -37,7 +37,6 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -51,17 +50,17 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 10
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: pnpm
@@ -79,7 +78,7 @@ jobs:
 
       - name: Upload Storybook visual screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: storybook-argos-screenshots
           path: screenshots/

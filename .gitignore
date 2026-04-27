@@ -15,12 +15,6 @@ dist/
 *.pem
 .env*.local
 
-# Screenshot tooling
-.mc-auth.json
-docs/_captures/
-docs/_diffs/
-playwright-output/
-
 # npm (project uses pnpm)
 package-lock.json
 

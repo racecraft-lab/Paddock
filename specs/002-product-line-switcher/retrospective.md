@@ -9,7 +9,7 @@
 - Generated task completion: 50/50 tasks complete.
 - Acceptance coverage: P1-AC1 through P1-AC16 documented as passing in `docs/ai/specs/SPEC-002-workflow.md`.
 - Implementation status: Product Line scope switching is implemented behind tenant/facility feature flags, with the Facility aggregate view preserved as the default path.
-- PR status: draft PR opened for review; initial review-thread check found no human comments or unresolved review threads; final GitHub check poll passed after the opt-in visual diff was triggered.
+- PR status: draft PR opened for review; initial review-thread check found no human comments or unresolved review threads; final GitHub check poll passed after Argos visual review and Docker-backed UI evidence were added.
 
 ## Verification Evidence
 
@@ -28,8 +28,8 @@
 - `WorkspaceSwitcher` now distinguishes workspace-load failure from true empty Product Line state.
 - Route scope resolution now honors JSON body scope carriers and rejects conflicting query/body carriers through `resolveWorkspaceScopeFromRequest`.
 - Initial GitHub PR review check found no human comments and no review threads.
-- The screenshot-drift bot reminder was remediated by triggering the canonical `run-visual-diff` workflow; visual diff passed, so no screenshot baseline commit was needed.
-- Final GitHub check poll passed for CodeQL, Screenshot Drift Check, visual diff, and quality-gate.
+- The legacy screenshot-drift and visual-diff workflows were removed in favor of Argos Storybook review plus short-lived Playwright artifacts.
+- Final GitHub check poll passed for CodeQL, Argos Storybook, Docker UI e2e, and quality-gate.
 - Storybook + Argos follow-up coverage replaces committed SPEC-002 PNGs for focused component and shell visual review while preserving Docker-backed Playwright coverage for real user journey behavior.
 
 ## What Worked

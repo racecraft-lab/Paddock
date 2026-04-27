@@ -765,8 +765,8 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 
 - Draft PR #16 opened at https://github.com/racecraft-lab/mission-control/pull/16.
 - Initial PR review check found no human comments and no review threads.
-- GitHub Actions posted a screenshot-drift reminder; the opt-in `run-visual-diff` workflow was triggered for verification.
-- Final GitHub check poll passed: CodeQL, Screenshot Drift Check, visual diff, and quality-gate.
+- Legacy screenshot-drift and visual-diff workflows were replaced by Argos Storybook review plus short-lived Playwright artifacts.
+- Final GitHub check poll passed: CodeQL, Argos Storybook, Docker UI e2e, and quality-gate.
 - Retrospective artifact: `specs/002-product-line-switcher/retrospective.md`.
 
 ---
