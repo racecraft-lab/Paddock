@@ -33,6 +33,7 @@
 | 5 | Area-label GitHub sync | Yes | `FEATURE_AREA_LABEL_ROUTING` | `upstream-safe` | Phase 8 |
 | 6 | Disposition logging + artifact store + audit/admin panels | Yes | `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS` | `upstream-divergent` | Phase 8 |
 | 7 | Resource governance + Cost Tracker enforcement | Yes | `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS` | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` | Phase 8 |
+| 7.5 | CrabTrap honeypot — HAL security adapter | Yes | `FEATURE_CRABTRAP_HONEYPOT` | `fork-only optional` | — |
 | 8 | Product Line A pilot — end-to-end smoke | Pilot gate | `PILOT_PRODUCT_LINE_A_E2E` | Fork rollout only | Phase 9 |
 | 9 | Product Line B onboarding | Post-pilot | — | Fork rollout only | — |
 
@@ -88,6 +89,23 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Pending | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
 | SPEC-009 | 8 | Product Line A Pilot End-to-End Smoke | product-line-a-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
 | SPEC-010 | 9 | Product Line B Product-Line Onboarding | product-line-b-onboarding | Pending | P3 | SPEC-002A, SPEC-009 | — | Phase 9 |
+| SPEC-011 | 7.5 | CrabTrap Honeypot — HAL Security Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
+
+### SPEC-011: CrabTrap Honeypot — HAL Security Adapter
+
+- **Status:** Pending
+- **Priority:** P2
+- **Branch short name:** `crabtrap-honeypot`
+- **Dependencies:** SPEC-008 (resource governance — shares the `activities` table and `resource_policy_events` audit surface)
+- **Enables:** —
+- **Scope source:** Phase 7.5 — CrabTrap Honeypot (HAL Security Adapter)
+- **Upstream impact:** `fork-only optional` — HAL-node-specific; must be absent-safe, config-gated, and disabled by default. No schema migration in v1.
+- **Feature flag:** `FEATURE_CRABTRAP_HONEYPOT`
+- **Tool count / tool names:** N/A — not a tool-surface spec
+- **Strict Scope:** `src/lib/crabtrap-adapter.ts` (new, runtime-only). No schema migrations. No changes to upstream Mission Control tables.
+- **Scope summary:** Deploy CrabTrap (`github.com/brexhq/CrabTrap`) as a honeypot sidecar on HAL to detect unauthorized access to Mission Control REST API endpoints and agent sandboxes. When CrabTrap fires a webhook alert, the adapter writes an `activities` row of kind `security_intrusion_detected` to the relevant workspace (or the facility workspace for global-scope probes), making the intrusion signal visible in Mission Control's operator UI and governance surface. If `FEATURE_CRABTRAP_HONEYPOT` is OFF or CrabTrap is absent/misconfigured, Mission Control behaves exactly as it does today.
+- **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
+- **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
 **Current roadmap note:** SPEC-001, SPEC-002, and SPEC-002A are complete on `main`. SPEC-003 is the next unblocked implementation spec; Archive Sweep should run first when its autopilot run starts.
 
