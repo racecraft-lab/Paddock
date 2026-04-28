@@ -520,7 +520,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 0 | Foundation migrations (M53–M61) | Complete | Yes — runtime-safe | `upstream-divergent` |
 | 1 | Workspace switcher + `activeWorkspace` scoping | Complete | Yes — flag-off default | `upstream-safe` |
 | 1A | Spec archive + evidence retention | Complete | Yes — process/tooling only | `upstream-safe` |
-| 2 | Aegis refactor (facility singleton) | Pending | Yes — shim preserves legacy | `upstream-divergent` |
+| 2 | Aegis refactor (facility singleton) | Implementation complete; PR pending | Yes — shim preserves legacy | `upstream-divergent` |
 | 3 | Task-chain engine + declarative routing over `workflow_templates` | Pending | Yes — null-default fields | `upstream-divergent` |
 | 4 | `ready_for_owner` state + two-step terminal | Pending | Yes — per-template opt-in | `upstream-divergent` |
 | 5 | Area labels + GitHub sync updates | Pending | Yes — fallback to `area:triage` | `upstream-safe` |
@@ -537,6 +537,8 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 **Phase 1 completion note:** SPEC-002 is complete on PR #16 after merge to `main` as `65f2e7c`. Evidence: all 50 generated tasks checked, `pnpm typecheck`, `pnpm lint`, `pnpm test` (106 files / 1035 tests), `pnpm build`, and `pnpm test:e2e` (526 tests) passed before merge.
 
 **Phase 1A completion note:** SPEC-002A is complete on PR #18 after merge to `main` as `daab0c1`. It defines spec artifact archival, Argos/CI evidence provenance, PR evidence links, CI/local guards, and the Archive Sweep lifecycle. The adopted `racecraft-lab/spec-kit-archive` fork is published as `v1.1.0`, `speckit-pro-v1.9.0` is released from merged main history, and later feature specs can proceed with Archive Sweep running first.
+
+**Phase 2 branch completion note:** SPEC-003 implementation is complete on branch `003-global-aegis` and awaiting PR review/merge. Evidence: all 21 generated tasks are checked, `getAegis(db, workspace_id?)` is implemented in `src/lib/aegis.ts`, `runAegisReviews` uses the shared resolver, Aegis completion gates remain `quality_reviews.reviewer='aegis'`, static guardrails pass with zero matches, focused Vitest passes 6 files / 68 tests, `pnpm typecheck` passes, `pnpm lint` passes with 0 errors and 10 pre-existing warnings, and `pnpm build` passes with network access for Google Fonts. Full `pnpm test` is still blocked by baseline environment issues in GPG-backed GNAP sync tests and the provisioner socket timeout.
 
 ### Autopilot Caveats (per spec)
 

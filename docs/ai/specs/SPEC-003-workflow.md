@@ -33,7 +33,7 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 | Checklist | `$speckit-checklist` | Complete | G4 passed; all four domains generated with zero remaining gaps |
 | Tasks | `$speckit-tasks` | Complete | G5 passed; generated 21 dependency-ordered tasks |
 | Analyze | `$speckit-analyze` | Complete | G6 passed after remediating 1 critical and 3 medium findings |
-| Implement | `$speckit-implement` | In Progress | Implement via TDD, then run verification and status sync |
+| Implement | `$speckit-implement` | Complete | G7 passed; 21 tasks complete with focused tests, typecheck, lint, build, e2e, and guardrails recorded |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -600,32 +600,38 @@ For each task, follow this cycle:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 0 - Archive Sweep and baseline discovery | Pending | 0 | |
-| 1 - Resolver and flag behavior | Pending | 0 | |
-| 2 - Scheduler and route integration | Pending | 0 | |
-| 3 - Reference sweep and regression guards | Pending | 0 | |
-| 4 - Final verification and status sync | Pending | 0 | |
+| 0 - Archive Sweep and baseline discovery | 2 | 2 | Completed in T001-T002 |
+| 1 - Resolver and flag behavior | 4 | 4 | Completed in T003-T006 |
+| 2 - Scheduler and route integration | 9 | 9 | Completed in T007-T015 |
+| 3 - Reference sweep and regression guards | 3 | 3 | Completed in T016-T018 |
+| 4 - Final verification and status sync | 3 | 3 | Completed in T019-T021 |
+
+**G7 Validation:** Passed 2026-04-28T21:33:04Z with all 21 tasks complete.
+
+**Implementation Verification:** Focused Vitest passed for 6 files / 68 tests. `pnpm typecheck` passed. `pnpm lint` passed with 0 errors and 10 pre-existing warnings. Static guardrails returned zero matches. `pnpm build` passed after rerunning with network access for Google Fonts; the sandboxed build failed only on `next/font` network fetches. Full `pnpm test` still fails on baseline environment issues: 8 `gnap-sync.test.ts` GPG signing failures and 1 `mc-provisioner-daemon.test.ts` socket timeout.
+
+**Integration Suite:** `pnpm test:e2e` passed on 2026-04-28T21:40:33Z with 531 Playwright tests passing.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] Archive Sweep evidence is recorded and excludes `SPEC-003`.
-- [ ] All generated tasks are marked complete in `specs/003-global-aegis/tasks.md`.
-- [ ] Acceptance evidence exists for P2-AC1 through P2-AC6.
-- [ ] `src/lib/aegis.ts` exists and exports the shared resolver.
-- [ ] `runAegisReviews` uses `getAegis` rather than a local workspace-keyed Aegis map.
-- [ ] Flag OFF preserves workspace-first behavior.
-- [ ] Flag ON resolves global Aegis first and preserves legacy fallback.
-- [ ] Shadowed local-row audit activity is tested and does not spam.
-- [ ] Aegis gates still use `quality_reviews.reviewer='aegis'`.
-- [ ] Prohibited-drift grep checks pass.
-- [ ] `pnpm typecheck` passes or any environment failure is documented with evidence.
-- [ ] `pnpm lint` passes or any environment failure is documented with evidence.
-- [ ] `pnpm test` passes or any environment failure is documented with evidence.
-- [ ] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-003 completion evidence after implementation.
-- [ ] `docs/rc-factory-v1-prd.md` reflects SPEC-003 completion after verification.
-- [ ] Branch is pushed for review.
+- [x] Archive Sweep evidence is recorded and excludes `SPEC-003`.
+- [x] All generated tasks are marked complete in `specs/003-global-aegis/tasks.md`.
+- [x] Acceptance evidence exists for P2-AC1 through P2-AC6.
+- [x] `src/lib/aegis.ts` exists and exports the shared resolver.
+- [x] `runAegisReviews` uses `getAegis` rather than a local workspace-keyed Aegis map.
+- [x] Flag OFF preserves workspace-first behavior.
+- [x] Flag ON resolves global Aegis first and preserves legacy fallback.
+- [x] Shadowed local-row audit activity is tested and does not spam.
+- [x] Aegis gates still use `quality_reviews.reviewer='aegis'`.
+- [x] Prohibited-drift grep checks pass.
+- [x] `pnpm typecheck` passes or any environment failure is documented with evidence.
+- [x] `pnpm lint` passes or any environment failure is documented with evidence.
+- [x] `pnpm test` passes or any environment failure is documented with evidence.
+- [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-003 completion evidence after implementation.
+- [x] `docs/rc-factory-v1-prd.md` reflects SPEC-003 completion after verification.
+- [x] Branch is pushed for review.
 
 ---
 

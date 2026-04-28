@@ -45,6 +45,14 @@ function request(body: Record<string, unknown>) {
   })
 }
 
+function featureFlagRequest(key: string, body: Record<string, unknown>) {
+  return new NextRequest(`http://localhost/api/feature-flags/${key}`, {
+    method: 'PATCH',
+    headers: { 'content-type': 'application/json', 'user-agent': 'vitest' },
+    body: JSON.stringify(body),
+  })
+}
+
 describe('PATCH /api/feature-flags/[key]', () => {
   beforeEach(() => {
     vi.resetModules()
@@ -97,6 +105,36 @@ describe('PATCH /api/feature-flags/[key]', () => {
 
     expect(response.status).toBe(409)
     expect(body.blockers).toContain('FEATURE_GLOBAL_AEGIS must be enabled first')
+    expect(updateWorkspaceFeatureFlag).not.toHaveBeenCalled()
+  })
+
+  it('blocks FEATURE_GLOBAL_AEGIS enablement until FEATURE_WORKSPACE_SWITCHER preflight passes', async () => {
+    getFeatureFlagAdminStates.mockReturnValue({
+      flags: [{
+        definition: { key: 'FEATURE_GLOBAL_AEGIS' },
+        env_locked: false,
+        evaluated_value: false,
+      }],
+    })
+    getFeatureFlagPreflight.mockReturnValue({
+      can_enable: false,
+      blockers: ['FEATURE_WORKSPACE_SWITCHER must be enabled first'],
+      checks: [{
+        id: 'dependencies',
+        label: 'Flag dependencies',
+        status: 'fail',
+        detail: 'Requires FEATURE_WORKSPACE_SWITCHER',
+      }],
+    })
+    const { PATCH } = await import('@/app/api/feature-flags/[key]/route')
+
+    const response = await PATCH(featureFlagRequest('FEATURE_GLOBAL_AEGIS', { workspace_id: 1, value: true, reason: 'canary' }), {
+      params: Promise.resolve({ key: 'FEATURE_GLOBAL_AEGIS' }),
+    })
+    const body = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(body.blockers).toContain('FEATURE_WORKSPACE_SWITCHER must be enabled first')
     expect(updateWorkspaceFeatureFlag).not.toHaveBeenCalled()
   })
 

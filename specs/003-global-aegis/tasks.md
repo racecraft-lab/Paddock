@@ -7,17 +7,17 @@
 
 **Purpose**: Confirm spec inputs, Archive Sweep safety, and the live Aegis reference surface before implementation.
 
-- [ ] T001 Confirm the spec artifact set and working tree scope in `specs/003-global-aegis/`, record the generated feature context from `specs/003-global-aegis/plan.md`, and verify Archive Sweep startup evidence excludes `specs/003-global-aegis` with no archive cleanup, delete, or move applied to the current target spec
-- [ ] T002 [P] Capture the exact live Aegis reference locations for the implementation baseline in `src/lib/task-dispatch.ts`, `src/lib/feature-flags.ts`, `src/lib/scheduler.ts`, `src/app/api/tasks/route.ts`, `src/app/api/tasks/[id]/route.ts`, `src/lib/validation.ts`, `src/components/panels/task-board-panel.tsx`, and `src/components/chat/chat-workspace.tsx`, classifying each as resolver dependency, `quality_reviews.reviewer='aegis'` review-gate dependency, or display-only/unaffected
+- [x] T001 Confirm the spec artifact set and working tree scope in `specs/003-global-aegis/`, record the generated feature context from `specs/003-global-aegis/plan.md`, and verify Archive Sweep startup evidence excludes `specs/003-global-aegis` with no archive cleanup, delete, or move applied to the current target spec
+- [x] T002 [P] Capture the exact live Aegis reference locations for the implementation baseline in `src/lib/task-dispatch.ts`, `src/lib/feature-flags.ts`, `src/lib/scheduler.ts`, `src/app/api/tasks/route.ts`, `src/app/api/tasks/[id]/route.ts`, `src/lib/validation.ts`, `src/components/panels/task-board-panel.tsx`, and `src/components/chat/chat-workspace.tsx`, classifying each as resolver dependency, `quality_reviews.reviewer='aegis'` review-gate dependency, or display-only/unaffected
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
 **Purpose**: Establish the shared resolver contract, feature-flag behavior, and guardrail coverage needed by all user stories.
 
-- [ ] T003 [P] Add resolver-focused Vitest coverage for `src/lib/aegis.ts` in `src/lib/__tests__/aegis.test.ts` to prove the module contract before implementation
-- [ ] T004 [P] Extend feature-flag tests in `src/lib/__tests__/feature-flags.test.ts` and `src/lib/__tests__/feature-flags-route.test.ts` to cover `FEATURE_GLOBAL_AEGIS` workspace-context evaluation, malformed workspace flag JSON, env `0` kill switch behavior, env `1` non-enablement, and the `FEATURE_WORKSPACE_SWITCHER` dependency/preflight blocker
-- [ ] T005 Add shared resolver helpers in `src/lib/aegis.ts` for `getAegis(db, workspace_id?)`, lowest-id tie breaking, workspace-first/global-first precedence, gateway fallback shape, and `aegis_local_shadowed` activity insertion, then add `src/lib/aegis.ts` to the strict-scope lists in `tsconfig.spec-strict.json` and `eslint.config.mjs`
-- [ ] T006 Update the task-dispatch contract tests in `src/lib/__tests__/task-dispatch.test.ts` to cover `resolveGatewayAgentIdForReviewAgent` with database-backed config, malformed config fallback, and the gateway `aegis` fallback
+- [x] T003 [P] Add resolver-focused Vitest coverage for `src/lib/aegis.ts` in `src/lib/__tests__/aegis.test.ts` to prove the module contract before implementation
+- [x] T004 [P] Extend feature-flag tests in `src/lib/__tests__/feature-flags.test.ts` and `src/lib/__tests__/feature-flags-route.test.ts` to cover `FEATURE_GLOBAL_AEGIS` workspace-context evaluation, malformed workspace flag JSON, env `0` kill switch behavior, env `1` non-enablement, and the `FEATURE_WORKSPACE_SWITCHER` dependency/preflight blocker
+- [x] T005 Add shared resolver helpers in `src/lib/aegis.ts` for `getAegis(db, workspace_id?)`, lowest-id tie breaking, workspace-first/global-first precedence, gateway fallback shape, and `aegis_local_shadowed` activity insertion, then add `src/lib/aegis.ts` to the strict-scope lists in `tsconfig.spec-strict.json` and `eslint.config.mjs`
+- [x] T006 Update the task-dispatch contract tests in `src/lib/__tests__/task-dispatch.test.ts` to cover `resolveGatewayAgentIdForReviewAgent` with database-backed config, malformed config fallback, and the gateway `aegis` fallback
 
 ## Phase 3: User Story 1 - Workspace-First Compatibility (Priority: P1)
 
@@ -25,9 +25,9 @@
 
 **Independent Test**: A workspace with a local Aegis row still resolves that row when the flag is off, and scheduler review dispatch completes with the same `quality_reviews.reviewer='aegis'` gate behavior.
 
-- [ ] T007 [P] [US1] Add flag-off workspace-first resolver coverage in `src/lib/__tests__/aegis.test.ts` for local-row precedence and global fallback only when no local row exists
-- [ ] T008 [US1] Implement the flag-off path in `src/lib/aegis.ts` so `getAegis(db, workspace_id?)` resolves workspace rows first, then global rows, and returns the gateway `aegis` fallback when no database row exists
-- [ ] T009 [P] [US1] Add regression coverage in `src/lib/__tests__/task-dispatch.test.ts` for `runAegisReviews` preserving task selection, retry handling, dispatch inputs, quality-review writes, activity logging, status transitions, and `quality_reviews.reviewer='aegis'` gate checks while sourcing the reviewer through `getAegis`
+- [x] T007 [P] [US1] Add flag-off workspace-first resolver coverage in `src/lib/__tests__/aegis.test.ts` for local-row precedence and global fallback only when no local row exists
+- [x] T008 [US1] Implement the flag-off path in `src/lib/aegis.ts` so `getAegis(db, workspace_id?)` resolves workspace rows first, then global rows, and returns the gateway `aegis` fallback when no database row exists
+- [x] T009 [P] [US1] Add regression coverage in `src/lib/__tests__/task-dispatch.test.ts` for `runAegisReviews` preserving task selection, retry handling, dispatch inputs, quality-review writes, activity logging, status transitions, and `quality_reviews.reviewer='aegis'` gate checks while sourcing the reviewer through `getAegis`
 
 ## Phase 4: User Story 2 - Facility-Wide Aegis (Priority: P2)
 
@@ -35,9 +35,9 @@
 
 **Independent Test**: A workspace with no local Aegis row resolves the global Aegis row when the flag is on, and repeated resolver calls do not change the review gate contract.
 
-- [ ] T010 [P] [US2] Add flag-on global-first resolver coverage in `src/lib/__tests__/aegis.test.ts` for global-only lookup and workspace fallback when the global row is missing
-- [ ] T011 [US2] Implement the flag-on path in `src/lib/aegis.ts` so `getAegis(db, workspace_id?)` prefers the global singleton for workspace-scoped review dispatch
-- [ ] T012 [P] [US2] Wire `runAegisReviews` in `src/lib/task-dispatch.ts` to call `getAegis(db, task.workspace_id)` and keep gateway routing through `resolveGatewayAgentIdForReviewAgent`
+- [x] T010 [P] [US2] Add flag-on global-first resolver coverage in `src/lib/__tests__/aegis.test.ts` for global-only lookup and workspace fallback when the global row is missing
+- [x] T011 [US2] Implement the flag-on path in `src/lib/aegis.ts` so `getAegis(db, workspace_id?)` prefers the global singleton for workspace-scoped review dispatch
+- [x] T012 [P] [US2] Wire `runAegisReviews` in `src/lib/task-dispatch.ts` to call `getAegis(db, task.workspace_id)` and keep gateway routing through `resolveGatewayAgentIdForReviewAgent`
 
 ## Phase 5: User Story 3 - Shadowed Local Visibility (Priority: P3)
 
@@ -45,25 +45,25 @@
 
 **Independent Test**: When both local and global Aegis rows exist under the enabled flag, the global row is chosen and exactly one `aegis_local_shadowed` activity exists for the requested workspace/global/local tuple.
 
-- [ ] T013 [P] [US3] Add shadow-audit coverage in `src/lib/__tests__/aegis.test.ts` for idempotent `activities` insertion when global Aegis shadows a local row
-- [ ] T014 [US3] Implement idempotent `aegis_local_shadowed` activity writes in `src/lib/aegis.ts` with the requested workspace id, global agent id, local agent id, actor `system`, and deterministic data payload
-- [ ] T015 [P] [US3] Update scheduler and task-dispatch regression tests in `src/lib/__tests__/task-dispatch.test.ts` to prove repeated ticks do not duplicate the shadow audit row and still fall back to gateway `aegis` when no database Aegis row exists
+- [x] T013 [P] [US3] Add shadow-audit coverage in `src/lib/__tests__/aegis.test.ts` for idempotent `activities` insertion when global Aegis shadows a local row
+- [x] T014 [US3] Implement idempotent `aegis_local_shadowed` activity writes in `src/lib/aegis.ts` with the requested workspace id, global agent id, local agent id, actor `system`, and deterministic data payload
+- [x] T015 [P] [US3] Update scheduler and task-dispatch regression tests in `src/lib/__tests__/task-dispatch.test.ts` to prove repeated ticks do not duplicate the shadow audit row and still fall back to gateway `aegis` when no database Aegis row exists
 
 ## Phase 6: Aegis Reference Sweep & Contract Preservation
 
 **Purpose**: Update the smallest remaining task, validation, and UI/chat reference surfaces so they keep the same reviewer contract without introducing task-pipeline behavior.
 
-- [ ] T016 [P] Refactor the task route approval gate checks in `src/app/api/tasks/route.ts` and `src/app/api/tasks/[id]/route.ts` to keep using `quality_reviews.reviewer='aegis'` while avoiding any `quality_reviews.agent_id` dependency
-- [ ] T017 [P] Update only true resolver dependencies from the classified sweep in `src/lib/validation.ts`, `src/components/panels/task-board-panel.tsx`, and `src/components/chat/chat-workspace.tsx`; explicitly document display-only or unaffected Aegis references and avoid task pipeline or `ready_for_owner` behavior
-- [ ] T018 Add prohibited-drift grep guardrails in `specs/003-global-aegis/quickstart.md` or a companion verification note under `specs/003-global-aegis/` for inline `process.env.FEATURE_GLOBAL_AEGIS` reads, direct Aegis lookup bypasses, `aegisAgentByWorkspace`, `quality_reviews.agent_id`, and downstream leakage into `FEATURE_TASK_PIPELINES`, `ready_for_owner`, `FEATURE_AREA_LABEL_ROUTING`, artifact store, governance, pilot behavior, product-line skill/session ownership, multi-facility modeling, or CrabTrap
+- [x] T016 [P] Refactor the task route approval gate checks in `src/app/api/tasks/route.ts` and `src/app/api/tasks/[id]/route.ts` to keep using `quality_reviews.reviewer='aegis'` while avoiding any `quality_reviews.agent_id` dependency
+- [x] T017 [P] Update only true resolver dependencies from the classified sweep in `src/lib/validation.ts`, `src/components/panels/task-board-panel.tsx`, and `src/components/chat/chat-workspace.tsx`; explicitly document display-only or unaffected Aegis references and avoid task pipeline or `ready_for_owner` behavior
+- [x] T018 Add prohibited-drift grep guardrails in `specs/003-global-aegis/quickstart.md` or a companion verification note under `specs/003-global-aegis/` for inline `process.env.FEATURE_GLOBAL_AEGIS` reads, direct Aegis lookup bypasses, `aegisAgentByWorkspace`, `quality_reviews.agent_id`, and downstream leakage into `FEATURE_TASK_PIPELINES`, `ready_for_owner`, `FEATURE_AREA_LABEL_ROUTING`, artifact store, governance, pilot behavior, product-line skill/session ownership, multi-facility modeling, or CrabTrap
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
 **Purpose**: Final verification that the resolver, routes, and guardrails behave as specified.
 
-- [ ] T019 Run focused verification for `src/lib/__tests__/aegis.test.ts`, `src/lib/__tests__/task-dispatch.test.ts`, `src/lib/__tests__/feature-flags.test.ts`, `src/lib/__tests__/feature-flags-route.test.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts`
-- [ ] T020 Run the static guardrail commands from `specs/003-global-aegis/quickstart.md` plus focused strict-scope and archive checks; confirm zero matches for direct Aegis bypasses outside `src/lib/aegis.ts`, missing strict-scope coverage for `src/lib/aegis.ts`, `quality_reviews.agent_id`, and Archive Sweep cleanup/delete/move of `specs/003-global-aegis`
-- [ ] T021 Update `specs/003-global-aegis/quickstart.md` status notes after verification so the documented checks match the implemented resolver and review-gate behavior
+- [x] T019 Run focused verification for `src/lib/__tests__/aegis.test.ts`, `src/lib/__tests__/task-dispatch.test.ts`, `src/lib/__tests__/feature-flags.test.ts`, `src/lib/__tests__/feature-flags-route.test.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts`
+- [x] T020 Run the static guardrail commands from `specs/003-global-aegis/quickstart.md` plus focused strict-scope and archive checks; confirm zero matches for direct Aegis bypasses outside `src/lib/aegis.ts`, missing strict-scope coverage for `src/lib/aegis.ts`, `quality_reviews.agent_id`, and Archive Sweep cleanup/delete/move of `specs/003-global-aegis`
+- [x] T021 Update `specs/003-global-aegis/quickstart.md` status notes after verification so the documented checks match the implemented resolver and review-gate behavior
 
 ## Dependencies & Execution Order
 

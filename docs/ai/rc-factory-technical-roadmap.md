@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, and SPEC-002A are complete on `main`. SPEC-003 setup is active on branch `003-global-aegis`; Archive Sweep should run first when its autopilot run starts.
+**Current roadmap note:** SPEC-001, SPEC-002, and SPEC-002A are complete on `main`. SPEC-003 implementation is complete on branch `003-global-aegis` and is awaiting PR review/merge; downstream specs remain pending until SPEC-003 lands.
 
 ## Feature Flag Resolution Policy
 
@@ -176,7 +176,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 ### SPEC-003: Aegis Facility Singleton Refactor
 
 - **Status:** In Progress
-- **Branch status:** Setup branch `003-global-aegis` created with workflow `docs/ai/specs/SPEC-003-workflow.md`; implementation has not started.
+- **Branch status:** Implementation complete on branch `003-global-aegis`; awaiting PR review/merge.
 - **Priority:** P1
 - **Branch short name:** `global-aegis`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A
@@ -188,6 +188,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `src/lib/aegis.ts`
 - **Autopilot notes:** Centralize lookup behavior in `getAegis`. Sweep all known Aegis references without changing review semantics. Use the live `quality_reviews.reviewer='aegis'` signal unless a separate migration intentionally changes that model.
 - **Definition of done:** Phase 2 deliverables are implemented, P2 acceptance criteria pass for global-only, workspace-only, and legacy-local scenarios, and scheduler behavior remains unchanged with compatibility mode OFF.
+- **Implementation evidence:** Complete on branch `003-global-aegis` on 2026-04-28. G7 passed with all 21 generated tasks checked. Evidence includes `src/lib/aegis.ts`, feature-flagged workspace-first/global-first resolver behavior, legacy fallback, idempotent `aegis_local_shadowed` activity writes, `runAegisReviews` using `getAegis(db, task.workspace_id)`, strict-scope coverage in `tsconfig.spec-strict.json` and `eslint.config.mjs`, focused Vitest passing 6 files / 68 tests, `pnpm typecheck` passing, `pnpm lint` passing with 0 errors and 10 pre-existing warnings, static guardrails passing with zero matches, and `pnpm build` passing with network access for Google Fonts. Full `pnpm test` remains blocked by baseline environment issues: GPG-agent signing failures in `gnap-sync.test.ts` and a provisioner socket timeout.
 
 ### SPEC-004: Task Pipeline Engine and Declarative Routing
 

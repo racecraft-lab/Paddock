@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-003-workflow.md",
-  "updated_at": "2026-04-28T21:11:08Z",
-  "active_step": "Phase 7: Implement - Pending task decomposition",
+  "updated_at": "2026-04-28T21:41:16Z",
+  "active_step": "Post: PR Creation",
   "status": "In Progress",
   "notes": [
     "SPEC-003 setup completed on branch 003-global-aegis from origin/main e161a70.",
@@ -21,7 +21,12 @@
     "Scheduler Safety checklist completed on 2026-04-28T20:42:02Z: 35 items, 0 gaps, no unresolved consensus items, zero markers after generation.",
     "Regression Safety checklist completed on 2026-04-28T20:55:11Z: 26 items, 4 gaps remediated in spec/plan/quickstart/checklist, no unresolved consensus items. G4 passed with zero gap markers.",
     "Tasks completed on 2026-04-28T20:59:36Z: 21 tasks across 7 phases, 3 user stories covered, 6 parallel opportunities. G5 passed with zero markers.",
-    "Analyze completed on 2026-04-28T21:11:08Z: 1 critical and 3 medium findings remediated in plan/tasks, no unresolved consensus items. G6 passed with zero CRITICAL/HIGH findings."
+    "Analyze completed on 2026-04-28T21:11:08Z: 1 critical and 3 medium findings remediated in plan/tasks, no unresolved consensus items. G6 passed with zero CRITICAL/HIGH findings.",
+    "Implementation completed on 2026-04-28T21:33:04Z: src/lib/aegis.ts added, runAegisReviews wired to getAegis, all 21 tasks complete, G7 passed, focused tests/typecheck/lint/build/guardrails recorded. Full pnpm test still fails on baseline GPG-agent and provisioner socket environment issues.",
+    "Post verification completed on 2026-04-28T21:36:00Z: focused Vitest, typecheck, lint, static guardrails, strict-scope checks, G7, and build evidence recorded; roadmap and PRD status synced with branch implementation evidence.",
+    "Post code review completed on 2026-04-28T21:36:56Z with no merge-blocking findings in resolver, task-dispatch, feature-flag, strict-scope, or guardrail diffs.",
+    "Integration suite completed on 2026-04-28T21:40:33Z: pnpm test:e2e passed 531 Playwright tests.",
+    "Cleanup completed on 2026-04-28T21:41:16Z: git diff --check passed, autopilot-state.json parsed successfully, and git status contained only expected SPEC-003 implementation and documentation changes."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -108,12 +113,12 @@
     {"step": "Phase 5: Tasks", "status": "completed"},
     {"step": "Phase 6: Analyze", "status": "completed"},
     {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
-    {"step": "Phase 7: Implement - Pending task decomposition", "status": "in_progress"},
-    {"step": "Post: Verify Implementation", "status": "pending"},
-    {"step": "Post: Code Review", "status": "pending"},
-    {"step": "Post: Integration Suite", "status": "pending"},
-    {"step": "Post: Cleanup", "status": "pending"},
-    {"step": "Post: PR Creation", "status": "pending"},
+    {"step": "Phase 7: Implement - Pending task decomposition", "status": "completed"},
+    {"step": "Post: Verify Implementation", "status": "completed"},
+    {"step": "Post: Code Review", "status": "completed"},
+    {"step": "Post: Integration Suite", "status": "completed"},
+    {"step": "Post: Cleanup", "status": "completed"},
+    {"step": "Post: PR Creation", "status": "in_progress"},
     {"step": "Post: Review Remediation", "status": "pending"},
     {"step": "Post: Retrospective", "status": "pending"}
   ]
