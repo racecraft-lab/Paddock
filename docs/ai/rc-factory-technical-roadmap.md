@@ -72,8 +72,8 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | Spec ID | Phase | Spec Name | Short Name | Status | Priority | Depends On | Enables | Source Section |
 |---|---:|---|---|---|---|---|---|---|
 | SPEC-001 | 0 | Foundation Migrations | foundation-migrations | Complete | P0 | — | SPEC-002 | Phase 0 |
-| SPEC-002 | 1 | Product-Line Switcher and activeWorkspace Scoping | product-line-switcher | In Progress | P1 | SPEC-001 | SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009 | Phase 1 |
-| SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | Pending | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
+| SPEC-002 | 1 | Product-Line Switcher and activeWorkspace Scoping | product-line-switcher | Complete | P1 | SPEC-001 | SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009 | Phase 1 |
+| SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | In Progress | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
 | SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
 | SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Pending | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
@@ -83,7 +83,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-009 | 8 | Product Line A Pilot End-to-End Smoke | product-line-a-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
 | SPEC-010 | 9 | Product Line B Product-Line Onboarding | product-line-b-onboarding | Pending | P3 | SPEC-002A, SPEC-009 | — | Phase 9 |
 
-**Current branch note:** SPEC-002 implementation is complete and G7-verified on branch `002-product-line-switcher`, but the SpecKit-Pro index remains `In Progress` until the implementation PR is merged, per the status policy above.
+**Current branch note:** SPEC-002 is complete after PR #16 merged into `main` as merge commit `65f2e7c`; SPEC-002A setup is active on branch `002a-spec-archive-evidence`.
 
 ## Feature Flag Resolution Policy
 
@@ -118,7 +118,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-002: Product-Line Switcher and activeWorkspace Scoping
 
-- **Status:** In Progress
+- **Status:** Complete
 - **Priority:** P1
 - **Branch short name:** `product-line-switcher`
 - **Dependencies:** SPEC-001
@@ -130,11 +130,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** New production modules are limited to `src/components/layout/workspace-switcher.tsx`, `src/types/product-line.ts`, and `src/lib/feature-flags.ts`. Existing store, header, panel, API, and SSE files may be touched only where Phase 1 route/panel matrices require Product Line scope, Facility aggregate behavior, or header terminology fixes.
 - **Autopilot notes:** Keep `activeTenant` independent from Product Line scope. The switcher's synthetic Facility entry means authenticated Facility aggregate view, not direct selection of the real `workspaces.slug='facility'` row. Global agents must appear across product-line views. Skills, local/gateway sessions, transcripts, and multi-facility tenant modeling remain deferred boundaries.
 - **Definition of done:** Phase 1 deliverables are implemented, P1-AC1 through P1-AC16 pass with flag OFF, Facility aggregate, and selected Product Line modes, and no unauthorized workspace data leaks through REST, URL state, cache reuse, BroadcastChannel, or SSE scoping.
-- **Implementation evidence:** G7 passed locally on 2026-04-26 in branch `002-product-line-switcher`: all 50 generated tasks are checked, `pnpm typecheck` passed, `pnpm lint` passed with 0 errors / 11 pre-existing warnings, `pnpm test` passed 106 files / 1035 tests, `pnpm build` passed, `pnpm test:e2e` passed 526 tests, and guardrail greps found no inline runtime `FEATURE_*` reads outside `src/lib/feature-flags.ts` or new runtime gateway/global-boundary drift.
+- **Completion evidence:** Complete on PR #16 (`002-product-line-switcher`), merged to `main` as `65f2e7c` after G7 passed locally on 2026-04-26: all 50 generated tasks checked, `pnpm typecheck` passed, `pnpm lint` passed with 0 errors / 11 pre-existing warnings, `pnpm test` passed 106 files / 1035 tests, `pnpm build` passed, `pnpm test:e2e` passed 526 tests, and guardrail greps found no inline runtime `FEATURE_*` reads outside `src/lib/feature-flags.ts` or new runtime gateway/global-boundary drift.
 
 ### SPEC-002A: Spec Archive and Evidence Retention
 
-- **Status:** Pending
+- **Status:** In Progress
 - **Priority:** P1
 - **Branch short name:** `spec-archive-evidence`
 - **Dependencies:** SPEC-002
@@ -145,6 +145,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Tool count / tool names:** N/A — process/tooling spec
 - **Strict Scope:** `.specify` archive integration and hooks, SpecKit workflow docs/templates, screenshot/evidence manifest conventions, CI/local guards for `specs/**/screenshots`, and PR evidence guidance. No runtime product feature behavior ships in this spec.
 - **Autopilot notes:** Use `specs/002-product-line-switcher` as the dry-run source because it contains real Playwright screenshots. Do not delete or move existing spec folders automatically. If archive cleanup is needed, produce an explicit reviewed change rather than a silent post-merge mutation.
+- **Execution note:** Setup worktree and branch are `002a-spec-archive-evidence`; workflow is `docs/ai/specs/SPEC-002A-workflow.md`.
 - **Definition of done:** Phase 1A deliverables are implemented, the archive command dry-runs against SPEC-002, screenshot guard behavior is verified locally and in CI, constitution/workflow docs distinguish durable memory from ephemeral CI artifacts and curated permanent screenshots, and SPEC-003 setup can proceed without unresolved artifact-retention decisions.
 
 ### SPEC-003: Aegis Facility Singleton Refactor
