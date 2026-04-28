@@ -612,6 +612,8 @@ For each task, follow this cycle:
 
 **Integration Suite:** Spec-specific e2e coverage exists at `tests/e2e/spec-003-global-aegis.spec.ts` and passed 2 tests on 2026-04-28T22:10:54Z. Full `pnpm test:e2e` passed on 2026-04-28T22:10:54Z with 533 Playwright tests passing.
 
+**Argos Fixture Remediation:** PR #20 remediation on 2026-04-28T22:51:33Z stabilized the inherited SPEC-002 visual fixtures by replacing timestamp/randomized Playwright seed names with fixed workspace/project/agent/task data, freezing the SPEC-002 visual browser clock, and resetting only the fixed visual fixture rows before each run. Verification passed `pnpm test:e2e:spec-002` (11 tests), `pnpm test:e2e:argos-metadata` (11 Playwright screenshot metadata files across 5 tests), `pnpm test:visual:storybook` (10 tests), `pnpm test:visual:argos-metadata` (20 Storybook metadata files across 10 stories), `pnpm exec playwright test tests/e2e/spec-003-global-aegis.spec.ts` (2 tests), `pnpm typecheck`, and `pnpm lint` with the same 10 pre-existing warnings.
+
 **PR Creation:** PR #20 opened on 2026-04-28T21:43:56Z: <https://github.com/racecraft-lab/mission-control/pull/20>.
 
 **Post-Extension Gates:** Installed verify/review/cleanup/retrospective command definitions were re-run as local gate procedures on 2026-04-28T22:10:54Z because this Codex runtime does not expose a slash-command invoker. Evidence is recorded in `specs/003-global-aegis/post-implementation-gates.md` and `specs/003-global-aegis/retrospective.md`.
@@ -659,6 +661,7 @@ For each task, follow this cycle:
 - `pnpm build` needed network access for Google Fonts, and SSH push failed because the signing agent refused the key; HTTPS push succeeded.
 - The autopilot `/loop` review-remediation scheduler is unavailable in this Codex runtime, so review-thread monitoring was limited to a direct GitHub query.
 - The first completion pass marked P2 success criteria complete only in the post-implementation checklist; the remediation pass checked P2-AC1 through P2-AC6 in the success-criteria summary as well.
+- SPEC-002 Argos Playwright snapshots should not use visible timestamp/random suffix seed data; fixed visual fixture identities plus a frozen browser clock keep every PR from producing unrelated screenshot churn.
 
 ### Patterns to Reuse
 
@@ -666,6 +669,7 @@ For each task, follow this cycle:
 - Record both local verification success and environment-limited failures in the workflow rather than hiding incomplete suite results.
 - Refresh the remote tracking ref after HTTPS pushes when the configured `origin` remote uses SSH.
 - Keep a spec-named `tests/e2e/` file for every spec that relies on Playwright evidence so the Integration Suite discovery step has an unambiguous match.
+- For visual journeys, seed human-readable fixture names, slugs, ticket prefixes, and task timestamps deterministically and reset those rows before the run instead of making each PR invent new visible data.
 
 ---
 

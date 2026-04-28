@@ -11,9 +11,32 @@ export const API_KEY_HEADER: Record<string, string> = {
 export const E2E_ADMIN_USER = process.env.AUTH_USER || 'testadmin'
 export const E2E_ADMIN_PASS = process.env.AUTH_PASS || 'testpass1234!'
 
-export function setDefaultWorkspaceSwitcherFlag(enabled: boolean): () => void {
-  const dbPath = process.env.MISSION_CONTROL_DB_PATH ||
+export const SPEC002_VISUAL_NOW = new Date('2026-04-28T12:00:00.000Z')
+const SPEC002_VISUAL_NOW_SECONDS = Math.floor(SPEC002_VISUAL_NOW.getTime() / 1000)
+
+const SPEC002_PRODUCT_LINE_VISUAL = {
+  alphaWorkspace: { name: 'SPEC-002 Alpha', slug: 'spec-002-alpha-visual' },
+  betaWorkspace: { name: 'SPEC-002 Beta', slug: 'spec-002-beta-visual' },
+  alphaProject: { name: 'SPEC-002 Alpha Project', ticketPrefix: 'A002' },
+  betaProject: { name: 'SPEC-002 Beta Project', ticketPrefix: 'B002' },
+  alphaAgent: 'spec-002-alpha-agent',
+  betaAgent: 'spec-002-beta-agent',
+  alphaTask: 'SPEC-002 Alpha Task',
+  betaTask: 'SPEC-002 Beta Task',
+} as const
+
+export const SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE = {
+  name: 'SPEC-002 Flag Admin',
+  slug: 'spec-002-flag-admin-visual',
+} as const
+
+function getE2EDbPath() {
+  return process.env.MISSION_CONTROL_DB_PATH ||
     path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+}
+
+export function setDefaultWorkspaceSwitcherFlag(enabled: boolean): () => void {
+  const dbPath = getE2EDbPath()
   const db = new Database(dbPath)
   try {
     const rows = db.prepare('SELECT id, feature_flags FROM workspaces')
@@ -97,6 +120,112 @@ export async function enableWorkspaceSwitcherFlagForE2E(request: APIRequestConte
 
 function uid() {
   return `${Date.now()}-${randomBytes(4).toString('hex')}`
+}
+
+function sqlPlaceholders(values: readonly unknown[]) {
+  return values.map(() => '?').join(', ')
+}
+
+function tableExists(db: Database.Database, table: string) {
+  return Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table))
+}
+
+function deleteWhereIn(db: Database.Database, table: string, column: string, values: readonly unknown[]) {
+  if (values.length === 0 || !tableExists(db, table)) return
+  db.prepare(`DELETE FROM ${table} WHERE ${column} IN (${sqlPlaceholders(values)})`).run(...values)
+}
+
+function deleteTaskNotifications(db: Database.Database, taskIds: readonly number[]) {
+  if (taskIds.length === 0 || !tableExists(db, 'notifications')) return
+  db.prepare(`DELETE FROM notifications WHERE source_type = 'task' AND source_id IN (${sqlPlaceholders(taskIds)})`)
+    .run(...taskIds)
+}
+
+function selectIdsWhereIn(db: Database.Database, table: string, column: string, values: readonly unknown[]) {
+  if (values.length === 0 || !tableExists(db, table)) return [] as number[]
+  return db.prepare(`SELECT id FROM ${table} WHERE ${column} IN (${sqlPlaceholders(values)})`)
+    .all(...values)
+    .map((row) => (row as { id: number }).id)
+}
+
+export async function freezeSpec002VisualClock(page: Page) {
+  await page.clock.setFixedTime(SPEC002_VISUAL_NOW)
+}
+
+export function resetSpec002ProductLineVisualFixtures() {
+  const workspaceSlugs = [
+    SPEC002_PRODUCT_LINE_VISUAL.alphaWorkspace.slug,
+    SPEC002_PRODUCT_LINE_VISUAL.betaWorkspace.slug,
+  ]
+  const projectNames = [
+    SPEC002_PRODUCT_LINE_VISUAL.alphaProject.name,
+    SPEC002_PRODUCT_LINE_VISUAL.betaProject.name,
+  ]
+  const agentNames = [
+    SPEC002_PRODUCT_LINE_VISUAL.alphaAgent,
+    SPEC002_PRODUCT_LINE_VISUAL.betaAgent,
+  ]
+  const taskTitles = [
+    SPEC002_PRODUCT_LINE_VISUAL.alphaTask,
+    SPEC002_PRODUCT_LINE_VISUAL.betaTask,
+  ]
+
+  const db = new Database(getE2EDbPath())
+  try {
+    db.transaction(() => {
+      const workspaceIds = selectIdsWhereIn(db, 'workspaces', 'slug', workspaceSlugs)
+      const taskIdsByTitle = tableExists(db, 'tasks')
+        ? db.prepare(`
+            SELECT id FROM tasks
+            WHERE title IN (${sqlPlaceholders(taskTitles)})
+              AND description LIKE '%seeded by SPEC-002 real UI e2e%'
+          `).all(...taskTitles).map((row) => (row as { id: number }).id)
+        : []
+      const taskIdsByWorkspace = selectIdsWhereIn(db, 'tasks', 'workspace_id', workspaceIds)
+      const taskIds = Array.from(new Set([...taskIdsByTitle, ...taskIdsByWorkspace]))
+
+      deleteTaskNotifications(db, taskIds)
+      deleteWhereIn(db, 'notifications', 'workspace_id', workspaceIds)
+      deleteWhereIn(db, 'activities', 'workspace_id', workspaceIds)
+      deleteWhereIn(db, 'comments', 'task_id', taskIds)
+      deleteWhereIn(db, 'task_subscriptions', 'task_id', taskIds)
+      deleteWhereIn(db, 'quality_reviews', 'task_id', taskIds)
+      deleteWhereIn(db, 'tasks', 'id', taskIds)
+      deleteWhereIn(db, 'agents', 'name', agentNames)
+      deleteWhereIn(db, 'agents', 'workspace_id', workspaceIds)
+      deleteWhereIn(db, 'projects', 'name', projectNames)
+      deleteWhereIn(db, 'projects', 'workspace_id', workspaceIds)
+      deleteWhereIn(db, 'workspaces', 'id', workspaceIds)
+    })()
+  } finally {
+    db.close()
+  }
+}
+
+export function resetSpec002FlagAdminVisualFixture() {
+  const db = new Database(getE2EDbPath())
+  try {
+    db.transaction(() => {
+      const workspaceIds = selectIdsWhereIn(db, 'workspaces', 'slug', [SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE.slug])
+      deleteWhereIn(db, 'activities', 'workspace_id', workspaceIds)
+      deleteWhereIn(db, 'workspaces', 'id', workspaceIds)
+    })()
+  } finally {
+    db.close()
+  }
+}
+
+function setSpec002VisualTaskTimestamps(taskIds: readonly number[]) {
+  if (taskIds.length === 0) return
+  const db = new Database(getE2EDbPath())
+  try {
+    const update = db.prepare('UPDATE tasks SET created_at = ?, updated_at = ? WHERE id = ?')
+    for (const taskId of taskIds) {
+      update.run(SPEC002_VISUAL_NOW_SECONDS, SPEC002_VISUAL_NOW_SECONDS, taskId)
+    }
+  } finally {
+    db.close()
+  }
 }
 
 function withWorkspaceScope(pathname: string, workspaceId: number) {
@@ -244,7 +373,7 @@ async function createSeedTask(
 }
 
 export async function seedProductLineE2EData(request: APIRequestContext): Promise<ProductLineE2EFixture> {
-  const stamp = uid().replace(/[^a-z0-9]/gi, '').toLowerCase().slice(-10)
+  resetSpec002ProductLineVisualFixtures()
   const restoreWorkspaceSwitcherFlag = await enableWorkspaceSwitcherFlagForE2E(request)
   const created = {
     tasks: [] as Array<{ id: number; workspaceId: number }>,
@@ -272,39 +401,40 @@ export async function seedProductLineE2EData(request: APIRequestContext): Promis
   try {
     const alphaWorkspace = await createSeedWorkspace(
       request,
-      `SPEC-002 Alpha ${stamp}`,
-      `spec-002-alpha-${stamp}`
+      SPEC002_PRODUCT_LINE_VISUAL.alphaWorkspace.name,
+      SPEC002_PRODUCT_LINE_VISUAL.alphaWorkspace.slug
     )
     const betaWorkspace = await createSeedWorkspace(
       request,
-      `SPEC-002 Beta ${stamp}`,
-      `spec-002-beta-${stamp}`
+      SPEC002_PRODUCT_LINE_VISUAL.betaWorkspace.name,
+      SPEC002_PRODUCT_LINE_VISUAL.betaWorkspace.slug
     )
     created.workspaces.push({ id: alphaWorkspace.id }, { id: betaWorkspace.id })
 
-    const alphaProject = await createSeedProject(request, alphaWorkspace.id, `SPEC-002 Alpha Project ${stamp}`, `A${stamp.slice(0, 5)}`.toUpperCase())
-    const betaProject = await createSeedProject(request, betaWorkspace.id, `SPEC-002 Beta Project ${stamp}`, `B${stamp.slice(0, 5)}`.toUpperCase())
+    const alphaProject = await createSeedProject(request, alphaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.alphaProject.name, SPEC002_PRODUCT_LINE_VISUAL.alphaProject.ticketPrefix)
+    const betaProject = await createSeedProject(request, betaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.betaProject.name, SPEC002_PRODUCT_LINE_VISUAL.betaProject.ticketPrefix)
     created.projects.push({ id: alphaProject.id, workspaceId: alphaWorkspace.id }, { id: betaProject.id, workspaceId: betaWorkspace.id })
 
-    const alphaAgent = await createSeedAgent(request, alphaWorkspace.id, `spec-002-alpha-agent-${stamp}`)
-    const betaAgent = await createSeedAgent(request, betaWorkspace.id, `spec-002-beta-agent-${stamp}`)
+    const alphaAgent = await createSeedAgent(request, alphaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.alphaAgent)
+    const betaAgent = await createSeedAgent(request, betaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.betaAgent)
     created.agents.push({ id: alphaAgent.id, workspaceId: alphaWorkspace.id }, { id: betaAgent.id, workspaceId: betaWorkspace.id })
 
     const alphaTask = await createSeedTask(
       request,
       alphaWorkspace.id,
       alphaProject.id,
-      `SPEC-002 Alpha Task ${stamp}`,
+      SPEC002_PRODUCT_LINE_VISUAL.alphaTask,
       alphaAgent.name
     )
     const betaTask = await createSeedTask(
       request,
       betaWorkspace.id,
       betaProject.id,
-      `SPEC-002 Beta Task ${stamp}`,
+      SPEC002_PRODUCT_LINE_VISUAL.betaTask,
       betaAgent.name
     )
     created.tasks.push({ id: alphaTask.id, workspaceId: alphaWorkspace.id }, { id: betaTask.id, workspaceId: betaWorkspace.id })
+    setSpec002VisualTaskTimestamps([alphaTask.id, betaTask.id])
 
     return {
       alpha: {

@@ -29,6 +29,8 @@ The only process drift was post-implementation tooling drift:
 - Focused Vitest: 4 files / 35 tests passed after the remediation pass.
 - SPEC-003 e2e: `tests/e2e/spec-003-global-aegis.spec.ts` passed 2 tests.
 - Full Playwright: 533 tests passed.
+- Argos Playwright fixture remediation: `pnpm test:e2e:spec-002` passed 11 tests, and `pnpm test:e2e:argos-metadata` verified 11 screenshot metadata files across 5 tests.
+- Argos Storybook safety check: `pnpm test:visual:storybook` passed 10 tests, and `pnpm test:visual:argos-metadata` verified 20 screenshot metadata files across 10 stories.
 - Typecheck: passed.
 - Lint: passed with 0 errors and 10 pre-existing warnings.
 - Build: passed after rerunning with network access for Google Fonts.
@@ -39,3 +41,4 @@ The only process drift was post-implementation tooling drift:
 - Keep phase-specific e2e coverage in a spec-named file so autopilot post-gate discovery is unambiguous.
 - Record post-extension gate evidence in a dedicated spec artifact when the runtime cannot invoke slash commands directly.
 - Do not mark `/loop` as scheduled unless the runtime actually exposes the scheduling capability.
+- Keep visual-regression seed data deterministic. Visible names, slugs, ticket prefixes, timestamps, and every Playwright page clock need fixed fixtures; random suffixes are acceptable for hidden API-only rows, but not for Argos screenshots.
