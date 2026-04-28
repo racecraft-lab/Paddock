@@ -76,6 +76,7 @@ src/
 ## Design Plan
 
 - Define `getAegis(db, workspace_id?)` as the single resolver entry point with deterministic scope precedence and lowest-id tie breaking.
+- Return a task-dispatch-compatible resolver row: `id`, `name`, source `config`, `agent_config` mapped from `agents.config` for `ReviewAgentRecord`, `workspace_id`, and `scope`; `agent_config` must equal `config` for database-backed rows so gateway `openclawId` parsing and name fallback semantics remain unchanged.
 - Keep gateway fallback behavior explicit so the scheduler can continue when no database-backed row exists.
 - Add tests that prove flag-off workspace-first behavior, flag-on global-first behavior through `workspaces.feature_flags`, no-workspace-context default OFF behavior, malformed config default-OFF handling, environment `0` kill-switch behavior, environment `1` non-enablement, existing `FEATURE_WORKSPACE_SWITCHER` dependency/preflight behavior, shadow-audit insertion, and unchanged scheduler semantics.
 

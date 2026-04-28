@@ -7,7 +7,8 @@
 - Fields:
   - `id`: database agent id
   - `name`: canonical reviewer name
-  - `config`: gateway routing and agent configuration
+  - `config`: source gateway routing and agent configuration from `agents.config`
+  - `agent_config`: task-dispatch adapter field mapped from the same `agents.config` value and consumed by `ReviewAgentRecord`
   - `workspace_id`: nullable workspace scope
   - `scope`: `global` or workspace-scoped equivalent
 - Relationships:
@@ -17,6 +18,7 @@
   - Match by `LOWER(name)='aegis'`
   - Prefer the scope dictated by `FEATURE_GLOBAL_AEGIS`
   - Use lowest database id when multiple rows match the same scope
+  - Preserve `config` and `agent_config` with identical values for database-backed rows so existing `openclawId` parsing and name fallback behavior remain available to task-dispatch consumers
 
 ### Shadow Audit Activity
 

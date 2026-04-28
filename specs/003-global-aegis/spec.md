@@ -134,7 +134,7 @@ A maintainer or auditor can see when a local Aegis row exists but is shadowed by
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST provide a shared Aegis resolver that returns the best available Aegis reviewer for an optional workspace context.
+- **FR-001**: The system MUST provide a shared Aegis resolver that returns the best available Aegis reviewer for an optional workspace context, including the row identity and gateway-routing fields needed by task-dispatch consumers: `id`, `name`, source `config`, adapter `agent_config` mapped from `agents.config`, `workspace_id`, and `scope`.
 - **FR-002**: The system MUST respect the global Aegis feature flag when choosing between global and workspace-scoped Aegis records.
 - **FR-003**: When the global feature is off, the system MUST prefer a workspace-scoped Aegis reviewer and fall back to a global reviewer only if no workspace-scoped reviewer is available.
 - **FR-004**: When the global feature is on, the system MUST prefer a global Aegis reviewer and fall back to a workspace-scoped reviewer only if no global reviewer is available.
