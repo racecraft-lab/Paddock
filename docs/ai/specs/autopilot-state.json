@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-003-workflow.md",
-  "updated_at": "2026-04-28T18:30:00Z",
-  "active_step": "Setup Complete",
+  "updated_at": "2026-04-28T19:27:45Z",
+  "active_step": "Phase 1: Specify",
   "status": "In Progress",
   "notes": [
     "SPEC-003 setup completed on branch 003-global-aegis from origin/main e161a70.",
@@ -9,7 +9,8 @@
     "Roadmap copy in this branch marks SPEC-003 In Progress per SpecKit-Pro status policy.",
     "Archive Sweep is now a speckit-pro:autopilot startup step. It runs before Phase 0 for the requested spec, excludes the current target spec, and keeps cleanup dry-run-only or stopped unless a clean safe base branch records safeToApplyCleanup=true.",
     "No active specs/** cleanup was applied by SPEC-002A. Completed spec folders may be removed only by a reviewed forward change after archive success, merge/tree references, recovery commands, and safeToApplyCleanup=true are recorded.",
-    "SPEC-003 autopilot should start with Archive Sweep and treat SPEC-001, SPEC-002, and SPEC-002A as previously merged candidates."
+    "SPEC-003 autopilot should start with Archive Sweep and treat SPEC-001, SPEC-002, and SPEC-002A as previously merged candidates.",
+    "Archive Sweep dry run completed for SPEC-003 on 2026-04-28T19:27:45Z: SPEC-001, SPEC-002, and SPEC-002A classified as eligibleForArchive=true; specs/003-global-aegis excluded; safeToApplyCleanup=false; no files deleted, moved, or rewritten."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -20,7 +21,8 @@
     "startup_timing": "before Phase 0/prerequisites for the requested spec",
     "last_recorded_dry_run_candidates": [
       "SPEC-001",
-      "SPEC-002"
+      "SPEC-002",
+      "SPEC-002A"
     ],
     "current_target_excluded_during_spec_003": "SPEC-003",
     "next_autopilot_previous_spec_candidates": [
@@ -29,6 +31,29 @@
       "SPEC-002A"
     ],
     "safeToApplyCleanup": false,
+    "last_recorded_dry_run_at": "2026-04-28T19:27:45Z",
+    "last_recorded_dry_run_current_target": "specs/003-global-aegis",
+    "last_recorded_dry_run_results": [
+      {
+        "path": "specs/001-foundation-migrations",
+        "eligibleForArchive": true,
+        "eligibleForCleanup": false
+      },
+      {
+        "path": "specs/002-product-line-switcher",
+        "eligibleForArchive": true,
+        "eligibleForCleanup": false
+      },
+      {
+        "path": "specs/002a-spec-archive-evidence",
+        "eligibleForArchive": true,
+        "eligibleForCleanup": false
+      },
+      {
+        "path": "specs/003-global-aegis",
+        "excludedCurrentSpec": true
+      }
+    ],
     "cleanup_policy": "Reviewed forward cleanup only after archive success, merge/tree references, recovery commands, clean safe base branch, and safeToApplyCleanup=true."
   },
   "releases": {
@@ -52,15 +77,33 @@
     "login_http_status": 200
   },
   "plan": [
-    {"step": "Setup: Branch, worktree, workflow, and roadmap status", "status": "completed"},
-    {"step": "Phase 0: Prerequisites and Archive Sweep startup", "status": "pending"},
-    {"step": "Phase 1: Specify", "status": "pending"},
-    {"step": "Phase 2: Clarify", "status": "pending"},
+    {"step": "Phase 0: Prerequisites and Archive Sweep startup", "status": "completed"},
+    {"step": "Phase 1: Specify", "status": "in_progress"},
+    {"step": "Phase 2: Clarify - Resolver Precedence and Flag Context", "status": "pending"},
+    {"step": "Phase 2: Clarify - Resolver Precedence and Flag Context Consensus", "status": "pending"},
+    {"step": "Phase 2: Clarify - Scheduler and Review Gate Compatibility", "status": "pending"},
+    {"step": "Phase 2: Clarify - Scheduler and Review Gate Compatibility Consensus", "status": "pending"},
+    {"step": "Phase 2: Clarify - Audit Activity and Reference Sweep", "status": "pending"},
+    {"step": "Phase 2: Clarify - Audit Activity and Reference Sweep Consensus", "status": "pending"},
     {"step": "Phase 3: Plan", "status": "pending"},
-    {"step": "Phase 4: Checklists", "status": "pending"},
+    {"step": "Phase 4: Checklist - Feature Flags", "status": "pending"},
+    {"step": "Phase 4: Checklist - Feature Flags Consensus", "status": "pending"},
+    {"step": "Phase 4: Checklist - Data Integrity", "status": "pending"},
+    {"step": "Phase 4: Checklist - Data Integrity Consensus", "status": "pending"},
+    {"step": "Phase 4: Checklist - Scheduler Safety", "status": "pending"},
+    {"step": "Phase 4: Checklist - Scheduler Safety Consensus", "status": "pending"},
+    {"step": "Phase 4: Checklist - Regression Safety", "status": "pending"},
+    {"step": "Phase 4: Checklist - Regression Safety Consensus", "status": "pending"},
     {"step": "Phase 5: Tasks", "status": "pending"},
     {"step": "Phase 6: Analyze", "status": "pending"},
-    {"step": "Phase 7: Implement", "status": "pending"},
-    {"step": "Post: Verification, status sync, and PR", "status": "pending"}
+    {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
+    {"step": "Phase 7: Implement - Pending task decomposition", "status": "pending"},
+    {"step": "Post: Verify Implementation", "status": "pending"},
+    {"step": "Post: Code Review", "status": "pending"},
+    {"step": "Post: Integration Suite", "status": "pending"},
+    {"step": "Post: Cleanup", "status": "pending"},
+    {"step": "Post: PR Creation", "status": "pending"},
+    {"step": "Post: Review Remediation", "status": "pending"},
+    {"step": "Post: Retrospective", "status": "pending"}
   ]
 }

@@ -26,7 +26,7 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Pending | Archive previously merged specs only; exclude `SPEC-003`; do not apply cleanup without safe cleanup evidence |
+| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Dry-run evidence recorded; `SPEC-003` excluded; cleanup not safe/applied |
 | Specify | `$speckit-specify` | Pending | Generate `specs/003-global-aegis/spec.md` from Phase 2 roadmap scope |
 | Clarify | `$speckit-clarify` | Pending | Resolve lookup precedence, audit activity, flag context, and legacy fallback ambiguity |
 | Plan | `$speckit-plan` | Pending | Design `getAegis`, task-dispatch integration, route validation, and tests |
@@ -77,6 +77,25 @@ SPEC-002A made Archive Sweep a required autopilot startup step. For this workflo
 - Current target excluded: `SPEC-003`.
 - Cleanup policy: dry-run-only or stop unless a clean safe base branch records `safeToApplyCleanup=true`, archive success, merge/tree references, and recovery commands.
 - No source spec folder is deleted silently by setup or by this workflow.
+
+#### Startup Dry-Run Evidence
+
+Recorded: 2026-04-28T19:27:45Z.
+
+Archive Sweep ran as:
+
+```bash
+$speckit.archive.run --sweep --current-target specs/003-global-aegis --dry-run
+```
+
+| Spec Folder | Classification | Cleanup |
+|-------------|----------------|---------|
+| `specs/001-foundation-migrations` | `eligibleForArchive=true` | `eligibleForCleanup=false` |
+| `specs/002-product-line-switcher` | `eligibleForArchive=true` | `eligibleForCleanup=false` |
+| `specs/002a-spec-archive-evidence` | `eligibleForArchive=true` | `eligibleForCleanup=false` |
+| `specs/003-global-aegis` | `excludedCurrentSpec=true` | Not applicable |
+
+`safeToApplyCleanup=false` because the run was dry-run only, `--apply-cleanup` was not supplied, and the worktree was not clean. No files were deleted, moved, or rewritten.
 
 ---
 
