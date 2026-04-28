@@ -33,6 +33,7 @@ A new **task pipeline engine** auto-chains tasks based on declarative routing ru
 - **Existing**: Next.js 16, React 19, TypeScript 5.7, better-sqlite3 (SQLite), Zustand, xyflow/react, reagraph, pnpm, Node ≥22, existing REST + SSE API surface.
 - **New**: Phase 0 schema additions only: one new column on `agents` (`scope`), four new tables (`task_dispositions`, `task_artifacts`, `resource_policies`, `resource_policy_events`), a feature-flag storage column on `workspaces` (`feature_flags JSON`), routing/chain/artifact-policy columns on `workflow_templates`, and task-chain binding/lineage columns on `tasks`. Later v1 runtime specs add the pinned schema-validation dependency (`ajv`), the application-level `ready_for_owner` vocabulary, and the UI/config/doc-copy rename from agent filesystem "workspace" to "Sandbox" while the existing `agents.workspace_path` SQL column remains unchanged. OpenClaw electricity / infra cost support is **not** a schema feature in v1; it is a runtime-only optional adapter.
 - **Testing**: existing Playwright/Vitest patterns + new migration tests + scheduler unit tests for routing + pilot smoke (see Smoke Plan).
+- **Security (fork-only optional):** CrabTrap (`github.com/brexhq/CrabTrap`) honeypot on HAL — decoy endpoints detect unauthorized access attempts against the AI/software factory REST API and agent sandboxes. Absent-safe and disabled by default; no-ops cleanly when config is missing.
 
 ---
 
@@ -131,6 +132,8 @@ This is the current honest fork-pressure picture.
 
 ### Explicitly `fork-only optional`
 
+- Running CrabTrap honeypot decoy service on HAL to detect unauthorized access to Mission Control API surfaces and agent sandboxes
+- Processing CrabTrap alert webhooks to create `activities` rows of kind `security_intrusion_detected` in Mission Control
 - Reading electricity / infra telemetry from `~/.openclaw/health/readings.jsonl`
 - Reading `~/.openclaw/health/current-rate.json`
 - Reading `~/.openclaw/health/cost.json`
@@ -523,6 +526,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 5 | Area labels + GitHub sync updates | Pending | Yes — fallback to `area:triage` | `upstream-safe` |
 | 6 | Disposition logging + artifact store + audit/admin panels | Pending | Yes — purely additive | `upstream-divergent` |
 | 7 | Resource governance + Cost Tracker enforcement | Pending | Yes — flag-off default | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` |
+| 7.5 | CrabTrap honeypot — HAL security adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
 | 8 | Product Line A pilot (issue #110, then #111) | Pending | Gated behind pilot feature flag | Fork rollout only |
 | 9 | Second product line onboarding (Product Line B) | Pending | Post-pilot | Fork rollout only |
 
