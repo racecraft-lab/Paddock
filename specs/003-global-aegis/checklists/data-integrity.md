@@ -8,36 +8,36 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Are the global Aegis singleton source requirements complete for matching `agents.scope='global'` and `LOWER(name)='aegis'` without introducing a new singleton table or schema migration? [Completeness, Spec §FR-005, Spec §Constraints]
-- [ ] CHK002 Are legacy workspace-scoped Aegis requirements complete for preserving existing `agents.workspace_id` lookup behavior during compatibility fallback? [Completeness, Spec §FR-003, Spec §FR-006]
-- [ ] CHK003 Are same-scope duplicate Aegis row requirements complete enough to preserve deterministic lowest-id selection before cross-scope precedence is applied? [Completeness, Spec §FR-012]
+- [x] CHK001 Are the global Aegis singleton source requirements complete for matching `agents.scope='global'` and `LOWER(name)='aegis'` without introducing a new singleton table or schema migration? [Completeness, Spec §FR-005, Spec §Constraints]
+- [x] CHK002 Are legacy workspace-scoped Aegis requirements complete for preserving existing `agents.workspace_id` lookup behavior during compatibility fallback? [Completeness, Spec §FR-003, Spec §FR-006]
+- [x] CHK003 Are same-scope duplicate Aegis row requirements complete enough to preserve deterministic lowest-id selection before cross-scope precedence is applied? [Completeness, Spec §FR-012]
 - [x] CHK004 Does the resolver contract define the returned row shape in terms of fields required by `task-dispatch.ts`, including the current `ReviewAgentRecord.agent_config` gateway adapter field as well as database `config`? [Resolved, Spec §FR-001, Plan §Design Plan, Contract §Resolver Shape]
-- [ ] CHK005 Are no-row fallback requirements complete for preserving gateway agent id/name `aegis` without requiring a database-backed row? [Completeness, Spec §FR-014]
+- [x] CHK005 Are no-row fallback requirements complete for preserving gateway agent id/name `aegis` without requiring a database-backed row? [Completeness, Spec §FR-014]
 
 ## Requirement Clarity
 
-- [ ] CHK006 Is the flag-on shadowing rule clear that the global row is returned when both global and local Aegis rows exist for the requested workspace? [Clarity, Spec §FR-004, Spec §FR-007]
-- [ ] CHK007 Is the shadow-audit row shape unambiguous for `type`, `entity_type`, `entity_id`, `actor`, requested `workspace_id`, deterministic description, and JSON data keys? [Clarity, Spec §FR-007, Spec §Key Entities]
-- [ ] CHK008 Is the idempotence key for shadow-audit writes specified as the requested workspace id, global Aegis id, and local Aegis id tuple rather than scheduler-run timing or task id? [Clarity, Spec §FR-007, Spec §SC-003]
-- [ ] CHK009 Is the requirement not to filter Aegis candidates by `agents.status` explicit enough to prevent data loss from treating unavailable rows as absent? [Clarity, Spec §FR-013]
-- [ ] CHK010 Is the no-schema-migration boundary clear enough that SPEC-003 cannot add columns, indexes, or a `quality_reviews.agent_id` field? [Clarity, Spec §Constraints, Spec §Out of Scope, Plan §Technical Context]
+- [x] CHK006 Is the flag-on shadowing rule clear that the global row is returned when both global and local Aegis rows exist for the requested workspace? [Clarity, Spec §FR-004, Spec §FR-007]
+- [x] CHK007 Is the shadow-audit row shape unambiguous for `type`, `entity_type`, `entity_id`, `actor`, requested `workspace_id`, deterministic description, and JSON data keys? [Clarity, Spec §FR-007, Spec §Key Entities]
+- [x] CHK008 Is the idempotence key for shadow-audit writes specified as the requested workspace id, global Aegis id, and local Aegis id tuple rather than scheduler-run timing or task id? [Clarity, Spec §FR-007, Spec §SC-003]
+- [x] CHK009 Is the requirement not to filter Aegis candidates by `agents.status` explicit enough to prevent data loss from treating unavailable rows as absent? [Clarity, Spec §FR-013]
+- [x] CHK010 Is the no-schema-migration boundary clear enough that SPEC-003 cannot add columns, indexes, or a `quality_reviews.agent_id` field? [Clarity, Spec §Constraints, Spec §Out of Scope, Plan §Technical Context]
 
 ## Requirement Consistency
 
-- [ ] CHK011 Do the spec, plan, data model, and resolver contract consistently use existing `agents.scope`, `agents.workspace_id`, and `agents.config` data surfaces rather than inventing parallel persistence? [Consistency, Spec §FR-005, Spec §FR-006, Data Model §Aegis Resolver Result]
-- [ ] CHK012 Do review-gate requirements consistently preserve `quality_reviews.reviewer='aegis'` across user stories, functional requirements, success criteria, and plan constraints? [Consistency, Spec §US5, Spec §FR-009, Spec §SC-008, Plan §Technical Context]
-- [ ] CHK013 Do scheduler integration requirements consistently limit behavior changes to resolver source while preserving task selection, retry, gateway invocation, quality review writes, and status transitions? [Consistency, Spec §FR-008, Spec §SC-006, Plan §Summary]
-- [ ] CHK014 Do gateway-routing requirements align with the resolver row-shape requirements so configured `openclawId` and session-key-derived routing data remain available after refactor? [Consistency, Spec §FR-015, Contract §Contract Rules]
+- [x] CHK011 Do the spec, plan, data model, and resolver contract consistently use existing `agents.scope`, `agents.workspace_id`, and `agents.config` data surfaces rather than inventing parallel persistence? [Consistency, Spec §FR-005, Spec §FR-006, Data Model §Aegis Resolver Result]
+- [x] CHK012 Do review-gate requirements consistently preserve `quality_reviews.reviewer='aegis'` across user stories, functional requirements, success criteria, and plan constraints? [Consistency, Spec §US5, Spec §FR-009, Spec §SC-008, Plan §Technical Context]
+- [x] CHK013 Do scheduler integration requirements consistently limit behavior changes to resolver source while preserving task selection, retry, gateway invocation, quality review writes, and status transitions? [Consistency, Spec §FR-008, Spec §SC-006, Plan §Summary]
+- [x] CHK014 Do gateway-routing requirements align with the resolver row-shape requirements so configured `openclawId` and session-key-derived routing data remain available after refactor? [Consistency, Spec §FR-015, Contract §Contract Rules]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK015 Can success criteria objectively prove global-only, local-only, global-plus-local, duplicate same-scope, inactive-row, and no-row resolver data states? [Acceptance Criteria, Spec §SC-001, Spec §SC-002, Spec §SC-003, Spec §SC-005]
-- [ ] CHK016 Can success criteria objectively prove repeated scheduler runs do not create duplicate `aegis_local_shadowed` activity rows for the same tuple? [Acceptance Criteria, Spec §SC-003]
-- [ ] CHK017 Can success criteria objectively prove no `quality_reviews.agent_id` assumption appears in production code or tests? [Acceptance Criteria, Spec §SC-008]
+- [x] CHK015 Can success criteria objectively prove global-only, local-only, global-plus-local, duplicate same-scope, inactive-row, and no-row resolver data states? [Acceptance Criteria, Spec §SC-001, Spec §SC-002, Spec §SC-003, Spec §SC-005]
+- [x] CHK016 Can success criteria objectively prove repeated scheduler runs do not create duplicate `aegis_local_shadowed` activity rows for the same tuple? [Acceptance Criteria, Spec §SC-003]
+- [x] CHK017 Can success criteria objectively prove no `quality_reviews.agent_id` assumption appears in production code or tests? [Acceptance Criteria, Spec §SC-008]
 
 ## Dependencies & Assumptions
 
-- [ ] CHK018 Are dependencies on SPEC-001 schema surfaces and SPEC-002 feature-flag resolution documented clearly enough for implementation without another migration? [Dependency, Spec §Assumptions, Plan §Technical Context, Constitution §V, Constitution §VII]
+- [x] CHK018 Are dependencies on SPEC-001 schema surfaces and SPEC-002 feature-flag resolution documented clearly enough for implementation without another migration? [Dependency, Spec §Assumptions, Plan §Technical Context, Constitution §V, Constitution §VII]
 
 ## Notes
 
@@ -47,7 +47,7 @@
 
 ## Verification Rerun - Gap Closure
 
-- [ ] CHK019 Does the spec now state the resolver row identity and gateway-routing fields required by task-dispatch consumers? [Completeness, Spec §FR-001]
-- [ ] CHK020 Does the plan now require `agent_config` to be mapped from `agents.config` for database-backed rows? [Consistency, Plan §Design Plan]
-- [ ] CHK021 Does the data model now define both source `config` and adapter `agent_config` fields with identical values for database-backed rows? [Clarity, Data Model §Aegis Resolver Result]
-- [ ] CHK022 Does the resolver contract now document gateway id resolution through `agent_config` with fallback to `name` and then `aegis`? [Acceptance Criteria, Contract §Resolver Shape]
+- [x] CHK019 Does the spec now state the resolver row identity and gateway-routing fields required by task-dispatch consumers? [Completeness, Spec §FR-001]
+- [x] CHK020 Does the plan now require `agent_config` to be mapped from `agents.config` for database-backed rows? [Consistency, Plan §Design Plan]
+- [x] CHK021 Does the data model now define both source `config` and adapter `agent_config` fields with identical values for database-backed rows? [Clarity, Data Model §Aegis Resolver Result]
+- [x] CHK022 Does the resolver contract now document gateway id resolution through `agent_config` with fallback to `name` and then `aegis`? [Acceptance Criteria, Contract §Resolver Shape]

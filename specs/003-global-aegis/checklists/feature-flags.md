@@ -8,36 +8,36 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Are flag-off requirements complete for preserving workspace-first Aegis resolution before global fallback? [Completeness, Spec §FR-003]
-- [ ] CHK002 Are flag-on requirements complete for selecting global Aegis before workspace-scoped fallback? [Completeness, Spec §FR-004]
-- [ ] CHK003 Are workspace-context requirements complete for evaluating `FEATURE_GLOBAL_AEGIS` through requested task or review workspace flags? [Completeness, Spec §FR-011]
-- [ ] CHK004 Are requirements defined for the no-workspace-context resolver path, including how flag evaluation behaves without a workspace? [Completeness, Spec §FR-001, Spec §FR-011]
-- [ ] CHK005 Are malformed workspace feature-flag JSON requirements defined so resolver behavior remains deterministic when persisted flag config cannot be parsed? [Completeness, Spec §FR-017]
-- [ ] CHK006 Are requirements defined for the existing `FEATURE_GLOBAL_AEGIS` enablement/preflight dependency on `FEATURE_WORKSPACE_SWITCHER` without introducing inline Aegis runtime flag reads? [Completeness, Spec §FR-016]
+- [x] CHK001 Are flag-off requirements complete for preserving workspace-first Aegis resolution before global fallback? [Completeness, Spec §FR-003]
+- [x] CHK002 Are flag-on requirements complete for selecting global Aegis before workspace-scoped fallback? [Completeness, Spec §FR-004]
+- [x] CHK003 Are workspace-context requirements complete for evaluating `FEATURE_GLOBAL_AEGIS` through requested task or review workspace flags? [Completeness, Spec §FR-011]
+- [x] CHK004 Are requirements defined for the no-workspace-context resolver path, including how flag evaluation behaves without a workspace? [Completeness, Spec §FR-001, Spec §FR-011]
+- [x] CHK005 Are malformed workspace feature-flag JSON requirements defined so resolver behavior remains deterministic when persisted flag config cannot be parsed? [Completeness, Spec §FR-017]
+- [x] CHK006 Are requirements defined for the existing `FEATURE_GLOBAL_AEGIS` enablement/preflight dependency on `FEATURE_WORKSPACE_SWITCHER` without introducing inline Aegis runtime flag reads? [Completeness, Spec §FR-016]
 
 ## Requirement Clarity
 
-- [ ] CHK007 Is the prohibition on `process.env.FEATURE_GLOBAL_AEGIS='1'` as an enablement path unambiguous and tied to shared `resolveFlag()` evaluation? [Clarity, Spec §FR-011]
-- [ ] CHK008 Is the environment `0` kill-switch behavior explicitly distinguished from environment `1` not forcing enablement? [Clarity, Spec §Assumptions]
-- [ ] CHK009 Is `workspaces.feature_flags` identified as the authoritative flag source when a workspace context exists? [Clarity, Spec §FR-011]
-- [ ] CHK010 Is the no-inline-runtime-read boundary specific enough to prevent production reads of `FEATURE_GLOBAL_AEGIS` outside the shared feature-flag module? [Clarity, Spec §FR-002, Spec §FR-011]
+- [x] CHK007 Is the prohibition on `process.env.FEATURE_GLOBAL_AEGIS='1'` as an enablement path unambiguous and tied to shared `resolveFlag()` evaluation? [Clarity, Spec §FR-011]
+- [x] CHK008 Is the environment `0` kill-switch behavior explicitly distinguished from environment `1` not forcing enablement? [Clarity, Spec §Assumptions]
+- [x] CHK009 Is `workspaces.feature_flags` identified as the authoritative flag source when a workspace context exists? [Clarity, Spec §FR-011]
+- [x] CHK010 Is the no-inline-runtime-read boundary specific enough to prevent production reads of `FEATURE_GLOBAL_AEGIS` outside the shared feature-flag module? [Clarity, Spec §FR-002, Spec §FR-011]
 
 ## Requirement Consistency
 
-- [ ] CHK011 Do the flag-off and flag-on precedence rules align consistently across user stories, functional requirements, edge cases, and the resolver contract? [Consistency, Spec §US1, Spec §US2, Spec §FR-003, Spec §FR-004]
-- [ ] CHK012 Do flag evaluation requirements in the spec align with the implementation plan constraint to use `resolveFlag(name, ctx)` and avoid inline environment reads? [Consistency, Spec §FR-011, Plan §Technical Context]
-- [ ] CHK013 Do resolver test requirements cover flag OFF, flag ON, no workspace context, malformed flag JSON, and the enforced workspace-switcher dependency/preflight behavior? [Coverage, Spec §SC-010, Plan §Design Plan]
+- [x] CHK011 Do the flag-off and flag-on precedence rules align consistently across user stories, functional requirements, edge cases, and the resolver contract? [Consistency, Spec §US1, Spec §US2, Spec §FR-003, Spec §FR-004]
+- [x] CHK012 Do flag evaluation requirements in the spec align with the implementation plan constraint to use `resolveFlag(name, ctx)` and avoid inline environment reads? [Consistency, Spec §FR-011, Plan §Technical Context]
+- [x] CHK013 Do resolver test requirements cover flag OFF, flag ON, no workspace context, malformed flag JSON, and the enforced workspace-switcher dependency/preflight behavior? [Coverage, Spec §SC-010, Plan §Design Plan]
 
 ## Acceptance Criteria Quality
 
-- [ ] CHK014 Can success criteria objectively prove workspace-first compatibility when the global flag is off? [Acceptance Criteria, Spec §SC-002]
-- [ ] CHK015 Can success criteria objectively prove global-first behavior when the global flag is on? [Acceptance Criteria, Spec §SC-001]
-- [ ] CHK016 Are test-oriented success criteria sufficient to prove `FEATURE_GLOBAL_AEGIS` is not enabled by environment `1` and remains disableable by environment `0`? [Acceptance Criteria, Spec §SC-010]
+- [x] CHK014 Can success criteria objectively prove workspace-first compatibility when the global flag is off? [Acceptance Criteria, Spec §SC-002]
+- [x] CHK015 Can success criteria objectively prove global-first behavior when the global flag is on? [Acceptance Criteria, Spec §SC-001]
+- [x] CHK016 Are test-oriented success criteria sufficient to prove `FEATURE_GLOBAL_AEGIS` is not enabled by environment `1` and remains disableable by environment `0`? [Acceptance Criteria, Spec §SC-010]
 
 ## Edge Case Coverage
 
-- [ ] CHK017 Are edge cases for feature-flag changes between review runs tied back to resolver precedence and workspace context requirements? [Coverage, Spec §Edge Cases]
-- [ ] CHK018 Are failure or fallback requirements for missing Aegis rows independent of feature-flag state and clear enough to avoid resolver crashes? [Edge Case, Spec §FR-014]
+- [x] CHK017 Are edge cases for feature-flag changes between review runs tied back to resolver precedence and workspace context requirements? [Coverage, Spec §Edge Cases]
+- [x] CHK018 Are failure or fallback requirements for missing Aegis rows independent of feature-flag state and clear enough to avoid resolver crashes? [Edge Case, Spec §FR-014]
 
 ## Notes
 
@@ -47,7 +47,7 @@
 
 ## Verification Rerun - Gap Closure
 
-- [ ] CHK019 Are malformed workspace feature-flag JSON requirements now defined with deterministic default-OFF behavior and no resolver crash path? [Completeness, Spec §FR-017]
-- [ ] CHK020 Is the existing `FEATURE_WORKSPACE_SWITCHER` dependency documented as a registry/preflight dependency rather than an inline runtime Aegis resolver gate? [Completeness, Spec §FR-016]
-- [ ] CHK021 Do success criteria require focused coverage for flag OFF, flag ON, no workspace context, malformed JSON, env `0`, env `1`, and the registry dependency/preflight blocker? [Acceptance Criteria, Spec §SC-010]
-- [ ] CHK022 Does the implementation plan require the same feature-flag and dependency coverage expected by the spec? [Consistency, Plan §Design Plan]
+- [x] CHK019 Are malformed workspace feature-flag JSON requirements now defined with deterministic default-OFF behavior and no resolver crash path? [Completeness, Spec §FR-017]
+- [x] CHK020 Is the existing `FEATURE_WORKSPACE_SWITCHER` dependency documented as a registry/preflight dependency rather than an inline runtime Aegis resolver gate? [Completeness, Spec §FR-016]
+- [x] CHK021 Do success criteria require focused coverage for flag OFF, flag ON, no workspace context, malformed JSON, env `0`, env `1`, and the registry dependency/preflight blocker? [Acceptance Criteria, Spec §SC-010]
+- [x] CHK022 Does the implementation plan require the same feature-flag and dependency coverage expected by the spec? [Consistency, Plan §Design Plan]
