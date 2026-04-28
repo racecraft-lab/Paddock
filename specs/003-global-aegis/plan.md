@@ -16,7 +16,7 @@ Introduce a shared Aegis resolver in `src/lib/aegis.ts` that honors the `FEATURE
 **Target Platform**: Web application / server-side Node runtime  
 **Project Type**: web application  
 **Performance Goals**: Preserve scheduler throughput and avoid repeated per-task resolver lookups where practical  
-**Constraints**: No schema migration; preserve `quality_reviews.reviewer='aegis'`; route flag checks through `resolveFlag()`; keep `FEATURE_GLOBAL_AEGIS='1'` from forcing enablement; no downstream SPEC-004+ behavior  
+**Constraints**: No schema migration; preserve `quality_reviews.reviewer='aegis'`; route flag checks through `resolveFlag()`; keep `FEATURE_GLOBAL_AEGIS='1'` from forcing enablement; treat malformed workspace feature-flag JSON as no override/default OFF; preserve the existing `FEATURE_GLOBAL_AEGIS` registry dependency on `FEATURE_WORKSPACE_SWITCHER` for enablement/preflight checks; no downstream SPEC-004+ behavior
 **Scale/Scope**: Focused refactor across resolver, scheduler review dispatch, task routes, and targeted tests  
 **Strict Scope**: `src/lib/aegis.ts`
 
@@ -77,7 +77,7 @@ src/
 
 - Define `getAegis(db, workspace_id?)` as the single resolver entry point with deterministic scope precedence and lowest-id tie breaking.
 - Keep gateway fallback behavior explicit so the scheduler can continue when no database-backed row exists.
-- Add tests that prove flag-off workspace-first behavior, flag-on global-first behavior, shadow-audit insertion, malformed config handling, and unchanged scheduler semantics.
+- Add tests that prove flag-off workspace-first behavior, flag-on global-first behavior through `workspaces.feature_flags`, no-workspace-context default OFF behavior, malformed config default-OFF handling, environment `0` kill-switch behavior, environment `1` non-enablement, existing `FEATURE_WORKSPACE_SWITCHER` dependency/preflight behavior, shadow-audit insertion, and unchanged scheduler semantics.
 
 ## Complexity Tracking
 

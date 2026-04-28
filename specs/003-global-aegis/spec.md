@@ -149,6 +149,8 @@ A maintainer or auditor can see when a local Aegis row exists but is shadowed by
 - **FR-013**: The resolver MUST NOT filter candidates by `agents.status`; unavailable-agent outcomes remain in gateway invocation and review failure handling.
 - **FR-014**: If no global or workspace-scoped Aegis row exists, the system MUST preserve the current gateway fallback to agent id/name `aegis` and MUST NOT crash scheduler review loops.
 - **FR-015**: The system MUST preserve existing Aegis gateway routing behavior, including configured OpenClaw id and session-key-derived routing behavior, and MUST NOT introduce a broad gateway contract rewrite.
+- **FR-016**: The system MUST preserve the existing feature-flag registry dependency that requires `FEATURE_WORKSPACE_SWITCHER` before `FEATURE_GLOBAL_AEGIS` can pass enablement/preflight checks; this dependency MUST be enforced through registry metadata and feature-flag service preflight/blocker behavior, not through inline runtime flag reads in Aegis resolver code.
+- **FR-017**: If `workspaces.feature_flags` is malformed, unparsable, or not a JSON object for the requested workspace context, `FEATURE_GLOBAL_AEGIS` evaluation MUST treat it as no workspace override, resolve OFF unless an allowed kill-switch/default rule says otherwise, and MUST NOT throw or activate global-first Aegis behavior.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -172,11 +174,12 @@ A maintainer or auditor can see when a local Aegis row exists but is shadowed by
 - **SC-007**: Regression tests prove Aegis gateway routing still honors configured `openclawId` and established session-key fallback behavior without requiring a gateway contract change.
 - **SC-008**: Grep or schema validation shows SPEC-003 production code and tests do not require `quality_reviews.agent_id`.
 - **SC-009**: Grep or focused tests prove the Aegis reference sweep covers task routes, validation defaults, scheduler hooks, task-board Aegis display, and chat Aegis role surfaces without adding task pipeline, `ready_for_owner`, area-label, artifact-publishing, governance, pilot-seed-data, or CrabTrap behavior.
+- **SC-010**: Focused feature-flag and resolver tests cover `FEATURE_GLOBAL_AEGIS` flag OFF, flag ON through `workspaces.feature_flags`, no workspace context, malformed workspace feature-flag JSON defaulting OFF, environment `0` as a kill switch, environment `1` not forcing enablement, and the existing `FEATURE_WORKSPACE_SWITCHER` registry dependency/preflight blocker.
 
 ## Assumptions
 
 - The canonical Aegis name remains stable across existing deployments.
 - Operators may have a mix of global and local Aegis records during migration.
 - The global feature flag is intended to be toggled without requiring a schema change.
-- `FEATURE_GLOBAL_AEGIS` follows the shared feature-flag contract: workspace JSON may opt in, environment `0` may force off, and environment `1` does not force on.
+- `FEATURE_GLOBAL_AEGIS` follows the shared feature-flag contract: workspace JSON may opt in, malformed or non-object workspace JSON behaves as no override, environment `0` may force off, environment `1` does not force on, and existing registry metadata requires `FEATURE_WORKSPACE_SWITCHER` before admin/preflight enablement succeeds.
 - Existing review workflows continue to treat the reviewer name as the user-visible gate signal.
