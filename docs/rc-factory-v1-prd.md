@@ -519,7 +519,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 |---|---|---|---|---|
 | 0 | Foundation migrations (M53–M61) | Complete | Yes — runtime-safe | `upstream-divergent` |
 | 1 | Workspace switcher + `activeWorkspace` scoping | Complete | Yes — flag-off default | `upstream-safe` |
-| 1A | Spec archive + evidence retention | In Progress | Yes — process/tooling only | `upstream-safe` |
+| 1A | Spec archive + evidence retention | Complete | Yes — process/tooling only | `upstream-safe` |
 | 2 | Aegis refactor (facility singleton) | Pending | Yes — shim preserves legacy | `upstream-divergent` |
 | 3 | Task-chain engine + declarative routing over `workflow_templates` | Pending | Yes — null-default fields | `upstream-divergent` |
 | 4 | `ready_for_owner` state + two-step terminal | Pending | Yes — per-template opt-in | `upstream-divergent` |
@@ -536,7 +536,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 
 **Phase 1 completion note:** SPEC-002 is complete on PR #16 after merge to `main` as `65f2e7c`. Evidence: all 50 generated tasks checked, `pnpm typecheck`, `pnpm lint`, `pnpm test` (106 files / 1035 tests), `pnpm build`, and `pnpm test:e2e` (526 tests) passed before merge.
 
-**Phase 1A execution note:** SPEC-002A is active on branch `002a-spec-archive-evidence`. It defines spec artifact archival, Playwright screenshot retention, PR evidence links, and CI/local guards. It evaluates `stn1slv/spec-kit-archive` as the default post-merge archive mechanism and blocks later feature specs until the retention policy is explicit.
+**Phase 1A completion note:** SPEC-002A is complete on PR #18 after merge to `main` as `daab0c1`. It defines spec artifact archival, Argos/CI evidence provenance, PR evidence links, CI/local guards, and the Archive Sweep lifecycle. The adopted `racecraft-lab/spec-kit-archive` fork is published as `v1.1.0`, `speckit-pro-v1.9.0` is released from merged main history, and later feature specs can proceed with Archive Sweep running first.
 
 ### Autopilot Caveats (per spec)
 

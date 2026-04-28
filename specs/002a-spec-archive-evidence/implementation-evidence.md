@@ -121,11 +121,25 @@ No `archive` extension entry is present in `.specify/extensions/.registry`, and 
 | `.specify/extensions.yml` | `67ba75469a4e2e2b51dc5026c4d87a9ec72f4d676eb309e61bebde810282f272` |
 | `.specify/extensions/.registry` | `552599913e44da2d985a57614df5c56948dd011771bd1a85779dd7e7b202adb2` |
 
+## Post-Merge Finalization
+
+Recorded: 2026-04-28
+
+Final release and deployment state after PR merges:
+
+- Mission Control PR #18 merged to `main` as `daab0c11f8896b31c2d24ed0a53419814671c3b1`.
+- `racecraft-lab/spec-kit-archive` PR #1 merged to `main` as `4e6ad6b34a20811f9af5e4ab5a822e47310d0271`; `v1.1.0` is published at `https://github.com/racecraft-lab/spec-kit-archive/releases/tag/v1.1.0`.
+- `racecraft-lab/racecraft-plugins-public` PR #20 merged to `main` as `e489dac719081c577c7131dc49f8287ceb633f7b`.
+- Release-please PR #21 merged to `main` as `75a5b727cd0868d647c9afa968e0edbe398c3f94`.
+- The stale branch-cut `speckit-pro-v1.9.0` release/tag was deleted and recreated at `75a5b727cd0868d647c9afa968e0edbe398c3f94`: `https://github.com/racecraft-lab/racecraft-plugins-public/releases/tag/speckit-pro-v1.9.0`.
+- The user's local Codex `speckit-pro` install and cache report version `1.9.0` and were refreshed to match the corrected release changelog.
+- Mission Control was deployed on HAL; `mission-control.service` and `openclaw-gateway.service` were active and `http://127.0.0.1:3000/login` returned HTTP 200.
+
 ## Phase 7: speckit-pro Release (T028-T033)
 
 Recorded: 2026-04-28
 
-Scope: Updated the archive-aware `speckit-pro` plugin release candidate in `racecraft-lab/racecraft-plugins-public` and opened the required PR for main-based release flow.
+Scope: Updated the archive-aware `speckit-pro` plugin in `racecraft-lab/racecraft-plugins-public`, merged the required PRs, and published the corrected main-based `speckit-pro-v1.9.0` release.
 
 ### T028 Autopilot Archive Sweep Startup
 
@@ -189,30 +203,27 @@ The Codex structural validation initially caught a Codex-facing slash-command wo
 
 ### T033 Versioned Release
 
-Release candidate and corrective PR:
+Final release and corrective PRs:
 
 - corrective PR: `https://github.com/racecraft-lab/racecraft-plugins-public/pull/20`
-- provisional branch-cut tag: `speckit-pro-v1.9.0`
-- tag object: `e053ade70a1f69edf6ded0b5632efeffdef868f2`
-- target commit: `6a44e1a6d1a685c699941447c4713acca0f2820b`
-- provisional branch-cut release: `https://github.com/racecraft-lab/racecraft-plugins-public/releases/tag/speckit-pro-v1.9.0`
-- published at: `2026-04-28T13:33:41Z`
+- release-please PR: `https://github.com/racecraft-lab/racecraft-plugins-public/pull/21`
+- final tag: `speckit-pro-v1.9.0`
+- target commit: `75a5b727cd0868d647c9afa968e0edbe398c3f94`
+- final GitHub release: `https://github.com/racecraft-lab/racecraft-plugins-public/releases/tag/speckit-pro-v1.9.0`
+- published at: `2026-04-28T17:13:17Z`
 
-Release-process correction: `speckit-pro-v1.9.0` was created from branch
-`racecraft/speckit-pro-archive-sweep` before PR #20 merged to `main`. Treat it
-as invalid for the official release process. The correct next step is to merge
-PR #20 to `main` and let the main-based release-please flow produce the
-official `speckit-pro` release.
+Release-process correction completed: the earlier branch-cut
+`speckit-pro-v1.9.0` release/tag was deleted, release-please PR #21 was merged
+to `main`, and `speckit-pro-v1.9.0` was recreated at the merged main release
+commit.
 
 Relevant verification:
 
 ```text
-$ git push origin racecraft/speckit-pro-archive-sweep
-$ git push origin speckit-pro-v1.9.0
-$ gh release create speckit-pro-v1.9.0 --repo racecraft-lab/racecraft-plugins-public --target 6a44e1a6d1a685c699941447c4713acca0f2820b --title "speckit-pro: v1.9.0" --notes "..."
+$ gh pr view 20 --repo racecraft-lab/racecraft-plugins-public --json state,mergedAt,mergeCommit
+$ gh pr view 21 --repo racecraft-lab/racecraft-plugins-public --json state,mergedAt,mergeCommit
 $ gh release view speckit-pro-v1.9.0 --repo racecraft-lab/racecraft-plugins-public --json tagName,url,publishedAt,name,targetCommitish
 $ gh api repos/racecraft-lab/racecraft-plugins-public/git/ref/tags/speckit-pro-v1.9.0
-$ gh api repos/racecraft-lab/racecraft-plugins-public/git/tags/e053ade70a1f69edf6ded0b5632efeffdef868f2
 ```
 
 ## Phase 7: Local Codex Plugin Refresh (T034-T038)
@@ -229,7 +240,11 @@ Updated local plugin install:
 - destination: `/Users/fredrickgabelmann/.codex/plugins/speckit-pro`
 - cache destination: `/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.9.0`
 
-Both destinations were refreshed from release commit `6a44e1a6d1a685c699941447c4713acca0f2820b`.
+Both destinations were initially refreshed from archive-support commit
+`6a44e1a6d1a685c699941447c4713acca0f2820b`. After the corrected
+`speckit-pro-v1.9.0` release was recreated at
+`75a5b727cd0868d647c9afa968e0edbe398c3f94`, the local install and cache
+`CHANGELOG.md` were refreshed to match the released plugin content.
 
 ### T035 Manifest Version Comparison
 
@@ -346,36 +361,36 @@ Final adoption state:
 
 - source repo: `https://github.com/racecraft-lab/spec-kit-archive`
 - source PR: `https://github.com/racecraft-lab/spec-kit-archive/pull/1`
-- provisional source tag: `v1.1.0`
+- source tag: `v1.1.0`
 - source commit: `08ee0e919a72ccb254758a2b6f51d58196490ea7`
 - tag object: `1e87928c30293aef4f75c1c3fbc46a8c43540d7a`
+- main merge commit: `4e6ad6b34a20811f9af5e4ab5a822e47310d0271`
+- GitHub release: `https://github.com/racecraft-lab/spec-kit-archive/releases/tag/v1.1.0`
 - vendored install path: `.specify/extensions/archive`
 - pin record: `.specify/extensions/archive/RACECRAFT-PIN.md`
 - enabled registry: `.specify/extensions/.registry`
 - installed list: `.specify/extensions.yml`
 
-Release-process correction: `v1.1.0` was created before PR #1 merged to
-`main`. Treat that tag as provisional branch evidence, not the official
-main-based archive extension release. After PR #1 merges, cut or recreate the
-official archive extension tag from `main`.
+Release-process correction completed: PR #1 merged to `main`, the `v1.1.0`
+GitHub release was published, and the tagged extension tree is contained in the
+merged main history.
 
 ### T043 Plugin Release and Local Codex Refresh Evidence
 
 Final plugin state:
 
-- `racecraft-lab/racecraft-plugins-public` branch: `racecraft/speckit-pro-archive-sweep`
 - corrective PR: `https://github.com/racecraft-lab/racecraft-plugins-public/pull/20`
-- release commit: `6a44e1a6d1a685c699941447c4713acca0f2820b`
-- provisional tag: `speckit-pro-v1.9.0`
-- tag object: `e053ade70a1f69edf6ded0b5632efeffdef868f2`
-- provisional GitHub release: `https://github.com/racecraft-lab/racecraft-plugins-public/releases/tag/speckit-pro-v1.9.0`
+- release-please PR: `https://github.com/racecraft-lab/racecraft-plugins-public/pull/21`
+- release commit: `75a5b727cd0868d647c9afa968e0edbe398c3f94`
+- tag: `speckit-pro-v1.9.0`
+- GitHub release: `https://github.com/racecraft-lab/racecraft-plugins-public/releases/tag/speckit-pro-v1.9.0`
 - release validation: `speckit-pro test suite: 830/830 passed`
 - local plugin install: `/Users/fredrickgabelmann/.codex/plugins/speckit-pro` reports manifest version `1.9.0`
 - local cache: `/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.9.0` reports manifest version `1.9.0`
 - local marketplace: `/Users/fredrickgabelmann/.agents/plugins/marketplace.json` points to `./.codex/plugins/speckit-pro`
 
-Official plugin release remains pending until PR #20 merges and the
-release-please/main-based release flow cuts the replacement official release.
+The stale branch-cut `speckit-pro-v1.9.0` release/tag was removed before the
+final release was recreated at the merged main release commit.
 
 ### T044 Screenshot Guard and Provenance-Only Evidence
 
@@ -402,7 +417,7 @@ Final guard state:
 | FR-009 | T004, T006, T014, T019, T040 unsafe branch dry-run/stop behavior |
 | FR-010 | T004, T006, T014, T016, T020, T041 dry-run evidence boundary |
 | FR-011 | T005, T007-T009, T011-T012, T042 adoption decision and install evidence |
-| FR-012 | T028-T033, T043 archive-aware `speckit-pro` release candidate and PR #20 evidence |
+| FR-012 | T028-T033, T043 archive-aware `speckit-pro` PR #20, release-please PR #21, and final `speckit-pro-v1.9.0` release evidence |
 | FR-013 | T034-T038, T043 local Codex marketplace/plugin refresh |
 | FR-014 | T017, T021, T025, T044 Argos/CI durable provenance |
 | FR-015 | T003, T010, T018 merge/tree recovery references |
@@ -421,7 +436,7 @@ Final guard state:
 | SC-002 | T017, T021, T025-T027, T039, T044 Argos/CI provenance and PR readiness policy |
 | SC-003 | T001, T004, T006, T013-T014, T019-T020, T028, T040, T047 Archive Sweep lifecycle and unsafe-branch behavior |
 | SC-004 | T005, T007-T009, T011-T012, T042 pinned Racecraft fork install/vendor evidence |
-| SC-005 | T028-T038, T043 plugin release candidate, PR #20 evidence, local plugin refresh, marketplace verification, and structural tests |
+| SC-005 | T028-T038, T043 final plugin release, PR #20/#21 evidence, local plugin refresh, marketplace verification, and structural tests |
 | SC-006 | T010, T015, T018, T039-T041, T047 future cleanup and recovery safety policy |
 | SC-007 | T001, T021-T025, T044-T046 screenshot guard and final traceability evidence |
 
@@ -629,7 +644,7 @@ Fork update evidence:
 | Commit | `08ee0e919a72ccb254758a2b6f51d58196490ea7` |
 | Commit message | `feat: add provenance-safe archive sweep` |
 | Corrective PR | `https://github.com/racecraft-lab/spec-kit-archive/pull/1` |
-| Provisional tag pushed | `v1.1.0` |
+| Tag pushed | `v1.1.0` |
 | Tag object | `1e87928c30293aef4f75c1c3fbc46a8c43540d7a` |
 | Tag target | `08ee0e919a72ccb254758a2b6f51d58196490ea7` |
 | Install URL | `https://github.com/racecraft-lab/spec-kit-archive/archive/refs/tags/v1.1.0.zip` |
@@ -655,7 +670,7 @@ $ gh api repos/racecraft-lab/spec-kit-archive/git/tags/1e87928c30293aef4f75c1c3f
 
 External fork changes completed:
 
-1. `extension.yml` now points to `https://github.com/racecraft-lab/spec-kit-archive`, version `1.1.0`, with PR #1, a provisional pushed Racecraft tag, and immutable commit for Mission Control to pin pending the main-based archive release.
+1. `extension.yml` now points to `https://github.com/racecraft-lab/spec-kit-archive`, version `1.1.0`, with PR #1, published Racecraft tag, and immutable commit for Mission Control to pin.
 2. `commands/archive.md` defines explicit `--dry-run`, `--apply`, `--sweep`, and `--apply-cleanup` modes.
 3. Branch/worktree safety gates require dry-run/provenance-only behavior unless cleanup is explicitly safe.
 4. Archive Sweep semantics identify previously merged specs and report the excluded current target.
@@ -667,7 +682,7 @@ External fork changes completed:
 
 ### T008 Adoption Without Changes
 
-T008 is not applicable because the fork was not adopted without changes. The as-is candidate was rejected, and the adopted source is the Racecraft-updated commit from T007, currently exposed through provisional branch tag `v1.1.0` pending PR #1 merge and main-based retag.
+T008 is not applicable because the fork was not adopted without changes. The as-is candidate was rejected, and the adopted source is the Racecraft-updated commit from T007, exposed through published tag `v1.1.0` after PR #1 merged.
 
 ### T009 Rejection and Fallback Behavior
 
@@ -676,7 +691,7 @@ Adoption decision: reject `racecraft-lab/spec-kit-archive` unchanged for SPEC-00
 Fallback behavior recorded during validation, now superseded by the T007 `v1.1.0` fork update:
 
 - Mission Control must not install or refresh the original `1.0.0` archive extension as the active SPEC-002A archive implementation.
-- Mission Control integration tasks should install or vendor the corrected `racecraft-lab/spec-kit-archive` commit `08ee0e919a72ccb254758a2b6f51d58196490ea7` or the official main-based tag created after PR #1 merges.
+- Mission Control integration tasks should install or vendor the corrected `racecraft-lab/spec-kit-archive` commit `08ee0e919a72ccb254758a2b6f51d58196490ea7` or the published `v1.1.0` release.
 - Any fallback archive report must be provenance-first and cleanup-safe: it can record readiness and recovery evidence in dry-run mode, but it must not delete or move active `specs/**` content in this unsafe checkout.
 - The fallback must record the same reproducibility fields required of an adopted extension: source URL, pinned commit/tag or vendored file hashes, manifest/source hashes, license/version evidence, and local modifications.
 

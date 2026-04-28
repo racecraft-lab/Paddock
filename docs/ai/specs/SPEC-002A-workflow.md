@@ -3,7 +3,7 @@
 **Spec ID**: SPEC-002A
 **Spec Directory**: `specs/002a-spec-archive-evidence`
 **Branch Short Name**: `spec-archive-evidence`
-**Status**: In Progress
+**Status**: Complete
 **Priority**: P1
 **Depends On**: SPEC-002
 **Blocks**: SPEC-003 and later feature specs
@@ -16,7 +16,7 @@ Candidate upstream extension: <https://github.com/stn1slv/spec-kit-archive>
 
 ## Workflow Source of Truth
 
-This workflow file is the source of truth for the pending SPEC-002A autopilot run. Do not treat pre-existing files under `specs/002a-spec-archive-evidence/` as authoritative; they were seeded before this workflow was executed and should be regenerated or reconciled by autopilot.
+This workflow file is the source of truth for the completed SPEC-002A autopilot run. Generated artifacts under `specs/002a-spec-archive-evidence/` have been reconciled and merged; later changes should treat those files and `implementation-evidence.md` as the completed evidence set.
 
 Reference context:
 
@@ -34,10 +34,18 @@ Generated artifact targets:
 ## Target End State
 
 - `speckit-pro` includes first-class archive extension support: install/discovery guidance, autopilot/coach/status awareness, and an Archive Sweep that runs at the start of autopilot for previously merged specs.
-- Mission Control installs or vendors the archive extension from a pinned `racecraft-lab/spec-kit-archive` fork tag/commit and records that pin in repo documentation/configuration.
+- Mission Control vendors the archive extension from the pinned `racecraft-lab/spec-kit-archive` `v1.1.0` release and records that pin in repo documentation/configuration.
 - The archive command is run at the correct lifecycle point: when `speckit-pro:autopilot` starts for the next spec, it first archives any prior specs whose PRs have already merged to `main`; the current target spec is excluded until a later run sees it as merged.
 - Completed spec folders may be removed from active `specs/**` only after the Archive Sweep succeeds and the archive report records recovery commands.
-- This user's local Codex marketplace and installed `speckit-pro` plugin are refreshed to the released archive-aware plugin.
+- This user's local Codex marketplace and installed `speckit-pro` plugin are refreshed to the released archive-aware plugin, `speckit-pro-v1.9.0`.
+
+## Completion Evidence
+
+- Mission Control PR #18 merged to `main` on 2026-04-28.
+- `racecraft-lab/spec-kit-archive` PR #1 merged and `v1.1.0` was published: <https://github.com/racecraft-lab/spec-kit-archive/releases/tag/v1.1.0>.
+- `racecraft-lab/racecraft-plugins-public` PR #20 and release-please PR #21 merged; stale branch-cut `speckit-pro-v1.9.0` release/tag was removed and recreated at main commit `75a5b727cd0868d647c9afa968e0edbe398c3f94`: <https://github.com/racecraft-lab/racecraft-plugins-public/releases/tag/speckit-pro-v1.9.0>.
+- Local Codex `speckit-pro` install and cache report version `1.9.0`; marketplace wiring remains `./.codex/plugins/speckit-pro`.
+- Mission Control was deployed on HAL from `main`; `mission-control.service` and `openclaw-gateway.service` were active and `/login` returned HTTP 200 after deployment verification.
 
 ## Implementation Brief
 

@@ -79,8 +79,8 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | Spec ID | Phase | Spec Name | Short Name | Status | Priority | Depends On | Enables | Source Section |
 |---|---:|---|---|---|---|---|---|---|
 | SPEC-001 | 0 | Foundation Migrations | foundation-migrations | Complete | P0 | — | SPEC-002 | Phase 0 |
-| SPEC-002 | 1 | Product-Line Switcher and activeWorkspace Scoping | product-line-switcher | In Progress | P1 | SPEC-001 | SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009 | Phase 1 |
-| SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | In Progress | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
+| SPEC-002 | 1 | Product-Line Switcher and activeWorkspace Scoping | product-line-switcher | Complete | P1 | SPEC-001 | SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009 | Phase 1 |
+| SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | Complete | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
 | SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
 | SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Pending | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current branch note:** SPEC-002 implementation is complete and G7-verified on branch `002-product-line-switcher`, but the SpecKit-Pro index remains `In Progress` until the implementation PR is merged, per the status policy above.
+**Current roadmap note:** SPEC-001, SPEC-002, and SPEC-002A are complete on `main`. SPEC-003 is the next unblocked implementation spec; Archive Sweep should run first when its autopilot run starts.
 
 ## Feature Flag Resolution Policy
 
@@ -142,7 +142,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-002: Product-Line Switcher and activeWorkspace Scoping
 
-- **Status:** In Progress
+- **Status:** Complete
 - **Priority:** P1
 - **Branch short name:** `product-line-switcher`
 - **Dependencies:** SPEC-001
@@ -154,12 +154,12 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** New production modules are limited to `src/components/layout/workspace-switcher.tsx`, `src/types/product-line.ts`, and `src/lib/feature-flags.ts`. Existing store, header, panel, API, and SSE files may be touched only where Phase 1 route/panel matrices require Product Line scope, Facility aggregate behavior, or header terminology fixes.
 - **Autopilot notes:** Keep `activeTenant` independent from Product Line scope. The switcher's synthetic Facility entry means authenticated Facility aggregate view, not direct selection of the real `workspaces.slug='facility'` row. Global agents must appear across product-line views. Skills, local/gateway sessions, transcripts, and multi-facility tenant modeling remain deferred boundaries.
 - **Definition of done:** Phase 1 deliverables are implemented, P1-AC1 through P1-AC16 pass with flag OFF, Facility aggregate, and selected Product Line modes, and no unauthorized workspace data leaks through REST, URL state, cache reuse, BroadcastChannel, or SSE scoping.
-- **Implementation evidence:** G7 passed locally on 2026-04-26 in branch `002-product-line-switcher`: all 50 generated tasks are checked, `pnpm typecheck` passed, `pnpm lint` passed with 0 errors / 11 pre-existing warnings, `pnpm test` passed 106 files / 1035 tests, `pnpm build` passed, `pnpm test:e2e` passed 526 tests, and guardrail greps found no inline runtime `FEATURE_*` reads outside `src/lib/feature-flags.ts` or new runtime gateway/global-boundary drift.
+- **Implementation evidence:** Complete on PR #16 after merge to `main` as `65f2e7c`. G7 passed locally on 2026-04-26 in branch `002-product-line-switcher`: all 50 generated tasks are checked, `pnpm typecheck` passed, `pnpm lint` passed with 0 errors / 11 pre-existing warnings, `pnpm test` passed 106 files / 1035 tests, `pnpm build` passed, `pnpm test:e2e` passed 526 tests, and guardrail greps found no inline runtime `FEATURE_*` reads outside `src/lib/feature-flags.ts` or new runtime gateway/global-boundary drift.
 
 ### SPEC-002A: Spec Archive and Evidence Retention
 
-- **Status:** In Progress
-- **Branch status:** Implementation is complete locally on the SPEC-002A branch; roadmap status remains `In Progress` until the implementation PR is merged per the SpecKit-Pro status policy.
+- **Status:** Complete
+- **Branch status:** Implementation PR #18 merged to `main` on 2026-04-28; external archive/plugin release cleanup is complete.
 - **Priority:** P1
 - **Branch short name:** `spec-archive-evidence`
 - **Dependencies:** SPEC-002
@@ -171,7 +171,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `.specify` archive integration and hooks, SpecKit workflow docs/templates, screenshot/evidence manifest conventions, CI/local guards for `specs/**/screenshots`, and PR evidence guidance. No runtime product feature behavior ships in this spec.
 - **Autopilot notes:** Use `specs/002-product-line-switcher` as the dry-run source because it contains real Playwright screenshots. Do not delete or move existing spec folders automatically. If archive cleanup is needed, produce an explicit reviewed change rather than a silent post-merge mutation.
 - **Definition of done:** Phase 1A deliverables are implemented, the archive command dry-runs against SPEC-002, screenshot guard behavior is verified locally and in CI, constitution/workflow docs distinguish durable memory from ephemeral CI artifacts and curated permanent screenshots, and SPEC-003 setup can proceed without unresolved artifact-retention decisions.
-- **Implementation evidence:** G7 passed locally on 2026-04-28 with all 47 generated tasks checked and zero markers. The branch includes archive fork PR #1 evidence, vendored Mission Control archive extension pinning, Archive Sweep dry-run evidence for SPEC-001/SPEC-002, screenshot guard verification, `speckit-pro` PR #20 evidence, local Codex plugin refresh evidence, and retrospective evidence. Provisional branch-cut tags/releases are not the official release path; official releases must be cut from `main` after their PRs merge. Status remains `In Progress` until the implementation PR is merged.
+- **Implementation evidence:** Complete on PR #18 after merge to `main` as `daab0c1`. G7 passed locally on 2026-04-28 with all 47 generated tasks checked and zero markers. Final evidence includes `spec-kit-archive` PR #1 merged and `v1.1.0` released, vendored Mission Control archive extension pinning, Archive Sweep dry-run evidence for SPEC-001/SPEC-002, screenshot guard verification, `speckit-pro` PR #20 and release-please PR #21 merged, official `speckit-pro-v1.9.0` release recreated at main commit `75a5b727cd0868d647c9afa968e0edbe398c3f94`, local Codex plugin refresh evidence, HAL deployment verification, and retrospective evidence.
 
 ### SPEC-003: Aegis Facility Singleton Refactor
 
