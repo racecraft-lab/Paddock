@@ -80,6 +80,13 @@ src/
 - Keep gateway fallback behavior explicit so the scheduler can continue when no database-backed row exists.
 - Add tests that prove flag-off workspace-first behavior, flag-on global-first behavior through `workspaces.feature_flags`, no-workspace-context default OFF behavior, malformed config default-OFF handling, environment `0` kill-switch behavior, environment `1` non-enablement, existing `FEATURE_WORKSPACE_SWITCHER` dependency/preflight behavior, shadow-audit insertion, and unchanged scheduler semantics.
 
+## Regression Safety Gates
+
+- Resolver bypass guard: after `src/lib/aegis.ts` lands, `getAegis(db, workspace_id?)` owns Aegis agent-row, agent-config, Mission Control agent-id, and gateway-identity resolution. Production source outside `src/lib/aegis.ts` may call `getAegis`, may keep `quality_reviews.reviewer='aegis'` review-gate queries, and may mention the literal `aegis` in copy/logs/tests, but must not query `agents` directly by Aegis name, workspace id, scope, or config.
+- Legacy bypass removal: implementation must remove or stop relying on `aegisAgentByWorkspace` and the existing workspace-local SQL lookup in `runAegisReviews`; `src/lib/scheduler.ts` must continue to trigger `runAegisReviews()` rather than resolving Aegis directly.
+- Static guardrail checks: implementation verification must run `rg` checks that fail on matches for direct Aegis agent lookup outside `src/lib/aegis.ts`, `aegisAgentByWorkspace`, `quality_reviews.agent_id`, inline `process.env.FEATURE_GLOBAL_AEGIS` reads outside `src/lib/feature-flags.ts`, and downstream drift into `FEATURE_TASK_PIPELINES`, `ready_for_owner`, `FEATURE_AREA_LABEL_ROUTING`, artifact store, governance, pilot behavior, product-line skill/session ownership, multi-facility modeling, or CrabTrap.
+- Scope of remediation: if a guardrail fails, remediation is limited to routing Aegis metadata resolution through `getAegis` or removing out-of-scope drift; do not widen SPEC-003 into a quality-review schema migration, task pipeline engine, owner-ready state, area routing, artifact publishing, governance, pilot, product-line ownership, multi-facility, or CrabTrap implementation.
+
 ## Complexity Tracking
 
 No constitution violations require justification.

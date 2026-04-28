@@ -30,8 +30,8 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 | Specify | `$speckit-specify` | Complete | Generated `specs/003-global-aegis/spec.md`; G1 passed with zero markers |
 | Clarify | `$speckit-clarify` | Complete | G2 passed; lookup precedence, audit activity, flag context, legacy fallback, scheduler, route, and reference-sweep boundaries resolved |
 | Plan | `$speckit-plan` | Complete | G3 passed; generated plan, research, data model, quickstart, and resolver contract |
-| Checklist | `$speckit-checklist` | In Progress | Run feature-flag, data-integrity, scheduler-safety, and regression-safety domains |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered tasks with P2-AC1..P2-AC6 coverage |
+| Checklist | `$speckit-checklist` | Complete | G4 passed; all four domains generated with zero remaining gaps |
+| Tasks | `$speckit-tasks` | In Progress | Generate dependency-ordered tasks with P2-AC1..P2-AC6 coverage |
 | Analyze | `$speckit-analyze` | Pending | Verify no downstream task-pipeline, ready-for-owner, area-label, artifact, or governance drift |
 | Implement | `$speckit-implement` | Pending | Implement via TDD, then run verification and status sync |
 
@@ -430,7 +430,9 @@ Focus on SPEC-003:
 | feature-flags | 22 | 2 found and remediated; zero markers after rerun | P2-AC1, P2-AC2, P2-AC3 |
 | data-integrity | 22 | 1 found and remediated; zero markers after rerun | P2-AC2, P2-AC3, P2-AC6 |
 | scheduler-safety | 35 | 0 gaps; zero markers after generation | P2-AC4, P2-AC5 |
-| regression-safety | Pending | Pending | P2-AC1, P2-AC6 |
+| regression-safety | 26 | 4 found and remediated; zero markers after rerun | P2-AC1, P2-AC6 |
+
+**G4 Validation:** Passed 2026-04-28T20:55:11Z with zero `[Gap]` markers.
 
 ---
 

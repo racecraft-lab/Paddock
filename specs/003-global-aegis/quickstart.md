@@ -26,3 +26,15 @@
    pnpm lint
    pnpm test
    ```
+4. Run static guardrail checks. Each command must return no matches:
+   ```bash
+   rg -n 'process\.env\.FEATURE_GLOBAL_AEGIS' src --glob '!src/lib/feature-flags.ts'
+   rg -n 'aegisAgentByWorkspace' src
+   rg -n -U "FROM\s+agents[\s\S]{0,500}(LOWER\s*\(\s*name\s*\)\s*=\s*['\"]aegis['\"]|name\s*=\s*['\"]aegis['\"])" src --glob '!src/lib/aegis.ts'
+   rg -n -U "(LOWER\s*\(\s*name\s*\)\s*=\s*['\"]aegis['\"][\s\S]{0,300}workspace_id|workspace_id[\s\S]{0,300}LOWER\s*\(\s*name\s*\)\s*=\s*['\"]aegis['\"])" src --glob '!src/lib/aegis.ts'
+   rg -n 'quality_reviews\.agent_id' src tests
+   changed_files=$(git diff --name-only -- src tests)
+   if [ -n "$changed_files" ]; then
+     rg -n 'FEATURE_TASK_PIPELINES|ready_for_owner|FEATURE_AREA_LABEL_ROUTING|task_artifacts|resource_policy|PILOT_PRODUCT_LINE_A_E2E|product-line skill|session ownership|multi-facility|CrabTrap' $changed_files
+   fi
+   ```

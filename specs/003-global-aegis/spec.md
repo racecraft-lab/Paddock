@@ -129,6 +129,7 @@ A maintainer or auditor can see when a local Aegis row exists but is shadowed by
 - A workspace has multiple local rows with the same Aegis name and only one global row exists; same-scope duplicates resolve by lowest database id before cross-scope fallback rules apply.
 - The global and local rows both exist but one is inactive or otherwise unavailable; `agents.status` does not change resolver precedence, and downstream gateway/review failure handling owns unavailable-agent outcomes.
 - The feature flag changes between review runs for the same workspace.
+- After `getAegis` lands, a future production or test change attempts to resolve Aegis by directly querying `agents` outside `src/lib/aegis.ts`; static guardrail checks fail before completion, while existing `quality_reviews.reviewer='aegis'` review-gate queries remain allowed.
 
 ## Requirements *(mandatory)*
 
@@ -151,6 +152,7 @@ A maintainer or auditor can see when a local Aegis row exists but is shadowed by
 - **FR-015**: The system MUST preserve existing Aegis gateway routing behavior, including configured OpenClaw id and session-key-derived routing behavior, and MUST NOT introduce a broad gateway contract rewrite.
 - **FR-016**: The system MUST preserve the existing feature-flag registry dependency that requires `FEATURE_WORKSPACE_SWITCHER` before `FEATURE_GLOBAL_AEGIS` can pass enablement/preflight checks; this dependency MUST be enforced through registry metadata and feature-flag service preflight/blocker behavior, not through inline runtime flag reads in Aegis resolver code.
 - **FR-017**: If `workspaces.feature_flags` is malformed, unparsable, or not a JSON object for the requested workspace context, `FEATURE_GLOBAL_AEGIS` evaluation MUST treat it as no workspace override, resolve OFF unless an allowed kill-switch/default rule says otherwise, and MUST NOT throw or activate global-first Aegis behavior.
+- **FR-018**: After `src/lib/aegis.ts` lands, production code and regression tests that resolve Aegis agent rows, Aegis agent config, Aegis Mission Control agent ids, or Aegis gateway identity MUST route through `getAegis(db, workspace_id?)`; `src/lib/aegis.ts` is the only production source allowed to query `agents` with direct Aegis-name predicates such as `LOWER(name)='aegis'` or equivalent `name='aegis'` checks. Task API approval gates may continue to query `quality_reviews.reviewer='aegis'` as the live review signal, but task routes, scheduler hooks, validation defaults, UI/chat surfaces, future task edits, and tests MUST NOT query `agents` directly to resolve Aegis metadata outside the shared resolver.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -175,6 +177,7 @@ A maintainer or auditor can see when a local Aegis row exists but is shadowed by
 - **SC-008**: Grep or schema validation shows SPEC-003 production code and tests do not require `quality_reviews.agent_id`.
 - **SC-009**: Grep or focused tests prove the Aegis reference sweep covers task routes, validation defaults, scheduler hooks, task-board Aegis display, and chat Aegis role surfaces without adding task pipeline, `ready_for_owner`, area-label, artifact-publishing, governance, pilot-seed-data, or CrabTrap behavior.
 - **SC-010**: Focused feature-flag and resolver tests cover `FEATURE_GLOBAL_AEGIS` flag OFF, flag ON through `workspaces.feature_flags`, no workspace context, malformed workspace feature-flag JSON defaulting OFF, environment `0` as a kill switch, environment `1` not forcing enablement, and the existing `FEATURE_WORKSPACE_SWITCHER` registry dependency/preflight blocker.
+- **SC-011**: Static guardrail checks produce zero matches for direct Aegis agent-resolution bypasses outside `src/lib/aegis.ts`, including the legacy `aegisAgentByWorkspace` cache and production/test SQL patterns that query `agents` by `LOWER(name)='aegis'`, `name='aegis'`, or a workspace-id-plus-Aegis-name predicate; matches against `quality_reviews.reviewer='aegis'` remain allowed only for review-completion gates covered by SC-004 and SC-008.
 
 ## Assumptions
 

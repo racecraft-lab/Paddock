@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-003-workflow.md",
-  "updated_at": "2026-04-28T20:42:02Z",
-  "active_step": "Phase 4: Checklist - Regression Safety",
+  "updated_at": "2026-04-28T20:55:11Z",
+  "active_step": "Phase 5: Tasks",
   "status": "In Progress",
   "notes": [
     "SPEC-003 setup completed on branch 003-global-aegis from origin/main e161a70.",
@@ -18,7 +18,8 @@
     "Plan completed on 2026-04-28T20:15:03Z: plan, research, data model, quickstart, and resolver contract generated. G3 passed with zero unresolved markers.",
     "Feature Flags checklist completed on 2026-04-28T20:25:35Z: 22 items, 2 gaps remediated in spec/plan/checklist, no unresolved consensus items, zero markers after rerun.",
     "Data Integrity checklist completed on 2026-04-28T20:37:06Z: 22 items, 1 gap remediated across spec/plan/data-model/contract/checklist, no unresolved consensus items, zero markers after rerun.",
-    "Scheduler Safety checklist completed on 2026-04-28T20:42:02Z: 35 items, 0 gaps, no unresolved consensus items, zero markers after generation."
+    "Scheduler Safety checklist completed on 2026-04-28T20:42:02Z: 35 items, 0 gaps, no unresolved consensus items, zero markers after generation.",
+    "Regression Safety checklist completed on 2026-04-28T20:55:11Z: 26 items, 4 gaps remediated in spec/plan/quickstart/checklist, no unresolved consensus items. G4 passed with zero gap markers."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -100,9 +101,9 @@
     {"step": "Phase 4: Checklist - Data Integrity Consensus", "status": "completed"},
     {"step": "Phase 4: Checklist - Scheduler Safety", "status": "completed"},
     {"step": "Phase 4: Checklist - Scheduler Safety Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - Regression Safety", "status": "in_progress"},
-    {"step": "Phase 4: Checklist - Regression Safety Consensus", "status": "pending"},
-    {"step": "Phase 5: Tasks", "status": "pending"},
+    {"step": "Phase 4: Checklist - Regression Safety", "status": "completed"},
+    {"step": "Phase 4: Checklist - Regression Safety Consensus", "status": "completed"},
+    {"step": "Phase 5: Tasks", "status": "in_progress"},
     {"step": "Phase 6: Analyze", "status": "pending"},
     {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
     {"step": "Phase 7: Implement - Pending task decomposition", "status": "pending"},
