@@ -6,15 +6,19 @@ Installed for SPEC-002A.
 
 - Repository: `https://github.com/racecraft-lab/spec-kit-archive`
 - Corrective PR: `https://github.com/racecraft-lab/spec-kit-archive/pull/1`
-- Ref: `refs/tags/v1.1.0` (provisional branch tag pending main-based retag)
+- Ref: `refs/tags/v1.1.0`
 - Commit: `08ee0e919a72ccb254758a2b6f51d58196490ea7`
 - Tag object: `1e87928c30293aef4f75c1c3fbc46a8c43540d7a`
 - Archive URL: `https://github.com/racecraft-lab/spec-kit-archive/archive/refs/tags/v1.1.0.zip`
+- GitHub release: `https://github.com/racecraft-lab/spec-kit-archive/releases/tag/v1.1.0`
+- Merged PR: `https://github.com/racecraft-lab/spec-kit-archive/pull/1`
+- Main merge commit: `4e6ad6b34a20811f9af5e4ab5a822e47310d0271`
 - License: MIT
 
-Release-process note: this pin was created from the Racecraft fork branch
-before PR #1 merged to `main`. Treat the tag as provisional branch evidence
-until PR #1 merges and the official tag is cut or recreated from `main`.
+Release-process note: this pin was created from the Racecraft fork branch and
+was later published as `v1.1.0` after PR #1 merged to `main`. The tag commit is
+contained in `main`; the tagged tree and merged `main` tree are equivalent for
+the vendored extension files recorded below.
 
 ## Vendored Files
 
@@ -29,11 +33,11 @@ until PR #1 merges and the official tag is cut or recreated from `main`.
 ## Mission Control Safety Policy
 
 Archive Sweep runs before requested spec work and excludes the current target
-spec. In this checkout, cleanup-sensitive behavior remains dry-run-only because
-the active branch is not a safe base branch and the worktree contains
-uncommitted SPEC-002A work. Active `specs/**` cleanup is permitted only as a
-reviewed forward change after archive success, merge or tree references,
-recovery commands, and `safeToApplyCleanup=true` have been recorded.
+spec. Cleanup-sensitive behavior remains dry-run-only unless the active branch
+is a safe base branch and the worktree is clean. Active `specs/**` cleanup is
+permitted only as a reviewed forward change after archive success, merge or
+tree references, recovery commands, and `safeToApplyCleanup=true` have been
+recorded.
 
 The archive extension must not rewrite git history and must not rely on
 post-merge CI mutating `main`.
