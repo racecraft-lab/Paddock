@@ -46,6 +46,9 @@ jobs:
       - name: API contract parity
         run: pnpm api:parity
 
+      - name: Spec evidence screenshot guard
+        run: pnpm test:evidence:screenshots
+
       - name: Lint
         run: pnpm lint
 
