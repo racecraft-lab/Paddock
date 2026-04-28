@@ -429,7 +429,7 @@ Focus on SPEC-003:
 |-----------|-------|------|-----------------|
 | feature-flags | 22 | 2 found and remediated; zero markers after rerun | P2-AC1, P2-AC2, P2-AC3 |
 | data-integrity | 22 | 1 found and remediated; zero markers after rerun | P2-AC2, P2-AC3, P2-AC6 |
-| scheduler-safety | Pending | Pending | P2-AC4, P2-AC5 |
+| scheduler-safety | 35 | 0 gaps; zero markers after generation | P2-AC4, P2-AC5 |
 | regression-safety | Pending | Pending | P2-AC1, P2-AC6 |
 
 ---
