@@ -81,7 +81,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-001 | 0 | Foundation Migrations | foundation-migrations | Complete | P0 | — | SPEC-002 | Phase 0 |
 | SPEC-002 | 1 | Product-Line Switcher and activeWorkspace Scoping | product-line-switcher | Complete | P1 | SPEC-001 | SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009 | Phase 1 |
 | SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | Complete | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
-| SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
+| SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | In Progress | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
 | SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Pending | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, and SPEC-002A are complete on `main`. SPEC-003 is the next unblocked implementation spec; Archive Sweep should run first when its autopilot run starts.
+**Current roadmap note:** SPEC-001, SPEC-002, and SPEC-002A are complete on `main`. SPEC-003 setup is active on branch `003-global-aegis`; Archive Sweep should run first when its autopilot run starts.
 
 ## Feature Flag Resolution Policy
 
@@ -175,7 +175,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-003: Aegis Facility Singleton Refactor
 
-- **Status:** Pending
+- **Status:** In Progress
+- **Branch status:** Setup branch `003-global-aegis` created with workflow `docs/ai/specs/SPEC-003-workflow.md`; implementation has not started.
 - **Priority:** P1
 - **Branch short name:** `global-aegis`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A

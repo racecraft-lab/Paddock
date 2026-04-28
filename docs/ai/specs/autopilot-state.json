@@ -1,19 +1,15 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-002A-workflow.md",
-  "updated_at": "2026-04-28T18:07:29Z",
-  "active_step": "Complete",
-  "status": "Complete",
+  "workflow_file": "docs/ai/specs/SPEC-003-workflow.md",
+  "updated_at": "2026-04-28T18:30:00Z",
+  "active_step": "Setup Complete",
+  "status": "In Progress",
   "notes": [
-    "SPEC-002A completed with all 47 generated tasks checked, G7 passed, and FR-001 through FR-021 plus SC-001 through SC-007 mapped to implementation evidence.",
-    "Mission Control PR #18 merged to main as daab0c11f8896b31c2d24ed0a53419814671c3b1.",
-    "racecraft-lab/spec-kit-archive PR #1 merged and v1.1.0 was published at https://github.com/racecraft-lab/spec-kit-archive/releases/tag/v1.1.0.",
-    "Mission Control vendors .specify/extensions/archive from the Racecraft archive extension v1.1.0 pin and records the source, release, hashes, and cleanup safety policy in .specify/extensions/archive/RACECRAFT-PIN.md.",
-    "racecraft-lab/racecraft-plugins-public PR #20 and release-please PR #21 merged. The stale branch-cut speckit-pro-v1.9.0 release/tag was deleted and recreated at main commit 75a5b727cd0868d647c9afa968e0edbe398c3f94.",
-    "Local Codex speckit-pro install and cache report version 1.9.0, and the user marketplace still points speckit-pro at ./.codex/plugins/speckit-pro.",
-    "Mission Control was deployed on HAL after merge; mission-control.service and openclaw-gateway.service were active and http://127.0.0.1:3000/login returned HTTP 200.",
+    "SPEC-003 setup completed on branch 003-global-aegis from origin/main e161a70.",
+    "Workflow file docs/ai/specs/SPEC-003-workflow.md was generated for Aegis Facility Singleton Refactor and is ready for autopilot.",
+    "Roadmap copy in this branch marks SPEC-003 In Progress per SpecKit-Pro status policy.",
     "Archive Sweep is now a speckit-pro:autopilot startup step. It runs before Phase 0 for the requested spec, excludes the current target spec, and keeps cleanup dry-run-only or stopped unless a clean safe base branch records safeToApplyCleanup=true.",
     "No active specs/** cleanup was applied by SPEC-002A. Completed spec folders may be removed only by a reviewed forward change after archive success, merge/tree references, recovery commands, and safeToApplyCleanup=true are recorded.",
-    "SPEC-003 is the next unblocked implementation spec. Its autopilot run should start with Archive Sweep and treat SPEC-001, SPEC-002, and SPEC-002A as previously merged candidates."
+    "SPEC-003 autopilot should start with Archive Sweep and treat SPEC-001, SPEC-002, and SPEC-002A as previously merged candidates."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -26,7 +22,7 @@
       "SPEC-001",
       "SPEC-002"
     ],
-    "current_target_excluded_during_spec_002a": "SPEC-002A",
+    "current_target_excluded_during_spec_003": "SPEC-003",
     "next_autopilot_previous_spec_candidates": [
       "SPEC-001",
       "SPEC-002",
@@ -56,15 +52,15 @@
     "login_http_status": 200
   },
   "plan": [
-    {"step": "Phase 0: Prerequisites and Archive Sweep startup", "status": "completed"},
-    {"step": "Phase 1: Specify", "status": "completed"},
-    {"step": "Phase 2: Clarify", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "completed"},
-    {"step": "Phase 4: Checklists", "status": "completed"},
-    {"step": "Phase 5: Tasks", "status": "completed"},
-    {"step": "Phase 6: Analyze", "status": "completed"},
-    {"step": "Phase 7: Implement", "status": "completed"},
-    {"step": "Post: Release, local install, deploy, and retrospective", "status": "completed"},
-    {"step": "Next: SPEC-003 setup/autopilot", "status": "pending"}
+    {"step": "Setup: Branch, worktree, workflow, and roadmap status", "status": "completed"},
+    {"step": "Phase 0: Prerequisites and Archive Sweep startup", "status": "pending"},
+    {"step": "Phase 1: Specify", "status": "pending"},
+    {"step": "Phase 2: Clarify", "status": "pending"},
+    {"step": "Phase 3: Plan", "status": "pending"},
+    {"step": "Phase 4: Checklists", "status": "pending"},
+    {"step": "Phase 5: Tasks", "status": "pending"},
+    {"step": "Phase 6: Analyze", "status": "pending"},
+    {"step": "Phase 7: Implement", "status": "pending"},
+    {"step": "Post: Verification, status sync, and PR", "status": "pending"}
   ]
 }
