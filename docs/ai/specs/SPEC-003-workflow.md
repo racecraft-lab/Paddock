@@ -29,8 +29,8 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Dry-run evidence recorded; `SPEC-003` excluded; cleanup not safe/applied |
 | Specify | `$speckit-specify` | Complete | Generated `specs/003-global-aegis/spec.md`; G1 passed with zero markers |
 | Clarify | `$speckit-clarify` | Complete | G2 passed; lookup precedence, audit activity, flag context, legacy fallback, scheduler, route, and reference-sweep boundaries resolved |
-| Plan | `$speckit-plan` | In Progress | Design `getAegis`, task-dispatch integration, route validation, and tests |
-| Checklist | `$speckit-checklist` | Pending | Run feature-flag, data-integrity, scheduler-safety, and regression-safety domains |
+| Plan | `$speckit-plan` | Complete | G3 passed; generated plan, research, data model, quickstart, and resolver contract |
+| Checklist | `$speckit-checklist` | In Progress | Run feature-flag, data-integrity, scheduler-safety, and regression-safety domains |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered tasks with P2-AC1..P2-AC6 coverage |
 | Analyze | `$speckit-analyze` | Pending | Verify no downstream task-pipeline, ready-for-owner, area-label, artifact, or governance drift |
 | Implement | `$speckit-implement` | Pending | Implement via TDD, then run verification and status sync |
@@ -359,11 +359,11 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | |
-| `research.md` | Pending | |
-| `data-model.md` | Pending | |
-| `contracts/` | Pending | Resolver and scheduler contract expected |
-| `quickstart.md` | Pending | |
+| `plan.md` | Complete | G3 passed 2026-04-28T20:15:03Z with zero unresolved markers |
+| `research.md` | Complete | Generated |
+| `data-model.md` | Complete | Generated |
+| `contracts/` | Complete | `contracts/aegis-resolver.md` generated |
+| `quickstart.md` | Complete | Generated |
 
 ---
 
