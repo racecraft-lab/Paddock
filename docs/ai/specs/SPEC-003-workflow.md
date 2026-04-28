@@ -143,12 +143,12 @@ Implement RC Factory Phase 2:
 
 ### Success Criteria Summary
 
-- [ ] P2-AC1: With flag OFF, Aegis resolution matches pre-refactor behavior for every workspace.
-- [ ] P2-AC2: With flag ON, Aegis resolves to the single `scope='global'` record even when a workspace has no local Aegis.
-- [ ] P2-AC3: If a workspace has a legacy local Aegis record, `getAegis(ws)` returns the local one when compatibility mode requires it.
-- [ ] P2-AC4: `runAegisReviews` scheduler loop runs identically. No new failure modes.
-- [ ] P2-AC5: Test suite covers global-only, workspace-only, and workspace-with-legacy scenarios.
-- [ ] P2-AC6: Aegis completion gates use live `quality_reviews.reviewer='aegis'`; tests must not expect `quality_reviews.agent_id` by default.
+- [x] P2-AC1: With flag OFF, Aegis resolution matches pre-refactor behavior for every workspace.
+- [x] P2-AC2: With flag ON, Aegis resolves to the single `scope='global'` record even when a workspace has no local Aegis.
+- [x] P2-AC3: If a workspace has a legacy local Aegis record, `getAegis(ws)` returns the local one when compatibility mode requires it.
+- [x] P2-AC4: `runAegisReviews` scheduler loop runs identically. No new failure modes.
+- [x] P2-AC5: Test suite covers global-only, workspace-only, and workspace-with-legacy scenarios.
+- [x] P2-AC6: Aegis completion gates use live `quality_reviews.reviewer='aegis'`; tests must not expect `quality_reviews.agent_id` by default.
 
 ---
 
@@ -608,13 +608,15 @@ For each task, follow this cycle:
 
 **G7 Validation:** Passed 2026-04-28T21:33:04Z with all 21 tasks complete.
 
-**Implementation Verification:** Focused Vitest passed for 6 files / 68 tests. `pnpm typecheck` passed. `pnpm lint` passed with 0 errors and 10 pre-existing warnings. Static guardrails returned zero matches. `pnpm build` passed after rerunning with network access for Google Fonts; the sandboxed build failed only on `next/font` network fetches. Full `pnpm test` still fails on baseline environment issues: 8 `gnap-sync.test.ts` GPG signing failures and 1 `mc-provisioner-daemon.test.ts` socket timeout.
+**Implementation Verification:** Focused Vitest passed for the original 6-file / 68-test SPEC-003 matrix. Remediation pass on 2026-04-28T22:10:54Z passed the core 4-file / 35-test resolver/dispatch/flag matrix. `pnpm typecheck` passed. `pnpm lint` passed with 0 errors and 10 pre-existing warnings. Static guardrails returned zero matches. `pnpm build` passed after rerunning with network access for Google Fonts; the sandboxed build failed only on `next/font` network fetches. Full `pnpm test` still fails on baseline environment issues: 8 `gnap-sync.test.ts` GPG signing failures and 1 `mc-provisioner-daemon.test.ts` socket timeout.
 
-**Integration Suite:** `pnpm test:e2e` passed on 2026-04-28T21:40:33Z with 531 Playwright tests passing.
+**Integration Suite:** Spec-specific e2e coverage exists at `tests/e2e/spec-003-global-aegis.spec.ts` and passed 2 tests on 2026-04-28T22:10:54Z. Full `pnpm test:e2e` passed on 2026-04-28T22:10:54Z with 533 Playwright tests passing.
 
 **PR Creation:** PR #20 opened on 2026-04-28T21:43:56Z: <https://github.com/racecraft-lab/mission-control/pull/20>.
 
-**Review Remediation:** Immediate GitHub review-thread query for PR #20 returned zero review threads. The autopilot `/loop` remediation scheduler is not available in this Codex runtime or in `.claude/commands`, so no recurring monitor was scheduled; PR checks were in progress at creation time.
+**Post-Extension Gates:** Installed verify/review/cleanup/retrospective command definitions were re-run as local gate procedures on 2026-04-28T22:10:54Z because this Codex runtime does not expose a slash-command invoker. Evidence is recorded in `specs/003-global-aegis/post-implementation-gates.md` and `specs/003-global-aegis/retrospective.md`.
+
+**Review Remediation:** Immediate GitHub review-thread query for PR #20 returned zero review threads. The autopilot `/loop` remediation scheduler is not available in this Codex runtime or in `.claude/commands`, so no recurring monitor could be scheduled from this session. This remains an external runtime capability gap, not a repository implementation gap.
 
 ---
 
@@ -636,6 +638,9 @@ For each task, follow this cycle:
 - [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-003 completion evidence after implementation.
 - [x] `docs/rc-factory-v1-prd.md` reflects SPEC-003 completion after verification.
 - [x] Branch is pushed for review.
+- [x] Spec-specific e2e coverage exists at `tests/e2e/spec-003-global-aegis.spec.ts`.
+- [x] Post-extension gate evidence is recorded in `specs/003-global-aegis/post-implementation-gates.md`.
+- [x] Retrospective evidence is recorded in `specs/003-global-aegis/retrospective.md`.
 
 ---
 
@@ -653,12 +658,14 @@ For each task, follow this cycle:
 - Full `pnpm test` is not clean in this local environment because GPG-agent and provisioner socket tests fail independently of SPEC-003.
 - `pnpm build` needed network access for Google Fonts, and SSH push failed because the signing agent refused the key; HTTPS push succeeded.
 - The autopilot `/loop` review-remediation scheduler is unavailable in this Codex runtime, so review-thread monitoring was limited to a direct GitHub query.
+- The first completion pass marked P2 success criteria complete only in the post-implementation checklist; the remediation pass checked P2-AC1 through P2-AC6 in the success-criteria summary as well.
 
 ### Patterns to Reuse
 
 - Keep downstream SPEC-004+ behavior behind static grep guardrails when a phase must not drift into later roadmap scope.
 - Record both local verification success and environment-limited failures in the workflow rather than hiding incomplete suite results.
 - Refresh the remote tracking ref after HTTPS pushes when the configured `origin` remote uses SSH.
+- Keep a spec-named `tests/e2e/` file for every spec that relies on Playwright evidence so the Integration Suite discovery step has an unambiguous match.
 
 ---
 

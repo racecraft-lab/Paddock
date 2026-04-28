@@ -141,7 +141,9 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     implementedAfter: ['SPEC-003'],
     preflightRequires: ['Global Aegis row exists and legacy local Aegis fallback is verified.'],
     rollbackBehavior: 'Disable to make Aegis lookup prefer workspace-scoped records again.',
-    evidence: {},
+    evidence: {
+      playwright: ['tests/e2e/spec-003-global-aegis.spec.ts'],
+    },
   },
   FEATURE_TASK_PIPELINES: {
     key: 'FEATURE_TASK_PIPELINES',
