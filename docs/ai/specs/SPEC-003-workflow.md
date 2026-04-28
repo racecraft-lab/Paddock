@@ -28,8 +28,8 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Dry-run evidence recorded; `SPEC-003` excluded; cleanup not safe/applied |
 | Specify | `$speckit-specify` | Complete | Generated `specs/003-global-aegis/spec.md`; G1 passed with zero markers |
-| Clarify | `$speckit-clarify` | In Progress | Resolve lookup precedence, audit activity, flag context, and legacy fallback ambiguity |
-| Plan | `$speckit-plan` | Pending | Design `getAegis`, task-dispatch integration, route validation, and tests |
+| Clarify | `$speckit-clarify` | Complete | G2 passed; lookup precedence, audit activity, flag context, legacy fallback, scheduler, route, and reference-sweep boundaries resolved |
+| Plan | `$speckit-plan` | In Progress | Design `getAegis`, task-dispatch integration, route validation, and tests |
 | Checklist | `$speckit-checklist` | Pending | Run feature-flag, data-integrity, scheduler-safety, and regression-safety domains |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered tasks with P2-AC1..P2-AC6 coverage |
 | Analyze | `$speckit-analyze` | Pending | Verify no downstream task-pipeline, ready-for-owner, area-label, artifact, or governance drift |
@@ -296,9 +296,11 @@ Focus on audit and reference-sweep boundaries:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Resolver precedence and flag context | Pending | |
-| 2 | Scheduler and review gate compatibility | Pending | |
-| 3 | Audit activity and reference sweep | Pending | |
+| 1 | Resolver precedence and flag context | 5 | Workspace flag context, gateway fallback, shadow activity shape, duplicate tie-breaker, and status-filter behavior resolved |
+| 2 | Scheduler and review gate compatibility | 5 | Resolver source-only scheduler change, gateway routing, reviewer gate, no `quality_reviews.agent_id`, and UI display-only behavior resolved |
+| 3 | Audit activity and reference sweep | 4 | Shadow activity row shape, idempotency, reference-sweep surfaces, and downstream out-of-scope boundaries resolved |
+
+**G2 Validation:** Passed 2026-04-28T20:12:06Z with zero `[NEEDS CLARIFICATION]` markers.
 
 ---
 
