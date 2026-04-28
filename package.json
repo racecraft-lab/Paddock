@@ -30,6 +30,8 @@
     "build-storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
     "test:visual:storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --config vitest.storybook.config.ts",
     "test:visual:argos-metadata": "pnpm run verify:node && node scripts/verify-argos-storybook-metadata.mjs",
+    "test:evidence:screenshots": "pnpm run verify:node && node scripts/verify-spec-evidence-screenshots.mjs",
+    "test:evidence:screenshots:negative": "pnpm run verify:node && node scripts/verify-spec-evidence-screenshots.mjs --self-test",
     "test:all": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e",
     "quality:gate": "pnpm test:all",
     "postinstall": "node -e \"try{require('better-sqlite3')}catch(e){if(e.code==='ERR_DLOPEN_FAILED'||/NODE_MODULE_VERSION/.test(e.message)){console.error('\\n⚠  better-sqlite3 compiled for wrong Node version. Run: pnpm rebuild better-sqlite3\\n');process.exit(1)}}\""

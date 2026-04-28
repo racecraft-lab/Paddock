@@ -13,7 +13,10 @@ feature specification or constitution requires them. User-facing UI changes
 MUST include real Playwright e2e journey tasks, Docker-backed seed-data
 execution when Docker is available, screenshot artifact capture, Argos
 metadata verification when Argos uploads are used, and an e2e/screenshot
-defect review before any PR update.
+defect review before any PR update. Specs that touch SpecKit artifacts or
+evidence policy MUST include Archive Sweep startup/dry-run evidence,
+current-target exclusion, cleanup safety, recovery-command evidence, and
+screenshot/evidence guard tasks.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -163,6 +166,8 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Performance optimization across all stories
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
+- [ ] TXXX Archive Sweep dry-run/apply safety evidence and recovery commands for previously merged specs, excluding the current target spec
+- [ ] TXXX Screenshot/evidence guard verification, including negative fixture or manifest-backed exception coverage when generated screenshots could be committed
 - [ ] TXXX Run quickstart.md validation
 
 ---

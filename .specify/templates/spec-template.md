@@ -24,6 +24,9 @@
   supporting evidence, not acceptance evidence for new UI behavior.
   If Argos is used, the Independent Test should also name the CI metadata gate
   that proves screenshots include test/story identity and spec-scoped tags.
+  Specs that create or retire SpecKit evidence must name the Archive Sweep
+  provenance path, the current-target exclusion, and any manifest-backed
+  exception for committed binary artifacts.
 -->
 
 ### User Story 1 - [Brief Title] (Priority: P1)
@@ -100,6 +103,14 @@
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+
+### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
+
+- Archive Sweep runs before Phase 0 for the requested spec and considers only previously merged specs.
+- The current target spec is excluded from same-run archival.
+- Unsafe branches or dirty worktrees use dry-run or stop behavior, not cleanup.
+- Cleanup of completed spec folders requires archive success, merge/tree references, and recovery commands.
+- Generated UI screenshots are Argos/CI artifacts by default; committed binaries require a manifest-backed exception.
 
 ### Key Entities *(include if feature involves data)*
 

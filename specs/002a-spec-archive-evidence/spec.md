@@ -3,105 +3,114 @@
 **Feature Branch**: `[002a-spec-archive-evidence]`
 **Created**: 2026-04-27
 **Status**: Draft
-**Input**: User description: "Create a future spec between SPEC-002 and SPEC-003 for managing growing SpecKit artifacts and screenshots. Evaluate adding https://github.com/stn1slv/spec-kit-archive."
+**Input**: SPEC-002A workflow for archiving completed SpecKit artifacts and preserving Argos/CI evidence provenance without committing generated screenshots by default.
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - Archive Completed Spec Knowledge (Priority: P1)
+### User Story 1 - Archive Completed Spec Knowledge Safely (Priority: P1)
 
-A maintainer can merge a completed feature and run a documented archive flow that preserves the feature's requirements, implementation evidence, PR links, and decisions in durable project memory without requiring every generated screenshot or temporary markdown artifact to remain permanently committed in `specs/`.
+A maintainer can archive a completed feature spec after merge so the durable record preserves the feature's requirements, implementation evidence, PR links, CI links, and recovery commands without requiring generated screenshot content to remain in source control.
 
-**Why this priority**: SPEC-002 added real UI journey screenshots as review evidence. Without an archive policy, each future UI spec can grow the repository with binary artifacts while still failing to provide a canonical post-merge memory.
+**Why this priority**: SPEC-002A exists to prevent repository bloat while preserving enough evidence to reconstruct what happened after a spec has merged.
 
-**Independent Test**: Run the archive flow in dry-run mode against `specs/002-product-line-switcher` and verify it produces an archival report, durable memory updates, and a screenshot/evidence manifest without deleting source spec files.
+**Independent Test**: Run an archive dry-run against `specs/002-product-line-switcher` and verify it produces an archive report, source references, and recovery commands without deleting source files or copying generated screenshots into `main`.
 
 **Acceptance Scenarios**:
 
-1. **Given** a completed feature spec with spec, plan, tasks, quickstart, PR link, CI link, and screenshots, **When** the archive dry-run runs, **Then** it reports the durable memory changes, screenshot manifest, source paths, and no destructive actions.
-2. **Given** a completed feature spec with no screenshots, **When** the archive dry-run runs, **Then** it still captures spec/plan/tasks evidence and reports that no screenshot evidence was present.
-3. **Given** conflicting requirements between feature artifacts and canonical project memory, **When** the archive flow analyzes the feature, **Then** it stops for human decision instead of silently overwriting the canonical memory.
+1. **Given** a merged feature spec with spec, plan, tasks, PR, CI, and Argos evidence, **When** the archive dry-run runs, **Then** it records durable references to the source paths, merge commit, PR, CI run, and recovery commands.
+2. **Given** a merged feature spec with no screenshots, **When** the archive dry-run runs, **Then** it still records the spec lineage and notes that screenshot evidence was not present.
+3. **Given** the archive process detects a conflict between the archived record and canonical project memory, **When** it runs, **Then** it stops for review rather than silently overwriting the canonical record.
 
 ---
 
-### User Story 2 - Keep Human Screenshot Review Without Repository Bloat (Priority: P1)
+### User Story 2 - Preserve Argos and CI Provenance Instead of Committed Screenshot Retention (Priority: P1)
 
-A reviewer can inspect the screenshots required for UI journey review from Argos, the PR description, or CI artifacts, while long-lived repository history keeps only curated evidence summaries or intentionally retained images.
+A reviewer can trace UI evidence through Argos and CI artifacts, while the repository keeps provenance metadata and manifest links instead of archiving generated screenshot content into source control.
 
-**Why this priority**: Human-in-the-loop screenshot review is now a constitutional quality gate, but committed screenshots should be the exception rather than the only way to preserve reviewability.
+**Why this priority**: The accepted evidence model for SPEC-002A is provenance-first. Committed screenshots are not the default archival target.
 
-**Independent Test**: Run the SPEC-002 Playwright journey and Storybook visual suite in CI and verify the PR evidence points to Argos builds or artifact bundles, while a guard reports whether committed screenshots exceed the approved policy.
+**Independent Test**: Verify the evidence model captures Argos build links, CI run links, command provenance, and metadata gate outcomes while excluding generated screenshot files from the archive output by default.
 
 **Acceptance Scenarios**:
 
-1. **Given** a PR with new UI journey tests, **When** CI completes, **Then** the PR description includes a screenshot review section with links to the relevant Argos build, images, or artifact bundle.
-2. **Given** `specs/**/screenshots` contains binary screenshots above the approved count or size cap, **When** the repository guard runs, **Then** it fails with the offending files and remediation instructions.
-3. **Given** a small curated screenshot set has an approved manifest, **When** the repository guard runs, **Then** it allows those files and records why they are permanent evidence.
+1. **Given** a UI journey spec with Argos-backed review artifacts, **When** the archive flow records evidence, **Then** it preserves links and metadata for the review artifacts without copying generated screenshots into the repo.
+2. **Given** a completed spec has no Argos artifacts but does have CI evidence, **When** it is archived, **Then** the archive record still preserves CI provenance and marks the absence of Argos data explicitly.
+3. **Given** generated screenshot files are present in a spec folder, **When** the archive policy runs, **Then** it treats them as review artifacts unless an explicit exception says otherwise.
 
 ---
 
-### User Story 3 - Enforce the Archive Policy Before Later Specs Start (Priority: P2)
+### User Story 3 - Prepare Archive Sweep Behavior for Future Autopilot Runs (Priority: P1)
 
-A SpecKit executor preparing SPEC-003 or any later spec can follow documented constitution, workflow, and CI rules that define which artifacts are durable, which are temporary, and how post-merge archival is handled.
+A SpecKit executor can start autopilot with an Archive Sweep that processes only previously merged specs, excludes the current target spec, and stops or runs dry-run only when the branch or worktree is unsafe for cleanup.
 
-**Why this priority**: This is a process and repository hygiene dependency. It should land before SPEC-003 so the next feature branch does not copy the ad hoc SPEC-002 screenshot retention pattern.
+**Why this priority**: SPEC-002A must define the archive lifecycle before SPEC-003 and later specs begin producing more evidence.
 
-**Independent Test**: Generate or inspect the next spec workflow and confirm it references the archive/evidence policy, the screenshot retention limits, and the post-merge archive command.
+**Independent Test**: Start autopilot on a later spec and verify the Archive Sweep first targets already merged specs, excludes the current target spec, and refuses destructive cleanup on an unsafe base branch or dirty worktree.
 
 **Acceptance Scenarios**:
 
-1. **Given** a future spec workflow is created, **When** the workflow template is rendered, **Then** it requires Playwright screenshot evidence and the archive/evidence retention policy.
-2. **Given** a completed feature branch is ready to merge, **When** the pre-merge checks run, **Then** known UI journey defects, missing screenshot evidence, and oversized committed screenshot folders block the PR update.
-3. **Given** a PR has merged, **When** the post-merge archive process is run, **Then** it creates durable memory/changelog updates and proposes any cleanup as an explicit reviewed change rather than silent deletion.
+1. **Given** autopilot starts on a clean safe base branch, **When** the Archive Sweep runs, **Then** it archives previously merged specs first and leaves the current target spec untouched.
+2. **Given** autopilot starts on a dirty worktree or an unsafe branch, **When** the Archive Sweep runs, **Then** it limits itself to dry-run behavior or stops with a clear guard message.
+3. **Given** the current target spec has not merged yet, **When** the Archive Sweep runs, **Then** it does not archive that spec in the same run.
 
 ### Edge Cases
 
-- GitHub Actions artifacts expire before a historical audit. The durable memory must still include PR URL, CI run URL, commit SHA, artifact names, and hashes or manifest entries.
-- A branch is deleted after merge. Permanent evidence must not depend only on branch raw URLs.
-- The upstream archive extension changes behavior after release. Adoption must pin a release or commit and record local modifications.
-- The extension is unavailable or incompatible with the current SpecKit version. The implementation must provide a documented fallback path or defer adoption with evidence.
-- A completed feature contains screenshots with sensitive data. The archive policy must require review, redaction, or exclusion before durable retention.
-- CI cannot mutate the repository after merge. Cleanup must be implemented as a checked workflow, explicit follow-up PR, or manually invoked archive step, not as silent post-merge history rewriting.
+- A merged spec's screenshot evidence is only available through expired CI artifacts. The archive record must still preserve the PR, merge commit, CI run, and recovery commands even if binary files are gone.
+- A spec folder still exists under `specs/**` after merge. Removal from active specs may happen only after archive succeeds and the report records merge/tree references plus concrete recovery commands.
+- The archive extension or plugin support changes behavior after pinning. Mission Control must keep the pinned fork/tag/commit and report the installed version so later runs remain reproducible.
+- The current target spec is merged during a later run. It becomes eligible only in that later Archive Sweep, not the run that is currently processing it.
+- The worktree is dirty or the base branch is not safe for cleanup. Archive behavior must stay in dry-run or stop rather than mixing prior-spec cleanup into the current feature branch.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST evaluate `stn1slv/spec-kit-archive` as the default archival mechanism and document whether it is adopted, vendored, pinned, forked, or rejected.
-- **FR-002**: If adopted, the archive integration MUST pin a release tag or commit and record the upstream repository, license, version, and any local modifications.
-- **FR-003**: The archive flow MUST preserve traceability from durable memory back to the source feature spec path, PR URL, merge commit, CI run, and screenshot evidence.
-- **FR-004**: The archive flow MUST NOT delete or move source feature spec files automatically. Any cleanup of `specs/` content must happen through an explicit reviewed change.
-- **FR-005**: The repository MUST define artifact classes for source-of-truth spec files, durable memory summaries, ephemeral CI artifacts, and permanent curated evidence.
-- **FR-006**: The repository MUST define count and size limits for committed screenshot evidence under `specs/**/screenshots`.
-- **FR-007**: CI MUST include a guard that fails when committed screenshots exceed the approved policy or lack a manifest/allowlist.
-- **FR-008**: PR evidence requirements MUST include screenshot links or artifact bundle links for every new or changed UI journey covered by Playwright.
-- **FR-015**: Storybook + Argos SHOULD be used for focused component and shell visual states touched by specs so generated screenshots do not need to be committed to source control.
-- **FR-009**: The constitution MUST be updated to mandate archive/evidence retention discipline for spec artifacts, screenshots, and post-merge memory.
-- **FR-010**: SpecKit workflow templates or project workflow docs MUST require the archive/evidence policy before later feature specs are opened or updated.
-- **FR-011**: The implementation MUST include a local and CI-runnable verification path for the archive guard and any adopted archive command.
-- **FR-012**: The archive flow MUST stop for human decision when it detects constitution conflicts, requirement collisions, or destructive cleanup decisions.
-- **FR-013**: Durable memory MUST include enough evidence for a future reviewer to understand what was implemented, how it was validated, and where the original detailed artifacts lived.
-- **FR-014**: The cleanup strategy MUST avoid rewriting git history and MUST avoid depending on CI jobs that silently mutate `main` after merge.
+- **FR-001**: The system MUST evaluate `racecraft-lab/spec-kit-archive` as the archive extension candidate and record whether Mission Control installs it directly from a pinned fork tag/commit or vendors an equivalent pinned copy.
+- **FR-002**: The system MUST require validation of any `racecraft-lab/spec-kit-archive` fork against Racecraft-specific behavior before adoption, including Argos/CI provenance, dry-run/apply separation, gated active-spec cleanup, and recovery-command reporting.
+- **FR-003**: Mission Control MUST pin the archive extension to a specific Racecraft fork tag or commit and record that pin in repo-facing documentation or configuration, including the applicable `.specify/extensions.yml` entry, `.specify/extensions/.registry` installed-extension evidence, vendored `.specify/extensions/archive/extension.yml` manifest when vendored, and SPEC-002A implementation evidence showing the source URL, tag or commit, and manifest hash.
+- **FR-004**: The archive policy MUST preserve evidence links and metadata for Argos and CI runs, including Argos build/review URLs, CI run URLs, command provenance, metadata gate outcomes, and optional artifact manifests with screenshot or binary artifact names, hashes, and CI artifact references, and MUST NOT treat generated screenshot content as the default archival payload.
+- **FR-005**: The archive policy MUST preserve traceability from durable records back to the source spec path, PR URL, merge commit, CI run, and recovery commands such as `git show <merge-sha>:specs/<feature>/spec.md`.
+- **FR-006**: Completed spec folders in `specs/**` MUST remain in active source control until archive succeeds and the archive report includes merge/tree references and concrete recovery commands.
+- **FR-007**: The archive process MUST NOT archive the current target spec during the same autopilot run that selected it; the current target spec becomes eligible only after it has merged and a later run sees it as merged.
+- **FR-008**: The Archive Sweep MUST run at the start of `speckit-pro:autopilot` for previously merged specs only, and it MUST exclude the current target spec from the same sweep.
+- **FR-009**: The Archive Sweep MUST stop or run dry-run only when the base branch is unsafe or the worktree is not clean.
+- **FR-010**: The archive flow MUST support dry-run and apply separation so repository cleanup is explicit and reviewable.
+- **FR-011**: Mission Control MUST install or vendor the archive extension from a pinned `racecraft-lab/spec-kit-archive` fork tag or commit.
+- **FR-012**: `racecraft-lab/racecraft-plugins-public` `speckit-pro` MUST be updated and released with versioned archive-aware behavior across the release surfaces that own that behavior: `.codex-plugin/plugin.json`, `.claude-plugin/plugin.json`, `README.md`, Codex skill files for `speckit-autopilot`, `speckit-coach`, and `speckit-status`, Claude/Codex parity surfaces when shared behavior changes, and marketplace metadata when package metadata or source routing changes. The release MUST define that autopilot begins with Archive Sweep, coach explains archive extension install or vendoring support plus cleanup safety boundaries, and status surfaces archive extension installation state with next-step guidance.
+- **FR-013**: This user's local Codex marketplace and installed `speckit-pro` plugin MUST be refreshed to the released archive-aware version after the plugin release, including validation that `~/.codex/plugins/speckit-pro` reports the released manifest version and that `~/.agents/plugins/marketplace.json` points at the intended local plugin source path. Bundled Codex agent templates MUST be refreshed only when the release changes those templates, and Codex restart guidance MUST remain conditional on whether plugin or custom-agent reload is required.
+- **FR-014**: The archive policy MUST treat Argos/CI provenance as the source of truth for UI evidence retention and MUST not require committed generated screenshots for that provenance to exist.
+- **FR-015**: The repository MUST provide evidence that future spec archival can identify merge/tree references and the exact recovery commands needed to reconstruct removed spec files.
+- **FR-016**: The archive workflow MUST define a local and CI guard, negative fixture, or equivalent documented test showing that committed generated screenshots are not required by default and that accidental unmanifested or oversized generated screenshot commits are rejected or flagged with the offending path.
+- **FR-017**: Archive Sweep output MUST record eligible previously merged specs, the excluded current target spec, cleanup mode, whether the archive extension is installed, and whether cleanup is safe to apply.
+- **FR-018**: The evidence policy MUST state that missing required evidence, failing metadata gates, visible UI defects, clipped or overlapping controls, wrong seeded data, inaccessible controls, or broken UI journeys block PR readiness even when generated screenshots are not committed by default.
+- **FR-019**: Future UI evidence runs MUST carry forward SPEC-002 Argos metadata gate and no-empty-build behavior: visual runs record expected Argos metadata for test/story identity, source location, and spec-scoped tags, while non-visual or flag-off regression runs MUST NOT upload empty Argos builds.
+- **FR-020**: Archive cleanup MUST NOT rewrite git history and MUST NOT depend on post-merge CI silently mutating `main`; any active-spec folder removal MUST be an explicit reviewed cleanup change after archive success and recovery evidence are recorded.
+- **FR-021**: Current Archive Sweep dry-run evidence for previously merged specs, including SPEC-001 and SPEC-002, MUST remain provenance and readiness evidence only and MUST NOT authorize active `specs/**` cleanup unless a later apply-mode run on a clean safe branch records archive success, merge/tree references, recovery commands, and safe-to-apply cleanup state.
 
 ### Key Entities
 
-- **Archive Policy**: The repository rule set defining durable, temporary, and permanent-by-exception artifact classes.
-- **Evidence Manifest**: A machine-readable or structured markdown record of screenshots, artifact bundles, hashes, PR URLs, CI runs, and source spec paths.
-- **Archive Report**: The output of the archive command or dry-run, including changed memory files, source paths, conflicts, defaults, and follow-up cleanup recommendations.
-- **Permanent Evidence Exception**: A documented approval for committed binary artifacts that exceed the default ephemeral artifact approach.
+- **Archive Policy**: The repository rule set defining which evidence is preserved as links and metadata, which artifacts remain temporary, and when cleanup is permitted.
+- **Archive Report**: The output of an archive dry-run or apply run, including source references, merge/tree references, evidence links, conflicts, recovery commands, cleanup mode, archive extension installed state, dry-run provenance status, and safe-to-apply cleanup state.
+- **Archive Sweep**: The autopilot pre-flight archive step that processes previously merged specs before the requested spec and skips the current target spec until it is eligible.
+- **Evidence Provenance**: The Argos/CI metadata, PR references, command provenance, and related links that reconstruct UI review history without committing generated screenshots by default.
+- **Pinned Archive Extension**: The adopted `racecraft-lab/spec-kit-archive` fork tag or commit used to ensure repeatable archive behavior.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: A dry-run archive against `specs/002-product-line-switcher` completes without deleting source files and reports durable memory updates plus screenshot evidence.
-- **SC-002**: CI fails on an intentionally oversized or unmanifested screenshot fixture and names the offending file path.
-- **SC-003**: CI passes for the approved SPEC-002 curated screenshot evidence or an approved artifact-bundle-only path.
-- **SC-004**: The constitution and workflow docs state that future UI journey PRs must include screenshot review evidence and must not merge known UI journey defects.
-- **SC-005**: A future SPEC-003 setup can identify SPEC-002A as complete and does not inherit an unresolved artifact retention decision.
+- **SC-001**: A dry-run archive against `specs/002-product-line-switcher` completes without deleting source files, produces a report with merge/tree references and recovery commands, and records that dry-run evidence is not cleanup permission.
+- **SC-002**: The spec record shows Argos/CI provenance links, metadata gate outcomes, command provenance, and optional artifact-manifest references for a completed UI journey without requiring committed generated screenshots as the durable artifact.
+- **SC-003**: The Archive Sweep can be shown to archive previously merged specs first, exclude the current target spec, record cleanup mode and archive extension installed state, and stop or dry-run when the branch or worktree is unsafe.
+- **SC-004**: Mission Control records a pinned archive extension version or commit from the Racecraft fork and shows that the archive extension is installed or vendored in the repo.
+- **SC-005**: The `speckit-pro` release and this user's local plugin install both reflect archive-aware behavior, including Archive Sweep startup in autopilot, archive extension install/vendor guidance in coach, archive installation state and next-step guidance in status, matching version evidence from plugin manifests, marketplace source-path verification, and passing structural release tests.
+- **SC-006**: Future SPEC-003 setup can identify SPEC-002A as complete and can recover any removed active-spec file using the recorded merge/tree reference and `git show` command, with cleanup performed through reviewed forward history rather than history rewrite or post-merge CI mutation.
+- **SC-007**: A local and CI screenshot-retention guard, negative fixture, or documented equivalent fails or flags an accidental unmanifested or oversized generated screenshot commit and names the offending path.
 
 ## Assumptions
 
-- SPEC-002 remains the current exemplar because it introduced real Playwright screenshots for a new UI journey.
-- GitHub Actions artifact retention is acceptable for short-term review but not sufficient as the only durable historical record.
-- Committed binary screenshots are allowed only when curated, small, and tied to a manifest or explicit exception.
-- The upstream `spec-kit-archive` extension is a candidate implementation detail, not a constitutional dependency until this spec validates and pins it.
+- SPEC-002 is the reference example because it introduced the first real UI journey evidence that motivated this policy.
+- Argos and CI artifact provenance are preferred over committed screenshot retention for long-lived evidence.
+- Git history is the raw archive of completed specs; active `specs/**` folders may be cleaned up only after archive succeeds and recovery commands are recorded.
+- The `racecraft-lab/spec-kit-archive` fork must be validated for Racecraft-specific behavior before Mission Control installs or vendors a pinned copy.
+- The `speckit-pro` plugin release and local install refresh are required parts of SPEC-002A completion, not optional follow-up work.

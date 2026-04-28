@@ -1,8 +1,9 @@
 <!--
 Sync Impact Report
-Version change: 1.3.0 -> 1.3.1
+Version change: 1.3.1 -> 1.4.0
 Modified principles: XIV. Real UI Journey Quality Gate
-Added sections: None
+Added principles: XV. Spec Artifact Provenance And Archive Sweep
+Added sections: Autopilot Conventions / K. Archive Sweep startup convention
 Removed sections: None
 Templates requiring updates:
 - .specify/templates/plan-template.md: updated
@@ -345,6 +346,37 @@ command used, the Storybook/Argos visual build when applicable, and where
 screenshot artifacts are stored for reviewer access. Committed binary
 screenshots require an explicit manifest-backed exception.
 
+### XV. Spec Artifact Provenance And Archive Sweep (NON-NEGOTIABLE)
+
+Active `specs/**` folders are working artifacts, not an unbounded graveyard.
+Completed spec folders may leave the active tree only after archive evidence
+records enough provenance to reconstruct the raw files from Git history.
+
+Operationalized as:
+
+- The Archive Sweep runs at the start of `speckit-pro:autopilot`, before
+  Phase 0 for the requested spec. It considers only previously merged specs.
+- The current target spec is excluded from the same run and becomes eligible
+  only after its PR is merged and a later autopilot run performs the sweep.
+- Unsafe branches or dirty worktrees run dry-run only or stop with explicit
+  instructions. Cleanup MUST NOT be mixed into an unrelated feature branch.
+- Cleanup is a reviewed forward-history change. It MUST NOT rewrite Git
+  history, and post-merge CI MUST NOT silently mutate `main`.
+- Archive evidence records source paths, PR URL, merge commit or tree
+  reference, CI/Argos provenance when relevant, cleanup mode, safe-to-apply
+  cleanup state, and recovery commands such as
+  `git show <merge-sha>:specs/<feature>/spec.md`.
+- Mission Control pins the adopted archive extension from the Racecraft fork
+  in `.specify/extensions/archive`, `.specify/extensions.yml`, and
+  `.specify/extensions/.registry`; version changes update the pin evidence.
+- Argos/CI provenance is the durable UI evidence path by default. Generated
+  screenshots are short-lived CI artifacts unless a manifest-backed exception
+  explicitly commits a curated binary artifact.
+
+Compliance evidence names the Archive Sweep report or dry-run report, the
+archive extension pin, the recovery-command format, the branch/worktree safety
+decision, and the screenshot/evidence guard result.
+
 ## Tech Stack Constraints
 
 - Next.js 16, React 19, TypeScript 5.7.
@@ -483,6 +515,22 @@ Spec `plan.md` files record this explicitly:
 Until the post-pilot repo-wide hardening pass lands, existing upstream-owned
 or grandfathered files remain outside this scoped strictness ramp.
 
+### K. Archive Sweep startup convention
+
+Every autopilot workflow starts with Archive Sweep discovery before Phase 0.
+The sweep reports previously merged specs, excludes the current target spec,
+and records whether cleanup is safe to apply. If the archive extension is
+missing, the workflow records that state and continues only when the current
+spec does not require cleanup as a precondition.
+
+Future workflow files and generated plans must preserve this lifecycle order:
+
+1. Archive Sweep discovery or dry-run for prior merged specs.
+2. Phase 0 prerequisites for the requested spec.
+3. Normal specify -> clarify -> plan -> checklist -> tasks -> analyze ->
+   implement execution.
+4. Reviewed cleanup only after archive success and recovery commands exist.
+
 ## Development Workflow
 
 ### Commands
@@ -546,10 +594,12 @@ Compliance checkpoints:
   fires. UI PRs also include real Playwright journey results, Storybook/Argos
   visual evidence for component or shell states when applicable, screenshot
   artifacts, and an explicit note that known UI journey defects were reviewed
-  and remediated before PR update.
+  and remediated before PR update. Spec/process PRs also include archive
+  provenance, cleanup safety state, and screenshot/evidence guard results
+  when they touch `specs/**`, `.specify/**`, or UI evidence policy.
 - Every spec: `/speckit.analyze` produces no CRITICAL findings against
   this constitution.
 - Every migration: rollback file present; upstream-compat checklist
   satisfied.
 
-**Version**: 1.3.1 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-27
+**Version**: 1.4.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-28
