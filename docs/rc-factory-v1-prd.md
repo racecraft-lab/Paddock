@@ -10,6 +10,12 @@ The companion technical roadmap at `docs/ai/rc-factory-technical-roadmap.md` def
 
 Workflow files under `docs/ai/specs/SPEC-*-workflow.md` are execution records created by SpecKit-Pro setup/autopilot for individual specs. They should capture per-spec prompts, phase outputs, gate results, implementation notes, and completion status.
 
+Spec archive and evidence retention is governed by SPEC-002A. Autopilot starts
+with Archive Sweep discovery for previously merged specs, excludes the current
+target spec, records recovery commands before cleanup, and treats Argos/CI
+provenance as the durable UI evidence path instead of committing generated
+screenshots by default.
+
 This PRD should preserve the durable **why**, **what**, **success criteria**, and **constraints** for the architecture. It should not become the per-spec execution ledger or duplicate the detailed workflow records.
 
 ## Goal
@@ -509,8 +515,8 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | Phase | Scope | Status | Ship-safe? | Compatibility class |
 |---|---|---|---|---|
 | 0 | Foundation migrations (M53–M61) | Complete | Yes — runtime-safe | `upstream-divergent` |
-| 1 | Workspace switcher + `activeWorkspace` scoping | Implementation complete; PR pending | Yes — flag-off default | `upstream-safe` |
-| 1A | Spec archive + evidence retention | Pending | Yes — process/tooling only | `upstream-safe` |
+| 1 | Workspace switcher + `activeWorkspace` scoping | Complete | Yes — flag-off default | `upstream-safe` |
+| 1A | Spec archive + evidence retention | In Progress | Yes — process/tooling only | `upstream-safe` |
 | 2 | Aegis refactor (facility singleton) | Pending | Yes — shim preserves legacy | `upstream-divergent` |
 | 3 | Task-chain engine + declarative routing over `workflow_templates` | Pending | Yes — null-default fields | `upstream-divergent` |
 | 4 | `ready_for_owner` state + two-step terminal | Pending | Yes — per-template opt-in | `upstream-divergent` |
@@ -524,9 +530,9 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 
 **Phase 0 completion note:** SPEC-001 is complete on PR #15 after HAL UAT acceptance on 2026-04-26. Acceptance evidence: M53-M61 migration markers present, `PRAGMA quick_check` OK, `workspaces.slug='facility'` seeded, Aegis/HAL/Security Guardian backfilled to `scope='global'`, and operator UAT found no blocking regressions in the core app flows.
 
-**Phase 1 implementation note:** SPEC-002 is implementation-complete and G7-verified on branch `002-product-line-switcher` as of 2026-04-26. Evidence: all 50 generated tasks checked, `pnpm typecheck`, `pnpm lint`, `pnpm test` (106 files / 1035 tests), `pnpm build`, and `pnpm test:e2e` (526 tests) passed; roadmap status remains PR/merge-gated.
+**Phase 1 completion note:** SPEC-002 is complete on PR #16 after merge to `main` as `65f2e7c`. Evidence: all 50 generated tasks checked, `pnpm typecheck`, `pnpm lint`, `pnpm test` (106 files / 1035 tests), `pnpm build`, and `pnpm test:e2e` (526 tests) passed before merge.
 
-**Phase 1A planning note:** SPEC-002A is inserted before SPEC-003 to define spec artifact archival, Playwright screenshot retention, PR evidence links, and CI/local guards. It evaluates `stn1slv/spec-kit-archive` as the default post-merge archive mechanism and blocks later feature specs until the retention policy is explicit.
+**Phase 1A execution note:** SPEC-002A is active on branch `002a-spec-archive-evidence`. It defines spec artifact archival, Playwright screenshot retention, PR evidence links, and CI/local guards. It evaluates `stn1slv/spec-kit-archive` as the default post-merge archive mechanism and blocks later feature specs until the retention policy is explicit.
 
 ### Autopilot Caveats (per spec)
 

@@ -50,6 +50,19 @@ For user-facing UI changes, the generated plan MUST also define:
   before PR update, and known UI journey bugs are fixed before the PR is
   opened, updated, or marked ready.
 
+For all specs that touch SpecKit artifacts, evidence retention, or UI evidence
+policy, the generated plan MUST also define:
+
+- Archive Sweep startup behavior before Phase 0, including previously merged
+  spec discovery and current-target exclusion.
+- The branch/worktree safety decision: apply cleanup only from a safe reviewed
+  context; otherwise dry-run or stop.
+- The provenance fields needed before cleanup: source paths, PR URL, merge
+  commit or tree reference, CI/Argos links when relevant, cleanup mode,
+  safe-to-apply state, and `git show` recovery commands.
+- The screenshot/evidence guard commands and whether committed generated
+  screenshots are absent or covered by a manifest-backed exception.
+
 ## Project Structure
 
 ### Documentation (this feature)

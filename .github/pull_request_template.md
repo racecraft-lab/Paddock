@@ -10,6 +10,9 @@ List commands run and results.
 # Visual Evidence
 For UI changes, link the relevant Argos Storybook build and any short-lived Playwright/CI screenshot artifacts. Do not commit generated screenshots unless an explicit artifact-retention exception is documented.
 
+# Evidence Readiness
+Missing evidence, failing Argos metadata gates, visible UI defects, clipped or overlapping controls, wrong seeded data, inaccessible controls, broken UI journeys, or unmanifested committed screenshots block PR readiness.
+
 # Contribution Checklist
 - [ ] Tests added/updated for behavior changes
 - [ ] Lint/typecheck/build passing

@@ -45,6 +45,10 @@ screenshots/
 /e2e-debug-*.png
 /e2e-channels-*.png
 
+# Local visual review artifacts
+docs/_captures/
+docs/_diffs/
+
 # Claude Code context files (root CLAUDE.md is committed for AI agent discovery)
 **/CLAUDE.md
 !/CLAUDE.md

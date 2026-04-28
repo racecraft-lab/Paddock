@@ -111,6 +111,26 @@
       },
       "registered_skills": [],
       "installed_at": "2026-04-25T01:51:08.445677+00:00"
+    },
+    "archive": {
+      "version": "1.1.0",
+      "source": "local-vendored",
+      "source_url": "https://github.com/racecraft-lab/spec-kit-archive",
+      "source_pr": "https://github.com/racecraft-lab/spec-kit-archive/pull/1",
+      "source_ref": "refs/tags/v1.1.0",
+      "source_commit": "08ee0e919a72ccb254758a2b6f51d58196490ea7",
+      "archive_url": "https://github.com/racecraft-lab/spec-kit-archive/archive/refs/tags/v1.1.0.zip",
+      "release_status": "provisional-branch-tag-pending-main-release",
+      "manifest_hash": "sha256:fb4b68b85d69d6ed546965acc6a2a7157e215d894093230574fffc11c20d7893",
+      "enabled": true,
+      "priority": 10,
+      "registered_commands": {
+        "claude": [
+          "speckit.archive.run"
+        ]
+      },
+      "registered_skills": [],
+      "installed_at": "2026-04-28T13:09:48+00:00"
     }
   }
 }
