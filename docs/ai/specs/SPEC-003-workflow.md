@@ -31,8 +31,8 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 | Clarify | `$speckit-clarify` | Complete | G2 passed; lookup precedence, audit activity, flag context, legacy fallback, scheduler, route, and reference-sweep boundaries resolved |
 | Plan | `$speckit-plan` | Complete | G3 passed; generated plan, research, data model, quickstart, and resolver contract |
 | Checklist | `$speckit-checklist` | Complete | G4 passed; all four domains generated with zero remaining gaps |
-| Tasks | `$speckit-tasks` | In Progress | Generate dependency-ordered tasks with P2-AC1..P2-AC6 coverage |
-| Analyze | `$speckit-analyze` | Pending | Verify no downstream task-pipeline, ready-for-owner, area-label, artifact, or governance drift |
+| Tasks | `$speckit-tasks` | Complete | G5 passed; generated 21 dependency-ordered tasks |
+| Analyze | `$speckit-analyze` | In Progress | Verify no downstream task-pipeline, ready-for-owner, area-label, artifact, or governance drift |
 | Implement | `$speckit-implement` | Pending | Implement via TDD, then run verification and status sync |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -484,10 +484,12 @@ $speckit-tasks
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 21 |
+| Phases | 7 |
+| Parallel Opportunities | 6 |
+| User Stories Covered | 3 |
+
+**G5 Validation:** Passed 2026-04-28T20:59:36Z with 21 tasks and zero markers.
 
 ---
 
