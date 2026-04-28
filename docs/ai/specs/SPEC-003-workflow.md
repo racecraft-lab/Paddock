@@ -27,8 +27,8 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Dry-run evidence recorded; `SPEC-003` excluded; cleanup not safe/applied |
-| Specify | `$speckit-specify` | Pending | Generate `specs/003-global-aegis/spec.md` from Phase 2 roadmap scope |
-| Clarify | `$speckit-clarify` | Pending | Resolve lookup precedence, audit activity, flag context, and legacy fallback ambiguity |
+| Specify | `$speckit-specify` | Complete | Generated `specs/003-global-aegis/spec.md`; G1 passed with zero markers |
+| Clarify | `$speckit-clarify` | In Progress | Resolve lookup precedence, audit activity, flag context, and legacy fallback ambiguity |
 | Plan | `$speckit-plan` | Pending | Design `getAegis`, task-dispatch integration, route validation, and tests |
 | Checklist | `$speckit-checklist` | Pending | Run feature-flag, data-integrity, scheduler-safety, and regression-safety domains |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered tasks with P2-AC1..P2-AC6 coverage |
@@ -220,13 +220,15 @@ Mission Control currently resolves Aegis through workspace-keyed lookup paths ev
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
+| Functional Requirements | 10 |
+| User Stories | 3 |
 | Acceptance Criteria | 6 P2 criteria from roadmap |
+| G1 Validation | Passed 2026-04-28T19:31:34Z; `spec.md` exists with zero markers |
 
 ### Files Generated
 
-- [ ] `specs/003-global-aegis/spec.md`
+- [x] `specs/003-global-aegis/spec.md`
+- [x] `specs/003-global-aegis/checklists/requirements.md`
 
 ### Traceability Markers
 
