@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-003-workflow.md",
-  "updated_at": "2026-04-28T21:41:16Z",
-  "active_step": "Post: PR Creation",
-  "status": "In Progress",
+  "updated_at": "2026-04-28T21:43:56Z",
+  "active_step": "Done",
+  "status": "Complete",
   "notes": [
     "SPEC-003 setup completed on branch 003-global-aegis from origin/main e161a70.",
     "Workflow file docs/ai/specs/SPEC-003-workflow.md was generated for Aegis Facility Singleton Refactor and is ready for autopilot.",
@@ -26,7 +26,10 @@
     "Post verification completed on 2026-04-28T21:36:00Z: focused Vitest, typecheck, lint, static guardrails, strict-scope checks, G7, and build evidence recorded; roadmap and PRD status synced with branch implementation evidence.",
     "Post code review completed on 2026-04-28T21:36:56Z with no merge-blocking findings in resolver, task-dispatch, feature-flag, strict-scope, or guardrail diffs.",
     "Integration suite completed on 2026-04-28T21:40:33Z: pnpm test:e2e passed 531 Playwright tests.",
-    "Cleanup completed on 2026-04-28T21:41:16Z: git diff --check passed, autopilot-state.json parsed successfully, and git status contained only expected SPEC-003 implementation and documentation changes."
+    "Cleanup completed on 2026-04-28T21:41:16Z: git diff --check passed, autopilot-state.json parsed successfully, and git status contained only expected SPEC-003 implementation and documentation changes.",
+    "PR creation completed on 2026-04-28T21:43:56Z: PR #20 opened at https://github.com/racecraft-lab/mission-control/pull/20 and branch 003-global-aegis was pushed at commit 27c1dff.",
+    "Review remediation completed on 2026-04-28T21:43:56Z for the current pass: PR #20 had zero review threads; the autopilot /loop scheduler was not available in this Codex runtime or .claude/commands, so no recurring monitor was scheduled.",
+    "Retrospective completed on 2026-04-28T21:43:56Z with lessons recorded in docs/ai/specs/SPEC-003-workflow.md."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -118,8 +121,8 @@
     {"step": "Post: Code Review", "status": "completed"},
     {"step": "Post: Integration Suite", "status": "completed"},
     {"step": "Post: Cleanup", "status": "completed"},
-    {"step": "Post: PR Creation", "status": "in_progress"},
-    {"step": "Post: Review Remediation", "status": "pending"},
-    {"step": "Post: Retrospective", "status": "pending"}
+    {"step": "Post: PR Creation", "status": "completed"},
+    {"step": "Post: Review Remediation", "status": "completed"},
+    {"step": "Post: Retrospective", "status": "completed"}
   ]
 }

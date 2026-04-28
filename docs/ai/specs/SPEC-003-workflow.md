@@ -612,6 +612,10 @@ For each task, follow this cycle:
 
 **Integration Suite:** `pnpm test:e2e` passed on 2026-04-28T21:40:33Z with 531 Playwright tests passing.
 
+**PR Creation:** PR #20 opened on 2026-04-28T21:43:56Z: <https://github.com/racecraft-lab/mission-control/pull/20>.
+
+**Review Remediation:** Immediate GitHub review-thread query for PR #20 returned zero review threads. The autopilot `/loop` remediation scheduler is not available in this Codex runtime or in `.claude/commands`, so no recurring monitor was scheduled; PR checks were in progress at creation time.
+
 ---
 
 ## Post-Implementation Checklist
@@ -639,15 +643,22 @@ For each task, follow this cycle:
 
 ### What Worked Well
 
-Pending.
+- Keeping `getAegis(db, workspace_id?)` as the single resolver made the scheduler change small and kept flag-off compatibility directly testable.
+- Checklist/analyze gates caught strict-scope and regression-guard wording before implementation, which kept the final code diff focused.
+- Recording Archive Sweep and gate evidence in `autopilot-state.json` made the interrupted/resumed run recoverable.
 
 ### Challenges Encountered
 
-Pending.
+- Legacy SpecKit command templates were missing from `.claude/commands` at startup and had to be restored before prerequisite validation could pass.
+- Full `pnpm test` is not clean in this local environment because GPG-agent and provisioner socket tests fail independently of SPEC-003.
+- `pnpm build` needed network access for Google Fonts, and SSH push failed because the signing agent refused the key; HTTPS push succeeded.
+- The autopilot `/loop` review-remediation scheduler is unavailable in this Codex runtime, so review-thread monitoring was limited to a direct GitHub query.
 
 ### Patterns to Reuse
 
-Pending.
+- Keep downstream SPEC-004+ behavior behind static grep guardrails when a phase must not drift into later roadmap scope.
+- Record both local verification success and environment-limited failures in the workflow rather than hiding incomplete suite results.
+- Refresh the remote tracking ref after HTTPS pushes when the configured `origin` remote uses SSH.
 
 ---
 
