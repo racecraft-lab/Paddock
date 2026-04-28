@@ -32,8 +32,8 @@ Do not start downstream specs from this worktree. SPEC-003 stops after the featu
 | Plan | `$speckit-plan` | Complete | G3 passed; generated plan, research, data model, quickstart, and resolver contract |
 | Checklist | `$speckit-checklist` | Complete | G4 passed; all four domains generated with zero remaining gaps |
 | Tasks | `$speckit-tasks` | Complete | G5 passed; generated 21 dependency-ordered tasks |
-| Analyze | `$speckit-analyze` | In Progress | Verify no downstream task-pipeline, ready-for-owner, area-label, artifact, or governance drift |
-| Implement | `$speckit-implement` | Pending | Implement via TDD, then run verification and status sync |
+| Analyze | `$speckit-analyze` | Complete | G6 passed after remediating 1 critical and 3 medium findings |
+| Implement | `$speckit-implement` | In Progress | Implement via TDD, then run verification and status sync |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -528,7 +528,12 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A001 | CRITICAL | Strict-scope ramp named `src/lib/aegis.ts` but did not task required strict config updates | Remediated in `plan.md` and `tasks.md` by requiring `src/lib/aegis.ts` in `tsconfig.spec-strict.json` and `eslint.config.mjs` |
+| A002 | MEDIUM | Archive Sweep safety was too implicit in generated tasks | Remediated by expanding T001/T020 to verify current-target exclusion and no cleanup/delete/move of `specs/003-global-aegis` |
+| A003 | MEDIUM | Reference sweep did not require classifying references as resolver, review-gate, or display-only/unaffected | Remediated in plan rules and T002/T017 |
+| A004 | MEDIUM | Scheduler regression task did not explicitly cover dispatch inputs, activity logging, and status transitions | Remediated by adding a scheduler semantics guard and expanding T009 |
+
+**G6 Validation:** Passed 2026-04-28T21:11:08Z with zero CRITICAL/HIGH findings and zero markers.
 
 ---
 

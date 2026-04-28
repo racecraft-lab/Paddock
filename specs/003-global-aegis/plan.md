@@ -18,7 +18,7 @@ Introduce a shared Aegis resolver in `src/lib/aegis.ts` that honors the `FEATURE
 **Performance Goals**: Preserve scheduler throughput and avoid repeated per-task resolver lookups where practical  
 **Constraints**: No schema migration; preserve `quality_reviews.reviewer='aegis'`; route flag checks through `resolveFlag()`; keep `FEATURE_GLOBAL_AEGIS='1'` from forcing enablement; treat malformed workspace feature-flag JSON as no override/default OFF; preserve the existing `FEATURE_GLOBAL_AEGIS` registry dependency on `FEATURE_WORKSPACE_SWITCHER` for enablement/preflight checks; no downstream SPEC-004+ behavior
 **Scale/Scope**: Focused refactor across resolver, scheduler review dispatch, task routes, and targeted tests  
-**Strict Scope**: `src/lib/aegis.ts`
+**Strict Scope**: New production module `src/lib/aegis.ts`; implementation must add this file to the strict-scope lists in `tsconfig.spec-strict.json` and `eslint.config.mjs`
 
 ## Constitution Check
 
@@ -31,7 +31,7 @@ Introduce a shared Aegis resolver in `src/lib/aegis.ts` that honors the `FEATURE
 - Additive migration policy: satisfied by no schema migration.
 - Successor side-effect parity: not applicable.
 - Safe evaluation discipline: not applicable.
-- Strict new-module scope: satisfied by introducing only `src/lib/aegis.ts` as the new production module.
+- Strict new-module scope: satisfied by introducing only `src/lib/aegis.ts` as the new production module and requiring same-branch strict-scope coverage in `tsconfig.spec-strict.json` and `eslint.config.mjs`.
 
 ## Project Structure
 
@@ -67,6 +67,14 @@ src/
 
 **Structure Decision**: Keep the new resolver isolated in `src/lib/aegis.ts`, then update the scheduler and the smallest set of task/chat surface files that reference Aegis so they continue to reflect the same review source without introducing new task-pipeline behavior.
 
+## Reference Sweep Classification
+
+Each live Aegis reference discovered during implementation must be classified before it is changed:
+
+- **Resolver dependency**: route through `getAegis(db, workspace_id?)`.
+- **Review-gate dependency**: preserve `quality_reviews.reviewer='aegis'` without adding `quality_reviews.agent_id`.
+- **Display-only/unaffected**: document why the reference does not resolve Aegis metadata and leave review semantics unchanged.
+
 ## Research Plan
 
 - Confirm the existing `resolveFlag()` calling pattern for workspace-scoped feature evaluation.
@@ -84,6 +92,7 @@ src/
 
 - Resolver bypass guard: after `src/lib/aegis.ts` lands, `getAegis(db, workspace_id?)` owns Aegis agent-row, agent-config, Mission Control agent-id, and gateway-identity resolution. Production source outside `src/lib/aegis.ts` may call `getAegis`, may keep `quality_reviews.reviewer='aegis'` review-gate queries, and may mention the literal `aegis` in copy/logs/tests, but must not query `agents` directly by Aegis name, workspace id, scope, or config.
 - Legacy bypass removal: implementation must remove or stop relying on `aegisAgentByWorkspace` and the existing workspace-local SQL lookup in `runAegisReviews`; `src/lib/scheduler.ts` must continue to trigger `runAegisReviews()` rather than resolving Aegis directly.
+- Scheduler semantics guard: regression coverage must prove `runAegisReviews` preserves task selection, retry behavior, dispatch inputs, quality-review writes, activity logging, and `review`/`quality_review`/`assigned`/`failed`/`done` transition semantics except for the resolver source.
 - Static guardrail checks: implementation verification must run `rg` checks that fail on matches for direct Aegis agent lookup outside `src/lib/aegis.ts`, `aegisAgentByWorkspace`, `quality_reviews.agent_id`, inline `process.env.FEATURE_GLOBAL_AEGIS` reads outside `src/lib/feature-flags.ts`, and downstream drift into `FEATURE_TASK_PIPELINES`, `ready_for_owner`, `FEATURE_AREA_LABEL_ROUTING`, artifact store, governance, pilot behavior, product-line skill/session ownership, multi-facility modeling, or CrabTrap.
 - Scope of remediation: if a guardrail fails, remediation is limited to routing Aegis metadata resolution through `getAegis` or removing out-of-scope drift; do not widen SPEC-003 into a quality-review schema migration, task pipeline engine, owner-ready state, area routing, artifact publishing, governance, pilot, product-line ownership, multi-facility, or CrabTrap implementation.
 
