@@ -61,7 +61,7 @@
 
 **Purpose**: Final verification that the resolver, routes, and guardrails behave as specified.
 
-- [x] T019 Run focused verification for `src/lib/__tests__/aegis.test.ts`, `src/lib/__tests__/task-dispatch.test.ts`, `src/lib/__tests__/feature-flags.test.ts`, `src/lib/__tests__/feature-flags-route.test.ts`, `tests/e2e/spec-003-global-aegis.spec.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts`
+- [x] T019 Run focused verification for `src/lib/__tests__/aegis.test.ts`, `src/lib/__tests__/task-dispatch.test.ts`, `src/lib/__tests__/feature-flags.test.ts`, `src/lib/__tests__/feature-flags-route.test.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts`
 - [x] T020 Run the static guardrail commands from `specs/003-global-aegis/quickstart.md` plus focused strict-scope and archive checks; confirm zero matches for direct Aegis bypasses outside `src/lib/aegis.ts`, missing strict-scope coverage for `src/lib/aegis.ts`, `quality_reviews.agent_id`, and Archive Sweep cleanup/delete/move of `specs/003-global-aegis`
 - [x] T021 Update `specs/003-global-aegis/quickstart.md` status notes after verification so the documented checks match the implemented resolver and review-gate behavior
 

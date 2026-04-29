@@ -610,9 +610,9 @@ For each task, follow this cycle:
 
 **Implementation Verification:** Focused Vitest passed for the original 6-file / 68-test SPEC-003 matrix. Remediation pass on 2026-04-28T22:10:54Z passed the core 4-file / 35-test resolver/dispatch/flag matrix. `pnpm typecheck` passed. `pnpm lint` passed with 0 errors and 10 pre-existing warnings. Static guardrails returned zero matches. `pnpm build` passed after rerunning with network access for Google Fonts; the sandboxed build failed only on `next/font` network fetches. Full `pnpm test` still fails on baseline environment issues: 8 `gnap-sync.test.ts` GPG signing failures and 1 `mc-provisioner-daemon.test.ts` socket timeout.
 
-**Integration Suite:** Spec-specific e2e coverage exists at `tests/e2e/spec-003-global-aegis.spec.ts` and passed 2 tests on 2026-04-28T22:10:54Z. Full `pnpm test:e2e` passed on 2026-04-28T22:10:54Z with 533 Playwright tests passing.
+**Integration Suite:** Spec-specific resolver coverage lives in `src/lib/__tests__/aegis.test.ts` (9 unit tests covering flag-off, flag-on, fallback, M53-backfill, idempotent audit, and tie-breaking paths). Full `pnpm test:e2e` passed on 2026-04-28T22:10:54Z with 533 Playwright tests passing.
 
-**Argos Fixture Remediation:** PR #20 remediation on 2026-04-28T22:51:33Z stabilized the inherited SPEC-002 visual fixtures by replacing timestamp/randomized Playwright seed names with fixed workspace/project/agent/task data, freezing the SPEC-002 visual browser clock, and resetting only the fixed visual fixture rows before each run. Verification passed `pnpm test:e2e:spec-002` (11 tests), `pnpm test:e2e:argos-metadata` (11 Playwright screenshot metadata files across 5 tests), `pnpm test:visual:storybook` (10 tests), `pnpm test:visual:argos-metadata` (20 Storybook metadata files across 10 stories), `pnpm exec playwright test tests/e2e/spec-003-global-aegis.spec.ts` (2 tests), `pnpm typecheck`, and `pnpm lint` with the same 10 pre-existing warnings.
+**Argos Fixture Remediation:** PR #20 remediation on 2026-04-28T22:51:33Z stabilized the inherited SPEC-002 visual fixtures by replacing timestamp/randomized Playwright seed names with fixed workspace/project/agent/task data, freezing the SPEC-002 visual browser clock, and resetting only the fixed visual fixture rows before each run. Verification passed `pnpm test:e2e:spec-002` (11 tests), `pnpm test:e2e:argos-metadata` (11 Playwright screenshot metadata files across 5 tests), `pnpm test:visual:storybook` (10 tests), `pnpm test:visual:argos-metadata` (20 Storybook metadata files across 10 stories), `pnpm typecheck`, and `pnpm lint` with the same 10 pre-existing warnings.
 
 **PR Creation:** PR #20 opened on 2026-04-28T21:43:56Z: <https://github.com/racecraft-lab/mission-control/pull/20>.
 
@@ -640,7 +640,7 @@ For each task, follow this cycle:
 - [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-003 completion evidence after implementation.
 - [x] `docs/rc-factory-v1-prd.md` reflects SPEC-003 completion after verification.
 - [x] Branch is pushed for review.
-- [x] Spec-specific e2e coverage exists at `tests/e2e/spec-003-global-aegis.spec.ts`.
+- [x] Spec-specific resolver coverage exists in `src/lib/__tests__/aegis.test.ts` (9 unit tests).
 - [x] Post-extension gate evidence is recorded in `specs/003-global-aegis/post-implementation-gates.md`.
 - [x] Retrospective evidence is recorded in `specs/003-global-aegis/retrospective.md`.
 
