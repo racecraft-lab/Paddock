@@ -2,7 +2,7 @@
 
 **Feature Branch**: `[002a-spec-archive-evidence]`
 **Created**: 2026-04-27
-**Status**: Draft
+**Status**: Completed
 **Input**: SPEC-002A workflow for archiving completed SpecKit artifacts and preserving Argos/CI evidence provenance without committing generated screenshots by default.
 
 ## User Scenarios & Testing *(mandatory)*
