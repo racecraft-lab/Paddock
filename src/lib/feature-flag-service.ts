@@ -1,4 +1,5 @@
 import type Database from 'better-sqlite3'
+import { hasGlobalAegisCandidate } from '@/lib/aegis'
 import {
   evaluateFeatureFlagCore,
   FEATURE_FLAG_KEYS,
@@ -125,7 +126,10 @@ function scopeBlockers(workspace: WorkspaceRecord, definition: FeatureFlagDefini
   return []
 }
 
-function featureFlagBlockers(
+// Mutation blockers apply to ANY change (enable or disable). They cover
+// manageability, env locks, and the activation-scope guard that protects the
+// real facility workspace row from being used as a Product Line scope target.
+function mutationBlockers(
   workspace: WorkspaceRecord,
   definition: FeatureFlagDefinition,
   evaluation: FeatureFlagResolution
@@ -136,8 +140,18 @@ function featureFlagBlockers(
   if (definition.implementationStatus === 'deprecated') blockers.push('This flag is deprecated and cannot be changed from the UI')
   if (evaluation.envLocked) blockers.push('Deployment configuration forces this flag OFF')
   blockers.push(...scopeBlockers(workspace, definition))
-  blockers.push(...dependencyBlockers(workspace, definition))
   return blockers
+}
+
+function featureFlagBlockers(
+  workspace: WorkspaceRecord,
+  definition: FeatureFlagDefinition,
+  evaluation: FeatureFlagResolution
+): string[] {
+  return [
+    ...mutationBlockers(workspace, definition, evaluation),
+    ...dependencyBlockers(workspace, definition),
+  ]
 }
 
 function featureFlagWarnings(
@@ -248,12 +262,11 @@ export function getFeatureFlagPreflight(
   })
 
   if (definition.requiresPreflight && definition.preflightRequires.length > 0) {
-    checks.push({
-      id: 'runtime-readiness',
-      label: 'Runtime readiness',
-      status: definition.implementationStatus === 'ready_for_canary' ? 'pass' : 'fail',
-      detail: definition.preflightRequires.join(' '),
-    })
+    const runtimeCheck = runtimeReadinessCheck(db, definition, workspaceId)
+    checks.push(runtimeCheck)
+    if (runtimeCheck.status === 'fail') {
+      blockers.push(runtimeCheck.detail)
+    }
   }
 
   return {
@@ -262,6 +275,56 @@ export function getFeatureFlagPreflight(
     blockers,
     checks,
   }
+}
+
+// Runtime readiness probe. Defaults to a pass when implementation status is
+// ready_for_canary, but applies key-specific runtime probes for flags whose
+// preflight requires concrete state (Finding F3 — FEATURE_GLOBAL_AEGIS must
+// have a usable global Aegis row before enable is allowed).
+function runtimeReadinessCheck(
+  db: Database.Database,
+  definition: FeatureFlagDefinition,
+  workspaceId: number
+): FeatureFlagPreflightCheck {
+  if (definition.implementationStatus !== 'ready_for_canary') {
+    return {
+      id: 'runtime-readiness',
+      label: 'Runtime readiness',
+      status: 'fail',
+      detail: `${definition.spec} status is ${definition.implementationStatus}`,
+    }
+  }
+
+  if (definition.key === 'FEATURE_GLOBAL_AEGIS') {
+    const ready = hasGlobalAegisCandidate(db, workspaceId)
+    return {
+      id: 'runtime-readiness',
+      label: 'Runtime readiness',
+      status: ready ? 'pass' : 'fail',
+      detail: ready
+        ? 'Global Aegis row exists and legacy local Aegis fallback is verified.'
+        : 'No global Aegis row is reachable from this workspace tenant; create or backfill one before enabling.',
+    }
+  }
+
+  return {
+    id: 'runtime-readiness',
+    label: 'Runtime readiness',
+    status: 'pass',
+    detail: definition.preflightRequires.join(' '),
+  }
+}
+
+export function getFeatureFlagMutationBlockers(
+  db: Database.Database,
+  tenantId: number,
+  workspaceId: number,
+  key: FeatureFlagKey
+): string[] {
+  const workspace = ensureTenantWorkspaceAccess(db, tenantId, workspaceId)
+  const definition = FEATURE_FLAG_REGISTRY[key]
+  const evaluation = evaluateFeatureFlagCore(key, { workspaceFlags: workspace.feature_flags ?? null })
+  return mutationBlockers(workspace, definition, evaluation)
 }
 
 export function updateWorkspaceFeatureFlag(
