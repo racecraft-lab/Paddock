@@ -57,7 +57,7 @@ function findWorkspaceAegis(db: Database.Database, workspaceId?: number): AegisA
   return (db.prepare(`
     SELECT id, name, config, workspace_id, scope, status
     FROM agents
-    WHERE LOWER(name) = 'aegis' AND workspace_id = ?
+    WHERE LOWER(name) = 'aegis' AND workspace_id = ? AND scope = 'workspace'
     ORDER BY id ASC
     LIMIT 1
   `).get(workspaceId) as AegisAgentRow | undefined) ?? null

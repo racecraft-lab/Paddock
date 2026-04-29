@@ -183,4 +183,24 @@ describe('getAegis', () => {
       workspace_id: 1,
     })
   })
+
+  it('does not treat a post-M53-backfill row (workspace_id set, scope=global) as a local Aegis', () => {
+    // M53 backfill promotes existing per-workspace Aegis rows to scope='global' while preserving
+    // their workspace_id. findWorkspaceAegis must not match these — they are global, not local.
+    insertAegis({ id: 10, workspaceId: 1, scope: 'global', config: '{"openclawId":"backfilled-global"}' })
+
+    // Flag off: local lookup should return null; global fallback picks up the backfilled row.
+    expect(getAegis(db, 1)).toMatchObject({
+      id: 10,
+      scope: 'global',
+      workspace_id: 1,
+    })
+
+    // Flag on: global lookup returns the row directly; no self-shadow audit is written.
+    setWorkspaceFlags(1, { FEATURE_GLOBAL_AEGIS: true })
+    const result = getAegis(db, 1)
+    expect(result).toMatchObject({ id: 10, scope: 'global' })
+    const auditRows = db.prepare(`SELECT id FROM activities WHERE type = 'aegis_local_shadowed'`).all()
+    expect(auditRows).toHaveLength(0)
+  })
 })
