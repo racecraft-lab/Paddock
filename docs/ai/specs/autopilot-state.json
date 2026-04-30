@@ -1,19 +1,38 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-002A-workflow.md",
-  "updated_at": "2026-04-28T18:07:29Z",
-  "active_step": "Complete",
+  "workflow_file": "docs/ai/specs/SPEC-003-workflow.md",
+  "updated_at": "2026-04-28T22:51:33Z",
+  "active_step": "Done",
   "status": "Complete",
   "notes": [
-    "SPEC-002A completed with all 47 generated tasks checked, G7 passed, and FR-001 through FR-021 plus SC-001 through SC-007 mapped to implementation evidence.",
-    "Mission Control PR #18 merged to main as daab0c11f8896b31c2d24ed0a53419814671c3b1.",
-    "racecraft-lab/spec-kit-archive PR #1 merged and v1.1.0 was published at https://github.com/racecraft-lab/spec-kit-archive/releases/tag/v1.1.0.",
-    "Mission Control vendors .specify/extensions/archive from the Racecraft archive extension v1.1.0 pin and records the source, release, hashes, and cleanup safety policy in .specify/extensions/archive/RACECRAFT-PIN.md.",
-    "racecraft-lab/racecraft-plugins-public PR #20 and release-please PR #21 merged. The stale branch-cut speckit-pro-v1.9.0 release/tag was deleted and recreated at main commit 75a5b727cd0868d647c9afa968e0edbe398c3f94.",
-    "Local Codex speckit-pro install and cache report version 1.9.0, and the user marketplace still points speckit-pro at ./.codex/plugins/speckit-pro.",
-    "Mission Control was deployed on HAL after merge; mission-control.service and openclaw-gateway.service were active and http://127.0.0.1:3000/login returned HTTP 200.",
+    "SPEC-003 setup completed on branch 003-global-aegis from origin/main e161a70.",
+    "Workflow file docs/ai/specs/SPEC-003-workflow.md was generated for Aegis Facility Singleton Refactor and is ready for autopilot.",
+    "Roadmap copy in this branch marks SPEC-003 In Progress per SpecKit-Pro status policy.",
     "Archive Sweep is now a speckit-pro:autopilot startup step. It runs before Phase 0 for the requested spec, excludes the current target spec, and keeps cleanup dry-run-only or stopped unless a clean safe base branch records safeToApplyCleanup=true.",
     "No active specs/** cleanup was applied by SPEC-002A. Completed spec folders may be removed only by a reviewed forward change after archive success, merge/tree references, recovery commands, and safeToApplyCleanup=true are recorded.",
-    "SPEC-003 is the next unblocked implementation spec. Its autopilot run should start with Archive Sweep and treat SPEC-001, SPEC-002, and SPEC-002A as previously merged candidates."
+    "SPEC-003 autopilot should start with Archive Sweep and treat SPEC-001, SPEC-002, and SPEC-002A as previously merged candidates.",
+    "Archive Sweep dry run completed for SPEC-003 on 2026-04-28T19:27:45Z: SPEC-001, SPEC-002, and SPEC-002A classified as eligibleForArchive=true; specs/003-global-aegis excluded; safeToApplyCleanup=false; no files deleted, moved, or rewritten.",
+    "Specify completed on 2026-04-28T19:31:34Z: specs/003-global-aegis/spec.md and requirements checklist generated; G1 passed with zero markers.",
+    "Clarify session 1 completed on 2026-04-28T19:39:39Z with no unresolved consensus items: workspace flag context, gateway fallback, shadow activity shape, duplicate tie-breaker, and status-filter behavior resolved.",
+    "Clarify session 2 completed on 2026-04-28T19:43:49Z with no unresolved consensus items: resolver source-only scheduler change, gateway routing, reviewer gate, no quality_reviews.agent_id, and UI display-only behavior resolved.",
+    "Clarify session 3 completed on 2026-04-28T20:12:06Z with no unresolved consensus items: shadow activity row shape, idempotency, reference-sweep surfaces, and downstream out-of-scope boundaries resolved. G2 passed with zero markers.",
+    "Plan completed on 2026-04-28T20:15:03Z: plan, research, data model, quickstart, and resolver contract generated. G3 passed with zero unresolved markers.",
+    "Feature Flags checklist completed on 2026-04-28T20:25:35Z: 22 items, 2 gaps remediated in spec/plan/checklist, no unresolved consensus items, zero markers after rerun.",
+    "Data Integrity checklist completed on 2026-04-28T20:37:06Z: 22 items, 1 gap remediated across spec/plan/data-model/contract/checklist, no unresolved consensus items, zero markers after rerun.",
+    "Scheduler Safety checklist completed on 2026-04-28T20:42:02Z: 35 items, 0 gaps, no unresolved consensus items, zero markers after generation.",
+    "Regression Safety checklist completed on 2026-04-28T20:55:11Z: 26 items, 4 gaps remediated in spec/plan/quickstart/checklist, no unresolved consensus items. G4 passed with zero gap markers.",
+    "Tasks completed on 2026-04-28T20:59:36Z: 21 tasks across 7 phases, 3 user stories covered, 6 parallel opportunities. G5 passed with zero markers.",
+    "Analyze completed on 2026-04-28T21:11:08Z: 1 critical and 3 medium findings remediated in plan/tasks, no unresolved consensus items. G6 passed with zero CRITICAL/HIGH findings.",
+    "Implementation completed on 2026-04-28T21:33:04Z: src/lib/aegis.ts added, runAegisReviews wired to getAegis, all 21 tasks complete, G7 passed, focused tests/typecheck/lint/build/guardrails recorded. Full pnpm test still fails on baseline GPG-agent and provisioner socket environment issues.",
+    "Post verification completed on 2026-04-28T21:36:00Z: focused Vitest, typecheck, lint, static guardrails, strict-scope checks, G7, and build evidence recorded; roadmap and PRD status synced with branch implementation evidence.",
+    "Post code review completed on 2026-04-28T21:36:56Z with no merge-blocking findings in resolver, task-dispatch, feature-flag, strict-scope, or guardrail diffs.",
+    "Integration suite completed on 2026-04-28T21:40:33Z: pnpm test:e2e passed 531 Playwright tests.",
+    "Cleanup completed on 2026-04-28T21:41:16Z: git diff --check passed, autopilot-state.json parsed successfully, and git status contained only expected SPEC-003 implementation and documentation changes.",
+    "PR creation completed on 2026-04-28T21:43:56Z: PR #20 opened at https://github.com/racecraft-lab/mission-control/pull/20 and branch 003-global-aegis was pushed at commit 27c1dff.",
+    "Review remediation completed on 2026-04-28T21:43:56Z for the current pass: PR #20 had zero review threads; the autopilot /loop scheduler was not available in this Codex runtime or .claude/commands, so no recurring monitor was scheduled.",
+    "Retrospective completed on 2026-04-28T21:43:56Z with lessons recorded in docs/ai/specs/SPEC-003-workflow.md.",
+    "Deviation remediation completed on 2026-04-28T22:10:54Z: P2 success criteria checkboxes were marked complete, full pnpm test:e2e passed 533 tests, post-extension gate evidence was recorded in specs/003-global-aegis/post-implementation-gates.md, and specs/003-global-aegis/retrospective.md was generated. Resolver coverage is in src/lib/__tests__/aegis.test.ts (9 unit tests).",
+    "External runtime blocker remains: the /loop review-remediation scheduler is not available in this Codex runtime or .claude/commands, so recurring 5-minute review monitoring could not be scheduled from this session.",
+    "PR #20 Argos fixture remediation completed on 2026-04-28T22:51:33Z: inherited SPEC-002 Playwright visual fixtures now use deterministic visible workspace/project/agent/task data, fixed task timestamps, frozen browser clocks for every screenshot page, and targeted reset helpers. Verification passed pnpm test:e2e:spec-002, pnpm test:e2e:argos-metadata, pnpm test:visual:storybook, pnpm test:visual:argos-metadata, pnpm typecheck, and pnpm lint with 10 pre-existing warnings."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -24,15 +43,39 @@
     "startup_timing": "before Phase 0/prerequisites for the requested spec",
     "last_recorded_dry_run_candidates": [
       "SPEC-001",
-      "SPEC-002"
+      "SPEC-002",
+      "SPEC-002A"
     ],
-    "current_target_excluded_during_spec_002a": "SPEC-002A",
+    "current_target_excluded_during_spec_003": "SPEC-003",
     "next_autopilot_previous_spec_candidates": [
       "SPEC-001",
       "SPEC-002",
       "SPEC-002A"
     ],
     "safeToApplyCleanup": false,
+    "last_recorded_dry_run_at": "2026-04-28T19:27:45Z",
+    "last_recorded_dry_run_current_target": "specs/003-global-aegis",
+    "last_recorded_dry_run_results": [
+      {
+        "path": "specs/001-foundation-migrations",
+        "eligibleForArchive": true,
+        "eligibleForCleanup": false
+      },
+      {
+        "path": "specs/002-product-line-switcher",
+        "eligibleForArchive": true,
+        "eligibleForCleanup": false
+      },
+      {
+        "path": "specs/002a-spec-archive-evidence",
+        "eligibleForArchive": true,
+        "eligibleForCleanup": false
+      },
+      {
+        "path": "specs/003-global-aegis",
+        "excludedCurrentSpec": true
+      }
+    ],
     "cleanup_policy": "Reviewed forward cleanup only after archive success, merge/tree references, recovery commands, clean safe base branch, and safeToApplyCleanup=true."
   },
   "releases": {
@@ -58,13 +101,32 @@
   "plan": [
     {"step": "Phase 0: Prerequisites and Archive Sweep startup", "status": "completed"},
     {"step": "Phase 1: Specify", "status": "completed"},
-    {"step": "Phase 2: Clarify", "status": "completed"},
+    {"step": "Phase 2: Clarify - Resolver Precedence and Flag Context", "status": "completed"},
+    {"step": "Phase 2: Clarify - Resolver Precedence and Flag Context Consensus", "status": "completed"},
+    {"step": "Phase 2: Clarify - Scheduler and Review Gate Compatibility", "status": "completed"},
+    {"step": "Phase 2: Clarify - Scheduler and Review Gate Compatibility Consensus", "status": "completed"},
+    {"step": "Phase 2: Clarify - Audit Activity and Reference Sweep", "status": "completed"},
+    {"step": "Phase 2: Clarify - Audit Activity and Reference Sweep Consensus", "status": "completed"},
     {"step": "Phase 3: Plan", "status": "completed"},
-    {"step": "Phase 4: Checklists", "status": "completed"},
+    {"step": "Phase 4: Checklist - Feature Flags", "status": "completed"},
+    {"step": "Phase 4: Checklist - Feature Flags Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - Data Integrity", "status": "completed"},
+    {"step": "Phase 4: Checklist - Data Integrity Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - Scheduler Safety", "status": "completed"},
+    {"step": "Phase 4: Checklist - Scheduler Safety Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - Regression Safety", "status": "completed"},
+    {"step": "Phase 4: Checklist - Regression Safety Consensus", "status": "completed"},
     {"step": "Phase 5: Tasks", "status": "completed"},
     {"step": "Phase 6: Analyze", "status": "completed"},
-    {"step": "Phase 7: Implement", "status": "completed"},
-    {"step": "Post: Release, local install, deploy, and retrospective", "status": "completed"},
-    {"step": "Next: SPEC-003 setup/autopilot", "status": "pending"}
+    {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
+    {"step": "Phase 7: Implement - Pending task decomposition", "status": "completed"},
+    {"step": "Post: Verify Implementation", "status": "completed"},
+    {"step": "Post: Code Review", "status": "completed"},
+    {"step": "Post: Integration Suite", "status": "completed"},
+    {"step": "Post: Cleanup", "status": "completed"},
+    {"step": "Post: PR Creation", "status": "completed"},
+    {"step": "Post: Review Remediation", "status": "completed"},
+    {"step": "Post: Argos Visual Fixture Remediation", "status": "completed"},
+    {"step": "Post: Retrospective", "status": "completed"}
   ]
 }

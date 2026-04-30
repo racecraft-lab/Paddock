@@ -120,6 +120,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 ## Active Technologies
 - TypeScript 5 on Next.js 16 App Router with React 19 + Zustand, better-sqlite3, Tailwind CSS 3, Vitest, Playwright (002-product-line-switcher)
 - SQLite plus localStorage for persisted Product Line scope (002-product-line-switcher)
+- TypeScript 5 on Next.js 16 App Router with React 19 + Next.js, Zustand, better-sqlite3, Vitest, ESLint, pnpm (003-global-aegis)
+- SQLite via `better-sqlite3` (003-global-aegis)
 
 ## Recent Changes
 - 002-product-line-switcher: Added TypeScript 5 on Next.js 16 App Router with React 19 + Zustand, better-sqlite3, Tailwind CSS 3, Vitest, Playwright
