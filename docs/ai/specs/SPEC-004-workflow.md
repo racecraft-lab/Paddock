@@ -140,7 +140,7 @@ Implement RC Factory Phase 3:
 - [ ] P3-AC6: Successor task inherits workspace/project, resolves assignee via `project_agent_assignments.agent_name`, and populates lineage fields.
 - [ ] P3-AC6a: Successor creation calls `createTask()` exactly once, source-specific side effects are preserved, and direct runtime `INSERT INTO tasks` outside `src/lib/task-create.ts` is gone from production source.
 - [ ] P3-AC7: Unit tests cover valid routing, invalid output, no-match fallback to static next, and chain termination.
-- [ ] P3-AC8: `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`, with CI guardrails and `pnpm audit --audit-level high` evidence recorded.
+- [ ] P3-AC8: `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`; SPEC-004 remediates the current high-severity audit baseline; CI guardrails run and passing `pnpm audit --audit-level high` evidence is recorded.
 - [ ] P3-AC9: Validator enforces every numeric bound, forbidden schema feature, and AJV safety option listed in the roadmap.
 - [ ] P3-AC10: Compiled validators cache per `(template_id, schema_sha256)` with LRU eviction at 256; p95 validation remains within the 50 ms budget over the fixed corpus; combined validation + routing + chain advancement overhead remains ≤50 ms p95 versus the flag-off/null-chain baseline.
 - [ ] P3-AC11: `docs/orchestration.md` is updated in the SPEC-004 branch before Phase 3 is considered shipped.
@@ -200,7 +200,7 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 - Successor creation inherits `workspace_id` and `project_id`, resolves `assigned_to` via `project_agent_assignments.agent_name` and `workflow_template.agent_role`, sets `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`, and calls `createTask()` exactly once.
 - Extend `src/components/panels/orchestration-bar.tsx`, `src/app/api/workflows/route.ts`, and create/update workflow schemas in `src/lib/validation.ts` for task-chain fields: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`; preserve existing operator-only write authorization for create/update/delete. `PUT /api/workflows` must validate and persist every chain field. Repair workflow-template delete compatibility by either sending JSON `{ id }` from `orchestration-bar.tsx` or making `DELETE /api/workflows` accept the existing `?id=` UI contract.
 - Add `src/types/workflow-template.ts` for typed workflow-template chain metadata.
-- Add exact pinned direct runtime dependencies for `ajv`, `jsonpath-plus`, and `safe-regex` in `package.json` and `pnpm-lock.yaml`, wire `.github/workflows/quality-gate.yml` to run SPEC-004 guardrails and `pnpm audit:high`, and record `pnpm audit --audit-level high` evidence.
+- Add exact pinned direct runtime dependencies for `ajv`, `jsonpath-plus`, and `safe-regex` in `package.json` and `pnpm-lock.yaml`, remediate the current high-severity audit baseline observed on 2026-04-30 (`minimatch`, `rollup`, `flatted`, `picomatch`, `defu`, and `next` advisories), wire `.github/workflows/quality-gate.yml` to run SPEC-004 guardrails and `pnpm audit:high`, and record passing `pnpm audit --audit-level high` evidence.
 - Update `docs/orchestration.md` with feature-flagged declarative task-chain behavior and current lifecycle terminology before marking Phase 3 shipped.
 
 ### Constraints
@@ -278,7 +278,7 @@ Focus on SPEC-004 task creation parity:
 $speckit-clarify
 
 Focus on SPEC-004 untrusted-output safety:
-- Confirm `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies, not transitive imports or dev-only dependencies, and that `pnpm audit --audit-level high` evidence is required before merge.
+- Confirm `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies, not transitive imports or dev-only dependencies, and that SPEC-004 owns clearing the current high-severity `pnpm audit --audit-level high` baseline before merge.
 - Encode every output-schema validator numeric bound: output 262144 bytes, schema 65536 bytes, depth 16, keys 256, array length 1024, string length 32768, pattern length 256, validation budget 50 ms, validator cache 256 entries.
 - Confirm forbidden schema features and AJV behavior: remote `$ref`, `$dynamicRef`, `$dynamicAnchor`, custom keywords, custom formats, async schemas, `ajv-formats` direct dependency/import/registration in SPEC-004 validator code, format enforcement, patterns rejected by `safe-regex`, patterns outside the conservative subset (nested quantifiers, backreferences, lookaround, unbounded wildcards, ambiguous alternation), data mutation/default insertion, type coercion, exhaustive error collection, and `$data`.
 - Confirm routing grammar: `==`, `!=`, `in`, `not in`, `&&`, `||`, `!`; JSONPath-Plus traversal with JavaScript execution disabled (`eval: false`, or `preventEval: true` on older supported APIs); literal string/number/boolean/array right sides.
@@ -358,7 +358,7 @@ $speckit-plan
 - Add focused Vitest tests for `createTask()` side effects and each migrated callsite.
 - Add task-chain terminal-success tests for every live non-`done` to `done` route: flag OFF, flag ON with unbound tasks and NULL fields, valid routing, invalid output failure, fallback to `next_template_slug`, missing/disabled/duplicate/cross-workspace target slug stall, timeout stall, chain termination, duplicate-prevention, successor lineage, and assignee resolution.
 - Add adversarial evaluator tests and validator bound tests, including JSONPath filter/script rejection before `JSONPath()`.
-- Add exact runtime dependency pin, lockfile, CI quality-gate, and `pnpm audit --audit-level high` checks for `ajv`, `jsonpath-plus`, and `safe-regex`.
+- Add exact runtime dependency pin, lockfile, CI quality-gate, audit-remediation, and `pnpm audit --audit-level high` checks for `ajv`, `jsonpath-plus`, and `safe-regex`.
 - Add a real running-app Playwright journey for workflow-template chain-field create/edit/read/delete under operator auth; component-only tests may supplement but do not satisfy P3-AC12.
 - Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, focused Playwright or e2e checks for affected UI flows, and static guardrails.
 ```
@@ -432,7 +432,7 @@ $speckit-checklist regression-safety
 Focus on SPEC-004 regression and dependency discipline:
 - Existing task creation callsites keep their current API, GitHub, recurring, and sync semantics after moving to `createTask()`.
 - Direct runtime `INSERT INTO tasks` is gone from production source outside `src/lib/task-create.ts`; intentional test fixtures are excluded or migrated deliberately.
-- `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in both `package.json` and `pnpm-lock.yaml`; CI and `pnpm audit --audit-level high` evidence is recorded.
+- `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in both `package.json` and `pnpm-lock.yaml`; the current high-severity audit baseline is remediated; CI and passing `pnpm audit --audit-level high` evidence is recorded.
 - Strict-scope config includes new production modules.
 - A real running-app Playwright journey verifies workflow-template chain-field create/edit/read/delete under operator auth.
 - `docs/orchestration.md` is updated before ship.
@@ -477,7 +477,7 @@ $speckit-tasks
   7. `advanceTaskChain` tests and implementation across every live non-`done` to `done` transition.
   8. Documentation update in `docs/orchestration.md`.
   9. Real running-app Playwright workflow-template chain-field create/edit/read/delete verification.
-  10. Strict-scope config, CI quality-gate updates, dependency pin checks, guardrail greps, and final verification.
+  10. Strict-scope config, CI quality-gate updates, dependency pin checks, audit-remediation package/lock updates, guardrail greps, and final verification.
 - Mark parallel-safe tasks with [P] only when they do not touch the same file or contract.
 
 ## Required Task Coverage
@@ -488,7 +488,7 @@ $speckit-tasks
 - P3-AC5 and P3-AC9 require adversarial fixtures, validator bound fixtures, AJV safety-option fixtures, conservative pattern-subset fixtures, JSONPath filter/script rejection, routing pre-validation cap fixtures, and routing timeout-budget fixtures.
 - P3-AC6 requires inheritance, assignee resolution, and lineage assertions.
 - P3-AC6a requires `createTask()` call-count/side-effect assertions, source-specific callsite behavior assertions, duplicate-successor prevention, and production-source direct INSERT grep.
-- P3-AC8 requires package and lockfile exact pinned direct runtime dependency checks for `ajv`, `jsonpath-plus`, and `safe-regex`, `.github/workflows/quality-gate.yml` coverage for SPEC-004 guardrails and `pnpm audit:high`, plus `pnpm audit --audit-level high` evidence.
+- P3-AC8 requires package and lockfile exact pinned direct runtime dependency checks for `ajv`, `jsonpath-plus`, and `safe-regex`, audit-remediation tasks that make the current branch baseline pass `pnpm audit --audit-level high`, `.github/workflows/quality-gate.yml` coverage for SPEC-004 guardrails and `pnpm audit:high`, plus passing audit evidence.
 - P3-AC10 requires validator cache, validator p95 budget tests over a fixed corpus, and combined terminal-success overhead p95 tests against flag-off/null-chain baseline.
 - P3-AC11 requires `docs/orchestration.md` update and branch commit evidence.
 - P3-AC12 requires a real running-app Playwright journey covering create, edit, read-back, and repaired delete behavior for workflow-template chain fields under operator auth.
@@ -497,7 +497,7 @@ $speckit-tasks
 
 - Primary new files: `src/lib/task-create.ts`, `src/lib/output-schema-validator.ts`, `src/lib/routing-rule-evaluator.ts`, `src/types/workflow-template.ts`.
 - Expected source edits: `src/app/api/tasks/route.ts`, `src/app/api/tasks/[id]/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, `src/lib/recurring-tasks.ts`, `src/lib/task-dispatch.ts`, `src/app/api/quality-review/route.ts`, `src/components/panels/orchestration-bar.tsx`, `src/app/api/workflows/route.ts`, `src/lib/validation.ts`.
-- Expected config edits: `package.json`, `pnpm-lock.yaml`, `.github/workflows/quality-gate.yml`, `tsconfig.spec-strict.json`, `eslint.config.mjs`.
+- Expected config edits: `package.json`, `pnpm-lock.yaml`, `.github/workflows/quality-gate.yml`, `tsconfig.spec-strict.json`, `eslint.config.mjs`. Package/lockfile edits include the direct SPEC-004 dependency pins and any audit-remediation updates required to clear the current high-severity baseline.
 - Expected docs edit: `docs/orchestration.md`.
 - Expected fixtures: create or use `src/lib/__tests__/fixtures/routing/` and `src/lib/__tests__/fixtures/schema-corpus/`; keep fixture direct INSERTs out of the production guardrail or migrate them deliberately when they test runtime behavior.
 - Avoid unrelated cleanup and do not touch implementation surfaces outside SPEC-004 unless a failing test proves it is required.
@@ -530,7 +530,7 @@ Focus on:
 4. Validator consistency: every numeric bound and forbidden schema feature has a test and implementation task.
 5. Evaluator consistency: allowlisted grammar, JSONPath no-script configuration/rejection, `maxRuleEvalMs=10`, and forbidden primitive checks are explicit in tasks and tests.
 6. Scheduler consistency: flag-off, unbound tasks, flag-on-null, valid route, invalid output, fallback, missing-target stall, timeout stall, termination, duplicate-prevention, and lineage behaviors are covered at every live non-`done` to `done` transition or unsupported manual routes are rejected/blocked.
-7. Dependency discipline: `ajv`, `jsonpath-plus`, and `safe-regex` handling are exact pinned direct runtime dependencies, audited with `pnpm audit --audit-level high`, wired into CI, and tested.
+7. Dependency discipline: `ajv`, `jsonpath-plus`, and `safe-regex` handling are exact pinned direct runtime dependencies, the current high-severity audit baseline is remediated, `pnpm audit --audit-level high` is wired into CI, and the result is tested.
 8. Documentation discipline: `docs/orchestration.md` is a required shipping artifact.
 9. File-path truthfulness: tasks use the live paths from this worktree and do not invent `task_templates` or `project_agent_assignments.agent_id`.
 10. Downstream boundaries: generated tasks must not implement SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, or SPEC-011 behavior.
@@ -626,7 +626,7 @@ For each task, follow this cycle:
   - no unsafe evaluator primitives: `eval`, `Function`, `vm`, `vm2`, `with`, dynamic `require`, prototype-chain access, JSONPath filters/scripts, arithmetic/bitwise routing operators, or right-side regex behavior
   - no downstream drift into `ready_for_owner`, `FEATURE_AREA_LABEL_ROUTING`, artifact publishing, resource governance, pilot seed behavior, or CrabTrap implementation
 - CI checks:
-  - `.github/workflows/quality-gate.yml` runs `pnpm audit:high` before merge; local registry/network failures may be recorded during development, but merge requires a successful CI audit run or an explicit owner-approved security exception
+  - `.github/workflows/quality-gate.yml` runs `pnpm audit:high` before merge; local registry/network failures may be recorded during development, but SPEC-004 owns resolving the known high-severity audit advisories and merge requires a successful CI audit run
   - `.github/workflows/quality-gate.yml` runs or invokes SPEC-004 guardrails for exact direct runtime dependency pins, production direct `INSERT INTO tasks`, unsafe evaluator primitives, and downstream-scope drift
 ```
 
@@ -658,7 +658,7 @@ For each task, follow this cycle:
 - [ ] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap while preserving operator-only writes and repairing delete compatibility.
 - [ ] `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`.
 - [ ] `.github/workflows/quality-gate.yml` runs SPEC-004 dependency, audit, direct-INSERT, unsafe-primitive, and downstream-drift guardrails.
-- [ ] `pnpm audit --audit-level high` passes before merge; local registry/network failure is temporary evidence only unless an owner-approved security exception is recorded.
+- [ ] `pnpm audit --audit-level high` passes before merge after SPEC-004 audit remediation; local registry/network failure is temporary evidence only and cannot satisfy P3-AC8.
 - [ ] `tsconfig.spec-strict.json` and `eslint.config.mjs` include new production modules.
 - [ ] `docs/orchestration.md` describes declarative task chains and current lifecycle/status terminology.
 - [ ] Prohibited-drift grep checks pass.
