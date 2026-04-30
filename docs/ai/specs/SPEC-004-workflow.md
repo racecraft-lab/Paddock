@@ -111,7 +111,7 @@ Implement RC Factory Phase 3:
 - Add server-side output schema validation in `src/lib/output-schema-validator.ts` using exact pinned runtime `ajv` and `safe-regex`, with the constrained AJV safety profile and conservative pattern subset from the roadmap.
 - Add a safe routing-rule evaluator in `src/lib/routing-rule-evaluator.ts` using exact pinned runtime `jsonpath-plus` with JavaScript execution disabled, pre-validation caps, and a hand-written parser for an allowlisted boolean grammar.
 - Add `advanceTaskChain` behavior at every live non-`done` to `done` transition for pipeline-bound tasks that reads structured output from `tasks.resolution`, validates it, evaluates routing rules, falls back to `next_template_slug`, creates a successor task through `createTask()`, stalls automated advancement with activity evidence on deterministic routing failures, or terminates the chain normally.
-- Extend the live workflow-template editor in `src/components/panels/orchestration-bar.tsx`, plus `/api/workflows` persistence and create/update workflow schemas, to edit `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`, while repairing and preserving the delete UI/API contract.
+- Extend the live workflow-template editor in `src/components/panels/orchestration-bar.tsx`, plus `/api/workflows` persistence and create/update workflow schemas, to edit `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`, while repairing and preserving the `DELETE /api/workflows?id=...` UI/API contract.
 - Update `docs/orchestration.md` before Phase 3 is considered shipped.
 
 ### Known Reference Surface
@@ -144,7 +144,7 @@ Implement RC Factory Phase 3:
 - [ ] P3-AC9: Validator enforces every numeric bound, forbidden schema feature, and AJV safety option listed in the roadmap.
 - [ ] P3-AC10: Compiled validators cache per `(template_id, schema_sha256)` with LRU eviction at 256; p95 validation remains within the 50 ms budget over the fixed corpus; combined validation + routing + chain advancement overhead remains ≤50 ms p95 versus the flag-off/null-chain baseline.
 - [ ] P3-AC11: `docs/orchestration.md` is updated in the SPEC-004 branch before Phase 3 is considered shipped.
-- [ ] P3-AC12: A real running-app Playwright journey creates, edits, reads back, and deletes workflow-template chain fields in the live Workflows editor under operator auth, including the repaired delete contract; component-only tests are insufficient.
+- [ ] P3-AC12: A real running-app Playwright journey creates, edits, reads back, and deletes workflow-template chain fields in the live Workflows editor under operator auth, including the repaired `DELETE /api/workflows?id=...` query-parameter delete contract; component-only tests are insufficient.
 
 ---
 
@@ -198,7 +198,7 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 - Invalid structured output transitions the parent task to `failed`, records an activity, and creates no successor.
 - Routing-rule budget overruns (`maxRuleEvalMs=10`) and missing/disabled/duplicate/cross-workspace target slugs stall automated chain advancement, leave the parent in its terminal success state, record an operator-visible activity with the structured failure reason, and create no successor. Manual operator triage owns recovery.
 - Successor creation inherits `workspace_id` and `project_id`, resolves `assigned_to` via `project_agent_assignments.agent_name` and `workflow_template.agent_role`, sets `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`, and calls `createTask()` exactly once.
-- Extend `src/components/panels/orchestration-bar.tsx`, `src/app/api/workflows/route.ts`, and create/update workflow schemas in `src/lib/validation.ts` for task-chain fields: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`; preserve existing operator-only write authorization for create/update/delete. `PUT /api/workflows` must validate and persist every chain field. Repair workflow-template delete compatibility by either sending JSON `{ id }` from `orchestration-bar.tsx` or making `DELETE /api/workflows` accept the existing `?id=` UI contract.
+- Extend `src/components/panels/orchestration-bar.tsx`, `src/app/api/workflows/route.ts`, and create/update workflow schemas in `src/lib/validation.ts` for task-chain fields: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`; preserve existing operator-only write authorization for create/update/delete. `PUT /api/workflows` must validate and persist every chain field. Repair workflow-template delete compatibility by making `DELETE /api/workflows?id=...` accept the existing live editor query-parameter contract. JSON `{ id }` body support may remain for backward compatibility, but the query-parameter delete path is required.
 - Add `src/types/workflow-template.ts` for typed workflow-template chain metadata.
 - Add exact pinned direct runtime dependencies for `ajv`, `jsonpath-plus`, and `safe-regex` in `package.json` and `pnpm-lock.yaml`, remediate the current high-severity audit baseline observed on 2026-04-30 (`minimatch`, `rollup`, `flatted`, `picomatch`, `defu`, and `next` advisories), wire `.github/workflows/quality-gate.yml` to run SPEC-004 guardrails and `pnpm audit:high`, and record passing `pnpm audit --audit-level high` evidence.
 - Update `docs/orchestration.md` with feature-flagged declarative task-chain behavior and current lifecycle terminology before marking Phase 3 shipped.
@@ -300,7 +300,7 @@ Focus on SPEC-004 runtime integration:
 - Confirm missing, disabled, duplicate, or cross-workspace routing target slugs stall automated chain advancement deterministically with structured error/activity evidence, parent terminal-success preservation, and no successor.
 - Confirm successor lineage fields: `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`.
 - Confirm assignee resolution uses `project_agent_assignments.agent_name` and `workflow_template.agent_role`, not imagined `agent_id` fields.
-- Confirm live template editor fields in `src/components/panels/orchestration-bar.tsx`, `/api/workflows` persistence, create/update workflow schemas, `PUT /api/workflows` validation/persistence of every chain field, repaired delete editor/API compatibility, and operator-only template ownership.
+- Confirm live template editor fields in `src/components/panels/orchestration-bar.tsx`, `/api/workflows` persistence, create/update workflow schemas, `PUT /api/workflows` validation/persistence of every chain field, repaired `DELETE /api/workflows?id=...` editor/API compatibility, and operator-only template ownership.
 - Confirm downstream out-of-scope boundaries: no `ready_for_owner`, area labels, dispositions/artifacts, governance enforcement, pilot seed behavior, or CrabTrap.
 - Confirm `docs/orchestration.md` must be updated before Phase 3 ships.
 ```
@@ -350,7 +350,7 @@ $speckit-plan
 - Parent output is read from `tasks.resolution` in SPEC-004 only as the temporary bridge before SPEC-007 artifact publishing.
 - Successor task creation must be structurally side-effect-equivalent by calling `createTask()`.
 - Routing evaluation and schema validation run on untrusted agent output and must be safe-by-construction.
-- Workflow-template task-chain fields are edited through the live Workflows UI in `orchestration-bar.tsx` and persisted by `/api/workflows` with create/update workflow schemas. `PUT /api/workflows` validates and persists every chain field, and delete remains compatible with the live editor.
+- Workflow-template task-chain fields are edited through the live Workflows UI in `orchestration-bar.tsx` and persisted by `/api/workflows` with create/update workflow schemas. `PUT /api/workflows` validates and persists every chain field, and `DELETE /api/workflows?id=...` remains compatible with the live editor.
 - `docs/orchestration.md` must describe both existing manual follow-up task patterns and the new feature-flagged declarative chain path.
 
 ## Verification Strategy
@@ -473,7 +473,7 @@ $speckit-tasks
   3. Migration of API, GitHub, sync, and recurring task creation callsites.
   4. `output-schema-validator.ts` tests and implementation with `ajv`.
   5. `routing-rule-evaluator.ts` adversarial, timeout, and JSONPath no-script tests and implementation with `jsonpath-plus`.
-  6. `workflow-template` types, `/api/workflows` create/update validation/persistence, delete contract repair/compatibility, and editor UI changes.
+  6. `workflow-template` types, `/api/workflows` create/update validation/persistence, `DELETE /api/workflows?id=...` contract repair/compatibility, and editor UI changes.
   7. `advanceTaskChain` tests and implementation across every live non-`done` to `done` transition.
   8. Documentation update in `docs/orchestration.md`.
   9. Real running-app Playwright workflow-template chain-field create/edit/read/delete verification.
@@ -491,7 +491,7 @@ $speckit-tasks
 - P3-AC8 requires package and lockfile exact pinned direct runtime dependency checks for `ajv`, `jsonpath-plus`, and `safe-regex`, audit-remediation tasks that make the current branch baseline pass `pnpm audit --audit-level high`, `.github/workflows/quality-gate.yml` coverage for SPEC-004 guardrails and `pnpm audit:high`, plus passing audit evidence.
 - P3-AC10 requires validator cache, validator p95 budget tests over a fixed corpus, and combined terminal-success overhead p95 tests against flag-off/null-chain baseline.
 - P3-AC11 requires `docs/orchestration.md` update and branch commit evidence.
-- P3-AC12 requires a real running-app Playwright journey covering create, edit, read-back, and repaired delete behavior for workflow-template chain fields under operator auth.
+- P3-AC12 requires a real running-app Playwright journey covering create, edit, read-back, and repaired `DELETE /api/workflows?id=...` behavior for workflow-template chain fields under operator auth.
 
 ## File Layout Constraints
 
@@ -655,7 +655,7 @@ For each task, follow this cycle:
 - [ ] Schema `pattern`/`patternProperties` acceptance treats `safe-regex` as necessary but not sufficient and enforces the conservative pattern subset with adversarial fixtures.
 - [ ] `src/lib/routing-rule-evaluator.ts` uses JSONPath traversal with JavaScript execution disabled, rejects JSONPath filters/scripts before `JSONPath()`, enforces `maxRuleEvalMs=10`, and uses a hand-written allowlisted grammar.
 - [ ] `advanceTaskChain` implements valid routing, invalid-output failure, fallback, timeout/unresolved-target advancement stall, termination, duplicate-prevention, successor creation, and lineage behavior at every live non-`done` to `done` transition for pipeline-bound tasks, or unsupported manual `done` transitions are rejected/blocked.
-- [ ] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap while preserving operator-only writes and repairing delete compatibility.
+- [ ] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap while preserving operator-only writes and repairing `DELETE /api/workflows?id=...` compatibility.
 - [ ] `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`.
 - [ ] `.github/workflows/quality-gate.yml` runs SPEC-004 dependency, audit, direct-INSERT, unsafe-primitive, and downstream-drift guardrails.
 - [ ] `pnpm audit --audit-level high` passes before merge after SPEC-004 audit remediation; local registry/network failure is temporary evidence only and cannot satisfy P3-AC8.
