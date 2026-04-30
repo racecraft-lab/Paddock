@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T18:44:58Z",
+  "updated_at": "2026-04-30T18:51:57Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -18,6 +18,7 @@
     "Owner clarification on 2026-04-30: for a pipeline-bound task with `output_schema`, missing `tasks.resolution` or invalid structured output is a validation failure; mark the parent `failed`, record activity, and create no successor.",
     "Owner clarification on 2026-04-30: if successor assignee resolution finds no matching `project_agent_assignments.agent_name` for `workflow_template.agent_role`, chain advancement stalls with activity evidence, parent terminal-success preservation, and no successor.",
     "Owner clarification on 2026-04-30: workflow-template create/update must reject non-empty `routing_rules` unless `output_schema` is present; static `next_template_slug` without schema remains valid.",
+    "Owner clarification on 2026-04-30: when creating the first successor from a parent with no lineage, initialize the parent as root (`root_task_id = parent.id`, generated `chain_id`, `chain_stage = 0`) before inserting the successor with the same root/chain and `chain_stage = 1`.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {
