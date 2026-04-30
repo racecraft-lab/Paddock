@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T23:17:02Z",
+  "updated_at": "2026-04-30T23:23:01Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -32,6 +32,7 @@
     "Owner clarification on 2026-04-30: all `retry_chain_advancement` 409 rejections are side-effect-free; they write no activity, increment no `retry_attempt`, leave state and successors unchanged, and return a machine-readable rejection reason in the response body.",
     "Owner clarification on 2026-04-30: retry 409 responses use `{ \"retry_rejection_reason\": \"<enum>\" }` with allowed enum values `retry_not_eligible`, `retry_template_provenance_missing`, and `retry_template_drift_unconfirmed`.",
     "Owner clarification on 2026-04-30: if a terminal-success advancement-stall retry passes eligibility/provenance/drift checks and current routing now resolves to no matching rule and no `next_template_slug`, the retry succeeds as normal chain termination: no successor, no new stall activity, recovery activity `recovery_outcome='chain_terminated'`, and no extra confirmation flag or 409.",
+    "Owner clarification on 2026-04-30: every `retry_chain_advancement` 200 OK response returns normal task detail data plus bounded `chain_retry` fields (`recovery_class`, `retry_attempt`, `recovery_outcome`, `successor_task_id`, `chain_terminated`, `idempotent_successor`) with outcomes `output_still_invalid`, `stall_persisted`, `successor_created`, `successor_already_exists`, or `chain_terminated`, and never leaks full corrected output, parsed output, or routing traces.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {
