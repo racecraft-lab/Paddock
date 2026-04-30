@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T17:36:15Z",
+  "updated_at": "2026-04-30T18:35:00Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -14,6 +14,7 @@
     "Round 3 final adversarial peer-review remediation added the existing-branch guard for Specify, clarified routing-failure stall semantics, hardened schema pattern safety beyond safe-regex alone, made workflow-template delete repair explicit, and required quality-gate CI coverage for SPEC-004 audit and static guardrails.",
     "Owner clarification on 2026-04-30: SPEC-004 owns remediating the current `pnpm audit --audit-level high` advisories rather than treating them as an external blocker; autopilot must update package/lock/CI as needed until the audit passes.",
     "Owner clarification on 2026-04-30: workflow-template delete repair must support the existing live editor query-parameter path `DELETE /api/workflows?id=...`; JSON `{ id }` body support may remain only as backward-compatible optional behavior.",
+    "Owner clarification on 2026-04-30: every live non-`done` to `done` path for pipeline-bound tasks must route through one shared `advanceTaskChain` helper from `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`; manual/API completions remain allowed only through that helper.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {

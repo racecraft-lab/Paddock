@@ -194,7 +194,7 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 - Migrate direct task INSERT callsites in `src/app/api/tasks/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/recurring-tasks.ts` to `createTask()`.
 - Add `src/lib/output-schema-validator.ts` using exact pinned runtime `ajv`; enforce the constrained Mission Control schema profile, every numeric bound from the roadmap, and the AJV safety profile: strict behavior, no data mutation/default insertion, no type coercion, no exhaustive error collection, `validateFormats=false`, `$data=false`, no direct SPEC-004 dependency/import/registration of `ajv-formats`, no custom formats/keywords/async schemas, and no schema `pattern`/`patternProperties` outside the conservative pattern subset.
 - Add `src/lib/routing-rule-evaluator.ts` using exact pinned runtime `jsonpath-plus` with JavaScript execution disabled (`eval: false`, or `preventEval: true` on older supported APIs) and a hand-written parser for the allowlisted grammar. Reject JSONPath filters/script expressions before calling `JSONPath()` and enforce pre-validation caps before synchronous parse/traversal work: `maxRoutingRules=64`, `maxRoutingExpressionBytes=8192`, `maxRoutingTokens=256`, `maxBooleanNestingDepth=16`, `maxJsonPathBytes=512`, `maxJsonPathResults=128`, and `maxLiteralBytes=32768`.
-- Add `advanceTaskChain` behavior at every live non-`done` to `done` transition for pipeline-bound tasks (`runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`) that reads structured output from `tasks.resolution`, validates against `workflow_template.output_schema`, evaluates ordered `routing_rules`, falls back to `next_template_slug`, and terminates normally if neither route resolves. If a manual route does not advance pipeline-bound tasks, it must reject/block the `done` transition deterministically.
+- Add `advanceTaskChain` behavior at every live non-`done` to `done` transition for pipeline-bound tasks (`runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`) that reads structured output from `tasks.resolution`, validates against `workflow_template.output_schema`, evaluates ordered `routing_rules`, falls back to `next_template_slug`, and terminates normally if neither route resolves. Manual/API completions remain allowed, but no live pipeline-bound `done` path may bypass the shared helper.
 - Invalid structured output transitions the parent task to `failed`, records an activity, and creates no successor.
 - Routing-rule budget overruns (`maxRuleEvalMs=10`) and missing/disabled/duplicate/cross-workspace target slugs stall automated chain advancement, leave the parent in its terminal success state, record an operator-visible activity with the structured failure reason, and create no successor. Manual operator triage owns recovery.
 - Successor creation inherits `workspace_id` and `project_id`, resolves `assigned_to` via `project_agent_assignments.agent_name` and `workflow_template.agent_role`, sets `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`, and calls `createTask()` exactly once.
@@ -295,7 +295,7 @@ $speckit-clarify
 Focus on SPEC-004 runtime integration:
 - Confirm `FEATURE_TASK_PIPELINES=false` and flag ON with NULL chain fields preserve current completion behavior.
 - Confirm `advanceTaskChain` reads structured output from `tasks.resolution` only as the Phase 3 bridge; SPEC-007 later owns canonical artifact handoff.
-- Confirm `advanceTaskChain` hooks every live non-`done` to `done` transition for pipeline-bound tasks: Aegis approval in `runAegisReviews`, operator approval in `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`; duplicate successor creation is idempotently prevented. If any manual route does not advance, confirm it rejects/blocks pipeline-bound `done` transitions deterministically.
+- Confirm `advanceTaskChain` hooks every live non-`done` to `done` transition for pipeline-bound tasks: Aegis approval in `runAegisReviews`, operator approval in `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`; duplicate successor creation is idempotently prevented, manual/API completions remain allowed, and no live pipeline-bound `done` path bypasses the shared helper.
 - Confirm invalid output transitions parent task to `failed`, records activity, and creates no successor.
 - Confirm missing, disabled, duplicate, or cross-workspace routing target slugs stall automated chain advancement deterministically with structured error/activity evidence, parent terminal-success preservation, and no successor.
 - Confirm successor lineage fields: `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`.
@@ -418,7 +418,7 @@ $speckit-checklist scheduler-safety
 Focus on SPEC-004 scheduler behavior:
 - Flag OFF preserves current task completion, sync, notification, subscription, and activity behavior.
 - Flag ON with NULL chain fields preserves current behavior.
-- `advanceTaskChain` runs at every live non-`done` to `done` transition for pipeline-bound tasks (`runAegisReviews`, operator `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`) and cannot create duplicate successors; any unsupported manual transition is rejected/blocked.
+- `advanceTaskChain` runs at every live non-`done` to `done` transition for pipeline-bound tasks (`runAegisReviews`, operator `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`) and cannot create duplicate successors; manual/API completions remain allowed only through the shared helper.
 - Routing evaluator budget overruns stall automated chain advancement with an operator-visible `activities` row and no successor.
 - Successor creation calls `createTask()` exactly once.
 - Scheduler behavior does not implement SPEC-005 `ready_for_owner`, SPEC-007 dispositions/artifacts, SPEC-008 governance, or SPEC-009 pilot behavior.
@@ -529,7 +529,7 @@ Focus on:
 3. Task creation consistency: every production task creation callsite moves through `createTask()` with source-specific side effects preserved and no runtime direct INSERT bypasses.
 4. Validator consistency: every numeric bound and forbidden schema feature has a test and implementation task.
 5. Evaluator consistency: allowlisted grammar, JSONPath no-script configuration/rejection, `maxRuleEvalMs=10`, and forbidden primitive checks are explicit in tasks and tests.
-6. Scheduler consistency: flag-off, unbound tasks, flag-on-null, valid route, invalid output, fallback, missing-target stall, timeout stall, termination, duplicate-prevention, and lineage behaviors are covered at every live non-`done` to `done` transition or unsupported manual routes are rejected/blocked.
+6. Scheduler consistency: flag-off, unbound tasks, flag-on-null, valid route, invalid output, fallback, missing-target stall, timeout stall, termination, duplicate-prevention, and lineage behaviors are covered at every live non-`done` to `done` transition, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`.
 7. Dependency discipline: `ajv`, `jsonpath-plus`, and `safe-regex` handling are exact pinned direct runtime dependencies, the current high-severity audit baseline is remediated, `pnpm audit --audit-level high` is wired into CI, and the result is tested.
 8. Documentation discipline: `docs/orchestration.md` is a required shipping artifact.
 9. File-path truthfulness: tasks use the live paths from this worktree and do not invent `task_templates` or `project_agent_assignments.agent_id`.
@@ -603,7 +603,7 @@ For each task, follow this cycle:
 - Use `project_agent_assignments.agent_name` and `workflow_template.agent_role` for assignee resolution.
 - Invalid output fails the parent task and creates no successor.
 - Routing timeout or unresolved target slug stalls automated chain advancement with activity evidence and creates no successor; the parent remains in its terminal success state and manual operator triage owns recovery.
-- Hook `advanceTaskChain` at every live non-`done` to `done` transition for pipeline-bound tasks and guard against duplicate successors; reject/block unsupported manual `done` transitions deterministically.
+- Hook `advanceTaskChain` at every live non-`done` to `done` transition for pipeline-bound tasks and guard against duplicate successors; manual/API `done` transitions remain allowed only through the shared helper.
 - Successor creation must call `createTask()` exactly once.
 - Do not add downstream state machine, artifact, governance, area-label, pilot, or CrabTrap behavior.
 
@@ -654,7 +654,7 @@ For each task, follow this cycle:
 - [ ] `src/lib/output-schema-validator.ts` enforces every roadmap numeric bound and forbidden schema feature.
 - [ ] Schema `pattern`/`patternProperties` acceptance treats `safe-regex` as necessary but not sufficient and enforces the conservative pattern subset with adversarial fixtures.
 - [ ] `src/lib/routing-rule-evaluator.ts` uses JSONPath traversal with JavaScript execution disabled, rejects JSONPath filters/scripts before `JSONPath()`, enforces `maxRuleEvalMs=10`, and uses a hand-written allowlisted grammar.
-- [ ] `advanceTaskChain` implements valid routing, invalid-output failure, fallback, timeout/unresolved-target advancement stall, termination, duplicate-prevention, successor creation, and lineage behavior at every live non-`done` to `done` transition for pipeline-bound tasks, or unsupported manual `done` transitions are rejected/blocked.
+- [ ] `advanceTaskChain` implements valid routing, invalid-output failure, fallback, timeout/unresolved-target advancement stall, termination, duplicate-prevention, successor creation, and lineage behavior at every live non-`done` to `done` transition for pipeline-bound tasks, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`.
 - [ ] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap while preserving operator-only writes and repairing `DELETE /api/workflows?id=...` compatibility.
 - [ ] `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`.
 - [ ] `.github/workflows/quality-gate.yml` runs SPEC-004 dependency, audit, direct-INSERT, unsafe-primitive, and downstream-drift guardrails.
