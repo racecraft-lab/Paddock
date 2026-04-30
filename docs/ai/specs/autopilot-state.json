@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T23:36:35Z",
+  "updated_at": "2026-04-30T23:50:12Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -34,6 +34,7 @@
     "Owner clarification on 2026-04-30: if a terminal-success advancement-stall retry passes eligibility/provenance/drift checks and current routing now resolves to no matching rule and no `next_template_slug`, the retry succeeds as normal chain termination: no successor, no new stall activity, recovery activity `recovery_outcome='chain_terminated'`, and no extra confirmation flag or 409.",
     "Owner clarification on 2026-04-30: every `retry_chain_advancement` 200 OK response returns normal task detail data plus bounded `chain_retry` fields (`recovery_class`, `retry_attempt`, `recovery_outcome`, `successor_task_id`, `chain_terminated`, `idempotent_successor`) with outcomes `output_still_invalid`, `stall_persisted`, `successor_created`, `successor_already_exists`, or `chain_terminated`, and never leaks full corrected output, parsed output, or routing traces.",
     "Owner clarification on 2026-04-30: every `retry_chain_advancement` 200 OK recovery activity uses stable `activities.data.reason_code='task_pipeline_retry_chain_advancement'` and preserves the selected original failure/stall reason in `previous_reason_code`; retry 409 rejections remain side-effect-free and write no activity.",
+    "Owner clarification on 2026-04-30: post-recovery retry calls follow Option C: if a successor exists for the parent, return `200 OK` with `recovery_outcome='successor_already_exists'`, `successor_task_id`, `chain_terminated=false`, and `idempotent_successor=true`; if the selected failure/stall was already resolved by `recovery_outcome='chain_terminated'`, later retry calls return side-effect-free `409 Conflict` with `retry_rejection_reason='retry_not_eligible'` until a new retry-eligible SPEC-004 failure/stall activity is recorded.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {
