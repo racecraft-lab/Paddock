@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T18:58:11Z",
+  "updated_at": "2026-04-30T19:08:25Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -20,6 +20,7 @@
     "Owner clarification on 2026-04-30: workflow-template create/update must reject non-empty `routing_rules` unless `output_schema` is present; static `next_template_slug` without schema remains valid.",
     "Owner clarification on 2026-04-30: when creating the first successor from a parent with no lineage, initialize the parent as root (`root_task_id = parent.id`, generated `chain_id`, `chain_stage = 0`) before inserting the successor with the same root/chain and `chain_stage = 1`.",
     "Owner clarification on 2026-04-30: `advanceTaskChain` and successor creation must run in one database transaction covering parent lineage initialization, validation failure state/activity writes, stall activity writes, duplicate-successor guard checks, and successor insertion.",
+    "Owner clarification on 2026-04-30: if `advanceTaskChain` finds an existing successor for the same `parent_task_id`, treat the retry as a successful idempotent no-op and create no duplicate task.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {
