@@ -35,6 +35,35 @@ describe('resolveFlag', () => {
     })).toBe(false)
   })
 
+  it('evaluates FEATURE_GLOBAL_AEGIS from workspace context only', () => {
+    expect(resolveFlag('FEATURE_GLOBAL_AEGIS', {
+      env: {},
+      workspaceFlags: { FEATURE_GLOBAL_AEGIS: true },
+    })).toBe(true)
+    expect(resolveFlag('FEATURE_GLOBAL_AEGIS', {
+      env: { FEATURE_GLOBAL_AEGIS: '1' },
+      workspaceFlags: null,
+    })).toBe(false)
+  })
+
+  it('lets env 0 kill-switch FEATURE_GLOBAL_AEGIS even when workspace flags enable it', () => {
+    expect(resolveFlag('FEATURE_GLOBAL_AEGIS', {
+      env: { FEATURE_GLOBAL_AEGIS: '0' },
+      workspaceFlags: { FEATURE_GLOBAL_AEGIS: true },
+    })).toBe(false)
+  })
+
+  it('defaults malformed FEATURE_GLOBAL_AEGIS workspace JSON off', () => {
+    const resolution = evaluateFeatureFlagCore('FEATURE_GLOBAL_AEGIS', {
+      env: {},
+      workspaceFlags: '{not json',
+    })
+
+    expect(resolution.value).toBe(false)
+    expect(resolution.reason).toBe('default_off')
+    expect(resolution.storedValue).toBeNull()
+  })
+
   it('preserves the pilot env-force-on exception', () => {
     expect(resolveFlag('PILOT_PRODUCT_LINE_A_E2E', {
       env: { PILOT_PRODUCT_LINE_A_E2E: '1' },
@@ -78,6 +107,13 @@ describe('feature flag registry', () => {
     expect(FEATURE_FLAG_REGISTRY.FEATURE_AREA_LABEL_ROUTING.enableRequires).toEqual(['FEATURE_WORKSPACE_SWITCHER'])
     expect(FEATURE_FLAG_REGISTRY.PILOT_PRODUCT_LINE_A_E2E.enableRequires).toContain('FEATURE_OPENCLAW_HEALTH_COSTS')
     expect(FEATURE_FLAG_REGISTRY.PILOT_PRODUCT_LINE_A_E2E.enableRequires).toHaveLength(9)
+  })
+
+  it('marks FEATURE_GLOBAL_AEGIS implemented but gated by workspace switcher preflight', () => {
+    expect(FEATURE_FLAG_REGISTRY.FEATURE_GLOBAL_AEGIS.implementationStatus).toBe('ready_for_canary')
+    expect(FEATURE_FLAG_REGISTRY.FEATURE_GLOBAL_AEGIS.adminManageable).toBe(true)
+    expect(FEATURE_FLAG_REGISTRY.FEATURE_GLOBAL_AEGIS.enableRequires).toEqual(['FEATURE_WORKSPACE_SWITCHER'])
+    expect(FEATURE_FLAG_REGISTRY.FEATURE_GLOBAL_AEGIS.requiresPreflight).toBe(true)
   })
 
   it('pins OpenFeature server-side only', () => {

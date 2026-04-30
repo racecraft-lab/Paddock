@@ -5,6 +5,7 @@ import { mutationLimiter } from '@/lib/rate-limit'
 import {
   assertFeatureFlagKey,
   getFeatureFlagAdminStates,
+  getFeatureFlagMutationBlockers,
   getFeatureFlagPreflight,
   updateWorkspaceFeatureFlag,
 } from '@/lib/feature-flag-service'
@@ -87,10 +88,21 @@ export async function PATCH(
           checks: preflight.checks,
         }, { status: 409 })
       }
-    } else if (before.env_locked) {
-      return NextResponse.json({ error: 'Deployment configuration already forces this flag OFF' }, { status: 409 })
-    } else if (!definition.adminManageable || definition.implementationStatus === 'not_implemented') {
-      return NextResponse.json({ error: 'Feature flag is not admin-manageable' }, { status: 409 })
+    } else {
+      // Disable path: enforce the same scope/manageability guards as enable so
+      // the facility workspace row cannot be used as a Product Line scope target
+      // (Finding F2). env_locked produces its own narrower message for parity
+      // with the existing UI flow.
+      if (before.env_locked) {
+        return NextResponse.json({ error: 'Deployment configuration already forces this flag OFF' }, { status: 409 })
+      }
+      const blockers = getFeatureFlagMutationBlockers(db, tenantId, workspaceId, key)
+      if (blockers.length > 0) {
+        return NextResponse.json({
+          error: 'Feature flag cannot be disabled',
+          blockers,
+        }, { status: 409 })
+      }
     }
 
     const updated = db.transaction(() => updateWorkspaceFeatureFlag(db, workspaceId, key, Boolean(body.value)))()

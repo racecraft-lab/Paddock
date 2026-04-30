@@ -4,6 +4,7 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
 import { argosScreenshot } from '@argos-ci/playwright'
 import {
   dismissOnboardingForE2E,
+  freezeSpec002VisualClock,
   loginAsE2EAdmin,
   seedProductLineE2EData,
   type ProductLineE2EFixture,
@@ -41,6 +42,7 @@ async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: stri
 }
 
 async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof loginAsE2EAdmin>[1]) {
+  await freezeSpec002VisualClock(page)
   await page.context().addInitScript(() => {
     sessionStorage.setItem('mc-onboarding-dismissed', '1')
     sessionStorage.removeItem('mc-onboarding-replay')
@@ -151,6 +153,7 @@ test.describe.serial('SPEC-002 Product Line switcher real UI journey', () => {
 
   test('broadcasts selected Product Line scope to another real app tab', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
     const pageB = await page.context().newPage()
+    await freezeSpec002VisualClock(pageB)
     await page.goto('/tasks')
     await pageB.goto('/tasks')
 

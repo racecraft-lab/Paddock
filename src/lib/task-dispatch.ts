@@ -5,6 +5,7 @@ import { eventBus } from './event-bus'
 import { logger } from './logger'
 import { config } from './config'
 import { syncTaskOutbound } from './github-sync-engine'
+import { getAegis } from './aegis'
 
 /** Sync task to GitHub/GNAP and broadcast escalation if task failed */
 function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
@@ -391,7 +392,7 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
   }
 
   const results: Array<{ id: number; verdict: string; error?: string }> = []
-  const aegisAgentByWorkspace = new Map<number, ReviewAgentRecord>()
+  const reviewAgentByWorkspace = new Map<number, ReviewAgentRecord>()
 
   for (const task of tasks) {
     // Move to quality_review to prevent re-processing
@@ -419,20 +420,14 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
         }
         agentResponse = await callClaudeDirectly(reviewTask, prompt)
       } else {
-        let reviewAgentRecord = aegisAgentByWorkspace.get(task.workspace_id)
+        let reviewAgentRecord = reviewAgentByWorkspace.get(task.workspace_id)
         if (!reviewAgentRecord) {
-          const aegis = db.prepare(`
-            SELECT name, config
-            FROM agents
-            WHERE LOWER(name) = 'aegis' AND workspace_id = ?
-            ORDER BY id ASC
-            LIMIT 1
-          `).get(task.workspace_id) as { name?: string | null; config?: string | null } | undefined
+          const aegis = getAegis(db, task.workspace_id)
           reviewAgentRecord = {
-            name: aegis?.name || 'aegis',
-            agent_config: aegis?.config || null,
+            name: aegis.name,
+            agent_config: aegis.agent_config,
           }
-          aegisAgentByWorkspace.set(task.workspace_id, reviewAgentRecord)
+          reviewAgentByWorkspace.set(task.workspace_id, reviewAgentRecord)
         }
 
         // Resolve the dedicated Aegis gateway agent id, not the original worker.

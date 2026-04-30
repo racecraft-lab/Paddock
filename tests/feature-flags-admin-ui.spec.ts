@@ -5,7 +5,10 @@ import { argosScreenshot } from '@argos-ci/playwright'
 import {
   API_KEY_HEADER,
   dismissOnboardingForE2E,
+  freezeSpec002VisualClock,
   loginAsE2EAdmin,
+  resetSpec002FlagAdminVisualFixture,
+  SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE,
 } from './helpers'
 
 const ARGOS_SCREENSHOT_TAGS = ['spec-002', 'feature-flag-admin']
@@ -15,10 +18,6 @@ interface SeededWorkspace {
   id: number
   name: string
   slug: string
-}
-
-function stamp() {
-  return Date.now().toString(36).slice(-8)
 }
 
 async function attachReviewScreenshot(
@@ -50,6 +49,7 @@ async function attachReviewScreenshot(
 }
 
 async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof loginAsE2EAdmin>[1]) {
+  await freezeSpec002VisualClock(page)
   await page.context().addInitScript(() => {
     sessionStorage.setItem('mc-onboarding-dismissed', '1')
     sessionStorage.removeItem('mc-onboarding-replay')
@@ -62,12 +62,12 @@ test.describe.serial('SPEC-002 Feature Flag admin UI journey', () => {
   let workspace: SeededWorkspace
 
   test.beforeAll(async ({ request }) => {
-    const suffix = stamp()
+    resetSpec002FlagAdminVisualFixture()
     const res = await request.post('/api/workspaces', {
       headers: API_KEY_HEADER,
       data: {
-        name: `SPEC-002 Flag Admin ${suffix}`,
-        slug: `spec-002-flag-admin-${suffix}`,
+        name: SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE.name,
+        slug: SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE.slug,
       },
     })
     const body = await res.json().catch(() => ({}))

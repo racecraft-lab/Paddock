@@ -116,3 +116,20 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - **better-sqlite3**: Native addon -- needs rebuild when switching Node versions (`pnpm rebuild better-sqlite3`)
 - **AUTH_PASS with `#`**: Quote it (`AUTH_PASS="my#pass"`) or use `AUTH_PASS_B64` (base64-encoded)
 - **Gateway optional**: Set `NEXT_PUBLIC_GATEWAY_OPTIONAL=true` for standalone deployments without gateway connectivity
+- **`resolveFlag` env override**: `process.env.FEATURE_X='1'` does NOT force a flag ON — only `workspaces.feature_flags` JSON can opt a workspace in. `'0'` forces OFF.
+- **M53 backfill scope leak**: Post-M53 rows have `workspace_id` set AND `scope='global'`. `findWorkspaceAegis` must include `AND scope = 'workspace'` or these rows appear in both local and global lookups (fixed in SPEC-003).
+- **Facility real row**: The `workspaces` row with `slug='facility'` is NOT a valid Product Line workspace_id. REST/URL/SSE must reject it with 400.
+
+## Recent Changes
+
+### SPEC-001 — Foundation Migrations (PR #15, merged 2026-04-26)
+Added migrations M53-M61 to `src/lib/migrations.ts`: agent scope backfill (`scope='global'` for Aegis, Security Guardian, HAL), workflow-template routing metadata, task lineage fields, workspace feature-flag storage (`feature_flags JSON`), task dispositions, task artifacts, facility workspace seed, resource policies, resource policy events. All changes additive and rerun-safe. 9 rollback SQL files at `docs/migrations/rollback-M53.sql` through `rollback-M61.sql` plus `docs/migrations/rollback-procedure.md`. No runtime behavior added. Test harness at `src/lib/__tests__/migrations-phase0.test.ts` (35/35 tasks complete).
+
+### SPEC-002 — Product Line Switcher (PR #16, merged 2026-04-27)
+Added `FEATURE_WORKSPACE_SWITCHER`-gated workspace switcher. New production modules: `src/lib/feature-flags.ts` (`resolveFlag(name, ctx)`), `src/types/product-line.ts` (discriminated Facility/ProductLine scope, scopeKey), `src/components/layout/workspace-switcher.tsx` (ARIA listbox, responsive header). Zustand persistence key `mc:active-workspace:v1`. BroadcastChannel cross-tab sync. REST/SSE scope matrix with explicit Facility/PL authorization. `/api/events` scoped. Flag-OFF behavior preserved byte-compatible (56/56 tasks complete).
+
+### SPEC-002A — Spec Archive and Evidence Retention (PRs #18 #19, merged 2026-04-28)
+Established archive evidence policy (provenance-first, no committed screenshots by default). Installed `racecraft-lab/spec-kit-archive` v1.1.0 at `.specify/extensions/archive/`. Archive Sweep lifecycle defined: autopilot pre-flight, feature-branch applies cleanup, main/protected branches dry-run only, unsafe/dirty worktrees stop. Released `speckit-pro` 1.9.1 with corrected Archive Sweep behavior. Recovery commands use `git show <merge-sha>:specs/<feature>/spec.md` (47/47 tasks complete).
+
+<!-- MANUAL ADDITIONS START -->
+<!-- MANUAL ADDITIONS END -->
