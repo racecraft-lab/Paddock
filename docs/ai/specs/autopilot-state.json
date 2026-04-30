@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T20:09:35Z",
+  "updated_at": "2026-04-30T20:23:56Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -24,6 +24,7 @@
     "Owner clarification on 2026-04-30: every SPEC-004 chain failure or advancement-stall activity must include human-readable text plus stable machine-readable `activities.data.reason_code` metadata for missing output, invalid output, routing rejection, routing timeout, target resolution stalls, and missing successor assignee.",
     "Owner clarification on 2026-04-30: recovery from missing/invalid output uses an explicit operator-only `POST /api/tasks/[id]` action `{ \"action\": \"retry_chain_advancement\" }`; ordinary failed-to-`done` updates must not rerun chain advancement, and recovery provenance must not duplicate full corrected output in `activities.data`.",
     "Owner clarification on 2026-04-30: `retry_chain_advancement` uses current workflow-template rules, but compares failure-time and current template schema/routing/next hashes and returns 409 until the operator sends `confirm_template_drift=true` before retrying across drift.",
+    "Owner clarification on 2026-04-30: `retry_chain_advancement` is the single operator recovery action for both failed output-validation parents and terminal-success advancement stalls; failed parents are eligible only for missing/invalid output, stalled terminal-success parents are retried without changing failure state, recovery provenance records `recovery_class`, and ineligible state/reason pairs return 409 without side effects.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {
