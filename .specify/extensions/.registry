@@ -120,7 +120,7 @@
       "source_ref": "refs/tags/v1.1.0",
       "source_commit": "08ee0e919a72ccb254758a2b6f51d58196490ea7",
       "archive_url": "https://github.com/racecraft-lab/spec-kit-archive/archive/refs/tags/v1.1.0.zip",
-      "release_status": "provisional-branch-tag-pending-main-release",
+      "release_status": "published-main-release",
       "manifest_hash": "sha256:fb4b68b85d69d6ed546965acc6a2a7157e215d894093230574fffc11c20d7893",
       "enabled": true,
       "priority": 10,

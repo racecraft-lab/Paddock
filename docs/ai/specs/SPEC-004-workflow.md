@@ -63,11 +63,11 @@ Before starting any phase, verify alignment with `.specify/memory/constitution.m
 | Spec execution order | `SPEC-001`, `SPEC-002`, `SPEC-002A`, and `SPEC-003` are complete on `main` before this worktree starts | Roadmap and current `origin/main` show prior specs complete |
 | Feature-flag default OFF | `FEATURE_TASK_PIPELINES=false` preserves current task completion behavior | Focused scheduler and task-completion regression tests |
 | Null-default safety | With flag ON but workflow-template chain fields NULL, behavior matches flag OFF | Scheduler tests for unbound tasks and NULL chain fields |
-| Shared task creation | All task creation routes through `src/lib/task-create.ts`; direct `INSERT INTO tasks` outside that helper is forbidden | Unit/integration tests plus ripgrep guardrail over `src/` |
+| Shared task creation | All production task creation routes through `src/lib/task-create.ts`; direct runtime `INSERT INTO tasks` outside that helper is forbidden | Unit/integration tests plus ripgrep guardrail over production source, excluding intentional test fixtures |
 | Safe evaluation | `routing-rule-evaluator.ts` and `output-schema-validator.ts` operate over untrusted agent output without unsafe primitives or unbounded schemas | Adversarial fixtures, safe-regex checks, dependency pin checks, and forbidden-primitive greps |
 | Strict scope ramp | New production modules are limited to `src/lib/task-create.ts`, `src/lib/output-schema-validator.ts`, `src/lib/routing-rule-evaluator.ts`, and `src/types/workflow-template.ts` unless plan evidence justifies more | `tsconfig.spec-strict.json` and `eslint.config.mjs` updated for new modules |
 | Package manager | Use pnpm only | Lockfile is `pnpm-lock.yaml`; use `pnpm` commands |
-| Archive Sweep | Archive discovery runs before Phase 1 and excludes the current target | Archive report records candidates and `safeToApplyCleanup` state |
+| Archive Sweep | Archive discovery runs before Phase 0/prerequisites and excludes the current target | Archive report records candidates and `safeToApplyCleanup` state |
 
 **Constitution Check:** Pending. Verify at Phase 1 start.
 
@@ -108,10 +108,10 @@ Implement RC Factory Phase 3:
 - Add feature-flagged task-chain behavior over the existing `workflow_templates` table.
 - Do not create or reference a `task_templates` SQL table.
 - Extract a shared `createTask()` helper in `src/lib/task-create.ts` and migrate the current direct task INSERT callsites to it.
-- Add server-side output schema validation in `src/lib/output-schema-validator.ts` using direct pinned `ajv`.
-- Add a safe routing-rule evaluator in `src/lib/routing-rule-evaluator.ts` using `jsonpath-plus` for path traversal and a hand-written parser for an allowlisted boolean grammar.
-- Add `advanceTaskChain` behavior that reads structured output from `tasks.resolution`, validates it, evaluates routing rules, falls back to `next_template_slug`, creates a successor task through `createTask()`, or terminates the chain normally.
-- Extend the workflow-template editor in `settings-panel.tsx` to edit `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`.
+- Add server-side output schema validation in `src/lib/output-schema-validator.ts` using direct pinned `ajv` and existing pinned direct `safe-regex`.
+- Add a safe routing-rule evaluator in `src/lib/routing-rule-evaluator.ts` using `jsonpath-plus` with JavaScript execution disabled and a hand-written parser for an allowlisted boolean grammar.
+- Add `advanceTaskChain` behavior at live terminal-success transitions that reads structured output from `tasks.resolution`, validates it, evaluates routing rules, falls back to `next_template_slug`, creates a successor task through `createTask()`, routes deterministic failures to triage with activity evidence, or terminates the chain normally.
+- Extend the live workflow-template editor in `src/components/panels/orchestration-bar.tsx`, plus `/api/workflows` persistence and `createWorkflowSchema`, to edit `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`.
 - Update `docs/orchestration.md` before Phase 3 is considered shipped.
 
 ### Known Reference Surface
@@ -120,9 +120,10 @@ Implement RC Factory Phase 3:
 - `src/app/api/github/route.ts` - GitHub issue ingestion task creation callsite.
 - `src/lib/github-sync-engine.ts` - sync-created task callsite and outbound push semantics.
 - `src/lib/recurring-tasks.ts` - recurring task creation callsite.
-- `src/lib/task-dispatch.ts` - task dispatch, Aegis review, and target location for `advanceTaskChain`.
-- `src/lib/scheduler.ts` - scheduler hooks for task completion and task-chain advancement.
-- `src/components/panels/settings-panel.tsx` - workflow-template editor UI.
+- `src/lib/task-dispatch.ts` - task dispatch, Aegis review, terminal success transition, and target location for `advanceTaskChain`.
+- `src/app/api/quality-review/route.ts` - operator-approved terminal success transition that must trigger chain advancement idempotently.
+- `src/components/panels/orchestration-bar.tsx` - live workflow-template editor UI.
+- `src/app/api/workflows/route.ts` and `src/lib/validation.ts` - workflow-template persistence, operator auth, and request validation.
 - `src/lib/feature-flags.ts` - `resolveFlag()` from SPEC-002.
 - `src/lib/aegis.ts` - global Aegis resolver from SPEC-003, which downstream review loops still use.
 - `docs/orchestration.md` - repository documentation that must describe declarative task chains before ship.
@@ -133,11 +134,11 @@ Implement RC Factory Phase 3:
 - [ ] P3-AC2: With flag ON and all new workflow-template fields NULL, behavior matches flag OFF.
 - [ ] P3-AC3: With a bound workflow template, `output_schema`, and valid `tasks.resolution`, a successor task is created per `routing_rules` or `next_template_slug`.
 - [ ] P3-AC4: With invalid output, the parent task transitions to `failed` and no successor is created.
-- [ ] P3-AC5: Routing evaluator rejects unsafe inputs without exception leaks or successor creation.
+- [ ] P3-AC5: Routing evaluator rejects unsafe inputs without exception leaks or successor creation, rejects JSONPath filters/scripts before `JSONPath()`, and enforces `maxRuleEvalMs=10` triage fallback with activity evidence.
 - [ ] P3-AC6: Successor task inherits workspace/project, resolves assignee via `project_agent_assignments.agent_name`, and populates lineage fields.
-- [ ] P3-AC6a: Successor creation calls `createTask()` exactly once and inherits all expected side effects; direct `INSERT INTO tasks` outside `src/lib/task-create.ts` is gone.
+- [ ] P3-AC6a: Successor creation calls `createTask()` exactly once, source-specific side effects are preserved, and direct runtime `INSERT INTO tasks` outside `src/lib/task-create.ts` is gone from production source.
 - [ ] P3-AC7: Unit tests cover valid routing, invalid output, no-match fallback to static next, and chain termination.
-- [ ] P3-AC8: `ajv` and `jsonpath-plus` are direct pinned dependencies in `package.json` and `pnpm-lock.yaml`.
+- [ ] P3-AC8: `ajv`, `jsonpath-plus`, and `safe-regex` are direct pinned dependencies in `package.json` and `pnpm-lock.yaml`, with `pnpm audit` evidence recorded.
 - [ ] P3-AC9: Validator enforces every numeric bound and forbidden schema feature listed in the roadmap.
 - [ ] P3-AC10: Compiled validators cache per `(template_id, schema_sha256)` with LRU eviction at 256; p95 validation remains within the 50 ms budget over the fixed corpus.
 - [ ] P3-AC11: `docs/orchestration.md` is updated in the SPEC-004 branch before Phase 3 is considered shipped.
@@ -184,16 +185,17 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 - Treat `workflow_templates` as the live table. A task-chain template is a domain alias over `workflow_templates`, not a `task_templates` table.
 - Preserve current task completion behavior with the flag OFF.
 - Preserve current behavior with the flag ON when tasks are unbound or all chain fields are NULL.
-- Add `src/lib/task-create.ts` exporting a shared `createTask()` helper that performs the existing task creation side effects: INSERT, ticket-counter allocation, activity row, creator subscription, mention/assignee notifications, GitHub push when enabled, and GNAP push when configured.
+- Add `src/lib/task-create.ts` exporting a shared `createTask()` helper that performs the existing task creation side effects: INSERT, ticket-counter allocation, activity row, creator subscription, mention/assignee notifications, GitHub push when enabled, and GNAP push when configured. The helper contract must preserve source-specific semantics for API creation, GitHub issue import, GitHub sync import, recurring tasks, and pipeline successors.
 - Migrate direct task INSERT callsites in `src/app/api/tasks/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/recurring-tasks.ts` to `createTask()`.
 - Add `src/lib/output-schema-validator.ts` using direct pinned `ajv`; enforce the constrained Mission Control schema profile and every numeric bound from the roadmap.
-- Add `src/lib/routing-rule-evaluator.ts` using `jsonpath-plus` with safe evaluation disabled/enforced safe mode and a hand-written parser for the allowlisted grammar.
-- Add `advanceTaskChain` behavior that reads structured output from `tasks.resolution`, validates against `workflow_template.output_schema`, evaluates ordered `routing_rules`, falls back to `next_template_slug`, and terminates normally if neither route resolves.
+- Add `src/lib/routing-rule-evaluator.ts` using `jsonpath-plus` with JavaScript execution disabled (`eval: false`, or `preventEval: true` on older supported APIs) and a hand-written parser for the allowlisted grammar. Reject JSONPath filters/script expressions before calling `JSONPath()`.
+- Add `advanceTaskChain` behavior at live terminal-success transitions that reads structured output from `tasks.resolution`, validates against `workflow_template.output_schema`, evaluates ordered `routing_rules`, falls back to `next_template_slug`, and terminates normally if neither route resolves.
 - Invalid structured output transitions the parent task to `failed`, records an activity, and creates no successor.
-- Successor creation inherits `workspace_id` and `project_id`, resolves `assigned_to` via `project_agent_assignments.agent_name` and template role, sets `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`, and calls `createTask()` exactly once.
-- Extend `settings-panel.tsx` workflow-template editor for task-chain fields: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`.
+- Routing-rule budget overruns (`maxRuleEvalMs=10`) and missing/disabled/cross-workspace target slugs route to triage, record an activity, and create no automated successor.
+- Successor creation inherits `workspace_id` and `project_id`, resolves `assigned_to` via `project_agent_assignments.agent_name` and `workflow_template.agent_role`, sets `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`, and calls `createTask()` exactly once.
+- Extend `src/components/panels/orchestration-bar.tsx`, `src/app/api/workflows/route.ts`, and `createWorkflowSchema` in `src/lib/validation.ts` for task-chain fields: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`; preserve existing operator-only write authorization for create/update/delete.
 - Add `src/types/workflow-template.ts` for typed workflow-template chain metadata.
-- Add direct pinned dependencies for `ajv` and `jsonpath-plus` in `package.json` and `pnpm-lock.yaml`.
+- Add direct pinned dependencies for `ajv` and `jsonpath-plus` in `package.json` and `pnpm-lock.yaml`, keep `safe-regex` as a pinned direct dependency, and record `pnpm audit` evidence.
 - Update `docs/orchestration.md` with feature-flagged declarative task-chain behavior and current lifecycle terminology before marking Phase 3 shipped.
 
 ### Constraints
@@ -261,8 +263,8 @@ Focus on SPEC-004 task creation parity:
 - Confirm `createTask()` owns INSERT, ticket-counter allocation, activity logging, creator subscription, mention/assignee notifications, GitHub push when `github_sync_enabled` and `github_repo` are set, and GNAP push when configured.
 - Confirm the four direct INSERT callsites to migrate: `src/app/api/tasks/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/recurring-tasks.ts`.
 - Confirm successor creation calls `createTask()` exactly once and does not inline side effects.
-- Define the `createTask()` input/output contract needed by API routes, GitHub ingestion, recurring tasks, and `advanceTaskChain`.
-- Confirm the ripgrep guardrail: zero `INSERT INTO tasks` outside `src/lib/task-create.ts` after implementation.
+- Define the `createTask()` input/output contract needed by API routes, GitHub issue import, GitHub sync import, recurring tasks, and `advanceTaskChain`; record a callsite behavior matrix so existing broadcast, notification, subscription, ticket-counter, and outbound-sync semantics do not drift.
+- Confirm the ripgrep guardrail: zero runtime `INSERT INTO tasks` in production source outside `src/lib/task-create.ts` after implementation, with intentional test fixtures excluded or migrated deliberately.
 ```
 
 #### Session 2: Safe Output Validation and Routing Evaluation
@@ -271,11 +273,12 @@ Focus on SPEC-004 task creation parity:
 $speckit-clarify
 
 Focus on SPEC-004 untrusted-output safety:
-- Confirm `ajv` and `jsonpath-plus` are direct pinned dependencies, not transitive imports.
+- Confirm `ajv`, `jsonpath-plus`, and `safe-regex` are direct pinned dependencies, not transitive imports, and that `pnpm audit` evidence is required before merge.
 - Encode every output-schema validator numeric bound: output 262144 bytes, schema 65536 bytes, depth 16, keys 256, array length 1024, string length 32768, pattern length 256, validation budget 50 ms, validator cache 256 entries.
 - Confirm forbidden schema features: remote `$ref`, `$dynamicRef`, `$dynamicAnchor`, custom keywords, async schemas, format enforcement, and patterns rejected by `safe-regex`.
-- Confirm routing grammar: `==`, `!=`, `in`, `not in`, `&&`, `||`, `!`; JSONPath-Plus safe traversal; literal string/number/boolean/array right sides.
-- Confirm forbidden routing primitives and fixtures: `__proto__`, `constructor`, `Function`, global code-evaluation primitive, arithmetic, bitwise operators, right-side regex, malformed JSONPath, and oversized literal strings.
+- Confirm routing grammar: `==`, `!=`, `in`, `not in`, `&&`, `||`, `!`; JSONPath-Plus traversal with JavaScript execution disabled (`eval: false`, or `preventEval: true` on older supported APIs); literal string/number/boolean/array right sides.
+- Confirm forbidden routing primitives and fixtures: `__proto__`, `constructor`, `Function`, global code-evaluation primitive, JSONPath filters/scripts rejected before `JSONPath()`, arithmetic, bitwise operators, right-side regex, malformed JSONPath, and oversized literal strings.
+- Confirm `maxRuleEvalMs=10` timeout behavior: over-budget rule evaluation routes to triage, records an activity, and creates no automated successor.
 ```
 
 #### Session 3: Scheduler Integration, Template UI, and Downstream Boundaries
@@ -286,10 +289,12 @@ $speckit-clarify
 Focus on SPEC-004 runtime integration:
 - Confirm `FEATURE_TASK_PIPELINES=false` and flag ON with NULL chain fields preserve current completion behavior.
 - Confirm `advanceTaskChain` reads structured output from `tasks.resolution` only as the Phase 3 bridge; SPEC-007 later owns canonical artifact handoff.
+- Confirm `advanceTaskChain` hooks only at live terminal-success transitions: Aegis approval in `runAegisReviews` and operator approval in `POST /api/quality-review`; duplicate successor creation is idempotently prevented.
 - Confirm invalid output transitions parent task to `failed`, records activity, and creates no successor.
+- Confirm missing, disabled, duplicate, or cross-workspace routing target slugs fail deterministically with structured error/activity evidence and no automated successor.
 - Confirm successor lineage fields: `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`.
-- Confirm assignee resolution uses `project_agent_assignments.agent_name`, not an imagined `agent_id`.
-- Confirm `settings-panel.tsx` template editor fields and operator-only template ownership.
+- Confirm assignee resolution uses `project_agent_assignments.agent_name` and `workflow_template.agent_role`, not imagined `agent_id` fields.
+- Confirm live template editor fields in `src/components/panels/orchestration-bar.tsx`, `/api/workflows` persistence, `createWorkflowSchema`, and operator-only template ownership.
 - Confirm downstream out-of-scope boundaries: no `ready_for_owner`, area labels, dispositions/artifacts, governance enforcement, pilot seed behavior, or CrabTrap.
 - Confirm `docs/orchestration.md` must be updated before Phase 3 ships.
 ```
@@ -319,14 +324,14 @@ $speckit-plan
 - State/UI: Zustand and existing React/Tailwind component patterns
 - Database: SQLite via `better-sqlite3`; SPEC-001 added task-chain columns and lineage fields
 - Feature flags: `resolveFlag()` in `src/lib/feature-flags.ts`
-- Scheduler/dispatch: `src/lib/scheduler.ts` and `src/lib/task-dispatch.ts`
+- Scheduler/dispatch: `src/lib/task-dispatch.ts` and `src/app/api/quality-review/route.ts` terminal-success paths; inspect `src/lib/scheduler.ts` only if plan evidence proves it is part of completion flow
 - Tests: Vitest, Playwright, TypeScript typecheck, ESLint
 - Package manager: pnpm
 
 ## Constraints
 
 - Strict Scope: new production modules are `src/lib/task-create.ts`, `src/lib/output-schema-validator.ts`, `src/lib/routing-rule-evaluator.ts`, and `src/types/workflow-template.ts`.
-- Existing-file edits are expected in task creation routes, sync/recurring task creation, task dispatch/scheduler hooks, `settings-panel.tsx`, strict-scope config, package manifests, tests, and `docs/orchestration.md`.
+- Existing-file edits are expected in task creation routes, sync/recurring task creation, task dispatch/manual review hooks, `orchestration-bar.tsx`, `/api/workflows`, `validation.ts`, strict-scope config, package manifests, tests, and `docs/orchestration.md`.
 - Preserve flag-off behavior and null-default safety.
 - Do not add new schema unless live schema verification proves SPEC-001 fields are absent; if absent, stop and report the dependency mismatch.
 - Do not introduce `task_templates`.
@@ -339,15 +344,16 @@ $speckit-plan
 - Parent output is read from `tasks.resolution` in SPEC-004 only as the temporary bridge before SPEC-007 artifact publishing.
 - Successor task creation must be structurally side-effect-equivalent by calling `createTask()`.
 - Routing evaluation and schema validation run on untrusted agent output and must be safe-by-construction.
+- Workflow-template task-chain fields are edited through the live Workflows UI in `orchestration-bar.tsx` and persisted by `/api/workflows` with `createWorkflowSchema`.
 - `docs/orchestration.md` must describe both existing manual follow-up task patterns and the new feature-flagged declarative chain path.
 
 ## Verification Strategy
 
 - Add focused Vitest tests for `createTask()` side effects and each migrated callsite.
-- Add task-chain scheduler tests for flag OFF, flag ON with NULL fields, valid routing, invalid output failure, fallback to `next_template_slug`, chain termination, successor lineage, and assignee resolution.
-- Add adversarial evaluator tests and validator bound tests.
-- Add dependency pin and lockfile checks for `ajv` and `jsonpath-plus`.
-- Add UI tests or component-level coverage for workflow-template editor fields where current patterns support it.
+- Add task-chain terminal-success tests for flag OFF, flag ON with NULL fields, valid routing, invalid output failure, fallback to `next_template_slug`, missing/disabled target slug triage, timeout triage, chain termination, duplicate-prevention, successor lineage, and assignee resolution.
+- Add adversarial evaluator tests and validator bound tests, including JSONPath filter/script rejection before `JSONPath()`.
+- Add dependency pin, lockfile, and audit checks for `ajv`, `jsonpath-plus`, and `safe-regex`.
+- Add route/UI tests or component-level coverage for workflow-template editor fields and operator-only write preservation where current patterns support it.
 - Run `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`, focused Playwright or e2e checks for affected UI flows, and static guardrails.
 ```
 
@@ -376,9 +382,9 @@ Focus on SPEC-004 requirements:
 - `workflow_templates`, not `task_templates`, is the live task-chain template surface.
 - Existing SPEC-001 chain columns and task lineage fields are verified before use.
 - Successor lineage fields are populated consistently: `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, and `chain_stage`.
-- Assignee resolution uses `project_agent_assignments.agent_name`, not an imagined `agent_id`.
+- Assignee resolution uses `project_agent_assignments.agent_name` and `workflow_template.agent_role`, not imagined `agent_id` fields.
 - Invalid output fails deterministically and does not create a successor.
-- Pay special attention to null-default behavior, missing template slug, no-match termination, and idempotent activity/state-transition records.
+- Pay special attention to null-default behavior, duplicate/missing template slug validation, missing/disabled/cross-workspace routing targets, no-match termination, and idempotent activity/state-transition records.
 ```
 
 ### 2. Safe Evaluation Checklist
@@ -388,10 +394,11 @@ $speckit-checklist safe-evaluation
 
 Focus on SPEC-004 evaluator and validator safety:
 - Output-schema validation enforces every numeric bound and forbidden schema feature.
-- Routing expressions use only the allowlisted grammar and safe JSONPath traversal.
+- Routing expressions use only the allowlisted grammar and JSONPath traversal with JavaScript execution disabled.
+- JSONPath filters/script expressions are rejected before `JSONPath()` runs.
 - No unsafe primitives appear in implementation: `eval`, `Function`, `vm`, `vm2`, `with`, dynamic `require`, prototype-chain access, arithmetic, bitwise operators, or right-side regex.
 - `safe-regex` rejects unsafe patterns before validators are accepted.
-- Test fixtures cover malicious, malformed, oversized, and valid cases without exception leaks.
+- Test fixtures cover malicious, malformed, oversized, timeout-budget, and valid cases without exception leaks.
 ```
 
 ### 3. Scheduler Safety Checklist
@@ -402,7 +409,8 @@ $speckit-checklist scheduler-safety
 Focus on SPEC-004 scheduler behavior:
 - Flag OFF preserves current task completion, sync, notification, subscription, and activity behavior.
 - Flag ON with NULL chain fields preserves current behavior.
-- `advanceTaskChain` runs only at the intended completion point and cannot create duplicate successors.
+- `advanceTaskChain` runs only at live terminal-success transition points (`runAegisReviews` and operator `POST /api/quality-review`) and cannot create duplicate successors.
+- Routing evaluator budget overruns route to triage with an `activities` row and no automated successor.
 - Successor creation calls `createTask()` exactly once.
 - Scheduler behavior does not implement SPEC-005 `ready_for_owner`, SPEC-007 dispositions/artifacts, SPEC-008 governance, or SPEC-009 pilot behavior.
 ```
@@ -414,8 +422,8 @@ $speckit-checklist regression-safety
 
 Focus on SPEC-004 regression and dependency discipline:
 - Existing task creation callsites keep their current API, GitHub, recurring, and sync semantics after moving to `createTask()`.
-- Direct `INSERT INTO tasks` is gone outside `src/lib/task-create.ts`.
-- `ajv` and `jsonpath-plus` are direct pinned dependencies in both `package.json` and `pnpm-lock.yaml`.
+- Direct runtime `INSERT INTO tasks` is gone from production source outside `src/lib/task-create.ts`; intentional test fixtures are excluded or migrated deliberately.
+- `ajv`, `jsonpath-plus`, and `safe-regex` are direct pinned dependencies in both `package.json` and `pnpm-lock.yaml`; `pnpm audit` evidence is recorded.
 - Strict-scope config includes new production modules.
 - `docs/orchestration.md` is updated before ship.
 - No downstream behavior is introduced for `ready_for_owner`, area labels, artifact publishing, governance enforcement, pilot seeding, or CrabTrap.
@@ -451,12 +459,12 @@ $speckit-tasks
 - Use TDD where feasible: write focused Vitest, route, scheduler, validator, evaluator, and UI tests before implementation.
 - Order tasks by dependency:
   1. Archive Sweep evidence, dependency verification, baseline direct INSERT/reference discovery.
-  2. `createTask()` contract tests and helper extraction.
+  2. `createTask()` contract tests, callsite behavior matrix, and helper extraction.
   3. Migration of API, GitHub, sync, and recurring task creation callsites.
   4. `output-schema-validator.ts` tests and implementation with `ajv`.
-  5. `routing-rule-evaluator.ts` adversarial tests and implementation with `jsonpath-plus`.
-  6. `workflow-template` types and editor UI changes.
-  7. `advanceTaskChain` scheduler/dispatch tests and implementation.
+  5. `routing-rule-evaluator.ts` adversarial, timeout, and JSONPath no-script tests and implementation with `jsonpath-plus`.
+  6. `workflow-template` types, `/api/workflows` validation/persistence, and editor UI changes.
+  7. `advanceTaskChain` terminal-success transition tests and implementation.
   8. Documentation update in `docs/orchestration.md`.
   9. Strict-scope config, dependency pin checks, guardrail greps, and final verification.
 - Mark parallel-safe tasks with [P] only when they do not touch the same file or contract.
@@ -464,22 +472,22 @@ $speckit-tasks
 ## Required Task Coverage
 
 - P3-AC1 and P3-AC2 require explicit flag-off and flag-on-null regression tests.
-- P3-AC3 and P3-AC7 require valid routing, fallback, and termination tests.
+- P3-AC3 and P3-AC7 require valid routing, fallback, missing/disabled target slug triage, and termination tests.
 - P3-AC4 requires invalid output failure tests with no successor.
-- P3-AC5 and P3-AC9 require adversarial fixtures and bound fixtures.
+- P3-AC5 and P3-AC9 require adversarial fixtures, bound fixtures, JSONPath filter/script rejection, and routing timeout-budget fixtures.
 - P3-AC6 requires inheritance, assignee resolution, and lineage assertions.
-- P3-AC6a requires `createTask()` call-count/side-effect assertions and direct INSERT grep.
-- P3-AC8 requires package and lockfile direct dependency checks.
+- P3-AC6a requires `createTask()` call-count/side-effect assertions, source-specific callsite behavior assertions, duplicate-successor prevention, and production-source direct INSERT grep.
+- P3-AC8 requires package and lockfile direct dependency checks for `ajv`, `jsonpath-plus`, and `safe-regex`, plus `pnpm audit` evidence.
 - P3-AC10 requires validator cache and p95 budget tests over a fixed corpus.
 - P3-AC11 requires `docs/orchestration.md` update and branch commit evidence.
 
 ## File Layout Constraints
 
 - Primary new files: `src/lib/task-create.ts`, `src/lib/output-schema-validator.ts`, `src/lib/routing-rule-evaluator.ts`, `src/types/workflow-template.ts`.
-- Expected source edits: `src/app/api/tasks/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, `src/lib/recurring-tasks.ts`, `src/lib/task-dispatch.ts`, `src/lib/scheduler.ts`, `src/components/panels/settings-panel.tsx`.
+- Expected source edits: `src/app/api/tasks/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, `src/lib/recurring-tasks.ts`, `src/lib/task-dispatch.ts`, `src/app/api/quality-review/route.ts`, `src/components/panels/orchestration-bar.tsx`, `src/app/api/workflows/route.ts`, `src/lib/validation.ts`.
 - Expected config edits: `package.json`, `pnpm-lock.yaml`, `tsconfig.spec-strict.json`, `eslint.config.mjs`.
 - Expected docs edit: `docs/orchestration.md`.
-- Expected fixtures: `src/lib/__tests__/fixtures/routing/` and `src/lib/__tests__/fixtures/schema-corpus/` if not already present.
+- Expected fixtures: create or use `src/lib/__tests__/fixtures/routing/` and `src/lib/__tests__/fixtures/schema-corpus/`; keep fixture direct INSERTs out of the production guardrail or migrate them deliberately when they test runtime behavior.
 - Avoid unrelated cleanup and do not touch implementation surfaces outside SPEC-004 unless a failing test proves it is required.
 ```
 
@@ -506,11 +514,11 @@ $speckit-analyze
 Focus on:
 1. Constitution alignment: feature-flag default OFF, additive behavior, TDD, strict-scope ramp, shared task creation, and safe evaluation.
 2. Acceptance coverage: P3-AC1 through P3-AC11 each have implementation or verification tasks.
-3. Task creation consistency: every task creation callsite moves through `createTask()` with side effects preserved and no direct INSERT bypasses.
+3. Task creation consistency: every production task creation callsite moves through `createTask()` with source-specific side effects preserved and no runtime direct INSERT bypasses.
 4. Validator consistency: every numeric bound and forbidden schema feature has a test and implementation task.
-5. Evaluator consistency: allowlisted grammar and forbidden primitive checks are explicit in tasks and tests.
-6. Scheduler consistency: flag-off, flag-on-null, valid route, invalid output, fallback, termination, duplicate-prevention, and lineage behaviors are covered.
-7. Dependency discipline: `ajv`, `jsonpath-plus`, and `safe-regex` handling are pinned, direct, audited, and tested.
+5. Evaluator consistency: allowlisted grammar, JSONPath no-script configuration/rejection, `maxRuleEvalMs=10`, and forbidden primitive checks are explicit in tasks and tests.
+6. Scheduler consistency: flag-off, flag-on-null, valid route, invalid output, fallback, missing-target triage, timeout triage, termination, duplicate-prevention, and lineage behaviors are covered at live terminal-success transitions.
+7. Dependency discipline: `ajv`, `jsonpath-plus`, and `safe-regex` handling are pinned, direct, audited with `pnpm audit`, and tested.
 8. Documentation discipline: `docs/orchestration.md` is a required shipping artifact.
 9. File-path truthfulness: tasks use the live paths from this worktree and do not invent `task_templates` or `project_agent_assignments.agent_id`.
 10. Downstream boundaries: generated tasks must not implement SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, or SPEC-011 behavior.
@@ -557,15 +565,17 @@ For each task, follow this cycle:
 1. Verify branch: `git rev-parse --abbrev-ref HEAD` must return `004-task-pipeline-engine`.
 2. Verify package manager: lockfile is `pnpm-lock.yaml`; use pnpm only.
 3. Verify SPEC-001, SPEC-002, SPEC-002A, and SPEC-003 are complete in the roadmap and present in this branch.
-4. Run Archive Sweep startup per SPEC-002A policy before normal phases.
+4. Run Archive Sweep startup per SPEC-002A policy before Phase 0/prerequisites.
 5. Inspect current task creation and scheduler reference paths:
    - `src/app/api/tasks/route.ts`
    - `src/app/api/github/route.ts`
    - `src/lib/github-sync-engine.ts`
    - `src/lib/recurring-tasks.ts`
    - `src/lib/task-dispatch.ts`
-   - `src/lib/scheduler.ts`
-   - `src/components/panels/settings-panel.tsx`
+   - `src/app/api/quality-review/route.ts`
+   - `src/components/panels/orchestration-bar.tsx`
+   - `src/app/api/workflows/route.ts`
+   - `src/lib/validation.ts`
    - `docs/orchestration.md`
 6. Capture baseline tests before enabling new behavior.
 
@@ -576,14 +586,17 @@ For each task, follow this cycle:
 - Keep tasks without workflow-template binding, or templates with NULL chain fields, on the legacy path.
 - Treat `tasks.resolution` as the temporary structured-output source only for SPEC-004.
 - Use `workflow_templates`, not `task_templates`.
-- Use `project_agent_assignments.agent_name` for assignee resolution.
+- Use `project_agent_assignments.agent_name` and `workflow_template.agent_role` for assignee resolution.
 - Invalid output fails the parent task and creates no successor.
+- Routing timeout or unresolved target slug routes to triage with activity evidence and creates no automated successor.
+- Hook `advanceTaskChain` at live terminal-success transitions and guard against duplicate successors.
 - Successor creation must call `createTask()` exactly once.
 - Do not add downstream state machine, artifact, governance, area-label, pilot, or CrabTrap behavior.
 
 ### Verification Commands
 
 - `pnpm install` if dependency changes require lockfile updates.
+- `pnpm audit`
 - `pnpm typecheck`
 - `pnpm lint`
 - `pnpm test`
@@ -594,9 +607,9 @@ For each task, follow this cycle:
 - Grep checks:
   - no inline runtime `process.env.FEATURE_TASK_PIPELINES` reads outside `src/lib/feature-flags.ts`
   - no `task_templates` SQL/table references
-  - no `INSERT INTO tasks` outside `src/lib/task-create.ts`
+  - no runtime `INSERT INTO tasks` in production source outside `src/lib/task-create.ts` (exclude `src/**/__tests__/**` and fixture-only files, or migrate them deliberately)
   - no `quality_reviews.agent_id` or `project_agent_assignments.agent_id` assumptions
-  - no unsafe evaluator primitives: `eval`, `Function`, `vm`, `vm2`, `with`, dynamic `require`, prototype-chain access, arithmetic/bitwise routing operators, or right-side regex behavior
+  - no unsafe evaluator primitives: `eval`, `Function`, `vm`, `vm2`, `with`, dynamic `require`, prototype-chain access, JSONPath filters/scripts, arithmetic/bitwise routing operators, or right-side regex behavior
   - no downstream drift into `ready_for_owner`, `FEATURE_AREA_LABEL_ROUTING`, artifact publishing, resource governance, pilot seed behavior, or CrabTrap implementation
 ```
 
@@ -619,12 +632,14 @@ For each task, follow this cycle:
 - [ ] All generated tasks are marked complete in `specs/004-task-pipeline-engine/tasks.md`.
 - [ ] Acceptance evidence exists for P3-AC1 through P3-AC11.
 - [ ] `src/lib/task-create.ts` exists and owns all task creation side effects.
-- [ ] Direct `INSERT INTO tasks` is gone outside `src/lib/task-create.ts`.
+- [ ] Source-specific API, GitHub import, GitHub sync import, recurring, and pipeline-successor behavior is preserved through `createTask()`.
+- [ ] Direct runtime `INSERT INTO tasks` is gone from production source outside `src/lib/task-create.ts`; any test fixture inserts are deliberately excluded or migrated.
 - [ ] `src/lib/output-schema-validator.ts` enforces every roadmap numeric bound and forbidden schema feature.
-- [ ] `src/lib/routing-rule-evaluator.ts` uses safe JSONPath traversal and a hand-written allowlisted grammar.
-- [ ] `advanceTaskChain` implements valid routing, invalid-output failure, fallback, termination, successor creation, and lineage behavior.
-- [ ] `settings-panel.tsx` exposes the workflow-template chain fields required by the roadmap.
-- [ ] `ajv` and `jsonpath-plus` are direct pinned dependencies in `package.json` and `pnpm-lock.yaml`.
+- [ ] `src/lib/routing-rule-evaluator.ts` uses JSONPath traversal with JavaScript execution disabled, rejects JSONPath filters/scripts before `JSONPath()`, enforces `maxRuleEvalMs=10`, and uses a hand-written allowlisted grammar.
+- [ ] `advanceTaskChain` implements valid routing, invalid-output failure, fallback, timeout/unresolved-target triage, termination, duplicate-prevention, successor creation, and lineage behavior at live terminal-success transitions.
+- [ ] `orchestration-bar.tsx`, `/api/workflows`, and `createWorkflowSchema` expose and persist the workflow-template chain fields required by the roadmap while preserving operator-only writes.
+- [ ] `ajv`, `jsonpath-plus`, and `safe-regex` are direct pinned dependencies in `package.json` and `pnpm-lock.yaml`.
+- [ ] `pnpm audit` passes or any environment failure is documented with evidence.
 - [ ] `tsconfig.spec-strict.json` and `eslint.config.mjs` include new production modules.
 - [ ] `docs/orchestration.md` describes declarative task chains and current lifecycle/status terminology.
 - [ ] Prohibited-drift grep checks pass.
@@ -663,13 +678,15 @@ racecraft-mission-control/
 |-- src/lib/output-schema-validator.ts      # New constrained JSON Schema validator
 |-- src/lib/routing-rule-evaluator.ts       # New safe routing expression evaluator
 |-- src/types/workflow-template.ts          # New workflow-template chain metadata types
-|-- src/lib/task-dispatch.ts                # `advanceTaskChain` integration
-|-- src/lib/scheduler.ts                    # Scheduler hook integration
+|-- src/lib/task-dispatch.ts                # Aegis approval `advanceTaskChain` integration
+|-- src/app/api/quality-review/route.ts     # Operator approval `advanceTaskChain` integration
 |-- src/app/api/tasks/route.ts              # Existing task creation callsite
 |-- src/app/api/github/route.ts             # Existing GitHub ingestion callsite
 |-- src/lib/github-sync-engine.ts           # Existing sync callsite
 |-- src/lib/recurring-tasks.ts              # Existing recurring task callsite
-|-- src/components/panels/settings-panel.tsx
+|-- src/components/panels/orchestration-bar.tsx
+|-- src/app/api/workflows/route.ts
+|-- src/lib/validation.ts
 |-- docs/orchestration.md
 |-- docs/rc-factory-v1-prd.md
 |-- docs/ai/rc-factory-technical-roadmap.md
