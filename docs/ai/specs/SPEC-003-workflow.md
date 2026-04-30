@@ -616,6 +616,8 @@ For each task, follow this cycle:
 
 **PR Creation:** PR #20 opened on 2026-04-28T21:43:56Z: <https://github.com/racecraft-lab/mission-control/pull/20>.
 
+**PR Merge:** PR #20 merged to `main` on 2026-04-30 as `85d102f`.
+
 **Post-Extension Gates:** Installed verify/review/cleanup/retrospective command definitions were re-run as local gate procedures on 2026-04-28T22:10:54Z because this Codex runtime does not expose a slash-command invoker. Evidence is recorded in `specs/003-global-aegis/post-implementation-gates.md` and `specs/003-global-aegis/retrospective.md`.
 
 **Review Remediation:** Immediate GitHub review-thread query for PR #20 returned zero review threads. The autopilot `/loop` remediation scheduler is not available in this Codex runtime or in `.claude/commands`, so no recurring monitor could be scheduled from this session. This remains an external runtime capability gap, not a repository implementation gap.
@@ -698,6 +700,6 @@ racecraft-mission-control/
 
 ## Setup Notes
 
-- This workflow is committed on branch `003-global-aegis`.
-- Run `$speckit-autopilot docs/ai/specs/SPEC-003-workflow.md` from the worktree root.
-- Do not run autopilot from `main`.
+- This workflow was committed on branch `003-global-aegis` and merged to `main` via PR #20.
+- This workflow is retained as completed SPEC-003 evidence; do not rerun SPEC-003 autopilot from `main`.
+- Set up the next dependency-chain spec from a fresh workflow, starting with `$speckit-setup SPEC-004`.

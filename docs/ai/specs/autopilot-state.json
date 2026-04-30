@@ -1,12 +1,12 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-003-workflow.md",
-  "updated_at": "2026-04-28T22:51:33Z",
+  "updated_at": "2026-04-30T15:27:29Z",
   "active_step": "Done",
   "status": "Complete",
   "notes": [
     "SPEC-003 setup completed on branch 003-global-aegis from origin/main e161a70.",
     "Workflow file docs/ai/specs/SPEC-003-workflow.md was generated for Aegis Facility Singleton Refactor and is ready for autopilot.",
-    "Roadmap copy in this branch marks SPEC-003 In Progress per SpecKit-Pro status policy.",
+    "Roadmap and PRD status synced to Complete after PR #20 merged to main as 85d102f on 2026-04-30.",
     "Archive Sweep is now a speckit-pro:autopilot startup step. It runs before Phase 0 for the requested spec, excludes the current target spec, and keeps cleanup dry-run-only or stopped unless a clean safe base branch records safeToApplyCleanup=true.",
     "No active specs/** cleanup was applied by SPEC-002A. Completed spec folders may be removed only by a reviewed forward change after archive success, merge/tree references, recovery commands, and safeToApplyCleanup=true are recorded.",
     "SPEC-003 autopilot should start with Archive Sweep and treat SPEC-001, SPEC-002, and SPEC-002A as previously merged candidates.",
@@ -32,7 +32,8 @@
     "Retrospective completed on 2026-04-28T21:43:56Z with lessons recorded in docs/ai/specs/SPEC-003-workflow.md.",
     "Deviation remediation completed on 2026-04-28T22:10:54Z: P2 success criteria checkboxes were marked complete, full pnpm test:e2e passed 533 tests, post-extension gate evidence was recorded in specs/003-global-aegis/post-implementation-gates.md, and specs/003-global-aegis/retrospective.md was generated. Resolver coverage is in src/lib/__tests__/aegis.test.ts (9 unit tests).",
     "External runtime blocker remains: the /loop review-remediation scheduler is not available in this Codex runtime or .claude/commands, so recurring 5-minute review monitoring could not be scheduled from this session.",
-    "PR #20 Argos fixture remediation completed on 2026-04-28T22:51:33Z: inherited SPEC-002 Playwright visual fixtures now use deterministic visible workspace/project/agent/task data, fixed task timestamps, frozen browser clocks for every screenshot page, and targeted reset helpers. Verification passed pnpm test:e2e:spec-002, pnpm test:e2e:argos-metadata, pnpm test:visual:storybook, pnpm test:visual:argos-metadata, pnpm typecheck, and pnpm lint with 10 pre-existing warnings."
+    "PR #20 Argos fixture remediation completed on 2026-04-28T22:51:33Z: inherited SPEC-002 Playwright visual fixtures now use deterministic visible workspace/project/agent/task data, fixed task timestamps, frozen browser clocks for every screenshot page, and targeted reset helpers. Verification passed pnpm test:e2e:spec-002, pnpm test:e2e:argos-metadata, pnpm test:visual:storybook, pnpm test:visual:argos-metadata, pnpm typecheck, and pnpm lint with 10 pre-existing warnings.",
+    "Post-merge status hygiene completed on 2026-04-30T15:27:29Z after pulling main to 85d102f: SPEC-003 roadmap/PRD status now reflects PR #20 merged, and the next autopilot Archive Sweep candidate set includes SPEC-003."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -50,7 +51,8 @@
     "next_autopilot_previous_spec_candidates": [
       "SPEC-001",
       "SPEC-002",
-      "SPEC-002A"
+      "SPEC-002A",
+      "SPEC-003"
     ],
     "safeToApplyCleanup": false,
     "last_recorded_dry_run_at": "2026-04-28T19:27:45Z",
