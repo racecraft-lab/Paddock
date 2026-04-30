@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T16:09:02Z",
+  "updated_at": "2026-04-30T16:41:13Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -8,7 +8,9 @@
     "Workflow file docs/ai/specs/SPEC-004-workflow.md was generated for Task Pipeline Engine and Declarative Routing and is ready for autopilot review.",
     "The branch 004-task-pipeline-engine was created in .worktrees/004-task-pipeline-engine and pushed to origin.",
     "Archive Sweep must run at autopilot startup before Phase 0/prerequisites, treating SPEC-001, SPEC-002, SPEC-002A, and SPEC-003 as previously merged candidates and excluding SPEC-004.",
-    "Adversarial peer-review remediation updated the workflow/state ledger to include mandatory consensus checkpoints, exact live implementation paths, safe-evaluation gates, and dependency audit gates.",
+    "Round 1 adversarial peer-review remediation updated the workflow/state ledger to include mandatory consensus checkpoints, exact live implementation paths, safe-evaluation gates, and dependency audit gates.",
+    "Round 2 adversarial peer-review remediation tightened SPEC-004 terminal-success coverage, runtime dependency pins, AJV safety profile, routing pre-validation caps, combined latency acceptance, workflow-template PUT/delete coverage, and mandatory real Playwright UI acceptance.",
+    "Round 2 dependency validation added exact direct runtime pins for ajv@8.18.0, jsonpath-plus@10.4.0, and safe-regex@2.1.1. `pnpm audit --audit-level high` currently reports pre-existing high advisories outside the SPEC-004 dependency additions and must be resolved before P3-AC8 can pass.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {
