@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T22:32:34Z",
+  "updated_at": "2026-04-30T22:39:53Z",
   "active_step": "Setup complete",
   "status": "Ready for Autopilot",
   "notes": [
@@ -28,6 +28,7 @@
     "Owner clarification on 2026-04-30: SPEC-004 does not enforce a hard retry-attempt cap for `retry_chain_advancement`; repeated eligible retries remain allowed with monotonic `retry_attempt` audit evidence, and tests must prove repeated invalid/stalled retries do not create successors or corrupt state.",
     "Owner clarification on 2026-04-30: `retry_chain_advancement` always anchors to the latest eligible SPEC-004 failure/stall activity for the parent task; the API accepts no `activity_id` override, older failure/stall activities are never replayed, and ineligible latest state/reason pairs return 409 without side effects.",
     "Owner clarification on 2026-04-30: `retry_attempt` is one monotonic per-parent counter shared across all `retry_chain_advancement` recovery classes and reason codes, not separate per class, reason, or timestamp-only ordering.",
+    "Owner clarification on 2026-04-30: if the selected latest retry-eligible failure/stall activity is missing any required template hash provenance, `retry_chain_advancement` fails closed with 409, no state/activity/successor side effects, and no `confirm_template_drift` bypass until provenance is manually remediated.",
     "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
   ],
   "archive_sweep": {
