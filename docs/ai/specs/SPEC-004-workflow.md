@@ -31,7 +31,7 @@ Do not start downstream specs from this worktree. SPEC-004 stops after the featu
 | Clarify | `$speckit-clarify` | Pending | Resolve task creation parity, safe evaluation, scheduler, and downstream boundaries |
 | Plan | `$speckit-plan` | Pending | Generate plan, research, data model, contracts, and quickstart |
 | Checklist | `$speckit-checklist` | Pending | Run data-integrity, safe-evaluation, scheduler-safety, and regression-safety domains |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered tasks covering P3-AC1 through P3-AC12 |
+| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered tasks covering P3-AC1 through P3-AC12 plus P3-AC6b |
 | Analyze | `$speckit-analyze` | Pending | Confirm no CRITICAL/HIGH issues before implementation |
 | Implement | `$speckit-implement` | Pending | Execute TDD implementation with full verification and guardrails |
 
@@ -46,7 +46,7 @@ Do not start downstream specs from this worktree. SPEC-004 stops after the featu
 | G2 | After Clarify | Ambiguities in createTask side effects, validation bounds, safe evaluator grammar, scheduler hook, UI edits, and downstream boundaries are resolved |
 | G3 | After Plan | Constitution gates pass; strict scope, dependencies, implementation seams, tests, and rollback strategy are concrete |
 | G4 | After Checklist | All data-integrity, safe-evaluation, scheduler-safety, and regression-safety gaps are resolved |
-| G5 | After Tasks | P3-AC1 through P3-AC12 have task coverage and dependency order is implementable |
+| G5 | After Tasks | P3-AC1 through P3-AC12 plus P3-AC6b have task coverage and dependency order is implementable |
 | G6 | After Analyze | No CRITICAL/HIGH findings; tasks do not drift into SPEC-005, SPEC-007, SPEC-008, SPEC-009, or SPEC-011 behavior |
 | G7 | After Implement | Focused tests, typecheck, lint, build, e2e or justified subset, guardrail greps, docs status, and branch push are complete |
 
@@ -139,6 +139,7 @@ Implement RC Factory Phase 3:
 - [ ] P3-AC5: Routing evaluator rejects unsafe inputs without exception leaks or successor creation, rejects JSONPath filters/scripts before `JSONPath()`, enforces every routing pre-validation cap, and enforces `maxRuleEvalMs=10` triage fallback with activity evidence.
 - [ ] P3-AC6: Successor task inherits workspace/project, initializes first-hop parent lineage when absent, resolves assignee via `project_agent_assignments.agent_name`, populates successor lineage fields, and stalls with activity evidence/no successor when no matching assignee exists.
 - [ ] P3-AC6a: Successor creation calls `createTask()` exactly once, source-specific side effects are preserved, and direct runtime `INSERT INTO tasks` outside `src/lib/task-create.ts` is gone from production source.
+- [ ] P3-AC6b: `advanceTaskChain` wraps parent lineage initialization, validation failure state/activity writes, stall activity writes, duplicate-successor guard checks, and successor creation in one database transaction with rollback tests for each write boundary.
 - [ ] P3-AC7: Unit tests cover valid routing, missing output, invalid output, no-match fallback to static next, and chain termination.
 - [ ] P3-AC8: `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`; SPEC-004 remediates the current high-severity audit baseline; CI guardrails run and passing `pnpm audit --audit-level high` evidence is recorded.
 - [ ] P3-AC9: Validator enforces every numeric bound, forbidden schema feature, and AJV safety option listed in the roadmap.
@@ -197,7 +198,7 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 - Add `advanceTaskChain` behavior at every live non-`done` to `done` transition for pipeline-bound tasks (`runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`) that reads structured output from `tasks.resolution`, validates against `workflow_template.output_schema`, evaluates ordered `routing_rules`, falls back to `next_template_slug`, and terminates normally if neither route resolves. Manual/API completions remain allowed, but no live pipeline-bound `done` path may bypass the shared helper.
 - Missing `tasks.resolution` or invalid structured output under an `output_schema` transitions the parent task to `failed`, records an activity, and creates no successor.
 - Routing-rule budget overruns (`maxRuleEvalMs=10`) and missing/disabled/duplicate/cross-workspace target slugs stall automated chain advancement, leave the parent in its terminal success state, record an operator-visible activity with the structured failure reason, and create no successor. Manual operator triage owns recovery.
-- Successor creation inherits `workspace_id` and `project_id`, resolves `assigned_to` via `project_agent_assignments.agent_name` and `workflow_template.agent_role`, initializes first-hop parent lineage when absent (`root_task_id = parent.id`, generated `chain_id`, `chain_stage = 0`), sets successor `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, same `root_task_id`, same `chain_id`, and `chain_stage = parent.chain_stage + 1`, and calls `createTask()` exactly once. If no matching assignee exists for the resolved successor role, chain advancement stalls with operator-visible activity evidence, the parent remains in terminal success, and no successor is created.
+- Successor creation runs inside one `advanceTaskChain` database transaction that covers parent lineage initialization, validation failure state/activity writes, stall activity writes, duplicate-successor guard checks, and successor `createTask()` insertion. It inherits `workspace_id` and `project_id`, resolves `assigned_to` via `project_agent_assignments.agent_name` and `workflow_template.agent_role`, initializes first-hop parent lineage when absent (`root_task_id = parent.id`, generated `chain_id`, `chain_stage = 0`), sets successor `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, same `root_task_id`, same `chain_id`, and `chain_stage = parent.chain_stage + 1`, and calls `createTask()` exactly once. If no matching assignee exists for the resolved successor role, chain advancement stalls with operator-visible activity evidence, the parent remains in terminal success, and no successor is created.
 - Extend `src/components/panels/orchestration-bar.tsx`, `src/app/api/workflows/route.ts`, and create/update workflow schemas in `src/lib/validation.ts` for task-chain fields: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, and `allow_redacted_artifacts`; preserve existing operator-only write authorization for create/update/delete. `POST/PUT /api/workflows` must validate and persist every chain field, reject non-empty `routing_rules` unless `output_schema` is present, and allow `next_template_slug` without schema for static chaining. Repair workflow-template delete compatibility by making `DELETE /api/workflows?id=...` accept the existing live editor query-parameter contract. JSON `{ id }` body support may remain for backward compatibility, but the query-parameter delete path is required.
 - Add `src/types/workflow-template.ts` for typed workflow-template chain metadata.
 - Add exact pinned direct runtime dependencies for `ajv`, `jsonpath-plus`, and `safe-regex` in `package.json` and `pnpm-lock.yaml`, remediate the current high-severity audit baseline observed on 2026-04-30 (`minimatch`, `rollup`, `flatted`, `picomatch`, `defu`, and `next` advisories), wire `.github/workflows/quality-gate.yml` to run SPEC-004 guardrails and `pnpm audit:high`, and record passing `pnpm audit --audit-level high` evidence.
@@ -228,7 +229,7 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 |--------|-------|
 | Functional Requirements | Pending |
 | User Stories | Pending |
-| Acceptance Criteria | 13 criteria: P3-AC1 through P3-AC12 including P3-AC6a |
+| Acceptance Criteria | 14 criteria: P3-AC1 through P3-AC12 including P3-AC6a and P3-AC6b |
 
 ### Files Generated
 
@@ -243,7 +244,7 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 | US3 | Shared task creation side-effect parity |
 | US4 | Safe evaluator and validator behavior |
 | US5 | Downstream chain lineage and temporary `tasks.resolution` bridge |
-| P3-AC1..P3-AC12 | Roadmap acceptance criteria |
+| P3-AC1..P3-AC12 plus P3-AC6b | Roadmap acceptance criteria |
 | FR-FLAG | `FEATURE_TASK_PIPELINES` and `resolveFlag()` behavior |
 | FR-CREATE | `createTask()` helper and migrated callsites |
 | FR-VALIDATE | Output-schema validator requirements |
@@ -298,7 +299,7 @@ Focus on SPEC-004 runtime integration:
 - Confirm `advanceTaskChain` hooks every live non-`done` to `done` transition for pipeline-bound tasks: Aegis approval in `runAegisReviews`, operator approval in `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`; duplicate successor creation is idempotently prevented, manual/API completions remain allowed, and no live pipeline-bound `done` path bypasses the shared helper.
 - Confirm missing `tasks.resolution` or invalid output under an `output_schema` transitions parent task to `failed`, records activity, and creates no successor.
 - Confirm missing, disabled, duplicate, or cross-workspace routing target slugs stall automated chain advancement deterministically with structured error/activity evidence, parent terminal-success preservation, and no successor.
-- Confirm first-hop lineage initialization: if the parent has no lineage, update parent `root_task_id = parent.id`, generate `chain_id`, set parent `chain_stage = 0`, then create the successor with `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, same `root_task_id`, same `chain_id`, and `chain_stage = 1`.
+- Confirm first-hop lineage initialization and transactionality: if the parent has no lineage, update parent `root_task_id = parent.id`, generate `chain_id`, set parent `chain_stage = 0`, then create the successor with `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, same `root_task_id`, same `chain_id`, and `chain_stage = 1`; lineage updates, validation failure writes, stall activity writes, duplicate-successor guard checks, and successor creation must commit or roll back as one database transaction.
 - Confirm assignee resolution uses `project_agent_assignments.agent_name` and `workflow_template.agent_role`, not imagined `agent_id` fields; missing assignee stalls chain advancement with activity evidence, parent terminal-success preservation, and no successor.
 - Confirm live template editor fields in `src/components/panels/orchestration-bar.tsx`, `/api/workflows` persistence, create/update workflow schemas, `POST/PUT /api/workflows` validation/persistence of every chain field, rejection of `routing_rules` without `output_schema`, static `next_template_slug` without schema, repaired `DELETE /api/workflows?id=...` editor/API compatibility, and operator-only template ownership.
 - Confirm downstream out-of-scope boundaries: no `ready_for_owner`, area labels, dispositions/artifacts, governance enforcement, pilot seed behavior, or CrabTrap.
@@ -356,7 +357,7 @@ $speckit-plan
 ## Verification Strategy
 
 - Add focused Vitest tests for `createTask()` side effects and each migrated callsite.
-- Add task-chain terminal-success tests for every live non-`done` to `done` route: flag OFF, flag ON with unbound tasks and NULL fields, valid routing, routing-rules-without-schema rejection, static `next_template_slug` without schema, missing output failure, invalid output failure, fallback to `next_template_slug`, missing/disabled/duplicate/cross-workspace target slug stall, missing-assignee stall, timeout stall, chain termination, duplicate-prevention, successor lineage, and assignee resolution.
+- Add task-chain terminal-success tests for every live non-`done` to `done` route: flag OFF, flag ON with unbound tasks and NULL fields, valid routing, routing-rules-without-schema rejection, static `next_template_slug` without schema, missing output failure, invalid output failure, fallback to `next_template_slug`, missing/disabled/duplicate/cross-workspace target slug stall, missing-assignee stall, timeout stall, chain termination, duplicate-prevention, transaction rollback at each write boundary, successor lineage, and assignee resolution.
 - Add adversarial evaluator tests and validator bound tests, including JSONPath filter/script rejection before `JSONPath()`.
 - Add exact runtime dependency pin, lockfile, CI quality-gate, audit-remediation, and `pnpm audit --audit-level high` checks for `ajv`, `jsonpath-plus`, and `safe-regex`.
 - Add a real running-app Playwright journey for workflow-template chain-field create/edit/read/delete under operator auth; component-only tests may supplement but do not satisfy P3-AC12.
@@ -446,7 +447,7 @@ Focus on SPEC-004 regression and dependency discipline:
 |-----------|-------|------|-----------------|
 | data-integrity | Pending | Pending | P3-AC1, P3-AC2, P3-AC3, P3-AC4, P3-AC6 |
 | safe-evaluation | Pending | Pending | P3-AC5, P3-AC8, P3-AC9, P3-AC10 |
-| scheduler-safety | Pending | Pending | P3-AC1, P3-AC2, P3-AC3, P3-AC4, P3-AC6a |
+| scheduler-safety | Pending | Pending | P3-AC1, P3-AC2, P3-AC3, P3-AC4, P3-AC6a, P3-AC6b |
 | regression-safety | Pending | Pending | P3-AC6a, P3-AC8, P3-AC11, P3-AC12 |
 
 ### Addressing Gaps
@@ -466,7 +467,7 @@ $speckit-tasks
 
 ## Task Structure
 
-- Small, testable chunks tied to P3-AC1 through P3-AC12.
+- Small, testable chunks tied to P3-AC1 through P3-AC12 plus P3-AC6b.
 - Use TDD where feasible: write focused Vitest, route, scheduler, validator, evaluator, and UI tests before implementation.
 - Order tasks by dependency:
   1. Archive Sweep evidence, dependency verification, baseline direct INSERT/reference discovery.
@@ -489,6 +490,7 @@ $speckit-tasks
 - P3-AC5 and P3-AC9 require adversarial fixtures, validator bound fixtures, AJV safety-option fixtures, conservative pattern-subset fixtures, JSONPath filter/script rejection, routing pre-validation cap fixtures, and routing timeout-budget fixtures.
 - P3-AC6 requires inheritance, first-hop parent lineage initialization, assignee resolution, missing-assignee stall, and successor lineage assertions.
 - P3-AC6a requires `createTask()` call-count/side-effect assertions, source-specific callsite behavior assertions, duplicate-successor prevention, and production-source direct INSERT grep.
+- P3-AC6b requires transaction rollback tests that force failures after parent lineage initialization, validation failure writes, stall activity writes, duplicate-successor guard checks, and successor insertion, then assert no partial lineage, activity, state, or successor rows persist.
 - P3-AC8 requires package and lockfile exact pinned direct runtime dependency checks for `ajv`, `jsonpath-plus`, and `safe-regex`, audit-remediation tasks that make the current branch baseline pass `pnpm audit --audit-level high`, `.github/workflows/quality-gate.yml` coverage for SPEC-004 guardrails and `pnpm audit:high`, plus passing audit evidence.
 - P3-AC10 requires validator cache, validator p95 budget tests over a fixed corpus, and combined terminal-success overhead p95 tests against flag-off/null-chain baseline.
 - P3-AC11 requires `docs/orchestration.md` update and branch commit evidence.
@@ -526,11 +528,11 @@ $speckit-analyze
 
 Focus on:
 1. Constitution alignment: feature-flag default OFF, additive behavior, TDD, strict-scope ramp, shared task creation, and safe evaluation.
-2. Acceptance coverage: P3-AC1 through P3-AC12 each have implementation or verification tasks.
+2. Acceptance coverage: P3-AC1 through P3-AC12 plus P3-AC6b each have implementation or verification tasks.
 3. Task creation consistency: every production task creation callsite moves through `createTask()` with source-specific side effects preserved and no runtime direct INSERT bypasses.
 4. Validator consistency: every numeric bound and forbidden schema feature has a test and implementation task.
 5. Evaluator consistency: allowlisted grammar, JSONPath no-script configuration/rejection, `maxRuleEvalMs=10`, and forbidden primitive checks are explicit in tasks and tests.
-6. Scheduler consistency: flag-off, unbound tasks, flag-on-null, valid route, missing/invalid output, fallback, missing-target stall, missing-assignee stall, timeout stall, termination, duplicate-prevention, first-hop lineage initialization, and successor lineage behaviors are covered at every live non-`done` to `done` transition, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`.
+6. Scheduler consistency: flag-off, unbound tasks, flag-on-null, valid route, missing/invalid output, fallback, missing-target stall, missing-assignee stall, timeout stall, termination, duplicate-prevention, transaction rollback, first-hop lineage initialization, and successor lineage behaviors are covered at every live non-`done` to `done` transition, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`.
 7. Dependency discipline: `ajv`, `jsonpath-plus`, and `safe-regex` handling are exact pinned direct runtime dependencies, the current high-severity audit baseline is remediated, `pnpm audit --audit-level high` is wired into CI, and the result is tested.
 8. Documentation discipline: `docs/orchestration.md` is a required shipping artifact.
 9. File-path truthfulness: tasks use the live paths from this worktree and do not invent `task_templates` or `project_agent_assignments.agent_id`.
@@ -604,7 +606,7 @@ For each task, follow this cycle:
 - Use `project_agent_assignments.agent_name` and `workflow_template.agent_role` for assignee resolution; missing assignee stalls with activity evidence and creates no successor.
 - Missing `tasks.resolution` or invalid output under an `output_schema` fails the parent task, records activity, and creates no successor.
 - Routing timeout or unresolved target slug stalls automated chain advancement with activity evidence and creates no successor; the parent remains in its terminal success state and manual operator triage owns recovery.
-- Hook `advanceTaskChain` at every live non-`done` to `done` transition for pipeline-bound tasks and guard against duplicate successors; manual/API `done` transitions remain allowed only through the shared helper.
+- Hook `advanceTaskChain` at every live non-`done` to `done` transition for pipeline-bound tasks, wrap all chain writes in one database transaction, and guard against duplicate successors; manual/API `done` transitions remain allowed only through the shared helper.
 - Successor creation must call `createTask()` exactly once.
 - Do not add downstream state machine, artifact, governance, area-label, pilot, or CrabTrap behavior.
 
@@ -648,14 +650,14 @@ For each task, follow this cycle:
 
 - [ ] Archive Sweep evidence is recorded and excludes `SPEC-004`.
 - [ ] All generated tasks are marked complete in `specs/004-task-pipeline-engine/tasks.md`.
-- [ ] Acceptance evidence exists for P3-AC1 through P3-AC12.
+- [ ] Acceptance evidence exists for P3-AC1 through P3-AC12 plus P3-AC6b.
 - [ ] `src/lib/task-create.ts` exists and owns all task creation side effects.
 - [ ] Source-specific API, GitHub import, GitHub sync import, recurring, and pipeline-successor behavior is preserved through `createTask()`.
 - [ ] Direct runtime `INSERT INTO tasks` is gone from production source outside `src/lib/task-create.ts`; any test fixture inserts are deliberately excluded or migrated.
 - [ ] `src/lib/output-schema-validator.ts` enforces every roadmap numeric bound and forbidden schema feature.
 - [ ] Schema `pattern`/`patternProperties` acceptance treats `safe-regex` as necessary but not sufficient and enforces the conservative pattern subset with adversarial fixtures.
 - [ ] `src/lib/routing-rule-evaluator.ts` uses JSONPath traversal with JavaScript execution disabled, rejects JSONPath filters/scripts before `JSONPath()`, enforces `maxRuleEvalMs=10`, and uses a hand-written allowlisted grammar.
-- [ ] `advanceTaskChain` implements valid routing, missing-output failure, invalid-output failure, fallback, missing-assignee stall, timeout/unresolved-target advancement stall, termination, duplicate-prevention, successor creation, first-hop parent lineage initialization, and successor lineage behavior at every live non-`done` to `done` transition for pipeline-bound tasks, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`.
+- [ ] `advanceTaskChain` implements valid routing, missing-output failure, invalid-output failure, fallback, missing-assignee stall, timeout/unresolved-target advancement stall, termination, duplicate-prevention, transaction rollback, successor creation, first-hop parent lineage initialization, and successor lineage behavior at every live non-`done` to `done` transition for pipeline-bound tasks, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`.
 - [ ] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap, reject `routing_rules` without `output_schema`, allow static `next_template_slug` without schema, preserve operator-only writes, and repair `DELETE /api/workflows?id=...` compatibility.
 - [ ] `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`.
 - [ ] `.github/workflows/quality-gate.yml` runs SPEC-004 dependency, audit, direct-INSERT, unsafe-primitive, and downstream-drift guardrails.
