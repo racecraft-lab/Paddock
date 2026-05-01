@@ -121,6 +121,7 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - **Facility real row**: The `workspaces` row with `slug='facility'` is NOT a valid Product Line workspace_id. REST/URL/SSE must reject it with 400.
 
 ## Recent Changes
+- 006-area-label-github-sync: Added TypeScript 5.7 strict (existing project tsconfig). + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch` for GitHub API. No new runtime dependencies.
 
 ### SPEC-001 — Foundation Migrations (PR #15, merged 2026-04-26)
 Added migrations M53-M61 to `src/lib/migrations.ts`: agent scope backfill (`scope='global'` for Aegis, Security Guardian, HAL), workflow-template routing metadata, task lineage fields, workspace feature-flag storage (`feature_flags JSON`), task dispositions, task artifacts, facility workspace seed, resource policies, resource policy events. All changes additive and rerun-safe. 9 rollback SQL files at `docs/migrations/rollback-M53.sql` through `rollback-M61.sql` plus `docs/migrations/rollback-procedure.md`. No runtime behavior added. Test harness at `src/lib/__tests__/migrations-phase0.test.ts` (35/35 tasks complete).
@@ -133,3 +134,7 @@ Established archive evidence policy (provenance-first, no committed screenshots 
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
+
+## Active Technologies
+- TypeScript 5.7 strict (existing project tsconfig). + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch` for GitHub API. No new runtime dependencies. (006-area-label-github-sync)
+- SQLite via `better-sqlite3`. Single-process, synchronous transactions through `db.transaction(() => { ... })`. (006-area-label-github-sync)
