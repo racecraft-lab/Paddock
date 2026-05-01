@@ -1,0 +1,50 @@
+{
+  "spec": "006-area-label-github-sync",
+  "captured_at": "2026-05-01",
+  "purpose": "Pre-M62 EXPLAIN QUERY PLAN baselines for the canonical legacy query set. Re-run post-migration in T012 — any planner delta fails CI.",
+  "note": "Queries are pinned by SQL string. The T012 regression harness applies migrations 001..061 (pre-M62), captures plans, applies M62, captures again, and asserts: (a) plans are identical to these baselines AFTER M62; (b) none of the four new SPEC-006 indexes (idx_projects_workspace_area_slug, idx_projects_one_sync_owner_per_repo, idx_projects_one_triage_per_workspace, idx_tasks_area_routing_backfill_pending) appears in any of the legacy plans.",
+  "queries": [
+    {
+      "name": "poller_legacy_selection",
+      "source": "src/lib/github-sync-poller.ts (runSyncTick)",
+      "sql": "SELECT id, github_repo, github_sync_enabled, github_default_branch, workspace_id FROM projects WHERE github_sync_enabled = 1 AND github_repo IS NOT NULL AND status = 'active'",
+      "params": []
+    },
+    {
+      "name": "task_select_by_id_workspace",
+      "source": "src/app/api/tasks/[id]/route.ts (and src/app/api/tasks/route.ts)",
+      "sql": "SELECT * FROM tasks WHERE id = ? AND workspace_id = ?",
+      "params": [1, 1]
+    },
+    {
+      "name": "task_list_by_workspace",
+      "source": "src/app/api/tasks/route.ts (workspace-scoped list patterns)",
+      "sql": "SELECT * FROM tasks WHERE workspace_id = ? ORDER BY created_at DESC LIMIT 100",
+      "params": [1]
+    },
+    {
+      "name": "agent_queue_capacity",
+      "source": "src/lib/task-dispatch.ts (assigned_to capacity check)",
+      "sql": "SELECT COUNT(*) as c FROM tasks WHERE assigned_to = ? AND status = 'in_progress' AND workspace_id = ?",
+      "params": ["Aegis", 1]
+    },
+    {
+      "name": "agent_lookup_by_name",
+      "source": "src/lib/db.ts (findAgent helper)",
+      "sql": "SELECT id FROM agents WHERE name = ? AND workspace_id = ?",
+      "params": ["Aegis", 1]
+    },
+    {
+      "name": "task_match_by_repo_issue",
+      "source": "src/lib/github-sync-engine.ts (pullFromGitHub dedupe)",
+      "sql": "SELECT * FROM tasks WHERE github_repo = ? AND github_issue_number = ? AND workspace_id = ?",
+      "params": ["org/repo", 42, 1]
+    }
+  ],
+  "forbidden_indexes_post_m62": [
+    "idx_projects_workspace_area_slug",
+    "idx_projects_one_sync_owner_per_repo",
+    "idx_projects_one_triage_per_workspace",
+    "idx_tasks_area_routing_backfill_pending"
+  ]
+}

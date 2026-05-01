@@ -2,6 +2,8 @@
 
 Auto-generated from Archive Sweep on 2026-04-28.
 Revision: Archiving SPEC-001, SPEC-002, SPEC-002A after confirmed PR merges.
+Revision 2026-05-01: Backfilling SPEC-003 (PR #20 merged 2026-04-30) — original
+sweep silently no-op'd due to unwired /speckit.archive.run command (now fixed).
 
 ---
 
@@ -67,10 +69,13 @@ docs/
 └── scripts/bash/                   # check-prerequisites.sh, validate-gate.sh, etc.
 
 specs/
-├── 001-foundation-migrations/      # SPEC-001: Complete (archived 2026-04-28)
-├── 002-product-line-switcher/      # SPEC-002: Complete (archived 2026-04-28)
-├── 002a-spec-archive-evidence/     # SPEC-002A: Complete (archived 2026-04-28)
-└── 003-global-aegis/               # SPEC-003: In progress (current target)
+└── 006-area-label-github-sync/     # SPEC-006: In progress (current target)
+
+# Archived (cleanup applied 2026-05-01 backfill sweep):
+# - 001-foundation-migrations    (SPEC-001, archived 2026-04-28)
+# - 002-product-line-switcher    (SPEC-002, archived 2026-04-28)
+# - 002a-spec-archive-evidence   (SPEC-002A, archived 2026-04-28)
+# - 003-global-aegis             (SPEC-003, archived 2026-05-01)
 ```
 
 ---
@@ -183,6 +188,67 @@ specs/
 
 ---
 
+## SPEC-003 Plan Summary [Source: specs/003-global-aegis]
+
+**Branch**: `003-global-aegis` | **Merged**: 2026-04-30 | **PR**: #20
+
+### New Production Module (Strict Scope)
+
+| File | Purpose |
+|------|---------|
+| `src/lib/aegis.ts` | `getAegis(db, workspace_id?)` — single Aegis lookup path; flag-off workspace-first / flag-on global-first; lowest-id tie breaking; idempotent shadow-audit insertion; gateway fallback |
+
+### Resolver Contract
+
+- `getAegis(db, workspace_id?)` returns a `ReviewAgentRecord` shape: `{ id, name, config, agent_config, workspace_id, scope }`. `agent_config` mirrors `config` for DB-backed rows so gateway `openclawId` parsing and name fallback semantics are unchanged.
+- Flag OFF: workspace-scoped row first (`LOWER(name)='aegis' AND workspace_id=? AND scope='workspace'`), then global fallback (`scope='global'`).
+- Flag ON: global row first (`scope='global'`), then workspace-scoped fallback.
+- Tie breaking within a candidate scope: lowest `agents.id`.
+- No `agents.status` filtering — gateway invocation handles unavailable agents.
+- No DB row in either scope → return synthetic gateway `{ id: 'aegis', name: 'aegis' }`.
+
+### Shadow Audit (Flag ON Only)
+
+- Insert `activities` row idempotently per `(workspace_id, global_agent_id, local_agent_id)` tuple
+- `type='aegis_local_shadowed'`, `entity_type='agent'`, `entity_id=<local_agent_id>`, `actor='system'`, `workspace_id=<requested>`
+- `data = { global_agent_id, local_agent_id, workspace_id, feature_flag: 'FEATURE_GLOBAL_AEGIS' }`
+- Same-tuple subsequent calls are no-ops; no scheduler-tick spam
+
+### Scheduler Integration
+
+- `runAegisReviews` now calls `getAegis(db, task.workspace_id)` instead of consulting the workspace-keyed `aegisAgentByWorkspace` map
+- `resolveGatewayAgentIdForReviewAgent` reads `config`/`agent_config` from the resolver row to compute the OpenClaw id, with malformed-config and `aegis`-name fallbacks unchanged
+- Task selection, retry, dispatch inputs, quality-review writes, activity logging, and `review/quality_review/assigned/failed/done` transitions all preserved
+- `aegisAgentByWorkspace` removed; `src/lib/scheduler.ts` continues to trigger `runAegisReviews()` rather than resolving Aegis directly
+- `quality_reviews.reviewer='aegis'` (string match) remains the live gate signal — no `quality_reviews.agent_id` introduced
+
+### Static Guardrails (Verified by `rg` Checks)
+
+- No direct `agents` table queries by Aegis name/workspace/scope/config outside `src/lib/aegis.ts`
+- No `aegisAgentByWorkspace` references remaining
+- No `quality_reviews.agent_id` references in code or tests
+- No inline `process.env.FEATURE_GLOBAL_AEGIS` reads outside `src/lib/feature-flags.ts`
+- No drift into SPEC-004+ surfaces (`FEATURE_TASK_PIPELINES`, `ready_for_owner`, `FEATURE_AREA_LABEL_ROUTING`, artifact store, governance, pilot, product-line ownership, multi-facility, CrabTrap)
+
+### Test Coverage
+
+- `src/lib/__tests__/aegis.test.ts` — 9 paths including M53-backfill regression
+- `src/lib/__tests__/feature-flags.test.ts` + `feature-flags-route.test.ts` — `FEATURE_GLOBAL_AEGIS` workspace-context evaluation, malformed JSON, env `0` kill switch, env `1` non-enablement, `FEATURE_WORKSPACE_SWITCHER` dependency/preflight
+- `src/lib/__tests__/task-dispatch.test.ts` — `resolveGatewayAgentIdForReviewAgent` with DB-backed config, malformed-config fallback, gateway `aegis` fallback; `runAegisReviews` task selection / retry / dispatch / activity / status semantics under resolver source change
+- Full Playwright: 533 tests pass; Argos metadata fixtures verified
+
+### Deferred to Later Specs
+
+- SPEC-004 task pipelines and successor side-effect parity
+- SPEC-005 `ready_for_owner` task state and PR merge transitions
+- SPEC-006 area-label routing and repo-level sync dedupe (this spec — current target)
+- SPEC-007 artifact publishing and disposition logging
+- SPEC-008 governance and resource policies
+- SPEC-009 Product Line A pilot seed data
+- SPEC-011 CrabTrap honeypot
+
+---
+
 ## Configuration and Routing
 
 ### Feature Flags (as of SPEC-002)
@@ -213,9 +279,9 @@ From SPEC-002:
 - `src/types/product-line.ts`
 - `src/lib/feature-flags.ts`
 
-From SPEC-003 (in progress):
-- `src/lib/aegis.ts` (expected)
-- `src/app/api/feature-flags/` (expected)
+From SPEC-003:
+- `src/lib/aegis.ts`
+- `src/app/api/feature-flags/`
 
 ---
 
@@ -226,5 +292,6 @@ From SPEC-003 (in progress):
 - **Facility real row rejection**: The real `workspaces` row with `slug='facility'` must NOT be accepted as a Product Line workspace_id in REST, URL, or SSE setup.
 - **`activeWorkspace = null` pre-init**: This is compatibility storage for Facility, not a "no-workspace" flag context. Flag resolution still uses authenticated tenant context.
 - **resolveFlag env '1' does NOT force ON**: Only workspace JSON can opt a workspace in. `process.env.FEATURE_X='1'` is intentionally NOT an override (unlike `'0'` which forces OFF).
-- **Archive cleanup gate**: Cleanup (folder removal) requires `--apply-cleanup`, `main` or safe base branch, clean worktree, confirmed merge, and recovery commands. Feature branches will always have `safeToApplyCleanup=false`.
+- **Archive cleanup gate**: Cleanup (folder removal) requires `--apply-cleanup`, clean worktree, confirmed merge, and recovery commands. Per SPEC-002A's revised policy (`speckit-pro` 1.9.1), feature-branch worktrees CAN apply cleanup for previously merged specs (excluding the current target); `main` and protected branches stay dry-run only. Pre-1.9.1 docs that say "feature branches always have `safeToApplyCleanup=false`" are stale.
+- **Archive command wiring**: `.specify/extensions/archive/commands/archive.md` is vendored but is NOT auto-published to `.claude/commands/`. The autopilot's Step -1 will silently no-op unless `.claude/commands/speckit.archive.run.md` exists. Wired during SPEC-006 backfill — same gap exists for `git/verify/doctor/cleanup/retrospective/review/verify-tasks` extension commands and may need wiring if/when their hooks are exercised.
 - **CLAUDE.md** is the agent knowledge file (GEMINI.md and AGENTS.md not present); update this file for agent conventions.

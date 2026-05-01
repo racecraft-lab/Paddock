@@ -121,6 +121,7 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - **Facility real row**: The `workspaces` row with `slug='facility'` is NOT a valid Product Line workspace_id. REST/URL/SSE must reject it with 400.
 
 ## Recent Changes
+- 006-area-label-github-sync: Added TypeScript 5.7 strict (existing project tsconfig). + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch` for GitHub API. No new runtime dependencies.
 
 ### SPEC-001 — Foundation Migrations (PR #15, merged 2026-04-26)
 Added migrations M53-M61 to `src/lib/migrations.ts`: agent scope backfill (`scope='global'` for Aegis, Security Guardian, HAL), workflow-template routing metadata, task lineage fields, workspace feature-flag storage (`feature_flags JSON`), task dispositions, task artifacts, facility workspace seed, resource policies, resource policy events. All changes additive and rerun-safe. 9 rollback SQL files at `docs/migrations/rollback-M53.sql` through `rollback-M61.sql` plus `docs/migrations/rollback-procedure.md`. No runtime behavior added. Test harness at `src/lib/__tests__/migrations-phase0.test.ts` (35/35 tasks complete).
@@ -131,5 +132,12 @@ Added `FEATURE_WORKSPACE_SWITCHER`-gated workspace switcher. New production modu
 ### SPEC-002A — Spec Archive and Evidence Retention (PRs #18 #19, merged 2026-04-28)
 Established archive evidence policy (provenance-first, no committed screenshots by default). Installed `racecraft-lab/spec-kit-archive` v1.1.0 at `.specify/extensions/archive/`. Archive Sweep lifecycle defined: autopilot pre-flight, feature-branch applies cleanup, main/protected branches dry-run only, unsafe/dirty worktrees stop. Released `speckit-pro` 1.9.1 with corrected Archive Sweep behavior. Recovery commands use `git show <merge-sha>:specs/<feature>/spec.md` (47/47 tasks complete).
 
+### SPEC-003 — Aegis Facility Singleton Refactor (PR #20, merged 2026-04-30)
+Introduced `src/lib/aegis.ts` exporting `getAegis(db, workspace_id?)` as the single Aegis lookup path. `FEATURE_GLOBAL_AEGIS` routed through `resolveFlag(name, ctx)` against requested-task/review workspace context. Flag OFF preserves workspace-first/global-fallback compatibility; flag ON prefers the global singleton (`agents.scope='global'` + `LOWER(name)='aegis'`). Lowest-id tie breaking; no `agents.status` filtering. Idempotent `aegis_local_shadowed` activity row written once per `(workspace_id, global_agent_id, local_agent_id)` tuple. `runAegisReviews` and `resolveGatewayAgentIdForReviewAgent` source the reviewer through `getAegis` while preserving task selection, retry, dispatch, quality-review, activity, and status-transition semantics. Removed `aegisAgentByWorkspace` map. Preserved `quality_reviews.reviewer='aegis'` as the live gate signal — no `quality_reviews.agent_id` introduced. Strict scope: `src/lib/aegis.ts` added to `tsconfig.spec-strict.json` and `eslint.config.mjs`. No schema migrations (21/21 tasks complete).
+
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
+
+## Active Technologies
+- TypeScript 5.7 strict (existing project tsconfig). + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch` for GitHub API. No new runtime dependencies. (006-area-label-github-sync)
+- SQLite via `better-sqlite3`. Single-process, synchronous transactions through `db.transaction(() => { ... })`. (006-area-label-github-sync)
