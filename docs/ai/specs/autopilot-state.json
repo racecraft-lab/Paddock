@@ -1,17 +1,38 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-006-workflow.md",
-  "updated_at": "2026-05-01T16:50:00Z",
-  "active_step": "Archive Sweep + Phase 0",
+  "updated_at": "2026-05-01T18:30:00Z",
+  "active_step": "Phase 7: Implement (partial — T001-T005 complete; T006-T088 remaining)",
   "status": "In Progress",
   "notes": [
     "SPEC-006 setup completed on branch 006-area-label-github-sync from origin/main bce89a2.",
     "Workflow file docs/ai/specs/SPEC-006-workflow.md was generated for Area-Label GitHub Sync from grill-me design concept (18 questions, 8 open questions).",
     "Branch 006-area-label-github-sync created in .worktrees/006-area-label-github-sync and pushed to origin.",
     "Draft PR #21 opened at https://github.com/racecraft-lab/mission-control/pull/21 with the design concept and workflow file.",
-    "Archive Sweep dry run recorded on 2026-05-01T16:50:00Z: SPEC-001, SPEC-002, SPEC-002A, SPEC-003 classified as previously merged candidates; specs/006-area-label-github-sync excluded; safeToApplyCleanup=false; no files deleted, moved, or rewritten. Archive extension is vendored at .specify/extensions/archive but the slash command /speckit.archive.run is not invokable as a bundled skill in this Claude Code session, so cleanup runs as evidence-only.",
-    "Concurrent worktree at .worktrees/004-task-pipeline-engine is in flight on branch 004-task-pipeline-engine; SPEC-004 is not a sweep candidate.",
-    "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded.",
-    "Phase 0 prerequisites passed on 2026-05-01T16:50:00Z: check-prerequisites.sh all_pass=true, branch 006-area-label-github-sync, isolated worktree, clean status, pnpm package manager, default settings, project commands discovered: BUILD=pnpm build, TYPECHECK=pnpm typecheck, LINT=pnpm lint, UNIT_TEST=pnpm test, INTEGRATION_TEST=pnpm test:e2e."
+    "Archive Sweep dry run recorded on 2026-05-01T16:50:00Z: SPEC-001, SPEC-002, SPEC-002A, SPEC-003 classified as previously merged candidates; specs/006-area-label-github-sync excluded; safeToApplyCleanup=false; no files deleted, moved, or rewritten.",
+    "Phase 0 prerequisites passed on 2026-05-01T16:50:00Z: check-prerequisites.sh all_pass=true, branch 006-area-label-github-sync, isolated worktree, clean status, pnpm package manager.",
+    "Phase 1 Specify completed: 285-line spec.md with 51 FRs, 7 user stories, 33 acceptance scenarios, 10 success criteria. G1 zero markers.",
+    "Phase 2 Clarify completed all 3 sessions: S1 (Schema/Migration/Backfill resume) added column-based resume marker; S2 (Lifecycle/Failure Isolation/Conflict) deferred sync-owner re-election per Constitution Article XII, added throttled label_provisioning_failed activity; S3 (API contracts/UX) applied hybrid 409 shape, clear-then-set transfer ordering (SQLite UNIQUE is immediate), visible-but-disabled UI, yellow no-triage banner, deferred backfill bookend kinds. G2 markers clean throughout. 7 of 15 questions routed to two-layer category-routed consensus; all resolved without escalation.",
+    "Phase 3 Plan completed: 7 artifacts (1328 lines) — plan.md, research.md (8 resolved topics R-001..R-008), data-model.md, quickstart.md, contracts/{projects-put,github-connect,activities-shapes}.md. Constitution check: 12 PASS / 3 N/A / 0 violations. G3 zero markers.",
+    "Phase 4 Checklist completed all 4 domains: data-integrity (60 items, 9 gaps remediated), regression-safety (58 items, 15 gaps remediated, FR-052..056 added), error-handling (70 items, 14 gaps remediated, FR-027b added), api-contracts (75 items, 16 gaps remediated, FR-057..064 added). 263 total items, 54 gaps remediated, 0 consensus escalations. G4 zero markers throughout.",
+    "Phase 5 Tasks completed: 88 tasks across 10 phases, 51 [T-RED] test tasks, 53 [P] parallel markers, all 9 P5-ACs covered, all FR-001..064 referenced. G5 passed.",
+    "Phase 6 Analyze completed: 7 findings (1 CRITICAL, 3 HIGH, 3 MEDIUM, 0 LOW). 5 substantive drift fixes applied (NOT NULL contradiction in data-model removed, throttle SQL `>=`, activity-kinds count 3->4, P5-AC8/9 clarified as spec-internal, cache key alignment to slugToProjectId). 2 informational items confirmed non-issues. G6 passed: 0 CRITICAL/HIGH after remediation. No consensus escalation.",
+    "Phase 7 Implement partial: T001-T005 (foundation) complete and verified.",
+    "  - T001-T002: strict-scope guard wired into pnpm test:all + planner baseline (commit 591ea4c).",
+    "  - T003-T005: M62 migration `062_area_label_routing_sync_owner_triage` adds projects.area_slug TEXT NULL, projects.is_triage_project INTEGER DEFAULT 0, projects.is_repo_sync_owner INTEGER DEFAULT 0, tasks.area_routing_backfilled_at INTEGER NULL plus 4 indexes (idx_projects_workspace_area_slug non-unique, 3 partial unique on is_repo_sync_owner=1 / is_triage_project=1 / area_routing_backfill_pending). Owner backfill via MIN(projects.id) per (workspace_id, github_repo) group with at least one github_sync_enabled=1 project; deterministic and rerun-safe via HAVING SUM(...)=0. Rollback SQL at docs/migrations/rollback-M62.sql drops indexes then columns; SQLite 3.35+ DROP COLUMN supported (better-sqlite3 v12 bundles 3.45+). Test suite at src/lib/__tests__/migrations-spec006.test.ts: 5/5 passing — column existence, 4 indexes, no NOT NULL on new columns (FR-003 / Constitution Article VII), deterministic owner election, idempotent re-run, legacy unique constraint preserved (commit 142796f).",
+    "  - T006-T088: PENDING. Remaining work (per tasks.md):",
+    "    Phase 1 Setup remaining: T006-T007.",
+    "    Phase 2 Foundational remaining: T006-T007 (AREA_LABEL_MAP defaults + areaLabelsForWorkspace + ALL_AREA_LABEL_NAMES exports in github-label-map.ts).",
+    "    Phase 3 US1 flag-OFF parity: T008-T019 (12 tasks; mostly tests + EXPLAIN QUERY PLAN snapshots; FR-052 per-row resolveFlag; FR-053 1-arg initializeLabels compat; FR-054 unknown-kind renderer compat).",
+    "    Phase 4 US2 sync ownership: T020-T032 (13 tasks; poller filter, PUT validation, transfer_owner clear-then-set transaction, idempotent re-assert, validation precedence FR-057, 409 priority FR-058, project settings UI for owner field).",
+    "    Phase 5 US3 triage project: T033-T037 (5 tasks; is_triage_project exclusivity, project settings UI for triage flag, no-triage banner FR-040b).",
+    "    Phase 6 US4 area routing: T038-T049 (12 tasks; loadAreaRoutingCache, inbound routing, activity log, outbound emission, area_slug regex validation FR-034, project settings UI for area_slug).",
+    "    Phase 7 US5 auto-backfill: T050-T060 (11 tasks; backfillAreaRouting per-task transaction, monotonicity invariant FR-021a, first-flag-on bootstrap, completion marker, idempotent resume).",
+    "    Phase 8 US6 UI consolidation: T061-T070 (10 tasks; pinned to src/components/modals/project-manager-modal.tsx, disabled-when-flag-OFF FR-040a, e2e flow).",
+    "    Phase 9 US7 label provisioning: T071-T076 (6 tasks; initializeLabels(repo, workspaceId?) extension with 3 trigger points FR-028, failure isolation FR-027 + throttled label_provisioning_failed activity FR-027a, structured log FR-027b).",
+    "    Phase 10 Polish + verification: T077-T088 (12 tasks; docs/github-sync.md, docs/feature-flags-runbook.md update, docs/orchestration.md cross-ref, openapi.json snapshot test FR-064, strict-scope grep T080, FULL_VERIFY).",
+    "  - First US1 attempt by phase-executor produced TypeScript errors in 3 new test files (github-label-map.test.ts +2 errors, github-sync-poller.test.ts +4 errors, github-sync-engine.test.ts +6 errors) plus production-source changes (github-sync-engine.ts +44 LOC, github-sync-poller.ts +29 LOC adding per-workspace flag cache + auditable resolveFlag site for FR-052). The broken WIP is preserved in `git stash@{0}` titled 'SPEC-006 US1 attempt — TS errors, needs rework on resume' but is NOT applied to the main branch to keep the PR's CI green and the codebase clean.",
+    "Resume instructions: from this worktree, run `/speckit-pro:autopilot docs/ai/specs/SPEC-006-workflow.md --from-phase implement`. The autopilot will detect that Phases 0-6 are complete and Phase 7 is in progress, then continue from T006. The stash entry for the broken US1 attempt can be inspected via `git stash show -p stash@{0}` if useful for understanding the design intent (FR-052 wiring) before re-implementing it cleanly.",
+    "PR #21 status: Draft. 11 commits showing the SDD process from setup through the foundational migration with passing tests. Will be marked ready-for-review after T006-T088 complete and G7 passes."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -34,33 +55,6 @@
     ],
     "safeToApplyCleanup": false,
     "last_recorded_dry_run_at": "2026-05-01T16:50:00Z",
-    "last_recorded_dry_run_current_target": "specs/006-area-label-github-sync",
-    "last_recorded_dry_run_results": [
-      {
-        "path": "specs/001-foundation-migrations",
-        "eligibleForArchive": true,
-        "eligibleForCleanup": false
-      },
-      {
-        "path": "specs/002-product-line-switcher",
-        "eligibleForArchive": true,
-        "eligibleForCleanup": false
-      },
-      {
-        "path": "specs/002a-spec-archive-evidence",
-        "eligibleForArchive": true,
-        "eligibleForCleanup": false
-      },
-      {
-        "path": "specs/003-global-aegis",
-        "eligibleForArchive": true,
-        "eligibleForCleanup": false
-      },
-      {
-        "path": "specs/006-area-label-github-sync",
-        "excludedCurrentSpec": true
-      }
-    ],
     "cleanup_policy": "Reviewed forward cleanup only after archive success, merge/tree references, recovery commands, clean safe base branch, and safeToApplyCleanup=true."
   },
   "deployment": {
@@ -71,26 +65,22 @@
   },
   "plan": [
     {"step": "Phase 0: Prerequisites and Archive Sweep startup", "status": "completed"},
-    {"step": "Phase 1: Specify", "status": "pending"},
-    {"step": "Phase 2: Clarify - Schema, Migration, Backfill resume", "status": "pending"},
-    {"step": "Phase 2: Clarify - Schema, Migration, Backfill resume Consensus", "status": "pending"},
-    {"step": "Phase 2: Clarify - Lifecycle, Failure Isolation, Conflict Semantics", "status": "pending"},
-    {"step": "Phase 2: Clarify - Lifecycle, Failure Isolation, Conflict Semantics Consensus", "status": "pending"},
-    {"step": "Phase 2: Clarify - API Contracts and UX Edge Cases", "status": "pending"},
-    {"step": "Phase 2: Clarify - API Contracts and UX Edge Cases Consensus", "status": "pending"},
-    {"step": "Phase 3: Plan", "status": "pending"},
-    {"step": "Phase 4: Checklist - data-integrity", "status": "pending"},
-    {"step": "Phase 4: Checklist - data-integrity Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - regression-safety", "status": "pending"},
-    {"step": "Phase 4: Checklist - regression-safety Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - error-handling", "status": "pending"},
-    {"step": "Phase 4: Checklist - error-handling Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - api-contracts", "status": "pending"},
-    {"step": "Phase 4: Checklist - api-contracts Consensus", "status": "pending"},
-    {"step": "Phase 5: Tasks", "status": "pending"},
-    {"step": "Phase 6: Analyze", "status": "pending"},
-    {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
-    {"step": "Phase 7: Implement", "status": "pending"},
+    {"step": "Phase 1: Specify", "status": "completed"},
+    {"step": "Phase 2: Clarify - Schema, Migration, Backfill resume", "status": "completed"},
+    {"step": "Phase 2: Clarify - Schema, Migration, Backfill resume Consensus", "status": "completed"},
+    {"step": "Phase 2: Clarify - Lifecycle, Failure Isolation, Conflict Semantics", "status": "completed"},
+    {"step": "Phase 2: Clarify - Lifecycle, Failure Isolation, Conflict Semantics Consensus", "status": "completed"},
+    {"step": "Phase 2: Clarify - API Contracts and UX Edge Cases", "status": "completed"},
+    {"step": "Phase 2: Clarify - API Contracts and UX Edge Cases Consensus", "status": "completed"},
+    {"step": "Phase 3: Plan", "status": "completed"},
+    {"step": "Phase 4: Checklist - data-integrity", "status": "completed"},
+    {"step": "Phase 4: Checklist - regression-safety", "status": "completed"},
+    {"step": "Phase 4: Checklist - error-handling", "status": "completed"},
+    {"step": "Phase 4: Checklist - api-contracts", "status": "completed"},
+    {"step": "Phase 5: Tasks", "status": "completed"},
+    {"step": "Phase 6: Analyze", "status": "completed"},
+    {"step": "Phase 7: Implement T001-T005 (foundation)", "status": "completed"},
+    {"step": "Phase 7: Implement T006-T088 (US1-US7 + Polish)", "status": "pending"},
     {"step": "Post: Integration Suite", "status": "pending"},
     {"step": "Post: Update PR #21 to ready-for-review", "status": "pending"},
     {"step": "Post: Update roadmap on success", "status": "pending"}
