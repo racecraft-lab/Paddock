@@ -22,7 +22,7 @@ function scoped(pathname: string, workspaceId: number): string {
   return `${pathname}${separator}workspace_id=${encodeURIComponent(String(workspaceId))}`
 }
 
-test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
+test.describe.serial('Task-pipeline workflow templates', () => {
   let restoreWorkspaceSwitcherFlag: (() => void) | null = null
   let workspaceId = 0
   const createdTemplateIds: number[] = []
@@ -33,8 +33,8 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
     const workspaceRes = await request.post('/api/workspaces', {
       headers: API_KEY_HEADER,
       data: {
-        name: `SPEC-004 Pipeline ${suffix}`,
-        slug: `spec-004-pipeline-${suffix}`,
+        name: `Task Pipeline ${suffix}`,
+        slug: `task-pipeline-${suffix}`,
       },
     })
     const workspaceBody = await workspaceRes.json().catch(() => ({})) as WorkspaceResponse
@@ -67,9 +67,9 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
     const createRes = await request.post(scoped('/api/workflows', workspaceId), {
       headers: API_KEY_HEADER,
       data: {
-        name: 'SPEC-004 Routed Template',
+        name: 'Task Pipeline Routed Template',
         task_prompt: 'Validate output and choose the next pipeline task.',
-        slug: 'spec-004-routed',
+        slug: 'task-pipeline-routed',
         output_schema: schema,
         routing_rules: createRules,
         next_template_slug: 'manual-review',
@@ -81,7 +81,7 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
     createdTemplateIds.push(routed.id)
     expect(routed).toMatchObject({
       workspace_id: workspaceId,
-      slug: 'spec-004-routed',
+      slug: 'task-pipeline-routed',
       output_schema: schema,
       routing_rules: createRules,
       next_template_slug: 'manual-review',
@@ -90,9 +90,9 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
     const invalidRes = await request.post(scoped('/api/workflows', workspaceId), {
       headers: API_KEY_HEADER,
       data: {
-        name: 'SPEC-004 Invalid Routed Template',
+        name: 'Task Pipeline Invalid Routed Template',
         task_prompt: 'This should not persist without an output schema.',
-        slug: 'spec-004-invalid-routed',
+        slug: 'task-pipeline-invalid-routed',
         routing_rules: createRules,
       },
     })
@@ -104,10 +104,10 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
     const staticRes = await request.post(scoped('/api/workflows', workspaceId), {
       headers: API_KEY_HEADER,
       data: {
-        name: 'SPEC-004 Static Template',
+        name: 'Task Pipeline Static Template',
         task_prompt: 'Static next-template routing without structured output.',
-        slug: 'spec-004-static',
-        next_template_slug: 'spec-004-routed',
+        slug: 'task-pipeline-static',
+        next_template_slug: 'task-pipeline-routed',
       },
     })
     const staticBody = await staticRes.json()
@@ -118,7 +118,7 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
       workspace_id: workspaceId,
       output_schema: null,
       routing_rules: [],
-      next_template_slug: 'spec-004-routed',
+      next_template_slug: 'task-pipeline-routed',
     })
 
     const updateRules = [{ when: '$.outcome == "blocked"', next_template_slug: 'blocked-review' }]
@@ -126,7 +126,7 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
       headers: API_KEY_HEADER,
       data: {
         id: routed.id,
-        name: 'SPEC-004 Routed Template Updated',
+        name: 'Task Pipeline Routed Template Updated',
         output_schema: schema,
         routing_rules: updateRules,
         next_template_slug: 'archive',
@@ -136,7 +136,7 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
     expect(updateRes.status(), JSON.stringify(updateBody)).toBe(200)
     expect(updateBody.template).toMatchObject({
       id: routed.id,
-      name: 'SPEC-004 Routed Template Updated',
+      name: 'Task Pipeline Routed Template Updated',
       routing_rules: updateRules,
       next_template_slug: 'archive',
     })
@@ -146,13 +146,13 @@ test.describe.serial('SPEC-004 task-pipeline workflow templates', () => {
     expect(listRes.status(), JSON.stringify(listBody)).toBe(200)
     const templates = listBody.templates as WorkflowTemplate[]
     expect(templates.find((template) => template.id === routed.id)).toMatchObject({
-      name: 'SPEC-004 Routed Template Updated',
+      name: 'Task Pipeline Routed Template Updated',
       workspace_id: workspaceId,
       routing_rules: updateRules,
     })
     expect(templates.find((template) => template.id === staticTemplate.id)).toMatchObject({
-      slug: 'spec-004-static',
-      next_template_slug: 'spec-004-routed',
+      slug: 'task-pipeline-static',
+      next_template_slug: 'task-pipeline-routed',
     })
 
     const usageRes = await request.put(scoped('/api/workflows', workspaceId), {

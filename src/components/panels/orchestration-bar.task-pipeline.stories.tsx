@@ -82,7 +82,7 @@ function jsonResponse(payload: unknown, status = 200): Response {
   })
 }
 
-function installSpec004FetchMock() {
+function installTaskPipelineFetchMock() {
   globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const method = init?.method ?? 'GET'
     const rawUrl = typeof input === 'string'
@@ -132,8 +132,8 @@ function installSpec004FetchMock() {
   }) as typeof fetch
 }
 
-function configureSpec004State() {
-  installSpec004FetchMock()
+function configureTaskPipelineState() {
+  installTaskPipelineFetchMock()
   const activeProductLineScope = createProductLineScope(productLineAlpha, 4)
 
   useMissionControl.setState({
@@ -153,7 +153,7 @@ function configureSpec004State() {
   })
 }
 
-function Spec004OrchestrationSurface() {
+function TaskPipelineOrchestrationSurface() {
   return (
     <div className="min-h-[860px] bg-background p-6 text-foreground">
       <div className="mx-auto max-w-5xl">
@@ -164,12 +164,12 @@ function Spec004OrchestrationSurface() {
 }
 
 const meta = {
-  title: 'SPEC-004/Task Pipeline Workflow UI',
-  component: Spec004OrchestrationSurface,
-  tags: ['spec-004', 'visual', 'task-pipeline-workflows'],
+  title: 'Task Pipeline/Workflow UI',
+  component: TaskPipelineOrchestrationSurface,
+  tags: ['visual', 'task-pipeline-workflows'],
   loaders: [
     async () => {
-      configureSpec004State()
+      configureTaskPipelineState()
       return {}
     },
   ],
@@ -178,7 +178,7 @@ const meta = {
       fitToContent: false,
     },
   },
-} satisfies Meta<typeof Spec004OrchestrationSurface>
+} satisfies Meta<typeof TaskPipelineOrchestrationSurface>
 
 export default meta
 type Story = StoryObj<typeof meta>

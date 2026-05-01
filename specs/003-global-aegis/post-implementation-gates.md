@@ -25,7 +25,7 @@ Evidence:
 - `pnpm lint` passed with 0 errors and 10 pre-existing warnings.
 - Focused Vitest passed: `pnpm test src/lib/__tests__/aegis.test.ts src/lib/__tests__/task-dispatch.test.ts src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/feature-flags-route.test.ts` passed 4 files / 35 tests.
 - Spec-specific resolver coverage is in `src/lib/__tests__/aegis.test.ts` (9 unit tests covering flag-off, flag-on, fallback, M53-backfill, idempotent audit, and tie-breaking paths), included in the focused Vitest run above.
-- PR #20 Argos fixture remediation passed `pnpm test:e2e:spec-002` with 11 tests after replacing visible timestamp/random seed data with deterministic SPEC-002 fixture rows and freezing the browser clock.
+- PR #20 Argos fixture remediation passed `pnpm test:e2e:ui-visual` with 11 tests after replacing visible timestamp/random seed data with deterministic Product Line fixture rows and freezing the browser clock.
 - `pnpm test:e2e:argos-metadata` verified 11 Playwright screenshot metadata files across 5 Argos-backed tests.
 - `pnpm test:visual:storybook` passed 10 Storybook visual tests, and `pnpm test:visual:argos-metadata` verified 20 Storybook screenshot metadata files across 10 stories.
 - `pnpm test:e2e` passed 533 tests.

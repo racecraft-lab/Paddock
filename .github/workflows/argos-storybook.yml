@@ -21,7 +21,7 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
-      - 'scripts/verify-argos-storybook-metadata.mjs'
+      - 'scripts/verify-argos-metadata.mjs'
   push:
     branches:
       - main
@@ -44,7 +44,7 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
-      - 'scripts/verify-argos-storybook-metadata.mjs'
+      - 'scripts/verify-argos-metadata.mjs'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'

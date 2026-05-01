@@ -148,7 +148,7 @@ describe('createTask api source profile', () => {
       created_by: 'operator',
       project_id: 10,
       workspace_id: 1,
-      tags: ['spec-004'],
+      tags: ['task-pipeline'],
       metadata: { implementation_repo: 'racecraft/mission-control' },
     } as any)
 
@@ -165,7 +165,7 @@ describe('createTask api source profile', () => {
       title: 'Wire shared creator',
       project_ticket_no: 5,
       ticket_ref: 'OPS-005',
-      tags: ['spec-004'],
+      tags: ['task-pipeline'],
       metadata: { implementation_repo: 'racecraft/mission-control' },
     })
     expect(result.raw).toBeUndefined()

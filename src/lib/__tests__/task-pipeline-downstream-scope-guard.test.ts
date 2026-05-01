@@ -9,7 +9,7 @@ const ownedRuntimeFiles = [
   'src/app/api/tasks/[id]/route.ts',
 ]
 
-describe('SPEC-004 downstream scope guard', () => {
+describe('Task pipeline downstream scope guard', () => {
   it('does not implement later-spec terminal states, area routing, artifact publishing, governance, pilot, or CrabTrap behavior', () => {
     const source = ownedRuntimeFiles
       .map((file) => readFileSync(join(process.cwd(), file), 'utf8'))

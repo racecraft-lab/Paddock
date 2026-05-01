@@ -1,5 +1,5 @@
 {
-  "name": "SPEC-004 routing fixtures",
+  "name": "Task pipeline routing fixtures",
   "purpose": "Fixed corpus for routing grammar, JSONPath safety, cap, timeout, and no-match tests.",
   "cases": [
     "valid-rule-order",

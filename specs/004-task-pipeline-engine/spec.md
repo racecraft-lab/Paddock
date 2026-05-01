@@ -238,7 +238,7 @@ SPEC-004 routing rules are evaluated through a small allowlisted parser before a
 - **SC-010**: 100% of retry success responses include bounded `chain_retry` metadata with `recovery_class`, `retry_attempt`, `recovery_outcome`, `successor_task_id`, `chain_terminated`, and `idempotent_successor`, and exclude full corrected output, parsed output, and routing traces.
 - **SC-011**: One-successor-per-parent enforcement prevents duplicate successors while allowing multiple tasks without parents.
 - **SC-012**: Workflow-template UI and API checks cover scoped create, edit, read-back, validation rejection, static next-template chaining, usage tracking, and query-parameter delete behavior under operator authorization and Product Line scope enforcement.
-- **SC-013**: The high-severity dependency audit passes before merge and CI runs SPEC-004 guardrails.
+- **SC-013**: The high-severity dependency audit passes before merge and CI runs repository guardrails.
 - **SC-014**: Documentation accurately describes declarative task chains and lifecycle terminology before the feature is marked shipped.
 
 ## Assumptions

@@ -18,7 +18,7 @@ function productionSources(dir: string): string[] {
   })
 }
 
-describe('SPEC-004 direct task insert guard', () => {
+describe('Task pipeline direct task insert guard', () => {
   it('keeps runtime production task inserts centralized in src/lib/task-create.ts', () => {
     const root = process.cwd()
     const offenders = productionSources(path.join(root, 'src'))

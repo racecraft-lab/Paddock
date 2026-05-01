@@ -8,7 +8,7 @@ function source(path: string): string {
   return readFileSync(path, 'utf8')
 }
 
-describe('SPEC-004 static guardrails', () => {
+describe('Task pipeline static guardrails', () => {
   it('excludes ajv-formats imports and registration from strict-scope validator code', () => {
     const validator = source('src/lib/output-schema-validator.ts')
 

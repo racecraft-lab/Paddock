@@ -1,5 +1,5 @@
 {
-  "name": "SPEC-004 schema corpus",
+  "name": "Task pipeline schema corpus",
   "purpose": "Fixed corpus for output-schema validator bounds, pattern safety, cache, and performance tests.",
   "cases": [
     "compact-object",

@@ -6,7 +6,7 @@ import {
   API_KEY_HEADER,
   dismissOnboardingForE2E,
   FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE,
-  freezeSpec002VisualClock,
+  freezeProductLineVisualClock,
   loginAsE2EAdmin,
   resetFeatureFlagAdminVisualFixture,
 } from './helpers'
@@ -52,7 +52,7 @@ async function attachReviewScreenshot(
 }
 
 async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof loginAsE2EAdmin>[1]) {
-  await freezeSpec002VisualClock(page)
+  await freezeProductLineVisualClock(page)
   await page.context().addInitScript(() => {
     sessionStorage.setItem('mc-onboarding-dismissed', '1')
     sessionStorage.removeItem('mc-onboarding-replay')
