@@ -1,7 +1,7 @@
 # Contract: `POST /api/github` (delta)
 
 **Spec**: SPEC-006 — Area-Label GitHub Sync
-**Covers**: FR-028 (trigger point a), FR-039
+**Covers**: FR-028 (trigger point a), FR-039, FR-063 (public contract preserved), FR-064 (no OpenAPI shape change)
 
 ## Summary
 
