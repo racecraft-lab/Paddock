@@ -29,7 +29,7 @@
     "audit:high": "pnpm audit --audit-level high",
     "storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 storybook dev --host 127.0.0.1 --port 6006",
     "build-storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 storybook build",
-    "test:visual:storybook": "pnpm run verify:node && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --config vitest.storybook.config.ts",
+    "test:visual:storybook": "pnpm run verify:node && node scripts/clean-storybook-argos-output.mjs && STORYBOOK_DISABLE_TELEMETRY=1 vitest run --config vitest.storybook.config.ts",
     "test:visual:argos-metadata": "pnpm run verify:node && node scripts/verify-argos-metadata.mjs --mode storybook",
     "guardrails": "pnpm run verify:node && node scripts/check-guardrails.mjs",
     "test:evidence:screenshots": "pnpm run verify:node && node scripts/check-guardrails.mjs --suite spec-evidence-screenshots",

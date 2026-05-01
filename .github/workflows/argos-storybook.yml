@@ -101,15 +101,6 @@ jobs:
           ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS: 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2'
         run: pnpm test:visual:argos-metadata
 
-      - name: Upload Storybook visual screenshots
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: storybook-argos-screenshots
-          path: screenshots/storybook/
-          if-no-files-found: ignore
-          retention-days: 14
-
       - name: Fail on Storybook or Argos metadata defects
         if: steps.storybook.outcome != 'success' || steps.storybook-metadata.outcome != 'success'
         run: exit 1
