@@ -28,8 +28,8 @@
 
 **Purpose**: Lock the scope guard and capture pre-migration baseline before any code change.
 
-- [ ] T001 Capture pre-migration EXPLAIN QUERY PLAN baseline for the canonical legacy query set (agent-queue selection, task-list filter-by-workspace, task select-by-id, sync-owner-less poller selection — full SQL list pinned inside the test fixture) and write the plans under `src/lib/__tests__/__fixtures__/explain-query-plan-pre-m62.json`. The harness re-runs post-migration in T012; any planner delta fails CI per plan.md regression-safety gates.
-- [ ] T002 [P] Create the strict-scope guardrail script `scripts/check-strict-scope.sh` that runs `git diff origin/main...HEAD --name-only --diff-filter=A | grep -E '^src/.*\\.(ts|tsx)$'` and fails when output is non-empty (per plan §Strict Scope reviewer guard). Wire it into `pnpm test:all` via `package.json` script `check:strict-scope`. NO new TS/TSX modules MUST be introduced.
+- [X] T001 Capture pre-migration EXPLAIN QUERY PLAN baseline for the canonical legacy query set (agent-queue selection, task-list filter-by-workspace, task select-by-id, sync-owner-less poller selection — full SQL list pinned inside the test fixture) and write the plans under `src/lib/__tests__/__fixtures__/explain-query-plan-pre-m62.json`. The harness re-runs post-migration in T012; any planner delta fails CI per plan.md regression-safety gates.
+- [X] T002 [P] Create the strict-scope guardrail script `scripts/check-strict-scope.sh` that runs `git diff origin/main...HEAD --name-only --diff-filter=A | grep -E '^src/.*\\.(ts|tsx)$'` and fails when output is non-empty (per plan §Strict Scope reviewer guard). Wire it into `pnpm test:all` via `package.json` script `check:strict-scope`. NO new TS/TSX modules MUST be introduced.
 
 **Checkpoint**: Baseline captured, scope guard active.
 
