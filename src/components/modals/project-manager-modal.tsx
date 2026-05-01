@@ -48,6 +48,18 @@ interface TriageConflictState {
   message: string
 }
 
+// SPEC-006 / FR-035, FR-040, FR-041 — area_slug_conflict surfaced inline
+// when another project in the workspace already holds the desired slug.
+interface AreaSlugConflictState {
+  projectId: number
+  existingProjectId: number
+  existingProjectSlug: string
+  message: string
+}
+
+// SPEC-006 / FR-034 — RFC 1123 / Kubernetes DNS label, max 32 chars.
+const AREA_SLUG_REGEX = /^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$/
+
 interface Agent {
   id: number
   name: string
@@ -89,9 +101,11 @@ export function ProjectManagerModal({
     github_default_branch: string
     is_repo_sync_owner: boolean
     is_triage_project: boolean
-  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main', is_repo_sync_owner: false, is_triage_project: false })
+    area_slug: string
+  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main', is_repo_sync_owner: false, is_triage_project: false, area_slug: '' })
   const [ownerConflict, setOwnerConflict] = useState<OwnerConflictState | null>(null)
   const [triageConflict, setTriageConflict] = useState<TriageConflictState | null>(null)
+  const [areaSlugConflict, setAreaSlugConflict] = useState<AreaSlugConflictState | null>(null)
   const { activeProductLineScope, activeProductLine } = useMissionControl()
 
   // SPEC-006 / FR-040b — banner visibility derived client-side from the
@@ -198,6 +212,7 @@ export function ProjectManagerModal({
     setEditingId(project.id)
     setOwnerConflict(null)
     setTriageConflict(null)
+    setAreaSlugConflict(null)
     setEditForm({
       description: project.description || '',
       github_repo: project.github_repo || '',
@@ -208,6 +223,7 @@ export function ProjectManagerModal({
       github_default_branch: project.github_default_branch || 'main',
       is_repo_sync_owner: !!project.is_repo_sync_owner,
       is_triage_project: !!project.is_triage_project,
+      area_slug: project.area_slug ?? '',
     })
   }
 
@@ -238,6 +254,7 @@ export function ProjectManagerModal({
           message: String(data.message ?? 'Another project owns this repo.'),
         })
         setTriageConflict(null)
+        setAreaSlugConflict(null)
         return false
       }
       if (response.status === 409 && data?.error === 'triage_conflict') {
@@ -248,6 +265,18 @@ export function ProjectManagerModal({
           message: String(data.message ?? 'Another project is the triage project.'),
         })
         setOwnerConflict(null)
+        setAreaSlugConflict(null)
+        return false
+      }
+      if (response.status === 409 && data?.error === 'area_slug_conflict') {
+        setAreaSlugConflict({
+          projectId: project.id,
+          existingProjectId: data.existing_area_slug_project_id as number,
+          existingProjectSlug: String(data.existing_area_slug_project_slug),
+          message: String(data.message ?? 'Another project uses this area slug.'),
+        })
+        setOwnerConflict(null)
+        setTriageConflict(null)
         return false
       }
       if (!response.ok) {
@@ -255,6 +284,7 @@ export function ProjectManagerModal({
       }
       setOwnerConflict(null)
       setTriageConflict(null)
+      setAreaSlugConflict(null)
       return true
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update project')
@@ -569,6 +599,35 @@ export function ProjectManagerModal({
                               </div>
                             </div>
                           )}
+                          <div className="mt-2">
+                            <label className="block text-xs text-muted-foreground mb-1">
+                              Area slug (FR-034) — `area:&lt;slug&gt;` GitHub label routes to this project
+                            </label>
+                            <input
+                              type="text"
+                              value={editForm.area_slug}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, area_slug: e.target.value }))}
+                              placeholder="qa, dev, infra, frontend (lowercase; 1-32 chars; RFC 1123)"
+                              className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm font-mono"
+                            />
+                            {editForm.area_slug.length > 0 && !AREA_SLUG_REGEX.test(editForm.area_slug) && (
+                              <div className="mt-1 text-xs text-red-400">
+                                Invalid format. Use lowercase alphanumeric with optional hyphens
+                                (RFC 1123, 1-32 chars). Examples: <code className="font-mono">qa</code>,
+                                <code className="font-mono">product-line-a</code>.
+                              </div>
+                            )}
+                            {areaSlugConflict && areaSlugConflict.projectId === project.id && (
+                              <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                <div className="font-medium">Area slug conflict</div>
+                                <div className="mt-0.5">
+                                  Project <code className="font-mono">{areaSlugConflict.existingProjectSlug}</code>{' '}
+                                  (id={areaSlugConflict.existingProjectId}) already uses this slug.{' '}
+                                  {areaSlugConflict.message}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       )}
 

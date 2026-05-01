@@ -691,3 +691,100 @@ describe('SPEC-006 / T033 — is_triage_project exclusivity (FR-036)', () => {
     }).not.toThrow()
   })
 })
+
+// ── T042 — area_slug regex validation (FR-034) ──────────────────────
+
+describe('SPEC-006 / T042 — area_slug regex validation (FR-034)', () => {
+  it.each([
+    ['q'],
+    ['qa'],
+    ['qa-1'],
+    ['a--b'],
+    ['area-name-32-chars-aaaaaaaaaaaaa'], // 32 chars
+  ])('valid: %s → 200', async (slug) => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const id = seedProject(db, { workspaceId: 1, slug: 'p1' })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(buildRequest({ body: { area_slug: slug } }), buildParams(id))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { project: { area_slug: string } }
+    expect(body.project.area_slug).toBe(slug)
+  })
+
+  it.each([
+    ['Q A!'],
+    [' qa '],
+    ['qa-'],
+    ['-qa'],
+    ['a'.repeat(33)],
+    [''],
+  ])('invalid: %s → 400 invalid_area_slug, no DB write', async (slug) => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const id = seedProject(db, { workspaceId: 1, slug: 'p1' })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(buildRequest({ body: { area_slug: slug } }), buildParams(id))
+    expect(res.status).toBe(400)
+    const body = (await res.json()) as { error: string; field?: string }
+    expect(body.error).toBe('invalid_area_slug')
+    expect(body.field).toBe('area_slug')
+
+    const after = db
+      .prepare(`SELECT area_slug FROM projects WHERE id = ?`)
+      .get(id) as { area_slug: string | null }
+    expect(after.area_slug).toBeNull()
+  })
+
+  it('null clears area_slug (200)', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const id = seedProject(db, { workspaceId: 1, slug: 'p1', areaSlug: 'qa' })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(buildRequest({ body: { area_slug: null } }), buildParams(id))
+    expect(res.status).toBe(200)
+    const after = db
+      .prepare(`SELECT area_slug FROM projects WHERE id = ?`)
+      .get(id) as { area_slug: string | null }
+    expect(after.area_slug).toBeNull()
+  })
+})
+
+// ── T043 — area_slug_conflict 409 (FR-035) ──────────────────────────
+
+describe('SPEC-006 / T043 — area_slug_conflict 409 shape (FR-035)', () => {
+  it('returns hybrid 409 shape when another project in the workspace already holds the slug', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const aId = seedProject(db, { workspaceId: 1, slug: 'p-a', areaSlug: 'qa' })
+    const bId = seedProject(db, { workspaceId: 1, slug: 'p-b' })
+    getDatabaseMock.mockReturnValue(db)
+
+    const res = await PUT(buildRequest({ body: { area_slug: 'qa' } }), buildParams(bId))
+    expect(res.status).toBe(409)
+    const body = (await res.json()) as {
+      error: string
+      message: string
+      existing_area_slug_project_id: number
+      existing_area_slug_project_slug: string
+    }
+    expect(body.error).toBe('area_slug_conflict')
+    expect(body.existing_area_slug_project_id).toBe(aId)
+    expect(body.existing_area_slug_project_slug).toBe('p-a')
+    expect(body.message).toMatch(/qa/)
+
+    // DB unchanged.
+    const bRow = db
+      .prepare(`SELECT area_slug FROM projects WHERE id = ?`)
+      .get(bId) as { area_slug: string | null }
+    expect(bRow.area_slug).toBeNull()
+  })
+})

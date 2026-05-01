@@ -6,6 +6,7 @@
 
 import { getDatabase, db_helpers } from '@/lib/db'
 import { logger } from '@/lib/logger'
+import { resolveFlag } from '@/lib/feature-flags'
 import {
   fetchIssues,
   fetchIssue,
@@ -18,6 +19,7 @@ import {
   ALL_MC_LABELS,
   ALL_STATUS_LABEL_NAMES,
   ALL_PRIORITY_LABEL_NAMES,
+  ALL_AREA_LABEL_NAMES,
   statusToLabel,
   labelToStatus,
   priorityToLabel,
@@ -25,6 +27,7 @@ import {
   type TaskStatus,
   type TaskPriority,
 } from '@/lib/github-label-map'
+import type Database from 'better-sqlite3'
 
 /**
  * Idempotently create Mission Control labels on a GitHub repo.
@@ -46,6 +49,120 @@ export async function initializeLabels(repo: string, _workspaceId?: number): Pro
   logger.info({ repo }, 'GitHub labels initialized')
 }
 
+// ── SPEC-006 / FR-009..FR-014 — area-routing cache + parser ──────────
+//
+// `loadAreaRoutingCache` is built ONCE per `pullFromGitHub` invocation.
+// It resolves both:
+//   (a) `slugToProjectId` — every project in the workspace whose
+//       `area_slug` is non-NULL maps to its project id. Includes a
+//       project that uses `area_slug='triage'` even when its
+//       `is_triage_project=0` (FR-014 amendment: the cache wins for
+//       single_match, the triage flag is the routing authority for
+//       ambiguous issues only).
+//   (b) `triageProjectId` — the workspace's triage project id, or
+//       null when no project has `is_triage_project=1`.
+//
+// One SELECT, no JOINs, lookup is O(1). The migration provides
+// `idx_projects_workspace_area_slug` and the partial unique index
+// `idx_projects_one_triage_per_workspace` so this query is index-backed.
+export interface AreaRoutingCache {
+  slugToProjectId: Map<string, number>
+  triageProjectId: number | null
+}
+
+export function loadAreaRoutingCache(
+  db: Database.Database,
+  workspaceId: number,
+): AreaRoutingCache {
+  const rows = db.prepare(`
+    SELECT id, area_slug, is_triage_project
+    FROM projects
+    WHERE workspace_id = ?
+  `).all(workspaceId) as Array<{
+    id: number
+    area_slug: string | null
+    is_triage_project: number
+  }>
+  const slugToProjectId = new Map<string, number>()
+  let triageProjectId: number | null = null
+  for (const row of rows) {
+    if (row.area_slug) {
+      slugToProjectId.set(row.area_slug, row.id)
+    }
+    if (row.is_triage_project === 1 && triageProjectId === null) {
+      triageProjectId = row.id
+    }
+  }
+  return { slugToProjectId, triageProjectId }
+}
+
+// Parse `area:*` labels from a GitHub issue. Lowercase, prefix-stripped,
+// empty values (`area:` alone) skipped, deduplicated in input order.
+function parseAreaLabels(labelNames: string[]): string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const raw of labelNames) {
+    if (typeof raw !== 'string') continue
+    const lower = raw.toLowerCase()
+    if (!lower.startsWith('area:')) continue
+    const value = lower.slice(5)
+    if (value.length === 0) continue
+    if (seen.has(value)) continue
+    seen.add(value)
+    out.push(value)
+  }
+  return out
+}
+
+type RoutingReason =
+  | 'single_match'
+  | 'no_label'
+  | 'multi_label'
+  | 'no_match'
+  | 'no_triage'
+
+export interface RoutingResolution {
+  resolvedProjectId: number | null
+  reason: RoutingReason
+  areaLabels: string[]
+}
+
+// FR-010..FR-014 + FR-014 amendment: resolve area labels to a project.
+//   - exactly one match in cache → single_match → that project
+//   - zero area labels → no_label → triage (or no_triage if no triage)
+//   - multiple area labels → multi_label → triage (or no_triage)
+//   - exactly one unmatched area label → no_match → triage (or no_triage)
+// Triage authority is the `is_triage_project=1` flag, NOT the slug
+// `area_slug='triage'` (FR-014 amendment).
+export function resolveAreaRouting(
+  areaLabels: string[],
+  cache: AreaRoutingCache,
+  syncOwnerProjectId: number,
+): RoutingResolution {
+  if (areaLabels.length === 1) {
+    const hit = cache.slugToProjectId.get(areaLabels[0])
+    if (hit !== undefined) {
+      return { resolvedProjectId: hit, reason: 'single_match', areaLabels }
+    }
+    // Single label, no match → triage (or no_triage fallback).
+    if (cache.triageProjectId !== null) {
+      return { resolvedProjectId: cache.triageProjectId, reason: 'no_match', areaLabels }
+    }
+    return { resolvedProjectId: syncOwnerProjectId, reason: 'no_triage', areaLabels }
+  }
+  if (areaLabels.length === 0) {
+    if (cache.triageProjectId !== null) {
+      return { resolvedProjectId: cache.triageProjectId, reason: 'no_label', areaLabels }
+    }
+    return { resolvedProjectId: syncOwnerProjectId, reason: 'no_triage', areaLabels }
+  }
+  // Multi-label.
+  if (cache.triageProjectId !== null) {
+    return { resolvedProjectId: cache.triageProjectId, reason: 'multi_label', areaLabels }
+  }
+  return { resolvedProjectId: syncOwnerProjectId, reason: 'no_triage', areaLabels }
+}
+
 /**
  * Push a single MC task to GitHub (create or update issue).
  */
@@ -59,11 +176,13 @@ export async function pushTaskToGitHub(
     github_issue_number?: number | null
     github_repo?: string | null
     workspace_id?: number
+    project_id?: number | null
   },
   project: {
     id: number
     github_repo?: string | null
     github_sync_enabled?: number | null
+    area_slug?: string | null
   }
 ): Promise<void> {
   const repo = task.github_repo || project.github_repo
@@ -76,6 +195,34 @@ export async function pushTaskToGitHub(
   const priorityLabel = priorityToLabel(task.priority as TaskPriority)
   const state: 'open' | 'closed' = task.status === 'done' ? 'closed' : 'open'
 
+  // SPEC-006 / FR-016, FR-017 — outbound area:<slug> emission.
+  // Resolve the workspace's area-routing flag and the project's
+  // `area_slug` from the DB. When flag is ON and area_slug is non-NULL,
+  // append `area:<slug>` alongside mc:* and priority:* labels. When flag
+  // is OFF or area_slug IS NULL, no area:* label is emitted (byte-exact
+  // legacy behavior).
+  let areaLabel: string | null = null
+  if (task.workspace_id && task.project_id !== null && task.project_id !== undefined) {
+    try {
+      const flagsRow = db.prepare(
+        `SELECT feature_flags FROM workspaces WHERE id = ?`,
+      ).get(task.workspace_id) as { feature_flags: string | null } | undefined
+      const flagOn = resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
+        workspaceFlags: flagsRow?.feature_flags ?? null,
+      })
+      if (flagOn) {
+        const projectRow = db.prepare(
+          `SELECT area_slug FROM projects WHERE id = ? AND workspace_id = ?`,
+        ).get(task.project_id, task.workspace_id) as { area_slug: string | null } | undefined
+        if (projectRow?.area_slug) {
+          areaLabel = `area:${projectRow.area_slug}`
+        }
+      }
+    } catch (err) {
+      logger.warn({ err, taskId: task.id }, 'Failed to resolve area_slug for outbound sync')
+    }
+  }
+
   if (task.github_issue_number) {
     // Update existing issue
     let existingIssue: GitHubIssue
@@ -86,12 +233,24 @@ export async function pushTaskToGitHub(
       return
     }
 
-    // Keep non-MC labels, replace MC labels with current values
+    // Keep non-MC labels, replace MC labels with current values.
+    // Drop any pre-existing area:* labels so the project's current
+    // area_slug is the sole source of truth (FR-016).
     const nonMcLabels = existingIssue.labels
       .map(l => l.name)
-      .filter(name => !ALL_STATUS_LABEL_NAMES.includes(name) && !ALL_PRIORITY_LABEL_NAMES.includes(name))
+      .filter(name =>
+        !ALL_STATUS_LABEL_NAMES.includes(name)
+        && !ALL_PRIORITY_LABEL_NAMES.includes(name)
+        && !ALL_AREA_LABEL_NAMES.includes(name)
+        && !name.toLowerCase().startsWith('area:'),
+      )
 
-    const labels = [...nonMcLabels, statusLabel.name, priorityLabel.name]
+    const labels = [
+      ...nonMcLabels,
+      statusLabel.name,
+      priorityLabel.name,
+      ...(areaLabel ? [areaLabel] : []),
+    ]
 
     await updateIssue(repo, task.github_issue_number, {
       title: task.title,
@@ -108,7 +267,7 @@ export async function pushTaskToGitHub(
     logger.info({ repo, issue: task.github_issue_number }, 'Pushed task update to GitHub')
   } else if (project.github_sync_enabled) {
     // Create new issue
-    const labels = [statusLabel.name, priorityLabel.name]
+    const labels = [statusLabel.name, priorityLabel.name, ...(areaLabel ? [areaLabel] : [])]
 
     const created = await createIssue(repo, {
       title: task.title,
@@ -148,6 +307,16 @@ export async function pullFromGitHub(
   const now = Math.floor(Date.now() / 1000)
   let pulled = 0
   let pushed = 0
+
+  // SPEC-006 / FR-002, FR-009 — resolve flag once and build the area-routing
+  // cache once per pullFromGitHub invocation.
+  const flagsRow = db.prepare(
+    `SELECT feature_flags FROM workspaces WHERE id = ?`,
+  ).get(workspaceId) as { feature_flags: string | null } | undefined
+  const areaRoutingFlagOn = resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
+    workspaceFlags: flagsRow?.feature_flags ?? null,
+  })
+  const routingCache = loadAreaRoutingCache(db, workspaceId)
 
   // Find last sync time for this project
   const lastSync = db.prepare(`
@@ -197,7 +366,17 @@ export async function pullFromGitHub(
         const priority = labelToPriority(labelNames)
         const tags = labelNames.filter(l => !ALL_STATUS_LABEL_NAMES.includes(l) && !ALL_PRIORITY_LABEL_NAMES.includes(l))
 
-        db.prepare(`
+        // SPEC-006 / FR-010..FR-014 — resolve area routing on FIRST ingest
+        // ONLY (FR-015 anti-thrash). The resolved project becomes the new
+        // task's project_id. When flag is OFF, route to the calling
+        // project to preserve legacy behavior byte-exactly.
+        const areaLabels = parseAreaLabels(labelNames)
+        const resolution = resolveAreaRouting(areaLabels, routingCache, project.id)
+        const targetProjectId = areaRoutingFlagOn
+          ? (resolution.resolvedProjectId ?? project.id)
+          : project.id
+
+        const insertResult = db.prepare(`
           INSERT INTO tasks (
             title, description, status, priority, created_by,
             created_at, updated_at, tags, metadata,
@@ -212,12 +391,38 @@ export async function pullFromGitHub(
           now, now,
           JSON.stringify(tags),
           issue.number, repo, now,
-          project.id, workspaceId
+          targetProjectId, workspaceId
         )
+        const newTaskId = Number(insertResult.lastInsertRowid)
+
+        // SPEC-006 / FR-042, FR-043, FR-043a — activity row.
+        const activityType: 'area_routing_resolved' | 'area_routing_unresolved' =
+          resolution.reason === 'single_match'
+            ? 'area_routing_resolved'
+            : 'area_routing_unresolved'
+        writeAreaRoutingActivity(areaRoutingFlagOn, {
+          type: activityType,
+          entityId: newTaskId,
+          actor: 'github-sync',
+          description:
+            resolution.reason === 'single_match'
+              ? `Routed ${repo}#${issue.number} via area:${areaLabels[0]}`
+              : `Routed ${repo}#${issue.number} (${resolution.reason})`,
+          data: {
+            area_labels: areaLabels,
+            resolved_project_id: resolution.resolvedProjectId ?? targetProjectId,
+            reason: resolution.reason,
+            source: 'ingest',
+            github_issue_number: issue.number,
+            workspace_id: workspaceId,
+            github_repo: repo,
+          },
+          workspaceId,
+        })
 
         pulled++
         db_helpers.logActivity(
-          'task_created', 'task', 0, 'github-sync',
+          'task_created', 'task', newTaskId, 'github-sync',
           `Synced from GitHub: ${repo}#${issue.number}`,
           { github_issue: issue.number, github_repo: repo },
           workspaceId
