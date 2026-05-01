@@ -84,7 +84,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
 | SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Pending | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
-| SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | In Progress | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
+| SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Implemented (PR open) | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Pending | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Pending | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
 | SPEC-009 | 8 | Product Line A Pilot End-to-End Smoke | product-line-a-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
@@ -222,8 +222,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-006: Area-Label GitHub Sync
 
-- **Status:** In Progress
-- **Branch status:** Setup completed 2026-05-01; worktree at `.worktrees/006-area-label-github-sync` on branch `006-area-label-github-sync`; design concept and workflow committed at `docs/ai/specs/SPEC-006-design-concept.md` and `docs/ai/specs/SPEC-006-workflow.md`; ready for `$speckit-autopilot`.
+- **Status:** Implemented (PR open)
+- **Branch status:** PR #21 (https://github.com/racecraft-lab/mission-control/pull/21) marked ready-for-review on 2026-05-01. 30 commits on branch `006-area-label-github-sync` in worktree `.worktrees/006-area-label-github-sync`. All 7 SDD phases complete. Implementation: 64 FRs satisfied, 88+ tasks landed, 1228/1228 unit tests pass with zero regressions vs baseline. Two scope deferrals under Constitution Article XII: sync-owner re-election (operator preflight covers it) and backfill bookend activity kinds (SC-006 testable without them).
 - **Priority:** P1
 - **Branch short name:** `area-label-github-sync`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A
