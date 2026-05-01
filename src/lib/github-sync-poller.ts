@@ -126,6 +126,22 @@ async function runSyncTick(): Promise<void> {
       }
     }
 
+    // Prepare the owner-filter statement once outside the loop so we don't
+    // recompile it per candidate project. Includes `github_sync_enabled = 1`
+    // to match the M63 election semantics — a row that has
+    // is_repo_sync_owner=1 but sync disabled should NOT be treated as the
+    // owner; otherwise we'd skip every other enabled project for that repo
+    // and the workspace would silently stop syncing.
+    const ownerFilterStmt = db.prepare(`
+      SELECT id FROM projects
+      WHERE workspace_id = ?
+        AND github_repo = ?
+        AND is_repo_sync_owner = 1
+        AND github_sync_enabled = 1
+        AND status = 'active'
+      LIMIT 1
+    `)
+
     for (const project of projects) {
       try {
         const workspaceFlags = flagsForWorkspace(project.workspace_id)
@@ -138,18 +154,11 @@ async function runSyncTick(): Promise<void> {
         })
 
         if (areaRoutingOn) {
-          // FR-018 (US2): only the is_repo_sync_owner=1 project for this
-          // (workspace_id, github_repo) is allowed to poll. Non-owner rows
-          // are skipped silently to keep this branch a pure read-side
-          // filter (no DB writes from the poller).
-          const ownerRow = db.prepare(`
-            SELECT id FROM projects
-            WHERE workspace_id = ?
-              AND github_repo = ?
-              AND is_repo_sync_owner = 1
-              AND status = 'active'
-            LIMIT 1
-          `).get(project.workspace_id, project.github_repo) as
+          // FR-018 (US2): only the is_repo_sync_owner=1 + sync-enabled
+          // project for this (workspace_id, github_repo) is allowed to
+          // poll. Non-owner rows are skipped silently to keep this branch
+          // a pure read-side filter (no DB writes from the poller).
+          const ownerRow = ownerFilterStmt.get(project.workspace_id, project.github_repo) as
             | { id: number }
             | undefined
           if (!ownerRow || ownerRow.id !== project.id) {

@@ -1,6 +1,16 @@
 /**
  * Bidirectional mapping between Mission Control statuses/priorities and GitHub labels.
- * Labels use `mc:` prefix to avoid collisions with existing repo labels.
+ *
+ * Three label families are defined here:
+ *   - `mc:*`        — Mission Control task statuses (mc:backlog, mc:in-progress, ...)
+ *   - `priority:*`  — task priorities (priority:low/medium/high/critical)
+ *   - `area:*`      — SPEC-006 product-line / department routing
+ *                     (area:qa, area:dev, area:triage, ...)
+ *
+ * The `mc:` prefix on the status family is intentional, to avoid collisions
+ * with existing repo labels; `priority:*` and `area:*` are conventional GitHub
+ * label namespaces and do not use a `mc:` prefix because they are already
+ * domain-specific enough not to collide.
  */
 
 import type Database from 'better-sqlite3'

@@ -1739,10 +1739,14 @@ const migrations: Migration[] = [
 
       // Partial UNIQUE - at most one sync-owner per (workspace_id, github_repo).
       // Allows zero owners (group with no enabled projects, or pre-election state).
+      // The `github_repo IS NOT NULL` clause is required because UNIQUE indexes
+      // treat NULL as distinct in SQLite, so without it multiple
+      // is_repo_sync_owner=1 rows with NULL github_repo would coexist and the
+      // invariant would be unenforced for unconnected projects.
       db.exec(`
         CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_one_sync_owner_per_repo
         ON projects(workspace_id, github_repo)
-        WHERE is_repo_sync_owner = 1
+        WHERE is_repo_sync_owner = 1 AND github_repo IS NOT NULL
       `)
 
       // Partial UNIQUE - at most one triage project per workspace.
@@ -1768,6 +1772,14 @@ const migrations: Migration[] = [
       // enabled subset. Re-running this UPDATE is a no-op for already-elected
       // groups (the HAVING clause filters them out). Disabled-only groups
       // elect zero owners.
+      //
+      // `COALESCE(SUM(...), 0)` defends against rows where is_repo_sync_owner
+      // is NULL: SUM over an all-NULL group returns NULL, which would make
+      // the predicate `NULL = 0` (i.e., NULL/false) and skip a group that
+      // SHOULD be eligible for election. Explicit DEFAULT 0 + the backfill
+      // make this redundant in practice, but the COALESCE keeps the
+      // behavior correct under any future schema/state where the column is
+      // truly NULL.
       db.exec(`
         UPDATE projects
         SET is_repo_sync_owner = 1
@@ -1776,7 +1788,7 @@ const migrations: Migration[] = [
           WHERE p.github_repo IS NOT NULL
             AND p.github_sync_enabled = 1
           GROUP BY p.workspace_id, p.github_repo
-          HAVING SUM(p.is_repo_sync_owner) = 0
+          HAVING COALESCE(SUM(p.is_repo_sync_owner), 0) = 0
         )
       `)
     }

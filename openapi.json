@@ -5789,7 +5789,7 @@
           "Projects"
         ],
         "summary": "Update a project (SPEC-006 area-routing)",
-        "description": "PUT accepts the four SPEC-006 area-routing fields in addition to the standard PATCH fields. Validation precedence (FR-057): auth (401) -> role (403) -> scope (404) -> flag-OFF defense-in-depth (400 feature_flag_disabled) -> format (400 invalid_area_slug) -> uniqueness chain (409 area_slug_conflict -> triage_conflict -> owner_conflict) -> atomic write. Closed error-code enum: feature_flag_disabled, invalid_area_slug, area_slug_conflict, triage_conflict, owner_conflict.",
+        "description": "PUT accepts ONLY the four SPEC-006 area-routing fields (area_slug, is_triage_project, is_repo_sync_owner, transfer_owner). Standard project fields (name, description, status, etc.) continue to go through the legacy PATCH endpoint and are NOT accepted here — clients that need to change both must call PUT first (conflict-prone area-routing fields) and then PATCH for the rest. Validation precedence (FR-057): auth (401) -> role (403) -> scope (404) -> flag-OFF defense-in-depth (400 feature_flag_disabled) -> format (400 invalid_area_slug) -> uniqueness chain (409 area_slug_conflict -> triage_conflict -> owner_conflict) -> atomic write. Closed error-code enum: feature_flag_disabled, invalid_area_slug, area_slug_conflict, triage_conflict, owner_conflict.",
         "operationId": "putProject",
         "parameters": [
           {

@@ -301,6 +301,50 @@ export function ProjectManagerModal({
 
   const saveEdit = async (project: Project) => {
     try {
+      // SPEC-006 / FR-040 — area-routing PUT runs FIRST because it is the
+      // only conflict-prone branch (409 owner_conflict / triage_conflict /
+      // area_slug_conflict). Running PATCH first leaves operators with
+      // partially-applied legacy fields when PUT fails. Only call when at
+      // least one of the four area-routing fields changed; the call short-
+      // circuits otherwise to keep flag-OFF and unchanged-area-routing
+      // saves byte-identical to the legacy PATCH path.
+      const desiredIsOwner = editForm.is_repo_sync_owner
+      const ownerChanged = desiredIsOwner !== !!project.is_repo_sync_owner
+      const desiredIsTriage = editForm.is_triage_project
+      const triageChanged = desiredIsTriage !== !!project.is_triage_project
+      // Empty input is treated as "clear" → submit `null`. Treat undefined
+      // / null on the project the same as '' so toggling between empty
+      // and unchanged doesn't fire a needless PUT.
+      const trimmedAreaSlug = editForm.area_slug.trim()
+      const desiredAreaSlug = trimmedAreaSlug.length > 0 ? trimmedAreaSlug : null
+      const currentAreaSlug = project.area_slug ?? null
+      const areaSlugChanged = desiredAreaSlug !== currentAreaSlug
+
+      if (ownerChanged || triageChanged || areaSlugChanged) {
+        // Defensive client-side regex check so we don't waste a round-trip
+        // on a value the server will reject with `invalid_area_slug`.
+        if (areaSlugChanged && desiredAreaSlug !== null && !AREA_SLUG_REGEX.test(desiredAreaSlug)) {
+          setError('Area slug must be RFC 1123 / Kubernetes DNS label (lowercase, digits, hyphens; 1-32 chars; cannot start/end with hyphen).')
+          return
+        }
+        const areaBody: Record<string, unknown> = {}
+        if (ownerChanged) areaBody.is_repo_sync_owner = desiredIsOwner
+        if (triageChanged) areaBody.is_triage_project = desiredIsTriage
+        if (areaSlugChanged) areaBody.area_slug = desiredAreaSlug
+        const ok = await submitAreaRouting(project, areaBody)
+        if (!ok) {
+          // Either an owner_conflict / triage_conflict / area_slug_conflict
+          // surfaced inline or another error in `error`. Bail without
+          // dismissing the editor and BEFORE we mutate any legacy fields,
+          // so the operator can act on the conflict without dealing with
+          // a half-applied save.
+          return
+        }
+      }
+
+      // Legacy fields go through the existing PATCH endpoint. This runs
+      // ONLY after the area-routing PUT either succeeded or had no work
+      // to do.
       const body: Record<string, unknown> = {
         description: editForm.description,
         github_repo: editForm.github_repo || null,
@@ -316,27 +360,6 @@ export function ProjectManagerModal({
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to update project')
-
-      // SPEC-006 / FR-040 — area-routing fields go through the new PUT
-      // handler. Only call when at least one toggle changed to keep the
-      // legacy PATCH path side-effect free.
-      const desiredIsOwner = editForm.is_repo_sync_owner
-      const ownerChanged = desiredIsOwner !== !!project.is_repo_sync_owner
-      const desiredIsTriage = editForm.is_triage_project
-      const triageChanged = desiredIsTriage !== !!project.is_triage_project
-
-      if (ownerChanged || triageChanged) {
-        const areaBody: Record<string, unknown> = {}
-        if (ownerChanged) areaBody.is_repo_sync_owner = desiredIsOwner
-        if (triageChanged) areaBody.is_triage_project = desiredIsTriage
-        const ok = await submitAreaRouting(project, areaBody)
-        if (!ok) {
-          // Either an owner_conflict / triage_conflict surfaced inline or
-          // another error in `error`. Bail without dismissing the editor
-          // so the operator can act.
-          return
-        }
-      }
 
       // Sync agent assignments
       const currentAgents = project.assigned_agents || []
@@ -575,6 +598,38 @@ export function ProjectManagerModal({
                                 Project <code className="font-mono">{ownerConflict.existingProjectSlug}</code>{' '}
                                 (id={ownerConflict.existingProjectId}) currently owns this repo.{' '}
                                 {ownerConflict.message}
+                              </div>
+                              <div className="mt-2 flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  data-testid="transfer-ownership-button"
+                                  onClick={async () => {
+                                    // FR-037 / FR-058 — atomic transfer.
+                                    // Re-submit the same is_repo_sync_owner=true
+                                    // request with `transfer_owner: true`. The
+                                    // server clears the existing owner and sets
+                                    // the new one in a single transaction; the
+                                    // 409 surface goes away on success.
+                                    const ok = await submitAreaRouting(project, {
+                                      is_repo_sync_owner: true,
+                                      transfer_owner: true,
+                                    })
+                                    if (ok) {
+                                      // Refresh the project list so the new
+                                      // owner state is visible. submitAreaRouting
+                                      // already cleared the conflict banners.
+                                      await load()
+                                      await onChanged?.()
+                                    }
+                                  }}
+                                  className="rounded border border-amber-400/50 bg-amber-500/20 px-2 py-1 font-medium text-amber-100 hover:bg-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                >
+                                  Transfer ownership
+                                </button>
+                                <span className="text-amber-300/70">
+                                  This clears <code className="font-mono">{ownerConflict.existingProjectSlug}</code>{' '}
+                                  as owner and sets this project instead.
+                                </span>
                               </div>
                             </div>
                           )}

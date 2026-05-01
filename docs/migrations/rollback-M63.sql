@@ -10,7 +10,17 @@
 --   minimum SQLite version (better-sqlite3 v12) bundles 3.45+, so DROP COLUMN
 --   works in production. However, the operation is NOT instant — for very large
 --   tasks/projects tables, schedule rollback during a maintenance window.
---   Re-running this file after an interrupted rollback is safe (DROP IF EXISTS).
+--
+-- Rerun-safety:
+--   The DROP INDEX, json_remove, and DELETE FROM schema_migrations statements
+--   in this file are rerun-safe (DROP INDEX IF EXISTS, json_remove returns the
+--   original on miss, DELETE on a non-matching id is a no-op).
+--   The ALTER TABLE ... DROP COLUMN statements are NOT rerunnable: SQLite has
+--   no DROP COLUMN IF EXISTS, so a second invocation after the columns are
+--   already gone will raise "no such column" and abort. Operators replaying an
+--   interrupted rollback should comment out (or skip) any DROP COLUMN whose
+--   column has already been removed, and rely on the index/json_remove/
+--   schema_migrations cleanup steps to converge.
 --
 -- Index drop order is the reverse of CREATE order (defensive — SQLite does not
 -- require ordered drops, but reverse order keeps EXPLAIN logs readable).
