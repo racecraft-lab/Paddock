@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-04-30T23:50:12Z",
-  "active_step": "Setup complete",
-  "status": "Ready for Autopilot",
+  "updated_at": "2026-05-01T20:21:04Z",
+  "active_step": "Phase 7: Implement",
+  "status": "SPEC-004 implementation tasks T001-T087 are complete; T088 commit evidence is blocked by sandbox git metadata write restrictions",
   "notes": [
     "SPEC-004 setup completed on branch 004-task-pipeline-engine from origin/main bce89a2.",
     "Workflow file docs/ai/specs/SPEC-004-workflow.md was generated for Task Pipeline Engine and Declarative Routing and is ready for autopilot review.",
@@ -35,7 +35,39 @@
     "Owner clarification on 2026-04-30: every `retry_chain_advancement` 200 OK response returns normal task detail data plus bounded `chain_retry` fields (`recovery_class`, `retry_attempt`, `recovery_outcome`, `successor_task_id`, `chain_terminated`, `idempotent_successor`) with outcomes `output_still_invalid`, `stall_persisted`, `successor_created`, `successor_already_exists`, or `chain_terminated`, and never leaks full corrected output, parsed output, or routing traces.",
     "Owner clarification on 2026-04-30: every `retry_chain_advancement` 200 OK recovery activity uses stable `activities.data.reason_code='task_pipeline_retry_chain_advancement'` and preserves the selected original failure/stall reason in `previous_reason_code`; retry 409 rejections remain side-effect-free and write no activity.",
     "Owner clarification on 2026-04-30: post-recovery retry calls follow Option C: if a successor exists for the parent, return `200 OK` with `recovery_outcome='successor_already_exists'`, `successor_task_id`, `chain_terminated=false`, and `idempotent_successor=true`; if the selected failure/stall was already resolved by `recovery_outcome='chain_terminated'`, later retry calls return side-effect-free `409 Conflict` with `retry_rejection_reason='retry_not_eligible'` until a new retry-eligible SPEC-004 failure/stall activity is recorded.",
-    "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded."
+    "Cleanup remains unsafe by default. Prior-spec cleanup may be applied only after archive success, merge/tree references, recovery commands, a clean safe base branch, and safeToApplyCleanup=true are recorded.",
+    "Archive Sweep dry-run evidence recorded on 2026-05-01T02:25:33Z: active spec directories were specs/003-global-aegis and specs/004-task-pipeline-engine; SPEC-001, SPEC-002, and SPEC-002A are already archived/removed from active specs; specs/003-global-aegis remains an eligible prior merged candidate; SPEC-004 was excluded; safeToApplyCleanup=false and no cleanup was applied.",
+    "Phase 0 prerequisites passed on 2026-05-01T02:25:33Z: check-prerequisites all_pass=true, branch 004-task-pipeline-engine, isolated worktree, clean status, pnpm package manager, default settings, and project commands discovered.",
+    "Phase 1 Specify completed on 2026-05-01T02:30:30Z: branch guard returned 004-task-pipeline-engine; generated specs/004-task-pipeline-engine/spec.md and specs/004-task-pipeline-engine/checklists/requirements.md; .specify/feature.json points to specs/004-task-pipeline-engine; G1 unresolved clarification marker count was 0; Clarify was not run.",
+    "Clarify session 1 started on 2026-05-01T02:31:53Z for task creation parity and side effects.",
+    "Clarify session 1 worker 019de161-8dd0-78a3-83ec-64e8c26bbb62 was closed on 2026-05-01T15:06:03Z after remaining running without a completed result; session 1 is being restarted from the current clean generated-spec state.",
+    "Clarify session 1 restarted with patched local clarify-executor 019de430-0c07-7f12-9f67-efd0de48c321 and completed on 2026-05-01T15:41:36Z with a read-only Clarify Question Set; no files were edited by the worker. Q1 source-profiled createTask ownership and Q3 deferred outbound sync after transaction commit were routed to codebase/spec consensus.",
+    "Clarify session 1 consensus completed on 2026-05-01T15:45:27Z: Q1 resolved in Round 1 with codebase/spec agreement; Q3 escaped to Round 2 due spec-context low confidence and resolved with domain agreement. specs/004-task-pipeline-engine/spec.md now records source profiles, bounded createTask return metadata, the callsite behavior matrix, and post-commit outbound sync timing for chain-created tasks. Workflow clarify results and consensus log were updated.",
+    "Clarify session 2 worker 019de438-6456-7ce0-80fd-a1fc05c6dc96 completed on 2026-05-01T15:50:33Z with a read-only Clarify Question Set; no files were edited by the worker. Dependency/audit and numeric bound answers are ready for parent application, and security-tagged validator/routing questions Q3-Q5 were routed to all-analyst consensus before artifact edits.",
+    "Clarify session 2 consensus completed on 2026-05-01T16:40:12Z: all three analysts agreed to encode exact workflow constants for AJV/schema safety, routing grammar, JSONPath execution disabling, forbidden primitives, pre-validation caps, 10 ms budget stall behavior, and normal no-successor termination; specs/004-task-pipeline-engine/spec.md and the workflow consensus log were updated.",
+    "Autopilot paused before spawning Clarify session 3 because the local sandbox exec/apply_patch layer returned Too many open files (os error 24) after the all-analyst consensus round; all spawned consensus agents were closed. Restart Codex or relaunch with a higher open-file limit before continuing the next subagent step.",
+    "Clarify session 3 completed on 2026-05-01T17:09:22Z: Q1 empty-chain behavior and Q4 template-hash canonicalization were applied directly; Q2 disabled-target semantics resolved in Round 1 codebase/spec consensus; Q3 workflow-template Product Line scoping resolved with codebase/spec/domain security consensus. specs/004-task-pipeline-engine/spec.md and docs/ai/specs/SPEC-004-workflow.md were updated.",
+    "G2 passed on 2026-05-01T17:09:22Z via validate-gate.sh G2 specs/004-task-pipeline-engine with 0 [NEEDS CLARIFICATION] markers. Phase 3 Plan is now active.",
+    "Phase 3 Plan completed on 2026-05-01T17:16:40Z: generated plan.md, research.md, data-model.md, quickstart.md, and contracts/api-workflows.md, contracts/task-chain-engine.md, contracts/task-create.md; setup-plan and update-agent-context ran; AGENTS.md was updated with SPEC-004 active technology; marker scan was clean.",
+    "G3 passed on 2026-05-01T17:16:40Z via validate-gate.sh G3 specs/004-task-pipeline-engine with plan.md present and 0 unresolved markers. Phase 4 Checklist - Data Integrity is now active.",
+    "Data Integrity checklist completed on 2026-05-01T17:25:07Z: 16 items generated, 3 gaps found and remediated in spec.md, plan.md, data-model.md, contracts/task-chain-engine.md, and checklists/data-integrity.md; direct rg marker fallback found 0 remaining [Gap] markers after count-markers.sh hit a zero-match jq --argjson bug. No consensus items remained.",
+    "Safe Evaluation checklist completed on 2026-05-01T17:33:31Z: 20 items generated, 4 gaps found and remediated in spec.md, plan.md, quickstart.md, and checklists/safe-evaluation.md; count-markers.sh returned total=0, spec=0, plan=0, checklists=0. No consensus items remained.",
+    "Scheduler Safety checklist completed on 2026-05-01T17:38:17Z: 30 items generated, 0 gaps found, and no artifact remediation was required; count-markers.sh returned total=0, spec=0, plan=0, checklists=0. No consensus items remained.",
+    "Regression Safety checklist completed on 2026-05-01T17:43:34Z: 34 items generated, 0 gaps found, and no artifact remediation was required; count-markers.sh returned total=0, spec=0, plan=0, checklists=0. No consensus items remained. G4 is complete and Phase 5 Tasks is now active.",
+    "Phase 5 Tasks completed on 2026-05-01T17:51:03Z: generated specs/004-task-pipeline-engine/tasks.md with 88 tasks across 8 phases/groups, 32 parallel-safe tasks, and full P3-AC1 through P3-AC12/P3-AC6a/P3-AC6b coverage. validate-gate.sh G5 passed with task_count=88 and marker scan found 0 gaps/clarifications/critical/high/medium/low findings. Phase 6 Analyze is now active.",
+    "Phase 6 Analyze completed on 2026-05-01T17:56:33Z: one HIGH downstream-boundary wording drift was found and remediated by adding SPEC-006 to the G6 gate, scheduler-safety workflow guardrail, and plan static guardrail wording. count-markers.sh findings returned total=0 after remediation; no consensus items remain. Phase 7 Implement is pending.",
+    "Implementation Phase 0 setup baseline completed on 2026-05-01T18:07:12Z: T001-T008 are complete. Verified SPEC-001 chain fields in migrations 054/055, recorded direct task INSERT migration matrix, confirmed exact runtime pins in package.json and pnpm-lock.yaml, added src/types/workflow-template.ts to strict scope, added M62 one-successor index migration and rollback docs, wired pnpm spec004:guardrails and CI audit/guardrail steps, and captured RED guardrail evidence showing only the expected unmigrated production task INSERT callsites remain. Local pnpm audit --audit-level high is blocked by registry ENOTFOUND and remains a final CI/local-network verification obligation.",
+    "Implementation foundational strict-scope surfaces completed on 2026-05-01T18:13:40Z: T009-T016 are complete. Added workflow-template chain types, schema/routing fixture manifests, createTask/validator/evaluator scaffolds, no-op advance/retry dispatch seams, and M62 duplicate preflight/index migration. `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed; `pnpm spec004:guardrails` remains RED only on the four direct task INSERT callsites owned by US1.",
+    "US1 shared task creation completed on 2026-05-01T18:21:04Z for T017-T021 and T023-T030. Added focused RED tests for API, GitHub import, GitHub sync, recurring, pipeline-successor, callsite matrix, and direct-insert guard; implemented shared createTask source profiles, bounded result shape, caller-owned transaction support, duplicate guards, deferred outbound intent, migrated direct runtime task INSERT callsites, and added the task-dispatch pipeline-successor seam. Verification passed: focused task-create Vitest suite 13/13, `pnpm spec004:guardrails`, and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`. T022 remains pending because full flag-off/unbound/null-chain completion regression coverage depends on the later chain-advancement runtime and the current slice must not implement that behavior.",
+    "US3 validator/evaluator safety completed on 2026-05-01T18:31:37Z for T031-T037 and T039-T043. RED evidence: focused US3 Vitest suite ran 22 tests with 16 real assertion failures against scaffolds. GREEN/REFACTOR evidence: same focused suite passed 22/22 after implementing constrained AJV validation, schema/output caps, conservative pattern enforcement, LRU cache, p95/cache hooks, hand-written routing parser, JSONPath `eval: false`, forbidden syntax rejection, caps, and bounded result shaping. Verification passed: `pnpm test src/lib/__tests__/output-schema-validator.bounds.test.ts src/lib/__tests__/output-schema-validator.ajv-safety.test.ts src/lib/__tests__/output-schema-validator.patterns.test.ts src/lib/__tests__/output-schema-validator.performance.test.ts src/lib/__tests__/routing-rule-evaluator.validity.test.ts src/lib/__tests__/routing-rule-evaluator.adversarial.test.ts src/lib/__tests__/routing-rule-evaluator.budget.test.ts src/lib/__tests__/task-pipeline-static-guardrails.test.ts`, `pnpm spec004:guardrails`, and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`. T038 remains pending because exact advancement stall activity reason-code assertions require the later `advanceTaskChain` runtime; evaluator-level routing rejection and budget outputs are covered by T035-T037.",
+    "US2 workflow-template API/UI chain-field slice completed on 2026-05-01T18:44:17Z for T044-T048 and T053-T055. RED evidence: focused workflow suite ran 14 tests with 14 real failures against the legacy route/editor. GREEN/REFACTOR evidence: same suite passed 14/14 after adding validation helpers, Product Line scoped `/api/workflows` list/create/update/usage/delete behavior, chain-field persistence/response parsing, query-parameter delete compatibility with JSON-body backward compatibility, and scoped editor controls/error display. Verification passed: `pnpm test src/app/api/workflows/route.test.ts src/app/api/workflows/route.scope.test.ts src/app/api/workflows/route.delete.test.ts src/components/panels/orchestration-bar.test.tsx`, `pnpm spec004:guardrails`, and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`.",
+    "Chain advancement runtime, lineage, and M62 slice completed on 2026-05-01T18:59:25Z for T022, T038, T049-T052, T056-T058, and T072-T082. RED evidence: focused chain suite ran 30 tests with 26 real failures against the no-op runtime and missing terminal hooks. GREEN/REFACTOR evidence: focused chain suite passed 31/31 after adding overhead p95 coverage and implementing feature-flagged advancement eligibility, structured-output validation from tasks.resolution, ordered routing/static fallback/termination, target and assignee stalls with stable reason_code activity data, transactional lineage/successor creation through createTask, post-commit sync intent, existing-successor idempotency, M62 tests, downstream scope guard, and terminal-success hooks. Verification passed: focused chain/M62/downstream Vitest suite 31/31 and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`.",
+    "US4 explicit retry recovery completed on 2026-05-01T19:13:53Z for T059-T071. RED evidence: focused retry suite ran 15 tests with 15 real failures (`POST is not a function` plus ordinary failed-to-done advancement regression) before implementation. GREEN/REFACTOR evidence: focused retry suite passed 15/15 after adding operator-only `POST /api/tasks/[id]` action `retry_chain_advancement`, latest eligible activity selection, no `activity_id` override, side-effect-free 409 rejection enums, template provenance hashes and drift confirmation, failed-parent revalidation/restoration, terminal-success stall retry, repeated attempts, existing-successor idempotency, chain termination closeout, bounded `chain_retry` response shape, and recovery activity metadata without full output/routing leakage. Relevant chain regression suite also passed 22/22, and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed.",
+    "Phase 8 documentation and guardrails completed on 2026-05-01T19:59:17Z for T083-T085. Updated docs/orchestration.md, added tests/e2e/task-pipeline-workflow-templates.spec.ts, expanded scripts/check-spec-004-guardrails.mjs and quality-gate coverage, added safe-regex typing to strict scope, and moved invalid route test exports into helper modules so Next route modules expose only allowed fields.",
+    "Final local verification evidence recorded on 2026-05-01T19:59:17Z for T087. Passing gates: `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`, `pnpm spec004:guardrails`, `pnpm typecheck`, `pnpm lint` with 10 warnings/0 errors, focused task-create 13/13, retry 15/15, chain regression 22/22, workflow/API/UI guardrails 17/17, route-export regressions 7/7, and `NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/next-font-google-mock.js pnpm exec next build --webpack`.",
+    "Final audit remediation completed on 2026-05-01T20:05:27Z for T086/P3-AC8. Updated package.json and pnpm-lock.yaml with next/eslint-config-next patched-line upgrades plus narrow pnpm overrides for vulnerable transitive minimatch, rollup, flatted, picomatch, and defu ranges. `pnpm audit:high` passed after network approval; npm reported 11 remaining vulnerabilities, all low/moderate, with 0 high.",
+    "Remaining blockers on 2026-05-01T20:05:27Z: `pnpm test:e2e` cannot start the configured web server because binding 127.0.0.1 returns EPERM; full `pnpm test` passes 149/150 files and 1181/1182 tests with command-local git config but the mc-provisioner Unix socket test is blocked by sandbox `listen EPERM`; default Turbopack `pnpm build` is blocked by the same process/listener restriction while the webpack production build passes with the local font mock. T088 commit evidence remains pending.",
+    "T088 commit attempt evidence recorded on 2026-05-01T20:21:04Z: pre-commit sanity checks passed (`git diff --check`, JSON parse, `pnpm spec004:guardrails`, and strict-scope TypeScript), and 91 SPEC-004 files were staged, but `git commit` is blocked in this Codex sandbox because Git cannot create linked-worktree metadata locks/open COMMIT_EDITMSG under the parent checkout `.git/worktrees/004-task-pipeline-engine` path outside the writable root. T088 remains pending until commit/push run from an environment with write access to that git metadata; post-implementation push/PR tasks remain gated on commit evidence."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -53,39 +85,200 @@
     "current_target_excluded": "SPEC-004",
     "current_target_path": "specs/004-task-pipeline-engine",
     "safeToApplyCleanup": false,
+    "last_recorded_dry_run_at": "2026-05-01T02:25:33Z",
+    "last_recorded_dry_run_current_target": "specs/004-task-pipeline-engine",
+    "last_recorded_dry_run_results": [
+      {
+        "spec": "SPEC-001",
+        "path": "specs/001-foundation-migrations",
+        "archiveAlreadyRecorded": true,
+        "activeDirectoryPresent": false,
+        "eligibleForCleanup": false
+      },
+      {
+        "spec": "SPEC-002",
+        "path": "specs/002-product-line-switcher",
+        "archiveAlreadyRecorded": true,
+        "activeDirectoryPresent": false,
+        "eligibleForCleanup": false
+      },
+      {
+        "spec": "SPEC-002A",
+        "path": "specs/002a-spec-archive-evidence",
+        "archiveAlreadyRecorded": true,
+        "activeDirectoryPresent": false,
+        "eligibleForCleanup": false
+      },
+      {
+        "spec": "SPEC-003",
+        "path": "specs/003-global-aegis",
+        "eligibleForArchive": true,
+        "eligibleForCleanup": false
+      },
+      {
+        "spec": "SPEC-004",
+        "path": "specs/004-task-pipeline-engine",
+        "excludedCurrentSpec": true
+      }
+    ],
     "cleanup_policy": "Reviewed forward cleanup only after archive success, merge/tree references, recovery commands, clean safe base branch, and safeToApplyCleanup=true."
   },
   "plan": [
-    {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "pending"},
-    {"step": "Phase 0: Prerequisites", "status": "pending"},
-    {"step": "Phase 1: Specify", "status": "pending"},
-    {"step": "Phase 2: Clarify - Task Creation Parity and Side Effects", "status": "pending"},
-    {"step": "Phase 2: Clarify - Task Creation Parity and Side Effects Consensus", "status": "pending"},
-    {"step": "Phase 2: Clarify - Safe Output Validation and Routing Evaluation", "status": "pending"},
-    {"step": "Phase 2: Clarify - Safe Output Validation and Routing Evaluation Consensus", "status": "pending"},
-    {"step": "Phase 2: Clarify - Scheduler Integration, Template UI, and Downstream Boundaries", "status": "pending"},
-    {"step": "Phase 2: Clarify - Scheduler Integration, Template UI, and Downstream Boundaries Consensus", "status": "pending"},
-    {"step": "Phase 3: Plan", "status": "pending"},
-    {"step": "Phase 4: Checklist - Data Integrity", "status": "pending"},
-    {"step": "Phase 4: Checklist - Data Integrity Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - Safe Evaluation", "status": "pending"},
-    {"step": "Phase 4: Checklist - Safe Evaluation Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - Scheduler Safety", "status": "pending"},
-    {"step": "Phase 4: Checklist - Scheduler Safety Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - Regression Safety", "status": "pending"},
-    {"step": "Phase 4: Checklist - Regression Safety Consensus", "status": "pending"},
-    {"step": "Phase 5: Tasks", "status": "pending"},
-    {"step": "Phase 6: Analyze", "status": "pending"},
-    {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
-    {"step": "Phase 7: Implement", "status": "pending"},
-    {"step": "Post: Doctor", "status": "pending"},
-    {"step": "Post: Verify Implementation", "status": "pending"},
-    {"step": "Post: Verify Tasks", "status": "pending"},
-    {"step": "Post: Code Review", "status": "pending"},
-    {"step": "Post: Integration Suite", "status": "pending"},
-    {"step": "Post: Cleanup", "status": "pending"},
-    {"step": "Post: PR Creation", "status": "pending"},
-    {"step": "Post: Review Remediation", "status": "pending"},
-    {"step": "Post: Retrospective", "status": "pending"}
+    {
+      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 0: Prerequisites",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 1: Specify",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify session 1 - Task Creation Parity and Side Effects",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify session 1 consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify session 2 - Safe Output Validation and Routing Evaluation",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify session 2 consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify session 3 - Scheduler Integration, Template UI, and Downstream Boundaries",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify session 3 consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 3: Plan",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Data Integrity",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Data Integrity consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Safe Evaluation",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Safe Evaluation consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Scheduler Safety",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Scheduler Safety consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Regression Safety",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - Regression Safety consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 5: Tasks",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 6: Analyze",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 6: Analyze consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T001-T008 archive/baseline discovery",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T009-T016 foundational strict-scope surfaces",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T017-T030 shared task creation helper",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T031-T043 validator/evaluator safety",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T044-T055 template API/UI chain fields",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T022/T038/T049-T052/T056-T058/T072-T082 chain advancement runtime, lineage, M62",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T059-T071 explicit retry recovery",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 slice: T083-T087 docs, guardrails, audit, verification evidence",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 7 task: T088 commit evidence (blocked by sandbox git metadata writes)",
+      "status": "in_progress"
+    },
+    {
+      "step": "Post: Doctor",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verify Implementation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verify Tasks",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Code Review",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Integration Suite",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Cleanup",
+      "status": "pending"
+    },
+    {
+      "step": "Post: PR Creation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Review Remediation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Retrospective",
+      "status": "pending"
+    }
   ]
 }

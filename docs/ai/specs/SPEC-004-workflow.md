@@ -26,14 +26,14 @@ Do not start downstream specs from this worktree. SPEC-004 stops after the featu
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Pending | Must dry-run or record safe archive state; `SPEC-004` is excluded |
-| Specify | `$speckit-specify` | Pending | Generate `specs/004-task-pipeline-engine/spec.md` from this workflow |
-| Clarify | `$speckit-clarify` | Pending | Resolve task creation parity, safe evaluation, scheduler, and downstream boundaries |
-| Plan | `$speckit-plan` | Pending | Generate plan, research, data model, contracts, and quickstart |
-| Checklist | `$speckit-checklist` | Pending | Run data-integrity, safe-evaluation, scheduler-safety, and regression-safety domains |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered tasks covering P3-AC1 through P3-AC12 plus P3-AC6b |
-| Analyze | `$speckit-analyze` | Pending | Confirm no CRITICAL/HIGH issues before implementation |
-| Implement | `$speckit-implement` | Pending | Execute TDD implementation with full verification and guardrails |
+| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | 2026-05-01 dry-run evidence recorded; `SPEC-004` excluded; cleanup unsafe/not applied |
+| Specify | `$speckit-specify` | Complete | 2026-05-01 generated spec and requirements checklist; G1 marker scan clean |
+| Clarify | `$speckit-clarify` | Complete | Sessions 1-3 resolved; G2 marker scan passed 2026-05-01 |
+| Plan | `$speckit-plan` | Complete | Generated plan/research/data model/contracts/quickstart; G3 passed 2026-05-01 |
+| Checklist | `$speckit-checklist` | Complete | All four domain checklists complete; G4 marker scan clean 2026-05-01 |
+| Tasks | `$speckit-tasks` | Complete | 88 tasks generated; G5 passed 2026-05-01 |
+| Analyze | `$speckit-analyze` | Complete | 2026-05-01 found and remediated one HIGH downstream-boundary wording drift; marker scan clean |
+| Implement | `$speckit-implement` | In Progress | T001-T087 complete; T088 commit evidence remains pending |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -47,7 +47,7 @@ Do not start downstream specs from this worktree. SPEC-004 stops after the featu
 | G3 | After Plan | Constitution gates pass; strict scope, dependencies, implementation seams, tests, and rollback strategy are concrete |
 | G4 | After Checklist | All data-integrity, safe-evaluation, scheduler-safety, and regression-safety gaps are resolved |
 | G5 | After Tasks | P3-AC1 through P3-AC12 plus P3-AC6b have task coverage and dependency order is implementable |
-| G6 | After Analyze | No CRITICAL/HIGH findings; tasks do not drift into SPEC-005, SPEC-007, SPEC-008, SPEC-009, or SPEC-011 behavior |
+| G6 | After Analyze | No CRITICAL/HIGH findings; tasks do not drift into SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, or SPEC-011 behavior |
 | G7 | After Implement | Focused tests, typecheck, lint, build, e2e or justified subset, guardrail greps, docs status, and branch push are complete |
 
 ---
@@ -79,6 +79,26 @@ SPEC-002A made Archive Sweep a required autopilot startup step. For this workflo
 - Current target excluded: `SPEC-004` / `specs/004-task-pipeline-engine`.
 - Cleanup policy: dry-run-only or stop unless a clean safe base branch records `safeToApplyCleanup=true`, archive success, merge/tree references, and recovery commands.
 - No source spec folder is deleted silently by setup or by this workflow.
+
+#### Archive Sweep Startup Evidence - 2026-05-01T02:25:33Z
+
+- Branch/worktree: `004-task-pipeline-engine`, isolated worktree, clean before sweep.
+- Mode: dry-run evidence only. Cleanup was not applied because `safeToApplyCleanup=false` remains the recorded cleanup policy.
+- Active spec directories found: `specs/003-global-aegis`, `specs/004-task-pipeline-engine`.
+- Previously merged candidates from workflow/state: `SPEC-001`, `SPEC-002`, `SPEC-002A`, `SPEC-003`.
+- Already archived/removed from active `specs/**`: `SPEC-001`, `SPEC-002`, `SPEC-002A` have project-memory changelog entries and are not active directories in this worktree.
+- Eligible active candidate: `specs/003-global-aegis` is a prior merged spec and remains eligible for archive discovery; cleanup is not eligible in this run.
+- Excluded current target: `SPEC-004` / `specs/004-task-pipeline-engine`; no archive or cleanup action was taken against the current target.
+- G0 result: Passed by dry-run evidence; no source spec folder was deleted, moved, or rewritten.
+
+### Phase 0 Startup Evidence - 2026-05-01T02:25:33Z
+
+- Prerequisite script: `check-prerequisites.sh docs/ai/specs/SPEC-004-workflow.md` returned `all_pass=true`.
+- Branch check: current branch is `004-task-pipeline-engine`; script reported `on_feature_branch=true` and `is_worktree=true`.
+- Settings: no `.claude/speckit-pro.local.md`; defaults in effect (`consensus-mode=moderate`, `gate-failure=stop`, `auto-commit=per-phase`).
+- MCP availability: `tavily-mcp`, `context7`, and `RepoPrompt` are not configured; phase agents must use local repo evidence and built-in fallbacks.
+- Project commands discovered from lockfile/scripts: `BUILD=pnpm build`, `TYPECHECK=pnpm typecheck`, `LINT=pnpm lint`, `UNIT_TEST=pnpm test`, `INTEGRATION_TEST=pnpm test:e2e`, `FULL_VERIFY=pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e`.
+- Package manager: `pnpm` from `pnpm-lock.yaml`.
 
 ---
 
@@ -130,6 +150,7 @@ Implement RC Factory Phase 3:
 - `src/app/api/quality-review/route.ts` - operator-approved terminal success transition that must trigger chain advancement idempotently.
 - `src/components/panels/orchestration-bar.tsx` - live workflow-template editor UI.
 - `src/app/api/workflows/route.ts` and `src/lib/validation.ts` - workflow-template persistence, operator auth, and request validation.
+- `src/lib/workspaces.ts` and `src/types/product-line.ts` - Product Line scope resolver and `appendScopeToPath` helpers that workflow-template API/UI calls must use.
 - `src/lib/feature-flags.ts` - `resolveFlag()` from SPEC-002.
 - `src/lib/aegis.ts` - global Aegis resolver from SPEC-003, which downstream review loops still use.
 - `.github/workflows/quality-gate.yml` - CI quality gate that must run SPEC-004 dependency, audit, and static guardrail checks before merge.
@@ -138,10 +159,10 @@ Implement RC Factory Phase 3:
 ### Success Criteria Summary
 
 - [ ] P3-AC1: With flag OFF, task completion behaves exactly as today; no chain advances regardless of workflow-template fields.
-- [ ] P3-AC2: With flag ON, tasks without `workflow_template_id` OR with all new workflow-template fields NULL behave exactly like flag OFF.
+- [ ] P3-AC2: With flag ON, tasks without `workflow_template_id` OR without advancement-driving chain metadata (`output_schema`, non-empty `routing_rules`, or `next_template_slug`) behave exactly like flag OFF; slug-only or downstream-metadata-only templates do not advance.
 - [ ] P3-AC3: With a bound workflow template, `output_schema`, and valid `tasks.resolution`, a successor task is created per `routing_rules` or `next_template_slug`; templates with `routing_rules` and no `output_schema` are rejected, while static `next_template_slug` without schema remains valid.
 - [ ] P3-AC4: With missing `tasks.resolution` or invalid output under an `output_schema`, the parent task transitions to `failed`, activity is recorded with `data.reason_code` set to `task_pipeline_output_missing` or `task_pipeline_output_invalid` plus template schema/routing hashes, and no successor is created. Corrected-output recovery requires the explicit operator retry action; ordinary failed-to-`done` updates do not rerun chain advancement. Retry uses current template rules only after template drift is either absent or explicitly confirmed, fails closed with side-effect-free `409 Conflict` and `retry_rejection_reason='retry_template_provenance_missing'` when selected failure/stall hash provenance is missing, records `recovery_class='output_validation_failure'`, leaves the parent `failed` on repeated validation failure, and restores terminal success before normal chain routing only after validation passes.
-- [ ] P3-AC4a: `retry_chain_advancement` also supports terminal-success advancement stalls for `task_pipeline_routing_expression_rejected`, `task_pipeline_routing_budget_exceeded`, `task_pipeline_target_missing`, `task_pipeline_target_disabled`, `task_pipeline_target_duplicate`, `task_pipeline_target_cross_workspace`, and `task_pipeline_successor_assignee_missing`. Retry preserves terminal success throughout, records `recovery_class='advancement_stall'`, re-runs routing/target/assignee resolution using the current template after the same drift check, creates no successor if the stall remains, creates or returns the idempotent successor outcome if resolved, terminates normally with no successor/new stall and `recovery_outcome='chain_terminated'` if the resolved current route has no matching rule and no `next_template_slug`, and never marks the parent `failed`. Retry selects only the latest eligible SPEC-004 failure/stall activity for the parent; no `activity_id` override is accepted and older activities are not replayed. Ineligible latest state/reason pairs and post-`chain_terminated` retries return `409 Conflict` with `retry_rejection_reason='retry_not_eligible'`, no activity write, no `retry_attempt` increment, and no state/successor side effects. There is no built-in retry-attempt cap for still-unresolved eligible stalls; repeated attempts are allowed with monotonic per-parent `retry_attempt` audit evidence shared across all retry classes and no successor/state corruption.
+- [ ] P3-AC4a: `retry_chain_advancement` also supports terminal-success advancement stalls for `task_pipeline_routing_expression_rejected`, `task_pipeline_routing_budget_exceeded`, `task_pipeline_target_missing`, `task_pipeline_target_disabled` when a live template-disable state exists, `task_pipeline_target_duplicate`, `task_pipeline_target_cross_workspace`, and `task_pipeline_successor_assignee_missing`. Retry preserves terminal success throughout, records `recovery_class='advancement_stall'`, re-runs routing/target/assignee resolution using the current template after the same drift check, creates no successor if the stall remains, creates or returns the idempotent successor outcome if resolved, terminates normally with no successor/new stall and `recovery_outcome='chain_terminated'` if the resolved current route has no matching rule and no `next_template_slug`, and never marks the parent `failed`. Retry selects only the latest eligible SPEC-004 failure/stall activity for the parent; no `activity_id` override is accepted and older activities are not replayed. Ineligible latest state/reason pairs and post-`chain_terminated` retries return `409 Conflict` with `retry_rejection_reason='retry_not_eligible'`, no activity write, no `retry_attempt` increment, and no state/successor side effects. There is no built-in retry-attempt cap for still-unresolved eligible stalls; repeated attempts are allowed with monotonic per-parent `retry_attempt` audit evidence shared across all retry classes and no successor/state corruption.
 - [ ] P3-AC4b: Every eligible `retry_chain_advancement` `200 OK` response returns normal task detail data plus `chain_retry` with `recovery_class`, `retry_attempt`, `recovery_outcome`, `successor_task_id`, `chain_terminated`, and `idempotent_successor`; the corresponding recovery activity has `data.reason_code='task_pipeline_retry_chain_advancement'` plus `previous_reason_code` for the selected original failure/stall; tests cover all allowed outcomes, prove existing-successor post-recovery retry returns `200 OK`/`successor_already_exists` without creating a duplicate, prove post-`chain_terminated` retry returns side-effect-free `409 Conflict`/`retry_not_eligible` until a new retry-eligible failure/stall exists, prove the response does not leak full corrected output or routing traces, and prove retry `409 Conflict` rejections write no recovery activity.
 - [ ] P3-AC5: Routing evaluator rejects unsafe inputs without exception leaks or successor creation, rejects JSONPath filters/scripts before `JSONPath()`, enforces every routing pre-validation cap, and enforces `maxRuleEvalMs=10` triage fallback with activity evidence and stable reason codes.
 - [ ] P3-AC6: Successor task inherits workspace/project, initializes first-hop parent lineage when absent, resolves assignee via `project_agent_assignments.agent_name`, populates successor lineage fields, and stalls with `data.reason_code='task_pipeline_successor_assignee_missing'`/no successor when no matching assignee exists.
@@ -152,7 +173,7 @@ Implement RC Factory Phase 3:
 - [ ] P3-AC9: Validator enforces every numeric bound, forbidden schema feature, and AJV safety option listed in the roadmap.
 - [ ] P3-AC10: Compiled validators cache per `(template_id, schema_sha256)` with LRU eviction at 256; p95 validation remains within the 50 ms budget over the fixed corpus; combined validation + routing + chain advancement overhead remains ≤50 ms p95 versus the flag-off/null-chain baseline.
 - [ ] P3-AC11: `docs/orchestration.md` is updated in the SPEC-004 branch before Phase 3 is considered shipped.
-- [ ] P3-AC12: A real running-app Playwright journey creates, edits, reads back, and deletes workflow-template chain fields in the live Workflows editor under operator auth, including `routing_rules`-requires-`output_schema` validation, static `next_template_slug` without schema, and the repaired `DELETE /api/workflows?id=...` query-parameter delete contract; component-only tests are insufficient.
+- [ ] P3-AC12: A real running-app Playwright journey creates, edits, reads back, usage-tracks, and deletes workflow-template chain fields in the live Workflows editor under operator auth and Product Line scope, including `routing_rules`-requires-`output_schema` validation, static `next_template_slug` without schema, `appendScopeToPath` coverage for `/api/workflows`, and the repaired `DELETE /api/workflows?id=...` query-parameter delete contract; component-only tests are insufficient.
 
 ---
 
@@ -237,13 +258,23 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
+| Functional Requirements | 44 including FR-022a |
+| User Stories | 5 |
+| Acceptance Scenarios | 21 |
 | Acceptance Criteria | 14 criteria: P3-AC1 through P3-AC12 including P3-AC6a and P3-AC6b |
+| G1 Clarification Markers | 0 |
+
+### Specify Evidence
+
+- Branch guard: `git branch --show-current` returned `004-task-pipeline-engine`; no branch was created or switched.
+- Feature directory: `.specify/feature.json` now resolves to `specs/004-task-pipeline-engine`.
+- Generated artifacts were searched for unresolved clarification markers after Specify; count was 0.
+- Phase boundary honored: Clarify was not run.
 
 ### Files Generated
 
-- [ ] `specs/004-task-pipeline-engine/spec.md`
+- [x] `specs/004-task-pipeline-engine/spec.md`
+- [x] `specs/004-task-pipeline-engine/checklists/requirements.md`
 
 ### Traceability Markers
 
@@ -322,9 +353,19 @@ Focus on SPEC-004 runtime integration:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Task creation parity and side effects | Pending | Pending |
-| 2 | Safe output validation and routing evaluation | Pending | Pending |
-| 3 | Scheduler integration, template UI, and boundaries | Pending | Pending |
+| 1 | Task creation parity and side effects | 5 answered; Q1 and Q3 resolved by consensus | `createTask()` uses explicit source profiles plus per-effect options; returns bounded task/side-effect metadata; API mention validation remains source-specific; chain-created tasks run DB effects inside `advanceTaskChain` and defer GitHub/GNAP pushes until after commit; production insert guardrail scopes to `src/app` and `src/lib` excluding tests/fixtures. |
+| 2 | Safe output validation and routing evaluation | Q1-Q5 answered; Q3-Q5 resolved by all-analyst security consensus | Exact pinned runtime deps and audit ownership confirmed; validator numeric bounds encoded; AJV non-mutating/no-format/no-remote profile and conservative pattern subset recorded; routing grammar, JSONPath execution disabling, forbidden primitives, pre-validation caps, 10 ms budget stall behavior, and normal no-successor termination clarified. |
+| 3 | Scheduler integration, template UI, and boundaries | 4 answered; Q2 and Q3 resolved by consensus | Empty-chain behavior is advancement-driven only by `output_schema`, non-empty `routing_rules`, or `next_template_slug`; `task_pipeline_target_disabled` is reserved without adding a disabled-template state; workflow-template API/UI must use Product Line scope helpers; retry template hashes use canonical JSON/string-or-null SHA-256 inputs. |
+
+### Consensus Resolution Log
+
+| Round | Item | Routed Categories | Outcome | Analysts Used |
+|-------|------|-------------------|---------|---------------|
+| 1 | Clarify S1 Q1: source-profiled `createTask()` ownership | `[codebase, spec]` | Accepted answer A: explicit source profiles plus per-effect options preserve source-specific side effects while centralizing structural ownership. | `clarify-executor`, `codebase-analyst`, `spec-context-analyst` |
+| 2 | Clarify S1 Q3: outbound sync timing for chain-created tasks | `[codebase, spec]` then Round 2 domain check | Accepted answer A: DB effects run inside the caller transaction; GitHub/GNAP pushes run only after successful commit and failures use existing sync/error activity handling without rolling back the committed chain transaction. | `clarify-executor`, `codebase-analyst`, `spec-context-analyst`, `domain-researcher` |
+| 3 | Clarify S2 Q3-Q5: untrusted output validator and routing safety | `[security]` | Accepted consensus: encode exact runtime dependency pins, validator numeric bounds, non-mutating AJV profile, safe-regex plus conservative pattern subset, hand-written routing grammar, JSONPath execution disabled, forbidden primitives/caps, `maxRuleEvalMs=10` stall semantics, terminal-success preservation, and normal no-successor termination. | `clarify-executor`, `codebase-analyst`, `spec-context-analyst`, `domain-researcher` |
+| 4 | Clarify S3 Q2: disabled target reason code with no live disabled template state | `[codebase, spec]` | Accepted Round 1 consensus: reserve `task_pipeline_target_disabled` for a live/future template-state column, do not add disabled/status schema in SPEC-004, and classify current unresolved targets as missing, duplicate, or cross-workspace. | `clarify-executor`, `codebase-analyst`, `spec-context-analyst` |
+| 5 | Clarify S3 Q3: Product Line scoping for workflow-template API/UI | `[security]` | Accepted all-analyst consensus: `/api/workflows` must use `resolveWorkspaceScopeFromRequest`, mutations require concrete Product Line scope and reject Facility aggregate writes, and `orchestration-bar.tsx`/workflow-template UI calls must use `appendScopeToPath`. | `clarify-executor`, `codebase-analyst`, `spec-context-analyst`, `domain-researcher` |
 
 ---
 
@@ -381,11 +422,11 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | |
-| `research.md` | Pending | |
-| `data-model.md` | Pending | |
-| `contracts/` | Pending | |
-| `quickstart.md` | Pending | |
+| `plan.md` | Complete | Constitution gates PASS pre/post design; strict scope, M62-only schema, Product Line scoping, and verification strategy recorded |
+| `research.md` | Complete | Decisions recorded for workflow template source, task binding, structured-output bridge, safe validator/evaluator, retry recovery, successor uniqueness, UI/API editing, and verification |
+| `data-model.md` | Complete | Workflow-template, task lineage, chain activity, retry recovery, M62, validator/evaluator data contracts, and state transitions recorded |
+| `contracts/` | Complete | `api-workflows.md`, `task-chain-engine.md`, and `task-create.md` generated |
+| `quickstart.md` | Complete | Verification flow and running-app Playwright journey documented |
 
 ---
 
@@ -436,7 +477,7 @@ Focus on SPEC-004 scheduler behavior:
 - `advanceTaskChain` runs at every live non-`done` to `done` transition for pipeline-bound tasks (`runAegisReviews`, operator `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`) and cannot create duplicate successors; `idx_tasks_one_successor_per_parent` is the DB backstop for non-null `parent_task_id`; manual/API completions remain allowed only through the shared helper.
 - Routing evaluator budget overruns stall automated chain advancement with an operator-visible `activities` row containing `data.reason_code='task_pipeline_routing_budget_exceeded'` and no successor.
 - Successor creation calls `createTask()` exactly once.
-- Scheduler behavior does not implement SPEC-005 `ready_for_owner`, SPEC-007 dispositions/artifacts, SPEC-008 governance, or SPEC-009 pilot behavior.
+- Scheduler behavior does not implement SPEC-005 `ready_for_owner`, SPEC-006 area-label routing, SPEC-007 dispositions/artifacts, SPEC-008 governance, SPEC-009 pilot behavior, or SPEC-011 CrabTrap behavior.
 ```
 
 ### 4. Regression Safety Checklist
@@ -458,10 +499,10 @@ Focus on SPEC-004 regression and dependency discipline:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | P3-AC1, P3-AC2, P3-AC3, P3-AC4, P3-AC6 |
-| safe-evaluation | Pending | Pending | P3-AC5, P3-AC8, P3-AC9, P3-AC10 |
-| scheduler-safety | Pending | Pending | P3-AC1, P3-AC2, P3-AC3, P3-AC4, P3-AC6a, P3-AC6b |
-| regression-safety | Pending | Pending | P3-AC6a, P3-AC8, P3-AC11, P3-AC12 |
+| data-integrity | 16 | 3 found and resolved; no consensus required | P3-AC1, P3-AC2, P3-AC3, P3-AC4, P3-AC6 |
+| safe-evaluation | 20 | 4 found and resolved; no consensus required | P3-AC5, P3-AC8, P3-AC9, P3-AC10 |
+| scheduler-safety | 30 | 0 gaps; no consensus required | P3-AC1, P3-AC2, P3-AC3, P3-AC4, P3-AC6a, P3-AC6b |
+| regression-safety | 34 | 0 gaps; no consensus required | P3-AC6a, P3-AC8, P3-AC11, P3-AC12 |
 
 ### Addressing Gaps
 
@@ -525,10 +566,10 @@ $speckit-tasks
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 88 |
+| Phases | 8 groups: Setup, Foundation, US1, US3, US2, US4, US5, Polish |
+| Parallel Opportunities | 32 parallel-safe tasks |
+| User Stories Covered | US1 14, US2 15, US3 13, US4 13, US5 11; setup/foundation/polish cover cross-cutting P3-AC evidence |
 
 ---
 
@@ -567,7 +608,7 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A1 | HIGH | G6 gate and selected guardrail wording omitted SPEC-006 from the downstream-boundary set even though FR-043, T077, and the Analyze prompt require excluding SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, and SPEC-011 behavior. | Resolved by adding SPEC-006 to the G6 gate, scheduler-safety workflow guardrail, and plan static guardrail wording. Marker verification returned 0 findings. |
 
 ---
 
@@ -654,39 +695,66 @@ For each task, follow this cycle:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 0 - Archive Sweep and baseline discovery | Pending | 0 | |
-| 1 - Shared task creation helper | Pending | 0 | |
-| 2 - Validator and evaluator safety | Pending | 0 | |
-| 3 - Scheduler and successor routing | Pending | 0 | |
-| 4 - Template UI, docs, and strict scope | Pending | 0 | |
-| 5 - Final verification and status sync | Pending | 0 | |
+| 0 - Archive Sweep and baseline discovery | T001-T008 | 8 | SPEC-001 chain columns and workflow-template fields verified in M54/M55; direct task insert migration matrix found `src/app/api/tasks/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/recurring-tasks.ts`; exact runtime pins are present in package/lockfile; `pnpm audit --audit-level high` is blocked locally by registry ENOTFOUND and remains a CI/final-verification obligation; M62 rollback and SPEC-004 guardrail CI step added. |
+| 1 - Foundational strict-scope surfaces | T009-T016 | 8 | Added workflow-template chain types, validator/routing fixture manifests, `createTask()`/validator/evaluator scaffolds, no-op chain advancement/retry seams, and M62 duplicate-preflight migration scaffolding. `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed; `pnpm spec004:guardrails` remains RED only on the four direct task INSERT callsites owned by US1. |
+| 2 - Shared task creation helper | T017-T021, T023-T030 | 13 | Added focused RED contract/guard tests for API creation, GitHub import, GitHub sync import, recurring spawn, pipeline successor creation, source-profile matrix, and direct production task inserts. Implemented shared `createTask()` with source profiles, bounded result shape, caller-owned transaction support, duplicate guards, deferred outbound intent, and migrated API/GitHub/recurring callsites plus the task-dispatch successor seam. `pnpm test src/lib/__tests__/task-create.api.test.ts src/lib/__tests__/task-create.github-import.test.ts src/lib/__tests__/task-create.github-sync.test.ts src/lib/__tests__/task-create.recurring.test.ts src/lib/__tests__/task-create.pipeline-successor.test.ts src/lib/__tests__/task-create.callsite-matrix.test.ts src/lib/__tests__/task-create.direct-insert-guard.test.ts`, `pnpm spec004:guardrails`, and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T18:21:04Z. T022 is intentionally left pending because full flag-off/unbound/null-chain completion regression coverage requires the chain advancement runtime owned by later tasks. |
+| 3 - Validator and evaluator safety | T031-T037, T039-T043 | 12 | Added RED fixtures for validator bounds, AJV safety profile, conservative pattern subset, LRU/p95 corpus checks, routing validity/adversarial/budget behavior, and static unsafe-primitive/`ajv-formats` guardrails. Implemented constrained AJV compilation with pre-validation caps, safe-regex plus conservative pattern checks, bounded result shaping, `(template_id, schema_sha256)` LRU cache, hand-written routing grammar, JSONPath traversal with `eval: false`, pre-screened forbidden syntax, result caps, and bounded rejection/budget outputs. Focused suite passed 22/22; `pnpm spec004:guardrails` and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T18:31:37Z. T038 remains pending because exact advancement stall activity reason-code assertions require the later `advanceTaskChain` runtime. |
+| 4 - Scheduler and successor routing | T022, T038, T049-T052, T056-T058, T072-T082 | 20 | Added RED chain/runtime/M62 coverage for eligibility, output validation, routing, target stalls, terminal hooks, overhead p95, lineage, assignee resolution, transaction rollback, existing-successor idempotency, M62 uniqueness/rollback, and downstream scope. Implemented feature-flagged `advanceTaskChain`, structured-output validation from `tasks.resolution`, ordered routing/static fallback/termination, target and assignee stalls with stable activity reason codes, transactional lineage/successor creation through `createTask()`, post-commit sync intent, idempotent existing-successor no-op, and terminal-success hooks in Aegis review, quality-review, bulk task update, and detail task update. Focused suite passed 31/31; `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T18:59:25Z. US4 retry recovery remains pending by scope. |
+| 5 - Template API/UI chain fields | T044-T048, T053-T055 | 8 | Added workflow-template chain-field API contract/scope/delete tests plus editor tests. Implemented workflow chain validation helpers, Product Line scoped `/api/workflows` reads/writes/usage/delete, query-parameter delete compatibility with JSON-body backward compatibility, chain-field response parsing, and scoped editor controls/error display. Focused suite passed 14/14; `pnpm spec004:guardrails` and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T18:44:17Z. |
+| 6 - Explicit retry recovery | T059-T071 | 13 | Added RED retry route suites for output failures, advancement stalls, conflicts, bounded responses, provenance/drift, repeated attempts, and terminal recovery. Implemented operator-only `retry_chain_advancement`, latest eligible activity selection, side-effect-free `409` rejection enums, template provenance hashes and drift confirmation, failed-parent revalidation/restoration, terminal-success stall retry, repeated attempts, existing-successor idempotency, chain termination closeout, bounded `chain_retry` responses, and recovery activity metadata without full output/routing leakage. Focused retry suite passed 15/15; chain regression suite passed 22/22; `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T19:13:53Z. |
+| 7 - Documentation, guardrails, audit remediation, and verification | T083-T087 | 5 | Updated `docs/orchestration.md`, added the running-app Playwright workflow-template journey in `tests/e2e/task-pipeline-workflow-templates.spec.ts`, expanded SPEC-004 static guardrails, moved invalid route test exports to helper modules for Next build compatibility, remediated high-severity audit advisories with `next`/`eslint-config-next` upgrades and narrow pnpm overrides for vulnerable transitive ranges, and recorded final local gate evidence below. T088 remains pending until commit/push evidence exists. |
+
+### Final Local Verification Evidence - 2026-05-01
+
+- `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`: passed.
+- `pnpm spec004:guardrails`: passed.
+- `pnpm typecheck`: passed.
+- `pnpm lint`: passed with 10 pre-existing warnings and 0 errors.
+- Focused task-create suite: 7 files, 13 tests passed.
+- Focused retry suite: 7 files, 15 tests passed.
+- Focused chain regression suite: 9 files, 22 tests passed.
+- Focused workflow/API/UI guardrail suite: 5 files, 17 tests passed.
+- Project slug and transcript route-export regression tests: 3 plus 4 tests passed.
+- `NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/next-font-google-mock.js pnpm exec next build --webpack`: passed.
+- `GIT_CONFIG_GLOBAL=/dev/null ... pnpm test`: 149 files and 1181 tests passed; `src/lib/__tests__/mc-provisioner-daemon.test.ts` failed because this sandbox blocks Unix socket creation (`listen EPERM`), confirmed by directly running `ops/mc-provisioner-daemon.js`.
+- `NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/next-font-google-mock.js pnpm build`: blocked by Turbopack helper process bind restriction (`Operation not permitted` while resolving next/font Google CSS module). The webpack build above validates the production app tree in this sandbox.
+- `pnpm test:e2e`: blocked before tests because Playwright's configured web server cannot bind `127.0.0.1` (`listen EPERM`).
+- `pnpm audit:high`: passed after network approval and audit remediation on 2026-05-01T20:05:27Z; npm reported 11 remaining vulnerabilities, all low/moderate, with 0 high.
+
+### T088 Commit Attempt Evidence - 2026-05-01
+
+- Pre-commit sanity checks passed in the current worktree: `git diff --check`, `node -e "JSON.parse(...autopilot-state.json...)"`, `pnpm spec004:guardrails`, and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`.
+- `git add -A` staged the SPEC-004 implementation and generated artifacts, covering 91 files in the cached diff.
+- `git -c commit.gpgsign=false commit -m "feat(spec-004): implement task pipeline engine"` is blocked in this Codex sandbox because Git cannot create `/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.git/worktrees/004-task-pipeline-engine/index.lock` (`Operation not permitted`).
+- A contained-index retry with `GIT_INDEX_FILE="$PWD/.git-index"` moved the index lock inside the writable worktree, but commit creation still failed when Git attempted to open `/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.git/worktrees/004-task-pipeline-engine/COMMIT_EDITMSG` (`Operation not permitted`).
+- T088 remains pending until the implementation commit can be created from an environment with write access to the parent checkout's linked-worktree git metadata. Post-implementation push/PR tasks remain gated on that commit evidence.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] Archive Sweep evidence is recorded and excludes `SPEC-004`.
+- [x] Archive Sweep evidence is recorded and excludes `SPEC-004`.
 - [ ] All generated tasks are marked complete in `specs/004-task-pipeline-engine/tasks.md`.
 - [ ] Acceptance evidence exists for P3-AC1 through P3-AC12 plus P3-AC6b.
-- [ ] `src/lib/task-create.ts` exists and owns all task creation side effects.
-- [ ] Source-specific API, GitHub import, GitHub sync import, recurring, and pipeline-successor behavior is preserved through `createTask()`.
-- [ ] Direct runtime `INSERT INTO tasks` is gone from production source outside `src/lib/task-create.ts`; any test fixture inserts are deliberately excluded or migrated.
-- [ ] `src/lib/output-schema-validator.ts` enforces every roadmap numeric bound and forbidden schema feature.
-- [ ] Schema `pattern`/`patternProperties` acceptance treats `safe-regex` as necessary but not sufficient and enforces the conservative pattern subset with adversarial fixtures.
-- [ ] `src/lib/routing-rule-evaluator.ts` uses JSONPath traversal with JavaScript execution disabled, rejects JSONPath filters/scripts before `JSONPath()`, enforces `maxRuleEvalMs=10`, and uses a hand-written allowlisted grammar.
-- [ ] `advanceTaskChain` implements valid routing, missing-output failure, invalid-output failure, explicit output-validation retry recovery, explicit terminal-success advancement-stall retry recovery including no-route/no-`next_template_slug` retry-resolved chain termination with `recovery_outcome='chain_terminated'`, latest eligible failure/stall activity selection with no `activity_id` override or older-activity replay, current-template execution with template-drift confirmation, missing selected-activity hash provenance fail-closed behavior, no-hard-cap retry attempts with monotonic per-parent audit evidence shared across retry classes while unresolved, existing-successor `200 OK successor_already_exists` idempotency, post-`chain_terminated` side-effect-free `409 retry_not_eligible`, side-effect-free retry `409 Conflict` behavior with `{ "retry_rejection_reason": "<enum>" }`/no activity/no attempt increment, fallback, missing-assignee stall, timeout/unresolved-target advancement stall, exact `activities.data.reason_code`, template hash, and `recovery_class` metadata for every failure/stall/retry activity including `task_pipeline_retry_chain_advancement` on `200 OK` recovery activities, termination, duplicate-successor retry no-op, transaction rollback, successor creation, first-hop parent lineage initialization, and successor lineage behavior at every live non-`done` to `done` transition for pipeline-bound tasks, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`; M62 enforces one successor per non-null `parent_task_id` at the DB layer with preflight and rollback evidence.
-- [ ] `retry_chain_advancement` `200 OK` responses return normal task detail data plus `chain_retry` with all required fields/outcomes, existing-successor `successor_task_id`/`idempotent_successor=true`, chain-termination `successor_task_id=null`/`chain_terminated=true`, and no full corrected-output, parsed-output, or routing-trace leakage.
-- [ ] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap, reject `routing_rules` without `output_schema`, allow static `next_template_slug` without schema, preserve operator-only writes, and repair `DELETE /api/workflows?id=...` compatibility.
-- [ ] `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`.
-- [ ] `.github/workflows/quality-gate.yml` runs SPEC-004 dependency, audit, direct-INSERT, unsafe-primitive, and downstream-drift guardrails.
+- [x] `src/lib/task-create.ts` exists and owns all task creation side effects.
+- [x] Source-specific API, GitHub import, GitHub sync import, recurring, and pipeline-successor behavior is preserved through `createTask()`.
+- [x] Direct runtime `INSERT INTO tasks` is gone from production source outside `src/lib/task-create.ts`; any test fixture inserts are deliberately excluded or migrated.
+- [x] `src/lib/output-schema-validator.ts` enforces every roadmap numeric bound and forbidden schema feature.
+- [x] Schema `pattern`/`patternProperties` acceptance treats `safe-regex` as necessary but not sufficient and enforces the conservative pattern subset with adversarial fixtures.
+- [x] `src/lib/routing-rule-evaluator.ts` uses JSONPath traversal with JavaScript execution disabled, rejects JSONPath filters/scripts before `JSONPath()`, enforces `maxRuleEvalMs=10`, and uses a hand-written allowlisted grammar.
+- [x] `advanceTaskChain` implements valid routing, missing-output failure, invalid-output failure, explicit output-validation retry recovery, explicit terminal-success advancement-stall retry recovery including no-route/no-`next_template_slug` retry-resolved chain termination with `recovery_outcome='chain_terminated'`, latest eligible failure/stall activity selection with no `activity_id` override or older-activity replay, current-template execution with template-drift confirmation, missing selected-activity hash provenance fail-closed behavior, no-hard-cap retry attempts with monotonic per-parent audit evidence shared across retry classes while unresolved, existing-successor `200 OK successor_already_exists` idempotency, post-`chain_terminated` side-effect-free `409 retry_not_eligible`, side-effect-free retry `409 Conflict` behavior with `{ "retry_rejection_reason": "<enum>" }`/no activity/no attempt increment, fallback, missing-assignee stall, timeout/unresolved-target advancement stall, exact `activities.data.reason_code`, template hash, and `recovery_class` metadata for every failure/stall/retry activity including `task_pipeline_retry_chain_advancement` on `200 OK` recovery activities, termination, duplicate-successor retry no-op, transaction rollback, successor creation, first-hop parent lineage initialization, and successor lineage behavior at every live non-`done` to `done` transition for pipeline-bound tasks, including `runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`; M62 enforces one successor per non-null `parent_task_id` at the DB layer with preflight and rollback evidence.
+- [x] `retry_chain_advancement` `200 OK` responses return normal task detail data plus `chain_retry` with all required fields/outcomes, existing-successor `successor_task_id`/`idempotent_successor=true`, chain-termination `successor_task_id=null`/`chain_terminated=true`, and no full corrected-output, parsed-output, or routing-trace leakage.
+- [x] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap, reject `routing_rules` without `output_schema`, allow static `next_template_slug` without schema, preserve operator-only writes, and repair `DELETE /api/workflows?id=...` compatibility.
+- [x] `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`.
+- [x] `.github/workflows/quality-gate.yml` runs SPEC-004 dependency, audit, direct-INSERT, unsafe-primitive, and downstream-drift guardrails.
 - [ ] `pnpm audit --audit-level high` passes before merge after SPEC-004 audit remediation; local registry/network failure is temporary evidence only and cannot satisfy P3-AC8.
-- [ ] `tsconfig.spec-strict.json` and `eslint.config.mjs` include new production modules.
-- [ ] `docs/orchestration.md` describes declarative task chains and current lifecycle/status terminology.
-- [ ] Prohibited-drift grep checks pass.
-- [ ] `pnpm typecheck` passes or any environment failure is documented with evidence.
-- [ ] `pnpm lint` passes or any environment failure is documented with evidence.
-- [ ] `pnpm test` passes or any environment failure is documented with evidence.
-- [ ] `pnpm build` passes or any environment failure is documented with evidence.
+- [x] `tsconfig.spec-strict.json` and `eslint.config.mjs` include new production modules.
+- [x] `docs/orchestration.md` describes declarative task chains and current lifecycle/status terminology.
+- [x] Prohibited-drift grep checks pass.
+- [x] `pnpm typecheck` passes or any environment failure is documented with evidence.
+- [x] `pnpm lint` passes or any environment failure is documented with evidence.
+- [x] `pnpm test` passes or any environment failure is documented with evidence.
+- [x] `pnpm build` passes or any environment failure is documented with evidence.
 - [ ] Real running-app Playwright verification for P3-AC12 passes.
 - [ ] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-004 implementation evidence after verification.
 - [ ] `docs/rc-factory-v1-prd.md` reflects SPEC-004 completion after verification.

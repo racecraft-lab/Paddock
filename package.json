@@ -33,6 +33,7 @@
     "test:visual:argos-metadata": "pnpm run verify:node && node scripts/verify-argos-storybook-metadata.mjs",
     "test:evidence:screenshots": "pnpm run verify:node && node scripts/verify-spec-evidence-screenshots.mjs",
     "test:evidence:screenshots:negative": "pnpm run verify:node && node scripts/verify-spec-evidence-screenshots.mjs --self-test",
+    "spec004:guardrails": "pnpm run verify:node && node scripts/check-spec-004-guardrails.mjs",
     "test:all": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e",
     "quality:gate": "pnpm test:all && pnpm audit:high",
     "postinstall": "node -e \"try{require('better-sqlite3')}catch(e){if(e.code==='ERR_DLOPEN_FAILED'||/NODE_MODULE_VERSION/.test(e.message)){console.error('\\n⚠  better-sqlite3 compiled for wrong Node version. Run: pnpm rebuild better-sqlite3\\n');process.exit(1)}}\""
@@ -51,9 +52,9 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "eslint": "^9.18.0",
-    "eslint-config-next": "^16.1.6",
+    "eslint-config-next": "^16.2.3",
     "jsonpath-plus": "10.4.0",
-    "next": "^16.1.6",
+    "next": "^16.2.3",
     "next-intl": "^4.8.3",
     "next-themes": "^0.4.6",
     "node-pty": "^1.1.0",
@@ -119,6 +120,15 @@
     "url": "https://github.com/builderz-labs/mission-control.git"
   },
   "pnpm": {
+    "overrides": {
+      "defu@<=6.1.4": "6.1.5",
+      "flatted@<=3.4.1": "3.4.2",
+      "minimatch@<3.1.4": "3.1.4",
+      "minimatch@>=9.0.0 <9.0.7": "9.0.7",
+      "picomatch@<2.3.2": "2.3.2",
+      "picomatch@>=4.0.0 <4.0.4": "4.0.4",
+      "rollup@>=4.0.0 <4.59.0": "4.59.0"
+    },
     "onlyBuiltDependencies": [
       "better-sqlite3",
       "node-pty"

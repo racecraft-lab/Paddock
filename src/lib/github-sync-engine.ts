@@ -25,6 +25,7 @@ import {
   type TaskStatus,
   type TaskPriority,
 } from '@/lib/github-label-map'
+import { createTask } from '@/lib/task-create'
 
 /**
  * Idempotently create all MC labels on a GitHub repo.
@@ -185,31 +186,29 @@ export async function pullFromGitHub(
         const priority = labelToPriority(labelNames)
         const tags = labelNames.filter(l => !ALL_STATUS_LABEL_NAMES.includes(l) && !ALL_PRIORITY_LABEL_NAMES.includes(l))
 
-        db.prepare(`
-          INSERT INTO tasks (
-            title, description, status, priority, created_by,
-            created_at, updated_at, tags, metadata,
-            github_issue_number, github_repo, github_synced_at,
-            project_id, workspace_id
-          ) VALUES (?, ?, ?, ?, 'github-sync', ?, ?, ?, '{}', ?, ?, ?, ?, ?)
-        `).run(
-          issue.title,
-          issue.body || '',
+        const createResult = createTask({
+          source: 'github_sync',
+          title: issue.title,
+          description: issue.body || '',
           status,
           priority,
-          now, now,
-          JSON.stringify(tags),
-          issue.number, repo, now,
-          project.id, workspaceId
-        )
+          created_by: 'github-sync',
+          workspace_id: workspaceId,
+          project_id: project.id,
+          tags,
+          metadata: {},
+          github_issue_number: issue.number,
+          github_repo: repo,
+          github_synced_at: now,
+          activity: {
+            actor: 'github-sync',
+            description: `Synced from GitHub: ${repo}#${issue.number}`,
+            data: { github_issue: issue.number, github_repo: repo },
+          },
+        })
 
         pulled++
-        db_helpers.logActivity(
-          'task_created', 'task', 0, 'github-sync',
-          `Synced from GitHub: ${repo}#${issue.number}`,
-          { github_issue: issue.number, github_repo: repo },
-          workspaceId
-        )
+        if (createResult.duplicate) pulled--
       } else {
         // Existing task — anti-ping-pong: skip if task was just pushed
         if (existingTask.github_synced_at && Math.abs(existingTask.github_synced_at - issueUpdatedAt) < 10) {

@@ -117,6 +117,52 @@ export const createPipelineSchema = z.object({
   })).min(2, 'Pipeline needs at least 2 steps').max(50),
 })
 
+function nullableTrimmedString(maxLength: number) {
+  return z.preprocess(
+    value => typeof value === 'string' ? (value.trim() || null) : value,
+    z.string().max(maxLength).nullable()
+  )
+}
+
+const outputSchemaObject = z.record(z.string(), z.unknown())
+
+export const workflowRoutingRuleSchema = z.union([
+  z.object({
+    when: z.string().min(1, 'Routing rule expression is required').max(8192),
+    next_template_slug: z.string().min(1, 'Routing rule target is required').max(200),
+  }),
+  z.object({
+    expression: z.string().min(1, 'Routing rule expression is required').max(8192),
+    target_template_slug: z.string().min(1, 'Routing rule target is required').max(200),
+  }).transform(rule => ({
+    when: rule.expression,
+    next_template_slug: rule.target_template_slug,
+  })),
+])
+
+function requireOutputSchemaForRoutingRules(
+  data: { output_schema?: Record<string, unknown> | null; routing_rules?: Array<unknown> },
+  ctx: z.RefinementCtx
+) {
+  if ((data.routing_rules?.length ?? 0) > 0 && data.output_schema == null) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['routing_rules'],
+      message: 'routing_rules require output_schema',
+    })
+  }
+}
+
+export const workflowTemplateChainFieldsSchema = z.object({
+  slug: nullableTrimmedString(200).optional().default(null),
+  output_schema: outputSchemaObject.nullable().optional().default(null),
+  routing_rules: z.array(workflowRoutingRuleSchema).max(64).optional().default([]),
+  next_template_slug: nullableTrimmedString(200).optional().default(null),
+  produces_pr: z.boolean().optional().default(false),
+  external_terminal_event: nullableTrimmedString(200).optional().default(null),
+  allow_redacted_artifacts: z.boolean().optional().default(false),
+}).superRefine(requireOutputSchemaForRoutingRules)
+
 export const createWorkflowSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
   task_prompt: z.string().min(1, 'Task prompt is required').max(10000),
@@ -125,7 +171,27 @@ export const createWorkflowSchema = z.object({
   timeout_seconds: z.number().int().min(10).max(3600).default(300),
   agent_role: z.string().max(100).optional(),
   tags: z.array(z.string().min(1).max(100)).max(50).default([]),
-})
+}).and(workflowTemplateChainFieldsSchema)
+
+export const updateWorkflowSchema = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(1, 'Name is required').max(200).optional(),
+  task_prompt: z.string().min(1, 'Task prompt is required').max(10000).optional(),
+  description: z.string().max(5000).nullable().optional(),
+  model: z.string().max(100).optional(),
+  timeout_seconds: z.number().int().min(10).max(3600).optional(),
+  agent_role: z.string().max(100).nullable().optional(),
+  tags: z.array(z.string().min(1).max(100)).max(50).optional(),
+  slug: nullableTrimmedString(200).optional(),
+  output_schema: outputSchemaObject.nullable().optional(),
+  routing_rules: z.array(workflowRoutingRuleSchema).max(64).optional(),
+  next_template_slug: nullableTrimmedString(200).optional(),
+  produces_pr: z.boolean().optional(),
+  external_terminal_event: nullableTrimmedString(200).optional(),
+  allow_redacted_artifacts: z.boolean().optional(),
+}).superRefine(requireOutputSchemaForRoutingRules)
+
+export type UpdateWorkflowInput = z.infer<typeof updateWorkflowSchema>
 
 export const createCommentSchema = z.object({
   task_id: z.number().optional(),

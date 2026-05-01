@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import Database from 'better-sqlite3'
-import { __testables } from '@/app/api/sessions/transcript/route'
+import { readHermesTranscriptFromDbPath } from '@/lib/session-transcript-readers'
 
 const tempDirs: string[] = []
 
@@ -70,7 +70,7 @@ describe('session transcript route', () => {
 
     db.close()
 
-    const messages = __testables.readHermesTranscriptFromDbPath(dbPath, 'session-1', 10)
+    const messages = readHermesTranscriptFromDbPath(dbPath, 'session-1', 10)
 
     expect(messages).toHaveLength(4)
     expect(messages[0]).toMatchObject({

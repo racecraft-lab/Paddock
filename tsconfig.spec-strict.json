@@ -16,6 +16,7 @@
     "src/lib/aegis.ts",
     "src/lib/feature-flags.ts",
     "src/types/product-line.ts",
+    "src/types/workflow-template.ts",
     "src/components/layout/workspace-switcher.tsx",
     "src/components/ui/button.tsx",
     "src/lib/models.ts",
@@ -24,6 +25,7 @@
     "src/types/index.ts",
     "src/lib/routing-rule-evaluator.ts",
     "src/lib/output-schema-validator.ts",
-    "src/lib/task-create.ts"
+    "src/lib/task-create.ts",
+    "src/types/safe-regex.d.ts"
   ]
 }

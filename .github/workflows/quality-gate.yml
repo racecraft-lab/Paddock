@@ -46,6 +46,12 @@ jobs:
       - name: API contract parity
         run: pnpm api:parity
 
+      - name: SPEC-004 guardrails
+        run: pnpm spec004:guardrails
+
+      - name: High-severity dependency audit
+        run: pnpm audit:high
+
       - name: Spec evidence screenshot guard
         run: pnpm test:evidence:screenshots
 

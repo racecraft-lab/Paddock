@@ -11,6 +11,7 @@ import { syncTaskOutbound } from '@/lib/github-sync-engine';
 import { removeTaskFromGnap } from '@/lib/gnap-sync';
 import { config } from '@/lib/config';
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces';
+import { advanceTaskChain, retryTaskChainAdvancement } from '@/lib/task-dispatch';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -293,6 +294,15 @@ export async function PUT(
     `);
     
     stmt.run(...updateParams);
+
+    if (normalizedStatus === 'done' && currentTask.status !== 'done') {
+      advanceTaskChain({
+        taskId,
+        workspaceId,
+        previousStatus: currentTask.status,
+        trigger: 'detail_task_update',
+      })
+    }
     
     // Track changes and log activities
     const changes: string[] = [];
@@ -411,6 +421,88 @@ export async function PUT(
     if (scopeError) return NextResponse.json({ error: scopeError.error }, { status: scopeError.status });
     logger.error({ err: error }, 'PUT /api/tasks/[id] error');
     return NextResponse.json({ error: 'Failed to update task' }, { status: 500 });
+  }
+}
+
+/**
+ * POST /api/tasks/[id] - Operator task actions
+ */
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const auth = requireRole(request, 'operator');
+  if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status });
+
+  const rateCheck = mutationLimiter(request);
+  if (rateCheck) return rateCheck;
+
+  try {
+    const db = getDatabase();
+    const resolvedParams = await params;
+    const taskId = parseInt(resolvedParams.id);
+    const acceptedScope = await resolveWorkspaceScopeFromRequest(db, request, auth.user);
+    const workspaceFilter = workspaceScopePredicate(acceptedScope, 'workspace_id');
+
+    if (isNaN(taskId)) {
+      return NextResponse.json({ error: 'Invalid task ID' }, { status: 400 });
+    }
+
+    const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+    if (body.action !== 'retry_chain_advancement') {
+      return NextResponse.json({ error: 'Unsupported task action' }, { status: 400 });
+    }
+    if ('activity_id' in body) {
+      return NextResponse.json(
+        { error: 'retry_conflict', retry_rejection_reason: 'retry_not_eligible' },
+        { status: 409 }
+      );
+    }
+
+    const currentTask = db
+      .prepare(`SELECT * FROM tasks WHERE id = ? AND ${workspaceFilter.sql}`)
+      .get(taskId, ...workspaceFilter.params) as Task;
+    if (!currentTask) {
+      return NextResponse.json({ error: 'Task not found' }, { status: 404 });
+    }
+    const workspaceId = (currentTask as Task & { workspace_id: number }).workspace_id;
+
+    const retry = retryTaskChainAdvancement({
+      taskId,
+      workspaceId,
+      confirmTemplateDrift: body.confirm_template_drift === true,
+    });
+
+    if (!retry.ok) {
+      return NextResponse.json(
+        { error: 'retry_conflict', retry_rejection_reason: retry.retryRejectionReason },
+        { status: 409 }
+      );
+    }
+
+    const updatedTask = db.prepare(`
+      SELECT t.*, p.name as project_name, p.ticket_prefix as project_prefix
+      FROM tasks t
+      LEFT JOIN projects p ON p.id = t.project_id AND p.workspace_id = t.workspace_id
+      WHERE t.id = ? AND t.workspace_id = ?
+    `).get(taskId, workspaceId) as Task;
+
+    return NextResponse.json({
+      task: mapTaskRow(updatedTask),
+      chain_retry: {
+        recovery_class: retry.recoveryClass,
+        retry_attempt: retry.retryAttempt,
+        recovery_outcome: retry.recoveryOutcome,
+        successor_task_id: retry.successorTaskId,
+        chain_terminated: retry.chainTerminated,
+        idempotent_successor: retry.idempotentSuccessor,
+      },
+    });
+  } catch (error) {
+    const scopeError = workspaceScopeError(error);
+    if (scopeError) return NextResponse.json({ error: scopeError.error }, { status: scopeError.status });
+    logger.error({ err: error }, 'POST /api/tasks/[id] error');
+    return NextResponse.json({ error: 'Failed to execute task action' }, { status: 500 });
   }
 }
 

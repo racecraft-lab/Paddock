@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { PipelineTab } from './pipeline-tab'
 import { useMissionControl } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
+import type { JsonObject, WorkflowRoutingRule } from '@/types/workflow-template'
 
 interface Agent {
   id: number
@@ -26,6 +27,13 @@ interface WorkflowTemplate {
   tags: string[]
   use_count: number
   last_used_at: number | null
+  slug: string | null
+  output_schema: JsonObject | null
+  routing_rules: WorkflowRoutingRule[]
+  next_template_slug: string | null
+  produces_pr: boolean
+  external_terminal_event: string | null
+  allow_redacted_artifacts: boolean
 }
 
 type TemplateFormData = {
@@ -36,11 +44,36 @@ type TemplateFormData = {
   timeout_seconds: number
   agent_role: string
   tags: string[]
+  slug: string
+  output_schema: string
+  routing_rules: string
+  next_template_slug: string
+  produces_pr: boolean
+  external_terminal_event: string
+  allow_redacted_artifacts: boolean
 }
 
 const emptyForm: TemplateFormData = {
   name: '', description: '', model: 'sonnet', task_prompt: '',
-  timeout_seconds: 300, agent_role: '', tags: []
+  timeout_seconds: 300, agent_role: '', tags: [],
+  slug: '', output_schema: '', routing_rules: '', next_template_slug: '',
+  produces_pr: false, external_terminal_event: '', allow_redacted_artifacts: false,
+}
+
+function formatJsonField(value: unknown): string {
+  if (value == null) return ''
+  if (Array.isArray(value) && value.length === 0) return ''
+  return JSON.stringify(value, null, 2)
+}
+
+function parseJsonField<T>(value: string, emptyValue: T, fieldName: string): T {
+  const trimmed = value.trim()
+  if (!trimmed) return emptyValue
+  try {
+    return JSON.parse(trimmed) as T
+  } catch {
+    throw new Error(`${fieldName} must be valid JSON`)
+  }
 }
 
 export function OrchestrationBar() {
@@ -64,11 +97,12 @@ export function OrchestrationBar() {
   const [filterTag, setFilterTag] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<number | null>(null)
   const [spawning, setSpawning] = useState<number | null>(null)
+  const [templateError, setTemplateError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     const [agentRes, templateRes] = await Promise.all([
       fetch(appendScopeToPath('/api/agents', activeProductLineScope)).then(r => r.json()).catch(() => ({ agents: [] })),
-      fetch('/api/workflows').then(r => r.json()).catch(() => ({ templates: [] })),
+      fetch(appendScopeToPath('/api/workflows', activeProductLineScope)).then(r => r.json()).catch(() => ({ templates: [] })),
     ])
     setAgents(agentRes.agents || [])
     setTemplates(templateRes.templates || [])
@@ -126,7 +160,7 @@ export function OrchestrationBar() {
       })
 
       if (res.ok) {
-        await fetch('/api/workflows', {
+        await fetch(appendScopeToPath('/api/workflows', activeProductLineScope), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: template.id })
@@ -147,19 +181,33 @@ export function OrchestrationBar() {
   // Save template (create or update)
   const saveTemplate = async () => {
     if (!templateForm.name || !templateForm.task_prompt) return
+    setTemplateError(null)
     try {
       const isEdit = formMode === 'edit' && editingId !== null
-      const res = await fetch('/api/workflows', {
+      const outputSchema = parseJsonField<JsonObject | null>(templateForm.output_schema, null, 'Output schema')
+      const routingRules = parseJsonField<WorkflowRoutingRule[]>(templateForm.routing_rules, [], 'Routing rules')
+      const payload = {
+        ...templateForm,
+        slug: templateForm.slug.trim() || null,
+        output_schema: outputSchema,
+        routing_rules: routingRules,
+        next_template_slug: templateForm.next_template_slug.trim() || null,
+        external_terminal_event: templateForm.external_terminal_event.trim() || null,
+      }
+      const res = await fetch(appendScopeToPath('/api/workflows', activeProductLineScope), {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(isEdit ? { id: editingId, ...templateForm } : templateForm)
+        body: JSON.stringify(isEdit ? { id: editingId, ...payload } : payload)
       })
       if (res.ok) {
         closeForm()
         fetchData()
+      } else {
+        const data = await res.json().catch(() => ({ error: 'Failed to save template' })) as { error?: string; details?: string[] }
+        setTemplateError(data.details?.join('\n') || data.error || 'Failed to save template')
       }
-    } catch {
-      // ignore
+    } catch (error) {
+      setTemplateError(error instanceof Error ? error.message : 'Failed to save template')
     }
   }
 
@@ -175,8 +223,16 @@ export function OrchestrationBar() {
       timeout_seconds: t.timeout_seconds,
       agent_role: t.agent_role || '',
       tags: t.tags || [],
+      slug: t.slug || '',
+      output_schema: formatJsonField(t.output_schema),
+      routing_rules: formatJsonField(t.routing_rules),
+      next_template_slug: t.next_template_slug || '',
+      produces_pr: Boolean(t.produces_pr),
+      external_terminal_event: t.external_terminal_event || '',
+      allow_redacted_artifacts: Boolean(t.allow_redacted_artifacts),
     })
     setTagInput('')
+    setTemplateError(null)
   }
 
   // Duplicate template
@@ -191,8 +247,16 @@ export function OrchestrationBar() {
       timeout_seconds: t.timeout_seconds,
       agent_role: t.agent_role || '',
       tags: t.tags || [],
+      slug: t.slug ? `${t.slug}-copy` : '',
+      output_schema: formatJsonField(t.output_schema),
+      routing_rules: formatJsonField(t.routing_rules),
+      next_template_slug: t.next_template_slug || '',
+      produces_pr: Boolean(t.produces_pr),
+      external_terminal_event: t.external_terminal_event || '',
+      allow_redacted_artifacts: Boolean(t.allow_redacted_artifacts),
     })
     setTagInput('')
+    setTemplateError(null)
   }
 
   // Close form
@@ -201,11 +265,12 @@ export function OrchestrationBar() {
     setEditingId(null)
     setTemplateForm({ ...emptyForm })
     setTagInput('')
+    setTemplateError(null)
   }
 
   // Delete template
   const deleteTemplate = async (id: number) => {
-    await fetch(`/api/workflows?id=${id}`, { method: 'DELETE' })
+    await fetch(appendScopeToPath(`/api/workflows?id=${id}`, activeProductLineScope), { method: 'DELETE' })
     if (expandedId === id) setExpandedId(null)
     fetchData()
   }
@@ -304,7 +369,7 @@ export function OrchestrationBar() {
             <div className="text-center py-4">
               <p className="text-sm text-muted-foreground mb-2">{t('noTemplates')}</p>
               <Button
-                onClick={() => { setFormMode('create'); setEditingId(null); setTemplateForm({ ...emptyForm }) }}
+                onClick={() => { setFormMode('create'); setEditingId(null); setTemplateForm({ ...emptyForm }); setTemplateError(null) }}
                 variant="link"
                 size="sm"
               >
@@ -348,7 +413,7 @@ export function OrchestrationBar() {
                 <Button
                   onClick={() => {
                     if (formMode !== 'hidden') closeForm()
-                    else { setFormMode('create'); setTemplateForm({ ...emptyForm }) }
+                    else { setFormMode('create'); setTemplateForm({ ...emptyForm }); setTemplateError(null) }
                   }}
                   variant="link"
                   size="xs"
@@ -395,6 +460,67 @@ export function OrchestrationBar() {
                     rows={3}
                     className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-sm text-foreground resize-none"
                   />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={templateForm.slug}
+                      onChange={(e) => setTemplateForm(f => ({ ...f, slug: e.target.value }))}
+                      placeholder="Template slug"
+                      className="h-8 px-2 rounded-md bg-secondary border border-border text-sm text-foreground"
+                    />
+                    <input
+                      value={templateForm.next_template_slug}
+                      onChange={(e) => setTemplateForm(f => ({ ...f, next_template_slug: e.target.value }))}
+                      placeholder="Next template slug"
+                      className="h-8 px-2 rounded-md bg-secondary border border-border text-sm text-foreground"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <textarea
+                      value={templateForm.output_schema}
+                      onChange={(e) => setTemplateForm(f => ({ ...f, output_schema: e.target.value }))}
+                      placeholder="Output schema JSON"
+                      rows={4}
+                      className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-xs text-foreground font-mono resize-y"
+                    />
+                    <textarea
+                      value={templateForm.routing_rules}
+                      onChange={(e) => setTemplateForm(f => ({ ...f, routing_rules: e.target.value }))}
+                      placeholder="Routing rules JSON"
+                      rows={4}
+                      className="w-full px-2 py-1.5 rounded-md bg-secondary border border-border text-xs text-foreground font-mono resize-y"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      value={templateForm.external_terminal_event}
+                      onChange={(e) => setTemplateForm(f => ({ ...f, external_terminal_event: e.target.value }))}
+                      placeholder="External terminal event"
+                      className="h-8 px-2 rounded-md bg-secondary border border-border text-sm text-foreground"
+                    />
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={templateForm.produces_pr}
+                          onChange={(e) => setTemplateForm(f => ({ ...f, produces_pr: e.target.checked }))}
+                        />
+                        Produces PR
+                      </label>
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={templateForm.allow_redacted_artifacts}
+                          onChange={(e) => setTemplateForm(f => ({ ...f, allow_redacted_artifacts: e.target.checked }))}
+                        />
+                        Allow redacted artifacts
+                      </label>
+                    </div>
+                  </div>
+                  {templateError && (
+                    <div role="alert" className="text-xs text-red-400 whitespace-pre-wrap">
+                      {templateError}
+                    </div>
+                  )}
                   {/* Tags */}
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1 flex-wrap flex-1">
