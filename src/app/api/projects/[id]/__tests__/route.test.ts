@@ -567,3 +567,127 @@ describe('SPEC-006 / T032 — structured log on activity-INSERT failure (FR-027b
     expect(payload.error_class).toBeDefined()
   })
 })
+
+// ── T033 — is_triage_project exclusivity (FR-036, US3-AC4, P5-AC4) ──────────
+
+describe('SPEC-006 / T033 — is_triage_project exclusivity (FR-036)', () => {
+  it('returns 409 triage_conflict with hybrid shape when another project already holds the flag', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const triageId = seedProject(db, {
+      workspaceId: 1,
+      slug: 'p-triage',
+      isTriageProject: 1,
+    })
+    const targetId = seedProject(db, { workspaceId: 1, slug: 'p-target' })
+    getDatabaseMock.mockReturnValue(db)
+
+    const req = buildRequest({ body: { is_triage_project: true } })
+    const res = await PUT(req, buildParams(targetId))
+    expect(res.status).toBe(409)
+    const body = (await res.json()) as {
+      error: string
+      message: string
+      existing_triage_project_id: number
+      existing_triage_project_slug: string
+    }
+    expect(body.error).toBe('triage_conflict')
+    expect(body.existing_triage_project_id).toBe(triageId)
+    expect(body.existing_triage_project_slug).toBe('p-triage')
+    expect(body.message).toMatch(/triage/i)
+
+    // DB unchanged: target is still NOT triage; existing still IS triage.
+    const tRow = db
+      .prepare(`SELECT is_triage_project FROM projects WHERE id = ?`)
+      .get(targetId) as { is_triage_project: number }
+    const xRow = db
+      .prepare(`SELECT is_triage_project FROM projects WHERE id = ?`)
+      .get(triageId) as { is_triage_project: number }
+    expect(tRow.is_triage_project).toBe(0)
+    expect(xRow.is_triage_project).toBe(1)
+  })
+
+  it('idempotent re-assertion: setting is_triage_project=true on the current triage project is a 200 no-op', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const triageId = seedProject(db, {
+      workspaceId: 1,
+      slug: 'p-triage',
+      isTriageProject: 1,
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    const req = buildRequest({ body: { is_triage_project: true } })
+    const res = await PUT(req, buildParams(triageId))
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as {
+      project: { is_triage_project: boolean }
+    }
+    expect(body.project.is_triage_project).toBe(true)
+
+    // Still exactly one triage in the workspace.
+    const count = db
+      .prepare(
+        `SELECT COUNT(*) as c FROM projects WHERE workspace_id = 1 AND is_triage_project = 1`,
+      )
+      .get() as { c: number }
+    expect(count.c).toBe(1)
+  })
+
+  it('symmetric clear: setting is_triage_project=false on the current triage project succeeds (zero triage allowed)', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const triageId = seedProject(db, {
+      workspaceId: 1,
+      slug: 'p-triage',
+      isTriageProject: 1,
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    const req = buildRequest({ body: { is_triage_project: false } })
+    const res = await PUT(req, buildParams(triageId))
+    expect(res.status).toBe(200)
+
+    const count = db
+      .prepare(
+        `SELECT COUNT(*) as c FROM projects WHERE workspace_id = 1 AND is_triage_project = 1`,
+      )
+      .get() as { c: number }
+    expect(count.c).toBe(0)
+  })
+
+  it('partial unique index idx_projects_one_triage_per_workspace enforces exclusivity at the SQL layer', () => {
+    const db = freshMigratedDb()
+    seedProject(db, {
+      workspaceId: 1,
+      slug: 'p-a',
+      isTriageProject: 1,
+    })
+    expect(() => {
+      seedProject(db, {
+        workspaceId: 1,
+        slug: 'p-b',
+        isTriageProject: 1,
+      })
+    }).toThrow(/UNIQUE/i)
+
+    // Different workspace is allowed.
+    const wsRow = db
+      .prepare(`INSERT INTO workspaces (tenant_id, slug, name) VALUES (1, 'paint-test', 'Paint Test')`)
+      .run()
+    const otherWorkspaceId = Number(wsRow.lastInsertRowid)
+    expect(() => {
+      seedProject(db, {
+        workspaceId: otherWorkspaceId,
+        slug: 'p-other',
+        isTriageProject: 1,
+      })
+    }).not.toThrow()
+  })
+})

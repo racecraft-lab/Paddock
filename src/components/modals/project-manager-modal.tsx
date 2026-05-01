@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useFocusTrap } from '@/lib/use-focus-trap'
 import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
+import { resolveFlag } from '@/lib/feature-flags'
 
 interface Project {
   id: number
@@ -30,6 +31,17 @@ interface Project {
 // SPEC-006 / FR-037, FR-058 — owner_conflict surfaced inline so operators
 // can resolve it via the "Transfer ownership" action without leaving the modal.
 interface OwnerConflictState {
+  projectId: number
+  existingProjectId: number
+  existingProjectSlug: string
+  message: string
+}
+
+// SPEC-006 / FR-036, FR-040, FR-041 — triage_conflict surfaced inline.
+// The partial unique index `idx_projects_one_triage_per_workspace` enforces
+// at-most-one triage per workspace; the API returns this 409 shape when a
+// second project tries to claim the flag.
+interface TriageConflictState {
   projectId: number
   existingProjectId: number
   existingProjectSlug: string
@@ -76,9 +88,26 @@ export function ProjectManagerModal({
     github_sync_enabled: boolean
     github_default_branch: string
     is_repo_sync_owner: boolean
-  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main', is_repo_sync_owner: false })
+    is_triage_project: boolean
+  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main', is_repo_sync_owner: false, is_triage_project: false })
   const [ownerConflict, setOwnerConflict] = useState<OwnerConflictState | null>(null)
-  const { activeProductLineScope } = useMissionControl()
+  const [triageConflict, setTriageConflict] = useState<TriageConflictState | null>(null)
+  const { activeProductLineScope, activeProductLine } = useMissionControl()
+
+  // SPEC-006 / FR-040b — banner visibility derived client-side from the
+  // active workspace's `feature_flags` blob. We deliberately mirror the
+  // server-side `resolveFlag` semantics so the UI cannot drift from the API.
+  const areaRoutingFlagOn = useMemo(() => {
+    return resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
+      workspaceFlags: activeProductLine?.feature_flags ?? null,
+    })
+  }, [activeProductLine])
+
+  const hasTriageProject = useMemo(
+    () => projects.some((p) => p.is_triage_project),
+    [projects],
+  )
+  const showNoTriageBanner = areaRoutingFlagOn && !hasTriageProject
 
   const load = useCallback(async () => {
     try {
@@ -163,10 +192,12 @@ export function ProjectManagerModal({
     if (editingId === project.id) {
       setEditingId(null)
       setOwnerConflict(null)
+      setTriageConflict(null)
       return
     }
     setEditingId(project.id)
     setOwnerConflict(null)
+    setTriageConflict(null)
     setEditForm({
       description: project.description || '',
       github_repo: project.github_repo || '',
@@ -176,21 +207,20 @@ export function ProjectManagerModal({
       github_sync_enabled: !!project.github_sync_enabled,
       github_default_branch: project.github_default_branch || 'main',
       is_repo_sync_owner: !!project.is_repo_sync_owner,
+      is_triage_project: !!project.is_triage_project,
     })
   }
 
-  // SPEC-006 / FR-040, FR-041 — submit the area-routing fields via the new
-  // PUT route. When the server returns 409 owner_conflict, surface the
-  // conflicting project inline and offer a "Transfer ownership" action that
-  // re-submits with `transfer_owner=true` (FR-037 atomic swap).
+  // SPEC-006 / FR-040, FR-041 — submit area-routing fields via the new PUT
+  // route. The single dispatcher handles all four 409 shapes (area_slug,
+  // triage, owner) and the activity-bearing transfer_owner=true atomic swap.
+  // Body fields are passed through verbatim so callers can mix is_triage,
+  // is_repo_sync_owner, area_slug, and transfer_owner in one round-trip.
   const submitAreaRouting = async (
     project: Project,
-    desiredIsOwner: boolean,
-    transferOwner: boolean,
+    body: Record<string, unknown>,
   ) => {
     try {
-      const body: Record<string, unknown> = { is_repo_sync_owner: desiredIsOwner }
-      if (transferOwner) body.transfer_owner = true
       const response = await fetch(
         appendScopeToPath(`/api/projects/${project.id}`, activeProductLineScope),
         {
@@ -207,12 +237,24 @@ export function ProjectManagerModal({
           existingProjectSlug: String(data.existing_owner_project_slug),
           message: String(data.message ?? 'Another project owns this repo.'),
         })
+        setTriageConflict(null)
+        return false
+      }
+      if (response.status === 409 && data?.error === 'triage_conflict') {
+        setTriageConflict({
+          projectId: project.id,
+          existingProjectId: data.existing_triage_project_id as number,
+          existingProjectSlug: String(data.existing_triage_project_slug),
+          message: String(data.message ?? 'Another project is the triage project.'),
+        })
+        setOwnerConflict(null)
         return false
       }
       if (!response.ok) {
         throw new Error(data?.error ?? data?.message ?? 'Failed to update project')
       }
       setOwnerConflict(null)
+      setTriageConflict(null)
       return true
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update project')
@@ -239,14 +281,22 @@ export function ProjectManagerModal({
       if (!response.ok) throw new Error(data.error || 'Failed to update project')
 
       // SPEC-006 / FR-040 — area-routing fields go through the new PUT
-      // handler. Only call when the user changed the toggle to keep the
+      // handler. Only call when at least one toggle changed to keep the
       // legacy PATCH path side-effect free.
       const desiredIsOwner = editForm.is_repo_sync_owner
-      if (desiredIsOwner !== !!project.is_repo_sync_owner) {
-        const ok = await submitAreaRouting(project, desiredIsOwner, false)
+      const ownerChanged = desiredIsOwner !== !!project.is_repo_sync_owner
+      const desiredIsTriage = editForm.is_triage_project
+      const triageChanged = desiredIsTriage !== !!project.is_triage_project
+
+      if (ownerChanged || triageChanged) {
+        const areaBody: Record<string, unknown> = {}
+        if (ownerChanged) areaBody.is_repo_sync_owner = desiredIsOwner
+        if (triageChanged) areaBody.is_triage_project = desiredIsTriage
+        const ok = await submitAreaRouting(project, areaBody)
         if (!ok) {
-          // Either an owner_conflict surfaced inline or another error in `error`.
-          // Bail without dismissing the editor so the operator can act.
+          // Either an owner_conflict / triage_conflict surfaced inline or
+          // another error in `error`. Bail without dismissing the editor
+          // so the operator can act.
           return
         }
       }
@@ -329,6 +379,21 @@ export function ProjectManagerModal({
               className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm resize-none"
             />
           </form>
+
+          {/* SPEC-006 / FR-040b — no-triage-designated banner. Visible when
+              FEATURE_AREA_LABEL_ROUTING is ON and no project in the workspace
+              has is_triage_project=1. Disappears the moment any project is
+              promoted to triage, so the cue is purely state-driven (no
+              dedicated API). */}
+          {showNoTriageBanner && !loading && (
+            <div
+              data-testid="no-triage-banner"
+              role="status"
+              className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+            >
+              No triage project designated. Unresolvable issues will route to the sync-owner project until you designate one.
+            </div>
+          )}
 
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading projects...</div>
@@ -465,6 +530,42 @@ export function ProjectManagerModal({
                                 Project <code className="font-mono">{ownerConflict.existingProjectSlug}</code>{' '}
                                 (id={ownerConflict.existingProjectId}) currently owns this repo.{' '}
                                 {ownerConflict.message}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* SPEC-006 / FR-040 — triage project toggle. Visible
+                          only when FEATURE_AREA_LABEL_ROUTING is ON for the
+                          workspace; otherwise the PUT route would reject any
+                          attempt with `feature_flag_disabled`. */}
+                      {areaRoutingFlagOn && (
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditForm(prev => ({ ...prev, is_triage_project: !prev.is_triage_project }))}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                editForm.is_triage_project ? 'bg-primary' : 'bg-muted-foreground/30'
+                              }`}
+                              aria-label="Toggle triage project"
+                            >
+                              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                editForm.is_triage_project ? 'translate-x-4' : 'translate-x-0.5'
+                              }`} />
+                            </button>
+                            <label className="text-xs text-muted-foreground">
+                              Triage Project (one per workspace) — absorbs ambiguous issues
+                            </label>
+                          </div>
+                          {triageConflict && triageConflict.projectId === project.id && (
+                            <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                              <div className="font-medium">Triage project conflict</div>
+                              <div className="mt-0.5">
+                                Project <code className="font-mono">{triageConflict.existingProjectSlug}</code>{' '}
+                                (id={triageConflict.existingProjectId}) is already the triage project.{' '}
+                                {triageConflict.message}
                               </div>
                             </div>
                           )}
