@@ -20,6 +20,20 @@ interface Project {
   github_default_branch?: string
   task_count?: number
   assigned_agents?: string[]
+  // SPEC-006 / FR-040 — area-routing fields, additive and always present
+  // when the server returns them. Defaults are null/false on the server side.
+  area_slug?: string | null
+  is_triage_project?: boolean
+  is_repo_sync_owner?: boolean
+}
+
+// SPEC-006 / FR-037, FR-058 — owner_conflict surfaced inline so operators
+// can resolve it via the "Transfer ownership" action without leaving the modal.
+interface OwnerConflictState {
+  projectId: number
+  existingProjectId: number
+  existingProjectSlug: string
+  message: string
 }
 
 interface Agent {
@@ -61,7 +75,9 @@ export function ProjectManagerModal({
     assigned_agents: string[]
     github_sync_enabled: boolean
     github_default_branch: string
-  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main' })
+    is_repo_sync_owner: boolean
+  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main', is_repo_sync_owner: false })
+  const [ownerConflict, setOwnerConflict] = useState<OwnerConflictState | null>(null)
   const { activeProductLineScope } = useMissionControl()
 
   const load = useCallback(async () => {
@@ -146,9 +162,11 @@ export function ProjectManagerModal({
   const startEditing = (project: Project) => {
     if (editingId === project.id) {
       setEditingId(null)
+      setOwnerConflict(null)
       return
     }
     setEditingId(project.id)
+    setOwnerConflict(null)
     setEditForm({
       description: project.description || '',
       github_repo: project.github_repo || '',
@@ -157,7 +175,49 @@ export function ProjectManagerModal({
       assigned_agents: project.assigned_agents || [],
       github_sync_enabled: !!project.github_sync_enabled,
       github_default_branch: project.github_default_branch || 'main',
+      is_repo_sync_owner: !!project.is_repo_sync_owner,
     })
+  }
+
+  // SPEC-006 / FR-040, FR-041 — submit the area-routing fields via the new
+  // PUT route. When the server returns 409 owner_conflict, surface the
+  // conflicting project inline and offer a "Transfer ownership" action that
+  // re-submits with `transfer_owner=true` (FR-037 atomic swap).
+  const submitAreaRouting = async (
+    project: Project,
+    desiredIsOwner: boolean,
+    transferOwner: boolean,
+  ) => {
+    try {
+      const body: Record<string, unknown> = { is_repo_sync_owner: desiredIsOwner }
+      if (transferOwner) body.transfer_owner = true
+      const response = await fetch(
+        appendScopeToPath(`/api/projects/${project.id}`, activeProductLineScope),
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      )
+      const data = await response.json()
+      if (response.status === 409 && data?.error === 'owner_conflict') {
+        setOwnerConflict({
+          projectId: project.id,
+          existingProjectId: data.existing_owner_project_id as number,
+          existingProjectSlug: String(data.existing_owner_project_slug),
+          message: String(data.message ?? 'Another project owns this repo.'),
+        })
+        return false
+      }
+      if (!response.ok) {
+        throw new Error(data?.error ?? data?.message ?? 'Failed to update project')
+      }
+      setOwnerConflict(null)
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update project')
+      return false
+    }
   }
 
   const saveEdit = async (project: Project) => {
@@ -177,6 +237,19 @@ export function ProjectManagerModal({
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || 'Failed to update project')
+
+      // SPEC-006 / FR-040 — area-routing fields go through the new PUT
+      // handler. Only call when the user changed the toggle to keep the
+      // legacy PATCH path side-effect free.
+      const desiredIsOwner = editForm.is_repo_sync_owner
+      if (desiredIsOwner !== !!project.is_repo_sync_owner) {
+        const ok = await submitAreaRouting(project, desiredIsOwner, false)
+        if (!ok) {
+          // Either an owner_conflict surfaced inline or another error in `error`.
+          // Bail without dismissing the editor so the operator can act.
+          return
+        }
+      }
 
       // Sync agent assignments
       const currentAgents = project.assigned_agents || []
@@ -370,6 +443,31 @@ export function ProjectManagerModal({
                             </button>
                             <label className="text-xs text-muted-foreground">Enable Two-Way Sync</label>
                           </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <button
+                              type="button"
+                              onClick={() => setEditForm(prev => ({ ...prev, is_repo_sync_owner: !prev.is_repo_sync_owner }))}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                editForm.is_repo_sync_owner ? 'bg-primary' : 'bg-muted-foreground/30'
+                              }`}
+                              aria-label="Toggle repo sync owner"
+                            >
+                              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                editForm.is_repo_sync_owner ? 'translate-x-4' : 'translate-x-0.5'
+                              }`} />
+                            </button>
+                            <label className="text-xs text-muted-foreground">Repo Sync Owner (one per repo per workspace)</label>
+                          </div>
+                          {ownerConflict && ownerConflict.projectId === project.id && (
+                            <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                              <div className="font-medium">Sync owner conflict</div>
+                              <div className="mt-0.5">
+                                Project <code className="font-mono">{ownerConflict.existingProjectSlug}</code>{' '}
+                                (id={ownerConflict.existingProjectId}) currently owns this repo.{' '}
+                                {ownerConflict.message}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
 

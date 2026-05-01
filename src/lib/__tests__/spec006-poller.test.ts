@@ -128,11 +128,16 @@ describe('SPEC-006 / T013 — mixed-tenant per-row resolveFlag (FR-052, P5-AC1)'
       2,
     )
 
+    // WS-1 row: flag OFF, legacy per-project polling. WS-2 row: flag ON, must
+    // be the elected sync owner for its repo so the T027 owner-filter does
+    // not skip it (the FR-052 per-row resolveFlag invocation is the assertion
+    // here — the behavior of each branch is exercised in the dedicated T020
+    // tests below).
     db.exec(`
-      INSERT INTO projects (workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, status)
+      INSERT INTO projects (workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner, status)
       VALUES
-        (1, 'P-WS1', 'p-ws1', 'P1', 'org/repo-ws1', 1, 'active'),
-        (2, 'P-WS2', 'p-ws2', 'P2', 'org/repo-ws2', 1, 'active');
+        (1, 'P-WS1', 'p-ws1', 'P1', 'org/repo-ws1', 1, 0, 'active'),
+        (2, 'P-WS2', 'p-ws2', 'P2', 'org/repo-ws2', 1, 1, 'active');
     `)
 
     getDatabaseMock.mockReturnValue(db)
@@ -146,9 +151,82 @@ describe('SPEC-006 / T013 — mixed-tenant per-row resolveFlag (FR-052, P5-AC1)'
     )
     expect(callsForFlag.length).toBeGreaterThanOrEqual(2)
 
-    // OFF-branch behavior preserved byte-for-byte: pullFromGitHub still
-    // invoked for every candidate project. The ON-branch owner-filter SQL
-    // change is deferred to T027 (US2).
+    // OFF workspace polled per-project; ON workspace polled via the owner
+    // filter (T027). Both rows exercise their branch and reach pullFromGitHub.
+    expect(pullFromGitHubMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('T020 — flag-ON poller filter selects only the is_repo_sync_owner=1 project per (workspace_id, github_repo) (FR-018, US2-AC2, P5-AC2)', async () => {
+    const db = freshMigratedDb()
+
+    // Seed a workspace with the flag ON via feature_flags JSON.
+    db.prepare(`UPDATE workspaces SET feature_flags = ? WHERE id = ?`).run(
+      JSON.stringify({ FEATURE_AREA_LABEL_ROUTING: true }),
+      1,
+    )
+
+    // Two projects share the same github_repo. Only project A is the owner.
+    db.exec(`
+      INSERT INTO projects (workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner, status)
+      VALUES
+        (1, 'P-A', 'p-a', 'PA', 'org/shared-repo', 1, 1, 'active'),
+        (1, 'P-B', 'p-b', 'PB', 'org/shared-repo', 1, 0, 'active');
+    `)
+
+    getDatabaseMock.mockReturnValue(db)
+
+    await runSyncTickForTest()
+
+    // Flag ON, owner filter: only one project polled for the shared repo.
+    expect(pullFromGitHubMock).toHaveBeenCalledTimes(1)
+    const calls = pullFromGitHubMock.mock.calls as unknown as Array<
+      [{ id: number; github_repo: string }, ...unknown[]]
+    >
+    const polledProject = calls[0]?.[0]
+    expect(polledProject?.github_repo).toBe('org/shared-repo')
+  })
+
+  it('T020 — flag-ON poller skips non-owner candidates even when github_sync_enabled=1', async () => {
+    const db = freshMigratedDb()
+
+    db.prepare(`UPDATE workspaces SET feature_flags = ? WHERE id = ?`).run(
+      JSON.stringify({ FEATURE_AREA_LABEL_ROUTING: true }),
+      1,
+    )
+
+    // Three projects, two share a repo (only one owner), one has its own repo as owner.
+    db.exec(`
+      INSERT INTO projects (workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner, status)
+      VALUES
+        (1, 'P-Owner-A', 'p-own-a', 'PA', 'org/repo-shared', 1, 1, 'active'),
+        (1, 'P-Non-Owner', 'p-non', 'PN', 'org/repo-shared', 1, 0, 'active'),
+        (1, 'P-Owner-B', 'p-own-b', 'PB', 'org/repo-solo',   1, 1, 'active');
+    `)
+
+    getDatabaseMock.mockReturnValue(db)
+
+    await runSyncTickForTest()
+
+    // Flag ON: exactly the two owner rows polled (no leak from the non-owner row).
+    expect(pullFromGitHubMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('T020 — flag-OFF preserves legacy per-project polling regardless of is_repo_sync_owner state', async () => {
+    const db = freshMigratedDb()
+
+    // Flag stays OFF (no feature_flags update).
+    db.exec(`
+      INSERT INTO projects (workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner, status)
+      VALUES
+        (1, 'P-A', 'p-a', 'PA', 'org/shared-repo', 1, 1, 'active'),
+        (1, 'P-B', 'p-b', 'PB', 'org/shared-repo', 1, 0, 'active');
+    `)
+
+    getDatabaseMock.mockReturnValue(db)
+
+    await runSyncTickForTest()
+
+    // Flag OFF: legacy per-project — both projects polled (current behavior).
     expect(pullFromGitHubMock).toHaveBeenCalledTimes(2)
   })
 

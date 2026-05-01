@@ -93,12 +93,33 @@ async function runSyncTick(): Promise<void> {
     for (const project of projects) {
       try {
         const workspaceFlags = flagsForWorkspace(project.workspace_id)
-        // Per-row resolveFlag (FR-052). The boolean is currently observed
-        // for audit only — the owner-only candidate filter is T027.
-        const _areaRoutingOn = resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
+        // Per-row resolveFlag (FR-052). When ON, owner-filter (FR-018, T027):
+        // skip rows whose project is NOT the elected sync owner for the
+        // (workspace_id, github_repo) group. The legacy per-project SELECT
+        // above is unchanged so flag-OFF behavior is byte-identical.
+        const areaRoutingOn = resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
           workspaceFlags,
         })
-        void _areaRoutingOn
+
+        if (areaRoutingOn) {
+          // FR-018 (US2): only the is_repo_sync_owner=1 project for this
+          // (workspace_id, github_repo) is allowed to poll. Non-owner rows
+          // are skipped silently to keep this branch a pure read-side
+          // filter (no DB writes from the poller).
+          const ownerRow = db.prepare(`
+            SELECT id FROM projects
+            WHERE workspace_id = ?
+              AND github_repo = ?
+              AND is_repo_sync_owner = 1
+              AND status = 'active'
+            LIMIT 1
+          `).get(project.workspace_id, project.github_repo) as
+            | { id: number }
+            | undefined
+          if (!ownerRow || ownerRow.id !== project.id) {
+            continue
+          }
+        }
 
         await pullFromGitHub(project, project.workspace_id)
       } catch (err) {
