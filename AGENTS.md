@@ -122,6 +122,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite plus localStorage for persisted Product Line scope (002-product-line-switcher)
 - TypeScript 5 on Next.js 16 App Router with React 19 + Next.js, Zustand, better-sqlite3, Vitest, ESLint, pnpm (003-global-aegis)
 - SQLite via `better-sqlite3` (003-global-aegis)
+- TypeScript 5 on Next.js 16 App Router with React 19 + Next.js, React, Zustand, Tailwind CSS 3, better-sqlite3, Vitest, Playwright, exact pinned runtime dependencies `ajv@8.18.0`, `jsonpath-plus@10.4.0`, and `safe-regex@2.1.1` (004-task-pipeline-engine)
+- SQLite via `better-sqlite3`; SPEC-001 task-chain columns and workflow-template fields are assumed present; SPEC-004 adds only M62's partial unique successor index and rollback SQL (004-task-pipeline-engine)
 
 ## Recent Changes
 - 002-product-line-switcher: Added TypeScript 5 on Next.js 16 App Router with React 19 + Zustand, better-sqlite3, Tailwind CSS 3, Vitest, Playwright

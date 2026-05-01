@@ -5,7 +5,7 @@ import {
   SLUG_NON_ALNUM_SEQUENCE_RE,
   SLUG_LEADING_DASH_RE,
   SLUG_TRAILING_DASH_RE,
-} from './route'
+} from '@/lib/project-slug'
 
 describe('projects route slugify redos guards', () => {
   it('preserves slugify behavior on valid input', () => {

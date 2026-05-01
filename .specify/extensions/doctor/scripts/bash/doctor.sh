@@ -58,10 +58,10 @@ echo ""
 echo "=== Project Structure ==="
 check_dir ".specify" ".specify/ directory" "error"
 check_dir "specs" "specs/ directory" "info"
-check_dir "scripts" "scripts/ directory" "error"
-check_dir "templates" "templates/ directory" "error"
-check_dir "memory" "memory/ directory" "error"
-check_file "memory/constitution.md" "memory/constitution.md" "warning"
+check_dir ".specify/scripts" ".specify/scripts/ directory" "error"
+check_dir ".specify/templates" ".specify/templates/ directory" "error"
+check_dir ".specify/memory" ".specify/memory/ directory" "error"
+check_file ".specify/memory/constitution.md" ".specify/memory/constitution.md" "warning"
 
 # ── 2. AI agent detection ─────────────────────────────────────────
 echo ""
@@ -94,10 +94,9 @@ declare -A AGENTS=(
 
 for path in "${!AGENTS[@]}"; do
     agent_name="${AGENTS[$path]}"
-    dir_part="$(dirname "$path")"
-    if [ -d "$PROJECT_ROOT/$dir_part" ]; then
+    if [ -d "$PROJECT_ROOT/$path" ]; then
         AGENT_FOUND=true
-        if [ -d "$PROJECT_ROOT/$path" ] && [ "$(ls -A "$PROJECT_ROOT/$path" 2>/dev/null)" ]; then
+        if [ "$(ls -A "$PROJECT_ROOT/$path" 2>/dev/null)" ]; then
             echo "  [OK] $agent_name (commands in $path/)"
         else
             echo "  [WARNING] $agent_name folder exists but commands directory is empty"
@@ -155,38 +154,40 @@ echo ""
 echo "=== Scripts ==="
 
 EXPECTED_SCRIPTS="common check-prerequisites create-new-feature setup-plan update-agent-context"
+BASH_SCRIPTS_DIR="$PROJECT_ROOT/.specify/scripts/bash"
+POWERSHELL_SCRIPTS_DIR="$PROJECT_ROOT/.specify/scripts/powershell"
 
-if [ -d "$PROJECT_ROOT/scripts/bash" ]; then
+if [ -d "$BASH_SCRIPTS_DIR" ]; then
     for name in $EXPECTED_SCRIPTS; do
-        script="$PROJECT_ROOT/scripts/bash/${name}.sh"
+        script="$BASH_SCRIPTS_DIR/${name}.sh"
         if [ -f "$script" ]; then
             if [ ! -x "$script" ]; then
-                echo "  [WARNING] bash/${name}.sh — not executable"
-                WARNINGS+=("scripts/bash/${name}.sh is not executable — run chmod +x")
+                echo "  [WARNING] .specify/scripts/bash/${name}.sh — not executable"
+                WARNINGS+=(".specify/scripts/bash/${name}.sh is not executable — run chmod +x")
             else
-                echo "  [OK] bash/${name}.sh"
+                echo "  [OK] .specify/scripts/bash/${name}.sh"
             fi
         else
-            echo "  [MISSING] bash/${name}.sh"
-            ERRORS+=("scripts/bash/${name}.sh is missing")
+            echo "  [MISSING] .specify/scripts/bash/${name}.sh"
+            ERRORS+=(".specify/scripts/bash/${name}.sh is missing")
         fi
     done
 else
-    echo "  [NOTE] scripts/bash/ not found"
+    echo "  [NOTE] .specify/scripts/bash/ not found"
 fi
 
-if [ -d "$PROJECT_ROOT/scripts/powershell" ]; then
+if [ -d "$POWERSHELL_SCRIPTS_DIR" ]; then
     for name in $EXPECTED_SCRIPTS; do
-        script="$PROJECT_ROOT/scripts/powershell/${name}.ps1"
+        script="$POWERSHELL_SCRIPTS_DIR/${name}.ps1"
         if [ -f "$script" ]; then
-            echo "  [OK] powershell/${name}.ps1"
+            echo "  [OK] .specify/scripts/powershell/${name}.ps1"
         else
-            echo "  [MISSING] powershell/${name}.ps1"
-            ERRORS+=("scripts/powershell/${name}.ps1 is missing")
+            echo "  [MISSING] .specify/scripts/powershell/${name}.ps1"
+            ERRORS+=(".specify/scripts/powershell/${name}.ps1 is missing")
         fi
     done
 else
-    echo "  [NOTE] scripts/powershell/ not found"
+    echo "  [OK] .specify/scripts/powershell/ not configured (optional)"
 fi
 
 # ── 5. Extensions health ──────────────────────────────────────────
@@ -201,6 +202,8 @@ fi
 
 if [ -f "$PROJECT_ROOT/.specify/extensions/registry.json" ]; then
     echo "  [OK] Extension registry found"
+elif [ -d "$PROJECT_ROOT/.specify/extensions" ] && find "$PROJECT_ROOT/.specify/extensions" -mindepth 1 -maxdepth 1 -type d ! -name ".cache" | grep -q .; then
+    echo "  [OK] Extensions installed in .specify/extensions/"
 else
     echo "  [NOTE] No extensions installed"
 fi

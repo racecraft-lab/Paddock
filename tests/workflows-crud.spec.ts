@@ -1,8 +1,17 @@
 import { test, expect } from '@playwright/test'
-import { API_KEY_HEADER, createTestWorkflow, deleteTestWorkflow } from './helpers'
+import { API_KEY_HEADER, createTestWorkflow, deleteTestWorkflow, enableWorkspaceSwitcherFlagForE2E, workflowTestPath } from './helpers'
 
-test.describe('Workflows CRUD', () => {
+test.describe.serial('Workflows CRUD', () => {
   const cleanup: number[] = []
+  let restoreWorkspaceSwitcherFlag: (() => void) | null = null
+
+  test.beforeAll(async ({ request }) => {
+    restoreWorkspaceSwitcherFlag = await enableWorkspaceSwitcherFlagForE2E(request)
+  })
+
+  test.afterAll(async () => {
+    restoreWorkspaceSwitcherFlag?.()
+  })
 
   test.afterEach(async ({ request }) => {
     for (const id of cleanup) {
@@ -25,7 +34,7 @@ test.describe('Workflows CRUD', () => {
   })
 
   test('POST rejects missing name', async ({ request }) => {
-    const res = await request.post('/api/workflows', {
+    const res = await request.post(await workflowTestPath(request), {
       headers: API_KEY_HEADER,
       data: { task_prompt: 'prompt only' },
     })
@@ -33,7 +42,7 @@ test.describe('Workflows CRUD', () => {
   })
 
   test('POST rejects missing task_prompt', async ({ request }) => {
-    const res = await request.post('/api/workflows', {
+    const res = await request.post(await workflowTestPath(request), {
       headers: API_KEY_HEADER,
       data: { name: 'name only' },
     })
@@ -46,7 +55,7 @@ test.describe('Workflows CRUD', () => {
     const { id } = await createTestWorkflow(request)
     cleanup.push(id)
 
-    const res = await request.get('/api/workflows', { headers: API_KEY_HEADER })
+    const res = await request.get(await workflowTestPath(request), { headers: API_KEY_HEADER })
     expect(res.status()).toBe(200)
     const body = await res.json()
     expect(body.templates).toBeDefined()
@@ -59,7 +68,7 @@ test.describe('Workflows CRUD', () => {
     const { id } = await createTestWorkflow(request)
     cleanup.push(id)
 
-    const res = await request.put('/api/workflows', {
+    const res = await request.put(await workflowTestPath(request), {
       headers: API_KEY_HEADER,
       data: { id, name: 'updated-wf-name', description: 'Updated desc' },
     })
@@ -70,7 +79,7 @@ test.describe('Workflows CRUD', () => {
   })
 
   test('PUT returns 404 for missing template', async ({ request }) => {
-    const res = await request.put('/api/workflows', {
+    const res = await request.put(await workflowTestPath(request), {
       headers: API_KEY_HEADER,
       data: { id: 999999, name: 'nope' },
     })
@@ -82,7 +91,7 @@ test.describe('Workflows CRUD', () => {
   test('DELETE removes template', async ({ request }) => {
     const { id } = await createTestWorkflow(request)
 
-    const res = await request.delete('/api/workflows', {
+    const res = await request.delete(await workflowTestPath(request), {
       headers: API_KEY_HEADER,
       data: { id },
     })
@@ -99,19 +108,19 @@ test.describe('Workflows CRUD', () => {
     expect(createRes.status()).toBe(201)
 
     // List
-    const listRes = await request.get('/api/workflows', { headers: API_KEY_HEADER })
+    const listRes = await request.get(await workflowTestPath(request), { headers: API_KEY_HEADER })
     const listBody = await listRes.json()
     expect(listBody.templates.some((t: any) => t.id === id)).toBe(true)
 
     // Update
-    const updateRes = await request.put('/api/workflows', {
+    const updateRes = await request.put(await workflowTestPath(request), {
       headers: API_KEY_HEADER,
       data: { id, description: 'lifecycle update' },
     })
     expect(updateRes.status()).toBe(200)
 
     // Delete
-    const deleteRes = await request.delete('/api/workflows', {
+    const deleteRes = await request.delete(await workflowTestPath(request), {
       headers: API_KEY_HEADER,
       data: { id },
     })

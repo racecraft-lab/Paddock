@@ -4,27 +4,7 @@ import { requireRole } from '@/lib/auth'
 import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces'
-
-export const SLUG_NON_ALNUM_SEQUENCE_RE = /[^a-z0-9]+/g
-export const SLUG_LEADING_DASH_RE = /^-+/
-export const SLUG_TRAILING_DASH_RE = /-+$/
-
-// Cap input length BEFORE running any regex over it. This neutralises any
-// pathological-input concern from CodeQL's data-flow analysis: even though the
-// three regexes here are linear-time, bounding the input also bounds total work
-// at the boundary regardless of regex shape.
-const SLUGIFY_MAX_INPUT_LENGTH = 1024
-
-export function slugify(input: string): string {
-  return input
-    .slice(0, SLUGIFY_MAX_INPUT_LENGTH)
-    .trim()
-    .toLowerCase()
-    .replace(SLUG_NON_ALNUM_SEQUENCE_RE, '-')
-    .replace(SLUG_LEADING_DASH_RE, '')
-    .replace(SLUG_TRAILING_DASH_RE, '')
-    .slice(0, 64)
-}
+import { slugify } from '@/lib/project-slug'
 
 function normalizePrefix(input: string): string {
   const normalized = input.trim().toUpperCase().replace(/[^A-Z0-9]/g, '')

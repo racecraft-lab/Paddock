@@ -28,7 +28,7 @@ The only process drift was post-implementation tooling drift:
 
 - Focused Vitest: 4 files / 35 tests passed after the remediation pass; `src/lib/__tests__/aegis.test.ts` now covers 9 paths including M53-backfill regression.
 - Full Playwright: 533 tests passed.
-- Argos Playwright fixture remediation: `pnpm test:e2e:spec-002` passed 11 tests, and `pnpm test:e2e:argos-metadata` verified 11 screenshot metadata files across 5 tests.
+- Argos Playwright fixture remediation: `pnpm test:e2e:ui-visual` passed 11 tests, and `pnpm test:e2e:argos-metadata` verified 11 screenshot metadata files across 5 tests.
 - Argos Storybook safety check: `pnpm test:visual:storybook` passed 10 tests, and `pnpm test:visual:argos-metadata` verified 20 screenshot metadata files across 10 stories.
 - Typecheck: passed.
 - Lint: passed with 0 errors and 10 pre-existing warnings.

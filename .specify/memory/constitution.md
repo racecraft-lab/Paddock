@@ -1,9 +1,9 @@
 <!--
 Sync Impact Report
-Version change: 1.3.1 -> 1.4.0
-Modified principles: XIV. Real UI Journey Quality Gate
-Added principles: XV. Spec Artifact Provenance And Archive Sweep
-Added sections: Autopilot Conventions / K. Archive Sweep startup convention
+Version change: 1.4.0 -> 1.4.1
+Modified principles: VIII. Successor Side-Effect Parity, IX. Safe Evaluation Discipline
+Added principles: None
+Added sections: None
 Removed sections: None
 Templates requiring updates:
 - .specify/templates/plan-template.md: updated
@@ -165,8 +165,11 @@ All task creation MUST go through the shared helper `createTask()` in
   `projects.github_repo IS NOT NULL`.
 - GNAP push when configured.
 
-Direct `INSERT INTO tasks` outside `src/lib/task-create.ts` is forbidden.
-CI greps for `INSERT INTO tasks` outside that file and fails on match.
+Direct runtime `INSERT INTO tasks` in production source outside
+`src/lib/task-create.ts` is forbidden. CI greps production source for
+`INSERT INTO tasks` outside that file and fails on match; intentional test
+fixture inserts are either migrated when semantically useful or excluded from
+the production guardrail.
 
 Parity is enforced structurally — by sharing the function — not by keeping
 two parallel code paths synchronized.
@@ -178,8 +181,9 @@ over untrusted agent output. Both must be safe-by-construction.
 
 **Routing-rule evaluator** (`src/lib/routing-rule-evaluator.ts`):
 
-- JSONPath traversal uses `jsonpath-plus` with `eval: 'safe'` or
-  `preventEval: true`.
+- JSONPath traversal uses `jsonpath-plus` with JavaScript execution disabled:
+  `eval: false`, or `preventEval: true` on older supported APIs. JSONPath
+  filters/script expressions are rejected before calling `JSONPath()`.
 - Boolean grammar is parsed by a hand-written recursive-descent parser
   over an explicit operator allowlist: `==`, `!=`, `in`, `not in`,
   `&&`, `||`, `!`.
@@ -602,4 +606,4 @@ Compliance checkpoints:
 - Every migration: rollback file present; upstream-compat checklist
   satisfied.
 
-**Version**: 1.4.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-28
+**Version**: 1.4.1 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-30

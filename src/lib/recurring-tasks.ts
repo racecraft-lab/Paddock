@@ -7,9 +7,10 @@
  * date-suffixed titles.
  */
 
-import { getDatabase, db_helpers } from './db'
+import { getDatabase } from './db'
 import { logger } from './logger'
 import { isCronDue } from './schedule-parser'
+import { createTask } from './task-create'
 
 export interface RecurrenceMetadata {
   cron_expr: string
@@ -88,42 +89,26 @@ export async function spawnRecurringTasks(): Promise<{ ok: boolean; message: str
       }
 
       db.transaction(() => {
-        // Get project ticket number
-        if (template.project_id) {
-          db.prepare(`
-            UPDATE projects
-            SET ticket_counter = ticket_counter + 1, updated_at = unixepoch()
-            WHERE id = ? AND workspace_id = ?
-          `).run(template.project_id, template.workspace_id)
-        }
-
-        const ticketRow = template.project_id
-          ? db.prepare(`SELECT ticket_counter FROM projects WHERE id = ? AND workspace_id = ?`).get(template.project_id, template.workspace_id) as { ticket_counter: number } | undefined
-          : undefined
-
-        const insertResult = db.prepare(`
-          INSERT INTO tasks (
-            title, description, status, priority, project_id, project_ticket_no,
-            assigned_to, created_by, created_at, updated_at,
-            tags, metadata, workspace_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `).run(
-          childTitle,
-          template.description,
-          template.assigned_to ? 'assigned' : 'inbox',
-          template.priority,
-          template.project_id,
-          ticketRow?.ticket_counter ?? null,
-          template.assigned_to,
-          'scheduler',
-          nowSec,
-          nowSec,
-          template.tags,
-          JSON.stringify(childMetadata),
-          template.workspace_id,
-        )
-
-        const childId = Number(insertResult.lastInsertRowid)
+        createTask({
+          source: 'recurring',
+          db,
+          transaction: 'caller',
+          title: childTitle,
+          description: template.description,
+          status: template.assigned_to ? 'assigned' : 'inbox',
+          priority: template.priority,
+          project_id: template.project_id,
+          assigned_to: template.assigned_to,
+          created_by: 'scheduler',
+          workspace_id: template.workspace_id,
+          tags: template.tags ? JSON.parse(template.tags) : [],
+          metadata: childMetadata,
+          activity: {
+            actor: 'scheduler',
+            description: `Recurring task spawned: ${childTitle}`,
+            data: { parent_task_id: template.id, cron_expr: recurrence.cron_expr },
+          },
+        })
 
         // Update template: bump spawn count and last_spawned_at
         const updatedRecurrence = {
@@ -135,16 +120,6 @@ export async function spawnRecurringTasks(): Promise<{ ok: boolean; message: str
         db.prepare(`
           UPDATE tasks SET metadata = ?, updated_at = ? WHERE id = ?
         `).run(JSON.stringify(updatedMetadata), nowSec, template.id)
-
-        db_helpers.logActivity(
-          'task_created',
-          'task',
-          childId,
-          'scheduler',
-          `Recurring task spawned: ${childTitle}`,
-          { parent_task_id: template.id, cron_expr: recurrence.cron_expr },
-          template.workspace_id,
-        )
       })()
 
       spawned++

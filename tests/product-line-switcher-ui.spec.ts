@@ -4,7 +4,7 @@ import { expect, test, type Locator, type Page, type TestInfo } from '@playwrigh
 import { argosScreenshot } from '@argos-ci/playwright'
 import {
   dismissOnboardingForE2E,
-  freezeSpec002VisualClock,
+  freezeProductLineVisualClock,
   loginAsE2EAdmin,
   seedProductLineE2EData,
   type ProductLineE2EFixture,
@@ -12,8 +12,10 @@ import {
 
 const SWITCHER_NAME = /change facility or product line scope/i
 const LISTBOX_NAME = /facility and product line scopes/i
-const ARGOS_SCREENSHOT_TAGS = ['spec-002', 'product-line-switcher']
-const ARGOS_TEST_TAGS = ['@spec-002', '@product-line-switcher']
+const ARGOS_SCREENSHOT_TAGS = ['product-line-switcher']
+const ARGOS_TEST_TAGS = ['@product-line-switcher']
+const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1'
+const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1'
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -22,19 +24,20 @@ function escapeRegExp(input: string) {
 async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: string) {
   const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
 
-  if (process.env.SPEC002_SCREENSHOTS === '1') {
-    const dir = process.env.SPEC002_SCREENSHOT_DIR || path.join(process.cwd(), 'test-results', 'spec-002-screenshots')
+  if (REVIEW_SCREENSHOTS_ENABLED) {
+    const dir = process.env.MC_E2E_SCREENSHOT_DIR ||
+      path.join(process.cwd(), 'test-results', 'product-line-screenshots')
     const screenshotPath = path.join(dir, `${normalizedName}.png`)
     await fs.mkdir(dir, { recursive: true })
     await page.screenshot({ path: screenshotPath, fullPage: true })
-    await testInfo.attach(`spec-002-${name}`, {
+    await testInfo.attach(`product-line-${name}`, {
       path: screenshotPath,
       contentType: 'image/png',
     })
   }
 
-  if (process.env.SPEC002_ARGOS_SCREENSHOTS === '1') {
-    await argosScreenshot(page, `spec-002-${normalizedName}`, {
+  if (ARGOS_SCREENSHOTS_ENABLED) {
+    await argosScreenshot(page, `product-line-${normalizedName}`, {
       fullPage: true,
       tag: ARGOS_SCREENSHOT_TAGS,
     })
@@ -42,7 +45,7 @@ async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: stri
 }
 
 async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof loginAsE2EAdmin>[1]) {
-  await freezeSpec002VisualClock(page)
+  await freezeProductLineVisualClock(page)
   await page.context().addInitScript(() => {
     sessionStorage.setItem('mc-onboarding-dismissed', '1')
     sessionStorage.removeItem('mc-onboarding-replay')
@@ -68,7 +71,7 @@ async function expectControlInViewport(locator: Locator, width: number, label: s
   expect(box!.x + box!.width, `${label} right edge at ${width}px`).toBeLessThanOrEqual(width)
 }
 
-test.describe.serial('SPEC-002 Product Line switcher real UI journey', () => {
+test.describe.serial('Product Line switcher real UI journey', () => {
   let fixture: ProductLineE2EFixture
 
   test.beforeAll(async ({ request }) => {
@@ -153,7 +156,7 @@ test.describe.serial('SPEC-002 Product Line switcher real UI journey', () => {
 
   test('broadcasts selected Product Line scope to another real app tab', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
     const pageB = await page.context().newPage()
-    await freezeSpec002VisualClock(pageB)
+    await freezeProductLineVisualClock(pageB)
     await page.goto('/tasks')
     await pageB.goto('/tasks')
 

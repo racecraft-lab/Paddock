@@ -1,0 +1,12 @@
+{
+  "name": "Task pipeline routing fixtures",
+  "purpose": "Fixed corpus for routing grammar, JSONPath safety, cap, timeout, and no-match tests.",
+  "cases": [
+    "valid-rule-order",
+    "static-fallback",
+    "static-termination",
+    "jsonpath-filter-rejected",
+    "prototype-access-rejected",
+    "result-cap-budget"
+  ]
+}

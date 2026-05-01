@@ -8004,6 +8004,144 @@
           }
         }
       },
+      "post": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Execute task action",
+        "operationId": "executeTaskAction",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "retry_chain_advancement"
+                    ]
+                  },
+                  "confirm_template_drift": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task action executed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "task": {
+                      "$ref": "#/components/schemas/Task"
+                    },
+                    "chain_retry": {
+                      "type": "object",
+                      "properties": {
+                        "recovery_class": {
+                          "type": "string",
+                          "enum": [
+                            "output_validation_failure",
+                            "advancement_stall"
+                          ]
+                        },
+                        "retry_attempt": {
+                          "type": "integer"
+                        },
+                        "recovery_outcome": {
+                          "type": "string",
+                          "enum": [
+                            "output_still_invalid",
+                            "stall_persisted",
+                            "successor_created",
+                            "successor_already_exists",
+                            "chain_terminated"
+                          ]
+                        },
+                        "successor_task_id": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "chain_terminated": {
+                          "type": "boolean"
+                        },
+                        "idempotent_successor": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Retry conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "retry_conflict"
+                      ]
+                    },
+                    "retry_rejection_reason": {
+                      "type": "string",
+                      "enum": [
+                        "retry_not_eligible",
+                        "retry_template_provenance_missing",
+                        "retry_template_drift_unconfirmed"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Tasks"

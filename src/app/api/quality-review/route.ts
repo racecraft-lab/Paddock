@@ -6,6 +6,7 @@ import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { eventBus } from '@/lib/event-bus'
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces'
+import { advanceTaskChain } from '@/lib/task-dispatch'
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
     const workspaceId = acceptedScope.workspaceId
 
     const task = db
-      .prepare('SELECT id, title FROM tasks WHERE id = ? AND workspace_id = ?')
+      .prepare('SELECT id, title, status FROM tasks WHERE id = ? AND workspace_id = ?')
       .get(taskId, workspaceId) as any
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
@@ -116,6 +117,12 @@ export async function POST(request: NextRequest) {
     if (status === 'approved') {
       db.prepare('UPDATE tasks SET status = ?, updated_at = unixepoch() WHERE id = ? AND workspace_id = ?')
         .run('done', taskId, workspaceId)
+      advanceTaskChain({
+        taskId,
+        workspaceId,
+        previousStatus: task.status,
+        trigger: 'quality_review',
+      })
       eventBus.broadcast('task.status_changed', {
         id: taskId,
         status: 'done',

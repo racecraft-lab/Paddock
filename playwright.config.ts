@@ -18,7 +18,7 @@ export default defineConfig({
       '@argos-ci/playwright/reporter',
       createArgosReporterOptions({
         uploadToArgos,
-        buildName: 'spec-002-playwright-local',
+        buildName: process.env.ARGOS_PLAYWRIGHT_BUILD_NAME || 'mission-control-playwright',
       }),
     ],
   ],

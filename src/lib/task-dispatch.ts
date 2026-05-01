@@ -6,6 +6,11 @@ import { logger } from './logger'
 import { config } from './config'
 import { syncTaskOutbound } from './github-sync-engine'
 import { getAegis } from './aegis'
+import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
+import { resolveFlag } from './feature-flags'
+import { validateTaskOutput } from './output-schema-validator'
+import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
+import { createHash } from 'crypto'
 
 /** Sync task to GitHub/GNAP and broadcast escalation if task failed */
 function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
@@ -37,6 +42,707 @@ interface DispatchableTask {
   project_ticket_no: number | null
   project_id: number | null
   tags?: string[]
+}
+
+export type TaskChainAdvanceTrigger =
+  | 'aegis_review'
+  | 'quality_review'
+  | 'bulk_task_update'
+  | 'detail_task_update'
+  | 'retry_chain_advancement'
+
+export interface AdvanceTaskChainInput {
+  taskId: number
+  workspaceId: number
+  previousStatus: string | null
+  trigger: TaskChainAdvanceTrigger
+}
+
+export interface AdvanceTaskChainResult {
+  advanced: boolean
+  reason:
+    | 'not_eligible'
+    | 'validation_failed'
+    | 'stalled'
+    | 'chain_terminated'
+    | 'successor_exists'
+    | 'successor_created'
+  reasonCode?: TaskPipelineReasonCode
+  successorTaskId?: number
+}
+
+export interface RetryTaskChainAdvancementInput {
+  taskId: number
+  workspaceId: number
+  confirmTemplateDrift?: boolean
+}
+
+export type RetryRejectionReason =
+  | 'retry_not_eligible'
+  | 'retry_template_provenance_missing'
+  | 'retry_template_drift_unconfirmed'
+
+export type ChainRetryRecoveryClass = 'failed_parent' | 'advancement_stall'
+export type ChainRetryRecoveryOutcome =
+  | 'output_still_invalid'
+  | 'stall_persisted'
+  | 'successor_created'
+  | 'successor_already_exists'
+  | 'chain_terminated'
+
+export type RetryTaskChainAdvancementResult =
+  | { ok: false; retryRejectionReason: RetryRejectionReason }
+  | {
+      ok: true
+      recoveryClass: ChainRetryRecoveryClass
+      retryAttempt: number
+      recoveryOutcome: ChainRetryRecoveryOutcome
+      successorTaskId: number | null
+      chainTerminated: boolean
+      idempotentSuccessor: boolean
+    }
+
+type TaskPipelineReasonCode =
+  | 'task_pipeline_output_missing'
+  | 'task_pipeline_output_invalid'
+  | 'task_pipeline_routing_expression_rejected'
+  | 'task_pipeline_routing_budget_exceeded'
+  | 'task_pipeline_target_missing'
+  | 'task_pipeline_target_duplicate'
+  | 'task_pipeline_target_cross_workspace'
+  | 'task_pipeline_target_disabled'
+  | 'task_pipeline_successor_assignee_missing'
+  | 'task_pipeline_retry_chain_advancement'
+
+type RetryEligibleReasonCode = TaskPipelineReasonCode
+
+type TemplateProvenance = {
+  output_schema_sha256: string
+  routing_rules_sha256: string
+  next_template_slug_sha256: string
+}
+
+type SelectedRetryActivity = {
+  id: number
+  reasonCode: RetryEligibleReasonCode
+  data: Record<string, unknown>
+}
+
+type TaskPipelineTemplate = {
+  id: number
+  name: string
+  task_prompt: string | null
+  workspace_id: number
+  slug: string | null
+  agent_role: string | null
+  output_schema: unknown
+  routing_rules: unknown
+  next_template_slug: string | null
+  enabled?: number | null
+  status?: string | null
+  disabled?: number | null
+  archived?: number | null
+  is_active?: number | null
+}
+
+type TaskPipelineTask = {
+  id: number
+  title: string
+  description: string | null
+  status: string
+  priority: string
+  assigned_to: string | null
+  project_id: number | null
+  workspace_id: number
+  resolution: string | null
+  workflow_template_id: number | null
+  workflow_template_slug: string | null
+  parent_task_id: number | null
+  root_task_id: number | null
+  chain_id: string | null
+  chain_stage: number | null
+}
+
+function tableExists(db: any, table: string): boolean {
+  return Boolean(db.prepare("SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = ?").get(table))
+}
+
+function columnsFor(db: any, table: string): Set<string> {
+  if (!tableExists(db, table)) return new Set()
+  return new Set((db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>).map((row) => row.name))
+}
+
+function parseJson(value: unknown): unknown {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value !== 'string') return value
+  try {
+    return JSON.parse(value)
+  } catch {
+    return undefined
+  }
+}
+
+function stableCanonicalJson(value: unknown): string {
+  if (value === null || typeof value !== 'object') return JSON.stringify(value)
+  if (Array.isArray(value)) return `[${value.map((item) => stableCanonicalJson(item)).join(',')}]`
+  const object = value as Record<string, unknown>
+  return `{${Object.keys(object).sort().map((key) => `${JSON.stringify(key)}:${stableCanonicalJson(object[key])}`).join(',')}}`
+}
+
+function sha256(value: string): string {
+  return createHash('sha256').update(value).digest('hex')
+}
+
+function canonicalFieldHash(value: unknown): string {
+  const parsed = parseJson(value)
+  return sha256(stableCanonicalJson(parsed === undefined ? value : parsed))
+}
+
+function nextTemplateSlugHash(value: string | null): string {
+  return sha256(stableCanonicalJson(value === null ? null : String(value)))
+}
+
+function templateProvenance(template: TaskPipelineTemplate): TemplateProvenance {
+  return {
+    output_schema_sha256: canonicalFieldHash(template.output_schema ?? null),
+    routing_rules_sha256: canonicalFieldHash(template.routing_rules ?? null),
+    next_template_slug_sha256: nextTemplateSlugHash(template.next_template_slug ?? null),
+  }
+}
+
+function sameTemplateProvenance(a: TemplateProvenance, b: TemplateProvenance): boolean {
+  return a.output_schema_sha256 === b.output_schema_sha256
+    && a.routing_rules_sha256 === b.routing_rules_sha256
+    && a.next_template_slug_sha256 === b.next_template_slug_sha256
+}
+
+function parseTemplateProvenance(value: unknown): TemplateProvenance | null {
+  if (!value || typeof value !== 'object') return null
+  const candidate = value as Record<string, unknown>
+  if (
+    typeof candidate.output_schema_sha256 !== 'string'
+    || typeof candidate.routing_rules_sha256 !== 'string'
+    || typeof candidate.next_template_slug_sha256 !== 'string'
+  ) {
+    return null
+  }
+  return {
+    output_schema_sha256: candidate.output_schema_sha256,
+    routing_rules_sha256: candidate.routing_rules_sha256,
+    next_template_slug_sha256: candidate.next_template_slug_sha256,
+  }
+}
+
+function parseRoutingRules(value: unknown): RoutingRuleInput[] {
+  const parsed = parseJson(value)
+  if (!Array.isArray(parsed)) return []
+  return parsed
+    .filter((rule): rule is RoutingRuleInput => {
+      return typeof rule?.when === 'string' && typeof rule?.next_template_slug === 'string'
+    })
+}
+
+function hasAdvancementMetadata(template: TaskPipelineTemplate): boolean {
+  if (template.output_schema !== null && template.output_schema !== undefined && template.output_schema !== '') return true
+  if (parseRoutingRules(template.routing_rules).length > 0) return true
+  return Boolean(template.next_template_slug)
+}
+
+function isFeatureEnabled(db: any, workspaceId: number): boolean {
+  const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as { feature_flags: string | null } | undefined
+  return resolveFlag('FEATURE_TASK_PIPELINES', { workspaceFlags: row?.feature_flags ?? null })
+}
+
+function fetchPipelineTask(db: any, taskId: number, workspaceId: number): TaskPipelineTask | null {
+  return (db.prepare('SELECT * FROM tasks WHERE id = ? AND workspace_id = ?').get(taskId, workspaceId) as TaskPipelineTask | undefined) ?? null
+}
+
+function fetchTemplate(db: any, templateId: number | null, workspaceId: number): TaskPipelineTemplate | null {
+  if (!templateId || !tableExists(db, 'workflow_templates')) return null
+  const row = db.prepare('SELECT * FROM workflow_templates WHERE id = ? AND workspace_id = ?').get(templateId, workspaceId) as TaskPipelineTemplate | undefined
+  return row ?? null
+}
+
+function logPipelineActivity(
+  db: any,
+  taskId: number,
+  workspaceId: number,
+  reasonCode: TaskPipelineReasonCode,
+  trigger: TaskChainAdvanceTrigger,
+  extra: Record<string, unknown> = {},
+): void {
+  if (!tableExists(db, 'activities')) return
+  db.prepare(`
+    INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id)
+    VALUES (?, 'task', ?, 'task-pipeline', ?, ?, ?)
+  `).run(
+    'task_pipeline_advancement',
+    taskId,
+    `Task pipeline advancement recorded ${reasonCode}`,
+    JSON.stringify({ reason_code: reasonCode, trigger, ...extra }),
+    workspaceId,
+  )
+}
+
+function failParentForOutput(
+  db: any,
+  task: TaskPipelineTask,
+  reasonCode: 'task_pipeline_output_missing' | 'task_pipeline_output_invalid',
+  trigger: TaskChainAdvanceTrigger,
+  extra: Record<string, unknown> = {},
+): AdvanceTaskChainResult {
+  const timestampSet = columnsFor(db, 'tasks').has('updated_at') ? ', updated_at = unixepoch()' : ''
+  db.prepare(`UPDATE tasks SET status = ?, error_message = ?${timestampSet} WHERE id = ? AND workspace_id = ?`)
+    .run('failed', reasonCode, task.id, task.workspace_id)
+  logPipelineActivity(db, task.id, task.workspace_id, reasonCode, trigger, extra)
+  return { advanced: false, reason: 'validation_failed', reasonCode }
+}
+
+function stall(
+  db: any,
+  task: TaskPipelineTask,
+  reasonCode: TaskPipelineReasonCode,
+  trigger: TaskChainAdvanceTrigger,
+  extra: Record<string, unknown> = {},
+): AdvanceTaskChainResult {
+  logPipelineActivity(db, task.id, task.workspace_id, reasonCode, trigger, extra)
+  return { advanced: false, reason: 'stalled', reasonCode }
+}
+
+function resolveTargetTemplate(db: any, workspaceId: number, slug: string): { ok: true; template: TaskPipelineTemplate } | { ok: false; reasonCode: TaskPipelineReasonCode } {
+  const workspaceMatches = db.prepare('SELECT * FROM workflow_templates WHERE slug = ? AND workspace_id = ?').all(slug, workspaceId) as TaskPipelineTemplate[]
+  if (workspaceMatches.length > 1) return { ok: false, reasonCode: 'task_pipeline_target_duplicate' }
+  if (workspaceMatches.length === 1) {
+    const candidate = workspaceMatches[0]
+    if (isTemplateDisabled(candidate)) return { ok: false, reasonCode: 'task_pipeline_target_disabled' }
+    return { ok: true, template: candidate }
+  }
+  const anyMatches = db.prepare('SELECT id FROM workflow_templates WHERE slug = ? LIMIT 1').all(slug) as Array<{ id: number }>
+  if (anyMatches.length > 0) return { ok: false, reasonCode: 'task_pipeline_target_cross_workspace' }
+  return { ok: false, reasonCode: 'task_pipeline_target_missing' }
+}
+
+function isTemplateDisabled(template: TaskPipelineTemplate): boolean {
+  if ('enabled' in template && template.enabled === 0) return true
+  if ('disabled' in template && template.disabled === 1) return true
+  if ('archived' in template && template.archived === 1) return true
+  if ('is_active' in template && template.is_active === 0) return true
+  if (typeof template.status === 'string' && ['disabled', 'archived', 'inactive'].includes(template.status.toLowerCase())) return true
+  return false
+}
+
+function resolveSuccessorAssignee(db: any, parent: TaskPipelineTask, target: TaskPipelineTemplate): string | null {
+  if (!parent.project_id || !target.agent_role) return null
+  if (!tableExists(db, 'project_agent_assignments') || !tableExists(db, 'agents')) return null
+  const row = db.prepare(`
+    SELECT paa.agent_name
+    FROM project_agent_assignments paa
+    INNER JOIN agents a
+      ON a.name = paa.agent_name
+     AND a.workspace_id = paa.workspace_id
+    WHERE paa.project_id = ?
+      AND paa.role = ?
+      AND paa.workspace_id = ?
+    LIMIT 1
+  `).get(parent.project_id, target.agent_role, parent.workspace_id) as { agent_name: string } | undefined
+  return row?.agent_name ?? null
+}
+
+function existingSuccessorId(db: any, parentTaskId: number, workspaceId: number): number | null {
+  const row = db.prepare('SELECT id FROM tasks WHERE parent_task_id = ? AND workspace_id = ? LIMIT 1')
+    .get(parentTaskId, workspaceId) as { id: number } | undefined
+  return row?.id ?? null
+}
+
+function initializeParentLineage(db: any, parent: TaskPipelineTask): { rootTaskId: number; chainId: string; chainStage: number } {
+  const rootTaskId = parent.root_task_id ?? parent.id
+  const chainId = parent.chain_id ?? `task-chain-${parent.id}`
+  const chainStage = parent.chain_stage ?? 0
+  if (parent.root_task_id === null || parent.chain_id === null || parent.chain_stage === null) {
+    const timestampSet = columnsFor(db, 'tasks').has('updated_at') ? ', updated_at = unixepoch()' : ''
+    db.prepare(`
+      UPDATE tasks
+      SET root_task_id = COALESCE(root_task_id, ?),
+          chain_id = COALESCE(chain_id, ?),
+          chain_stage = COALESCE(chain_stage, ?)
+          ${timestampSet}
+      WHERE id = ? AND workspace_id = ?
+    `).run(rootTaskId, chainId, chainStage, parent.id, parent.workspace_id)
+  }
+  return { rootTaskId, chainId, chainStage }
+}
+
+function runPostCommitSuccessorSync(db: any, successorTaskId: number, workspaceId: number): void {
+  const successor = db.prepare('SELECT * FROM tasks WHERE id = ? AND workspace_id = ?').get(successorTaskId, workspaceId)
+  if (successor) syncTaskOutbound(successor as any, workspaceId)
+}
+
+export function advanceTaskChain(input: AdvanceTaskChainInput): AdvanceTaskChainResult {
+  const db = getDatabase()
+  let successorForPostCommit: number | null = null
+
+  const result = db.transaction((): AdvanceTaskChainResult => {
+    if (!isFeatureEnabled(db, input.workspaceId)) return { advanced: false, reason: 'not_eligible' }
+    if (input.previousStatus === null || input.previousStatus === 'done') return { advanced: false, reason: 'not_eligible' }
+    if (input.previousStatus === 'failed' && input.trigger !== 'retry_chain_advancement') return { advanced: false, reason: 'not_eligible' }
+
+    const parent = fetchPipelineTask(db, input.taskId, input.workspaceId)
+    if (!parent || parent.status !== 'done' || !parent.workflow_template_id) return { advanced: false, reason: 'not_eligible' }
+
+    const existing = existingSuccessorId(db, parent.id, parent.workspace_id)
+    if (existing) return { advanced: false, reason: 'successor_exists', successorTaskId: existing }
+
+    const template = fetchTemplate(db, parent.workflow_template_id, parent.workspace_id)
+    if (!template || !hasAdvancementMetadata(template)) return { advanced: false, reason: 'not_eligible' }
+    const provenance = { template_provenance: templateProvenance(template) }
+
+    const schema = parseJson(template.output_schema)
+    let output: unknown = {}
+    if (schema !== null) {
+      if (parent.resolution === null || parent.resolution.trim() === '') {
+        return failParentForOutput(db, parent, 'task_pipeline_output_missing', input.trigger, provenance)
+      }
+      output = parseJson(parent.resolution)
+      if (output === undefined) {
+        return failParentForOutput(db, parent, 'task_pipeline_output_invalid', input.trigger, provenance)
+      }
+      const validation = validateTaskOutput({ templateId: template.id, schema, output })
+      if (!validation.ok) {
+        const reasonCode = validation.reason === 'output_missing'
+          ? 'task_pipeline_output_missing'
+          : 'task_pipeline_output_invalid'
+        return failParentForOutput(db, parent, reasonCode, input.trigger, provenance)
+      }
+      output = validation.value
+    } else if (parent.resolution && parent.resolution.trim() !== '') {
+      output = parseJson(parent.resolution)
+      if (output === undefined) output = {}
+    }
+
+    const routing = evaluateRoutingRules({
+      rules: parseRoutingRules(template.routing_rules),
+      output,
+      fallbackNextTemplateSlug: template.next_template_slug,
+    })
+    if (!routing.ok) {
+      const reasonCode = routing.reason === 'routing_budget_exceeded'
+        ? 'task_pipeline_routing_budget_exceeded'
+        : 'task_pipeline_routing_expression_rejected'
+      return stall(db, parent, reasonCode, input.trigger, provenance)
+    }
+    if (!routing.nextTemplateSlug) return { advanced: false, reason: 'chain_terminated' }
+
+    const target = resolveTargetTemplate(db, parent.workspace_id, routing.nextTemplateSlug)
+    if (!target.ok) return stall(db, parent, target.reasonCode, input.trigger, { ...provenance, target_template_slug: routing.nextTemplateSlug })
+
+    const assignee = resolveSuccessorAssignee(db, parent, target.template)
+    if (!assignee) {
+      return stall(db, parent, 'task_pipeline_successor_assignee_missing', input.trigger, { ...provenance, target_template_slug: routing.nextTemplateSlug })
+    }
+
+    const lineage = initializeParentLineage(db, parent)
+    const duplicateAfterLineage = existingSuccessorId(db, parent.id, parent.workspace_id)
+    if (duplicateAfterLineage) return { advanced: false, reason: 'successor_exists', successorTaskId: duplicateAfterLineage }
+
+    const createResult = createPipelineSuccessorTask({
+      db,
+      runtime: {
+        broadcast: () => undefined,
+        gnap: { enabled: false, autoSync: false },
+      },
+      transaction: 'caller',
+      deferOutboundSync: true,
+      title: target.template.name,
+      description: target.template.task_prompt,
+      status: 'assigned',
+      priority: parent.priority,
+      assigned_to: assignee,
+      project_id: parent.project_id,
+      workspace_id: parent.workspace_id,
+      created_by: 'task-pipeline',
+      workflow_template_id: target.template.id,
+      workflow_template_slug: target.template.slug,
+      parent_task_id: parent.id,
+      root_task_id: lineage.rootTaskId,
+      chain_id: lineage.chainId,
+      chain_stage: lineage.chainStage + 1,
+      tags: [],
+      metadata: {
+        task_pipeline: {
+          parent_task_id: parent.id,
+          root_task_id: lineage.rootTaskId,
+          chain_id: lineage.chainId,
+          chain_stage: lineage.chainStage + 1,
+          source_template_slug: template.slug,
+          target_template_slug: target.template.slug,
+          matched_rule_index: routing.matchedRuleIndex,
+        },
+      },
+      activity: {
+        type: 'task_pipeline_successor_created',
+        actor: 'task-pipeline',
+        description: `Created pipeline successor from task ${parent.id}`,
+        data: {
+          parent_task_id: parent.id,
+          target_template_slug: target.template.slug,
+          trigger: input.trigger,
+        },
+      },
+    })
+
+    if (createResult.duplicate) {
+      return { advanced: false, reason: 'successor_exists', successorTaskId: createResult.taskId }
+    }
+
+    successorForPostCommit = createResult.taskId
+    return { advanced: true, reason: 'successor_created', successorTaskId: createResult.taskId }
+  })()
+
+  if (successorForPostCommit !== null) {
+    runPostCommitSuccessorSync(db, successorForPostCommit, input.workspaceId)
+  }
+
+  return result
+}
+
+const FAILED_PARENT_REASONS = new Set<RetryEligibleReasonCode>([
+  'task_pipeline_output_missing',
+  'task_pipeline_output_invalid',
+])
+
+const ADVANCEMENT_STALL_REASONS = new Set<RetryEligibleReasonCode>([
+  'task_pipeline_routing_expression_rejected',
+  'task_pipeline_routing_budget_exceeded',
+  'task_pipeline_target_missing',
+  'task_pipeline_target_disabled',
+  'task_pipeline_target_duplicate',
+  'task_pipeline_target_cross_workspace',
+  'task_pipeline_successor_assignee_missing',
+])
+
+function isRetryEligibleReason(value: unknown): value is RetryEligibleReasonCode {
+  return typeof value === 'string' && (FAILED_PARENT_REASONS.has(value as RetryEligibleReasonCode) || ADVANCEMENT_STALL_REASONS.has(value as RetryEligibleReasonCode))
+}
+
+function recoveryClassFor(reasonCode: RetryEligibleReasonCode): ChainRetryRecoveryClass {
+  return FAILED_PARENT_REASONS.has(reasonCode) ? 'failed_parent' : 'advancement_stall'
+}
+
+function parseActivityData(value: unknown): Record<string, unknown> {
+  const parsed = parseJson(value)
+  return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed as Record<string, unknown> : {}
+}
+
+function selectLatestRetryActivity(db: any, taskId: number, workspaceId: number): SelectedRetryActivity | null {
+  if (!tableExists(db, 'activities')) return null
+  const rows = db.prepare(`
+    SELECT id, data
+    FROM activities
+    WHERE entity_type = 'task'
+      AND entity_id = ?
+      AND workspace_id = ?
+    ORDER BY id DESC
+  `).all(taskId, workspaceId) as Array<{ id: number; data: string | null }>
+
+  for (const row of rows) {
+    const data = parseActivityData(row.data)
+    if (data.reason_code === 'task_pipeline_retry_chain_advancement' && data.recovery_outcome === 'chain_terminated') {
+      return null
+    }
+    if (isRetryEligibleReason(data.reason_code)) {
+      return { id: row.id, reasonCode: data.reason_code, data }
+    }
+  }
+  return null
+}
+
+function nextRetryAttempt(db: any, taskId: number, workspaceId: number): number {
+  if (!tableExists(db, 'activities')) return 1
+  const rows = db.prepare(`
+    SELECT data
+    FROM activities
+    WHERE entity_type = 'task'
+      AND entity_id = ?
+      AND workspace_id = ?
+  `).all(taskId, workspaceId) as Array<{ data: string | null }>
+  let maxAttempt = 0
+  for (const row of rows) {
+    const attempt = parseActivityData(row.data).retry_attempt
+    if (typeof attempt === 'number' && Number.isFinite(attempt)) maxAttempt = Math.max(maxAttempt, attempt)
+  }
+  return maxAttempt + 1
+}
+
+function resolutionHash(resolution: string | null): string | null {
+  if (resolution === null || resolution.trim() === '') return null
+  return sha256(resolution)
+}
+
+function logRetryRecoveryActivity(
+  db: any,
+  task: TaskPipelineTask,
+  selected: SelectedRetryActivity,
+  retryAttempt: number,
+  recoveryClass: ChainRetryRecoveryClass,
+  recoveryOutcome: ChainRetryRecoveryOutcome,
+  templateDriftConfirmed: boolean,
+  successorTaskId: number | null,
+): void {
+  logPipelineActivity(db, task.id, task.workspace_id, 'task_pipeline_retry_chain_advancement', 'retry_chain_advancement', {
+    previous_reason_code: selected.reasonCode,
+    selected_activity_id: selected.id,
+    recovery_class: recoveryClass,
+    recovery_action: 'retry_chain_advancement',
+    recovery_outcome: recoveryOutcome,
+    retry_attempt: retryAttempt,
+    template_drift_confirmed: templateDriftConfirmed,
+    corrected_resolution_sha256: recoveryClass === 'failed_parent' ? resolutionHash(task.resolution) : null,
+    successor_task_id: successorTaskId,
+  })
+}
+
+function validateCurrentOutput(task: TaskPipelineTask, template: TaskPipelineTemplate): { ok: true } | { ok: false; reasonCode: 'task_pipeline_output_missing' | 'task_pipeline_output_invalid' } {
+  const schema = parseJson(template.output_schema)
+  if (schema === null) return { ok: true }
+  if (task.resolution === null || task.resolution.trim() === '') return { ok: false, reasonCode: 'task_pipeline_output_missing' }
+  const output = parseJson(task.resolution)
+  if (output === undefined) return { ok: false, reasonCode: 'task_pipeline_output_invalid' }
+  const validation = validateTaskOutput({ templateId: template.id, schema, output })
+  if (!validation.ok) {
+    return {
+      ok: false,
+      reasonCode: validation.reason === 'output_missing' ? 'task_pipeline_output_missing' : 'task_pipeline_output_invalid',
+    }
+  }
+  return { ok: true }
+}
+
+function resultFromAdvance(result: AdvanceTaskChainResult): Omit<Extract<RetryTaskChainAdvancementResult, { ok: true }>, 'ok' | 'recoveryClass' | 'retryAttempt'> | null {
+  if (result.reason === 'successor_created') {
+    return {
+      recoveryOutcome: 'successor_created',
+      successorTaskId: result.successorTaskId ?? null,
+      chainTerminated: false,
+      idempotentSuccessor: false,
+    }
+  }
+  if (result.reason === 'successor_exists') {
+    return {
+      recoveryOutcome: 'successor_already_exists',
+      successorTaskId: result.successorTaskId ?? null,
+      chainTerminated: false,
+      idempotentSuccessor: true,
+    }
+  }
+  if (result.reason === 'chain_terminated') {
+    return {
+      recoveryOutcome: 'chain_terminated',
+      successorTaskId: null,
+      chainTerminated: true,
+      idempotentSuccessor: false,
+    }
+  }
+  if (result.reason === 'stalled') {
+    return {
+      recoveryOutcome: 'stall_persisted',
+      successorTaskId: null,
+      chainTerminated: false,
+      idempotentSuccessor: false,
+    }
+  }
+  return null
+}
+
+export function retryTaskChainAdvancement(input: RetryTaskChainAdvancementInput): RetryTaskChainAdvancementResult {
+  const db = getDatabase()
+  let postCommitSuccessor: number | null = null
+
+  const result = db.transaction((): RetryTaskChainAdvancementResult => {
+    if (!isFeatureEnabled(db, input.workspaceId)) return { ok: false, retryRejectionReason: 'retry_not_eligible' }
+    const parent = fetchPipelineTask(db, input.taskId, input.workspaceId)
+    if (!parent || !parent.workflow_template_id) return { ok: false, retryRejectionReason: 'retry_not_eligible' }
+
+    const selected = selectLatestRetryActivity(db, parent.id, parent.workspace_id)
+    if (!selected) return { ok: false, retryRejectionReason: 'retry_not_eligible' }
+
+    const recoveryClass = recoveryClassFor(selected.reasonCode)
+    if (recoveryClass === 'failed_parent' && parent.status !== 'failed') return { ok: false, retryRejectionReason: 'retry_not_eligible' }
+    if (recoveryClass === 'advancement_stall' && parent.status !== 'done') return { ok: false, retryRejectionReason: 'retry_not_eligible' }
+
+    const selectedProvenance = parseTemplateProvenance(selected.data.template_provenance)
+    if (!selectedProvenance) return { ok: false, retryRejectionReason: 'retry_template_provenance_missing' }
+
+    const template = fetchTemplate(db, parent.workflow_template_id, parent.workspace_id)
+    if (!template) return { ok: false, retryRejectionReason: 'retry_not_eligible' }
+    const currentProvenance = templateProvenance(template)
+    const hasDrift = !sameTemplateProvenance(selectedProvenance, currentProvenance)
+    if (hasDrift && !input.confirmTemplateDrift) return { ok: false, retryRejectionReason: 'retry_template_drift_unconfirmed' }
+
+    const retryAttempt = nextRetryAttempt(db, parent.id, parent.workspace_id)
+    if (recoveryClass === 'failed_parent') {
+      const output = validateCurrentOutput(parent, template)
+      if (!output.ok) {
+        const timestampSet = columnsFor(db, 'tasks').has('updated_at') ? ', updated_at = unixepoch()' : ''
+        db.prepare(`UPDATE tasks SET status = ?, error_message = ?${timestampSet} WHERE id = ? AND workspace_id = ?`)
+          .run('failed', output.reasonCode, parent.id, parent.workspace_id)
+        logRetryRecoveryActivity(db, parent, selected, retryAttempt, recoveryClass, 'output_still_invalid', hasDrift, null)
+        return {
+          ok: true,
+          recoveryClass,
+          retryAttempt,
+          recoveryOutcome: 'output_still_invalid',
+          successorTaskId: null,
+          chainTerminated: false,
+          idempotentSuccessor: false,
+        }
+      }
+      const timestampSet = columnsFor(db, 'tasks').has('updated_at') ? ', updated_at = unixepoch()' : ''
+      db.prepare(`UPDATE tasks SET status = ?, error_message = NULL${timestampSet} WHERE id = ? AND workspace_id = ?`)
+        .run('done', parent.id, parent.workspace_id)
+    }
+
+    if (!hasAdvancementMetadata(template)) {
+      logRetryRecoveryActivity(db, parent, selected, retryAttempt, recoveryClass, 'chain_terminated', hasDrift, null)
+      return {
+        ok: true,
+        recoveryClass,
+        retryAttempt,
+        recoveryOutcome: 'chain_terminated',
+        successorTaskId: null,
+        chainTerminated: true,
+        idempotentSuccessor: false,
+      }
+    }
+
+    const advanced = advanceTaskChain({
+      taskId: parent.id,
+      workspaceId: parent.workspace_id,
+      previousStatus: recoveryClass === 'failed_parent' ? 'failed' : 'review',
+      trigger: 'retry_chain_advancement',
+    })
+    const retryResult = resultFromAdvance(advanced)
+    if (!retryResult) return { ok: false, retryRejectionReason: 'retry_not_eligible' }
+    if (retryResult.recoveryOutcome === 'successor_created') postCommitSuccessor = retryResult.successorTaskId
+    logRetryRecoveryActivity(db, parent, selected, retryAttempt, recoveryClass, retryResult.recoveryOutcome, hasDrift, retryResult.successorTaskId)
+    return {
+      ok: true,
+      recoveryClass,
+      retryAttempt,
+      ...retryResult,
+    }
+  })()
+
+  if (postCommitSuccessor !== null) {
+    runPostCommitSuccessorSync(db, postCommitSuccessor, input.workspaceId)
+  }
+
+  return result
+}
+
+export function createPipelineSuccessorTask(
+  input: Omit<CreateTaskInput, 'source'> & { source?: 'pipeline_successor' },
+): CreateTaskResult {
+  return createTask({ ...input, source: 'pipeline_successor' })
 }
 
 // ---------------------------------------------------------------------------
@@ -472,6 +1178,12 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
           previous_status: 'quality_review',
         })
         syncAndEscalateIfFailed(task, 'done')
+        advanceTaskChain({
+          taskId: task.id,
+          workspaceId: task.workspace_id,
+          previousStatus: 'quality_review',
+          trigger: 'aegis_review',
+        })
       } else {
         // Rejected: check dispatch_attempts to decide next status
         const now = Math.floor(Date.now() / 1000)

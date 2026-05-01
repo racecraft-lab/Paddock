@@ -11,23 +11,23 @@ export const API_KEY_HEADER: Record<string, string> = {
 export const E2E_ADMIN_USER = process.env.AUTH_USER || 'testadmin'
 export const E2E_ADMIN_PASS = process.env.AUTH_PASS || 'testpass1234!'
 
-export const SPEC002_VISUAL_NOW = new Date('2026-04-28T12:00:00.000Z')
-const SPEC002_VISUAL_NOW_SECONDS = Math.floor(SPEC002_VISUAL_NOW.getTime() / 1000)
+export const PRODUCT_LINE_VISUAL_NOW = new Date('2026-04-28T12:00:00.000Z')
+const PRODUCT_LINE_VISUAL_NOW_SECONDS = Math.floor(PRODUCT_LINE_VISUAL_NOW.getTime() / 1000)
 
-const SPEC002_PRODUCT_LINE_VISUAL = {
-  alphaWorkspace: { name: 'SPEC-002 Alpha', slug: 'spec-002-alpha-visual' },
-  betaWorkspace: { name: 'SPEC-002 Beta', slug: 'spec-002-beta-visual' },
-  alphaProject: { name: 'SPEC-002 Alpha Project', ticketPrefix: 'A002' },
-  betaProject: { name: 'SPEC-002 Beta Project', ticketPrefix: 'B002' },
-  alphaAgent: 'spec-002-alpha-agent',
-  betaAgent: 'spec-002-beta-agent',
-  alphaTask: 'SPEC-002 Alpha Task',
-  betaTask: 'SPEC-002 Beta Task',
+const PRODUCT_LINE_VISUAL_FIXTURE = {
+  alphaWorkspace: { name: 'Product Line Alpha', slug: 'product-line-alpha-visual' },
+  betaWorkspace: { name: 'Product Line Beta', slug: 'product-line-beta-visual' },
+  alphaProject: { name: 'Product Line Alpha Project', ticketPrefix: 'A002' },
+  betaProject: { name: 'Product Line Beta Project', ticketPrefix: 'B002' },
+  alphaAgent: 'product-line-alpha-agent',
+  betaAgent: 'product-line-beta-agent',
+  alphaTask: 'Product Line Alpha Task',
+  betaTask: 'Product Line Beta Task',
 } as const
 
-export const SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE = {
-  name: 'SPEC-002 Flag Admin',
-  slug: 'spec-002-flag-admin-visual',
+export const FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE = {
+  name: 'Feature Flag Admin',
+  slug: 'feature-flag-admin-visual',
 } as const
 
 function getE2EDbPath() {
@@ -148,26 +148,26 @@ function selectIdsWhereIn(db: Database.Database, table: string, column: string, 
     .map((row) => (row as { id: number }).id)
 }
 
-export async function freezeSpec002VisualClock(page: Page) {
-  await page.clock.setFixedTime(SPEC002_VISUAL_NOW)
+export async function freezeProductLineVisualClock(page: Page) {
+  await page.clock.setFixedTime(PRODUCT_LINE_VISUAL_NOW)
 }
 
-export function resetSpec002ProductLineVisualFixtures() {
+export function resetProductLineVisualFixtures() {
   const workspaceSlugs = [
-    SPEC002_PRODUCT_LINE_VISUAL.alphaWorkspace.slug,
-    SPEC002_PRODUCT_LINE_VISUAL.betaWorkspace.slug,
+    PRODUCT_LINE_VISUAL_FIXTURE.alphaWorkspace.slug,
+    PRODUCT_LINE_VISUAL_FIXTURE.betaWorkspace.slug,
   ]
   const projectNames = [
-    SPEC002_PRODUCT_LINE_VISUAL.alphaProject.name,
-    SPEC002_PRODUCT_LINE_VISUAL.betaProject.name,
+    PRODUCT_LINE_VISUAL_FIXTURE.alphaProject.name,
+    PRODUCT_LINE_VISUAL_FIXTURE.betaProject.name,
   ]
   const agentNames = [
-    SPEC002_PRODUCT_LINE_VISUAL.alphaAgent,
-    SPEC002_PRODUCT_LINE_VISUAL.betaAgent,
+    PRODUCT_LINE_VISUAL_FIXTURE.alphaAgent,
+    PRODUCT_LINE_VISUAL_FIXTURE.betaAgent,
   ]
   const taskTitles = [
-    SPEC002_PRODUCT_LINE_VISUAL.alphaTask,
-    SPEC002_PRODUCT_LINE_VISUAL.betaTask,
+    PRODUCT_LINE_VISUAL_FIXTURE.alphaTask,
+    PRODUCT_LINE_VISUAL_FIXTURE.betaTask,
   ]
 
   const db = new Database(getE2EDbPath())
@@ -178,7 +178,7 @@ export function resetSpec002ProductLineVisualFixtures() {
         ? db.prepare(`
             SELECT id FROM tasks
             WHERE title IN (${sqlPlaceholders(taskTitles)})
-              AND description LIKE '%seeded by SPEC-002 real UI e2e%'
+              AND description LIKE '%seeded by Product Line real UI e2e%'
           `).all(...taskTitles).map((row) => (row as { id: number }).id)
         : []
       const taskIdsByWorkspace = selectIdsWhereIn(db, 'tasks', 'workspace_id', workspaceIds)
@@ -202,11 +202,11 @@ export function resetSpec002ProductLineVisualFixtures() {
   }
 }
 
-export function resetSpec002FlagAdminVisualFixture() {
+export function resetFeatureFlagAdminVisualFixture() {
   const db = new Database(getE2EDbPath())
   try {
     db.transaction(() => {
-      const workspaceIds = selectIdsWhereIn(db, 'workspaces', 'slug', [SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE.slug])
+      const workspaceIds = selectIdsWhereIn(db, 'workspaces', 'slug', [FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE.slug])
       deleteWhereIn(db, 'activities', 'workspace_id', workspaceIds)
       deleteWhereIn(db, 'workspaces', 'id', workspaceIds)
     })()
@@ -215,13 +215,13 @@ export function resetSpec002FlagAdminVisualFixture() {
   }
 }
 
-function setSpec002VisualTaskTimestamps(taskIds: readonly number[]) {
+function setProductLineVisualTaskTimestamps(taskIds: readonly number[]) {
   if (taskIds.length === 0) return
   const db = new Database(getE2EDbPath())
   try {
     const update = db.prepare('UPDATE tasks SET created_at = ?, updated_at = ? WHERE id = ?')
     for (const taskId of taskIds) {
-      update.run(SPEC002_VISUAL_NOW_SECONDS, SPEC002_VISUAL_NOW_SECONDS, taskId)
+      update.run(PRODUCT_LINE_VISUAL_NOW_SECONDS, PRODUCT_LINE_VISUAL_NOW_SECONDS, taskId)
     }
   } finally {
     db.close()
@@ -360,7 +360,7 @@ async function createSeedTask(
     headers: API_KEY_HEADER,
     data: {
       title,
-      description: `${title} seeded by SPEC-002 real UI e2e`,
+      description: `${title} seeded by Product Line real UI e2e`,
       priority: 'medium',
       status: 'inbox',
       project_id: projectId,
@@ -373,7 +373,7 @@ async function createSeedTask(
 }
 
 export async function seedProductLineE2EData(request: APIRequestContext): Promise<ProductLineE2EFixture> {
-  resetSpec002ProductLineVisualFixtures()
+  resetProductLineVisualFixtures()
   const restoreWorkspaceSwitcherFlag = await enableWorkspaceSwitcherFlagForE2E(request)
   const created = {
     tasks: [] as Array<{ id: number; workspaceId: number }>,
@@ -401,40 +401,40 @@ export async function seedProductLineE2EData(request: APIRequestContext): Promis
   try {
     const alphaWorkspace = await createSeedWorkspace(
       request,
-      SPEC002_PRODUCT_LINE_VISUAL.alphaWorkspace.name,
-      SPEC002_PRODUCT_LINE_VISUAL.alphaWorkspace.slug
+      PRODUCT_LINE_VISUAL_FIXTURE.alphaWorkspace.name,
+      PRODUCT_LINE_VISUAL_FIXTURE.alphaWorkspace.slug
     )
     const betaWorkspace = await createSeedWorkspace(
       request,
-      SPEC002_PRODUCT_LINE_VISUAL.betaWorkspace.name,
-      SPEC002_PRODUCT_LINE_VISUAL.betaWorkspace.slug
+      PRODUCT_LINE_VISUAL_FIXTURE.betaWorkspace.name,
+      PRODUCT_LINE_VISUAL_FIXTURE.betaWorkspace.slug
     )
     created.workspaces.push({ id: alphaWorkspace.id }, { id: betaWorkspace.id })
 
-    const alphaProject = await createSeedProject(request, alphaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.alphaProject.name, SPEC002_PRODUCT_LINE_VISUAL.alphaProject.ticketPrefix)
-    const betaProject = await createSeedProject(request, betaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.betaProject.name, SPEC002_PRODUCT_LINE_VISUAL.betaProject.ticketPrefix)
+    const alphaProject = await createSeedProject(request, alphaWorkspace.id, PRODUCT_LINE_VISUAL_FIXTURE.alphaProject.name, PRODUCT_LINE_VISUAL_FIXTURE.alphaProject.ticketPrefix)
+    const betaProject = await createSeedProject(request, betaWorkspace.id, PRODUCT_LINE_VISUAL_FIXTURE.betaProject.name, PRODUCT_LINE_VISUAL_FIXTURE.betaProject.ticketPrefix)
     created.projects.push({ id: alphaProject.id, workspaceId: alphaWorkspace.id }, { id: betaProject.id, workspaceId: betaWorkspace.id })
 
-    const alphaAgent = await createSeedAgent(request, alphaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.alphaAgent)
-    const betaAgent = await createSeedAgent(request, betaWorkspace.id, SPEC002_PRODUCT_LINE_VISUAL.betaAgent)
+    const alphaAgent = await createSeedAgent(request, alphaWorkspace.id, PRODUCT_LINE_VISUAL_FIXTURE.alphaAgent)
+    const betaAgent = await createSeedAgent(request, betaWorkspace.id, PRODUCT_LINE_VISUAL_FIXTURE.betaAgent)
     created.agents.push({ id: alphaAgent.id, workspaceId: alphaWorkspace.id }, { id: betaAgent.id, workspaceId: betaWorkspace.id })
 
     const alphaTask = await createSeedTask(
       request,
       alphaWorkspace.id,
       alphaProject.id,
-      SPEC002_PRODUCT_LINE_VISUAL.alphaTask,
+      PRODUCT_LINE_VISUAL_FIXTURE.alphaTask,
       alphaAgent.name
     )
     const betaTask = await createSeedTask(
       request,
       betaWorkspace.id,
       betaProject.id,
-      SPEC002_PRODUCT_LINE_VISUAL.betaTask,
+      PRODUCT_LINE_VISUAL_FIXTURE.betaTask,
       betaAgent.name
     )
     created.tasks.push({ id: alphaTask.id, workspaceId: alphaWorkspace.id }, { id: betaTask.id, workspaceId: betaWorkspace.id })
-    setSpec002VisualTaskTimestamps([alphaTask.id, betaTask.id])
+    setProductLineVisualTaskTimestamps([alphaTask.id, betaTask.id])
 
     return {
       alpha: {
@@ -508,7 +508,7 @@ export async function createTestWorkflow(
   overrides: Record<string, unknown> = {}
 ) {
   const name = `e2e-wf-${uid()}`
-  const res = await request.post('/api/workflows', {
+  const res = await request.post(await workflowTestPath(request), {
     headers: API_KEY_HEADER,
     data: { name, task_prompt: 'Test prompt for e2e', ...overrides },
   })
@@ -517,10 +517,32 @@ export async function createTestWorkflow(
 }
 
 export async function deleteTestWorkflow(request: APIRequestContext, id: number) {
-  return request.delete('/api/workflows', {
+  return request.delete(await workflowTestPath(request), {
     headers: API_KEY_HEADER,
     data: { id },
   })
+}
+
+export async function getWorkflowTestWorkspaceId(request: APIRequestContext) {
+  const res = await request.get('/api/workspaces', { headers: API_KEY_HEADER })
+  const body = await expectJsonSuccess<{
+    workspaces?: Array<{ id: number; name?: string; slug?: string }>
+  }>(res, 'load workflow test workspace')
+  const workspace = body.workspaces?.find((candidate) => (
+    candidate.slug !== 'facility' && candidate.name !== 'Facility'
+  ))
+  if (!workspace?.id) {
+    throw new Error(`No Product Line workspace available for workflow tests: ${JSON.stringify(body)}`)
+  }
+  return workspace.id
+}
+
+export async function productLineScopedPath(request: APIRequestContext, pathname: string) {
+  return withWorkspaceScope(pathname, await getWorkflowTestWorkspaceId(request))
+}
+
+export async function workflowTestPath(request: APIRequestContext, pathname = '/api/workflows') {
+  return productLineScopedPath(request, pathname)
 }
 
 // --- Webhook helpers ---
