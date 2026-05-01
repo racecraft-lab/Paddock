@@ -5784,6 +5784,66 @@
           }
         }
       },
+      "put": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Update a project (SPEC-006 area-routing)",
+        "description": "PUT accepts the four SPEC-006 area-routing fields in addition to the standard PATCH fields. Validation precedence (FR-057): auth (401) -> role (403) -> scope (404) -> flag-OFF defense-in-depth (400 feature_flag_disabled) -> format (400 invalid_area_slug) -> uniqueness chain (409 area_slug_conflict -> triage_conflict -> owner_conflict) -> atomic write. Closed error-code enum: feature_flag_disabled, invalid_area_slug, area_slug_conflict, triage_conflict, owner_conflict.",
+        "operationId": "putProject",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "area_slug": {
+                    "type": ["string", "null"],
+                    "pattern": "^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$",
+                    "description": "RFC 1123 / Kubernetes DNS label, max 32 chars. Workspace-scoped unique (FR-034, FR-035). Set to null to clear."
+                  },
+                  "is_triage_project": {
+                    "type": "boolean",
+                    "description": "Designate this project as the workspace's triage destination for ambiguous-routed issues. At most one per workspace (FR-036)."
+                  },
+                  "is_repo_sync_owner": {
+                    "type": "boolean",
+                    "description": "Mark this project as the sync owner for its `(workspace_id, github_repo)` group. At most one per group (FR-004). Use transfer_owner=true to swap atomically."
+                  },
+                  "transfer_owner": {
+                    "type": "boolean",
+                    "description": "Request-only flag (NEVER returned in response). When paired with is_repo_sync_owner=true, performs a clear-then-set atomic swap inside one transaction (FR-037, FR-055)."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated. Response always includes `area_slug`, `is_triage_project`, `is_repo_sync_owner` (defaults null/false/false). Never includes `transfer_owner` (FR-061)."
+          },
+          "400": {
+            "description": "Validation failure. `error` is one of: `feature_flag_disabled` (any of the four area-routing fields present while flag is OFF for the workspace, FR-040a), `invalid_area_slug` (format/regex failure, FR-034)."
+          },
+          "404": {
+            "description": "Project not found in the requested workspace scope."
+          },
+          "409": {
+            "description": "Uniqueness conflict. `error` is one of three closed shapes: `area_slug_conflict` { existing_area_slug_project_id, existing_area_slug_project_slug }, `triage_conflict` { existing_triage_project_id, existing_triage_project_slug }, `owner_conflict` { existing_owner_project_id, existing_owner_project_slug, hint }. Priority order per FR-058: area_slug -> triage -> owner."
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Projects"
