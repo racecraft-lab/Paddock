@@ -60,8 +60,8 @@ docs/ai/specs/SPEC-006-design-concept.md
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Pending | Run sweep treating SPEC-001/002/002A/003 as previously merged candidates; exclude SPEC-006 |
-| Specify | `$speckit-specify` | Pending | Generate spec.md and requirements checklist; G1 marker scan |
+| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | 2026-05-01T16:50Z dry-run evidence recorded; SPEC-001/002/002A/003 eligibleForArchive=true; SPEC-006 excluded; safeToApplyCleanup=false; no cleanup applied |
+| Specify | `$speckit-specify` | Complete | 2026-05-01 generated specs/006-area-label-github-sync/spec.md (285 lines, 51 FRs, 7 user stories, 33 scenarios, 10 SCs) and checklists/requirements.md (36 lines); G1 passed with 0 markers; 2 consensus items deferred to Clarify session 1 (AREA_LABEL_MAP defaults [domain]; backfill resume mechanism [codebase]) |
 | Clarify | `$speckit-clarify` | Pending | Sessions 1–3 focused on schema/migration/backfill, lifecycle/failure isolation, validation/UX |
 | Plan | `$speckit-plan` | Pending | Generate plan/research/data-model/contracts/quickstart |
 | Checklist | `$speckit-checklist` | Pending | data-integrity, regression-safety, error-handling, api-contracts |
