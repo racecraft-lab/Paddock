@@ -1,6 +1,6 @@
-# SPEC-001 Manual Rollback Procedure
+# SPEC-001 / SPEC-006 Manual Rollback Procedure
 
-SPEC-001 adds forward-only migrations M53 through M61. The live migration runner has no `down()` hook, so rollback is an operator-initiated manual SQL procedure.
+SPEC-001 adds forward-only migrations M53 through M61; SPEC-006 adds M62. The live migration runner has no `down()` hook, so rollback is an operator-initiated manual SQL procedure.
 
 ## Preconditions
 
@@ -11,7 +11,7 @@ SPEC-001 adds forward-only migrations M53 through M61. The live migration runner
 ```sql
 SELECT id, applied_at
 FROM schema_migrations
-WHERE id BETWEEN '053_agent_scope' AND '061_resource_policy_events'
+WHERE id BETWEEN '053_agent_scope' AND '062_area_label_routing_sync_owner_triage'
 ORDER BY id;
 ```
 
@@ -21,15 +21,16 @@ ORDER BY id;
 
 Apply the rollback files in this exact order:
 
-1. `docs/migrations/rollback-M61.sql`
-2. `docs/migrations/rollback-M60.sql`
-3. `docs/migrations/rollback-M59.sql`
-4. `docs/migrations/rollback-M58.sql`
-5. `docs/migrations/rollback-M57.sql`
-6. `docs/migrations/rollback-M56.sql`
-7. `docs/migrations/rollback-M55.sql`
-8. `docs/migrations/rollback-M54.sql`
-9. `docs/migrations/rollback-M53.sql`
+1. `docs/migrations/rollback-M62.sql` (SPEC-006)
+2. `docs/migrations/rollback-M61.sql`
+3. `docs/migrations/rollback-M60.sql`
+4. `docs/migrations/rollback-M59.sql`
+5. `docs/migrations/rollback-M58.sql`
+6. `docs/migrations/rollback-M57.sql`
+7. `docs/migrations/rollback-M56.sql`
+8. `docs/migrations/rollback-M55.sql`
+9. `docs/migrations/rollback-M54.sql`
+10. `docs/migrations/rollback-M53.sql`
 
 ## SQLite Column Rollback Guidance
 
