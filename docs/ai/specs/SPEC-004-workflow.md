@@ -706,7 +706,7 @@ For each task, follow this cycle:
 
 ### Final Higher-Ulimit Verification Evidence - 2026-05-01
 
-- Doctor: `.specify/extensions/doctor/scripts/bash/doctor.sh` exited 1 on stale root-level `templates/` and `memory/` false positives, but the canonical prerequisite gate passed with `FEATURE_DIR=/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/004-task-pipeline-engine/specs/004-task-pipeline-engine` and all expected docs discovered.
+- Doctor: `.specify/extensions/doctor/scripts/bash/doctor.sh` was remediated to validate this repo's `.specify/{scripts,templates,memory,extensions}` layout and exact agent command directories; it now exits 0 and reports the project healthy.
 - Task reconciliation: all 88 generated tasks are checked complete in `specs/004-task-pipeline-engine/tasks.md`; no task-referenced repository file is missing after correcting the stale T074 test path.
 - `pnpm spec004:guardrails`: passed.
 - `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`: passed.
@@ -732,6 +732,12 @@ For each task, follow this cycle:
 - Branch `004-task-pipeline-engine` was pushed to `origin`.
 - PR #22 is open for review: https://github.com/racecraft-lab/mission-control/pull/22
 - Immediate review-thread check returned no review threads. Initial GitHub checks were pending at handoff: Analyze (actions), Analyze (javascript-typescript), argos-storybook, docker-ui-e2e, and quality-gate.
+
+### Doctor Remediation - 2026-05-01
+
+- `.specify/extensions/doctor/scripts/bash/doctor.sh` now checks `.specify/templates`, `.specify/memory`, `.specify/memory/constitution.md`, `.specify/scripts/bash`, and `.specify/extensions` instead of stale root-level SpecKit paths.
+- AI agent detection now reports an agent only when the actual command directory exists, removing false warnings caused by unrelated `.github/` and `.agents/` directories.
+- Re-run evidence: `ulimit -n 8192; bash .specify/extensions/doctor/scripts/bash/doctor.sh` exited 0 and printed "All checks passed — project looks healthy!"
 
 ---
 
@@ -781,7 +787,7 @@ For each task, follow this cycle:
 
 ### Patterns to Reuse
 
-- Keep post-implementation verification separate from implementation commits so sandbox failures, stale-path false positives, and genuine product regressions are distinguishable in the workflow ledger.
+- Keep post-implementation verification separate from implementation commits so sandbox failures, stale extension assumptions, and genuine product regressions are distinguishable in the workflow ledger.
 - For later Product Line scoped APIs, update shared e2e helpers first and then run both focused and full Playwright suites before treating compatibility repairs as complete.
 
 ---

@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-05-01T20:45:13Z",
+  "updated_at": "2026-05-01T20:49:49Z",
   "active_step": "Complete",
   "status": "SPEC-004 implementation, higher-ulimit post-verification, PR creation, and immediate review-thread check are complete",
   "notes": [
@@ -69,7 +69,7 @@
     "Remaining blockers on 2026-05-01T20:05:27Z: `pnpm test:e2e` cannot start the configured web server because binding 127.0.0.1 returns EPERM; full `pnpm test` passes 149/150 files and 1181/1182 tests with command-local git config but the mc-provisioner Unix socket test is blocked by sandbox `listen EPERM`; default Turbopack `pnpm build` is blocked by the same process/listener restriction while the webpack production build passes with the local font mock. T088 commit evidence remains pending.",
     "T088 commit attempt evidence recorded on 2026-05-01T20:21:04Z: pre-commit sanity checks passed (`git diff --check`, JSON parse, `pnpm spec004:guardrails`, and strict-scope TypeScript), and 91 SPEC-004 files were staged, but `git commit` is blocked in this Codex sandbox because Git cannot create linked-worktree metadata locks/open COMMIT_EDITMSG under the parent checkout `.git/worktrees/004-task-pipeline-engine` path outside the writable root. T088 remains pending until commit/push run from an environment with write access to that git metadata; post-implementation push/PR tasks remain gated on commit evidence.",
     "T088 commit evidence completed on 2026-05-01T20:22:54Z: parent session created implementation commit 5f92f179d7f89a256e09589d982354be1f32a95d with signing disabled after nested sandbox commit attempts proved blocked by linked-worktree git metadata permissions. Post-implementation phases are now unblocked.",
-    "Post Doctor completed on 2026-05-01T20:42:31Z: the doctor extension reported stale root-level templates/memory false positives, while the canonical prerequisite script passed against the actual .specify layout and SPEC-004 feature directory.",
+    "Post Doctor completed on 2026-05-01T20:49:49Z: .specify/extensions/doctor/scripts/bash/doctor.sh was remediated to validate .specify/scripts, .specify/templates, .specify/memory, .specify/extensions, and exact agent command directories; rerunning with ulimit -n 8192 exited 0 and reported the project healthy.",
     "Post higher-ulimit verification completed on 2026-05-01T20:42:31Z: `pnpm spec004:guardrails`, strict TypeScript, `pnpm typecheck`, `pnpm lint`, `pnpm test` (150 files/1182 tests), `pnpm build`, focused Playwright (25/25), full `pnpm test:e2e` (532/532), and `pnpm audit:high` all passed under the approved execution surface with `ulimit -n 8192` where needed.",
     "Post task reconciliation and code review completed on 2026-05-01T20:42:31Z: all 88 generated tasks are checked complete, no task-referenced repository file is missing, and the final e2e compatibility delta is scoped to Product Line workflow API test helpers.",
     "Post cleanup and retrospective completed on 2026-05-01T20:42:31Z: workflow evidence, roadmap evidence, PRD status note, and specs/004-task-pipeline-engine/retrospective.md were updated before PR creation.",

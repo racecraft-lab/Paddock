@@ -52,7 +52,7 @@ None requiring spec changes.
 
 Operational deviations:
 
-- The doctor extension reported stale root-level `templates/` and `memory/` false positives; canonical prerequisite checks passed against the actual `.specify` layout.
+- The doctor extension initially reported stale root-level `templates/` and `memory/` false positives; the PR branch remediated the script to validate the actual `.specify` layout and exact agent command directories.
 - Earlier sandbox runs were blocked by EMFILE/listener/socket restrictions. Final verification was rerun with `ulimit -n 8192`, which cleared the full gate set.
 
 ## Innovations and Best Practices
@@ -78,7 +78,7 @@ Spec adherence: 100%. No generated task remains open, and no acceptance criterio
 ## Lessons Learned and Recommendations
 
 - Keep long-running autopilot post gates on the higher file-descriptor limit when local exec has previously hit EMFILE.
-- Treat extension doctor failures as actionable only after comparing them to canonical prerequisite scripts; stale extension root assumptions should not block a verified feature branch.
+- Treat extension doctor failures as actionable after comparing them to canonical prerequisite scripts; stale extension root assumptions should be fixed in the doctor check rather than carried as permanent workflow exceptions.
 - Product Line scoped e2e helpers should become the default for APIs that can operate in Facility aggregate or Product Line scope.
 
 ## File Traceability Appendix
