@@ -5,12 +5,11 @@ import { requireRole } from '@/lib/auth';
 import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, createTaskSchema, bulkUpdateTaskStatusSchema } from '@/lib/validation';
-import { resolveMentionRecipients } from '@/lib/mentions';
 import { normalizeTaskCreateStatus } from '@/lib/task-status';
-import { pushTaskToGitHub, syncTaskOutbound } from '@/lib/github-sync-engine';
-import { pushTaskToGnap } from '@/lib/gnap-sync';
-import { config } from '@/lib/config';
+import { syncTaskOutbound } from '@/lib/github-sync-engine';
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces';
+import { createTask, UnknownMentionsError } from '@/lib/task-create';
+import { advanceTaskChain } from '@/lib/task-dispatch';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -201,48 +200,20 @@ export async function POST(request: NextRequest) {
     const resolvedProjectId = resolveProjectId(db, workspaceId, project_id)
     
     const now = Math.floor(Date.now() / 1000);
-    const mentionResolution = resolveMentionRecipients(description || '', db, workspaceId);
-    if (mentionResolution.unresolved.length > 0) {
-      return NextResponse.json({
-        error: `Unknown mentions: ${mentionResolution.unresolved.map((m) => `@${m}`).join(', ')}`,
-        missing_mentions: mentionResolution.unresolved
-      }, { status: 400 });
-    }
-
     const resolvedCompletedAt = completed_at ?? (normalizedStatus === 'done' ? now : null)
 
-    const createTaskTx = db.transaction(() => {
-      db.prepare(`
-        UPDATE projects
-        SET ticket_counter = ticket_counter + 1, updated_at = unixepoch()
-        WHERE id = ? AND workspace_id = ?
-      `).run(resolvedProjectId, workspaceId)
-      const row = db.prepare(`
-        SELECT ticket_counter FROM projects
-        WHERE id = ? AND workspace_id = ?
-      `).get(resolvedProjectId, workspaceId) as { ticket_counter: number } | undefined
-      if (!row || !row.ticket_counter) throw new Error('Failed to allocate project ticket number')
-
-      const insertStmt = db.prepare(`
-        INSERT INTO tasks (
-          title, description, status, priority, project_id, project_ticket_no, assigned_to, created_by,
-          created_at, updated_at, due_date, estimated_hours, actual_hours,
-          outcome, error_message, resolution, feedback_rating, feedback_notes, retry_count, completed_at,
-          tags, metadata, workspace_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
-
-      const dbResult = insertStmt.run(
+    let createResult
+    try {
+      createResult = createTask({
+        source: 'api',
         title,
         description,
-        normalizedStatus,
+        status: normalizedStatus,
         priority,
-        resolvedProjectId,
-        row.ticket_counter,
+        project_id: resolvedProjectId,
         assigned_to,
-        actor,
-        now,
-        now,
+        created_by: actor,
+        workspace_id: workspaceId,
         due_date,
         estimated_hours,
         actual_hours,
@@ -252,88 +223,21 @@ export async function POST(request: NextRequest) {
         feedback_rating,
         feedback_notes,
         retry_count,
-        resolvedCompletedAt,
-        JSON.stringify(tags),
-        JSON.stringify(metadata),
-        workspaceId
-      )
-      return Number(dbResult.lastInsertRowid)
-    })
-
-    const taskId = createTaskTx()
-    
-    // Log activity
-    db_helpers.logActivity('task_created', 'task', taskId, actor, `Created task: ${title}`, {
-      title,
-      status: normalizedStatus,
-      priority,
-      assigned_to,
-      ...(outcome ? { outcome } : {})
-    }, workspaceId);
-
-    if (actor) {
-      db_helpers.ensureTaskSubscription(taskId, actor, workspaceId)
-    }
-
-    for (const recipient of mentionResolution.recipients) {
-      db_helpers.ensureTaskSubscription(taskId, recipient, workspaceId);
-      if (recipient === actor) continue;
-      db_helpers.createNotification(
-        recipient,
-        'mention',
-        'You were mentioned in a task description',
-        `${actor} mentioned you in task "${title}"`,
-        'task',
-        taskId,
-        workspaceId
-      );
-    }
-
-    // Create notification if assigned
-    if (assigned_to) {
-      db_helpers.ensureTaskSubscription(taskId, assigned_to, workspaceId)
-      db_helpers.createNotification(
-        assigned_to,
-        'assignment',
-        'Task Assigned',
-        `You have been assigned to task: ${title}`,
-        'task',
-        taskId,
-        workspaceId
-      );
-    }
-    
-    // Fetch the created task
-    const createdTask = db.prepare(`
-      SELECT t.*, p.name as project_name, p.ticket_prefix as project_prefix
-      FROM tasks t
-      LEFT JOIN projects p
-        ON p.id = t.project_id AND p.workspace_id = t.workspace_id
-      WHERE t.id = ? AND t.workspace_id = ?
-    `).get(taskId, workspaceId) as Task;
-    const parsedTask = mapTaskRow(createdTask);
-
-    // Fire-and-forget outbound GitHub sync for new tasks
-    if (parsedTask.project_id) {
-      const project = db.prepare(`
-        SELECT id, github_repo, github_sync_enabled FROM projects
-        WHERE id = ? AND workspace_id = ?
-      `).get(parsedTask.project_id, workspaceId) as any
-      if (project?.github_sync_enabled && project?.github_repo) {
-        pushTaskToGitHub(parsedTask as any, project).catch(err =>
-          logger.error({ err, taskId }, 'Outbound GitHub sync failed for new task')
-        )
+        completed_at: resolvedCompletedAt,
+        tags,
+        metadata,
+      })
+    } catch (err) {
+      if (err instanceof UnknownMentionsError) {
+        return NextResponse.json({
+          error: err.message,
+          missing_mentions: err.missingMentions,
+        }, { status: 400 })
       }
+      throw err
     }
 
-    // Fire-and-forget GNAP sync for new tasks
-    if (config.gnap.enabled && config.gnap.autoSync) {
-      try { pushTaskToGnap(parsedTask as any, config.gnap.repoPath) }
-      catch (err) { logger.warn({ err, taskId }, 'GNAP sync failed for new task') }
-    }
-
-    // Broadcast to SSE clients
-    eventBus.broadcast('task.created', parsedTask);
+    const parsedTask = createResult.task as unknown as Task & { tags: string[]; metadata: Record<string, unknown> };
 
     return NextResponse.json({ task: parsedTask }, { status: 201 });
   } catch (error) {
@@ -406,6 +310,15 @@ export async function PUT(request: NextRequest) {
             { oldStatus: oldTask.status, newStatus: task.status },
             workspaceId
           );
+        }
+
+        if (oldTask.status !== 'done' && task.status === 'done') {
+          advanceTaskChain({
+            taskId: task.id,
+            workspaceId,
+            previousStatus: oldTask.status,
+            trigger: 'bulk_task_update',
+          })
         }
       }
     });

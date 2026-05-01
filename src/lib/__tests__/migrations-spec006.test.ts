@@ -1,8 +1,8 @@
 /**
- * SPEC-006 — Migration M62 tests (T003)
+ * SPEC-006 — Migration M63 tests (T003)
  *
  * Asserts:
- *   (a) M62 adds projects.area_slug TEXT NULL,
+ *   (a) M63 adds projects.area_slug TEXT NULL,
  *       projects.is_triage_project INTEGER DEFAULT 0,
  *       projects.is_repo_sync_owner INTEGER DEFAULT 0,
  *       tasks.area_routing_backfilled_at INTEGER NULL.
@@ -14,7 +14,7 @@
  *   (c) NO NOT NULL on any new column (FR-003 / Constitution Article VII).
  *   (d) Owner election is deterministic — MIN(projects.id) per group with
  *       at least one github_sync_enabled=1 project.
- *   (e) Re-running M62 is idempotent.
+ *   (e) Re-running M63 is idempotent.
  *   (f) Legacy (workspace_id, github_repo, github_issue_number) unique preserved.
  */
 import Database from 'better-sqlite3'
@@ -57,7 +57,7 @@ function freshMigratedDb(): Database.Database {
   return db
 }
 
-describe('SPEC-006 / M62 migration', () => {
+describe('SPEC-006 / M63 migration', () => {
   it('adds the four nullable columns with correct types and defaults', () => {
     const db = freshMigratedDb()
 
@@ -125,7 +125,7 @@ describe('SPEC-006 / M62 migration', () => {
         (301, 1, 'C1', 'c1', 'C1', 'org/repo-c', 1, 'active');
     `)
 
-    // Apply the deterministic owner-election logic (the same UPDATE M62 runs
+    // Apply the deterministic owner-election logic (the same UPDATE M63 runs
     // post-column-addition). After the migration runs on an existing DB with
     // pre-existing projects, owners are elected. For projects added AFTER the
     // migration ran, callers must run the same election themselves — that's
@@ -155,7 +155,7 @@ describe('SPEC-006 / M62 migration', () => {
     ).toEqual([{ id: 301 }])
   })
 
-  it('M62 is idempotent — re-applying does not raise UNIQUE violations', () => {
+  it('M63 is idempotent — re-applying does not raise UNIQUE violations', () => {
     const db = freshMigratedDb()
 
     db.prepare(`DELETE FROM schema_migrations WHERE id LIKE '062%'`).run()

@@ -1,38 +1,7 @@
--- SPEC-006 rollback M62: drop SPEC-006 indexes + columns
--- (area_slug, is_triage_project, is_repo_sync_owner, area_routing_backfilled_at).
+-- SPEC-004 rollback M62: drop one-successor-per-parent guard.
 -- Snapshot the database before running this file.
---
--- IMPORTANT — SQLite ALTER TABLE DROP COLUMN caveat:
---   SQLite has supported DROP COLUMN since 3.35 (March 2021). Mission Control's
---   minimum SQLite version (better-sqlite3 v12) bundles 3.45+, so DROP COLUMN
---   works in production. However, the operation is NOT instant — for very large
---   tasks/projects tables, schedule rollback during a maintenance window.
---   Re-running this file after an interrupted rollback is safe (DROP IF EXISTS).
---
--- Index drop order is the reverse of CREATE order (defensive — SQLite does not
--- require ordered drops, but reverse order keeps EXPLAIN logs readable).
 
-PRAGMA foreign_keys = OFF;
-
--- Indexes first (UNIQUE partial indexes block column DROP otherwise).
-DROP INDEX IF EXISTS idx_tasks_area_routing_backfill_pending;
-DROP INDEX IF EXISTS idx_projects_one_triage_per_workspace;
-DROP INDEX IF EXISTS idx_projects_one_sync_owner_per_repo;
-DROP INDEX IF EXISTS idx_projects_workspace_area_slug;
-
--- Columns (reverse of ADD order).
-ALTER TABLE tasks DROP COLUMN area_routing_backfilled_at;
-ALTER TABLE projects DROP COLUMN is_repo_sync_owner;
-ALTER TABLE projects DROP COLUMN is_triage_project;
-ALTER TABLE projects DROP COLUMN area_slug;
-
--- Workspace feature flag cleanup — remove the SPEC-006 backfill marker if set.
--- Safe even when the JSON key is absent: json_remove returns the original on miss.
-UPDATE workspaces
-SET feature_flags = json_remove(feature_flags, '$.area_label_routing_backfill_completed_at')
-WHERE feature_flags IS NOT NULL;
+DROP INDEX IF EXISTS idx_tasks_one_successor_per_parent;
 
 DELETE FROM schema_migrations
-WHERE id = '062_area_label_routing_sync_owner_triage';
-
-PRAGMA foreign_keys = ON;
+WHERE id = '062_task_successor_unique_parent_index';

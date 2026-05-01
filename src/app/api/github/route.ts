@@ -5,6 +5,7 @@ import { requireRole } from '@/lib/auth'
 import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { validateBody, githubSyncSchema } from '@/lib/validation'
+import { createTask } from '@/lib/task-create'
 import {
   getGitHubToken,
   githubFetch,
@@ -153,47 +154,24 @@ async function handleSync(
         github_state: issue.state,
       }
 
-      const stmt = db.prepare(`
-        INSERT INTO tasks (
-          title, description, status, priority, assigned_to, created_by,
-          created_at, updated_at, tags, metadata, workspace_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
-
-      const dbResult = stmt.run(
-        issue.title,
-        issue.body || '',
+      const createResult = createTask({
+        source: 'github_import',
+        title: issue.title,
+        description: issue.body || '',
         status,
         priority,
-        body.assignAgent || null,
-        actor,
-        now,
-        now,
-        JSON.stringify(tags),
-        JSON.stringify(metadata),
-        workspaceId
-      )
-
-      const taskId = dbResult.lastInsertRowid as number
-
-      db_helpers.logActivity(
-        'task_created',
-        'task',
-        taskId,
-        actor,
-        `Imported from GitHub: ${repo}#${issue.number}`,
-        { github_issue: issue.number, github_repo: repo },
-        workspaceId
-      )
-
-      const createdTask = db.prepare('SELECT * FROM tasks WHERE id = ? AND workspace_id = ?').get(taskId, workspaceId) as Task
-      const parsedTask = {
-        ...createdTask,
-        tags: JSON.parse(createdTask.tags || '[]'),
-        metadata: JSON.parse(createdTask.metadata || '{}'),
-      }
-
-      eventBus.broadcast('task.created', parsedTask)
+        assigned_to: body.assignAgent || null,
+        created_by: actor,
+        workspace_id: workspaceId,
+        tags,
+        metadata,
+        activity: {
+          actor,
+          description: `Imported from GitHub: ${repo}#${issue.number}`,
+          data: { github_issue: issue.number, github_repo: repo },
+        },
+      })
+      const parsedTask = createResult.task as unknown as Task & { tags: string[]; metadata: Record<string, unknown> }
       createdTasks.push(parsedTask)
       imported++
     } catch (err: any) {

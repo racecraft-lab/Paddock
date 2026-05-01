@@ -29,6 +29,7 @@ import {
   type TaskStatus,
   type TaskPriority,
 } from '@/lib/github-label-map'
+import { createTask } from '@/lib/task-create'
 import type Database from 'better-sqlite3'
 
 // ── SPEC-006 / FR-027b — error classification + sanitization ─────────
@@ -576,57 +577,62 @@ export async function pullFromGitHub(
           ? (resolution.resolvedProjectId ?? project.id)
           : project.id
 
-        const insertResult = db.prepare(`
-          INSERT INTO tasks (
-            title, description, status, priority, created_by,
-            created_at, updated_at, tags, metadata,
-            github_issue_number, github_repo, github_synced_at,
-            project_id, workspace_id
-          ) VALUES (?, ?, ?, ?, 'github-sync', ?, ?, ?, '{}', ?, ?, ?, ?, ?)
-        `).run(
-          issue.title,
-          issue.body || '',
+        // SPEC-004 introduced the centralized `createTask` helper which
+        // owns ticket allocation, idempotent dedup (returns
+        // `duplicate: true` instead of inserting a second row), and the
+        // standard `task_created` activity row.
+        const createResult = createTask({
+          source: 'github_sync',
+          title: issue.title,
+          description: issue.body || '',
           status,
           priority,
-          now, now,
-          JSON.stringify(tags),
-          issue.number, repo, now,
-          targetProjectId, workspaceId
-        )
-        const newTaskId = Number(insertResult.lastInsertRowid)
-
-        // SPEC-006 / FR-042, FR-043, FR-043a — activity row.
-        const activityType: 'area_routing_resolved' | 'area_routing_unresolved' =
-          resolution.reason === 'single_match'
-            ? 'area_routing_resolved'
-            : 'area_routing_unresolved'
-        writeAreaRoutingActivity(areaRoutingFlagOn, {
-          type: activityType,
-          entityId: newTaskId,
-          actor: 'github-sync',
-          description:
-            resolution.reason === 'single_match'
-              ? `Routed ${repo}#${issue.number} via area:${areaLabels[0]}`
-              : `Routed ${repo}#${issue.number} (${resolution.reason})`,
-          data: {
-            area_labels: areaLabels,
-            resolved_project_id: resolution.resolvedProjectId ?? targetProjectId,
-            reason: resolution.reason,
-            source: 'ingest',
-            github_issue_number: issue.number,
-            workspace_id: workspaceId,
-            github_repo: repo,
+          created_by: 'github-sync',
+          workspace_id: workspaceId,
+          project_id: targetProjectId,
+          tags,
+          metadata: {},
+          github_issue_number: issue.number,
+          github_repo: repo,
+          github_synced_at: now,
+          activity: {
+            actor: 'github-sync',
+            description: `Synced from GitHub: ${repo}#${issue.number}`,
+            data: { github_issue: issue.number, github_repo: repo },
           },
-          workspaceId,
         })
 
         pulled++
-        db_helpers.logActivity(
-          'task_created', 'task', newTaskId, 'github-sync',
-          `Synced from GitHub: ${repo}#${issue.number}`,
-          { github_issue: issue.number, github_repo: repo },
-          workspaceId
-        )
+        if (createResult.duplicate) {
+          pulled--
+        } else {
+          // SPEC-006 / FR-042, FR-043, FR-043a — area routing activity row.
+          // Skipped when createTask returned duplicate=true (no new ingest,
+          // and the original routing decision was logged on the first pass).
+          const activityType: 'area_routing_resolved' | 'area_routing_unresolved' =
+            resolution.reason === 'single_match'
+              ? 'area_routing_resolved'
+              : 'area_routing_unresolved'
+          writeAreaRoutingActivity(areaRoutingFlagOn, {
+            type: activityType,
+            entityId: createResult.taskId,
+            actor: 'github-sync',
+            description:
+              resolution.reason === 'single_match'
+                ? `Routed ${repo}#${issue.number} via area:${areaLabels[0]}`
+                : `Routed ${repo}#${issue.number} (${resolution.reason})`,
+            data: {
+              area_labels: areaLabels,
+              resolved_project_id: resolution.resolvedProjectId ?? targetProjectId,
+              reason: resolution.reason,
+              source: 'ingest',
+              github_issue_number: issue.number,
+              workspace_id: workspaceId,
+              github_repo: repo,
+            },
+            workspaceId,
+          })
+        }
       } else {
         // Existing task — anti-ping-pong: skip if task was just pushed
         if (existingTask.github_synced_at && Math.abs(existingTask.github_synced_at - issueUpdatedAt) < 10) {

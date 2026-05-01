@@ -20,17 +20,17 @@ ships to any operator it must NOT be renumbered.
 | Migration ID | Spec | Description |
 |--------------|------|-------------|
 | M53–M61 | SPEC-001 (Foundation Migrations, PR #15) | Agent scope backfill, workflow-template routing/artifact-policy columns, task lineage, workspace feature-flag storage, dispositions, artifacts, facility seed, resource policies, resource policy events |
+| M62 | SPEC-004 (Task Pipeline Engine, PR #22) | `idx_tasks_one_successor_per_parent` partial unique index — DB-backed duplicate-successor protection |
 
-Last shipped id: **M61** (`061_resource_policy_events`).
+Last shipped id: **M62** (`062_task_successor_unique_parent_index`).
 
-Next available id: **M62**.
+Next available id: **M63** (reserved by SPEC-006, in flight).
 
 ## Reservations (in-flight)
 
 | Migration ID | Spec | Description | Status |
 |--------------|------|-------------|--------|
-| M62 (or M63) | SPEC-004 (Task Pipeline Engine) | `idx_tasks_one_successor_per_parent` partial unique index | In flight in `.worktrees/004-task-pipeline-engine/` |
-| M62 (or M63) | SPEC-006 (Area-Label GitHub Sync) | `area_label_routing` — adds `projects.area_slug`, `projects.is_triage_project`, `projects.is_repo_sync_owner`, `tasks.area_routing_backfilled_at`, plus four indexes | In flight in `.worktrees/006-area-label-github-sync/` |
+| M63 | SPEC-006 (Area-Label GitHub Sync) | `063_area_label_routing_sync_owner_triage` — adds `projects.area_slug`, `projects.is_triage_project`, `projects.is_repo_sync_owner`, `tasks.area_routing_backfilled_at`, plus four indexes | In flight in `.worktrees/006-area-label-github-sync/` (rebased from M62 to M63 on 2026-05-01 after SPEC-004 PR #22 merged first) |
 
 ## Rebase rule
 

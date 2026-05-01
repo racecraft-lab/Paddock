@@ -1674,7 +1674,39 @@ const migrations: Migration[] = [
     }
   },
   {
+    id: '062_task_successor_unique_parent_index',
+    up(db: Database.Database) {
+      if (!tableExists(db, 'tasks') || !columnExists(db, 'tasks', 'parent_task_id')) return
+
+      const duplicate = db
+        .prepare(`
+          SELECT parent_task_id, COUNT(*) as count
+          FROM tasks
+          WHERE parent_task_id IS NOT NULL
+          GROUP BY parent_task_id
+          HAVING COUNT(*) > 1
+          LIMIT 1
+        `)
+        .get() as { parent_task_id: number; count: number } | undefined
+
+      if (duplicate) {
+        throw new Error(
+          `Cannot create idx_tasks_one_successor_per_parent; parent_task_id ${duplicate.parent_task_id} has ${duplicate.count} successors`
+        )
+      }
+
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_one_successor_per_parent
+        ON tasks(parent_task_id)
+        WHERE parent_task_id IS NOT NULL
+      `)
+    }
+  },
+  {
     // SPEC-006 - Area-Label GitHub Sync
+    //
+    // Migration ID rebased from M62 to M63 per docs/migrations/migration-id-reservations.md
+    // first-to-merge-keeps-M62 rule. SPEC-004 (PR #22) shipped M62 first.
     //
     // Additive schema delta. All four new columns are NULLABLE per FR-003 /
     // Constitution Article VII. Four indexes - one non-unique covering index
@@ -1686,7 +1718,7 @@ const migrations: Migration[] = [
     // (workspace_id, github_repo) group with at least one
     // github_sync_enabled=1 project. Disabled-only groups elect zero owners
     // (FR-005). Re-running the migration is a no-op (idempotent).
-    id: '062_area_label_routing_sync_owner_triage',
+    id: '063_area_label_routing_sync_owner_triage',
     up(db: Database.Database) {
       addColumnIfMissing(db, 'projects', 'area_slug', 'area_slug TEXT')
       addColumnIfMissing(db, 'projects', 'is_triage_project', 'is_triage_project INTEGER DEFAULT 0')
