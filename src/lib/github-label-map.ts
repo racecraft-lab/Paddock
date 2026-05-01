@@ -3,6 +3,8 @@
  * Labels use `mc:` prefix to avoid collisions with existing repo labels.
  */
 
+import type Database from 'better-sqlite3'
+
 export type TaskStatus = 'backlog' | 'inbox' | 'assigned' | 'awaiting_owner' | 'in_progress' | 'review' | 'quality_review' | 'done' | 'failed'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
 
@@ -72,3 +74,81 @@ export const ALL_MC_LABELS: LabelDef[] = [
 
 export const ALL_STATUS_LABEL_NAMES = Object.values(STATUS_LABEL_MAP).map(l => l.name)
 export const ALL_PRIORITY_LABEL_NAMES = Object.values(PRIORITY_LABEL_MAP).map(l => l.name)
+
+// ── Area ↔ Label mapping (SPEC-006 / FR-030..FR-032) ────────────
+//
+// Static catalog of the 12 canonical Mission Control "area" labels. These are
+// the well-known department / function buckets that ship with every workspace
+// when `FEATURE_AREA_LABEL_ROUTING` is enabled. Workspaces may also define
+// their own free-form `projects.area_slug` values — `areaLabelsForWorkspace`
+// returns the union of these static labels and any workspace-defined slugs
+// not already covered by the static map.
+//
+// Snapshot-pinned by `github-label-map-spec006.test.ts` per FR-030. Any drift
+// in name / color / description is a deliberate decision that requires a
+// matching test update.
+
+export const AREA_LABEL_MAP: Record<string, LabelDef> = {
+  'area:qa':       { name: 'area:qa',       color: 'a855f7', description: 'Mission Control area: quality assurance' },
+  'area:dev':      { name: 'area:dev',      color: '3b82f6', description: 'Mission Control area: development' },
+  'area:design':   { name: 'area:design',   color: 'be185d', description: 'Mission Control area: design' },
+  'area:infra':    { name: 'area:infra',    color: '64748b', description: 'Mission Control area: infrastructure' },
+  'area:security': { name: 'area:security', color: 'ef4444', description: 'Mission Control area: security' },
+  'area:docs':     { name: 'area:docs',     color: 'eab308', description: 'Mission Control area: documentation' },
+  'area:ops':      { name: 'area:ops',      color: 'f97316', description: 'Mission Control area: operations' },
+  'area:frontend': { name: 'area:frontend', color: '0e7490', description: 'Mission Control area: frontend' },
+  'area:backend':  { name: 'area:backend',  color: '6366f1', description: 'Mission Control area: backend' },
+  'area:data':     { name: 'area:data',     color: '22c55e', description: 'Mission Control area: data' },
+  'area:ml':       { name: 'area:ml',       color: '6d28d9', description: 'Mission Control area: machine learning' },
+  'area:triage':   { name: 'area:triage',   color: '6b7280', description: 'Mission Control area: triage (unresolvable inbound issues)' },
+}
+
+export const ALL_AREA_LABEL_NAMES = Object.values(AREA_LABEL_MAP).map(l => l.name)
+
+// Stable fallback color for synthesized (workspace-defined) area labels.
+// Slate-400, distinct from every color in the static AREA_LABEL_MAP so that
+// operators can visually differentiate workspace-defined slugs in the GitHub UI.
+const SYNTHESIZED_AREA_LABEL_COLOR = '94a3b8'
+
+/**
+ * Return the union of the static AREA_LABEL_MAP values plus a synthesized
+ * `LabelDef` for every non-NULL `projects.area_slug` in the given workspace
+ * that is NOT already covered by a static `area:<slug>` entry.
+ *
+ * Synthesized labels carry a stable slate fallback color and a description
+ * suffixed with `(workspace-defined)` so operators can tell them apart from
+ * the canonical 12. The static map always wins on collision — a project with
+ * `area_slug='qa'` does NOT add a duplicate `area:qa` row.
+ *
+ * Used by `initializeLabels(repo, workspaceId)` (FR-025) to seed area labels
+ * on a connected GitHub repo.
+ */
+export function areaLabelsForWorkspace(
+  db: Database.Database,
+  workspaceId: number,
+): LabelDef[] {
+  const rows = db
+    .prepare(
+      `SELECT DISTINCT area_slug
+         FROM projects
+        WHERE workspace_id = ?
+          AND area_slug IS NOT NULL`,
+    )
+    .all(workspaceId) as Array<{ area_slug: string }>
+
+  const labels: LabelDef[] = [...Object.values(AREA_LABEL_MAP)]
+  const seen = new Set(labels.map((l) => l.name))
+
+  for (const { area_slug } of rows) {
+    const name = `area:${area_slug}`
+    if (seen.has(name)) continue
+    seen.add(name)
+    labels.push({
+      name,
+      color: SYNTHESIZED_AREA_LABEL_COLOR,
+      description: `Mission Control area: ${area_slug} (workspace-defined)`,
+    })
+  }
+
+  return labels
+}
