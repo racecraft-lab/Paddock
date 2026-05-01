@@ -8,7 +8,7 @@ import { validateBody, createTaskSchema, bulkUpdateTaskStatusSchema } from '@/li
 import { normalizeTaskCreateStatus } from '@/lib/task-status';
 import { syncTaskOutbound } from '@/lib/github-sync-engine';
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces';
-import { createTask } from '@/lib/task-create';
+import { createTask, UnknownMentionsError } from '@/lib/task-create';
 import { advanceTaskChain } from '@/lib/task-dispatch';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
@@ -228,16 +228,10 @@ export async function POST(request: NextRequest) {
         metadata,
       })
     } catch (err) {
-      const message = err instanceof Error ? err.message : ''
-      if (message.startsWith('Unknown mentions: ')) {
-        const missingMentions = message
-          .replace('Unknown mentions: ', '')
-          .split(', ')
-          .filter(Boolean)
-          .map((mention) => mention.replace(/^@/, ''))
+      if (err instanceof UnknownMentionsError) {
         return NextResponse.json({
-          error: message,
-          missing_mentions: missingMentions,
+          error: err.message,
+          missing_mentions: err.missingMentions,
         }, { status: 400 })
       }
       throw err

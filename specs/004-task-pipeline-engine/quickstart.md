@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Worktree: `/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/004-task-pipeline-engine`
+- Worktree: a local checkout of this repository, referred to below as `<repo-root>`
 - Package manager: `pnpm`
 - Node.js >=22
 - SPEC-001 task-chain columns and workflow-template fields present in the live schema
@@ -10,7 +10,7 @@
 ## Install And Baseline
 
 ```bash
-cd /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/004-task-pipeline-engine
+cd <repo-root>
 pnpm install
 pnpm typecheck
 pnpm lint

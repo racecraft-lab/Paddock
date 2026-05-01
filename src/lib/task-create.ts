@@ -143,6 +143,19 @@ export interface CreateTaskResult {
   duplicate?: boolean
 }
 
+export class UnknownMentionsError extends Error {
+  readonly missingMentions: string[]
+
+  constructor(missingMentions: string[]) {
+    const normalizedMentions = Array.from(new Set(
+      missingMentions.map((mention) => mention.replace(/^@/, '')).filter(Boolean)
+    ))
+    super(`Unknown mentions: ${normalizedMentions.map((mention) => `@${mention}`).join(', ')}`)
+    this.name = 'UnknownMentionsError'
+    this.missingMentions = normalizedMentions
+  }
+}
+
 function getRuntimeDatabase(): () => Database.Database {
   return (runtimeRequire('./db') as { getDatabase: () => Database.Database }).getDatabase
 }
@@ -548,7 +561,7 @@ export function createTask(input: CreateTaskInput): CreateTaskResult {
     ? (input.runtime?.resolveMentionRecipients ?? getRuntimeMentions().resolveMentionRecipients)(input.description ?? '', db, input.workspace_id)
     : { unresolved: [], recipients: [] as string[] }
   if (mentionResolution.unresolved.length > 0) {
-    throw new Error(`Unknown mentions: ${mentionResolution.unresolved.map((mention: string) => `@${mention}`).join(', ')}`)
+    throw new UnknownMentionsError(mentionResolution.unresolved)
   }
 
   let ticket: string | null = null

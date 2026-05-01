@@ -190,7 +190,7 @@ describe('createTask api source profile', () => {
 
   it('rejects unresolved API mentions before inserting a task', async () => {
     const db = createTaskDb()
-    const { createTask, runtime } = await importCreateTask(db)
+    const { createTask, UnknownMentionsError, runtime } = await importCreateTask(db)
 
     expect(() => createTask({
       source: 'api',
@@ -201,6 +201,20 @@ describe('createTask api source profile', () => {
       created_by: 'operator',
       workspace_id: 1,
     } as any)).toThrow(/Unknown mentions: @nobody/)
+    try {
+      createTask({
+        source: 'api',
+        db,
+        runtime,
+        title: 'Bad mention',
+        description: 'Missing @nobody',
+        created_by: 'operator',
+        workspace_id: 1,
+      } as any)
+    } catch (err) {
+      expect(err).toBeInstanceOf(UnknownMentionsError)
+      expect((err as InstanceType<typeof UnknownMentionsError>).missingMentions).toEqual(['nobody'])
+    }
 
     expect(db.prepare('SELECT COUNT(*) AS count FROM tasks').get()).toEqual({ count: 0 })
   })

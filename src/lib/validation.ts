@@ -153,7 +153,7 @@ function requireOutputSchemaForRoutingRules(
   }
 }
 
-export const workflowTemplateChainFieldsSchema = z.object({
+const workflowTemplateChainFieldsBaseSchema = z.object({
   slug: nullableTrimmedString(200).optional().default(null),
   output_schema: outputSchemaObject.nullable().optional().default(null),
   routing_rules: z.array(workflowRoutingRuleSchema).max(64).optional().default([]),
@@ -161,7 +161,10 @@ export const workflowTemplateChainFieldsSchema = z.object({
   produces_pr: z.boolean().optional().default(false),
   external_terminal_event: nullableTrimmedString(200).optional().default(null),
   allow_redacted_artifacts: z.boolean().optional().default(false),
-}).superRefine(requireOutputSchemaForRoutingRules)
+})
+
+export const workflowTemplateChainFieldsSchema = workflowTemplateChainFieldsBaseSchema
+  .superRefine(requireOutputSchemaForRoutingRules)
 
 export const createWorkflowSchema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
@@ -171,7 +174,7 @@ export const createWorkflowSchema = z.object({
   timeout_seconds: z.number().int().min(10).max(3600).default(300),
   agent_role: z.string().max(100).optional(),
   tags: z.array(z.string().min(1).max(100)).max(50).default([]),
-}).and(workflowTemplateChainFieldsSchema)
+}).merge(workflowTemplateChainFieldsBaseSchema).superRefine(requireOutputSchemaForRoutingRules)
 
 export const updateWorkflowSchema = z.object({
   id: z.number().int().positive(),

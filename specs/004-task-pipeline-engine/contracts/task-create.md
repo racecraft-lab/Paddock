@@ -14,7 +14,7 @@ type CreateTaskResult = {
   task?: unknown;
   activityIds: number[];
   notificationIds: number[];
-  subscriptionRecipients: number[];
+  subscriptionRecipients: string[];
   outboundSync: {
     githubQueued: boolean;
     gatewayQueued: boolean;
@@ -85,4 +85,3 @@ Defaults:
 ## Transaction Contract
 
 The helper supports caller-owned transactions for recurring task spawn and pipeline successor creation. Internal database side effects honor the caller transaction. External outbound side effects are represented as post-commit intents when required by the caller.
-
