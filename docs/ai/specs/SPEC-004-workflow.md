@@ -755,7 +755,7 @@ For each task, follow this cycle:
 - Added the `POST /api/tasks/{id}` OpenAPI operation with the retry request, bounded success response, and 409 retry-conflict response shape.
 - Re-run evidence: `pnpm api:parity` passed with 265 route operations, 256 OpenAPI operations, and 12 ignored entries.
 - GitHub CodeQL flagged the intentionally unsafe nested-quantifier test fixture as an inefficient regular expression; the fixture now builds the same schema pattern from string segments so validator coverage remains while avoiding a static executable vulnerable regex literal.
-- PR closeout evidence: PR #22 has zero unresolved review threads, the latest head `96580d33cecad7238288cfec4648e1629ddebba7` has passing CodeQL, Quality Gate, Mission Control UI E2E, Argos Storybook, Argos Playwright, and Argos summary checks, and roadmap/PRD hygiene now marks SPEC-004 complete for merge.
+- PR closeout evidence: PR #22 has zero unresolved review threads, the latest head `0e8a6126ebd177a3b56dccce41144a116184c3ec` has passing CodeQL, Quality Gate, Mission Control UI E2E, Argos Storybook, Argos Playwright, and Argos summary checks, and roadmap/PRD hygiene now marks SPEC-004 complete for merge.
 
 ---
 

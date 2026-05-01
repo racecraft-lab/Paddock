@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-05-01T22:25:58Z",
+  "updated_at": "2026-05-01T22:32:58Z",
   "active_step": "Complete",
   "status": "SPEC-004 implementation, higher-ulimit post-verification, PR review remediation, CI/Argos closeout, and merge-context hygiene are complete",
   "notes": [
@@ -78,7 +78,7 @@
     "Deep scan evidence on 2026-05-01T22:25:58Z: workflow/package/script/source/test surfaces no longer contain SPEC-002/SPEC-004 hard-coded labels, script names, story paths, Argos tags, screenshot envs, or feature-registry UI metadata. Quality Gate now runs the generic `pnpm guardrails` entrypoint, Argos metadata verification is consolidated in `scripts/verify-argos-metadata.mjs` with Playwright/Storybook modes, Product Line visual stories use domain filenames/tags, and Task Pipeline stories/tests use domain filenames/slugs.",
     "PR CI remediation on 2026-05-01T21:25:37Z: GitHub quality-gate failed API contract parity because POST /api/tasks/{id} was missing from openapi.json; added the retry_chain_advancement OpenAPI operation and verified pnpm api:parity passes locally.",
     "PR CI remediation on 2026-05-01T21:32:40Z: GitHub CodeQL flagged the intentionally unsafe nested-quantifier fixture in output-schema-validator.patterns.test.ts; rewrote the fixture to build the same pattern from string segments so validator coverage remains without a static vulnerable regex literal.",
-    "PR closeout and merge-context hygiene completed on 2026-05-01T21:58:08Z: PR #22 has zero unresolved review threads, latest head 96580d33cecad7238288cfec4648e1629ddebba7 has passing CodeQL, Quality Gate, Mission Control UI E2E, Argos Storybook, Argos Playwright, and Argos summary checks, and docs/ai/rc-factory-technical-roadmap.md plus docs/rc-factory-v1-prd.md mark SPEC-004 complete for merge."
+    "PR closeout and merge-context hygiene completed on 2026-05-01T22:32:58Z: PR #22 has zero unresolved review threads, latest head 0e8a6126ebd177a3b56dccce41144a116184c3ec has passing CodeQL, Quality Gate, Mission Control UI E2E, Argos Storybook, Argos Playwright, and Argos summary checks, and docs/ai/rc-factory-technical-roadmap.md plus docs/rc-factory-v1-prd.md mark SPEC-004 complete for merge."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
