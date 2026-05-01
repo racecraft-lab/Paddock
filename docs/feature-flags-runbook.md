@@ -31,6 +31,51 @@ admins in the UI.
 
 The current admin-managed flag is `FEATURE_WORKSPACE_SWITCHER`.
 
+## `FEATURE_AREA_LABEL_ROUTING` Preflight Checklist
+
+SPEC-006 introduces workspace-scoped GitHub sync routing. Before enabling
+`FEATURE_AREA_LABEL_ROUTING` for a workspace, verify:
+
+1. **At least one project has `area_slug` set.** Without any
+   `projects.area_slug` configured for the workspace, no inbound issue
+   can resolve as `single_match`; everything routes to triage or to the
+   sync owner. Run:
+
+   ```sql
+   SELECT COUNT(*) FROM projects WHERE workspace_id = ? AND area_slug IS NOT NULL;
+   ```
+
+   Expect `>= 1`.
+
+2. **Exactly one `is_repo_sync_owner=1` per `(workspace_id, github_repo)`
+   group.** Migration M62 elects an initial owner deterministically, but
+   projects added post-migration may not have ownership set. Run:
+
+   ```sql
+   SELECT github_repo, SUM(is_repo_sync_owner) AS owners
+     FROM projects
+     WHERE workspace_id = ? AND github_repo IS NOT NULL
+     GROUP BY github_repo;
+   ```
+
+   Every row should have `owners = 1`. Zero-owner groups will not poll;
+   double-owner groups violate the partial unique index (this should
+   never happen — if observed, file a bug).
+
+3. **A triage project is designated if ambiguous-issue routing is
+   expected.** Without `is_triage_project=1` on any project,
+   no-label / multi-label / no-match issues fall through to the sync
+   owner via the `no_triage` path (FR-014). Confirm the operator
+   intends that fallback. Run:
+
+   ```sql
+   SELECT id, slug FROM projects WHERE workspace_id = ? AND is_triage_project = 1;
+   ```
+
+   Expect 0 rows (intentional fallback) or exactly 1.
+
+See `docs/github-sync.md` for the full sync behavior and rollback path.
+
 ## Safe Enable Procedure
 
 1. Confirm the owning spec, task list, and roadmap entry identify the feature as

@@ -4,6 +4,7 @@
   "description": "OpenClaw Mission Control — open-source agent orchestration dashboard",
   "scripts": {
     "verify:node": "node scripts/check-node-version.mjs",
+    "check:strict-scope": "bash scripts/check-strict-scope.sh",
     "api:parity": "node scripts/check-api-contract-parity.mjs --root . --openapi openapi.json --ignore-file scripts/api-contract-parity.ignore",
     "api:parity:json": "node scripts/check-api-contract-parity.mjs --root . --openapi openapi.json --ignore-file scripts/api-contract-parity.ignore --json",
     "mc": "node scripts/mc-cli.cjs",
@@ -35,7 +36,7 @@
     "test:evidence:screenshots": "pnpm run verify:node && node scripts/check-guardrails.mjs --suite spec-evidence-screenshots",
     "test:evidence:screenshots:negative": "pnpm run verify:node && node scripts/verify-spec-evidence-screenshots.mjs --self-test",
     "task-pipeline:guardrails": "pnpm run verify:node && node scripts/check-guardrails.mjs --suite task-pipeline",
-    "test:all": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e",
+    "test:all": "pnpm check:strict-scope && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:e2e",
     "quality:gate": "pnpm guardrails && pnpm test:all && pnpm audit:high",
     "postinstall": "node -e \"try{require('better-sqlite3')}catch(e){if(e.code==='ERR_DLOPEN_FAILED'||/NODE_MODULE_VERSION/.test(e.message)){console.error('\\n⚠  better-sqlite3 compiled for wrong Node version. Run: pnpm rebuild better-sqlite3\\n');process.exit(1)}}\""
   },

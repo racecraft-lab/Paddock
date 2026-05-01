@@ -118,8 +118,34 @@ function runTaskPipelineGuardrails() {
       fail(`Forbidden project_agent_assignments.agent_id assumption in production source: ${path}`)
     }
 
-    if (path !== 'src/lib/feature-flags.ts' && /\bFEATURE_AREA_LABEL_ROUTING\b|\bready_for_owner\b|\bCrabTrap\b/.test(source)) {
-      fail(`Downstream-scope drift marker found in production source: ${path}`)
+    // Per-marker downstream-scope drift checks. Each marker has its own
+    // allowlist so an earlier spec's guardrail doesn't block a later spec's
+    // legitimate implementation.
+    //
+    // - FEATURE_AREA_LABEL_ROUTING: SPEC-006 owns this flag. Allowed in
+    //   the central resolver and the SPEC-006-touched files listed below.
+    // - ready_for_owner: SPEC-005 owns this. NO production owner yet, so
+    //   it remains blocked everywhere except the central resolver.
+    // - CrabTrap: SPEC-011 owns this. NO production owner yet, so it
+    //   remains blocked everywhere except the central resolver.
+    const areaLabelRoutingAllowlist = new Set([
+      'src/lib/feature-flags.ts',
+      'src/lib/github-label-map.ts',
+      'src/lib/github-sync-engine.ts',
+      'src/lib/github-sync-poller.ts',
+      'src/app/api/projects/[id]/route.ts',
+      'src/components/modals/project-manager-modal.tsx',
+    ])
+    if (!areaLabelRoutingAllowlist.has(path) && /\bFEATURE_AREA_LABEL_ROUTING\b/.test(source)) {
+      fail(`SPEC-006 marker (FEATURE_AREA_LABEL_ROUTING) outside allowed files: ${path}`)
+    }
+
+    if (path !== 'src/lib/feature-flags.ts' && /\bready_for_owner\b/.test(source)) {
+      fail(`SPEC-005 marker (ready_for_owner) found before its owner spec lands: ${path}`)
+    }
+
+    if (path !== 'src/lib/feature-flags.ts' && /\bCrabTrap\b/.test(source)) {
+      fail(`SPEC-011 marker (CrabTrap) found before its owner spec lands: ${path}`)
     }
   }
 

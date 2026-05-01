@@ -215,6 +215,8 @@ function createMigration052Database(): Database.Database {
       slug TEXT NOT NULL,
       ticket_prefix TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'active',
+      github_repo TEXT,
+      github_sync_enabled INTEGER DEFAULT 0,
       UNIQUE(workspace_id, slug),
       UNIQUE(workspace_id, ticket_prefix)
     );

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useFocusTrap } from '@/lib/use-focus-trap'
 import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
+import { resolveFlag } from '@/lib/feature-flags'
 
 interface Project {
   id: number
@@ -20,7 +21,51 @@ interface Project {
   github_default_branch?: string
   task_count?: number
   assigned_agents?: string[]
+  // SPEC-006 / FR-040 — area-routing fields, additive and always present
+  // when the server returns them. Defaults are null/false on the server side.
+  area_slug?: string | null
+  is_triage_project?: boolean
+  is_repo_sync_owner?: boolean
 }
+
+// SPEC-006 / FR-037, FR-058 — owner_conflict surfaced inline so operators
+// can resolve it via the "Transfer ownership" action without leaving the modal.
+interface OwnerConflictState {
+  projectId: number
+  existingProjectId: number
+  existingProjectSlug: string
+  message: string
+}
+
+// SPEC-006 / FR-036, FR-040, FR-041 — triage_conflict surfaced inline.
+// The partial unique index `idx_projects_one_triage_per_workspace` enforces
+// at-most-one triage per workspace; the API returns this 409 shape when a
+// second project tries to claim the flag.
+interface TriageConflictState {
+  projectId: number
+  existingProjectId: number
+  existingProjectSlug: string
+  message: string
+}
+
+// SPEC-006 / FR-035, FR-040, FR-041 — area_slug_conflict surfaced inline
+// when another project in the workspace already holds the desired slug.
+interface AreaSlugConflictState {
+  projectId: number
+  existingProjectId: number
+  existingProjectSlug: string
+  message: string
+}
+
+// SPEC-006 / FR-034 — RFC 1123 / Kubernetes DNS label, max 32 chars.
+const AREA_SLUG_REGEX = /^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$/
+
+// SPEC-006 / FR-040a, P5-AC9 — required tooltip copy on the three new fields
+// when `FEATURE_AREA_LABEL_ROUTING` is OFF. Surfacing the same string on
+// every disabled control gives operators a consistent discovery cue.
+// Exported so tests can assert the tooltip text without duplicating the literal.
+export const FLAG_OFF_TOOLTIP =
+  'Available after FEATURE_AREA_LABEL_ROUTING is enabled for this workspace.'
 
 interface Agent {
   id: number
@@ -61,8 +106,29 @@ export function ProjectManagerModal({
     assigned_agents: string[]
     github_sync_enabled: boolean
     github_default_branch: string
-  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main' })
-  const { activeProductLineScope } = useMissionControl()
+    is_repo_sync_owner: boolean
+    is_triage_project: boolean
+    area_slug: string
+  }>({ description: '', github_repo: '', deadline: '', color: '', assigned_agents: [], github_sync_enabled: false, github_default_branch: 'main', is_repo_sync_owner: false, is_triage_project: false, area_slug: '' })
+  const [ownerConflict, setOwnerConflict] = useState<OwnerConflictState | null>(null)
+  const [triageConflict, setTriageConflict] = useState<TriageConflictState | null>(null)
+  const [areaSlugConflict, setAreaSlugConflict] = useState<AreaSlugConflictState | null>(null)
+  const { activeProductLineScope, activeProductLine } = useMissionControl()
+
+  // SPEC-006 / FR-040b — banner visibility derived client-side from the
+  // active workspace's `feature_flags` blob. We deliberately mirror the
+  // server-side `resolveFlag` semantics so the UI cannot drift from the API.
+  const areaRoutingFlagOn = useMemo(() => {
+    return resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
+      workspaceFlags: activeProductLine?.feature_flags ?? null,
+    })
+  }, [activeProductLine])
+
+  const hasTriageProject = useMemo(
+    () => projects.some((p) => p.is_triage_project),
+    [projects],
+  )
+  const showNoTriageBanner = areaRoutingFlagOn && !hasTriageProject
 
   const load = useCallback(async () => {
     try {
@@ -146,9 +212,14 @@ export function ProjectManagerModal({
   const startEditing = (project: Project) => {
     if (editingId === project.id) {
       setEditingId(null)
+      setOwnerConflict(null)
+      setTriageConflict(null)
       return
     }
     setEditingId(project.id)
+    setOwnerConflict(null)
+    setTriageConflict(null)
+    setAreaSlugConflict(null)
     setEditForm({
       description: project.description || '',
       github_repo: project.github_repo || '',
@@ -157,11 +228,123 @@ export function ProjectManagerModal({
       assigned_agents: project.assigned_agents || [],
       github_sync_enabled: !!project.github_sync_enabled,
       github_default_branch: project.github_default_branch || 'main',
+      is_repo_sync_owner: !!project.is_repo_sync_owner,
+      is_triage_project: !!project.is_triage_project,
+      area_slug: project.area_slug ?? '',
     })
+  }
+
+  // SPEC-006 / FR-040, FR-041 — submit area-routing fields via the new PUT
+  // route. The single dispatcher handles all four 409 shapes (area_slug,
+  // triage, owner) and the activity-bearing transfer_owner=true atomic swap.
+  // Body fields are passed through verbatim so callers can mix is_triage,
+  // is_repo_sync_owner, area_slug, and transfer_owner in one round-trip.
+  const submitAreaRouting = async (
+    project: Project,
+    body: Record<string, unknown>,
+  ) => {
+    try {
+      const response = await fetch(
+        appendScopeToPath(`/api/projects/${project.id}`, activeProductLineScope),
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      )
+      const data = await response.json()
+      if (response.status === 409 && data?.error === 'owner_conflict') {
+        setOwnerConflict({
+          projectId: project.id,
+          existingProjectId: data.existing_owner_project_id as number,
+          existingProjectSlug: String(data.existing_owner_project_slug),
+          message: String(data.message ?? 'Another project owns this repo.'),
+        })
+        setTriageConflict(null)
+        setAreaSlugConflict(null)
+        return false
+      }
+      if (response.status === 409 && data?.error === 'triage_conflict') {
+        setTriageConflict({
+          projectId: project.id,
+          existingProjectId: data.existing_triage_project_id as number,
+          existingProjectSlug: String(data.existing_triage_project_slug),
+          message: String(data.message ?? 'Another project is the triage project.'),
+        })
+        setOwnerConflict(null)
+        setAreaSlugConflict(null)
+        return false
+      }
+      if (response.status === 409 && data?.error === 'area_slug_conflict') {
+        setAreaSlugConflict({
+          projectId: project.id,
+          existingProjectId: data.existing_area_slug_project_id as number,
+          existingProjectSlug: String(data.existing_area_slug_project_slug),
+          message: String(data.message ?? 'Another project uses this area slug.'),
+        })
+        setOwnerConflict(null)
+        setTriageConflict(null)
+        return false
+      }
+      if (!response.ok) {
+        throw new Error(data?.error ?? data?.message ?? 'Failed to update project')
+      }
+      setOwnerConflict(null)
+      setTriageConflict(null)
+      setAreaSlugConflict(null)
+      return true
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update project')
+      return false
+    }
   }
 
   const saveEdit = async (project: Project) => {
     try {
+      // SPEC-006 / FR-040 — area-routing PUT runs FIRST because it is the
+      // only conflict-prone branch (409 owner_conflict / triage_conflict /
+      // area_slug_conflict). Running PATCH first leaves operators with
+      // partially-applied legacy fields when PUT fails. Only call when at
+      // least one of the four area-routing fields changed; the call short-
+      // circuits otherwise to keep flag-OFF and unchanged-area-routing
+      // saves byte-identical to the legacy PATCH path.
+      const desiredIsOwner = editForm.is_repo_sync_owner
+      const ownerChanged = desiredIsOwner !== !!project.is_repo_sync_owner
+      const desiredIsTriage = editForm.is_triage_project
+      const triageChanged = desiredIsTriage !== !!project.is_triage_project
+      // Empty input is treated as "clear" → submit `null`. Treat undefined
+      // / null on the project the same as '' so toggling between empty
+      // and unchanged doesn't fire a needless PUT.
+      const trimmedAreaSlug = editForm.area_slug.trim()
+      const desiredAreaSlug = trimmedAreaSlug.length > 0 ? trimmedAreaSlug : null
+      const currentAreaSlug = project.area_slug ?? null
+      const areaSlugChanged = desiredAreaSlug !== currentAreaSlug
+
+      if (ownerChanged || triageChanged || areaSlugChanged) {
+        // Defensive client-side regex check so we don't waste a round-trip
+        // on a value the server will reject with `invalid_area_slug`.
+        if (areaSlugChanged && desiredAreaSlug !== null && !AREA_SLUG_REGEX.test(desiredAreaSlug)) {
+          setError('Area slug must be RFC 1123 / Kubernetes DNS label (lowercase, digits, hyphens; 1-32 chars; cannot start/end with hyphen).')
+          return
+        }
+        const areaBody: Record<string, unknown> = {}
+        if (ownerChanged) areaBody.is_repo_sync_owner = desiredIsOwner
+        if (triageChanged) areaBody.is_triage_project = desiredIsTriage
+        if (areaSlugChanged) areaBody.area_slug = desiredAreaSlug
+        const ok = await submitAreaRouting(project, areaBody)
+        if (!ok) {
+          // Either an owner_conflict / triage_conflict / area_slug_conflict
+          // surfaced inline or another error in `error`. Bail without
+          // dismissing the editor and BEFORE we mutate any legacy fields,
+          // so the operator can act on the conflict without dealing with
+          // a half-applied save.
+          return
+        }
+      }
+
+      // Legacy fields go through the existing PATCH endpoint. This runs
+      // ONLY after the area-routing PUT either succeeded or had no work
+      // to do.
       const body: Record<string, unknown> = {
         description: editForm.description,
         github_repo: editForm.github_repo || null,
@@ -256,6 +439,21 @@ export function ProjectManagerModal({
               className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm resize-none"
             />
           </form>
+
+          {/* SPEC-006 / FR-040b — no-triage-designated banner. Visible when
+              FEATURE_AREA_LABEL_ROUTING is ON and no project in the workspace
+              has is_triage_project=1. Disappears the moment any project is
+              promoted to triage, so the cue is purely state-driven (no
+              dedicated API). */}
+          {showNoTriageBanner && !loading && (
+            <div
+              data-testid="no-triage-banner"
+              role="status"
+              className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200"
+            >
+              No triage project designated. Unresolvable issues will route to the sync-owner project until you designate one.
+            </div>
+          )}
 
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading projects...</div>
@@ -369,6 +567,152 @@ export function ProjectManagerModal({
                               }`} />
                             </button>
                             <label className="text-xs text-muted-foreground">Enable Two-Way Sync</label>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
+                            <button
+                              type="button"
+                              data-testid="is-repo-sync-owner-toggle"
+                              onClick={() => {
+                                if (!areaRoutingFlagOn) return
+                                setEditForm(prev => ({ ...prev, is_repo_sync_owner: !prev.is_repo_sync_owner }))
+                              }}
+                              disabled={!areaRoutingFlagOn}
+                              aria-disabled={!areaRoutingFlagOn ? 'true' : undefined}
+                              title={!areaRoutingFlagOn ? FLAG_OFF_TOOLTIP : undefined}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                !areaRoutingFlagOn ? 'opacity-50 cursor-not-allowed bg-muted-foreground/30' :
+                                editForm.is_repo_sync_owner ? 'bg-primary' : 'bg-muted-foreground/30'
+                              }`}
+                              aria-label="Toggle repo sync owner"
+                            >
+                              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                editForm.is_repo_sync_owner ? 'translate-x-4' : 'translate-x-0.5'
+                              }`} />
+                            </button>
+                            <label className="text-xs text-muted-foreground">Repo Sync Owner (one per repo per workspace)</label>
+                          </div>
+                          {ownerConflict && ownerConflict.projectId === project.id && (
+                            <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                              <div className="font-medium">Sync owner conflict</div>
+                              <div className="mt-0.5">
+                                Project <code className="font-mono">{ownerConflict.existingProjectSlug}</code>{' '}
+                                (id={ownerConflict.existingProjectId}) currently owns this repo.{' '}
+                                {ownerConflict.message}
+                              </div>
+                              <div className="mt-2 flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  data-testid="transfer-ownership-button"
+                                  onClick={async () => {
+                                    // FR-037 / FR-058 — atomic transfer.
+                                    // Re-submit the same is_repo_sync_owner=true
+                                    // request with `transfer_owner: true`. The
+                                    // server clears the existing owner and sets
+                                    // the new one in a single transaction; the
+                                    // 409 surface goes away on success.
+                                    const ok = await submitAreaRouting(project, {
+                                      is_repo_sync_owner: true,
+                                      transfer_owner: true,
+                                    })
+                                    if (ok) {
+                                      // Refresh the project list so the new
+                                      // owner state is visible. submitAreaRouting
+                                      // already cleared the conflict banners.
+                                      await load()
+                                      await onChanged?.()
+                                    }
+                                  }}
+                                  className="rounded border border-amber-400/50 bg-amber-500/20 px-2 py-1 font-medium text-amber-100 hover:bg-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                >
+                                  Transfer ownership
+                                </button>
+                                <span className="text-amber-300/70">
+                                  This clears <code className="font-mono">{ownerConflict.existingProjectSlug}</code>{' '}
+                                  as owner and sets this project instead.
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* SPEC-006 / FR-040, FR-040a — triage project + area_slug.
+                          Always rendered; FR-040a applies visible-but-disabled
+                          state when FEATURE_AREA_LABEL_ROUTING is OFF. */}
+                      {(
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              data-testid="is-triage-project-toggle"
+                              onClick={() => {
+                                if (!areaRoutingFlagOn) return
+                                setEditForm(prev => ({ ...prev, is_triage_project: !prev.is_triage_project }))
+                              }}
+                              disabled={!areaRoutingFlagOn}
+                              aria-disabled={!areaRoutingFlagOn ? 'true' : undefined}
+                              title={!areaRoutingFlagOn ? FLAG_OFF_TOOLTIP : undefined}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                !areaRoutingFlagOn ? 'opacity-50 cursor-not-allowed bg-muted-foreground/30' :
+                                editForm.is_triage_project ? 'bg-primary' : 'bg-muted-foreground/30'
+                              }`}
+                              aria-label="Toggle triage project"
+                            >
+                              <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+                                editForm.is_triage_project ? 'translate-x-4' : 'translate-x-0.5'
+                              }`} />
+                            </button>
+                            <label className="text-xs text-muted-foreground">
+                              Triage Project (one per workspace) — absorbs ambiguous issues
+                            </label>
+                          </div>
+                          {triageConflict && triageConflict.projectId === project.id && (
+                            <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                              <div className="font-medium">Triage project conflict</div>
+                              <div className="mt-0.5">
+                                Project <code className="font-mono">{triageConflict.existingProjectSlug}</code>{' '}
+                                (id={triageConflict.existingProjectId}) is already the triage project.{' '}
+                                {triageConflict.message}
+                              </div>
+                            </div>
+                          )}
+                          <div className="mt-2">
+                            <label className="block text-xs text-muted-foreground mb-1">
+                              Area slug (FR-034) — `area:&lt;slug&gt;` GitHub label routes to this project
+                            </label>
+                            <input
+                              type="text"
+                              data-testid="area-slug-input"
+                              value={editForm.area_slug}
+                              onChange={(e) => {
+                                if (!areaRoutingFlagOn) return
+                                setEditForm(prev => ({ ...prev, area_slug: e.target.value }))
+                              }}
+                              disabled={!areaRoutingFlagOn}
+                              aria-disabled={!areaRoutingFlagOn ? 'true' : undefined}
+                              title={!areaRoutingFlagOn ? FLAG_OFF_TOOLTIP : undefined}
+                              placeholder="qa, dev, infra, frontend (lowercase; 1-32 chars; RFC 1123)"
+                              className={`w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm font-mono ${
+                                !areaRoutingFlagOn ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
+                            />
+                            {editForm.area_slug.length > 0 && !AREA_SLUG_REGEX.test(editForm.area_slug) && (
+                              <div className="mt-1 text-xs text-red-400">
+                                Invalid format. Use lowercase alphanumeric with optional hyphens
+                                (RFC 1123, 1-32 chars). Examples: <code className="font-mono">qa</code>,
+                                <code className="font-mono">product-line-a</code>.
+                              </div>
+                            )}
+                            {areaSlugConflict && areaSlugConflict.projectId === project.id && (
+                              <div className="mt-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+                                <div className="font-medium">Area slug conflict</div>
+                                <div className="mt-0.5">
+                                  Project <code className="font-mono">{areaSlugConflict.existingProjectSlug}</code>{' '}
+                                  (id={areaSlugConflict.existingProjectId}) already uses this slug.{' '}
+                                  {areaSlugConflict.message}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

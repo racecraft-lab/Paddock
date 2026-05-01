@@ -1701,6 +1701,97 @@ const migrations: Migration[] = [
         WHERE parent_task_id IS NOT NULL
       `)
     }
+  },
+  {
+    // SPEC-006 - Area-Label GitHub Sync
+    //
+    // Migration ID rebased from M62 to M63 per docs/migrations/migration-id-reservations.md
+    // first-to-merge-keeps-M62 rule. SPEC-004 (PR #22) shipped M62 first.
+    //
+    // Additive schema delta. All four new columns are NULLABLE per FR-003 /
+    // Constitution Article VII. Four indexes - one non-unique covering index
+    // and three partial indexes (two partial UNIQUE for owner / triage
+    // singletons, one partial covering for backfill scan acceleration).
+    //
+    // After columns + indexes land, a deterministic owner-election UPDATE
+    // assigns is_repo_sync_owner=1 to MIN(projects.id) per
+    // (workspace_id, github_repo) group with at least one
+    // github_sync_enabled=1 project. Disabled-only groups elect zero owners
+    // (FR-005). Re-running the migration is a no-op (idempotent).
+    id: '063_area_label_routing_sync_owner_triage',
+    up(db: Database.Database) {
+      // Defensive guard for minimal-fixture tests (matches the M62 pattern):
+      // if `projects` and `tasks` haven't been seeded by the prior migrations,
+      // record M63 as applied without doing column work. Production runs
+      // migrations from scratch so both tables always exist by this point.
+      if (!tableExists(db, 'projects') || !tableExists(db, 'tasks')) return
+      addColumnIfMissing(db, 'projects', 'area_slug', 'area_slug TEXT')
+      addColumnIfMissing(db, 'projects', 'is_triage_project', 'is_triage_project INTEGER DEFAULT 0')
+      addColumnIfMissing(db, 'projects', 'is_repo_sync_owner', 'is_repo_sync_owner INTEGER DEFAULT 0')
+      addColumnIfMissing(db, 'tasks', 'area_routing_backfilled_at', 'area_routing_backfilled_at INTEGER')
+
+      // Non-unique covering index for area_slug routing lookups
+      // (SELECT id, area_slug, is_triage_project FROM projects WHERE workspace_id=?).
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_projects_workspace_area_slug
+        ON projects(workspace_id, area_slug)
+      `)
+
+      // Partial UNIQUE - at most one sync-owner per (workspace_id, github_repo).
+      // Allows zero owners (group with no enabled projects, or pre-election state).
+      // The `github_repo IS NOT NULL` clause is required because UNIQUE indexes
+      // treat NULL as distinct in SQLite, so without it multiple
+      // is_repo_sync_owner=1 rows with NULL github_repo would coexist and the
+      // invariant would be unenforced for unconnected projects.
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_one_sync_owner_per_repo
+        ON projects(workspace_id, github_repo)
+        WHERE is_repo_sync_owner = 1 AND github_repo IS NOT NULL
+      `)
+
+      // Partial UNIQUE - at most one triage project per workspace.
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_projects_one_triage_per_workspace
+        ON projects(workspace_id)
+        WHERE is_triage_project = 1
+      `)
+
+      // Partial covering index for backfill scan resumability - scans only
+      // tasks with a github_issue_number that have not yet been backfilled.
+      // Resume after interruption is O(remaining tasks), not O(all tasks).
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_tasks_area_routing_backfill_pending
+        ON tasks(workspace_id, github_issue_number)
+        WHERE github_issue_number IS NOT NULL AND area_routing_backfilled_at IS NULL
+      `)
+
+      // Deterministic owner election (FR-005, FR-007).
+      //
+      // For each (workspace_id, github_repo) group with NO existing owner
+      // AND at least one github_sync_enabled=1 project, elect MIN(id) of the
+      // enabled subset. Re-running this UPDATE is a no-op for already-elected
+      // groups (the HAVING clause filters them out). Disabled-only groups
+      // elect zero owners.
+      //
+      // `COALESCE(SUM(...), 0)` defends against rows where is_repo_sync_owner
+      // is NULL: SUM over an all-NULL group returns NULL, which would make
+      // the predicate `NULL = 0` (i.e., NULL/false) and skip a group that
+      // SHOULD be eligible for election. Explicit DEFAULT 0 + the backfill
+      // make this redundant in practice, but the COALESCE keeps the
+      // behavior correct under any future schema/state where the column is
+      // truly NULL.
+      db.exec(`
+        UPDATE projects
+        SET is_repo_sync_owner = 1
+        WHERE id IN (
+          SELECT MIN(p.id) FROM projects p
+          WHERE p.github_repo IS NOT NULL
+            AND p.github_sync_enabled = 1
+          GROUP BY p.workspace_id, p.github_repo
+          HAVING COALESCE(SUM(p.is_repo_sync_owner), 0) = 0
+        )
+      `)
+    }
   }
 ]
 
