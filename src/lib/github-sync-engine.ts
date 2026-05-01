@@ -30,6 +30,8 @@ import {
   type TaskPriority,
 } from '@/lib/github-label-map'
 import { createTask } from '@/lib/task-create'
+import { eventBus } from '@/lib/event-bus'
+import { config } from '@/lib/config'
 import type Database from 'better-sqlite3'
 
 // ── SPEC-006 / FR-027b — error classification + sanitization ─────────
@@ -581,7 +583,17 @@ export async function pullFromGitHub(
         // owns ticket allocation, idempotent dedup (returns
         // `duplicate: true` instead of inserting a second row), and the
         // standard `task_created` activity row.
+        // Pass `db` and `runtime` explicitly so createTask does not bypass
+        // the test's `vi.mock('@/lib/db')` via runtimeRequire and so its
+        // event-bus / gnap helpers resolve through static ESM imports
+        // (which vitest's mock system DOES intercept), not Node's CJS
+        // createRequire (which it does not).
         const createResult = createTask({
+          db,
+          runtime: {
+            broadcast: (type, data) => eventBus.broadcast(type as Parameters<typeof eventBus.broadcast>[0], data),
+            gnap: config.gnap,
+          },
           source: 'github_sync',
           title: issue.title,
           description: issue.body || '',

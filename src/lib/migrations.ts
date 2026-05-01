@@ -1720,6 +1720,11 @@ const migrations: Migration[] = [
     // (FR-005). Re-running the migration is a no-op (idempotent).
     id: '063_area_label_routing_sync_owner_triage',
     up(db: Database.Database) {
+      // Defensive guard for minimal-fixture tests (matches the M62 pattern):
+      // if `projects` and `tasks` haven't been seeded by the prior migrations,
+      // record M63 as applied without doing column work. Production runs
+      // migrations from scratch so both tables always exist by this point.
+      if (!tableExists(db, 'projects') || !tableExists(db, 'tasks')) return
       addColumnIfMissing(db, 'projects', 'area_slug', 'area_slug TEXT')
       addColumnIfMissing(db, 'projects', 'is_triage_project', 'is_triage_project INTEGER DEFAULT 0')
       addColumnIfMissing(db, 'projects', 'is_repo_sync_owner', 'is_repo_sync_owner INTEGER DEFAULT 0')

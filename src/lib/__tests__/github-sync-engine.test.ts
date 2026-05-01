@@ -64,6 +64,19 @@ vi.mock('@/lib/logger', () => ({
   },
 }))
 
+// SPEC-004's `createTask` (used by github-sync-engine.ts via createTask after
+// the SPEC-006 / SPEC-004 merge) does `runtimeRequire('./event-bus')` and
+// `runtimeRequire('./config')` inside its broadcast/outbound-sync helpers.
+// These CJS requires aren't intercepted by Vite's ESM mocks unless we provide
+// stubbed module versions here.
+vi.mock('@/lib/event-bus', () => ({
+  eventBus: { broadcast: vi.fn() },
+}))
+
+vi.mock('@/lib/config', () => ({
+  config: { gnap: { enabled: false, autoSync: false, repoPath: '' } },
+}))
+
 import { runMigrations } from '../migrations'
 import {
   pullFromGitHub,
