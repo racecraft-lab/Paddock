@@ -73,7 +73,7 @@ None. The scoped e2e helper repair follows the already-specified Product Line wo
 
 Completion rate: 88/88 tasks, 100%.
 
-Spec adherence: 100%. No generated task remains open, and no acceptance criterion is intentionally deferred inside SPEC-004. The branch remains pending PR review/merge before roadmap status can move from In Progress to Complete.
+Spec adherence: 100%. No generated task remains open, and no acceptance criterion is intentionally deferred inside SPEC-004. PR #22 review remediation, GitHub checks, and Argos visual approvals are complete, so roadmap and PRD context now mark SPEC-004 complete for merge.
 
 ## Lessons Learned and Recommendations
 

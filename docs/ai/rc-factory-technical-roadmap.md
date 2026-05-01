@@ -82,7 +82,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-002 | 1 | Product-Line Switcher and activeWorkspace Scoping | product-line-switcher | Complete | P1 | SPEC-001 | SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009 | Phase 1 |
 | SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | Complete | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
 | SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
-| SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | In Progress | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
+| SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
 | SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Pending | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Pending | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Pending | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, and SPEC-003 are complete on `main`. SPEC-004 implementation and local verification are complete on branch `004-task-pipeline-engine` and remain pending PR review/merge; SPEC-006 remains an independent P1 alternate after Phase 1A, but it does not unblock SPEC-005, SPEC-007, or SPEC-008.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, and SPEC-004 are complete in the active roadmap context. SPEC-004 is complete on PR #22 with review remediation, CI, and Argos evidence green; SPEC-005, SPEC-007, SPEC-008, and SPEC-009 remain gated on PR #22 merging to `main`. SPEC-006 remains an independent P1 alternate after Phase 1A, but it does not unblock SPEC-005, SPEC-007, or SPEC-008.
 
 ## Feature Flag Resolution Policy
 
@@ -192,8 +192,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-004: Task Pipeline Engine and Declarative Routing
 
-- **Status:** In Progress
-- **Branch status:** Implementation and local verification completed on branch `004-task-pipeline-engine` on 2026-05-01; pending PR review/merge before the status can move to Complete.
+- **Status:** Complete
+- **Branch status:** Implementation, local verification, PR review remediation, and GitHub/Argos checks completed on branch `004-task-pipeline-engine` for PR #22 on 2026-05-01; ready to merge to `main`.
 - **Priority:** P1
 - **Branch short name:** `task-pipeline-engine`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003
@@ -205,7 +205,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `src/lib/task-create.ts`, `src/lib/output-schema-validator.ts`, `src/lib/routing-rule-evaluator.ts`, `src/types/workflow-template.ts`, plus `src/lib/migrations.ts` and `docs/migrations/rollback-M62.sql` only for the SPEC-004 one-successor-per-parent index.
 - **Autopilot notes:** Do not introduce a `task_templates` SQL table. A task-chain template is a domain alias over `workflow_templates`. With the feature flag OFF or fields NULL, task completion must behave exactly as before. Phase 3 reads structured output from `tasks.resolution`; Phase 6 later upgrades artifact handoff. SPEC-004 is allowed one additive schema exception: a partial unique index on non-null `tasks.parent_task_id`, created only after a zero-duplicate preflight.
 - **Definition of done:** Phase 3 deliverables are implemented, P3 acceptance criteria pass for valid routing, missing/invalid output failure, fallback, termination, side-effect parity, DB-backed successor uniqueness, dependency pinning, validator constraints, rollback SQL, and repository documentation refresh.
-- **Implementation evidence:** Local G7/post gates passed on 2026-05-01 with all 88 generated tasks checked. Evidence includes the shared `createTask()` helper and migrated task-insert callsites, constrained output schema validation, safe routing evaluation, feature-flagged `advanceTaskChain`, explicit `retry_chain_advancement`, M62 successor uniqueness/rollback, workflow-template API/UI chain fields, SPEC-004 static guardrails, high-severity audit remediation, `pnpm spec004:guardrails`, strict-scope TypeScript, `pnpm typecheck`, `pnpm lint` with 0 errors / 10 pre-existing warnings, `pnpm test` passing 150 files / 1182 tests under `ulimit -n 8192`, `pnpm build` passing under `ulimit -n 8192`, `pnpm test:e2e` passing 532 tests under `ulimit -n 8192`, and `pnpm audit:high` reporting 0 high vulnerabilities.
+- **Implementation evidence:** Local G7/post gates passed on 2026-05-01 with all 88 generated tasks checked. Evidence includes the shared `createTask()` helper and migrated task-insert callsites, constrained output schema validation, safe routing evaluation, feature-flagged `advanceTaskChain`, explicit `retry_chain_advancement`, M62 successor uniqueness/rollback, workflow-template API/UI chain fields, SPEC-004 static guardrails, high-severity audit remediation, `pnpm spec004:guardrails`, strict-scope TypeScript, `pnpm typecheck`, `pnpm lint` with 0 errors / 10 pre-existing warnings, `pnpm test` passing 150 files / 1182 tests under `ulimit -n 8192`, `pnpm build` passing under `ulimit -n 8192`, `pnpm test:e2e` passing 532 tests under `ulimit -n 8192`, and `pnpm audit:high` reporting 0 high vulnerabilities. PR #22 review remediation is complete with zero unresolved review threads, and the latest GitHub checks are green: CodeQL, Quality Gate, Mission Control UI E2E, Argos Storybook, Argos Playwright, and Argos summary.
 
 ### SPEC-005: ready_for_owner State and Two-Step Terminal Event
 
