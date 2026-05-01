@@ -753,6 +753,7 @@ For each task, follow this cycle:
 - GitHub `quality-gate` initially failed API contract parity because SPEC-004 added `POST /api/tasks/{id}` for `retry_chain_advancement` without a matching OpenAPI path operation.
 - Added the `POST /api/tasks/{id}` OpenAPI operation with the retry request, bounded success response, and 409 retry-conflict response shape.
 - Re-run evidence: `pnpm api:parity` passed with 265 route operations, 256 OpenAPI operations, and 12 ignored entries.
+- GitHub CodeQL flagged the intentionally unsafe nested-quantifier test fixture as an inefficient regular expression; the fixture now builds the same schema pattern from string segments so validator coverage remains while avoiding a static executable vulnerable regex literal.
 
 ---
 

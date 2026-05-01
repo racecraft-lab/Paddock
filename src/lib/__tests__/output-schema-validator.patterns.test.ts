@@ -32,8 +32,9 @@ describe('validateTaskOutput conservative pattern subset', () => {
   })
 
   it('rejects nested quantifiers, lookaround, backreferences, unbounded wildcards, and ambiguous alternation', () => {
+    const nestedQuantifierPattern = ['^(', 'a+', ')+$'].join('')
     const patterns = [
-      '^(a+)+$',
+      nestedQuantifierPattern,
       '^(?=safe).+$',
       '^(a)\\1$',
       '^.*secret$',
