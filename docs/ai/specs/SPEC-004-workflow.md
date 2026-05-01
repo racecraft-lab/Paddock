@@ -748,6 +748,12 @@ For each task, follow this cycle:
 - Storybook screenshots now write to `screenshots/storybook`, and `pnpm test:visual:argos-metadata` reads that same isolated root so stale ignored screenshots from renamed stories cannot inflate the gate.
 - Re-run evidence: `pnpm test:visual:storybook` passed 12/12 stories, `pnpm test:visual:argos-metadata` verified 24 screenshot metadata files across 12 stories, focused Product Line + Feature Flag Admin Playwright passed 5/5, `pnpm test:e2e:argos-metadata` verified 11 screenshot metadata files across 5 Playwright tests, `pnpm test src/components/panels/orchestration-bar.test.tsx src/lib/__tests__/feature-flags.test.ts` passed 17/17, `pnpm typecheck` passed, and `pnpm lint` passed with 0 errors / 10 pre-existing warnings.
 
+### PR CI Remediation - 2026-05-01
+
+- GitHub `quality-gate` initially failed API contract parity because SPEC-004 added `POST /api/tasks/{id}` for `retry_chain_advancement` without a matching OpenAPI path operation.
+- Added the `POST /api/tasks/{id}` OpenAPI operation with the retry request, bounded success response, and 409 retry-conflict response shape.
+- Re-run evidence: `pnpm api:parity` passed with 265 route operations, 256 OpenAPI operations, and 12 ignored entries.
+
 ---
 
 ## Post-Implementation Checklist
