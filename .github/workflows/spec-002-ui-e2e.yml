@@ -98,9 +98,8 @@ jobs:
           ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ARGOS_UPLOAD_TO_ARGOS: '1'
-          SPEC002_ARGOS_SCREENSHOTS: '1'
-          SPEC002_ARGOS_TRACES: '1'
-          SPEC002_SCREENSHOTS: '1'
+          ARGOS_PLAYWRIGHT_SCREENSHOTS: '1'
+          ARGOS_PLAYWRIGHT_TRACES: '1'
         run: pnpm test:e2e:docker
 
       - name: Verify Argos test metadata
@@ -108,11 +107,11 @@ jobs:
         if: always()
         continue-on-error: true
         env:
-          SPEC002_ARGOS_EXPECTED_METADATA: '11'
-          SPEC002_ARGOS_EXPECTED_TESTS: '5'
-          SPEC002_ARGOS_REQUIRED_TEST_TAG: '@spec-002'
-          SPEC002_ARGOS_REQUIRED_SCREENSHOT_TAGS: 'spec-002'
-          SPEC002_ARGOS_REQUIRED_DOMAIN_COUNTS: 'product-line-switcher:9,feature-flag-admin:2'
+          ARGOS_PLAYWRIGHT_EXPECTED_METADATA: '11'
+          ARGOS_PLAYWRIGHT_EXPECTED_TESTS: '5'
+          ARGOS_PLAYWRIGHT_ALLOWED_TEST_TAGS: '@product-line-switcher,@feature-flag-admin'
+          ARGOS_PLAYWRIGHT_ALLOWED_SCREENSHOT_TAGS: 'product-line-switcher,feature-flag-admin'
+          ARGOS_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS: 'product-line-switcher:9,feature-flag-admin:2'
         run: pnpm test:e2e:argos-metadata
 
       - name: Upload Playwright artifacts
@@ -142,7 +141,7 @@ jobs:
               '',
               `Review screenshots and traces in the \`spec-002-ui-e2e-artifacts\` artifact: ${runUrl}`,
               '',
-              'Argos metadata gate: CI must find at least 11 Argos screenshot metadata files across 5 Playwright tests with the `@spec-002` test tag, including Product Line switcher and Feature Flag admin coverage, before this check can pass.',
+              'Argos metadata gate: CI must find at least 11 Argos screenshot metadata files across 5 Playwright tests with Product Line switcher and Feature Flag admin domain tags before this check can pass.',
               '',
               'Covered states: Facility task board, scope menu options, selected Product Line task board, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile scope menus, cross-tab Product Line sync, Feature Flags admin default state, and Feature Flags admin toggle-on state.'
             ].join('\n');

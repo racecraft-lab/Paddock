@@ -3,7 +3,7 @@ import { createArgosReporterOptions } from '@argos-ci/playwright/reporter'
 
 const uploadToArgos = process.env.ARGOS_UPLOAD_TO_ARGOS === '1'
   || (process.env.CI === 'true' && process.env.ARGOS_UPLOAD_TO_ARGOS !== '0')
-const recordArgosTraces = process.env.SPEC002_ARGOS_TRACES === '1'
+const recordArgosTraces = process.env.ARGOS_PLAYWRIGHT_TRACES === '1'
 
 export default defineConfig({
   testDir: 'tests',
@@ -21,7 +21,7 @@ export default defineConfig({
       '@argos-ci/playwright/reporter',
       createArgosReporterOptions({
         uploadToArgos,
-        buildName: 'spec-002-playwright',
+        buildName: process.env.ARGOS_PLAYWRIGHT_BUILD_NAME || 'mission-control-playwright',
       }),
     ],
   ],

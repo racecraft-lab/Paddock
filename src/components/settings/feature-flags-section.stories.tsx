@@ -45,7 +45,7 @@ function flagDefinition(key: string, overrides: Record<string, unknown> = {}) {
     description: key === 'FEATURE_WORKSPACE_SWITCHER'
       ? 'Header Product Line selector, activeWorkspace scope, REST/SSE scoping, and filtered panel behavior.'
       : 'Facility-wide Aegis resolution with legacy workspace-scoped fallback.',
-    spec: key === 'FEATURE_WORKSPACE_SWITCHER' ? 'SPEC-002' : 'SPEC-003',
+    spec: key === 'FEATURE_WORKSPACE_SWITCHER' ? 'Product Line switcher' : 'Global Aegis',
     phase: key === 'FEATURE_WORKSPACE_SWITCHER' ? 1 : 2,
     upstreamImpact: key === 'FEATURE_WORKSPACE_SWITCHER' ? 'upstream-safe' : 'upstream-divergent',
     activationScope: key === 'FEATURE_WORKSPACE_SWITCHER' ? 'authWorkspace' : 'productLineWorkspace',
@@ -62,7 +62,7 @@ function flagDefinition(key: string, overrides: Record<string, unknown> = {}) {
         ? ['tests/feature-flags-admin-ui.spec.ts']
         : [],
       argos: key === 'FEATURE_WORKSPACE_SWITCHER'
-        ? ['spec-002-playwright', 'spec-002-storybook']
+        ? ['mission-control-playwright', 'mission-control-storybook']
         : [],
       storybook: key === 'FEATURE_WORKSPACE_SWITCHER'
         ? ['src/components/settings/feature-flags-section.stories.tsx']
@@ -86,7 +86,7 @@ function featureFlagPayload(workspaceSwitcherEnabled: boolean) {
         env_value: null,
         can_update: true,
         enable_blockers: [],
-        warnings: ['This flag controls the SPEC-002 Product Line switcher currently under review.'],
+        warnings: ['This flag controls the Product Line switcher currently under review.'],
         last_change: workspaceSwitcherEnabled
           ? {
               actor: 'testadmin',
@@ -179,9 +179,9 @@ function FeatureFlagAdminSurface() {
 }
 
 const meta = {
-  title: 'SPEC-002/Feature Flag Admin',
+  title: 'Platform/Feature Flag Admin',
   component: FeatureFlagAdminSurface,
-  tags: ['spec-002', 'visual', 'feature-flag-admin'],
+  tags: ['visual', 'feature-flag-admin'],
   loaders: [
     async ({ args }) => {
       installFeatureFlagFetchMock((args as FeatureFlagAdminStoryArgs).scenario)

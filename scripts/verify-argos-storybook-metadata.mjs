@@ -3,14 +3,27 @@
 import { access, readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
 
-const root = process.argv[2] || path.join(process.cwd(), 'screenshots')
-const expectedMetadata = Number.parseInt(process.env.SPEC002_ARGOS_STORYBOOK_EXPECTED_METADATA || '18', 10)
-const expectedStories = Number.parseInt(process.env.SPEC002_ARGOS_STORYBOOK_EXPECTED_STORIES || '10', 10)
-const requiredStoryTags = (process.env.SPEC002_ARGOS_STORYBOOK_REQUIRED_TAGS || 'spec-002,visual')
+const root = process.argv[2] ||
+  process.env.ARGOS_STORYBOOK_SCREENSHOT_DIR ||
+  path.join(process.cwd(), 'screenshots', 'storybook')
+const expectedMetadata = Number.parseInt(
+  process.env.ARGOS_STORYBOOK_EXPECTED_METADATA ||
+  '22',
+  10
+)
+const expectedStories = Number.parseInt(
+  process.env.ARGOS_STORYBOOK_EXPECTED_STORIES ||
+  '12',
+  10
+)
+const requiredStoryTags = (process.env.ARGOS_STORYBOOK_REQUIRED_TAGS || 'visual')
   .split(',')
   .map((tag) => tag.trim())
   .filter(Boolean)
-const requiredDomainStoryCounts = (process.env.SPEC002_ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS || 'product-line-switcher:8,feature-flag-admin:2')
+const requiredDomainStoryCounts = (
+  process.env.ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS ||
+  'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2'
+)
   .split(',')
   .map((entry) => entry.trim())
   .filter(Boolean)
@@ -56,8 +69,8 @@ function validateMetadata(metadata, filePath) {
   if (metadata.automationLibrary?.name !== '@storybook/addon-vitest') {
     failures.push('metadata was not generated from @storybook/addon-vitest')
   }
-  if (typeof metadata.story?.id !== 'string' || !metadata.story.id.startsWith('spec-002-')) {
-    failures.push('missing SPEC-002 story id')
+  if (typeof metadata.story?.id !== 'string') {
+    failures.push('missing Storybook story id')
   }
   for (const tag of requiredStoryTags) {
     if (!Array.isArray(metadata.story?.tags) || !metadata.story.tags.includes(tag)) {

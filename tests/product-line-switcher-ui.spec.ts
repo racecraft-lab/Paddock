@@ -14,6 +14,8 @@ const SWITCHER_NAME = /change facility or product line scope/i
 const LISTBOX_NAME = /facility and product line scopes/i
 const ARGOS_SCREENSHOT_TAGS = ['spec-002', 'product-line-switcher']
 const ARGOS_TEST_TAGS = ['@spec-002', '@product-line-switcher']
+const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1' || process.env.SPEC002_SCREENSHOTS === '1'
+const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1' || process.env.SPEC002_ARGOS_SCREENSHOTS === '1'
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -22,8 +24,10 @@ function escapeRegExp(input: string) {
 async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: string) {
   const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
 
-  if (process.env.SPEC002_SCREENSHOTS === '1') {
-    const dir = process.env.SPEC002_SCREENSHOT_DIR || path.join(process.cwd(), 'test-results', 'spec-002-screenshots')
+  if (REVIEW_SCREENSHOTS_ENABLED) {
+    const dir = process.env.MC_E2E_SCREENSHOT_DIR ||
+      process.env.SPEC002_SCREENSHOT_DIR ||
+      path.join(process.cwd(), 'test-results', 'spec-002-screenshots')
     const screenshotPath = path.join(dir, `${normalizedName}.png`)
     await fs.mkdir(dir, { recursive: true })
     await page.screenshot({ path: screenshotPath, fullPage: true })
@@ -33,7 +37,7 @@ async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: stri
     })
   }
 
-  if (process.env.SPEC002_ARGOS_SCREENSHOTS === '1') {
+  if (ARGOS_SCREENSHOTS_ENABLED) {
     await argosScreenshot(page, `spec-002-${normalizedName}`, {
       fullPage: true,
       tag: ARGOS_SCREENSHOT_TAGS,

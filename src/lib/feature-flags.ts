@@ -119,7 +119,7 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
         'src/components/layout/spec-002-visual.stories.tsx',
         'src/components/settings/feature-flags-section.stories.tsx',
       ],
-      argos: ['spec-002-storybook', 'spec-002-playwright'],
+      argos: ['mission-control-storybook', 'mission-control-playwright'],
     },
   },
   FEATURE_GLOBAL_AEGIS: {

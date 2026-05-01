@@ -25,9 +25,9 @@ const SPEC002_PRODUCT_LINE_VISUAL = {
   betaTask: 'SPEC-002 Beta Task',
 } as const
 
-export const SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE = {
-  name: 'SPEC-002 Flag Admin',
-  slug: 'spec-002-flag-admin-visual',
+export const FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE = {
+  name: 'Feature Flag Admin',
+  slug: 'feature-flag-admin-visual',
 } as const
 
 function getE2EDbPath() {
@@ -202,11 +202,11 @@ export function resetSpec002ProductLineVisualFixtures() {
   }
 }
 
-export function resetSpec002FlagAdminVisualFixture() {
+export function resetFeatureFlagAdminVisualFixture() {
   const db = new Database(getE2EDbPath())
   try {
     db.transaction(() => {
-      const workspaceIds = selectIdsWhereIn(db, 'workspaces', 'slug', [SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE.slug])
+      const workspaceIds = selectIdsWhereIn(db, 'workspaces', 'slug', [FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE.slug])
       deleteWhereIn(db, 'activities', 'workspace_id', workspaceIds)
       deleteWhereIn(db, 'workspaces', 'id', workspaceIds)
     })()

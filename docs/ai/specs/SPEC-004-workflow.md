@@ -716,6 +716,7 @@ For each task, follow this cycle:
 - `pnpm build`: passed with the normal Turbopack production build under `ulimit -n 8192`; the attempted mocked-font variant was discarded because the mock path breaks Turbopack's internal Google font CSS module resolver.
 - Focused Playwright regression/e2e suite passed 25/25 after aligning legacy `/api/workflows` e2e helpers with the Product Line scoped contract introduced by SPEC-004.
 - `pnpm test:e2e`: passed with 532/532 Playwright tests under `ulimit -n 8192`.
+- Storybook/Argos coverage for the new Orchestration Bar task-pipeline UI was added in `src/components/panels/orchestration-bar.spec-004.stories.tsx`; `pnpm test:visual:storybook` passed 12/12 stories and `pnpm test:visual:argos-metadata` verified 24 screenshot metadata files across 12 stories from the isolated `screenshots/storybook` root, including 2 SPEC-004 task-pipeline workflow stories.
 - `pnpm audit:high`: passed after audit remediation and network approval; npm reported 11 remaining vulnerabilities, all low/moderate, with 0 high.
 
 ### T088 Commit Evidence - 2026-05-01
@@ -738,6 +739,14 @@ For each task, follow this cycle:
 - `.specify/extensions/doctor/scripts/bash/doctor.sh` now checks `.specify/templates`, `.specify/memory`, `.specify/memory/constitution.md`, `.specify/scripts/bash`, and `.specify/extensions` instead of stale root-level SpecKit paths.
 - AI agent detection now reports an agent only when the actual command directory exists, removing false warnings caused by unrelated `.github/` and `.agents/` directories.
 - Re-run evidence: `ulimit -n 8192; bash .specify/extensions/doctor/scripts/bash/doctor.sh` exited 0 and printed "All checks passed — project looks healthy!"
+
+### Storybook/Argos Remediation - 2026-05-01
+
+- Added `src/components/panels/orchestration-bar.spec-004.stories.tsx` with Argos-backed stories for editing workflow chain fields and the routing-without-output-schema validation error state.
+- Generalized `scripts/verify-argos-storybook-metadata.mjs`, `.github/workflows/argos-storybook.yml`, `vitest.storybook.config.ts`, Playwright Argos build names, shared screenshot envs, and `scripts/verify-argos-test-metadata.mjs` so visual coverage uses `mission-control-*` labels and domain tags instead of generic `spec-002-*` harness names.
+- Feature Flag Admin Storybook and Playwright coverage now use platform/domain labels; the Feature Flags component/story/e2e surface no longer renders or fixtures SPEC-002 as UI copy. Remaining SPEC-002 hits from the deep scan are limited to SPEC-002 Product Line switcher-owned fixtures/tests, the SPEC-002 workflow wrapper, the product-line-switcher story path, and feature-registry ownership metadata.
+- Storybook screenshots now write to `screenshots/storybook`, and `pnpm test:visual:argos-metadata` reads that same isolated root so stale ignored screenshots from renamed stories cannot inflate the gate.
+- Re-run evidence: `pnpm test:visual:storybook` passed 12/12 stories, `pnpm test:visual:argos-metadata` verified 24 screenshot metadata files across 12 stories, focused Product Line + Feature Flag Admin Playwright passed 5/5, `pnpm test:e2e:argos-metadata` verified 11 screenshot metadata files across 5 Playwright tests, `pnpm test src/components/panels/orchestration-bar.test.tsx src/lib/__tests__/feature-flags.test.ts` passed 17/17, `pnpm typecheck` passed, and `pnpm lint` passed with 0 errors / 10 pre-existing warnings.
 
 ---
 
@@ -766,6 +775,7 @@ For each task, follow this cycle:
 - [x] `pnpm test` passes or any environment failure is documented with evidence.
 - [x] `pnpm build` passes or any environment failure is documented with evidence.
 - [x] Real running-app Playwright verification for P3-AC12 passes.
+- [x] Storybook/Argos coverage exists for new SPEC-004 Orchestration Bar UI states.
 - [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-004 implementation evidence after verification.
 - [x] `docs/rc-factory-v1-prd.md` reflects SPEC-004 completion after verification.
 - [x] Branch is pushed for review.

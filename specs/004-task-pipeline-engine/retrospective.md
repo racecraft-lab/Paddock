@@ -35,7 +35,7 @@ None.
 
 ## Success Criteria Assessment
 
-All generated tasks are checked complete in `tasks.md`. Final local gates passed: `pnpm spec004:guardrails`, strict-scope TypeScript, `pnpm typecheck`, `pnpm lint`, `pnpm test` with 150 files / 1182 tests, `pnpm build`, focused Playwright 25/25, full `pnpm test:e2e` with 532/532 tests, and `pnpm audit:high` with 0 high vulnerabilities.
+All generated tasks are checked complete in `tasks.md`. Final local gates passed: `pnpm spec004:guardrails`, strict-scope TypeScript, `pnpm typecheck`, `pnpm lint`, `pnpm test` with 150 files / 1182 tests, `pnpm build`, focused Playwright 25/25, full `pnpm test:e2e` with 532/532 tests, SPEC-004 Storybook/Argos coverage for the workflow-template UI, and `pnpm audit:high` with 0 high vulnerabilities.
 
 ## Architecture Drift Table
 
@@ -80,6 +80,7 @@ Spec adherence: 100%. No generated task remains open, and no acceptance criterio
 - Keep long-running autopilot post gates on the higher file-descriptor limit when local exec has previously hit EMFILE.
 - Treat extension doctor failures as actionable after comparing them to canonical prerequisite scripts; stale extension root assumptions should be fixed in the doctor check rather than carried as permanent workflow exceptions.
 - Product Line scoped e2e helpers should become the default for APIs that can operate in Facility aggregate or Product Line scope.
+- Shared visual harness labels should stay platform/domain scoped; spec-specific labels belong only in spec-owned tests, fixtures, or traceability metadata.
 
 ## File Traceability Appendix
 
@@ -89,6 +90,7 @@ Spec adherence: 100%. No generated task remains open, and no acceptance criterio
 - Roadmap evidence: `docs/ai/rc-factory-technical-roadmap.md`
 - PRD status note: `docs/rc-factory-v1-prd.md`
 - E2E compatibility repairs: `tests/helpers.ts`, `tests/workflows-crud.spec.ts`, `tests/injection-guard-endpoints.spec.ts`, `tests/delete-body.spec.ts`
+- Visual coverage: `src/components/panels/orchestration-bar.spec-004.stories.tsx`, `scripts/verify-argos-storybook-metadata.mjs`, `.github/workflows/argos-storybook.yml`
 
 ## Self-Assessment Checklist
 

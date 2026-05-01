@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-05-01T20:49:49Z",
+  "updated_at": "2026-05-01T21:21:05Z",
   "active_step": "Complete",
   "status": "SPEC-004 implementation, higher-ulimit post-verification, PR creation, and immediate review-thread check are complete",
   "notes": [
@@ -73,7 +73,9 @@
     "Post higher-ulimit verification completed on 2026-05-01T20:42:31Z: `pnpm spec004:guardrails`, strict TypeScript, `pnpm typecheck`, `pnpm lint`, `pnpm test` (150 files/1182 tests), `pnpm build`, focused Playwright (25/25), full `pnpm test:e2e` (532/532), and `pnpm audit:high` all passed under the approved execution surface with `ulimit -n 8192` where needed.",
     "Post task reconciliation and code review completed on 2026-05-01T20:42:31Z: all 88 generated tasks are checked complete, no task-referenced repository file is missing, and the final e2e compatibility delta is scoped to Product Line workflow API test helpers.",
     "Post cleanup and retrospective completed on 2026-05-01T20:42:31Z: workflow evidence, roadmap evidence, PRD status note, and specs/004-task-pipeline-engine/retrospective.md were updated before PR creation.",
-    "PR creation and immediate review-remediation check completed on 2026-05-01T20:45:13Z: branch 004-task-pipeline-engine was pushed to origin, PR #22 opened at https://github.com/racecraft-lab/mission-control/pull/22, reviewThreads returned no nodes, and initial GitHub checks were pending."
+    "PR creation and immediate review-remediation check completed on 2026-05-01T20:45:13Z: branch 004-task-pipeline-engine was pushed to origin, PR #22 opened at https://github.com/racecraft-lab/mission-control/pull/22, reviewThreads returned no nodes, and initial GitHub checks were pending.",
+    "Post Storybook/Argos remediation completed on 2026-05-01T21:21:05Z: added SPEC-004 Orchestration Bar workflow-template stories with Argos screenshots, generalized shared Storybook/Playwright Argos build labels to mission-control names, moved Storybook screenshots to the isolated screenshots/storybook root, and removed generic spec-specific Storybook/Playwright harness hardcoding.",
+    "Deep scan evidence on 2026-05-01T21:21:05Z: no remaining deprecated SPEC-002 Storybook/Playwright build labels, legacy Storybook Argos env names, legacy Playwright trace env names, legacy Playwright metadata env names, or Storybook prefix allow-list env names outside ignored generated artifacts. Feature Flag Admin Storybook and Playwright labels are now platform/domain-scoped; remaining SPEC-002 hits are limited to SPEC-002 Product Line switcher-owned fixtures/tests, the SPEC-002 workflow wrapper, the SPEC-002 product-line visual story path, and feature-registry ownership metadata."
   ],
   "archive_sweep": {
     "installed_extension": "archive",

@@ -5,14 +5,16 @@ import { argosScreenshot } from '@argos-ci/playwright'
 import {
   API_KEY_HEADER,
   dismissOnboardingForE2E,
+  FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE,
   freezeSpec002VisualClock,
   loginAsE2EAdmin,
-  resetSpec002FlagAdminVisualFixture,
-  SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE,
+  resetFeatureFlagAdminVisualFixture,
 } from './helpers'
 
-const ARGOS_SCREENSHOT_TAGS = ['spec-002', 'feature-flag-admin']
-const ARGOS_TEST_TAGS = ['@spec-002', '@feature-flag-admin']
+const ARGOS_SCREENSHOT_TAGS = ['feature-flag-admin']
+const ARGOS_TEST_TAGS = ['@feature-flag-admin']
+const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1'
+const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1'
 
 interface SeededWorkspace {
   id: number
@@ -29,19 +31,20 @@ async function attachReviewScreenshot(
   const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
   const fullPage = options.fullPage ?? true
 
-  if (process.env.SPEC002_SCREENSHOTS === '1') {
-    const dir = process.env.SPEC002_SCREENSHOT_DIR || path.join(process.cwd(), 'test-results', 'spec-002-screenshots')
+  if (REVIEW_SCREENSHOTS_ENABLED) {
+    const dir = process.env.MC_E2E_SCREENSHOT_DIR ||
+      path.join(process.cwd(), 'test-results', 'feature-flag-admin-screenshots')
     const screenshotPath = path.join(dir, `${normalizedName}.png`)
     await fs.mkdir(dir, { recursive: true })
     await page.screenshot({ path: screenshotPath, fullPage })
-    await testInfo.attach(`spec-002-${name}`, {
+    await testInfo.attach(`feature-flag-admin-${name}`, {
       path: screenshotPath,
       contentType: 'image/png',
     })
   }
 
-  if (process.env.SPEC002_ARGOS_SCREENSHOTS === '1') {
-    await argosScreenshot(page, `spec-002-${normalizedName}`, {
+  if (ARGOS_SCREENSHOTS_ENABLED) {
+    await argosScreenshot(page, `feature-flag-admin-${normalizedName}`, {
       fullPage,
       tag: ARGOS_SCREENSHOT_TAGS,
     })
@@ -58,16 +61,16 @@ async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof l
   await dismissOnboardingForE2E(request, cookieHeader)
 }
 
-test.describe.serial('SPEC-002 Feature Flag admin UI journey', () => {
+test.describe.serial('Platform Feature Flag admin UI journey', () => {
   let workspace: SeededWorkspace
 
   test.beforeAll(async ({ request }) => {
-    resetSpec002FlagAdminVisualFixture()
+    resetFeatureFlagAdminVisualFixture()
     const res = await request.post('/api/workspaces', {
       headers: API_KEY_HEADER,
       data: {
-        name: SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE.name,
-        slug: SPEC002_FLAG_ADMIN_VISUAL_WORKSPACE.slug,
+        name: FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE.name,
+        slug: FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE.slug,
       },
     })
     const body = await res.json().catch(() => ({}))
