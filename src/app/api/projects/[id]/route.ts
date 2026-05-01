@@ -4,6 +4,7 @@ import { requireRole } from '@/lib/auth'
 import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { resolveFlag } from '@/lib/feature-flags'
+import { initializeLabels } from '@/lib/github-sync-engine'
 import {
   resolveWorkspaceScopeFromRequest,
   workspaceScopeError,
@@ -597,6 +598,59 @@ export async function PUT(
         }
         logger.error({ err: txErr, projectId, workspaceId }, 'PUT /api/projects/[id] transaction failed')
         return NextResponse.json({ error: 'Failed to update project' }, { status: 500 })
+      }
+
+      // ── FR-038 / FR-060 — Post-commit label provisioning trigger ────
+      //
+      // After the transaction commits successfully, fire `initializeLabels`
+      // once per owner-held repo in this workspace IFF the committed change
+      // mutated `area_slug` or `is_triage_project`. Owner-only transitions
+      // (including transfer_owner) MUST NOT trigger; idempotent writes
+      // already short-circuit upstream via the `anyChange` gate.
+      //
+      // Best-effort: any failure inside `initializeLabels` is swallowed so
+      // the PUT response is not aborted (FR-027 isolation).
+      if (areaSlugChanged || isTriageChanged) {
+        try {
+          const ownerRepos = db
+            .prepare(
+              `SELECT DISTINCT github_repo FROM projects
+               WHERE workspace_id = ?
+                 AND is_repo_sync_owner = 1
+                 AND github_repo IS NOT NULL`,
+            )
+            .all(workspaceId) as Array<{ github_repo: string }>
+          for (const row of ownerRepos) {
+            try {
+              await initializeLabels(row.github_repo, workspaceId, {
+                trigger: 'area_slug_change',
+              })
+            } catch (labelErr) {
+              logger.error(
+                {
+                  event: 'label_provisioning_failed',
+                  workspace_id: workspaceId,
+                  github_repo: row.github_repo,
+                  error_message:
+                    labelErr instanceof Error ? labelErr.message : String(labelErr),
+                  error_class: classifyError(labelErr),
+                  trigger: 'area_slug_change',
+                },
+                'PUT /api/projects/[id] post-commit initializeLabels failed (best-effort)',
+              )
+            }
+          }
+        } catch (selectErr) {
+          // Owner-repo SELECT failure must not abort the PUT response.
+          logger.error(
+            {
+              err: selectErr,
+              workspace_id: workspaceId,
+              event: 'post_put_owner_repo_lookup_failed',
+            },
+            'PUT /api/projects/[id] post-commit owner-repo lookup failed',
+          )
+        }
       }
     }
 

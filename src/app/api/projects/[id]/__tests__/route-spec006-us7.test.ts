@@ -197,7 +197,7 @@ async function runPut(body: Record<string, unknown>, projectId: number) {
 
 // ── T073 — TRIGGER cases ─────────────────────────────
 
-describe.skip('SPEC-006 / T073 — initializeLabels TRIGGERS on area_slug or is_triage_project change (FR-060) [DEFERRED — wire in follow-up commit]', () => {
+describe('SPEC-006 / T073 — initializeLabels TRIGGERS on area_slug or is_triage_project change (FR-060)', () => {
   it('area_slug NULL→value triggers', async () => {
     setupAuthOk(); setupScopeOk(1)
     const db = freshMigratedDb()
