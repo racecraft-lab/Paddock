@@ -239,9 +239,9 @@
 
 ## Phase 10: Polish & Cross-Cutting Concerns
 
-- [ ] T077 [P] Add `docs/github-sync.md` covering: connect/disconnect, label initialization (mc/priority/area), per-project polling vs. owner-based polling, inbound issue handling (dedupe, area routing, triage, no-thrash), outbound task push, sync owner election + transfer, triage project designation, `area_slug` configuration, auto-backfill on first flag-on, recovery procedures, and rollback. Per FR-045.
-- [ ] T078 [P] Update `docs/feature-flags-runbook.md` with the `FEATURE_AREA_LABEL_ROUTING` preflight checklist: verify ≥1 project has `area_slug` set, verify exactly one `is_repo_sync_owner=1` per `(workspace_id, github_repo)` group, verify a triage project is designated if expected. Per FR-046.
-- [ ] T079 [P] Update `docs/orchestration.md` with a pointer to `docs/github-sync.md` IFF the file currently has a project-routing section. Per FR-047.
+- [X] T077 [P] Add `docs/github-sync.md` covering: connect/disconnect, label initialization (mc/priority/area), per-project polling vs. owner-based polling, inbound issue handling (dedupe, area routing, triage, no-thrash), outbound task push, sync owner election + transfer, triage project designation, `area_slug` configuration, auto-backfill on first flag-on, recovery procedures, and rollback. Per FR-045.
+- [X] T078 [P] Update `docs/feature-flags-runbook.md` with the `FEATURE_AREA_LABEL_ROUTING` preflight checklist: verify ≥1 project has `area_slug` set, verify exactly one `is_repo_sync_owner=1` per `(workspace_id, github_repo)` group, verify a triage project is designated if expected. Per FR-046.
+- [X] T079 [P] Update `docs/orchestration.md` with a pointer to `docs/github-sync.md` IFF the file currently has a project-routing section. Per FR-047. (N/A — orchestration.md has no project-routing section; verified via grep)
 - [ ] T080 Run the strict-scope guardrail (T002) and assert empty output: `git diff origin/main...HEAD --name-only --diff-filter=A | grep -E '^src/.*\\.(ts|tsx)$'` returns empty; `find src -type f \\( -name 'github-area-routing*.ts' -o -name 'area-routing-admin-panel*.tsx' \\) | wc -l` returns `0`. Per plan §Strict Scope.
 - [ ] T081 Run `pnpm typecheck` and assert zero errors. Per Constitution Article IV.
 - [ ] T082 Run `pnpm lint` and assert zero errors.
