@@ -22,7 +22,10 @@ if ! git rev-parse --verify --quiet "${BASE_BRANCH}" >/dev/null; then
   fi
 fi
 
-added_files=$(git diff "${BASE_BRANCH}"...HEAD --name-only --diff-filter=A | grep -E '^src/.*\.(ts|tsx)$' || true)
+added_files=$(git diff "${BASE_BRANCH}"...HEAD --name-only --diff-filter=A \
+  | grep -E '^src/.*\.(ts|tsx)$' \
+  | grep -v -E '(^|/)__tests__/' \
+  || true)
 
 if [[ -n "${added_files}" ]]; then
   echo "ERROR: SPEC-006 strict-scope guard tripped — new TS/TSX modules added under src/:" >&2

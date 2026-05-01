@@ -27,9 +27,21 @@ import {
 } from '@/lib/github-label-map'
 
 /**
- * Idempotently create all MC labels on a GitHub repo.
+ * Idempotently create Mission Control labels on a GitHub repo.
+ *
+ * Signatures (FR-053, US1-AC3, P5-AC1):
+ *   - `initializeLabels(repo)` — legacy 1-arg call; creates ONLY the
+ *     mc:* status and priority:* labels.
+ *   - `initializeLabels(repo, workspaceId)` — 2-arg call. With
+ *     `FEATURE_AREA_LABEL_ROUTING` OFF for the workspace, behavior is
+ *     identical to the 1-arg call. The ON-branch behavior — provisioning
+ *     `area:*` labels via `areaLabelsForWorkspace` per FR-025 — is wired
+ *     in T074 (US7). For US1, the additional argument is accepted but
+ *     does NOT change the outbound label set; this preserves byte-identical
+ *     behavior under flag-OFF (US1-AC3) while letting downstream callers
+ *     start passing the workspace context.
  */
-export async function initializeLabels(repo: string): Promise<void> {
+export async function initializeLabels(repo: string, _workspaceId?: number): Promise<void> {
   await ensureLabels(repo, ALL_MC_LABELS)
   logger.info({ repo }, 'GitHub labels initialized')
 }
@@ -299,4 +311,44 @@ export function syncTaskOutbound(
   } catch (err) {
     logger.warn({ err, taskId: task.id }, 'GNAP sync failed')
   }
+}
+
+// ── SPEC-006 / FR-002 / FR-052: flag-gated area-routing activity helper ──────
+//
+// Single audited write site for `area_routing_resolved` and
+// `area_routing_unresolved` activities. Callers (inbound routing in
+// `pullFromGitHub`, backfill in `backfillAreaRouting`) MUST pass the workspace's
+// resolved `FEATURE_AREA_LABEL_ROUTING` flag value as the first argument; when
+// false, the helper is a deterministic no-op so flag-OFF parity is byte-exact
+// (FR-001/002). When true, the helper inserts one activity row using the
+// existing activities-table schema.
+export interface AreaRoutingActivityArgs {
+  type: 'area_routing_resolved' | 'area_routing_unresolved'
+  entityId: number
+  actor: string
+  description: string
+  data: Record<string, unknown>
+  workspaceId: number
+}
+
+export function writeAreaRoutingActivity(
+  flagOn: boolean,
+  args: AreaRoutingActivityArgs,
+): void {
+  if (!flagOn) {
+    // Flag-OFF parity: no activity write, no log, no side effects.
+    return
+  }
+  const db = getDatabase()
+  db.prepare(`
+    INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id)
+    VALUES (?, 'task', ?, ?, ?, ?, ?)
+  `).run(
+    args.type,
+    args.entityId,
+    args.actor,
+    args.description,
+    JSON.stringify(args.data),
+    args.workspaceId,
+  )
 }
