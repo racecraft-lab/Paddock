@@ -72,7 +72,30 @@ git show e161a70ed9d415afaec3d0c5fb6d7fb682e6d884:specs/002a-spec-archive-eviden
 
 ---
 
+## SPEC-003: Aegis Facility Singleton Refactor
+
+- **Feature**: RC Factory Phase 2 — feature-flagged global Aegis resolver
+- **Branch**: `003-global-aegis`
+- **Spec Path**: `specs/003-global-aegis/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/20
+- **Merge Commit**: `85d102f0e4941cc51d20534fa1d0fec787c8ad56`
+- **Tree Reference**: `git show 85d102f0e4941cc51d20534fa1d0fec787c8ad56:specs/003-global-aegis/spec.md`
+- **CI URL**: N/A (local verification — Vitest, Playwright, Argos metadata, typecheck, lint, build all green per retrospective)
+- **Argos URL**: N/A (resolver-only spec; no new UI journey, only display-state coverage on existing surfaces)
+- **Task Completion**: 21/21
+- **Summary**: Introduced `src/lib/aegis.ts` exporting `getAegis(db, workspace_id?)` as the single Aegis lookup path. Routed `FEATURE_GLOBAL_AEGIS` through `resolveFlag(name, ctx)` evaluated against the requested-task/review workspace context. Flag OFF preserves workspace-first/global-fallback compatibility; flag ON prefers the global singleton with workspace fallback. Lowest-id tie breaking, no `agents.status` filtering. Idempotent `aegis_local_shadowed` activity row written once per `(workspace_id, global_agent_id, local_agent_id)` tuple under flag ON. Refactored `runAegisReviews` and `resolveGatewayAgentIdForReviewAgent` to source the reviewer through `getAegis` while preserving task selection, retry, dispatch, quality-review, activity, and `review/quality_review/assigned/failed/done` transition semantics. Removed `aegisAgentByWorkspace` map. Preserved `quality_reviews.reviewer='aegis'` as the live gate signal — no `quality_reviews.agent_id` introduced. Gateway fallback to agent id/name `aegis` retained when no DB-backed row exists. Strict scope: `src/lib/aegis.ts` added to `tsconfig.spec-strict.json` and `eslint.config.mjs`. No schema migrations.
+
+**Recovery Commands**:
+```text
+git show 85d102f0e4941cc51d20534fa1d0fec787c8ad56:specs/003-global-aegis/spec.md
+git show 85d102f0e4941cc51d20534fa1d0fec787c8ad56:specs/003-global-aegis/plan.md
+git show 85d102f0e4941cc51d20534fa1d0fec787c8ad56:specs/003-global-aegis/tasks.md
+```
+
+---
+
 <!-- Archive Sweep metadata -->
-<!-- archiveMode: sweep | dryRun: false | applyCleanupRequested: false | safeToApplyCleanup: false -->
-<!-- Branch: 003-global-aegis (feature branch — cleanup deferred to main) -->
-<!-- Sweep run: 2026-04-28 | archiveExtension: 1.1.0 | excludedCurrentSpec: specs/003-global-aegis -->
+<!-- archiveMode: sweep | dryRun: false | applyCleanupRequested: true | safeToApplyCleanup: true -->
+<!-- Branch: 006-area-label-github-sync (feature branch — cleanup applies per SPEC-002A policy) -->
+<!-- Sweep run: 2026-05-01 | archiveExtension: 1.1.0 | excludedCurrentSpec: specs/006-area-label-github-sync -->
+<!-- Backfill note: SPEC-006 autopilot Step -1 silently no-op'd because /speckit.archive.run was not wired into .claude/commands/. Wiring fixed and sweep re-run manually 2026-05-01 to backfill SPEC-003. -->

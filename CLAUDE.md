@@ -132,6 +132,9 @@ Added `FEATURE_WORKSPACE_SWITCHER`-gated workspace switcher. New production modu
 ### SPEC-002A — Spec Archive and Evidence Retention (PRs #18 #19, merged 2026-04-28)
 Established archive evidence policy (provenance-first, no committed screenshots by default). Installed `racecraft-lab/spec-kit-archive` v1.1.0 at `.specify/extensions/archive/`. Archive Sweep lifecycle defined: autopilot pre-flight, feature-branch applies cleanup, main/protected branches dry-run only, unsafe/dirty worktrees stop. Released `speckit-pro` 1.9.1 with corrected Archive Sweep behavior. Recovery commands use `git show <merge-sha>:specs/<feature>/spec.md` (47/47 tasks complete).
 
+### SPEC-003 — Aegis Facility Singleton Refactor (PR #20, merged 2026-04-30)
+Introduced `src/lib/aegis.ts` exporting `getAegis(db, workspace_id?)` as the single Aegis lookup path. `FEATURE_GLOBAL_AEGIS` routed through `resolveFlag(name, ctx)` against requested-task/review workspace context. Flag OFF preserves workspace-first/global-fallback compatibility; flag ON prefers the global singleton (`agents.scope='global'` + `LOWER(name)='aegis'`). Lowest-id tie breaking; no `agents.status` filtering. Idempotent `aegis_local_shadowed` activity row written once per `(workspace_id, global_agent_id, local_agent_id)` tuple. `runAegisReviews` and `resolveGatewayAgentIdForReviewAgent` source the reviewer through `getAegis` while preserving task selection, retry, dispatch, quality-review, activity, and status-transition semantics. Removed `aegisAgentByWorkspace` map. Preserved `quality_reviews.reviewer='aegis'` as the live gate signal — no `quality_reviews.agent_id` introduced. Strict scope: `src/lib/aegis.ts` added to `tsconfig.spec-strict.json` and `eslint.config.mjs`. No schema migrations (21/21 tasks complete).
+
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
 

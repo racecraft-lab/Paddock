@@ -2,6 +2,8 @@
 
 Auto-generated from Archive Sweep on 2026-04-28.
 Revision: Archiving SPEC-001, SPEC-002, SPEC-002A after confirmed PR merges.
+Revision 2026-05-01: Backfilling SPEC-003 (PR #20 merged 2026-04-30) — original
+sweep silently no-op'd due to unwired /speckit.archive.run command (now fixed).
 
 ---
 
@@ -49,6 +51,25 @@ A reviewer can trace UI evidence through Argos and CI artifacts while the reposi
 
 **US3 — Prepare Archive Sweep Behavior for Future Autopilot Runs (P1)**  
 A SpecKit executor can start autopilot with an Archive Sweep that processes only previously merged specs, excludes the current target spec, and stops or runs dry-run only when the branch or worktree is unsafe for cleanup.
+
+---
+
+### SPEC-003: Aegis Facility Singleton Refactor [Source: specs/003-global-aegis]
+
+**US1 — Workspace-First Compatibility (P1)**  
+As an existing operator, I can keep `FEATURE_GLOBAL_AEGIS` OFF and Aegis review behavior remains workspace-first.
+
+**US2 — Facility-Wide Aegis (P2)**  
+As a facility operator, I can enable `FEATURE_GLOBAL_AEGIS` and have a single global Aegis row serve workspaces with no local Aegis.
+
+**US3 — Legacy Local Aegis Compatibility (P3)**  
+As a maintainer, I can preserve legacy local Aegis fallback for compatibility during migration.
+
+**US4 — Shadow Audit Visibility (P3)**  
+As an auditor, I can see an idempotent `aegis_local_shadowed` activity when a local Aegis row is shadowed by the global row under flag ON.
+
+**US5 — Stable Review Gate For Downstream Specs (P1)**  
+As a downstream spec executor, I can rely on Aegis completion gates using `quality_reviews.reviewer='aegis'`.
 
 ---
 
@@ -125,6 +146,30 @@ A SpecKit executor can start autopilot with an Archive Sweep that processes only
 - **FR-020**: Archive cleanup MUST NOT rewrite git history or depend on post-merge CI mutating main.
 - **FR-021**: Dry-run evidence for SPEC-001 and SPEC-002 does not authorize active cleanup unless a later apply-mode run on a clean safe branch records full archive success.
 
+### SPEC-003 FRs [Source: specs/003-global-aegis]
+
+- **FR-001**: Add `src/lib/aegis.ts` exporting `getAegis(db, workspace_id?)` as the single Aegis lookup path.
+- **FR-002**: Route `FEATURE_GLOBAL_AEGIS` through `resolveFlag(name, ctx)`; no inline `process.env.FEATURE_GLOBAL_AEGIS` reads outside `src/lib/feature-flags.ts`.
+- **FR-003**: Evaluate `FEATURE_GLOBAL_AEGIS` against the requested-task or review workspace context when a workspace exists; `process.env.FEATURE_GLOBAL_AEGIS='1'` does NOT force ON.
+- **FR-004**: With flag OFF, resolve workspace-scoped Aegis first, then global fallback.
+- **FR-005**: With flag ON, resolve global Aegis first, then workspace-scoped fallback.
+- **FR-006**: Match Aegis by `LOWER(name)='aegis'` and use `agents.scope='global'` for the facility singleton.
+- **FR-007**: Preserve legacy `agents.workspace_id` lookup for workspace-scoped rows.
+- **FR-008**: When multiple Aegis rows match the same candidate scope, choose the row with the lowest database id for deterministic compatibility.
+- **FR-009**: Resolver selection MUST NOT filter by `agents.status`; gateway invocation and review failure handling remain responsible for unavailable agents.
+- **FR-010**: When flag ON and both global and workspace-scoped rows exist, return global and idempotently record one structured `activities` row per `(workspace_id, global_agent_id, local_agent_id)` tuple with `type='aegis_local_shadowed'`, `entity_type='agent'`, `entity_id=<local_agent_id>`, `actor='system'`, requested `workspace_id`, deterministic description, and JSON `data` containing `global_agent_id`, `local_agent_id`, `workspace_id`, and `feature_flag='FEATURE_GLOBAL_AEGIS'`.
+- **FR-011**: Refactor `runAegisReviews` and `resolveGatewayAgentIdForReviewAgent` so scheduler review dispatch uses `getAegis` while preserving task selection, retry, status transitions, and gateway invocation semantics.
+- **FR-012**: Preserve existing gateway routing behavior that reads configured OpenClaw ids and session-key-derived routing; SPEC-003 MUST NOT rewrite the gateway dispatch contract.
+- **FR-013**: Remove or stop relying on the local `aegisAgentByWorkspace` map once all callsites are migrated.
+- **FR-014**: Sweep task routes, validation defaults, scheduler hooks, task-board Aegis display, and chat Aegis role surfaces without changing review semantics.
+- **FR-015**: Preserve `quality_reviews.reviewer='aegis'` as the live gate signal; do NOT introduce `quality_reviews.agent_id` expectations in code or tests.
+- **FR-016**: Existing UI surfaces may display Aegis review state, but MUST NOT gain new task pipeline behavior or `ready_for_owner` semantics.
+- **FR-017**: When no global or workspace-scoped Aegis database row exists, preserve current gateway fallback by returning agent id/name `aegis` and ensure scheduler loops continue without a resolver crash.
+- **FR-018**: Treat malformed workspace `feature_flags` JSON as no override / default OFF.
+- **FR-019**: Preserve `FEATURE_GLOBAL_AEGIS` registry dependency on `FEATURE_WORKSPACE_SWITCHER` for enablement and preflight checks.
+- **FR-020**: New production module strict scope is `src/lib/aegis.ts` only; add to `tsconfig.spec-strict.json` and `eslint.config.mjs` strict-scope lists.
+- **FR-021**: No schema migrations; SPEC-001 already created `agents.scope`.
+
 ---
 
 ## Key Entities
@@ -164,6 +209,17 @@ A SpecKit executor can start autopilot with an Archive Sweep that processes only
 | Evidence Provenance | Argos/CI metadata, PR references, and links that reconstruct review history without committed screenshots |
 | Pinned Archive Extension | `racecraft-lab/spec-kit-archive` fork v1.1.0 at `.specify/extensions/archive/` |
 
+### SPEC-003 Entities [Source: specs/003-global-aegis]
+
+| Entity | Description |
+|--------|-------------|
+| Aegis Resolver | `getAegis(db, workspace_id?)` — single Aegis lookup path returning a `ReviewAgentRecord` shape with `id`, `name`, `config`, `agent_config`, `workspace_id`, `scope` |
+| Global Aegis Singleton | `agents` row with `LOWER(name)='aegis'` and `scope='global'`; serves all workspaces under flag ON |
+| Workspace-Scoped Aegis | Legacy `agents` row with `LOWER(name)='aegis'` and `workspace_id=<id>`; preferred under flag OFF |
+| Shadow Audit Activity | `activities` row with `type='aegis_local_shadowed'`, idempotent per `(workspace_id, global_agent_id, local_agent_id)` tuple |
+| Aegis Gateway Fallback | Synthetic `{ id: 'aegis', name: 'aegis' }` returned when no DB-backed row exists; preserves scheduler loop continuity |
+| Review Gate Signal | `quality_reviews.reviewer='aegis'` (string match); SPEC-003 does NOT introduce `quality_reviews.agent_id` |
+
 ---
 
 ## Edge Cases (Consolidated)
@@ -180,6 +236,11 @@ A SpecKit executor can start autopilot with an Archive Sweep that processes only
 - Archive Sweep on a dirty worktree or unsafe branch: dry-run only or stop with clear guard message.
 - Current target spec is never archived in the same autopilot run; eligible only after its PR merges.
 - M53-M61 backfill targets only agents named exactly Aegis, Security Guardian, HAL (case-insensitive).
+- Aegis resolver: when both global and workspace-scoped Aegis rows exist under flag ON, return global and write at most one shadow-audit row per `(workspace_id, global_agent_id, local_agent_id)` tuple — repeated scheduler ticks never duplicate the row.
+- Aegis resolver: when multiple rows match the same candidate scope (rare via M53 backfill or manual migration), choose the lowest database id deterministically; agent `status` is not a resolver filter.
+- Aegis resolver: malformed workspace `feature_flags` JSON is treated as no override / default OFF — the resolver does not throw.
+- Aegis resolver: when neither global nor workspace-scoped DB rows exist, return synthetic gateway `aegis` so scheduler loops keep running.
+- M53 backfill scope leak: post-M53 rows have `workspace_id` set AND `scope='global'`. `findWorkspaceAegis` MUST include `AND scope = 'workspace'` or these rows appear in both local and global lookups (fixed in SPEC-003 resolver).
 
 ---
 
@@ -188,3 +249,4 @@ A SpecKit executor can start autopilot with an Archive Sweep that processes only
 - SPEC-001: M53-M61 applied once on a migration-052 database without data loss; second run produces no duplicates; 35/35 tasks completed; rollback package covers all SQL-changing steps.
 - SPEC-002: Flag-OFF preserves 100% of baseline snapshots; authorized users switch Facility/PL in one step; cross-tab convergence <1s when BroadcastChannel available; 56/56 tasks completed.
 - SPEC-002A: Archive dry-run against SPEC-002 completes without deleting source files; speckit-pro 1.9.1 released with archive-aware behavior; archive extension installed at v1.1.0; 47/47 tasks completed.
+- SPEC-003: P2-AC1 flag-off workspace-first preserved; P2-AC2 flag-on global-first served from `scope='global'`; P2-AC3 legacy fallback covered; P2-AC4 scheduler loop semantics unchanged (only resolver source); P2-AC5 unit coverage of global-only/workspace-only/legacy paths; P2-AC6 `quality_reviews.reviewer='aegis'` gate preserved; 21/21 tasks completed; 9 resolver-focused Vitest paths including M53-backfill regression; 533 Playwright tests pass; typecheck/lint/build green.
