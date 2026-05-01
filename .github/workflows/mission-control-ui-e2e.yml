@@ -1,9 +1,9 @@
-name: SPEC-002 UI E2E
+name: Mission Control UI E2E
 
 on:
   pull_request:
     paths:
-      - '.github/workflows/spec-002-ui-e2e.yml'
+      - '.github/workflows/mission-control-ui-e2e.yml'
       - 'src/components/layout/**'
       - 'src/components/settings/**'
       - 'src/components/ui/theme-selector.tsx'
@@ -24,13 +24,12 @@ on:
       - 'docker-entrypoint.sh'
       - 'package.json'
       - 'pnpm-lock.yaml'
-      - 'specs/002-product-line-switcher/**'
       - '.specify/memory/constitution.md'
   push:
     branches:
       - main
     paths:
-      - '.github/workflows/spec-002-ui-e2e.yml'
+      - '.github/workflows/mission-control-ui-e2e.yml'
       - 'src/components/layout/**'
       - 'src/components/settings/**'
       - 'src/components/ui/theme-selector.tsx'
@@ -51,7 +50,6 @@ on:
       - 'docker-entrypoint.sh'
       - 'package.json'
       - 'pnpm-lock.yaml'
-      - 'specs/002-product-line-switcher/**'
       - '.specify/memory/constitution.md'
 
 env:
@@ -91,7 +89,7 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run Docker-backed SPEC-002 Playwright journey
+      - name: Run Docker-backed Mission Control UI journey
         id: e2e
         continue-on-error: true
         env:
@@ -118,7 +116,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: spec-002-ui-e2e-artifacts
+          name: mission-control-ui-e2e-artifacts
           path: |
             test-results/
             playwright-report/docker/
@@ -130,16 +128,16 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            const marker = '<!-- spec-002-ui-e2e -->';
+            const marker = '<!-- mission-control-ui-e2e -->';
             const outcome = '${{ steps.e2e.outcome }}';
             const metadataOutcome = '${{ steps.argos-metadata.outcome }}';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
               marker,
-              `SPEC-002 Docker-backed Playwright UI journey: **${outcome}**`,
+              `Mission Control Docker-backed UI journey: **${outcome}**`,
               `Argos Playwright test metadata gate: **${metadataOutcome}**`,
               '',
-              `Review screenshots and traces in the \`spec-002-ui-e2e-artifacts\` artifact: ${runUrl}`,
+              `Review screenshots and traces in the \`mission-control-ui-e2e-artifacts\` artifact: ${runUrl}`,
               '',
               'Argos metadata gate: CI must find at least 11 Argos screenshot metadata files across 5 Playwright tests with Product Line switcher and Feature Flag admin domain tags before this check can pass.',
               '',
