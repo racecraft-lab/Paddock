@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-05-01T20:21:04Z",
-  "active_step": "Phase 7: Implement",
-  "status": "SPEC-004 implementation tasks T001-T087 are complete; T088 commit evidence is blocked by sandbox git metadata write restrictions",
+  "updated_at": "2026-05-01T20:42:31Z",
+  "active_step": "Post: PR Creation",
+  "status": "SPEC-004 implementation and higher-ulimit post-verification are complete; PR creation is active",
   "notes": [
     "SPEC-004 setup completed on branch 004-task-pipeline-engine from origin/main bce89a2.",
     "Workflow file docs/ai/specs/SPEC-004-workflow.md was generated for Task Pipeline Engine and Declarative Routing and is ready for autopilot review.",
@@ -67,7 +67,12 @@
     "Final local verification evidence recorded on 2026-05-01T19:59:17Z for T087. Passing gates: `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`, `pnpm spec004:guardrails`, `pnpm typecheck`, `pnpm lint` with 10 warnings/0 errors, focused task-create 13/13, retry 15/15, chain regression 22/22, workflow/API/UI guardrails 17/17, route-export regressions 7/7, and `NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/next-font-google-mock.js pnpm exec next build --webpack`.",
     "Final audit remediation completed on 2026-05-01T20:05:27Z for T086/P3-AC8. Updated package.json and pnpm-lock.yaml with next/eslint-config-next patched-line upgrades plus narrow pnpm overrides for vulnerable transitive minimatch, rollup, flatted, picomatch, and defu ranges. `pnpm audit:high` passed after network approval; npm reported 11 remaining vulnerabilities, all low/moderate, with 0 high.",
     "Remaining blockers on 2026-05-01T20:05:27Z: `pnpm test:e2e` cannot start the configured web server because binding 127.0.0.1 returns EPERM; full `pnpm test` passes 149/150 files and 1181/1182 tests with command-local git config but the mc-provisioner Unix socket test is blocked by sandbox `listen EPERM`; default Turbopack `pnpm build` is blocked by the same process/listener restriction while the webpack production build passes with the local font mock. T088 commit evidence remains pending.",
-    "T088 commit attempt evidence recorded on 2026-05-01T20:21:04Z: pre-commit sanity checks passed (`git diff --check`, JSON parse, `pnpm spec004:guardrails`, and strict-scope TypeScript), and 91 SPEC-004 files were staged, but `git commit` is blocked in this Codex sandbox because Git cannot create linked-worktree metadata locks/open COMMIT_EDITMSG under the parent checkout `.git/worktrees/004-task-pipeline-engine` path outside the writable root. T088 remains pending until commit/push run from an environment with write access to that git metadata; post-implementation push/PR tasks remain gated on commit evidence."
+    "T088 commit attempt evidence recorded on 2026-05-01T20:21:04Z: pre-commit sanity checks passed (`git diff --check`, JSON parse, `pnpm spec004:guardrails`, and strict-scope TypeScript), and 91 SPEC-004 files were staged, but `git commit` is blocked in this Codex sandbox because Git cannot create linked-worktree metadata locks/open COMMIT_EDITMSG under the parent checkout `.git/worktrees/004-task-pipeline-engine` path outside the writable root. T088 remains pending until commit/push run from an environment with write access to that git metadata; post-implementation push/PR tasks remain gated on commit evidence.",
+    "T088 commit evidence completed on 2026-05-01T20:22:54Z: parent session created implementation commit 5f92f179d7f89a256e09589d982354be1f32a95d with signing disabled after nested sandbox commit attempts proved blocked by linked-worktree git metadata permissions. Post-implementation phases are now unblocked.",
+    "Post Doctor completed on 2026-05-01T20:42:31Z: the doctor extension reported stale root-level templates/memory false positives, while the canonical prerequisite script passed against the actual .specify layout and SPEC-004 feature directory.",
+    "Post higher-ulimit verification completed on 2026-05-01T20:42:31Z: `pnpm spec004:guardrails`, strict TypeScript, `pnpm typecheck`, `pnpm lint`, `pnpm test` (150 files/1182 tests), `pnpm build`, focused Playwright (25/25), full `pnpm test:e2e` (532/532), and `pnpm audit:high` all passed under the approved execution surface with `ulimit -n 8192` where needed.",
+    "Post task reconciliation and code review completed on 2026-05-01T20:42:31Z: all 88 generated tasks are checked complete, no task-referenced repository file is missing, and the final e2e compatibility delta is scoped to Product Line workflow API test helpers.",
+    "Post cleanup and retrospective completed on 2026-05-01T20:42:31Z: workflow evidence, roadmap evidence, PRD status note, and specs/004-task-pipeline-engine/retrospective.md were updated before PR creation."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -241,36 +246,36 @@
       "status": "completed"
     },
     {
-      "step": "Phase 7 task: T088 commit evidence (blocked by sandbox git metadata writes)",
-      "status": "in_progress"
+      "step": "Phase 7 task: T088 commit evidence",
+      "status": "completed"
     },
     {
       "step": "Post: Doctor",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Implementation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Tasks",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Code Review",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Integration Suite",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Cleanup",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Creation",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Review Remediation",
@@ -278,7 +283,7 @@
     },
     {
       "step": "Post: Retrospective",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }

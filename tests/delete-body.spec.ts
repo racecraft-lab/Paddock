@@ -1,13 +1,22 @@
 import { test, expect } from '@playwright/test'
+import { API_KEY_HEADER, enableWorkspaceSwitcherFlagForE2E, workflowTestPath } from './helpers'
 
 /**
  * E2E tests for Issue #18 — DELETE handlers use request body
  * Verifies that DELETE endpoints require JSON body instead of query params.
  */
 
-const API_KEY_HEADER = { 'x-api-key': 'test-api-key-e2e-12345' }
+test.describe.serial('DELETE Body Standardization (Issue #18)', () => {
+  let restoreWorkspaceSwitcherFlag: (() => void) | null = null
 
-test.describe('DELETE Body Standardization (Issue #18)', () => {
+  test.beforeAll(async ({ request }) => {
+    restoreWorkspaceSwitcherFlag = await enableWorkspaceSwitcherFlagForE2E(request)
+  })
+
+  test.afterAll(async () => {
+    restoreWorkspaceSwitcherFlag?.()
+  })
+
   test('DELETE /api/pipelines rejects without body', async ({ request }) => {
     const res = await request.delete('/api/pipelines', {
       headers: API_KEY_HEADER
@@ -44,12 +53,12 @@ test.describe('DELETE Body Standardization (Issue #18)', () => {
     expect(res.status()).toBe(400)
   })
 
-  test('DELETE /api/workflows rejects without body', async ({ request }) => {
-    const res = await request.delete('/api/workflows', {
+  test('DELETE /api/workflows requires a template id under Product Line scope', async ({ request }) => {
+    const res = await request.delete(await workflowTestPath(request), {
       headers: API_KEY_HEADER
     })
     const body = await res.json()
-    expect(body.error).toContain('body required')
+    expect(body.error).toContain('Template ID is required')
     expect(res.status()).toBe(400)
   })
 

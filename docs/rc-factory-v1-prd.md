@@ -28,6 +28,8 @@ Mission Control remains the source of truth. The existing `tenant → workspace 
 
 A new **task pipeline engine** auto-chains tasks based on declarative routing rules evaluated against structured agent output. **Aegis is refactored** from per-workspace resolution to facility-wide via a new `scope='global'` flag on agents. **GitHub sync routes issues** via a new `area:*` label family to the correct department project within a product line's monorepo. **Resource governance** extends the existing Cost Tracker into enforceable WIP limits, blackout/degraded windows, and budget gates before autonomous work is started. Facility electricity / infrastructure usage and cost from the OpenClaw health cron are part of the same governance surface, but only through a fork-only optional adapter.
 
+As of 2026-05-01, SPEC-004 implements and locally verifies the task pipeline engine on branch `004-task-pipeline-engine`; it remains pending PR review/merge before this behavior is considered shipped on `main`.
+
 ## Tech Stack
 
 - **Existing**: Next.js 16, React 19, TypeScript 5.x (`package.json` spec `^5.7.2`; current lockfile resolves 5.9.3), better-sqlite3 (SQLite), Zustand, xyflow/react, reagraph, pnpm, Node ≥22, existing REST + SSE API surface.

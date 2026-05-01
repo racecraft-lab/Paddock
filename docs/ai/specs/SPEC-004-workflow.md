@@ -33,7 +33,7 @@ Do not start downstream specs from this worktree. SPEC-004 stops after the featu
 | Checklist | `$speckit-checklist` | Complete | All four domain checklists complete; G4 marker scan clean 2026-05-01 |
 | Tasks | `$speckit-tasks` | Complete | 88 tasks generated; G5 passed 2026-05-01 |
 | Analyze | `$speckit-analyze` | Complete | 2026-05-01 found and remediated one HIGH downstream-boundary wording drift; marker scan clean |
-| Implement | `$speckit-implement` | In Progress | T001-T087 complete; T088 commit evidence remains pending |
+| Implement | `$speckit-implement` | Complete | T001-T088 complete; implementation commit `5f92f179d7f89a256e09589d982354be1f32a95d` recorded 2026-05-01 |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -702,40 +702,37 @@ For each task, follow this cycle:
 | 4 - Scheduler and successor routing | T022, T038, T049-T052, T056-T058, T072-T082 | 20 | Added RED chain/runtime/M62 coverage for eligibility, output validation, routing, target stalls, terminal hooks, overhead p95, lineage, assignee resolution, transaction rollback, existing-successor idempotency, M62 uniqueness/rollback, and downstream scope. Implemented feature-flagged `advanceTaskChain`, structured-output validation from `tasks.resolution`, ordered routing/static fallback/termination, target and assignee stalls with stable activity reason codes, transactional lineage/successor creation through `createTask()`, post-commit sync intent, idempotent existing-successor no-op, and terminal-success hooks in Aegis review, quality-review, bulk task update, and detail task update. Focused suite passed 31/31; `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T18:59:25Z. US4 retry recovery remains pending by scope. |
 | 5 - Template API/UI chain fields | T044-T048, T053-T055 | 8 | Added workflow-template chain-field API contract/scope/delete tests plus editor tests. Implemented workflow chain validation helpers, Product Line scoped `/api/workflows` reads/writes/usage/delete, query-parameter delete compatibility with JSON-body backward compatibility, chain-field response parsing, and scoped editor controls/error display. Focused suite passed 14/14; `pnpm spec004:guardrails` and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T18:44:17Z. |
 | 6 - Explicit retry recovery | T059-T071 | 13 | Added RED retry route suites for output failures, advancement stalls, conflicts, bounded responses, provenance/drift, repeated attempts, and terminal recovery. Implemented operator-only `retry_chain_advancement`, latest eligible activity selection, side-effect-free `409` rejection enums, template provenance hashes and drift confirmation, failed-parent revalidation/restoration, terminal-success stall retry, repeated attempts, existing-successor idempotency, chain termination closeout, bounded `chain_retry` responses, and recovery activity metadata without full output/routing leakage. Focused retry suite passed 15/15; chain regression suite passed 22/22; `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false` passed on 2026-05-01T19:13:53Z. |
-| 7 - Documentation, guardrails, audit remediation, and verification | T083-T087 | 5 | Updated `docs/orchestration.md`, added the running-app Playwright workflow-template journey in `tests/e2e/task-pipeline-workflow-templates.spec.ts`, expanded SPEC-004 static guardrails, moved invalid route test exports to helper modules for Next build compatibility, remediated high-severity audit advisories with `next`/`eslint-config-next` upgrades and narrow pnpm overrides for vulnerable transitive ranges, and recorded final local gate evidence below. T088 remains pending until commit/push evidence exists. |
+| 7 - Documentation, guardrails, audit remediation, and verification | T083-T088 | 6 | Updated `docs/orchestration.md`, added the running-app Playwright workflow-template journey in `tests/e2e/task-pipeline-workflow-templates.spec.ts`, expanded SPEC-004 static guardrails, moved invalid route test exports to helper modules for Next build compatibility, remediated high-severity audit advisories with `next`/`eslint-config-next` upgrades and narrow pnpm overrides for vulnerable transitive ranges, recorded final local gate evidence below, and created implementation commit `5f92f179d7f89a256e09589d982354be1f32a95d`. |
 
-### Final Local Verification Evidence - 2026-05-01
+### Final Higher-Ulimit Verification Evidence - 2026-05-01
 
-- `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`: passed.
+- Doctor: `.specify/extensions/doctor/scripts/bash/doctor.sh` exited 1 on stale root-level `templates/` and `memory/` false positives, but the canonical prerequisite gate passed with `FEATURE_DIR=/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/004-task-pipeline-engine/specs/004-task-pipeline-engine` and all expected docs discovered.
+- Task reconciliation: all 88 generated tasks are checked complete in `specs/004-task-pipeline-engine/tasks.md`; no task-referenced repository file is missing after correcting the stale T074 test path.
 - `pnpm spec004:guardrails`: passed.
+- `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`: passed.
 - `pnpm typecheck`: passed.
 - `pnpm lint`: passed with 10 pre-existing warnings and 0 errors.
-- Focused task-create suite: 7 files, 13 tests passed.
-- Focused retry suite: 7 files, 15 tests passed.
-- Focused chain regression suite: 9 files, 22 tests passed.
-- Focused workflow/API/UI guardrail suite: 5 files, 17 tests passed.
-- Project slug and transcript route-export regression tests: 3 plus 4 tests passed.
-- `NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/next-font-google-mock.js pnpm exec next build --webpack`: passed.
-- `GIT_CONFIG_GLOBAL=/dev/null ... pnpm test`: 149 files and 1181 tests passed; `src/lib/__tests__/mc-provisioner-daemon.test.ts` failed because this sandbox blocks Unix socket creation (`listen EPERM`), confirmed by directly running `ops/mc-provisioner-daemon.js`.
-- `NEXT_FONT_GOOGLE_MOCKED_RESPONSES=/tmp/next-font-google-mock.js pnpm build`: blocked by Turbopack helper process bind restriction (`Operation not permitted` while resolving next/font Google CSS module). The webpack build above validates the production app tree in this sandbox.
-- `pnpm test:e2e`: blocked before tests because Playwright's configured web server cannot bind `127.0.0.1` (`listen EPERM`).
-- `pnpm audit:high`: passed after network approval and audit remediation on 2026-05-01T20:05:27Z; npm reported 11 remaining vulnerabilities, all low/moderate, with 0 high.
+- `pnpm test`: passed with 150 test files and 1182 tests under `ulimit -n 8192`.
+- `pnpm build`: passed with the normal Turbopack production build under `ulimit -n 8192`; the attempted mocked-font variant was discarded because the mock path breaks Turbopack's internal Google font CSS module resolver.
+- Focused Playwright regression/e2e suite passed 25/25 after aligning legacy `/api/workflows` e2e helpers with the Product Line scoped contract introduced by SPEC-004.
+- `pnpm test:e2e`: passed with 532/532 Playwright tests under `ulimit -n 8192`.
+- `pnpm audit:high`: passed after audit remediation and network approval; npm reported 11 remaining vulnerabilities, all low/moderate, with 0 high.
 
-### T088 Commit Attempt Evidence - 2026-05-01
+### T088 Commit Evidence - 2026-05-01
 
 - Pre-commit sanity checks passed in the current worktree: `git diff --check`, `node -e "JSON.parse(...autopilot-state.json...)"`, `pnpm spec004:guardrails`, and `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`.
 - `git add -A` staged the SPEC-004 implementation and generated artifacts, covering 91 files in the cached diff.
-- `git -c commit.gpgsign=false commit -m "feat(spec-004): implement task pipeline engine"` is blocked in this Codex sandbox because Git cannot create `/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.git/worktrees/004-task-pipeline-engine/index.lock` (`Operation not permitted`).
-- A contained-index retry with `GIT_INDEX_FILE="$PWD/.git-index"` moved the index lock inside the writable worktree, but commit creation still failed when Git attempted to open `/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.git/worktrees/004-task-pipeline-engine/COMMIT_EDITMSG` (`Operation not permitted`).
-- T088 remains pending until the implementation commit can be created from an environment with write access to the parent checkout's linked-worktree git metadata. Post-implementation push/PR tasks remain gated on that commit evidence.
+- Initial commit attempts from the nested Codex sandbox were blocked by linked-worktree git metadata writes outside that session's writable root; the parent session retried with appropriate git metadata access.
+- `git -c commit.gpgsign=false commit -m "feat(spec-004): implement task pipeline engine"` succeeded as commit `5f92f179d7f89a256e09589d982354be1f32a95d`.
+- T088 is complete. Post-implementation push/PR tasks can proceed from commit `5f92f179d7f89a256e09589d982354be1f32a95d`.
 
 ---
 
 ## Post-Implementation Checklist
 
 - [x] Archive Sweep evidence is recorded and excludes `SPEC-004`.
-- [ ] All generated tasks are marked complete in `specs/004-task-pipeline-engine/tasks.md`.
-- [ ] Acceptance evidence exists for P3-AC1 through P3-AC12 plus P3-AC6b.
+- [x] All generated tasks are marked complete in `specs/004-task-pipeline-engine/tasks.md`.
+- [x] Acceptance evidence exists for P3-AC1 through P3-AC12 plus P3-AC6b.
 - [x] `src/lib/task-create.ts` exists and owns all task creation side effects.
 - [x] Source-specific API, GitHub import, GitHub sync import, recurring, and pipeline-successor behavior is preserved through `createTask()`.
 - [x] Direct runtime `INSERT INTO tasks` is gone from production source outside `src/lib/task-create.ts`; any test fixture inserts are deliberately excluded or migrated.
@@ -747,7 +744,7 @@ For each task, follow this cycle:
 - [x] `orchestration-bar.tsx`, `/api/workflows`, and create/update workflow schemas expose, validate, and persist the workflow-template chain fields required by the roadmap, reject `routing_rules` without `output_schema`, allow static `next_template_slug` without schema, preserve operator-only writes, and repair `DELETE /api/workflows?id=...` compatibility.
 - [x] `ajv`, `jsonpath-plus`, and `safe-regex` are exact pinned direct runtime dependencies in `package.json` and `pnpm-lock.yaml`.
 - [x] `.github/workflows/quality-gate.yml` runs SPEC-004 dependency, audit, direct-INSERT, unsafe-primitive, and downstream-drift guardrails.
-- [ ] `pnpm audit --audit-level high` passes before merge after SPEC-004 audit remediation; local registry/network failure is temporary evidence only and cannot satisfy P3-AC8.
+- [x] `pnpm audit --audit-level high` passes before merge after SPEC-004 audit remediation.
 - [x] `tsconfig.spec-strict.json` and `eslint.config.mjs` include new production modules.
 - [x] `docs/orchestration.md` describes declarative task chains and current lifecycle/status terminology.
 - [x] Prohibited-drift grep checks pass.
@@ -755,10 +752,11 @@ For each task, follow this cycle:
 - [x] `pnpm lint` passes or any environment failure is documented with evidence.
 - [x] `pnpm test` passes or any environment failure is documented with evidence.
 - [x] `pnpm build` passes or any environment failure is documented with evidence.
-- [ ] Real running-app Playwright verification for P3-AC12 passes.
-- [ ] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-004 implementation evidence after verification.
-- [ ] `docs/rc-factory-v1-prd.md` reflects SPEC-004 completion after verification.
+- [x] Real running-app Playwright verification for P3-AC12 passes.
+- [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-004 implementation evidence after verification.
+- [x] `docs/rc-factory-v1-prd.md` reflects SPEC-004 completion after verification.
 - [ ] Branch is pushed for review.
+- [x] Retrospective evidence is recorded in `specs/004-task-pipeline-engine/retrospective.md`.
 
 ---
 
@@ -766,15 +764,18 @@ For each task, follow this cycle:
 
 ### What Worked Well
 
-- Pending.
+- The phase-sliced implementation kept RED/GREEN evidence tied to the generated task ranges, which made the final 88-task reconciliation straightforward.
+- The explicit `createTask()` helper plus static guardrails closed the highest-risk side-effect parity gap without broadening SPEC-004 into later artifact or state-machine specs.
 
 ### Challenges Encountered
 
-- Pending.
+- The local sandbox hit EMFILE and listener/socket restrictions during long autopilot runs; rerunning final gates with `ulimit -n 8192` and the approved execution surface was required for trustworthy unit, build, e2e, and audit evidence.
+- Legacy e2e workflow tests assumed global `/api/workflows`; SPEC-004's Product Line scoped contract required test helpers to select a non-Facility workspace before exercising workflow CRUD and injection guards.
 
 ### Patterns to Reuse
 
-- Pending.
+- Keep post-implementation verification separate from implementation commits so sandbox failures, stale-path false positives, and genuine product regressions are distinguishable in the workflow ledger.
+- For later Product Line scoped APIs, update shared e2e helpers first and then run both focused and full Playwright suites before treating compatibility repairs as complete.
 
 ---
 

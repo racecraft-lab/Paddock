@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, and SPEC-003 are complete on `main`. SPEC-004 is in progress on branch `004-task-pipeline-engine`; SPEC-006 remains an independent P1 alternate after Phase 1A, but it does not unblock SPEC-005, SPEC-007, or SPEC-008.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, and SPEC-003 are complete on `main`. SPEC-004 implementation and local verification are complete on branch `004-task-pipeline-engine` and remain pending PR review/merge; SPEC-006 remains an independent P1 alternate after Phase 1A, but it does not unblock SPEC-005, SPEC-007, or SPEC-008.
 
 ## Feature Flag Resolution Policy
 
@@ -193,7 +193,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 ### SPEC-004: Task Pipeline Engine and Declarative Routing
 
 - **Status:** In Progress
-- **Branch status:** Setup branch `004-task-pipeline-engine` created from `origin/main` on 2026-04-30; workflow file generated at `docs/ai/specs/SPEC-004-workflow.md` and ready for autopilot review.
+- **Branch status:** Implementation and local verification completed on branch `004-task-pipeline-engine` on 2026-05-01; pending PR review/merge before the status can move to Complete.
 - **Priority:** P1
 - **Branch short name:** `task-pipeline-engine`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003
@@ -205,6 +205,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `src/lib/task-create.ts`, `src/lib/output-schema-validator.ts`, `src/lib/routing-rule-evaluator.ts`, `src/types/workflow-template.ts`, plus `src/lib/migrations.ts` and `docs/migrations/rollback-M62.sql` only for the SPEC-004 one-successor-per-parent index.
 - **Autopilot notes:** Do not introduce a `task_templates` SQL table. A task-chain template is a domain alias over `workflow_templates`. With the feature flag OFF or fields NULL, task completion must behave exactly as before. Phase 3 reads structured output from `tasks.resolution`; Phase 6 later upgrades artifact handoff. SPEC-004 is allowed one additive schema exception: a partial unique index on non-null `tasks.parent_task_id`, created only after a zero-duplicate preflight.
 - **Definition of done:** Phase 3 deliverables are implemented, P3 acceptance criteria pass for valid routing, missing/invalid output failure, fallback, termination, side-effect parity, DB-backed successor uniqueness, dependency pinning, validator constraints, rollback SQL, and repository documentation refresh.
+- **Implementation evidence:** Local G7/post gates passed on 2026-05-01 with all 88 generated tasks checked. Evidence includes the shared `createTask()` helper and migrated task-insert callsites, constrained output schema validation, safe routing evaluation, feature-flagged `advanceTaskChain`, explicit `retry_chain_advancement`, M62 successor uniqueness/rollback, workflow-template API/UI chain fields, SPEC-004 static guardrails, high-severity audit remediation, `pnpm spec004:guardrails`, strict-scope TypeScript, `pnpm typecheck`, `pnpm lint` with 0 errors / 10 pre-existing warnings, `pnpm test` passing 150 files / 1182 tests under `ulimit -n 8192`, `pnpm build` passing under `ulimit -n 8192`, `pnpm test:e2e` passing 532 tests under `ulimit -n 8192`, and `pnpm audit:high` reporting 0 high vulnerabilities.
 
 ### SPEC-005: ready_for_owner State and Two-Step Terminal Event
 

@@ -508,7 +508,7 @@ export async function createTestWorkflow(
   overrides: Record<string, unknown> = {}
 ) {
   const name = `e2e-wf-${uid()}`
-  const res = await request.post('/api/workflows', {
+  const res = await request.post(await workflowTestPath(request), {
     headers: API_KEY_HEADER,
     data: { name, task_prompt: 'Test prompt for e2e', ...overrides },
   })
@@ -517,10 +517,32 @@ export async function createTestWorkflow(
 }
 
 export async function deleteTestWorkflow(request: APIRequestContext, id: number) {
-  return request.delete('/api/workflows', {
+  return request.delete(await workflowTestPath(request), {
     headers: API_KEY_HEADER,
     data: { id },
   })
+}
+
+export async function getWorkflowTestWorkspaceId(request: APIRequestContext) {
+  const res = await request.get('/api/workspaces', { headers: API_KEY_HEADER })
+  const body = await expectJsonSuccess<{
+    workspaces?: Array<{ id: number; name?: string; slug?: string }>
+  }>(res, 'load workflow test workspace')
+  const workspace = body.workspaces?.find((candidate) => (
+    candidate.slug !== 'facility' && candidate.name !== 'Facility'
+  ))
+  if (!workspace?.id) {
+    throw new Error(`No Product Line workspace available for workflow tests: ${JSON.stringify(body)}`)
+  }
+  return workspace.id
+}
+
+export async function productLineScopedPath(request: APIRequestContext, pathname: string) {
+  return withWorkspaceScope(pathname, await getWorkflowTestWorkspaceId(request))
+}
+
+export async function workflowTestPath(request: APIRequestContext, pathname = '/api/workflows') {
+  return productLineScopedPath(request, pathname)
 }
 
 // --- Webhook helpers ---

@@ -178,7 +178,7 @@
 
 - [x] T072 [P] [US5] Add first-hop parent lineage initialization and successor lineage inheritance tests for `parent_task_id`, `root_task_id`, `chain_id`, `chain_stage`, workspace, project, workflow-template id, and slug snapshot in `src/lib/__tests__/task-chain-lineage.test.ts`
 - [x] T073 [P] [US5] Add assignee resolution tests using `project_agent_assignments.agent_name`, `project_agent_assignments.role`, and `agents.name`, with no `agent_id` assumptions in `src/lib/__tests__/task-chain-assignee.test.ts`
-- [x] T074 [P] [US5] Add missing-assignee advancement-stall tests with exact `task_pipeline_successor_assignee_missing` activity code in `src/lib/__tests__/task-chain-assignee-stall.test.ts`
+- [x] T074 [P] [US5] Add missing-assignee advancement-stall tests with exact `task_pipeline_successor_assignee_missing` activity code in `src/lib/__tests__/task-chain-assignee.test.ts`
 - [x] T075 [P] [US5] Add transaction rollback tests that force failures after parent lineage initialization, validation failure writes, stall activity writes, duplicate-successor guard checks, and successor insertion, then assert no partial lineage, activity, state, or successor rows persist in `src/lib/__tests__/task-chain-transaction-rollback.test.ts`
 - [x] T076 [P] [US5] Add M62 migration tests proving duplicate preflight fails closed, partial unique index rejects a second non-null `parent_task_id`, multiple NULL `parent_task_id` rows remain valid, and rollback drops the index in `src/lib/__tests__/migrations.M62-task-successor-index.test.ts`
 - [x] T077 [US5] Add downstream-scope drift guard tests excluding SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-011 state, artifact, governance, area-routing, pilot, and CrabTrap behavior in `src/lib/__tests__/task-pipeline-downstream-scope-guard.test.ts`
@@ -204,7 +204,7 @@
 - [x] T085 Add SPEC-004 dependency-pin, audit, AJV safety, pattern-subset, unsafe primitive, direct task insert, and downstream-scope guardrail steps plus `pnpm audit:high` coverage in `.github/workflows/quality-gate.yml`
 - [x] T086 Apply audit-remediation package and lockfile updates required for `pnpm audit --audit-level high` to pass in `package.json` and `pnpm-lock.yaml`
 - [x] T087 Run and record `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm test:e2e`, and `pnpm audit --audit-level high` evidence in `docs/ai/specs/SPEC-004-workflow.md`
-- [ ] T088 Record branch commit evidence for SPEC-004 docs and task-pipeline implementation completion in `docs/ai/specs/SPEC-004-workflow.md`
+- [x] T088 Record branch commit evidence for SPEC-004 docs and task-pipeline implementation completion in `docs/ai/specs/SPEC-004-workflow.md`
 
 **Checkpoint**: Documentation, running-app verification, audit, CI guardrails, and final evidence are complete.
 
