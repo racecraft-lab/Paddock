@@ -5,7 +5,7 @@
 
 import { getDatabase } from '@/lib/db'
 import { logger } from '@/lib/logger'
-import { pullFromGitHub } from '@/lib/github-sync-engine'
+import { pullFromGitHub, backfillAreaRouting } from '@/lib/github-sync-engine'
 import { resolveFlag } from '@/lib/feature-flags'
 
 const INTERVAL_MS = parseInt(process.env.GITHUB_SYNC_INTERVAL_MS || '60000', 10)
@@ -88,6 +88,42 @@ async function runSyncTick(): Promise<void> {
       }
       flagsByWorkspace.set(workspaceId, value)
       return value
+    }
+
+    // SPEC-006 / FR-019, FR-022 (T059): first-flag-on bootstrap. For each
+    // workspace whose flag is ON and whose backfill completion marker is
+    // unset, run `backfillAreaRouting(db, workspaceId)` once before the
+    // legacy/owner-filtered project loop. The marker (set inside
+    // backfillAreaRouting) is the durable gate — re-invocations are no-ops
+    // because the predicate `area_routing_backfilled_at IS NULL` returns
+    // zero rows.
+    const distinctWorkspaceIds = new Set<number>(projects.map((p) => p.workspace_id))
+    for (const workspaceId of distinctWorkspaceIds) {
+      try {
+        const workspaceFlags = flagsForWorkspace(workspaceId)
+        const areaRoutingOn = resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
+          workspaceFlags,
+        })
+        if (!areaRoutingOn) continue
+        let alreadyDone = false
+        if (workspaceFlags) {
+          try {
+            const parsed = JSON.parse(workspaceFlags) as Record<string, unknown>
+            alreadyDone = parsed.area_label_routing_backfill_completed_at !== undefined
+          } catch {
+            alreadyDone = false
+          }
+        }
+        if (alreadyDone) continue
+        backfillAreaRouting(db, workspaceId)
+        // Refresh the cache so the post-bootstrap pollers see the marker.
+        flagsByWorkspace.delete(workspaceId)
+      } catch (err) {
+        logger.error(
+          { err, workspaceId, event: 'backfill_bootstrap_failed' },
+          'Sync poller: backfill bootstrap failed',
+        )
+      }
     }
 
     for (const project of projects) {

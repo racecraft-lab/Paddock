@@ -557,3 +557,192 @@ export function writeAreaRoutingActivity(
     args.workspaceId,
   )
 }
+
+// ── SPEC-006 / Phase 7 (US5) — backfillAreaRouting (FR-019..FR-024) ──────
+//
+// First-time-flag-on bootstrap. Iterates GitHub-synced tasks in the
+// workspace whose `area_routing_backfilled_at IS NULL`, applies the
+// same FR-011..FR-014 routing rules using each task's stored labels
+// (in `tasks.tags`, the column where ingest persists `area:*` labels),
+// and updates `tasks.project_id` + sets the resume marker. Per-task
+// transaction wraps SELECT/parse/UPDATE/INSERT activity. Failure on
+// any task is isolated and logged via FR-027b structured log
+// (`event='backfill_task_failed'`); the loop continues. After the
+// loop drains, the workspace's `feature_flags.area_label_routing_backfill_completed_at`
+// is set in a separate transaction iff zero pending rows remain.
+//
+// Idempotent: with `area_routing_backfilled_at IS NULL` predicate +
+// the partial index `idx_tasks_area_routing_backfill_pending`, the
+// resume scan is O(remaining tasks). The completion marker prevents
+// re-invocation by the poller bootstrap.
+//
+// Monotonicity (FR-021a, FR-056): `area_routing_backfilled_at` is
+// only ever set forward; failed transactions ROLLBACK so the marker
+// stays NULL and the next resume retries. No code path resets the
+// marker to NULL or decreases it.
+//
+// Tests: see SPEC-006 / T050-T057 in github-sync-engine.test.ts.
+interface BackfillTaskRow {
+  id: number
+  project_id: number | null
+  workspace_id: number
+  github_repo: string | null
+  github_issue_number: number | null
+  tags: string | null
+  area_routing_backfilled_at: number | null
+}
+
+function parseStoredLabels(tagsJson: string | null, taskId: number): string[] {
+  if (tagsJson === null || tagsJson === undefined) return []
+  try {
+    const parsed = JSON.parse(tagsJson) as unknown
+    if (Array.isArray(parsed)) {
+      return parsed.filter((v): v is string => typeof v === 'string')
+    }
+    return []
+  } catch (err) {
+    // FR-021: malformed JSON treated as no_label; log but do NOT abort.
+    logger.warn(
+      { err, taskId, event: 'backfill_task_label_parse_failed' },
+      'backfill: failed to parse tasks.tags JSON',
+    )
+    return []
+  }
+}
+
+export function backfillAreaRouting(
+  db: Database.Database,
+  workspaceId: number,
+): void {
+  // Build a per-workspace map of github_repo → owner project id. Tasks
+  // are filtered to repos owned in this workspace; the owner project
+  // also doubles as the syncOwnerProjectId for the no_triage fallback.
+  const ownerRows = db
+    .prepare(
+      `SELECT id, github_repo FROM projects
+       WHERE workspace_id = ? AND is_repo_sync_owner = 1 AND github_repo IS NOT NULL`,
+    )
+    .all(workspaceId) as Array<{ id: number; github_repo: string }>
+  const repoToOwnerProjectId = new Map<string, number>()
+  for (const r of ownerRows) {
+    repoToOwnerProjectId.set(r.github_repo, r.id)
+  }
+
+  const cache = loadAreaRoutingCache(db, workspaceId)
+
+  const pendingStmt = db.prepare(`
+    SELECT id, project_id, workspace_id, github_repo, github_issue_number,
+           tags, area_routing_backfilled_at
+    FROM tasks
+    WHERE workspace_id = ?
+      AND github_issue_number IS NOT NULL
+      AND area_routing_backfilled_at IS NULL
+  `)
+
+  const pending = pendingStmt.all(workspaceId) as BackfillTaskRow[]
+
+  for (const row of pending) {
+    if (!row.github_repo) continue
+    const ownerProjectId = repoToOwnerProjectId.get(row.github_repo)
+    if (ownerProjectId === undefined) {
+      // No sync-owner project in this workspace claims this repo. Skip.
+      continue
+    }
+
+    try {
+      const labelNames = parseStoredLabels(row.tags, row.id)
+      const areaLabels = parseAreaLabels(labelNames)
+      const resolution = resolveAreaRouting(areaLabels, cache, ownerProjectId)
+      const targetProjectId = resolution.resolvedProjectId ?? ownerProjectId
+      const activityType: 'area_routing_resolved' | 'area_routing_unresolved' =
+        resolution.reason === 'single_match'
+          ? 'area_routing_resolved'
+          : 'area_routing_unresolved'
+      const description =
+        resolution.reason === 'single_match'
+          ? `Backfilled ${row.github_repo}#${row.github_issue_number} via area:${areaLabels[0]}`
+          : `Backfilled ${row.github_repo}#${row.github_issue_number} (${resolution.reason})`
+
+      const txn = db.transaction(() => {
+        db.prepare(
+          `UPDATE tasks
+             SET project_id = ?,
+                 area_routing_backfilled_at = unixepoch()
+           WHERE id = ?`,
+        ).run(targetProjectId, row.id)
+        db.prepare(`
+          INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id)
+          VALUES (?, 'task', ?, 'github-sync', ?, ?, ?)
+        `).run(
+          activityType,
+          row.id,
+          description,
+          JSON.stringify({
+            area_labels: areaLabels,
+            resolved_project_id: targetProjectId,
+            reason: resolution.reason,
+            source: 'backfill',
+            github_issue_number: row.github_issue_number,
+            workspace_id: workspaceId,
+            github_repo: row.github_repo,
+          }),
+          workspaceId,
+        )
+      })
+      txn()
+    } catch (err) {
+      // FR-021 / FR-027b: per-task failure isolated and logged. The
+      // transaction rolled back on throw; `area_routing_backfilled_at`
+      // stays NULL so the next resume retries.
+      logger.error(
+        {
+          event: 'backfill_task_failed',
+          workspace_id: workspaceId,
+          github_repo: row.github_repo,
+          task_id: row.id,
+          error_message: (err as Error)?.message,
+          error_class: (err as Error)?.name ?? 'UnknownError',
+        },
+        'backfill: per-task transaction failed',
+      )
+      continue
+    }
+  }
+
+  // Completion marker (FR-022). Set ONLY when the pending predicate is
+  // empty. Runs in its own statement (separate transaction). If this
+  // UPDATE itself fails, the next bootstrap finds zero pending rows
+  // and re-runs to set the marker without reprocessing.
+  const remaining = (
+    db
+      .prepare(
+        `SELECT COUNT(*) as c FROM tasks
+         WHERE workspace_id = ?
+           AND github_issue_number IS NOT NULL
+           AND area_routing_backfilled_at IS NULL`,
+      )
+      .get(workspaceId) as { c: number }
+  ).c
+  if (remaining === 0) {
+    try {
+      db.prepare(
+        `UPDATE workspaces
+           SET feature_flags = json_patch(
+             COALESCE(feature_flags, '{}'),
+             json_object('area_label_routing_backfill_completed_at', unixepoch())
+           )
+         WHERE id = ?`,
+      ).run(workspaceId)
+    } catch (err) {
+      logger.error(
+        {
+          event: 'backfill_marker_update_failed',
+          workspace_id: workspaceId,
+          error_message: (err as Error)?.message,
+          error_class: (err as Error)?.name ?? 'UnknownError',
+        },
+        'backfill: completion-marker UPDATE failed; next bootstrap will retry',
+      )
+    }
+  }
+}
