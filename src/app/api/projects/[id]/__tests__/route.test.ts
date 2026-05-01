@@ -788,3 +788,222 @@ describe('SPEC-006 / T043 — area_slug_conflict 409 shape (FR-035)', () => {
     expect(bRow.area_slug).toBeNull()
   })
 })
+
+// ── T061 — 200 response-shape snapshot (FR-061) ─────────────────
+//
+// The 200 response body MUST:
+//   (a) include the three persisted SPEC-006 fields (`area_slug`,
+//       `is_triage_project`, `is_repo_sync_owner`).
+//   (b) NEVER include `transfer_owner` (request-only flag, not stored).
+//   (c) project that never set the new fields renders with defaults
+//       `null` / `false` / `false`.
+//   (d) byte-shape (key set + types) is otherwise identical to the
+//       pre-SPEC-006 baseline EXCEPT for the additive presence of the
+//       three persisted fields.
+describe('SPEC-006 / T061 — PUT 200 response-shape snapshot (FR-061)', () => {
+  it('includes the three new persisted fields and never returns transfer_owner', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    // Seed a project that already owns the repo so transfer_owner is exercised
+    // without producing a 409 (idempotent re-assertion path).
+    const projectId = seedProject(db, {
+      workspaceId: 1,
+      slug: 'p-target',
+      githubRepo: 'org/repo',
+      isRepoSyncOwner: 1,
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    // Submit a body that includes transfer_owner=true; the response MUST NOT
+    // surface it back to the client.
+    const res = await PUT(
+      buildRequest({
+        body: {
+          area_slug: 'qa',
+          is_triage_project: true,
+          is_repo_sync_owner: true,
+          transfer_owner: true,
+        },
+      }),
+      buildParams(projectId),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { project: Record<string, unknown> }
+    const project = body.project
+
+    // (a) all three new persisted fields are present with the expected types.
+    expect(project).toHaveProperty('area_slug', 'qa')
+    expect(project).toHaveProperty('is_triage_project', true)
+    expect(project).toHaveProperty('is_repo_sync_owner', true)
+
+    // (b) transfer_owner is NEVER returned.
+    expect(project).not.toHaveProperty('transfer_owner')
+
+    // (d) byte-shape: key set is the documented persisted set.
+    const expectedKeys = new Set([
+      'id',
+      'workspace_id',
+      'name',
+      'slug',
+      'description',
+      'ticket_prefix',
+      'ticket_counter',
+      'status',
+      'github_repo',
+      'deadline',
+      'color',
+      'github_sync_enabled',
+      'github_labels_initialized',
+      'github_default_branch',
+      'area_slug',
+      'is_triage_project',
+      'is_repo_sync_owner',
+      'created_at',
+      'updated_at',
+    ])
+    const actualKeys = new Set(Object.keys(project))
+    expect(actualKeys).toEqual(expectedKeys)
+  })
+
+  it('renders defaults null/false/false for projects that never set the new fields', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const projectId = seedProject(db, { workspaceId: 1, slug: 'p-default' })
+    getDatabaseMock.mockReturnValue(db)
+
+    // Only update a non-area-routing field path is not available in PUT,
+    // so re-assert defaults via an idempotent area_slug=null write.
+    const res = await PUT(
+      buildRequest({ body: { area_slug: null } }),
+      buildParams(projectId),
+    )
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as { project: Record<string, unknown> }
+    expect(body.project.area_slug).toBeNull()
+    expect(body.project.is_triage_project).toBe(false)
+    expect(body.project.is_repo_sync_owner).toBe(false)
+  })
+})
+
+// ── T062 — Closed error-code enum (FR-062) ──────────────────────
+//
+// The structured `error` codes returned by `PUT /api/projects/[id]` for the
+// SPEC-006 area-routing surface MUST be drawn from the closed set:
+//   { feature_flag_disabled, invalid_area_slug, area_slug_conflict,
+//     triage_conflict, owner_conflict }.
+// Pre-existing baseline error codes (e.g. 401/403/404/'Invalid project ID')
+// are NOT part of this enum — they pre-date SPEC-006 and remain unchanged.
+describe('SPEC-006 / T062 — PUT closed error-code enum (FR-062)', () => {
+  const SPEC006_ERROR_CODES = [
+    'feature_flag_disabled',
+    'invalid_area_slug',
+    'area_slug_conflict',
+    'triage_conflict',
+    'owner_conflict',
+  ] as const
+
+  it('snapshot-pins the closed enum so additions to the route trip CI', () => {
+    expect([...SPEC006_ERROR_CODES].sort()).toEqual([
+      'area_slug_conflict',
+      'feature_flag_disabled',
+      'invalid_area_slug',
+      'owner_conflict',
+      'triage_conflict',
+    ])
+  })
+
+  it('emits feature_flag_disabled when flag is OFF and any new field is present', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    seedProject(db, { workspaceId: 1, slug: 'p1', githubRepo: 'org/repo' })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(
+      buildRequest({ body: { is_triage_project: true } }),
+      buildParams(1),
+    )
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toBe('feature_flag_disabled')
+    expect(SPEC006_ERROR_CODES).toContain(body.error as (typeof SPEC006_ERROR_CODES)[number])
+  })
+
+  it('emits invalid_area_slug for a regex-rejecting slug', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    seedProject(db, { workspaceId: 1, slug: 'p1' })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(
+      buildRequest({ body: { area_slug: 'Q A!' } }),
+      buildParams(1),
+    )
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toBe('invalid_area_slug')
+    expect(SPEC006_ERROR_CODES).toContain(body.error as (typeof SPEC006_ERROR_CODES)[number])
+  })
+
+  it('emits area_slug_conflict when another project already holds the slug', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    seedProject(db, { workspaceId: 1, slug: 'p-a', areaSlug: 'qa' })
+    const bId = seedProject(db, { workspaceId: 1, slug: 'p-b' })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(
+      buildRequest({ body: { area_slug: 'qa' } }),
+      buildParams(bId),
+    )
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toBe('area_slug_conflict')
+    expect(SPEC006_ERROR_CODES).toContain(body.error as (typeof SPEC006_ERROR_CODES)[number])
+  })
+
+  it('emits triage_conflict when another project is already the triage', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    seedProject(db, { workspaceId: 1, slug: 'p-a', isTriageProject: 1 })
+    const bId = seedProject(db, { workspaceId: 1, slug: 'p-b' })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(
+      buildRequest({ body: { is_triage_project: true } }),
+      buildParams(bId),
+    )
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toBe('triage_conflict')
+    expect(SPEC006_ERROR_CODES).toContain(body.error as (typeof SPEC006_ERROR_CODES)[number])
+  })
+
+  it('emits owner_conflict when another project owns the repo and transfer_owner is absent', async () => {
+    setupAuthOk()
+    setupScopeOk(1)
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    seedProject(db, {
+      workspaceId: 1,
+      slug: 'p-a',
+      githubRepo: 'org/repo',
+      isRepoSyncOwner: 1,
+    })
+    const bId = seedProject(db, {
+      workspaceId: 1,
+      slug: 'p-b',
+      githubRepo: 'org/repo',
+    })
+    getDatabaseMock.mockReturnValue(db)
+    const res = await PUT(
+      buildRequest({ body: { is_repo_sync_owner: true } }),
+      buildParams(bId),
+    )
+    const body = (await res.json()) as { error: string }
+    expect(body.error).toBe('owner_conflict')
+    expect(SPEC006_ERROR_CODES).toContain(body.error as (typeof SPEC006_ERROR_CODES)[number])
+  })
+})

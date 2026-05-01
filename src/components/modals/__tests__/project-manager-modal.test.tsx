@@ -1,10 +1,19 @@
 /**
- * SPEC-006 — ProjectManagerModal (US3)
+ * SPEC-006 — ProjectManagerModal (US3, US6)
  *
- * Covers T034 RED + T037 GREEN:
+ * Covers T034 RED + T037 GREEN (US3):
  *   T034 — no-triage banner test (FR-040b)
  *   T037 — banner visible when flag ON & no triage; hidden when flag OFF or
  *          when any project has is_triage_project=1.
+ *
+ * Covers T065 RED + T069 GREEN (US6, FR-040a, P5-AC9):
+ *   T065 — when `FEATURE_AREA_LABEL_ROUTING` is OFF for the workspace,
+ *          the three new fields (`area_slug`, `is_triage_project`,
+ *          `is_repo_sync_owner`) MUST render visibly with HTML `disabled`
+ *          (or `aria-disabled='true'` on non-form elements) and a tooltip
+ *          'Available after FEATURE_AREA_LABEL_ROUTING is enabled for this
+ *          workspace.'
+ *   T069 — modal renders the disabled visible state.
  *
  * Uses `@testing-library/react` against jsdom (vitest config). Network is
  * stubbed via `vi.stubGlobal('fetch', ...)`. The modal pulls workspace and
@@ -13,7 +22,7 @@
  * `resolveFlag('FEATURE_AREA_LABEL_ROUTING', ...)` against the active
  * workspace's `feature_flags` blob.
  */
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProjectManagerModal } from '../project-manager-modal'
 import { useMissionControl } from '../../../store'
@@ -194,5 +203,126 @@ describe('SPEC-006 / T034 — no-triage-designated banner (FR-040b)', () => {
     await waitFor(() => expect(screen.getByText('Default')).toBeInTheDocument())
     expect(screen.queryByTestId('no-triage-banner')).not.toBeInTheDocument()
     expect(screen.queryByText(BANNER_TEXT)).not.toBeInTheDocument()
+  })
+})
+
+// ── T065 — Visible-but-disabled when flag is OFF (FR-040a, P5-AC9) ──
+//
+// When FEATURE_AREA_LABEL_ROUTING is OFF for the active workspace, the
+// three new fields (`area_slug`, `is_triage_project`, `is_repo_sync_owner`)
+// MUST render visibly so operators discover them, but each interactive
+// surface MUST be `disabled={true}` (or `aria-disabled='true'` on non-form
+// surfaces) and carry a tooltip with the exact required copy.
+const FLAG_OFF_TOOLTIP = 'Available after FEATURE_AREA_LABEL_ROUTING is enabled for this workspace.'
+
+describe('SPEC-006 / T065 — flag-OFF visible-but-disabled fields (FR-040a)', () => {
+  it('renders is_repo_sync_owner toggle disabled with tooltip when flag is OFF', async () => {
+    const workspace = buildWorkspace({
+      feature_flags: '{"FEATURE_WORKSPACE_SWITCHER":true}',
+    })
+    const projects: ProjectFixture[] = [
+      {
+        id: 1,
+        name: 'Repo Project',
+        slug: 'repo-project',
+        ticket_prefix: 'REP',
+        status: 'active',
+        github_repo: 'org/repo',
+      },
+    ]
+    setupStore(workspace)
+    setupFetchStub({ projects, agents: [] })
+
+    render(<ProjectManagerModal onClose={() => {}} />)
+    await waitFor(() => expect(screen.getByText('Repo Project')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Repo Project'))
+
+    const ownerToggle = await screen.findByTestId('is-repo-sync-owner-toggle')
+    expect(ownerToggle).toBeInTheDocument()
+    expect(ownerToggle).toBeDisabled()
+    expect(ownerToggle).toHaveAttribute('aria-disabled', 'true')
+    expect(ownerToggle).toHaveAttribute('title', FLAG_OFF_TOOLTIP)
+  })
+
+  it('renders is_triage_project toggle disabled with tooltip when flag is OFF', async () => {
+    const workspace = buildWorkspace({
+      feature_flags: '{"FEATURE_WORKSPACE_SWITCHER":true}',
+    })
+    const projects: ProjectFixture[] = [
+      {
+        id: 1,
+        name: 'Some Project',
+        slug: 'some',
+        ticket_prefix: 'SOM',
+        status: 'active',
+      },
+    ]
+    setupStore(workspace)
+    setupFetchStub({ projects, agents: [] })
+
+    render(<ProjectManagerModal onClose={() => {}} />)
+    await waitFor(() => expect(screen.getByText('Some Project')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Some Project'))
+
+    const triageToggle = await screen.findByTestId('is-triage-project-toggle')
+    expect(triageToggle).toBeInTheDocument()
+    expect(triageToggle).toBeDisabled()
+    expect(triageToggle).toHaveAttribute('aria-disabled', 'true')
+    expect(triageToggle).toHaveAttribute('title', FLAG_OFF_TOOLTIP)
+  })
+
+  it('renders area_slug input disabled with tooltip when flag is OFF', async () => {
+    const workspace = buildWorkspace({
+      feature_flags: '{"FEATURE_WORKSPACE_SWITCHER":true}',
+    })
+    const projects: ProjectFixture[] = [
+      {
+        id: 1,
+        name: 'Some Project',
+        slug: 'some',
+        ticket_prefix: 'SOM',
+        status: 'active',
+      },
+    ]
+    setupStore(workspace)
+    setupFetchStub({ projects, agents: [] })
+
+    render(<ProjectManagerModal onClose={() => {}} />)
+    await waitFor(() => expect(screen.getByText('Some Project')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Some Project'))
+
+    const areaInput = await screen.findByTestId('area-slug-input')
+    expect(areaInput).toBeInTheDocument()
+    expect(areaInput).toBeDisabled()
+    expect(areaInput).toHaveAttribute('aria-disabled', 'true')
+    expect(areaInput).toHaveAttribute('title', FLAG_OFF_TOOLTIP)
+  })
+
+  it('does NOT render the disabled tooltip when flag is ON (fields are interactive)', async () => {
+    const workspace = buildWorkspace() // flag ON by default
+    const projects: ProjectFixture[] = [
+      {
+        id: 1,
+        name: 'Some Project',
+        slug: 'some',
+        ticket_prefix: 'SOM',
+        status: 'active',
+      },
+    ]
+    setupStore(workspace)
+    setupFetchStub({ projects, agents: [] })
+
+    render(<ProjectManagerModal onClose={() => {}} />)
+    await waitFor(() => expect(screen.getByText('Some Project')).toBeInTheDocument())
+    fireEvent.click(screen.getByText('Some Project'))
+
+    const triageToggle = await screen.findByTestId('is-triage-project-toggle')
+    expect(triageToggle).not.toBeDisabled()
+    expect(triageToggle).not.toHaveAttribute('aria-disabled', 'true')
+    expect(triageToggle).not.toHaveAttribute('title', FLAG_OFF_TOOLTIP)
+    const areaInput = await screen.findByTestId('area-slug-input')
+    expect(areaInput).not.toBeDisabled()
+    expect(areaInput).not.toHaveAttribute('aria-disabled', 'true')
+    expect(areaInput).not.toHaveAttribute('title', FLAG_OFF_TOOLTIP)
   })
 })

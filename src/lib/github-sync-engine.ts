@@ -32,7 +32,7 @@ import type Database from 'better-sqlite3'
 /**
  * Idempotently create Mission Control labels on a GitHub repo.
  *
- * Signatures (FR-053, US1-AC3, P5-AC1):
+ * Signatures (FR-053, US1-AC3, P5-AC1, US6-T068):
  *   - `initializeLabels(repo)` — legacy 1-arg call; creates ONLY the
  *     mc:* status and priority:* labels.
  *   - `initializeLabels(repo, workspaceId)` — 2-arg call. With
@@ -43,8 +43,22 @@ import type Database from 'better-sqlite3'
  *     does NOT change the outbound label set; this preserves byte-identical
  *     behavior under flag-OFF (US1-AC3) while letting downstream callers
  *     start passing the workspace context.
+ *   - `initializeLabels(repo, workspaceId, { trigger })` — 3-arg call.
+ *     `trigger` is one of `'connect' | 'area_slug_change' | 'bootstrap'`
+ *     and identifies the call site for downstream observability (FR-027a
+ *     `data.trigger`). For US6, the third argument is ACCEPTED and
+ *     CARRIED through to the downstream label-provisioning path (wired in
+ *     T074). It does NOT change the outbound label set today.
  */
-export async function initializeLabels(repo: string, _workspaceId?: number): Promise<void> {
+export interface InitializeLabelsOptions {
+  trigger?: 'connect' | 'area_slug_change' | 'bootstrap'
+}
+
+export async function initializeLabels(
+  repo: string,
+  _workspaceId?: number,
+  _opts?: InitializeLabelsOptions,
+): Promise<void> {
   await ensureLabels(repo, ALL_MC_LABELS)
   logger.info({ repo }, 'GitHub labels initialized')
 }

@@ -431,7 +431,12 @@ async function handleInitLabels(
     return NextResponse.json({ error: 'repo is required' }, { status: 400 })
   }
 
-  await initializeLabels(repo)
+  // SPEC-006 / FR-039, FR-063, T068 — pass the resolved workspaceId and a
+  // `trigger='connect'` discriminator so downstream provisioning (FR-025,
+  // US7) can attribute the call site. Per-label provisioning failures are
+  // isolated inside `initializeLabels` (FR-027) and MUST NOT alter this
+  // handler's response shape, status code, or authorization contract.
+  await initializeLabels(repo, workspaceId, { trigger: 'connect' })
 
   // Mark project labels as initialized
   const db = getDatabase()

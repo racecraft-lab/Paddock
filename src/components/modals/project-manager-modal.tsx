@@ -60,6 +60,13 @@ interface AreaSlugConflictState {
 // SPEC-006 / FR-034 — RFC 1123 / Kubernetes DNS label, max 32 chars.
 const AREA_SLUG_REGEX = /^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$/
 
+// SPEC-006 / FR-040a, P5-AC9 — required tooltip copy on the three new fields
+// when `FEATURE_AREA_LABEL_ROUTING` is OFF. Surfacing the same string on
+// every disabled control gives operators a consistent discovery cue.
+// Exported so tests can assert the tooltip text without duplicating the literal.
+export const FLAG_OFF_TOOLTIP =
+  'Available after FEATURE_AREA_LABEL_ROUTING is enabled for this workspace.'
+
 interface Agent {
   id: number
   name: string
@@ -541,8 +548,16 @@ export function ProjectManagerModal({
                           <div className="flex items-center gap-2 mt-2">
                             <button
                               type="button"
-                              onClick={() => setEditForm(prev => ({ ...prev, is_repo_sync_owner: !prev.is_repo_sync_owner }))}
+                              data-testid="is-repo-sync-owner-toggle"
+                              onClick={() => {
+                                if (!areaRoutingFlagOn) return
+                                setEditForm(prev => ({ ...prev, is_repo_sync_owner: !prev.is_repo_sync_owner }))
+                              }}
+                              disabled={!areaRoutingFlagOn}
+                              aria-disabled={!areaRoutingFlagOn ? 'true' : undefined}
+                              title={!areaRoutingFlagOn ? FLAG_OFF_TOOLTIP : undefined}
                               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                !areaRoutingFlagOn ? 'opacity-50 cursor-not-allowed bg-muted-foreground/30' :
                                 editForm.is_repo_sync_owner ? 'bg-primary' : 'bg-muted-foreground/30'
                               }`}
                               aria-label="Toggle repo sync owner"
@@ -566,17 +581,24 @@ export function ProjectManagerModal({
                         </div>
                       )}
 
-                      {/* SPEC-006 / FR-040 — triage project toggle. Visible
-                          only when FEATURE_AREA_LABEL_ROUTING is ON for the
-                          workspace; otherwise the PUT route would reject any
-                          attempt with `feature_flag_disabled`. */}
-                      {areaRoutingFlagOn && (
+                      {/* SPEC-006 / FR-040, FR-040a — triage project + area_slug.
+                          Always rendered; FR-040a applies visible-but-disabled
+                          state when FEATURE_AREA_LABEL_ROUTING is OFF. */}
+                      {(
                         <div>
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() => setEditForm(prev => ({ ...prev, is_triage_project: !prev.is_triage_project }))}
+                              data-testid="is-triage-project-toggle"
+                              onClick={() => {
+                                if (!areaRoutingFlagOn) return
+                                setEditForm(prev => ({ ...prev, is_triage_project: !prev.is_triage_project }))
+                              }}
+                              disabled={!areaRoutingFlagOn}
+                              aria-disabled={!areaRoutingFlagOn ? 'true' : undefined}
+                              title={!areaRoutingFlagOn ? FLAG_OFF_TOOLTIP : undefined}
                               className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                !areaRoutingFlagOn ? 'opacity-50 cursor-not-allowed bg-muted-foreground/30' :
                                 editForm.is_triage_project ? 'bg-primary' : 'bg-muted-foreground/30'
                               }`}
                               aria-label="Toggle triage project"
@@ -605,10 +627,19 @@ export function ProjectManagerModal({
                             </label>
                             <input
                               type="text"
+                              data-testid="area-slug-input"
                               value={editForm.area_slug}
-                              onChange={(e) => setEditForm(prev => ({ ...prev, area_slug: e.target.value }))}
+                              onChange={(e) => {
+                                if (!areaRoutingFlagOn) return
+                                setEditForm(prev => ({ ...prev, area_slug: e.target.value }))
+                              }}
+                              disabled={!areaRoutingFlagOn}
+                              aria-disabled={!areaRoutingFlagOn ? 'true' : undefined}
+                              title={!areaRoutingFlagOn ? FLAG_OFF_TOOLTIP : undefined}
                               placeholder="qa, dev, infra, frontend (lowercase; 1-32 chars; RFC 1123)"
-                              className="w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm font-mono"
+                              className={`w-full bg-surface-1 text-foreground border border-border rounded-md px-3 py-2 text-sm font-mono ${
+                                !areaRoutingFlagOn ? 'opacity-50 cursor-not-allowed' : ''
+                              }`}
                             />
                             {editForm.area_slug.length > 0 && !AREA_SLUG_REGEX.test(editForm.area_slug) && (
                               <div className="mt-1 text-xs text-red-400">
