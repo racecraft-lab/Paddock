@@ -69,6 +69,7 @@ import {
   pullFromGitHub,
   pushTaskToGitHub,
   loadAreaRoutingCache,
+  backfillAreaRouting,
 } from '../github-sync-engine'
 import type { GitHubIssue } from '../github'
 
@@ -810,5 +811,539 @@ describe('SPEC-006 / T041 — outbound area:* emission', () => {
 
     const labels = updateIssueMock.mock.calls[0]?.[2]?.labels as string[]
     expect(labels.some((l) => l.startsWith('area:'))).toBe(false)
+  })
+})
+
+// ── SPEC-006 / Phase 7 (US5) — backfillAreaRouting helpers + tests ────
+
+interface SeedTaskArgs {
+  id?: number
+  workspaceId: number
+  projectId: number
+  githubRepo?: string | null
+  githubIssueNumber?: number | null
+  tags?: string[] | null | string
+  status?: string
+  priority?: string
+}
+
+function seedTask(db: Database.Database, args: SeedTaskArgs): number {
+  const tagsValue =
+    args.tags === null
+      ? null
+      : typeof args.tags === 'string'
+        ? args.tags
+        : JSON.stringify(args.tags ?? [])
+  const stmt = db.prepare(`
+    INSERT INTO tasks (
+      id, title, status, priority, created_by,
+      created_at, updated_at, tags, metadata,
+      github_issue_number, github_repo, github_synced_at,
+      project_id, workspace_id
+    ) VALUES (?, ?, ?, ?, 'github-sync', unixepoch(), unixepoch(), ?, '{}', ?, ?, unixepoch(), ?, ?)
+  `)
+  const info = stmt.run(
+    args.id ?? null,
+    `Task ${args.githubIssueNumber ?? args.id ?? 'x'}`,
+    args.status ?? 'backlog',
+    args.priority ?? 'p2',
+    tagsValue,
+    args.githubIssueNumber ?? null,
+    args.githubRepo ?? null,
+    args.projectId,
+    args.workspaceId,
+  )
+  return Number(info.lastInsertRowid)
+}
+
+function getBackfillCompletedAt(
+  db: Database.Database,
+  workspaceId: number,
+): number | string | null {
+  const row = db
+    .prepare(`SELECT feature_flags FROM workspaces WHERE id = ?`)
+    .get(workspaceId) as { feature_flags: string | null } | undefined
+  if (!row?.feature_flags) return null
+  try {
+    const parsed = JSON.parse(row.feature_flags) as Record<string, unknown>
+    const v = parsed.area_label_routing_backfill_completed_at
+    if (typeof v === 'number' || typeof v === 'string') return v
+    return null
+  } catch {
+    return null
+  }
+}
+
+function installFailingTrigger(db: Database.Database, name: string, condition: string): void {
+  db.prepare(
+    `CREATE TRIGGER ${name}
+     BEFORE INSERT ON activities
+     WHEN ${condition}
+     BEGIN SELECT RAISE(ABORT, 'forced-failure'); END;`,
+  ).run()
+}
+
+// ── T050 — per-task transaction atomicity (FR-021) ──────────────────────
+describe('SPEC-006 / T050 — backfillAreaRouting per-task transaction (FR-021)', () => {
+  it('(a) success case sets project_id, area_routing_backfilled_at, AND writes activity in one COMMIT', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 500,
+      tags: ['area:qa'],
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+
+    const t = db
+      .prepare(`SELECT project_id, area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { project_id: number; area_routing_backfilled_at: number | null }
+    expect(t.project_id).toBe(qaId)
+    expect(t.area_routing_backfilled_at).not.toBeNull()
+    expect(typeof t.area_routing_backfilled_at).toBe('number')
+
+    const activity = db
+      .prepare(`SELECT type, data FROM activities WHERE entity_id = ? AND type LIKE 'area_routing_%'`)
+      .get(taskId) as { type: string; data: string }
+    expect(activity.type).toBe('area_routing_resolved')
+    const data = JSON.parse(activity.data) as { source: string; reason: string }
+    expect(data.source).toBe('backfill')
+    expect(data.reason).toBe('single_match')
+  })
+
+  it('(b) activity-INSERT failure rolls back: project_id and area_routing_backfilled_at stay unchanged', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 501, tags: ['area:qa'],
+    })
+    installFailingTrigger(
+      db, 'backfill_activity_fail',
+      `NEW.type LIKE 'area_routing_%' AND NEW.data LIKE '%"source":"backfill"%'`,
+    )
+    getDatabaseMock.mockReturnValue(db)
+
+    expect(() => backfillAreaRouting(db, 1)).not.toThrow()
+
+    const t = db
+      .prepare(`SELECT project_id, area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { project_id: number; area_routing_backfilled_at: number | null }
+    expect(t.project_id).toBe(ownerId)
+    expect(t.area_routing_backfilled_at).toBeNull()
+    expect(qaId).toBeGreaterThan(0)
+  })
+
+  it('(c) NULL tags → no_label → routes to triage with reason=no_label and source=backfill', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const triageId = seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 502, tags: null,
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+
+    const t = db.prepare(`SELECT project_id FROM tasks WHERE id = ?`).get(taskId) as { project_id: number }
+    expect(t.project_id).toBe(triageId)
+    const activity = db
+      .prepare(`SELECT type, data FROM activities WHERE entity_id = ? AND type LIKE 'area_routing_%'`)
+      .get(taskId) as { type: string; data: string }
+    expect(activity.type).toBe('area_routing_unresolved')
+    const data = JSON.parse(activity.data) as { reason: string; source: string }
+    expect(data.reason).toBe('no_label')
+    expect(data.source).toBe('backfill')
+  })
+
+  it('(d) malformed-JSON tags → identical to NULL (no abort)', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const triageId = seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 503,
+      tags: 'not valid json {{[',
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    expect(() => backfillAreaRouting(db, 1)).not.toThrow()
+
+    const t = db
+      .prepare(`SELECT project_id, area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { project_id: number; area_routing_backfilled_at: number | null }
+    expect(t.project_id).toBe(triageId)
+    expect(t.area_routing_backfilled_at).not.toBeNull()
+  })
+
+  it('(e) task already in correct project → marker still set, no project_id change', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: qaId,
+      githubRepo: 'org/repo', githubIssueNumber: 504, tags: ['area:qa'],
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+
+    const t = db
+      .prepare(`SELECT project_id, area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { project_id: number; area_routing_backfilled_at: number | null }
+    expect(t.project_id).toBe(qaId)
+    expect(t.area_routing_backfilled_at).not.toBeNull()
+  })
+})
+
+// ── T051 — area_routing_backfilled_at monotonicity (FR-021a, FR-056) ────
+describe('SPEC-006 / T051 — area_routing_backfilled_at monotonicity', () => {
+  it('once set, the marker is never reset to NULL or decreased across full sync cycles', async () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 600, tags: ['area:qa'],
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+    const t1 = db.prepare(`SELECT area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { area_routing_backfilled_at: number }
+    expect(t1.area_routing_backfilled_at).not.toBeNull()
+    const v1 = t1.area_routing_backfilled_at
+
+    fetchIssueMock.mockResolvedValue(makeIssue({ number: 600, labels: [] }))
+    updateIssueMock.mockResolvedValue(undefined)
+    await pushTaskToGitHub(
+      {
+        id: taskId, title: 'x', status: 'in_progress', priority: 'p2',
+        github_issue_number: 600, github_repo: 'org/repo',
+        workspace_id: 1, project_id: qaId,
+      },
+      { id: qaId, github_repo: 'org/repo', github_sync_enabled: 1 },
+    )
+    const t2 = db.prepare(`SELECT area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { area_routing_backfilled_at: number }
+    expect(t2.area_routing_backfilled_at).toBe(v1)
+
+    fetchIssuesMock.mockResolvedValueOnce([
+      makeIssue({ number: 600, labels: ['area:dev'], updatedAt: '2026-06-01T10:00:00Z' }),
+    ])
+    await pullFromGitHub(
+      { id: ownerId, github_repo: 'org/repo', github_sync_enabled: 1 }, 1,
+    )
+    const t3 = db.prepare(`SELECT area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { area_routing_backfilled_at: number }
+    expect(t3.area_routing_backfilled_at).toBe(v1)
+
+    backfillAreaRouting(db, 1)
+    const t4 = db.prepare(`SELECT area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { area_routing_backfilled_at: number }
+    expect(t4.area_routing_backfilled_at).toBe(v1)
+  })
+})
+
+// ── T052 — first-flag-on bootstrap fires once ──────────────────────────
+describe('SPEC-006 / T052 — first-flag-on bootstrap (FR-019, FR-022)', () => {
+  it('flag transitions OFF→ON: poller invokes backfill exactly once and marker prevents re-invocation', async () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 700, tags: ['area:qa'],
+    })
+    getDatabaseMock.mockReturnValue(db)
+    fetchIssuesMock.mockResolvedValue([])
+
+    const { runSyncTickForTest } = await import('../github-sync-poller')
+    await runSyncTickForTest()
+
+    const marker1 = getBackfillCompletedAt(db, 1)
+    expect(marker1).not.toBeNull()
+    const tAfterFirst = db
+      .prepare(`SELECT project_id FROM tasks WHERE github_issue_number = 700`)
+      .get() as { project_id: number }
+    expect(tAfterFirst.project_id).toBe(qaId)
+
+    const activityCountBefore = (
+      db.prepare(`SELECT COUNT(*) as c FROM activities WHERE type = 'area_routing_resolved'`)
+        .get() as { c: number }
+    ).c
+    await runSyncTickForTest()
+    const activityCountAfter = (
+      db.prepare(`SELECT COUNT(*) as c FROM activities WHERE type = 'area_routing_resolved'`)
+        .get() as { c: number }
+    ).c
+    expect(activityCountAfter).toBe(activityCountBefore)
+  })
+})
+
+// ── T053 — backfill completion-marker semantics (FR-022) ────────────────
+describe('SPEC-006 / T053 — completion marker (FR-022)', () => {
+  it('(a) marker set ONLY after pending count = 0', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 800, tags: ['area:qa'],
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+    expect(getBackfillCompletedAt(db, 1)).not.toBeNull()
+  })
+
+  it('(b) per-task failure leaves the marker unset', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 801, tags: ['area:qa'],
+    })
+    installFailingTrigger(
+      db, 'block_backfill_activity_for_marker_test',
+      `NEW.type LIKE 'area_routing_%' AND NEW.data LIKE '%"source":"backfill"%'`,
+    )
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+    expect(getBackfillCompletedAt(db, 1)).toBeNull()
+  })
+
+  it('(d) if marker UPDATE fails after the loop, the next bootstrap finds zero pending and sets the marker without reprocessing', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 802, tags: ['area:qa'],
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+    db.prepare(
+      `UPDATE workspaces SET feature_flags = json_remove(feature_flags, '$.area_label_routing_backfill_completed_at') WHERE id = ?`,
+    ).run(1)
+
+    const t1 = db.prepare(`SELECT area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { area_routing_backfilled_at: number }
+    const v1 = t1.area_routing_backfilled_at
+
+    backfillAreaRouting(db, 1)
+    const t2 = db.prepare(`SELECT area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { area_routing_backfilled_at: number }
+    expect(t2.area_routing_backfilled_at).toBe(v1)
+    expect(getBackfillCompletedAt(db, 1)).not.toBeNull()
+  })
+})
+
+// ── T054 — idempotent resume (FR-023) ───────────────────────────────────
+describe('SPEC-006 / T054 — idempotent resume (FR-023)', () => {
+  it('resumed scan only touches tasks where area_routing_backfilled_at IS NULL', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    for (let i = 0; i < 25; i++) {
+      const tid = seedTask(db, {
+        workspaceId: 1, projectId: qaId,
+        githubRepo: 'org/repo', githubIssueNumber: 900 + i, tags: ['area:qa'],
+      })
+      db.prepare(`UPDATE tasks SET area_routing_backfilled_at = ? WHERE id = ?`)
+        .run(1000 + i, tid)
+    }
+    for (let i = 0; i < 25; i++) {
+      seedTask(db, {
+        workspaceId: 1, projectId: ownerId,
+        githubRepo: 'org/repo', githubIssueNumber: 1000 + i, tags: ['area:qa'],
+      })
+    }
+    getDatabaseMock.mockReturnValue(db)
+
+    const before = db
+      .prepare(`SELECT COUNT(*) as c FROM tasks WHERE workspace_id = 1 AND area_routing_backfilled_at IS NULL`)
+      .get() as { c: number }
+    expect(before.c).toBe(25)
+
+    backfillAreaRouting(db, 1)
+
+    const after = db
+      .prepare(`SELECT COUNT(*) as c FROM tasks WHERE workspace_id = 1 AND area_routing_backfilled_at IS NULL`)
+      .get() as { c: number }
+    expect(after.c).toBe(0)
+    const preserved = db
+      .prepare(`SELECT COUNT(*) as c FROM tasks WHERE workspace_id = 1 AND area_routing_backfilled_at < 2000`)
+      .get() as { c: number }
+    expect(preserved.c).toBe(25)
+  })
+})
+
+// ── T055 — single-task-failure isolation (FR-021, FR-027b) ─────────────
+describe('SPEC-006 / T055 — single-task-failure isolation', () => {
+  it('one failing task does NOT abort the run; subsequent tasks COMMIT', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const failingId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 1100, tags: ['area:qa'],
+    })
+    const goodId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 1101, tags: ['area:qa'],
+    })
+    installFailingTrigger(
+      db, 'fail_for_specific_task',
+      `NEW.type LIKE 'area_routing_%' AND NEW.data LIKE '%"source":"backfill"%' AND NEW.entity_id = ${failingId}`,
+    )
+    getDatabaseMock.mockReturnValue(db)
+
+    expect(() => backfillAreaRouting(db, 1)).not.toThrow()
+
+    const failing = db
+      .prepare(`SELECT project_id, area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(failingId) as { project_id: number; area_routing_backfilled_at: number | null }
+    expect(failing.area_routing_backfilled_at).toBeNull()
+
+    const good = db
+      .prepare(`SELECT project_id, area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(goodId) as { project_id: number; area_routing_backfilled_at: number | null }
+    expect(good.project_id).toBe(qaId)
+    expect(good.area_routing_backfilled_at).not.toBeNull()
+  })
+})
+
+// ── T056 — repeat failures keep retrying (no permanent skip) ───────────
+describe('SPEC-006 / T056 — repeat failures, no permanent skip (FR-022)', () => {
+  it('re-runs continue to retry the same failing task across cycles', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    seedProject(db, { workspaceId: 1, slug: 'p-qa', areaSlug: 'qa' })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 1200, tags: ['area:qa'],
+    })
+    installFailingTrigger(
+      db, 'repeat_fail',
+      `NEW.type LIKE 'area_routing_%' AND NEW.data LIKE '%"source":"backfill"%'`,
+    )
+    getDatabaseMock.mockReturnValue(db)
+
+    backfillAreaRouting(db, 1)
+    backfillAreaRouting(db, 1)
+    backfillAreaRouting(db, 1)
+
+    const t = db.prepare(`SELECT area_routing_backfilled_at FROM tasks WHERE id = ?`)
+      .get(taskId) as { area_routing_backfilled_at: number | null }
+    expect(t.area_routing_backfilled_at).toBeNull()
+    expect(getBackfillCompletedAt(db, 1)).toBeNull()
+  })
+})
+
+// ── T057 — UNIQUE-constraint preservation regression (FR-008, FR-050) ──
+describe('SPEC-006 / T057 — same-repo-different-projects regression (FR-008/FR-050)', () => {
+  it('moves a task between two projects sharing (workspace_id, github_repo) without UNIQUE violation', () => {
+    const db = freshMigratedDb()
+    setWorkspaceFlag(db, 1, true)
+    const ownerId = seedProject(db, {
+      workspaceId: 1, slug: 'p-owner', githubRepo: 'org/repo',
+      isRepoSyncOwner: 1, githubSyncEnabled: 1,
+    })
+    const qaId = seedProject(db, {
+      workspaceId: 1, slug: 'p-qa', githubRepo: 'org/repo',
+      areaSlug: 'qa', isRepoSyncOwner: 0,
+    })
+    seedProject(db, { workspaceId: 1, slug: 'p-triage', isTriageProject: 1 })
+    const taskId = seedTask(db, {
+      workspaceId: 1, projectId: ownerId,
+      githubRepo: 'org/repo', githubIssueNumber: 1300, tags: ['area:qa'],
+    })
+    getDatabaseMock.mockReturnValue(db)
+
+    expect(() => backfillAreaRouting(db, 1)).not.toThrow()
+
+    const t = db.prepare(`SELECT project_id FROM tasks WHERE id = ?`)
+      .get(taskId) as { project_id: number }
+    expect(t.project_id).toBe(qaId)
+
+    const activities = db
+      .prepare(`SELECT data FROM activities WHERE entity_id = ? AND type = 'area_routing_resolved'`)
+      .all(taskId) as Array<{ data: string }>
+    expect(activities).toHaveLength(1)
+    const data = JSON.parse(activities[0].data) as { reason: string; source: string }
+    expect(data.reason).toBe('single_match')
+    expect(data.source).toBe('backfill')
   })
 })
