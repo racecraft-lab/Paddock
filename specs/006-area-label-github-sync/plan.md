@@ -156,7 +156,7 @@ See [`data-model.md`](./data-model.md). Summary:
 - **`tasks`** gains one NULLable column: `area_routing_backfilled_at TIMESTAMP NULL`.
 - **`workspaces.feature_flags JSON`** gains one runtime key: `area_label_routing_backfill_completed_at` (set after backfill completes; idempotent guard).
 - Four indexes: `idx_projects_workspace_area_slug` (non-unique), `idx_projects_one_sync_owner_per_repo` (partial unique on `is_repo_sync_owner=1`), `idx_projects_one_triage_per_workspace` (partial unique on `is_triage_project=1`), `idx_tasks_area_routing_backfill_pending` (partial on `github_issue_number IS NOT NULL AND area_routing_backfilled_at IS NULL`).
-- Three new `activities.kind` values: `area_routing_resolved`, `area_routing_unresolved`, `label_provisioning_failed`. One additional kind for transfer audits: `sync_owner_transferred`.
+- Four new `activities.kind` values: `area_routing_resolved`, `area_routing_unresolved`, `label_provisioning_failed`, and `sync_owner_transferred` (transfer audit). All four are written through the existing activity-write helper inside `src/lib/github-sync-engine.ts`; no new activity helper is introduced.
 
 ### Contracts
 

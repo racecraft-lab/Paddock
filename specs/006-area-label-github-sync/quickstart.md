@@ -41,7 +41,7 @@ SQL
 
 Expected:
 
-- `projects.area_slug TEXT`, `projects.is_triage_project INTEGER NOT NULL DEFAULT 0`, `projects.is_repo_sync_owner INTEGER NOT NULL DEFAULT 0`.
+- `projects.area_slug TEXT`, `projects.is_triage_project INTEGER DEFAULT 0`, `projects.is_repo_sync_owner INTEGER DEFAULT 0` (no `NOT NULL` clause per FR-003 / Constitution Article VII; `DEFAULT 0` provides the intended initial value for existing rows).
 - `tasks.area_routing_backfilled_at INTEGER`.
 - Indexes: `idx_projects_workspace_area_slug`, `idx_projects_one_sync_owner_per_repo`, `idx_projects_one_triage_per_workspace`, `idx_tasks_area_routing_backfill_pending`.
 

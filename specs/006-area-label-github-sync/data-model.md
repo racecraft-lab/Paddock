@@ -14,17 +14,17 @@ This document specifies the schema delta, all indexes, the migration backfill, a
 
 ```sql
 ALTER TABLE projects ADD COLUMN area_slug TEXT;
-ALTER TABLE projects ADD COLUMN is_triage_project INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE projects ADD COLUMN is_repo_sync_owner INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE projects ADD COLUMN is_triage_project INTEGER DEFAULT 0;
+ALTER TABLE projects ADD COLUMN is_repo_sync_owner INTEGER DEFAULT 0;
 ```
 
-> Implemented via `addColumnIfMissing(db, 'projects', 'area_slug', 'area_slug TEXT')` etc., consistent with the existing migration helper precedent (`028_github_sync_v2`). Boolean columns use SQLite's `INTEGER` storage class with `0`/`1` semantics; the `NOT NULL DEFAULT 0` clause is allowed because every existing row gets `0` (which is the intended initial state).
+> Implemented via `addColumnIfMissing(db, 'projects', 'area_slug', 'area_slug TEXT')` etc., consistent with the existing migration helper precedent (`028_github_sync_v2`). Boolean columns use SQLite's `INTEGER` storage class with `0`/`1` semantics. Per FR-003, NO `NOT NULL` constraint is added on any new column; the `DEFAULT 0` clause alone produces the intended `0` value for existing rows while leaving the column nullable in DDL terms (additive-migration policy, Constitution Article VII).
 
 | Column | Type | Constraints | Purpose |
 |--------|------|-------------|---------|
 | `area_slug` | `TEXT` | NULL allowed; format `^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$` enforced by application | The slug used to resolve `area:<slug>` GitHub labels to this project (FR-009..FR-014). NULL means the project is not an area-routing target. |
-| `is_triage_project` | `INTEGER` (BOOLEAN) | `DEFAULT 0`; partial unique index per workspace | Marks the project as the workspace's triage destination for unresolvable issues (FR-014, US3). |
-| `is_repo_sync_owner` | `INTEGER` (BOOLEAN) | `DEFAULT 0`; partial unique index per `(workspace_id, github_repo)` | Marks the project as the sole poller for its `github_repo` when the flag is ON (FR-018, US2). |
+| `is_triage_project` | `INTEGER` (BOOLEAN) | NULL allowed; `DEFAULT 0`; partial unique index per workspace | Marks the project as the workspace's triage destination for unresolvable issues (FR-014, US3). |
+| `is_repo_sync_owner` | `INTEGER` (BOOLEAN) | NULL allowed; `DEFAULT 0`; partial unique index per `(workspace_id, github_repo)` | Marks the project as the sole poller for its `github_repo` when the flag is ON (FR-018, US2). |
 
 ### 1.2 `tasks` table — one NULLable column
 

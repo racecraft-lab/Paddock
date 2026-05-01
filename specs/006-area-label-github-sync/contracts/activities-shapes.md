@@ -89,9 +89,11 @@ SELECT 1 FROM activities
 WHERE kind = 'label_provisioning_failed'
   AND workspace_id = ?
   AND json_extract(data, '$.github_repo') = ?
-  AND created_at > unixepoch() - 86400
+  AND created_at >= unixepoch() - 86400
 LIMIT 1;
 ```
+
+The `>=` operator is canonical per spec FR-027 — it closes the same-second boundary so the same operator action cannot produce two rows in the same epoch second. T072 (tasks.md) asserts this boundary explicitly.
 
 If a row exists, the function logs but does not insert.
 

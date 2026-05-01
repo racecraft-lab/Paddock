@@ -94,7 +94,7 @@ Full table (already in `spec.md` FR-030):
 
 **Question**: How does the inbound routing avoid N+1 lookups on workspaces with many issues per sync?
 
-**Decision**: **Build the cache once per `pullFromGitHub` invocation via a non-exported helper `loadAreaRoutingCache(db, workspaceId): { areaToProjectId: Map<string, number>, triageProjectId: number | null }`.** The helper runs one `SELECT id, area_slug, is_triage_project FROM projects WHERE workspace_id=?` and folds the result into a Map plus a single triage project id.
+**Decision**: **Build the cache once per `pullFromGitHub` invocation via a non-exported helper `loadAreaRoutingCache(db, workspaceId): { slugToProjectId: Map<string, number>, triageProjectId: number | null }`.** The helper runs one `SELECT id, area_slug, is_triage_project FROM projects WHERE workspace_id=?` and folds the result into a Map (keyed by `area_slug` → `project_id`) plus a single triage project id. The key name `slugToProjectId` is canonical (matches tasks.md T044); the design-concept Q12 phrase "areaToProjectId" is a synonym retained for prose readability.
 
 **Rationale**:
 
@@ -116,7 +116,7 @@ Full table (already in `spec.md` FR-030):
 
 **Question**: How are `initializeLabels` per-label failures recorded without spamming the activity log on rate-limit storms?
 
-**Decision**: **Aggregate all per-label failures from a single `initializeLabels` invocation into one `kind='label_provisioning_failed'` activity. Throttle inserts to at most one per `(workspace_id, github_repo)` per 24 hours by querying for an existing row with `created_at > unixepoch() - 86400` before insert.**
+**Decision**: **Aggregate all per-label failures from a single `initializeLabels` invocation into one `kind='label_provisioning_failed'` activity. Throttle inserts to at most one per `(workspace_id, github_repo)` per 24 hours by querying for an existing row with `created_at >= unixepoch() - 86400` before insert.** The `>=` operator (canonical per spec FR-027) closes the same-second boundary case so a single operator action cannot produce two rows in the same epoch second.
 
 **Rationale**:
 
