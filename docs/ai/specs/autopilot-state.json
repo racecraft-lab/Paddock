@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-004-workflow.md",
-  "updated_at": "2026-05-01T20:42:31Z",
-  "active_step": "Post: PR Creation",
-  "status": "SPEC-004 implementation and higher-ulimit post-verification are complete; PR creation is active",
+  "updated_at": "2026-05-01T20:45:13Z",
+  "active_step": "Complete",
+  "status": "SPEC-004 implementation, higher-ulimit post-verification, PR creation, and immediate review-thread check are complete",
   "notes": [
     "SPEC-004 setup completed on branch 004-task-pipeline-engine from origin/main bce89a2.",
     "Workflow file docs/ai/specs/SPEC-004-workflow.md was generated for Task Pipeline Engine and Declarative Routing and is ready for autopilot review.",
@@ -72,7 +72,8 @@
     "Post Doctor completed on 2026-05-01T20:42:31Z: the doctor extension reported stale root-level templates/memory false positives, while the canonical prerequisite script passed against the actual .specify layout and SPEC-004 feature directory.",
     "Post higher-ulimit verification completed on 2026-05-01T20:42:31Z: `pnpm spec004:guardrails`, strict TypeScript, `pnpm typecheck`, `pnpm lint`, `pnpm test` (150 files/1182 tests), `pnpm build`, focused Playwright (25/25), full `pnpm test:e2e` (532/532), and `pnpm audit:high` all passed under the approved execution surface with `ulimit -n 8192` where needed.",
     "Post task reconciliation and code review completed on 2026-05-01T20:42:31Z: all 88 generated tasks are checked complete, no task-referenced repository file is missing, and the final e2e compatibility delta is scoped to Product Line workflow API test helpers.",
-    "Post cleanup and retrospective completed on 2026-05-01T20:42:31Z: workflow evidence, roadmap evidence, PRD status note, and specs/004-task-pipeline-engine/retrospective.md were updated before PR creation."
+    "Post cleanup and retrospective completed on 2026-05-01T20:42:31Z: workflow evidence, roadmap evidence, PRD status note, and specs/004-task-pipeline-engine/retrospective.md were updated before PR creation.",
+    "PR creation and immediate review-remediation check completed on 2026-05-01T20:45:13Z: branch 004-task-pipeline-engine was pushed to origin, PR #22 opened at https://github.com/racecraft-lab/mission-control/pull/22, reviewThreads returned no nodes, and initial GitHub checks were pending."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -275,11 +276,11 @@
     },
     {
       "step": "Post: PR Creation",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: Review Remediation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Retrospective",

@@ -726,6 +726,13 @@ For each task, follow this cycle:
 - `git -c commit.gpgsign=false commit -m "feat(spec-004): implement task pipeline engine"` succeeded as commit `5f92f179d7f89a256e09589d982354be1f32a95d`.
 - T088 is complete. Post-implementation push/PR tasks can proceed from commit `5f92f179d7f89a256e09589d982354be1f32a95d`.
 
+### PR Review Handoff - 2026-05-01
+
+- Post-verification cleanup and scoped workflow e2e compatibility evidence were committed as `fe63fef` (`test(spec-004): align scoped workflow verification`).
+- Branch `004-task-pipeline-engine` was pushed to `origin`.
+- PR #22 is open for review: https://github.com/racecraft-lab/mission-control/pull/22
+- Immediate review-thread check returned no review threads. Initial GitHub checks were pending at handoff: Analyze (actions), Analyze (javascript-typescript), argos-storybook, docker-ui-e2e, and quality-gate.
+
 ---
 
 ## Post-Implementation Checklist
@@ -755,7 +762,7 @@ For each task, follow this cycle:
 - [x] Real running-app Playwright verification for P3-AC12 passes.
 - [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-004 implementation evidence after verification.
 - [x] `docs/rc-factory-v1-prd.md` reflects SPEC-004 completion after verification.
-- [ ] Branch is pushed for review.
+- [x] Branch is pushed for review.
 - [x] Retrospective evidence is recorded in `specs/004-task-pipeline-engine/retrospective.md`.
 
 ---
