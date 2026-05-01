@@ -13,6 +13,7 @@ import {
   updateIssue,
   createIssue,
   ensureLabels,
+  createLabel,
   type GitHubIssue,
 } from '@/lib/github'
 import {
@@ -20,6 +21,7 @@ import {
   ALL_STATUS_LABEL_NAMES,
   ALL_PRIORITY_LABEL_NAMES,
   ALL_AREA_LABEL_NAMES,
+  areaLabelsForWorkspace,
   statusToLabel,
   labelToStatus,
   priorityToLabel,
@@ -28,6 +30,62 @@ import {
   type TaskPriority,
 } from '@/lib/github-label-map'
 import type Database from 'better-sqlite3'
+
+// ── SPEC-006 / FR-027b — error classification + sanitization ─────────
+//
+// `classifyLabelProvisioningError` maps a thrown error to one of the
+// FR-027b error_class values. The HTTP error path (from
+// `createLabel`) carries the status in `Error('GitHub API error <status>:
+// ...')` form (see github.ts:268); we match that shape. Network failures
+// (DNS, TLS, connection reset, timeout) come back as `TypeError` from
+// `fetch()`; any other thrown error class falls through to UnknownError.
+type LabelProvisioningErrorClass =
+  | 'RateLimitError'
+  | 'NetworkError'
+  | 'HttpClientError'
+  | 'HttpServerError'
+  | 'UnknownError'
+
+export function classifyLabelProvisioningError(err: unknown): LabelProvisioningErrorClass {
+  if (!(err instanceof Error)) return 'UnknownError'
+  const m = err.message.match(/GitHub API error (\d{3})/)
+  if (m) {
+    const status = Number(m[1])
+    if (status === 429) return 'RateLimitError'
+    if (status >= 400 && status < 500) return 'HttpClientError'
+    if (status >= 500 && status < 600) return 'HttpServerError'
+  }
+  if (
+    err.name === 'TypeError' ||
+    /fetch failed|ECONN|ENOTFOUND|EAI_AGAIN|ETIMEDOUT|certificate|TLS|network/i.test(err.message)
+  ) {
+    return 'NetworkError'
+  }
+  return 'UnknownError'
+}
+
+// FR-027a / FR-027b — sanitize a free-text error message:
+//  - strip Authorization header lines
+//  - strip GitHub PAT-shaped tokens (gh[posru]_...)
+//  - strip emails
+//  - strip API-key-shaped runs (long opaque tokens)
+//  - truncate to 500 chars
+// Sanitization is at the call site, not deferred.
+const GH_TOKEN_RE = /gh[posru]_[A-Za-z0-9_]+/g
+const AUTH_HEADER_RE = /Authorization:\s*[^\n\r]+/gi
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g
+const OPAQUE_KEY_RE = /\b[A-Za-z0-9_]{32,}\b/g
+
+export function sanitizeLabelProvisioningError(input: string): string {
+  if (typeof input !== 'string') return ''
+  let out = input
+  out = out.replace(AUTH_HEADER_RE, '<redacted-auth>')
+  out = out.replace(GH_TOKEN_RE, '<redacted-gh-token>')
+  out = out.replace(EMAIL_RE, '<redacted-email>')
+  out = out.replace(OPAQUE_KEY_RE, '<redacted>')
+  if (out.length > 500) out = out.slice(0, 500)
+  return out
+}
 
 /**
  * Idempotently create Mission Control labels on a GitHub repo.
@@ -56,11 +114,139 @@ export interface InitializeLabelsOptions {
 
 export async function initializeLabels(
   repo: string,
-  _workspaceId?: number,
-  _opts?: InitializeLabelsOptions,
+  workspaceId?: number,
+  opts?: InitializeLabelsOptions,
 ): Promise<void> {
-  await ensureLabels(repo, ALL_MC_LABELS)
-  logger.info({ repo }, 'GitHub labels initialized')
+  // 1) Resolve flag (per-workspace) and assemble the full label set.
+  let flagOn = false
+  let extraAreaLabels: Array<{ name: string; color: string; description?: string }> = []
+  if (typeof workspaceId === 'number') {
+    try {
+      const db = getDatabase()
+      const row = db
+        .prepare(`SELECT feature_flags FROM workspaces WHERE id = ?`)
+        .get(workspaceId) as { feature_flags: string | null } | undefined
+      flagOn = resolveFlag('FEATURE_AREA_LABEL_ROUTING', {
+        workspaceFlags: row?.feature_flags ?? null,
+      })
+      if (flagOn) {
+        extraAreaLabels = areaLabelsForWorkspace(db, workspaceId)
+      }
+    } catch (err) {
+      // Resolving the flag must NEVER abort label provisioning. Fall
+      // through with flagOn=false so legacy behavior wins.
+      flagOn = false
+      extraAreaLabels = []
+      logger.warn(
+        { err, workspaceId, event: 'label_provisioning_flag_resolve_failed' },
+        'initializeLabels: flag resolution failed, falling back to legacy label set',
+      )
+    }
+  }
+
+  // Flag-OFF path: byte-identical to legacy (FR-053). No new behavior, no
+  // new logs, no activity rows.
+  if (!flagOn) {
+    await ensureLabels(repo, ALL_MC_LABELS)
+    logger.info({ repo }, 'GitHub labels initialized')
+    return
+  }
+
+  // 2) Flag-ON path. Per-label loop with isolated try/catch so a single
+  // failure cannot abort the rest of the set or the surrounding sync run
+  // (FR-027). Idempotency (FR-026) is provided by `createLabel`'s 422-OK
+  // semantics; existing labels with different color/description are NOT
+  // modified here.
+  const fullSet = [...ALL_MC_LABELS, ...extraAreaLabels]
+  const failures: Array<{ name: string; err: unknown }> = []
+  for (const label of fullSet) {
+    try {
+      await createLabel(repo, label)
+    } catch (err) {
+      failures.push({ name: label.name, err })
+    }
+  }
+
+  // 3) Per-failure structured logs (FR-027b) — emitted unconditionally,
+  // independent of the 24h activity throttle. Use console.error for the
+  // structured shape (single object argument) so test harnesses and
+  // production log aggregators see the same payload.
+  for (const f of failures) {
+    const message = f.err instanceof Error ? f.err.message : String(f.err)
+    /* eslint-disable-next-line no-console */
+    console.error({
+      event: 'label_provisioning_failed',
+      workspace_id: workspaceId,
+      github_repo: repo,
+      error_message: sanitizeLabelProvisioningError(message),
+      error_class: classifyLabelProvisioningError(f.err),
+      label: f.name,
+    })
+  }
+
+  if (failures.length === 0) {
+    logger.info({ repo, workspaceId, areaCount: extraAreaLabels.length }, 'GitHub labels initialized (with area labels)')
+    return
+  }
+
+  // 4) Aggregated activity row (FR-027 / FR-027a). Throttled to one row
+  // per (workspace_id, github_repo) per 24 hours. The structured logs
+  // above are NOT throttled; only this row is.
+  try {
+    const db = getDatabase()
+    const recent = db
+      .prepare(
+        `SELECT id FROM activities
+          WHERE type = 'label_provisioning_failed'
+            AND workspace_id = ?
+            AND json_extract(data, '$.github_repo') = ?
+            AND created_at >= unixepoch() - 86400
+          LIMIT 1`,
+      )
+      .get(workspaceId, repo) as { id: number } | undefined
+    if (recent) {
+      logger.info(
+        { repo, workspaceId, failureCount: failures.length, event: 'label_provisioning_failed_throttled' },
+        'initializeLabels: activity throttled (within 24h window)',
+      )
+      return
+    }
+
+    const sampleRaw =
+      failures[0].err instanceof Error
+        ? failures[0].err.message
+        : String(failures[0].err)
+    const failedLabels = failures.map((f) => f.name)
+    const data = {
+      workspace_id: workspaceId,
+      github_repo: repo,
+      failed_labels: failedLabels,
+      error_count: failures.length,
+      sample_error: sanitizeLabelProvisioningError(sampleRaw),
+      trigger: opts?.trigger ?? 'connect',
+    }
+    db.prepare(
+      `INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id)
+       VALUES ('label_provisioning_failed', 'workspace', ?, 'github-sync',
+               ?, ?, ?)`,
+    ).run(
+      workspaceId ?? 0,
+      `Label provisioning failed for ${failedLabels.length}/${fullSet.length} labels on ${repo}`,
+      JSON.stringify(data),
+      workspaceId,
+    )
+  } catch (writeErr) {
+    // Activity-write failure must NOT throw out of initializeLabels.
+    logger.error(
+      {
+        err: writeErr,
+        workspace_id: workspaceId,
+        github_repo: repo,
+        event: 'label_provisioning_activity_write_failed',
+      },
+      'initializeLabels: activity insert failed',
+    )
+  }
 }
 
 // ── SPEC-006 / FR-009..FR-014 — area-routing cache + parser ──────────
