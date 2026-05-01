@@ -155,11 +155,11 @@ A security and rollout reviewer inspects the migration that ships SPEC-006 and c
 
 #### Schema and migration
 
-- **FR-003**: A migration (M62 or next available, reconciled with SPEC-004 at rebase time) MUST add three nullable columns to `projects`: `area_slug TEXT NULL`, `is_triage_project BOOLEAN DEFAULT 0`, and `is_repo_sync_owner BOOLEAN DEFAULT 0`. No NOT NULL constraint MUST be added to any new column.
-- **FR-004**: The migration MUST create three indexes: a non-unique index `idx_projects_workspace_area_slug` on `(workspace_id, area_slug)`, a partial unique index `idx_projects_one_sync_owner_per_repo` on `(workspace_id, github_repo) WHERE is_repo_sync_owner=1`, and a partial unique index `idx_projects_one_triage_per_workspace` on `(workspace_id) WHERE is_triage_project=1`.
+- **FR-003**: A migration (M62 or next available, reconciled with SPEC-004 at rebase time) MUST add three nullable columns to `projects` — `area_slug TEXT NULL`, `is_triage_project BOOLEAN DEFAULT 0`, and `is_repo_sync_owner BOOLEAN DEFAULT 0` — and one nullable column to `tasks` — `area_routing_backfilled_at TIMESTAMP NULL`. No NOT NULL constraint MUST be added to any new column. The migration MUST use the `addColumnIfMissing()` helper for idempotency, following the established multi-table precedent (`028_github_sync_v2`).
+- **FR-004**: The migration MUST create four indexes: a non-unique index `idx_projects_workspace_area_slug` on `(workspace_id, area_slug)`; a partial unique index `idx_projects_one_sync_owner_per_repo` on `(workspace_id, github_repo) WHERE is_repo_sync_owner=1`; a partial unique index `idx_projects_one_triage_per_workspace` on `(workspace_id) WHERE is_triage_project=1`; and a partial index `idx_tasks_area_routing_backfill_pending` on `(workspace_id) WHERE github_issue_number IS NOT NULL AND area_routing_backfilled_at IS NULL` to keep the resume scan O(remaining-tasks) on large workspaces.
 - **FR-005**: The migration MUST backfill `is_repo_sync_owner=1` for the project with `MIN(projects.id)` per `(workspace_id, github_repo)` group where `github_sync_enabled=1`, leaving all other projects in the group at `is_repo_sync_owner=0`.
-- **FR-006**: A `docs/migrations/rollback-M62.sql` (or matching migration id) MUST be committed alongside the migration. The rollback MUST drop the three new columns and three new indexes and MUST NOT alter existing data in unrelated columns.
-- **FR-007**: Migration ordering with SPEC-004 MUST be reconciled at rebase time. If SPEC-004 ships first under M62, this feature MUST use the next available migration id (M63 or higher). The migration body and behavior MUST be unchanged regardless of final id.
+- **FR-006**: A `docs/migrations/rollback-M62.sql` (or matching migration id) MUST be committed alongside the migration. The rollback MUST drop all four new columns (`projects.area_slug`, `projects.is_triage_project`, `projects.is_repo_sync_owner`, `tasks.area_routing_backfilled_at`) and all four new indexes and MUST NOT alter existing data in unrelated columns.
+- **FR-007**: Migration ordering with SPEC-004 MUST be reconciled at rebase time per the canonical reservation rule documented in `docs/migrations/migration-id-reservations.md`: first-to-merge keeps M62; the second rebases to M63 and renames its rollback SQL accordingly. The migration body and runtime behavior MUST be unchanged regardless of final id; only the numeric id, file name, and string references change at rebase.
 - **FR-008**: The legacy unique constraint `(workspace_id, github_repo, github_issue_number)` MUST remain in place. SPEC-006 MUST NOT alter or remove it.
 
 #### Inbound area routing
@@ -185,9 +185,9 @@ A security and rollout reviewer inspects the migration that ships SPEC-006 and c
 #### Backfill
 
 - **FR-020**: `backfillAreaRouting(workspaceId)` MUST iterate over tasks with `workspace_id=? AND github_issue_number IS NOT NULL` for repos owned by `is_repo_sync_owner=1` projects in the workspace, parse each task's stored GitHub labels, and re-evaluate routing using the same rules as inbound (FR-011 through FR-014).
-- **FR-021**: Each task processed by the backfill MUST be wrapped in its own transaction: SELECT, label resolution, UPDATE `tasks.project_id`, INSERT activity row, COMMIT. A failure on one task MUST be caught, logged, and counted without aborting the run.
+- **FR-021**: Each task processed by the backfill MUST be wrapped in its own transaction: SELECT, label resolution, UPDATE `tasks.project_id` and `tasks.area_routing_backfilled_at = unixepoch()` (or current SQL timestamp), INSERT activity row, COMMIT. A failure on one task MUST be caught, logged, and counted without aborting the run.
 - **FR-022**: The backfill MUST set the completion marker `workspaces.feature_flags.area_label_routing_backfill_completed_at` only after processing all eligible tasks. Subsequent flag-on triggers MUST skip the backfill if the marker is set.
-- **FR-023**: The backfill MUST be resumable after interruption. Already-evaluated tasks MUST be skipped on a resumed run via the resume mechanism (the choice between a `tasks.area_routing_backfilled_at TIMESTAMP NULL` column and an activity-log lookup is deferred to the Clarify phase, recorded as Clarify session 1).
+- **FR-023**: The backfill MUST be resumable after interruption. Already-evaluated tasks MUST be skipped on a resumed run via the column-based predicate `WHERE area_routing_backfilled_at IS NULL` (resolved in Clarify session 1; activity-log lookup rejected for O(activities) per-task cost). The backfill SELECT query MUST use this predicate so resumption is O(remaining-tasks) rather than O(all-tasks).
 - **FR-024**: Activities written by the backfill MUST set `data.source='backfill'` (versus `source='ingest'` for inbound activities).
 
 #### Label provisioning
@@ -200,14 +200,31 @@ A security and rollout reviewer inspects the migration that ships SPEC-006 and c
 
 #### Label map source of truth
 
-- **FR-030**: A static `AREA_LABEL_MAP: Record<string, LabelDef>` MUST be defined in `src/lib/github-label-map.ts` covering curated default area names. The exact contents (recommended set: `qa`, `dev`, `design`, `infra`, `security`, `docs`, `ops`, `frontend`, `backend`, `data`, `ml`, `triage`) MUST be reconciled in Clarify session 1. Each entry MUST have a stable name, color, and description; a snapshot test MUST guard accidental drift.
+- **FR-030**: A static `AREA_LABEL_MAP: Record<string, LabelDef>` MUST be defined in `src/lib/github-label-map.ts` covering 12 curated default area names with the following names, hex colors (no `#`), and descriptions. Colors use Tailwind 700-level shades for the three new hues to meet WCAG AA 4.5:1 contrast against white text on GitHub label backgrounds; existing palette colors are reused where they already pass contrast. A snapshot test MUST guard accidental drift.
+
+  | name | color | description |
+  |------|-------|-------------|
+  | `area:qa` | `a855f7` | Mission Control area: quality assurance |
+  | `area:dev` | `3b82f6` | Mission Control area: development |
+  | `area:design` | `be185d` | Mission Control area: design |
+  | `area:infra` | `64748b` | Mission Control area: infrastructure |
+  | `area:security` | `ef4444` | Mission Control area: security |
+  | `area:docs` | `eab308` | Mission Control area: documentation |
+  | `area:ops` | `f97316` | Mission Control area: operations |
+  | `area:frontend` | `0e7490` | Mission Control area: frontend |
+  | `area:backend` | `6366f1` | Mission Control area: backend |
+  | `area:data` | `22c55e` | Mission Control area: data |
+  | `area:ml` | `6d28d9` | Mission Control area: machine learning |
+  | `area:triage` | `6b7280` | Mission Control area: triage (unresolvable inbound issues) |
+
+  Note: the OSS convention treats `triage` as a status label rather than an area label, but SPEC-006's design ties the `area:triage` label to the `is_triage_project=1` flag for routing unresolvable issues, so it ships as an area label here.
 - **FR-031**: A function `areaLabelsForWorkspace(db, workspaceId): LabelDef[]` MUST return the union of `AREA_LABEL_MAP` values plus `LabelDef`s synthesized from non-NULL `projects.area_slug` values for that workspace not already present in the static map.
-- **FR-032**: An export `ALL_AREA_LABEL_NAMES: ReadonlySet<string>` MUST cover the static defaults only (parallel to the existing `ALL_STATUS_LABEL_NAMES` export pattern).
+- **FR-032**: An export `ALL_AREA_LABEL_NAMES: string[]` MUST cover the static defaults only, defined as `Object.values(AREA_LABEL_MAP).map(l => l.name)` (parallel to the existing `ALL_STATUS_LABEL_NAMES` and `ALL_PRIORITY_LABEL_NAMES` export pattern in `src/lib/github-label-map.ts`).
 
 #### API surface
 
 - **FR-033**: `PUT /api/projects/[id]` MUST accept four optional fields in the request body: `area_slug`, `is_triage_project`, `is_repo_sync_owner`, and `transfer_owner`. Operator-only authorization MUST remain unchanged.
-- **FR-034**: When `area_slug` is non-NULL, it MUST match `^[a-z0-9-]{1,32}$` or the request MUST return 400 Bad Request with a format-error message.
+- **FR-034**: When `area_slug` is non-NULL, it MUST match `^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$` (1–32 chars, lowercase alphanumeric start and end, hyphens permitted in interior only — RFC 1123 / Kubernetes DNS label style) or the request MUST return 400 Bad Request with a format-error message. Single-character slugs are allowed (e.g., `q`) via the optional outer group. Consecutive interior hyphens (e.g., `a--b`) are permitted by the regex consistent with the K8s convention; if operators report visual issues with `area:a--b` rendering, a stricter rule can be layered on later.
 - **FR-035**: `(workspace_id, area_slug)` MUST be unique across non-NULL values. A request that would create a duplicate MUST return 409 Conflict identifying the conflicting project's id.
 - **FR-036**: `is_triage_project=1` MUST be exclusive per `workspace_id`. A request that would create a duplicate MUST return 409 Conflict identifying the existing triage project's id.
 - **FR-037**: `is_repo_sync_owner=1` MUST be exclusive per `(workspace_id, github_repo)`. A request that would create a duplicate without `transfer_owner=true` MUST return 409 Conflict identifying the existing owner's id. With `transfer_owner=true`, the system MUST perform an atomic swap (clear previous owner, set new owner) in a single transaction.
@@ -235,7 +252,7 @@ A security and rollout reviewer inspects the migration that ships SPEC-006 and c
 
 - **FR-048**: Every P5-AC1 through P5-AC7 acceptance criterion MUST have at least one direct test assertion. Coverage budget at the analyze gate (G7) is one or more direct assertions per AC.
 - **FR-049**: Unit tests MUST cover label parsing (mixed `area:*` + `mc:*` + `priority:*`), all four resolution paths, `is_repo_sync_owner` filtering in poller selection, outbound emission with and without `area_slug`, backfill logic with idempotency, and per-sync cache correctness across multiple issues.
-- **FR-050**: Integration tests with a mocked GitHub client MUST cover full `pullFromGitHub` cycles with mixed-label issue sets, full `pushTaskToGitHub` cycles for area projects, `initializeLabels` with a workspace context (including partial-failure scenarios), and auto-backfill on first flag-on.
+- **FR-050**: Integration tests with a mocked GitHub client MUST cover full `pullFromGitHub` cycles with mixed-label issue sets, full `pushTaskToGitHub` cycles for area projects, `initializeLabels` with a workspace context (including partial-failure scenarios), and auto-backfill on first flag-on. Integration tests MUST include a regression case for backfill moving a task between two projects sharing the same `(workspace_id, github_repo)` to confirm no UNIQUE violation on `(workspace_id, github_repo, github_issue_number)` — assert the task's `project_id` updates, exactly one `area_routing_resolved` activity with `reason='single_match'` and `source='backfill'` is written, and no constraint error is raised.
 - **FR-051**: A Playwright e2e journey MUST verify the project settings UI exposes the three new fields with regex format validation, surfaces 409 errors inline for all uniqueness conflicts, and supports the transfer-owner flow for sync-owner conflicts.
 
 ### Spec Evidence And Archive Policy
