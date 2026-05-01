@@ -1672,6 +1672,35 @@ const migrations: Migration[] = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_resource_policy_events_task ON resource_policy_events(task_id, created_at)`)
       db.exec(`CREATE INDEX IF NOT EXISTS idx_resource_policy_events_policy ON resource_policy_events(policy_id, created_at)`)
     }
+  },
+  {
+    id: '062_task_successor_unique_parent_index',
+    up(db: Database.Database) {
+      if (!tableExists(db, 'tasks') || !columnExists(db, 'tasks', 'parent_task_id')) return
+
+      const duplicate = db
+        .prepare(`
+          SELECT parent_task_id, COUNT(*) as count
+          FROM tasks
+          WHERE parent_task_id IS NOT NULL
+          GROUP BY parent_task_id
+          HAVING COUNT(*) > 1
+          LIMIT 1
+        `)
+        .get() as { parent_task_id: number; count: number } | undefined
+
+      if (duplicate) {
+        throw new Error(
+          `Cannot create idx_tasks_one_successor_per_parent; parent_task_id ${duplicate.parent_task_id} has ${duplicate.count} successors`
+        )
+      }
+
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_one_successor_per_parent
+        ON tasks(parent_task_id)
+        WHERE parent_task_id IS NOT NULL
+      `)
+    }
   }
 ]
 

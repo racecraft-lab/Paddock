@@ -41,6 +41,7 @@ committed screenshots.
 ## Local Commands
 
 ```bash
+pnpm guardrails
 pnpm test:evidence:screenshots
 pnpm test:evidence:screenshots:negative
 ```
@@ -51,7 +52,7 @@ guard names that offending path.
 
 ## CI Guard
 
-The Quality Gate workflow runs `pnpm test:evidence:screenshots` before lint,
+The Quality Gate workflow runs `pnpm guardrails` before lint,
 typecheck, unit tests, build, and e2e tests.
 
 ## PR Readiness Blockers

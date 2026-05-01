@@ -25,6 +25,8 @@ Key transitions:
 - **review → done**: Aegis approves the work
 - **review → assigned**: Aegis rejects, task is requeued with feedback
 
+Feature-flagged task chains add work after a task reaches terminal success. When `FEATURE_TASK_PIPELINES` is off, or when a completed task is not bound to a workflow template with advancement-driving chain metadata, the lifecycle above is unchanged. When it is on, a non-`done` to `done` transition can validate structured output, choose a successor template, and create exactly one follow-up task.
+
 ## Pattern 1: Manual Assignment
 
 The simplest pattern. A human creates a task and assigns it to a specific agent.
@@ -233,7 +235,56 @@ The scheduler spawns dated child tasks from the template on each trigger. Manage
 
 **When to use**: Reports, health checks, periodic audits, maintenance tasks.
 
-## Pattern 6: Multi-Agent Handoff
+## Pattern 6: Declarative Task Chains
+
+Declarative task chains let operators model a multi-step handoff in workflow templates instead of asking agents to create follow-up tasks manually.
+
+### Workflow Template Fields
+
+Use the Workflows tab or `/api/workflows` to configure chain fields:
+
+- `slug`: Stable template identifier used by routing and successor metadata.
+- `output_schema`: JSON Schema profile for the parent task's structured `resolution`.
+- `routing_rules`: Ordered rules that inspect validated output and select a `next_template_slug`.
+- `next_template_slug`: Static fallback successor template when no routing rule matches.
+- `agent_role`: Role used to resolve the successor assignee from the parent project assignments.
+
+Routing rules require an `output_schema`. Static `next_template_slug` chains are allowed without an output schema.
+
+### Advancement Behavior
+
+On every live transition from a non-`done` status to `done`, Mission Control checks the feature flag, parent task, and workflow template:
+
+1. Unbound tasks and templates with no advancement-driving metadata keep legacy completion behavior.
+2. If `output_schema` is present, `resolution` is validated before routing.
+3. Ordered `routing_rules` run first; `next_template_slug` is used as fallback.
+4. If neither a route nor a static next template resolves, the chain terminates normally with no successor.
+5. If a successor resolves, Mission Control creates one assigned child task with parent/root/chain lineage.
+
+Missing or invalid structured output marks the parent `failed` and creates no successor. Routing expression rejection, routing budget overrun, missing or duplicate target templates, cross-workspace targets, and missing successor assignees preserve the parent as terminal success, write an operator-visible activity, and create no successor.
+
+### Retry Recovery
+
+Ordinary task edits do not replay a chain. Operators recover eligible chain failures through:
+
+```bash
+curl -X POST "$MC_URL/api/tasks/$TASK_ID" \
+  -H "Authorization: Bearer $MC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"action": "retry_chain_advancement"}'
+```
+
+Retry uses only the latest eligible failure or stall activity for the parent task. It checks template provenance hashes, fails closed if provenance is missing, and requires explicit drift confirmation before retrying across template changes. Successful retry responses include a bounded `chain_retry` summary and do not expose full corrected output, parsed output, or routing traces.
+
+Current limitations:
+
+- The parent task's `resolution` field is the temporary structured-output bridge for SPEC-004.
+- SPEC-004 records lineage and one-successor guarantees only; it does not implement downstream ready-for-owner states, artifact handoff, governance approval, pilot seeding, area routing, or CrabTrap behavior.
+- The reserved `task_pipeline_target_disabled` stall code is emitted only if the live workflow-template schema exposes an explicit enabled/disabled target state.
+
+**When to use**: Repeatable handoffs where the next agent depends on the previous task's structured output.
+
+## Pattern 7: Multi-Agent Handoff
 
 Agent A completes a task, then creates a follow-up task assigned to Agent B. This chains agents into a pipeline.
 
@@ -280,9 +331,9 @@ curl -X POST "$MC_URL/api/tasks" \
   }'
 ```
 
-**When to use**: Complex workflows where different agents have different specializations.
+**When to use**: Ad hoc workflows where different agents have different specializations and the follow-up task should stay human- or agent-authored instead of template-driven.
 
-## Pattern 7: Stale Task Recovery
+## Pattern 8: Stale Task Recovery
 
 MC automatically recovers from stuck agents. The `requeueStaleTasks` scheduler job:
 
@@ -300,10 +351,11 @@ In practice, you'll combine these patterns. A typical production setup:
 2. **Queue-based dispatch** distributes tasks to available agents (Pattern 2)
 3. **Model routing** picks the right model per task (Pattern 3)
 4. **Aegis** reviews all completed work (Pattern 4)
-5. **Stale recovery** handles agent failures (Pattern 7)
+5. **Declarative task chains** create template-owned successor work after approved completions (Pattern 6)
+6. **Stale recovery** handles agent failures (Pattern 8)
 
 ```
- Cron ──► inbox ──► Queue assigns ──► Agent works ──► Aegis reviews ──► done
+ Cron ──► inbox ──► Queue assigns ──► Agent works ──► Aegis reviews ──► done ──► chain successor
                                           │                  │
                                           └── timeout ───────┘── requeue
 ```

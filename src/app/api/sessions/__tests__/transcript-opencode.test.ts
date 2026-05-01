@@ -74,8 +74,8 @@ describe('OpenCode transcript helper', () => {
   })
 
   it('reads real OpenCode message rows instead of returning a synthetic summary', async () => {
-    const { __testables } = await import('@/app/api/sessions/transcript/route')
-    const messages = __testables.readOpenCodeTranscript('ses_e2e_1', 40)
+    const { readOpenCodeTranscript } = await import('@/lib/session-transcript-readers')
+    const messages = readOpenCodeTranscript('ses_e2e_1', 40)
     expect(messages).toHaveLength(2)
     expect(messages[0].role).toBe('user')
     expect(messages[0].parts[0]).toMatchObject({ type: 'text', text: 'hello from opencode' })
@@ -91,8 +91,8 @@ describe('OpenCode transcript helper', () => {
       time_updated: 1000 + index,
     }))
 
-    const { __testables } = await import('@/app/api/sessions/transcript/route')
-    const messages = __testables.readOpenCodeTranscript('ses_e2e_1', 40)
+    const { readOpenCodeTranscript } = await import('@/lib/session-transcript-readers')
+    const messages = readOpenCodeTranscript('ses_e2e_1', 40)
     expect(messages).toHaveLength(40)
     expect(messages[0].parts[0]).toMatchObject({ type: 'text', text: 'message-180' })
     expect(messages[39].parts[0]).toMatchObject({ type: 'text', text: 'message-219' })
@@ -124,8 +124,8 @@ describe('OpenCode transcript helper', () => {
       ],
     }
 
-    const { __testables } = await import('@/app/api/sessions/transcript/route')
-    const messages = __testables.readOpenCodeTranscript('ses_e2e_1', 40)
+    const { readOpenCodeTranscript } = await import('@/lib/session-transcript-readers')
+    const messages = readOpenCodeTranscript('ses_e2e_1', 40)
     expect(messages).toHaveLength(2)
     expect(messages[0].role).toBe('user')
     expect(messages[0].parts[0]).toMatchObject({ type: 'text', text: 'hello from part table' })

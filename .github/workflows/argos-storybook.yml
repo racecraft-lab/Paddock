@@ -7,11 +7,13 @@ on:
       - '.storybook/**'
       - 'src/**/*.stories.tsx'
       - 'src/components/layout/**'
+      - 'src/components/panels/orchestration-bar.tsx'
       - 'src/components/panels/task-board-panel.tsx'
       - 'src/components/settings/**'
       - 'src/components/ui/**'
       - 'src/store/**'
       - 'src/types/product-line.ts'
+      - 'src/types/workflow-template.ts'
       - 'src/lib/feature-flags.ts'
       - 'messages/en.json'
       - 'src/app/globals.css'
@@ -19,7 +21,7 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
-      - 'scripts/verify-argos-storybook-metadata.mjs'
+      - 'scripts/verify-argos-metadata.mjs'
   push:
     branches:
       - main
@@ -28,11 +30,13 @@ on:
       - '.storybook/**'
       - 'src/**/*.stories.tsx'
       - 'src/components/layout/**'
+      - 'src/components/panels/orchestration-bar.tsx'
       - 'src/components/panels/task-board-panel.tsx'
       - 'src/components/settings/**'
       - 'src/components/ui/**'
       - 'src/store/**'
       - 'src/types/product-line.ts'
+      - 'src/types/workflow-template.ts'
       - 'src/lib/feature-flags.ts'
       - 'messages/en.json'
       - 'src/app/globals.css'
@@ -40,7 +44,7 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
-      - 'scripts/verify-argos-storybook-metadata.mjs'
+      - 'scripts/verify-argos-metadata.mjs'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
@@ -91,20 +95,11 @@ jobs:
         if: always()
         continue-on-error: true
         env:
-          SPEC002_ARGOS_STORYBOOK_EXPECTED_METADATA: '18'
-          SPEC002_ARGOS_STORYBOOK_EXPECTED_STORIES: '10'
-          SPEC002_ARGOS_STORYBOOK_REQUIRED_TAGS: 'spec-002,visual'
-          SPEC002_ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS: 'product-line-switcher:8,feature-flag-admin:2'
+          ARGOS_STORYBOOK_EXPECTED_METADATA: '22'
+          ARGOS_STORYBOOK_EXPECTED_STORIES: '12'
+          ARGOS_STORYBOOK_REQUIRED_TAGS: 'visual'
+          ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS: 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2'
         run: pnpm test:visual:argos-metadata
-
-      - name: Upload Storybook visual screenshots
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: storybook-argos-screenshots
-          path: screenshots/
-          if-no-files-found: ignore
-          retention-days: 14
 
       - name: Fail on Storybook or Argos metadata defects
         if: steps.storybook.outcome != 'success' || steps.storybook-metadata.outcome != 'success'

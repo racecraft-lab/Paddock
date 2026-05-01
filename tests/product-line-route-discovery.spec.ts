@@ -56,7 +56,7 @@ function listRouteFiles(dir: string): string[] {
   })
 }
 
-test.describe('SPEC-002 route discovery traceability', () => {
+test.describe('Product Line route discovery traceability', () => {
   test('keeps the generated Product Line scope matrix aligned with live API route files', () => {
     const discovered = new Set(
       listRouteFiles('src/app/api').map((filePath) => filePath.split(path.sep).join('/'))

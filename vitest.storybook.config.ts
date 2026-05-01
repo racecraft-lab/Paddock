@@ -20,8 +20,9 @@ export default defineConfig({
             tags: { include: ['visual'] },
           }),
           argosVitestPlugin({
+            root: process.env.ARGOS_STORYBOOK_SCREENSHOT_DIR || './screenshots/storybook',
             uploadToArgos: process.env.CI === 'true',
-            buildName: 'spec-002-storybook',
+            buildName: 'mission-control-storybook',
             token: process.env.ARGOS_TOKEN,
           }),
         ],

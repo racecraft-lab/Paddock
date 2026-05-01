@@ -15,7 +15,7 @@ import {
 type Surface = 'switcher' | 'header' | 'task-board'
 type Scenario = 'facility' | 'alpha' | 'loading' | 'error'
 
-interface Spec002StoryArgs {
+interface ProductLineStoryArgs {
   surface: Surface
   scenario: Scenario
 }
@@ -116,7 +116,7 @@ function tasksForScope(scope: ActiveProductLineScope | null) {
   return [alphaTask, betaTask]
 }
 
-function installSpec002FetchMock(scenario: Scenario) {
+function installProductLineFetchMock(scenario: Scenario) {
   globalThis.fetch = (async (input: RequestInfo | URL) => {
     const rawUrl = typeof input === 'string'
       ? input
@@ -169,8 +169,8 @@ function installSpec002FetchMock(scenario: Scenario) {
   }) as typeof fetch
 }
 
-function configureSpec002State(scenario: Scenario) {
-  installSpec002FetchMock(scenario)
+function configureProductLineState(scenario: Scenario) {
+  installProductLineFetchMock(scenario)
 
   const activeScope = scenario === 'alpha'
     ? createProductLineScope(alphaWorkspace, 1)
@@ -254,13 +254,13 @@ function configureSpec002State(scenario: Scenario) {
   })
 }
 
-function Spec002VisualSurface({ surface }: Spec002StoryArgs) {
+function ProductLineVisualSurface({ surface }: ProductLineStoryArgs) {
   if (surface === 'header') {
     return (
       <div className="min-h-screen bg-background">
         <HeaderBar />
         <div className="border-b border-border/40 px-4 py-3 text-xs text-muted-foreground">
-          SPEC-002 visual shell
+          Product Line visual shell
         </div>
       </div>
     )
@@ -284,12 +284,12 @@ function Spec002VisualSurface({ surface }: Spec002StoryArgs) {
 }
 
 const meta = {
-  title: 'SPEC-002/Product Line Visual States',
-  component: Spec002VisualSurface,
-  tags: ['spec-002', 'visual', 'product-line-switcher'],
+  title: 'Product Line/Visual States',
+  component: ProductLineVisualSurface,
+  tags: ['visual', 'product-line-switcher'],
   loaders: [
     async ({ args }) => {
-      configureSpec002State((args as Spec002StoryArgs).scenario)
+      configureProductLineState((args as ProductLineStoryArgs).scenario)
       return {}
     },
   ],
@@ -298,7 +298,7 @@ const meta = {
       fitToContent: false,
     },
   },
-} satisfies Meta<typeof Spec002VisualSurface>
+} satisfies Meta<typeof ProductLineVisualSurface>
 
 export default meta
 type Story = StoryObj<typeof meta>

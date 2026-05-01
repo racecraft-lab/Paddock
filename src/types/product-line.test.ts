@@ -19,7 +19,7 @@ const productLine: ProductLine = {
 }
 
 describe('Product Line scope helpers', () => {
-  it('uses the SPEC-002 persistence key', () => {
+  it('uses the Product Line persistence key', () => {
     expect(ACTIVE_WORKSPACE_STORAGE_KEY).toBe('mc:active-workspace:v1')
   })
 
