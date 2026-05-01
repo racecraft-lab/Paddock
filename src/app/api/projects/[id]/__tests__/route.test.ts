@@ -541,8 +541,8 @@ describe('SPEC-006 / T032 — structured log on activity-INSERT failure (FR-027b
           // Force a controllable error class.
           const err = new Error('disk full')
           throw err
-          // eslint-disable-next-line @typescript-eslint/no-unreachable
-          return origRun()
+          // Unreachable — preserved for type symmetry with the original signature.
+          return origRun() // eslint-disable-line no-unreachable
         }) as typeof stmt.run
       }
       return stmt
