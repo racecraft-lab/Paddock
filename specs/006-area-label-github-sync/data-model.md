@@ -178,7 +178,7 @@ If SPEC-004 ships first, the rollback file is renamed to `rollback-M63.sql` per 
 | `area_routing_resolved` | **new** (FR-042) | `{ area_labels, resolved_project_id, reason: 'single_match', source: 'ingest'|'backfill', github_issue_number, workspace_id, github_repo }` |
 | `area_routing_unresolved` | **new** (FR-042) | Same shape as above with `reason: 'no_label'|'multi_label'|'no_match'|'no_triage'`. `resolved_project_id` may be `null`. |
 | `label_provisioning_failed` | **new** (FR-027a) | `{ workspace_id, github_repo, failed_labels: string[], error_count, sample_error: string, trigger: 'connect'|'area_slug_change'|'bootstrap' }` |
-| `sync_owner_transferred` | **new** (FR-037) | `{ previous_owner_project_id, new_owner_project_id, github_repo, workspace_id, actor_user_id }` |
+| `sync_owner_transferred` | **new** (FR-037) | `{ previous_owner_project_id: number, new_owner_project_id: number, github_repo: string, workspace_id: number, actor_user_id: number }` — `actor_user_id` is the integer `users.id` foreign key only; never an email or display name (FR-043a). |
 
 See [`contracts/activities-shapes.md`](./contracts/activities-shapes.md) for canonical JSON examples.
 
