@@ -146,6 +146,7 @@ function runTaskPipelineGuardrails() {
       'src/lib/github-label-map.ts',
       'src/app/api/tasks/route.ts',
       'src/components/panels/task-board-panel.tsx',
+      'src/components/panels/ready-for-owner-ux.stories.tsx',
       'src/index.ts',
       'src/store/index.ts',
     ])
