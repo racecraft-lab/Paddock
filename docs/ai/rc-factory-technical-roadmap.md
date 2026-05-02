@@ -83,7 +83,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | Complete | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
 | SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
-| SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Pending | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
+| SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | In Progress | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Implemented (PR open) | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Pending | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Pending | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, and SPEC-004 are complete on `main` (SPEC-004 merged via PR #22). SPEC-006 (parallel P1 alternate after Phase 1A) is in progress in `.worktrees/006-area-label-github-sync` (PR #21 ready-for-review; migration rebased to M63 after SPEC-004 took M62). SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 — those remain gated on prior dependency-chain specs.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, and SPEC-004 are complete on `main` (SPEC-004 merged via PR #22). SPEC-006 has merged to `main` via PR #21, but some generated tracking artifacts still contain stale pre-merge wording; SPEC-005 Phase 0 owns repairing that branch-local status drift before Specify. SPEC-005 setup is in progress in `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 — those remain gated on prior dependency-chain specs.
 
 ## Feature Flag Resolution Policy
 
@@ -209,7 +209,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-005: ready_for_owner State and Two-Step Terminal Event
 
-- **Status:** Pending
+- **Status:** In Progress
+- **Branch status:** Setup started in worktree `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`; Design Concept and workflow generated for autopilot. Phase 0 must repair stale merged-state tracking for SPEC-004/SPEC-006/autopilot state before SPEC-005 Specify.
 - **Priority:** P1
 - **Branch short name:** `ready-for-owner`
 - **Dependencies:** SPEC-002, SPEC-002A, SPEC-004
