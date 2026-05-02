@@ -68,7 +68,7 @@ const TEXT_MIME_EXACTS = new Set<string>([
 ])
 
 function isTextMime(mime: string): boolean {
-  const lower = mime.toLowerCase()
+  const lower = mime.split(';')[0].trim().toLowerCase()
   for (const prefix of TEXT_MIME_PREFIXES) {
     if (lower.startsWith(prefix)) return true
   }
