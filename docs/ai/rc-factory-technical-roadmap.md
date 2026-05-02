@@ -85,7 +85,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
 | SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | In Progress | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Implemented (PR open) | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
-| SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Pending | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
+| SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | In Progress | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Pending | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
 | SPEC-009 | 8 | Product Line A Pilot End-to-End Smoke | product-line-a-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
 | SPEC-010 | 9 | Product Line B Product-Line Onboarding | product-line-b-onboarding | Pending | P3 | SPEC-002A, SPEC-009 | — | Phase 9 |
@@ -241,7 +241,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-007: Disposition Logging and Task Artifact Store
 
-- **Status:** Pending
+- **Status:** In Progress (worktree `.worktrees/007-disposition-artifacts`, branch `007-disposition-artifacts`)
 - **Priority:** P2
 - **Branch short name:** `disposition-artifacts`
 - **Dependencies:** SPEC-002, SPEC-002A, SPEC-004
