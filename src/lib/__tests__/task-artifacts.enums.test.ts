@@ -168,6 +168,7 @@ const SPEC_007_ALLOWLIST = [
 ] as const
 
 const ALLOWED_PREFIXES = [
+  '.github/secret_scanning.yml',
   'src/lib/__tests__/__fixtures__/',
   'src/lib/__tests__/secret-detector.', // additional secret-detector test variants
   'src/app/api/task-artifacts/__tests__/',
