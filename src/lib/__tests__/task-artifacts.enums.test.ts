@@ -149,6 +149,8 @@ const SPEC_007_ALLOWLIST = [
   'src/lib/__tests__/spec-007-disposition-dispatch.test.ts',
   // US6 publish-path tests:
   'src/lib/__tests__/task-artifacts-publish.test.ts',
+  // US9 dispatch input_artifacts tests:
+  'src/lib/__tests__/spec-007-dispatch-input-artifacts.test.ts',
 ] as const
 
 const ALLOWED_PREFIXES = [
