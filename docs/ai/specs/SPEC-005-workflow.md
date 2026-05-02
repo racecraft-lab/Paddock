@@ -33,8 +33,8 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep + Status Hygiene | `$speckit-autopilot` startup | Complete | 2026-05-02 dry-run/no-cleanup Archive Sweep recorded; SPEC-005 excluded; prerequisite scripts passed; status hygiene repaired merged SPEC-004/SPEC-006 tracking before Specify |
-| Specify | `$speckit-specify` | Pending | Generate `specs/005-ready-for-owner/spec.md`; no unresolved markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve open questions from the Design Concept doc |
+| Specify | `$speckit-specify` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/spec.md` and requirements checklist; G1 passed with 0 markers |
+| Clarify | `$speckit-clarify` | In Progress | Resolve open questions from the Design Concept doc |
 | Plan | `$speckit-plan` | Pending | Generate plan/research/data model/contracts/quickstart; no DB migration unless a gate proves roadmap drift |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: state-machine, github-sync, notifications-ux, regression-safety |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with P4-AC1..P4-AC6 coverage |
@@ -198,17 +198,20 @@ Use P4-AC1 through P4-AC6 from this workflow and the technical roadmap.
 
 ### Specify Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Generated SPEC-005 Specify artifacts with no unresolved clarification markers. G1 gate passed: `validate-gate.sh G1 specs/005-ready-for-owner` returned `pass=true`; `count-markers.sh all specs/005-ready-for-owner` returned 0 gaps, clarifications, CRITICAL, HIGH, MEDIUM, and LOW markers.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Scenarios | Pending |
+| Functional Requirements | 23 |
+| User Stories | 5 |
+| Acceptance Scenarios | 19 |
+| Success Criteria | 6 |
+| Edge Cases | 8 |
 
 ### Files Generated
 
-- [ ] `specs/005-ready-for-owner/spec.md`
+- [x] `specs/005-ready-for-owner/spec.md`
+- [x] `specs/005-ready-for-owner/checklists/requirements.md`
 
 ## Phase 2: Clarify
 
