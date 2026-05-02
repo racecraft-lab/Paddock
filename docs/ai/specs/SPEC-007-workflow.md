@@ -386,11 +386,9 @@ Focus on SPEC-007 API contracts and UX surfaces:
 
 ### Clarify Results
 
-Pending. Populate per session.
-
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Schema, Detector Rules, Strict-Scope Boundaries | | |
+| 1 | Schema, Detector Rules, Strict-Scope Boundaries | 5 | Q2 + Q5 applied directly (high confidence). Q1 → Option C: thin new `aegis-review.ts` with `AEGIS_FAILURE_REASONS` + `evaluateSpec007AegisSignals`; `runAegisReviews` calls into it. Q3 → Option A: closed 17-family v1 list (3 promoted from v2 deferral: GCP service-account JSON, Vault `hvs.*`, npm `npm_*`); v2 deferrals named in spec. Q4 → Option C: 6 files in strict scope (detector trio, aegis-review, task-artifacts, enums-test). |
 | 2 | Artifact Lifecycle, Concurrency, Failure Isolation | | |
 | 3 | API Contracts, UX Surfaces, Cross-Spec Boundaries | | |
 
@@ -398,6 +396,9 @@ Pending. Populate per session.
 
 | Item | Round | Routed Categories | Outcome | Analysts Used |
 |------|-------|-------------------|---------|---------------|
+| S1-Q1 (Aegis hook host file) | 1 | [spec, codebase] | Option C — thin new `aegis-review.ts` (constants + helper); `runAegisReviews` calls into it. 2/2 high confidence. | codebase-analyst, spec-context-analyst |
+| S1-Q3 (Detector v1 rule list — security) | 1 | [security, spec] | Option A — closed v1 list. Domain-researcher promoted Vault `hvs.*`, npm tokens, GCP SA JSON IN to v1 (final v1 = 17 families); 11 v2 deferrals named in spec. 3/3 high confidence; security keyword forced 3 analysts. | codebase-analyst, spec-context-analyst, domain-researcher |
+| S1-Q4 (Strict-scope file list) | 1 | [spec] | Option C — 6 files (detector trio + aegis-review.ts + task-artifacts.ts + enums-test). 1/1 high confidence. | spec-context-analyst |
 
 ## Phase 3: Plan
 

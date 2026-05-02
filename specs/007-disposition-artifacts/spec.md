@@ -211,15 +211,35 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 - **FR-026**: System MUST use the producer task's `workspace_id` as the authoritative workspace for storage path and policy. If `session.activeWorkspace` differs and the session is non-Facility, the publish MUST return HTTP 403. Facility-scoped sessions MUST be allowed to publish across workspaces.
 - **FR-027**: On republish with `supersedes: <prev_id>`, the system MUST insert a new row with `supersedes_artifact_id=<prev_id>` and set the previous row's `redaction_status` to `'superseded'` only after the new publish succeeds.
 - **FR-028**: System MUST update the in-memory p95 latency ring buffer (publish path, 1024 observations per workspace) on every successful publish.
-- **FR-029**: System MUST enforce the application-level enum sets:
-  - `redaction_status ∈ {'pending','clean','redacted','rejected','quarantined','superseded'}`
-  - `security_scan_status ∈ {'pending','scanned_clean','scanned_with_findings','scan_error','hash_mismatch','file_missing'}`
-  These enums MUST be exported `const` arrays in `src/lib/task-artifacts.ts` and guarded by a snapshot test. No DB CHECK constraints.
+- **FR-029**: System MUST enforce the application-level enum sets, exported as ordered, frozen `const` tuples from `src/lib/task-artifacts.ts`:
+  - `export const REDACTION_STATUSES = ['pending','clean','redacted','rejected','quarantined','superseded'] as const`
+  - `export const SECURITY_SCAN_STATUSES = ['pending','scanned_clean','scanned_with_findings','scan_error','hash_mismatch','file_missing'] as const`
+
+  A dedicated snapshot test at `src/lib/__tests__/task-artifacts.enums.test.ts` MUST assert (i) the exact ordered contents of both tuples, and (ii) an `EXPLAIN` of the live `task_artifacts` schema confirming no DB-level CHECK constraint exists on `redaction_status` or `security_scan_status`. The test fails if any enum value is added, removed, reordered, or if a CHECK constraint is introduced. (Clarify Session 1 / Q2.)
 
 #### Secret detector
 
 - **FR-030**: System MUST export `detectSecrets(content: string | Buffer, mime: string): { findings: SecretFinding[], redacted: string | Buffer }` from `src/lib/secret-detector.ts`.
-- **FR-031**: System MUST ship MC Secret Detector v1 rules sourced from gitleaks v8.18.0 plus MC additions covering: AWS access key id (`AKIA[0-9A-Z]{16}`), AWS secret access key (40-char base64-ish + AWS context), GitHub PATs (`gh[pousr]_…`), GitHub fine-grained PAT, GitHub OAuth (`gho_…`), Google API key (`AIza…`), Slack token, Stripe (`sk_live_…`/`pk_live_…`), `BEGIN PRIVATE KEY` / `BEGIN RSA PRIVATE KEY` PEM, generic `password=` / `api_key=` / `token=` / `secret=` env-style, JWT (`eyJ.eyJ.X`), Bearer header, Anthropic (`sk-ant-…`), OpenAI (`sk-…`).
+- **FR-031**: System MUST ship MC Secret Detector v1 as a CLOSED, BOUNDED rule list (no transitive gitleaks pulls). Pattern provenance is gitleaks v8.18.0 plus MC additions. The complete v1 family list is:
+  1. AWS access key id (`AKIA[0-9A-Z]{16}` and `ASIA[0-9A-Z]{16}` for STS sessions)
+  2. AWS secret access key (40-char base64-ish + AWS context heuristic)
+  3. GitHub Personal Access Tokens (classic `ghp_…` and user `ghu_…`)
+  4. GitHub fine-grained PAT (`github_pat_…`)
+  5. GitHub OAuth / refresh / server tokens (`gho_…`, `ghs_…`, `ghr_…`)
+  6. Google API key (`AIza[0-9A-Za-z\-_]{35}`)
+  7. **Google Cloud service-account JSON compound** (`"type": "service_account"` + `"private_key"` PEM-block in same JSON object) — promoted from v2 deferral per Clarify Session 1 consensus (Q3)
+  8. Slack tokens (`xoxb-…` bot, `xoxp-…` user, `xoxa-…` workspace, `xoxr-…` refresh)
+  9. Stripe live keys (`sk_live_…` secret, `pk_live_…` publishable)
+  10. PEM private key headers (`-----BEGIN PRIVATE KEY-----`, `-----BEGIN RSA PRIVATE KEY-----`, `-----BEGIN EC PRIVATE KEY-----`, `-----BEGIN OPENSSH PRIVATE KEY-----`)
+  11. Generic env-style assignments (case-insensitive `^(password|api[_-]?key|token|secret)\s*=\s*[A-Za-z0-9/+=._\-]{16,}$`)
+  12. JSON Web Token (`eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+`)
+  13. Authorization Bearer header (`(?i)authorization:\s*bearer\s+[A-Za-z0-9._\-]{20,}`)
+  14. Anthropic API key (`sk-ant-(api03|sid01)-[A-Za-z0-9_\-]{93,}`)
+  15. OpenAI API key (`sk-(proj-)?[A-Za-z0-9_\-]{40,}`)
+  16. **HashiCorp Vault service token** (`hvs\.[A-Za-z0-9_\-]{20,}`) — promoted from v2 deferral per Clarify Session 1 consensus (Q3)
+  17. **npm access token** (`npm_[A-Za-z0-9]{36}`) — promoted from v2 deferral per Clarify Session 1 consensus (Q3)
+
+  Each family ships a single canonical regex in `src/lib/secret-detector.rules.ts`; per-rule positive AND negative test fixtures are MANDATORY (CI gate). The list is closed for v1 — no transitive inclusion of unlisted gitleaks rules.
 - **FR-032**: When detector findings ≥ 1, the system MUST reject the publish with HTTP 422 + redacted preview, and write an `activities` row of `kind='security_violation'` throttled to 1 per `(task_id, kind)` per 60 seconds.
 - **FR-033**: When `workflow_templates.allow_redacted_artifacts=1` (M054) AND MIME is text-like (`text/*`, `application/json`, `application/x-yaml`), the system MUST store the redacted content with `redaction_status='redacted'` and `security_scan_status='scanned_with_findings'`.
 - **FR-034**: Binaries with detector findings MUST always reject with HTTP 422 regardless of `allow_redacted_artifacts`.
@@ -262,13 +282,45 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 - **FR-080**: System MUST expose `GET /api/dispositions` with filters: `workspace_id` (required for non-Facility callers), `disposition` (multi-select), `since` and `until` (ISO timestamps), `triaged_by_agent_id`, `task_id`. Cursor pagination on `(triaged_at DESC, id DESC)`.
 - **FR-081**: Auth MUST follow the same pattern as `/api/activities`. v1 MUST NOT impose any rate limit beyond existing API-key gating.
 
-#### Aegis hook (src/lib/aegis-review.ts)
+#### Aegis hook (src/lib/aegis-review.ts — thin new module per Clarify Session 1 consensus / Q1)
 
-- **FR-090**: `runAegisReviews` MUST examine activities for the triage-template task within the review window. Any `kind='security_violation'` MUST cause Aegis to FAIL the producer task with `reason='secret_in_artifact'`. Any `task_dispositions` row with `disposition='unknown'` for the producer task MUST cause Aegis to FAIL with `reason='disposition_validation_failed'`.
+- **FR-090**: System MUST ship a thin new module `src/lib/aegis-review.ts` exporting:
+  - `export const AEGIS_FAILURE_REASONS = ['secret_in_artifact', 'disposition_validation_failed'] as const`
+  - `export function evaluateSpec007AegisSignals(taskId: number, db: Database, reviewWindow: { since: string }): AegisFailure | null` — inspects `activities` for `kind='security_violation'` AND `task_dispositions` for `disposition='unknown'` for the producer task, returns the first matching `AegisFailure { reason, evidence }` or `null` when both signals are clean.
+
+  The pre-existing `runAegisReviews` in `src/lib/task-dispatch.ts` MUST call `evaluateSpec007AegisSignals` BEFORE its other checks. When the helper returns a non-null `AegisFailure`, `runAegisReviews` MUST FAIL the producer task with the returned `reason` (`secret_in_artifact` or `disposition_validation_failed`). When it returns `null`, behavior continues unchanged.
+
+  The full `runAegisReviews` body remains in `task-dispatch.ts` (NOT extracted, NOT in strict scope) — this preserves the SPEC-003 / SPEC-004 boundary. Only `aegis-review.ts` (the new thin module + its constants and helper) enters SPEC-007 strict scope. SPEC-007 introduces no other Aegis behavior changes.
 
 #### Strict-scope discipline
 
-- **FR-100**: System MUST add `src/lib/secret-detector.ts`, `src/lib/secret-detector.rules.ts`, `src/lib/__tests__/secret-detector.test.ts`, and the explicit Aegis hook surface in `src/lib/aegis-review.ts` to `tsconfig.spec-strict.json` and `eslint.config.mjs`. A strict-scope grep test MUST guard against accidental blast-radius expansion outside the declared file list.
+- **FR-100**: System MUST add the following 6 files to `tsconfig.spec-strict.json` `include` AND to the `specStrictFiles` array in `eslint.config.mjs` (per Clarify Session 1 consensus / Q4):
+  1. `src/lib/secret-detector.ts`
+  2. `src/lib/secret-detector.rules.ts`
+  3. `src/lib/__tests__/secret-detector.test.ts`
+  4. `src/lib/aegis-review.ts`
+  5. `src/lib/task-artifacts.ts` (owns FR-029 enums, the publish/read path, and the in-process p95 ring buffer — bulk of SPEC-007 risk surface)
+  6. `src/lib/__tests__/task-artifacts.enums.test.ts` (snapshot-test sibling guarding the FR-029 enums)
+
+  A strict-scope grep test MUST verify that ONLY these 6 files (plus the SPEC-007-touched files outside strict scope: `src/lib/task-dispatch.ts` for the post-commit insert hook + Aegis call, `src/components/dashboard/dashboard.tsx`, `src/components/panels/audit-trail-panel.tsx`, `src/components/panels/artifact-admin-panel.tsx`, `src/app/api/dispositions/route.ts`, `src/app/api/task-artifacts/route.ts`, `src/app/api/task-artifacts/[id]/route.ts`) are modified by the SPEC-007 PR diff against `main`. Any additional file in the diff MUST fail the test.
+
+### Detector v2 Deferrals (NOT in v1)
+
+Per Clarify Session 1 consensus (Q3), the v1 detector ruleset (FR-031) is closed. The following rule families are explicitly deferred to a future v2 spec — naming them here gives v2 a concrete target and makes the v1 floor auditable:
+
+- Azure AD client secret (`(?i)azure[_-]?(?:ad|ar)[_-]?secret`)
+- Atlassian API tokens
+- SendGrid API keys (`SG\.[A-Za-z0-9_\-]{22}\.[A-Za-z0-9_\-]{43}`)
+- Twilio account SID + auth token (compound)
+- Mailgun API keys (`key-[A-Za-z0-9]{32}`)
+- Datadog API + APP keys
+- PyPI tokens (`pypi-AgEIcHlwaS5vcmcC[A-Za-z0-9_\-]{50,}`)
+- Heroku API keys
+- Docker registry credentials
+- Linear / Notion / Asana API tokens
+- Discord / Telegram bot tokens
+
+The v2 spec MUST author per-rule positive + negative fixtures and a wild-corpus update before promoting any of these into v1.
 
 ### Spec Evidence And Archive Policy
 
@@ -301,7 +353,7 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 - **SC-007**: The dashboard widget reflects a newly inserted disposition row within one client poll cycle (≤ 30 seconds) of the insert; cache hit rate on read is ≥ 80% under 10 concurrent dashboards.
 - **SC-008**: Admin destructive actions (quarantine, delete, archive, repair orphans, retention sweep) each produce exactly one `activities` row with full before/after status, actor, and reason; non-admins receive HTTP 403 in 100% of attempts.
 - **SC-009**: P95 publish latency reported by the admin panel matches the in-process measured p95 within ±5% when the ring buffer has ≥ 100 observations; the panel displays "insufficient data" otherwise.
-- **SC-010**: A strict-scope grep test passes for SPEC-007: only the declared files (the roadmap-listed surfaces, the secret-detector triplet, and the Aegis hook) appear in `tsconfig.spec-strict.json`'s include list and in eslint strict-scope coverage.
+- **SC-010**: A strict-scope grep test passes for SPEC-007: exactly the 6 files declared in FR-100 (`src/lib/secret-detector.ts`, `src/lib/secret-detector.rules.ts`, `src/lib/__tests__/secret-detector.test.ts`, `src/lib/aegis-review.ts`, `src/lib/task-artifacts.ts`, `src/lib/__tests__/task-artifacts.enums.test.ts`) — and no others added by SPEC-007 — appear in `tsconfig.spec-strict.json`'s `include` list and in `eslint.config.mjs`'s `specStrictFiles` array.
 
 ## Assumptions
 
@@ -316,3 +368,4 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 - The detector's "wild corpus" can be authored from scratch using synthetic + manually crafted patterns; no real customer data is sourced.
 - SPEC-007 depends on SPEC-005's status-hygiene fix landing first; if SPEC-005 merges first, this branch will rebase. Autopilot can still execute SPEC-007 independently against the stale roadmap; the dependency is for clean-merge ergonomics, not correctness.
 - The pre-existing admin guard pattern used by other privileged endpoints is sufficient for artifact admin actions; no new admin-role primitive is introduced.
+- Migrations are referenced as `M054` / `M057` / `M058` in spec.md, plan.md, tasks.md, and code (matching `migrations.ts` IDs `054_workflow_templates_task_chain_routing_and_artifact_policy`, `057_task_dispositions`, `058_task_artifacts`). Existing rollback files in `docs/migrations/` retain their original two-digit names (`rollback-M54.sql`, `rollback-M57.sql`, `rollback-M58.sql`) per SPEC-001 convention. SPEC-007 creates no new migrations and renames no files. (Clarify Session 1 / Q5.)
