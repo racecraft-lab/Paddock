@@ -124,8 +124,8 @@ function runTaskPipelineGuardrails() {
     //
     // - FEATURE_AREA_LABEL_ROUTING: SPEC-006 owns this flag. Allowed in
     //   the central resolver and the SPEC-006-touched files listed below.
-    // - ready_for_owner: SPEC-005 owns this. NO production owner yet, so
-    //   it remains blocked everywhere except the central resolver.
+    // - ready_for_owner: SPEC-005 owns this. Allowed in the status vocabulary,
+    //   GitHub label mapping, task API guard, and Kanban/store surfaces listed below.
     // - CrabTrap: SPEC-011 owns this. NO production owner yet, so it
     //   remains blocked everywhere except the central resolver.
     const areaLabelRoutingAllowlist = new Set([
@@ -140,8 +140,18 @@ function runTaskPipelineGuardrails() {
       fail(`SPEC-006 marker (FEATURE_AREA_LABEL_ROUTING) outside allowed files: ${path}`)
     }
 
-    if (path !== 'src/lib/feature-flags.ts' && /\bready_for_owner\b/.test(source)) {
-      fail(`SPEC-005 marker (ready_for_owner) found before its owner spec lands: ${path}`)
+    const readyForOwnerAllowlist = new Set([
+      'src/lib/feature-flags.ts',
+      'src/lib/task-status.ts',
+      'src/lib/github-label-map.ts',
+      'src/app/api/tasks/route.ts',
+      'src/components/panels/task-board-panel.tsx',
+      'src/components/panels/ready-for-owner-ux.stories.tsx',
+      'src/index.ts',
+      'src/store/index.ts',
+    ])
+    if (!readyForOwnerAllowlist.has(path) && /\bready_for_owner\b/.test(source)) {
+      fail(`SPEC-005 marker (ready_for_owner) outside allowed files: ${path}`)
     }
 
     if (path !== 'src/lib/feature-flags.ts' && /\bCrabTrap\b/.test(source)) {

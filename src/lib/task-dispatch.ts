@@ -8,12 +8,13 @@ import { syncTaskOutbound } from './github-sync-engine'
 import { getAegis } from './aegis'
 import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
 import { resolveFlag } from './feature-flags'
+import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition, type TaskStatus } from './task-status'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
 import { createHash } from 'crypto'
 
 /** Sync task to GitHub/GNAP and broadcast escalation if task failed */
-function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
+function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null; github_issue_number?: number | null; github_repo?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
   syncTaskOutbound({ ...task, status: newStatus }, task.workspace_id)
   if (newStatus === 'failed') {
     eventBus.broadcast('task.escalated', {
@@ -50,6 +51,7 @@ export type TaskChainAdvanceTrigger =
   | 'bulk_task_update'
   | 'detail_task_update'
   | 'retry_chain_advancement'
+  | 'github_pr_merged'
 
 export interface AdvanceTaskChainInput {
   taskId: number
@@ -1028,6 +1030,13 @@ interface ReviewableTask {
   project_id: number | null
   ticket_prefix: string | null
   project_ticket_no: number | null
+  produces_pr: number | null
+  external_terminal_event: string | null
+  feature_flags: string | null
+  github_repo: string | null
+  github_issue_number: number | null
+  github_pr_number: number | null
+  created_by: string | null
 }
 
 function buildReviewPrompt(task: ReviewableTask): string {
@@ -1076,6 +1085,32 @@ function parseReviewVerdict(text: string): { status: 'approved' | 'rejected'; no
   return { status, notes }
 }
 
+function recordReadyForOwnerEntrySideEffects(
+  task: Pick<ReviewableTask, 'id' | 'title' | 'workspace_id' | 'assigned_to' | 'created_by' | 'github_repo' | 'github_pr_number'>,
+  actor: string,
+): void {
+  if (!task.github_repo || !task.github_pr_number) {
+    const data = {
+      task_id: task.id,
+      workspace_id: task.workspace_id,
+      reason: 'missing_explicit_pr_linkage',
+      github_repo: task.github_repo ?? null,
+      github_pr_number: task.github_pr_number ?? null,
+    }
+    db_helpers.logActivity(
+      'task_ready_for_owner',
+      'task',
+      task.id,
+      actor,
+      `Task ready for owner merge is missing explicit PR linkage: ${task.title}`,
+      data,
+      task.workspace_id,
+    )
+  }
+
+  db_helpers.createTaskReadyForOwnerNotification(task)
+}
+
 /**
  * Run Aegis quality reviews on tasks in 'review' status.
  * Uses an agent to evaluate the task resolution, then approves or rejects.
@@ -1085,9 +1120,15 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
 
   const tasks = db.prepare(`
     SELECT t.id, t.title, t.description, t.status, t.priority, t.resolution, t.assigned_to, t.workspace_id,
-           t.project_id, p.ticket_prefix, t.project_ticket_no
+           t.project_id, p.ticket_prefix, t.project_ticket_no,
+           COALESCE(wt.produces_pr, 0) AS produces_pr,
+           wt.external_terminal_event,
+           t.github_repo, t.github_issue_number, t.github_pr_number, t.created_by,
+           w.feature_flags
     FROM tasks t
     LEFT JOIN projects p ON p.id = t.project_id AND p.workspace_id = t.workspace_id
+    LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+    LEFT JOIN workspaces w ON w.id = t.workspace_id
     WHERE t.status = 'review'
     ORDER BY t.updated_at ASC
     LIMIT 3
@@ -1162,29 +1203,53 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
 
       const verdict = parseReviewVerdict(agentResponse.text)
 
-      // Insert quality review record
-      db.prepare(`
-        INSERT INTO quality_reviews (task_id, reviewer, status, notes, workspace_id)
-        VALUES (?, 'aegis', ?, ?, ?)
-      `).run(task.id, verdict.status, verdict.notes, task.workspace_id)
-
       if (verdict.status === 'approved') {
+        const transition = resolveTaskTerminalTransition({
+          taskId: task.id,
+          currentStatus: 'quality_review',
+          requestedStatus: 'done',
+          producesPr: task.produces_pr === 1 && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT,
+          twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+            workspaceFlags: task.feature_flags,
+          }),
+          transitionIntent: 'approval',
+        })
+        if (!transition.ok) {
+          results.push({ id: task.id, verdict: 'error', error: transition.body.reason })
+          continue
+        }
+        db.prepare(`
+          INSERT INTO quality_reviews (task_id, reviewer, status, notes, workspace_id)
+          VALUES (?, 'aegis', ?, ?, ?)
+        `).run(task.id, verdict.status, verdict.notes, task.workspace_id)
+
+        const nextStatus = transition.status as TaskStatus
         db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?')
-          .run('done', Math.floor(Date.now() / 1000), task.id)
+          .run(nextStatus, Math.floor(Date.now() / 1000), task.id)
 
         eventBus.broadcast('task.status_changed', {
           id: task.id,
-          status: 'done',
+          status: nextStatus,
           previous_status: 'quality_review',
         })
-        syncAndEscalateIfFailed(task, 'done')
-        advanceTaskChain({
-          taskId: task.id,
-          workspaceId: task.workspace_id,
-          previousStatus: 'quality_review',
-          trigger: 'aegis_review',
-        })
+        syncAndEscalateIfFailed(task, nextStatus)
+        if (nextStatus === READY_FOR_OWNER_STATUS) {
+          recordReadyForOwnerEntrySideEffects(task, 'aegis')
+        }
+        if (nextStatus === 'done') {
+          advanceTaskChain({
+            taskId: task.id,
+            workspaceId: task.workspace_id,
+            previousStatus: 'quality_review',
+            trigger: 'aegis_review',
+          })
+        }
       } else {
+        db.prepare(`
+          INSERT INTO quality_reviews (task_id, reviewer, status, notes, workspace_id)
+          VALUES (?, 'aegis', ?, ?, ?)
+        `).run(task.id, verdict.status, verdict.notes, task.workspace_id)
+
         // Rejected: check dispatch_attempts to decide next status
         const now = Math.floor(Date.now() / 1000)
         const currentAttempts = (db.prepare('SELECT dispatch_attempts FROM tasks WHERE id = ?').get(task.id) as { dispatch_attempts: number } | undefined)?.dispatch_attempts ?? 0

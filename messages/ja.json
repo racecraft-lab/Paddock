@@ -463,7 +463,12 @@
     "recipientLabel": "受信者",
     "recipientPlaceholder": "エージェント名（例：my-agent）",
     "noNotifications": "通知なし",
-    "markRead": "既読にする"
+    "markRead": "既読にする",
+    "readyForOwnerNormalTitle": "オーナーによるマージ待ち",
+    "readyForOwnerNormalMessage": "オーナーの対応が必要: オーナーによるマージ待ちです。",
+    "readyForOwnerReconciliationTitle": "オーナーマージの調整が必要",
+    "readyForOwnerReconciliationMessage": "オーナーの対応が必要: クローズ済み Issue にはマージ済み PR の証拠が必要です。",
+    "readyForOwnerActionRequired": "オーナーの対応が必要"
   },
   "localAgentsDoc": {
     "title": "ローカル AGENTS.md",
@@ -763,6 +768,8 @@
     "colInProgress": "進行中",
     "colReview": "レビュー",
     "colQualityReview": "品質レビュー",
+    "colReadyForOwner": "オーナー準備完了",
+    "readyForOwnerActionRequired": "オーナーの対応が必要",
     "colFailed": "失敗",
     "retryTask": "再試行",
     "colDone": "完了",

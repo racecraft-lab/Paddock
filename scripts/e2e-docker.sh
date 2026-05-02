@@ -93,7 +93,8 @@ start_container() {
 run_playwright() {
   local data_dir="$1"
   local preseeded="$2"
-  shift 2
+  local ready_for_owner_preseeded="$3"
+  shift 3
 
   AUTH_USER="$AUTH_USER" \
   AUTH_PASS="$AUTH_PASS" \
@@ -104,9 +105,19 @@ run_playwright() {
   ARGOS_UPLOAD_TO_ARGOS="${ARGOS_UPLOAD_TO_ARGOS:-0}" \
   ARGOS_TOKEN="${ARGOS_TOKEN:-}" \
   MC_E2E_WORKSPACE_SWITCHER_PRESEEDED="$preseeded" \
+  MC_READY_FOR_OWNER_PRESEEDED="$ready_for_owner_preseeded" \
   E2E_BASE_URL="http://127.0.0.1:${PORT}" \
   MISSION_CONTROL_DB_PATH="$data_dir/mission-control.db" \
   pnpm exec playwright test -c playwright.docker.config.ts "$@"
+}
+
+should_seed_ready_for_owner() {
+  for target in "$@"; do
+    if [[ "$target" == *"ready-for-owner-kanban.spec.ts"* ]]; then
+      return 0
+    fi
+  done
+  return 1
 }
 
 echo "[e2e-docker] building image ${IMAGE}..."
@@ -120,7 +131,7 @@ if [ "$#" -eq 0 ]; then
 
   echo "[e2e-docker] running clean flag-off regression suite."
   ARGOS_UPLOAD_TO_ARGOS=0 ARGOS_PLAYWRIGHT_SCREENSHOTS=0 ARGOS_PLAYWRIGHT_TRACES=0 \
-    run_playwright "$FLAG_OFF_DATA_DIR" 0 tests/workspace-switcher-flag-off.spec.ts
+    run_playwright "$FLAG_OFF_DATA_DIR" 0 0 tests/workspace-switcher-flag-off.spec.ts
 
   docker rm -f "$FLAG_OFF_CONTAINER" >/dev/null
 
@@ -131,15 +142,18 @@ if [ "$#" -eq 0 ]; then
 
   echo "[e2e-docker] seeding workspace-switcher flag in mounted database..."
   MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-workspace-switcher.cjs
+  echo "[e2e-docker] seeding SPEC-005 ready-for-owner fixture in mounted database..."
+  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-ready-for-owner.cjs
 
   echo "[e2e-docker] restarting container so seeded database state is read at boot..."
   docker restart "$FLAG_ON_CONTAINER" >/dev/null
   wait_for_health "$FLAG_ON_CONTAINER"
 
   echo "[e2e-docker] running seeded Product Line e2e suite."
-  run_playwright "$FLAG_ON_DATA_DIR" 1 \
+  run_playwright "$FLAG_ON_DATA_DIR" 1 1 \
     tests/product-line-switcher-ui.spec.ts \
     tests/feature-flags-admin-ui.spec.ts \
+    tests/e2e/ready-for-owner-kanban.spec.ts \
     tests/product-line-scope-api.spec.ts \
     tests/product-line-scope-matrix.spec.ts \
     tests/product-line-events.spec.ts
@@ -152,16 +166,23 @@ else
   if [ "${MC_E2E_DOCKER_PRESEED:-1}" = "1" ]; then
     echo "[e2e-docker] seeding workspace-switcher flag in mounted database..."
     MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-workspace-switcher.cjs
+    READY_FOR_OWNER_PRESEEDED=0
+    if should_seed_ready_for_owner "$@"; then
+      echo "[e2e-docker] seeding SPEC-005 ready-for-owner fixture in mounted database..."
+      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-ready-for-owner.cjs
+      READY_FOR_OWNER_PRESEEDED=1
+    fi
     echo "[e2e-docker] restarting container so seeded database state is read at boot..."
     docker restart "$CONTAINER" >/dev/null
     wait_for_health "$CONTAINER"
     PRESEEDED=1
   else
     PRESEEDED=0
+    READY_FOR_OWNER_PRESEEDED=0
   fi
 
   echo "[e2e-docker] container ready; running Playwright."
-  run_playwright "$DATA_DIR" "$PRESEEDED" "$@"
+  run_playwright "$DATA_DIR" "$PRESEEDED" "$READY_FOR_OWNER_PRESEEDED" "$@"
 fi
 
 echo "[e2e-docker] done. Container and data directory will be removed."

@@ -7,6 +7,43 @@ import { logger } from '@/lib/logger'
 import { eventBus } from '@/lib/event-bus'
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces'
 import { advanceTaskChain } from '@/lib/task-dispatch'
+import { resolveFlag } from '@/lib/feature-flags'
+import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition } from '@/lib/task-status'
+import { syncTaskOutbound } from '@/lib/github-sync-engine'
+
+function recordReadyForOwnerEntrySideEffects(
+  task: {
+    id: number
+    title: string
+    workspace_id: number
+    assigned_to?: string | null
+    created_by?: string | null
+    github_repo?: string | null
+    github_pr_number?: number | null
+  },
+  actor: string,
+): void {
+  if (!task.github_repo || !task.github_pr_number) {
+    const data = {
+      task_id: task.id,
+      workspace_id: task.workspace_id,
+      reason: 'missing_explicit_pr_linkage',
+      github_repo: task.github_repo ?? null,
+      github_pr_number: task.github_pr_number ?? null,
+    }
+    db_helpers.logActivity(
+      'task_ready_for_owner',
+      'task',
+      task.id,
+      actor,
+      `Task ready for owner merge is missing explicit PR linkage: ${task.title}`,
+      data,
+      task.workspace_id,
+    )
+  }
+
+  db_helpers.createTaskReadyForOwnerNotification(task)
+}
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
@@ -92,10 +129,36 @@ export async function POST(request: NextRequest) {
     const workspaceId = acceptedScope.workspaceId
 
     const task = db
-      .prepare('SELECT id, title, status FROM tasks WHERE id = ? AND workspace_id = ?')
+      .prepare(`
+        SELECT t.id, t.title, t.description, t.status, t.priority, t.project_id, t.workspace_id,
+               t.assigned_to, t.created_by, t.github_repo, t.github_issue_number, t.github_pr_number,
+               COALESCE(wt.produces_pr, 0) AS produces_pr,
+               wt.external_terminal_event,
+               w.feature_flags
+        FROM tasks t
+        LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+        LEFT JOIN workspaces w ON w.id = t.workspace_id
+        WHERE t.id = ? AND t.workspace_id = ?
+      `)
       .get(taskId, workspaceId) as any
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    }
+
+    const approvedTransition = status === 'approved'
+      ? resolveTaskTerminalTransition({
+          taskId,
+          currentStatus: task.status,
+          requestedStatus: 'done',
+          producesPr: task.produces_pr === 1 && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT,
+          twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+            workspaceFlags: task.feature_flags,
+          }),
+          transitionIntent: 'approval',
+        })
+      : null
+    if (approvedTransition && !approvedTransition.ok) {
+      return NextResponse.json(approvedTransition.body, { status: approvedTransition.status })
     }
 
     const result = db.prepare(`
@@ -115,18 +178,25 @@ export async function POST(request: NextRequest) {
 
     // Auto-advance task based on review outcome
     if (status === 'approved') {
+      const nextStatus = approvedTransition?.ok ? approvedTransition.status : 'done'
       db.prepare('UPDATE tasks SET status = ?, updated_at = unixepoch() WHERE id = ? AND workspace_id = ?')
-        .run('done', taskId, workspaceId)
-      advanceTaskChain({
-        taskId,
-        workspaceId,
-        previousStatus: task.status,
-        trigger: 'quality_review',
-      })
+        .run(nextStatus, taskId, workspaceId)
+      syncTaskOutbound({ ...task, status: nextStatus }, workspaceId)
+      if (nextStatus === READY_FOR_OWNER_STATUS) {
+        recordReadyForOwnerEntrySideEffects(task, reviewer)
+      }
+      if (nextStatus === 'done') {
+        advanceTaskChain({
+          taskId,
+          workspaceId,
+          previousStatus: task.status,
+          trigger: 'quality_review',
+        })
+      }
       eventBus.broadcast('task.status_changed', {
         id: taskId,
-        status: 'done',
-        previous_status: 'review',
+        status: nextStatus,
+        previous_status: task.status,
         updated_at: Math.floor(Date.now() / 1000),
         workspace_id: workspaceId,
       })

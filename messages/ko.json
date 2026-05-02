@@ -463,7 +463,12 @@
     "recipientLabel": "수신자",
     "recipientPlaceholder": "에이전트 이름 (예: my-agent)",
     "noNotifications": "알림 없음",
-    "markRead": "읽음으로 표시"
+    "markRead": "읽음으로 표시",
+    "readyForOwnerNormalTitle": "소유자 병합 준비됨",
+    "readyForOwnerNormalMessage": "소유자 조치 필요: 소유자 병합 준비됨.",
+    "readyForOwnerReconciliationTitle": "소유자 병합 조정 필요",
+    "readyForOwnerReconciliationMessage": "소유자 조치 필요: 닫힌 이슈에는 병합된 PR 증거가 필요합니다.",
+    "readyForOwnerActionRequired": "소유자 조치 필요"
   },
   "localAgentsDoc": {
     "title": "로컬 AGENTS.md",
@@ -763,6 +768,8 @@
     "colInProgress": "진행 중",
     "colReview": "검토",
     "colQualityReview": "품질 검토",
+    "colReadyForOwner": "소유자 준비 완료",
+    "readyForOwnerActionRequired": "소유자 조치 필요",
     "colFailed": "실패",
     "retryTask": "재시도",
     "colDone": "완료",

@@ -28,7 +28,7 @@ Mission Control remains the source of truth. The existing `tenant → workspace 
 
 A new **task pipeline engine** auto-chains tasks based on declarative routing rules evaluated against structured agent output. **Aegis is refactored** from per-workspace resolution to facility-wide via a new `scope='global'` flag on agents. **GitHub sync routes issues** via a new `area:*` label family to the correct department project within a product line's monorepo. **Resource governance** extends the existing Cost Tracker into enforceable WIP limits, blackout/degraded windows, and budget gates before autonomous work is started. Facility electricity / infrastructure usage and cost from the OpenClaw health cron are part of the same governance surface, but only through a fork-only optional adapter.
 
-As of 2026-05-01, SPEC-004 completes the task pipeline engine on PR #22 with local verification, review remediation, GitHub checks, and Argos evidence green. Merging PR #22 to `main` ships this behavior.
+As of 2026-05-02, SPEC-004 is merged on PR #22 as `20643d8` and SPEC-006 is merged on PR #21 as `dbb6c75`. SPEC-005 implementation and local G7 verification are complete on branch `005-ready-for-owner`, with PR #23 open; it remains pending merge to `main`.
 
 ## Tech Stack
 
@@ -533,8 +533,8 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 1A | Spec archive + evidence retention | Complete | Yes — process/tooling only | `upstream-safe` |
 | 2 | Aegis refactor (facility singleton) | Complete | Yes — shim preserves legacy | `upstream-divergent` |
 | 3 | Task-chain engine + declarative routing over `workflow_templates` | Complete | Yes — null-default fields | `upstream-divergent` |
-| 4 | `ready_for_owner` state + two-step terminal | Pending | Yes — per-template opt-in | `upstream-divergent` |
-| 5 | Area labels + GitHub sync updates | Pending | Yes — fallback to `area:triage` | `upstream-safe` |
+| 4 | `ready_for_owner` state + two-step terminal | Implemented on branch; PR #23 open | Yes — per-template opt-in | `upstream-divergent` |
+| 5 | Area labels + GitHub sync updates | Complete | Yes — fallback to `area:triage` | `upstream-safe` |
 | 6 | Disposition logging + artifact store + audit/admin panels | Pending | Yes — purely additive | `upstream-divergent` |
 | 7 | Resource governance + Cost Tracker enforcement | Pending | Yes — flag-off default | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` |
 | 7.5 | CrabTrap honeypot — HAL security adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
@@ -552,6 +552,8 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 **Phase 2 completion note:** SPEC-003 is complete on PR #20 after merge to `main` as `85d102f` on 2026-04-30. Evidence: all 21 generated tasks are checked, `getAegis(db, workspace_id?)` is implemented in `src/lib/aegis.ts`, `runAegisReviews` uses the shared resolver, Aegis completion gates remain `quality_reviews.reviewer='aegis'`, static guardrails pass with zero matches, focused Vitest passes the SPEC-003 resolver/dispatch/flag matrix (9 tests in `src/lib/__tests__/aegis.test.ts`), `pnpm typecheck` passes, `pnpm lint` passes with 0 errors and 10 pre-existing warnings, `pnpm build` passes with network access for Google Fonts, and `pnpm test:e2e` passes 533 Playwright tests. Full `pnpm test` is still blocked by baseline environment issues in GPG-backed GNAP sync tests and the provisioner socket timeout.
 
 **Phase 3 completion note:** SPEC-004 is complete on PR #22 after final verification on 2026-05-01. Evidence: all 88 generated tasks are checked, task creation is centralized through `createTask()`, task-chain advancement and explicit `retry_chain_advancement` are implemented behind `FEATURE_TASK_PIPELINES`, M62 enforces one successor per non-null parent task, workflow-template chain fields are exposed in API/UI, Storybook/Argos and Playwright UI coverage are present, `pnpm typecheck`, `pnpm lint`, `pnpm test` (150 files / 1182 tests), `pnpm build`, full `pnpm test:e2e` (532 tests), and `pnpm audit:high` passed under the recorded higher-ulimit execution surface, PR #22 review threads are resolved, and GitHub CodeQL, Quality Gate, Mission Control UI E2E, Argos Storybook, Argos Playwright, and Argos summary are green.
+
+**Phase 5 completion note:** SPEC-006 is complete on PR #21 after merge to `main` as `dbb6c75` on 2026-05-01. Evidence recorded in the workflow includes 64 FRs satisfied, 88+ tasks landed, `FEATURE_AREA_LABEL_ROUTING` flag-off parity, repo sync ownership, triage routing, area-label routing, auto-backfill, label provisioning, docs updates, `pnpm typecheck`, `pnpm lint`, `pnpm test` (124 files / 1228 tests), strict-scope guardrails, and passing GitHub checks for Quality Gate, docker UI e2e, CodeQL, Argos Playwright, Argos Storybook, and Argos summary.
 
 ### Autopilot Caveats (per spec)
 

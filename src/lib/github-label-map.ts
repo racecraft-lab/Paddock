@@ -15,7 +15,7 @@
 
 import type Database from 'better-sqlite3'
 
-export type TaskStatus = 'backlog' | 'inbox' | 'assigned' | 'awaiting_owner' | 'in_progress' | 'review' | 'quality_review' | 'done' | 'failed'
+export type TaskStatus = 'backlog' | 'inbox' | 'assigned' | 'awaiting_owner' | 'in_progress' | 'review' | 'quality_review' | 'ready_for_owner' | 'done' | 'failed'
 export type TaskPriority = 'low' | 'medium' | 'high' | 'critical'
 
 interface LabelDef {
@@ -33,6 +33,7 @@ const STATUS_LABEL_MAP: Record<TaskStatus, LabelDef> = {
   in_progress:    { name: 'mc:in-progress',    color: 'eab308', description: 'Mission Control: in progress' },
   review:         { name: 'mc:review',         color: 'a855f7', description: 'Mission Control: review' },
   quality_review: { name: 'mc:quality-review', color: '6366f1', description: 'Mission Control: quality review' },
+  ready_for_owner: { name: 'mc:ready-for-owner', color: '14b8a6', description: 'Mission Control: ready for owner' },
   done:           { name: 'mc:done',           color: '22c55e', description: 'Mission Control: done' },
   awaiting_owner: { name: 'mc:awaiting-owner', color: 'f97316', description: 'Mission Control: awaiting owner' },
   failed:         { name: 'mc:failed',          color: 'ef4444', description: 'Mission Control: failed' },

@@ -20,7 +20,17 @@ function createDb(): Database.Database {
     CREATE TABLE projects (id INTEGER PRIMARY KEY, workspace_id INTEGER, name TEXT, ticket_prefix TEXT, ticket_counter INTEGER NOT NULL DEFAULT 0, updated_at INTEGER, github_repo TEXT, github_sync_enabled INTEGER DEFAULT 0);
     CREATE TABLE agents (id INTEGER PRIMARY KEY, name TEXT, workspace_id INTEGER, scope TEXT DEFAULT 'workspace', status TEXT DEFAULT 'online', config TEXT);
     CREATE TABLE project_agent_assignments (project_id INTEGER, role TEXT, agent_name TEXT, workspace_id INTEGER);
-    CREATE TABLE workflow_templates (id INTEGER PRIMARY KEY, name TEXT, task_prompt TEXT, workspace_id INTEGER, slug TEXT, agent_role TEXT, next_template_slug TEXT);
+    CREATE TABLE workflow_templates (
+      id INTEGER PRIMARY KEY,
+      name TEXT,
+      task_prompt TEXT,
+      workspace_id INTEGER,
+      slug TEXT,
+      agent_role TEXT,
+      next_template_slug TEXT,
+      produces_pr INTEGER NOT NULL DEFAULT 0,
+      external_terminal_event TEXT
+    );
     CREATE TABLE tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT,
@@ -30,6 +40,9 @@ function createDb(): Database.Database {
       resolution TEXT,
       assigned_to TEXT,
       created_by TEXT,
+      github_repo TEXT,
+      github_issue_number INTEGER,
+      github_pr_number INTEGER,
       created_at INTEGER DEFAULT 1,
       updated_at INTEGER DEFAULT 1,
       completed_at INTEGER,

@@ -11,6 +11,12 @@ export const API_KEY_HEADER: Record<string, string> = {
 export const E2E_ADMIN_USER = process.env.AUTH_USER || 'testadmin'
 export const E2E_ADMIN_PASS = process.env.AUTH_PASS || 'testpass1234!'
 
+let e2eAdminLoginSequence = 0
+
+function nextE2EAdminLoginIp() {
+  return `10.88.90.${10 + (e2eAdminLoginSequence++ % 200)}`
+}
+
 export const PRODUCT_LINE_VISUAL_NOW = new Date('2026-04-28T12:00:00.000Z')
 const PRODUCT_LINE_VISUAL_NOW_SECONDS = Math.floor(PRODUCT_LINE_VISUAL_NOW.getTime() / 1000)
 
@@ -253,7 +259,7 @@ async function expectJsonSuccess<TBody extends Record<string, unknown>>(
 export async function loginAsE2EAdmin(page: Page, request: APIRequestContext) {
   const res = await request.post('/api/auth/login', {
     data: { username: E2E_ADMIN_USER, password: E2E_ADMIN_PASS },
-    headers: { 'x-real-ip': '10.88.90.10' },
+    headers: { 'x-real-ip': nextE2EAdminLoginIp() },
   })
   const body = await res.json().catch(() => ({}))
   if (!res.ok()) {

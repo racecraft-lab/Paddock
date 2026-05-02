@@ -23,7 +23,7 @@ interface Task {
   id: number
   title: string
   description?: string
-  status: 'backlog' | 'inbox' | 'assigned' | 'awaiting_owner' | 'in_progress' | 'review' | 'quality_review' | 'done' | 'failed'
+  status: 'backlog' | 'inbox' | 'assigned' | 'awaiting_owner' | 'in_progress' | 'review' | 'quality_review' | 'ready_for_owner' | 'done' | 'failed'
   priority: 'low' | 'medium' | 'high' | 'critical' | 'urgent'
   assigned_to?: string
   created_by: string
@@ -59,6 +59,7 @@ interface Agent {
     total: number
     assigned: number
     in_progress: number
+    ready_for_owner: number
     completed: number
   }
 }
@@ -98,6 +99,7 @@ const STATUS_COLUMN_KEYS = [
   { key: 'in_progress', titleKey: 'colInProgress', color: 'bg-yellow-500/20 text-yellow-400' },
   { key: 'review', titleKey: 'colReview', color: 'bg-purple-500/20 text-purple-400' },
   { key: 'quality_review', titleKey: 'colQualityReview', color: 'bg-indigo-500/20 text-indigo-400' },
+  { key: 'ready_for_owner', titleKey: 'colReadyForOwner', color: 'bg-teal-500/20 text-teal-300' },
   { key: 'done', titleKey: 'colDone', color: 'bg-green-500/20 text-green-400' },
   { key: 'failed', titleKey: 'colFailed', color: 'bg-red-500/20 text-red-400' },
 ]
@@ -976,7 +978,9 @@ export function TaskBoardPanel() {
                   draggable
                   role="button"
                   tabIndex={0}
-                  aria-label={`${task.title}, ${task.priority} priority, ${task.status}`}
+                  aria-label={`${task.title}, ${task.priority} priority, ${column.title}${
+                    column.key === 'ready_for_owner' ? `, ${t('readyForOwnerActionRequired')}` : ''
+                  }`}
                   onDragStart={(e) => handleDragStart(e, task)}
                   onClick={() => {
                     setSelectedTask(task)
@@ -1060,6 +1064,11 @@ export function TaskBoardPanel() {
                           {detectAwaitingOwner(task) && (
                             <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 border border-orange-500/30 font-mono">
                               {t('colAwaitingOwner')}
+                            </span>
+                          )}
+                          {column.key === 'ready_for_owner' && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/15 text-teal-300 border border-teal-500/30 font-mono">
+                              {t('readyForOwnerActionRequired')}
                             </span>
                           )}
                         </div>

@@ -463,7 +463,12 @@
     "recipientLabel": "المستلم",
     "recipientPlaceholder": "اسم الوكيل (مثال: my-agent)",
     "noNotifications": "لا توجد إشعارات",
-    "markRead": "وضع علامة مقروء"
+    "markRead": "وضع علامة مقروء",
+    "readyForOwnerNormalTitle": "جاهز لدمج المالك",
+    "readyForOwnerNormalMessage": "إجراء المالك مطلوب: جاهز لدمج المالك.",
+    "readyForOwnerReconciliationTitle": "مطلوب تسوية دمج المالك",
+    "readyForOwnerReconciliationMessage": "إجراء المالك مطلوب: تحتاج المشكلة المغلقة إلى دليل PR مدمج.",
+    "readyForOwnerActionRequired": "إجراء المالك مطلوب"
   },
   "localAgentsDoc": {
     "title": "AGENTS.md المحلي",
@@ -763,6 +768,8 @@
     "colInProgress": "قيد التنفيذ",
     "colReview": "المراجعة",
     "colQualityReview": "مراجعة الجودة",
+    "colReadyForOwner": "جاهز للمالك",
+    "readyForOwnerActionRequired": "إجراء المالك مطلوب",
     "colFailed": "فشل",
     "retryTask": "إعادة المحاولة",
     "colDone": "مكتمل",

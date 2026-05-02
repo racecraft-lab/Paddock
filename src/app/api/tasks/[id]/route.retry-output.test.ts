@@ -29,7 +29,9 @@ function createDb(): Database.Database {
       agent_role TEXT,
       output_schema TEXT,
       routing_rules TEXT,
-      next_template_slug TEXT
+      next_template_slug TEXT,
+      produces_pr INTEGER NOT NULL DEFAULT 0,
+      external_terminal_event TEXT
     );
     CREATE TABLE tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

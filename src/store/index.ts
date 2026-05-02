@@ -152,7 +152,7 @@ export interface Task {
   id: number
   title: string
   description?: string
-  status: 'backlog' | 'inbox' | 'assigned' | 'awaiting_owner' | 'in_progress' | 'review' | 'quality_review' | 'done' | 'failed'
+  status: 'backlog' | 'inbox' | 'assigned' | 'awaiting_owner' | 'in_progress' | 'review' | 'quality_review' | 'ready_for_owner' | 'done' | 'failed'
   priority: 'low' | 'medium' | 'high' | 'critical' | 'urgent'
   project_id?: number
   project_ticket_no?: number
@@ -202,6 +202,7 @@ export interface Agent {
     assigned: number
     in_progress: number
     quality_review: number
+    ready_for_owner: number
     done: number
     completed: number
   }
