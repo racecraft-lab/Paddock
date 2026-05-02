@@ -21,7 +21,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "pnpm run verify:node && playwright test",
-    "test:e2e:ui-visual": "pnpm build && MC_E2E_SCREENSHOTS=1 ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 playwright test tests/product-line-switcher-ui.spec.ts tests/feature-flags-admin-ui.spec.ts tests/e2e/ready-for-owner-kanban.spec.ts tests/workspace-switcher-flag-off.spec.ts tests/product-line-scope-api.spec.ts tests/product-line-scope-matrix.spec.ts tests/product-line-events.spec.ts",
+    "test:e2e:ui-visual": "pnpm build && MC_E2E_SCREENSHOTS=1 ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 playwright test tests/product-line-switcher-ui.spec.ts tests/feature-flags-admin-ui.spec.ts tests/e2e/ready-for-owner-kanban.spec.ts tests/e2e/spec-007-ui-visual.spec.ts tests/workspace-switcher-flag-off.spec.ts tests/product-line-scope-api.spec.ts tests/product-line-scope-matrix.spec.ts tests/product-line-events.spec.ts",
     "test:e2e:docker": "pnpm run verify:node && bash scripts/e2e-docker.sh",
     "test:e2e:argos-metadata": "pnpm run verify:node && node scripts/verify-argos-metadata.mjs --mode playwright",
     "test:e2e:openclaw:local": "pnpm run verify:node && E2E_GATEWAY_EXPECTED=0 playwright test -c playwright.openclaw.local.config.ts",

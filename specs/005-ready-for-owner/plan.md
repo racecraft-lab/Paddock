@@ -9,15 +9,15 @@ Add application-level `ready_for_owner` task status support for PR-producing wor
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application  
-**Primary Dependencies**: Next.js, React, Zustand, `better-sqlite3`, Vitest, Playwright, ESLint, pnpm; no new runtime dependency planned  
-**Storage**: SQLite through `better-sqlite3`; existing `tasks.status`, `tasks.github_repo`, `tasks.github_pr_number`, `workflow_templates.produces_pr`, and nullable `workflow_templates.external_terminal_event` fields  
-**Testing**: Vitest for transition, route, GitHub sync, label, notification, and guard tests; Playwright for the real Kanban lane/operator journey; `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test`, `pnpm test:e2e`  
-**Target Platform**: Node >= 22, server-rendered Next.js web app with local SQLite persistence  
-**Project Type**: Single web application with App Router API routes, React panels, and local background/sync helpers  
-**Performance Goals**: Transition guard and GitHub reconciliation checks add only synchronous DB lookups already local to the update transaction; no extra network call is added outside GitHub sync's existing pull loop  
-**Constraints**: No database migration, no DB task-status CHECK, no terminal-event table, no issue timeline PR inference, no force-complete override, no chain advancement at `ready_for_owner`, flag-off behavior preserved, existing `awaiting_owner` behavior preserved  
-**Scale/Scope**: One workspace-scoped feature flag; all live paths that can write `done` are in scope: `runAegisReviews`, `/api/quality-review`, bulk `PUT /api/tasks`, detail `PUT /api/tasks/[id]`, and `pullFromGitHub`  
+**Language/Version**: TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application
+**Primary Dependencies**: Next.js, React, Zustand, `better-sqlite3`, Vitest, Playwright, ESLint, pnpm; no new runtime dependency planned
+**Storage**: SQLite through `better-sqlite3`; existing `tasks.status`, `tasks.github_repo`, `tasks.github_pr_number`, `workflow_templates.produces_pr`, and nullable `workflow_templates.external_terminal_event` fields
+**Testing**: Vitest for transition, route, GitHub sync, label, notification, and guard tests; Playwright for the real Kanban lane/operator journey; `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test`, `pnpm test:e2e`
+**Target Platform**: Node >= 22, server-rendered Next.js web app with local SQLite persistence
+**Project Type**: Single web application with App Router API routes, React panels, and local background/sync helpers
+**Performance Goals**: Transition guard and GitHub reconciliation checks add only synchronous DB lookups already local to the update transaction; no extra network call is added outside GitHub sync's existing pull loop
+**Constraints**: No database migration, no DB task-status CHECK, no terminal-event table, no issue timeline PR inference, no force-complete override, no chain advancement at `ready_for_owner`, flag-off behavior preserved, existing `awaiting_owner` behavior preserved
+**Scale/Scope**: One workspace-scoped feature flag; all live paths that can write `done` are in scope: `runAegisReviews`, `/api/quality-review`, bulk `PUT /api/tasks`, detail `PUT /api/tasks/[id]`, and `pullFromGitHub`
 **Strict Scope**: Add `src/lib/task-status.ts` to `tsconfig.spec-strict.json` and `eslint.config.mjs`. Do not add `src/lib/notifications.ts`; current notification integration stays in `src/lib/db.ts`, `src/components/panels/notifications-panel.tsx`, and `src/app/api/notifications/deliver/route.ts`.
 
 ## Constitution Check

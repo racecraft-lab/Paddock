@@ -97,10 +97,10 @@ jobs:
         if: always()
         continue-on-error: true
         env:
-          ARGOS_STORYBOOK_EXPECTED_METADATA: '25'
-          ARGOS_STORYBOOK_EXPECTED_STORIES: '15'
+          ARGOS_STORYBOOK_EXPECTED_METADATA: '28'
+          ARGOS_STORYBOOK_EXPECTED_STORIES: '18'
           ARGOS_STORYBOOK_REQUIRED_TAGS: 'visual'
-          ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS: 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,ready-for-owner:3'
+          ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS: 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,ready-for-owner:3,spec-007:3'
         run: pnpm test:visual:argos-metadata
 
       - name: Fail on Storybook or Argos metadata defects

@@ -11,7 +11,156 @@ import { resolveFlag } from './feature-flags'
 import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition, type TaskStatus } from './task-status'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
+import { sanitizeDispositionFailurePayload } from './task-artifacts'
+import { evaluateSpec007AegisSignals } from './aegis-review'
 import { createHash } from 'crypto'
+
+// SPEC-007 FR-010: Closed disposition enum (Design Concept Q3).
+const DISPOSITION_ENUM = [
+  'merged', 'closed', 'rejected', 'rerouted', 'duplicate', 'spam', 'completed', 'abandoned',
+] as const
+
+// SPEC-007 FR-010 / Q4: triage-template detection by output_schema shape.
+function isTriageTemplateSchema(schemaRaw: string | null | undefined): boolean {
+  if (!schemaRaw) return false
+  try {
+    const schema = JSON.parse(schemaRaw) as unknown
+    if (!schema || typeof schema !== 'object') return false
+    const obj = schema as Record<string, unknown>
+    const required = Array.isArray(obj.required) ? (obj.required as unknown[]) : []
+    if (!required.includes('disposition')) return false
+    const props = obj.properties
+    if (!props || typeof props !== 'object') return false
+    const disp = (props as Record<string, unknown>).disposition
+    if (!disp || typeof disp !== 'object') return false
+    const dispObj = disp as Record<string, unknown>
+    if (dispObj.type !== 'string') return false
+    if (!Array.isArray(dispObj.enum)) return false
+    const dispEnum = dispObj.enum as unknown[]
+    return DISPOSITION_ENUM.every(v => dispEnum.includes(v))
+  } catch {
+    return false
+  }
+}
+
+function safeParseJson(s: string): unknown {
+  try { return JSON.parse(s) } catch { return undefined }
+}
+
+function isDispositionLoggingEnabled(db: any, workspaceId: number): boolean {
+  const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as { feature_flags: string | null } | undefined
+  return resolveFlag('FEATURE_DISPOSITION_LOGGING', { workspaceFlags: row?.feature_flags ?? null })
+}
+
+// SPEC-007 FR-014: throttled `disposition_insert_failed` activity (1 per (task_id, type) per 60s).
+function writeThrottledInsertFailure(
+  db: any,
+  parentTaskId: number,
+  workspaceId: number,
+  err: unknown,
+): void {
+  try {
+    const recent = db.prepare(
+      "SELECT id FROM activities WHERE type = 'disposition_insert_failed' AND entity_type = 'task' AND entity_id = ? AND created_at >= unixepoch() - 60 LIMIT 1",
+    ).get(parentTaskId)
+    if (recent) return
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('disposition_insert_failed', 'task', ?, 'task-pipeline', 'Disposition INSERT failed', ?, ?)",
+    ).run(
+      parentTaskId,
+      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
+      workspaceId,
+    )
+  } catch (innerErr) {
+    logger.warn({
+      event: 'disposition_insert_failed_activity_write_failed',
+      task_id: parentTaskId,
+      error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+    })
+  }
+}
+
+// SPEC-007 FR-011/FR-012/FR-013/FR-015: Post-commit disposition logging hook.
+// Runs AFTER advanceTaskChain's IIFE returns, BEFORE runPostCommitSuccessorSync.
+// Gated by FEATURE_DISPOSITION_LOGGING. No-op if not a triage template.
+// On INSERT failure, writes throttled activity, never rethrows.
+function runPostCommitDispositionInsert(
+  db: any,
+  parentTaskId: number,
+  workspaceId: number,
+): void {
+  if (!isDispositionLoggingEnabled(db, workspaceId)) return
+
+  const parent = db.prepare(
+    'SELECT t.id, t.assigned_to, t.resolution, t.workspace_id, t.workflow_template_id, wt.output_schema FROM tasks t JOIN workflow_templates wt ON wt.id = t.workflow_template_id WHERE t.id = ? AND t.workspace_id = ?',
+  ).get(parentTaskId, workspaceId) as
+    | { id: number; assigned_to: string | null; resolution: string | null; workspace_id: number; workflow_template_id: number; output_schema: string | null }
+    | undefined
+  if (!parent) return
+  if (!isTriageTemplateSchema(parent.output_schema)) return
+
+  const rawOutput = parent.resolution ?? ''
+  const parsed = rawOutput ? safeParseJson(rawOutput) : undefined
+  const parsedObj = parsed && typeof parsed === 'object' && parsed !== null
+    ? (parsed as Record<string, unknown>)
+    : null
+
+  const dispRaw = parsedObj && typeof parsedObj.disposition === 'string' ? parsedObj.disposition : null
+  const validationOk = dispRaw !== null && (DISPOSITION_ENUM as readonly string[]).includes(dispRaw)
+  const reason = parsedObj && typeof parsedObj.reason === 'string' ? parsedObj.reason : null
+
+  const agentRow = parent.assigned_to
+    ? (db.prepare('SELECT id FROM agents WHERE name = ? AND workspace_id = ?').get(parent.assigned_to, workspaceId) as { id: number } | undefined)
+    : undefined
+  const triagedByAgentId = agentRow ? agentRow.id : null
+
+  if (validationOk) {
+    try {
+      db.prepare(
+        'INSERT INTO task_dispositions (task_id, disposition, reason, triaged_by_agent_id, triaged_at, workspace_id) VALUES (?, ?, ?, ?, unixepoch(), ?)',
+      ).run(parentTaskId, dispRaw, reason, triagedByAgentId, workspaceId)
+    } catch (err) {
+      writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+    }
+    return
+  }
+
+  const violation = parsedObj === null
+    ? 'invalid_json'
+    : 'disposition' in parsedObj
+      ? 'enum_violation'
+      : 'missing_required_field'
+  const sanitized = sanitizeDispositionFailurePayload({
+    rule: 'output_schema_violation',
+    violation,
+    field: 'disposition',
+    content: rawOutput,
+  })
+
+  let inserted = false
+  try {
+    db.prepare(
+      "INSERT INTO task_dispositions (task_id, disposition, reason, triaged_by_agent_id, triaged_at, workspace_id) VALUES (?, 'unknown', ?, ?, unixepoch(), ?)",
+    ).run(parentTaskId, reason, triagedByAgentId, workspaceId)
+    inserted = true
+  } catch (err) {
+    writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+  }
+
+  if (!inserted) return
+
+  try {
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('disposition_validation_failed', 'task', ?, 'task-pipeline', 'Disposition validation failed', ?, ?)",
+    ).run(parentTaskId, JSON.stringify(sanitized), workspaceId)
+  } catch (innerErr) {
+    logger.warn({
+      event: 'disposition_validation_activity_write_failed',
+      task_id: parentTaskId,
+      error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+    })
+  }
+}
 
 /** Sync task to GitHub/GNAP and broadcast escalation if task failed */
 function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null; github_issue_number?: number | null; github_repo?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
@@ -255,6 +404,100 @@ function isFeatureEnabled(db: any, workspaceId: number): boolean {
   return resolveFlag('FEATURE_TASK_PIPELINES', { workspaceFlags: row?.feature_flags ?? null })
 }
 
+// SPEC-007 FR-040: Successor input_artifacts query.
+// Returns null when FEATURE_TASK_ARTIFACTS is OFF for the workspace -- caller
+// MUST omit the input_artifacts key entirely (flag-OFF byte-compat per P6-AC7).
+// Returns [] when flag is ON but the producer has no eligible rows.
+function isTaskArtifactsEnabled(db: any, workspaceId: number): boolean {
+  const row = db
+    .prepare('SELECT feature_flags FROM workspaces WHERE id = ?')
+    .get(workspaceId) as { feature_flags: string | null } | undefined
+  return resolveFlag('FEATURE_TASK_ARTIFACTS', {
+    workspaceFlags: row?.feature_flags ?? null,
+  })
+}
+
+interface SuccessorInputArtifact {
+  id: number
+  type: string
+  sha256: string | null
+  preview_text: string | null
+  storage_kind: string
+  byte_size: number | null
+}
+
+function getSuccessorInputArtifacts(
+  db: any,
+  parentTaskId: number,
+): SuccessorInputArtifact[] {
+  if (!tableExists(db, 'task_artifacts')) return []
+  const artifactRows = db
+    .prepare(
+      `SELECT id, artifact_type, sha256, preview_text, storage_kind, byte_size
+         FROM task_artifacts
+        WHERE task_id = ?
+          AND redaction_status NOT IN ('superseded','quarantined')
+        ORDER BY created_at ASC, id ASC`,
+    )
+    .all(parentTaskId) as Array<{
+      id: number
+      artifact_type: string
+      sha256: string | null
+      preview_text: string | null
+      storage_kind: string
+      byte_size: number | null
+    }>
+  return artifactRows.map((a) => ({
+    id: a.id,
+    type: a.artifact_type,
+    sha256: a.sha256,
+    preview_text: a.preview_text,
+    storage_kind: a.storage_kind,
+    byte_size: a.byte_size,
+  }))
+}
+
+// SPEC-007 FR-066: write one UNTHROTTLED activity row per quarantined artifact
+// excluded from successor dispatch. Failure-isolated (catch-and-log).
+function writeQuarantinedSkipActivities(
+  db: any,
+  parentTaskId: number,
+  successorTaskId: number,
+  workspaceId: number,
+): void {
+  if (!tableExists(db, 'task_artifacts') || !tableExists(db, 'activities')) return
+  try {
+    const quarantinedRows = db
+      .prepare(
+        "SELECT id FROM task_artifacts WHERE task_id = ? AND redaction_status = 'quarantined'",
+      )
+      .all(parentTaskId) as Array<{ id: number }>
+    if (quarantinedRows.length === 0) return
+    const insert = db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('artifact_skipped_quarantined_in_dispatch', 'task', ?, 'task-pipeline', 'Artifact skipped from successor dispatch (quarantined)', ?, ?)",
+    )
+    for (const q of quarantinedRows) {
+      insert.run(
+        parentTaskId,
+        JSON.stringify({
+          artifact_id: q.id,
+          producer_task_id: parentTaskId,
+          successor_task_id: successorTaskId,
+          workspace_id: workspaceId,
+          reason: 'quarantined',
+        }),
+        workspaceId,
+      )
+    }
+  } catch (err) {
+    logger.warn({
+      event: 'artifact_skipped_quarantined_activity_write_failed',
+      task_id: parentTaskId,
+      error: err instanceof Error ? err.message : String(err),
+    })
+  }
+}
+
 function fetchPipelineTask(db: any, taskId: number, workspaceId: number): TaskPipelineTask | null {
   return (db.prepare('SELECT * FROM tasks WHERE id = ? AND workspace_id = ?').get(taskId, workspaceId) as TaskPipelineTask | undefined) ?? null
 }
@@ -446,6 +689,31 @@ export function advanceTaskChain(input: AdvanceTaskChainInput): AdvanceTaskChain
     const duplicateAfterLineage = existingSuccessorId(db, parent.id, parent.workspace_id)
     if (duplicateAfterLineage) return { advanced: false, reason: 'successor_exists', successorTaskId: duplicateAfterLineage }
 
+    // SPEC-007 FR-040: attach metadata.input_artifacts when FEATURE_TASK_ARTIFACTS
+    // is ON for this workspace. When OFF, the key MUST NOT be present in the
+    // serialized metadata JSON (P6-AC7 byte-compat). This SELECT runs inside
+    // advanceTaskChain's enclosing transaction; SQLite WAL guarantees a
+    // consistent snapshot (CHK074).
+    const taskArtifactsEnabled = isTaskArtifactsEnabled(db, parent.workspace_id)
+    const inputArtifacts = taskArtifactsEnabled
+      ? getSuccessorInputArtifacts(db, parent.id)
+      : null
+
+    const baseMetadata: Record<string, unknown> = {
+      task_pipeline: {
+        parent_task_id: parent.id,
+        root_task_id: lineage.rootTaskId,
+        chain_id: lineage.chainId,
+        chain_stage: lineage.chainStage + 1,
+        source_template_slug: template.slug,
+        target_template_slug: target.template.slug,
+        matched_rule_index: routing.matchedRuleIndex,
+      },
+    }
+    if (inputArtifacts !== null) {
+      baseMetadata.input_artifacts = inputArtifacts
+    }
+
     const createResult = createPipelineSuccessorTask({
       db,
       runtime: {
@@ -469,17 +737,7 @@ export function advanceTaskChain(input: AdvanceTaskChainInput): AdvanceTaskChain
       chain_id: lineage.chainId,
       chain_stage: lineage.chainStage + 1,
       tags: [],
-      metadata: {
-        task_pipeline: {
-          parent_task_id: parent.id,
-          root_task_id: lineage.rootTaskId,
-          chain_id: lineage.chainId,
-          chain_stage: lineage.chainStage + 1,
-          source_template_slug: template.slug,
-          target_template_slug: target.template.slug,
-          matched_rule_index: routing.matchedRuleIndex,
-        },
-      },
+      metadata: baseMetadata,
       activity: {
         type: 'task_pipeline_successor_created',
         actor: 'task-pipeline',
@@ -496,9 +754,30 @@ export function advanceTaskChain(input: AdvanceTaskChainInput): AdvanceTaskChain
       return { advanced: false, reason: 'successor_exists', successorTaskId: createResult.taskId }
     }
 
+    // SPEC-007 FR-066: emit one UNTHROTTLED `artifact_skipped_quarantined_in_dispatch`
+    // activity row per quarantined artifact for the producer task. Only when the
+    // artifacts flag is ON (otherwise the dispatcher made no decision about
+    // artifacts and there is nothing to record). Failure-isolated.
+    if (taskArtifactsEnabled) {
+      writeQuarantinedSkipActivities(db, parent.id, createResult.taskId, parent.workspace_id)
+    }
+
     successorForPostCommit = createResult.taskId
     return { advanced: true, reason: 'successor_created', successorTaskId: createResult.taskId }
   })()
+
+  // SPEC-007 FR-011: Post-commit disposition logging runs AFTER the IIFE
+  // and BEFORE runPostCommitSuccessorSync. Failure-isolated (try/catch).
+  try {
+    runPostCommitDispositionInsert(db, input.taskId, input.workspaceId)
+  } catch (err) {
+    // Defense-in-depth: SPEC-007 FR-012 says failures must never block advancement.
+    logger.warn({
+      event: 'disposition_post_commit_unexpected_error',
+      task_id: input.taskId,
+      error: err instanceof Error ? err.message : String(err),
+    })
+  }
 
   if (successorForPostCommit !== null) {
     runPostCommitSuccessorSync(db, successorForPostCommit, input.workspaceId)
@@ -1151,6 +1430,34 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
       status: 'quality_review',
       previous_status: 'review',
     })
+
+    // SPEC-007 FR-090: pre-flight signal check before invoking the agent.
+    // Any security_violation activity OR disposition='unknown' row → FAIL the producer
+    // with the structured AegisFailure reason. No agent call performed for short-circuit.
+    try {
+      const aegisFailure = evaluateSpec007AegisSignals(
+        db,
+        task.id,
+        { since: Math.floor(Date.now() / 1000) - 24 * 60 * 60 },
+      )
+      if (aegisFailure) {
+        db.prepare('UPDATE tasks SET status = ?, error_message = ?, updated_at = ? WHERE id = ?')
+          .run('failed', `Aegis FAIL: ${aegisFailure.reason}`, Math.floor(Date.now() / 1000), task.id)
+        eventBus.broadcast('task.status_changed', {
+          id: task.id,
+          status: 'failed',
+          previous_status: 'quality_review',
+        })
+        results.push({ id: task.id, verdict: 'failed', error: aegisFailure.reason })
+        continue
+      }
+    } catch (err) {
+      logger.warn({
+        event: 'aegis_spec007_signal_check_error',
+        task_id: task.id,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
 
     try {
       const prompt = buildReviewPrompt(task)

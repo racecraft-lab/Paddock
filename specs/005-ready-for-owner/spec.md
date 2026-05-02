@@ -1,8 +1,8 @@
 # Feature Specification: SPEC-005 ready_for_owner State and Two-Step Terminal Event
 
-**Feature Branch**: `005-ready-for-owner`  
-**Created**: 2026-05-02  
-**Status**: Draft  
+**Feature Branch**: `005-ready-for-owner`
+**Created**: 2026-05-02
+**Status**: Draft
 **Input**: User description: "SPEC-005 ready_for_owner State and Two-Step Terminal Event"
 
 ## Clarifications
