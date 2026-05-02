@@ -40,7 +40,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Plan | `/speckit.plan` | Complete | plan.md + research.md (13 decisions) + data-model.md (7 entities) + 3 contracts + quickstart.md (10 scenarios) + CLAUDE.md/AGENTS.md updates. All 15 constitution principles PASS. G3 PASS (0 markers). |
 | Checklist | `/speckit.checklist` | Complete | 4 domains / 382 items: data-integrity (107/12 gaps), security (100/13 gaps + FR-035a), error-handling (105/35 gaps → FR-120-141), regression-safety (70/9 gaps → FR-110-114). 6 unresolved-for-consensus items resolved (3 security from S3 + 4 from error-handling). Spec.md grew from FR-100 to FR-141 + FR-035a. G4 PASS (0 gaps, 0 markers). |
 | Tasks | `/speckit.tasks` | Complete | 169 tasks (83 [T-RED] tests + 81 [P] parallel-safe); 14 phases; full P6-AC1..AC10 + FR-110..FR-141 + FR-035a coverage matrices; G5 PASS |
-| Analyze | `/speckit.analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
+| Analyze | `/speckit.analyze` | Complete | 3 findings (2 HIGH + 1 LOW) all remediated in 1 loop: phantom FR-300 reference (plan.md), phantom FR-300 reference (spec.md FR-135), FR-090 `kind` → `type` normalization. 0 unresolved for consensus. G6 PASS. |
 | Implement | `/speckit.implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-008/009/011 behavior |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -645,6 +645,9 @@ Focus on SPEC-007 cross-artifact drift:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
+| F1 | HIGH | plan.md:69 referenced phantom `FR-300-series error matrix` (not a real artifact in SPEC-007) | Replaced with "API Error Code Matrix (spec.md §API Error Code Matrix)" |
+| F2 | HIGH | spec.md FR-135 referenced phantom `FR-300-series matrix` | Replaced with "API Error Code Matrix (the table immediately preceding the FR-090 section)" |
+| F3 | LOW | FR-090 normative definition used legacy `kind='security_violation'` instead of canonical column `type=` | Updated to `type='security_violation'` with cross-reference to FR-120 (column-name authority) |
 
 ## Phase 7: Implement
 
