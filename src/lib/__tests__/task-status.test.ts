@@ -97,6 +97,25 @@ describe('task status vocabulary and transition conflicts', () => {
       task_ids: [42, 43],
     })
   })
+
+  it('uses the same uniform conflict body for approval attempts once a PR-producing task is already waiting on owner merge', () => {
+    expect(resolveTransition({
+      taskId: 44,
+      currentStatus: 'ready_for_owner',
+      requestedStatus: 'done',
+      producesPr: true,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'approval',
+    })).toEqual({
+      ok: false,
+      status: 409,
+      body: {
+        error: 'transition_conflict',
+        reason: 'ready_for_owner_pr_merge_required',
+        task_ids: [44],
+      },
+    })
+  })
 })
 
 describe('resolveTaskTerminalTransition', () => {

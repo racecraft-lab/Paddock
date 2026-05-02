@@ -32,6 +32,11 @@ import {
 import { createTask } from '@/lib/task-create'
 import { eventBus } from '@/lib/event-bus'
 import { config } from '@/lib/config'
+import {
+  READY_FOR_OWNER_STATUS,
+  READY_FOR_OWNER_TERMINAL_EVENT,
+  resolveTaskTerminalTransition,
+} from '@/lib/task-status'
 import type Database from 'better-sqlite3'
 
 // ── SPEC-006 / FR-027b — error classification + sanitization ─────────
@@ -330,6 +335,170 @@ export interface RoutingResolution {
   areaLabels: string[]
 }
 
+export interface GitHubTerminalFixture {
+  repo: string
+  issue_number?: number | null
+  pull_request?: {
+    number: number
+    state?: 'open' | 'closed'
+    merged?: boolean
+    merged_at?: string | null
+    merge_commit_sha?: string | null
+  } | null
+}
+
+export interface PullFromGitHubOptions {
+  webhookFixture?: GitHubTerminalFixture
+}
+
+interface ReadyForOwnerTaskRow {
+  id: number
+  title: string
+  status: string
+  assigned_to: string | null
+  created_by: string | null
+  workspace_id: number
+  github_repo: string | null
+  github_issue_number: number | null
+  github_pr_number: number | null
+  produces_pr: number | null
+  external_terminal_event: string | null
+}
+
+interface PullRequestMergeEvidence {
+  number: number
+  state?: 'open' | 'closed'
+  merged?: boolean
+  merged_at?: string | null
+  merge_commit_sha?: string | null
+}
+
+function hasMergedPrEvidence(pr: PullRequestMergeEvidence | null | undefined): pr is PullRequestMergeEvidence {
+  return Boolean(pr && (pr.merged === true || pr.merged_at || pr.merge_commit_sha))
+}
+
+function isReadyForOwnerMergeGatedTask(
+  task: ReadyForOwnerTaskRow,
+  twoStepTerminalEnabled: boolean,
+): boolean {
+  return twoStepTerminalEnabled
+    && task.status === READY_FOR_OWNER_STATUS
+    && task.produces_pr === 1
+    && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT
+}
+
+function fixturePullRequestForTask(
+  task: ReadyForOwnerTaskRow,
+  fixture: GitHubTerminalFixture | undefined,
+): PullRequestMergeEvidence | null {
+  if (!fixture || fixture.repo !== task.github_repo) return null
+  if (
+    fixture.issue_number !== undefined
+    && fixture.issue_number !== null
+    && fixture.issue_number !== task.github_issue_number
+  ) {
+    return null
+  }
+  const pr = fixture.pull_request
+  if (!pr || task.github_pr_number === null || task.github_pr_number === undefined) return null
+  if (pr.number !== task.github_pr_number) return null
+  return pr
+}
+
+async function livePullRequestForTask(task: ReadyForOwnerTaskRow): Promise<PullRequestMergeEvidence | null> {
+  if (!task.github_repo || task.github_pr_number === null || task.github_pr_number === undefined) return null
+  try {
+    const github = await import('@/lib/github') as {
+      fetchPullRequests?: (
+        repo: string,
+        params?: { state?: 'open' | 'closed' | 'all'; per_page?: number }
+      ) => Promise<PullRequestMergeEvidence[]>
+    }
+    if (typeof github.fetchPullRequests !== 'function') return null
+    const prs = await github.fetchPullRequests(task.github_repo, { state: 'all', per_page: 100 })
+    return prs.find((pr) => pr.number === task.github_pr_number) ?? null
+  } catch (err) {
+    logger.warn({ err, taskId: task.id, repo: task.github_repo }, 'Failed to fetch linked PR merge evidence')
+    return null
+  }
+}
+
+async function mergedPullRequestEvidenceForTask(
+  task: ReadyForOwnerTaskRow,
+  fixture: GitHubTerminalFixture | undefined,
+): Promise<PullRequestMergeEvidence | null> {
+  const fixturePr = fixturePullRequestForTask(task, fixture)
+  if (hasMergedPrEvidence(fixturePr)) return fixturePr
+  const livePr = await livePullRequestForTask(task)
+  return hasMergedPrEvidence(livePr) ? livePr : null
+}
+
+function reconciliationRecipient(task: ReadyForOwnerTaskRow): string | null {
+  return task.assigned_to?.trim() || task.created_by?.trim() || null
+}
+
+function writeReadyForOwnerReconciliation(
+  db: Database.Database,
+  task: ReadyForOwnerTaskRow,
+): void {
+  const reason = 'linked_issue_closed_without_merged_pr'
+  const existingActivity = db.prepare(`
+    SELECT id FROM activities
+    WHERE type = 'github_terminal_reconciliation_required'
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND workspace_id = ?
+      AND json_extract(data, '$.github_issue_number') = ?
+      AND json_extract(data, '$.reason') = ?
+    LIMIT 1
+  `).get(task.id, task.workspace_id, task.github_issue_number, reason) as { id: number } | undefined
+
+  const data = {
+    task_id: task.id,
+    workspace_id: task.workspace_id,
+    github_repo: task.github_repo,
+    github_issue_number: task.github_issue_number,
+    github_pr_number: task.github_pr_number ?? null,
+    reason,
+    source: 'github_sync',
+  }
+
+  if (!existingActivity) {
+    db_helpers.logActivity(
+      'github_terminal_reconciliation_required',
+      'task',
+      task.id,
+      'github-sync',
+      `GitHub issue closed without merged linked PR for task: ${task.title}`,
+      data,
+      task.workspace_id,
+    )
+  }
+
+  const recipient = reconciliationRecipient(task)
+  if (!recipient) return
+  const existingNotification = db.prepare(`
+    SELECT id FROM notifications
+    WHERE type = 'task_ready_for_owner'
+      AND source_type = 'task'
+      AND source_id = ?
+      AND workspace_id = ?
+      AND title = 'Owner merge reconciliation required'
+    LIMIT 1
+  `).get(task.id, task.workspace_id) as { id: number } | undefined
+  if (existingNotification) return
+
+  db_helpers.createNotification(
+    recipient,
+    'task_ready_for_owner',
+    'Owner merge reconciliation required',
+    `Owner action required: ${task.title} has a closed linked issue without merged PR evidence.`,
+    'task',
+    task.id,
+    task.workspace_id,
+  )
+}
+
 // FR-010..FR-014 + FR-014 amendment: resolve area labels to a project.
 //   - exactly one match in cache → single_match → that project
 //   - zero area labels → no_label → triage (or no_triage if no triage)
@@ -499,7 +668,8 @@ export async function pullFromGitHub(
     github_sync_enabled?: number | null
     github_default_branch?: string | null
   },
-  workspaceId: number
+  workspaceId: number,
+  opts?: PullFromGitHubOptions,
 ): Promise<{ pulled: number; pushed: number }> {
   const repo = project.github_repo
   if (!repo || !project.github_sync_enabled) {
@@ -554,8 +724,10 @@ export async function pullFromGitHub(
     try {
       // Match to existing task via DB columns
       const existingTask = db.prepare(`
-        SELECT * FROM tasks
-        WHERE github_repo = ? AND github_issue_number = ? AND workspace_id = ?
+        SELECT t.*, COALESCE(wt.produces_pr, 0) AS produces_pr, wt.external_terminal_event
+        FROM tasks t
+        LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+        WHERE t.github_repo = ? AND t.github_issue_number = ? AND t.workspace_id = ?
       `).get(repo, issue.number, workspaceId) as any | undefined
 
       const issueUpdatedAt = Math.floor(new Date(issue.updated_at).getTime() / 1000)
@@ -654,6 +826,77 @@ export async function pullFromGitHub(
         // Only update if GitHub is newer
         if (issueUpdatedAt <= existingTask.updated_at) {
           continue
+        }
+
+        if (isReadyForOwnerMergeGatedTask(existingTask, resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+          workspaceFlags: flagsRow?.feature_flags ?? null,
+        }))) {
+          const mergedPr = await mergedPullRequestEvidenceForTask(existingTask, opts?.webhookFixture)
+          if (mergedPr) {
+            const transition = resolveTaskTerminalTransition({
+              taskId: existingTask.id,
+              currentStatus: existingTask.status,
+              requestedStatus: 'done',
+              producesPr: true,
+              twoStepTerminalEnabled: true,
+              transitionIntent: 'status_write',
+              terminalEvent: READY_FOR_OWNER_TERMINAL_EVENT,
+            })
+            if (!transition.ok) {
+              writeReadyForOwnerReconciliation(db, existingTask)
+              continue
+            }
+
+            db.prepare(`
+              UPDATE tasks
+              SET title = ?, description = ?, status = ?, priority = ?,
+                  completed_at = COALESCE(completed_at, ?),
+                  github_synced_at = ?, updated_at = ?
+              WHERE id = ? AND workspace_id = ?
+            `).run(
+              issue.title,
+              issue.body || '',
+              transition.status,
+              labelToPriority(labelNames),
+              now,
+              now, now,
+              existingTask.id, workspaceId,
+            )
+
+            pulled++
+            db_helpers.logActivity(
+              'task_updated', 'task', existingTask.id, 'github-sync',
+              `Updated from GitHub merged PR: ${repo}#${mergedPr.number}`,
+              { github_issue: issue.number, github_repo: repo, github_pr_number: mergedPr.number, terminal_event: READY_FOR_OWNER_TERMINAL_EVENT },
+              workspaceId,
+            )
+            const { advanceTaskChain } = await import('@/lib/task-dispatch')
+            advanceTaskChain({
+              taskId: existingTask.id,
+              workspaceId,
+              previousStatus: existingTask.status,
+              trigger: READY_FOR_OWNER_TERMINAL_EVENT,
+            })
+            continue
+          }
+
+          if (issue.state === 'closed') {
+            db.prepare(`
+              UPDATE tasks
+              SET title = ?, description = ?, priority = ?,
+                  github_synced_at = ?, updated_at = ?
+              WHERE id = ? AND workspace_id = ?
+            `).run(
+              issue.title,
+              issue.body || '',
+              labelToPriority(labelNames),
+              now, now,
+              existingTask.id, workspaceId,
+            )
+            pulled++
+            writeReadyForOwnerReconciliation(db, existingTask)
+            continue
+          }
         }
 
         const status = issue.state === 'closed' ? 'done' : (labelToStatus(

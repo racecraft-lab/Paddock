@@ -97,25 +97,25 @@
 
 ### Tests for User Story 3
 
-- [ ] T034 [P] [US3] Add failing red tests for uniform `409 Conflict` response shape from `transitionConflict()` in `src/lib/__tests__/task-status.test.ts`.
-- [ ] T035 [P] [US3] Add failing red tests for side-effect-free blocked bulk `done` writes with all affected `task_ids` in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
-- [ ] T036 [P] [US3] Add failing red tests for side-effect-free blocked detail `done` writes with a one-item `task_ids` array in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
-- [ ] T037 [P] [US3] Add failing red tests for blocked quality-review and Aegis non-merge attempts to write PR-producing tasks to `done` in `src/app/api/quality-review/__tests__/route.test.ts` and `src/lib/__tests__/task-dispatch.test.ts`.
-- [ ] T038 [P] [US3] Add failing red tests for failed-to-done recovery attempts being blocked by the same guard in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
-- [ ] T039 [P] [US3] Add failing red tests for `pullFromGitHub(project, workspaceId, { webhookFixture })` accepting test-only terminal evidence while production callsites pass no fixture in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
-- [ ] T040 [P] [US3] Add failing red tests for matched merged PR evidence moving `ready_for_owner` to `done` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
-- [ ] T041 [P] [US3] Add failing red tests for closed issue without merged linked PR leaving the task in `ready_for_owner` and deduping reconciliation activity/notification in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
-- [ ] T042 [P] [US3] Add failing red tests proving `advanceTaskChain` runs only after verified PR merge successfully writes `done` with trigger `github_pr_merged` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
+- [X] T034 [P] [US3] Add failing red tests for uniform `409 Conflict` response shape from `transitionConflict()` in `src/lib/__tests__/task-status.test.ts`.
+- [X] T035 [P] [US3] Add failing red tests for side-effect-free blocked bulk `done` writes with all affected `task_ids` in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
+- [X] T036 [P] [US3] Add failing red tests for side-effect-free blocked detail `done` writes with a one-item `task_ids` array in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
+- [X] T037 [P] [US3] Add failing red tests for blocked quality-review and Aegis non-merge attempts to write PR-producing tasks to `done` in `src/app/api/quality-review/__tests__/route.test.ts` and `src/lib/__tests__/task-dispatch.test.ts`.
+- [X] T038 [P] [US3] Add failing red tests for failed-to-done recovery attempts being blocked by the same guard in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
+- [X] T039 [P] [US3] Add failing red tests for `pullFromGitHub(project, workspaceId, { webhookFixture })` accepting test-only terminal evidence while production callsites pass no fixture in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
+- [X] T040 [P] [US3] Add failing red tests for matched merged PR evidence moving `ready_for_owner` to `done` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
+- [X] T041 [P] [US3] Add failing red tests for closed issue without merged linked PR leaving the task in `ready_for_owner` and deduping reconciliation activity/notification in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
+- [X] T042 [P] [US3] Add failing red tests proving `advanceTaskChain` runs only after verified PR merge successfully writes `done` with trigger `github_pr_merged` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
 
 ### Implementation for User Story 3
 
-- [ ] T043 [US3] Update `src/app/api/tasks/route.ts` to preflight bulk `done` updates, return uniform `409 Conflict`, and avoid partial status, activity, notification, label, timestamp, or chain side effects.
-- [ ] T044 [US3] Update `src/app/api/tasks/[id]/route.ts` to guard detail `done` and `ready_for_owner` writes before mutation and return the one-id conflict body when blocked.
-- [ ] T045 [US3] Update `src/lib/github-sync-engine.ts` to add optional `opts?: { webhookFixture?: GitHubTerminalFixture }`, match explicit `github_repo` plus `github_pr_number`, and accept merge evidence only from `merged=true`, `merged_at`, or `merge_commit_sha`.
-- [ ] T046 [US3] Update `src/lib/github-sync-engine.ts` so verified linked PR merge writes `done`, sets completion state through existing behavior, and calls `advanceTaskChain` only after the successful write with `github_pr_merged`.
-- [ ] T047 [US3] Update `src/lib/github-sync-engine.ts` so closed linked issues without merged PR evidence leave tasks in `ready_for_owner`, write one `github_terminal_reconciliation_required` activity, and create one deduped `task_ready_for_owner` reconciliation notification.
-- [ ] T048 [US3] Refactor `src/lib/github-sync-engine.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts` to keep issue timeline inference, operator overrides, and terminal-event table behavior out of SPEC-005.
-- [ ] T049 [US3] Run `pnpm test src/lib/__tests__/github-sync-ready-for-owner.test.ts src/lib/__tests__/tasks-route-ready-for-owner.test.ts src/lib/__tests__/task-status.test.ts`.
+- [X] T043 [US3] Update `src/app/api/tasks/route.ts` to preflight bulk `done` updates, return uniform `409 Conflict`, and avoid partial status, activity, notification, label, timestamp, or chain side effects.
+- [X] T044 [US3] Update `src/app/api/tasks/[id]/route.ts` to guard detail `done` and `ready_for_owner` writes before mutation and return the one-id conflict body when blocked.
+- [X] T045 [US3] Update `src/lib/github-sync-engine.ts` to add optional `opts?: { webhookFixture?: GitHubTerminalFixture }`, match explicit `github_repo` plus `github_pr_number`, and accept merge evidence only from `merged=true`, `merged_at`, or `merge_commit_sha`.
+- [X] T046 [US3] Update `src/lib/github-sync-engine.ts` so verified linked PR merge writes `done`, sets completion state through existing behavior, and calls `advanceTaskChain` only after the successful write with `github_pr_merged`.
+- [X] T047 [US3] Update `src/lib/github-sync-engine.ts` so closed linked issues without merged PR evidence leave tasks in `ready_for_owner`, write one `github_terminal_reconciliation_required` activity, and create one deduped `task_ready_for_owner` reconciliation notification.
+- [X] T048 [US3] Refactor `src/lib/github-sync-engine.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts` to keep issue timeline inference, operator overrides, and terminal-event table behavior out of SPEC-005.
+- [X] T049 [US3] Run `pnpm test src/lib/__tests__/github-sync-ready-for-owner.test.ts src/lib/__tests__/tasks-route-ready-for-owner.test.ts src/lib/__tests__/task-status.test.ts`.
 
 **Checkpoint**: P4-AC4, P4-AC4a, P4-AC4b, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-016a, FR-021, and FR-022 are covered and independently testable.
 

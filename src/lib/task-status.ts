@@ -99,7 +99,9 @@ export function resolveTaskTerminalTransition(
   if (terminalEvent === READY_FOR_OWNER_TERMINAL_EVENT) {
     return allowedTransition('done', READY_FOR_OWNER_TERMINAL_EVENT)
   }
-  if (transitionIntent === 'approval') return allowedTransition(READY_FOR_OWNER_STATUS)
+  if (transitionIntent === 'approval' && currentStatus !== READY_FOR_OWNER_STATUS) {
+    return allowedTransition(READY_FOR_OWNER_STATUS)
+  }
   return conflictForTask(taskId)
 }
 

@@ -245,4 +245,51 @@ describe('POST /api/quality-review ready_for_owner flag-off behavior', () => {
     }))
     expect(advanceTaskChain).not.toHaveBeenCalled()
   })
+
+  it('returns a side-effect-free conflict when approval tries to complete a PR-producing task already waiting for owner merge', async () => {
+    const db = createDb()
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
+      .run(JSON.stringify({ FEATURE_TASK_PIPELINES: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    db.prepare(`
+      UPDATE tasks
+      SET status = 'ready_for_owner', github_repo = 'owner/repo', github_pr_number = 42
+      WHERE id = 100
+    `).run()
+    const beforeTask = db.prepare('SELECT status, updated_at FROM tasks WHERE id = 100').get()
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { route, advanceTaskChain } = await importRouteWithDb(db, resolveTransitionSpy)
+
+    const response = await route.POST(new NextRequest('http://localhost/api/quality-review', {
+      method: 'POST',
+      body: JSON.stringify({
+        taskId: 100,
+        reviewer: 'operator',
+        status: 'approved',
+        notes: 'Trying to close it',
+      }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(payload).toEqual({
+      error: 'transition_conflict',
+      reason: 'ready_for_owner_pr_merge_required',
+      task_ids: [100],
+    })
+    expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 100,
+      currentStatus: 'ready_for_owner',
+      requestedStatus: 'done',
+      producesPr: true,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'approval',
+    }))
+    expect(db.prepare('SELECT status, updated_at FROM tasks WHERE id = 100').get()).toEqual(beforeTask)
+    expect(db.prepare('SELECT COUNT(*) AS count FROM quality_reviews').get()).toEqual({ count: 0 })
+    expect(db.prepare('SELECT COUNT(*) AS count FROM activities').get()).toEqual({ count: 0 })
+    expect(db.prepare('SELECT COUNT(*) AS count FROM notifications').get()).toEqual({ count: 0 })
+    expect(advanceTaskChain).not.toHaveBeenCalled()
+  })
 })

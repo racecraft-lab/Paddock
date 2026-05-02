@@ -471,4 +471,43 @@ describe('runAegisReviews resolver integration', () => {
     expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_pipeline_advancement'").get())
       .toEqual({ count: 0 })
   })
+
+  it('does not write an Aegis approval or done state when the shared merge guard rejects completion', async () => {
+    dispatchDb = createDispatchDb()
+    dispatchDb.prepare(`
+      UPDATE workspaces
+      SET feature_flags = ?
+      WHERE id = 1
+    `).run(JSON.stringify({ FEATURE_GLOBAL_AEGIS: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    dispatchDb.prepare(`
+      INSERT INTO agents (id, name, workspace_id, scope, config)
+      VALUES (10, 'Aegis', 1, 'workspace', '{"openclawId":"aegis"}')
+    `).run()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug, github_repo, github_pr_number)
+      VALUES (250, 'Guarded PR task', 'PR required', 'review', 'high', 'Done', 'builder', 1, 1, 26, 1, 'pr-template', 'owner/repo', 9)
+    `).run()
+    const runOpenClaw = vi.fn().mockResolvedValue({
+      stdout: JSON.stringify({ payloads: [{ text: 'VERDICT: APPROVED\nNOTES: pass' }] }),
+    })
+    const resolveTransitionSpy = vi.fn(() => ({
+      ok: false,
+      status: 409,
+      body: {
+        error: 'transition_conflict',
+        reason: 'ready_for_owner_pr_merge_required',
+        task_ids: [250],
+      },
+    } satisfies TaskTerminalTransitionResult))
+    const { runAegisReviews } = await importTaskDispatchWithDb(dispatchDb, runOpenClaw, resolveTransitionSpy)
+
+    const result = await runAegisReviews()
+
+    expect(result.ok).toBe(false)
+    expect(result.message).toContain('1 error')
+    expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 250').get()).toEqual({ status: 'quality_review' })
+    expect(dispatchDb.prepare('SELECT COUNT(*) AS count FROM quality_reviews').get()).toEqual({ count: 0 })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_pipeline_advancement'").get())
+      .toEqual({ count: 0 })
+  })
 })

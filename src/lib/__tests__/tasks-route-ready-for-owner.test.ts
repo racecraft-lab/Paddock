@@ -49,7 +49,9 @@ function createDb(): Database.Database {
       metadata TEXT DEFAULT '{}',
       workspace_id INTEGER NOT NULL,
       workflow_template_id INTEGER,
-      workflow_template_slug TEXT
+      workflow_template_slug TEXT,
+      github_repo TEXT,
+      github_pr_number INTEGER
     );
     CREATE TABLE quality_reviews (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -69,6 +71,16 @@ function createDb(): Database.Database {
       data TEXT,
       workspace_id INTEGER
     );
+    CREATE TABLE notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipient TEXT,
+      type TEXT,
+      title TEXT,
+      message TEXT,
+      source_type TEXT,
+      source_id INTEGER,
+      workspace_id INTEGER
+    );
   `)
   db.prepare('INSERT INTO workspaces (id, slug, feature_flags) VALUES (1, ?, ?)').run('alpha', JSON.stringify({
     FEATURE_TASK_PIPELINES: true,
@@ -86,7 +98,33 @@ function createDb(): Database.Database {
   return db
 }
 
+function setTwoStepTerminalFlag(db: Database.Database, enabled: boolean) {
+  db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1').run(JSON.stringify({
+    FEATURE_TASK_PIPELINES: true,
+    FEATURE_TWO_STEP_TERMINAL: enabled,
+  }))
+}
+
+function seedReadyForOwnerTask(db: Database.Database, id: number, status = 'ready_for_owner') {
+  db.prepare(`
+    INSERT INTO tasks (
+      id, title, description, status, priority, assigned_to, project_id, workspace_id,
+      workflow_template_id, workflow_template_slug, github_repo, github_pr_number
+    )
+    VALUES (?, ?, 'Needs owner merge', ?, 'high', 'builder', 10, 1, 20, 'pr-template', 'owner/repo', ?)
+  `).run(id, `Owner gate ${id}`, status, id)
+}
+
 function mockDeps(db: Database.Database) {
+  const broadcast = vi.fn()
+  const syncTaskOutbound = vi.fn()
+  const advanceTaskChain = vi.fn()
+  const createNotification = vi.fn((recipient, type, title, message, sourceType, sourceId, workspaceId) => {
+    db.prepare(`
+      INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(recipient, type, title, message, sourceType, sourceId, workspaceId)
+  })
   vi.doMock('@/lib/db', () => ({
     getDatabase: () => db,
     db_helpers: {
@@ -96,7 +134,7 @@ function mockDeps(db: Database.Database) {
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(type, entityType, entityId, actor, description, JSON.stringify(data), workspaceId)
       }),
-      createNotification: vi.fn(),
+      createNotification,
       ensureTaskSubscription: vi.fn(),
     },
   }))
@@ -107,18 +145,20 @@ function mockDeps(db: Database.Database) {
     workspaceScopePredicate: vi.fn((_scope, column = 'workspace_id') => ({ sql: `${column} = ?`, params: [1] })),
     workspaceScopeError: vi.fn(() => null),
   }))
-  vi.doMock('@/lib/event-bus', () => ({ eventBus: { broadcast: vi.fn() } }))
-  vi.doMock('@/lib/github-sync-engine', () => ({ syncTaskOutbound: vi.fn() }))
+  vi.doMock('@/lib/event-bus', () => ({ eventBus: { broadcast } }))
+  vi.doMock('@/lib/github-sync-engine', () => ({ syncTaskOutbound }))
   vi.doMock('@/lib/gnap-sync', () => ({ removeTaskFromGnap: vi.fn() }))
   vi.doMock('@/lib/config', () => ({ config: { gnap: { enabled: false, autoSync: false, repoPath: '' } } }))
   vi.doMock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }))
-  vi.doMock('@/lib/task-dispatch', () => ({ advanceTaskChain: vi.fn(), retryTaskChainAdvancement: vi.fn() }))
+  vi.doMock('@/lib/task-dispatch', () => ({ advanceTaskChain, retryTaskChainAdvancement: vi.fn() }))
+  return { advanceTaskChain, broadcast, createNotification, syncTaskOutbound }
 }
 
 function snapshot(db: Database.Database) {
   return {
-    task: db.prepare('SELECT status, updated_at FROM tasks WHERE id = 100').get(),
+    tasks: db.prepare('SELECT id, status, updated_at, completed_at, resolution, error_message FROM tasks ORDER BY id').all(),
     activities: db.prepare('SELECT COUNT(*) AS count FROM activities').get(),
+    notifications: db.prepare('SELECT COUNT(*) AS count FROM notifications').get(),
   }
 }
 
@@ -165,5 +205,102 @@ describe('task routes ready_for_owner flag-off write guard', () => {
       task_ids: [100],
     })
     expect(snapshot(db)).toEqual(before)
+  })
+
+  it('rejects bulk done writes for all affected ready_for_owner PR-producing tasks without side effects', async () => {
+    const db = createDb()
+    setTwoStepTerminalFlag(db, true)
+    db.prepare(`
+      UPDATE tasks
+      SET status = 'ready_for_owner', github_repo = 'owner/repo', github_pr_number = 100
+      WHERE id = 100
+    `).run()
+    seedReadyForOwnerTask(db, 101)
+    const mocks = mockDeps(db)
+    const before = snapshot(db)
+    const { PUT } = await import('@/app/api/tasks/route')
+
+    const response = await PUT(new NextRequest('http://localhost/api/tasks', {
+      method: 'PUT',
+      body: JSON.stringify({ tasks: [{ id: 100, status: 'done' }, { id: 101, status: 'done' }] }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const body = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(body).toEqual({
+      error: 'transition_conflict',
+      reason: 'ready_for_owner_pr_merge_required',
+      task_ids: [100, 101],
+    })
+    expect(snapshot(db)).toEqual(before)
+    expect(mocks.advanceTaskChain).not.toHaveBeenCalled()
+    expect(mocks.broadcast).not.toHaveBeenCalled()
+    expect(mocks.createNotification).not.toHaveBeenCalled()
+    expect(mocks.syncTaskOutbound).not.toHaveBeenCalled()
+  })
+
+  it('rejects detail done writes for ready_for_owner PR-producing tasks with a one-item task_ids array', async () => {
+    const db = createDb()
+    setTwoStepTerminalFlag(db, true)
+    db.prepare(`
+      UPDATE tasks
+      SET status = 'ready_for_owner', github_repo = 'owner/repo', github_pr_number = 100
+      WHERE id = 100
+    `).run()
+    const mocks = mockDeps(db)
+    const before = snapshot(db)
+    const { PUT } = await import('@/app/api/tasks/[id]/route')
+
+    const response = await PUT(new NextRequest('http://localhost/api/tasks/100', {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'done' }),
+      headers: { 'content-type': 'application/json' },
+    }), { params: Promise.resolve({ id: '100' }) })
+    const body = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(body).toEqual({
+      error: 'transition_conflict',
+      reason: 'ready_for_owner_pr_merge_required',
+      task_ids: [100],
+    })
+    expect(snapshot(db)).toEqual(before)
+    expect(mocks.advanceTaskChain).not.toHaveBeenCalled()
+    expect(mocks.broadcast).not.toHaveBeenCalled()
+    expect(mocks.createNotification).not.toHaveBeenCalled()
+    expect(mocks.syncTaskOutbound).not.toHaveBeenCalled()
+  })
+
+  it('blocks failed-to-done recovery attempts for PR-producing tasks through the same merge guard', async () => {
+    const db = createDb()
+    setTwoStepTerminalFlag(db, true)
+    db.prepare(`
+      UPDATE tasks
+      SET status = 'failed', github_repo = 'owner/repo', github_pr_number = 100, error_message = 'needs retry'
+      WHERE id = 100
+    `).run()
+    const mocks = mockDeps(db)
+    const before = snapshot(db)
+    const { PUT } = await import('@/app/api/tasks/[id]/route')
+
+    const response = await PUT(new NextRequest('http://localhost/api/tasks/100', {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'done', resolution: 'Recovered after manual check' }),
+      headers: { 'content-type': 'application/json' },
+    }), { params: Promise.resolve({ id: '100' }) })
+    const body = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(body).toEqual({
+      error: 'transition_conflict',
+      reason: 'ready_for_owner_pr_merge_required',
+      task_ids: [100],
+    })
+    expect(snapshot(db)).toEqual(before)
+    expect(mocks.advanceTaskChain).not.toHaveBeenCalled()
+    expect(mocks.broadcast).not.toHaveBeenCalled()
+    expect(mocks.createNotification).not.toHaveBeenCalled()
+    expect(mocks.syncTaskOutbound).not.toHaveBeenCalled()
   })
 })

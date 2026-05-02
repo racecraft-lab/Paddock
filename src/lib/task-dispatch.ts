@@ -51,6 +51,7 @@ export type TaskChainAdvanceTrigger =
   | 'bulk_task_update'
   | 'detail_task_update'
   | 'retry_chain_advancement'
+  | 'github_pr_merged'
 
 export interface AdvanceTaskChainInput {
   taskId: number
@@ -1215,12 +1216,6 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
 
       const verdict = parseReviewVerdict(agentResponse.text)
 
-      // Insert quality review record
-      db.prepare(`
-        INSERT INTO quality_reviews (task_id, reviewer, status, notes, workspace_id)
-        VALUES (?, 'aegis', ?, ?, ?)
-      `).run(task.id, verdict.status, verdict.notes, task.workspace_id)
-
       if (verdict.status === 'approved') {
         const transition = resolveTaskTerminalTransition({
           taskId: task.id,
@@ -1236,6 +1231,11 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
           results.push({ id: task.id, verdict: 'error', error: transition.body.reason })
           continue
         }
+        db.prepare(`
+          INSERT INTO quality_reviews (task_id, reviewer, status, notes, workspace_id)
+          VALUES (?, 'aegis', ?, ?, ?)
+        `).run(task.id, verdict.status, verdict.notes, task.workspace_id)
+
         const nextStatus = transition.status as TaskStatus
         db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?')
           .run(nextStatus, Math.floor(Date.now() / 1000), task.id)
@@ -1258,6 +1258,11 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
           })
         }
       } else {
+        db.prepare(`
+          INSERT INTO quality_reviews (task_id, reviewer, status, notes, workspace_id)
+          VALUES (?, 'aegis', ?, ?, ?)
+        `).run(task.id, verdict.status, verdict.notes, task.workspace_id)
+
         // Rejected: check dispatch_attempts to decide next status
         const now = Math.floor(Date.now() / 1000)
         const currentAttempts = (db.prepare('SELECT dispatch_attempts FROM tasks WHERE id = ?').get(task.id) as { dispatch_attempts: number } | undefined)?.dispatch_attempts ?? 0
