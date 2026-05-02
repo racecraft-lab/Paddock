@@ -731,7 +731,7 @@ For each task, follow this cycle:
 
 - Post-verification cleanup and scoped workflow e2e compatibility evidence were committed as `fe63fef` (`test(spec-004): align scoped workflow verification`).
 - Branch `004-task-pipeline-engine` was pushed to `origin`.
-- PR #22 is open for review: https://github.com/racecraft-lab/mission-control/pull/22
+- PR #22 merged to `main` on 2026-05-01 as `20643d8`: https://github.com/racecraft-lab/mission-control/pull/22
 - Immediate review-thread check returned no review threads. Initial GitHub checks were pending at handoff: Analyze (actions), Analyze (javascript-typescript), argos-storybook, docker-ui-e2e, and quality-gate.
 
 ### Doctor Remediation - 2026-05-01

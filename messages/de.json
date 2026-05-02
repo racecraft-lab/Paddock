@@ -463,7 +463,12 @@
     "recipientLabel": "Empfänger",
     "recipientPlaceholder": "Agentenname (z. B. my-agent)",
     "noNotifications": "Keine Benachrichtigungen",
-    "markRead": "Als gelesen markieren"
+    "markRead": "Als gelesen markieren",
+    "readyForOwnerNormalTitle": "Bereit fuer Owner-Merge",
+    "readyForOwnerNormalMessage": "Owner-Aktion erforderlich: bereit fuer Owner-Merge.",
+    "readyForOwnerReconciliationTitle": "Owner-Merge-Abgleich erforderlich",
+    "readyForOwnerReconciliationMessage": "Owner-Aktion erforderlich: geschlossenes Issue benoetigt Nachweis eines gemergten PR.",
+    "readyForOwnerActionRequired": "Owner-Aktion erforderlich"
   },
   "localAgentsDoc": {
     "title": "Lokale AGENTS.md",
@@ -763,6 +768,8 @@
     "colInProgress": "In Bearbeitung",
     "colReview": "Überprüfung",
     "colQualityReview": "Qualitätsprüfung",
+    "colReadyForOwner": "Bereit für Besitzer",
+    "readyForOwnerActionRequired": "Aktion des Besitzers erforderlich",
     "colFailed": "Fehlgeschlagen",
     "retryTask": "Erneut versuchen",
     "colDone": "Erledigt",

@@ -10,12 +10,11 @@ const ownedRuntimeFiles = [
 ]
 
 describe('Task pipeline downstream scope guard', () => {
-  it('does not implement later-spec terminal states, area routing, artifact publishing, governance, pilot, or CrabTrap behavior', () => {
+  it('does not implement later-spec area routing, artifact publishing, governance, pilot, or CrabTrap behavior', () => {
     const source = ownedRuntimeFiles
       .map((file) => readFileSync(join(process.cwd(), file), 'utf8'))
       .join('\n')
 
-    expect(source).not.toMatch(/\bready_for_owner\b/)
     expect(source).not.toMatch(/\barea:\*/)
     expect(source).not.toMatch(/\btask_artifacts\b/)
     expect(source).not.toMatch(/\btask_dispositions\b/)

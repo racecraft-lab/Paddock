@@ -143,6 +143,11 @@ export function NotificationsPanel() {
                 <div className="min-w-0">
                   <div className="text-sm font-medium text-foreground">{n.title}</div>
                   <div className="text-xs text-muted-foreground/60">{n.type}</div>
+                  {n.type === 'task_ready_for_owner' && (
+                    <div className="text-xs font-medium text-teal-300 mt-1">
+                      {t('readyForOwnerActionRequired')}
+                    </div>
+                  )}
                 </div>
                 {!n.read_at && (
                   <Button

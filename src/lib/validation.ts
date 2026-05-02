@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server'
 import { ZodSchema, ZodError } from 'zod'
 import { z } from 'zod'
+import {
+  TASK_STATUSES,
+  resolveTaskTerminalTransition,
+  type ResolveTaskTerminalTransitionInput,
+} from '@/lib/task-status'
 
 export async function validateBody<T>(
   request: Request,
@@ -31,10 +36,17 @@ const taskMetadataSchema = z.object({
   code_location: z.string().min(1, 'code_location cannot be empty').max(500).optional(),
 }).catchall(z.unknown())
 
+export const taskStatusReadSchema = z.enum(TASK_STATUSES)
+export const taskStatusWriteSchema = taskStatusReadSchema
+
+export function validateTaskStatusTransition(input: ResolveTaskTerminalTransitionInput) {
+  return resolveTaskTerminalTransition(input)
+}
+
 export const createTaskSchema = z.object({
   title: z.string().min(1, 'Title is required').max(500),
   description: z.string().max(5000).optional(),
-  status: z.enum(['backlog', 'inbox', 'assigned', 'awaiting_owner', 'in_progress', 'review', 'quality_review', 'done', 'failed']).default('inbox'),
+  status: taskStatusWriteSchema.default('inbox'),
   priority: z.enum(['critical', 'high', 'medium', 'low']).default('medium'),
   project_id: z.number().int().positive().optional(),
   assigned_to: z.string().max(100).optional(),
@@ -74,7 +86,7 @@ export const createAgentSchema = z.object({
 export const bulkUpdateTaskStatusSchema = z.object({
   tasks: z.array(z.object({
     id: z.number().int().positive(),
-    status: z.enum(['backlog', 'inbox', 'assigned', 'awaiting_owner', 'in_progress', 'review', 'quality_review', 'done', 'failed']),
+    status: taskStatusWriteSchema,
   })).min(1, 'At least one task is required').max(100),
 })
 
