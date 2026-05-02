@@ -433,10 +433,6 @@ async function mergedPullRequestEvidenceForTask(
   return hasMergedPrEvidence(livePr) ? livePr : null
 }
 
-function reconciliationRecipient(task: ReadyForOwnerTaskRow): string | null {
-  return task.assigned_to?.trim() || task.created_by?.trim() || null
-}
-
 function writeReadyForOwnerReconciliation(
   db: Database.Database,
   task: ReadyForOwnerTaskRow,
@@ -475,8 +471,6 @@ function writeReadyForOwnerReconciliation(
     )
   }
 
-  const recipient = reconciliationRecipient(task)
-  if (!recipient) return
   const existingNotification = db.prepare(`
     SELECT id FROM notifications
     WHERE type = 'task_ready_for_owner'
@@ -484,19 +478,18 @@ function writeReadyForOwnerReconciliation(
       AND source_id = ?
       AND workspace_id = ?
       AND title = 'Owner merge reconciliation required'
+      AND message LIKE ?
+      AND message LIKE ?
     LIMIT 1
-  `).get(task.id, task.workspace_id) as { id: number } | undefined
-  if (existingNotification) return
-
-  db_helpers.createNotification(
-    recipient,
-    'task_ready_for_owner',
-    'Owner merge reconciliation required',
-    `Owner action required: ${task.title} has a closed linked issue without merged PR evidence.`,
-    'task',
+  `).get(
     task.id,
     task.workspace_id,
-  )
+    `%GitHub issue #${task.github_issue_number ?? 'unknown'}%`,
+    `%Reason: ${reason}.%`,
+  ) as { id: number } | undefined
+  if (existingNotification) return
+
+  db_helpers.createTaskReadyForOwnerNotification(task, { kind: 'reconciliation', reason })
 }
 
 // FR-010..FR-014 + FR-014 amendment: resolve area labels to a project.

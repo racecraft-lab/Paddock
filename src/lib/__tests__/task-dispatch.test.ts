@@ -107,6 +107,7 @@ function createDispatchDb(): Database.Database {
       workflow_template_id INTEGER,
       workflow_template_slug TEXT,
       github_repo TEXT,
+      github_issue_number INTEGER,
       github_pr_number INTEGER,
       dispatch_attempts INTEGER NOT NULL DEFAULT 0,
       error_message TEXT,
@@ -194,6 +195,26 @@ async function importTaskDispatchWithDb(
           INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(recipient, type, title, message, sourceType, sourceId, workspaceId)
+      }),
+      createTaskReadyForOwnerNotification: vi.fn((task) => {
+        const recipient = task.assigned_to?.trim() || task.created_by?.trim()
+        if (!recipient) return null
+        const message = task.github_repo && task.github_pr_number
+          ? `Owner action required: ${task.title} is ready for owner merge.`
+          : `Owner action required: ${task.title} is ready for owner merge but needs explicit GitHub PR linkage.`
+        db.prepare(`
+          INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          recipient,
+          'task_ready_for_owner',
+          'Ready for owner merge',
+          message,
+          'task',
+          task.id,
+          task.workspace_id,
+        )
+        return null
       }),
     },
   }))
@@ -384,6 +405,19 @@ describe('runAegisReviews resolver integration', () => {
 
     expect(result.ok).toBe(true)
     expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 220').get()).toEqual({ status: 'ready_for_owner' })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
+    expect(dispatchDb.prepare('SELECT recipient, type, title, message, source_type, source_id FROM notifications').all())
+      .toEqual([
+        {
+          recipient: 'builder',
+          type: 'task_ready_for_owner',
+          title: 'Ready for owner merge',
+          message: 'Owner action required: PR task is ready for owner merge.',
+          source_type: 'task',
+          source_id: 220,
+        },
+      ])
     expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
       taskId: 220,
       currentStatus: 'quality_review',

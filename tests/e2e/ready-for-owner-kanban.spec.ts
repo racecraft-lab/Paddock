@@ -63,6 +63,27 @@ function forceReadyForOwnerStatus(taskId: number) {
   }
 }
 
+function seedReadyForOwnerNotification(taskId: number, title: string) {
+  const db = new Database(E2E_DB_PATH)
+  const now = Math.floor(Date.now() / 1000)
+  try {
+    db.prepare(`
+      INSERT INTO notifications (
+        recipient, type, title, message, source_type, source_id, workspace_id, created_at
+      )
+      VALUES (?, 'task_ready_for_owner', 'Ready for owner merge', ?, 'task', ?, 1, ?)
+    `).run(
+      'owner-e2e',
+      `${title} is ready for owner merge.`,
+      taskId,
+      now,
+    )
+    db.pragma('wal_checkpoint(TRUNCATE)')
+  } finally {
+    db.close()
+  }
+}
+
 async function createTask(
   request: APIRequestContext,
   label: string,
@@ -102,6 +123,7 @@ test.describe.serial('Ready for Owner Kanban lane', () => {
     seeded.push(awaitingOwner, qualityReview, readyForOwner, done)
 
     forceReadyForOwnerStatus(readyForOwner.id)
+    seedReadyForOwnerNotification(readyForOwner.id, readyForOwner.title)
   })
 
   test.afterAll(async ({ request }) => {
@@ -159,5 +181,25 @@ test.describe.serial('Ready for Owner Kanban lane', () => {
     await expect(readyForOwnerCard).toBeFocused()
     await expect(readyForOwnerCard).toHaveClass(/focus-visible:ring-2/)
     await expect(readyForOwnerRegion.getByText(/Owner action required/i)).toBeVisible()
+  })
+
+  test('keeps unread ready-for-owner notification actions keyboard reachable and identifiable', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('mc.notifications.recipient', 'owner-e2e')
+    })
+    await page.goto('/notifications')
+
+    const notificationCard = page.locator('div').filter({
+      hasText: /Ready for owner merge[\s\S]*task_ready_for_owner[\s\S]*Owner action required/i,
+    }).first()
+    await expect(notificationCard).toBeVisible()
+    await expect(notificationCard.getByText(new RegExp(readyForOwner.title))).toBeVisible()
+
+    const markRead = notificationCard.getByRole('button', { name: /Mark read/i })
+    await expect(markRead).toBeVisible()
+    await page.getByRole('textbox', { name: /Agent name/i }).focus()
+    await page.keyboard.press('Tab')
+    await expect(markRead).toBeFocused()
+    await expect(markRead).toHaveClass(/focus-visible:ring-2/)
   })
 })

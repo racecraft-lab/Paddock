@@ -463,7 +463,12 @@
     "recipientLabel": "收件人",
     "recipientPlaceholder": "代理名称（例如：my-agent）",
     "noNotifications": "无通知",
-    "markRead": "标为已读"
+    "markRead": "标为已读",
+    "readyForOwnerNormalTitle": "准备由所有者合并",
+    "readyForOwnerNormalMessage": "需要所有者操作：已准备由所有者合并。",
+    "readyForOwnerReconciliationTitle": "需要所有者合并核对",
+    "readyForOwnerReconciliationMessage": "需要所有者操作：已关闭 issue 需要已合并 PR 证据。",
+    "readyForOwnerActionRequired": "需要所有者操作"
   },
   "localAgentsDoc": {
     "title": "本地 AGENTS.md",

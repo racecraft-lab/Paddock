@@ -463,7 +463,12 @@
     "recipientLabel": "Получатель",
     "recipientPlaceholder": "Имя агента (например, my-agent)",
     "noNotifications": "Нет уведомлений",
-    "markRead": "Отметить прочитанным"
+    "markRead": "Отметить прочитанным",
+    "readyForOwnerNormalTitle": "Готово к слиянию владельцем",
+    "readyForOwnerNormalMessage": "Требуется действие владельца: готово к слиянию владельцем.",
+    "readyForOwnerReconciliationTitle": "Требуется сверка слияния владельцем",
+    "readyForOwnerReconciliationMessage": "Требуется действие владельца: закрытому issue нужно подтверждение слитого PR.",
+    "readyForOwnerActionRequired": "Требуется действие владельца"
   },
   "localAgentsDoc": {
     "title": "Локальный AGENTS.md",

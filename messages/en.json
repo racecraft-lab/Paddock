@@ -463,7 +463,12 @@
     "recipientLabel": "Recipient",
     "recipientPlaceholder": "Agent name (e.g., my-agent)",
     "noNotifications": "No notifications",
-    "markRead": "Mark read"
+    "markRead": "Mark read",
+    "readyForOwnerNormalTitle": "Ready for owner merge",
+    "readyForOwnerNormalMessage": "Owner action required: ready for owner merge.",
+    "readyForOwnerReconciliationTitle": "Owner merge reconciliation required",
+    "readyForOwnerReconciliationMessage": "Owner action required: closed issue needs merged PR evidence.",
+    "readyForOwnerActionRequired": "Owner action required"
   },
   "localAgentsDoc": {
     "title": "Local AGENTS.md",

@@ -155,20 +155,20 @@
 
 ### Tests for User Story 5
 
-- [ ] T060 [P] [US5] Add failing red tests for normal `task_ready_for_owner` notification creation with assignee-first and creator-fallback routing in `src/lib/__tests__/db-helpers.test.ts`.
-- [ ] T061 [P] [US5] Add failing red tests for reconciliation `task_ready_for_owner` notification title, message, source fields, and dedupe behavior in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
-- [ ] T062 [P] [US5] Add failing red tests for notification delivery formatting with `Owner action required` wording in `src/app/api/notifications/deliver/__tests__/route.test.ts`.
-- [ ] T063 [P] [US5] Add failing component or route-level tests for notification panel rendering of `Ready for owner merge` and `Owner merge reconciliation required` in `src/components/panels/__tests__/notifications-panel.test.tsx`.
-- [ ] T064 [P] [US5] Add Playwright assertions that unread ready-for-owner notification actions are keyboard reachable, visibly focused, and identifiable by title/message/type text in `tests/e2e/ready-for-owner-kanban.spec.ts`.
+- [X] T060 [P] [US5] Add failing red tests for normal `task_ready_for_owner` notification creation with assignee-first and creator-fallback routing in `src/lib/__tests__/db-helpers.test.ts`.
+- [X] T061 [P] [US5] Add failing red tests for reconciliation `task_ready_for_owner` notification title, message, source fields, and dedupe behavior in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
+- [X] T062 [P] [US5] Add failing red tests for notification delivery formatting with `Owner action required` wording in `src/app/api/notifications/deliver/__tests__/route.test.ts`.
+- [X] T063 [P] [US5] Add failing component or route-level tests for notification panel rendering of `Ready for owner merge` and `Owner merge reconciliation required` in `src/components/panels/__tests__/notifications-panel.test.tsx`.
+- [X] T064 [P] [US5] Add Playwright assertions that unread ready-for-owner notification actions are keyboard reachable, visibly focused, and identifiable by title/message/type text in `tests/e2e/ready-for-owner-kanban.spec.ts`.
 
 ### Implementation for User Story 5
 
-- [ ] T065 [US5] Update `src/lib/db.ts` notification creation helpers or callsites so `task_ready_for_owner` rows use `source_type="task"`, `source_id=<task id>`, and assignee then creator fallback routing.
-- [ ] T066 [US5] Update `src/components/panels/notifications-panel.tsx` to render normal and reconciliation `task_ready_for_owner` notifications with action-required wording on existing card surfaces.
-- [ ] T067 [US5] Update `src/app/api/notifications/deliver/route.ts` so `formatNotificationMessage` includes `Owner action required` for `task_ready_for_owner`.
-- [ ] T068 [US5] Update `messages/en.json`, `messages/es.json`, `messages/fr.json`, `messages/de.json`, `messages/ja.json`, `messages/ko.json`, `messages/pt.json`, `messages/ru.json`, `messages/zh.json`, and `messages/ar.json` with normal and reconciliation notification copy.
-- [ ] T069 [US5] Refactor ready-for-owner notification callsites in `src/lib/task-dispatch.ts`, `src/app/api/quality-review/route.ts`, and `src/lib/github-sync-engine.ts` so notification payloads are consistent and reconciliation dedupe keys are unchanged-task, issue, and reason.
-- [ ] T070 [US5] Run `pnpm test src/lib/__tests__/db-helpers.test.ts src/app/api/notifications/deliver/__tests__/route.test.ts src/lib/__tests__/github-sync-ready-for-owner.test.ts` and `pnpm test:e2e tests/e2e/ready-for-owner-kanban.spec.ts`.
+- [X] T065 [US5] Update `src/lib/db.ts` notification creation helpers or callsites so `task_ready_for_owner` rows use `source_type="task"`, `source_id=<task id>`, and assignee then creator fallback routing.
+- [X] T066 [US5] Update `src/components/panels/notifications-panel.tsx` to render normal and reconciliation `task_ready_for_owner` notifications with action-required wording on existing card surfaces.
+- [X] T067 [US5] Update `src/app/api/notifications/deliver/route.ts` so `formatNotificationMessage` includes `Owner action required` for `task_ready_for_owner`.
+- [X] T068 [US5] Update `messages/en.json`, `messages/es.json`, `messages/fr.json`, `messages/de.json`, `messages/ja.json`, `messages/ko.json`, `messages/pt.json`, `messages/ru.json`, `messages/zh.json`, and `messages/ar.json` with normal and reconciliation notification copy.
+- [X] T069 [US5] Refactor ready-for-owner notification callsites in `src/lib/task-dispatch.ts`, `src/app/api/quality-review/route.ts`, and `src/lib/github-sync-engine.ts` so notification payloads are consistent and reconciliation dedupe keys are unchanged-task, issue, and reason.
+- [X] T070 [US5] Run `pnpm test src/lib/__tests__/db-helpers.test.ts src/app/api/notifications/deliver/__tests__/route.test.ts src/lib/__tests__/github-sync-ready-for-owner.test.ts` and `pnpm test:e2e tests/e2e/ready-for-owner-kanban.spec.ts`.
 
 **Checkpoint**: FR-016, FR-018, FR-019a, SC-005, and SC-006 notification requirements are covered and independently testable.
 

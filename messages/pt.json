@@ -463,7 +463,12 @@
     "recipientLabel": "Destinatário",
     "recipientPlaceholder": "Nome do agente (ex.: my-agent)",
     "noNotifications": "Sem notificações",
-    "markRead": "Marcar como lido"
+    "markRead": "Marcar como lido",
+    "readyForOwnerNormalTitle": "Pronto para merge do proprietario",
+    "readyForOwnerNormalMessage": "Acao do proprietario necessaria: pronto para merge do proprietario.",
+    "readyForOwnerReconciliationTitle": "Reconciliacao de merge do proprietario necessaria",
+    "readyForOwnerReconciliationMessage": "Acao do proprietario necessaria: issue fechado precisa de evidencia de PR mergeado.",
+    "readyForOwnerActionRequired": "Acao do proprietario necessaria"
   },
   "localAgentsDoc": {
     "title": "AGENTS.md local",

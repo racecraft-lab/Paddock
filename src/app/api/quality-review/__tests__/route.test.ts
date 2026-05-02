@@ -32,6 +32,7 @@ function createDb(): Database.Database {
       assigned_to TEXT,
       created_by TEXT NOT NULL DEFAULT 'creator',
       github_repo TEXT,
+      github_issue_number INTEGER,
       github_pr_number INTEGER,
       workspace_id INTEGER NOT NULL,
       workflow_template_id INTEGER,
@@ -104,6 +105,26 @@ async function importRouteWithDb(
           INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(recipient, type, title, message, sourceType, sourceId, workspaceId)
+      }),
+      createTaskReadyForOwnerNotification: vi.fn((task) => {
+        const recipient = task.assigned_to?.trim() || task.created_by?.trim()
+        if (!recipient) return null
+        const message = task.github_repo && task.github_pr_number
+          ? `Owner action required: ${task.title} is ready for owner merge.`
+          : `Owner action required: ${task.title} is ready for owner merge but needs explicit GitHub PR linkage.`
+        db.prepare(`
+          INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(
+          recipient,
+          'task_ready_for_owner',
+          'Ready for owner merge',
+          message,
+          'task',
+          task.id,
+          task.workspace_id,
+        )
+        return null
       }),
     },
   }))
@@ -216,6 +237,7 @@ describe('POST /api/quality-review ready_for_owner flag-off behavior', () => {
     const db = createDb()
     db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
       .run(JSON.stringify({ FEATURE_TASK_PIPELINES: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    db.prepare("UPDATE tasks SET github_repo = 'owner/repo', github_pr_number = 42 WHERE id = 100").run()
     const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
     const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
     const { route, advanceTaskChain } = await importRouteWithDb(db, resolveTransitionSpy)
@@ -243,6 +265,19 @@ describe('POST /api/quality-review ready_for_owner flag-off behavior', () => {
       twoStepTerminalEnabled: true,
       transitionIntent: 'approval',
     }))
+    expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
+    expect(db.prepare('SELECT recipient, type, title, message, source_type, source_id FROM notifications').all())
+      .toEqual([
+        {
+          recipient: 'builder',
+          type: 'task_ready_for_owner',
+          title: 'Ready for owner merge',
+          message: 'Owner action required: Review me is ready for owner merge.',
+          source_type: 'task',
+          source_id: 100,
+        },
+      ])
     expect(advanceTaskChain).not.toHaveBeenCalled()
   })
 

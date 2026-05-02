@@ -32,6 +32,20 @@ vi.mock('@/lib/db', () => ({
   db_helpers: {
     logActivity: logActivityMock,
     createNotification: createNotificationMock,
+    createTaskReadyForOwnerNotification: vi.fn((task, options = {}) => {
+      const recipient = task.assigned_to?.trim() || task.created_by?.trim()
+      if (!recipient) return null
+      const reason = options.reason ?? 'linked_issue_closed_without_merged_pr'
+      const title = options.kind === 'reconciliation'
+        ? 'Owner merge reconciliation required'
+        : 'Ready for owner merge'
+      const message = options.kind === 'reconciliation'
+        ? `Owner action required: ${task.title} has a closed linked GitHub issue #${task.github_issue_number ?? 'unknown'} without merged PR evidence. Reason: ${reason}.`
+        : task.github_repo && task.github_pr_number
+          ? `Owner action required: ${task.title} is ready for owner merge.`
+          : `Owner action required: ${task.title} is ready for owner merge but needs explicit GitHub PR linkage.`
+      return createNotificationMock(recipient, 'task_ready_for_owner', title, message, 'task', task.id, task.workspace_id)
+    }),
     ensureTaskSubscription: vi.fn(),
   },
 }))
@@ -254,16 +268,89 @@ describe('SPEC-005 GitHub ready_for_owner terminal reconciliation', () => {
         }),
       },
     ])
-    expect(db.prepare('SELECT recipient, type, title, source_type, source_id FROM notifications').all()).toEqual([
+    expect(db.prepare('SELECT recipient, type, title, message, source_type, source_id FROM notifications').all()).toEqual([
       {
         recipient: 'creator',
         type: 'task_ready_for_owner',
         title: 'Owner merge reconciliation required',
+        message: expect.stringContaining('Owner action required'),
         source_type: 'task',
         source_id: 500,
       },
     ])
     expect(advanceTaskChainMock).not.toHaveBeenCalled()
+  })
+
+  it('keys reconciliation notification dedupe on unchanged task, issue, and reason', async () => {
+    const db = freshDb()
+    const projectId = seedProject(db)
+    seedReadyForOwnerTask(db, projectId, { assignedTo: 'builder', createdBy: 'creator' })
+    fetchIssuesMock.mockResolvedValue([makeIssue('closed')])
+
+    await pullFromGitHub({ id: projectId, github_repo: 'owner/repo', github_sync_enabled: 1 }, 1, {
+      webhookFixture: { repo: 'owner/repo', issue_number: 90, pull_request: null },
+    })
+    await pullFromGitHub({ id: projectId, github_repo: 'owner/repo', github_sync_enabled: 1 }, 1, {
+      webhookFixture: { repo: 'owner/repo', issue_number: 90, pull_request: null },
+    })
+
+    db.prepare('UPDATE tasks SET github_issue_number = ? WHERE id = 500').run(91)
+    fetchIssuesMock.mockResolvedValue([{
+      ...makeIssue('closed'),
+      number: 91,
+      html_url: 'https://github.com/owner/repo/issues/91',
+    }])
+
+    await pullFromGitHub({ id: projectId, github_repo: 'owner/repo', github_sync_enabled: 1 }, 1, {
+      webhookFixture: { repo: 'owner/repo', issue_number: 91, pull_request: null },
+    })
+
+    expect(db.prepare(`
+      SELECT recipient, type, title, message, source_type, source_id
+      FROM notifications
+      ORDER BY id
+    `).all()).toEqual([
+      {
+        recipient: 'builder',
+        type: 'task_ready_for_owner',
+        title: 'Owner merge reconciliation required',
+        message: expect.stringContaining('GitHub issue #90'),
+        source_type: 'task',
+        source_id: 500,
+      },
+      {
+        recipient: 'builder',
+        type: 'task_ready_for_owner',
+        title: 'Owner merge reconciliation required',
+        message: expect.stringContaining('GitHub issue #91'),
+        source_type: 'task',
+        source_id: 500,
+      },
+    ])
+  })
+
+  it('does not duplicate reconciliation notifications when only the task title changes', async () => {
+    const db = freshDb()
+    const projectId = seedProject(db)
+    seedReadyForOwnerTask(db, projectId, { assignedTo: 'builder', createdBy: 'creator' })
+    fetchIssuesMock.mockResolvedValue([makeIssue('closed')])
+
+    await pullFromGitHub({ id: projectId, github_repo: 'owner/repo', github_sync_enabled: 1 }, 1, {
+      webhookFixture: { repo: 'owner/repo', issue_number: 90, pull_request: null },
+    })
+
+    db.prepare('UPDATE tasks SET title = ? WHERE id = 500').run('Ready task renamed')
+
+    await pullFromGitHub({ id: projectId, github_repo: 'owner/repo', github_sync_enabled: 1 }, 1, {
+      webhookFixture: { repo: 'owner/repo', issue_number: 90, pull_request: null },
+    })
+
+    expect(db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM notifications
+      WHERE type = 'task_ready_for_owner'
+        AND title = 'Owner merge reconciliation required'
+    `).get()).toEqual({ count: 1 })
   })
 
   it('advances the task chain only after a verified PR merge successfully writes done with github_pr_merged', async () => {

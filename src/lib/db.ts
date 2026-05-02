@@ -274,6 +274,22 @@ export interface Notification {
   created_at: number;
 }
 
+type ReadyForOwnerNotificationTask = {
+  id: number;
+  title: string;
+  assigned_to?: string | null;
+  created_by?: string | null;
+  workspace_id?: number | null;
+  github_issue_number?: number | null;
+  github_repo?: string | null;
+  github_pr_number?: number | null;
+}
+
+type ReadyForOwnerNotificationOptions = {
+  kind?: 'normal' | 'reconciliation';
+  reason?: string;
+}
+
 export interface Tenant {
   id: number
   slug: string
@@ -419,6 +435,34 @@ export const db_helpers = {
     eventBus.broadcast('notification.created', notificationPayload);
 
     return result;
+  },
+
+  createTaskReadyForOwnerNotification: (
+    task: ReadyForOwnerNotificationTask,
+    options: ReadyForOwnerNotificationOptions = {}
+  ) => {
+    const recipient = task.assigned_to?.trim() || task.created_by?.trim();
+    if (!recipient) return null;
+
+    const workspaceId = task.workspace_id ?? 1;
+    const title = options.kind === 'reconciliation'
+      ? 'Owner merge reconciliation required'
+      : 'Ready for owner merge';
+    const message = options.kind === 'reconciliation'
+      ? `Owner action required: ${task.title} has a closed linked GitHub issue #${task.github_issue_number ?? 'unknown'} without merged PR evidence. Reason: ${options.reason ?? 'linked_issue_closed_without_merged_pr'}.`
+      : task.github_repo && task.github_pr_number
+        ? `Owner action required: ${task.title} is ready for owner merge.`
+        : `Owner action required: ${task.title} is ready for owner merge but needs explicit GitHub PR linkage.`;
+
+    return db_helpers.createNotification(
+      recipient,
+      'task_ready_for_owner',
+      title,
+      message,
+      'task',
+      task.id,
+      workspaceId,
+    );
   },
 
   /**

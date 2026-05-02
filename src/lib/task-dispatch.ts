@@ -1085,44 +1085,30 @@ function parseReviewVerdict(text: string): { status: 'approved' | 'rejected'; no
   return { status, notes }
 }
 
-function readyForOwnerRecipient(task: Pick<ReviewableTask, 'assigned_to' | 'created_by'>): string | null {
-  return task.assigned_to?.trim() || task.created_by?.trim() || null
-}
-
 function recordReadyForOwnerEntrySideEffects(
   task: Pick<ReviewableTask, 'id' | 'title' | 'workspace_id' | 'assigned_to' | 'created_by' | 'github_repo' | 'github_pr_number'>,
   actor: string,
 ): void {
-  if (task.github_repo && task.github_pr_number) return
-
-  const data = {
-    task_id: task.id,
-    workspace_id: task.workspace_id,
-    reason: 'missing_explicit_pr_linkage',
-    github_repo: task.github_repo ?? null,
-    github_pr_number: task.github_pr_number ?? null,
+  if (!task.github_repo || !task.github_pr_number) {
+    const data = {
+      task_id: task.id,
+      workspace_id: task.workspace_id,
+      reason: 'missing_explicit_pr_linkage',
+      github_repo: task.github_repo ?? null,
+      github_pr_number: task.github_pr_number ?? null,
+    }
+    db_helpers.logActivity(
+      'task_ready_for_owner',
+      'task',
+      task.id,
+      actor,
+      `Task ready for owner merge is missing explicit PR linkage: ${task.title}`,
+      data,
+      task.workspace_id,
+    )
   }
-  db_helpers.logActivity(
-    'task_ready_for_owner',
-    'task',
-    task.id,
-    actor,
-    `Task ready for owner merge is missing explicit PR linkage: ${task.title}`,
-    data,
-    task.workspace_id,
-  )
 
-  const recipient = readyForOwnerRecipient(task)
-  if (!recipient) return
-  db_helpers.createNotification(
-    recipient,
-    'task_ready_for_owner',
-    'Ready for owner merge',
-    `Owner action required: ${task.title} is ready for owner merge but needs explicit GitHub PR linkage.`,
-    'task',
-    task.id,
-    task.workspace_id,
-  )
+  db_helpers.createTaskReadyForOwnerNotification(task)
 }
 
 /**

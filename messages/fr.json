@@ -463,7 +463,12 @@
     "recipientLabel": "Destinataire",
     "recipientPlaceholder": "Nom de l'agent (ex. : my-agent)",
     "noNotifications": "Aucune notification",
-    "markRead": "Marquer comme lu"
+    "markRead": "Marquer comme lu",
+    "readyForOwnerNormalTitle": "Pret pour la fusion par le proprietaire",
+    "readyForOwnerNormalMessage": "Action du proprietaire requise : pret pour la fusion par le proprietaire.",
+    "readyForOwnerReconciliationTitle": "Rapprochement de fusion proprietaire requis",
+    "readyForOwnerReconciliationMessage": "Action du proprietaire requise : l'issue fermee necessite une preuve de PR fusionnee.",
+    "readyForOwnerActionRequired": "Action du proprietaire requise"
   },
   "localAgentsDoc": {
     "title": "AGENTS.md local",

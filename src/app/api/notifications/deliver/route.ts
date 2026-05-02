@@ -293,6 +293,8 @@ function formatNotificationMessage(notification: Notification): string {
     message += `📋 You have been assigned a new task\n`;
   } else if (notification.type === 'due_date') {
     message += `⏰ Task deadline approaching\n`;
+  } else if (notification.type === 'task_ready_for_owner') {
+    message += `Owner action required\n`;
   }
   
   if (notification.source_type && notification.source_id) {
