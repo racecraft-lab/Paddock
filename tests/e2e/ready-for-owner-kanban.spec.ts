@@ -4,15 +4,35 @@ import { argosScreenshot } from '@argos-ci/playwright'
 import Database from 'better-sqlite3'
 import path from 'node:path'
 
-import { API_KEY_HEADER, dismissOnboardingForE2E, freezeProductLineVisualClock, loginAsE2EAdmin } from '../helpers'
+import {
+  API_KEY_HEADER,
+  dismissOnboardingForE2E,
+  enableWorkspaceSwitcherFlagForE2E,
+  freezeProductLineVisualClock,
+  loginAsE2EAdmin,
+} from '../helpers'
 
 type SeededTask = {
   id: number
   title: string
+  status?: string
+  workflow_template_slug?: string | null
+}
+
+type SeededWorkspace = {
+  id: number
+  name: string
+  slug: string
+}
+
+type SeededProject = {
+  id: number
+  name: string
 }
 
 const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ||
   path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const FACILITY_SCOPE_QUERY = 'workspace_scope=facility'
 const READY_FOR_OWNER_RECIPIENT = 'owner-e2e-ready-for-owner-visual'
 const READY_FOR_OWNER_SCREENSHOT_TAGS = ['ready-for-owner']
 const READY_FOR_OWNER_TEST_TAGS = ['@ready-for-owner']
@@ -25,6 +45,23 @@ const FIXTURE_TITLES = {
   readyForOwner: 'SPEC-005 Ready for Owner - Waiting on Merge',
   done: 'SPEC-005 Ready for Owner - Done',
 } as const
+const READY_FOR_OWNER_WORKSPACE = {
+  name: 'SPEC-005 Ready for Owner Visual',
+  slug: 'spec-005-ready-for-owner-visual',
+} as const
+const READY_FOR_OWNER_PROJECT = {
+  name: 'SPEC-005 Ready for Owner',
+  slug: 'spec-005-ready-for-owner',
+  ticket_prefix: 'S005',
+} as const
+const READY_FOR_OWNER_WORKFLOW_SLUG = 'spec-005-ready-for-owner-pr'
+const READY_FOR_OWNER_REQUIRED_FLAGS = {
+  FEATURE_WORKSPACE_SWITCHER: true,
+  FEATURE_GLOBAL_AEGIS: true,
+  FEATURE_TASK_PIPELINES: true,
+  FEATURE_TWO_STEP_TERMINAL: true,
+} as const
+const READY_FOR_OWNER_PRESEEDED = process.env.MC_READY_FOR_OWNER_PRESEEDED === '1'
 
 function sqlPlaceholders(values: readonly unknown[]) {
   return values.map(() => '?').join(', ')
@@ -34,39 +71,46 @@ function tableExists(db: Database.Database, table: string) {
   return Boolean(db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table))
 }
 
-function withTwoStepTerminalDisabled() {
+function checkpointFixtureDb(db: Database.Database) {
+  try {
+    db.pragma('wal_checkpoint(PASSIVE)')
+  } catch {
+    // The Dockerized app may hold a reader briefly; committed writes remain visible
+    // to subsequent requests even when a best-effort passive checkpoint is skipped.
+  }
+}
+
+function withRequiredReadyForOwnerFlagsEnabled(workspaceId: number) {
   const db = new Database(E2E_DB_PATH)
   try {
     if (!tableExists(db, 'workspaces')) return () => undefined
-    const rows = db.prepare('SELECT id, feature_flags FROM workspaces').all() as Array<{
+    const row = db.prepare('SELECT id, feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as {
       id: number
       feature_flags: string | null
-    }>
-    const update = db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?')
+    } | undefined
+    if (!row) return () => undefined
 
-    for (const row of rows) {
-      let flags: Record<string, unknown> = {}
-      if (row.feature_flags) {
-        try {
-          const parsed = JSON.parse(row.feature_flags)
-          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-            flags = parsed as Record<string, unknown>
-          }
-        } catch {
-          flags = {}
+    let flags: Record<string, unknown> = {}
+    if (row.feature_flags) {
+      try {
+        const parsed = JSON.parse(row.feature_flags)
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          flags = parsed as Record<string, unknown>
         }
+      } catch {
+        flags = {}
       }
-      delete flags.FEATURE_TWO_STEP_TERMINAL
-      update.run(Object.keys(flags).length > 0 ? JSON.stringify(flags) : null, row.id)
     }
+
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?')
+      .run(JSON.stringify({ ...flags, ...READY_FOR_OWNER_REQUIRED_FLAGS }), workspaceId)
+    checkpointFixtureDb(db)
 
     return () => {
       const restoreDb = new Database(E2E_DB_PATH)
       try {
-        const restore = restoreDb.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?')
-        for (const row of rows) {
-          restore.run(row.feature_flags, row.id)
-        }
+        restoreDb.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?').run(row.feature_flags, row.id)
+        checkpointFixtureDb(restoreDb)
       } finally {
         restoreDb.close()
       }
@@ -81,11 +125,22 @@ function resetReadyForOwnerVisualFixture() {
   try {
     db.transaction(() => {
       if (!tableExists(db, 'tasks')) return
+      const workspaceIds = tableExists(db, 'workspaces')
+        ? db.prepare('SELECT id FROM workspaces WHERE slug = ?')
+          .all(READY_FOR_OWNER_WORKSPACE.slug)
+          .map((row) => (row as { id: number }).id)
+        : []
       const titles = Object.values(FIXTURE_TITLES)
-      const taskIds = db.prepare(`
+      const taskIdsByTitle = db.prepare(`
         SELECT id FROM tasks
         WHERE title IN (${sqlPlaceholders(titles)})
       `).all(...titles).map((row) => (row as { id: number }).id)
+      const taskIdsByWorkspace = workspaceIds.length > 0
+        ? db.prepare(`SELECT id FROM tasks WHERE workspace_id IN (${sqlPlaceholders(workspaceIds)})`)
+          .all(...workspaceIds)
+          .map((row) => (row as { id: number }).id)
+        : []
+      const taskIds = Array.from(new Set([...taskIdsByTitle, ...taskIdsByWorkspace]))
 
       if (tableExists(db, 'notifications')) {
         db.prepare('DELETE FROM notifications WHERE recipient = ?').run(READY_FOR_OWNER_RECIPIENT)
@@ -93,6 +148,12 @@ function resetReadyForOwnerVisualFixture() {
           db.prepare(`DELETE FROM notifications WHERE source_type = 'task' AND source_id IN (${sqlPlaceholders(taskIds)})`)
             .run(...taskIds)
         }
+        if (workspaceIds.length > 0) {
+          db.prepare(`DELETE FROM notifications WHERE workspace_id IN (${sqlPlaceholders(workspaceIds)})`).run(...workspaceIds)
+        }
+      }
+      if (workspaceIds.length > 0 && tableExists(db, 'activities')) {
+        db.prepare(`DELETE FROM activities WHERE workspace_id IN (${sqlPlaceholders(workspaceIds)})`).run(...workspaceIds)
       }
       if (taskIds.length > 0) {
         if (tableExists(db, 'activities')) {
@@ -109,10 +170,47 @@ function resetReadyForOwnerVisualFixture() {
         }
         db.prepare(`DELETE FROM tasks WHERE id IN (${sqlPlaceholders(taskIds)})`).run(...taskIds)
       }
+      if (workspaceIds.length > 0 && tableExists(db, 'workflow_templates')) {
+        db.prepare(`DELETE FROM workflow_templates WHERE workspace_id IN (${sqlPlaceholders(workspaceIds)})`).run(...workspaceIds)
+      }
+      if (workspaceIds.length > 0 && tableExists(db, 'projects')) {
+        db.prepare(`DELETE FROM projects WHERE workspace_id IN (${sqlPlaceholders(workspaceIds)})`).run(...workspaceIds)
+      }
+      if (workspaceIds.length > 0 && tableExists(db, 'workspaces')) {
+        db.prepare(`DELETE FROM workspaces WHERE id IN (${sqlPlaceholders(workspaceIds)})`).run(...workspaceIds)
+      }
     })()
+    checkpointFixtureDb(db)
   } finally {
     db.close()
   }
+}
+
+function scopedApiPath(pathname: string) {
+  const separator = pathname.includes('?') ? '&' : '?'
+  return `${pathname}${separator}${FACILITY_SCOPE_QUERY}`
+}
+
+function workspaceApiPath(pathname: string, workspaceId: number) {
+  const separator = pathname.includes('?') ? '&' : '?'
+  return `${pathname}${separator}workspace_id=${encodeURIComponent(String(workspaceId))}`
+}
+
+function parseFeatureFlags(raw: unknown): Record<string, unknown> {
+  if (!raw) return {}
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed as Record<string, unknown>
+        : {}
+    } catch {
+      return {}
+    }
+  }
+  return raw && typeof raw === 'object' && !Array.isArray(raw)
+    ? raw as Record<string, unknown>
+    : {}
 }
 
 function setSeededTaskTimestamps(taskIds: readonly number[]) {
@@ -123,35 +221,62 @@ function setSeededTaskTimestamps(taskIds: readonly number[]) {
     for (const taskId of taskIds) {
       update.run(FIXTURE_NOW_SECONDS, FIXTURE_NOW_SECONDS, taskId)
     }
+    checkpointFixtureDb(db)
   } finally {
     db.close()
   }
 }
 
-function forceReadyForOwnerStatus(taskId: number) {
+function setReadyForOwnerNotificationTimestamp(taskId: number) {
   const db = new Database(E2E_DB_PATH)
   try {
-    db.prepare("UPDATE tasks SET status = 'ready_for_owner', updated_at = ? WHERE id = ?")
+    db.prepare("UPDATE notifications SET created_at = ? WHERE source_type = 'task' AND source_id = ?")
       .run(FIXTURE_NOW_SECONDS, taskId)
+    checkpointFixtureDb(db)
   } finally {
     db.close()
   }
 }
 
-function seedReadyForOwnerNotification(taskId: number, title: string) {
+function configureReadyForOwnerTemplate(workspaceId: number, taskId: number) {
   const db = new Database(E2E_DB_PATH)
   try {
-    db.prepare(`
-      INSERT INTO notifications (
-        recipient, type, title, message, source_type, source_id, workspace_id, created_at
+    const existing = db.prepare(`
+      SELECT id FROM workflow_templates
+      WHERE workspace_id = ? AND slug = ?
+      LIMIT 1
+    `).get(workspaceId, READY_FOR_OWNER_WORKFLOW_SLUG) as { id: number } | undefined
+
+    const templateId = existing?.id ?? Number(db.prepare(`
+      INSERT INTO workflow_templates (
+        name, task_prompt, workspace_id, slug, agent_role, produces_pr, external_terminal_event, created_by, created_at, updated_at
       )
-      VALUES (?, 'task_ready_for_owner', 'Ready for owner merge', ?, 'task', ?, 1, ?)
+      VALUES (?, ?, ?, ?, 'builder', 1, 'github_pr_merged', 'e2e', ?, ?)
     `).run(
-      READY_FOR_OWNER_RECIPIENT,
-      `Owner action required: ${title} is ready for owner merge.`,
-      taskId,
+      'SPEC-005 Ready for Owner PR workflow',
+      'Produce a pull request and wait for owner merge.',
+      workspaceId,
+      READY_FOR_OWNER_WORKFLOW_SLUG,
       FIXTURE_NOW_SECONDS,
+      FIXTURE_NOW_SECONDS,
+    ).lastInsertRowid)
+
+    db.prepare(`
+      UPDATE tasks
+      SET workflow_template_id = ?,
+          workflow_template_slug = ?,
+          github_repo = 'racecraft-lab/mission-control',
+          github_pr_number = 23,
+          updated_at = ?
+      WHERE id = ? AND workspace_id = ?
+    `).run(
+      templateId,
+      READY_FOR_OWNER_WORKFLOW_SLUG,
+      FIXTURE_NOW_SECONDS,
+      taskId,
+      workspaceId,
     )
+    checkpointFixtureDb(db)
   } finally {
     db.close()
   }
@@ -180,18 +305,107 @@ async function attachReadyForOwnerScreenshot(page: Page, testInfo: TestInfo, nam
   }
 }
 
+async function createReadyForOwnerWorkspace(request: APIRequestContext): Promise<SeededWorkspace> {
+  const res = await request.post('/api/workspaces', {
+    headers: API_KEY_HEADER,
+    data: READY_FOR_OWNER_WORKSPACE,
+  })
+  const body = await res.json().catch(() => ({}))
+  expect(res.status(), JSON.stringify(body)).toBe(201)
+  expect(body.workspace?.id).toBeTruthy()
+  return body.workspace as SeededWorkspace
+}
+
+async function createReadyForOwnerProject(request: APIRequestContext, workspaceId: number): Promise<SeededProject> {
+  const res = await request.post(workspaceApiPath('/api/projects', workspaceId), {
+    headers: API_KEY_HEADER,
+    data: READY_FOR_OWNER_PROJECT,
+  })
+  const body = await res.json().catch(() => ({}))
+  expect(res.status(), JSON.stringify(body)).toBe(201)
+  expect(body.project?.id).toBeTruthy()
+  return body.project as SeededProject
+}
+
+async function getReadyForOwnerWorkspace(request: APIRequestContext): Promise<SeededWorkspace> {
+  const res = await request.get('/api/workspaces', { headers: API_KEY_HEADER })
+  const body = await res.json().catch(() => ({}))
+  expect(res.status(), JSON.stringify(body)).toBe(200)
+  const workspace = (body.workspaces as Array<SeededWorkspace & { feature_flags?: unknown }> | undefined)
+    ?.find((candidate) => candidate.slug === READY_FOR_OWNER_WORKSPACE.slug)
+  expect(workspace, JSON.stringify(body)).toBeTruthy()
+
+  const flags = parseFeatureFlags(workspace?.feature_flags)
+  for (const [key, expected] of Object.entries(READY_FOR_OWNER_REQUIRED_FLAGS)) {
+    expect(flags[key], `${key} must be active for SPEC-005 ready-for-owner visual e2e`).toBe(expected)
+  }
+
+  return workspace as SeededWorkspace
+}
+
+async function loadReadyForOwnerWorkflow(request: APIRequestContext, workspaceId: number) {
+  const res = await request.get(workspaceApiPath('/api/workflows', workspaceId), {
+    headers: API_KEY_HEADER,
+  })
+  const body = await res.json().catch(() => ({}))
+  expect(res.status(), JSON.stringify(body)).toBe(200)
+  const template = (body.templates as Array<{
+    id: number
+    slug: string | null
+    produces_pr: boolean
+    external_terminal_event: string | null
+  }> | undefined)?.find((candidate) => candidate.slug === READY_FOR_OWNER_WORKFLOW_SLUG)
+  expect(template, JSON.stringify(body)).toBeTruthy()
+  expect(template?.produces_pr).toBe(true)
+  expect(template?.external_terminal_event).toBe('github_pr_merged')
+  return template
+}
+
+async function loadReadyForOwnerTasks(request: APIRequestContext, workspaceId: number) {
+  const res = await request.get(workspaceApiPath('/api/tasks?limit=200', workspaceId), {
+    headers: API_KEY_HEADER,
+  })
+  const body = await res.json().catch(() => ({}))
+  expect(res.status(), JSON.stringify(body)).toBe(200)
+  const tasks = (body.tasks as SeededTask[] | undefined) ?? []
+  const byTitle = new Map(tasks.map((task) => [task.title, task]))
+
+  const awaitingOwner = byTitle.get(FIXTURE_TITLES.awaitingOwner)
+  const qualityReview = byTitle.get(FIXTURE_TITLES.qualityReview)
+  const readyForOwner = byTitle.get(FIXTURE_TITLES.readyForOwner)
+  const done = byTitle.get(FIXTURE_TITLES.done)
+
+  expect(awaitingOwner, JSON.stringify(body)).toBeTruthy()
+  expect(qualityReview, JSON.stringify(body)).toBeTruthy()
+  expect(readyForOwner, JSON.stringify(body)).toBeTruthy()
+  expect(done, JSON.stringify(body)).toBeTruthy()
+  expect(readyForOwner?.status).toBe('quality_review')
+  expect(readyForOwner?.workflow_template_slug).toBe(READY_FOR_OWNER_WORKFLOW_SLUG)
+
+  return {
+    awaitingOwner: awaitingOwner as SeededTask,
+    qualityReview: qualityReview as SeededTask,
+    readyForOwner: readyForOwner as SeededTask,
+    done: done as SeededTask,
+  }
+}
+
 async function createTask(
   request: APIRequestContext,
+  workspaceId: number,
+  projectId: number,
   title: string,
   status: 'awaiting_owner' | 'quality_review' | 'done'
 ): Promise<SeededTask> {
-  const res = await request.post('/api/tasks', {
+  const res = await request.post(workspaceApiPath('/api/tasks', workspaceId), {
     headers: API_KEY_HEADER,
     data: {
       title,
       description: `${title} seeded for ready_for_owner Kanban e2e coverage`,
       priority: 'high',
       status,
+      project_id: projectId,
+      assigned_to: READY_FOR_OWNER_RECIPIENT,
     },
   })
   const body = await res.json().catch(() => ({}))
@@ -200,36 +414,102 @@ async function createTask(
   return { id: body.task.id as number, title }
 }
 
+async function approveReadyForOwnerTask(request: APIRequestContext, workspaceId: number, taskId: number) {
+  const res = await request.post(workspaceApiPath('/api/quality-review', workspaceId), {
+    headers: API_KEY_HEADER,
+    data: {
+      taskId,
+      reviewer: 'aegis',
+      status: 'approved',
+      notes: 'SPEC-005 e2e approval enters the ready_for_owner merge gate.',
+    },
+  })
+  const body = await res.json().catch(() => ({}))
+  expect(res.status(), JSON.stringify(body)).toBe(200)
+
+  const taskRes = await request.get(workspaceApiPath(`/api/tasks/${taskId}`, workspaceId), {
+    headers: API_KEY_HEADER,
+  })
+  const taskBody = await taskRes.json().catch(() => ({}))
+  expect(taskRes.status(), JSON.stringify(taskBody)).toBe(200)
+  expect(taskBody.task?.status).toBe('ready_for_owner')
+
+  const notificationRes = await request.get(
+    workspaceApiPath(`/api/notifications?recipient=${encodeURIComponent(READY_FOR_OWNER_RECIPIENT)}&type=task_ready_for_owner`, workspaceId),
+    { headers: API_KEY_HEADER }
+  )
+  const notificationBody = await notificationRes.json().catch(() => ({}))
+  expect(notificationRes.status(), JSON.stringify(notificationBody)).toBe(200)
+  expect(notificationBody.notifications).toEqual(expect.arrayContaining([
+    expect.objectContaining({
+      type: 'task_ready_for_owner',
+      recipient: READY_FOR_OWNER_RECIPIENT,
+      source_id: taskId,
+    }),
+  ]))
+}
+
 test.describe.serial('Ready for Owner Kanban lane', () => {
   const seeded: SeededTask[] = []
   let awaitingOwner: SeededTask
   let qualityReview: SeededTask
   let readyForOwner: SeededTask
   let done: SeededTask
+  let visualWorkspace: SeededWorkspace
+  let visualProject: SeededProject
   let restoreFeatureFlags: (() => void) | undefined
+  let restoreWorkspaceSwitcherFlag: (() => void) | undefined
 
   test.beforeAll(async ({ request }) => {
-    await request.get('/api/tasks', { headers: API_KEY_HEADER })
-    resetReadyForOwnerVisualFixture()
-    restoreFeatureFlags = withTwoStepTerminalDisabled()
+    await request.get(scopedApiPath('/api/tasks'), { headers: API_KEY_HEADER })
 
-    awaitingOwner = await createTask(request, FIXTURE_TITLES.awaitingOwner, 'awaiting_owner')
-    qualityReview = await createTask(request, FIXTURE_TITLES.qualityReview, 'quality_review')
-    readyForOwner = await createTask(request, FIXTURE_TITLES.readyForOwner, 'quality_review')
-    done = await createTask(request, FIXTURE_TITLES.done, 'done')
-    seeded.push(awaitingOwner, qualityReview, readyForOwner, done)
-    setSeededTaskTimestamps(seeded.map((task) => task.id))
+    if (READY_FOR_OWNER_PRESEEDED) {
+      visualWorkspace = await getReadyForOwnerWorkspace(request)
+      await loadReadyForOwnerWorkflow(request, visualWorkspace.id)
+      const loaded = await loadReadyForOwnerTasks(request, visualWorkspace.id)
+      awaitingOwner = loaded.awaitingOwner
+      qualityReview = loaded.qualityReview
+      readyForOwner = loaded.readyForOwner
+      done = loaded.done
+      seeded.push(awaitingOwner, qualityReview, readyForOwner, done)
+    } else {
+      resetReadyForOwnerVisualFixture()
+      restoreWorkspaceSwitcherFlag = await enableWorkspaceSwitcherFlagForE2E(request)
 
-    forceReadyForOwnerStatus(readyForOwner.id)
-    seedReadyForOwnerNotification(readyForOwner.id, readyForOwner.title)
+      visualWorkspace = await createReadyForOwnerWorkspace(request)
+      restoreFeatureFlags = withRequiredReadyForOwnerFlagsEnabled(visualWorkspace.id)
+      visualProject = await createReadyForOwnerProject(request, visualWorkspace.id)
+      awaitingOwner = await createTask(request, visualWorkspace.id, visualProject.id, FIXTURE_TITLES.awaitingOwner, 'awaiting_owner')
+      qualityReview = await createTask(request, visualWorkspace.id, visualProject.id, FIXTURE_TITLES.qualityReview, 'quality_review')
+      readyForOwner = await createTask(request, visualWorkspace.id, visualProject.id, FIXTURE_TITLES.readyForOwner, 'quality_review')
+      done = await createTask(request, visualWorkspace.id, visualProject.id, FIXTURE_TITLES.done, 'done')
+      seeded.push(awaitingOwner, qualityReview, readyForOwner, done)
+      setSeededTaskTimestamps(seeded.map((task) => task.id))
+
+      configureReadyForOwnerTemplate(visualWorkspace.id, readyForOwner.id)
+      await getReadyForOwnerWorkspace(request)
+      await loadReadyForOwnerWorkflow(request, visualWorkspace.id)
+      await loadReadyForOwnerTasks(request, visualWorkspace.id)
+    }
+
+    await approveReadyForOwnerTask(request, visualWorkspace.id, readyForOwner.id)
+    if (!READY_FOR_OWNER_PRESEEDED) {
+      setSeededTaskTimestamps(seeded.map((task) => task.id))
+      setReadyForOwnerNotificationTimestamp(readyForOwner.id)
+    }
   })
 
   test.afterAll(async ({ request }) => {
+    if (READY_FOR_OWNER_PRESEEDED) return
+
     for (const task of [...seeded].reverse()) {
-      await request.delete(`/api/tasks/${task.id}`, { headers: API_KEY_HEADER }).catch(() => undefined)
+      if (visualWorkspace?.id) {
+        await request.delete(workspaceApiPath(`/api/tasks/${task.id}`, visualWorkspace.id), { headers: API_KEY_HEADER }).catch(() => undefined)
+      }
     }
     resetReadyForOwnerVisualFixture()
     restoreFeatureFlags?.()
+    restoreWorkspaceSwitcherFlag?.()
   })
 
   test.beforeEach(async ({ page, request }) => {
@@ -242,7 +522,7 @@ test.describe.serial('Ready for Owner Kanban lane', () => {
     await dismissOnboardingForE2E(request, cookieHeader)
   })
 
-  test('orders the lane between Quality Review and Done while preserving flag-off ready_for_owner visibility', { tag: READY_FOR_OWNER_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('orders the flag-on ready_for_owner lane between Quality Review and Done', { tag: READY_FOR_OWNER_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/tasks')
 
     const board = page.getByRole('region', { name: /^Task Board$/i })
@@ -294,16 +574,26 @@ test.describe.serial('Ready for Owner Kanban lane', () => {
     })
     await page.goto('/notifications')
 
-    const notificationCard = page.locator('div').filter({
-      hasText: /Ready for owner merge[\s\S]*task_ready_for_owner[\s\S]*Owner action required/i,
+    const ownerActionMessage = page.getByText(
+      `Owner action required: ${readyForOwner.title} is ready for owner merge.`,
+      { exact: true },
+    )
+    const notificationCard = page.locator('div.rounded-lg').filter({
+      has: ownerActionMessage,
     }).first()
     await expect(notificationCard).toBeVisible()
-    await expect(notificationCard.getByText(new RegExp(readyForOwner.title))).toBeVisible()
+    await expect(ownerActionMessage).toBeVisible()
 
     const markRead = notificationCard.getByRole('button', { name: /Mark read/i })
     await expect(markRead).toBeVisible()
     await page.getByRole('textbox', { name: /Agent name/i }).focus()
-    await page.keyboard.press('Tab')
+    let targetFocused = false
+    for (let tabStop = 0; tabStop < 10; tabStop += 1) {
+      await page.keyboard.press('Tab')
+      targetFocused = await markRead.evaluate((button) => button === document.activeElement)
+      if (targetFocused) break
+    }
+    expect(targetFocused).toBe(true)
     await expect(markRead).toBeFocused()
     await expect(markRead).toHaveClass(/focus-visible:ring-2/)
 

@@ -5,6 +5,7 @@ import { expect, within } from 'storybook/test'
 import { NotificationsPanel } from '@/components/panels/notifications-panel'
 import { TaskBoardPanel } from '@/components/panels/task-board-panel'
 import { useMissionControl } from '@/store'
+import { createFacilityScope, type ProductLine } from '@/types/product-line'
 
 type Surface = 'task-board' | 'notifications'
 
@@ -14,6 +15,30 @@ interface ReadyForOwnerStoryArgs {
 
 const READY_FOR_OWNER_RECIPIENT = 'owner-storybook-ready-for-owner'
 const FUTURE_TIMESTAMP_SECONDS = 4102444800
+const READY_FOR_OWNER_REQUIRED_FLAGS = {
+  FEATURE_WORKSPACE_SWITCHER: true,
+  FEATURE_GLOBAL_AEGIS: true,
+  FEATURE_TASK_PIPELINES: true,
+  FEATURE_TWO_STEP_TERMINAL: true,
+} as const
+
+const facilityWorkspace: ProductLine = {
+  id: 1,
+  slug: 'facility',
+  name: 'Facility',
+  tenant_id: 1,
+  feature_flags: { FEATURE_WORKSPACE_SWITCHER: true },
+}
+
+const readyForOwnerWorkspace: ProductLine = {
+  id: 50,
+  slug: 'spec-005-ready-for-owner',
+  name: 'SPEC-005 Ready for Owner',
+  tenant_id: 1,
+  feature_flags: READY_FOR_OWNER_REQUIRED_FLAGS,
+}
+
+const workspaces = [facilityWorkspace, readyForOwnerWorkspace]
 
 const readyForOwnerTask = {
   id: 505,
@@ -125,6 +150,13 @@ function installReadyForOwnerFetchMock() {
     if (url.pathname === '/api/tasks') {
       return jsonResponse({ tasks })
     }
+    if (url.pathname === '/api/workspaces') {
+      return jsonResponse({
+        tenant_id: 1,
+        active_workspace_id: facilityWorkspace.id,
+        workspaces,
+      })
+    }
     if (url.pathname === '/api/agents') {
       return jsonResponse({ agents })
     }
@@ -170,13 +202,13 @@ function configureReadyForOwnerState() {
       status: 'active',
       linux_user: 'mission-control',
     },
-    workspaces: [],
-    workspaceSwitcherEnabled: false,
+    workspaces,
+    workspaceSwitcherEnabled: true,
     workspaceListStatus: 'ready',
     workspaceScopeNotice: null,
     activeProductLine: null,
-    activeProductLineScope: null,
-    scopeKey: 'legacy',
+    activeProductLineScope: createFacilityScope(1, facilityWorkspace.id),
+    scopeKey: 'tenant:1:facility',
     activeProject: null,
     selectedTask: null,
     selectedAgent: null,
