@@ -37,7 +37,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Clarify | `$speckit-clarify` | Complete | All 3 sessions complete; S1 transition guards/API, S2 GitHub terminal event/reconciliation, S3 operator surfaces/status vocabulary; marker scans clean |
 | Plan | `$speckit-plan` | Complete | 2026-05-02 generated plan/research/data model/contracts/quickstart; G3 architecture concrete with no migration, no DB CHECK, no terminal-event table, and no unresolved markers |
 | Checklist | `$speckit-checklist` | Complete | All 4 domains complete with marker counter returning zero `[Gap]` markers |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with P4-AC1..P4-AC6 coverage |
+| Tasks | `$speckit-tasks` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/tasks.md`; 79 tasks with P4-AC1..P4-AC6, all `done` transition paths, and FR-019a/SC-006 accessibility coverage |
 | Analyze | `$speckit-analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-007/008/009 behavior |
 
@@ -400,14 +400,19 @@ Task generation requirements:
 
 ### Tasks Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Generated dependency-ordered, TDD-first tasks in `specs/005-ready-for-owner/tasks.md` from the SPEC-005 spec, plan, design concept, design artifacts, and roadmap P4 acceptance criteria. Phase 0 status hygiene was already recorded complete before Specify, so the task list includes verification rather than redoing status-hygiene edits. Optional git before/after task hooks were available but not executed because this phase was requested without commits or pushes.
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Test Tasks | Pending |
-| Parallel Markers | Pending |
-| Phases | Pending |
+| Total Tasks | 79 |
+| Test Tasks | 41 |
+| Parallel Markers | 37 |
+| Phases | 8 |
+| User Story Tasks | US1: 9; US2: 10; US3: 16; US4: 10; US5: 11 |
+| P4 Acceptance Criteria Coverage | 8/8: P4-AC1, P4-AC2, P4-AC3, P4-AC4, P4-AC4a, P4-AC4b, P4-AC5, P4-AC6 |
+| Live `done` Transition Paths Covered | Aegis dispatch, quality-review API, bulk task update, detail task update, GitHub sync |
+| Accessibility Coverage | Included for Ready for Owner lane and `task_ready_for_owner` notifications via FR-019a/SC-006 tasks |
+| Checklist Format | Pass: all 79 task lines use `- [ ] T###` format with story labels on user-story tasks |
 
 ## Phase 6: Analyze
 
