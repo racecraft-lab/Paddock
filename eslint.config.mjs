@@ -12,6 +12,12 @@ const specStrictFiles = [
   'src/lib/routing-rule-evaluator.ts',
   'src/lib/output-schema-validator.ts',
   'src/lib/task-create.ts',
+  'src/lib/secret-detector.ts',
+  'src/lib/secret-detector.rules.ts',
+  'src/lib/__tests__/secret-detector.test.ts',
+  'src/lib/aegis-review.ts',
+  'src/lib/task-artifacts.ts',
+  'src/lib/__tests__/task-artifacts.enums.test.ts',
 ]
 
 const config = tseslint.config(
