@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
+import { useMissionControl } from '@/store'
 
 interface AuditEvent {
   id: number
@@ -17,6 +18,48 @@ interface AuditEvent {
   user_agent?: string
   created_at: number
 }
+
+// SPEC-007 (US3): Dispositions tab types and constants. Strings are hardcoded
+// (not in messages JSON) because the i18n message files are outside SPEC-007's
+// strict-scope allowlist. See tsconfig.spec-strict.json + task-artifacts.enums
+// allowlist test for the file boundary.
+interface DispositionRow {
+  id: number
+  task_id: number
+  disposition: string
+  reason: string | null
+  triaged_by_agent_id: number | null
+  triaged_at: number
+  workspace_id: number
+}
+
+interface AgentLite {
+  id: number
+  name: string
+}
+
+// FR-010 closed enum (8 values) + 'unknown' (FR-139 validation_failed label).
+const DISPOSITION_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+  { value: 'merged', label: 'Merged' },
+  { value: 'closed', label: 'Closed' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'rerouted', label: 'Rerouted' },
+  { value: 'duplicate', label: 'Duplicate' },
+  { value: 'spam', label: 'Spam' },
+  { value: 'completed', label: 'Completed' },
+  { value: 'abandoned', label: 'Abandoned' },
+  { value: 'unknown', label: 'validation_failed' },
+]
+
+const DATE_PRESETS: ReadonlyArray<{ value: string; label: string; days: number | null }> = [
+  { value: '7d', label: 'Last 7 days', days: 7 },
+  { value: '30d', label: 'Last 30 days', days: 30 },
+  { value: '90d', label: 'Last 90 days', days: 90 },
+  { value: 'custom', label: 'Custom range', days: null },
+]
+
+const DISPOSITIONS_DEFAULT_LIMIT = 50
+const DISPOSITIONS_MAX_LIMIT = 200
 
 // actionLabels are now provided via translations (auditTrail namespace)
 
@@ -92,7 +135,57 @@ const actionIcons: Record<string, string> = {
   access_deny: 'x',
 }
 
+type AuditTabKey = 'events' | 'dispositions'
+
 export function AuditTrailPanel() {
+  const [activeTab, setActiveTab] = useState<AuditTabKey>('events')
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Tab navigation — SPEC-007 US3 added "Dispositions" alongside the
+          existing audit-events view. */}
+      <div
+        role="tablist"
+        aria-label="Audit views"
+        className="flex gap-1 border-b border-border px-5 pt-4"
+        data-testid="audit-tab-nav"
+      >
+        <button
+          role="tab"
+          aria-selected={activeTab === 'events'}
+          onClick={() => setActiveTab('events')}
+          data-testid="audit-tab-events"
+          className={`px-3 py-2 text-xs font-medium rounded-t-md transition-smooth ${
+            activeTab === 'events'
+              ? 'bg-secondary text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+          }`}
+        >
+          Events
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === 'dispositions'}
+          onClick={() => setActiveTab('dispositions')}
+          data-testid="audit-tab-dispositions"
+          className={`px-3 py-2 text-xs font-medium rounded-t-md transition-smooth ${
+            activeTab === 'dispositions'
+              ? 'bg-secondary text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+          }`}
+        >
+          Dispositions
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-auto">
+        {activeTab === 'events' ? <AuditEventsTab /> : <DispositionsTab />}
+      </div>
+    </div>
+  )
+}
+
+function AuditEventsTab() {
   const t = useTranslations('auditTrail')
 
   const actionLabels: Record<string, string> = {
@@ -362,6 +455,506 @@ export function AuditTrailPanel() {
             size="xs"
           >
             {t('next')}
+          </Button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SPEC-007 US3 — Dispositions tab.
+// FR-050: filter UI (workspace, disposition multi-select, date range preset
+//         + custom, agent dropdown, task_id input).
+// FR-051: cursor pagination, default 50/page, max 200, stable order.
+// FR-052: banner "Logging began on YYYY-MM-DD" derived from earliest row;
+//         hide if no rows exist.
+// FR-139: 'unknown' filter option labeled "validation_failed".
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface DispositionFilters {
+  disposition: string[]
+  datePreset: string // '7d' | '30d' | '90d' | 'custom'
+  customFrom: string // YYYY-MM-DD
+  customTo: string // YYYY-MM-DD
+  triagedByAgentId: string // empty string = unset; otherwise numeric
+  taskId: string // empty string = unset; otherwise numeric
+  workspaceIdOverride: string // Facility-only manual override; numeric or empty
+}
+
+const INITIAL_DISPOSITION_FILTERS: DispositionFilters = {
+  disposition: [],
+  datePreset: '30d',
+  customFrom: '',
+  customTo: '',
+  triagedByAgentId: '',
+  taskId: '',
+  workspaceIdOverride: '',
+}
+
+function formatDateForBanner(epochSeconds: number): string {
+  const d = new Date(epochSeconds * 1000)
+  const yyyy = d.getUTCFullYear()
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  return `${String(yyyy)}-${mm}-${dd}`
+}
+
+function formatTriagedAt(ts: number): string {
+  const d = new Date(ts * 1000)
+  return d.toLocaleString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  })
+}
+
+function dispositionLabel(value: string): string {
+  const found = DISPOSITION_OPTIONS.find(o => o.value === value)
+  return found ? found.label : value
+}
+
+function DispositionsTab() {
+  const { activeProductLineScope, currentUser } = useMissionControl()
+  const isFacility = activeProductLineScope?.kind === 'facility'
+
+  const [filters, setFilters] = useState<DispositionFilters>(INITIAL_DISPOSITION_FILTERS)
+  const [rows, setRows] = useState<DispositionRow[]>([])
+  const [agents, setAgents] = useState<AgentLite[]>([])
+  const [pages, setPages] = useState<Array<string | null>>([null]) // cursor stack; pages[i] is the cursor used to fetch page i (null = first page)
+  const [pageIndex, setPageIndex] = useState(0)
+  const [nextCursor, setNextCursor] = useState<string | null>(null)
+  const [hasMore, setHasMore] = useState(false)
+  const [limit, setLimit] = useState(DISPOSITIONS_DEFAULT_LIMIT)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [bannerDate, setBannerDate] = useState<string | null>(null)
+  const [hasAnyRows, setHasAnyRows] = useState<boolean | null>(null)
+
+  // Effective workspace_id selected by the panel. For non-Facility callers we
+  // pin it to their active workspace; Facility callers may override.
+  const effectiveWorkspaceId = useMemo<number | null>(() => {
+    if (isFacility) {
+      const override = filters.workspaceIdOverride.trim()
+      if (override !== '' && /^\d+$/.test(override)) return Number(override)
+      return null
+    }
+    if (activeProductLineScope?.kind === 'productLine') {
+      return activeProductLineScope.productLineId
+    }
+    if (currentUser?.workspace_id) {
+      return currentUser.workspace_id
+    }
+    return null
+  }, [isFacility, filters.workspaceIdOverride, activeProductLineScope, currentUser])
+
+  // Resolve since/until from the date preset.
+  const { sinceIso, untilIso } = useMemo(() => {
+    const preset = DATE_PRESETS.find(p => p.value === filters.datePreset)
+    if (!preset) return { sinceIso: '', untilIso: '' }
+    if (preset.days !== null) {
+      const now = Date.now()
+      const since = new Date(now - preset.days * 24 * 60 * 60 * 1000).toISOString()
+      const until = new Date(now).toISOString()
+      return { sinceIso: since, untilIso: until }
+    }
+    // custom
+    return {
+      sinceIso: filters.customFrom ? `${filters.customFrom}T00:00:00.000Z` : '',
+      untilIso: filters.customTo ? `${filters.customTo}T23:59:59.999Z` : '',
+    }
+  }, [filters.datePreset, filters.customFrom, filters.customTo])
+
+  // Build /api/dispositions URL from filters + an explicit cursor argument.
+  const buildDispositionsUrl = useCallback((cursor: string | null, limitOverride?: number): string => {
+    const params = new URLSearchParams()
+    if (effectiveWorkspaceId !== null) {
+      params.set('workspace_id', String(effectiveWorkspaceId))
+    }
+    if (filters.disposition.length > 0) {
+      params.set('disposition', filters.disposition.join(','))
+    }
+    if (sinceIso) params.set('since', sinceIso)
+    if (untilIso) params.set('until', untilIso)
+    if (filters.triagedByAgentId !== '' && /^\d+$/.test(filters.triagedByAgentId)) {
+      params.set('triaged_by_agent_id', filters.triagedByAgentId)
+    }
+    if (filters.taskId !== '' && /^\d+$/.test(filters.taskId)) {
+      params.set('task_id', filters.taskId)
+    }
+    params.set('limit', String(limitOverride ?? limit))
+    if (cursor) params.set('cursor', cursor)
+    return `/api/dispositions?${params.toString()}`
+  }, [effectiveWorkspaceId, filters.disposition, filters.triagedByAgentId, filters.taskId, sinceIso, untilIso, limit])
+
+  // Fetch agents for the filter dropdown (best-effort; tab still works on failure).
+  useEffect(() => {
+    let cancelled = false
+    async function loadAgents() {
+      try {
+        const res = await fetch('/api/agents')
+        if (!res.ok) return
+        const data = await res.json()
+        if (cancelled) return
+        const list: AgentLite[] = Array.isArray(data?.agents)
+          ? data.agents.map((a: any) => ({ id: Number(a.id), name: String(a.name ?? '') }))
+              .filter((a: AgentLite) => Number.isFinite(a.id) && a.name !== '')
+          : []
+        setAgents(list)
+      } catch {
+        // Non-fatal — leave dropdown empty.
+      }
+    }
+    loadAgents()
+    return () => { cancelled = true }
+  }, [])
+
+  // Fetch a single page (cursor === null fetches the first page).
+  const fetchPage = useCallback(async (cursor: string | null) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(buildDispositionsUrl(cursor))
+      if (!res.ok) {
+        if (res.status === 503) {
+          setError('Disposition logging is disabled for this workspace.')
+        } else if (res.status === 403) {
+          setError('You do not have permission to view dispositions for this workspace.')
+        } else if (res.status === 400) {
+          let body: { error?: string } = {}
+          try { body = await res.json() } catch { /* ignore */ }
+          if (body.error === 'invalid_cursor') {
+            setError('Pagination cursor is invalid. Resetting to first page.')
+            setPages([null])
+            setPageIndex(0)
+          } else if (body.error === 'workspace_id_required') {
+            setError('Select a workspace to view dispositions.')
+          } else {
+            setError('Invalid request.')
+          }
+        } else {
+          setError('Failed to load dispositions.')
+        }
+        setRows([])
+        setNextCursor(null)
+        setHasMore(false)
+        return
+      }
+      const data = await res.json()
+      const fetched: DispositionRow[] = Array.isArray(data?.dispositions) ? data.dispositions : []
+      setRows(fetched)
+      setNextCursor(typeof data?.next_cursor === 'string' ? data.next_cursor : null)
+      setHasMore(Boolean(data?.has_more))
+    } catch {
+      setError('Failed to load dispositions.')
+      setRows([])
+      setNextCursor(null)
+      setHasMore(false)
+    } finally {
+      setLoading(false)
+    }
+  }, [buildDispositionsUrl])
+
+  // Compute the banner: walk forward to the last page once per filter change
+  // and read the final row (oldest, since order is triaged_at DESC, id DESC).
+  // The route hard-codes DESC sort; the strict scope forbids changes there, so
+  // we cursor-walk. With max 200 per page and seed sizes around 250×workspace
+  // this is at most ~3 fetches per filter change.
+  const computeBanner = useCallback(async () => {
+    setBannerDate(null)
+    setHasAnyRows(null)
+    try {
+      let cursor: string | null = null
+      let lastRow: DispositionRow | null = null
+      let totalSeen = 0
+      // Hard cap to keep this bounded if a workspace logs millions of rows.
+      const MAX_WALK_PAGES = 50
+      const WALK_LIMIT = DISPOSITIONS_MAX_LIMIT
+      for (let i = 0; i < MAX_WALK_PAGES; i++) {
+        const res: Response = await fetch(buildDispositionsUrl(cursor, WALK_LIMIT))
+        if (!res.ok) return
+        const data: { dispositions?: DispositionRow[]; next_cursor?: string | null; has_more?: boolean } = await res.json()
+        const list: DispositionRow[] = Array.isArray(data.dispositions) ? data.dispositions : []
+        if (list.length === 0) break
+        totalSeen += list.length
+        lastRow = list[list.length - 1] ?? lastRow
+        if (!data.has_more || typeof data.next_cursor !== 'string') break
+        cursor = data.next_cursor
+      }
+      setHasAnyRows(totalSeen > 0)
+      if (lastRow) setBannerDate(formatDateForBanner(lastRow.triaged_at))
+    } catch {
+      // Banner is best-effort.
+    }
+  }, [buildDispositionsUrl])
+
+  // Reset pagination when filters change, then fetch first page + banner.
+  useEffect(() => {
+    setPages([null])
+    setPageIndex(0)
+    fetchPage(null)
+    computeBanner()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buildDispositionsUrl])
+
+  function toggleDisposition(value: string) {
+    setFilters(f => {
+      const has = f.disposition.includes(value)
+      return { ...f, disposition: has ? f.disposition.filter(v => v !== value) : [...f.disposition, value] }
+    })
+  }
+
+  function goNext() {
+    if (!hasMore || !nextCursor) return
+    const nextPages = [...pages, nextCursor]
+    setPages(nextPages)
+    setPageIndex(nextPages.length - 1)
+    fetchPage(nextCursor)
+  }
+
+  function goPrev() {
+    if (pageIndex === 0) return
+    const prevIndex = pageIndex - 1
+    setPageIndex(prevIndex)
+    fetchPage(pages[prevIndex] ?? null)
+  }
+
+  return (
+    <div className="p-5 space-y-4" data-testid="dispositions-tab">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-foreground">Dispositions</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Triage outcomes for tasks routed through pipeline templates.
+          </p>
+        </div>
+        <Button
+          onClick={() => { setPages([null]); setPageIndex(0); fetchPage(null); computeBanner() }}
+          variant="ghost"
+          size="xs"
+        >
+          Refresh
+        </Button>
+      </div>
+
+      {/* Banner (FR-052) — hide entirely if no rows exist. */}
+      {hasAnyRows === true && bannerDate && (
+        <div
+          className="rounded-md border border-border bg-secondary/40 px-3 py-2 text-xs text-muted-foreground"
+          data-testid="dispositions-banner"
+        >
+          Logging began on {bannerDate}
+        </div>
+      )}
+
+      {/* Filters */}
+      <div className="space-y-3">
+        {/* Workspace + agent + task_id */}
+        <div className="flex flex-wrap gap-2 items-end">
+          {isFacility && (
+            <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
+              <span>Workspace ID</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={filters.workspaceIdOverride}
+                onChange={e => setFilters(f => ({ ...f, workspaceIdOverride: e.target.value }))}
+                placeholder="(all)"
+                className="h-8 px-2.5 text-xs rounded-md bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-32"
+                data-testid="dispositions-filter-workspace"
+              />
+            </label>
+          )}
+
+          <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
+            <span>Triaged by agent</span>
+            <select
+              value={filters.triagedByAgentId}
+              onChange={e => setFilters(f => ({ ...f, triagedByAgentId: e.target.value }))}
+              className="h-8 px-2 text-xs rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              data-testid="dispositions-filter-agent"
+            >
+              <option value="">All agents</option>
+              {agents.map(a => (
+                <option key={a.id} value={String(a.id)}>{a.name}</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
+            <span>Task ID</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={filters.taskId}
+              onChange={e => setFilters(f => ({ ...f, taskId: e.target.value }))}
+              placeholder="(any)"
+              className="h-8 px-2.5 text-xs rounded-md bg-secondary border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary w-28"
+              data-testid="dispositions-filter-task-id"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
+            <span>Page size</span>
+            <select
+              value={String(limit)}
+              onChange={e => setLimit(Math.min(DISPOSITIONS_MAX_LIMIT, Math.max(1, Number(e.target.value) || DISPOSITIONS_DEFAULT_LIMIT)))}
+              className="h-8 px-2 text-xs rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              data-testid="dispositions-filter-limit"
+            >
+              <option value="50">50</option>
+              <option value="100">100</option>
+              <option value="200">200</option>
+            </select>
+          </label>
+        </div>
+
+        {/* Date range */}
+        <div className="flex flex-wrap gap-2 items-end">
+          <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
+            <span>Date range</span>
+            <select
+              value={filters.datePreset}
+              onChange={e => setFilters(f => ({ ...f, datePreset: e.target.value }))}
+              className="h-8 px-2 text-xs rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              data-testid="dispositions-filter-date-preset"
+            >
+              {DATE_PRESETS.map(p => (
+                <option key={p.value} value={p.value}>{p.label}</option>
+              ))}
+            </select>
+          </label>
+          {filters.datePreset === 'custom' && (
+            <>
+              <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
+                <span>From</span>
+                <input
+                  type="date"
+                  value={filters.customFrom}
+                  onChange={e => setFilters(f => ({ ...f, customFrom: e.target.value }))}
+                  className="h-8 px-2 text-xs rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  data-testid="dispositions-filter-date-from"
+                />
+              </label>
+              <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
+                <span>To</span>
+                <input
+                  type="date"
+                  value={filters.customTo}
+                  onChange={e => setFilters(f => ({ ...f, customTo: e.target.value }))}
+                  className="h-8 px-2 text-xs rounded-md bg-secondary border border-border text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  data-testid="dispositions-filter-date-to"
+                />
+              </label>
+            </>
+          )}
+        </div>
+
+        {/* Disposition multi-select */}
+        <div className="flex flex-col gap-1">
+          <span className="text-2xs text-muted-foreground">Dispositions</span>
+          <div className="flex flex-wrap gap-1.5" data-testid="dispositions-filter-values">
+            {DISPOSITION_OPTIONS.map(opt => {
+              const selected = filters.disposition.includes(opt.value)
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => toggleDisposition(opt.value)}
+                  aria-pressed={selected}
+                  data-testid={`dispositions-filter-chip-${opt.value}`}
+                  className={`h-7 px-2.5 text-2xs rounded-md border transition-smooth ${
+                    selected
+                      ? 'bg-primary/20 border-primary text-foreground'
+                      : 'bg-secondary border-border text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* List / states */}
+      {error ? (
+        <div
+          className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-xs text-red-400"
+          data-testid="dispositions-error"
+        >
+          {error}
+        </div>
+      ) : loading ? (
+        <div className="space-y-2" data-testid="dispositions-loading">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-12 rounded-lg shimmer" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="py-12 text-center" data-testid="dispositions-empty">
+          <p className="text-xs text-muted-foreground">No dispositions yet</p>
+        </div>
+      ) : (
+        <div className="space-y-1" data-testid="dispositions-list">
+          {rows.map(row => (
+            <div
+              key={row.id}
+              className="flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary/50 transition-smooth"
+              data-testid={`dispositions-row-${String(row.id)}`}
+            >
+              <span
+                className={`px-2 py-0.5 rounded-md text-2xs font-mono shrink-0 mt-0.5 border ${
+                  row.disposition === 'unknown'
+                    ? 'border-amber-500/40 text-amber-400 bg-amber-500/10'
+                    : 'border-border text-foreground bg-secondary'
+                }`}
+                data-testid="dispositions-row-disposition"
+              >
+                {dispositionLabel(row.disposition)}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-sm font-medium text-foreground">Task #{String(row.task_id)}</span>
+                  {row.triaged_by_agent_id !== null && (
+                    <span className="text-xs text-muted-foreground">agent #{String(row.triaged_by_agent_id)}</span>
+                  )}
+                  <span className="text-xs text-muted-foreground">workspace #{String(row.workspace_id)}</span>
+                </div>
+                {row.reason && (
+                  <p className="text-xs text-muted-foreground mt-0.5 font-mono-tight truncate">{row.reason}</p>
+                )}
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-2xs text-muted-foreground font-mono-tight">{formatTriagedAt(row.triaged_at)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pagination — cursor stack. Hide controls if there's only one page. */}
+      {(pageIndex > 0 || hasMore) && (
+        <div className="flex items-center justify-between pt-2">
+          <Button
+            onClick={goPrev}
+            disabled={pageIndex === 0}
+            variant="ghost"
+            size="xs"
+            data-testid="dispositions-prev"
+          >
+            Previous
+          </Button>
+          <span className="text-xs text-muted-foreground" data-testid="dispositions-page-indicator">
+            Page {String(pageIndex + 1)}
+          </span>
+          <Button
+            onClick={goNext}
+            disabled={!hasMore}
+            variant="ghost"
+            size="xs"
+            data-testid="dispositions-next"
+          >
+            Next
           </Button>
         </div>
       )}
