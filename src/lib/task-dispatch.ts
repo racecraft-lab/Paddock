@@ -8,6 +8,7 @@ import { syncTaskOutbound } from './github-sync-engine'
 import { getAegis } from './aegis'
 import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
 import { resolveFlag } from './feature-flags'
+import { resolveTaskTerminalTransition, type TaskStatus } from './task-status'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
 import { createHash } from 'crypto'
@@ -1028,6 +1029,8 @@ interface ReviewableTask {
   project_id: number | null
   ticket_prefix: string | null
   project_ticket_no: number | null
+  produces_pr: number | null
+  feature_flags: string | null
 }
 
 function buildReviewPrompt(task: ReviewableTask): string {
@@ -1085,9 +1088,13 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
 
   const tasks = db.prepare(`
     SELECT t.id, t.title, t.description, t.status, t.priority, t.resolution, t.assigned_to, t.workspace_id,
-           t.project_id, p.ticket_prefix, t.project_ticket_no
+           t.project_id, p.ticket_prefix, t.project_ticket_no,
+           COALESCE(wt.produces_pr, 0) AS produces_pr,
+           w.feature_flags
     FROM tasks t
     LEFT JOIN projects p ON p.id = t.project_id AND p.workspace_id = t.workspace_id
+    LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+    LEFT JOIN workspaces w ON w.id = t.workspace_id
     WHERE t.status = 'review'
     ORDER BY t.updated_at ASC
     LIMIT 3
@@ -1169,21 +1176,38 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
       `).run(task.id, verdict.status, verdict.notes, task.workspace_id)
 
       if (verdict.status === 'approved') {
+        const transition = resolveTaskTerminalTransition({
+          taskId: task.id,
+          currentStatus: 'quality_review',
+          requestedStatus: 'done',
+          producesPr: task.produces_pr === 1,
+          twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+            workspaceFlags: task.feature_flags,
+          }),
+          transitionIntent: 'approval',
+        })
+        if (!transition.ok) {
+          results.push({ id: task.id, verdict: 'error', error: transition.body.reason })
+          continue
+        }
+        const nextStatus = transition.status as TaskStatus
         db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?')
-          .run('done', Math.floor(Date.now() / 1000), task.id)
+          .run(nextStatus, Math.floor(Date.now() / 1000), task.id)
 
         eventBus.broadcast('task.status_changed', {
           id: task.id,
-          status: 'done',
+          status: nextStatus,
           previous_status: 'quality_review',
         })
-        syncAndEscalateIfFailed(task, 'done')
-        advanceTaskChain({
-          taskId: task.id,
-          workspaceId: task.workspace_id,
-          previousStatus: 'quality_review',
-          trigger: 'aegis_review',
-        })
+        syncAndEscalateIfFailed(task, nextStatus)
+        if (nextStatus === 'done') {
+          advanceTaskChain({
+            taskId: task.id,
+            workspaceId: task.workspace_id,
+            previousStatus: 'quality_review',
+            trigger: 'aegis_review',
+          })
+        }
       } else {
         // Rejected: check dispatch_attempts to decide next status
         const now = Math.floor(Date.now() / 1000)

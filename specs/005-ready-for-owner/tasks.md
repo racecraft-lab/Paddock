@@ -46,18 +46,18 @@
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Add failing red tests for flag OFF existing `ready_for_owner` row reads and new `ready_for_owner` write blocking in `src/lib/__tests__/task-status.test.ts`.
-- [ ] T016 [P] [US1] Add failing red tests proving flag OFF Aegis approval for PR-producing and non-PR-producing tasks still writes `done` in `src/lib/__tests__/task-dispatch.test.ts`.
-- [ ] T017 [P] [US1] Add failing red tests proving flag OFF quality-review approval still writes `done` in `src/app/api/quality-review/__tests__/route.test.ts`.
-- [ ] T018 [P] [US1] Add failing red tests proving flag OFF bulk and detail task updates do not create new `ready_for_owner` writes in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
+- [X] T015 [P] [US1] Add failing red tests for flag OFF existing `ready_for_owner` row reads and new `ready_for_owner` write blocking in `src/lib/__tests__/task-status.test.ts`.
+- [X] T016 [P] [US1] Add failing red tests proving flag OFF Aegis approval for PR-producing and non-PR-producing tasks still writes `done` in `src/lib/__tests__/task-dispatch.test.ts`.
+- [X] T017 [P] [US1] Add failing red tests proving flag OFF quality-review approval still writes `done` in `src/app/api/quality-review/__tests__/route.test.ts`.
+- [X] T018 [P] [US1] Add failing red tests proving flag OFF bulk and detail task updates do not create new `ready_for_owner` writes in `src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
 
 ### Implementation for User Story 1
 
-- [ ] T019 [US1] Update `src/lib/task-dispatch.ts` so flag OFF Aegis approvals preserve current `quality_review` to `done` behavior for all templates.
-- [ ] T020 [US1] Update `src/app/api/tasks/[id]/route.ts` and `src/app/api/tasks/route.ts` so flag OFF new writes into `ready_for_owner` are blocked or normalized before mutation.
-- [ ] T021 [US1] Update `src/app/api/quality-review/route.ts` so flag OFF approvals preserve existing direct `done` behavior and do not emit ready-for-owner side effects.
-- [ ] T022 [US1] Refactor the flag OFF transition guard calls in `src/lib/task-dispatch.ts`, `src/app/api/quality-review/route.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts` to use the shared helper consistently.
-- [ ] T023 [US1] Run `pnpm test src/lib/__tests__/task-dispatch.test.ts src/app/api/quality-review/__tests__/route.test.ts src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
+- [X] T019 [US1] Update `src/lib/task-dispatch.ts` so flag OFF Aegis approvals preserve current `quality_review` to `done` behavior for all templates.
+- [X] T020 [US1] Update `src/app/api/tasks/[id]/route.ts` and `src/app/api/tasks/route.ts` so flag OFF new writes into `ready_for_owner` are blocked or normalized before mutation.
+- [X] T021 [US1] Update `src/app/api/quality-review/route.ts` so flag OFF approvals preserve existing direct `done` behavior and do not emit ready-for-owner side effects.
+- [X] T022 [US1] Refactor the flag OFF transition guard calls in `src/lib/task-dispatch.ts`, `src/app/api/quality-review/route.ts`, `src/app/api/tasks/route.ts`, and `src/app/api/tasks/[id]/route.ts` to use the shared helper consistently.
+- [X] T023 [US1] Run `pnpm test src/lib/__tests__/task-dispatch.test.ts src/app/api/quality-review/__tests__/route.test.ts src/lib/__tests__/tasks-route-ready-for-owner.test.ts`.
 
 **Checkpoint**: P4-AC1 is covered and independently testable.
 

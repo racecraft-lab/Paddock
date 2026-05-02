@@ -84,7 +84,10 @@ export function resolveTaskTerminalTransition(
     twoStepTerminalEnabled,
     transitionIntent = 'status_write',
     terminalEvent,
+    currentStatus,
   } = input
+
+  if (requestedStatus === currentStatus) return allowedTransition(requestedStatus)
 
   if (requestedStatus === READY_FOR_OWNER_STATUS) {
     if (!twoStepTerminalEnabled || !producesPr) return conflictForTask(taskId)

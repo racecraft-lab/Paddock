@@ -7,6 +7,8 @@ import { logger } from '@/lib/logger'
 import { eventBus } from '@/lib/event-bus'
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces'
 import { advanceTaskChain } from '@/lib/task-dispatch'
+import { resolveFlag } from '@/lib/feature-flags'
+import { resolveTaskTerminalTransition } from '@/lib/task-status'
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
@@ -92,10 +94,32 @@ export async function POST(request: NextRequest) {
     const workspaceId = acceptedScope.workspaceId
 
     const task = db
-      .prepare('SELECT id, title, status FROM tasks WHERE id = ? AND workspace_id = ?')
+      .prepare(`
+        SELECT t.id, t.title, t.status, COALESCE(wt.produces_pr, 0) AS produces_pr, w.feature_flags
+        FROM tasks t
+        LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+        LEFT JOIN workspaces w ON w.id = t.workspace_id
+        WHERE t.id = ? AND t.workspace_id = ?
+      `)
       .get(taskId, workspaceId) as any
     if (!task) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 })
+    }
+
+    const approvedTransition = status === 'approved'
+      ? resolveTaskTerminalTransition({
+          taskId,
+          currentStatus: task.status,
+          requestedStatus: 'done',
+          producesPr: task.produces_pr === 1,
+          twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+            workspaceFlags: task.feature_flags,
+          }),
+          transitionIntent: 'approval',
+        })
+      : null
+    if (approvedTransition && !approvedTransition.ok) {
+      return NextResponse.json(approvedTransition.body, { status: approvedTransition.status })
     }
 
     const result = db.prepare(`
@@ -115,18 +139,21 @@ export async function POST(request: NextRequest) {
 
     // Auto-advance task based on review outcome
     if (status === 'approved') {
+      const nextStatus = approvedTransition?.ok ? approvedTransition.status : 'done'
       db.prepare('UPDATE tasks SET status = ?, updated_at = unixepoch() WHERE id = ? AND workspace_id = ?')
-        .run('done', taskId, workspaceId)
-      advanceTaskChain({
-        taskId,
-        workspaceId,
-        previousStatus: task.status,
-        trigger: 'quality_review',
-      })
+        .run(nextStatus, taskId, workspaceId)
+      if (nextStatus === 'done') {
+        advanceTaskChain({
+          taskId,
+          workspaceId,
+          previousStatus: task.status,
+          trigger: 'quality_review',
+        })
+      }
       eventBus.broadcast('task.status_changed', {
         id: taskId,
-        status: 'done',
-        previous_status: 'review',
+        status: nextStatus,
+        previous_status: task.status,
         updated_at: Math.floor(Date.now() / 1000),
         workspace_id: workspaceId,
       })

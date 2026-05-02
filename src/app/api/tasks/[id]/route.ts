@@ -6,12 +6,13 @@ import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, updateTaskSchema } from '@/lib/validation';
 import { resolveMentionRecipients } from '@/lib/mentions';
-import { normalizeTaskUpdateStatus } from '@/lib/task-status';
+import { normalizeTaskUpdateStatus, resolveTaskTerminalTransition, type TaskStatus } from '@/lib/task-status';
 import { syncTaskOutbound } from '@/lib/github-sync-engine';
 import { removeTaskFromGnap } from '@/lib/gnap-sync';
 import { config } from '@/lib/config';
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces';
 import { advanceTaskChain, retryTaskChainAdvancement } from '@/lib/task-dispatch';
+import { resolveFlag } from '@/lib/feature-flags';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -39,6 +40,10 @@ function hasAegisApproval(
     LIMIT 1
   `).get(taskId, workspaceId) as { status?: string } | undefined
   return review?.status === 'approved'
+}
+
+function taskProducesPr(task: { produces_pr?: number | boolean | null }): boolean {
+  return task.produces_pr === 1 || task.produces_pr === true
 }
 
 /**
@@ -104,7 +109,7 @@ export async function PUT(
     const resolvedParams = await params;
     const taskId = parseInt(resolvedParams.id);
     const acceptedScope = await resolveWorkspaceScopeFromRequest(db, request, auth.user);
-    const workspaceFilter = workspaceScopePredicate(acceptedScope, 'workspace_id');
+    const workspaceFilter = workspaceScopePredicate(acceptedScope, 't.workspace_id');
     const validated = await validateBody(request, updateTaskSchema);
     if ('error' in validated) return validated.error;
     const body = validated.data;
@@ -115,7 +120,13 @@ export async function PUT(
     
     // Get current task for comparison
     const currentTask = db
-      .prepare(`SELECT * FROM tasks WHERE id = ? AND ${workspaceFilter.sql}`)
+      .prepare(`
+        SELECT t.*, COALESCE(wt.produces_pr, 0) AS produces_pr, w.feature_flags
+        FROM tasks t
+        LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+        LEFT JOIN workspaces w ON w.id = t.workspace_id
+        WHERE t.id = ? AND ${workspaceFilter.sql}
+      `)
       .get(taskId, ...workspaceFilter.params) as Task;
     
     if (!currentTask) {
@@ -149,6 +160,23 @@ export async function PUT(
       assignedTo: assigned_to,
       assignedToProvided: assigned_to !== undefined,
     })
+    let resolvedStatus = normalizedStatus as TaskStatus | undefined
+    if (normalizedStatus !== undefined) {
+      const transition = resolveTaskTerminalTransition({
+        taskId,
+        currentStatus: currentTask.status as TaskStatus,
+        requestedStatus: normalizedStatus as TaskStatus,
+        producesPr: taskProducesPr(currentTask as Task & { produces_pr?: number | null }),
+        twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+          workspaceFlags: (currentTask as Task & { feature_flags?: string | null }).feature_flags ?? null,
+        }),
+        transitionIntent: 'status_write',
+      })
+      if (!transition.ok) {
+        return NextResponse.json(transition.body, { status: transition.status })
+      }
+      resolvedStatus = transition.status
+    }
     
     const now = Math.floor(Date.now() / 1000);
     const descriptionMentionResolution = description !== undefined
@@ -176,15 +204,15 @@ export async function PUT(
       fieldsToUpdate.push('description = ?');
       updateParams.push(description);
     }
-    if (normalizedStatus !== undefined) {
-      if (normalizedStatus === 'done' && !hasAegisApproval(db, taskId, workspaceId)) {
+    if (resolvedStatus !== undefined) {
+      if (resolvedStatus === 'done' && !hasAegisApproval(db, taskId, workspaceId)) {
         return NextResponse.json(
           { error: 'Aegis approval is required to move task to done.' },
           { status: 403 }
         )
       }
       fieldsToUpdate.push('status = ?');
-      updateParams.push(normalizedStatus);
+      updateParams.push(resolvedStatus);
     }
     if (priority !== undefined) {
       fieldsToUpdate.push('priority = ?');
@@ -263,7 +291,7 @@ export async function PUT(
     if (completed_at !== undefined) {
       fieldsToUpdate.push('completed_at = ?');
       updateParams.push(completed_at);
-    } else if (normalizedStatus === 'done' && !currentTask.completed_at) {
+    } else if (resolvedStatus === 'done' && !currentTask.completed_at) {
       fieldsToUpdate.push('completed_at = ?');
       updateParams.push(now);
     }
@@ -295,7 +323,7 @@ export async function PUT(
     
     stmt.run(...updateParams);
 
-    if (normalizedStatus === 'done' && currentTask.status !== 'done') {
+    if (resolvedStatus === 'done' && currentTask.status !== 'done') {
       advanceTaskChain({
         taskId,
         workspaceId,
@@ -307,8 +335,8 @@ export async function PUT(
     // Track changes and log activities
     const changes: string[] = [];
     
-    if (normalizedStatus !== undefined && normalizedStatus !== currentTask.status) {
-      changes.push(`status: ${currentTask.status} → ${normalizedStatus}`);
+    if (resolvedStatus !== undefined && resolvedStatus !== currentTask.status) {
+      changes.push(`status: ${currentTask.status} → ${resolvedStatus}`);
       
       // Create notification for status change if assigned
       if (currentTask.assigned_to) {
@@ -316,7 +344,7 @@ export async function PUT(
           currentTask.assigned_to,
           'status_change',
           'Task Status Updated',
-          `Task "${currentTask.title}" status changed to ${normalizedStatus}`,
+          `Task "${currentTask.title}" status changed to ${resolvedStatus}`,
           'task',
           taskId,
           workspaceId
@@ -392,7 +420,7 @@ export async function PUT(
             priority: currentTask.priority,
             assigned_to: currentTask.assigned_to
           },
-          newValues: { title, status: normalizedStatus ?? currentTask.status, priority, assigned_to }
+          newValues: { title, status: resolvedStatus ?? currentTask.status, priority, assigned_to }
         },
         workspaceId
       );

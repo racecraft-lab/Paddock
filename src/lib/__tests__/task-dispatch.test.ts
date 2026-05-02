@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { resolveGatewayAgentIdForReviewAgent, resolveTaskDispatchModelOverride } from '@/lib/task-dispatch'
+import type { ResolveTaskTerminalTransitionInput, TaskTerminalTransitionResult } from '@/lib/task-status'
 
 describe('resolveTaskDispatchModelOverride', () => {
   it('returns null when the agent has no explicit dispatch model override', () => {
@@ -102,9 +103,18 @@ function createDispatchDb(): Database.Database {
       workspace_id INTEGER NOT NULL,
       project_id INTEGER,
       project_ticket_no INTEGER,
+      workflow_template_id INTEGER,
+      workflow_template_slug TEXT,
       dispatch_attempts INTEGER NOT NULL DEFAULT 0,
       error_message TEXT,
       updated_at INTEGER NOT NULL DEFAULT 1
+    );
+    CREATE TABLE workflow_templates (
+      id INTEGER PRIMARY KEY,
+      workspace_id INTEGER NOT NULL,
+      slug TEXT,
+      produces_pr INTEGER NOT NULL DEFAULT 0,
+      external_terminal_event TEXT
     );
     CREATE TABLE projects (
       id INTEGER PRIMARY KEY,
@@ -142,10 +152,20 @@ function createDispatchDb(): Database.Database {
   `)
   db.prepare('INSERT INTO workspaces (id, slug, feature_flags) VALUES (?, ?, ?)').run(1, 'alpha', '{"FEATURE_GLOBAL_AEGIS":true}')
   db.prepare('INSERT INTO projects (id, workspace_id, ticket_prefix) VALUES (?, ?, ?)').run(1, 1, 'ALP')
+  db.prepare(`
+    INSERT INTO workflow_templates (id, workspace_id, slug, produces_pr, external_terminal_event)
+    VALUES (1, 1, 'pr-template', 1, 'github_pr_merged'),
+           (2, 1, 'non-pr-template', 0, NULL)
+  `).run()
   return db
 }
 
-async function importTaskDispatchWithDb(db: Database.Database, runOpenClaw = vi.fn()) {
+async function importTaskDispatchWithDb(
+  db: Database.Database,
+  runOpenClaw = vi.fn(),
+  resolveTransitionSpy?: (input: ResolveTaskTerminalTransitionInput) => TaskTerminalTransitionResult
+) {
+  const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
   vi.doMock('@/lib/db', () => ({
     getDatabase: () => db,
     db_helpers: {
@@ -162,6 +182,10 @@ async function importTaskDispatchWithDb(db: Database.Database, runOpenClaw = vi.
   vi.doMock('@/lib/event-bus', () => ({ eventBus: { broadcast: vi.fn() } }))
   vi.doMock('@/lib/github-sync-engine', () => ({ syncTaskOutbound: vi.fn() }))
   vi.doMock('@/lib/logger', () => ({ logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } }))
+  vi.doMock('@/lib/task-status', () => ({
+    ...actualTaskStatus,
+    resolveTaskTerminalTransition: resolveTransitionSpy ?? actualTaskStatus.resolveTaskTerminalTransition,
+  }))
 
   return import('@/lib/task-dispatch')
 }
@@ -232,5 +256,49 @@ describe('runAegisReviews resolver integration', () => {
     expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'aegis_local_shadowed'").get()).toEqual({ count: 1 })
     const fallbackParams = JSON.parse(runOpenClaw.mock.calls.at(-1)?.[0][7])
     expect(fallbackParams.agentId).toBe('aegis')
+  })
+
+  it('keeps flag-off PR-producing and non-PR Aegis approvals on the done path through the shared transition guard', async () => {
+    dispatchDb = createDispatchDb()
+    dispatchDb.prepare(`
+      INSERT INTO agents (id, name, workspace_id, scope, config)
+      VALUES (10, 'Aegis', 1, 'workspace', '{"openclawId":"aegis"}')
+    `).run()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug)
+      VALUES
+        (200, 'PR task', 'Produces PR', 'review', 'high', 'Done', 'builder', 1, 1, 20, 1, 'pr-template'),
+        (201, 'Non-PR task', 'No PR', 'review', 'high', 'Done', 'builder', 1, 1, 21, 2, 'non-pr-template')
+    `).run()
+    const runOpenClaw = vi.fn().mockResolvedValue({
+      stdout: JSON.stringify({ payloads: [{ text: 'VERDICT: APPROVED\nNOTES: pass' }] }),
+    })
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { runAegisReviews } = await importTaskDispatchWithDb(dispatchDb, runOpenClaw, resolveTransitionSpy)
+
+    const result = await runAegisReviews()
+
+    expect(result.ok).toBe(true)
+    expect(dispatchDb.prepare('SELECT id, status FROM tasks ORDER BY id').all()).toEqual([
+      { id: 200, status: 'done' },
+      { id: 201, status: 'done' },
+    ])
+    expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 200,
+      currentStatus: 'quality_review',
+      requestedStatus: 'done',
+      producesPr: true,
+      twoStepTerminalEnabled: false,
+      transitionIntent: 'approval',
+    }))
+    expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 201,
+      currentStatus: 'quality_review',
+      requestedStatus: 'done',
+      producesPr: false,
+      twoStepTerminalEnabled: false,
+      transitionIntent: 'approval',
+    }))
   })
 })

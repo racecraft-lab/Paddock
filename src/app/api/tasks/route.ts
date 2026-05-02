@@ -5,11 +5,18 @@ import { requireRole } from '@/lib/auth';
 import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, createTaskSchema, bulkUpdateTaskStatusSchema } from '@/lib/validation';
-import { normalizeTaskCreateStatus } from '@/lib/task-status';
+import {
+  normalizeTaskCreateStatus,
+  resolveTaskTerminalTransition,
+  transitionConflict,
+  type TaskStatus,
+  type TransitionConflictBody,
+} from '@/lib/task-status';
 import { syncTaskOutbound } from '@/lib/github-sync-engine';
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces';
 import { createTask, UnknownMentionsError } from '@/lib/task-create';
 import { advanceTaskChain } from '@/lib/task-dispatch';
+import { resolveFlag } from '@/lib/feature-flags';
 
 function formatTicketRef(prefix?: string | null, num?: number | null): string | undefined {
   if (!prefix || typeof num !== 'number' || !Number.isFinite(num) || num <= 0) return undefined
@@ -56,6 +63,34 @@ function hasAegisApproval(db: ReturnType<typeof getDatabase>, taskId: number, wo
     LIMIT 1
   `).get(taskId, workspaceId) as { status?: string } | undefined
   return review?.status === 'approved'
+}
+
+class TaskTransitionConflictError extends Error {
+  constructor(readonly body: TransitionConflictBody) {
+    super(body.reason)
+  }
+}
+
+function isTwoStepTerminalEnabled(db: ReturnType<typeof getDatabase>, workspaceId: number): boolean {
+  const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as { feature_flags?: string | null } | undefined
+  return resolveFlag('FEATURE_TWO_STEP_TERMINAL', { workspaceFlags: row?.feature_flags ?? null })
+}
+
+function taskProducesPr(task: { produces_pr?: number | boolean | null }): boolean {
+  return task.produces_pr === 1 || task.produces_pr === true
+}
+
+function fetchTaskForStatusTransition(
+  db: ReturnType<typeof getDatabase>,
+  taskId: number,
+  workspaceId: number
+): (Task & { produces_pr?: number | null }) | null {
+  return (db.prepare(`
+    SELECT t.*, COALESCE(wt.produces_pr, 0) AS produces_pr
+    FROM tasks t
+    LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+    WHERE t.id = ? AND t.workspace_id = ?
+  `).get(taskId, workspaceId) as (Task & { produces_pr?: number | null }) | undefined) ?? null
 }
 
 /**
@@ -268,6 +303,7 @@ export async function PUT(request: NextRequest) {
     const validated = await validateBody(request, bulkUpdateTaskStatusSchema);
     if ('error' in validated) return validated.error;
     const { tasks } = validated.data;
+    const twoStepTerminalEnabled = isTwoStepTerminalEnabled(db, workspaceId);
 
     const now = Math.floor(Date.now() / 1000);
 
@@ -284,35 +320,59 @@ export async function PUT(request: NextRequest) {
 
     const actor = auth.user.username
 
+    let appliedUpdates: Array<{ id: number; status: TaskStatus }> = []
     const transaction = db.transaction((tasksToUpdate: any[]) => {
-      for (const task of tasksToUpdate) {
-        const oldTask = db.prepare('SELECT * FROM tasks WHERE id = ? AND workspace_id = ?').get(task.id, workspaceId) as Task;
-        if (!oldTask) continue;
+      const resolvedUpdates: Array<{ task: { id: number; status: TaskStatus }; oldTask: Task & { produces_pr?: number | null }; status: TaskStatus }> = []
+      const conflictIds: number[] = []
 
-        if (task.status === 'done' && !hasAegisApproval(db, task.id, workspaceId)) {
+      for (const task of tasksToUpdate) {
+        const oldTask = fetchTaskForStatusTransition(db, task.id, workspaceId);
+        if (!oldTask) continue;
+        const transition = resolveTaskTerminalTransition({
+          taskId: task.id,
+          currentStatus: oldTask.status as TaskStatus,
+          requestedStatus: task.status as TaskStatus,
+          producesPr: taskProducesPr(oldTask),
+          twoStepTerminalEnabled,
+          transitionIntent: 'status_write',
+        })
+        if (!transition.ok) {
+          conflictIds.push(task.id)
+          continue
+        }
+
+        resolvedUpdates.push({ task, oldTask, status: transition.status })
+      }
+
+      if (conflictIds.length > 0) {
+        throw new TaskTransitionConflictError(transitionConflict(conflictIds))
+      }
+
+      for (const { task, oldTask, status } of resolvedUpdates) {
+        if (status === 'done' && !hasAegisApproval(db, task.id, workspaceId)) {
           throw new Error(`Aegis approval required for task ${task.id}`)
         }
 
-        if (task.status === 'done') {
-          updateDoneStmt.run(task.status, now, now, task.id, workspaceId);
+        if (status === 'done') {
+          updateDoneStmt.run(status, now, now, task.id, workspaceId);
         } else {
-          updateStmt.run(task.status, now, task.id, workspaceId);
+          updateStmt.run(status, now, task.id, workspaceId);
         }
 
         // Log status change if different
-        if (oldTask && oldTask.status !== task.status) {
+        if (oldTask && oldTask.status !== status) {
           db_helpers.logActivity(
             'task_updated',
             'task',
             task.id,
             actor,
-            `Task moved from ${oldTask.status} to ${task.status}`,
-            { oldStatus: oldTask.status, newStatus: task.status },
+            `Task moved from ${oldTask.status} to ${status}`,
+            { oldStatus: oldTask.status, newStatus: status },
             workspaceId
           );
         }
 
-        if (oldTask.status !== 'done' && task.status === 'done') {
+        if (oldTask.status !== 'done' && status === 'done') {
           advanceTaskChain({
             taskId: task.id,
             workspaceId,
@@ -321,12 +381,13 @@ export async function PUT(request: NextRequest) {
           })
         }
       }
+      appliedUpdates = resolvedUpdates.map(({ task, status }) => ({ id: task.id, status }))
     });
     
     transaction(tasks);
 
     // Broadcast status changes to SSE clients + outbound sync
-    for (const task of tasks) {
+    for (const task of appliedUpdates) {
       eventBus.broadcast('task.status_changed', {
         id: task.id,
         status: task.status,
@@ -345,6 +406,9 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     const scopeError = workspaceScopeError(error);
     if (scopeError) return NextResponse.json({ error: scopeError.error }, { status: scopeError.status });
+    if (error instanceof TaskTransitionConflictError) {
+      return NextResponse.json(error.body, { status: 409 });
+    }
     logger.error({ err: error }, 'PUT /api/tasks error');
     const message = error instanceof Error ? error.message : 'Failed to update tasks'
     if (message.includes('Aegis approval required')) {

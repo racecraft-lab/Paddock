@@ -182,4 +182,15 @@ describe('resolveTaskTerminalTransition', () => {
       },
     })
   })
+
+  it('keeps existing ready_for_owner rows stable while the flag is off', () => {
+    expect(resolveTransition({
+      taskId: 7,
+      currentStatus: 'ready_for_owner',
+      requestedStatus: 'ready_for_owner',
+      producesPr: true,
+      twoStepTerminalEnabled: false,
+      transitionIntent: 'status_write',
+    })).toEqual({ ok: true, status: 'ready_for_owner' })
+  })
 })
