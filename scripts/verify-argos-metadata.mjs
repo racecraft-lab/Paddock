@@ -80,11 +80,11 @@ function getPlaywrightConfig(rootOverride) {
   return {
     label: 'argos-playwright-metadata',
     root: rootOverride || path.join(process.cwd(), 'test-results'),
-    expectedMetadata: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_METADATA || '11', 10),
-    expectedTests: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_TESTS || '5', 10),
-    allowedTestTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin'),
-    allowedScreenshotTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_SCREENSHOT_TAGS || 'product-line-switcher,feature-flag-admin'),
-    requiredDomainCounts: parseCounts(process.env.ARGOS_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2'),
+    expectedMetadata: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_METADATA || '14', 10),
+    expectedTests: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_TESTS || '8', 10),
+    allowedTestTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin,@ready-for-owner'),
+    allowedScreenshotTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_SCREENSHOT_TAGS || 'product-line-switcher,feature-flag-admin,ready-for-owner'),
+    requiredDomainCounts: parseCounts(process.env.ARGOS_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3'),
   }
 }
 
@@ -92,10 +92,10 @@ function getStorybookConfig(rootOverride) {
   return {
     label: 'argos-storybook-metadata',
     root: rootOverride || process.env.ARGOS_STORYBOOK_SCREENSHOT_DIR || path.join(process.cwd(), 'screenshots', 'storybook'),
-    expectedMetadata: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_METADATA || '22', 10),
-    expectedStories: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_STORIES || '12', 10),
+    expectedMetadata: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_METADATA || '25', 10),
+    expectedStories: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_STORIES || '15', 10),
     requiredStoryTags: parseList(process.env.ARGOS_STORYBOOK_REQUIRED_TAGS || 'visual'),
-    requiredDomainStoryCounts: parseCounts(process.env.ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS || 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2'),
+    requiredDomainStoryCounts: parseCounts(process.env.ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS || 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,ready-for-owner:3'),
   }
 }
 
