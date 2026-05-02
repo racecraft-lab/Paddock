@@ -366,17 +366,17 @@ these as documented in the **US Mapping** table below.
 
 ### Tests for US5 ([T-RED] first)
 
-- [ ] T1000 [T-RED] [US5] Author `src/app/api/dispositions/__tests__/route.test.ts` covering Error Code Matrix rows for `GET /api/dispositions`: 503 (flag OFF), 400 `workspace_id_required` (non-Facility no workspace_id), 400 `invalid_cursor` (malformed cursor), 401 (unauthenticated), 403 `workspace_forbidden` (caller cannot read workspace). 405 method-not-allowed for POST/PUT/DELETE. (FR-080, FR-081, FR-122, FR-123.)
-- [ ] T1001 [T-RED] [P] [US5] Add filter combo test: `?disposition=closed&disposition=rejected&since=2026-04-01T00:00:00Z` → only rows in `{'closed','rejected'}` with `triaged_at >= 2026-04-01T00:00:00Z`, sorted by `(triaged_at DESC, id DESC)`, with `next_cursor` if more pages. Response shape `{rows, next_cursor, has_more}` (NOT `{total, hasMore}`). (FR-080.)
+- [~] T1000 [T-RED] [US5] Author `src/app/api/dispositions/__tests__/route.test.ts` covering Error Code Matrix rows for `GET /api/dispositions`: 503 (flag OFF) ✓, 400 `workspace_id_required` (non-Facility no workspace_id) ✓, 400 `invalid_cursor` (malformed cursor) ✓. Pending in this scope: 401 (unauthenticated), 403 `workspace_forbidden`, 405 method-not-allowed for POST/PUT/DELETE — to be added in a follow-up pass. (FR-080, FR-081, FR-122, FR-123.)
+- [X] T1001 [T-RED] [P] [US5] Add filter combo test: `?disposition=closed,rejected&since=<ISO>` → only rows in `{'closed','rejected'}` with `triaged_at >= since`, sorted by `(triaged_at DESC, id DESC)`, with `next_cursor` if more pages. Response shape `{dispositions, next_cursor, has_more}` (NOT `{total, hasMore}`; tasks.md `{rows, ...}` corrected to spec-canonical `dispositions`). (FR-080.)
 - [ ] T1002 [T-RED] [P] [US5] Add Facility caller can-omit-workspace_id test. (FR-080.)
 - [ ] T1003 [T-RED] [P] [US5] Add no-rate-limit test (v1): assert no rate-limit headers emitted. (FR-081.)
 - [ ] T1004 [T-RED] [P] [US5] Add auth-parity test: same 401/403 behavior as `/api/activities` (e.g., missing API key → identical body shape). (FR-081.)
 
 ### Implementation for US5 (turns T1000..T1004 green)
 
-- [ ] T1005 [US5] Implement `src/app/api/dispositions/route.ts` GET handler: flag check (503), auth (401), workspace authorization (403), filter parsing, opaque base64url cursor decode using helpers from T020, SELECT with `WHERE workspace_id=? AND (triaged_at, id) < (?, ?) ORDER BY triaged_at DESC, id DESC LIMIT ?`, response shape `{rows, next_cursor, has_more}`. FR-122 precedence ordering. (FR-080, FR-081, FR-122.)
+- [X] T1005 [US5] Implement `src/app/api/dispositions/route.ts` GET handler: flag check (503), auth (401), workspace authorization (403), filter parsing, opaque base64url cursor decode using helpers from T020, SELECT with `WHERE workspace_id=? AND (triaged_at, id) < (?, ?) ORDER BY triaged_at DESC, id DESC LIMIT ?`, response shape `{dispositions, next_cursor, has_more}` (spec FR-080/FR-051 canonical key — tasks.md drift `{rows, ...}` corrected to spec-canonical `dispositions`). FR-122 precedence ordering implemented as two-phase flag check (pre-auth when query workspace_id present; post-auth fallback to caller's workspace when absent) followed by 401 → 403/400 scope → 400 invalid_cursor. (FR-080, FR-081, FR-122.)
 - [ ] T1006 [US5] Add 405 method-not-allowed for non-GET (FR-123). Turns T1000 green for that row.
-- [ ] T1007 [US5] Wire auth pattern from `/api/activities` (mirror exact 401/403 shapes). (FR-081.)
+- [X] T1007 [US5] Wire auth pattern from `/api/activities` (mirror exact 401/403 shapes). (FR-081.)
 
 **Checkpoint**: US5 done.
 
