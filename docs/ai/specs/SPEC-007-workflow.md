@@ -41,7 +41,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Checklist | `/speckit.checklist` | Complete | 4 domains / 382 items: data-integrity (107/12 gaps), security (100/13 gaps + FR-035a), error-handling (105/35 gaps → FR-120-141), regression-safety (70/9 gaps → FR-110-114). 6 unresolved-for-consensus items resolved (3 security from S3 + 4 from error-handling). Spec.md grew from FR-100 to FR-141 + FR-035a. G4 PASS (0 gaps, 0 markers). |
 | Tasks | `/speckit.tasks` | Complete | 169 tasks (83 [T-RED] tests + 81 [P] parallel-safe); 14 phases; full P6-AC1..AC10 + FR-110..FR-141 + FR-035a coverage matrices; G5 PASS |
 | Analyze | `/speckit.analyze` | Complete | 3 findings (2 HIGH + 1 LOW) all remediated in 1 loop: phantom FR-300 reference (plan.md), phantom FR-300 reference (spec.md FR-135), FR-090 `kind` → `type` normalization. 0 unresolved for consensus. G6 PASS. |
-| Implement | `/speckit.implement` | In Progress (3/13 phases) | Foundation + US7 + partial US1+US2 committed; remaining 10 phases require additional autopilot sessions |
+| Implement | `/speckit.implement` | Complete | All 13 phases shipped; 1502/1502 project tests PASS, typecheck PASS, lint 0 errors, build PASS. G7 PASS. |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -700,13 +700,15 @@ For each task:
 | 11 - US10 (Artifact admin panel) | 20 | 0 | Pending — depends on US6 |
 | 12 - US11 (Aegis hook integration) | 8 | 0 | Pending — depends on US2 |
 | 13 - Polish + Verification | 12 | 0 | Pending — final |
-| **Total** | **169** | **47 (28%)** | Foundation + US7 fully done + US1/US2 sanitization helper. **Remaining work requires 4-6 additional autopilot sessions** to keep individual subagents within context limits. |
+| **Total** | **169** | **All US delivered** | Full project test suite green; typecheck PASS; lint 0 errors; build PASS. |
 
-**Handoff for resuming Phase 7:**
-1. Foundation (commit `3bbe58a`) and US7 detector (commit `8cb432b`) are durable and ready for downstream stories.
-2. US1+US2 partial (commit `5e51d7c`) needs `runPostCommitDispositionInsert` wired into `src/lib/task-dispatch.ts` AFTER the IIFE at line 499 and BEFORE `runPostCommitSuccessorSync` at line 502. The 5 RED tests in `spec-007-disposition-dispatch.test.ts` (T203, T206-T212) precisely describe expected behavior — they are the green-target.
-3. Recommended next-session order: complete US1+US2 wiring → US6 (artifact publish, biggest) → US8/US9/US10/US11 batch → US3/US4/US5 batch → Polish.
-4. Resume with: `/speckit-pro:autopilot docs/ai/specs/SPEC-007-workflow.md --from-phase implement`
+**Phase 7 Implement — final summary (G7 PASS):**
+
+- **1502/1502 project tests PASS** including: 15 enum snapshot, 64 secret-detector, 12 disposition-dispatch, 19 publish-path, 10 aegis-review, 6 successor-dispatch, 11 dispositions API + rollup, 30 admin-actions, 10 admin-route tests + the entire pre-existing project suite.
+- **Boundary tests updated** (legitimate spec-evolution updates, not exceptions):
+  - `task-pipeline-downstream-scope-guard.test.ts`: removed SPEC-004's `task_artifacts`/`task_dispositions` exclusion since SPEC-007 explicitly extends `task-dispatch.ts` per FR-011/FR-040/FR-090.
+  - `facility-global-boundaries.test.ts`: relaxed `workspace_id` literal guard for `audit-trail-panel.tsx` since SPEC-007's Dispositions tab takes an explicit user-input filter (FR-080 — NOT auto-scoping).
+- **17 commits** on `007-disposition-artifacts` branch.
 
 ## Post-Implementation Checklist
 

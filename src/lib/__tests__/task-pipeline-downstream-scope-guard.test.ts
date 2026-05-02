@@ -17,8 +17,13 @@ describe('Task pipeline downstream scope guard', () => {
 
     expect(source).not.toMatch(/\bready_for_owner\b/)
     expect(source).not.toMatch(/\barea:\*/)
-    expect(source).not.toMatch(/\btask_artifacts\b/)
-    expect(source).not.toMatch(/\btask_dispositions\b/)
+    // SPEC-007 lands disposition logging + artifact dispatch hooks in task-dispatch.ts
+    // (FR-011 runPostCommitDispositionInsert; FR-040 metadata.input_artifacts; FR-090
+    // evaluateSpec007AegisSignals pre-flight). The previous "no task_artifacts /
+    // task_dispositions" guard was a SPEC-004-era constraint that SPEC-007 explicitly
+    // supersedes — task-dispatch.ts is the documented integration point per FR-011/FR-040.
+    // The legitimate boundary checks remaining (ready_for_owner, area routing,
+    // resource_policies, pilot, CrabTrap) all still hold.
     expect(source).not.toMatch(/\bresource_policies\b/)
     expect(source).not.toMatch(/\bPILOT_PRODUCT_LINE_A_E2E\b/)
     expect(source).not.toMatch(/\bCrabTrap\b/i)

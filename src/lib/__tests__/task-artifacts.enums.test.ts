@@ -155,6 +155,16 @@ const SPEC_007_ALLOWLIST = [
   'src/lib/__tests__/task-artifacts-admin.test.ts',
   // US10 admin health endpoint:
   'src/app/api/task-artifacts/health/route.ts',
+  // US4 dashboard rollup endpoint:
+  'src/app/api/dispositions/rollup/route.ts',
+  // SPEC-004 boundary-test update (relaxed task_artifacts/task_dispositions guard
+  // since SPEC-007 explicitly extends task-dispatch.ts with these references per
+  // FR-011 / FR-040 / FR-090):
+  'src/lib/__tests__/task-pipeline-downstream-scope-guard.test.ts',
+  // SPEC-002 boundary-test update (relaxed workspace_id literal guard for
+  // audit-trail-panel since SPEC-007's Dispositions tab takes an explicit
+  // user-input workspace_id filter per FR-080):
+  'src/components/panels/facility-global-boundaries.test.ts',
 ] as const
 
 const ALLOWED_PREFIXES = [

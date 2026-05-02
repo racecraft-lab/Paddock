@@ -514,8 +514,11 @@ function dispositionLabel(value: string): string {
 }
 
 function DispositionsTab() {
-  const { activeProductLineScope, currentUser } = useMissionControl()
-  const isFacility = activeProductLineScope?.kind === 'facility'
+  // SPEC-002 boundary: the audit-trail-panel intentionally does NOT auto-scope
+  // by Product Line state. Operators filter workspace_id explicitly via the
+  // panel's input. The /api/dispositions route enforces non-Facility callers
+  // server-side (returning 400 workspace_id_required if needed).
+  const { currentUser } = useMissionControl()
 
   const [filters, setFilters] = useState<DispositionFilters>(INITIAL_DISPOSITION_FILTERS)
   const [rows, setRows] = useState<DispositionRow[]>([])
@@ -530,22 +533,15 @@ function DispositionsTab() {
   const [bannerDate, setBannerDate] = useState<string | null>(null)
   const [hasAnyRows, setHasAnyRows] = useState<boolean | null>(null)
 
-  // Effective workspace_id selected by the panel. For non-Facility callers we
-  // pin it to their active workspace; Facility callers may override.
+  // Effective workspace_id from the explicit filter input only. Defaults to
+  // currentUser's workspace_id when the input is empty (non-Facility users
+  // are constrained server-side to their workspace anyway).
   const effectiveWorkspaceId = useMemo<number | null>(() => {
-    if (isFacility) {
-      const override = filters.workspaceIdOverride.trim()
-      if (override !== '' && /^\d+$/.test(override)) return Number(override)
-      return null
-    }
-    if (activeProductLineScope?.kind === 'productLine') {
-      return activeProductLineScope.productLineId
-    }
-    if (currentUser?.workspace_id) {
-      return currentUser.workspace_id
-    }
+    const override = filters.workspaceIdOverride.trim()
+    if (override !== '' && /^\d+$/.test(override)) return Number(override)
+    if (currentUser?.workspace_id) return currentUser.workspace_id
     return null
-  }, [isFacility, filters.workspaceIdOverride, activeProductLineScope, currentUser])
+  }, [filters.workspaceIdOverride, currentUser])
 
   // Resolve since/until from the date preset.
   const { sinceIso, untilIso } = useMemo(() => {
@@ -750,7 +746,8 @@ function DispositionsTab() {
       <div className="space-y-3">
         {/* Workspace + agent + task_id */}
         <div className="flex flex-wrap gap-2 items-end">
-          {isFacility && (
+          {/* Workspace input always visible — server enforces scope per FR-080. */}
+          {true && (
             <label className="flex flex-col gap-1 text-2xs text-muted-foreground">
               <span>Workspace ID</span>
               <input

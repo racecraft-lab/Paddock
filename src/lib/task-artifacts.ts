@@ -1720,6 +1720,7 @@ export function repairOrphans(db: Database.Database, workspaceId: number): Orpha
   if (fs.existsSync(wsRoot)) {
     const stack: string[] = [wsRoot]
     while (stack.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above guarantees non-undefined
       const dir = stack.pop()!
       let entries: import('fs').Dirent[]
       try {
@@ -1793,7 +1794,7 @@ export function repairOrphans(db: Database.Database, workspaceId: number): Orpha
             }
             if (noRow) {
               fsNoRow++
-            } else if (matchRow !== undefined && matchRow.workspace_id !== workspaceId) {
+            } else if (matchRow.workspace_id !== workspaceId) {
               wsViolations++
               const violationRowId = matchRow.id
               const tx = db.transaction(() => {
@@ -1878,7 +1879,7 @@ function resolveRetentionPolicy(
   const row = db
     .prepare('SELECT feature_flags FROM workspaces WHERE id = ?')
     .get(workspaceId) as { feature_flags: string | null } | undefined
-  if (row === undefined || row.feature_flags === null) {
+  if (row?.feature_flags == null) {
     return { policy: {}, resolved: { archive_after_seconds: null, delete_after_seconds: null } }
   }
   let parsed: Record<string, unknown>
@@ -1893,12 +1894,12 @@ function resolveRetentionPolicy(
   }
   const arRecord = ar as Record<string, unknown>
   const policy: RetentionPolicy = {
-    ...(typeof arRecord['keep_days'] === 'number' ? { keep_days: arRecord['keep_days'] as number } : {}),
+    ...(typeof arRecord['keep_days'] === 'number' ? { keep_days: arRecord['keep_days'] } : {}),
     ...(typeof arRecord['archive_after_days'] === 'number'
-      ? { archive_after_days: arRecord['archive_after_days'] as number }
+      ? { archive_after_days: arRecord['archive_after_days'] }
       : {}),
     ...(typeof arRecord['delete_after_days'] === 'number'
-      ? { delete_after_days: arRecord['delete_after_days'] as number }
+      ? { delete_after_days: arRecord['delete_after_days'] }
       : {}),
   }
   return {
@@ -2005,9 +2006,7 @@ export function runRetentionSweep(
         }
       } catch (err) {
         failed++
-        if (sampleFailureReason === undefined) {
-          sampleFailureReason = err instanceof Error ? err.message : String(err)
-        }
+        sampleFailureReason ??= err instanceof Error ? err.message : String(err)
       }
     }
 
