@@ -41,7 +41,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Checklist | `/speckit.checklist` | Complete | 4 domains / 382 items: data-integrity (107/12 gaps), security (100/13 gaps + FR-035a), error-handling (105/35 gaps → FR-120-141), regression-safety (70/9 gaps → FR-110-114). 6 unresolved-for-consensus items resolved (3 security from S3 + 4 from error-handling). Spec.md grew from FR-100 to FR-141 + FR-035a. G4 PASS (0 gaps, 0 markers). |
 | Tasks | `/speckit.tasks` | Complete | 169 tasks (83 [T-RED] tests + 81 [P] parallel-safe); 14 phases; full P6-AC1..AC10 + FR-110..FR-141 + FR-035a coverage matrices; G5 PASS |
 | Analyze | `/speckit.analyze` | Complete | 3 findings (2 HIGH + 1 LOW) all remediated in 1 loop: phantom FR-300 reference (plan.md), phantom FR-300 reference (spec.md FR-135), FR-090 `kind` → `type` normalization. 0 unresolved for consensus. G6 PASS. |
-| Implement | `/speckit.implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-008/009/011 behavior |
+| Implement | `/speckit.implement` | In Progress (3/13 phases) | Foundation + US7 + partial US1+US2 committed; remaining 10 phases require additional autopilot sessions |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -687,19 +687,26 @@ For each task:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 1 - Foundation | | | |
-| 2 - US1 (Disposition flag-OFF parity) | | | |
-| 3 - US2 (Disposition flag-ON insert) | | | |
-| 4 - US3 (Audit panel) | | | |
-| 5 - US4 (Dashboard widget) | | | |
-| 6 - US5 (Dispositions GET API) | | | |
-| 7 - US6 (Artifact publish) | | | |
-| 8 - US7 (Secret detector v1) | | | |
-| 9 - US8 (Detector enforcement) | | | |
-| 10 - US9 (Successor dispatch + read) | | | |
-| 11 - US10 (Artifact admin panel) | | | |
-| 12 - US11 (Aegis hook) | | | |
-| 13 - Polish + Verification | | | |
+| 1 - Foundation (T001 + T010-T021) | 13 | 13 ✅ | Commit `3bbe58a` — strict scope (6 files), `REDACTION_STATUSES` + `SECURITY_SCAN_STATUSES` enums, p95 ring buffer, cursor encode/decode, secret-detector skeleton, aegis-review thin module. typecheck PASS, 15/15 enum tests PASS. |
+| 2 - US1 (Disposition flag-OFF parity) | 10 | partial | See "US2 + integration" row |
+| 3 - US2 (Disposition flag-ON insert) | 13 | partial | Commit `5e51d7c` — `sanitizeDispositionFailurePayload` helper + RED tests in `spec-007-disposition-dispatch.test.ts`. **PENDING:** wire `runPostCommitDispositionInsert` into `task-dispatch.ts:502`. 7/12 helper tests PASS; 5/12 integration tests RED awaiting wiring. |
+| 4 - US3 (Audit panel) | 9 | 0 | Pending |
+| 5 - US4 (Dashboard widget) | 8 | 0 | Pending |
+| 6 - US5 (Dispositions GET API) | 8 | 0 | Pending |
+| 7 - US6 (Artifact publish) | 27 | 0 | Pending — biggest US |
+| 8 - US7 (Secret detector v1) | 21 | 21 ✅ | Commit `8cb432b` — 17 rule families (incl. Vault hvs, npm tokens, GCP SA JSON), per-rule pos/neg fixtures (17×2), wild corpus (55 lines), recall ≥0.95, safe-regex CI gate, DetectorScanError fail-closed. 64/64 tests PASS. |
+| 9 - US8 (Detector enforcement) | 12 | 0 | Pending — depends on US6 |
+| 10 - US9 (Successor dispatch + read) | 20 | 0 | Pending — depends on US6 |
+| 11 - US10 (Artifact admin panel) | 20 | 0 | Pending — depends on US6 |
+| 12 - US11 (Aegis hook integration) | 8 | 0 | Pending — depends on US2 |
+| 13 - Polish + Verification | 12 | 0 | Pending — final |
+| **Total** | **169** | **47 (28%)** | Foundation + US7 fully done + US1/US2 sanitization helper. **Remaining work requires 4-6 additional autopilot sessions** to keep individual subagents within context limits. |
+
+**Handoff for resuming Phase 7:**
+1. Foundation (commit `3bbe58a`) and US7 detector (commit `8cb432b`) are durable and ready for downstream stories.
+2. US1+US2 partial (commit `5e51d7c`) needs `runPostCommitDispositionInsert` wired into `src/lib/task-dispatch.ts` AFTER the IIFE at line 499 and BEFORE `runPostCommitSuccessorSync` at line 502. The 5 RED tests in `spec-007-disposition-dispatch.test.ts` (T203, T206-T212) precisely describe expected behavior — they are the green-target.
+3. Recommended next-session order: complete US1+US2 wiring → US6 (artifact publish, biggest) → US8/US9/US10/US11 batch → US3/US4/US5 batch → Polish.
+4. Resume with: `/speckit-pro:autopilot docs/ai/specs/SPEC-007-workflow.md --from-phase implement`
 
 ## Post-Implementation Checklist
 
