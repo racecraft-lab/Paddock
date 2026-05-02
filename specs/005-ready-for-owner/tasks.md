@@ -178,15 +178,15 @@
 
 **Purpose**: Validate cross-cutting scope boundaries, run the command map, and record completion evidence without widening into downstream specs.
 
-- [ ] T071 [P] Add guardrail grep evidence for no DB migration, no task status DB CHECK, no terminal-event table, no issue timeline inference, and no operator override in `specs/005-ready-for-owner/quickstart.md`.
-- [ ] T072 [P] Add implementation evidence notes for P4-AC1 through P4-AC6 and FR-019a/SC-006 accessibility coverage in `specs/005-ready-for-owner/quickstart.md`.
-- [ ] T073 [P] Verify production GitHub sync callsites pass no `{ webhookFixture }` by checking `src/app/api/github/sync/route.ts`, `src/app/api/github/route.ts`, and `src/lib/github-sync-engine.ts`.
-- [ ] T074 Run `pnpm typecheck` from the repository root.
-- [ ] T075 Run `pnpm lint` from the repository root.
-- [ ] T076 Run `pnpm test` from the repository root.
-- [ ] T077 Run `pnpm build` from the repository root.
-- [ ] T078 Run `pnpm test:e2e` from the repository root.
-- [ ] T079 Update SPEC-005 implementation tracking in `docs/ai/specs/SPEC-005-workflow.md` after implementation evidence is complete, without marking downstream SPEC-007, SPEC-008, SPEC-009, SPEC-010, or SPEC-011 artifacts complete.
+- [X] T071 [P] Add guardrail grep evidence for no DB migration, no task status DB CHECK, no terminal-event table, no issue timeline inference, and no operator override in `specs/005-ready-for-owner/quickstart.md`.
+- [X] T072 [P] Add implementation evidence notes for P4-AC1 through P4-AC6 and FR-019a/SC-006 accessibility coverage in `specs/005-ready-for-owner/quickstart.md`.
+- [X] T073 [P] Verify production GitHub sync callsites pass no `{ webhookFixture }` by checking `src/app/api/github/sync/route.ts`, `src/app/api/github/route.ts`, and `src/lib/github-sync-engine.ts`.
+- [X] T074 Run `pnpm typecheck` from the repository root.
+- [X] T075 Run `pnpm lint` from the repository root.
+- [X] T076 Run `pnpm test` from the repository root.
+- [X] T077 Run `pnpm build` from the repository root.
+- [X] T078 Run `pnpm test:e2e` from the repository root.
+- [X] T079 Update SPEC-005 implementation tracking in `docs/ai/specs/SPEC-005-workflow.md` after implementation evidence is complete, without marking downstream SPEC-007, SPEC-008, SPEC-009, SPEC-010, or SPEC-011 artifacts complete.
 
 ---
 

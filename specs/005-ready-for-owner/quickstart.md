@@ -89,3 +89,28 @@ pnpm test:e2e
 ```
 
 Record any environment-only failure with command output and rerun evidence. Merge readiness requires no unresolved SPEC-005 transition, label, notification, or Kanban regressions.
+
+## Implementation Evidence (2026-05-02)
+
+Guardrails verified:
+
+- `git diff --name-only origin/main...HEAD src/lib/migrations.ts docs/migrations` returned no files, confirming SPEC-005 added no database migration or rollback SQL.
+- `rg "issue timeline|timeline|force-complete|force complete|operator override|terminal-event table|CREATE TABLE|ALTER TABLE|CHECK \\(status" ...` over the SPEC-005 runtime surfaces returned no matches.
+- Production GitHub sync callsites in `src/app/api/github/sync/route.ts`, `src/app/api/github/route.ts`, and `src/lib/github-sync-poller.ts` call `pullFromGitHub(project, workspaceId)` or `pullFromGitHub(project, project.workspace_id)` with no third argument.
+- `webhookFixture` appears only in the optional `pullFromGitHub` implementation/test seam and SPEC-005 quickstart guidance, not in production callsites.
+
+Acceptance coverage:
+
+- P4-AC1: T015-T023 plus `tests/e2e/ready-for-owner-kanban.spec.ts` verify flag-off direct completion, readable/visible existing `ready_for_owner` rows, and blocked new flag-off writes.
+- P4-AC2, P4-AC3, and P4-AC4b: T024-T033 verify `produces_pr=false` direct completion, `produces_pr=true` owner-gate routing, missing-linkage evidence, and no chain advancement at `ready_for_owner`.
+- P4-AC4 and P4-AC4a: T034-T049 verify explicit linked PR merge completion, closed-issue-without-merged-PR reconciliation, side-effect-free blocked `done` writes, and `github_pr_merged` chain advancement only after verified completion.
+- P4-AC5 and P4-AC6: T050-T059 verify the dedicated Kanban lane, `awaiting_owner` separation, and idempotent `mc:ready-for-owner` label mapping/application.
+- FR-019a and SC-006: T053, T058, T064, T066, T067, and T070 verify accessible lane/card/notification text, keyboard reachability, visible focus, and owner-action-required notification copy.
+
+Final verification:
+
+- `pnpm typecheck`: passed after final harness/doc updates.
+- `pnpm lint`: passed with 0 errors and 12 existing warnings.
+- `pnpm test`: passed with 169 files and 1369 tests after host-permission rerun for GPG/socket tests.
+- `pnpm build`: passed after network-enabled rerun for Next.js Google Fonts; existing Turbopack NFT trace warnings were non-fatal.
+- `pnpm test:e2e`: passed with 535 Playwright tests after rotating the E2E admin helper's synthetic login IP to avoid self-induced setup throttling while preserving the dedicated login rate-limit tests.

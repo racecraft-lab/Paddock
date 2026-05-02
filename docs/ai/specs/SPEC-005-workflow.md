@@ -412,7 +412,7 @@ Complete on 2026-05-02. Generated dependency-ordered, TDD-first tasks in `specs/
 | P4 Acceptance Criteria Coverage | 8/8: P4-AC1, P4-AC2, P4-AC3, P4-AC4, P4-AC4a, P4-AC4b, P4-AC5, P4-AC6 |
 | Live `done` Transition Paths Covered | Aegis dispatch, quality-review API, bulk task update, detail task update, GitHub sync |
 | Accessibility Coverage | Included for Ready for Owner lane and `task_ready_for_owner` notifications via FR-019a/SC-006 tasks |
-| Checklist Format | Pass: all 79 task lines use `- [ ] T###` format with story labels on user-story tasks |
+| Checklist Format | Pass at generation: all 79 task lines used SpecKit checkbox task format with story labels on user-story tasks |
 
 ## Phase 6: Analyze
 
@@ -510,37 +510,63 @@ In progress. Update after each implementation group.
 | 3 - GitHub terminal event | T034-T049 | Complete | Optional fixture seam, explicit merged PR evidence, side-effect-free blocked conflicts, reconciliation dedupe, and `github_pr_merged` chain advancement verified |
 | 4 - Labels and Kanban | T050-T059 | Complete | `mc:ready-for-owner` mapping/application, lane order, existing row visibility, localized copy, and accessibility verified |
 | 5 - Owner notifications | T060-T070 | Complete | `task_ready_for_owner` helper routing, assignee/creator fallback, reconciliation dedupe, panel rendering, delivery formatting, and notification accessibility verified |
-| 6 - Verification and docs | T071-T079 | In Progress | Full G7 evidence and status sync |
+| 6 - Verification and docs | T071-T079 | Complete | Guardrail evidence, acceptance coverage, full verification matrix, status sync, and branch push evidence recorded |
+
+---
+
+### G7 Implementation Evidence
+
+G7 passed on 2026-05-02. All 79 generated tasks are checked in `specs/005-ready-for-owner/tasks.md`.
+
+Guardrail evidence:
+
+- `git diff --name-only origin/main...HEAD src/lib/migrations.ts docs/migrations` returned no files.
+- Guardrail grep for DB migration/status CHECK/terminal-event table, issue timeline inference, force-complete/operator override wording, and adjacent scope drift returned no matches across SPEC-005 runtime surfaces.
+- Production `pullFromGitHub` callsites in `src/app/api/github/sync/route.ts`, `src/app/api/github/route.ts`, and `src/lib/github-sync-poller.ts` pass no `{ webhookFixture }`; fixture usage remains test-only.
+
+Acceptance evidence:
+
+- P4-AC1 through P4-AC6 are covered by focused Vitest and Playwright suites recorded in `specs/005-ready-for-owner/quickstart.md`.
+- FR-019a and SC-006 are covered by lane, card, notification panel, delivery-formatting, and keyboard/focus assertions.
+- SPEC-005 did not add migrations, DB-level task status CHECKs, terminal-event tables, issue timeline inference, or operator override/force-complete policy.
+
+Final command evidence:
+
+- `pnpm typecheck`: passed.
+- `pnpm lint`: passed with 0 errors and 12 existing warnings.
+- `pnpm test`: passed with 169 files and 1369 tests after host-permission rerun for GPG/socket tests.
+- `pnpm build`: passed after network-enabled rerun for Next.js Google Fonts; existing Turbopack NFT trace warnings were non-fatal.
+- `pnpm test:e2e`: passed with 535 Playwright tests.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] Phase 0 status hygiene completed in branch.
-- [ ] Archive Sweep evidence is recorded and excludes `SPEC-005`.
-- [ ] All generated tasks are marked complete in `specs/005-ready-for-owner/tasks.md`.
-- [ ] Acceptance evidence exists for P4-AC1 through P4-AC6.
-- [ ] No database migration or DB-level status CHECK was added.
-- [ ] Existing `ready_for_owner` rows remain readable/visible with flag OFF.
-- [ ] New `ready_for_owner` writes/transitions are blocked with flag OFF.
-- [ ] `produces_pr=false` tasks still complete directly to `done`.
-- [ ] `produces_pr=true` tasks enter `ready_for_owner` after Aegis approval.
-- [ ] Non-merge attempts to move PR-producing `ready_for_owner` tasks to `done` return side-effect-free `409 Conflict`.
-- [ ] Explicit merged linked PR evidence moves `ready_for_owner -> done`.
-- [ ] Closed issue without merged linked PR leaves task in `ready_for_owner` and creates reconciliation activity/notification.
-- [ ] `advanceTaskChain` waits until verified `done`.
-- [ ] `mc:ready-for-owner` is provisioned and applied idempotently.
-- [ ] `task_ready_for_owner` notification is created, rendered, and delivered.
-- [ ] Kanban lane order places `ready_for_owner` between `quality_review` and `done`.
-- [ ] `awaiting_owner` behavior remains unchanged.
-- [ ] Production `pullFromGitHub` callsites pass no webhook fixture.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] Focused Vitest suites pass.
-- [ ] Required Playwright/UI evidence passes or is explicitly justified.
-- [ ] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-005 implementation evidence after verification.
-- [ ] `docs/rc-factory-v1-prd.md` reflects SPEC-005 completion after verification.
-- [ ] Branch is pushed for review.
+- [x] Phase 0 status hygiene completed in branch.
+- [x] Archive Sweep evidence is recorded and excludes `SPEC-005`.
+- [x] All generated tasks are marked complete in `specs/005-ready-for-owner/tasks.md`.
+- [x] Acceptance evidence exists for P4-AC1 through P4-AC6.
+- [x] No database migration or DB-level status CHECK was added.
+- [x] Existing `ready_for_owner` rows remain readable/visible with flag OFF.
+- [x] New `ready_for_owner` writes/transitions are blocked with flag OFF.
+- [x] `produces_pr=false` tasks still complete directly to `done`.
+- [x] `produces_pr=true` tasks enter `ready_for_owner` after Aegis approval.
+- [x] Non-merge attempts to move PR-producing `ready_for_owner` tasks to `done` return side-effect-free `409 Conflict`.
+- [x] Explicit merged linked PR evidence moves `ready_for_owner -> done`.
+- [x] Closed issue without merged linked PR leaves task in `ready_for_owner` and creates reconciliation activity/notification.
+- [x] `advanceTaskChain` waits until verified `done`.
+- [x] `mc:ready-for-owner` is provisioned and applied idempotently.
+- [x] `task_ready_for_owner` notification is created, rendered, and delivered.
+- [x] Kanban lane order places `ready_for_owner` between `quality_review` and `done`.
+- [x] `awaiting_owner` behavior remains unchanged.
+- [x] Production `pullFromGitHub` callsites pass no webhook fixture.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] Focused Vitest suites pass.
+- [x] Required Playwright/UI evidence passes or is explicitly justified.
+- [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-005 implementation evidence after verification.
+- [x] `docs/rc-factory-v1-prd.md` reflects SPEC-005 completion after verification.
+- [x] Branch is pushed for review.
 
 ---
 

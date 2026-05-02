@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, and SPEC-006 are complete on `main` (SPEC-004 merged via PR #22 as `20643d8`; SPEC-006 merged via PR #21 as `dbb6c75`). SPEC-005 setup and autopilot Phase 0 are complete in `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`; Specify is the next autopilot phase. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 — those remain gated on prior dependency-chain specs.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, and SPEC-006 are complete on `main` (SPEC-004 merged via PR #22 as `20643d8`; SPEC-006 merged via PR #21 as `dbb6c75`). SPEC-005 implementation and local G7 verification are complete on branch `005-ready-for-owner`; roadmap status remains In Progress until the implementation PR is merged. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 — those remain gated on prior dependency-chain specs.
 
 ## Feature Flag Resolution Policy
 
@@ -210,7 +210,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 ### SPEC-005: ready_for_owner State and Two-Step Terminal Event
 
 - **Status:** In Progress
-- **Branch status:** Setup and autopilot Phase 0 completed in worktree `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`; Design Concept and workflow generated for autopilot; merged-state tracking for SPEC-004/SPEC-006/autopilot state repaired before SPEC-005 Specify.
+- **Branch status:** Implementation and local G7 verification complete in worktree `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`; status remains In Progress until the implementation PR is merged to `main`.
 - **Priority:** P1
 - **Branch short name:** `ready-for-owner`
 - **Dependencies:** SPEC-002, SPEC-002A, SPEC-004
@@ -222,6 +222,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** new helper `src/lib/task-status.ts`; ready-for-owner notifications stay on existing `src/lib/db.ts`, panel, and delivery callsites.
 - **Autopilot notes:** Non-PR-producing templates must continue to complete directly to `done`. `produces_pr=true` tasks must not become `done` until linked PR merge is observed.
 - **Definition of done:** Phase 4 deliverables are implemented, P4 acceptance criteria pass for flag OFF, non-PR templates, PR-producing templates, merged PR transition, closed-issue reconciliation, Kanban rendering, and GitHub label sync.
+- **Implementation evidence:** Local G7 passed on 2026-05-02 with all 79 generated tasks checked. Evidence includes `ready_for_owner` application-level vocabulary, shared terminal transition guard, flag-off write blocking/read visibility, Aegis and quality-review owner-gate routing, side-effect-free blocked non-merge `done` attempts, explicit linked PR merge completion through `pullFromGitHub`, closed-issue reconciliation activity/notification dedupe, `mc:ready-for-owner` label provisioning/application, dedicated Kanban lane between `quality_review` and `done`, owner-action-required notifications, and accessibility coverage for lane/card/notification keyboard and focus behavior. Final verification passed: `pnpm typecheck`; `pnpm lint` with 0 errors and 12 existing warnings; `pnpm test` with 169 files / 1369 tests after host-permission rerun for GPG/socket tests; `pnpm build` after network-enabled rerun for Next.js Google Fonts with non-fatal existing Turbopack NFT trace warnings; and `pnpm test:e2e` with 535 Playwright tests. Guardrails confirmed no SPEC-005 database migration, DB-level task status CHECK, terminal-event table, issue timeline inference, operator override, or production `webhookFixture` callsite.
 
 ### SPEC-006: Area-Label GitHub Sync
 
