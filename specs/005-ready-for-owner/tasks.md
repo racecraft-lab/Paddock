@@ -71,19 +71,19 @@
 
 ### Tests for User Story 2
 
-- [ ] T024 [P] [US2] Add failing red tests for flag ON with `produces_pr=false` direct Aegis and quality-review completion in `src/lib/__tests__/task-dispatch.test.ts` and `src/app/api/quality-review/__tests__/route.test.ts`.
-- [ ] T025 [P] [US2] Add failing red tests for flag ON with `produces_pr=true` routing Aegis and quality-review approval to `ready_for_owner` in `src/lib/__tests__/task-dispatch.test.ts` and `src/app/api/quality-review/__tests__/route.test.ts`.
-- [ ] T026 [P] [US2] Add failing red tests for missing explicit PR linkage creating ready-for-owner activity and notification without completing the task in `src/lib/__tests__/task-dispatch.test.ts`.
-- [ ] T027 [P] [US2] Add failing red tests proving `advanceTaskChain` is not called when approval moves a task to `ready_for_owner` in `src/lib/__tests__/task-dispatch.test.ts`.
+- [X] T024 [P] [US2] Add failing red tests for flag ON with `produces_pr=false` direct Aegis and quality-review completion in `src/lib/__tests__/task-dispatch.test.ts` and `src/app/api/quality-review/__tests__/route.test.ts`.
+- [X] T025 [P] [US2] Add failing red tests for flag ON with `produces_pr=true` routing Aegis and quality-review approval to `ready_for_owner` in `src/lib/__tests__/task-dispatch.test.ts` and `src/app/api/quality-review/__tests__/route.test.ts`.
+- [X] T026 [P] [US2] Add failing red tests for missing explicit PR linkage creating ready-for-owner activity and notification without completing the task in `src/lib/__tests__/task-dispatch.test.ts`.
+- [X] T027 [P] [US2] Add failing red tests proving `advanceTaskChain` is not called when approval moves a task to `ready_for_owner` in `src/lib/__tests__/task-dispatch.test.ts`.
 
 ### Implementation for User Story 2
 
-- [ ] T028 [US2] Update `src/lib/task-dispatch.ts` to load workflow template `produces_pr` and `external_terminal_event` for reviewable tasks before approved transitions.
-- [ ] T029 [US2] Update `src/lib/task-dispatch.ts` to route approved PR-producing tasks to `ready_for_owner` when the workspace flag is ON and leave non-PR tasks on the existing `done` path.
-- [ ] T030 [US2] Update `src/app/api/quality-review/route.ts` to use the same guard outcome for approved reviews, including `ready_for_owner` routing and direct `done` completion.
-- [ ] T031 [US2] Add missing PR linkage activity and `task_ready_for_owner` notification creation in `src/lib/task-dispatch.ts` for PR-producing tasks that enter `ready_for_owner` without `github_repo` or `github_pr_number`.
-- [ ] T032 [US2] Refactor ready-for-owner entry side effects in `src/lib/task-dispatch.ts` and `src/app/api/quality-review/route.ts` so chain advancement, notification, label sync, and activity ordering are deterministic.
-- [ ] T033 [US2] Run `pnpm test src/lib/__tests__/task-dispatch.test.ts src/app/api/quality-review/__tests__/route.test.ts`.
+- [X] T028 [US2] Update `src/lib/task-dispatch.ts` to load workflow template `produces_pr` and `external_terminal_event` for reviewable tasks before approved transitions.
+- [X] T029 [US2] Update `src/lib/task-dispatch.ts` to route approved PR-producing tasks to `ready_for_owner` when the workspace flag is ON and leave non-PR tasks on the existing `done` path.
+- [X] T030 [US2] Update `src/app/api/quality-review/route.ts` to use the same guard outcome for approved reviews, including `ready_for_owner` routing and direct `done` completion.
+- [X] T031 [US2] Add missing PR linkage activity and `task_ready_for_owner` notification creation in `src/lib/task-dispatch.ts` for PR-producing tasks that enter `ready_for_owner` without `github_repo` or `github_pr_number`.
+- [X] T032 [US2] Refactor ready-for-owner entry side effects in `src/lib/task-dispatch.ts` and `src/app/api/quality-review/route.ts` so chain advancement, notification, label sync, and activity ordering are deterministic.
+- [X] T033 [US2] Run `pnpm test src/lib/__tests__/task-dispatch.test.ts src/app/api/quality-review/__tests__/route.test.ts`.
 
 **Checkpoint**: P4-AC2 and P4-AC3 are covered and independently testable.
 

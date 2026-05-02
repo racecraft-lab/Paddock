@@ -25,7 +25,14 @@ function createDb(): Database.Database {
     CREATE TABLE tasks (
       id INTEGER PRIMARY KEY,
       title TEXT NOT NULL,
+      description TEXT,
       status TEXT NOT NULL,
+      priority TEXT NOT NULL DEFAULT 'medium',
+      project_id INTEGER,
+      assigned_to TEXT,
+      created_by TEXT NOT NULL DEFAULT 'creator',
+      github_repo TEXT,
+      github_pr_number INTEGER,
       workspace_id INTEGER NOT NULL,
       workflow_template_id INTEGER,
       updated_at INTEGER DEFAULT 1
@@ -49,6 +56,16 @@ function createDb(): Database.Database {
       data TEXT,
       workspace_id INTEGER
     );
+    CREATE TABLE notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipient TEXT,
+      type TEXT,
+      title TEXT,
+      message TEXT,
+      source_type TEXT,
+      source_id INTEGER,
+      workspace_id INTEGER
+    );
   `)
   db.prepare('INSERT INTO workspaces (id, slug, feature_flags) VALUES (1, ?, ?)').run('alpha', JSON.stringify({
     FEATURE_TASK_PIPELINES: true,
@@ -56,11 +73,12 @@ function createDb(): Database.Database {
   }))
   db.prepare(`
     INSERT INTO workflow_templates (id, workspace_id, slug, produces_pr, external_terminal_event)
-    VALUES (10, 1, 'pr-template', 1, 'github_pr_merged')
+    VALUES (10, 1, 'pr-template', 1, 'github_pr_merged'),
+           (11, 1, 'non-pr-template', 0, NULL)
   `).run()
   db.prepare(`
-    INSERT INTO tasks (id, title, status, workspace_id, workflow_template_id)
-    VALUES (100, 'Review me', 'quality_review', 1, 10)
+    INSERT INTO tasks (id, title, status, assigned_to, created_by, workspace_id, workflow_template_id)
+    VALUES (100, 'Review me', 'quality_review', 'builder', 'creator', 1, 10)
   `).run()
   return db
 }
@@ -81,6 +99,12 @@ async function importRouteWithDb(
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(type, entityType, entityId, actor, description, JSON.stringify(data), workspaceId)
       }),
+      createNotification: vi.fn((recipient, type, title, message, sourceType, sourceId, workspaceId) => {
+        db.prepare(`
+          INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(recipient, type, title, message, sourceType, sourceId, workspaceId)
+      }),
     },
   }))
   vi.doMock('@/lib/auth', () => ({ requireRole: vi.fn(() => ({ user: { username: 'operator', role: 'operator' } })) }))
@@ -92,6 +116,7 @@ async function importRouteWithDb(
   }))
   vi.doMock('@/lib/event-bus', () => ({ eventBus: { broadcast: vi.fn() } }))
   vi.doMock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }))
+  vi.doMock('@/lib/github-sync-engine', () => ({ syncTaskOutbound: vi.fn() }))
   vi.doMock('@/lib/task-dispatch', () => ({ advanceTaskChain }))
   vi.doMock('@/lib/task-status', () => ({
     ...actualTaskStatus,
@@ -142,5 +167,82 @@ describe('POST /api/quality-review ready_for_owner flag-off behavior', () => {
     })
     expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_ready_for_owner'").get())
       .toEqual({ count: 0 })
+  })
+
+  it('keeps flag-on non-PR approval on the direct done path', async () => {
+    const db = createDb()
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
+      .run(JSON.stringify({ FEATURE_TASK_PIPELINES: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    db.prepare(`
+      INSERT INTO tasks (id, title, status, assigned_to, created_by, workspace_id, workflow_template_id)
+      VALUES (101, 'Non-PR review', 'quality_review', 'builder', 'creator', 1, 11)
+    `).run()
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { route, advanceTaskChain } = await importRouteWithDb(db, resolveTransitionSpy)
+
+    const response = await route.POST(new NextRequest('http://localhost/api/quality-review', {
+      method: 'POST',
+      body: JSON.stringify({
+        taskId: 101,
+        reviewer: 'operator',
+        status: 'approved',
+        notes: 'Looks good',
+      }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.success).toBe(true)
+    expect(db.prepare('SELECT status FROM tasks WHERE id = 101').get()).toEqual({ status: 'done' })
+    expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 101,
+      currentStatus: 'quality_review',
+      requestedStatus: 'done',
+      producesPr: false,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'approval',
+    }))
+    expect(advanceTaskChain).toHaveBeenCalledWith({
+      taskId: 101,
+      workspaceId: 1,
+      previousStatus: 'quality_review',
+      trigger: 'quality_review',
+    })
+  })
+
+  it('routes flag-on PR-producing approval to ready_for_owner without chain advancement', async () => {
+    const db = createDb()
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
+      .run(JSON.stringify({ FEATURE_TASK_PIPELINES: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { route, advanceTaskChain } = await importRouteWithDb(db, resolveTransitionSpy)
+
+    const response = await route.POST(new NextRequest('http://localhost/api/quality-review', {
+      method: 'POST',
+      body: JSON.stringify({
+        taskId: 100,
+        reviewer: 'operator',
+        status: 'approved',
+        notes: 'Looks good',
+      }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.success).toBe(true)
+    expect(db.prepare('SELECT status FROM tasks WHERE id = 100').get()).toEqual({ status: 'ready_for_owner' })
+    expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 100,
+      currentStatus: 'quality_review',
+      requestedStatus: 'done',
+      producesPr: true,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'approval',
+    }))
+    expect(advanceTaskChain).not.toHaveBeenCalled()
   })
 })

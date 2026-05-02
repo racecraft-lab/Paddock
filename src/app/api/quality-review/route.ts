@@ -8,7 +8,56 @@ import { eventBus } from '@/lib/event-bus'
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces'
 import { advanceTaskChain } from '@/lib/task-dispatch'
 import { resolveFlag } from '@/lib/feature-flags'
-import { resolveTaskTerminalTransition } from '@/lib/task-status'
+import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition } from '@/lib/task-status'
+import { syncTaskOutbound } from '@/lib/github-sync-engine'
+
+function readyForOwnerRecipient(task: { assigned_to?: string | null; created_by?: string | null }): string | null {
+  return task.assigned_to?.trim() || task.created_by?.trim() || null
+}
+
+function recordReadyForOwnerEntrySideEffects(
+  task: {
+    id: number
+    title: string
+    workspace_id: number
+    assigned_to?: string | null
+    created_by?: string | null
+    github_repo?: string | null
+    github_pr_number?: number | null
+  },
+  actor: string,
+): void {
+  if (task.github_repo && task.github_pr_number) return
+
+  const data = {
+    task_id: task.id,
+    workspace_id: task.workspace_id,
+    reason: 'missing_explicit_pr_linkage',
+    github_repo: task.github_repo ?? null,
+    github_pr_number: task.github_pr_number ?? null,
+  }
+  db_helpers.logActivity(
+    'task_ready_for_owner',
+    'task',
+    task.id,
+    actor,
+    `Task ready for owner merge is missing explicit PR linkage: ${task.title}`,
+    data,
+    task.workspace_id,
+  )
+
+  const recipient = readyForOwnerRecipient(task)
+  if (!recipient) return
+  db_helpers.createNotification(
+    recipient,
+    'task_ready_for_owner',
+    'Ready for owner merge',
+    `Owner action required: ${task.title} is ready for owner merge but needs explicit GitHub PR linkage.`,
+    'task',
+    task.id,
+    task.workspace_id,
+  )
+}
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
@@ -95,7 +144,11 @@ export async function POST(request: NextRequest) {
 
     const task = db
       .prepare(`
-        SELECT t.id, t.title, t.status, COALESCE(wt.produces_pr, 0) AS produces_pr, w.feature_flags
+        SELECT t.id, t.title, t.description, t.status, t.priority, t.project_id, t.workspace_id,
+               t.assigned_to, t.created_by, t.github_repo, t.github_pr_number,
+               COALESCE(wt.produces_pr, 0) AS produces_pr,
+               wt.external_terminal_event,
+               w.feature_flags
         FROM tasks t
         LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
         LEFT JOIN workspaces w ON w.id = t.workspace_id
@@ -111,7 +164,7 @@ export async function POST(request: NextRequest) {
           taskId,
           currentStatus: task.status,
           requestedStatus: 'done',
-          producesPr: task.produces_pr === 1,
+          producesPr: task.produces_pr === 1 && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT,
           twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
             workspaceFlags: task.feature_flags,
           }),
@@ -142,6 +195,10 @@ export async function POST(request: NextRequest) {
       const nextStatus = approvedTransition?.ok ? approvedTransition.status : 'done'
       db.prepare('UPDATE tasks SET status = ?, updated_at = unixepoch() WHERE id = ? AND workspace_id = ?')
         .run(nextStatus, taskId, workspaceId)
+      syncTaskOutbound({ ...task, status: nextStatus }, workspaceId)
+      if (nextStatus === READY_FOR_OWNER_STATUS) {
+        recordReadyForOwnerEntrySideEffects(task, reviewer)
+      }
       if (nextStatus === 'done') {
         advanceTaskChain({
           taskId,

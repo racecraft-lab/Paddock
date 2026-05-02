@@ -100,11 +100,14 @@ function createDispatchDb(): Database.Database {
       priority TEXT NOT NULL,
       resolution TEXT,
       assigned_to TEXT,
+      created_by TEXT NOT NULL DEFAULT 'creator',
       workspace_id INTEGER NOT NULL,
       project_id INTEGER,
       project_ticket_no INTEGER,
       workflow_template_id INTEGER,
       workflow_template_slug TEXT,
+      github_repo TEXT,
+      github_pr_number INTEGER,
       dispatch_attempts INTEGER NOT NULL DEFAULT 0,
       error_message TEXT,
       updated_at INTEGER NOT NULL DEFAULT 1
@@ -149,6 +152,17 @@ function createDispatchDb(): Database.Database {
       workspace_id INTEGER,
       created_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
+    CREATE TABLE notifications (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      recipient TEXT NOT NULL,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      source_type TEXT,
+      source_id INTEGER,
+      workspace_id INTEGER,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
   `)
   db.prepare('INSERT INTO workspaces (id, slug, feature_flags) VALUES (?, ?, ?)').run(1, 'alpha', '{"FEATURE_GLOBAL_AEGIS":true}')
   db.prepare('INSERT INTO projects (id, workspace_id, ticket_prefix) VALUES (?, ?, ?)').run(1, 1, 'ALP')
@@ -174,6 +188,12 @@ async function importTaskDispatchWithDb(
           INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id)
           VALUES (?, ?, ?, ?, ?, ?, ?)
         `).run(type, entityType, entityId, actor, description, JSON.stringify(data), workspaceId)
+      }),
+      createNotification: vi.fn((recipient, type, title, message, sourceType, sourceId, workspaceId) => {
+        db.prepare(`
+          INSERT INTO notifications (recipient, type, title, message, source_type, source_id, workspace_id)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `).run(recipient, type, title, message, sourceType, sourceId, workspaceId)
       }),
     },
   }))
@@ -300,5 +320,155 @@ describe('runAegisReviews resolver integration', () => {
       twoStepTerminalEnabled: false,
       transitionIntent: 'approval',
     }))
+  })
+
+  it('keeps flag-on non-PR Aegis approvals on the direct done path', async () => {
+    dispatchDb = createDispatchDb()
+    dispatchDb.prepare(`
+      UPDATE workspaces
+      SET feature_flags = ?
+      WHERE id = 1
+    `).run(JSON.stringify({ FEATURE_GLOBAL_AEGIS: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    dispatchDb.prepare(`
+      INSERT INTO agents (id, name, workspace_id, scope, config)
+      VALUES (10, 'Aegis', 1, 'workspace', '{"openclawId":"aegis"}')
+    `).run()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug)
+      VALUES (210, 'Non-PR task', 'No PR required', 'review', 'high', 'Done', 'builder', 1, 1, 22, 2, 'non-pr-template')
+    `).run()
+    const runOpenClaw = vi.fn().mockResolvedValue({
+      stdout: JSON.stringify({ payloads: [{ text: 'VERDICT: APPROVED\nNOTES: pass' }] }),
+    })
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { runAegisReviews } = await importTaskDispatchWithDb(dispatchDb, runOpenClaw, resolveTransitionSpy)
+
+    const result = await runAegisReviews()
+
+    expect(result.ok).toBe(true)
+    expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 210').get()).toEqual({ status: 'done' })
+    expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 210,
+      currentStatus: 'quality_review',
+      requestedStatus: 'done',
+      producesPr: false,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'approval',
+    }))
+  })
+
+  it('routes flag-on PR-producing Aegis approvals to ready_for_owner', async () => {
+    dispatchDb = createDispatchDb()
+    dispatchDb.prepare(`
+      UPDATE workspaces
+      SET feature_flags = ?
+      WHERE id = 1
+    `).run(JSON.stringify({ FEATURE_GLOBAL_AEGIS: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    dispatchDb.prepare(`
+      INSERT INTO agents (id, name, workspace_id, scope, config)
+      VALUES (10, 'Aegis', 1, 'workspace', '{"openclawId":"aegis"}')
+    `).run()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug, github_repo, github_pr_number)
+      VALUES (220, 'PR task', 'PR required', 'review', 'high', 'Done', 'builder', 1, 1, 23, 1, 'pr-template', 'owner/repo', 7)
+    `).run()
+    const runOpenClaw = vi.fn().mockResolvedValue({
+      stdout: JSON.stringify({ payloads: [{ text: 'VERDICT: APPROVED\nNOTES: pass' }] }),
+    })
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { runAegisReviews } = await importTaskDispatchWithDb(dispatchDb, runOpenClaw, resolveTransitionSpy)
+
+    const result = await runAegisReviews()
+
+    expect(result.ok).toBe(true)
+    expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 220').get()).toEqual({ status: 'ready_for_owner' })
+    expect(resolveTransitionSpy).toHaveBeenCalledWith(expect.objectContaining({
+      taskId: 220,
+      currentStatus: 'quality_review',
+      requestedStatus: 'done',
+      producesPr: true,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'approval',
+    }))
+  })
+
+  it('records missing explicit PR linkage when flag-on PR-producing Aegis approval enters ready_for_owner', async () => {
+    dispatchDb = createDispatchDb()
+    dispatchDb.prepare(`
+      UPDATE workspaces
+      SET feature_flags = ?
+      WHERE id = 1
+    `).run(JSON.stringify({ FEATURE_GLOBAL_AEGIS: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    dispatchDb.prepare(`
+      INSERT INTO agents (id, name, workspace_id, scope, config)
+      VALUES (10, 'Aegis', 1, 'workspace', '{"openclawId":"aegis"}')
+    `).run()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, created_by, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug)
+      VALUES (230, 'PR task without link', 'PR required', 'review', 'high', 'Done', 'builder', 'creator', 1, 1, 24, 1, 'pr-template')
+    `).run()
+    const runOpenClaw = vi.fn().mockResolvedValue({
+      stdout: JSON.stringify({ payloads: [{ text: 'VERDICT: APPROVED\nNOTES: pass' }] }),
+    })
+    const { runAegisReviews } = await importTaskDispatchWithDb(dispatchDb, runOpenClaw)
+
+    const result = await runAegisReviews()
+
+    expect(result.ok).toBe(true)
+    expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 230').get()).toEqual({ status: 'ready_for_owner' })
+    expect(dispatchDb.prepare("SELECT type, actor, data FROM activities WHERE type = 'task_ready_for_owner'").all())
+      .toEqual([
+        expect.objectContaining({
+          type: 'task_ready_for_owner',
+          actor: 'aegis',
+          data: JSON.stringify({
+            task_id: 230,
+            workspace_id: 1,
+            reason: 'missing_explicit_pr_linkage',
+            github_repo: null,
+            github_pr_number: null,
+          }),
+        }),
+      ])
+    expect(dispatchDb.prepare('SELECT recipient, type, title, message, source_type, source_id FROM notifications').all())
+      .toEqual([
+        {
+          recipient: 'builder',
+          type: 'task_ready_for_owner',
+          title: 'Ready for owner merge',
+          message: expect.stringContaining('Owner action required'),
+          source_type: 'task',
+          source_id: 230,
+        },
+      ])
+  })
+
+  it('does not advance task chains when flag-on PR-producing Aegis approval enters ready_for_owner', async () => {
+    dispatchDb = createDispatchDb()
+    dispatchDb.prepare(`
+      UPDATE workspaces
+      SET feature_flags = ?
+      WHERE id = 1
+    `).run(JSON.stringify({ FEATURE_GLOBAL_AEGIS: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    dispatchDb.prepare(`
+      INSERT INTO agents (id, name, workspace_id, scope, config)
+      VALUES (10, 'Aegis', 1, 'workspace', '{"openclawId":"aegis"}')
+    `).run()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug, github_repo, github_pr_number)
+      VALUES (240, 'PR task', 'PR required', 'review', 'high', 'Done', 'builder', 1, 1, 25, 1, 'pr-template', 'owner/repo', 8)
+    `).run()
+    const runOpenClaw = vi.fn().mockResolvedValue({
+      stdout: JSON.stringify({ payloads: [{ text: 'VERDICT: APPROVED\nNOTES: pass' }] }),
+    })
+    const { runAegisReviews } = await importTaskDispatchWithDb(dispatchDb, runOpenClaw)
+
+    await runAegisReviews()
+
+    expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 240').get()).toEqual({ status: 'ready_for_owner' })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_pipeline_advancement'").get())
+      .toEqual({ count: 0 })
   })
 })

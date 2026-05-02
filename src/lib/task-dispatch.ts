@@ -8,7 +8,7 @@ import { syncTaskOutbound } from './github-sync-engine'
 import { getAegis } from './aegis'
 import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
 import { resolveFlag } from './feature-flags'
-import { resolveTaskTerminalTransition, type TaskStatus } from './task-status'
+import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition, type TaskStatus } from './task-status'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
 import { createHash } from 'crypto'
@@ -1030,7 +1030,11 @@ interface ReviewableTask {
   ticket_prefix: string | null
   project_ticket_no: number | null
   produces_pr: number | null
+  external_terminal_event: string | null
   feature_flags: string | null
+  github_repo: string | null
+  github_pr_number: number | null
+  created_by: string | null
 }
 
 function buildReviewPrompt(task: ReviewableTask): string {
@@ -1079,6 +1083,46 @@ function parseReviewVerdict(text: string): { status: 'approved' | 'rejected'; no
   return { status, notes }
 }
 
+function readyForOwnerRecipient(task: Pick<ReviewableTask, 'assigned_to' | 'created_by'>): string | null {
+  return task.assigned_to?.trim() || task.created_by?.trim() || null
+}
+
+function recordReadyForOwnerEntrySideEffects(
+  task: Pick<ReviewableTask, 'id' | 'title' | 'workspace_id' | 'assigned_to' | 'created_by' | 'github_repo' | 'github_pr_number'>,
+  actor: string,
+): void {
+  if (task.github_repo && task.github_pr_number) return
+
+  const data = {
+    task_id: task.id,
+    workspace_id: task.workspace_id,
+    reason: 'missing_explicit_pr_linkage',
+    github_repo: task.github_repo ?? null,
+    github_pr_number: task.github_pr_number ?? null,
+  }
+  db_helpers.logActivity(
+    'task_ready_for_owner',
+    'task',
+    task.id,
+    actor,
+    `Task ready for owner merge is missing explicit PR linkage: ${task.title}`,
+    data,
+    task.workspace_id,
+  )
+
+  const recipient = readyForOwnerRecipient(task)
+  if (!recipient) return
+  db_helpers.createNotification(
+    recipient,
+    'task_ready_for_owner',
+    'Ready for owner merge',
+    `Owner action required: ${task.title} is ready for owner merge but needs explicit GitHub PR linkage.`,
+    'task',
+    task.id,
+    task.workspace_id,
+  )
+}
+
 /**
  * Run Aegis quality reviews on tasks in 'review' status.
  * Uses an agent to evaluate the task resolution, then approves or rejects.
@@ -1090,6 +1134,8 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
     SELECT t.id, t.title, t.description, t.status, t.priority, t.resolution, t.assigned_to, t.workspace_id,
            t.project_id, p.ticket_prefix, t.project_ticket_no,
            COALESCE(wt.produces_pr, 0) AS produces_pr,
+           wt.external_terminal_event,
+           t.github_repo, t.github_pr_number, t.created_by,
            w.feature_flags
     FROM tasks t
     LEFT JOIN projects p ON p.id = t.project_id AND p.workspace_id = t.workspace_id
@@ -1180,7 +1226,7 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
           taskId: task.id,
           currentStatus: 'quality_review',
           requestedStatus: 'done',
-          producesPr: task.produces_pr === 1,
+          producesPr: task.produces_pr === 1 && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT,
           twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
             workspaceFlags: task.feature_flags,
           }),
@@ -1200,6 +1246,9 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
           previous_status: 'quality_review',
         })
         syncAndEscalateIfFailed(task, nextStatus)
+        if (nextStatus === READY_FOR_OWNER_STATUS) {
+          recordReadyForOwnerEntrySideEffects(task, 'aegis')
+        }
         if (nextStatus === 'done') {
           advanceTaskChain({
             taskId: task.id,

@@ -506,8 +506,8 @@ In progress. Update after each implementation group.
 |-------|-------|-----------|-------|
 | 0 - Status hygiene and startup | T001-T005 | Complete | Phase 0 status hygiene and Archive Sweep evidence verified; no SPEC-005 migration/CHECK/table scope found; `src/lib/task-status.ts` added to strict type/lint surfaces; pnpm lockfile confirmed |
 | 1 - Status vocabulary and validation | T006-T014 | Complete | Shared status vocabulary, transition conflict body, terminal transition guard, validation exports, store/API status unions, and focused tests complete; 47 focused tests, focused ESLint, typecheck, and diff check passed |
-| 2 - Transition guards | T015-T023 | In Progress | Flag-off rollback behavior is guarded across Aegis, quality-review, bulk updates, and detail updates; flag-on owner routing continues in T024-T033 |
-| 3 - GitHub terminal event | Pending | Pending | Explicit merged PR evidence and reconciliation |
+| 2 - Transition guards | T015-T033 | Complete | Flag-off rollback behavior, flag-on Aegis/quality-review owner routing, missing-linkage evidence, outbound sync, and no chain advancement at `ready_for_owner` verified |
+| 3 - GitHub terminal event | T034-T049 | In Progress | Explicit merged PR evidence and reconciliation |
 | 4 - Labels and notifications | Pending | Pending | `mc:ready-for-owner`, `task_ready_for_owner` |
 | 5 - Kanban and operator UX | Pending | Pending | Lane order and existing row visibility |
 | 6 - Verification and docs | Pending | Pending | Full G7 evidence and status sync |
