@@ -19,7 +19,13 @@ describe('Facility/global boundary panels', () => {
       const content = source(filePath)
       expect(content, `${filePath} must not read selected Product Line state`).not.toContain('activeProductLineScope')
       expect(content, `${filePath} must not append selected Product Line scope`).not.toContain('appendScopeToPath')
-      expect(content, `${filePath} must not set Product Line query params`).not.toMatch(/workspace_id|workspace_scope/)
+      // SPEC-007 exception: the audit-trail-panel's Dispositions tab takes an
+      // EXPLICIT user-input `workspace_id` filter (FR-080). This is a manual
+      // filter, NOT auto-scoping from Product Line state — the boundary
+      // (no activeProductLineScope read, no appendScopeToPath) still holds.
+      if (filePath !== 'src/components/panels/audit-trail-panel.tsx') {
+        expect(content, `${filePath} must not set Product Line query params`).not.toMatch(/workspace_id|workspace_scope/)
+      }
     }
   })
 

@@ -27,6 +27,10 @@
     "src/lib/output-schema-validator.ts",
     "src/lib/task-create.ts",
     "src/lib/task-status.ts",
-    "src/types/safe-regex.d.ts"
+    "src/types/safe-regex.d.ts",
+    "src/lib/secret-detector.ts",
+    "src/lib/secret-detector.rules.ts",
+    "src/lib/aegis-review.ts",
+    "src/lib/task-artifacts.ts"
   ]
 }

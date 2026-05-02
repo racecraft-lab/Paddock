@@ -83,9 +83,9 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | Complete | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
 | SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
-| SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | In Progress | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
+| SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Complete | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
-| SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Pending | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
+| SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | In Progress | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Pending | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
 | SPEC-009 | 8 | Product Line A Pilot End-to-End Smoke | product-line-a-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
 | SPEC-010 | 9 | Product Line B Product-Line Onboarding | product-line-b-onboarding | Pending | P3 | SPEC-002A, SPEC-009 | — | Phase 9 |
@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, and SPEC-006 are complete on `main` (SPEC-004 merged via PR #22 as `20643d8`; SPEC-006 merged via PR #21 as `dbb6c75`). SPEC-005 implementation and local G7 verification are complete on branch `005-ready-for-owner` with PR #23 open; roadmap status remains In Progress until the implementation PR is merged. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 — those remain gated on prior dependency-chain specs.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, and SPEC-006 are complete on `main` (SPEC-004 merged via PR #22 as `20643d8`; SPEC-005 merged via PR #23 as `851571f`; SPEC-006 merged via PR #21 as `dbb6c75`). SPEC-007 implementation is in progress on branch `007-disposition-artifacts` with PR #25 open. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 -- those remain gated on prior dependency-chain specs.
 
 ## Feature Flag Resolution Policy
 
@@ -209,8 +209,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-005: ready_for_owner State and Two-Step Terminal Event
 
-- **Status:** In Progress
-- **Branch status:** Implementation and local G7 verification complete in worktree `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`; PR #23 is open against `main`; status remains In Progress until the implementation PR is merged to `main`.
+- **Status:** Complete
+- **Branch status:** PR #23 (https://github.com/racecraft-lab/mission-control/pull/23) merged to `main` on 2026-05-02 as `851571f`. Implementation and local G7 verification completed in worktree `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`.
 - **Priority:** P1
 - **Branch short name:** `ready-for-owner`
 - **Dependencies:** SPEC-002, SPEC-002A, SPEC-004
@@ -242,7 +242,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-007: Disposition Logging and Task Artifact Store
 
-- **Status:** Pending
+- **Status:** In Progress (worktree `.worktrees/007-disposition-artifacts`, branch `007-disposition-artifacts`)
 - **Priority:** P2
 - **Branch short name:** `disposition-artifacts`
 - **Dependencies:** SPEC-002, SPEC-002A, SPEC-004

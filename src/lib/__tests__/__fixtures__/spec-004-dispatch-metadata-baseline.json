@@ -1,0 +1,31 @@
+{
+  "spec": "007-disposition-artifacts",
+  "captured_at": "2026-05-01",
+  "purpose": "Baseline of the SPEC-004 successor `metadata` JSON shape captured from src/lib/task-dispatch.ts (advanceTaskChain, post-commit successor creation). FR-110 mandates `fs.existsSync` precondition for SPEC-007 flag-OFF parity tests; FR-043 asserts no extra keys appear under flag OFF; flag ON adds the additional `input_artifacts` key.",
+  "source": "src/lib/task-dispatch.ts (createPipelineSuccessor — `metadata` block built around line 470)",
+  "shape": {
+    "task_pipeline": {
+      "parent_task_id": "number",
+      "root_task_id": "number",
+      "chain_id": "string",
+      "chain_stage": "number",
+      "source_template_slug": "string",
+      "target_template_slug": "string",
+      "matched_rule_index": "number"
+    }
+  },
+  "required_top_level_keys": ["task_pipeline"],
+  "forbidden_under_flag_off": ["input_artifacts"],
+  "added_under_flag_on": {
+    "input_artifacts": "Array<{ id: number, type: string, sha256: string, preview_text: string, storage_kind: 'inline_json' | 'inline_markdown' | 'file' | 'external_uri', byte_size: number }>"
+  },
+  "task_pipeline_required_keys": [
+    "parent_task_id",
+    "root_task_id",
+    "chain_id",
+    "chain_stage",
+    "source_template_slug",
+    "target_template_slug",
+    "matched_rule_index"
+  ]
+}
