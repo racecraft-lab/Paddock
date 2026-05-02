@@ -12,6 +12,7 @@ const specStrictFiles = [
   'src/lib/routing-rule-evaluator.ts',
   'src/lib/output-schema-validator.ts',
   'src/lib/task-create.ts',
+  'src/lib/task-status.ts',
 ]
 
 const config = tseslint.config(

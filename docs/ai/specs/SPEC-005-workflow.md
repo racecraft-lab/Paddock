@@ -500,11 +500,11 @@ Expected implementation surfaces from roadmap and codebase scan:
 
 ### Implementation Progress
 
-Pending. Fill in during execution.
+In progress. Update after each implementation group.
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 0 - Status hygiene and startup | Pending | Pending | Archive Sweep and stale tracking repair |
+| 0 - Status hygiene and startup | T001-T005 | Complete | Phase 0 status hygiene and Archive Sweep evidence verified; no SPEC-005 migration/CHECK/table scope found; `src/lib/task-status.ts` added to strict type/lint surfaces; pnpm lockfile confirmed |
 | 1 - Status vocabulary and validation | Pending | Pending | Application-level `ready_for_owner`; no DB migration |
 | 2 - Transition guards | Pending | Pending | Aegis/API/bulk/detail guarded paths |
 | 3 - GitHub terminal event | Pending | Pending | Explicit merged PR evidence and reconciliation |

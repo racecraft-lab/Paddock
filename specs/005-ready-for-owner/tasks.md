@@ -10,11 +10,11 @@
 
 **Purpose**: Confirm the pre-SPEC status hygiene was already completed and prepare strict project surfaces for SPEC-005 implementation.
 
-- [ ] T001 Verify Phase 0 status hygiene and Archive Sweep evidence are already recorded in `docs/ai/specs/SPEC-005-workflow.md` and `docs/ai/specs/autopilot-state.json`, with no new status-hygiene edits required before runtime work.
-- [ ] T002 Verify no SPEC-005 migration, task status DB CHECK, enum constraint, or terminal-event table exists by checking `src/lib/migrations.ts`, `docs/migrations`, and `specs/005-ready-for-owner/`.
-- [ ] T003 [P] Add planned strict-scope inclusion for `src/lib/task-status.ts` in `tsconfig.spec-strict.json`.
-- [ ] T004 [P] Add planned lint inclusion for `src/lib/task-status.ts` in `eslint.config.mjs`.
-- [ ] T005 [P] Confirm package-manager command map uses `pnpm` by checking `pnpm-lock.yaml` before running SPEC-005 build, lint, typecheck, and test commands.
+- [X] T001 Verify Phase 0 status hygiene and Archive Sweep evidence are already recorded in `docs/ai/specs/SPEC-005-workflow.md` and `docs/ai/specs/autopilot-state.json`, with no new status-hygiene edits required before runtime work.
+- [X] T002 Verify no SPEC-005 migration, task status DB CHECK, enum constraint, or terminal-event table exists by checking `src/lib/migrations.ts`, `docs/migrations`, and `specs/005-ready-for-owner/`.
+- [X] T003 [P] Add planned strict-scope inclusion for `src/lib/task-status.ts` in `tsconfig.spec-strict.json`.
+- [X] T004 [P] Add planned lint inclusion for `src/lib/task-status.ts` in `eslint.config.mjs`.
+- [X] T005 [P] Confirm package-manager command map uses `pnpm` by checking `pnpm-lock.yaml` before running SPEC-005 build, lint, typecheck, and test commands.
 
 ---
 
@@ -279,4 +279,3 @@ pnpm test
 pnpm build
 pnpm test:e2e
 ```
-
