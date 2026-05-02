@@ -28,7 +28,7 @@ Mission Control remains the source of truth. The existing `tenant → workspace 
 
 A new **task pipeline engine** auto-chains tasks based on declarative routing rules evaluated against structured agent output. **Aegis is refactored** from per-workspace resolution to facility-wide via a new `scope='global'` flag on agents. **GitHub sync routes issues** via a new `area:*` label family to the correct department project within a product line's monorepo. **Resource governance** extends the existing Cost Tracker into enforceable WIP limits, blackout/degraded windows, and budget gates before autonomous work is started. Facility electricity / infrastructure usage and cost from the OpenClaw health cron are part of the same governance surface, but only through a fork-only optional adapter.
 
-As of 2026-05-02, SPEC-004 is merged on PR #22 as `20643d8` and SPEC-006 is merged on PR #21 as `dbb6c75`. SPEC-005 implementation and local G7 verification are complete on branch `005-ready-for-owner`; it remains pending merge to `main`.
+As of 2026-05-02, SPEC-004 is merged on PR #22 as `20643d8` and SPEC-006 is merged on PR #21 as `dbb6c75`. SPEC-005 implementation and local G7 verification are complete on branch `005-ready-for-owner`, with PR #23 open; it remains pending merge to `main`.
 
 ## Tech Stack
 
@@ -533,7 +533,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 1A | Spec archive + evidence retention | Complete | Yes — process/tooling only | `upstream-safe` |
 | 2 | Aegis refactor (facility singleton) | Complete | Yes — shim preserves legacy | `upstream-divergent` |
 | 3 | Task-chain engine + declarative routing over `workflow_templates` | Complete | Yes — null-default fields | `upstream-divergent` |
-| 4 | `ready_for_owner` state + two-step terminal | Implemented on branch; PR pending | Yes — per-template opt-in | `upstream-divergent` |
+| 4 | `ready_for_owner` state + two-step terminal | Implemented on branch; PR #23 open | Yes — per-template opt-in | `upstream-divergent` |
 | 5 | Area labels + GitHub sync updates | Complete | Yes — fallback to `area:triage` | `upstream-safe` |
 | 6 | Disposition logging + artifact store + audit/admin panels | Pending | Yes — purely additive | `upstream-divergent` |
 | 7 | Resource governance + Cost Tracker enforcement | Pending | Yes — flag-off default | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` |
