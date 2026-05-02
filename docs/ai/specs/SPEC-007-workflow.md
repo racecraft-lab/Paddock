@@ -115,7 +115,30 @@ Roadmap lines 330–334 already use the M54/M57/M58 form correctly. Both forms (
 
 **Status hygiene reminder (deferred):** Roadmap line 87 still lists SPEC-006 as "Implemented (PR open)" despite PR #21 being merged (commit `dbb6c75`); PR #22 (SPEC-004) was also merged (commit `20643d8`); `docs/ai/specs/autopilot-state.json` still describes SPEC-006 as Phase 7 partial. **SPEC-007 does not carry these fixes — they are owned by SPEC-005 (Design Concept Q28).**
 
-Archive Sweep results recorded below once the sweep agent completes.
+**Archive Sweep Results:**
+
+- Mode: `sweep` / apply (feature branch `007-disposition-artifacts` — SPEC-002A 1.9.1 policy permits cleanup)
+- `safeToApplyCleanup`: `true`
+- Excluded current spec: `specs/007-disposition-artifacts` (no active dir; trivially excluded)
+- Already archived (no-op): SPEC-001, SPEC-002, SPEC-002A, SPEC-003
+- **Newly archived this run:**
+  - **SPEC-004** — PR #22 merged 2026-05-01 (`20643d8`), 88/88 tasks, all 8 cleanup gates passed
+  - **SPEC-006** — PR #21 merged 2026-05-01 (`dbb6c75`), Implement Complete in roadmap + workflow file, all 8 cleanup gates passed (`tasks.md` had stale 22/88 ticked checkboxes at merge — recorded for traceability, not a regression)
+- Archive extension: `racecraft-lab/spec-kit-archive` v1.1.0 at `.specify/extensions/archive/`
+- Two-commit audit trail: `dcf46b3` (archive entries — durable BEFORE destructive op), `82229bc` (cleanup — `git rm -r specs/004-task-pipeline-engine specs/006-area-label-github-sync`, 29 files / 4368 lines deleted)
+
+**Recovery commands** (if SPEC-004 / SPEC-006 artifacts ever needed):
+
+```bash
+git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/spec.md
+git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/plan.md
+git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/tasks.md
+git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/spec.md
+git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/plan.md
+git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/tasks.md
+```
+
+**G0 Gate:** ✅ PASS — prior merged specs archived/recorded, current spec excluded, migration mapping verified, baselines clean.
 
 ## Specification Context
 
