@@ -18,8 +18,24 @@
  * side-effects until US6 lands.
  */
 
-import { createHash } from 'crypto'
+import { createHash, randomBytes } from 'crypto'
+import {
+  closeSync,
+  fsyncSync,
+  linkSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  unlinkSync,
+  writeSync,
+} from 'fs'
+import { createRequire } from 'node:module'
+import { join } from 'path'
+import { cwd } from 'process'
 import { detectSecrets } from './secret-detector'
+import type Database from 'better-sqlite3'
+
+const runtimeRequire = createRequire(import.meta.url)
 
 // ---------------------------------------------------------------------------
 // Status enum tuples (FR-029).
@@ -226,7 +242,9 @@ function truncateUtf8(input: string, capBytes: number): string {
   // Walk back to a UTF-8 boundary: any byte 0x80..0xBF is a continuation; back
   // up until we land on a leading byte (or the cap itself if already aligned).
   let cap = capBytes
-  while (cap > 0 && (buf[cap]! & 0b1100_0000) === 0b1000_0000) {
+  while (cap > 0) {
+    const byte = buf[cap]
+    if (byte === undefined || (byte & 0b1100_0000) !== 0b1000_0000) break
     cap--
   }
   return new TextDecoder('utf-8', { fatal: false }).decode(buf.subarray(0, cap))
@@ -241,7 +259,7 @@ function truncateUtf8(input: string, capBytes: number): string {
 export function sanitizeDispositionFailurePayload(
   input: DispositionFailurePayloadInput,
 ): DispositionFailurePayload {
-  const content = input.content ?? ''
+  const content = input.content
   const byteSize = Buffer.byteLength(content, 'utf8')
   const sha = createHash('sha256').update(content, 'utf8').digest('hex')
   // Run secret detector on the raw content; substitute <REDACTED:rule> tokens.
@@ -278,8 +296,7 @@ export function sanitizeDispositionFailurePayload(
 }
 
 // ---------------------------------------------------------------------------
-// Stubs for publishArtifact / getArtifact / getInlineContent (FR-020).
-// Wired in US6 (T315..T326) and US9 (T611..T619).
+// US6 — Artifact Publish (FR-020 through FR-029).
 // ---------------------------------------------------------------------------
 
 export interface InlineContentRow {
@@ -290,9 +307,7 @@ export interface InlineContentRow {
 
 /**
  * Returns the stored inline payload for an artifact row, or null when the
- * row is file-backed / external_uri (FR-020). US6 wires the real lookup
- * order (`content_json` for `inline_json`, `content_markdown` for
- * `inline_markdown`).
+ * row is file-backed / external_uri (FR-020).
  */
 export function getInlineContent(row: InlineContentRow): string | null {
   if (row.storage_kind === 'inline_json') return row.content_json
@@ -300,20 +315,587 @@ export function getInlineContent(row: InlineContentRow): string | null {
   return null
 }
 
+// ---- Constants & allowlists ------------------------------------------------
+
+export const INLINE_BYTE_LIMIT = 64 * 1024 // FR-021
+export const FILE_BYTE_LIMIT = 25 * 1024 * 1024 // FR-024
+
+/** FR-025 MIME allowlist. */
+export const MIME_ALLOWLIST: readonly string[] = Object.freeze([
+  'text/plain',
+  'text/markdown',
+  'application/json',
+  'application/x-yaml',
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/svg+xml',
+  'application/zip',
+])
+
+const MIME_TO_EXT: Readonly<Record<string, string>> = Object.freeze({
+  'text/plain': 'txt',
+  'text/markdown': 'md',
+  'application/json': 'json',
+  'application/x-yaml': 'yaml',
+  'application/pdf': 'pdf',
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/svg+xml': 'svg',
+  'application/zip': 'zip',
+})
+
+// ---- Typed errors (route layer translates to HTTP) -------------------------
+
+export class ExternalUriRejected extends Error {
+  readonly error_code = 'external_uri_rejected'
+  constructor(message = 'external_uri_rejected') {
+    super(message)
+    this.name = 'ExternalUriRejected'
+  }
+}
+
+export class PayloadTooLarge extends Error {
+  readonly error_code = 'payload_too_large'
+  readonly limit_bytes: number
+  constructor(limitBytes: number, message = 'payload_too_large') {
+    super(message)
+    this.name = 'PayloadTooLarge'
+    this.limit_bytes = limitBytes
+  }
+}
+
+export class UnsupportedMimeType extends Error {
+  readonly error_code = 'unsupported_media_type'
+  readonly mime: string
+  constructor(mime: string, message = 'unsupported_media_type') {
+    super(message)
+    this.name = 'UnsupportedMimeType'
+    this.mime = mime
+  }
+}
+
+export class EmptyPayload extends Error {
+  readonly error_code = 'empty_payload'
+  constructor(message = 'empty_payload') {
+    super(message)
+    this.name = 'EmptyPayload'
+  }
+}
+
+export class WorkspaceMismatch extends Error {
+  readonly error_code = 'workspace_mismatch'
+  constructor(message = 'workspace_mismatch') {
+    super(message)
+    this.name = 'WorkspaceMismatch'
+  }
+}
+
+export class SupersedeTargetNotFound extends Error {
+  readonly error_code = 'artifact_not_found'
+  constructor(message = 'artifact_not_found') {
+    super(message)
+    this.name = 'SupersedeTargetNotFound'
+  }
+}
+
+export class SupersedesCrossTask extends Error {
+  readonly error_code = 'supersedes_cross_task'
+  constructor(message = 'supersedes_cross_task') {
+    super(message)
+    this.name = 'SupersedesCrossTask'
+  }
+}
+
+export class SupersedeTargetAlreadySuperseded extends Error {
+  readonly error_code = 'supersede_target_already_superseded'
+  readonly supersedes_id: number
+  readonly current_status: string
+  constructor(supersedesId: number, currentStatus: string, message = 'supersede_target_already_superseded') {
+    super(message)
+    this.name = 'SupersedeTargetAlreadySuperseded'
+    this.supersedes_id = supersedesId
+    this.current_status = currentStatus
+  }
+}
+
+export class CannotSupersedeQuarantined extends Error {
+  readonly error_code = 'cannot_supersede_quarantined'
+  constructor(message = 'cannot_supersede_quarantined') {
+    super(message)
+    this.name = 'CannotSupersedeQuarantined'
+  }
+}
+
+export class TaskNotFound extends Error {
+  readonly error_code = 'task_not_found'
+  constructor(message = 'task_not_found') {
+    super(message)
+    this.name = 'TaskNotFound'
+  }
+}
+
+export class InternalStorageError extends Error {
+  readonly error_code = 'internal_storage_error'
+  readonly cause_code: string | undefined
+  constructor(causeCode?: string, message = 'internal_storage_error') {
+    super(message)
+    this.name = 'InternalStorageError'
+    this.cause_code = causeCode
+  }
+}
+
+// ---- publishArtifact -------------------------------------------------------
+
+export type StorageKind = 'inline_json' | 'inline_markdown' | 'file' | 'external_uri'
+
+export interface PublishArtifactFileInput {
+  readonly bytes: Buffer
+  readonly original_filename?: string
+}
+
 export interface PublishArtifactInput {
   readonly task_id: number
   readonly artifact_type: string
+  readonly storage_kind: StorageKind
+  readonly content?: string
+  readonly file?: PublishArtifactFileInput
+  readonly mime: string
+  readonly schema_version?: string
+  readonly supersedes?: number
+  /** Caller's currently active workspace (route layer supplies; FR-026). */
+  readonly active_workspace_id: number
+  /** True when the caller's session is Facility-scoped (FR-026 passthrough). */
+  readonly is_facility_caller: boolean
+  /** Optional db handle; defaults to the runtime singleton. */
+  readonly db?: Database.Database
+  /** Optional producer agent id for activity attribution. */
+  readonly producer_agent_id?: number
+  /** Optional workflow_template_slug for chain provenance. */
+  readonly workflow_template_slug?: string
+}
+
+export interface PublishArtifactResult {
+  readonly id: number
+  readonly sha256: string
+  readonly storage_uri: string | null
+  readonly byte_size: number
+  readonly redaction_status: RedactionStatus
+  readonly security_scan_status: SecurityScanStatus
+}
+
+interface TaskRow {
+  readonly id: number
+  readonly workspace_id: number
+}
+
+interface ArtifactRow {
+  readonly id: number
+  readonly task_id: number
+  readonly workspace_id: number
+  readonly artifact_type: string
   readonly storage_kind: string
+  readonly storage_uri: string | null
+  readonly redaction_status: RedactionStatus
+  readonly security_scan_status: SecurityScanStatus
+  readonly sha256: string | null
+  readonly byte_size: number | null
+  readonly content_json: string | null
+  readonly content_markdown: string | null
+  readonly mime_type: string | null
+  readonly preview_text: string | null
+  readonly supersedes_artifact_id: number | null
 }
 
-export function publishArtifact(input: PublishArtifactInput): never {
-  // Foundation stub — US6 (T315..T326) wires the real implementation.
-  void input
-  throw new Error('not_implemented')
+function getRuntimeDatabase(): () => Database.Database {
+  return (runtimeRequire('./db') as { getDatabase: () => Database.Database }).getDatabase
 }
 
-export function getArtifact(id: number): never {
-  // Foundation stub — US9 (T614..T617) wires the real implementation.
-  void id
-  throw new Error('not_implemented')
+function resolveDb(input: PublishArtifactInput): Database.Database {
+  if (input.db !== undefined) return input.db
+  return getRuntimeDatabase()()
 }
+
+function resolveDataDir(): string {
+  const env = process.env['MISSION_CONTROL_DATA_DIR']
+  if (typeof env === 'string' && env.length > 0) return env
+  return join(cwd(), '.data')
+}
+
+function utcShard(now: number): { yyyy: string; mm: string } {
+  const d = new Date(now)
+  const yyyy = String(d.getUTCFullYear()).padStart(4, '0')
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  return { yyyy, mm }
+}
+
+function extForMime(mime: string): string {
+  return MIME_TO_EXT[mime] ?? 'bin'
+}
+
+function fetchTaskWorkspace(db: Database.Database, taskId: number): TaskRow | null {
+  const row = db.prepare('SELECT id, workspace_id FROM tasks WHERE id = ?').get(taskId) as
+    | TaskRow
+    | undefined
+  return row ?? null
+}
+
+function fetchArtifactRow(db: Database.Database, id: number): ArtifactRow | null {
+  const row = db
+    .prepare(
+      `SELECT id, task_id, workspace_id, artifact_type, storage_kind, storage_uri,
+              redaction_status, security_scan_status, sha256, byte_size,
+              content_json, content_markdown, mime_type, preview_text,
+              supersedes_artifact_id
+       FROM task_artifacts WHERE id = ?`,
+    )
+    .get(id) as ArtifactRow | undefined
+  return row ?? null
+}
+
+/** Public lookup helper — same shape as fetchArtifactRow, exported for callers. */
+export function getArtifactById(db: Database.Database, id: number): ArtifactRow | null {
+  return fetchArtifactRow(db, id)
+}
+
+interface AtomicWriteResult {
+  readonly canonicalPath: string
+  readonly winnerWroteFile: boolean
+}
+
+/**
+ * FR-022 atomic write protocol. Returns the canonical path on success.
+ * Throws InternalStorageError on any non-EEXIST failure.
+ */
+function atomicWriteFile(
+  shardDir: string,
+  bytes: Buffer,
+  sha256: string,
+  ext: string,
+): AtomicWriteResult {
+  mkdirSync(shardDir, { recursive: true })
+  const canonical = join(shardDir, `${sha256}.${ext}`)
+  const tmpName = `.tmp.${sha256}.${String(process.pid)}.${randomBytes(6).toString('hex')}`
+  const tmpPath = join(shardDir, tmpName)
+
+  // Step 1: write bytes to temp.
+  let fd: number | undefined
+  try {
+    fd = openSync(tmpPath, 'wx')
+    writeSync(fd, bytes, 0, bytes.byteLength, 0)
+    fsyncSync(fd)
+  } catch (err) {
+    if (fd !== undefined) {
+      try {
+        closeSync(fd)
+      } catch {
+        /* best-effort */
+      }
+    }
+    try {
+      unlinkSync(tmpPath)
+    } catch {
+      /* best-effort */
+    }
+    const code = (err as { code?: string }).code
+    throw new InternalStorageError(code, `temp_write_failed${code !== undefined ? ':' + code : ''}`)
+  } finally {
+    if (fd !== undefined) {
+      try {
+        closeSync(fd)
+      } catch {
+        /* best-effort */
+      }
+    }
+  }
+
+  // Step 2: link temp → canonical (atomic on POSIX).
+  let winnerWroteFile = true
+  try {
+    linkSync(tmpPath, canonical)
+  } catch (err) {
+    const code = (err as { code?: string }).code
+    if (code === 'EEXIST') {
+      // FR-023 EEXIST loser path: re-read canonical, hash-assert.
+      try {
+        unlinkSync(tmpPath)
+      } catch {
+        /* best-effort */
+      }
+      const existing = readFileSync(canonical)
+      const existingHash = createHash('sha256').update(existing).digest('hex')
+      if (existingHash !== sha256) {
+        throw new InternalStorageError(
+          'hash_mismatch',
+          'artifact_hash_verification_failed',
+        )
+      }
+      winnerWroteFile = false
+      return { canonicalPath: canonical, winnerWroteFile }
+    }
+    try {
+      unlinkSync(tmpPath)
+    } catch {
+      /* best-effort */
+    }
+    throw new InternalStorageError(code, `link_failed${code !== undefined ? ':' + code : ''}`)
+  }
+
+  // Step 3: unlink temp now that link succeeded.
+  try {
+    unlinkSync(tmpPath)
+  } catch {
+    // Non-fatal: temp may have been removed by another process.
+  }
+
+  // Step 4: fsync parent dir for durability of the link.
+  try {
+    const dirFd = openSync(shardDir, 'r')
+    try {
+      fsyncSync(dirFd)
+    } finally {
+      closeSync(dirFd)
+    }
+  } catch {
+    // Some platforms (e.g. Windows or certain FS types) reject fsync on a
+    // directory descriptor. Treat as best-effort — the link is durable
+    // through journaled metadata on extN/APFS.
+  }
+  return { canonicalPath: canonical, winnerWroteFile }
+}
+
+/**
+ * Pre-INSERT validation order per CHK034 (the subset we own here — flag/auth
+ * happen at the route layer; everything from external_uri onward is library
+ * scope). Throws typed errors that the route layer maps to HTTP statuses.
+ */
+function validateInputs(input: PublishArtifactInput): void {
+  // FR-020: external_uri rejection (before any other parsing).
+  if (input.storage_kind === 'external_uri') {
+    throw new ExternalUriRejected()
+  }
+  // Storage_kind sanity: only the four enum values are accepted by the schema.
+  if (
+    input.storage_kind !== 'inline_json' &&
+    input.storage_kind !== 'inline_markdown' &&
+    input.storage_kind !== 'file'
+  ) {
+    throw new ExternalUriRejected('unsupported_storage_kind')
+  }
+}
+
+/**
+ * publishArtifact — US6 core (FR-020, FR-021, FR-022, FR-023, FR-024, FR-025,
+ * FR-026, FR-027, FR-028).
+ *
+ * Validation order (CHK034 within library scope):
+ *   1. external_uri → ExternalUriRejected.
+ *   2. workspace authorization (FR-026) → WorkspaceMismatch.
+ *   3. supersede target lookup (existence/cross-task/quarantined).
+ *   4. size cap (FR-024) → PayloadTooLarge.
+ *   5. MIME allowlist (FR-025) → UnsupportedMimeType.
+ *   6. inline → file auto-promotion (FR-021) when inline > 64 KiB.
+ *   7. atomic write (FR-022) for file-backed.
+ *   8. INSERT (+ supersede UPDATE) inside one transaction (FR-027).
+ *   9. p95 ring-buffer recording on success (FR-028).
+ *
+ * Detector integration (FR-030+) is intentionally OUT OF SCOPE for US6 — the
+ * call site lives in this function but is wired by US8.
+ */
+export function publishArtifact(input: PublishArtifactInput): PublishArtifactResult {
+  const start = Date.now()
+  validateInputs(input)
+  const db = resolveDb(input)
+
+  // Resolve producer task → authoritative workspace_id (FR-026).
+  const task = fetchTaskWorkspace(db, input.task_id)
+  if (task === null) {
+    throw new TaskNotFound()
+  }
+  const producerWorkspaceId = task.workspace_id
+
+  // FR-026: non-Facility callers must publish into their active workspace.
+  if (!input.is_facility_caller && input.active_workspace_id !== producerWorkspaceId) {
+    throw new WorkspaceMismatch()
+  }
+
+  // Materialize content into a Buffer (file) or string (inline) early for
+  // size/MIME checks. Auto-promote inline > 64 KiB to file. external_uri /
+  // unknown storage_kind values were rejected up front in validateInputs.
+  let storageKind: 'inline_json' | 'inline_markdown' | 'file' =
+    input.storage_kind === 'inline_json'
+      ? 'inline_json'
+      : input.storage_kind === 'inline_markdown'
+        ? 'inline_markdown'
+        : 'file'
+  let inlineString: string | null = null
+  let fileBytes: Buffer | null = null
+
+  if (storageKind === 'file') {
+    if (input.file === undefined) {
+      throw new EmptyPayload('missing_file_payload')
+    }
+    fileBytes = input.file.bytes
+    if (fileBytes.byteLength === 0) {
+      throw new EmptyPayload()
+    }
+    if (fileBytes.byteLength > FILE_BYTE_LIMIT) {
+      throw new PayloadTooLarge(FILE_BYTE_LIMIT)
+    }
+  } else {
+    // inline_json or inline_markdown
+    const text = input.content ?? ''
+    const utf8Bytes = Buffer.byteLength(text, 'utf8')
+    if (utf8Bytes === 0) {
+      throw new EmptyPayload()
+    }
+    if (utf8Bytes > INLINE_BYTE_LIMIT) {
+      // FR-021 auto-promotion to file storage.
+      storageKind = 'file'
+      fileBytes = Buffer.from(text, 'utf8')
+      if (fileBytes.byteLength > FILE_BYTE_LIMIT) {
+        throw new PayloadTooLarge(FILE_BYTE_LIMIT)
+      }
+    } else {
+      inlineString = text
+    }
+  }
+
+  // FR-025 MIME allowlist (size/cap precedes MIME per CHK034).
+  if (!MIME_ALLOWLIST.includes(input.mime)) {
+    throw new UnsupportedMimeType(input.mime)
+  }
+
+  // Resolve supersedes target if specified. Validate existence + same task.
+  // Final 'quarantined'/'superseded' check happens INSIDE the transaction
+  // to avoid TOCTOU (FR-027 / CHK069 / CHK071).
+  let supersedesRow: ArtifactRow | null = null
+  if (typeof input.supersedes === 'number') {
+    supersedesRow = fetchArtifactRow(db, input.supersedes)
+    if (supersedesRow === null) {
+      throw new SupersedeTargetNotFound()
+    }
+    if (supersedesRow.task_id !== input.task_id) {
+      throw new SupersedesCrossTask()
+    }
+    if (supersedesRow.workspace_id !== producerWorkspaceId) {
+      // Cross-workspace target: non-Facility caller masks as not_found
+      // (codebase precedent: tasks/[id]/route.ts:117-123). Library returns
+      // NotFound; the route layer can decide to mask further if needed.
+      throw new SupersedeTargetNotFound()
+    }
+  }
+
+  // Compute hash + byte_size for both inline and file.
+  let sha256Hex: string
+  let byteSize: number
+  let storageUri: string | null = null
+
+  if (storageKind === 'file') {
+    if (fileBytes === null) {
+      throw new InternalStorageError('missing_file_bytes_invariant')
+    }
+    sha256Hex = createHash('sha256').update(fileBytes).digest('hex').toLowerCase()
+    byteSize = fileBytes.byteLength
+
+    // FR-022 atomic write.
+    const dataDir = resolveDataDir()
+    const { yyyy, mm } = utcShard(start)
+    const shardDir = join(dataDir, 'artifacts', String(producerWorkspaceId), yyyy, mm)
+    const ext = extForMime(input.mime)
+    const writeResult = atomicWriteFile(shardDir, fileBytes, sha256Hex, ext)
+    storageUri = writeResult.canonicalPath
+  } else {
+    // inline path
+    if (inlineString === null) {
+      throw new InternalStorageError('missing_inline_string_invariant')
+    }
+    sha256Hex = createHash('sha256').update(inlineString, 'utf8').digest('hex').toLowerCase()
+    byteSize = Buffer.byteLength(inlineString, 'utf8')
+  }
+
+  // Inline column split: FR-029 / data-model Decision 12.
+  const contentJson = storageKind === 'inline_json' ? inlineString : null
+  const contentMarkdown = storageKind === 'inline_markdown' ? inlineString : null
+
+  // Initial statuses — US8 wires detector and may set 'redacted' / 'rejected'
+  // / 'quarantined' / 'scanned_with_findings' before the row INSERT.
+  // For US6 we leave both at the column defaults ('pending').
+  // The detector hook integration point (deferred to US8):
+  //   const findings = detectSecrets(payloadAsString, input.mime)
+  // Reference the import so the lint/typecheck passes don't strip it.
+  void detectSecrets
+
+  // FR-027 single-transaction INSERT (+ optional supersede UPDATE).
+  const tx = db.transaction(() => {
+    if (typeof input.supersedes === 'number' && supersedesRow !== null) {
+      // Re-read predecessor inside the transaction (CHK069/71 TOCTOU guard).
+      const fresh = fetchArtifactRow(db, input.supersedes)
+      if (fresh === null) {
+        throw new SupersedeTargetNotFound()
+      }
+      if (fresh.redaction_status === 'superseded') {
+        throw new SupersedeTargetAlreadySuperseded(fresh.id, fresh.redaction_status)
+      }
+      if (fresh.redaction_status === 'quarantined') {
+        throw new CannotSupersedeQuarantined()
+      }
+      // Mark predecessor superseded.
+      db.prepare(
+        `UPDATE task_artifacts SET redaction_status = 'superseded' WHERE id = ?`,
+      ).run(input.supersedes)
+    }
+
+    const insert = db.prepare(`
+      INSERT INTO task_artifacts (
+        task_id, workspace_id, project_id, producer_agent_id,
+        workflow_template_slug, artifact_type, schema_version,
+        storage_kind, content_json, content_markdown, storage_uri,
+        original_filename, mime_type, byte_size, sha256, preview_text,
+        redaction_status, security_scan_status, supersedes_artifact_id
+      ) VALUES (
+        @task_id, @workspace_id, NULL, @producer_agent_id,
+        @workflow_template_slug, @artifact_type, @schema_version,
+        @storage_kind, @content_json, @content_markdown, @storage_uri,
+        @original_filename, @mime_type, @byte_size, @sha256, @preview_text,
+        @redaction_status, @security_scan_status, @supersedes_artifact_id
+      )
+    `)
+    const info = insert.run({
+      task_id: input.task_id,
+      workspace_id: producerWorkspaceId,
+      producer_agent_id: input.producer_agent_id ?? null,
+      workflow_template_slug: input.workflow_template_slug ?? null,
+      artifact_type: input.artifact_type,
+      schema_version: input.schema_version ?? null,
+      storage_kind: storageKind,
+      content_json: contentJson,
+      content_markdown: contentMarkdown,
+      storage_uri: storageUri,
+      original_filename: input.file?.original_filename ?? null,
+      mime_type: input.mime,
+      byte_size: byteSize,
+      sha256: sha256Hex,
+      preview_text: null, // US9 wires preview_text materialization (FR-042).
+      redaction_status: 'pending' as RedactionStatus,
+      security_scan_status: 'pending' as SecurityScanStatus,
+      supersedes_artifact_id: input.supersedes ?? null,
+    })
+    return Number(info.lastInsertRowid)
+  })
+
+  const newId = tx()
+
+  // FR-028 ring-buffer update on success (and only success).
+  recordPublishLatency(producerWorkspaceId, Date.now() - start)
+
+  return {
+    id: newId,
+    sha256: sha256Hex,
+    storage_uri: storageUri,
+    byte_size: byteSize,
+    redaction_status: 'pending',
+    security_scan_status: 'pending',
+  }
+}
+

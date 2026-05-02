@@ -147,6 +147,8 @@ const SPEC_007_ALLOWLIST = [
   'src/lib/__tests__/aegis-review.test.ts',
   // Disposition-dispatch integration tests (US1+US2 wiring):
   'src/lib/__tests__/spec-007-disposition-dispatch.test.ts',
+  // US6 publish-path tests:
+  'src/lib/__tests__/task-artifacts-publish.test.ts',
 ] as const
 
 const ALLOWED_PREFIXES = [
