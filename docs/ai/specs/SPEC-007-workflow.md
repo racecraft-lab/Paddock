@@ -38,7 +38,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Specify | `/speckit.specify` | Complete | 49 FRs / 9 US / 44 acceptance scenarios / 10 SC / 10 edge cases; G1 PASS (0 markers) |
 | Clarify | `/speckit.clarify` | Complete | 3 sessions / 15 questions resolved (3 via consensus per security tag); G2 PASS (0 markers) |
 | Plan | `/speckit.plan` | Complete | plan.md + research.md (13 decisions) + data-model.md (7 entities) + 3 contracts + quickstart.md (10 scenarios) + CLAUDE.md/AGENTS.md updates. All 15 constitution principles PASS. G3 PASS (0 markers). |
-| Checklist | `/speckit.checklist` | Pending | Recommended domains: data-integrity, security (secret detector), error-handling, regression-safety |
+| Checklist | `/speckit.checklist` | Complete | 4 domains / 382 items: data-integrity (107/12 gaps), security (100/13 gaps + FR-035a), error-handling (105/35 gaps → FR-120-141), regression-safety (70/9 gaps → FR-110-114). 6 unresolved-for-consensus items resolved (3 security from S3 + 4 from error-handling). Spec.md grew from FR-100 to FR-141 + FR-035a. G4 PASS (0 gaps, 0 markers). |
 | Tasks | `/speckit.tasks` | Pending | Generate dependency-ordered TDD tasks with P6-AC1..P6-AC10 coverage |
 | Analyze | `/speckit.analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
 | Implement | `/speckit.implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-008/009/011 behavior |
@@ -565,11 +565,11 @@ Focus on SPEC-007 regression safety:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | | | |
-| security | | | |
-| error-handling | | | |
-| regression-safety | | | |
-| **Total** | | | |
+| data-integrity | 107 | 12 (resolved 12 — race conditions on artifact_id chain, atomic-write per-step, orphan timestamp/collision, ENOSPC, case-insensitivity) | spec.md Edge Cases (CHK034, CHK037, CHK080, CHK083-86), §"Race Conditions on the Same artifact_id Chain" subsection (CHK069-077) |
+| security | 100 | 13 (resolved 13 — secret detector boundary, redaction policy, admin authorization, override-audit, dispatch-skip schema, retention summary, rollback safety) | FR-035a (no-bypass), FR-002, FR-032, FR-063, FR-065, FR-066, FR-067, FR-069 |
+| error-handling | 105 | 35 (resolved 31 + 4 via consensus: CHK058, CHK064, CHK086, CHK092) | FR-120 through FR-141 (mid-flight flag flips, DB-error classification, type vs kind, error matrix, atomic write recovery, orphan repair classes, retention sweep transactionality, supersede validation, detector fail-closed, security_violation payload, no-silent-200) |
+| regression-safety | 70 | 9 (resolved 9 — baseline-fixture freshness, strict-scope allowlist, external_uri admin render, existing pagination invariance, direct-DB-write boundary, feature-flag CI guard) | FR-110 through FR-114 + expanded FR-100 |
+| **Total** | **382** | **69 → 0 (all remediated)** | spec.md FR-001..FR-141 (49 original + 92 added) + 7 race-condition edge cases + 14 activity types |
 
 ## Phase 5: Tasks
 
