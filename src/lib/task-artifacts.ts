@@ -18,6 +18,9 @@
  * side-effects until US6 lands.
  */
 
+import { createHash } from 'crypto'
+import { detectSecrets } from './secret-detector'
+
 // ---------------------------------------------------------------------------
 // Status enum tuples (FR-029).
 // ---------------------------------------------------------------------------
@@ -177,6 +180,101 @@ export function decodeCursor(token: string): DispositionCursor {
     throw new InvalidCursorError()
   }
   return { triaged_at: triagedAt, id }
+}
+
+// ---------------------------------------------------------------------------
+// Disposition validation-failure sanitization (FR-013, FR-133).
+// ---------------------------------------------------------------------------
+
+const EXCERPT_BYTE_CAP = 4 * 1024 // FR-013 redacted_excerpt ≤ 4 KiB UTF-8.
+const PAYLOAD_BYTE_CAP = 16 * 1024 // FR-133 total payload ≤ 16 KiB serialized.
+const TRUNCATION_THRESHOLD = 16 * 1024 // FR-013: truncated:true when byte_size > 16 KiB.
+
+export interface DispositionFailurePayloadInput {
+  readonly rule: string
+  readonly violation: string
+  readonly field: string
+  readonly content: string
+  /**
+   * MIME type used by the secret detector. Default 'application/json' which
+   * triggers text-based redaction. The disposition diagnostic record is always
+   * derived from a JSON-encoded agent output blob.
+   */
+  readonly mime?: string
+}
+
+export interface DispositionFailurePayload {
+  readonly rule: string
+  readonly violation: string
+  readonly field: string
+  readonly content_sha256: string
+  readonly byte_size: number
+  readonly redacted_excerpt: string
+  readonly truncated: boolean
+}
+
+/**
+ * Truncate a string to at most `capBytes` UTF-8 bytes WITHOUT splitting a
+ * surrogate pair or producing invalid UTF-8. The implementation slices by
+ * code-point boundaries (TextEncoder/Decoder round-trip), then drops trailing
+ * bytes until the result decodes cleanly.
+ */
+function truncateUtf8(input: string, capBytes: number): string {
+  const enc = new TextEncoder()
+  const buf = enc.encode(input)
+  if (buf.byteLength <= capBytes) return input
+  // Walk back to a UTF-8 boundary: any byte 0x80..0xBF is a continuation; back
+  // up until we land on a leading byte (or the cap itself if already aligned).
+  let cap = capBytes
+  while (cap > 0 && (buf[cap]! & 0b1100_0000) === 0b1000_0000) {
+    cap--
+  }
+  return new TextDecoder('utf-8', { fatal: false }).decode(buf.subarray(0, cap))
+}
+
+/**
+ * Build the FR-013 sanitized diagnostic payload for a disposition validation
+ * failure. The resulting payload is bounded ≤ 16 KiB serialized (FR-133) and
+ * NEVER contains the raw matched substring of any detector finding —
+ * Constitution Principle XIII enforces `<REDACTED:{rule_id}>` substitution.
+ */
+export function sanitizeDispositionFailurePayload(
+  input: DispositionFailurePayloadInput,
+): DispositionFailurePayload {
+  const content = input.content ?? ''
+  const byteSize = Buffer.byteLength(content, 'utf8')
+  const sha = createHash('sha256').update(content, 'utf8').digest('hex')
+  // Run secret detector on the raw content; substitute <REDACTED:rule> tokens.
+  // The detector ALWAYS returns the redaction substituted form for text-mode
+  // MIMEs. We force `application/json` (text-like) by default so even unknown
+  // payloads receive token substitution rather than leak the raw substring.
+  let scrubbed: string
+  try {
+    const result = detectSecrets(content, input.mime ?? 'application/json')
+    scrubbed = typeof result.redacted === 'string' ? result.redacted : content
+  } catch {
+    // Detector failed closed: redact the entire excerpt to avoid leaking.
+    scrubbed = '<REDACTED:detector_error>'
+  }
+  // Trim excerpt to ≤4 KiB.
+  let excerpt = truncateUtf8(scrubbed, EXCERPT_BYTE_CAP)
+  const truncated = byteSize > TRUNCATION_THRESHOLD
+
+  // Final hard cap on total serialized payload (FR-133). Trim excerpt iteratively.
+  let payload: DispositionFailurePayload = {
+    rule: input.rule,
+    violation: input.violation,
+    field: input.field,
+    content_sha256: sha,
+    byte_size: byteSize,
+    redacted_excerpt: excerpt,
+    truncated,
+  }
+  while (Buffer.byteLength(JSON.stringify(payload), 'utf8') > PAYLOAD_BYTE_CAP && excerpt.length > 0) {
+    excerpt = truncateUtf8(excerpt, Math.max(0, Buffer.byteLength(excerpt, 'utf8') - 256))
+    payload = { ...payload, redacted_excerpt: excerpt }
+  }
+  return payload
 }
 
 // ---------------------------------------------------------------------------
