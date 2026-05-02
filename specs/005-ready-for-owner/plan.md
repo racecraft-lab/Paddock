@@ -147,6 +147,7 @@ tests/
   - `messages/*.json` lane/copy keys, with English source copy `Ready for Owner`.
 - Kanban lane uses key `ready_for_owner`, title `Ready for Owner`, teal styling, and appears between `quality_review` and `done`.
 - `awaiting_owner` remains in its current lane position and keyword-detection behavior.
+- Accessibility stays on existing task board and notification card patterns: the `ready_for_owner` column keeps a region accessible name that includes the lane title and count, task cards and unread notification actions remain keyboard reachable with visible focus indicators, and the owner-merge requirement is present in text (`Ready for Owner`, `Owner action required`, notification title/message/type) instead of relying on teal styling alone.
 - GitHub label:
   - name `mc:ready-for-owner`
   - color `14b8a6`

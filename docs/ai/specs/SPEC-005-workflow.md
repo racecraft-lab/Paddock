@@ -36,7 +36,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Specify | `$speckit-specify` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/spec.md` and requirements checklist; G1 passed with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | All 3 sessions complete; S1 transition guards/API, S2 GitHub terminal event/reconciliation, S3 operator surfaces/status vocabulary; marker scans clean |
 | Plan | `$speckit-plan` | Complete | 2026-05-02 generated plan/research/data model/contracts/quickstart; G3 architecture concrete with no migration, no DB CHECK, no terminal-event table, and no unresolved markers |
-| Checklist | `$speckit-checklist` | Pending | Recommended domains: state-machine, github-sync, notifications-ux, regression-safety |
+| Checklist | `$speckit-checklist` | Complete | All 4 domains complete with marker counter returning zero `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with P4-AC1..P4-AC6 coverage |
 | Analyze | `$speckit-analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-007/008/009 behavior |
@@ -362,14 +362,14 @@ $speckit-checklist Regression safety for SPEC-005: no DB migration, no status CH
 
 ### Checklist Results
 
-Pending. Fill in after running.
+All four checklist domains complete.
 
 | Domain | Items | Gaps | Remediation |
 |--------|-------|------|-------------|
-| State Machine and Feature Flags | Pending | Pending | Pending |
-| GitHub Sync and Terminal Event Evidence | Pending | Pending | Pending |
-| Notifications and Operator UX | Pending | Pending | Pending |
-| Regression Safety and Cross-Spec Boundaries | Pending | Pending | Pending |
+| State Machine and Feature Flags | 18 | 0 | No remediation required; checklist generated at `specs/005-ready-for-owner/checklists/state-machine-feature-flags.md` and marker counter returned zero `[Gap]` markers. |
+| GitHub Sync and Terminal Event Evidence | 22 | 0 | No remediation required; checklist generated at `specs/005-ready-for-owner/checklists/github-sync-terminal-evidence.md` and marker counter returned zero `[Gap]` markers. |
+| Notifications and Operator UX | 24 | 0 | Remediated 1 accessibility requirement gap by adding `FR-019a`, tightening `SC-006`, and updating plan Operator Surfaces; checklist generated at `specs/005-ready-for-owner/checklists/notifications-operator-ux.md` and marker counter returned zero `[Gap]` markers. |
+| Regression Safety and Cross-Spec Boundaries | 24 | 0 | No remediation required; checklist generated at `specs/005-ready-for-owner/checklists/regression-safety-cross-spec-boundaries.md` and marker counter returned zero `[Gap]` markers. |
 
 ## Phase 5: Tasks
 
