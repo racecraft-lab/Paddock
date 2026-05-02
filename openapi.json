@@ -11039,6 +11039,149 @@
       }
     },
     "/api/task-artifacts": {
+      "get": {
+        "summary": "List task artifacts for Artifact Admin (SPEC-007 US10)",
+        "description": "Admin-only scoped artifact list used by the Artifact Admin panel. Supports artifact type, redaction status, security scan status, and date filters. Returns 503 when FEATURE_TASK_ARTIFACTS is OFF.",
+        "tags": [
+          "spec-007-task-artifacts"
+        ],
+        "parameters": [
+          {
+            "name": "artifact_type",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "redaction_status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated redaction statuses."
+          },
+          {
+            "name": "security_scan_status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Comma-separated security scan statuses."
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Artifact rows in the caller's resolved workspace scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "task_id": {
+                            "type": "integer"
+                          },
+                          "workspace_id": {
+                            "type": "integer"
+                          },
+                          "artifact_type": {
+                            "type": "string"
+                          },
+                          "storage_kind": {
+                            "type": "string"
+                          },
+                          "storage_uri": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "redaction_status": {
+                            "type": "string"
+                          },
+                          "security_scan_status": {
+                            "type": "string"
+                          },
+                          "sha256": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "byte_size": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "mime": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "preview_text": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "schema_version": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "workflow_template_slug": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "original_filename": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "producer_agent_id": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "supersedes_artifact_id": {
+                            "type": "integer",
+                            "nullable": true
+                          },
+                          "created_at": {
+                            "type": "integer"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "unauthenticated"
+          },
+          "403": {
+            "description": "forbidden_admin_required | workspace_forbidden"
+          },
+          "503": {
+            "description": "artifact_store_disabled"
+          }
+        }
+      },
       "post": {
         "summary": "Publish a task artifact (SPEC-007 FR-020..029)",
         "description": "Inline JSON, inline Markdown, or file-backed artifact publishing through the MC artifact store. Detector runs before any storage write (FR-035a no-bypass discipline). Atomic fs.link write protocol (FR-022). Returns 503 when FEATURE_TASK_ARTIFACTS is OFF.",
