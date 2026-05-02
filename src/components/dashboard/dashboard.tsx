@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useMissionControl } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
 import { useSmartPoll } from '@/lib/use-smart-poll'
@@ -9,6 +9,220 @@ import { OnboardingChecklistWidget } from './widgets/onboarding-checklist-widget
 import { EmptyStateLaunchpad } from './empty-state-launchpad'
 import { WidgetGrid } from './widget-grid'
 import type { DbStats, ClaudeStats, LogLike, DashboardData } from './widget-primitives'
+
+// SPEC-007 US4 — "Last 7d triage totals" widget. Per FR-070/FR-071/FR-072/FR-139.
+// Renders inline (no new component file — strict scope keeps the widget local
+// to dashboard.tsx). Reads /api/dispositions/rollup every 30s; treats any
+// non-2xx response (including 503 when FEATURE_DISPOSITION_LOGGING is OFF) as
+// the empty / zero-state — no error noise in the dashboard.
+interface DispositionRollupDay {
+  date: string
+  total: number
+  by_disposition: Record<string, number>
+}
+interface DispositionRollup {
+  days: DispositionRollupDay[]
+  total: number
+}
+
+// Stable color mapping per disposition value. 'unknown' renders as its own
+// segment with the FR-139 legend label 'validation_failed'.
+const DISPOSITION_COLORS: Record<string, string> = {
+  merged:     '#10b981', // emerald-500
+  closed:     '#3b82f6', // blue-500
+  rejected:   '#ef4444', // red-500
+  rerouted:   '#f59e0b', // amber-500
+  duplicate:  '#a855f7', // purple-500
+  spam:       '#64748b', // slate-500
+  completed:  '#22c55e', // green-500
+  abandoned:  '#94a3b8', // slate-400
+  unknown:    '#fbbf24', // amber-400 — flagged distinct, FR-139
+}
+// Stable order for legend + segment stacking (oldest → newest).
+const DISPOSITION_ORDER = [
+  'merged', 'closed', 'completed', 'rejected', 'rerouted', 'duplicate', 'spam', 'abandoned', 'unknown',
+] as const
+
+function dispositionLabel(name: string): string {
+  // FR-139: 'unknown' is rendered as 'validation_failed' for operator clarity.
+  return name === 'unknown' ? 'validation_failed' : name
+}
+
+function dispositionColor(name: string): string {
+  return DISPOSITION_COLORS[name] ?? '#6b7280' // gray-500 fallback
+}
+
+function shortDate(iso: string): string {
+  // YYYY-MM-DD → "Mon", best-effort.
+  const d = new Date(`${iso}T00:00:00Z`)
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' })
+}
+
+function Last7dTriageTotalsWidget({
+  workspaceIdHint,
+}: {
+  workspaceIdHint: number | null
+}): React.ReactElement {
+  const [rollup, setRollup] = useState<DispositionRollup | null>(null)
+
+  const fetchRollup = useCallback(async () => {
+    try {
+      const qs = workspaceIdHint !== null
+        ? `?workspace_id=${String(workspaceIdHint)}`
+        : ''
+      const res = await fetch(`/api/dispositions/rollup${qs}`)
+      if (!res.ok) {
+        // 503 (flag OFF) and any other error collapse to the empty state.
+        setRollup(null)
+        return
+      }
+      const data = await res.json() as DispositionRollup
+      setRollup(data)
+    } catch {
+      setRollup(null)
+    }
+  }, [workspaceIdHint])
+
+  useEffect(() => {
+    void fetchRollup()
+    const id = setInterval(() => { void fetchRollup() }, 30_000)
+    return () => { clearInterval(id) }
+  }, [fetchRollup])
+
+  const total = rollup?.total ?? 0
+  const days = useMemo<DispositionRollupDay[]>(() => rollup?.days ?? [], [rollup])
+  const isEmpty = total === 0
+
+  // Compute the maximum daily total so the bars share a vertical scale.
+  const maxDailyTotal = useMemo(() => {
+    let max = 0
+    for (const d of days) {
+      if (d.total > max) max = d.total
+    }
+    return max
+  }, [days])
+
+  // Active legend: only dispositions that have at least one row in the window.
+  const activeLegend = useMemo(() => {
+    const present = new Set<string>()
+    for (const d of days) {
+      for (const k of Object.keys(d.by_disposition)) present.add(k)
+    }
+    const ordered: string[] = []
+    for (const name of DISPOSITION_ORDER) {
+      if (present.has(name)) ordered.push(name)
+    }
+    // Surface any disposition values we did not anticipate at the end so the
+    // operator still sees them.
+    for (const name of present) {
+      if (!ordered.includes(name)) ordered.push(name)
+    }
+    return ordered
+  }, [days])
+
+  return (
+    <div
+      className="rounded-md border border-neutral-700 bg-neutral-900 p-4"
+      data-testid="last-7d-triage-totals-widget"
+    >
+      <div className="flex items-baseline justify-between mb-3">
+        <h3 className="text-sm font-medium text-neutral-200">
+          Last 7d triage totals
+        </h3>
+        <span
+          className="text-2xl font-semibold text-neutral-100 tabular-nums"
+          data-testid="last-7d-triage-totals-total"
+        >
+          {total}
+        </span>
+      </div>
+
+      {isEmpty ? (
+        <div
+          className="flex h-24 items-center justify-center text-sm text-neutral-500"
+          data-testid="last-7d-triage-totals-empty"
+        >
+          No dispositions in last 7 days
+        </div>
+      ) : (
+        <>
+          <div
+            className="flex h-24 items-end gap-1"
+            role="img"
+            aria-label="Stacked daily disposition totals for the last 7 days"
+          >
+            {days.map((day) => {
+              const heightPct = maxDailyTotal > 0
+                ? Math.max(2, Math.round((day.total / maxDailyTotal) * 100))
+                : 0
+              return (
+                <div
+                  key={day.date}
+                  className="flex flex-1 flex-col items-center gap-1"
+                  data-testid="last-7d-triage-totals-day"
+                  data-date={day.date}
+                  data-total={day.total}
+                  title={`${day.date}: ${String(day.total)} dispositions`}
+                >
+                  <div className="flex w-full flex-1 items-end">
+                    <div
+                      className="flex w-full flex-col-reverse overflow-hidden rounded-sm"
+                      style={{ height: `${String(heightPct)}%` }}
+                    >
+                      {/* Stack segments from largest disposition first using
+                          DISPOSITION_ORDER for visual stability. */}
+                      {DISPOSITION_ORDER.flatMap((name) => {
+                        const count = day.by_disposition[name] ?? 0
+                        if (count === 0) return []
+                        const segHeight = day.total > 0
+                          ? Math.round((count / day.total) * 100)
+                          : 0
+                        return [(
+                          <div
+                            key={name}
+                            data-testid="last-7d-triage-totals-segment"
+                            data-disposition={name}
+                            data-count={count}
+                            style={{
+                              backgroundColor: dispositionColor(name),
+                              height: `${String(segHeight)}%`,
+                              minHeight: count > 0 ? 2 : 0,
+                            }}
+                          />
+                        )]
+                      })}
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-neutral-500 tabular-nums">
+                    {shortDate(day.date)}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1">
+            {activeLegend.map((name) => (
+              <div
+                key={name}
+                className="flex items-center gap-1 text-[11px] text-neutral-400"
+                data-testid="last-7d-triage-totals-legend-item"
+                data-disposition={name}
+              >
+                <span
+                  className="inline-block h-2 w-2 rounded-sm"
+                  style={{ backgroundColor: dispositionColor(name) }}
+                />
+                <span>{dispositionLabel(name)}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
 
 export function Dashboard() {
   const {
@@ -21,7 +235,16 @@ export function Dashboard() {
     agents,
     tasks,
     setActiveConversation,
+    activeProductLineScope,
   } = useMissionControl()
+
+  // SPEC-007 US4: pass workspace_id only when scope is a Product Line. Facility
+  // scope intentionally omits the param so the rollup route fans out across
+  // the user's authorized workspaces.
+  const triageWorkspaceIdHint =
+    activeProductLineScope?.kind === 'productLine'
+      ? activeProductLineScope.productLineId
+      : null
 
   const navigateToPanel = useNavigateToPanel()
   const isLocal = dashboardMode === 'local'
@@ -269,6 +492,7 @@ export function Dashboard() {
         taskCount={dbStats?.tasks.total ?? tasks.length}
         onNavigate={navigateToPanel}
       />
+      <Last7dTriageTotalsWidget workspaceIdHint={triageWorkspaceIdHint} />
       <WidgetGrid data={dashboardData} />
     </div>
   )
