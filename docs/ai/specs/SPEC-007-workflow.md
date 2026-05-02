@@ -389,7 +389,7 @@ Focus on SPEC-007 API contracts and UX surfaces:
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
 | 1 | Schema, Detector Rules, Strict-Scope Boundaries | 5 | Q2 + Q5 applied directly (high confidence). Q1 → Option C: thin new `aegis-review.ts` with `AEGIS_FAILURE_REASONS` + `evaluateSpec007AegisSignals`; `runAegisReviews` calls into it. Q3 → Option A: closed 17-family v1 list (3 promoted from v2 deferral: GCP service-account JSON, Vault `hvs.*`, npm `npm_*`); v2 deferrals named in spec. Q4 → Option C: 6 files in strict scope (detector trio, aegis-review, task-artifacts, enums-test). |
-| 2 | Artifact Lifecycle, Concurrency, Failure Isolation | | |
+| 2 | Artifact Lifecycle, Concurrency, Failure Isolation | 5 | Q1/Q2/Q3 applied directly (high-confidence codebase facts). Q4 → Option A: single `db.transaction()` for new INSERT + supersedes UPDATE; file-write happens before tx; failure leaves canonical as orphan. Q5 → Option A: Node `fs.link()` atomic primitive; temp staging MUST be under `<DATA_DIR>/artifacts/.../tmp.*` (NEVER `/tmp` — Docker `read_only:true` puts tmpfs on a different filesystem causing EXDEV). Loser path: re-read canonical, hash-assert, unlink temp, insert row with same `storage_uri`. |
 | 3 | API Contracts, UX Surfaces, Cross-Spec Boundaries | | |
 
 ### Consensus Resolution Log
@@ -399,6 +399,8 @@ Focus on SPEC-007 API contracts and UX surfaces:
 | S1-Q1 (Aegis hook host file) | 1 | [spec, codebase] | Option C — thin new `aegis-review.ts` (constants + helper); `runAegisReviews` calls into it. 2/2 high confidence. | codebase-analyst, spec-context-analyst |
 | S1-Q3 (Detector v1 rule list — security) | 1 | [security, spec] | Option A — closed v1 list. Domain-researcher promoted Vault `hvs.*`, npm tokens, GCP SA JSON IN to v1 (final v1 = 17 families); 11 v2 deferrals named in spec. 3/3 high confidence; security keyword forced 3 analysts. | codebase-analyst, spec-context-analyst, domain-researcher |
 | S1-Q4 (Strict-scope file list) | 1 | [spec] | Option C — 6 files (detector trio + aegis-review.ts + task-artifacts.ts + enums-test). 1/1 high confidence. | spec-context-analyst |
+| S2-Q4 (Supersedes atomicity) | 1 | [codebase, domain] | Option A — single `db.transaction()` for new INSERT + supersedes UPDATE. File-write completes before tx; tx failure leaves orphan handled by FR-068 sweep. 2/2 high confidence. | codebase-analyst, domain-researcher |
+| S2-Q5 (Same-sha256 concurrent-write race — security) | 1 | [security, codebase, domain] | Option A — Node `fs.link()` POSIX atomic primitive; loser handles `EEXIST` by re-reading canonical + hash-assert + unlink temp + INSERT row at same `storage_uri`. CRITICAL refinement: temp MUST stage under `.data/` (not `/tmp`) to avoid EXDEV under Docker `read_only:true`. Domain-researcher's overlay2 EXDEV concern mitigated because `.data/` is a Docker named volume (not container-layer overlay). 3/3 high confidence; security keyword forced 3 analysts. | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ## Phase 3: Plan
 
