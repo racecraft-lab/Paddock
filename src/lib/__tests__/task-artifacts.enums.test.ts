@@ -165,6 +165,8 @@ const SPEC_007_ALLOWLIST = [
   // audit-trail-panel since SPEC-007's Dispositions tab takes an explicit
   // user-input workspace_id filter per FR-080):
   'src/components/panels/facility-global-boundaries.test.ts',
+  // OpenAPI spec snapshot — adds the 5 new SPEC-007 routes (T1207):
+  'openapi.json',
 ] as const
 
 const ALLOWED_PREFIXES = [

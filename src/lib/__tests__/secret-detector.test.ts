@@ -97,20 +97,20 @@ describe('T402: every rule passes safe-regex (FR-035)', () => {
 // concatenated from non-secret-shaped halves at test time. This keeps the
 // per-rule fixture obligation (FR-031) satisfied without storing match-able
 // secret-shape literals on disk.
-const RUNTIME_FIXTURES: Record<string, { positive: string; negative: string }> = {
+const RUNTIME_FIXTURES: Partial<Record<string, { positive: string; negative: string }>> = {
   'stripe-keys': {
     positive: [
-      `STRIPE_SECRET=sk_${'live'}_${'a'.repeat(30)}`,
-      `publishable: pk_${'live'}_${'b'.repeat(30)}`,
+      'STRIPE_SECRET=sk_' + 'live' + '_' + 'a'.repeat(30),
+      'publishable: pk_' + 'live' + '_' + 'b'.repeat(30),
     ].join('\n'),
     negative: 'STRIPE_PUBLIC=sk_test_24chars_only\npk_pub_test_too_short',
   },
   'slack-tokens': {
     positive: [
-      `SLACK_BOT_TOKEN=xoxb-${'a'.repeat(10)}-${'b'.repeat(10)}-${'c'.repeat(10)}`,
-      `slack user: xoxp-${'a'.repeat(10)}-${'b'.repeat(10)}-${'c'.repeat(10)}`,
-      `workspace: xoxa-${'a'.repeat(10)}-${'b'.repeat(10)}-${'c'.repeat(10)}`,
-      `refresh: xoxr-${'a'.repeat(10)}-${'b'.repeat(10)}-${'c'.repeat(10)}`,
+      'SLACK_BOT_TOKEN=xoxb-' + 'a'.repeat(10) + '-' + 'b'.repeat(10) + '-' + 'c'.repeat(10),
+      'slack user: xoxp-' + 'a'.repeat(10) + '-' + 'b'.repeat(10) + '-' + 'c'.repeat(10),
+      'workspace: xoxa-' + 'a'.repeat(10) + '-' + 'b'.repeat(10) + '-' + 'c'.repeat(10),
+      'refresh: xoxr-' + 'a'.repeat(10) + '-' + 'b'.repeat(10) + '-' + 'c'.repeat(10),
     ].join('\n'),
     negative: 'xoxs-too-short\nxoxz-not-a-valid-prefix',
   },
@@ -118,7 +118,7 @@ const RUNTIME_FIXTURES: Record<string, { positive: string; negative: string }> =
 
 function loadFixture(rule: string, kind: 'positive' | 'negative'): string {
   const runtime = RUNTIME_FIXTURES[rule]
-  if (runtime) return runtime[kind]
+  if (runtime !== undefined) return runtime[kind]
   return readFileSync(join(FIXTURE_DIR, `${rule}-${kind}.txt`), 'utf8')
 }
 
@@ -142,7 +142,7 @@ describe('T400: per-rule positive + negative fixtures (FR-031)', () => {
   it('every rule has both fixture files on disk OR a runtime-assembled fixture', () => {
     const files = new Set(readdirSync(FIXTURE_DIR))
     for (const rule of rules) {
-      const hasRuntime = RUNTIME_FIXTURES[rule.name] !== undefined
+      const hasRuntime = rule.name in RUNTIME_FIXTURES
       const hasPos = files.has(`${rule.name}-positive.txt`) || hasRuntime
       const hasNeg = files.has(`${rule.name}-negative.txt`) || hasRuntime
       expect(hasPos, `${rule.name} positive missing`).toBe(true)
@@ -231,7 +231,10 @@ describe('T408: wild-corpus recall ≥ 0.95 (FR-035)', () => {
     )
     // Append runtime-assembled lines for rules whose patterns are stored
     // off-disk to evade GitHub push-protection (see RUNTIME_FIXTURES above).
-    const runtimeCorpus = Object.values(RUNTIME_FIXTURES).map(f => f.positive).join('\n')
+    const runtimeCorpus = Object.values(RUNTIME_FIXTURES)
+      .filter((f): f is { positive: string; negative: string } => f !== undefined)
+      .map(f => f.positive)
+      .join('\n')
     const corpus = `${fileCorpus}\n${runtimeCorpus}`
     const lines = corpus.split('\n').filter(l => l.length > 0)
     expect(lines.length).toBeGreaterThanOrEqual(50)
