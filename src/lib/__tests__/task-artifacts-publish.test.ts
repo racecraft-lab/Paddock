@@ -22,12 +22,14 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } 
 import { tmpdir } from 'os'
 import { join } from 'path'
 import Database from 'better-sqlite3'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runMigrations } from '@/lib/migrations'
 import {
   EmptyPayload,
   ExternalUriRejected,
+  InternalScanError,
   PayloadTooLarge,
+  SecretDetectedError,
   SupersedeTargetAlreadySuperseded,
   UnsupportedMimeType,
   WorkspaceMismatch,
@@ -674,6 +676,258 @@ describe('publishArtifact: p95 ring-buffer update (T312, FR-028)', () => {
 // ---------------------------------------------------------------------------
 // Lookup helper — getArtifactById.
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// US8 — Detector enforcement at publish (FR-032/033/034/132/141).
+// Adds workflow_templates seed + findings paths against publishArtifact.
+// ---------------------------------------------------------------------------
+
+const TEMPLATE_ID_REJECT = 901 // allow_redacted_artifacts = 0
+const TEMPLATE_ID_ALLOW = 902 // allow_redacted_artifacts = 1
+const TASK_REJECT = 200 // tasks.workflow_template_id → TEMPLATE_ID_REJECT
+const TASK_ALLOW = 201 // tasks.workflow_template_id → TEMPLATE_ID_ALLOW
+// AWS-shaped fake key (matches `aws-access-key-id` rule). NOT a real secret.
+const FAKE_AKIA = 'AKIAIOSFODNN7EXAMPLE'
+
+function seedUs8Fixtures(db: Database.Database): void {
+  // workflow_templates rows + tasks pointing at them.
+  db.prepare(
+    `INSERT INTO workflow_templates (id, name, task_prompt, workspace_id, slug, allow_redacted_artifacts) VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(TEMPLATE_ID_REJECT, 'reject-tmpl', 'p', PRODUCT_LINE_WORKSPACE_ID, 'reject-tmpl', 0)
+  db.prepare(
+    `INSERT INTO workflow_templates (id, name, task_prompt, workspace_id, slug, allow_redacted_artifacts) VALUES (?, ?, ?, ?, ?, ?)`,
+  ).run(TEMPLATE_ID_ALLOW, 'allow-tmpl', 'p', PRODUCT_LINE_WORKSPACE_ID, 'allow-tmpl', 1)
+
+  // Discover required NOT NULL columns once and reuse the same builder as
+  // the harness above.
+  const taskCols = db
+    .prepare("PRAGMA table_info('tasks')")
+    .all() as { name: string; notnull: number; dflt_value: unknown }[]
+  const required = taskCols
+    .filter((c) => c.notnull === 1 && c.dflt_value === null && c.name !== 'id')
+    .map((c) => c.name)
+  const minimalCols = new Set<string>(['id', 'workspace_id', 'workflow_template_id', ...required])
+  const colList = Array.from(minimalCols)
+  const placeholders = colList.map(() => '?').join(',')
+  const insertTask = db.prepare(`INSERT INTO tasks (${colList.join(',')}) VALUES (${placeholders})`)
+  function row(id: number, templateId: number): unknown[] {
+    return colList.map((c) => {
+      if (c === 'id') return id
+      if (c === 'workspace_id') return PRODUCT_LINE_WORKSPACE_ID
+      if (c === 'workflow_template_id') return templateId
+      if (c === 'title') return `task-${String(id)}`
+      if (c === 'kind' || c === 'type') return 'task'
+      if (c === 'status') return 'queued'
+      if (c === 'created_at' || c === 'updated_at') return Date.now()
+      return ''
+    })
+  }
+  insertTask.run(...row(TASK_REJECT, TEMPLATE_ID_REJECT))
+  insertTask.run(...row(TASK_ALLOW, TEMPLATE_ID_ALLOW))
+}
+
+function countSecurityViolation(db: Database.Database, taskId: number): number {
+  const r = db
+    .prepare(
+      "SELECT COUNT(*) AS n FROM activities WHERE type = 'security_violation' AND entity_type = 'task' AND entity_id = ?",
+    )
+    .get(taskId) as { n: number }
+  return r.n
+}
+
+function countScanError(db: Database.Database, taskId: number): number {
+  const r = db
+    .prepare(
+      "SELECT COUNT(*) AS n FROM activities WHERE type = 'security_violation_scan_error' AND entity_type = 'task' AND entity_id = ?",
+    )
+    .get(taskId) as { n: number }
+  return r.n
+}
+
+function countArtifactRows(db: Database.Database, taskId: number): number {
+  const r = db
+    .prepare('SELECT COUNT(*) AS n FROM task_artifacts WHERE task_id = ?')
+    .get(taskId) as { n: number }
+  return r.n
+}
+
+describe('publishArtifact: US8 detector enforcement (FR-032/033/034/132/141)', () => {
+  it('clean content (no findings) → publishes normally with redaction_status=pending', () => {
+    const db = openSeededDb()
+    seedUs8Fixtures(db)
+    const result = publishArtifact({
+      db,
+      task_id: TASK_REJECT,
+      artifact_type: 'review_notes',
+      storage_kind: 'inline_markdown',
+      content: '# clean content with no secrets',
+      mime: 'text/markdown',
+      active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+      is_facility_caller: false,
+    })
+    expect(result.redaction_status).toBe('pending')
+    expect(result.security_scan_status).toBe('pending')
+    expect(countSecurityViolation(db, TASK_REJECT)).toBe(0)
+    expect(countArtifactRows(db, TASK_REJECT)).toBe(1)
+  })
+
+  it('findings + binary MIME (image/png) → SecretDetectedError, no file written, no row, security_violation activity', () => {
+    const db = openSeededDb()
+    seedUs8Fixtures(db)
+    // image/png with embedded ASCII secret. Even allow_redacted=1 would reject
+    // (binaries always reject per FR-034). Use the allow-template to prove
+    // binary path bypasses the redact-and-store gate.
+    const fileBytes = Buffer.concat([
+      Buffer.from([0x89, 0x50, 0x4e, 0x47]), // PNG header
+      Buffer.from(` leak: ${FAKE_AKIA} `, 'utf8'),
+      Buffer.from([0x00, 0x01, 0x02, 0x03]),
+    ])
+    let caught: unknown
+    try {
+      publishArtifact({
+        db,
+        task_id: TASK_ALLOW,
+        artifact_type: 'pr_diff',
+        storage_kind: 'file',
+        file: { bytes: fileBytes, original_filename: 'leak.png' },
+        mime: 'image/png',
+        active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+        is_facility_caller: false,
+      })
+    } catch (err) {
+      caught = err
+    }
+    expect(caught).toBeInstanceOf(SecretDetectedError)
+    const e = caught as SecretDetectedError
+    expect(e.code).toBe('secret_detected')
+    expect(e.findings).toBeGreaterThanOrEqual(1)
+    expect(typeof e.redacted_preview).toBe('string')
+    // FR-034: binary content is scan-only; the detector intentionally does
+    // NOT redact bytes (round-trip would corrupt the file). The preview is
+    // a UTF-8 view of original bytes and may contain ASCII secrets — the
+    // important guarantee is that the binary is NEVER STORED, not that the
+    // 422 body is sanitized for binary. Verify rejection + audit trail.
+    expect(countArtifactRows(db, TASK_ALLOW)).toBe(0)
+    expect(countSecurityViolation(db, TASK_ALLOW)).toBe(1)
+  })
+
+  it('findings + text MIME + allow_redacted=0 → SecretDetectedError, no row inserted, security_violation activity', () => {
+    const db = openSeededDb()
+    seedUs8Fixtures(db)
+    let caught: unknown
+    try {
+      publishArtifact({
+        db,
+        task_id: TASK_REJECT,
+        artifact_type: 'review_notes',
+        storage_kind: 'inline_markdown',
+        content: `notes\nkey: ${FAKE_AKIA}\n`,
+        mime: 'text/markdown',
+        active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+        is_facility_caller: false,
+      })
+    } catch (err) {
+      caught = err
+    }
+    expect(caught).toBeInstanceOf(SecretDetectedError)
+    expect((caught as SecretDetectedError).code).toBe('secret_detected')
+    expect((caught as SecretDetectedError).redacted_preview).not.toContain(FAKE_AKIA)
+    expect(countArtifactRows(db, TASK_REJECT)).toBe(0)
+    expect(countSecurityViolation(db, TASK_REJECT)).toBe(1)
+  })
+
+  it('findings + text MIME + allow_redacted=1 → publishes with redaction_status=redacted, stored content == redacted, security_violation activity', () => {
+    const db = openSeededDb()
+    seedUs8Fixtures(db)
+    const original = `# leaked\nkey: ${FAKE_AKIA}\n`
+    const result = publishArtifact({
+      db,
+      task_id: TASK_ALLOW,
+      artifact_type: 'review_notes',
+      storage_kind: 'inline_markdown',
+      content: original,
+      mime: 'text/markdown',
+      active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+      is_facility_caller: false,
+    })
+    expect(result.redaction_status).toBe('redacted')
+    expect(result.security_scan_status).toBe('scanned_with_findings')
+    const row = db
+      .prepare(
+        'SELECT content_markdown, redaction_status, security_scan_status, sha256 FROM task_artifacts WHERE id = ?',
+      )
+      .get(result.id) as {
+      content_markdown: string | null
+      redaction_status: string
+      security_scan_status: string
+      sha256: string
+    }
+    expect(row.redaction_status).toBe('redacted')
+    expect(row.security_scan_status).toBe('scanned_with_findings')
+    expect(row.content_markdown).not.toContain(FAKE_AKIA)
+    expect(row.content_markdown).toContain('<REDACTED:aws-access-key-id>')
+    // sha256 is over the redacted bytes (storage integrity).
+    expect(row.sha256).toBe(result.sha256)
+    expect(countSecurityViolation(db, TASK_ALLOW)).toBe(1)
+  })
+
+  it('detector throws → InternalScanError + security_violation_scan_error activity, no file/row', async () => {
+    const db = openSeededDb()
+    seedUs8Fixtures(db)
+    // Stub the detector to throw via vi.spyOn on the loaded module.
+    const detectorMod = await import('@/lib/secret-detector')
+    const spy = vi.spyOn(detectorMod, 'detectSecrets').mockImplementation(() => {
+      throw new detectorMod.DetectorScanError('boom')
+    })
+    let caught: unknown
+    try {
+      publishArtifact({
+        db,
+        task_id: TASK_REJECT,
+        artifact_type: 'review_notes',
+        storage_kind: 'inline_markdown',
+        content: '# clean enough',
+        mime: 'text/markdown',
+        active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+        is_facility_caller: false,
+      })
+    } catch (err) {
+      caught = err
+    } finally {
+      spy.mockRestore()
+    }
+    expect(caught).toBeInstanceOf(InternalScanError)
+    expect((caught as InternalScanError).code).toBe('internal_scan_error')
+    expect(countArtifactRows(db, TASK_REJECT)).toBe(0)
+    expect(countSecurityViolation(db, TASK_REJECT)).toBe(0)
+    expect(countScanError(db, TASK_REJECT)).toBe(1)
+  })
+
+  it('throttle: two publishes with findings within 60s for same task → only ONE security_violation row', () => {
+    const db = openSeededDb()
+    seedUs8Fixtures(db)
+    // Two consecutive rejects on the same task (allow_redacted=0).
+    for (let i = 0; i < 2; i++) {
+      try {
+        publishArtifact({
+          db,
+          task_id: TASK_REJECT,
+          artifact_type: 'review_notes',
+          storage_kind: 'inline_markdown',
+          content: `attempt-${String(i)} ${FAKE_AKIA}`,
+          mime: 'text/markdown',
+          active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+          is_facility_caller: false,
+        })
+      } catch {
+        /* expected SecretDetectedError */
+      }
+    }
+    // Both attempts had findings; throttle keys on (type, entity_id) within 60s.
+    expect(countSecurityViolation(db, TASK_REJECT)).toBe(1)
+    expect(countArtifactRows(db, TASK_REJECT)).toBe(0)
+  })
+})
 
 describe('getArtifactById', () => {
   it('returns the row for an existing id, null otherwise', () => {

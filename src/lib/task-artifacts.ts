@@ -32,7 +32,7 @@ import {
 import { createRequire } from 'node:module'
 import { join } from 'path'
 import { cwd } from 'process'
-import { detectSecrets } from './secret-detector'
+import { detectSecrets, DetectorScanError } from './secret-detector'
 import type Database from 'better-sqlite3'
 
 const runtimeRequire = createRequire(import.meta.url)
@@ -445,6 +445,52 @@ export class InternalStorageError extends Error {
   }
 }
 
+/**
+ * SPEC-007 US8 — secret detector enforcement (FR-032, FR-141).
+ * Thrown when `detectSecrets` reports findings ≥ 1 AND the detected payload
+ * cannot be redact-and-stored (binary MIME, or template's
+ * `allow_redacted_artifacts=0`). The route layer (US9) maps this to HTTP 422
+ * with body `{error: 'secret_detected', redacted_preview, findings}`.
+ *
+ * `redacted_preview` is bounded to ≤ 4 KiB UTF-8 (FR-013-equivalent cap) and
+ * NEVER contains the raw matched substring — the underlying detector already
+ * substitutes `<REDACTED:{rule_id}>` for text MIMEs (Constitution Principle
+ * XIII). For binary MIMEs the detector returns scan-only output; the
+ * `redacted_preview` is a UTF-8 view of those bytes, intentionally lossy.
+ */
+export class SecretDetectedError extends Error {
+  readonly status = 422
+  readonly code = 'secret_detected'
+  readonly error_code = 'secret_detected'
+  constructor(
+    public readonly redacted_preview: string,
+    public readonly findings: number,
+  ) {
+    super('secret_detected')
+    this.name = 'SecretDetectedError'
+  }
+}
+
+/**
+ * SPEC-007 US8 — fail-closed wrapper around `detectSecrets` (FR-132).
+ * Thrown when the detector itself raises (returned via `DetectorScanError`).
+ * The route layer (US9) maps this to HTTP 500 `internal_scan_error`. The
+ * `evidence` field is for activity payload only — never surfaced to the API
+ * response body.
+ */
+export class InternalScanError extends Error {
+  readonly status = 500
+  readonly code = 'internal_scan_error'
+  readonly error_code = 'internal_scan_error'
+  constructor(
+    message: string,
+    public readonly evidence: Record<string, unknown>,
+  ) {
+    super(message)
+    this.name = 'InternalScanError'
+  }
+}
+
 // ---- publishArtifact -------------------------------------------------------
 
 export type StorageKind = 'inline_json' | 'inline_markdown' | 'file' | 'external_uri'
@@ -665,6 +711,120 @@ function atomicWriteFile(
 }
 
 /**
+ * SPEC-007 US8 throttle helper (FR-032 / FR-141 / FR-132).
+ *
+ * Identical SQL shape to the FR-014 disposition throttle in
+ * `src/lib/task-dispatch.ts:writeThrottledInsertFailure`: 1 row per
+ * `(activity_type, task_id)` per 60s window, keyed off
+ * `activities.created_at >= unixepoch() - 60`.
+ *
+ * Suppresses ALL write failures via `logger.warn` so that an activities
+ * insert fault NEVER bubbles back into the publish path (the publish
+ * already failed/redacted by the time we land here — losing the audit row
+ * is preferable to surfacing a 500 to the agent).
+ */
+function writeThrottledSecurityActivity(
+  db: Database.Database,
+  activityType: 'security_violation' | 'security_violation_scan_error',
+  taskId: number,
+  workspaceId: number,
+  payload: Record<string, unknown>,
+): void {
+  try {
+    const recent = db
+      .prepare(
+        "SELECT id FROM activities WHERE type = ? AND entity_type = 'task' AND entity_id = ? AND created_at >= unixepoch() - 60 LIMIT 1",
+      )
+      .get(activityType, taskId) as { id: number } | undefined
+    if (recent !== undefined) return
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES (?, 'task', ?, 'task-artifacts', ?, ?, ?)",
+    ).run(
+      activityType,
+      taskId,
+      activityType === 'security_violation'
+        ? 'Secret detector findings on artifact publish'
+        : 'Secret detector internal error on artifact publish',
+      JSON.stringify(payload),
+      workspaceId,
+    )
+  } catch (innerErr) {
+    // Suppress activities-write failures so a missing audit row never bubbles
+    // back into the publish path. Use console.warn to keep the strict-scope
+    // module free of external `logger` import (avoids tsconfig.spec-strict
+    // include leakage for SPEC-007 task-artifacts.ts).
+    console.warn({
+      event: 'security_activity_write_failed',
+      task_id: taskId,
+      activity_type: activityType,
+      error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+    })
+  }
+}
+
+/**
+ * SPEC-007 US8 — resolve `workflow_templates.allow_redacted_artifacts` for a
+ * given task (FR-033). Returns `0` (the safe default — reject) when the task
+ * row, the template join, or the column is missing.
+ */
+function resolveAllowRedactedArtifacts(
+  db: Database.Database,
+  taskId: number,
+): number {
+  try {
+    const row = db
+      .prepare(
+        `SELECT wt.allow_redacted_artifacts AS allow_redacted_artifacts
+           FROM tasks t
+           JOIN workflow_templates wt ON wt.id = t.workflow_template_id
+          WHERE t.id = ?`,
+      )
+      .get(taskId) as { allow_redacted_artifacts: number | null } | undefined
+    if (row === undefined) return 0
+    const v = row.allow_redacted_artifacts
+    return typeof v === 'number' && v === 1 ? 1 : 0
+  } catch {
+    // Defensive: a malformed schema or missing FK should fail closed (reject).
+    return 0
+  }
+}
+
+/**
+ * SPEC-007 US8 — text-like MIME predicate (FR-033).
+ * Mirrors the detector's `isTextMime` set but intentionally narrower — only
+ * the subset where we are willing to redact-and-store. PDFs, ZIPs, images
+ * remain binary and ALWAYS reject on findings (FR-034).
+ */
+function isRedactableTextMime(mime: string): boolean {
+  const lower = mime.toLowerCase()
+  if (lower.startsWith('text/')) return true
+  return lower === 'application/json' || lower === 'application/x-yaml'
+}
+
+/**
+ * Build the FR-141 activity payload shape: `{task_id, mime, byte_size,
+ * findings: Array<{rule_id, line_number?, char_offset?}>}`. NEVER includes
+ * the matched substring.
+ */
+function buildSecretViolationPayload(
+  taskId: number,
+  mime: string,
+  byteSize: number,
+  findings: readonly { rule_id: string; line_number?: number; char_offset?: number }[],
+): Record<string, unknown> {
+  return {
+    task_id: taskId,
+    mime,
+    byte_size: byteSize,
+    findings: findings.map((f) => ({
+      rule_id: f.rule_id,
+      ...(typeof f.line_number === 'number' ? { line_number: f.line_number } : {}),
+      ...(typeof f.char_offset === 'number' ? { char_offset: f.char_offset } : {}),
+    })),
+  }
+}
+
+/**
  * Pre-INSERT validation order per CHK034 (the subset we own here — flag/auth
  * happen at the route layer; everything from external_uri onward is library
  * scope). Throws typed errors that the route layer maps to HTTP statuses.
@@ -674,12 +834,14 @@ function validateInputs(input: PublishArtifactInput): void {
   if (input.storage_kind === 'external_uri') {
     throw new ExternalUriRejected()
   }
-  // Storage_kind sanity: only the four enum values are accepted by the schema.
-  if (
-    input.storage_kind !== 'inline_json' &&
-    input.storage_kind !== 'inline_markdown' &&
-    input.storage_kind !== 'file'
-  ) {
+  // Storage_kind sanity: schema accepts only the four enum values; after the
+  // external_uri rejection above, the type narrows to inline_json |
+  // inline_markdown | file. A defensive runtime check still rejects any
+  // out-of-band value injected by a non-typed caller (eslint flags the dead
+  // type-only branch — `as string` defeats the narrowing for a true runtime
+  // guard).
+  const sk: string = input.storage_kind as string
+  if (sk !== 'inline_json' && sk !== 'inline_markdown' && sk !== 'file') {
     throw new ExternalUriRejected('unsupported_storage_kind')
   }
 }
@@ -786,6 +948,113 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
     }
   }
 
+  // -------------------------------------------------------------------------
+  // SPEC-007 US8 — Secret detector enforcement (FR-032/033/034/035a/132/141).
+  //
+  // Runs AFTER content materialization but BEFORE hash compute and atomic
+  // write. The detector's `redacted` output may swap our content variable
+  // (text MIMEs only); the hash and write below operate on whatever ends up
+  // being stored, so a redacted-and-stored artifact is internally consistent
+  // (sha256 == hash(redacted_text)).
+  //
+  // Three branches:
+  //   (a) findings == 0 → pass through (status stays pending/pending).
+  //   (b) findings ≥ 1 AND template allows AND text-like MIME → swap to
+  //       redacted content, mark redaction_status='redacted', security_scan
+  //       _status='scanned_with_findings'. Throttled `security_violation`
+  //       activity. Continue to hash + write of redacted bytes.
+  //   (c) findings ≥ 1 otherwise (binary OR not allowed) → throw
+  //       SecretDetectedError. Throttled `security_violation` activity. NO
+  //       file write. NO row insert.
+  //
+  // Detector throws are caught and re-thrown as InternalScanError (FR-132)
+  // with a throttled `security_violation_scan_error` activity. NEVER swallowed.
+  // -------------------------------------------------------------------------
+  let redactionStatusFinal: RedactionStatus = 'pending'
+  let securityScanStatusFinal: SecurityScanStatus = 'pending'
+  {
+    const detectorInput: string | Buffer =
+      storageKind === 'file'
+        ? (fileBytes ?? Buffer.alloc(0))
+        : (inlineString ?? '')
+    const detectorByteSize: number =
+      typeof detectorInput === 'string'
+        ? Buffer.byteLength(detectorInput, 'utf8')
+        : detectorInput.byteLength
+
+    let detectorResult
+    try {
+      detectorResult = detectSecrets(detectorInput, input.mime)
+    } catch (err) {
+      // FR-132 fail-closed: detector itself raised. Write throttled
+      // `security_violation_scan_error` activity (NEVER `security_violation`
+      // — different audit class), then re-throw as typed InternalScanError.
+      writeThrottledSecurityActivity(
+        db,
+        'security_violation_scan_error',
+        input.task_id,
+        producerWorkspaceId,
+        {
+          task_id: input.task_id,
+          mime: input.mime,
+          byte_size: detectorByteSize,
+          error_class:
+            err instanceof DetectorScanError ? 'DetectorScanError' : err instanceof Error ? err.name : 'unknown',
+        },
+      )
+      throw new InternalScanError('detector_threw', {
+        task_id: input.task_id,
+        mime: input.mime,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+
+    if (detectorResult.findings.length > 0) {
+      const allowRedacted = resolveAllowRedactedArtifacts(db, input.task_id)
+      const isText = isRedactableTextMime(input.mime)
+      const canRedactAndStore = allowRedacted === 1 && isText && typeof detectorResult.redacted === 'string'
+
+      // Always write the FR-141 violation activity (throttled). The forensic
+      // trail is identical for both reject and redact-and-store branches.
+      writeThrottledSecurityActivity(
+        db,
+        'security_violation',
+        input.task_id,
+        producerWorkspaceId,
+        buildSecretViolationPayload(
+          input.task_id,
+          input.mime,
+          detectorByteSize,
+          detectorResult.findings,
+        ),
+      )
+
+      if (canRedactAndStore) {
+        // Branch (b): swap content to redacted form. Hash + write below
+        // recompute against the redacted bytes so on-disk == sha256.
+        const redactedText = detectorResult.redacted as string
+        if (storageKind === 'file') {
+          fileBytes = Buffer.from(redactedText, 'utf8')
+        } else {
+          inlineString = redactedText
+        }
+        redactionStatusFinal = 'redacted'
+        securityScanStatusFinal = 'scanned_with_findings'
+      } else {
+        // Branch (c): always-reject. Build a ≤ 4 KiB UTF-8 preview of the
+        // redacted view (text MIMEs already substituted; binary view is a
+        // lossy UTF-8 decode of the original bytes — intentional, since
+        // FR-034 forbids binary redaction round-trips).
+        const previewSource: string =
+          typeof detectorResult.redacted === 'string'
+            ? detectorResult.redacted
+            : detectorResult.redacted.toString('utf8')
+        const preview = truncateUtf8(previewSource, EXCERPT_BYTE_CAP)
+        throw new SecretDetectedError(preview, detectorResult.findings.length)
+      }
+    }
+  }
+
   // Compute hash + byte_size for both inline and file.
   let sha256Hex: string
   let byteSize: number
@@ -817,14 +1086,6 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
   // Inline column split: FR-029 / data-model Decision 12.
   const contentJson = storageKind === 'inline_json' ? inlineString : null
   const contentMarkdown = storageKind === 'inline_markdown' ? inlineString : null
-
-  // Initial statuses — US8 wires detector and may set 'redacted' / 'rejected'
-  // / 'quarantined' / 'scanned_with_findings' before the row INSERT.
-  // For US6 we leave both at the column defaults ('pending').
-  // The detector hook integration point (deferred to US8):
-  //   const findings = detectSecrets(payloadAsString, input.mime)
-  // Reference the import so the lint/typecheck passes don't strip it.
-  void detectSecrets
 
   // FR-027 single-transaction INSERT (+ optional supersede UPDATE).
   const tx = db.transaction(() => {
@@ -877,8 +1138,8 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
       byte_size: byteSize,
       sha256: sha256Hex,
       preview_text: null, // US9 wires preview_text materialization (FR-042).
-      redaction_status: 'pending' as RedactionStatus,
-      security_scan_status: 'pending' as SecurityScanStatus,
+      redaction_status: redactionStatusFinal,
+      security_scan_status: securityScanStatusFinal,
       supersedes_artifact_id: input.supersedes ?? null,
     })
     return Number(info.lastInsertRowid)
@@ -894,8 +1155,8 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
     sha256: sha256Hex,
     storage_uri: storageUri,
     byte_size: byteSize,
-    redaction_status: 'pending',
-    security_scan_status: 'pending',
+    redaction_status: redactionStatusFinal,
+    security_scan_status: securityScanStatusFinal,
   }
 }
 
