@@ -219,7 +219,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Acceptance criteria source:** Phase 4 Acceptance Criteria
 - **Scope summary:** Add feature-flagged `ready_for_owner` runtime behavior for PR-producing templates, including Kanban lane, GitHub status label, Aegis approval branching, PR-merge transition to `done`, reconciliation alert on issue closure without merged PR, and notification type.
 - **Tool count / tool names:** N/A — not a tool-surface spec
-- **Strict Scope:** `src/lib/notifications.ts`
+- **Strict Scope:** new helper `src/lib/task-status.ts`; ready-for-owner notifications stay on existing `src/lib/db.ts`, panel, and delivery callsites.
 - **Autopilot notes:** Non-PR-producing templates must continue to complete directly to `done`. `produces_pr=true` tasks must not become `done` until linked PR merge is observed.
 - **Definition of done:** Phase 4 deliverables are implemented, P4 acceptance criteria pass for flag OFF, non-PR templates, PR-producing templates, merged PR transition, closed-issue reconciliation, Kanban rendering, and GitHub label sync.
 
@@ -687,12 +687,12 @@ Add `ready_for_owner` to the task state progression for PR-producing tasks (D6, 
 - `src/lib/github-label-map.ts` — 1 new entry
 - `src/lib/github-sync-engine.ts` — new transition rule (~15 lines)
 - `src/lib/task-dispatch.ts` — branch in `runAegisReviews` (~15 lines)
-- `src/lib/notifications.ts` — new notification type
+- `src/lib/db.ts` / existing notification callsites — create `task_ready_for_owner` notifications without adding a generic notification module
 - `src/components/panels/notifications-panel.tsx` — render new type
 
 ### Acceptance Criteria
 
-- [P4-AC1] With flag OFF, Aegis approval transitions tasks to `done` as today (no `ready_for_owner` in the enum used at runtime).
+- [P4-AC1] With flag OFF, Aegis approval transitions tasks to `done` as today; existing `ready_for_owner` rows remain readable and visible, but no new transition enters `ready_for_owner`.
 - [P4-AC2] With flag ON and `template.produces_pr = false`, task transitions `quality_review → done` as today.
 - [P4-AC3] With flag ON and `template.produces_pr = true`, task transitions `quality_review → ready_for_owner`.
 - [P4-AC4] `produces_pr=true` task in `ready_for_owner` with linked PR merged → `pullFromGitHub` transitions to `done`.
@@ -703,7 +703,7 @@ Add `ready_for_owner` to the task state progression for PR-producing tasks (D6, 
 
 ### Rollback
 
-Flip `FEATURE_TWO_STEP_TERMINAL` OFF. Scheduler transitions direct to `done` as before. `ready_for_owner` column still renders but remains empty.
+Flip `FEATURE_TWO_STEP_TERMINAL` OFF. Scheduler transitions direct to `done` as before. The `ready_for_owner` column still renders any existing rows for rollback visibility, but no new automatic or manual transition enters that state while the flag is OFF.
 
 ### Estimated Work
 

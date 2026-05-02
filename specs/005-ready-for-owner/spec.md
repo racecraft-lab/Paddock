@@ -40,7 +40,7 @@ Operators and autonomous agents continue to use the current completion flow when
 
 **Why this priority**: Rollback safety is the highest-priority requirement because Product Line A must be able to disable the feature without losing visibility into tasks that already reached the new state.
 
-**Independent Test**: Can be fully tested by disabling the two-step terminal behavior, approving both PR-producing and non-PR-producing tasks, verifying they complete as they do today, and verifying a pre-existing `ready_for_owner` task remains visible in task views and Kanban.
+**Independent Test**: Can be fully tested by disabling the two-step terminal behavior, approving both PR-producing and non-PR-producing tasks, verifying they complete as they do today, verifying a pre-existing `ready_for_owner` task remains visible in task views and Kanban, and verifying a new attempt to move a task into `ready_for_owner` is rejected or normalized.
 
 **Acceptance Scenarios**:
 

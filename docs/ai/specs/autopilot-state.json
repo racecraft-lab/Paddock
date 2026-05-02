@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-005-workflow.md",
-  "updated_at": "2026-05-02T02:47:29Z",
-  "active_step": "Phase 6: Analyze",
+  "updated_at": "2026-05-02T02:58:12Z",
+  "active_step": "Phase 7: Setup and status hygiene verification (T001-T005)",
   "status": "In Progress",
   "notes": [
     "SPEC-005 setup completed on branch 005-ready-for-owner from main at dbb6c75.",
@@ -31,7 +31,10 @@
     "G4 passed on 2026-05-02: validate-gate G4 returned pass=true with 0 [Gap] markers across checklist artifacts.",
     "Phase 5 Tasks completed on 2026-05-02: generated 79 dependency-ordered TDD-first tasks, 41 test/verification tasks, 37 parallel markers, 8 task phases, all 5 user stories, 19 acceptance scenarios, and 8/8 P4 acceptance criteria.",
     "G5 passed on 2026-05-02: validate-gate G5 returned pass=true with 79 tasks and 0 markers; count-markers all returned 0 gaps, clarifications, and severity markers.",
-    "Phase 7 placeholder decomposed on 2026-05-02 into concrete task groups T001-T079 before Analyze, as required by the autopilot skill."
+    "Phase 7 placeholder decomposed on 2026-05-02 into concrete task groups T001-T079 before Analyze, as required by the autopilot skill.",
+    "Phase 6 Analyze completed on 2026-05-02: deterministic finding marker count was 0 before remediation, semantic analyze found 3 cross-artifact findings (0 critical, 1 high, 1 medium, 1 low), and all were remediated in the SPEC-005 worktree.",
+    "G6 passed on 2026-05-02: roadmap flag-off/runtime-enum drift, roadmap notification-module drift, and US1 independent-test wording gap were fixed; final finding marker count returned 0 critical, 0 high, 0 medium, and 0 low.",
+    "Phase 6 Analyze consensus item completed as a no-op on 2026-05-02 because Unresolved for consensus was None."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -115,10 +118,10 @@
     {"step": "Gate G4: checklist gaps remediated without scope drift", "status": "completed"},
     {"step": "Phase 5: Tasks", "status": "completed"},
     {"step": "Gate G5: dependency-ordered tasks cover every P4 acceptance criterion and transition path", "status": "completed"},
-    {"step": "Phase 6: Analyze", "status": "in_progress"},
-    {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
-    {"step": "Gate G6: no CRITICAL/HIGH findings remain", "status": "pending"},
-    {"step": "Phase 7: Setup and status hygiene verification (T001-T005)", "status": "pending"},
+    {"step": "Phase 6: Analyze", "status": "completed"},
+    {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
+    {"step": "Gate G6: no CRITICAL/HIGH findings remain", "status": "completed"},
+    {"step": "Phase 7: Setup and status hygiene verification (T001-T005)", "status": "in_progress"},
     {"step": "Phase 7: Foundational status vocabulary and transition boundary (T006-T014)", "status": "pending"},
     {"step": "Phase 7: US1 flag-off rollback behavior (T015-T023)", "status": "pending"},
     {"step": "Phase 7: US2 owner merge gate routing (T024-T033)", "status": "pending"},

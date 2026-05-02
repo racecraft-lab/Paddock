@@ -38,7 +38,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Plan | `$speckit-plan` | Complete | 2026-05-02 generated plan/research/data model/contracts/quickstart; G3 architecture concrete with no migration, no DB CHECK, no terminal-event table, and no unresolved markers |
 | Checklist | `$speckit-checklist` | Complete | All 4 domains complete with marker counter returning zero `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/tasks.md`; 79 tasks with P4-AC1..P4-AC6, all `done` transition paths, and FR-019a/SC-006 accessibility coverage |
-| Analyze | `$speckit-analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
+| Analyze | `$speckit-analyze` | Complete | 2026-05-02 remediated 3 findings: one HIGH roadmap flag-off/runtime-enum drift, one MEDIUM roadmap notification-module drift, and one LOW US1 independent-test wording gap; marker scans clean |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-007/008/009 behavior |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -118,7 +118,7 @@ Complete on 2026-05-02 in branch `005-ready-for-owner`.
 | Enables | SPEC-009 |
 | Priority | P1 |
 | Tool count / tool names | N/A; non-tool-surface spec; `tools: []` |
-| Strict Scope | `src/lib/notifications.ts` is named by roadmap, but current repo has no such file. Plan must verify the real notification surface before creating a module. Existing expected surfaces include `src/lib/db.ts`, `src/components/panels/notifications-panel.tsx`, and notification delivery routes. |
+| Strict Scope | New helper scope is `src/lib/task-status.ts`. Notification work must stay on existing surfaces: `src/lib/db.ts`, `src/components/panels/notifications-panel.tsx`, and notification delivery routes. |
 | Status Authority | Roadmap + this workflow + Design Concept doc |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
@@ -309,7 +309,7 @@ $speckit-plan
 - Preserve flag-off behavior and existing `awaiting_owner` behavior.
 
 ## Architecture Notes
-- Inspect actual current notification surface before deciding whether to add `src/lib/notifications.ts`; the roadmap names it, but current code uses `db_helpers.createNotification`, `src/components/panels/notifications-panel.tsx`, and delivery route formatting.
+- Use the existing notification surface (`db_helpers.createNotification`, `src/components/panels/notifications-panel.tsx`, and delivery route formatting) instead of adding `src/lib/notifications.ts`.
 - Plan every transition site that can reach `done`: `runAegisReviews`, `/api/quality-review`, bulk `PUT /api/tasks`, detail `PUT /api/tasks/[id]`, and `pullFromGitHub`.
 - Plan read/write validation separately: reads can return existing `ready_for_owner`; new writes are flag/transition-gated.
 - Plan the optional `pullFromGitHub(..., { webhookFixture })` test seam so production callsites remain unchanged.
@@ -448,11 +448,15 @@ G6 passes only with zero CRITICAL/HIGH findings after remediation.
 
 ### Analyze Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Initial deterministic marker count returned `{"type":"findings","total":0,"critical":0,"high":0,"medium":0,"low":0}` because no severity markers were present in `spec.md`, `plan.md`, or `tasks.md`. Semantic analyze found three cross-artifact issues, all remediated directly. Final marker count returned `{"type":"findings","total":0,"critical":0,"high":0,"medium":0,"low":0}`.
 
 | Finding | Severity | Issue | Resolution |
 |---------|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A1 | HIGH | Roadmap P4-AC1 and rollback text still said flag OFF meant no `ready_for_owner` runtime enum and an empty column, conflicting with Q1/Q15 and SPEC-005 FR-001..FR-003 rollback visibility. | Updated `docs/ai/rc-factory-technical-roadmap.md` so flag OFF preserves existing `ready_for_owner` rows for reads/display while blocking new transitions. |
+| A2 | MEDIUM | Roadmap strict-scope/files-touched text still proposed `src/lib/notifications.ts`, conflicting with the SPEC-005 plan/tasks decision to use `src/lib/task-status.ts` plus existing notification helpers and avoid a generic notification abstraction. | Updated `docs/ai/rc-factory-technical-roadmap.md` to make `src/lib/task-status.ts` the new strict-scope helper and point notification work at `src/lib/db.ts` plus existing notification callsites for `task_ready_for_owner`. |
+| A3 | LOW | US1 independent-test prose omitted the new-write block check even though its acceptance scenarios and tasks covered it. | Updated `specs/005-ready-for-owner/spec.md` so the independent test includes rejection/normalization of new `ready_for_owner` transitions while the flag is OFF. |
+
+**Unresolved for consensus:** None.
 
 ## Phase 7: Implement
 
