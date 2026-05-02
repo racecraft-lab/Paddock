@@ -148,6 +148,68 @@ describe('createNotification', () => {
       'bob', 'alert', 'Alert', 'CPU high', 'agent', 5, 1,
     )
   })
+
+  it('creates normal ready-for-owner notifications for the assignee before creator fallback', () => {
+    ;(db_helpers as any).createTaskReadyForOwnerNotification({
+      id: 42,
+      title: 'Merge the owner PR',
+      assigned_to: 'owner-agent',
+      created_by: 'creator-agent',
+      workspace_id: 9,
+    })
+
+    expect(mockRun).toHaveBeenCalledWith(
+      'owner-agent',
+      'task_ready_for_owner',
+      'Ready for owner merge',
+      expect.stringContaining('Owner action required'),
+      'task',
+      42,
+      9,
+    )
+  })
+
+  it('falls back to the creator for normal ready-for-owner notifications when no assignee exists', () => {
+    ;(db_helpers as any).createTaskReadyForOwnerNotification({
+      id: 43,
+      title: 'Merge creator-owned PR',
+      assigned_to: '   ',
+      created_by: 'creator-agent',
+      workspace_id: 9,
+    })
+
+    expect(mockRun).toHaveBeenCalledWith(
+      'creator-agent',
+      'task_ready_for_owner',
+      'Ready for owner merge',
+      expect.stringContaining('Owner action required'),
+      'task',
+      43,
+      9,
+    )
+  })
+
+  it('creates linked ready-for-owner notifications without missing-linkage wording', () => {
+    ;(db_helpers as any).createTaskReadyForOwnerNotification({
+      id: 44,
+      title: 'Merge linked PR',
+      assigned_to: 'owner-agent',
+      created_by: 'creator-agent',
+      workspace_id: 9,
+      github_repo: 'owner/repo',
+      github_pr_number: 12,
+    })
+
+    expect(mockRun).toHaveBeenCalledWith(
+      'owner-agent',
+      'task_ready_for_owner',
+      'Ready for owner merge',
+      'Owner action required: Merge linked PR is ready for owner merge.',
+      'task',
+      44,
+      9,
+    )
+  })
 })
 
 describe('updateAgentStatus', () => {

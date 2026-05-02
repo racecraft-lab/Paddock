@@ -10,12 +10,11 @@ const ownedRuntimeFiles = [
 ]
 
 describe('Task pipeline downstream scope guard', () => {
-  it('does not implement later-spec terminal states, area routing, artifact publishing, governance, pilot, or CrabTrap behavior', () => {
+  it('does not implement later-spec area routing, artifact publishing, governance, pilot, or CrabTrap behavior', () => {
     const source = ownedRuntimeFiles
       .map((file) => readFileSync(join(process.cwd(), file), 'utf8'))
       .join('\n')
 
-    expect(source).not.toMatch(/\bready_for_owner\b/)
     expect(source).not.toMatch(/\barea:\*/)
     // SPEC-007 lands disposition logging + artifact dispatch hooks in task-dispatch.ts
     // (FR-011 runPostCommitDispositionInsert; FR-040 metadata.input_artifacts; FR-090

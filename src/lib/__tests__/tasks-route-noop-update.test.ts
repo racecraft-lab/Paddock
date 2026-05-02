@@ -71,6 +71,9 @@ describe('PUT /api/tasks/[id] no-op updates', () => {
       if (sql.includes('FROM workspaces')) {
         return { get: getMock }
       }
+      if (sql.includes('FROM tasks t')) {
+        return { get: getMock }
+      }
       if (sql.includes('SELECT * FROM tasks WHERE id = ? AND workspace_id = ?')) {
         return { get: getMock }
       }

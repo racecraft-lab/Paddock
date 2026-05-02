@@ -32,13 +32,13 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep + Status Hygiene | `$speckit-autopilot` startup | Pending | Archive dry-run, current target exclusion, and stale SPEC-006/SPEC-004/autopilot-state tracking repair before Specify |
-| Specify | `$speckit-specify` | Pending | Generate `specs/005-ready-for-owner/spec.md`; no unresolved markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve open questions from the Design Concept doc |
-| Plan | `$speckit-plan` | Pending | Generate plan/research/data model/contracts/quickstart; no DB migration unless a gate proves roadmap drift |
-| Checklist | `$speckit-checklist` | Pending | Recommended domains: state-machine, github-sync, notifications-ux, regression-safety |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with P4-AC1..P4-AC6 coverage |
-| Analyze | `$speckit-analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
+| Prerequisites + Archive Sweep + Status Hygiene | `$speckit-autopilot` startup | Complete | 2026-05-02 dry-run/no-cleanup Archive Sweep recorded; SPEC-005 excluded; prerequisite scripts passed; status hygiene repaired merged SPEC-004/SPEC-006 tracking before Specify |
+| Specify | `$speckit-specify` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/spec.md` and requirements checklist; G1 passed with 0 markers |
+| Clarify | `$speckit-clarify` | Complete | All 3 sessions complete; S1 transition guards/API, S2 GitHub terminal event/reconciliation, S3 operator surfaces/status vocabulary; marker scans clean |
+| Plan | `$speckit-plan` | Complete | 2026-05-02 generated plan/research/data model/contracts/quickstart; G3 architecture concrete with no migration, no DB CHECK, no terminal-event table, and no unresolved markers |
+| Checklist | `$speckit-checklist` | Complete | All 4 domains complete with marker counter returning zero `[Gap]` markers |
+| Tasks | `$speckit-tasks` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/tasks.md`; 79 tasks with P4-AC1..P4-AC6, all `done` transition paths, and FR-019a/SC-006 accessibility coverage |
+| Analyze | `$speckit-analyze` | Complete | 2026-05-02 remediated 3 findings: one HIGH roadmap flag-off/runtime-enum drift, one MEDIUM roadmap notification-module drift, and one LOW US1 independent-test wording gap; marker scans clean |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-007/008/009 behavior |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -69,7 +69,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Cross-spec boundary | SPEC-005 does not implement artifact store, resource governance, pilot seed behavior, Product Line B onboarding, or CrabTrap | Analyze prompt and guardrail grep |
 | Test fixture seam | `pullFromGitHub` may accept optional `{ webhookFixture }` only for deterministic tests; production calls pass no fixture | Unit tests and production callsite checks |
 
-**Constitution Check:** Pending. Verify at Phase 0 start.
+**Constitution Check:** Phase 0 baseline passed on 2026-05-02. Implementation-specific guardrails remain required in Plan/Analyze/Implement.
 
 ### Archive Sweep
 
@@ -96,6 +96,15 @@ Required Phase 0 hygiene actions:
 3. Update `docs/ai/specs/autopilot-state.json` so it no longer describes partial `SPEC-006` work as the active workflow. It should point at `docs/ai/specs/SPEC-005-workflow.md`, Phase 0 startup/status-hygiene state, and the archive sweep target exclusion for `SPEC-005`.
 4. Do not modify `main` directly. Commit the hygiene changes on `005-ready-for-owner`.
 
+### Phase 0 Results
+
+Complete on 2026-05-02 in branch `005-ready-for-owner`.
+
+- Archive Sweep startup: dry-run/no-cleanup recorded; archive extension v1.1.0 installed; `specs/005-ready-for-owner` excluded; `safeToApplyCleanup=false`.
+- Prerequisites: `check-prerequisites.sh` returned `all_pass=true`; branch `005-ready-for-owner`; isolated worktree; feature branch; `pnpm` package manager; missing MCP servers are non-blocking fallbacks.
+- Project command baseline: `pnpm typecheck` passed; `pnpm lint` passed with 0 errors and 12 warnings; `pnpm test` passed with 163 files / 1323 tests after rerun with host GPG/socket access; `pnpm build` passed after rerun with network access for Google Fonts.
+- Status hygiene: roadmap, PRD, SPEC-004 workflow, SPEC-006 workflow, and `autopilot-state.json` no longer describe SPEC-006 as an open PR or partial active workflow; SPEC-004 and SPEC-006 merge evidence is recorded.
+
 ## Specification Context
 
 ### Basic Information
@@ -109,7 +118,7 @@ Required Phase 0 hygiene actions:
 | Enables | SPEC-009 |
 | Priority | P1 |
 | Tool count / tool names | N/A; non-tool-surface spec; `tools: []` |
-| Strict Scope | `src/lib/notifications.ts` is named by roadmap, but current repo has no such file. Plan must verify the real notification surface before creating a module. Existing expected surfaces include `src/lib/db.ts`, `src/components/panels/notifications-panel.tsx`, and notification delivery routes. |
+| Strict Scope | New helper scope is `src/lib/task-status.ts`. Notification work must stay on existing surfaces: `src/lib/db.ts`, `src/components/panels/notifications-panel.tsx`, and notification delivery routes. |
 | Status Authority | Roadmap + this workflow + Design Concept doc |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
@@ -189,17 +198,20 @@ Use P4-AC1 through P4-AC6 from this workflow and the technical roadmap.
 
 ### Specify Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Generated SPEC-005 Specify artifacts with no unresolved clarification markers. G1 gate passed: `validate-gate.sh G1 specs/005-ready-for-owner` returned `pass=true`; `count-markers.sh all specs/005-ready-for-owner` returned 0 gaps, clarifications, CRITICAL, HIGH, MEDIUM, and LOW markers.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Scenarios | Pending |
+| Functional Requirements | 25 |
+| User Stories | 5 |
+| Acceptance Scenarios | 19 |
+| Success Criteria | 6 |
+| Edge Cases | 10 |
 
 ### Files Generated
 
-- [ ] `specs/005-ready-for-owner/spec.md`
+- [x] `specs/005-ready-for-owner/spec.md`
+- [x] `specs/005-ready-for-owner/checklists/requirements.md`
 
 ## Phase 2: Clarify
 
@@ -248,13 +260,22 @@ Focus on SPEC-005 operator-facing surfaces:
 
 ### Clarify Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. All three sessions completed; no unresolved markers remain.
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Transition Guards and API Contract | Pending | Pending |
-| 2 | GitHub Terminal Event and Reconciliation | Pending | Pending |
-| 3 | UI, Labels, Notifications, and Status Vocabulary | Pending | Pending |
+| 1 | Transition Guards and API Contract | 5 | Shared transition guard boundary; static read vocabulary plus workspace-aware write guards; uniform 409 body; all non-merge `done` writes for PR-producing tasks blocked while flag ON; `advanceTaskChain` runs only after verified PR merge writes `done` with a GitHub PR merge trigger. |
+| 2 | GitHub Terminal Event and Reconciliation | 5 | Explicit PR identity is `github_repo` + `github_pr_number`; merge evidence must match linked repo/PR and include `merged=true`, `merged_at`, or `merge_commit_sha` from live GitHub or test-only fixture; closed issue without merged PR leaves task in `ready_for_owner`; reconciliation writes `github_terminal_reconciliation_required` activity, sends `task_ready_for_owner` notification to assignee then creator, and dedupes unchanged task/issue/reason; production `pullFromGitHub` callsites pass no fixture/options. |
+| 3 | UI, Labels, Notifications, and Status Vocabulary | 5 | `ready_for_owner` added to static status vocabulary surfaces with write guards enforcing flag behavior; Kanban lane key `ready_for_owner`, label `Ready for Owner`, teal styling, placed between `quality_review` and `done`; GitHub label `mc:ready-for-owner` color `14b8a6` description `Mission Control: ready for owner`; `task_ready_for_owner` panel/delivery rendering with normal and reconciliation titles; existing nullable `external_terminal_event='github_pr_merged'` used with no migration/table. |
+
+### Consensus Resolution Log
+
+| Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|-------------------|---------|---------------|
+| Clarify S1 Q2: exact 409 conflict body | 2 | `[spec, codebase]` | Accepted uniform body `{ "error": "transition_conflict", "reason": "ready_for_owner_pr_merge_required", "task_ids": [<id>] }`; single-task routes use one-item `task_ids`. | `codebase-analyst`, `spec-context-analyst`, `domain-researcher` |
+| Clarify S1 Q4: non-merge done-write guard breadth | 1 | `[spec, codebase]` | Accepted broad guard: while flag ON, every non-GitHub-merge attempt to write `done` for a PR-producing task is blocked or routed to `ready_for_owner`; manual and failed-to-done paths cannot bypass. | `codebase-analyst`, `spec-context-analyst` |
+| Clarify S2 Q4: reconciliation activity and notification idempotency | 1 | `[codebase, spec]` | Accepted `github_terminal_reconciliation_required` activity with task/github/reason data; notification reuses `task_ready_for_owner` with reconciliation wording and assignee-then-creator routing; no duplicate activity or notification for unchanged task/issue/reason. | `codebase-analyst`, `spec-context-analyst` |
+| Clarify S3: operator surfaces and status vocabulary | 1 | n/a | No unresolved consensus items; accepted executor recommendations for static status vocabulary, Kanban lane label/style/order, GitHub label definition/provisioning/application, notification rendering/delivery copy, and no-migration `external_terminal_event='github_pr_merged'` contract. | `clarify-executor` |
 
 ## Phase 3: Plan
 
@@ -288,24 +309,26 @@ $speckit-plan
 - Preserve flag-off behavior and existing `awaiting_owner` behavior.
 
 ## Architecture Notes
-- Inspect actual current notification surface before deciding whether to add `src/lib/notifications.ts`; the roadmap names it, but current code uses `db_helpers.createNotification`, `src/components/panels/notifications-panel.tsx`, and delivery route formatting.
+- Use the existing notification surface (`db_helpers.createNotification`, `src/components/panels/notifications-panel.tsx`, and delivery route formatting) instead of adding `src/lib/notifications.ts`.
 - Plan every transition site that can reach `done`: `runAegisReviews`, `/api/quality-review`, bulk `PUT /api/tasks`, detail `PUT /api/tasks/[id]`, and `pullFromGitHub`.
 - Plan read/write validation separately: reads can return existing `ready_for_owner`; new writes are flag/transition-gated.
 - Plan the optional `pullFromGitHub(..., { webhookFixture })` test seam so production callsites remain unchanged.
+- Plan status vocabulary and operator surfaces across `messages/*.json`, task board lane/status styling, `github-label-map`, notification panel rendering, and notification delivery formatting.
+- Plan `external_terminal_event='github_pr_merged'` using the existing nullable workflow-template text field; verify no DB migration, DB CHECK, enum constraint, or terminal-event table is introduced.
 - Plan status-hygiene changes from Phase 0 separately from SPEC-005 runtime code.
 ```
 
 ### Plan Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Generated the Plan phase artifacts from `specs/005-ready-for-owner/spec.md`, roadmap Phase 4/SPEC-005, PRD sections E/F, the Design Concept, and SPEC-004's current task-chain/GitHub/template surfaces. G3 gate passed: the plan keeps SPEC-005 application-level only, uses a new narrow `src/lib/task-status.ts` transition helper, keeps notifications on existing `db_helpers.createNotification`/panel/delivery surfaces, and records `pullFromGitHub(..., { webhookFixture })` as test-only with production callsites unchanged.
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context and implementation flow |
-| `research.md` | Pending | Transition, GitHub, notification, UI decisions |
-| `data-model.md` | Pending | Application-level state and activity/notification shapes; no DB migration |
-| `contracts/` | Pending | API conflict shape and GitHub fixture seam |
-| `quickstart.md` | Pending | Verification flow |
+| `plan.md` | Complete | Technical context, constitution checks, strict-scope decision, implementation seams, and post-design gate |
+| `research.md` | Complete | Transition guard, read/write validation, GitHub evidence, notification, UI, and chain-timing decisions |
+| `data-model.md` | Complete | Application-level state, existing fields, reconciliation activity, notification, label, and chain semantics; no DB migration |
+| `contracts/` | Complete | API transition conflict contract, GitHub terminal-event fixture contract, and operator-surface contract |
+| `quickstart.md` | Complete | Focused verification flow plus final project command map |
 
 ## Phase 4: Domain Checklists
 
@@ -339,14 +362,14 @@ $speckit-checklist Regression safety for SPEC-005: no DB migration, no status CH
 
 ### Checklist Results
 
-Pending. Fill in after running.
+All four checklist domains complete.
 
 | Domain | Items | Gaps | Remediation |
 |--------|-------|------|-------------|
-| State Machine and Feature Flags | Pending | Pending | Pending |
-| GitHub Sync and Terminal Event Evidence | Pending | Pending | Pending |
-| Notifications and Operator UX | Pending | Pending | Pending |
-| Regression Safety and Cross-Spec Boundaries | Pending | Pending | Pending |
+| State Machine and Feature Flags | 18 | 0 | No remediation required; checklist generated at `specs/005-ready-for-owner/checklists/state-machine-feature-flags.md` and marker counter returned zero `[Gap]` markers. |
+| GitHub Sync and Terminal Event Evidence | 22 | 0 | No remediation required; checklist generated at `specs/005-ready-for-owner/checklists/github-sync-terminal-evidence.md` and marker counter returned zero `[Gap]` markers. |
+| Notifications and Operator UX | 24 | 0 | Remediated 1 accessibility requirement gap by adding `FR-019a`, tightening `SC-006`, and updating plan Operator Surfaces; checklist generated at `specs/005-ready-for-owner/checklists/notifications-operator-ux.md` and marker counter returned zero `[Gap]` markers. |
+| Regression Safety and Cross-Spec Boundaries | 24 | 0 | No remediation required; checklist generated at `specs/005-ready-for-owner/checklists/regression-safety-cross-spec-boundaries.md` and marker counter returned zero `[Gap]` markers. |
 
 ## Phase 5: Tasks
 
@@ -377,14 +400,19 @@ Task generation requirements:
 
 ### Tasks Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Generated dependency-ordered, TDD-first tasks in `specs/005-ready-for-owner/tasks.md` from the SPEC-005 spec, plan, design concept, design artifacts, and roadmap P4 acceptance criteria. Phase 0 status hygiene was already recorded complete before Specify, so the task list includes verification rather than redoing status-hygiene edits. Optional git before/after task hooks were available but not executed because this phase was requested without commits or pushes.
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Test Tasks | Pending |
-| Parallel Markers | Pending |
-| Phases | Pending |
+| Total Tasks | 79 |
+| Test Tasks | 41 |
+| Parallel Markers | 37 |
+| Phases | 8 |
+| User Story Tasks | US1: 9; US2: 10; US3: 16; US4: 10; US5: 11 |
+| P4 Acceptance Criteria Coverage | 8/8: P4-AC1, P4-AC2, P4-AC3, P4-AC4, P4-AC4a, P4-AC4b, P4-AC5, P4-AC6 |
+| Live `done` Transition Paths Covered | Aegis dispatch, quality-review API, bulk task update, detail task update, GitHub sync |
+| Accessibility Coverage | Included for Ready for Owner lane and `task_ready_for_owner` notifications via FR-019a/SC-006 tasks |
+| Checklist Format | Pass at generation: all 79 task lines used SpecKit checkbox task format with story labels on user-story tasks |
 
 ## Phase 6: Analyze
 
@@ -420,11 +448,15 @@ G6 passes only with zero CRITICAL/HIGH findings after remediation.
 
 ### Analyze Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Initial deterministic marker count returned `{"type":"findings","total":0,"critical":0,"high":0,"medium":0,"low":0}` because no severity markers were present in `spec.md`, `plan.md`, or `tasks.md`. Semantic analyze found three cross-artifact issues, all remediated directly. Final marker count returned `{"type":"findings","total":0,"critical":0,"high":0,"medium":0,"low":0}`.
 
 | Finding | Severity | Issue | Resolution |
 |---------|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A1 | HIGH | Roadmap P4-AC1 and rollback text still said flag OFF meant no `ready_for_owner` runtime enum and an empty column, conflicting with Q1/Q15 and SPEC-005 FR-001..FR-003 rollback visibility. | Updated `docs/ai/rc-factory-technical-roadmap.md` so flag OFF preserves existing `ready_for_owner` rows for reads/display while blocking new transitions. |
+| A2 | MEDIUM | Roadmap strict-scope/files-touched text still proposed `src/lib/notifications.ts`, conflicting with the SPEC-005 plan/tasks decision to use `src/lib/task-status.ts` plus existing notification helpers and avoid a generic notification abstraction. | Updated `docs/ai/rc-factory-technical-roadmap.md` to make `src/lib/task-status.ts` the new strict-scope helper and point notification work at `src/lib/db.ts` plus existing notification callsites for `task_ready_for_owner`. |
+| A3 | LOW | US1 independent-test prose omitted the new-write block check even though its acceptance scenarios and tasks covered it. | Updated `specs/005-ready-for-owner/spec.md` so the independent test includes rejection/normalization of new `ready_for_owner` transitions while the flag is OFF. |
+
+**Unresolved for consensus:** None.
 
 ## Phase 7: Implement
 
@@ -468,47 +500,73 @@ Expected implementation surfaces from roadmap and codebase scan:
 
 ### Implementation Progress
 
-Pending. Fill in during execution.
+In progress. Update after each implementation group.
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 0 - Status hygiene and startup | Pending | Pending | Archive Sweep and stale tracking repair |
-| 1 - Status vocabulary and validation | Pending | Pending | Application-level `ready_for_owner`; no DB migration |
-| 2 - Transition guards | Pending | Pending | Aegis/API/bulk/detail guarded paths |
-| 3 - GitHub terminal event | Pending | Pending | Explicit merged PR evidence and reconciliation |
-| 4 - Labels and notifications | Pending | Pending | `mc:ready-for-owner`, `task_ready_for_owner` |
-| 5 - Kanban and operator UX | Pending | Pending | Lane order and existing row visibility |
-| 6 - Verification and docs | Pending | Pending | Full G7 evidence and status sync |
+| 0 - Status hygiene and startup | T001-T005 | Complete | Phase 0 status hygiene and Archive Sweep evidence verified; no SPEC-005 migration/CHECK/table scope found; `src/lib/task-status.ts` added to strict type/lint surfaces; pnpm lockfile confirmed |
+| 1 - Status vocabulary and validation | T006-T014 | Complete | Shared status vocabulary, transition conflict body, terminal transition guard, validation exports, store/API status unions, and focused tests complete; 47 focused tests, focused ESLint, typecheck, and diff check passed |
+| 2 - Transition guards | T015-T033 | Complete | Flag-off rollback behavior, flag-on Aegis/quality-review owner routing, missing-linkage evidence, outbound sync, and no chain advancement at `ready_for_owner` verified |
+| 3 - GitHub terminal event | T034-T049 | Complete | Optional fixture seam, explicit merged PR evidence, side-effect-free blocked conflicts, reconciliation dedupe, and `github_pr_merged` chain advancement verified |
+| 4 - Labels and Kanban | T050-T059 | Complete | `mc:ready-for-owner` mapping/application, lane order, existing row visibility, localized copy, and accessibility verified |
+| 5 - Owner notifications | T060-T070 | Complete | `task_ready_for_owner` helper routing, assignee/creator fallback, reconciliation dedupe, panel rendering, delivery formatting, and notification accessibility verified |
+| 6 - Verification and docs | T071-T079 | Complete | Guardrail evidence, acceptance coverage, full verification matrix, status sync, and branch push evidence recorded |
+
+---
+
+### G7 Implementation Evidence
+
+G7 passed on 2026-05-02. All 79 generated tasks are checked in `specs/005-ready-for-owner/tasks.md`.
+
+Guardrail evidence:
+
+- `git diff --name-only origin/main...HEAD src/lib/migrations.ts docs/migrations` returned no files.
+- Guardrail grep for DB migration/status CHECK/terminal-event table, issue timeline inference, force-complete/operator override wording, and adjacent scope drift returned no matches across SPEC-005 runtime surfaces.
+- Production `pullFromGitHub` callsites in `src/app/api/github/sync/route.ts`, `src/app/api/github/route.ts`, and `src/lib/github-sync-poller.ts` pass no `{ webhookFixture }`; fixture usage remains test-only.
+
+Acceptance evidence:
+
+- P4-AC1 through P4-AC6 are covered by focused Vitest and Playwright suites recorded in `specs/005-ready-for-owner/quickstart.md`.
+- FR-019a and SC-006 are covered by lane, card, notification panel, delivery-formatting, and keyboard/focus assertions.
+- SPEC-005 did not add migrations, DB-level task status CHECKs, terminal-event tables, issue timeline inference, or operator override/force-complete policy.
+
+Final command evidence:
+
+- `pnpm typecheck`: passed.
+- `pnpm lint`: passed with 0 errors and 12 existing warnings.
+- `pnpm test`: passed with 169 files and 1369 tests after host-permission rerun for GPG/socket tests.
+- `pnpm build`: passed after network-enabled rerun for Next.js Google Fonts; existing Turbopack NFT trace warnings were non-fatal.
+- `pnpm test:e2e`: passed with 535 Playwright tests.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] Phase 0 status hygiene completed in branch.
-- [ ] Archive Sweep evidence is recorded and excludes `SPEC-005`.
-- [ ] All generated tasks are marked complete in `specs/005-ready-for-owner/tasks.md`.
-- [ ] Acceptance evidence exists for P4-AC1 through P4-AC6.
-- [ ] No database migration or DB-level status CHECK was added.
-- [ ] Existing `ready_for_owner` rows remain readable/visible with flag OFF.
-- [ ] New `ready_for_owner` writes/transitions are blocked with flag OFF.
-- [ ] `produces_pr=false` tasks still complete directly to `done`.
-- [ ] `produces_pr=true` tasks enter `ready_for_owner` after Aegis approval.
-- [ ] Non-merge attempts to move PR-producing `ready_for_owner` tasks to `done` return side-effect-free `409 Conflict`.
-- [ ] Explicit merged linked PR evidence moves `ready_for_owner -> done`.
-- [ ] Closed issue without merged linked PR leaves task in `ready_for_owner` and creates reconciliation activity/notification.
-- [ ] `advanceTaskChain` waits until verified `done`.
-- [ ] `mc:ready-for-owner` is provisioned and applied idempotently.
-- [ ] `task_ready_for_owner` notification is created, rendered, and delivered.
-- [ ] Kanban lane order places `ready_for_owner` between `quality_review` and `done`.
-- [ ] `awaiting_owner` behavior remains unchanged.
-- [ ] Production `pullFromGitHub` callsites pass no webhook fixture.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] Focused Vitest suites pass.
-- [ ] Required Playwright/UI evidence passes or is explicitly justified.
-- [ ] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-005 implementation evidence after verification.
-- [ ] `docs/rc-factory-v1-prd.md` reflects SPEC-005 completion after verification.
-- [ ] Branch is pushed for review.
+- [x] Phase 0 status hygiene completed in branch.
+- [x] Archive Sweep evidence is recorded and excludes `SPEC-005`.
+- [x] All generated tasks are marked complete in `specs/005-ready-for-owner/tasks.md`.
+- [x] Acceptance evidence exists for P4-AC1 through P4-AC6.
+- [x] No database migration or DB-level status CHECK was added.
+- [x] Existing `ready_for_owner` rows remain readable/visible with flag OFF.
+- [x] New `ready_for_owner` writes/transitions are blocked with flag OFF.
+- [x] `produces_pr=false` tasks still complete directly to `done`.
+- [x] `produces_pr=true` tasks enter `ready_for_owner` after Aegis approval.
+- [x] Non-merge attempts to move PR-producing `ready_for_owner` tasks to `done` return side-effect-free `409 Conflict`.
+- [x] Explicit merged linked PR evidence moves `ready_for_owner -> done`.
+- [x] Closed issue without merged linked PR leaves task in `ready_for_owner` and creates reconciliation activity/notification.
+- [x] `advanceTaskChain` waits until verified `done`.
+- [x] `mc:ready-for-owner` is provisioned and applied idempotently.
+- [x] `task_ready_for_owner` notification is created, rendered, and delivered.
+- [x] Kanban lane order places `ready_for_owner` between `quality_review` and `done`.
+- [x] `awaiting_owner` behavior remains unchanged.
+- [x] Production `pullFromGitHub` callsites pass no webhook fixture.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] Focused Vitest suites pass.
+- [x] Required Playwright/UI evidence passes or is explicitly justified.
+- [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-005 implementation evidence after verification.
+- [x] `docs/rc-factory-v1-prd.md` reflects SPEC-005 completion after verification.
+- [x] Branch is pushed for review.
 
 ---
 

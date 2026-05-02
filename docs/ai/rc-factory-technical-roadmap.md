@@ -83,8 +83,8 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-002A | 1A | Spec Archive and Evidence Retention | spec-archive-evidence | Complete | P1 | SPEC-002 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009, SPEC-010 | Phase 1A |
 | SPEC-003 | 2 | Aegis Facility Singleton Refactor | global-aegis | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-004, SPEC-009 | Phase 2 |
 | SPEC-004 | 3 | Task Pipeline Engine and Declarative Routing | task-pipeline-engine | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003 | SPEC-005, SPEC-007, SPEC-008, SPEC-009 | Phase 3 |
-| SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | In Progress | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
-| SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Implemented (PR open) | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
+| SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Complete | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
+| SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | In Progress | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Pending | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
 | SPEC-009 | 8 | Product Line A Pilot End-to-End Smoke | product-line-a-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
@@ -107,7 +107,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, and SPEC-004 are complete on `main` (SPEC-004 merged via PR #22). SPEC-006 has merged to `main` via PR #21, but some generated tracking artifacts still contain stale pre-merge wording; SPEC-005 Phase 0 owns repairing that branch-local status drift before Specify. SPEC-005 setup is in progress in `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 — those remain gated on prior dependency-chain specs.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, and SPEC-006 are complete on `main` (SPEC-004 merged via PR #22 as `20643d8`; SPEC-005 merged via PR #23 as `851571f`; SPEC-006 merged via PR #21 as `dbb6c75`). SPEC-007 implementation is in progress on branch `007-disposition-artifacts` with PR #25 open. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 -- those remain gated on prior dependency-chain specs.
 
 ## Feature Flag Resolution Policy
 
@@ -193,7 +193,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 ### SPEC-004: Task Pipeline Engine and Declarative Routing
 
 - **Status:** Complete
-- **Branch status:** Implementation, local verification, PR review remediation, and GitHub/Argos checks completed on branch `004-task-pipeline-engine` for PR #22 on 2026-05-01; ready to merge to `main`.
+- **Branch status:** Implementation, local verification, PR review remediation, GitHub/Argos checks, and merge to `main` completed on PR #22 on 2026-05-01 as `20643d8`.
 - **Priority:** P1
 - **Branch short name:** `task-pipeline-engine`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003
@@ -209,8 +209,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-005: ready_for_owner State and Two-Step Terminal Event
 
-- **Status:** In Progress
-- **Branch status:** Setup started in worktree `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`; Design Concept and workflow generated for autopilot. Phase 0 must repair stale merged-state tracking for SPEC-004/SPEC-006/autopilot state before SPEC-005 Specify.
+- **Status:** Complete
+- **Branch status:** PR #23 (https://github.com/racecraft-lab/mission-control/pull/23) merged to `main` on 2026-05-02 as `851571f`. Implementation and local G7 verification completed in worktree `.worktrees/005-ready-for-owner` on branch `005-ready-for-owner`.
 - **Priority:** P1
 - **Branch short name:** `ready-for-owner`
 - **Dependencies:** SPEC-002, SPEC-002A, SPEC-004
@@ -219,14 +219,15 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Acceptance criteria source:** Phase 4 Acceptance Criteria
 - **Scope summary:** Add feature-flagged `ready_for_owner` runtime behavior for PR-producing templates, including Kanban lane, GitHub status label, Aegis approval branching, PR-merge transition to `done`, reconciliation alert on issue closure without merged PR, and notification type.
 - **Tool count / tool names:** N/A — not a tool-surface spec
-- **Strict Scope:** `src/lib/notifications.ts`
+- **Strict Scope:** new helper `src/lib/task-status.ts`; ready-for-owner notifications stay on existing `src/lib/db.ts`, panel, and delivery callsites.
 - **Autopilot notes:** Non-PR-producing templates must continue to complete directly to `done`. `produces_pr=true` tasks must not become `done` until linked PR merge is observed.
 - **Definition of done:** Phase 4 deliverables are implemented, P4 acceptance criteria pass for flag OFF, non-PR templates, PR-producing templates, merged PR transition, closed-issue reconciliation, Kanban rendering, and GitHub label sync.
+- **Implementation evidence:** Local G7 passed on 2026-05-02 with all 79 generated tasks checked. Evidence includes `ready_for_owner` application-level vocabulary, shared terminal transition guard, flag-off write blocking/read visibility, Aegis and quality-review owner-gate routing, side-effect-free blocked non-merge `done` attempts, explicit linked PR merge completion through `pullFromGitHub`, closed-issue reconciliation activity/notification dedupe, `mc:ready-for-owner` label provisioning/application, dedicated Kanban lane between `quality_review` and `done`, owner-action-required notifications, and accessibility coverage for lane/card/notification keyboard and focus behavior. Final verification passed: `pnpm typecheck`; `pnpm lint` with 0 errors and 12 existing warnings; `pnpm test` with 169 files / 1369 tests after host-permission rerun for GPG/socket tests; `pnpm build` after network-enabled rerun for Next.js Google Fonts with non-fatal existing Turbopack NFT trace warnings; and `pnpm test:e2e` with 535 Playwright tests. Guardrails confirmed no SPEC-005 database migration, DB-level task status CHECK, terminal-event table, issue timeline inference, operator override, or production `webhookFixture` callsite.
 
 ### SPEC-006: Area-Label GitHub Sync
 
-- **Status:** Implemented (PR open)
-- **Branch status:** PR #21 (https://github.com/racecraft-lab/mission-control/pull/21) marked ready-for-review on 2026-05-01. 30 commits on branch `006-area-label-github-sync` in worktree `.worktrees/006-area-label-github-sync`. All 7 SDD phases complete. Implementation: 64 FRs satisfied, 88+ tasks landed, 1228/1228 unit tests pass with zero regressions vs baseline. Two scope deferrals under Constitution Article XII: sync-owner re-election (operator preflight covers it) and backfill bookend activity kinds (SC-006 testable without them).
+- **Status:** Complete
+- **Branch status:** PR #21 (https://github.com/racecraft-lab/mission-control/pull/21) merged to `main` on 2026-05-01 as `dbb6c75`. 30 commits landed from branch `006-area-label-github-sync`. All 7 SDD phases completed. Implementation: 64 FRs satisfied, 88+ tasks landed, 1228/1228 unit tests passed with zero regressions vs baseline, and GitHub checks passed for CodeQL, Quality Gate, docker UI e2e, Argos Playwright, Argos Storybook, and Argos summary. Two scope deferrals under Constitution Article XII remain documented: sync-owner re-election (operator preflight covers it) and backfill bookend activity kinds (SC-006 testable without them).
 - **Priority:** P1
 - **Branch short name:** `area-label-github-sync`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A
@@ -687,12 +688,12 @@ Add `ready_for_owner` to the task state progression for PR-producing tasks (D6, 
 - `src/lib/github-label-map.ts` — 1 new entry
 - `src/lib/github-sync-engine.ts` — new transition rule (~15 lines)
 - `src/lib/task-dispatch.ts` — branch in `runAegisReviews` (~15 lines)
-- `src/lib/notifications.ts` — new notification type
+- `src/lib/db.ts` / existing notification callsites — create `task_ready_for_owner` notifications without adding a generic notification module
 - `src/components/panels/notifications-panel.tsx` — render new type
 
 ### Acceptance Criteria
 
-- [P4-AC1] With flag OFF, Aegis approval transitions tasks to `done` as today (no `ready_for_owner` in the enum used at runtime).
+- [P4-AC1] With flag OFF, Aegis approval transitions tasks to `done` as today; existing `ready_for_owner` rows remain readable and visible, but no new transition enters `ready_for_owner`.
 - [P4-AC2] With flag ON and `template.produces_pr = false`, task transitions `quality_review → done` as today.
 - [P4-AC3] With flag ON and `template.produces_pr = true`, task transitions `quality_review → ready_for_owner`.
 - [P4-AC4] `produces_pr=true` task in `ready_for_owner` with linked PR merged → `pullFromGitHub` transitions to `done`.
@@ -703,7 +704,7 @@ Add `ready_for_owner` to the task state progression for PR-producing tasks (D6, 
 
 ### Rollback
 
-Flip `FEATURE_TWO_STEP_TERMINAL` OFF. Scheduler transitions direct to `done` as before. `ready_for_owner` column still renders but remains empty.
+Flip `FEATURE_TWO_STEP_TERMINAL` OFF. Scheduler transitions direct to `done` as before. The `ready_for_owner` column still renders any existing rows for rollback visibility, but no new automatic or manual transition enters that state while the flag is OFF.
 
 ### Estimated Work
 

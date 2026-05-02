@@ -463,7 +463,12 @@
     "recipientLabel": "Destinatario",
     "recipientPlaceholder": "Nombre del agente (p. ej., my-agent)",
     "noNotifications": "Sin notificaciones",
-    "markRead": "Marcar como leído"
+    "markRead": "Marcar como leído",
+    "readyForOwnerNormalTitle": "Listo para fusión del propietario",
+    "readyForOwnerNormalMessage": "Acción del propietario requerida: listo para la fusión del propietario.",
+    "readyForOwnerReconciliationTitle": "Se requiere conciliación de fusión del propietario",
+    "readyForOwnerReconciliationMessage": "Acción del propietario requerida: el issue cerrado necesita evidencia de PR fusionado.",
+    "readyForOwnerActionRequired": "Acción del propietario requerida"
   },
   "localAgentsDoc": {
     "title": "AGENTS.md local",
@@ -763,6 +768,8 @@
     "colInProgress": "En progreso",
     "colReview": "Revisión",
     "colQualityReview": "Revisión de calidad",
+    "colReadyForOwner": "Listo para el propietario",
+    "readyForOwnerActionRequired": "Acción del propietario requerida",
     "colFailed": "Fallido",
     "retryTask": "Reintentar",
     "colDone": "Hecho",

@@ -7,6 +7,7 @@ import {
   ALL_MC_LABELS,
   ALL_STATUS_LABEL_NAMES,
   ALL_PRIORITY_LABEL_NAMES,
+  type TaskStatus,
 } from '../github-label-map'
 
 describe('statusToLabel', () => {
@@ -17,6 +18,15 @@ describe('statusToLabel', () => {
     expect(statusToLabel('review').name).toBe('mc:review')
     expect(statusToLabel('quality_review').name).toBe('mc:quality-review')
     expect(statusToLabel('done').name).toBe('mc:done')
+  })
+
+  it('returns the ready-for-owner status label contract', () => {
+    const label = statusToLabel('ready_for_owner')
+    expect(label).toEqual({
+      name: 'mc:ready-for-owner',
+      color: '14b8a6',
+      description: 'Mission Control: ready for owner',
+    })
   })
 
   it('returns label with color and description', () => {
@@ -36,6 +46,10 @@ describe('labelToStatus', () => {
     expect(labelToStatus('mc:done')).toBe('done')
   })
 
+  it('maps mc:ready-for-owner back to ready_for_owner', () => {
+    expect(labelToStatus('mc:ready-for-owner')).toBe('ready_for_owner')
+  })
+
   it('returns null for unknown labels', () => {
     expect(labelToStatus('unknown')).toBeNull()
     expect(labelToStatus('')).toBeNull()
@@ -43,7 +57,7 @@ describe('labelToStatus', () => {
   })
 
   it('is the inverse of statusToLabel', () => {
-    const statuses = ['backlog', 'inbox', 'assigned', 'awaiting_owner', 'in_progress', 'review', 'quality_review', 'done', 'failed'] as const
+    const statuses: TaskStatus[] = ['backlog', 'inbox', 'assigned', 'awaiting_owner', 'in_progress', 'review', 'quality_review', 'ready_for_owner', 'done', 'failed']
     for (const status of statuses) {
       expect(labelToStatus(statusToLabel(status).name)).toBe(status)
     }
@@ -88,9 +102,10 @@ describe('labelToPriority', () => {
 
 describe('ALL_MC_LABELS', () => {
   it('contains all status and priority labels', () => {
-    expect(ALL_MC_LABELS.length).toBe(13) // 9 statuses + 4 priorities
+    expect(ALL_MC_LABELS.length).toBe(14) // 10 statuses + 4 priorities
     const names = ALL_MC_LABELS.map(l => l.name)
     expect(names).toContain('mc:inbox')
+    expect(names).toContain('mc:ready-for-owner')
     expect(names).toContain('priority:critical')
   })
 
@@ -103,10 +118,21 @@ describe('ALL_MC_LABELS', () => {
 })
 
 describe('ALL_STATUS_LABEL_NAMES', () => {
-  it('contains all 9 status label names', () => {
-    expect(ALL_STATUS_LABEL_NAMES).toHaveLength(9)
+  it('contains all 10 status label names', () => {
+    expect(ALL_STATUS_LABEL_NAMES).toHaveLength(10)
     expect(ALL_STATUS_LABEL_NAMES).toContain('mc:inbox')
+    expect(ALL_STATUS_LABEL_NAMES).toContain('mc:ready-for-owner')
     expect(ALL_STATUS_LABEL_NAMES).toContain('mc:done')
+  })
+
+  it('supports replacing prior mc:* status labels with mc:ready-for-owner', () => {
+    const existing = ['mc:review', 'mc:quality-review', 'priority:high', 'customer:keep']
+    const replacement = [
+      ...existing.filter((name) => !ALL_STATUS_LABEL_NAMES.includes(name)),
+      statusToLabel('ready_for_owner').name,
+    ]
+
+    expect(replacement).toEqual(['priority:high', 'customer:keep', 'mc:ready-for-owner'])
   })
 })
 

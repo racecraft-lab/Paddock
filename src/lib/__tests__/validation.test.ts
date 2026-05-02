@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import * as validation from '@/lib/validation'
 import {
   createTaskSchema,
   createAgentSchema,
@@ -11,6 +12,20 @@ import {
   createWorkflowSchema,
   createMessageSchema,
 } from '@/lib/validation'
+
+type SchemaLike = {
+  safeParse: (input: unknown) => { success: boolean; data?: unknown }
+}
+
+type TransitionArgs = {
+  taskId: number
+  currentStatus: string
+  requestedStatus: string
+  producesPr: boolean
+  twoStepTerminalEnabled: boolean
+  transitionIntent?: string
+  terminalEvent?: string | null
+}
 
 describe('createTaskSchema', () => {
   it('accepts valid input with defaults', () => {
@@ -36,10 +51,43 @@ describe('createTaskSchema', () => {
   })
 
   it('accepts all valid statuses', () => {
-    for (const status of ['backlog', 'inbox', 'assigned', 'awaiting_owner', 'in_progress', 'review', 'quality_review', 'done', 'failed']) {
+    for (const status of ['backlog', 'inbox', 'assigned', 'awaiting_owner', 'in_progress', 'review', 'quality_review', 'ready_for_owner', 'done', 'failed']) {
       const result = createTaskSchema.safeParse({ title: 'T', status })
       expect(result.success).toBe(true)
     }
+  })
+
+  it('accepts existing ready_for_owner rows through static read status vocabulary', () => {
+    const taskStatusReadSchema = (validation as { taskStatusReadSchema?: SchemaLike }).taskStatusReadSchema
+
+    expect(taskStatusReadSchema?.safeParse('ready_for_owner').success).toBe(true)
+  })
+
+  it('keeps ready_for_owner statically parseable while write authorization delegates to the transition guard', () => {
+    const result = createTaskSchema.safeParse({ title: 'T', status: 'ready_for_owner' })
+    expect(result.success).toBe(true)
+
+    const validateTaskStatusTransition = (validation as {
+      validateTaskStatusTransition?: (input: TransitionArgs) => unknown
+    }).validateTaskStatusTransition
+
+    expect(validateTaskStatusTransition).toBeTypeOf('function')
+    expect(validateTaskStatusTransition?.({
+      taskId: 10,
+      currentStatus: 'quality_review',
+      requestedStatus: 'ready_for_owner',
+      producesPr: true,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'status_write',
+    })).toEqual({
+      ok: false,
+      status: 409,
+      body: {
+        error: 'transition_conflict',
+        reason: 'ready_for_owner_pr_merge_required',
+        task_ids: [10],
+      },
+    })
   })
 
   it('accepts outcome and feedback fields', () => {

@@ -1,23 +1,22 @@
-# Summary
-Describe what changed and why.
+# What
+Describe the user-facing, API, data, workflow, or documentation changes in this PR.
 
-# Risk Level
-Low / Medium / High (pick one)
+# Why
+Explain the problem, spec requirement, issue, operational need, or product decision this PR addresses.
 
-# Tests
-List commands run and results.
+# How
+Summarize the implementation approach, important tradeoffs, and risk level.
 
-# Visual Evidence
-For UI changes, link the relevant Argos Storybook build and any short-lived Playwright/CI screenshot artifacts. Do not commit generated screenshots unless an explicit artifact-retention exception is documented.
-
-# Evidence Readiness
-Missing evidence, failing Argos metadata gates, visible UI defects, clipped or overlapping controls, wrong seeded data, inaccessible controls, broken UI journeys, or unmanifested committed screenshots block PR readiness.
-
-# Contribution Checklist
+Validation:
 - [ ] Tests added/updated for behavior changes
 - [ ] Lint/typecheck/build passing
 - [ ] Security review done if auth/data/crypto touched
 - [ ] DB migration tested if schema changed
 
-# Notes
-Anything reviewers should know.
+Evidence:
+- Commands run and results:
+- Visual evidence, if UI changed:
+- Known gaps, follow-up work, or reviewer-visible caveats:
+
+# Reviewer Guide
+Review the `What` and `Why` first, then verify the `How` against the changed files. Focus on the highest-risk behavior, confirm the validation evidence matches the scope, and inspect visual evidence for UI changes before approving.
