@@ -183,6 +183,8 @@ const ALLOWED_PREFIXES = [
   'src/components/panels/spec-007-ux.stories.tsx',
   'scripts/verify-argos-metadata.mjs',
   'scripts/seed-spec-007.ts',
+  'scripts/seed-e2e-spec-007.cjs',
+  'scripts/e2e-docker.sh',
   'package.json',
   '.github/workflows/mission-control-ui-e2e.yml',
   '.github/workflows/argos-storybook.yml',

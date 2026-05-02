@@ -277,8 +277,7 @@ export function resetSpec007Fixtures(): void {
 }
 
 // ---------------------------------------------------------------------------
-// REST helpers (workspace/project/agent/task creation through the API to
-// preserve auth + scope semantics).
+// Seed helpers.
 // ---------------------------------------------------------------------------
 
 function withWorkspaceScope(pathname: string, workspaceId: number): string {
@@ -286,91 +285,250 @@ function withWorkspaceScope(pathname: string, workspaceId: number): string {
   return `${pathname}${separator}workspace_id=${encodeURIComponent(String(workspaceId))}`
 }
 
-async function expectJsonOk<T>(
-  res: Awaited<ReturnType<APIRequestContext['post']>>,
-  label: string,
-): Promise<T> {
-  const body = (await res.json().catch(() => null)) as T | null
-  if (!res.ok() || body == null) {
-    throw new Error(`${label} failed (${String(res.status())}): ${JSON.stringify(body)}`)
-  }
-  return body
+function columnsFor(db: Database.Database, table: string): Set<string> {
+  if (!tableExists(db, table)) return new Set()
+  return new Set(
+    db.prepare(`PRAGMA table_info(${table})`).all().map((row) => (row as { name: string }).name),
+  )
 }
 
-async function createWorkspace(
-  request: APIRequestContext,
+function insertRow(
+  db: Database.Database,
+  table: string,
+  values: Record<string, unknown>,
+): number {
+  const columns = columnsFor(db, table)
+  const entries = Object.entries(values).filter(([column]) => columns.has(column))
+  if (entries.length === 0) throw new Error(`No insertable columns found for ${table}`)
+  const names = entries.map(([column]) => column)
+  const marks = names.map(() => '?').join(', ')
+  const info = db.prepare(`
+    INSERT INTO ${table} (${names.join(', ')})
+    VALUES (${marks})
+  `).run(...entries.map(([, value]) => value))
+  return Number(info.lastInsertRowid)
+}
+
+function slugifySeed(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+function createWorkspace(
+  db: Database.Database,
   name: string,
   slug: string,
-): Promise<SeededWorkspace> {
-  const res = await request.post('/api/workspaces', {
-    headers: API_KEY_HEADER,
-    data: { name, slug },
+): SeededWorkspace {
+  const id = insertRow(db, 'workspaces', {
+    name,
+    slug,
+    tenant_id: 1,
+    feature_flags: JSON.stringify({
+      FEATURE_WORKSPACE_SWITCHER: true,
+      FEATURE_DISPOSITION_LOGGING: true,
+      FEATURE_TASK_ARTIFACTS: true,
+    }),
+    created_at: SPEC_007_FIXED_NOW_SECONDS,
+    updated_at: SPEC_007_FIXED_NOW_SECONDS,
   })
-  const body = await expectJsonOk<{ workspace?: SeededWorkspace }>(res, `create workspace ${name}`)
-  if (!body.workspace?.id) throw new Error(`workspace ${name} missing id`)
-  return body.workspace
+  return { id, name, slug }
 }
 
-async function createProject(
-  request: APIRequestContext,
+function createProject(
+  db: Database.Database,
   workspaceId: number,
   name: string,
   ticketPrefix: string,
-): Promise<{ id: number; name: string }> {
-  const res = await request.post(withWorkspaceScope('/api/projects', workspaceId), {
-    headers: API_KEY_HEADER,
-    data: { name, ticket_prefix: ticketPrefix },
+): { id: number; name: string } {
+  const id = insertRow(db, 'projects', {
+    workspace_id: workspaceId,
+    name,
+    slug: slugifySeed(name),
+    ticket_prefix: ticketPrefix,
+    ticket_counter: 2,
+    status: 'active',
+    created_at: SPEC_007_FIXED_NOW_SECONDS,
+    updated_at: SPEC_007_FIXED_NOW_SECONDS,
   })
-  const body = await expectJsonOk<{ project?: { id: number; name: string } }>(
-    res,
-    `create project ${name}`,
-  )
-  if (!body.project?.id) throw new Error(`project ${name} missing id`)
-  return body.project
+  return { id, name }
 }
 
-async function createAgent(
-  request: APIRequestContext,
+function createAgent(
+  db: Database.Database,
   workspaceId: number,
   name: string,
-): Promise<SeededAgent> {
-  const res = await request.post(withWorkspaceScope('/api/agents', workspaceId), {
-    headers: API_KEY_HEADER,
-    data: { name, role: 'tester', status: 'offline' },
+): SeededAgent {
+  const id = insertRow(db, 'agents', {
+    name,
+    role: 'tester',
+    status: 'offline',
+    created_at: SPEC_007_FIXED_NOW_SECONDS,
+    updated_at: SPEC_007_FIXED_NOW_SECONDS,
+    config: JSON.stringify({ e2e_fixture: 'spec-007' }),
+    workspace_id: workspaceId,
   })
-  const body = await expectJsonOk<{ agent?: { id: number; name: string } }>(
-    res,
-    `create agent ${name}`,
-  )
-  if (!body.agent?.id) throw new Error(`agent ${name} missing id`)
-  return { id: body.agent.id, name: body.agent.name, workspaceId }
+  return { id, name, workspaceId }
 }
 
-async function createTask(
-  request: APIRequestContext,
+function createTask(
+  db: Database.Database,
   workspaceId: number,
   projectId: number,
   title: string,
   assignedTo: string,
-): Promise<SeededTask> {
-  const res = await request.post(withWorkspaceScope('/api/tasks', workspaceId), {
-    headers: API_KEY_HEADER,
-    data: {
-      title,
-      description: `${title} seeded by SPEC-007 e2e fixture`,
-      priority: 'medium',
-      status: 'inbox',
-      project_id: projectId,
-      assigned_to: assignedTo,
-    },
+  ticketNo: number,
+): SeededTask {
+  const id = insertRow(db, 'tasks', {
+    title,
+    description: `${title} seeded by SPEC-007 e2e fixture`,
+    priority: 'medium',
+    status: 'inbox',
+    project_id: projectId,
+    project_ticket_no: ticketNo,
+    assigned_to: assignedTo,
+    created_by: 'e2e',
+    workspace_id: workspaceId,
+    tags: JSON.stringify(['spec-007']),
+    metadata: JSON.stringify({ e2e_fixture: 'spec-007' }),
+    created_at: SPEC_007_FIXED_NOW_SECONDS,
+    updated_at: SPEC_007_FIXED_NOW_SECONDS,
   })
-  const body = await expectJsonOk<{ task?: { id: number } }>(res, `create task ${title}`)
-  if (!body.task?.id) throw new Error(`task ${title} missing id`)
-  return { id: body.task.id, workspaceId }
+  return { id, workspaceId }
+}
+
+function readOne<T>(
+  db: Database.Database,
+  sql: string,
+  params: readonly unknown[],
+  label: string,
+): T {
+  const row = db.prepare(sql).get(...params) as T | undefined
+  if (!row) throw new Error(`Missing SPEC-007 preseeded fixture row: ${label}`)
+  return row
+}
+
+function readPreseededSpec007Fixture(): Spec007E2EFixture {
+  const db = new Database(getE2EDbPath())
+  try {
+    const alphaWorkspace = readOne<SeededWorkspace>(
+      db,
+      'SELECT id, name, slug FROM workspaces WHERE slug = ?',
+      [SPEC_007_FIXTURE.alphaWorkspace.slug],
+      SPEC_007_FIXTURE.alphaWorkspace.slug,
+    )
+    const betaWorkspace = readOne<SeededWorkspace>(
+      db,
+      'SELECT id, name, slug FROM workspaces WHERE slug = ?',
+      [SPEC_007_FIXTURE.betaWorkspace.slug],
+      SPEC_007_FIXTURE.betaWorkspace.slug,
+    )
+    const alphaProject = readOne<{ id: number; name: string }>(
+      db,
+      'SELECT id, name FROM projects WHERE workspace_id = ? AND name = ?',
+      [alphaWorkspace.id, SPEC_007_FIXTURE.alphaProject.name],
+      SPEC_007_FIXTURE.alphaProject.name,
+    )
+    const betaProject = readOne<{ id: number; name: string }>(
+      db,
+      'SELECT id, name FROM projects WHERE workspace_id = ? AND name = ?',
+      [betaWorkspace.id, SPEC_007_FIXTURE.betaProject.name],
+      SPEC_007_FIXTURE.betaProject.name,
+    )
+    const alphaAgents = db
+      .prepare(`
+        SELECT id, name, workspace_id AS workspaceId
+        FROM agents
+        WHERE workspace_id = ? AND name IN (?, ?)
+        ORDER BY id ASC
+      `)
+      .all(
+        alphaWorkspace.id,
+        SPEC_007_FIXTURE.agents[0],
+        SPEC_007_FIXTURE.agents[1],
+      ) as SeededAgent[]
+    const betaAgents = db
+      .prepare(`
+        SELECT id, name, workspace_id AS workspaceId
+        FROM agents
+        WHERE workspace_id = ? AND name IN (?, ?)
+        ORDER BY id ASC
+      `)
+      .all(
+        betaWorkspace.id,
+        SPEC_007_FIXTURE.agents[2],
+        SPEC_007_FIXTURE.agents[3],
+      ) as SeededAgent[]
+    const alphaTasks = db
+      .prepare(`
+        SELECT id, workspace_id AS workspaceId
+        FROM tasks
+        WHERE workspace_id = ? AND title LIKE 'SPEC-007 Alpha task %'
+        ORDER BY id ASC
+      `)
+      .all(alphaWorkspace.id) as SeededTask[]
+    const betaTasks = db
+      .prepare(`
+        SELECT id, workspace_id AS workspaceId
+        FROM tasks
+        WHERE workspace_id = ? AND title LIKE 'SPEC-007 Beta task %'
+        ORDER BY id ASC
+      `)
+      .all(betaWorkspace.id) as SeededTask[]
+    if (alphaAgents.length !== 2 || betaAgents.length !== 2) {
+      throw new Error('Missing SPEC-007 preseeded agents')
+    }
+    if (alphaTasks.length !== 2 || betaTasks.length !== 2) {
+      throw new Error('Missing SPEC-007 preseeded tasks')
+    }
+
+    const readDispositions = (workspaceId: number) => db
+      .prepare(`
+        SELECT id, workspace_id, task_id, disposition, triaged_at,
+               triaged_by_agent_id, reason
+        FROM task_dispositions
+        WHERE workspace_id = ?
+        ORDER BY id ASC
+      `)
+      .all(workspaceId) as SeededDisposition[]
+    const readArtifacts = (workspaceId: number) => db
+      .prepare(`
+        SELECT id, workspace_id, task_id, redaction_status,
+               security_scan_status, storage_kind, byte_size, sha256
+        FROM task_artifacts
+        WHERE workspace_id = ?
+        ORDER BY id ASC
+      `)
+      .all(workspaceId) as SeededArtifact[]
+
+    return {
+      alpha: {
+        workspace: alphaWorkspace,
+        project: alphaProject,
+        agents: alphaAgents,
+        tasks: alphaTasks,
+        dispositions: readDispositions(alphaWorkspace.id),
+        artifacts: readArtifacts(alphaWorkspace.id),
+      },
+      beta: {
+        workspace: betaWorkspace,
+        project: betaProject,
+        agents: betaAgents,
+        tasks: betaTasks,
+        dispositions: readDispositions(betaWorkspace.id),
+        artifacts: readArtifacts(betaWorkspace.id),
+      },
+      fixedNow: SPEC_007_FIXED_NOW,
+      cleanup: async () => undefined,
+    }
+  } finally {
+    db.close()
+  }
 }
 
 // ---------------------------------------------------------------------------
-// Direct-DB inserts for dispositions + artifacts. Both tables are app-level
+// Direct-DB inserts for dispositions + artifacts. These tables are app-level
 // (no public REST POST in v1 for direct admin seeding), so we write through
 // `better-sqlite3` mirroring the schemas declared in M057 / M058.
 // ---------------------------------------------------------------------------
@@ -734,79 +892,110 @@ function insertArtifacts(
 export async function seedSpec007E2E(
   request: APIRequestContext,
 ): Promise<Spec007E2EFixture> {
+  if (process.env.MC_SPEC_007_PRESEEDED === '1') {
+    return readPreseededSpec007Fixture()
+  }
+
   // 1) Idempotent reset.
   resetSpec007Fixtures()
   const restoreWorkspaceFlags = enableSpec007WorkspaceFlags()
   try {
-
-  // 2) Build the two product-line workspaces with one project each through the API.
-  const alphaWorkspace = await createWorkspace(
-    request,
-    SPEC_007_FIXTURE.alphaWorkspace.name,
-    SPEC_007_FIXTURE.alphaWorkspace.slug,
-  )
-  const betaWorkspace = await createWorkspace(
-    request,
-    SPEC_007_FIXTURE.betaWorkspace.name,
-    SPEC_007_FIXTURE.betaWorkspace.slug,
-  )
-
-  const alphaProject = await createProject(
-    request,
-    alphaWorkspace.id,
-    SPEC_007_FIXTURE.alphaProject.name,
-    SPEC_007_FIXTURE.alphaProject.ticketPrefix,
-  )
-  const betaProject = await createProject(
-    request,
-    betaWorkspace.id,
-    SPEC_007_FIXTURE.betaProject.name,
-    SPEC_007_FIXTURE.betaProject.ticketPrefix,
-  )
-
-  const alphaAgents = [
-    await createAgent(request, alphaWorkspace.id, SPEC_007_FIXTURE.agents[0]),
-    await createAgent(request, alphaWorkspace.id, SPEC_007_FIXTURE.agents[1]),
-  ]
-  const betaAgents = [
-    await createAgent(request, betaWorkspace.id, SPEC_007_FIXTURE.agents[2]),
-    await createAgent(request, betaWorkspace.id, SPEC_007_FIXTURE.agents[3]),
-  ]
-
-  // Two tasks per workspace as triage parents.
-  const alphaTasks: SeededTask[] = []
-  for (let i = 0; i < 2; i++) {
-    alphaTasks.push(
-      await createTask(
-        request,
-        alphaWorkspace.id,
-        alphaProject.id,
-        `SPEC-007 Alpha task ${String(i)}`,
-        alphaAgents[i % alphaAgents.length]!.name,
-      ),
-    )
+    return await seedUnpreseededSpec007E2E(request, restoreWorkspaceFlags)
+  } catch (err) {
+    resetSpec007Fixtures()
+    restoreWorkspaceFlags()
+    throw err
   }
-  const betaTasks: SeededTask[] = []
-  for (let i = 0; i < 2; i++) {
-    betaTasks.push(
-      await createTask(
-        request,
-        betaWorkspace.id,
-        betaProject.id,
-        `SPEC-007 Beta task ${String(i)}`,
-        betaAgents[i % betaAgents.length]!.name,
-      ),
-    )
-  }
+}
 
-  // 3) Direct DB inserts for dispositions + artifacts.
+async function seedUnpreseededSpec007E2E(
+  request: APIRequestContext,
+  restoreWorkspaceFlags: () => void,
+): Promise<Spec007E2EFixture> {
   const dbPath = getE2EDbPath()
   const db = new Database(dbPath)
+  db.pragma('busy_timeout = 5000')
+
+  let alphaWorkspace: SeededWorkspace | null = null
+  let betaWorkspace: SeededWorkspace | null = null
+  let alphaProject: { id: number; name: string } | null = null
+  let betaProject: { id: number; name: string } | null = null
+  let alphaAgents: SeededAgent[] = []
+  let betaAgents: SeededAgent[] = []
+  const alphaTasks: SeededTask[] = []
+  const betaTasks: SeededTask[] = []
   let alphaDispositions: SeededDisposition[] = []
   let betaDispositions: SeededDisposition[] = []
   let alphaArtifacts: SeededArtifact[] = []
   let betaArtifacts: SeededArtifact[] = []
+
   try {
+    // 2) Build the two product-line workspaces, projects, agents, and parent
+    // tasks directly in the same mounted DB connection used for artifact and
+    // disposition rows. Docker e2e runs the app in a container while Playwright
+    // runs on the host; keeping the whole SPEC-007 fixture on one host-side
+    // connection avoids SQLite WAL visibility gaps between API writes and
+    // direct high-volume inserts.
+    alphaWorkspace = createWorkspace(
+      db,
+      SPEC_007_FIXTURE.alphaWorkspace.name,
+      SPEC_007_FIXTURE.alphaWorkspace.slug,
+    )
+    betaWorkspace = createWorkspace(
+      db,
+      SPEC_007_FIXTURE.betaWorkspace.name,
+      SPEC_007_FIXTURE.betaWorkspace.slug,
+    )
+
+    alphaProject = createProject(
+      db,
+      alphaWorkspace.id,
+      SPEC_007_FIXTURE.alphaProject.name,
+      SPEC_007_FIXTURE.alphaProject.ticketPrefix,
+    )
+    betaProject = createProject(
+      db,
+      betaWorkspace.id,
+      SPEC_007_FIXTURE.betaProject.name,
+      SPEC_007_FIXTURE.betaProject.ticketPrefix,
+    )
+
+    alphaAgents = [
+      createAgent(db, alphaWorkspace.id, SPEC_007_FIXTURE.agents[0]),
+      createAgent(db, alphaWorkspace.id, SPEC_007_FIXTURE.agents[1]),
+    ]
+    betaAgents = [
+      createAgent(db, betaWorkspace.id, SPEC_007_FIXTURE.agents[2]),
+      createAgent(db, betaWorkspace.id, SPEC_007_FIXTURE.agents[3]),
+    ]
+
+    // Two tasks per workspace as triage parents.
+    for (let i = 0; i < 2; i++) {
+      alphaTasks.push(
+        createTask(
+          db,
+          alphaWorkspace.id,
+          alphaProject.id,
+          `SPEC-007 Alpha task ${String(i)}`,
+          alphaAgents[i % alphaAgents.length]!.name,
+          i + 1,
+        ),
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      betaTasks.push(
+        createTask(
+          db,
+          betaWorkspace.id,
+          betaProject.id,
+          `SPEC-007 Beta task ${String(i)}`,
+          betaAgents[i % betaAgents.length]!.name,
+          i + 1,
+        ),
+      )
+    }
+
+    // 3) Direct DB inserts for dispositions + artifacts.
     const alphaPlans = buildDispositionPlan(alphaWorkspace, alphaAgents, alphaTasks)
     const betaPlans = buildDispositionPlan(betaWorkspace, betaAgents, betaTasks)
     alphaDispositions = insertDispositions(db, alphaPlans)
@@ -854,9 +1043,17 @@ export async function seedSpec007E2E(
     db.close()
   }
 
+  if (!alphaWorkspace || !betaWorkspace || !alphaProject || !betaProject) {
+    throw new Error('SPEC-007 seed did not initialize all required fixture records')
+  }
+  const seededAlphaWorkspace = alphaWorkspace
+  const seededBetaWorkspace = betaWorkspace
+  const seededAlphaProject = alphaProject
+  const seededBetaProject = betaProject
+
   const cleanup = async (): Promise<void> => {
-    // Delete tasks, agents, projects, workspaces through the API for symmetry,
-    // best-effort; resetSpec007Fixtures handles direct-DB child rows.
+    // Best-effort API cleanup, followed by direct DB cleanup for rows created
+    // by the host-side seed connection.
     for (const task of [...alphaTasks, ...betaTasks].reverse()) {
       await request
         .delete(withWorkspaceScope(`/api/tasks/${String(task.id)}`, task.workspaceId), {
@@ -873,21 +1070,27 @@ export async function seedSpec007E2E(
     }
     await request
       .delete(
-        withWorkspaceScope(`/api/projects/${String(alphaProject.id)}?mode=delete`, alphaWorkspace.id),
+        withWorkspaceScope(
+          `/api/projects/${String(seededAlphaProject.id)}?mode=delete`,
+          seededAlphaWorkspace.id,
+        ),
         { headers: API_KEY_HEADER },
       )
       .catch(() => undefined)
     await request
       .delete(
-        withWorkspaceScope(`/api/projects/${String(betaProject.id)}?mode=delete`, betaWorkspace.id),
+        withWorkspaceScope(
+          `/api/projects/${String(seededBetaProject.id)}?mode=delete`,
+          seededBetaWorkspace.id,
+        ),
         { headers: API_KEY_HEADER },
       )
       .catch(() => undefined)
     await request
-      .delete(`/api/workspaces/${String(alphaWorkspace.id)}`, { headers: API_KEY_HEADER })
+      .delete(`/api/workspaces/${String(seededAlphaWorkspace.id)}`, { headers: API_KEY_HEADER })
       .catch(() => undefined)
     await request
-      .delete(`/api/workspaces/${String(betaWorkspace.id)}`, { headers: API_KEY_HEADER })
+      .delete(`/api/workspaces/${String(seededBetaWorkspace.id)}`, { headers: API_KEY_HEADER })
       .catch(() => undefined)
 
     // Final pass: scrub any direct-DB rows the API didn't catch.
@@ -897,16 +1100,16 @@ export async function seedSpec007E2E(
 
   return {
     alpha: {
-      workspace: alphaWorkspace,
-      project: alphaProject,
+      workspace: seededAlphaWorkspace,
+      project: seededAlphaProject,
       agents: alphaAgents,
       tasks: alphaTasks,
       dispositions: alphaDispositions,
       artifacts: alphaArtifacts,
     },
     beta: {
-      workspace: betaWorkspace,
-      project: betaProject,
+      workspace: seededBetaWorkspace,
+      project: seededBetaProject,
       agents: betaAgents,
       tasks: betaTasks,
       dispositions: betaDispositions,
@@ -914,10 +1117,5 @@ export async function seedSpec007E2E(
     },
     fixedNow: SPEC_007_FIXED_NOW,
     cleanup,
-  }
-  } catch (err) {
-    resetSpec007Fixtures()
-    restoreWorkspaceFlags()
-    throw err
   }
 }

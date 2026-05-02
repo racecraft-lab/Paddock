@@ -17,10 +17,13 @@ on:
       - 'tests/product-line-*.spec.ts'
       - 'tests/feature-flags-*.spec.ts'
       - 'tests/e2e/ready-for-owner-kanban.spec.ts'
+      - 'tests/e2e/spec-007-ui-visual.spec.ts'
       - 'tests/workspace-switcher-*.spec.ts'
       - 'tests/helpers.ts'
       - 'scripts/e2e-docker.sh'
       - 'scripts/seed-e2e-workspace-switcher.cjs'
+      - 'scripts/seed-e2e-spec-007.cjs'
+      - 'scripts/seed-spec-007.ts'
       - 'scripts/verify-argos-metadata.mjs'
       - 'playwright*.config.ts'
       - 'Dockerfile'
@@ -46,10 +49,13 @@ on:
       - 'tests/product-line-*.spec.ts'
       - 'tests/feature-flags-*.spec.ts'
       - 'tests/e2e/ready-for-owner-kanban.spec.ts'
+      - 'tests/e2e/spec-007-ui-visual.spec.ts'
       - 'tests/workspace-switcher-*.spec.ts'
       - 'tests/helpers.ts'
       - 'scripts/e2e-docker.sh'
       - 'scripts/seed-e2e-workspace-switcher.cjs'
+      - 'scripts/seed-e2e-spec-007.cjs'
+      - 'scripts/seed-spec-007.ts'
       - 'scripts/verify-argos-metadata.mjs'
       - 'playwright*.config.ts'
       - 'Dockerfile'
@@ -145,9 +151,9 @@ jobs:
               '',
               `Review screenshots and traces in the \`mission-control-ui-e2e-artifacts\` artifact: ${runUrl}`,
               '',
-              'Argos metadata gate: CI must find at least 14 Argos screenshot metadata files across 8 Playwright tests with Product Line switcher, Feature Flag admin, and Ready for Owner domain tags before this check can pass.',
+              'Argos metadata gate: CI must find at least 19 Argos screenshot metadata files across 11 Playwright tests with Product Line switcher, Feature Flag admin, Ready for Owner, and SPEC-007 domain tags before this check can pass.',
               '',
-              'Covered states: Facility task board, scope menu options, selected Product Line task board, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile scope menus, cross-tab Product Line sync, Feature Flags admin default state, Feature Flags admin toggle-on state, Ready for Owner Kanban lane order, focused Ready for Owner card, and action-required notification panel state.'
+              'Covered states: Facility task board, scope menu options, selected Product Line task board, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile scope menus, cross-tab Product Line sync, Feature Flags admin default state, Feature Flags admin toggle-on state, Ready for Owner Kanban lane order, focused Ready for Owner card, action-required notification panel state, SPEC-007 dashboard rollup, SPEC-007 dispositions loaded/filter states, and SPEC-007 Artifact Admin mixed state, preview, and quarantine action.'
             ].join('\n');
             const { owner, repo } = context.repo;
             const issue_number = context.payload.pull_request.number;
