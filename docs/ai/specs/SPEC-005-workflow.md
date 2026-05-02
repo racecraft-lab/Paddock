@@ -34,7 +34,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep + Status Hygiene | `$speckit-autopilot` startup | Complete | 2026-05-02 dry-run/no-cleanup Archive Sweep recorded; SPEC-005 excluded; prerequisite scripts passed; status hygiene repaired merged SPEC-004/SPEC-006 tracking before Specify |
 | Specify | `$speckit-specify` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/spec.md` and requirements checklist; G1 passed with 0 markers |
-| Clarify | `$speckit-clarify` | In Progress | Resolve open questions from the Design Concept doc |
+| Clarify | `$speckit-clarify` | Complete | All 3 sessions complete; S1 transition guards/API, S2 GitHub terminal event/reconciliation, S3 operator surfaces/status vocabulary; marker scans clean |
 | Plan | `$speckit-plan` | Pending | Generate plan/research/data model/contracts/quickstart; no DB migration unless a gate proves roadmap drift |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: state-machine, github-sync, notifications-ux, regression-safety |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with P4-AC1..P4-AC6 coverage |
@@ -202,11 +202,11 @@ Complete on 2026-05-02. Generated SPEC-005 Specify artifacts with no unresolved 
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | 23 |
+| Functional Requirements | 25 |
 | User Stories | 5 |
 | Acceptance Scenarios | 19 |
 | Success Criteria | 6 |
-| Edge Cases | 8 |
+| Edge Cases | 10 |
 
 ### Files Generated
 
@@ -260,13 +260,22 @@ Focus on SPEC-005 operator-facing surfaces:
 
 ### Clarify Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. All three sessions completed; no unresolved markers remain.
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Transition Guards and API Contract | Pending | Pending |
-| 2 | GitHub Terminal Event and Reconciliation | Pending | Pending |
-| 3 | UI, Labels, Notifications, and Status Vocabulary | Pending | Pending |
+| 1 | Transition Guards and API Contract | 5 | Shared transition guard boundary; static read vocabulary plus workspace-aware write guards; uniform 409 body; all non-merge `done` writes for PR-producing tasks blocked while flag ON; `advanceTaskChain` runs only after verified PR merge writes `done` with a GitHub PR merge trigger. |
+| 2 | GitHub Terminal Event and Reconciliation | 5 | Explicit PR identity is `github_repo` + `github_pr_number`; merge evidence must match linked repo/PR and include `merged=true`, `merged_at`, or `merge_commit_sha` from live GitHub or test-only fixture; closed issue without merged PR leaves task in `ready_for_owner`; reconciliation writes `github_terminal_reconciliation_required` activity, sends `task_ready_for_owner` notification to assignee then creator, and dedupes unchanged task/issue/reason; production `pullFromGitHub` callsites pass no fixture/options. |
+| 3 | UI, Labels, Notifications, and Status Vocabulary | 5 | `ready_for_owner` added to static status vocabulary surfaces with write guards enforcing flag behavior; Kanban lane key `ready_for_owner`, label `Ready for Owner`, teal styling, placed between `quality_review` and `done`; GitHub label `mc:ready-for-owner` color `14b8a6` description `Mission Control: ready for owner`; `task_ready_for_owner` panel/delivery rendering with normal and reconciliation titles; existing nullable `external_terminal_event='github_pr_merged'` used with no migration/table. |
+
+### Consensus Resolution Log
+
+| Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|-------------------|---------|---------------|
+| Clarify S1 Q2: exact 409 conflict body | 2 | `[spec, codebase]` | Accepted uniform body `{ "error": "transition_conflict", "reason": "ready_for_owner_pr_merge_required", "task_ids": [<id>] }`; single-task routes use one-item `task_ids`. | `codebase-analyst`, `spec-context-analyst`, `domain-researcher` |
+| Clarify S1 Q4: non-merge done-write guard breadth | 1 | `[spec, codebase]` | Accepted broad guard: while flag ON, every non-GitHub-merge attempt to write `done` for a PR-producing task is blocked or routed to `ready_for_owner`; manual and failed-to-done paths cannot bypass. | `codebase-analyst`, `spec-context-analyst` |
+| Clarify S2 Q4: reconciliation activity and notification idempotency | 1 | `[codebase, spec]` | Accepted `github_terminal_reconciliation_required` activity with task/github/reason data; notification reuses `task_ready_for_owner` with reconciliation wording and assignee-then-creator routing; no duplicate activity or notification for unchanged task/issue/reason. | `codebase-analyst`, `spec-context-analyst` |
+| Clarify S3: operator surfaces and status vocabulary | 1 | n/a | No unresolved consensus items; accepted executor recommendations for static status vocabulary, Kanban lane label/style/order, GitHub label definition/provisioning/application, notification rendering/delivery copy, and no-migration `external_terminal_event='github_pr_merged'` contract. | `clarify-executor` |
 
 ## Phase 3: Plan
 
@@ -304,6 +313,8 @@ $speckit-plan
 - Plan every transition site that can reach `done`: `runAegisReviews`, `/api/quality-review`, bulk `PUT /api/tasks`, detail `PUT /api/tasks/[id]`, and `pullFromGitHub`.
 - Plan read/write validation separately: reads can return existing `ready_for_owner`; new writes are flag/transition-gated.
 - Plan the optional `pullFromGitHub(..., { webhookFixture })` test seam so production callsites remain unchanged.
+- Plan status vocabulary and operator surfaces across `messages/*.json`, task board lane/status styling, `github-label-map`, notification panel rendering, and notification delivery formatting.
+- Plan `external_terminal_event='github_pr_merged'` using the existing nullable workflow-template text field; verify no DB migration, DB CHECK, enum constraint, or terminal-event table is introduced.
 - Plan status-hygiene changes from Phase 0 separately from SPEC-005 runtime code.
 ```
 
