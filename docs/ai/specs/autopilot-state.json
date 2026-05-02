@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-005-workflow.md",
-  "updated_at": "2026-05-02T14:04:33Z",
-  "active_step": "Phase 7: Foundational status vocabulary and transition boundary (T006-T014)",
+  "updated_at": "2026-05-02T14:18:07Z",
+  "active_step": "Phase 7: US1 flag-off rollback behavior (T015-T023)",
   "status": "In Progress",
   "notes": [
     "SPEC-005 setup completed on branch 005-ready-for-owner from main at dbb6c75.",
@@ -35,7 +35,8 @@
     "Phase 6 Analyze completed on 2026-05-02: deterministic finding marker count was 0 before remediation, semantic analyze found 3 cross-artifact findings (0 critical, 1 high, 1 medium, 1 low), and all were remediated in the SPEC-005 worktree.",
     "G6 passed on 2026-05-02: roadmap flag-off/runtime-enum drift, roadmap notification-module drift, and US1 independent-test wording gap were fixed; final finding marker count returned 0 critical, 0 high, 0 medium, and 0 low.",
     "Phase 6 Analyze consensus item completed as a no-op on 2026-05-02 because Unresolved for consensus was None.",
-    "Phase 7 T001-T005 completed on 2026-05-02: verified Phase 0 status hygiene and Archive Sweep evidence, confirmed no SPEC-005 migration/status CHECK/terminal-event table scope, added src/lib/task-status.ts to strict type/lint scope, confirmed pnpm lockfile, and passed focused config-scope validation."
+    "Phase 7 T001-T005 completed on 2026-05-02: verified Phase 0 status hygiene and Archive Sweep evidence, confirmed no SPEC-005 migration/status CHECK/terminal-event table scope, added src/lib/task-status.ts to strict type/lint scope, confirmed pnpm lockfile, and passed focused config-scope validation.",
+    "Phase 7 T006-T014 completed on 2026-05-02: implemented shared ready_for_owner vocabulary, transition conflict contract, feature-flag-aware terminal transition guard, validation/status exports, and focused tests; parent verification passed 47 focused tests, focused ESLint, typecheck, and diff check."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -123,8 +124,8 @@
     {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
     {"step": "Gate G6: no CRITICAL/HIGH findings remain", "status": "completed"},
     {"step": "Phase 7: Setup and status hygiene verification (T001-T005)", "status": "completed"},
-    {"step": "Phase 7: Foundational status vocabulary and transition boundary (T006-T014)", "status": "in_progress"},
-    {"step": "Phase 7: US1 flag-off rollback behavior (T015-T023)", "status": "pending"},
+    {"step": "Phase 7: Foundational status vocabulary and transition boundary (T006-T014)", "status": "completed"},
+    {"step": "Phase 7: US1 flag-off rollback behavior (T015-T023)", "status": "in_progress"},
     {"step": "Phase 7: US2 owner merge gate routing (T024-T033)", "status": "pending"},
     {"step": "Phase 7: US3 verified merge completion and blocked paths (T034-T049)", "status": "pending"},
     {"step": "Phase 7: US4 Kanban lane and GitHub label (T050-T059)", "status": "pending"},

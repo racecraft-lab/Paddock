@@ -505,7 +505,7 @@ In progress. Update after each implementation group.
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
 | 0 - Status hygiene and startup | T001-T005 | Complete | Phase 0 status hygiene and Archive Sweep evidence verified; no SPEC-005 migration/CHECK/table scope found; `src/lib/task-status.ts` added to strict type/lint surfaces; pnpm lockfile confirmed |
-| 1 - Status vocabulary and validation | Pending | Pending | Application-level `ready_for_owner`; no DB migration |
+| 1 - Status vocabulary and validation | T006-T014 | Complete | Shared status vocabulary, transition conflict body, terminal transition guard, validation exports, store/API status unions, and focused tests complete; 47 focused tests, focused ESLint, typecheck, and diff check passed |
 | 2 - Transition guards | Pending | Pending | Aegis/API/bulk/detail guarded paths |
 | 3 - GitHub terminal event | Pending | Pending | Explicit merged PR evidence and reconciliation |
 | 4 - Labels and notifications | Pending | Pending | `mc:ready-for-owner`, `task_ready_for_owner` |

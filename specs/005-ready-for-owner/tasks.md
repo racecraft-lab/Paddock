@@ -24,15 +24,15 @@
 
 **Critical**: No user story work can complete until this shared guard exists, because every live path that can write `done` must call the same transition decision.
 
-- [ ] T006 [P] Add failing red tests for `TASK_STATUSES`, `READY_FOR_OWNER_STATUS`, `READY_FOR_OWNER_TERMINAL_EVENT`, and `transitionConflict()` in `src/lib/__tests__/task-status.test.ts`.
-- [ ] T007 [P] Add failing red tests for flag OFF, flag ON with `produces_pr=false`, flag ON with `produces_pr=true`, blocked non-merge `done`, and flag OFF `ready_for_owner` writes in `src/lib/__tests__/task-status.test.ts`.
-- [ ] T008 Implement `src/lib/task-status.ts` with `ready_for_owner` vocabulary, `github_pr_merged` terminal event constant, `ready_for_owner_pr_merge_required` conflict body, and `resolveTaskTerminalTransition()`.
-- [ ] T009 Refactor `src/lib/task-status.ts` to keep read vocabulary separate from write authorization and to accept workspace flag context without reading `process.env` directly.
-- [ ] T010 [P] Add failing red tests proving static read schemas accept existing `ready_for_owner` rows while write validation still delegates to the transition guard in `src/lib/__tests__/validation.test.ts`.
-- [ ] T011 Update `src/lib/validation.ts` to include `ready_for_owner` in read/status vocabulary and to guard new writes through `src/lib/task-status.ts`.
-- [ ] T012 [P] Add `ready_for_owner` to exported task status types and counters in `src/store/index.ts`.
-- [ ] T013 [P] Add `ready_for_owner` to package-level exported task status unions in `src/index.ts`.
-- [ ] T014 Run the focused foundational red-green-refactor check with `pnpm test src/lib/__tests__/task-status.test.ts src/lib/__tests__/validation.test.ts`.
+- [X] T006 [P] Add failing red tests for `TASK_STATUSES`, `READY_FOR_OWNER_STATUS`, `READY_FOR_OWNER_TERMINAL_EVENT`, and `transitionConflict()` in `src/lib/__tests__/task-status.test.ts`.
+- [X] T007 [P] Add failing red tests for flag OFF, flag ON with `produces_pr=false`, flag ON with `produces_pr=true`, blocked non-merge `done`, and flag OFF `ready_for_owner` writes in `src/lib/__tests__/task-status.test.ts`.
+- [X] T008 Implement `src/lib/task-status.ts` with `ready_for_owner` vocabulary, `github_pr_merged` terminal event constant, `ready_for_owner_pr_merge_required` conflict body, and `resolveTaskTerminalTransition()`.
+- [X] T009 Refactor `src/lib/task-status.ts` to keep read vocabulary separate from write authorization and to accept workspace flag context without reading `process.env` directly.
+- [X] T010 [P] Add failing red tests proving static read schemas accept existing `ready_for_owner` rows while write validation still delegates to the transition guard in `src/lib/__tests__/validation.test.ts`.
+- [X] T011 Update `src/lib/validation.ts` to include `ready_for_owner` in read/status vocabulary and to guard new writes through `src/lib/task-status.ts`.
+- [X] T012 [P] Add `ready_for_owner` to exported task status types and counters in `src/store/index.ts`.
+- [X] T013 [P] Add `ready_for_owner` to package-level exported task status unions in `src/index.ts`.
+- [X] T014 Run the focused foundational red-green-refactor check with `pnpm test src/lib/__tests__/task-status.test.ts src/lib/__tests__/validation.test.ts`.
 
 **Checkpoint**: Application-level vocabulary exists, reads can return `ready_for_owner`, and every implementation path can call a single transition guard.
 
