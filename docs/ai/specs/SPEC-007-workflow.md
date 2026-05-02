@@ -36,8 +36,8 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep + Migration-ID Verification | `/speckit-pro:autopilot` startup | Complete | Apply-mode sweep newly archived SPEC-004 + SPEC-006 (commits `dcf46b3`, `82229bc`); migration mapping verified (no roadmap edit); G0 PASS |
 | Specify | `/speckit.specify` | Complete | 49 FRs / 9 US / 44 acceptance scenarios / 10 SC / 10 edge cases; G1 PASS (0 markers) |
-| Clarify | `/speckit.clarify` | Pending | Resolve Open Questions from the Design Concept doc across 3 sessions |
-| Plan | `/speckit.plan` | Pending | Generate plan/research/data-model/contracts/quickstart; no DB migration; verify M054, M057, M058 schema match expectations |
+| Clarify | `/speckit.clarify` | Complete | 3 sessions / 15 questions resolved (3 via consensus per security tag); G2 PASS (0 markers) |
+| Plan | `/speckit.plan` | Complete | plan.md + research.md (13 decisions) + data-model.md (7 entities) + 3 contracts + quickstart.md (10 scenarios) + CLAUDE.md/AGENTS.md updates. All 15 constitution principles PASS. G3 PASS (0 markers). |
 | Checklist | `/speckit.checklist` | Pending | Recommended domains: data-integrity, security (secret detector), error-handling, regression-safety |
 | Tasks | `/speckit.tasks` | Pending | Generate dependency-ordered TDD tasks with P6-AC1..P6-AC10 coverage |
 | Analyze | `/speckit.analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
@@ -473,11 +473,13 @@ Focus on SPEC-007 API contracts and UX surfaces:
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, execution flow |
-| `research.md` | Pending | gitleaks rule selection, atomic-write protocol options |
-| `data-model.md` | Pending | task_dispositions + task_artifacts entity diagrams (no schema change) |
-| `contracts/` | Pending | task-artifacts (POST/GET), dispositions (GET), activity-shapes |
-| `quickstart.md` | Pending | Operator walkthroughs |
+| `plan.md` | Complete | Summary, Tech Context, Strict Scope (6 files), Constitution Check (15/15), Real UI Journey Plan, Archive Sweep Plan, Project Structure, Observability, Complexity Tracking (empty) |
+| `research.md` | Complete | 13 decisions: atomic write primitive, temp location, detector ruleset closure, throttle pattern, privileged-read non-throttling, cursor pagination, Aegis hook boundary, p95 ring buffer, post-commit insert order, successor metadata location, inline-content split, schema verification, performance budget |
+| `data-model.md` | Complete | 7 entities; 14 new `activities.type` values enumerated |
+| `contracts/post-task-artifacts.md` | Complete | Request/response, error matrix, redaction state machine |
+| `contracts/get-task-artifact-by-id.md` | Complete | Auth, 423/200 quarantine override, audit row |
+| `contracts/get-dispositions.md` | Complete | Filter set, opaque cursor, response shape |
+| `quickstart.md` | Complete | 10 operator walkthroughs |
 
 ## Phase 4: Domain Checklists
 
