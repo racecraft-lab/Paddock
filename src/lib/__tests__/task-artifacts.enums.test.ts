@@ -167,6 +167,8 @@ const SPEC_007_ALLOWLIST = [
   'src/components/panels/facility-global-boundaries.test.ts',
   // OpenAPI spec snapshot — adds the 5 new SPEC-007 routes (T1207):
   'openapi.json',
+  // Product PRD status wording updated by the SPEC-007 branch:
+  'docs/rc-factory-v1-prd.md',
 ] as const
 
 const ALLOWED_PREFIXES = [
@@ -177,7 +179,13 @@ const ALLOWED_PREFIXES = [
   'src/app/api/dispositions/__tests__/',
   'tests/e2e/disposition-',
   'tests/e2e/artifact-admin-panel.spec.ts',
+  'tests/e2e/spec-007-ui-visual.spec.ts',
+  'src/components/panels/spec-007-ux.stories.tsx',
+  'scripts/verify-argos-metadata.mjs',
   'scripts/seed-spec-007.ts',
+  'package.json',
+  '.github/workflows/mission-control-ui-e2e.yml',
+  '.github/workflows/argos-storybook.yml',
   // Spec workflow / docs prep files (no production code; FR-100 strict scope
   // intentionally targets `src/**` modules):
   'specs/',

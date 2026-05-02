@@ -35,9 +35,9 @@
  *   500 -> internal_scan_error | internal_storage_error
  *   503 -> artifact_store_disabled (FEATURE_TASK_ARTIFACTS OFF)
  *
- * Method-not-allowed (FR-123): GET/PUT/DELETE/PATCH on this collection
- * route fall through to the Next.js App Router default 405 -- contract
- * tests assert this.
+ * GET lists admin-visible artifacts for the artifact admin panel. PUT/DELETE/
+ * PATCH on this collection route fall through to the Next.js App Router default
+ * 405 per FR-123.
  */
 
 import { NextRequest, NextResponse } from 'next/server'
@@ -47,6 +47,7 @@ import { logger } from '@/lib/logger'
 import { resolveFlag } from '@/lib/feature-flags'
 import {
   resolveWorkspaceScopeFromRequest,
+  workspaceScopePredicate,
   workspaceScopeError,
 } from '@/lib/workspaces'
 import {
@@ -85,6 +86,88 @@ const VALID_STORAGE_KINDS: ReadonlySet<string> = new Set([
   'file',
   'external_uri',
 ])
+
+export async function GET(request: NextRequest) {
+  const auth = requireRole(request, 'admin')
+  if ('error' in auth) {
+    return NextResponse.json(
+      { error: auth.status === 401 ? 'unauthenticated' : 'forbidden_admin_required' },
+      { status: auth.status },
+    )
+  }
+
+  const db = getDatabase()
+  let scope
+  try {
+    scope = await resolveWorkspaceScopeFromRequest(db, request, auth.user)
+  } catch (err) {
+    const scopeErr = workspaceScopeError(err)
+    if (scopeErr) {
+      return NextResponse.json({ error: scopeErr.error }, { status: scopeErr.status })
+    }
+    logger.error({ err }, 'GET /api/task-artifacts scope resolution failed')
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 })
+  }
+
+  const flagWorkspaceId = scope.workspaceIds[0] ?? 0
+  if (!isFeatureTaskArtifactsEnabled(flagWorkspaceId)) {
+    return NextResponse.json({ error: 'artifact_store_disabled' }, { status: 503 })
+  }
+
+  const { searchParams } = new URL(request.url)
+  const { sql: scopeSql, params: scopeParams } = workspaceScopePredicate(scope, 'workspace_id')
+  const params: Array<string | number> = [...scopeParams]
+  const whereParts = [scopeSql]
+
+  const artifactType = searchParams.get('artifact_type')?.trim()
+  if (artifactType) {
+    whereParts.push('artifact_type LIKE ?')
+    params.push(`%${artifactType}%`)
+  }
+
+  const redactionRaw = searchParams.get('redaction_status')
+  if (redactionRaw) {
+    const statuses = redactionRaw.split(',').map((s) => s.trim()).filter(Boolean)
+    if (statuses.length > 0) {
+      whereParts.push(`redaction_status IN (${statuses.map(() => '?').join(',')})`)
+      params.push(...statuses)
+    }
+  }
+
+  const scanRaw = searchParams.get('security_scan_status')
+  if (scanRaw) {
+    const statuses = scanRaw.split(',').map((s) => s.trim()).filter(Boolean)
+    if (statuses.length > 0) {
+      whereParts.push(`security_scan_status IN (${statuses.map(() => '?').join(',')})`)
+      params.push(...statuses)
+    }
+  }
+
+  const dateFrom = searchParams.get('date_from')
+  if (dateFrom && /^\d{4}-\d{2}-\d{2}$/.test(dateFrom)) {
+    whereParts.push('created_at >= unixepoch(?)')
+    params.push(`${dateFrom}T00:00:00Z`)
+  }
+
+  const dateTo = searchParams.get('date_to')
+  if (dateTo && /^\d{4}-\d{2}-\d{2}$/.test(dateTo)) {
+    whereParts.push('created_at <= unixepoch(?)')
+    params.push(`${dateTo}T23:59:59Z`)
+  }
+
+  const rows = db.prepare(`
+    SELECT id, task_id, workspace_id, artifact_type, storage_kind, storage_uri,
+           redaction_status, security_scan_status, sha256, byte_size,
+           mime_type AS mime, preview_text, schema_version, workflow_template_slug,
+           original_filename, producer_agent_id, supersedes_artifact_id, created_at
+    FROM task_artifacts
+    WHERE ${whereParts.join(' AND ')}
+    ORDER BY created_at DESC, id DESC
+    LIMIT 200
+  `).all(...params)
+
+  return NextResponse.json({ rows })
+}
 
 function isFeatureTaskArtifactsEnabled(workspaceId: number): boolean {
   const db = getDatabase()

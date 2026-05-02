@@ -59,12 +59,14 @@ function shortDate(iso: string): string {
   return d.toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' })
 }
 
-function Last7dTriageTotalsWidget({
+export function Last7dTriageTotalsWidget({
   workspaceIdHint,
+  rollupOverride,
 }: {
   workspaceIdHint: number | null
+  rollupOverride?: DispositionRollup
 }): React.ReactElement {
-  const [rollup, setRollup] = useState<DispositionRollup | null>(null)
+  const [rollup, setRollup] = useState<DispositionRollup | null>(rollupOverride ?? null)
 
   const fetchRollup = useCallback(async () => {
     try {
@@ -85,10 +87,14 @@ function Last7dTriageTotalsWidget({
   }, [workspaceIdHint])
 
   useEffect(() => {
+    if (rollupOverride) {
+      setRollup(rollupOverride)
+      return
+    }
     void fetchRollup()
     const id = setInterval(() => { void fetchRollup() }, 30_000)
     return () => { clearInterval(id) }
-  }, [fetchRollup])
+  }, [fetchRollup, rollupOverride])
 
   const total = rollup?.total ?? 0
   const days = useMemo<DispositionRollupDay[]>(() => rollup?.days ?? [], [rollup])

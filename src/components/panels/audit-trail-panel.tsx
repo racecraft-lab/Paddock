@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { useMissionControl } from '@/store'
+import ArtifactAdminPanel from './artifact-admin-panel'
 
 interface AuditEvent {
   id: number
@@ -135,15 +136,15 @@ const actionIcons: Record<string, string> = {
   access_deny: 'x',
 }
 
-type AuditTabKey = 'events' | 'dispositions'
+type AuditTabKey = 'events' | 'dispositions' | 'artifacts'
 
 export function AuditTrailPanel() {
   const [activeTab, setActiveTab] = useState<AuditTabKey>('events')
 
   return (
     <div className="flex flex-col h-full">
-      {/* Tab navigation — SPEC-007 US3 added "Dispositions" alongside the
-          existing audit-events view. */}
+      {/* Tab navigation — SPEC-007 adds disposition and artifact audit surfaces
+          alongside the existing audit-events view. */}
       <div
         role="tablist"
         aria-label="Audit views"
@@ -151,8 +152,10 @@ export function AuditTrailPanel() {
         data-testid="audit-tab-nav"
       >
         <button
+          id="audit-tab-events"
           role="tab"
           aria-selected={activeTab === 'events'}
+          aria-controls="audit-tabpanel-events"
           onClick={() => setActiveTab('events')}
           data-testid="audit-tab-events"
           className={`px-3 py-2 text-xs font-medium rounded-t-md transition-smooth ${
@@ -164,8 +167,10 @@ export function AuditTrailPanel() {
           Events
         </button>
         <button
+          id="audit-tab-dispositions"
           role="tab"
           aria-selected={activeTab === 'dispositions'}
+          aria-controls="audit-tabpanel-dispositions"
           onClick={() => setActiveTab('dispositions')}
           data-testid="audit-tab-dispositions"
           className={`px-3 py-2 text-xs font-medium rounded-t-md transition-smooth ${
@@ -176,10 +181,36 @@ export function AuditTrailPanel() {
         >
           Dispositions
         </button>
+        <button
+          id="audit-tab-artifacts"
+          role="tab"
+          aria-selected={activeTab === 'artifacts'}
+          aria-controls="audit-tabpanel-artifacts"
+          onClick={() => setActiveTab('artifacts')}
+          data-testid="audit-tab-artifacts"
+          className={`px-3 py-2 text-xs font-medium rounded-t-md transition-smooth ${
+            activeTab === 'artifacts'
+              ? 'bg-secondary text-foreground border-b-2 border-primary'
+              : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+          }`}
+        >
+          Artifacts
+        </button>
       </div>
 
-      <div className="flex-1 overflow-auto">
-        {activeTab === 'events' ? <AuditEventsTab /> : <DispositionsTab />}
+      <div
+        id={`audit-tabpanel-${activeTab}`}
+        role="tabpanel"
+        aria-labelledby={`audit-tab-${activeTab}`}
+        className="flex-1 overflow-auto"
+      >
+        {activeTab === 'events' ? (
+          <AuditEventsTab />
+        ) : activeTab === 'dispositions' ? (
+          <DispositionsTab />
+        ) : (
+          <ArtifactAdminPanel />
+        )}
       </div>
     </div>
   )
