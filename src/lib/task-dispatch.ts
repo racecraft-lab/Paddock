@@ -10,7 +10,155 @@ import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-
 import { resolveFlag } from './feature-flags'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
+import { sanitizeDispositionFailurePayload } from './task-artifacts'
 import { createHash } from 'crypto'
+
+// SPEC-007 FR-010: Closed disposition enum (Design Concept Q3).
+const DISPOSITION_ENUM = [
+  'merged', 'closed', 'rejected', 'rerouted', 'duplicate', 'spam', 'completed', 'abandoned',
+] as const
+
+// SPEC-007 FR-010 / Q4: triage-template detection by output_schema shape.
+function isTriageTemplateSchema(schemaRaw: string | null | undefined): boolean {
+  if (!schemaRaw) return false
+  try {
+    const schema = JSON.parse(schemaRaw) as unknown
+    if (!schema || typeof schema !== 'object') return false
+    const obj = schema as Record<string, unknown>
+    const required = Array.isArray(obj.required) ? (obj.required as unknown[]) : []
+    if (!required.includes('disposition')) return false
+    const props = obj.properties
+    if (!props || typeof props !== 'object') return false
+    const disp = (props as Record<string, unknown>).disposition
+    if (!disp || typeof disp !== 'object') return false
+    const dispObj = disp as Record<string, unknown>
+    if (dispObj.type !== 'string') return false
+    if (!Array.isArray(dispObj.enum)) return false
+    const dispEnum = dispObj.enum as unknown[]
+    return DISPOSITION_ENUM.every(v => dispEnum.includes(v))
+  } catch {
+    return false
+  }
+}
+
+function safeParseJson(s: string): unknown {
+  try { return JSON.parse(s) } catch { return undefined }
+}
+
+function isDispositionLoggingEnabled(db: any, workspaceId: number): boolean {
+  const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as { feature_flags: string | null } | undefined
+  return resolveFlag('FEATURE_DISPOSITION_LOGGING', { workspaceFlags: row?.feature_flags ?? null })
+}
+
+// SPEC-007 FR-014: throttled `disposition_insert_failed` activity (1 per (task_id, type) per 60s).
+function writeThrottledInsertFailure(
+  db: any,
+  parentTaskId: number,
+  workspaceId: number,
+  err: unknown,
+): void {
+  try {
+    const recent = db.prepare(
+      "SELECT id FROM activities WHERE type = 'disposition_insert_failed' AND entity_type = 'task' AND entity_id = ? AND created_at >= unixepoch() - 60 LIMIT 1",
+    ).get(parentTaskId)
+    if (recent) return
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('disposition_insert_failed', 'task', ?, 'task-pipeline', 'Disposition INSERT failed', ?, ?)",
+    ).run(
+      parentTaskId,
+      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
+      workspaceId,
+    )
+  } catch (innerErr) {
+    logger.warn({
+      event: 'disposition_insert_failed_activity_write_failed',
+      task_id: parentTaskId,
+      error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+    })
+  }
+}
+
+// SPEC-007 FR-011/FR-012/FR-013/FR-015: Post-commit disposition logging hook.
+// Runs AFTER advanceTaskChain's IIFE returns, BEFORE runPostCommitSuccessorSync.
+// Gated by FEATURE_DISPOSITION_LOGGING. No-op if not a triage template.
+// On INSERT failure, writes throttled activity, never rethrows.
+function runPostCommitDispositionInsert(
+  db: any,
+  parentTaskId: number,
+  workspaceId: number,
+): void {
+  if (!isDispositionLoggingEnabled(db, workspaceId)) return
+
+  const parent = db.prepare(
+    'SELECT t.id, t.assigned_to, t.resolution, t.workspace_id, t.workflow_template_id, wt.output_schema FROM tasks t JOIN workflow_templates wt ON wt.id = t.workflow_template_id WHERE t.id = ? AND t.workspace_id = ?',
+  ).get(parentTaskId, workspaceId) as
+    | { id: number; assigned_to: string | null; resolution: string | null; workspace_id: number; workflow_template_id: number; output_schema: string | null }
+    | undefined
+  if (!parent) return
+  if (!isTriageTemplateSchema(parent.output_schema)) return
+
+  const rawOutput = parent.resolution ?? ''
+  const parsed = rawOutput ? safeParseJson(rawOutput) : undefined
+  const parsedObj = parsed && typeof parsed === 'object' && parsed !== null
+    ? (parsed as Record<string, unknown>)
+    : null
+
+  const dispRaw = parsedObj && typeof parsedObj.disposition === 'string' ? parsedObj.disposition : null
+  const validationOk = dispRaw !== null && (DISPOSITION_ENUM as readonly string[]).includes(dispRaw)
+  const reason = parsedObj && typeof parsedObj.reason === 'string' ? parsedObj.reason : null
+
+  const agentRow = parent.assigned_to
+    ? (db.prepare('SELECT id FROM agents WHERE name = ? AND workspace_id = ?').get(parent.assigned_to, workspaceId) as { id: number } | undefined)
+    : undefined
+  const triagedByAgentId = agentRow ? agentRow.id : null
+
+  if (validationOk) {
+    try {
+      db.prepare(
+        'INSERT INTO task_dispositions (task_id, disposition, reason, triaged_by_agent_id, triaged_at, workspace_id) VALUES (?, ?, ?, ?, unixepoch(), ?)',
+      ).run(parentTaskId, dispRaw, reason, triagedByAgentId, workspaceId)
+    } catch (err) {
+      writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+    }
+    return
+  }
+
+  const violation = parsedObj === null
+    ? 'invalid_json'
+    : 'disposition' in parsedObj
+      ? 'enum_violation'
+      : 'missing_required_field'
+  const sanitized = sanitizeDispositionFailurePayload({
+    rule: 'output_schema_violation',
+    violation,
+    field: 'disposition',
+    content: rawOutput,
+  })
+
+  let inserted = false
+  try {
+    db.prepare(
+      "INSERT INTO task_dispositions (task_id, disposition, reason, triaged_by_agent_id, triaged_at, workspace_id) VALUES (?, 'unknown', ?, ?, unixepoch(), ?)",
+    ).run(parentTaskId, reason, triagedByAgentId, workspaceId)
+    inserted = true
+  } catch (err) {
+    writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+  }
+
+  if (!inserted) return
+
+  try {
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('disposition_validation_failed', 'task', ?, 'task-pipeline', 'Disposition validation failed', ?, ?)",
+    ).run(parentTaskId, JSON.stringify(sanitized), workspaceId)
+  } catch (innerErr) {
+    logger.warn({
+      event: 'disposition_validation_activity_write_failed',
+      task_id: parentTaskId,
+      error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+    })
+  }
+}
 
 /** Sync task to GitHub/GNAP and broadcast escalation if task failed */
 function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
@@ -497,6 +645,19 @@ export function advanceTaskChain(input: AdvanceTaskChainInput): AdvanceTaskChain
     successorForPostCommit = createResult.taskId
     return { advanced: true, reason: 'successor_created', successorTaskId: createResult.taskId }
   })()
+
+  // SPEC-007 FR-011: Post-commit disposition logging runs AFTER the IIFE
+  // and BEFORE runPostCommitSuccessorSync. Failure-isolated (try/catch).
+  try {
+    runPostCommitDispositionInsert(db, input.taskId, input.workspaceId)
+  } catch (err) {
+    // Defense-in-depth: SPEC-007 FR-012 says failures must never block advancement.
+    logger.warn({
+      event: 'disposition_post_commit_unexpected_error',
+      task_id: input.taskId,
+      error: err instanceof Error ? err.message : String(err),
+    })
+  }
 
   if (successorForPostCommit !== null) {
     runPostCommitSuccessorSync(db, successorForPostCommit, input.workspaceId)
