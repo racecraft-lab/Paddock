@@ -13,11 +13,11 @@ When both `FEATURE_DISPOSITION_LOGGING` and `FEATURE_TASK_ARTIFACTS` are OFF for
 
 **Why this priority**: Rollback safety is the foundation of the rollout strategy. Without verifiable byte-compatibility when flags are OFF, operators cannot deploy the change with confidence that disabling a flag fully unwinds the new behavior. Both schemas (M057, M058) already exist, so the only behavioral guarantee in this state is "do nothing observable."
 
-**Independent Test**: With both flags resolving to OFF (default), drive a triage-template task to completion via `advanceTaskChain` and assert: (a) zero rows inserted into `task_dispositions`, (b) successor task `input` JSON is byte-identical to the SPEC-004 baseline (no `input_artifacts` key), (c) `POST /api/task-artifacts` returns HTTP 503. Run an EXPLAIN QUERY PLAN diff against the SPEC-004 dispatch baseline to confirm no query-plan drift.
+**Independent Test**: With both flags resolving to OFF (default), drive a triage-template task to completion via `advanceTaskChain` and assert: (a) zero rows inserted into `task_dispositions`, (b) successor task `metadata` JSON contains no `input_artifacts` key (`'input_artifacts' in JSON.parse(successor.metadata) === false`), (c) `POST /api/task-artifacts` returns HTTP 503. Persist `src/lib/__tests__/__fixtures__/spec-004-dispatch-metadata-baseline.json` (a structural baseline of the successor's `metadata` object — keys + types only, not literal values) and assert flag-OFF dispatch matches it. Reuse `src/lib/__tests__/__fixtures__/explain-query-plan-pre-m62.json` for the EXPLAIN QUERY PLAN diff. (Clarify Session 3 / Q1, Q2: there is no `tasks.input` column — the dispatch payload lives in `tasks.metadata` JSON; SPEC-007 attaches `metadata.input_artifacts` as a sibling of the existing `metadata.task_pipeline` namespace.)
 
 **Acceptance Scenarios**:
 
-1. **Given** both flags OFF in workspace W and a triage-template task T1 about to complete, **When** `advanceTaskChain` commits T1, **Then** no row is inserted into `task_dispositions` for T1, no `activities` row of `kind='disposition_*'` is written, and the successor task T2's `input` JSON contains no `input_artifacts` key.
+1. **Given** both flags OFF in workspace W and a triage-template task T1 about to complete, **When** `advanceTaskChain` commits T1, **Then** no row is inserted into `task_dispositions` for T1, no `activities` row of `type='disposition_*'` is written, and the successor task T2's `metadata` JSON contains no `input_artifacts` key.
 2. **Given** both flags OFF in workspace W, **When** an agent calls `POST /api/task-artifacts`, **Then** the response is HTTP 503 with a stable error body indicating the artifact store is disabled, and no row is inserted into `task_artifacts`.
 3. **Given** both flags OFF, **When** the audit panel loads the "Dispositions" tab, **Then** the tab renders an empty-state message but does not error, and the dashboard widget renders "no data" without polling failures.
 
@@ -81,19 +81,19 @@ The system runs every artifact through `detectSecrets(content, mime)` from `src/
 
 ### User Story 5 - Successor Consumes Artifact References (Priority: P1)
 
-When `FEATURE_TASK_ARTIFACTS=ON`, the successor dispatched by `advanceTaskChain` receives an `input_artifacts` array in `task.input`, populated from the producer task's latest non-superseded, non-quarantined `task_artifacts` rows. Each entry carries `{ id, type, sha256, preview_text, storage_kind, byte_size }`. `preview_text` is the first 4 KiB of UTF-8-decoded post-redaction content for text-like MIMEs, or `'(binary, ${byte_size} bytes, sha256=${sha256.slice(0,12)})'` for binary MIMEs. Raw content is available *only* via `GET /api/task-artifacts/[id]` with auth. With the flag OFF, the dispatch payload is byte-compatible with SPEC-004 and contains no `input_artifacts` key.
+When `FEATURE_TASK_ARTIFACTS=ON`, the successor dispatched by `advanceTaskChain` receives an `input_artifacts` array under the successor task's `metadata.input_artifacts` key (sibling of the existing `metadata.task_pipeline` namespace owned by SPEC-004), populated from the producer task's latest non-superseded, non-quarantined `task_artifacts` rows. Each entry carries `{ id, type, sha256, preview_text, storage_kind, byte_size }`. `preview_text` is the first 4 KiB of UTF-8-decoded post-redaction content for text-like MIMEs, or `'(binary, ${byte_size} bytes, sha256=${sha256.slice(0,12)})'` for binary MIMEs. Raw content is available *only* via `GET /api/task-artifacts/[id]` with auth. With the flag OFF, the dispatch payload is byte-compatible with SPEC-004 and contains no `input_artifacts` key in `metadata`.
 
 **Why this priority**: Successor handoff is the operational reason the artifact plane exists. Successor agents must NEVER read another agent's private sandbox; the `input_artifacts` contract is how they discover what their predecessor produced safely. The flag-OFF byte compatibility check protects rollback.
 
-**Independent Test**: With `FEATURE_TASK_ARTIFACTS=ON`, publish two artifacts (one inline JSON, one binary PDF) for producer task P, then drive the chain to dispatch successor S. Assert `S.input.input_artifacts` is an array of two entries with the correct shape, `preview_text` is post-redaction for the JSON, and the binary entry uses the binary stub. Quarantine one artifact and re-run; assert it is silently skipped from the successor's array. Run a publish-then-republish pair; assert only the latest non-superseded version appears.
+**Independent Test**: With `FEATURE_TASK_ARTIFACTS=ON`, publish two artifacts (one inline JSON, one binary PDF) for producer task P, then drive the chain to dispatch successor S. Assert `JSON.parse(S.metadata).input_artifacts` is an array of two entries with the correct shape, `preview_text` is post-redaction for the JSON, and the binary entry uses the binary stub. Quarantine one artifact and re-run; assert it is silently skipped from the successor's array. Run a publish-then-republish pair; assert only the latest non-superseded version appears.
 
 **Acceptance Scenarios**:
 
-1. **Given** `FEATURE_TASK_ARTIFACTS=ON` and producer task P with two non-superseded, non-quarantined artifacts (one `inline_json`, one `file` PDF), **When** `advanceTaskChain` dispatches successor S, **Then** `S.input.input_artifacts` is `[{id, type, sha256, preview_text, storage_kind:'inline_json', byte_size}, {id, type, sha256, preview_text:'(binary, ...)' , storage_kind:'file', byte_size}]`.
-2. **Given** producer task P has an artifact A1 published, then A2 published with `supersedes=A1`, **When** successor S is dispatched, **Then** `S.input.input_artifacts` contains only A2; A1 is excluded as superseded.
-3. **Given** producer task P has an artifact that an admin quarantined, **When** successor S is dispatched, **Then** the quarantined artifact is silently skipped from `input_artifacts` and an `activities` row records the skip.
-4. **Given** `FEATURE_TASK_ARTIFACTS=OFF`, **When** `advanceTaskChain` dispatches successor S, **Then** `S.input` JSON has no `input_artifacts` key (byte-compatible with SPEC-004 baseline).
-5. **Given** a successor agent reads `S.input.input_artifacts[0].preview_text`, **When** the producer published a 10 KiB Markdown post-redaction, **Then** the preview is the first 4 KiB of the redacted Markdown UTF-8-decoded.
+1. **Given** `FEATURE_TASK_ARTIFACTS=ON` and producer task P with two non-superseded, non-quarantined artifacts (one `inline_json`, one `file` PDF), **When** `advanceTaskChain` dispatches successor S, **Then** `JSON.parse(S.metadata).input_artifacts` is `[{id, type, sha256, preview_text, storage_kind:'inline_json', byte_size}, {id, type, sha256, preview_text:'(binary, ...)' , storage_kind:'file', byte_size}]`.
+2. **Given** producer task P has an artifact A1 published, then A2 published with `supersedes=A1`, **When** successor S is dispatched, **Then** `metadata.input_artifacts` contains only A2; A1 is excluded as superseded.
+3. **Given** producer task P has an artifact that an admin quarantined, **When** successor S is dispatched, **Then** the quarantined artifact is silently skipped from `metadata.input_artifacts` and an `activities` row records the skip.
+4. **Given** `FEATURE_TASK_ARTIFACTS=OFF`, **When** `advanceTaskChain` dispatches successor S, **Then** `JSON.parse(S.metadata)` has no `input_artifacts` key (byte-compatible with SPEC-004 baseline).
+5. **Given** a successor agent reads `JSON.parse(S.metadata).input_artifacts[0].preview_text`, **When** the producer published a 10 KiB Markdown post-redaction, **Then** the preview is the first 4 KiB of the redacted Markdown UTF-8-decoded.
 
 ---
 
@@ -188,7 +188,7 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 #### Feature flags
 
 - **FR-001**: System MUST resolve `FEATURE_DISPOSITION_LOGGING` through `resolveFlag(name, { workspaceId })` at every call site that affects behavior. With the flag OFF, no `task_dispositions` rows are inserted, no `disposition_*` activities are written, and no Aegis fail signal is generated from disposition logic.
-- **FR-002**: System MUST resolve `FEATURE_TASK_ARTIFACTS` through `resolveFlag(name, ctx)` at every call site. With the flag OFF, the publish API returns HTTP 503; successor dispatch payloads contain no `input_artifacts` key and are byte-compatible with the SPEC-004 baseline.
+- **FR-002**: System MUST resolve `FEATURE_TASK_ARTIFACTS` through `resolveFlag(name, ctx)` at every call site. With the flag OFF, the publish API returns HTTP 503; successor dispatch payloads contain no `metadata.input_artifacts` key and are byte-compatible with the SPEC-004 baseline.
 - **FR-003**: Both flags MUST default to OFF and MUST be independently togglable per workspace.
 
 #### Disposition logging (FEATURE_DISPOSITION_LOGGING)
@@ -262,15 +262,15 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 
 #### Successor dispatch
 
-- **FR-040**: With `FEATURE_TASK_ARTIFACTS=ON`, when `advanceTaskChain` dispatches the next task, the system MUST attach `task.input.input_artifacts: Array<{ id, type, sha256, preview_text, storage_kind, byte_size }>` populated from the producer task's latest non-superseded, non-quarantined `task_artifacts` rows.
+- **FR-040**: With `FEATURE_TASK_ARTIFACTS=ON`, when `advanceTaskChain` dispatches the next task, the system MUST attach `metadata.input_artifacts: Array<{ id, type, sha256, preview_text, storage_kind, byte_size }>` to the successor task's `metadata` JSON column (sibling of the SPEC-004-owned `metadata.task_pipeline` namespace), populated from the producer task's latest non-superseded, non-quarantined `task_artifacts` rows. (Clarify Session 3 / Q1: there is no `tasks.input` column — the existing payload storage is `tasks.metadata`.)
 - **FR-041**: Raw artifact content MUST be available only via `GET /api/task-artifacts/[id]` with authentication. Successor agents MUST NOT receive raw content in the dispatch payload.
 - **FR-042**: `preview_text` MUST be the first 4 KiB of UTF-8-decoded post-redaction content for text-like MIMEs (`text/*`, `application/json`, `application/x-yaml`), or the literal string `'(binary, ${byte_size} bytes, sha256=${sha256.slice(0,12)})'` for binary MIMEs.
-- **FR-043**: With `FEATURE_TASK_ARTIFACTS=OFF`, the dispatch payload MUST NOT contain an `input_artifacts` key (byte-compatible with SPEC-004 baseline). An EXPLAIN QUERY PLAN test MUST guard against query-plan drift.
+- **FR-043**: With `FEATURE_TASK_ARTIFACTS=OFF`, the successor's `metadata` JSON MUST NOT contain an `input_artifacts` key (byte-compatible with SPEC-004 baseline; key absence asserted with `'input_artifacts' in JSON.parse(successor.metadata) === false`). The flag-OFF baseline is captured in `src/lib/__tests__/__fixtures__/spec-004-dispatch-metadata-baseline.json` as a structural shape (keys + types) and asserted by a Vitest deep-shape diff. An EXPLAIN QUERY PLAN test MUST also guard against query-plan drift, reusing `src/lib/__tests__/__fixtures__/explain-query-plan-pre-m62.json`. (Clarify Session 3 / Q2.)
 
 #### Audit panel ("Dispositions" tab in src/components/panels/audit-trail-panel.tsx)
 
 - **FR-050**: System MUST add a "Dispositions" tab to `audit-trail-panel.tsx` with filters for `workspace_id`, `disposition` (multi-select), date range (preset + custom), `triaged_by_agent_id` (dropdown), and `task_id` (numeric exact OR title substring).
-- **FR-051**: Results MUST be paginated by cursor on `(triaged_at DESC, id DESC)` with a default page size of 50 and a max of 200.
+- **FR-051**: Results MUST be paginated by **opaque base64url cursor** on `(triaged_at DESC, id DESC)` with a default page size of 50 and a max of 200. Cursor format (server-side): `base64url(JSON.stringify({ triaged_at: number, id: number }))`. Wire contract: clients pass the opaque string back as `?cursor=<value>`; server decodes to apply `WHERE (triaged_at, id) < (?, ?)`. Malformed cursor → HTTP 400 with code `invalid_cursor`. Response shape: `{ dispositions: Array<...>, next_cursor: string | null, has_more: boolean }` (NOT the offset-pagination `{total, hasMore}` shape used by `/api/activities`). (Clarify Session 3 / Q5: no existing cursor-pagination precedent in the codebase; SPEC-007 establishes this convention.)
 - **FR-052**: When at least one row exists, the tab MUST display a banner reading "Logging began on YYYY-MM-DD" derived from the earliest `task_dispositions.triaged_at`. The banner MUST be hidden if no rows exist.
 
 #### Artifact admin panel (src/components/panels/artifact-admin-panel.tsx)
@@ -278,9 +278,9 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 - **FR-060**: System MUST provide an artifact admin panel that lists and searches artifacts with filters by `workspace_id`, `artifact_type`, `redaction_status`, `security_scan_status`, and date range.
 - **FR-061**: The panel MUST allow inspection of metadata, preview text rendering, and raw content download for non-quarantined non-binary artifacts.
 - **FR-062**: Destructive actions MUST be gated by the existing admin guard pattern: quarantine (reversible), un-quarantine, delete, archive, hash-verify (single + batch), repair orphans (bidirectional), rebuild previews/indexes, and run retention sweep.
-- **FR-063**: Each destructive action MUST write an `activities` row with `kind ∈ {'artifact_quarantined','artifact_unquarantined','artifact_deleted','artifact_archived','artifact_hash_verified','artifact_repaired_orphan','artifact_previews_rebuilt','artifact_retention_swept'}` and a payload of `{artifact_id, actor_session_id, reason, before_status, after_status}`.
+- **FR-063**: Each destructive action MUST write an `activities` row with `type ∈ {'artifact_quarantined','artifact_unquarantined','artifact_deleted','artifact_archived','artifact_hash_verified','artifact_repaired_orphan','artifact_previews_rebuilt','artifact_retention_swept'}` (note: the `activities` column is `type`, not `kind`) and a payload of `{artifact_id, actor_session_id, reason, before_status, after_status}`. The privileged-read audit type `artifact_quarantined_read_overridden` (FR-065) is NOT in this destructive-action set — it is its own audit category — but it shares the same write path and payload conventions.
 - **FR-064**: The panel MUST surface health metrics: artifact counts, total bytes, failed publishes/scans/reads, orphan count, storage free space, and p95 publish/read latency per workspace from the in-memory ring buffer. If fewer than 100 observations exist for a metric, the cell MUST display "insufficient data".
-- **FR-065**: Quarantine MUST set `redaction_status='quarantined'`. Reads of quarantined artifacts MUST return HTTP 423 Locked with a metadata-only stub body unless the request includes `?include_quarantined=1` AND the caller is admin.
+- **FR-065**: Quarantine MUST set `redaction_status='quarantined'`. Reads of quarantined artifacts MUST return HTTP 423 Locked with a metadata-only stub body unless the request includes `?include_quarantined=1` AND the caller is admin. Every successful admin-override read (i.e., `GET /api/task-artifacts/[id]?include_quarantined=1` returning 200 to an admin caller) MUST write an `activities` row of `type='artifact_quarantined_read_overridden'` with payload `{ artifact_id, actor_session_id, actor_user_id, requested_at: unixepoch() }` (Clarify Session 3 / Q4 — Constitution Principle X mandates a durable record of every governance-boundary crossing; NIST SP 800-53 AU-2/AU-3/AU-12 require complete unthrottled logging of privileged access; HashiCorp Vault and AWS KMS audit every privileged read unconditionally). This audit row MUST NOT be throttled — every override read produces exactly one row. The throttle pattern is reserved for failure-noise events (FR-014, FR-032), not authorized governance-boundary access.
 - **FR-066**: Successor dispatch MUST silently skip quarantined artifacts and write an `activities` row recording the skip.
 - **FR-067**: Hash verification MUST re-hash the file. On mismatch, the system MUST set `security_scan_status='hash_mismatch'` and write an `activities` row of `kind='artifact_hash_verified'` with mismatch detail; the system MUST NOT auto-quarantine.
 - **FR-068**: Orphan repair MUST handle both directions: a DB row without a file MUST get `redaction_status='rejected'` and `security_scan_status='file_missing'` (row preserved); a file without a DB row MUST be moved to `<DATA_DIR>/artifacts/_orphaned/<timestamp>/<original-relative-path>`.
@@ -294,8 +294,36 @@ A stable, generic `GET /api/dispositions` endpoint exposes disposition rows for 
 
 #### Generic dispositions API (src/app/api/dispositions/route.ts)
 
-- **FR-080**: System MUST expose `GET /api/dispositions` with filters: `workspace_id` (required for non-Facility callers), `disposition` (multi-select), `since` and `until` (ISO timestamps), `triaged_by_agent_id`, `task_id`. Cursor pagination on `(triaged_at DESC, id DESC)`.
+- **FR-080**: System MUST expose `GET /api/dispositions` with filters: `workspace_id` (required for non-Facility callers; missing → HTTP 400 code `workspace_id_required`), `disposition` (multi-select), `since` and `until` (ISO timestamps), `triaged_by_agent_id`, `task_id`. **Opaque base64url cursor pagination** on `(triaged_at DESC, id DESC)` with the same format and response shape as FR-051. Server response shape: `{ dispositions: Array<...>, next_cursor: string | null, has_more: boolean }`.
 - **FR-081**: Auth MUST follow the same pattern as `/api/activities`. v1 MUST NOT impose any rate limit beyond existing API-key gating.
+
+#### API Error Code Matrix (per Clarify Session 3 / Q3)
+
+The following table is the authoritative contract for HTTP status codes emitted by SPEC-007 endpoints. Every code listed here MUST be tested by the contract-test suite; codes not listed here are NOT permitted responses for the covered scenarios. Error body shape MUST follow the existing project convention `{ error: '<error_code>' }` with optional domain-specific supplemental fields (per `openapi.json` global Error schema and `src/app/api/activities/route.ts:18,36`). The system MUST NOT introduce a generic `code` field — domain-specific fields like `missing_mentions`, `redacted_preview`, `limit_bytes`, `mime`, `artifact_id` are added inline alongside `error`.
+
+| Endpoint | Condition | HTTP Status | Error body |
+|----------|-----------|-------------|------------|
+| `POST /api/task-artifacts` | Both flags resolve OFF | 503 | `{ error: 'artifact_store_disabled' }` |
+| `POST /api/task-artifacts` | `storage_kind='external_uri'` | 400 | `{ error: 'external_uri_rejected' }` |
+| `POST /api/task-artifacts` | Bad input (missing required field, malformed) | 400 | `{ error: 'bad_request', details?: string[] }` |
+| `POST /api/task-artifacts` | Unauthenticated | 401 | `{ error: 'unauthenticated' }` |
+| `POST /api/task-artifacts` | Session workspace ≠ producer workspace (non-Facility) | 403 | `{ error: 'workspace_mismatch' }` |
+| `POST /api/task-artifacts` | `supersedes` target is quarantined | 409 | `{ error: 'cannot_supersede_quarantined', supersedes_id: <id> }` |
+| `POST /api/task-artifacts` | File > 25 MiB | 413 | `{ error: 'payload_too_large', limit_bytes: 26214400 }` |
+| `POST /api/task-artifacts` | MIME not in allowlist | 415 | `{ error: 'unsupported_media_type', mime: '<received>' }` |
+| `POST /api/task-artifacts` | Detector findings ≥ 1, redact-and-store NOT enabled | 422 | `{ error: 'secret_detected', redacted_preview: '<...>', findings: number }` |
+| `POST /api/task-artifacts` | Redaction would empty the artifact | 422 | `{ error: 'redaction_would_empty_artifact' }` |
+| `POST /api/task-artifacts` | sha256 collision detected post-link (extremely rare) | 500 | `{ error: 'artifact_hash_verification_failed' }` |
+| `GET /api/task-artifacts/[id]` | Flag OFF | 503 | `{ error: 'artifact_store_disabled' }` |
+| `GET /api/task-artifacts/[id]` | Unauthenticated | 401 | `{ error: 'unauthenticated' }` |
+| `GET /api/task-artifacts/[id]` | Caller cannot read this workspace | 403 | `{ error: 'workspace_forbidden' }` |
+| `GET /api/task-artifacts/[id]` | Artifact id not found | 404 | `{ error: 'artifact_not_found' }` |
+| `GET /api/task-artifacts/[id]` | Quarantined; no `?include_quarantined=1` OR not admin | 423 | `{ error: 'artifact_locked', artifact_id: <id> }` |
+| `GET /api/dispositions` | Flag OFF | 503 | `{ error: 'disposition_logging_disabled' }` |
+| `GET /api/dispositions` | `workspace_id` missing for non-Facility caller | 400 | `{ error: 'workspace_id_required' }` |
+| `GET /api/dispositions` | Malformed `cursor` parameter | 400 | `{ error: 'invalid_cursor' }` |
+| `GET /api/dispositions` | Unauthenticated | 401 | `{ error: 'unauthenticated' }` |
+| `GET /api/dispositions` | Caller cannot read this workspace | 403 | `{ error: 'workspace_forbidden' }` |
 
 #### Aegis hook (src/lib/aegis-review.ts — thin new module per Clarify Session 1 consensus / Q1)
 
@@ -353,13 +381,13 @@ The v2 spec MUST author per-rule positive + negative fixtures and a wild-corpus 
 - **Secret detector rules**: Static array of `{name, regex, description}` entries; each entry passes `safe-regex` validation; each rule has at least one positive and one negative test fixture.
 - **Wild corpus**: A synthetic + manually crafted ≥ 50-line text file at `src/lib/__tests__/fixtures/secrets/wild-corpus.txt` containing a representative mix of real-world-shaped secret patterns. Used to assert detector recall ≥ 0.95.
 - **In-memory p95 ring buffer**: Per-workspace, two buffers (publish + read), 1024 observations each, no DB persistence, resets on process restart, surfaced in the admin panel with an "insufficient data" placeholder when fewer than 100 observations exist.
-- **Activity kinds added by this spec**: `disposition_validation_failed`, `disposition_insert_failed`, `security_violation`, `artifact_quarantined`, `artifact_unquarantined`, `artifact_deleted`, `artifact_archived`, `artifact_hash_verified`, `artifact_repaired_orphan`, `artifact_previews_rebuilt`, `artifact_retention_swept`, `artifact_skipped_quarantined_in_dispatch`.
+- **Activity types added by this spec** (`activities.type` column): `disposition_validation_failed`, `disposition_insert_failed`, `security_violation`, `artifact_quarantined`, `artifact_unquarantined`, `artifact_deleted`, `artifact_archived`, `artifact_hash_verified`, `artifact_hash_verification_failed`, `artifact_repaired_orphan`, `artifact_previews_rebuilt`, `artifact_retention_swept`, `artifact_skipped_quarantined_in_dispatch`, `artifact_quarantined_read_overridden`.
 
 ## Success Criteria *(mandatory)*
 
 ### Measurable Outcomes
 
-- **SC-001**: With both flags OFF, the SPEC-004 dispatch payload baseline MUST be byte-identical: zero diff in the `task.input` JSON across 100 sampled chains, and EXPLAIN QUERY PLAN snapshots show zero new query-plan rows.
+- **SC-001**: With both flags OFF, across 100 sampled SPEC-004 chains, every successor's `metadata` JSON MUST contain no `input_artifacts` key (`'input_artifacts' in JSON.parse(successor.metadata) === false`), the structural shape MUST match `src/lib/__tests__/__fixtures__/spec-004-dispatch-metadata-baseline.json`, AND EXPLAIN QUERY PLAN snapshots MUST show zero new query-plan rows vs `src/lib/__tests__/__fixtures__/explain-query-plan-pre-m62.json`.
 - **SC-002**: With `FEATURE_DISPOSITION_LOGGING=ON`, 100% of triage-template completions in a 1,000-task burst test produce exactly one `task_dispositions` row within 2 seconds of the task transition commit; INSERT failure rate logged as `activities` rows is < 0.1% under simulated DB stall.
 - **SC-003**: Operators using the audit panel can locate a specific disposition row by `(workspace, disposition, agent, date range)` filter combination and have the result render in under 2 seconds for datasets up to 100,000 rows.
 - **SC-004**: With `FEATURE_TASK_ARTIFACTS=ON`, the publish API rejects 100% of in-content secret patterns at the wild-corpus scale, producing redacted previews and `security_violation` activities. Detector recall MUST be ≥ 0.95.
