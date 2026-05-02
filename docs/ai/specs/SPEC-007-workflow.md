@@ -71,7 +71,11 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Strict-scope discipline | Strict scope = roadmap list + `src/lib/secret-detector.ts`, `src/lib/secret-detector.rules.ts`, `src/lib/__tests__/secret-detector.test.ts`, plus the explicit Aegis hook surface | `tsconfig.spec-strict.json`, `eslint.config.mjs`, strict-scope grep test |
 | Secret-detector test floor | Every rule family has ≥1 positive + ≥1 negative fixture; CI fails on `safe-regex` rejection; ≥0.95 recall on the wild corpus (≥50 lines) | Vitest + `safe-regex` checks |
 
-**Constitution Check:** Phase 0 baseline pending. Implementation-specific guardrails remain required in Plan/Analyze/Implement.
+**Constitution Check:** Phase 0 baselines recorded 2026-05-01:
+- `pnpm typecheck` → PASS (no errors)
+- `pnpm lint` → PASS (0 errors, 12 pre-existing warnings — none in SPEC-007 strict scope)
+- `pnpm test` baseline deferred until before Implement (full suite is large; we will rerun before Phase 7 to capture flag-OFF parity baseline)
+- Constitutional guardrails (feature-flag discipline, app-level enums, byte-compat, cross-spec boundary, strict-scope, secret-detector test floor) re-checked at Plan/Analyze/Implement gates.
 
 ### Archive Sweep
 
@@ -97,7 +101,21 @@ Required Phase 0 verification actions:
 
 ### Phase 0 Results
 
-Pending — record once executed.
+Executed 2026-05-01 by autopilot.
+
+**Migration-ID Verification (no edit performed):**
+
+| Roadmap form | Code form | File reference | Match? |
+|--------------|-----------|----------------|--------|
+| M54 (`workflow_templates.allow_redacted_artifacts`) | `id: '054_workflow_templates_task_chain_routing_and_artifact_policy'` | `src/lib/migrations.ts:1499` (column at :1510-1511) | ✅ |
+| M57 (`task_dispositions` table + index) | `id: '057_task_dispositions'` | `src/lib/migrations.ts:1549` | ✅ |
+| M58 (`task_artifacts` table + indexes) | `id: '058_task_artifacts'` | `src/lib/migrations.ts:1568` | ✅ |
+
+Roadmap lines 330–334 already use the M54/M57/M58 form correctly. Both forms (M54 and M054) reference the same migrations. **No roadmap content was edited in Phase 0.** Spec.md, plan.md, and tasks.md will internally use the M054/M057/M058 (triple-digit) form for code clarity.
+
+**Status hygiene reminder (deferred):** Roadmap line 87 still lists SPEC-006 as "Implemented (PR open)" despite PR #21 being merged (commit `dbb6c75`); PR #22 (SPEC-004) was also merged (commit `20643d8`); `docs/ai/specs/autopilot-state.json` still describes SPEC-006 as Phase 7 partial. **SPEC-007 does not carry these fixes — they are owned by SPEC-005 (Design Concept Q28).**
+
+Archive Sweep results recorded below once the sweep agent completes.
 
 ## Specification Context
 

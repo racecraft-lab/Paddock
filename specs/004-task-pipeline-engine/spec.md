@@ -2,7 +2,7 @@
 
 **Feature Branch**: `004-task-pipeline-engine`  
 **Created**: 2026-05-01  
-**Status**: Draft  
+**Status**: Completed (PR #22 merged 2026-05-01; archived 2026-05-01 by SPEC-007 autopilot Phase 0 sweep)  
 **Input**: User description: "SPEC-004 Task Pipeline Engine and Declarative Routing for RC Factory Phase 3 in Mission Control"
 
 ## User Scenarios & Testing *(mandatory)*

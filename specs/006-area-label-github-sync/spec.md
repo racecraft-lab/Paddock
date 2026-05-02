@@ -2,7 +2,7 @@
 
 **Feature Branch**: `006-area-label-github-sync`
 **Created**: 2026-05-01
-**Status**: Draft
+**Status**: Completed (PR #21 merged 2026-05-01; archived 2026-05-01 by SPEC-007 autopilot Phase 0 sweep)
 **Input**: User description: "SPEC-006 — RC Factory Phase 5 — area:* label routing and repo-level sync ownership for GitHub-synced product-line monorepos."
 
 ## User Scenarios & Testing *(mandatory)*

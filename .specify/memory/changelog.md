@@ -99,3 +99,55 @@ git show 85d102f0e4941cc51d20534fa1d0fec787c8ad56:specs/003-global-aegis/tasks.m
 <!-- Branch: 006-area-label-github-sync (feature branch — cleanup applies per SPEC-002A policy) -->
 <!-- Sweep run: 2026-05-01 | archiveExtension: 1.1.0 | excludedCurrentSpec: specs/006-area-label-github-sync -->
 <!-- Backfill note: SPEC-006 autopilot Step -1 silently no-op'd because /speckit.archive.run was not wired into .claude/commands/. Wiring fixed and sweep re-run manually 2026-05-01 to backfill SPEC-003. -->
+
+---
+
+## SPEC-004: Task Pipeline Engine and Declarative Routing
+
+- **Feature**: RC Factory Phase 3 — feature-flagged declarative task chains
+- **Branch**: `004-task-pipeline-engine`
+- **Spec Path**: `specs/004-task-pipeline-engine/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/22
+- **Merge Commit**: `20643d81fc76b66fb6227300e178622066ac268e`
+- **Tree Reference**: `git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/spec.md`
+- **CI URL**: N/A (local verification — Vitest, Playwright, typecheck, lint, build, audit baseline cleared)
+- **Argos URL**: N/A (engine + workflow-template UI; UI evidence via Playwright running-app)
+- **Task Completion**: 88/88
+- **Summary**: Added `FEATURE_TASK_PIPELINES`-gated declarative task pipeline engine. New strict-scope production modules: `src/lib/task-create.ts` (shared `createTask()` covering API, GitHub-import, GitHub-sync, recurring, and pipeline-successor profiles), `src/lib/output-schema-validator.ts` (constrained AJV profile, `safe-regex` patterns, hard caps on size/depth/budget), `src/lib/routing-rule-evaluator.ts` (allowlisted boolean grammar with bounded JSONPath traversal, no `eval`/`Function`/`vm`), and `src/types/workflow-template.ts`. Migration M62: partial unique successor index on non-null `tasks.parent_task_id`. Workflow-template fields (`slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, `allow_redacted_artifacts`) wired into `/api/workflows` (Product Line scope-aware) and the Workflows editor. `advanceTaskChain` runs inside a single transaction with deferred outbound GitHub/GNAP push; one-successor-per-parent enforced; explicit operator retry endpoint with template-provenance hash check (SHA-256 over canonical JSON). Stable activity reason codes for every failure/stall class; `chain_retry` summary excludes raw output and routing traces. Pinned runtime deps: `ajv@8.18.0`, `jsonpath-plus@10.4.0`, `safe-regex@2.1.1`. Consolidated CI guardrails behind `pnpm guardrails`. Storybook screenshot upload removed (Argos owns visual review).
+
+**Recovery Commands**:
+```text
+git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/spec.md
+git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/plan.md
+git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/tasks.md
+```
+
+---
+
+## SPEC-006: Area-Label GitHub Sync
+
+- **Feature**: RC Factory Phase 5 — `area:*` GitHub label routing + repo-level sync ownership for shared monorepos
+- **Branch**: `006-area-label-github-sync`
+- **Spec Path**: `specs/006-area-label-github-sync/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/21
+- **Merge Commit**: `dbb6c758f7f2796b06659fc70b52d16b13efee30`
+- **Tree Reference**: `git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/spec.md`
+- **CI URL**: N/A (local verification — focused Vitest, Playwright running-app journeys, typecheck, lint, build all green per workflow file Phase 7)
+- **Argos URL**: N/A (project settings UI extends existing surface; visual review via Playwright running-app)
+- **Task Completion**: Roadmap and SPEC-006 workflow file (`docs/ai/specs/SPEC-006-workflow.md`) record Implement phase Complete with implementation commits including `5f92f17` and PR #21 merged. The branch-local `specs/006-area-label-github-sync/tasks.md` file shows 22 of 88 task checkboxes ticked (pre-merge tracking drift documented in roadmap "stale pre-merge wording" note); the roadmap and workflow tracker are the authoritative status sources for SPEC-006 completion. Outstanding bookkeeping is captured in Outstanding Items.
+- **Summary**: Added `FEATURE_AREA_LABEL_ROUTING`-gated multi-department routing for shared GitHub monorepos. Migration M62: four nullable columns (`projects.area_slug`, `projects.is_triage_project`, `projects.is_repo_sync_owner`, `tasks.area_routing_backfilled_at`) plus four indexes — including partial unique indexes `idx_projects_one_sync_owner_per_repo` and `idx_projects_one_triage_per_workspace`. Single sync owner per `(workspace_id, github_repo)` elected by lowest `projects.id` (only `github_sync_enabled=1` projects considered). Inbound: `area:*` parsed → resolves to project by `area_slug` (`single_match`), triage project (`no_label` / `multi_label` / `no_match`), or sync-owner fallback (`no_triage`). First-ingest only — no re-route on label change (P5-AC5 no-thrash guarantee). Outbound: `area:<slug>` emitted alongside `mc:*`/`priority:*` when project has non-NULL `area_slug`. `backfillAreaRouting(workspaceId)` runs once per workspace on first flag-on (per-task transactions, monotonic `tasks.area_routing_backfilled_at` resume marker, workspace-level `area_label_routing_backfill_completed_at` completion marker set last). `initializeLabels(repo, workspaceId)` triggered on connect, on `area_slug`/`is_triage_project` transition, and once per workspace bootstrap; failures throttled to one `label_provisioning_failed` activity per `(workspace_id, github_repo)` per 24h with sanitized payload. `PUT /api/projects/[id]` accepts `area_slug`, `is_triage_project`, `is_repo_sync_owner`, `transfer_owner`; 409 conflict shapes `area_slug_conflict` / `triage_conflict` / `owner_conflict`; sync-owner transfer is atomic clear-then-set (SQLite UNIQUE indexes are immediate, not DEFERRABLE). Static `AREA_LABEL_MAP` covers 12 curated area names. Project Manager modal extends existing surface; flag-OFF disables fields with explanatory tooltip.
+
+**Recovery Commands**:
+```text
+git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/spec.md
+git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/plan.md
+git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/tasks.md
+```
+
+---
+
+<!-- Archive Sweep metadata -->
+<!-- archiveMode: sweep | dryRun: false | applyCleanupRequested: true | safeToApplyCleanup: true -->
+<!-- Branch: 007-disposition-artifacts (feature branch — cleanup applies per SPEC-002A policy) -->
+<!-- Sweep run: 2026-05-01 | archiveExtension: 1.1.0 | excludedCurrentSpec: specs/007-disposition-artifacts -->
+<!-- Backfilled SPEC-004 (PR #22) and SPEC-006 (PR #21); both merged on main but 005-ready-for-owner worktree never executed Phase 0 archive sweep, leaving residual specs/004 and specs/006 directories that this run cleans up. -->
