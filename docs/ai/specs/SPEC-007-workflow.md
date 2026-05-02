@@ -39,7 +39,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Clarify | `/speckit.clarify` | Complete | 3 sessions / 15 questions resolved (3 via consensus per security tag); G2 PASS (0 markers) |
 | Plan | `/speckit.plan` | Complete | plan.md + research.md (13 decisions) + data-model.md (7 entities) + 3 contracts + quickstart.md (10 scenarios) + CLAUDE.md/AGENTS.md updates. All 15 constitution principles PASS. G3 PASS (0 markers). |
 | Checklist | `/speckit.checklist` | Complete | 4 domains / 382 items: data-integrity (107/12 gaps), security (100/13 gaps + FR-035a), error-handling (105/35 gaps → FR-120-141), regression-safety (70/9 gaps → FR-110-114). 6 unresolved-for-consensus items resolved (3 security from S3 + 4 from error-handling). Spec.md grew from FR-100 to FR-141 + FR-035a. G4 PASS (0 gaps, 0 markers). |
-| Tasks | `/speckit.tasks` | Pending | Generate dependency-ordered TDD tasks with P6-AC1..P6-AC10 coverage |
+| Tasks | `/speckit.tasks` | Complete | 169 tasks (83 [T-RED] tests + 81 [P] parallel-safe); 14 phases; full P6-AC1..AC10 + FR-110..FR-141 + FR-035a coverage matrices; G5 PASS |
 | Analyze | `/speckit.analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
 | Implement | `/speckit.implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-008/009/011 behavior |
 
@@ -614,11 +614,13 @@ Focus on SPEC-007 regression safety:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | |
-| **Phases** | |
-| **Parallel Opportunities** | |
-| **User Stories Covered** | |
-| **Test Tasks ([T-RED])** | |
+| **Total Tasks** | 169 |
+| **Phases** | 14 (Setup, Foundational, US1–US11, Polish) |
+| **Parallel Opportunities** | 81 [P] tasks (72 are both [T-RED] and [P]) |
+| **User Stories Covered** | 11 (US1–US11) — all 9 spec user stories + Aegis hook (US11) + foundation/setup |
+| **Test Tasks ([T-RED])** | 83 |
+| **AC Coverage Matrix** | All P6-AC1..P6-AC10 mapped to specific T### IDs in tasks.md |
+| **FR Coverage Matrix** | All FR-035a + FR-110..FR-141 mapped to specific T### IDs in tasks.md |
 
 ## Phase 6: Analyze
 
