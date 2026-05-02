@@ -34,8 +34,8 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep + Migration-ID Verification | `/speckit-pro:autopilot` startup | Pending | Dry-run sweep; SPEC-007 excluded; verify roadmap M54 / M57 / M58 mapping matches code `054_…` / `057_…` / `058_…` (no edit required — see Phase 0 below) |
-| Specify | `/speckit.specify` | Pending | Generate `specs/007-disposition-artifacts/spec.md` covering both flags, secret detector contract, artifact lifecycle, audit/admin surfaces |
+| Prerequisites + Archive Sweep + Migration-ID Verification | `/speckit-pro:autopilot` startup | Complete | Apply-mode sweep newly archived SPEC-004 + SPEC-006 (commits `dcf46b3`, `82229bc`); migration mapping verified (no roadmap edit); G0 PASS |
+| Specify | `/speckit.specify` | Complete | 49 FRs / 9 US / 44 acceptance scenarios / 10 SC / 10 edge cases; G1 PASS (0 markers) |
 | Clarify | `/speckit.clarify` | Pending | Resolve Open Questions from the Design Concept doc across 3 sessions |
 | Plan | `/speckit.plan` | Pending | Generate plan/research/data-model/contracts/quickstart; no DB migration; verify M054, M057, M058 schema match expectations |
 | Checklist | `/speckit.checklist` | Pending | Recommended domains: data-integrity, security (secret detector), error-handling, regression-safety |
@@ -311,20 +311,33 @@ Use P6-AC1 through P6-AC10 from this workflow and the technical roadmap.
 
 ### Specify Results
 
-Pending. Record FR count, user story count, acceptance scenarios, success criteria, and edge cases once Specify completes.
+Generated 2026-05-01. G1 gate PASS (0 `[NEEDS CLARIFICATION]` markers, all 9 user-story areas covered).
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | |
-| User Stories | |
-| Acceptance Scenarios | |
-| Success Criteria | |
-| Edge Cases | |
+| Functional Requirements | 49 |
+| User Stories | 9 (P1×5, P2×3, P3×1) |
+| Acceptance Scenarios | 44 |
+| Success Criteria | 10 (SC-001..SC-010) |
+| Edge Cases | 10 |
+| Key Entities | 7 |
+
+User-story coverage:
+- US1 — Flag-OFF parity (P1)
+- US2 — Disposition insert hook (P1)
+- US3 — Artifact publish (inline + file) (P1)
+- US4 — Secret detection + redaction (P1)
+- US5 — Successor consume (P1)
+- US6 — Audit panel "Dispositions" tab (P2)
+- US7 — Artifact admin panel (P2)
+- US8 — Dashboard widget (P2)
+- US9 — Generic dispositions GET API (P3)
 
 ### Files Generated
 
-- [ ] `specs/007-disposition-artifacts/spec.md`
-- [ ] `specs/007-disposition-artifacts/checklists/requirements.md`
+- [x] `specs/007-disposition-artifacts/spec.md` (318 lines)
+- [x] `specs/007-disposition-artifacts/checklists/requirements.md` (37 lines)
+- [x] `.specify/feature.json` (pointer updated)
 
 ## Phase 2: Clarify
 
