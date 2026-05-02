@@ -11,6 +11,7 @@ const {
   ensureLabelsMock,
   fetchIssueMock,
   fetchIssuesMock,
+  fetchPullRequestMock,
   getDatabaseMock,
   logActivityMock,
   updateIssueMock,
@@ -22,6 +23,7 @@ const {
   ensureLabelsMock: vi.fn(),
   fetchIssueMock: vi.fn(),
   fetchIssuesMock: vi.fn(),
+  fetchPullRequestMock: vi.fn(),
   getDatabaseMock: vi.fn(),
   logActivityMock: vi.fn(),
   updateIssueMock: vi.fn(),
@@ -53,6 +55,7 @@ vi.mock('@/lib/db', () => ({
 vi.mock('@/lib/github', () => ({
   fetchIssues: fetchIssuesMock,
   fetchIssue: fetchIssueMock,
+  fetchPullRequest: fetchPullRequestMock,
   updateIssue: updateIssueMock,
   createIssue: createIssueMock,
   ensureLabels: ensureLabelsMock,
@@ -94,6 +97,7 @@ beforeEach(() => {
   ensureLabelsMock.mockReset()
   fetchIssueMock.mockReset()
   fetchIssuesMock.mockReset()
+  fetchPullRequestMock.mockReset()
   getDatabaseMock.mockReset()
   logActivityMock.mockReset()
   updateIssueMock.mockReset()
@@ -227,6 +231,22 @@ describe('SPEC-005 GitHub ready_for_owner terminal reconciliation', () => {
       },
     })
 
+    expect(db.prepare('SELECT status, completed_at FROM tasks WHERE id = 500').get()).toEqual({
+      status: 'done',
+      completed_at: expect.any(Number),
+    })
+  })
+
+  it('fetches live PR merge evidence by exact pull request number', async () => {
+    const db = freshDb()
+    const projectId = seedProject(db)
+    seedReadyForOwnerTask(db, projectId)
+    fetchIssuesMock.mockResolvedValue([makeIssue('closed')])
+    fetchPullRequestMock.mockResolvedValue({ number: 12, state: 'closed', merged: true })
+
+    await pullFromGitHub({ id: projectId, github_repo: 'owner/repo', github_sync_enabled: 1 }, 1)
+
+    expect(fetchPullRequestMock).toHaveBeenCalledWith('owner/repo', 12)
     expect(db.prepare('SELECT status, completed_at FROM tasks WHERE id = 500').get()).toEqual({
       status: 'done',
       completed_at: expect.any(Number),

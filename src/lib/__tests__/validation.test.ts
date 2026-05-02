@@ -77,7 +77,7 @@ describe('createTaskSchema', () => {
       currentStatus: 'quality_review',
       requestedStatus: 'ready_for_owner',
       producesPr: true,
-      twoStepTerminalEnabled: false,
+      twoStepTerminalEnabled: true,
       transitionIntent: 'status_write',
     })).toEqual({
       ok: false,

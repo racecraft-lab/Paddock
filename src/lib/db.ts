@@ -279,7 +279,7 @@ type ReadyForOwnerNotificationTask = {
   title: string;
   assigned_to?: string | null;
   created_by?: string | null;
-  workspace_id?: number | null;
+  workspace_id: number;
   github_issue_number?: number | null;
   github_repo?: string | null;
   github_pr_number?: number | null;
@@ -444,7 +444,7 @@ export const db_helpers = {
     const recipient = task.assigned_to?.trim() || task.created_by?.trim();
     if (!recipient) return null;
 
-    const workspaceId = task.workspace_id ?? 1;
+    const workspaceId = task.workspace_id;
     const title = options.kind === 'reconciliation'
       ? 'Owner merge reconciliation required'
       : 'Ready for owner merge';

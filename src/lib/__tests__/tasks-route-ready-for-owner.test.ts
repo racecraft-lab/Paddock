@@ -163,8 +163,52 @@ function snapshot(db: Database.Database) {
 }
 
 describe('task routes ready_for_owner flag-off write guard', () => {
+  it('rejects initial ready_for_owner task creation before create side effects', async () => {
+    const db = createDb()
+    const mocks = mockDeps(db)
+    const before = snapshot(db)
+    const { POST } = await import('@/app/api/tasks/route')
+
+    const response = await POST(new NextRequest('http://localhost/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify({ title: 'Bad initial owner gate', status: 'ready_for_owner' }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const body = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(body).toEqual({ error: 'ready_for_owner cannot be used as an initial task status' })
+    expect(snapshot(db)).toEqual(before)
+    expect(mocks.broadcast).not.toHaveBeenCalled()
+    expect(mocks.createNotification).not.toHaveBeenCalled()
+    expect(mocks.syncTaskOutbound).not.toHaveBeenCalled()
+  })
+
   it('rejects bulk ready_for_owner writes while the flag is off before mutating state', async () => {
     const db = createDb()
+    mockDeps(db)
+    const before = snapshot(db)
+    const { PUT } = await import('@/app/api/tasks/route')
+
+    const response = await PUT(new NextRequest('http://localhost/api/tasks', {
+      method: 'PUT',
+      body: JSON.stringify({ tasks: [{ id: 100, status: 'ready_for_owner' }] }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const body = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(body).toEqual({
+      error: 'transition_conflict',
+      reason: 'ready_for_owner_pr_merge_required',
+      task_ids: [100],
+    })
+    expect(snapshot(db)).toEqual(before)
+  })
+
+  it('rejects bulk ready_for_owner writes while the flag is on before mutating state', async () => {
+    const db = createDb()
+    setTwoStepTerminalFlag(db, true)
     mockDeps(db)
     const before = snapshot(db)
     const { PUT } = await import('@/app/api/tasks/route')
@@ -205,6 +249,87 @@ describe('task routes ready_for_owner flag-off write guard', () => {
       task_ids: [100],
     })
     expect(snapshot(db)).toEqual(before)
+  })
+
+  it('rejects detail ready_for_owner writes while the flag is on before mutating state', async () => {
+    const db = createDb()
+    setTwoStepTerminalFlag(db, true)
+    mockDeps(db)
+    const before = snapshot(db)
+    const { PUT } = await import('@/app/api/tasks/[id]/route')
+
+    const response = await PUT(new NextRequest('http://localhost/api/tasks/100', {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'ready_for_owner' }),
+      headers: { 'content-type': 'application/json' },
+    }), { params: Promise.resolve({ id: '100' }) })
+    const body = await response.json()
+
+    expect(response.status).toBe(409)
+    expect(body).toEqual({
+      error: 'transition_conflict',
+      reason: 'ready_for_owner_pr_merge_required',
+      task_ids: [100],
+    })
+    expect(snapshot(db)).toEqual(before)
+  })
+
+  it('allows bulk done writes for PR-producing templates without the GitHub merge terminal event', async () => {
+    const db = createDb()
+    setTwoStepTerminalFlag(db, true)
+    db.prepare("UPDATE workflow_templates SET external_terminal_event = 'review.completed' WHERE id = 20").run()
+    db.prepare("INSERT INTO quality_reviews (task_id, reviewer, status, workspace_id) VALUES (100, 'aegis', 'approved', 1)").run()
+    const mocks = mockDeps(db)
+    const { PUT } = await import('@/app/api/tasks/route')
+
+    const response = await PUT(new NextRequest('http://localhost/api/tasks', {
+      method: 'PUT',
+      body: JSON.stringify({ tasks: [{ id: 100, status: 'done' }] }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toEqual({ success: true, updated: 1 })
+    expect(db.prepare('SELECT status, completed_at FROM tasks WHERE id = 100').get()).toEqual({
+      status: 'done',
+      completed_at: expect.any(Number),
+    })
+    expect(mocks.advanceTaskChain).toHaveBeenCalledWith({
+      taskId: 100,
+      workspaceId: 1,
+      previousStatus: 'quality_review',
+      trigger: 'bulk_task_update',
+    })
+  })
+
+  it('allows detail done writes for PR-producing templates without the GitHub merge terminal event', async () => {
+    const db = createDb()
+    setTwoStepTerminalFlag(db, true)
+    db.prepare("UPDATE workflow_templates SET external_terminal_event = 'review.completed' WHERE id = 20").run()
+    db.prepare("INSERT INTO quality_reviews (task_id, reviewer, status, workspace_id) VALUES (100, 'aegis', 'approved', 1)").run()
+    const mocks = mockDeps(db)
+    const { PUT } = await import('@/app/api/tasks/[id]/route')
+
+    const response = await PUT(new NextRequest('http://localhost/api/tasks/100', {
+      method: 'PUT',
+      body: JSON.stringify({ status: 'done' }),
+      headers: { 'content-type': 'application/json' },
+    }), { params: Promise.resolve({ id: '100' }) })
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.task.status).toBe('done')
+    expect(db.prepare('SELECT status, completed_at FROM tasks WHERE id = 100').get()).toEqual({
+      status: 'done',
+      completed_at: expect.any(Number),
+    })
+    expect(mocks.advanceTaskChain).toHaveBeenCalledWith({
+      taskId: 100,
+      workspaceId: 1,
+      previousStatus: 'quality_review',
+      trigger: 'detail_task_update',
+    })
   })
 
   it('rejects bulk done writes for all affected ready_for_owner PR-producing tasks without side effects', async () => {

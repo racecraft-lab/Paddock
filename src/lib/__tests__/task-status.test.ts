@@ -152,6 +152,25 @@ describe('resolveTaskTerminalTransition', () => {
     })).toEqual({ ok: true, status: 'ready_for_owner' })
   })
 
+  it('blocks direct ready_for_owner status writes even when the flag is on', () => {
+    expect(resolveTransition({
+      taskId: 8,
+      currentStatus: 'quality_review',
+      requestedStatus: 'ready_for_owner',
+      producesPr: true,
+      twoStepTerminalEnabled: true,
+      transitionIntent: 'status_write',
+    })).toEqual({
+      ok: false,
+      status: 409,
+      body: {
+        error: 'transition_conflict',
+        reason: 'ready_for_owner_pr_merge_required',
+        task_ids: [8],
+      },
+    })
+  })
+
   it('blocks non-merge done writes for PR-producing tasks when the flag is on', () => {
     expect(resolveTransition({
       taskId: 4,

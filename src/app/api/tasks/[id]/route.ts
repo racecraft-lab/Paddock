@@ -6,7 +6,12 @@ import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, updateTaskSchema } from '@/lib/validation';
 import { resolveMentionRecipients } from '@/lib/mentions';
-import { normalizeTaskUpdateStatus, resolveTaskTerminalTransition, type TaskStatus } from '@/lib/task-status';
+import {
+  READY_FOR_OWNER_TERMINAL_EVENT,
+  normalizeTaskUpdateStatus,
+  resolveTaskTerminalTransition,
+  type TaskStatus,
+} from '@/lib/task-status';
 import { syncTaskOutbound } from '@/lib/github-sync-engine';
 import { removeTaskFromGnap } from '@/lib/gnap-sync';
 import { config } from '@/lib/config';
@@ -44,6 +49,12 @@ function hasAegisApproval(
 
 function taskProducesPr(task: { produces_pr?: number | boolean | null }): boolean {
   return task.produces_pr === 1 || task.produces_pr === true
+}
+
+function isReadyForOwnerMergeGatedTask(
+  task: { produces_pr?: number | boolean | null; external_terminal_event?: string | null }
+): boolean {
+  return taskProducesPr(task) && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT
 }
 
 /**
@@ -121,7 +132,7 @@ export async function PUT(
     // Get current task for comparison
     const currentTask = db
       .prepare(`
-        SELECT t.*, COALESCE(wt.produces_pr, 0) AS produces_pr, w.feature_flags
+        SELECT t.*, COALESCE(wt.produces_pr, 0) AS produces_pr, wt.external_terminal_event, w.feature_flags
         FROM tasks t
         LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
         LEFT JOIN workspaces w ON w.id = t.workspace_id
@@ -166,7 +177,7 @@ export async function PUT(
         taskId,
         currentStatus: currentTask.status as TaskStatus,
         requestedStatus: normalizedStatus as TaskStatus,
-        producesPr: taskProducesPr(currentTask as Task & { produces_pr?: number | null }),
+        producesPr: isReadyForOwnerMergeGatedTask(currentTask as Task & { produces_pr?: number | null; external_terminal_event?: string | null }),
         twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
           workspaceFlags: (currentTask as Task & { feature_flags?: string | null }).feature_flags ?? null,
         }),

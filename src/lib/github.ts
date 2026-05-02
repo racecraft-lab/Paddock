@@ -347,6 +347,21 @@ export interface GitHubPullRequest {
 }
 
 /**
+ * Fetch a single pull request by number.
+ */
+export async function fetchPullRequest(
+  repo: string,
+  pullNumber: number
+): Promise<GitHubPullRequest> {
+  const res = await githubFetch(`/repos/${repo}/pulls/${pullNumber}`)
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`GitHub API error ${res.status}: ${text}`)
+  }
+  return res.json()
+}
+
+/**
  * Fetch pull requests from a GitHub repo.
  */
 export async function fetchPullRequests(

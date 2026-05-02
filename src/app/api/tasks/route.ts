@@ -6,6 +6,8 @@ import { mutationLimiter } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
 import { validateBody, createTaskSchema, bulkUpdateTaskStatusSchema } from '@/lib/validation';
 import {
+  READY_FOR_OWNER_STATUS,
+  READY_FOR_OWNER_TERMINAL_EVENT,
   normalizeTaskCreateStatus,
   resolveTaskTerminalTransition,
   transitionConflict,
@@ -80,17 +82,23 @@ function taskProducesPr(task: { produces_pr?: number | boolean | null }): boolea
   return task.produces_pr === 1 || task.produces_pr === true
 }
 
+function isReadyForOwnerMergeGatedTask(
+  task: { produces_pr?: number | boolean | null; external_terminal_event?: string | null }
+): boolean {
+  return taskProducesPr(task) && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT
+}
+
 function fetchTaskForStatusTransition(
   db: ReturnType<typeof getDatabase>,
   taskId: number,
   workspaceId: number
-): (Task & { produces_pr?: number | null }) | null {
+): (Task & { produces_pr?: number | null; external_terminal_event?: string | null }) | null {
   return (db.prepare(`
-    SELECT t.*, COALESCE(wt.produces_pr, 0) AS produces_pr
+    SELECT t.*, COALESCE(wt.produces_pr, 0) AS produces_pr, wt.external_terminal_event
     FROM tasks t
     LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
     WHERE t.id = ? AND t.workspace_id = ?
-  `).get(taskId, workspaceId) as (Task & { produces_pr?: number | null }) | undefined) ?? null
+  `).get(taskId, workspaceId) as (Task & { produces_pr?: number | null; external_terminal_event?: string | null }) | undefined) ?? null
 }
 
 /**
@@ -230,6 +238,12 @@ export async function POST(request: NextRequest) {
       metadata = {}
     } = body;
     const normalizedStatus = normalizeTaskCreateStatus(status, assigned_to)
+    if (normalizedStatus === READY_FOR_OWNER_STATUS) {
+      return NextResponse.json(
+        { error: 'ready_for_owner cannot be used as an initial task status' },
+        { status: 400 }
+      )
+    }
 
     // Resolve project_id for the task
     const resolvedProjectId = resolveProjectId(db, workspaceId, project_id)
@@ -320,9 +334,13 @@ export async function PUT(request: NextRequest) {
 
     const actor = auth.user.username
 
-    let appliedUpdates: Array<{ id: number; status: TaskStatus }> = []
+    let appliedUpdates: Array<{ id: number; status: TaskStatus }> = [];
     const transaction = db.transaction((tasksToUpdate: any[]) => {
-      const resolvedUpdates: Array<{ task: { id: number; status: TaskStatus }; oldTask: Task & { produces_pr?: number | null }; status: TaskStatus }> = []
+      const resolvedUpdates: Array<{
+        task: { id: number; status: TaskStatus };
+        oldTask: Task & { produces_pr?: number | null; external_terminal_event?: string | null };
+        status: TaskStatus;
+      }> = []
       const conflictIds: number[] = []
 
       for (const task of tasksToUpdate) {
@@ -332,7 +350,7 @@ export async function PUT(request: NextRequest) {
           taskId: task.id,
           currentStatus: oldTask.status as TaskStatus,
           requestedStatus: task.status as TaskStatus,
-          producesPr: taskProducesPr(oldTask),
+          producesPr: isReadyForOwnerMergeGatedTask(oldTask),
           twoStepTerminalEnabled,
           transitionIntent: 'status_write',
         })

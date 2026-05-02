@@ -409,14 +409,14 @@ async function livePullRequestForTask(task: ReadyForOwnerTaskRow): Promise<PullR
   if (!task.github_repo || task.github_pr_number === null || task.github_pr_number === undefined) return null
   try {
     const github = await import('@/lib/github') as {
-      fetchPullRequests?: (
+      fetchPullRequest?: (
         repo: string,
-        params?: { state?: 'open' | 'closed' | 'all'; per_page?: number }
-      ) => Promise<PullRequestMergeEvidence[]>
+        pullNumber: number
+      ) => Promise<PullRequestMergeEvidence>
     }
-    if (typeof github.fetchPullRequests !== 'function') return null
-    const prs = await github.fetchPullRequests(task.github_repo, { state: 'all', per_page: 100 })
-    return prs.find((pr) => pr.number === task.github_pr_number) ?? null
+    if (typeof github.fetchPullRequest !== 'function') return null
+    const pr = await github.fetchPullRequest(task.github_repo, task.github_pr_number)
+    return pr.number === task.github_pr_number ? pr : null
   } catch (err) {
     logger.warn({ err, taskId: task.id, repo: task.github_repo }, 'Failed to fetch linked PR merge evidence')
     return null

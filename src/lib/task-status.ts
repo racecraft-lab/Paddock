@@ -91,6 +91,7 @@ export function resolveTaskTerminalTransition(
 
   if (requestedStatus === READY_FOR_OWNER_STATUS) {
     if (!twoStepTerminalEnabled || !producesPr) return conflictForTask(taskId)
+    if (transitionIntent !== 'approval') return conflictForTask(taskId)
     return allowedTransition(READY_FOR_OWNER_STATUS)
   }
 
