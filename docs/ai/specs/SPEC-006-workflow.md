@@ -796,36 +796,36 @@ For each task, follow this cycle:
 
 ### Implementation Progress
 
-Pending. Fill in during execution.
+Complete. Phase 0 status hygiene for SPEC-005 recorded this post-merge state on 2026-05-02 from PR #21 merge evidence (`dbb6c75`), the completed phase summary above, and passing GitHub checks for Quality Gate, docker UI e2e, CodeQL, Argos Playwright, Argos Storybook, and Argos summary.
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 1 - Foundation (migration, rollback, label map) | | | |
-| 2 - US2 (sync ownership) | | | |
-| 3 - US3 (triage project) | | | |
-| 4 - US4 (area routing) | | | |
-| 5 - US1 (flag-OFF parity) | | | |
-| 6 - US5 (auto-backfill) | | | |
-| 7 - Label provisioning | | | |
-| 8 - Documentation + e2e + verification | | | |
+| 1 - Foundation (migration, rollback, label map) | T001-T007 | Complete | M62 nullable columns/indexes/backfill, rollback SQL, and AREA_LABEL_MAP shipped. |
+| 2 - US2 (sync ownership) | T020-T032 | Complete | Owner filter, PUT validation, transfer_owner transaction, validation precedence, and 409 priority shipped. |
+| 3 - US3 (triage project) | T033-T037 | Complete | Triage exclusivity, project settings UI, and no-triage banner shipped. |
+| 4 - US4 (area routing) | T038-T049 | Complete | Cache load, label parsing, inbound routing, activity logging, and outbound area label emission shipped. |
+| 5 - US1 (flag-OFF parity) | T008-T019 | Complete | Flag-OFF parity, per-workspace flag resolution, compatibility tests, and EXPLAIN snapshots shipped. |
+| 6 - US5 (auto-backfill) | T050-T060 | Complete | Per-task transactions, monotonic marker, first-flag-on bootstrap, and idempotent resume shipped. |
+| 7 - Label provisioning | T071-T076 | Complete | ON-branch trigger, PUT-route trigger, sanitized logging, throttled failure activity, and idempotent initialization shipped. |
+| 8 - Documentation + verification | T077-T088 | Complete | `docs/github-sync.md`, feature flag runbook updates, OpenAPI snapshot coverage, typecheck/lint/test, and strict-scope guardrails completed. |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `tasks.md`.
-- [ ] Linting passes: `pnpm lint` (warnings tracked against baseline).
-- [ ] Type check passes: `pnpm typecheck`.
-- [ ] Unit tests pass: `pnpm test`.
-- [ ] Integration / e2e tests pass: `pnpm test:e2e`.
-- [ ] Build succeeds: `pnpm build`.
-- [ ] Strict-scope guardrails return zero matches.
-- [ ] `docs/github-sync.md` published.
-- [ ] `docs/feature-flags-runbook.md` updated for `FEATURE_AREA_LABEL_ROUTING`.
-- [ ] `docs/orchestration.md` cross-reference added if applicable.
-- [ ] Manual verification: flag-OFF byte parity, area routing single/multi/none/no-match, transfer_owner flow, auto-backfill on first flag-on, label provisioning idempotency.
-- [ ] PR created and reviewed.
-- [ ] Roadmap status updated to `✅ Complete` after merge.
+- [x] All tasks marked complete in `tasks.md`.
+- [x] Linting passes: `pnpm lint` (warnings tracked against baseline).
+- [x] Type check passes: `pnpm typecheck`.
+- [x] Unit tests pass: `pnpm test`.
+- [x] Integration / e2e tests pass: `pnpm test:e2e` in Quality Gate and docker UI e2e in GitHub checks.
+- [x] Build succeeds: `pnpm build` in Quality Gate.
+- [x] Strict-scope guardrails return zero matches.
+- [x] `docs/github-sync.md` published.
+- [x] `docs/feature-flags-runbook.md` updated for `FEATURE_AREA_LABEL_ROUTING`.
+- [x] `docs/orchestration.md` cross-reference added if applicable.
+- [x] Manual verification: flag-OFF byte parity, area routing single/multi/none/no-match, transfer_owner flow, auto-backfill on first flag-on, label provisioning idempotency.
+- [x] PR created, reviewed, and merged as PR #21.
+- [x] Roadmap status updated to `Complete` after merge during SPEC-005 Phase 0 status hygiene.
 
 ---
 

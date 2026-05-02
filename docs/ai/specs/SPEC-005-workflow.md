@@ -32,7 +32,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep + Status Hygiene | `$speckit-autopilot` startup | Pending | Archive dry-run, current target exclusion, and stale SPEC-006/SPEC-004/autopilot-state tracking repair before Specify |
+| Prerequisites + Archive Sweep + Status Hygiene | `$speckit-autopilot` startup | Complete | 2026-05-02 dry-run/no-cleanup Archive Sweep recorded; SPEC-005 excluded; prerequisite scripts passed; status hygiene repaired merged SPEC-004/SPEC-006 tracking before Specify |
 | Specify | `$speckit-specify` | Pending | Generate `specs/005-ready-for-owner/spec.md`; no unresolved markers |
 | Clarify | `$speckit-clarify` | Pending | Resolve open questions from the Design Concept doc |
 | Plan | `$speckit-plan` | Pending | Generate plan/research/data model/contracts/quickstart; no DB migration unless a gate proves roadmap drift |
@@ -69,7 +69,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Cross-spec boundary | SPEC-005 does not implement artifact store, resource governance, pilot seed behavior, Product Line B onboarding, or CrabTrap | Analyze prompt and guardrail grep |
 | Test fixture seam | `pullFromGitHub` may accept optional `{ webhookFixture }` only for deterministic tests; production calls pass no fixture | Unit tests and production callsite checks |
 
-**Constitution Check:** Pending. Verify at Phase 0 start.
+**Constitution Check:** Phase 0 baseline passed on 2026-05-02. Implementation-specific guardrails remain required in Plan/Analyze/Implement.
 
 ### Archive Sweep
 
@@ -95,6 +95,15 @@ Required Phase 0 hygiene actions:
    - The current roadmap note reflects merged `SPEC-004` and merged `SPEC-006`.
 3. Update `docs/ai/specs/autopilot-state.json` so it no longer describes partial `SPEC-006` work as the active workflow. It should point at `docs/ai/specs/SPEC-005-workflow.md`, Phase 0 startup/status-hygiene state, and the archive sweep target exclusion for `SPEC-005`.
 4. Do not modify `main` directly. Commit the hygiene changes on `005-ready-for-owner`.
+
+### Phase 0 Results
+
+Complete on 2026-05-02 in branch `005-ready-for-owner`.
+
+- Archive Sweep startup: dry-run/no-cleanup recorded; archive extension v1.1.0 installed; `specs/005-ready-for-owner` excluded; `safeToApplyCleanup=false`.
+- Prerequisites: `check-prerequisites.sh` returned `all_pass=true`; branch `005-ready-for-owner`; isolated worktree; feature branch; `pnpm` package manager; missing MCP servers are non-blocking fallbacks.
+- Project command baseline: `pnpm typecheck` passed; `pnpm lint` passed with 0 errors and 12 warnings; `pnpm test` passed with 163 files / 1323 tests after rerun with host GPG/socket access; `pnpm build` passed after rerun with network access for Google Fonts.
+- Status hygiene: roadmap, PRD, SPEC-004 workflow, SPEC-006 workflow, and `autopilot-state.json` no longer describe SPEC-006 as an open PR or partial active workflow; SPEC-004 and SPEC-006 merge evidence is recorded.
 
 ## Specification Context
 
