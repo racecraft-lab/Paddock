@@ -145,6 +145,8 @@ const SPEC_007_ALLOWLIST = [
   'eslint.config.mjs',
   // Aegis-review tests (cross-cutting US11 strict scope):
   'src/lib/__tests__/aegis-review.test.ts',
+  // Disposition-dispatch integration tests (US1+US2 wiring):
+  'src/lib/__tests__/spec-007-disposition-dispatch.test.ts',
 ] as const
 
 const ALLOWED_PREFIXES = [

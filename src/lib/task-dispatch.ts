@@ -11,6 +11,7 @@ import { resolveFlag } from './feature-flags'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
 import { sanitizeDispositionFailurePayload } from './task-artifacts'
+import { evaluateSpec007AegisSignals } from './aegis-review'
 import { createHash } from 'crypto'
 
 // SPEC-007 FR-010: Closed disposition enum (Design Concept Q3).
@@ -1271,6 +1272,34 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
       status: 'quality_review',
       previous_status: 'review',
     })
+
+    // SPEC-007 FR-090: pre-flight signal check before invoking the agent.
+    // Any security_violation activity OR disposition='unknown' row → FAIL the producer
+    // with the structured AegisFailure reason. No agent call performed for short-circuit.
+    try {
+      const aegisFailure = evaluateSpec007AegisSignals(
+        db,
+        task.id,
+        { since: Math.floor(Date.now() / 1000) - 24 * 60 * 60 },
+      )
+      if (aegisFailure) {
+        db.prepare('UPDATE tasks SET status = ?, error_message = ?, updated_at = ? WHERE id = ?')
+          .run('failed', `Aegis FAIL: ${aegisFailure.reason}`, Math.floor(Date.now() / 1000), task.id)
+        eventBus.broadcast('task.status_changed', {
+          id: task.id,
+          status: 'failed',
+          previous_status: 'quality_review',
+        })
+        results.push({ id: task.id, verdict: 'failed', error: aegisFailure.reason })
+        continue
+      }
+    } catch (err) {
+      logger.warn({
+        event: 'aegis_spec007_signal_check_error',
+        task_id: task.id,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
 
     try {
       const prompt = buildReviewPrompt(task)

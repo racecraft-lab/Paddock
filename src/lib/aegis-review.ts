@@ -31,20 +31,52 @@ export interface ReviewWindow {
 }
 
 /**
- * Stub. US11 replaces the body with the activity + disposition scan.
+ * SPEC-007 FR-090: scan activities (`security_violation`) and task_dispositions
+ * (`disposition='unknown'`) for the producer task. Returns the first matching
+ * AegisFailure or null when both signals are clean.
  *
- * @param db        SQLite handle — Foundation skeleton does not query.
+ * @param db        SQLite handle.
  * @param taskId    Task under review.
  * @param window    Review window with `since` epoch-seconds lower bound.
  *                  When `since` is null/undefined the function returns null
- *                  WITHOUT scanning the database (FR-134).
+ *                  WITHOUT scanning (FR-134).
  */
 export function evaluateSpec007AegisSignals(
-  _db: Database.Database,
-  _taskId: number,
+  db: Database.Database,
+  taskId: number,
   window: ReviewWindow,
 ): AegisFailure | null {
   if (window.since == null) return null
-  // US11 wires the real scan; Foundation skeleton returns null.
+
+  // Signal 1: security_violation activity within review window.
+  const violation = db.prepare(
+    "SELECT id, created_at, data FROM activities WHERE type = 'security_violation' AND entity_type = 'task' AND entity_id = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 1",
+  ).get(taskId, window.since) as { id: number; created_at: number; data: string | null } | undefined
+
+  if (violation) {
+    return {
+      reason: 'secret_in_artifact',
+      evidence: Object.freeze({
+        activity_id: violation.id,
+        activity_created_at: violation.created_at,
+      }),
+    }
+  }
+
+  // Signal 2: any task_dispositions row with disposition='unknown' for this task.
+  const unknownDisp = db.prepare(
+    "SELECT id, triaged_at FROM task_dispositions WHERE task_id = ? AND disposition = 'unknown' ORDER BY id DESC LIMIT 1",
+  ).get(taskId) as { id: number; triaged_at: number } | undefined
+
+  if (unknownDisp) {
+    return {
+      reason: 'disposition_validation_failed',
+      evidence: Object.freeze({
+        disposition_id: unknownDisp.id,
+        triaged_at: unknownDisp.triaged_at,
+      }),
+    }
+  }
+
   return null
 }
