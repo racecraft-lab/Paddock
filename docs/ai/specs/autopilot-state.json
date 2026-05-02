@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-005-workflow.md",
-  "updated_at": "2026-05-02T01:57:28Z",
-  "active_step": "Phase 3: Plan",
+  "updated_at": "2026-05-02T02:14:49Z",
+  "active_step": "Phase 4: Checklist - State Machine and Feature Flags",
   "status": "In Progress",
   "notes": [
     "SPEC-005 setup completed on branch 005-ready-for-owner from main at dbb6c75.",
@@ -21,7 +21,9 @@
     "Clarify session 1 completed on 2026-05-02: accepted shared task-status/transition guard boundary, static read vocabulary plus workspace-aware write guards, uniform 409 transition_conflict body, broad all-non-merge done-write guard for PR-producing tasks while flag ON, and GitHub PR merge chain-advance trigger. Q2 required Round 2 consensus; Q4 resolved in Round 1.",
     "Clarify session 2 completed on 2026-05-02: accepted explicit PR identity as github_repo + github_pr_number, live-or-fixture merge evidence matching linked repo/PR with merged=true or merged_at or merge_commit_sha, closed-issue-without-merged-PR reconciliation that leaves task ready_for_owner, github_terminal_reconciliation_required activity, task_ready_for_owner notification with assignee-then-creator routing, unchanged task/issue/reason dedupe, and production pullFromGitHub callsites without fixtures/options. Q4 consensus resolved in Round 1.",
     "Clarify session 3 completed on 2026-05-02: accepted ready_for_owner across static status vocabulary surfaces with write guards enforcing flag behavior, Ready for Owner teal Kanban lane between quality_review and done, mc:ready-for-owner label color 14b8a6 description Mission Control: ready for owner, task_ready_for_owner panel/delivery contract, and no-migration external_terminal_event='github_pr_merged'. No unresolved consensus items.",
-    "G2 passed on 2026-05-02: validate-gate G2 returned pass=true with 0 clarification markers; count-markers all returned 0 gaps, clarifications, and severity markers."
+    "G2 passed on 2026-05-02: validate-gate G2 returned pass=true with 0 clarification markers; count-markers all returned 0 gaps, clarifications, and severity markers.",
+    "Phase 3 Plan completed on 2026-05-02: generated plan.md, research.md, data-model.md, three contract files, quickstart.md, workflow Plan Results, and Codex agent-context updates while preserving no-migration/no-DB-CHECK/no-terminal-table constraints.",
+    "G3 passed on 2026-05-02: validate-gate G3 returned pass=true for plan.md with 0 unresolved markers; count-markers all returned 0 gaps, clarifications, and severity markers."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -92,9 +94,9 @@
     {"step": "Phase 2: Clarify - UI, Labels, Notifications, and Status Vocabulary", "status": "completed"},
     {"step": "Phase 2: Clarify - UI, Labels, Notifications, and Status Vocabulary Consensus", "status": "completed"},
     {"step": "Gate G2: clarification outcomes recorded and markers resolved", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "in_progress"},
-    {"step": "Gate G3: plan artifacts, constitution gates, architecture constraints verified", "status": "pending"},
-    {"step": "Phase 4: Checklist - State Machine and Feature Flags", "status": "pending"},
+    {"step": "Phase 3: Plan", "status": "completed"},
+    {"step": "Gate G3: plan artifacts, constitution gates, architecture constraints verified", "status": "completed"},
+    {"step": "Phase 4: Checklist - State Machine and Feature Flags", "status": "in_progress"},
     {"step": "Phase 4: Checklist - State Machine and Feature Flags Consensus", "status": "pending"},
     {"step": "Phase 4: Checklist - GitHub Sync and Terminal Event Evidence", "status": "pending"},
     {"step": "Phase 4: Checklist - GitHub Sync and Terminal Event Evidence Consensus", "status": "pending"},

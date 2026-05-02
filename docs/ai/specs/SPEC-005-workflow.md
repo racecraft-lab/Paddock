@@ -35,7 +35,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Prerequisites + Archive Sweep + Status Hygiene | `$speckit-autopilot` startup | Complete | 2026-05-02 dry-run/no-cleanup Archive Sweep recorded; SPEC-005 excluded; prerequisite scripts passed; status hygiene repaired merged SPEC-004/SPEC-006 tracking before Specify |
 | Specify | `$speckit-specify` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/spec.md` and requirements checklist; G1 passed with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | All 3 sessions complete; S1 transition guards/API, S2 GitHub terminal event/reconciliation, S3 operator surfaces/status vocabulary; marker scans clean |
-| Plan | `$speckit-plan` | Pending | Generate plan/research/data model/contracts/quickstart; no DB migration unless a gate proves roadmap drift |
+| Plan | `$speckit-plan` | Complete | 2026-05-02 generated plan/research/data model/contracts/quickstart; G3 architecture concrete with no migration, no DB CHECK, no terminal-event table, and no unresolved markers |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: state-machine, github-sync, notifications-ux, regression-safety |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with P4-AC1..P4-AC6 coverage |
 | Analyze | `$speckit-analyze` | Pending | Cross-artifact drift check against design concept, roadmap, PRD, and prior specs |
@@ -320,15 +320,15 @@ $speckit-plan
 
 ### Plan Results
 
-Pending. Fill in after running.
+Complete on 2026-05-02. Generated the Plan phase artifacts from `specs/005-ready-for-owner/spec.md`, roadmap Phase 4/SPEC-005, PRD sections E/F, the Design Concept, and SPEC-004's current task-chain/GitHub/template surfaces. G3 gate passed: the plan keeps SPEC-005 application-level only, uses a new narrow `src/lib/task-status.ts` transition helper, keeps notifications on existing `db_helpers.createNotification`/panel/delivery surfaces, and records `pullFromGitHub(..., { webhookFixture })` as test-only with production callsites unchanged.
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context and implementation flow |
-| `research.md` | Pending | Transition, GitHub, notification, UI decisions |
-| `data-model.md` | Pending | Application-level state and activity/notification shapes; no DB migration |
-| `contracts/` | Pending | API conflict shape and GitHub fixture seam |
-| `quickstart.md` | Pending | Verification flow |
+| `plan.md` | Complete | Technical context, constitution checks, strict-scope decision, implementation seams, and post-design gate |
+| `research.md` | Complete | Transition guard, read/write validation, GitHub evidence, notification, UI, and chain-timing decisions |
+| `data-model.md` | Complete | Application-level state, existing fields, reconciliation activity, notification, label, and chain semantics; no DB migration |
+| `contracts/` | Complete | API transition conflict contract, GitHub terminal-event fixture contract, and operator-surface contract |
+| `quickstart.md` | Complete | Focused verification flow plus final project command map |
 
 ## Phase 4: Domain Checklists
 

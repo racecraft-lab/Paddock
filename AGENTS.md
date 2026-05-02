@@ -126,6 +126,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite via `better-sqlite3`; SPEC-001 task-chain columns and workflow-template fields are assumed present; SPEC-004 adds only M62's partial unique successor index and rollback SQL (004-task-pipeline-engine)
 - TypeScript 5.7 strict (existing project tsconfig). + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch` for GitHub API. No new runtime dependencies. (006-area-label-github-sync)
 - SQLite via `better-sqlite3`. Single-process, synchronous transactions through `db.transaction(() => { ... })`. (006-area-label-github-sync)
+- TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application + Next.js, React, Zustand, `better-sqlite3`, Vitest, Playwright, ESLint, pnpm; no new runtime dependency planned (005-ready-for-owner)
+- SQLite through `better-sqlite3`; existing `tasks.status`, `tasks.github_repo`, `tasks.github_pr_number`, `workflow_templates.produces_pr`, and nullable `workflow_templates.external_terminal_event` fields (005-ready-for-owner)
 
 ## Recent Changes
 - 002-product-line-switcher: Added TypeScript 5 on Next.js 16 App Router with React 19 + Zustand, better-sqlite3, Tailwind CSS 3, Vitest, Playwright
