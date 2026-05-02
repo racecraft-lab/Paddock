@@ -763,6 +763,8 @@
     "colInProgress": "In Progress",
     "colReview": "Review",
     "colQualityReview": "Quality Review",
+    "colReadyForOwner": "Ready for Owner",
+    "readyForOwnerActionRequired": "Owner action required",
     "colFailed": "Failed",
     "retryTask": "Retry Task",
     "colDone": "Done",

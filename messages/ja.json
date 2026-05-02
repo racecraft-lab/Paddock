@@ -763,6 +763,8 @@
     "colInProgress": "進行中",
     "colReview": "レビュー",
     "colQualityReview": "品質レビュー",
+    "colReadyForOwner": "オーナー準備完了",
+    "readyForOwnerActionRequired": "オーナーの対応が必要",
     "colFailed": "失敗",
     "retryTask": "再試行",
     "colDone": "完了",

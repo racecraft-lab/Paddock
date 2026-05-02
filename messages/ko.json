@@ -763,6 +763,8 @@
     "colInProgress": "진행 중",
     "colReview": "검토",
     "colQualityReview": "품질 검토",
+    "colReadyForOwner": "소유자 준비 완료",
+    "readyForOwnerActionRequired": "소유자 조치 필요",
     "colFailed": "실패",
     "retryTask": "재시도",
     "colDone": "완료",

@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     const task = db
       .prepare(`
         SELECT t.id, t.title, t.description, t.status, t.priority, t.project_id, t.workspace_id,
-               t.assigned_to, t.created_by, t.github_repo, t.github_pr_number,
+               t.assigned_to, t.created_by, t.github_repo, t.github_issue_number, t.github_pr_number,
                COALESCE(wt.produces_pr, 0) AS produces_pr,
                wt.external_terminal_event,
                w.feature_flags

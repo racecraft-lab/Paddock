@@ -763,6 +763,8 @@
     "colInProgress": "Em andamento",
     "colReview": "Revisão",
     "colQualityReview": "Revisão de qualidade",
+    "colReadyForOwner": "Pronto para proprietário",
+    "readyForOwnerActionRequired": "Ação do proprietário necessária",
     "colFailed": "Falhou",
     "retryTask": "Tentar novamente",
     "colDone": "Concluído",

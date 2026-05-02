@@ -14,7 +14,7 @@ import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-eval
 import { createHash } from 'crypto'
 
 /** Sync task to GitHub/GNAP and broadcast escalation if task failed */
-function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
+function syncAndEscalateIfFailed(task: { id: number; title: string; status: string; priority: string; project_id?: number | null; workspace_id: number; description?: string | null; github_issue_number?: number | null; github_repo?: string | null }, newStatus: string, errorMsg?: string, dispatchAttempts?: number): void {
   syncTaskOutbound({ ...task, status: newStatus }, task.workspace_id)
   if (newStatus === 'failed') {
     eventBus.broadcast('task.escalated', {
@@ -1034,6 +1034,7 @@ interface ReviewableTask {
   external_terminal_event: string | null
   feature_flags: string | null
   github_repo: string | null
+  github_issue_number: number | null
   github_pr_number: number | null
   created_by: string | null
 }
@@ -1136,7 +1137,7 @@ export async function runAegisReviews(): Promise<{ ok: boolean; message: string 
            t.project_id, p.ticket_prefix, t.project_ticket_no,
            COALESCE(wt.produces_pr, 0) AS produces_pr,
            wt.external_terminal_event,
-           t.github_repo, t.github_pr_number, t.created_by,
+           t.github_repo, t.github_issue_number, t.github_pr_number, t.created_by,
            w.feature_flags
     FROM tasks t
     LEFT JOIN projects p ON p.id = t.project_id AND p.workspace_id = t.workspace_id

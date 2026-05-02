@@ -67,7 +67,7 @@ vi.mock('@/lib/logger', () => ({
 }))
 
 import { runMigrations } from '../migrations'
-import { pullFromGitHub } from '../github-sync-engine'
+import { pullFromGitHub, pushTaskToGitHub, syncTaskOutbound } from '../github-sync-engine'
 import type { GitHubIssue } from '../github'
 
 const openDbs: Database.Database[] = []
@@ -287,5 +287,82 @@ describe('SPEC-005 GitHub ready_for_owner terminal reconciliation', () => {
       previousStatus: 'ready_for_owner',
       trigger: 'github_pr_merged',
     })
+  })
+})
+
+describe('SPEC-005 GitHub ready_for_owner label application', () => {
+  it('replaces prior mc:* status labels with mc:ready-for-owner when updating a linked issue', async () => {
+    const db = freshDb()
+    const projectId = seedProject(db)
+    fetchIssueMock.mockResolvedValue({
+      ...makeIssue('open'),
+      labels: [
+        { name: 'mc:review' },
+        { name: 'mc:quality-review' },
+        { name: 'priority:medium' },
+        { name: 'customer:keep' },
+      ],
+    })
+    updateIssueMock.mockResolvedValue(undefined)
+
+    await pushTaskToGitHub(
+      {
+        id: 501,
+        title: 'Ready task',
+        description: 'Ready for owner merge',
+        status: 'ready_for_owner',
+        priority: 'high',
+        github_issue_number: 90,
+        github_repo: 'owner/repo',
+        workspace_id: 1,
+        project_id: projectId,
+      },
+      { id: projectId, github_repo: 'owner/repo', github_sync_enabled: 1 },
+    )
+
+    expect(updateIssueMock).toHaveBeenCalledWith('owner/repo', 90, {
+      title: 'Ready task',
+      body: 'Ready for owner merge',
+      state: 'open',
+      labels: ['customer:keep', 'mc:ready-for-owner', 'priority:high'],
+    })
+  })
+
+  it('applies mc:ready-for-owner through syncTaskOutbound without duplicating ready-owner notifications', async () => {
+    const db = freshDb()
+    const projectId = seedProject(db)
+    fetchIssueMock.mockResolvedValue({
+      ...makeIssue('open'),
+      labels: [{ name: 'mc:quality-review' }, { name: 'owner:keep' }],
+    })
+    updateIssueMock.mockResolvedValue(undefined)
+
+    syncTaskOutbound({
+      id: 502,
+      title: 'Outbound ready task',
+      description: 'Ready for owner merge',
+      status: 'ready_for_owner',
+      priority: 'high',
+      github_issue_number: 90,
+      github_repo: 'owner/repo',
+      workspace_id: 1,
+      project_id: projectId,
+    }, 1)
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(updateIssueMock).toHaveBeenCalledWith('owner/repo', 90, expect.objectContaining({
+      labels: ['owner:keep', 'mc:ready-for-owner', 'priority:high'],
+    }))
+    expect(createNotificationMock).not.toHaveBeenCalled()
+  })
+
+  it('keeps ready-for-owner entry callsites wired with github_issue_number for label updates', () => {
+    const root = process.cwd()
+    const taskDispatchSource = readFileSync(join(root, 'src/lib/task-dispatch.ts'), 'utf8')
+    const qualityReviewSource = readFileSync(join(root, 'src/app/api/quality-review/route.ts'), 'utf8')
+
+    expect(taskDispatchSource).toMatch(/t\.github_issue_number/)
+    expect(qualityReviewSource).toMatch(/t\.github_issue_number/)
   })
 })

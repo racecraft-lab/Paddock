@@ -508,8 +508,8 @@ In progress. Update after each implementation group.
 | 1 - Status vocabulary and validation | T006-T014 | Complete | Shared status vocabulary, transition conflict body, terminal transition guard, validation exports, store/API status unions, and focused tests complete; 47 focused tests, focused ESLint, typecheck, and diff check passed |
 | 2 - Transition guards | T015-T033 | Complete | Flag-off rollback behavior, flag-on Aegis/quality-review owner routing, missing-linkage evidence, outbound sync, and no chain advancement at `ready_for_owner` verified |
 | 3 - GitHub terminal event | T034-T049 | Complete | Optional fixture seam, explicit merged PR evidence, side-effect-free blocked conflicts, reconciliation dedupe, and `github_pr_merged` chain advancement verified |
-| 4 - Labels and Kanban | T050-T059 | In Progress | `mc:ready-for-owner`, lane order, existing row visibility, and accessibility |
-| 5 - Owner notifications | T060-T070 | Pending | `task_ready_for_owner` routing, panel rendering, and delivery formatting |
+| 4 - Labels and Kanban | T050-T059 | Complete | `mc:ready-for-owner` mapping/application, lane order, existing row visibility, localized copy, and accessibility verified |
+| 5 - Owner notifications | T060-T070 | In Progress | `task_ready_for_owner` routing, panel rendering, and delivery formatting |
 | 6 - Verification and docs | Pending | Pending | Full G7 evidence and status sync |
 
 ---

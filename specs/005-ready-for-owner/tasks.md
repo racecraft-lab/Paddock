@@ -129,19 +129,19 @@
 
 ### Tests for User Story 4
 
-- [ ] T050 [P] [US4] Add failing red tests for `mc:ready-for-owner` label mapping, color `14b8a6`, description `Mission Control: ready for owner`, inverse mapping, and status-label replacement in `src/lib/__tests__/github-label-map.test.ts`.
-- [ ] T051 [P] [US4] Add failing red tests for label application when a task enters `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
-- [ ] T052 [P] [US4] Add failing Playwright test for Kanban lane order, existing `ready_for_owner` visibility with flag OFF, and distinct `awaiting_owner` placement in `tests/e2e/ready-for-owner-kanban.spec.ts`.
-- [ ] T053 [P] [US4] Add failing Playwright accessibility assertions for `Ready for Owner` lane region name including count, keyboard-reachable task cards, and visible focus behavior in `tests/e2e/ready-for-owner-kanban.spec.ts`.
+- [X] T050 [P] [US4] Add failing red tests for `mc:ready-for-owner` label mapping, color `14b8a6`, description `Mission Control: ready for owner`, inverse mapping, and status-label replacement in `src/lib/__tests__/github-label-map.test.ts`.
+- [X] T051 [P] [US4] Add failing red tests for label application when a task enters `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
+- [X] T052 [P] [US4] Add failing Playwright test for Kanban lane order, existing `ready_for_owner` visibility with flag OFF, and distinct `awaiting_owner` placement in `tests/e2e/ready-for-owner-kanban.spec.ts`.
+- [X] T053 [P] [US4] Add failing Playwright accessibility assertions for `Ready for Owner` lane region name including count, keyboard-reachable task cards, and visible focus behavior in `tests/e2e/ready-for-owner-kanban.spec.ts`.
 
 ### Implementation for User Story 4
 
-- [ ] T054 [US4] Update `src/lib/github-label-map.ts` to provision and map `ready_for_owner` to `mc:ready-for-owner` idempotently and replace prior `mc:*` status labels.
-- [ ] T055 [US4] Update `src/lib/github-sync-engine.ts` and ready-for-owner entry callsites to apply `mc:ready-for-owner` when a task enters `ready_for_owner`.
-- [ ] T056 [US4] Update `src/components/panels/task-board-panel.tsx` so `ready_for_owner` renders between `quality_review` and `done`, uses teal styling, and leaves `awaiting_owner` semantics and placement unchanged.
-- [ ] T057 [US4] Update `messages/en.json`, `messages/es.json`, `messages/fr.json`, `messages/de.json`, `messages/ja.json`, `messages/ko.json`, `messages/pt.json`, `messages/ru.json`, `messages/zh.json`, and `messages/ar.json` with Ready for Owner lane and status copy.
-- [ ] T058 [US4] Refactor `src/components/panels/task-board-panel.tsx` so the lane has a screen-reader-identifiable region name with the `Ready for Owner` label and task count, and owner-merge meaning is never represented by teal styling alone.
-- [ ] T059 [US4] Run `pnpm test src/lib/__tests__/github-label-map.test.ts src/lib/__tests__/github-sync-ready-for-owner.test.ts` and `pnpm test:e2e tests/e2e/ready-for-owner-kanban.spec.ts`.
+- [X] T054 [US4] Update `src/lib/github-label-map.ts` to provision and map `ready_for_owner` to `mc:ready-for-owner` idempotently and replace prior `mc:*` status labels.
+- [X] T055 [US4] Update `src/lib/github-sync-engine.ts` and ready-for-owner entry callsites to apply `mc:ready-for-owner` when a task enters `ready_for_owner`.
+- [X] T056 [US4] Update `src/components/panels/task-board-panel.tsx` so `ready_for_owner` renders between `quality_review` and `done`, uses teal styling, and leaves `awaiting_owner` semantics and placement unchanged.
+- [X] T057 [US4] Update `messages/en.json`, `messages/es.json`, `messages/fr.json`, `messages/de.json`, `messages/ja.json`, `messages/ko.json`, `messages/pt.json`, `messages/ru.json`, `messages/zh.json`, and `messages/ar.json` with Ready for Owner lane and status copy.
+- [X] T058 [US4] Refactor `src/components/panels/task-board-panel.tsx` so the lane has a screen-reader-identifiable region name with the `Ready for Owner` label and task count, and owner-merge meaning is never represented by teal styling alone.
+- [X] T059 [US4] Run `pnpm test src/lib/__tests__/github-label-map.test.ts src/lib/__tests__/github-sync-ready-for-owner.test.ts` and `pnpm test:e2e tests/e2e/ready-for-owner-kanban.spec.ts`.
 
 **Checkpoint**: P4-AC5, P4-AC6, FR-017, FR-019, FR-019a, FR-020, and SC-006 are covered and independently testable.
 

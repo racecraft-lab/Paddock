@@ -763,6 +763,8 @@
     "colInProgress": "В работе",
     "colReview": "На проверке",
     "colQualityReview": "Контроль качества",
+    "colReadyForOwner": "Готово для владельца",
+    "readyForOwnerActionRequired": "Требуется действие владельца",
     "colFailed": "Ошибка",
     "retryTask": "Повторить",
     "colDone": "Готово",

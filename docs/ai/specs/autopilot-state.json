@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-005-workflow.md",
-  "updated_at": "2026-05-02T14:58:38Z",
-  "active_step": "Phase 7: US4 Kanban lane and GitHub label (T050-T059)",
+  "updated_at": "2026-05-02T15:12:46Z",
+  "active_step": "Phase 7: US5 owner notifications (T060-T070)",
   "status": "In Progress",
   "notes": [
     "SPEC-005 setup completed on branch 005-ready-for-owner from main at dbb6c75.",
@@ -39,7 +39,8 @@
     "Phase 7 T006-T014 completed on 2026-05-02: implemented shared ready_for_owner vocabulary, transition conflict contract, feature-flag-aware terminal transition guard, validation/status exports, and focused tests; parent verification passed 47 focused tests, focused ESLint, typecheck, and diff check.",
     "Phase 7 T015-T023 completed on 2026-05-02: implemented flag-off rollback guard coverage across task-status, Aegis dispatch, quality-review, bulk task updates, and detail task updates; parent verification passed 13 focused tests, focused ESLint, typecheck, and diff check.",
     "Phase 7 T024-T033 completed on 2026-05-02: implemented flag-on owner merge gate routing for Aegis and quality-review approvals, including non-PR direct completion, PR-producing ready_for_owner entry, missing-linkage activity/notification, outbound sync ordering, and no chain advancement at ready_for_owner; parent verification passed 33 focused tests, focused ESLint, typecheck, and diff check.",
-    "Phase 7 T034-T049 completed on 2026-05-02: implemented side-effect-free blocked completion conflicts, optional pullFromGitHub webhookFixture test seam, explicit linked PR merge evidence handling, github_pr_merged chain advancement, and closed-issue reconciliation activity/notification dedupe; parent verification passed 43 focused tests, focused ESLint with 0 errors and 1 existing warning, typecheck, diff check, and production callsite fixture-free grep."
+    "Phase 7 T034-T049 completed on 2026-05-02: implemented side-effect-free blocked completion conflicts, optional pullFromGitHub webhookFixture test seam, explicit linked PR merge evidence handling, github_pr_merged chain advancement, and closed-issue reconciliation activity/notification dedupe; parent verification passed 43 focused tests, focused ESLint with 0 errors and 1 existing warning, typecheck, diff check, and production callsite fixture-free grep.",
+    "Phase 7 T050-T059 completed on 2026-05-02: implemented mc:ready-for-owner label mapping/replacement/application, Ready for Owner Kanban lane between quality_review and done, distinct awaiting_owner placement, localized lane/action-required copy, and accessible region/card text; parent verification passed 25 focused unit tests, focused Playwright e2e with 2 tests, focused ESLint, typecheck, JSON parse, and diff check."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
@@ -131,8 +132,8 @@
     {"step": "Phase 7: US1 flag-off rollback behavior (T015-T023)", "status": "completed"},
     {"step": "Phase 7: US2 owner merge gate routing (T024-T033)", "status": "completed"},
     {"step": "Phase 7: US3 verified merge completion and blocked paths (T034-T049)", "status": "completed"},
-    {"step": "Phase 7: US4 Kanban lane and GitHub label (T050-T059)", "status": "in_progress"},
-    {"step": "Phase 7: US5 owner notifications (T060-T070)", "status": "pending"},
+    {"step": "Phase 7: US4 Kanban lane and GitHub label (T050-T059)", "status": "completed"},
+    {"step": "Phase 7: US5 owner notifications (T060-T070)", "status": "in_progress"},
     {"step": "Phase 7: Polish, guardrails, and final verification (T071-T079)", "status": "pending"},
     {"step": "Gate G7: focused tests, typecheck, lint, build/e2e or justified subset, guardrails, docs status, branch push", "status": "pending"},
     {"step": "Post: Verification and Status Sync", "status": "pending"},

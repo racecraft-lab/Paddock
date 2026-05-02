@@ -763,6 +763,8 @@
     "colInProgress": "قيد التنفيذ",
     "colReview": "المراجعة",
     "colQualityReview": "مراجعة الجودة",
+    "colReadyForOwner": "جاهز للمالك",
+    "readyForOwnerActionRequired": "إجراء المالك مطلوب",
     "colFailed": "فشل",
     "retryTask": "إعادة المحاولة",
     "colDone": "مكتمل",
