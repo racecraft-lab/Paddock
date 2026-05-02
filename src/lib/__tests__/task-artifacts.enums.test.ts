@@ -151,6 +151,10 @@ const SPEC_007_ALLOWLIST = [
   'src/lib/__tests__/task-artifacts-publish.test.ts',
   // US9 dispatch input_artifacts tests:
   'src/lib/__tests__/spec-007-dispatch-input-artifacts.test.ts',
+  // US10 admin-action library tests:
+  'src/lib/__tests__/task-artifacts-admin.test.ts',
+  // US10 admin health endpoint:
+  'src/app/api/task-artifacts/health/route.ts',
 ] as const
 
 const ALLOWED_PREFIXES = [

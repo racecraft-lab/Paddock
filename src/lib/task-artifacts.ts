@@ -1160,3 +1160,1051 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
   }
 }
 
+// ---------------------------------------------------------------------------
+// US10 — Admin actions (FR-060..FR-069, FR-124, FR-129, FR-130, FR-138).
+//
+// Every destructive admin action is wrapped in a single `db.transaction()`
+// with one activity row per mutation (FR-063). Filesystem side-effects (delete,
+// archive move, orphan move, retention move) happen BEFORE the transaction
+// opens so a partial FS step never produces a phantom "applied" DB row.
+// ---------------------------------------------------------------------------
+
+export const ADMIN_ACTIVITY_TYPES = Object.freeze([
+  'artifact_quarantined',
+  'artifact_unquarantined',
+  'artifact_deleted',
+  'artifact_archived',
+  'artifact_hash_verified',
+  'artifact_repaired_orphan',
+  'artifact_previews_rebuilt',
+  'artifact_retention_swept',
+] as const)
+
+export type AdminActivityType = (typeof ADMIN_ACTIVITY_TYPES)[number]
+
+export class ArtifactNotFound extends Error {
+  readonly status = 404
+  readonly error_code = 'artifact_not_found'
+  constructor(message = 'artifact_not_found') {
+    super(message)
+    this.name = 'ArtifactNotFound'
+  }
+}
+
+export class AlreadyQuarantined extends Error {
+  readonly status = 409
+  readonly error_code = 'already_quarantined'
+  constructor(message = 'already_quarantined') {
+    super(message)
+    this.name = 'AlreadyQuarantined'
+  }
+}
+
+export class NotQuarantined extends Error {
+  readonly status = 409
+  readonly error_code = 'not_quarantined'
+  constructor(message = 'not_quarantined') {
+    super(message)
+    this.name = 'NotQuarantined'
+  }
+}
+
+export class SweepInProgress extends Error {
+  readonly status = 409
+  readonly error_code = 'sweep_in_progress'
+  constructor(message = 'sweep_in_progress') {
+    super(message)
+    this.name = 'SweepInProgress'
+  }
+}
+
+export interface AdminActorContext {
+  readonly user_id?: number | null
+  readonly session_id?: number | string | null
+  readonly reason?: string | null
+}
+
+interface AdminActivityPayload {
+  readonly artifact_id: number
+  readonly actor_session_id: number | string | null
+  readonly actor_user_id: number | null
+  readonly reason: string | null
+  readonly before_status: RedactionStatus | null
+  readonly after_status: RedactionStatus | null
+  readonly extra?: Record<string, unknown>
+}
+
+function writeAdminActivity(
+  db: Database.Database,
+  type: AdminActivityType,
+  artifactId: number,
+  workspaceId: number,
+  payload: AdminActivityPayload,
+): void {
+  // Activity payload bounded to ≤16 KiB (FR-133 family limit). Production
+  // payloads stay small; defensive truncation only.
+  const data: Record<string, unknown> = {
+    artifact_id: payload.artifact_id,
+    actor_session_id: payload.actor_session_id,
+    actor_user_id: payload.actor_user_id,
+    reason: payload.reason,
+    before_status: payload.before_status,
+    after_status: payload.after_status,
+    ...(payload.extra ?? {}),
+  }
+  let json = JSON.stringify(data)
+  if (Buffer.byteLength(json, 'utf8') > PAYLOAD_BYTE_CAP) {
+    // Hard cap — drop `extra` and `reason` if oversized (FR-133).
+    json = JSON.stringify({
+      artifact_id: payload.artifact_id,
+      actor_session_id: payload.actor_session_id,
+      actor_user_id: payload.actor_user_id,
+      before_status: payload.before_status,
+      after_status: payload.after_status,
+      truncated: true,
+    })
+  }
+  db.prepare(
+    "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES (?, 'task_artifact', ?, 'task-artifacts-admin', ?, ?, ?)",
+  ).run(type, artifactId, type, json, workspaceId)
+}
+
+function fetchArtifactOrThrow(db: Database.Database, id: number): ArtifactRow {
+  const row = fetchArtifactRow(db, id)
+  if (row === null) throw new ArtifactNotFound()
+  return row
+}
+
+export interface QuarantineResult {
+  readonly id: number
+  readonly redaction_status: RedactionStatus
+  readonly before_status: RedactionStatus
+}
+
+/**
+ * FR-062 / FR-063 / FR-124: quarantine an artifact.
+ * Atomic: UPDATE + activity INSERT inside one db.transaction.
+ */
+export function quarantineArtifact(
+  db: Database.Database,
+  artifactId: number,
+  actor: AdminActorContext,
+): QuarantineResult {
+  const tx = db.transaction(() => {
+    const row = fetchArtifactOrThrow(db, artifactId)
+    if (row.redaction_status === 'quarantined') {
+      throw new AlreadyQuarantined()
+    }
+    const before = row.redaction_status
+    db.prepare(`UPDATE task_artifacts SET redaction_status = 'quarantined' WHERE id = ?`).run(
+      artifactId,
+    )
+    writeAdminActivity(db, 'artifact_quarantined', artifactId, row.workspace_id, {
+      artifact_id: artifactId,
+      actor_session_id: actor.session_id ?? null,
+      actor_user_id: actor.user_id ?? null,
+      reason: actor.reason ?? null,
+      before_status: before,
+      after_status: 'quarantined',
+    })
+    return { id: artifactId, redaction_status: 'quarantined' as RedactionStatus, before_status: before }
+  })
+  return tx()
+}
+
+/**
+ * FR-062 / FR-063 / FR-124: un-quarantine an artifact.
+ * Restores `redaction_status` to `'clean'` (the simplest safe restore — admins
+ * can re-route via supersede if they need a different state). Atomic.
+ */
+export function unquarantineArtifact(
+  db: Database.Database,
+  artifactId: number,
+  actor: AdminActorContext,
+): QuarantineResult {
+  const tx = db.transaction(() => {
+    const row = fetchArtifactOrThrow(db, artifactId)
+    if (row.redaction_status !== 'quarantined') {
+      throw new NotQuarantined()
+    }
+    const before = row.redaction_status
+    db.prepare(`UPDATE task_artifacts SET redaction_status = 'clean' WHERE id = ?`).run(artifactId)
+    writeAdminActivity(db, 'artifact_unquarantined', artifactId, row.workspace_id, {
+      artifact_id: artifactId,
+      actor_session_id: actor.session_id ?? null,
+      actor_user_id: actor.user_id ?? null,
+      reason: actor.reason ?? null,
+      before_status: before,
+      after_status: 'clean',
+    })
+    return { id: artifactId, redaction_status: 'clean' as RedactionStatus, before_status: before }
+  })
+  return tx()
+}
+
+/**
+ * FR-062 / FR-063: delete an artifact. The on-disk file (if any) is unlinked
+ * BEFORE the transaction opens (FR-127 ordering — never leave a phantom DB
+ * row referencing a vanished file). DB row is deleted (CASCADE-safe — no
+ * downstream FK references task_artifacts.id outside of supersedes_artifact_id
+ * which is nullable). Activity row recorded with the prior status.
+ */
+export function deleteArtifact(
+  db: Database.Database,
+  artifactId: number,
+  actor: AdminActorContext,
+): { id: number; deleted: true; before_status: RedactionStatus } {
+  const row = fetchArtifactOrThrow(db, artifactId)
+  // FS step BEFORE tx (FR-127 ordering).
+  if (row.storage_kind === 'file' && typeof row.storage_uri === 'string' && row.storage_uri.length > 0) {
+    try {
+      unlinkSync(row.storage_uri)
+    } catch (err) {
+      const code = (err as { code?: string } | null)?.code
+      if (code !== 'ENOENT') {
+        throw new InternalStorageError(code, 'delete_unlink_failed')
+      }
+      // Already absent — proceed to DB row deletion.
+    }
+  }
+  const before = row.redaction_status
+  const tx = db.transaction(() => {
+    // Re-confirm the row still exists; abort if a concurrent admin already
+    // deleted it.
+    const fresh = fetchArtifactRow(db, artifactId)
+    if (fresh === null) throw new ArtifactNotFound()
+    db.prepare('DELETE FROM task_artifacts WHERE id = ?').run(artifactId)
+    writeAdminActivity(db, 'artifact_deleted', artifactId, row.workspace_id, {
+      artifact_id: artifactId,
+      actor_session_id: actor.session_id ?? null,
+      actor_user_id: actor.user_id ?? null,
+      reason: actor.reason ?? null,
+      before_status: before,
+      after_status: null,
+    })
+  })
+  tx()
+  return { id: artifactId, deleted: true, before_status: before }
+}
+
+/**
+ * FR-062 / FR-063: archive an artifact. Marks `redaction_status='superseded'`
+ * (closest semantic match to "archived" without adding a new enum value to
+ * REDACTION_STATUSES; M058 has no `archived_at` column). The on-disk file is
+ * retained — archive is a soft state, not a destructive op. An
+ * `artifact_archived` activity row is written for audit.
+ */
+export function archiveArtifact(
+  db: Database.Database,
+  artifactId: number,
+  actor: AdminActorContext,
+): QuarantineResult {
+  const tx = db.transaction(() => {
+    const row = fetchArtifactOrThrow(db, artifactId)
+    const before = row.redaction_status
+    if (before !== 'superseded') {
+      db.prepare(`UPDATE task_artifacts SET redaction_status = 'superseded' WHERE id = ?`).run(
+        artifactId,
+      )
+    }
+    writeAdminActivity(db, 'artifact_archived', artifactId, row.workspace_id, {
+      artifact_id: artifactId,
+      actor_session_id: actor.session_id ?? null,
+      actor_user_id: actor.user_id ?? null,
+      reason: actor.reason ?? null,
+      before_status: before,
+      after_status: 'superseded',
+    })
+    return { id: artifactId, redaction_status: 'superseded' as RedactionStatus, before_status: before }
+  })
+  return tx()
+}
+
+export interface HashVerifyResult {
+  readonly id: number
+  readonly expected_sha256: string | null
+  readonly actual_sha256: string | null
+  readonly mismatch: boolean
+  readonly outcome: 'ok' | 'mismatch' | 'skipped_external_uri' | 'skipped_inline' | 'file_missing'
+}
+
+/**
+ * FR-067 / FR-112: hash-verify a single artifact. Re-hashes the on-disk file
+ * (file-backed only) and compares to `task_artifacts.sha256`. On mismatch:
+ * sets `security_scan_status='hash_mismatch'`, writes an
+ * `artifact_hash_verified` activity row with `mismatch:true`. NEVER auto-
+ * quarantines and NEVER auto-deletes (FR-067 — quarantine remains an explicit
+ * admin action).
+ *
+ * For `external_uri` rows the operation is a no-op writing
+ * `outcome='skipped_external_uri'` per FR-112. For inline rows it writes
+ * `outcome='skipped_inline'` since there is no FS to verify against.
+ */
+export function hashVerifyArtifact(
+  db: Database.Database,
+  artifactId: number,
+  actor: AdminActorContext,
+): HashVerifyResult {
+  const row = fetchArtifactOrThrow(db, artifactId)
+
+  // External URI: no FS work; record skipped activity.
+  if (row.storage_kind === 'external_uri') {
+    const tx = db.transaction(() => {
+      writeAdminActivity(db, 'artifact_hash_verified', artifactId, row.workspace_id, {
+        artifact_id: artifactId,
+        actor_session_id: actor.session_id ?? null,
+        actor_user_id: actor.user_id ?? null,
+        reason: actor.reason ?? null,
+        before_status: row.redaction_status,
+        after_status: row.redaction_status,
+        extra: { outcome: 'skipped_external_uri', expected_sha256: row.sha256 },
+      })
+    })
+    tx()
+    return {
+      id: artifactId,
+      expected_sha256: row.sha256,
+      actual_sha256: null,
+      mismatch: false,
+      outcome: 'skipped_external_uri',
+    }
+  }
+
+  // Inline rows: nothing to re-hash (the canonical bytes ARE the row data;
+  // they cannot drift). Record an activity for audit completeness.
+  if (row.storage_kind !== 'file') {
+    const tx = db.transaction(() => {
+      writeAdminActivity(db, 'artifact_hash_verified', artifactId, row.workspace_id, {
+        artifact_id: artifactId,
+        actor_session_id: actor.session_id ?? null,
+        actor_user_id: actor.user_id ?? null,
+        reason: actor.reason ?? null,
+        before_status: row.redaction_status,
+        after_status: row.redaction_status,
+        extra: { outcome: 'skipped_inline', expected_sha256: row.sha256 },
+      })
+    })
+    tx()
+    return {
+      id: artifactId,
+      expected_sha256: row.sha256,
+      actual_sha256: null,
+      mismatch: false,
+      outcome: 'skipped_inline',
+    }
+  }
+
+  // File-backed: re-hash and compare.
+  const storageUri = row.storage_uri
+  if (typeof storageUri !== 'string' || storageUri.length === 0) {
+    // No FS path on a file-kind row — treat as missing.
+    const tx = db.transaction(() => {
+      db.prepare(`UPDATE task_artifacts SET security_scan_status = 'file_missing' WHERE id = ?`).run(
+        artifactId,
+      )
+      writeAdminActivity(db, 'artifact_hash_verified', artifactId, row.workspace_id, {
+        artifact_id: artifactId,
+        actor_session_id: actor.session_id ?? null,
+        actor_user_id: actor.user_id ?? null,
+        reason: actor.reason ?? null,
+        before_status: row.redaction_status,
+        after_status: row.redaction_status,
+        extra: { outcome: 'file_missing', expected_sha256: row.sha256 },
+      })
+    })
+    tx()
+    return {
+      id: artifactId,
+      expected_sha256: row.sha256,
+      actual_sha256: null,
+      mismatch: false,
+      outcome: 'file_missing',
+    }
+  }
+
+  let bytes: Buffer
+  try {
+    bytes = readFileSync(storageUri)
+  } catch (err) {
+    const code = (err as { code?: string } | null)?.code
+    if (code === 'ENOENT') {
+      const tx = db.transaction(() => {
+        db.prepare(`UPDATE task_artifacts SET security_scan_status = 'file_missing' WHERE id = ?`).run(
+          artifactId,
+        )
+        writeAdminActivity(db, 'artifact_hash_verified', artifactId, row.workspace_id, {
+          artifact_id: artifactId,
+          actor_session_id: actor.session_id ?? null,
+          actor_user_id: actor.user_id ?? null,
+          reason: actor.reason ?? null,
+          before_status: row.redaction_status,
+          after_status: row.redaction_status,
+          extra: { outcome: 'file_missing', expected_sha256: row.sha256 },
+        })
+      })
+      tx()
+      return {
+        id: artifactId,
+        expected_sha256: row.sha256,
+        actual_sha256: null,
+        mismatch: false,
+        outcome: 'file_missing',
+      }
+    }
+    throw new InternalStorageError(code, 'hash_verify_read_failed')
+  }
+  const actual = createHash('sha256').update(bytes).digest('hex').toLowerCase()
+  const mismatch = row.sha256 !== null && actual !== row.sha256
+  const tx = db.transaction(() => {
+    if (mismatch) {
+      db.prepare(`UPDATE task_artifacts SET security_scan_status = 'hash_mismatch' WHERE id = ?`).run(
+        artifactId,
+      )
+    }
+    writeAdminActivity(db, 'artifact_hash_verified', artifactId, row.workspace_id, {
+      artifact_id: artifactId,
+      actor_session_id: actor.session_id ?? null,
+      actor_user_id: actor.user_id ?? null,
+      reason: actor.reason ?? null,
+      before_status: row.redaction_status,
+      after_status: row.redaction_status,
+      extra: {
+        outcome: mismatch ? 'mismatch' : 'ok',
+        expected_sha256: row.sha256,
+        actual_sha256: actual,
+        mismatch,
+      },
+    })
+  })
+  tx()
+  return {
+    id: artifactId,
+    expected_sha256: row.sha256,
+    actual_sha256: actual,
+    mismatch,
+    outcome: mismatch ? 'mismatch' : 'ok',
+  }
+}
+
+export interface BatchHashVerifyResult {
+  readonly checked: number
+  readonly mismatches: number
+  readonly skipped: number
+  readonly missing: number
+  readonly results: readonly HashVerifyResult[]
+}
+
+/**
+ * Batch hash-verify across a workspace. Each row is verified in its own
+ * transaction (catch-log-continue) so a single failure cannot poison the
+ * batch. Returns counts plus the per-row results array.
+ */
+export function batchHashVerify(
+  db: Database.Database,
+  workspaceId: number,
+  actor: AdminActorContext,
+): BatchHashVerifyResult {
+  const ids = db
+    .prepare('SELECT id FROM task_artifacts WHERE workspace_id = ? ORDER BY id ASC')
+    .all(workspaceId) as { id: number }[]
+  const results: HashVerifyResult[] = []
+  let mismatches = 0
+  let skipped = 0
+  let missing = 0
+  for (const row of ids) {
+    try {
+      const r = hashVerifyArtifact(db, row.id, actor)
+      results.push(r)
+      if (r.outcome === 'mismatch') mismatches++
+      else if (r.outcome === 'skipped_external_uri' || r.outcome === 'skipped_inline') skipped++
+      else if (r.outcome === 'file_missing') missing++
+    } catch (err) {
+      console.warn({
+        event: 'batch_hash_verify_row_failed',
+        artifact_id: row.id,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+  return { checked: ids.length, mismatches, skipped, missing, results }
+}
+
+// ---------------------------------------------------------------------------
+// FR-129 — Repair orphans (DB-no-file / FS-no-row / .tmp.* / workspace
+// isolation). Per-row transactions so a single failure does not poison the
+// sweep. Idempotent.
+// ---------------------------------------------------------------------------
+
+export interface OrphanRepairSummary {
+  readonly run_id: string
+  readonly db_no_file: number
+  readonly fs_no_row: number
+  readonly tmp_swept: number
+  readonly workspace_violations: number
+  readonly errors: number
+}
+
+/**
+ * Walk all task_artifacts rows in the workspace and reconcile against the FS:
+ *   - Class (a) DB row no file → flag as `redaction_status='rejected'`,
+ *     `security_scan_status='file_missing'`. Activity `artifact_repaired_orphan`.
+ *   - Class (b) FS file no row → move to `<DATA_DIR>/artifacts/_orphaned/<run_id>/`.
+ *   - Class (c) `.tmp.*` siblings older than 1h threshold → unlink.
+ *   - Class (d) Workspace-isolation violation (file under workspace_A's
+ *     tree but row references workspace_B) → also moves to `_orphaned/` AND
+ *     writes `artifact_workspace_isolation_violation` activity.
+ *
+ * Idempotent: re-runs without state mutation when nothing is wrong.
+ */
+export function repairOrphans(db: Database.Database, workspaceId: number): OrphanRepairSummary {
+  // Lazy require keeps strict-scope module import surface narrow.
+  const fs = runtimeRequire('fs') as typeof import('fs')
+  const path = runtimeRequire('path') as typeof import('path')
+
+  const runId = `${String(Math.floor(Date.now() / 1000))}-${randomBytes(4).toString('hex')}`
+  const dataDir = resolveDataDir()
+  const wsRoot = path.join(dataDir, 'artifacts', String(workspaceId))
+  const orphanedRoot = path.join(dataDir, 'artifacts', '_orphaned', runId)
+
+  let dbNoFile = 0
+  let fsNoRow = 0
+  let tmpSwept = 0
+  let wsViolations = 0
+  let errors = 0
+
+  const TMP_AGE_THRESHOLD_MS = 60 * 60 * 1000 // 1 hour
+
+  // --- Class (a): DB rows whose file is missing ---------------------------
+  const fileRows = db
+    .prepare(
+      `SELECT id, storage_uri, redaction_status, workspace_id FROM task_artifacts WHERE workspace_id = ? AND storage_kind = 'file'`,
+    )
+    .all(workspaceId) as {
+    id: number
+    storage_uri: string | null
+    redaction_status: RedactionStatus
+    workspace_id: number
+  }[]
+  for (const r of fileRows) {
+    try {
+      const uri = r.storage_uri
+      if (typeof uri !== 'string' || uri.length === 0 || !fs.existsSync(uri)) {
+        dbNoFile++
+        const tx = db.transaction(() => {
+          db.prepare(
+            `UPDATE task_artifacts SET redaction_status = 'rejected', security_scan_status = 'file_missing' WHERE id = ?`,
+          ).run(r.id)
+          writeAdminActivity(db, 'artifact_repaired_orphan', r.id, r.workspace_id, {
+            artifact_id: r.id,
+            actor_session_id: null,
+            actor_user_id: null,
+            reason: 'db_no_file',
+            before_status: r.redaction_status,
+            after_status: 'rejected',
+            extra: { run_id: runId, class: 'db_no_file', storage_uri: uri ?? null },
+          })
+        })
+        tx()
+      }
+    } catch (err) {
+      errors++
+      console.warn({
+        event: 'orphan_repair_db_no_file_failed',
+        artifact_id: r.id,
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
+  // --- Class (b/c/d): walk the workspace tree -----------------------------
+  if (fs.existsSync(wsRoot)) {
+    const stack: string[] = [wsRoot]
+    while (stack.length > 0) {
+      const dir = stack.pop()!
+      let entries: import('fs').Dirent[]
+      try {
+        entries = fs.readdirSync(dir, { withFileTypes: true })
+      } catch (err) {
+        errors++
+        console.warn({
+          event: 'orphan_repair_readdir_failed',
+          dir,
+          error: err instanceof Error ? err.message : String(err),
+        })
+        continue
+      }
+      for (const entry of entries) {
+        const full = path.join(dir, entry.name)
+        if (entry.isDirectory()) {
+          stack.push(full)
+          continue
+        }
+        // Class (c): .tmp.* siblings.
+        if (entry.name.startsWith('.tmp.')) {
+          try {
+            const st = fs.statSync(full)
+            const ageMs = Date.now() - st.mtimeMs
+            if (ageMs >= TMP_AGE_THRESHOLD_MS) {
+              fs.unlinkSync(full)
+              tmpSwept++
+            }
+          } catch (err) {
+            errors++
+            console.warn({
+              event: 'orphan_repair_tmp_unlink_failed',
+              file: full,
+              error: err instanceof Error ? err.message : String(err),
+            })
+          }
+          continue
+        }
+        // Class (b/d): file with no row OR row in wrong workspace.
+        try {
+          const matchRow = db
+            .prepare(`SELECT id, workspace_id FROM task_artifacts WHERE storage_uri = ?`)
+            .get(full) as { id: number; workspace_id: number } | undefined
+          const inWsTreeButRowMismatch =
+            matchRow !== undefined && matchRow.workspace_id !== workspaceId
+          const noRow = matchRow === undefined
+          if (noRow || inWsTreeButRowMismatch) {
+            // Move to _orphaned/.
+            const relativeFromDataDir = path.relative(path.join(dataDir, 'artifacts'), full)
+            let dest = path.join(orphanedRoot, relativeFromDataDir)
+            try {
+              fs.mkdirSync(path.dirname(dest), { recursive: true })
+            } catch {
+              /* best-effort */
+            }
+            // Collision suffix.
+            if (fs.existsSync(dest)) {
+              dest = `${dest}.${String(Date.now() * 1000)}.collision`
+            }
+            try {
+              fs.renameSync(full, dest)
+            } catch (err) {
+              const code = (err as { code?: string } | null)?.code
+              if (code === 'EXDEV') {
+                // Cross-device: fallback to copy-then-unlink.
+                fs.copyFileSync(full, dest)
+                fs.unlinkSync(full)
+              } else {
+                throw err
+              }
+            }
+            if (noRow) {
+              fsNoRow++
+            } else if (matchRow !== undefined && matchRow.workspace_id !== workspaceId) {
+              wsViolations++
+              const violationRowId = matchRow.id
+              const tx = db.transaction(() => {
+                writeAdminActivity(db, 'artifact_repaired_orphan', violationRowId, workspaceId, {
+                  artifact_id: violationRowId,
+                  actor_session_id: null,
+                  actor_user_id: null,
+                  reason: 'workspace_isolation_violation',
+                  before_status: null,
+                  after_status: null,
+                  extra: {
+                    run_id: runId,
+                    class: 'workspace_isolation_violation',
+                    moved_to: dest,
+                    expected_workspace_id: matchRow.workspace_id,
+                    matched_row_id: violationRowId,
+                    found_in_workspace_tree: workspaceId,
+                  },
+                })
+              })
+              tx()
+            }
+          }
+        } catch (err) {
+          errors++
+          console.warn({
+            event: 'orphan_repair_file_handler_failed',
+            file: full,
+            error: err instanceof Error ? err.message : String(err),
+          })
+        }
+      }
+    }
+  }
+
+  return {
+    run_id: runId,
+    db_no_file: dbNoFile,
+    fs_no_row: fsNoRow,
+    tmp_swept: tmpSwept,
+    workspace_violations: wsViolations,
+    errors,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// FR-130 — Retention sweep. Per-row transaction isolation; one summary
+// activity row at completion. Advisory lock prevents concurrent sweeps.
+// NEVER auto-cron — admin-triggered only.
+// ---------------------------------------------------------------------------
+
+const sweepLocks = new Map<number, boolean>()
+
+export interface RetentionPolicy {
+  readonly keep_days?: number
+  readonly archive_after_days?: number
+  readonly delete_after_days?: number
+}
+
+export interface RetentionSweepSummary {
+  readonly workspace_id: number
+  readonly started_at: number
+  readonly finished_at: number
+  readonly archived_count: number
+  readonly deleted_count: number
+  readonly skipped_count: number
+  readonly failed_count: number
+  readonly policy: RetentionPolicy
+  readonly sample_failure_reason?: string
+}
+
+interface ResolvedRetentionPolicy {
+  archive_after_seconds: number | null
+  delete_after_seconds: number | null
+}
+
+function resolveRetentionPolicy(
+  db: Database.Database,
+  workspaceId: number,
+): { policy: RetentionPolicy; resolved: ResolvedRetentionPolicy } {
+  // Pull `feature_flags.artifact_retention` (FR-130 source of truth).
+  const row = db
+    .prepare('SELECT feature_flags FROM workspaces WHERE id = ?')
+    .get(workspaceId) as { feature_flags: string | null } | undefined
+  if (row === undefined || row.feature_flags === null) {
+    return { policy: {}, resolved: { archive_after_seconds: null, delete_after_seconds: null } }
+  }
+  let parsed: Record<string, unknown>
+  try {
+    parsed = JSON.parse(row.feature_flags) as Record<string, unknown>
+  } catch {
+    return { policy: {}, resolved: { archive_after_seconds: null, delete_after_seconds: null } }
+  }
+  const ar = parsed['artifact_retention']
+  if (ar === null || typeof ar !== 'object') {
+    return { policy: {}, resolved: { archive_after_seconds: null, delete_after_seconds: null } }
+  }
+  const arRecord = ar as Record<string, unknown>
+  const policy: RetentionPolicy = {
+    ...(typeof arRecord['keep_days'] === 'number' ? { keep_days: arRecord['keep_days'] as number } : {}),
+    ...(typeof arRecord['archive_after_days'] === 'number'
+      ? { archive_after_days: arRecord['archive_after_days'] as number }
+      : {}),
+    ...(typeof arRecord['delete_after_days'] === 'number'
+      ? { delete_after_days: arRecord['delete_after_days'] as number }
+      : {}),
+  }
+  return {
+    policy,
+    resolved: {
+      archive_after_seconds:
+        typeof policy.archive_after_days === 'number' ? policy.archive_after_days * 86400 : null,
+      delete_after_seconds:
+        typeof policy.delete_after_days === 'number' ? policy.delete_after_days * 86400 : null,
+    },
+  }
+}
+
+interface SweepCandidate {
+  id: number
+  redaction_status: RedactionStatus
+  storage_kind: string
+  storage_uri: string | null
+  age_seconds: number
+}
+
+export function runRetentionSweep(
+  db: Database.Database,
+  workspaceId: number,
+  actor: AdminActorContext,
+): RetentionSweepSummary {
+  if (sweepLocks.get(workspaceId) === true) {
+    throw new SweepInProgress()
+  }
+  sweepLocks.set(workspaceId, true)
+  try {
+    const startedAt = Math.floor(Date.now() / 1000)
+    const { policy, resolved } = resolveRetentionPolicy(db, workspaceId)
+    let archived = 0
+    let deleted = 0
+    let skipped = 0
+    let failed = 0
+    let sampleFailureReason: string | undefined
+
+    if (resolved.archive_after_seconds === null && resolved.delete_after_seconds === null) {
+      const finishedAt = Math.floor(Date.now() / 1000)
+      // Still record an end-of-sweep summary for audit completeness.
+      const tx = db.transaction(() => {
+        db.prepare(
+          "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('artifact_retention_swept', 'workspace', ?, 'task-artifacts-admin', 'Retention sweep (no policy)', ?, ?)",
+        ).run(
+          workspaceId,
+          JSON.stringify({
+            workspace_id: workspaceId,
+            started_at: startedAt,
+            finished_at: finishedAt,
+            archived_count: 0,
+            deleted_count: 0,
+            skipped_count: 0,
+            failed_count: 0,
+            policy,
+          }),
+          workspaceId,
+        )
+      })
+      tx()
+      return {
+        workspace_id: workspaceId,
+        started_at: startedAt,
+        finished_at: finishedAt,
+        archived_count: 0,
+        deleted_count: 0,
+        skipped_count: 0,
+        failed_count: 0,
+        policy,
+      }
+    }
+
+    const candidates = db
+      .prepare(
+        `SELECT id, redaction_status, storage_kind, storage_uri,
+                CAST((unixepoch() - unixepoch(created_at)) AS INTEGER) AS age_seconds
+           FROM task_artifacts
+          WHERE workspace_id = ?
+          ORDER BY id ASC`,
+      )
+      .all(workspaceId) as SweepCandidate[]
+
+    for (const c of candidates) {
+      // Quarantined skipped + counted (FR-130 explicit).
+      if (c.redaction_status === 'quarantined') {
+        skipped++
+        continue
+      }
+      const eligibleDelete =
+        resolved.delete_after_seconds !== null && c.age_seconds >= resolved.delete_after_seconds
+      const eligibleArchive =
+        resolved.archive_after_seconds !== null && c.age_seconds >= resolved.archive_after_seconds
+      try {
+        // FR-130: delete wins precedence over archive when both apply.
+        if (eligibleDelete) {
+          deleteArtifact(db, c.id, { ...actor, reason: actor.reason ?? 'retention_delete' })
+          deleted++
+        } else if (eligibleArchive) {
+          archiveArtifact(db, c.id, { ...actor, reason: actor.reason ?? 'retention_archive' })
+          archived++
+        } else {
+          skipped++
+        }
+      } catch (err) {
+        failed++
+        if (sampleFailureReason === undefined) {
+          sampleFailureReason = err instanceof Error ? err.message : String(err)
+        }
+      }
+    }
+
+    const finishedAt = Math.floor(Date.now() / 1000)
+    const tx = db.transaction(() => {
+      db.prepare(
+        "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('artifact_retention_swept', 'workspace', ?, 'task-artifacts-admin', 'Retention sweep complete', ?, ?)",
+      ).run(
+        workspaceId,
+        JSON.stringify({
+          workspace_id: workspaceId,
+          started_at: startedAt,
+          finished_at: finishedAt,
+          archived_count: archived,
+          deleted_count: deleted,
+          skipped_count: skipped,
+          failed_count: failed,
+          policy,
+          ...(sampleFailureReason !== undefined ? { sample_failure_reason: sampleFailureReason } : {}),
+        }),
+        workspaceId,
+      )
+    })
+    tx()
+    return {
+      workspace_id: workspaceId,
+      started_at: startedAt,
+      finished_at: finishedAt,
+      archived_count: archived,
+      deleted_count: deleted,
+      skipped_count: skipped,
+      failed_count: failed,
+      policy,
+      ...(sampleFailureReason !== undefined ? { sample_failure_reason: sampleFailureReason } : {}),
+    }
+  } finally {
+    sweepLocks.delete(workspaceId)
+  }
+}
+
+/**
+ * FR-035a.5: rebuild previews for a workspace WITHOUT re-running the detector
+ * and WITHOUT promoting `'redacted'`/`'rejected'` rows back to `'clean'`.
+ * v1: writes a single summary `artifact_previews_rebuilt` activity. Real
+ * preview-text materialization is a US9-adjacent concern; this admin action
+ * is the audit anchor for the operator workflow.
+ */
+export function rebuildPreviews(
+  db: Database.Database,
+  workspaceId: number,
+  actor: AdminActorContext,
+): { workspace_id: number; rebuilt_count: number; preserved_status_count: number } {
+  const rows = db
+    .prepare(
+      `SELECT id, redaction_status FROM task_artifacts WHERE workspace_id = ? ORDER BY id ASC`,
+    )
+    .all(workspaceId) as { id: number; redaction_status: RedactionStatus }[]
+  // Invariant: status column unchanged (FR-035a.5). We never touch it here.
+  const preserved = rows.filter(
+    (r) => r.redaction_status === 'redacted' || r.redaction_status === 'rejected',
+  ).length
+  const tx = db.transaction(() => {
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('artifact_previews_rebuilt', 'workspace', ?, 'task-artifacts-admin', 'Previews rebuilt', ?, ?)",
+    ).run(
+      workspaceId,
+      JSON.stringify({
+        workspace_id: workspaceId,
+        rebuilt_count: rows.length,
+        preserved_status_count: preserved,
+        actor_session_id: actor.session_id ?? null,
+        actor_user_id: actor.user_id ?? null,
+        reason: actor.reason ?? null,
+      }),
+      workspaceId,
+    )
+  })
+  tx()
+  return { workspace_id: workspaceId, rebuilt_count: rows.length, preserved_status_count: preserved }
+}
+
+// ---------------------------------------------------------------------------
+// FR-064 / FR-138 — Health snapshot.
+// ---------------------------------------------------------------------------
+
+export interface HealthSnapshot {
+  readonly workspace_id: number
+  readonly counts: {
+    total: number
+    by_redaction_status: Record<string, number>
+    by_security_scan_status: Record<string, number>
+  }
+  readonly total_bytes: number
+  readonly failed_publishes_24h: number
+  readonly failed_scans_24h: number
+  readonly failed_reads_24h: number
+  readonly failed_disposition_inserts_24h: number
+  readonly orphan_count: number
+  readonly free_space_bytes: number | null
+  readonly p95: P95Snapshot | 'insufficient_data'
+}
+
+function countActivitiesLast24h(
+  db: Database.Database,
+  workspaceId: number,
+  type: string,
+): number {
+  try {
+    const row = db
+      .prepare(
+        `SELECT COUNT(*) AS c FROM activities WHERE workspace_id = ? AND type = ? AND created_at >= unixepoch() - 86400`,
+      )
+      .get(workspaceId, type) as { c: number } | undefined
+    return row?.c ?? 0
+  } catch {
+    return 0
+  }
+}
+
+function countOrphans(db: Database.Database, workspaceId: number): number {
+  try {
+    const row = db
+      .prepare(
+        `SELECT COUNT(*) AS c FROM task_artifacts
+           WHERE workspace_id = ?
+             AND storage_kind = 'file'
+             AND security_scan_status = 'file_missing'`,
+      )
+      .get(workspaceId) as { c: number } | undefined
+    return row?.c ?? 0
+  } catch {
+    return 0
+  }
+}
+
+function freeSpaceBytes(): number | null {
+  try {
+    const fs = runtimeRequire('fs') as typeof import('fs')
+    const dataDir = resolveDataDir()
+    if (!fs.existsSync(dataDir)) return null
+    type StatfsLike = (path: string) => { bavail: number | bigint; bsize: number | bigint }
+    const fsAny = fs as unknown as { statfsSync?: StatfsLike }
+    const fn = fsAny.statfsSync
+    if (typeof fn !== 'function') return null
+    const stats = fn(dataDir)
+    const bavail = typeof stats.bavail === 'bigint' ? Number(stats.bavail) : stats.bavail
+    const bsize = typeof stats.bsize === 'bigint' ? Number(stats.bsize) : stats.bsize
+    return bavail * bsize
+  } catch {
+    return null
+  }
+}
+
+export function getHealthSnapshot(db: Database.Database, workspaceId: number): HealthSnapshot {
+  const totalsRow = db
+    .prepare(
+      `SELECT COUNT(*) AS total, COALESCE(SUM(byte_size), 0) AS total_bytes
+         FROM task_artifacts WHERE workspace_id = ?`,
+    )
+    .get(workspaceId) as { total: number; total_bytes: number } | undefined
+  const total = totalsRow?.total ?? 0
+  const totalBytes = totalsRow?.total_bytes ?? 0
+
+  const redactionRows = db
+    .prepare(
+      `SELECT redaction_status AS k, COUNT(*) AS c FROM task_artifacts WHERE workspace_id = ? GROUP BY redaction_status`,
+    )
+    .all(workspaceId) as { k: string; c: number }[]
+  const securityRows = db
+    .prepare(
+      `SELECT security_scan_status AS k, COUNT(*) AS c FROM task_artifacts WHERE workspace_id = ? GROUP BY security_scan_status`,
+    )
+    .all(workspaceId) as { k: string; c: number }[]
+
+  const byRedaction: Record<string, number> = {}
+  for (const r of redactionRows) byRedaction[r.k] = r.c
+  const bySecurity: Record<string, number> = {}
+  for (const r of securityRows) bySecurity[r.k] = r.c
+
+  return {
+    workspace_id: workspaceId,
+    counts: {
+      total,
+      by_redaction_status: byRedaction,
+      by_security_scan_status: bySecurity,
+    },
+    total_bytes: totalBytes,
+    failed_publishes_24h: countActivitiesLast24h(db, workspaceId, 'artifact_publish_failed'),
+    failed_scans_24h: countActivitiesLast24h(db, workspaceId, 'security_violation_scan_error'),
+    failed_reads_24h: countActivitiesLast24h(db, workspaceId, 'artifact_read_failed'),
+    failed_disposition_inserts_24h: countActivitiesLast24h(
+      db,
+      workspaceId,
+      'disposition_insert_failed',
+    ),
+    orphan_count: countOrphans(db, workspaceId),
+    free_space_bytes: freeSpaceBytes(),
+    p95: getP95Latencies(workspaceId),
+  }
+}

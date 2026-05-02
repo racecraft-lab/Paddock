@@ -25,8 +25,18 @@ import {
   workspaceScopeError,
 } from '@/lib/workspaces'
 import {
+  AlreadyQuarantined,
+  ArtifactNotFound,
+  InternalStorageError,
+  NotQuarantined,
+  archiveArtifact,
+  deleteArtifact,
   getInlineContent,
+  hashVerifyArtifact,
+  quarantineArtifact,
   recordReadLatency,
+  unquarantineArtifact,
+  type AdminActorContext,
 } from '@/lib/task-artifacts'
 
 interface ArtifactRowFull {
@@ -240,4 +250,155 @@ export async function GET(
   // Success path.
   recordReadLatency(row.workspace_id, Date.now() - start)
   return NextResponse.json(buildSuccessBody(row), { status: 200 })
+}
+
+// ---------------------------------------------------------------------------
+// SPEC-007 US10 — POST /api/task-artifacts/[id]
+//
+// Single endpoint dispatching to admin actions per FR-062/FR-063/FR-124:
+//   { action: 'quarantine' | 'unquarantine' | 'delete' | 'archive' | 'hash_verify',
+//     reason?: string }
+//
+// Admin guard fires BEFORE any state mutation (FR-124). Flag-OFF returns 503
+// (FR-122 precedence: 503 → 401 → 403 → 404 → 409).
+// ---------------------------------------------------------------------------
+
+const ADMIN_ACTIONS = ['quarantine', 'unquarantine', 'delete', 'archive', 'hash_verify'] as const
+type AdminAction = (typeof ADMIN_ACTIONS)[number]
+
+interface AdminPostBody {
+  action?: unknown
+  reason?: unknown
+}
+
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> },
+) {
+  // FR-124: admin role required BEFORE any mutation.
+  const auth = requireRole(request, 'admin')
+  if ('error' in auth) {
+    return NextResponse.json(
+      {
+        error:
+          auth.status === 401 ? 'unauthenticated' : 'forbidden_admin_required',
+      },
+      { status: auth.status },
+    )
+  }
+
+  const resolvedParams = await context.params
+  const idNum = Number.parseInt(resolvedParams.id, 10)
+  if (!Number.isInteger(idNum) || idNum <= 0) {
+    return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+  }
+
+  let body: AdminPostBody
+  try {
+    const parsed = await request.json()
+    if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+    }
+    body = parsed as AdminPostBody
+  } catch {
+    return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+  }
+
+  const action = body.action
+  if (typeof action !== 'string' || !ADMIN_ACTIONS.includes(action as AdminAction)) {
+    return NextResponse.json(
+      { error: 'bad_request', detail: 'unknown_action' },
+      { status: 400 },
+    )
+  }
+  const adminAction = action as AdminAction
+
+  const db = getDatabase()
+
+  // Workspace scope (we mostly need it for flag context — admin actions
+  // themselves are workspace-scoped via the artifact's workspace_id).
+  let scope
+  try {
+    scope = await resolveWorkspaceScopeFromRequest(db, request, auth.user)
+  } catch (err) {
+    const scopeErr = workspaceScopeError(err)
+    if (scopeErr) {
+      return NextResponse.json({ error: scopeErr.error }, { status: scopeErr.status })
+    }
+    logger.error({ err }, 'POST /api/task-artifacts/[id] scope resolution failed')
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 })
+  }
+
+  // Look up artifact (no workspace filter — distinguish 404 from cross-workspace).
+  const row = db
+    .prepare('SELECT id, workspace_id, redaction_status FROM task_artifacts WHERE id = ?')
+    .get(idNum) as
+    | { id: number; workspace_id: number; redaction_status: string }
+    | undefined
+
+  // Flag check (503 before 404 per FR-122).
+  const flagWorkspaceId = row?.workspace_id ?? scope.workspaceIds[0] ?? 0
+  if (!isFeatureTaskArtifactsEnabled(flagWorkspaceId)) {
+    return NextResponse.json({ error: 'artifact_store_disabled' }, { status: 503 })
+  }
+
+  if (row === undefined) {
+    return NextResponse.json({ error: 'artifact_not_found' }, { status: 404 })
+  }
+
+  // Cross-workspace masking.
+  const isFacility = scope.kind === 'facility'
+  const callerWorkspaceIds = new Set(scope.workspaceIds)
+  if (!isFacility && !callerWorkspaceIds.has(row.workspace_id)) {
+    return NextResponse.json({ error: 'artifact_not_found' }, { status: 404 })
+  }
+
+  const actor: AdminActorContext = {
+    user_id: auth.user.id ?? null,
+    session_id: null,
+    ...(typeof body.reason === 'string' ? { reason: body.reason } : {}),
+  }
+
+  try {
+    switch (adminAction) {
+      case 'quarantine': {
+        const result = quarantineArtifact(db, idNum, actor)
+        return NextResponse.json({ ok: true, ...result }, { status: 200 })
+      }
+      case 'unquarantine': {
+        const result = unquarantineArtifact(db, idNum, actor)
+        return NextResponse.json({ ok: true, ...result }, { status: 200 })
+      }
+      case 'delete': {
+        const result = deleteArtifact(db, idNum, actor)
+        return NextResponse.json({ ok: true, ...result }, { status: 200 })
+      }
+      case 'archive': {
+        const result = archiveArtifact(db, idNum, actor)
+        return NextResponse.json({ ok: true, ...result }, { status: 200 })
+      }
+      case 'hash_verify': {
+        const result = hashVerifyArtifact(db, idNum, actor)
+        return NextResponse.json({ ok: true, ...result }, { status: 200 })
+      }
+      default: {
+        return NextResponse.json({ error: 'bad_request' }, { status: 400 })
+      }
+    }
+  } catch (err) {
+    if (err instanceof AlreadyQuarantined) {
+      return NextResponse.json({ error: 'already_quarantined' }, { status: 409 })
+    }
+    if (err instanceof NotQuarantined) {
+      return NextResponse.json({ error: 'not_quarantined' }, { status: 409 })
+    }
+    if (err instanceof ArtifactNotFound) {
+      return NextResponse.json({ error: 'artifact_not_found' }, { status: 404 })
+    }
+    if (err instanceof InternalStorageError) {
+      return NextResponse.json({ error: 'internal_storage_error' }, { status: 500 })
+    }
+    logger.error({ err }, 'POST /api/task-artifacts/[id] admin action failed')
+    return NextResponse.json({ error: 'internal_error' }, { status: 500 })
+  }
 }
