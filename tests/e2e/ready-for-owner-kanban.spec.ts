@@ -208,7 +208,7 @@ function parseFeatureFlags(raw: unknown): Record<string, unknown> {
       return {}
     }
   }
-  return raw && typeof raw === 'object' && !Array.isArray(raw)
+  return typeof raw === 'object' && !Array.isArray(raw)
     ? raw as Record<string, unknown>
     : {}
 }
