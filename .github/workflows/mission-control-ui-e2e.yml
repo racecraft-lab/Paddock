@@ -30,6 +30,7 @@ on:
       - 'scripts/seed-e2e-spec-008.cjs'
       - 'scripts/seed-spec-007.ts'
       - 'scripts/clean-visual-output.mjs'
+      - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/verify-visual-manifest.mjs'
       - 'tests/visual/**'
       - 'regconfig*.json'
@@ -70,6 +71,7 @@ on:
       - 'scripts/seed-e2e-spec-008.cjs'
       - 'scripts/seed-spec-007.ts'
       - 'scripts/clean-visual-output.mjs'
+      - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/verify-visual-manifest.mjs'
       - 'tests/visual/**'
       - 'regconfig*.json'
@@ -154,9 +156,16 @@ jobs:
           artifact-name: mission-control-playwright-visual
           branch: visual-regression-artifacts
           report-file-path: test-results/visual-report/playwright.html
+          custom-report-page: ${{ github.event_name == 'pull_request' && format('https://racecraft-lab.github.io/mission-control/pr/{0}/playwright/latest/', github.event.pull_request.number) || '' }}
           comment-report-format: summarized
           outdated-comment-action: minimize
           retention-days: 30
+
+      - name: Publish Playwright PR visual report to GitHub Pages
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/publish-visual-pr-pages.mjs --surface playwright --report-file test-results/visual-report/playwright.html
 
       - name: Publish Playwright visual report to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'

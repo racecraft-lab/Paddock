@@ -23,6 +23,7 @@ on:
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
       - 'scripts/clean-visual-output.mjs'
+      - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/write-storybook-visual-manifests.mjs'
       - 'scripts/verify-visual-manifest.mjs'
       - 'regconfig*.json'
@@ -50,6 +51,7 @@ on:
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
       - 'scripts/clean-visual-output.mjs'
+      - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/write-storybook-visual-manifests.mjs'
       - 'scripts/verify-visual-manifest.mjs'
       - 'regconfig*.json'
@@ -125,9 +127,16 @@ jobs:
           artifact-name: mission-control-storybook-visual
           branch: visual-regression-artifacts
           report-file-path: test-results/visual-report/storybook.html
+          custom-report-page: ${{ github.event_name == 'pull_request' && format('https://racecraft-lab.github.io/mission-control/pr/{0}/storybook/latest/', github.event.pull_request.number) || '' }}
           comment-report-format: summarized
           outdated-comment-action: minimize
           retention-days: 30
+
+      - name: Publish Storybook PR visual report to GitHub Pages
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.storybook.outcome == 'success' && steps.storybook-metadata.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/publish-visual-pr-pages.mjs --surface storybook --report-file test-results/visual-report/storybook.html
 
       - name: Publish Storybook visual report to GitHub Pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.storybook.outcome == 'success' && steps.storybook-metadata.outcome == 'success'

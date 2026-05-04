@@ -11,11 +11,13 @@ merging the PR must confirm the visual baseline before merge.
 2. Confirm both manifest gates passed:
    - `pnpm test:e2e:visual-manifest`
    - `pnpm test:visual:manifest`
-3. Open the visual regression reports attached to the workflow artifacts
-   and review every changed image.
-4. Approve intentional UI changes in the PR review. For accidental diffs,
+3. Open the GitHub Pages PR visual review links posted by the workflows:
+   - `https://racecraft-lab.github.io/mission-control/pr/<PR>/playwright/latest/`
+   - `https://racecraft-lab.github.io/mission-control/pr/<PR>/storybook/latest/`
+4. Review every changed baseline, current, and diff image in the report.
+5. Approve intentional UI changes in the PR review. For accidental diffs,
    request changes and link the failing report artifact.
-5. Operators may merge once the visual regression, manifest, accessibility,
+6. Operators may merge once the visual regression, manifest, accessibility,
    lint, typecheck, unit, and e2e checks are green.
 
 ## Main Baselines
@@ -23,6 +25,10 @@ merging the PR must confirm the visual baseline before merge.
 Merged `main` runs publish provider-neutral baselines with `reg-suit` to
 GitHub Pages on the `visual-regression-pages` branch. PR checks compare
 against those baselines without relying on a paid visual SaaS account.
+
+PR runs also publish their generated `reg-actions` report HTML to the same
+Pages branch under `/pr/<PR>/`. The report links expose the baseline,
+current, and diff panes for peer review without downloading Actions artifacts.
 
 Required repository setting:
 

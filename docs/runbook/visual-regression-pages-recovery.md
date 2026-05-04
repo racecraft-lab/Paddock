@@ -12,8 +12,9 @@
 
 ## 2. Impact
 
-- PRs still retain short-lived visual artifacts, but merged `main`
-  cannot refresh the durable baseline report.
+- PRs still retain short-lived visual artifacts, but reviewer-facing PR
+  reports under `/pr/<PR>/` and merged-main baseline reports may stop
+  refreshing.
 
 ## 3. Diagnose
 
@@ -47,11 +48,16 @@
 
 3. Re-run the latest `main` visual workflows so `reg-suit` republishes
    Playwright and Storybook baselines.
+4. Re-run the affected PR visual workflows so
+   `scripts/publish-visual-pr-pages.mjs` republishes the Playwright and
+   Storybook PR report pages.
 
 ## 6. Validate
 
 - GitHub Pages source is `visual-regression-pages` at `/`.
 - The latest `main` visual workflow publishes without errors.
+- The affected PR has Pages links under
+  `https://racecraft-lab.github.io/mission-control/pr/<PR>/`.
 
 ## 7. Postmortem
 
