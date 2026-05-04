@@ -182,6 +182,19 @@ a {
   color: #fff;
 }
 
+.file-btn {
+  position: relative;
+}
+
+.file-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .layout {
   width: min(1680px, calc(100vw - 32px));
   margin: 0 auto;
@@ -367,6 +380,145 @@ a {
 .content {
   display: grid;
   gap: 16px;
+}
+
+.review-guide {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 1px 1px rgba(20, 32, 51, 0.03);
+}
+
+.guide-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, auto);
+  gap: 12px;
+  align-items: start;
+}
+
+.guide-kicker {
+  margin: 0 0 4px;
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.guide-heading h2 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+.guide-status {
+  display: block;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.guide-status.approved {
+  border-color: #a7dcbf;
+  background: var(--approved-soft);
+  color: var(--approved);
+}
+
+.guide-status.pending {
+  border-color: #f0c67a;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.guide-status.rejected {
+  border-color: #f7b7b0;
+  background: var(--rejected-soft);
+  color: var(--rejected);
+}
+
+.guide-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-steps li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fbfcfe;
+}
+
+.guide-step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.guide-steps strong {
+  display: block;
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.guide-steps p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.38;
+}
+
+.guide-checkpoints {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.guide-checkpoints div {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel-2);
+}
+
+.guide-checkpoints span {
+  display: block;
+  color: var(--subtle);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.guide-checkpoints strong {
+  display: block;
+  margin-top: 2px;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 13px;
 }
 
 .viewer-card {
@@ -616,6 +768,76 @@ kbd {
   font-size: 13px;
 }
 
+.sync-panel {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.sync-panel.ready {
+  border-color: #a7dcbf;
+}
+
+.sync-panel.loading {
+  border-color: #8fd0ce;
+  background: #f4fbfb;
+}
+
+.sync-panel.error {
+  border-color: #f7b7b0;
+  background: var(--rejected-soft);
+}
+
+.sync-main {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sync-main strong {
+  font-size: 14px;
+}
+
+.sync-main p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.sync-badge {
+  flex: 0 0 auto;
+  min-height: 24px;
+  padding: 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sync-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.token-input {
+  flex: 1 1 220px;
+  min-width: 180px;
+  min-height: 34px;
+  border: 1px solid var(--line-strong);
+  border-radius: 7px;
+  background: #fff;
+  color: var(--text);
+  padding: 7px 10px;
+  font-size: 13px;
+}
+
 @media (max-width: 1180px) {
   .topbar-inner,
   .layout {
@@ -636,6 +858,15 @@ kbd {
   }
 
   .context-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guide-heading,
+  .guide-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-checkpoints {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -668,6 +899,10 @@ kbd {
   }
 
   .context-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-checkpoints {
     grid-template-columns: 1fr;
   }
 }

@@ -1,4 +1,15 @@
-/* global document, window, localStorage, navigator, history, URLSearchParams */
+import {
+  buildSurfaceReviewState,
+  findReviewComment,
+  mergeSurfaceReviewState,
+  normalizeRequiredSurfaces,
+  parseReviewCommentBody,
+  renderReviewComment,
+  validateVisualApproval,
+  VISUAL_REVIEW_STATUS_CONTEXT,
+} from './visual-review-state.mjs'
+
+/* global Blob, FileReader, document, window, localStorage, navigator, history, sessionStorage, URLSearchParams */
 (() => {
   const dataElement = document.getElementById('visual-review-data')
   const root = document.getElementById('visual-review-root')
@@ -12,11 +23,18 @@
   const state = {
     activeId: null,
     filter: 'reviewable',
+    githubToken: sessionStorage.getItem(githubTokenKey()) || '',
+    githubUser: '',
     group: 'all',
     mode: localStorage.getItem(storageKey('mode')) || 'side-by-side',
     overlay: clamp(Number(localStorage.getItem(storageKey('overlay')) || 50), 0, 100),
     query: '',
+    remoteAuthor: '',
+    remoteCommentId: null,
+    remoteState: null,
     reviews: readReviews(),
+    syncMessage: 'Loading PR state...',
+    syncState: 'loading',
     zoom: clamp(Number(localStorage.getItem(storageKey('zoom')) || 100), 50, 200),
   }
 
@@ -29,9 +47,14 @@
 
   render()
   window.addEventListener('keydown', handleKeys)
+  loadRemoteReviewState({ silent: true })
 
   function storageKey(suffix) {
     return `visual-review:${context.prNumber}:${context.surface}:${context.runKey}:${suffix}`
+  }
+
+  function githubTokenKey() {
+    return `visual-review:${context.repository}:${context.prNumber}:github-token`
   }
 
   function readReviews() {
@@ -164,6 +187,9 @@
             </div>
             <div class="actions">
               <button class="btn" type="button" data-action="copy-summary">Copy summary</button>
+              <button class="btn" type="button" data-action="copy-pr-comment">Copy PR comment</button>
+              <button class="btn" type="button" data-action="download-json">Download JSON</button>
+              <label class="btn file-btn">Import JSON<input class="file-hidden" type="file" accept="application/json" data-action="import-json" /></label>
               <a class="btn" href="${escapeAttribute(context.regVizHref)}">Open reg-viz</a>
               <a class="btn" href="${escapeAttribute(context.runUrl)}">Workflow run</a>
               <a class="btn primary" href="${escapeAttribute(context.prUrl)}">Open PR</a>
@@ -195,7 +221,8 @@
             </div>
           </aside>
           <section class="content">
-            <p class="notice">Review decisions are stored locally in this browser. Use the copied summary or GitHub PR review to record the final approval/request-changes decision.</p>
+            ${renderReviewGuide(currentCounts)}
+            ${renderSyncPanel()}
             ${current ? renderViewer(current) : '<article class="viewer-card"><div class="empty-list">No snapshots match the current filters.</div></article>'}
             ${current ? renderContext(current) : ''}
           </section>
@@ -205,6 +232,67 @@
     bindEvents()
     applyZoomState()
     applyOverlayState()
+  }
+
+  function renderReviewGuide(currentCounts) {
+    const open = currentCounts.reviewable - currentCounts.reviewed
+    const approved = currentCounts.reviewed - currentCounts.rejected
+    const statusTone = currentCounts.rejected > 0
+      ? 'rejected'
+      : open > 0
+        ? 'pending'
+        : 'approved'
+    const checkpoint = currentCounts.rejected > 0
+      ? `${currentCounts.rejected} rejected snapshot${currentCounts.rejected === 1 ? '' : 's'} must be resolved or called out before approval.`
+      : open > 0
+        ? `${open} snapshot${open === 1 ? '' : 's'} still need a decision on this surface.`
+        : 'This surface is locally complete. Publish PR state, then repeat on the other visual surface.'
+
+    return `
+      <section class="review-guide" aria-labelledby="review-guide-title">
+        <div class="guide-heading">
+          <div>
+            <p class="guide-kicker">Reviewer guide</p>
+            <h2 id="review-guide-title">Review ${escapeHtml(context.surfaceLabel)} in five steps</h2>
+          </div>
+          <span class="guide-status ${escapeAttribute(statusTone)}">${escapeHtml(checkpoint)}</span>
+        </div>
+        <ol class="guide-steps">
+          ${guideStep('1', 'Start with shared state', 'Use Load PR state first. If GitHub asks for a token, use a fine-grained token with Issues and Commit statuses write access, or import a JSON handoff from another reviewer.')}
+          ${guideStep('2', 'Inspect every open snapshot', 'Work from the Open filter until it is empty. For changed screenshots, compare Baseline and Current, then use Highlighter, Overlay, or Blink when the difference is subtle.')}
+          ${guideStep('3', 'Apply the decision rule', 'Approve only intentional UI changes. Reject clipped text, missing data, broken spacing, wrong feature-flag state, unexpected new screenshots, or unexpected removals.')}
+          ${guideStep('4', 'Leave a durable trail', 'When this surface is complete, publish to the PR. Without a token, download JSON for handoff or copy the generated PR comment and paste it into the pull request.')}
+          ${guideStep('5', 'Finish both surfaces', 'Playwright and Storybook must both be approved for the current head commit before visual-review-approval can turn green.')}
+        </ol>
+        <div class="guide-checkpoints" aria-label="Current review checkpoints">
+          ${checkpointItem('Surface', context.surfaceLabel)}
+          ${checkpointItem('Approved', String(approved))}
+          ${checkpointItem('Open', String(open))}
+          ${checkpointItem('Rejected', String(currentCounts.rejected))}
+        </div>
+      </section>
+    `
+  }
+
+  function guideStep(number, title, body) {
+    return `
+      <li>
+        <span class="guide-step-number">${escapeHtml(number)}</span>
+        <div>
+          <strong>${escapeHtml(title)}</strong>
+          <p>${escapeHtml(body)}</p>
+        </div>
+      </li>
+    `
+  }
+
+  function checkpointItem(label, value) {
+    return `
+      <div data-guide-checkpoint="${escapeAttribute(label.toLowerCase())}">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value)}</strong>
+      </div>
+    `
   }
 
   function filterButton(filter, label) {
@@ -227,6 +315,28 @@
         </button>
       `
     }).join('')
+  }
+
+  function renderSyncPanel() {
+    const tokenLabel = state.githubUser ? `@${state.githubUser}` : (state.githubToken ? 'Token ready' : 'No token')
+    return `
+      <article class="sync-panel ${escapeAttribute(state.syncState)}">
+        <div class="sync-main">
+          <div>
+            <strong>PR review state</strong>
+            <p>${escapeHtml(state.syncMessage)}</p>
+          </div>
+          <span class="sync-badge">${escapeHtml(tokenLabel)}</span>
+        </div>
+        <div class="sync-controls">
+          <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="GitHub token" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
+          <button class="btn" type="button" data-action="save-token">Use token</button>
+          <button class="btn" type="button" data-action="load-pr-state">Load PR state</button>
+          <button class="btn primary" type="button" data-action="publish-pr-state">Publish to PR</button>
+          <button class="btn" type="button" data-action="forget-token">Forget</button>
+        </div>
+      </article>
+    `
   }
 
   function renderViewer(item) {
@@ -387,6 +497,16 @@
       applyOverlayState()
     })
     root.querySelector('[data-action="copy-summary"]')?.addEventListener('click', copySummary)
+    root.querySelector('[data-action="copy-pr-comment"]')?.addEventListener('click', copyPrComment)
+    root.querySelector('[data-action="download-json"]')?.addEventListener('click', downloadReviewJson)
+    root.querySelector('[data-action="import-json"]')?.addEventListener('change', importReviewJson)
+    root.querySelector('[data-action="github-token"]')?.addEventListener('input', (event) => {
+      state.githubToken = event.target.value
+    })
+    root.querySelector('[data-action="save-token"]')?.addEventListener('click', saveGithubToken)
+    root.querySelector('[data-action="load-pr-state"]')?.addEventListener('click', () => loadRemoteReviewState())
+    root.querySelector('[data-action="publish-pr-state"]')?.addEventListener('click', publishRemoteReviewState)
+    root.querySelector('[data-action="forget-token"]')?.addEventListener('click', forgetGithubToken)
   }
 
   function applyZoomState() {
@@ -488,6 +608,269 @@
       rejected.slice(0, 20).forEach((item) => lines.push(`- ${item.raw}`))
     }
     await navigator.clipboard.writeText(lines.join('\n'))
+  }
+
+  async function copyPrComment() {
+    await navigator.clipboard.writeText(renderReviewComment(currentReviewState()))
+    setSyncState('ready', 'PR comment copied.')
+  }
+
+  function downloadReviewJson() {
+    const blob = new Blob([`${JSON.stringify(currentReviewState(), null, 2)}\n`], { type: 'application/json' })
+    const href = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = href
+    link.download = `mission-control-pr-${context.prNumber}-${context.surface}-visual-review.json`
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(href)
+    setSyncState('ready', 'Review JSON downloaded.')
+  }
+
+  async function importReviewJson(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const imported = JSON.parse(await readFileAsText(file))
+      applyImportedReviewState(imported, 'Imported JSON')
+    } catch {
+      setSyncState('error', 'Unable to import review JSON.')
+    }
+  }
+
+  function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.addEventListener('load', () => resolve(String(reader.result || '')))
+      reader.addEventListener('error', () => reject(reader.error || new Error('file read failed')))
+      reader.readAsText(file)
+    })
+  }
+
+  function currentSurfaceReviewState() {
+    return buildSurfaceReviewState({
+      context: {
+        ...context,
+        reportHref: `${window.location.origin}${window.location.pathname}`,
+      },
+      items,
+      reviewer: state.githubUser,
+      reviews: state.reviews,
+    })
+  }
+
+  function currentReviewState() {
+    return mergeSurfaceReviewState(state.remoteState, currentSurfaceReviewState())
+  }
+
+  function applyImportedReviewState(imported, sourceLabel) {
+    const surface = imported?.surfaces?.[context.surface] || imported
+    if (!surface?.decisions || surface.surface !== context.surface) {
+      setSyncState('error', `${sourceLabel} has no ${context.surface} review state.`)
+      return
+    }
+
+    let importedCount = 0
+    for (const [itemId, decision] of Object.entries(surface.decisions)) {
+      if (decision?.decision === 'approved' || decision?.decision === 'rejected') {
+        state.reviews[itemId] = decision.decision
+        importedCount += 1
+      }
+    }
+    state.remoteState = imported?.surfaces ? imported : mergeSurfaceReviewState(state.remoteState, surface)
+    saveReviews()
+    setSyncState('ready', `${sourceLabel}: imported ${importedCount} decision(s).`)
+  }
+
+  function applyRemoteReviewState(remoteState, sourceLabel) {
+    const surface = remoteState?.surfaces?.[context.surface]
+    if (!surface) {
+      setSyncState('ready', `${sourceLabel}: no ${context.surface} state yet.`)
+      return
+    }
+
+    let importedCount = 0
+    for (const [itemId, decision] of Object.entries(surface.decisions || {})) {
+      if (!state.reviews[itemId] && (decision?.decision === 'approved' || decision?.decision === 'rejected')) {
+        state.reviews[itemId] = decision.decision
+        importedCount += 1
+      }
+    }
+    saveReviews()
+    setSyncState('ready', `${sourceLabel}: loaded ${importedCount} decision(s).`)
+  }
+
+  async function loadRemoteReviewState(options = {}) {
+    if (!options.silent) setSyncState('loading', 'Loading PR state...')
+    try {
+      const comments = await githubRequest(`/repos/${context.repository}/issues/${context.prNumber}/comments?per_page=100&sort=updated&direction=desc`, {
+        allowUnauthenticated: true,
+      })
+      const comment = findReviewComment(comments)
+      if (!comment) {
+        state.remoteAuthor = ''
+        state.remoteCommentId = null
+        state.remoteState = null
+        setSyncState('ready', 'No shared PR state yet.')
+        return
+      }
+
+      const parsed = parseReviewCommentBody(comment.body)
+      state.remoteAuthor = comment.user?.login || ''
+      state.remoteCommentId = comment.id
+      state.remoteState = parsed
+      applyRemoteReviewState(parsed, state.remoteAuthor ? `@${state.remoteAuthor}` : 'PR state')
+    } catch (error) {
+      const hint = state.githubToken
+        ? error.message
+        : 'Add a GitHub token to load private PR state.'
+      setSyncState('error', hint)
+    }
+  }
+
+  async function publishRemoteReviewState() {
+    if (!state.githubToken.trim()) {
+      setSyncState('error', 'GitHub token required to publish PR state.')
+      return
+    }
+
+    setSyncState('loading', 'Publishing PR state...')
+    try {
+      await loadGithubUser()
+      const merged = currentReviewState()
+      const body = renderReviewComment(merged)
+      let comment = null
+
+      if (state.remoteCommentId) {
+        comment = await githubRequest(`/repos/${context.repository}/issues/comments/${state.remoteCommentId}`, {
+          body: { body },
+          method: 'PATCH',
+          requireToken: true,
+        })
+      } else {
+        comment = await githubRequest(`/repos/${context.repository}/issues/${context.prNumber}/comments`, {
+          body: { body },
+          method: 'POST',
+          requireToken: true,
+        })
+      }
+
+      state.remoteAuthor = comment.user?.login || state.githubUser
+      state.remoteCommentId = comment.id
+      state.remoteState = merged
+      try {
+        const approvalStatus = await publishApprovalStatus(merged)
+        const statusMessage = approvalStatus.approved
+          ? 'Approval status is green.'
+          : 'Approval status is still blocked.'
+        setSyncState(
+          'ready',
+          `Published PR state as ${state.remoteAuthor ? `@${state.remoteAuthor}` : 'GitHub user'}. ${statusMessage}`
+        )
+      } catch (statusError) {
+        setSyncState('error', `Published PR state, but approval status update failed: ${statusError.message}`)
+      }
+    } catch (error) {
+      setSyncState('error', error.message)
+    }
+  }
+
+  async function publishApprovalStatus(reviewState) {
+    const result = validateVisualApproval(reviewState, {
+      headSha: context.headSha,
+      prNumber: context.prNumber,
+      repository: context.repository,
+      requiredSurfaces: normalizeRequiredSurfaces(context.requiredVisualSurfaces),
+    })
+
+    await githubRequest(`/repos/${context.repository}/statuses/${context.headSha}`, {
+      body: {
+        context: VISUAL_REVIEW_STATUS_CONTEXT,
+        description: truncateStatusDescription(result.summary),
+        state: result.approved ? 'success' : 'failure',
+        target_url: context.prIndexHref || context.reportHref || window.location.href,
+      },
+      method: 'POST',
+      requireToken: true,
+    })
+
+    return result
+  }
+
+  function truncateStatusDescription(description) {
+    const text = String(description || '').replace(/\s+/g, ' ').trim()
+    return text.length <= 140 ? text : `${text.slice(0, 137)}...`
+  }
+
+  async function saveGithubToken() {
+    state.githubToken = root.querySelector('[data-action="github-token"]')?.value.trim() || ''
+    if (!state.githubToken) {
+      forgetGithubToken()
+      return
+    }
+    sessionStorage.setItem(githubTokenKey(), state.githubToken)
+    setSyncState('loading', 'Checking GitHub token...')
+    try {
+      await loadGithubUser()
+      await loadRemoteReviewState()
+    } catch (error) {
+      setSyncState('error', error.message)
+    }
+  }
+
+  async function loadGithubUser() {
+    if (!state.githubToken.trim()) return null
+    const user = await githubRequest('/user', { requireToken: true })
+    state.githubUser = user.login || ''
+    sessionStorage.setItem(githubTokenKey(), state.githubToken)
+    return user
+  }
+
+  function forgetGithubToken() {
+    state.githubToken = ''
+    state.githubUser = ''
+    sessionStorage.removeItem(githubTokenKey())
+    setSyncState('ready', 'GitHub token cleared.')
+  }
+
+  async function githubRequest(path, options = {}) {
+    const headers = {
+      accept: 'application/vnd.github+json',
+      'x-github-api-version': '2022-11-28',
+    }
+    const token = state.githubToken.trim()
+    if (token) headers.authorization = `Bearer ${token}`
+    if (options.requireToken && !token) throw new Error('GitHub token required.')
+    if (options.body) headers['content-type'] = 'application/json'
+
+    const response = await fetch(`https://api.github.com${path}`, {
+      method: options.method || 'GET',
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    })
+
+    if (!response.ok) {
+      if (response.status === 404 && options.allowUnauthenticated && !token) {
+        throw new Error('Add a GitHub token to load private PR state.')
+      }
+      let detail = ''
+      try {
+        detail = (await response.json()).message || ''
+      } catch {
+        detail = response.statusText
+      }
+      throw new Error(`GitHub API ${response.status}: ${detail}`)
+    }
+
+    return response.status === 204 ? null : response.json()
+  }
+
+  function setSyncState(syncState, message) {
+    state.syncState = syncState
+    state.syncMessage = message
+    render()
   }
 
   function statusLabel(variant) {
