@@ -296,16 +296,43 @@ async function attachVisualMetadata(items, baseDirs) {
   return enriched
 }
 
-async function enrichReportPayload(payload, reportDir) {
+function defaultManifestDir(surface) {
+  const root = process.env.MC_VISUAL_OUTPUT_DIR || path.join(process.cwd(), 'test-results', 'visual-current')
+  return path.join(root, surface)
+}
+
+function manifestDirsForOptions(options) {
+  return uniqueStrings([
+    options['manifest-dir'],
+    defaultManifestDir(options.surface),
+  ])
+}
+
+async function enrichReportPayload(payload, reportDir, manifestDirs = []) {
   const actualDir = path.resolve(reportDir, payload.actualDir)
   const expectedDir = path.resolve(reportDir, payload.expectedDir)
+  const externalManifestDirs = manifestDirs.filter((dir) => dir && existsSync(dir))
 
   return {
     ...payload,
-    deletedItems: await attachVisualMetadata(reportItems(payload, 'deletedItems'), [expectedDir, actualDir]),
-    failedItems: await attachVisualMetadata(reportItems(payload, 'failedItems'), [actualDir, expectedDir]),
-    newItems: await attachVisualMetadata(reportItems(payload, 'newItems'), [actualDir]),
-    passedItems: await attachVisualMetadata(reportItems(payload, 'passedItems'), [actualDir]),
+    deletedItems: await attachVisualMetadata(reportItems(payload, 'deletedItems'), [
+      expectedDir,
+      actualDir,
+      ...externalManifestDirs,
+    ]),
+    failedItems: await attachVisualMetadata(reportItems(payload, 'failedItems'), [
+      actualDir,
+      expectedDir,
+      ...externalManifestDirs,
+    ]),
+    newItems: await attachVisualMetadata(reportItems(payload, 'newItems'), [
+      actualDir,
+      ...externalManifestDirs,
+    ]),
+    passedItems: await attachVisualMetadata(reportItems(payload, 'passedItems'), [
+      actualDir,
+      ...externalManifestDirs,
+    ]),
   }
 }
 
@@ -399,10 +426,10 @@ async function copyReportAssetDir({ label, sourceDir, targetDir, requiredFiles }
   }
 }
 
-async function writeReportBundle({ reportFile, reportHtml, extracted, targetDir, context }) {
+async function writeReportBundle({ reportFile, reportHtml, extracted, targetDir, context, manifestDirs }) {
   const payload = extracted.payload
   const reportDir = path.dirname(reportFile)
-  const enrichedPayload = await enrichReportPayload(payload, reportDir)
+  const enrichedPayload = await enrichReportPayload(payload, reportDir, manifestDirs)
   const requiredFiles = requiredAssetFiles(payload)
   const assetRoot = path.join(targetDir, '__reg__')
 
@@ -861,6 +888,7 @@ async function publishReport(options) {
     reportHtml,
     extracted: extractedReport,
     targetDir: runReportDir,
+    manifestDirs: manifestDirsForOptions(options),
     context: {
       ...reviewContext,
       reportHref,
@@ -872,6 +900,7 @@ async function publishReport(options) {
     reportHtml,
     extracted: extractedReport,
     targetDir: latestReportDir,
+    manifestDirs: manifestDirsForOptions(options),
     context: {
       ...reviewContext,
       reportHref: latestHref,
