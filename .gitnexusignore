@@ -1,0 +1,90 @@
+# GitNexus local code-intelligence index
+.gitnexus/
+
+# Dependencies and package-manager artifacts
+node_modules/
+.pnpm-store/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Next.js, Storybook, build, and coverage outputs
+.next/
+out/
+build/
+dist/
+storybook-static/
+coverage/
+.vercel/
+.turbo/
+
+# Test, browser, and visual review outputs
+test-results/
+playwright-report/
+screenshots/
+.tmp/
+.playwright-mcp/
+e2e-debug-*.png
+e2e-channels-*.png
+docs/_captures/
+docs/_diffs/
+
+# Generated/cache artifacts
+*.tsbuildinfo
+.tsbuild/
+next-env.d.ts
+.cache/
+.data/
+aegis/
+
+# Logs, editor state, and transient tool caches
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm/
+.eslintcache
+.idea/
+.vscode/*
+!.vscode/settings.json
+*.swp
+*.swo
+.DS_Store
+
+# Local env/secrets and runtime data
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+.envrc
+.envrc.*
+*.pem
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.bak
+*.bak-*
+hal-gateway-probe.js
+
+# Local Claude/Codex generated state; keep committed skills/settings indexable.
+**/CLAUDE.md
+!/CLAUDE.md
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+.claude/settings.local.json.bak
+.codex/cache/
+.codex/tmp/
+.codex/config.toml
+
+# Local worktrees and SpecKit catalog caches; keep source specs/workflows indexable.
+.worktrees/
+.specify/extensions/.cache/
+.specify/presets/.cache/
+
+# GitNexus defaults ignore directories named fixtures. These are small checked-in
+# contract fixtures, so keep them available for code intelligence.
+!tests/fixtures/
+!tests/fixtures/**

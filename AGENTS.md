@@ -133,3 +133,9 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 
 ## Recent Changes
 - 002-product-line-switcher: Added TypeScript 5 on Next.js 16 App Router with React 19 + Zustand, better-sqlite3, Tailwind CSS 3, Vitest, Playwright
+
+## GitNexus
+
+- User-level Codex and Claude MCP configs register GitNexus with `/Users/fredrickgabelmann/.nvm/versions/node/v24.11.1/bin/gitnexus mcp`; do not add project-local MCP, skill, or hook installs.
+- To create or refresh this repo index, run `gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
+- GitNexus stores the generated local index under `.gitnexus/`, which is ignored.

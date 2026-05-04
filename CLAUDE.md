@@ -149,3 +149,10 @@ Added `FEATURE_AREA_LABEL_ROUTING`-gated multi-department routing for shared Git
 - TypeScript 5.7 strict (existing project tsconfig). + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch` for GitHub API. No new runtime dependencies. (006-area-label-github-sync)
 - TypeScript 5.7 strict (existing project tsconfig) + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch`. Pre-existing strict-mode deps from SPEC-004 (`ajv@8.18.0`, `jsonpath-plus@10.4.0`, `safe-regex@2.1.1`) are reused for output-schema validation in the disposition validator. **No new runtime dependencies.** (007-disposition-artifacts)
 - SQLite via `better-sqlite3`. Single-process synchronous transactions through `db.transaction(() => { ... })()`. No new migrations — relies on pre-existing M054, M057, M058. WAL mode preserves snapshot-isolated reads during the supersede transaction. (007-disposition-artifacts)
+- SQLite via `better-sqlite3`. Single-process, synchronous transactions through `db.transaction(() => { ... })`. (006-area-label-github-sync)
+
+## GitNexus
+
+- User-level Codex and Claude MCP configs register GitNexus with `/Users/fredrickgabelmann/.nvm/versions/node/v24.11.1/bin/gitnexus mcp`; do not add project-local MCP, skill, or hook installs.
+- To create or refresh this repo index, run `gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
+- GitNexus stores the generated local index under `.gitnexus/`, which is ignored.

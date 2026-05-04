@@ -67,3 +67,4 @@ docs/_diffs/
 *.bak-*
 hal-gateway-probe.js
 .pnpm-store/
+.gitnexus/
