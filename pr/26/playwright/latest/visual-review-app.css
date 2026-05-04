@@ -1425,6 +1425,162 @@ kbd {
   margin-top: 16px;
 }
 
+.annotation-shell {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.annotation-topbar {
+  z-index: 40;
+}
+
+.annotation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.annotation-workspace {
+  width: min(1780px, calc(100vw - 28px));
+  margin: 0 auto;
+  padding: 14px 0 24px;
+  display: grid;
+  grid-template-columns: minmax(640px, 1fr) 430px;
+  gap: 14px;
+  align-items: start;
+}
+
+.annotation-canvas,
+.annotation-review-panel {
+  min-width: 0;
+}
+
+.annotation-review-panel {
+  position: sticky;
+  top: 94px;
+  display: grid;
+  max-height: calc(100vh - 112px);
+  gap: 12px;
+  overflow: auto;
+}
+
+.annotation-card {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 1px 1px rgba(23, 32, 51, 0.04);
+}
+
+.annotation-card h2,
+.annotation-card h3 {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.annotation-card h2 {
+  font-size: 20px;
+}
+
+.annotation-card h3 {
+  font-size: 14px;
+}
+
+.annotation-steps {
+  margin-top: 12px;
+}
+
+.annotation-viewer-card {
+  min-height: calc(100vh - 112px);
+}
+
+.annotation-stage {
+  height: calc(100vh - 188px);
+}
+
+.annotation-stage-inner {
+  min-width: 100%;
+  place-items: start center;
+}
+
+.annotation-image-target {
+  max-width: none;
+}
+
+.annotation-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.annotation-note {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel-soft);
+}
+
+.annotation-note.posted {
+  border-color: #a7dcbf;
+  background: var(--approved-soft);
+}
+
+.annotation-note.failed {
+  border-color: #f7b7b0;
+  background: var(--rejected-soft);
+}
+
+.annotation-note strong,
+.annotation-note p {
+  overflow-wrap: anywhere;
+}
+
+.annotation-note strong {
+  color: var(--text);
+  font-size: 13px;
+}
+
+.annotation-note p,
+.annotation-note a,
+.annotation-muted {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.annotation-note > span {
+  color: var(--subtle);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.annotation-empty {
+  width: min(960px, calc(100vw - 28px));
+  margin: 0 auto;
+  padding: 28px 0;
+}
+
+.annotation-empty h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: 24px;
+}
+
+.annotation-empty p {
+  color: var(--muted);
+}
+
+.agentation-review-toolbar {
+  z-index: 100;
+}
+
 @media (max-width: 1320px) {
   .review-workspace {
     grid-template-columns: 310px minmax(0, 1fr);
@@ -1446,11 +1602,22 @@ kbd {
   .sync-submit-column {
     grid-column: 1 / -1;
   }
+
+  .annotation-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .annotation-review-panel {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
 }
 
 @media (max-width: 980px) {
   .topbar-inner,
   .review-workspace,
+  .annotation-workspace,
   .submission-footer {
     width: min(100vw - 20px, 100%);
   }
@@ -1458,6 +1625,7 @@ kbd {
   .topbar-inner,
   .review-workspace,
   .review-panel,
+  .annotation-workspace,
   .viewer-toolbar {
     grid-template-columns: 1fr;
   }

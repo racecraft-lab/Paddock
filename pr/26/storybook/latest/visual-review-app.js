@@ -8,6 +8,7 @@ import {
   validateVisualApproval,
   VISUAL_REVIEW_STATUS_CONTEXT,
 } from './visual-review-state.mjs'
+import { annotationPageHref } from './visual-review-annotations.mjs'
 
 /* global document, window, localStorage, history, sessionStorage, URLSearchParams */
 (() => {
@@ -482,7 +483,7 @@ import {
       links.push(`<a class="btn" href="${escapeAttribute(sourceFileHref(target))}" target="_blank" rel="noopener noreferrer" data-source-link>Open source file</a>`)
     }
     if (item.actual && item.variant !== 'deleted') {
-      links.push(`<a class="btn" href="${escapeAttribute(item.actual)}" target="_blank" rel="noopener noreferrer">Open current image</a>`)
+      links.push(`<a class="btn" href="${escapeAttribute(annotationPageHref({ asset: 'current', basePath: window.location.href, itemId: item.id }))}" target="_blank" rel="noopener noreferrer" data-annotation-link>Open current image</a>`)
     }
     if (item.expected && item.variant !== 'new') {
       links.push(`<a class="btn" href="${escapeAttribute(item.expected)}" target="_blank" rel="noopener noreferrer">Open baseline image</a>`)
