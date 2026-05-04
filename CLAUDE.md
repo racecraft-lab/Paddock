@@ -156,3 +156,9 @@ Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator 
 - SQLite via `better-sqlite3`. Single-process synchronous transactions through `db.transaction(() => { ... })()`. No new migrations — relies on pre-existing M054, M057, M058. WAL mode preserves snapshot-isolated reads during the supersede transaction. (007-disposition-artifacts)
 - TypeScript 5.7 strict (existing `tsconfig.json`) + new entries in `tsconfig.spec-strict.json` for every SPEC-008-owned module (Constitution Convention J). (008-resource-governance)
 - SQLite via `better-sqlite3`, single-process, append-only ledger semantics; monthly partition tables; archive partitions written to `<MISSION_CONTROL_DATA_DIR>/archives/`. (008-resource-governance)
+
+## GitNexus
+
+- User-level Codex and Claude MCP configs register GitNexus with `/Users/fredrickgabelmann/.nvm/versions/node/v24.11.1/bin/gitnexus mcp`; do not add project-local MCP, skill, or hook installs.
+- To create or refresh this repo index, run `gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
+- GitNexus stores the generated local index under `.gitnexus/`, which is ignored.

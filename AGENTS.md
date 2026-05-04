@@ -136,3 +136,9 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 ## Recent Changes
 - 008-resource-governance: Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator and observability pipeline. Migrations M65a..m + M66 (additive). Cost Tracker Governance tab with Policies/Budgets/Windows/Overrides/Diagnostics/System Health subviews. Constitution V matrix harness at `src/lib/feature-flag-matrix.ts`. axe-core baked into Playwright fixture. CI guards `scripts/spec-008/check-axe-coverage.mjs` + `scripts/spec-008/check-feature-flag-env-leak.mjs`. Flag-OFF preserves cost-tracker byte-compat (FR-305 / FR-238).
 - 002-product-line-switcher: Added TypeScript 5 on Next.js 16 App Router with React 19 + Zustand, better-sqlite3, Tailwind CSS 3, Vitest, Playwright
+
+## GitNexus
+
+- User-level Codex and Claude MCP configs register GitNexus with `/Users/fredrickgabelmann/.nvm/versions/node/v24.11.1/bin/gitnexus mcp`; do not add project-local MCP, skill, or hook installs.
+- To create or refresh this repo index, run `gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
+- GitNexus stores the generated local index under `.gitnexus/`, which is ignored.
