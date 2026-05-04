@@ -92,16 +92,119 @@ import {
   function buildItem(item, variant) {
     const fileName = item.encoded || item.raw
     const id = `${variant}-${fileName}`.replace(/[=?&]/g, '-')
+    const raw = item.raw || fileName
+    const review = normalizeReviewMetadata(item.review || item.visualMetadata || item.metadata)
+    const group = review?.domain || groupName(raw)
     return {
       id,
-      raw: item.raw || fileName,
+      raw,
       encoded: fileName,
       variant,
-      group: groupName(item.raw || fileName),
+      group,
       actual: joinUrl(payload.actualDir, fileName),
       expected: joinUrl(payload.expectedDir, fileName),
       diff: joinUrl(payload.diffDir, diffFileName(fileName)),
+      review,
+      searchText: itemSearchText({ raw, variant, group, review }),
     }
+  }
+
+  function normalizeReviewMetadata(value) {
+    if (!value || typeof value !== 'object') return null
+    const title = stringOr(value.title)
+    const storyTitle = stringOr(value.storyTitle)
+    const storyName = stringOr(value.storyName)
+    const testTitle = stringOr(value.testTitle)
+    const titlePath = stringArray(value.testTitlePath)
+    const subtitle = stringOr(value.subtitle) ||
+      (titlePath.length ? titlePath.join(' > ') : '') ||
+      [storyTitle, storyName].filter(Boolean).join(' / ') ||
+      stringOr(value.sourceFile)
+
+    return {
+      description: stringOr(value.description),
+      domain: stringOr(value.domain),
+      expected: stringOr(value.expected),
+      focus: stringArray(value.focus),
+      kind: stringOr(value.kind),
+      name: stringOr(value.name),
+      sourceFile: stringOr(value.sourceFile),
+      storyExportName: stringOr(value.storyExportName),
+      storyId: stringOr(value.storyId),
+      storyName,
+      storyTitle,
+      subtitle,
+      tags: stringArray(value.tags),
+      testAnnotations: annotationArray(value.testAnnotations),
+      testTitle,
+      testTitlePath: titlePath,
+      title,
+    }
+  }
+
+  function stringOr(value) {
+    return typeof value === 'string' && value.length > 0 ? value : ''
+  }
+
+  function stringArray(value) {
+    return Array.isArray(value)
+      ? value.filter((entry) => typeof entry === 'string' && entry.length > 0)
+      : []
+  }
+
+  function annotationArray(value) {
+    return Array.isArray(value)
+      ? value
+        .filter((entry) => entry && typeof entry === 'object')
+        .map((entry) => ({
+          type: stringOr(entry.type) || 'note',
+          description: stringOr(entry.description),
+        }))
+      : []
+  }
+
+  function itemSearchText(item) {
+    const review = item.review || {}
+    return [
+      item.raw,
+      item.group,
+      item.variant,
+      itemTitle(item),
+      itemSubtitle(item),
+      review.description,
+      review.expected,
+      review.kind,
+      review.sourceFile,
+      review.storyExportName,
+      review.storyId,
+      review.storyName,
+      review.storyTitle,
+      review.testTitle,
+      ...(review.focus || []),
+      ...(review.tags || []),
+      ...(review.testTitlePath || []),
+      ...(review.testAnnotations || []).flatMap((annotation) => [annotation.type, annotation.description]),
+    ].filter(Boolean).join(' ').toLowerCase()
+  }
+
+  function itemTitle(item) {
+    return item.review?.title || humanizeSnapshotName(item.raw)
+  }
+
+  function itemSubtitle(item) {
+    return item.review?.subtitle || item.review?.sourceFile || item.group
+  }
+
+  function humanizeSnapshotName(fileName) {
+    const leaf = String(fileName || '').split('/').pop() || fileName
+    return leaf
+      .replace(/\.[^.]+$/, '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+      .replace(/[-_.]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .replace(/\b\w/g, (char) => char.toUpperCase()) || fileName
   }
 
   function groupName(fileName) {
@@ -135,7 +238,7 @@ import {
         (state.filter === 'unreviewed' && reviewableVariants.has(item.variant) && !reviewState) ||
         state.filter === item.variant
       const groupMatch = state.group === 'all' || state.group === item.group
-      const queryMatch = !query || `${item.raw} ${item.group} ${item.variant}`.toLowerCase().includes(query)
+      const queryMatch = !query || item.searchText.includes(query)
       return statusMatch && groupMatch && queryMatch
     })
   }
@@ -224,6 +327,7 @@ import {
           <section class="content">
             ${renderReviewGuide(currentCounts)}
             ${renderSyncPanel()}
+            ${current ? renderReviewMetadata(current) : ''}
             ${current ? renderViewer(current) : '<article class="viewer-card"><div class="empty-list">No snapshots match the current filters.</div></article>'}
             ${current ? renderContext(current) : ''}
           </section>
@@ -310,8 +414,9 @@ import {
         <button class="snapshot-button${item.id === state.activeId ? ' active' : ''}" type="button" data-id="${escapeAttribute(item.id)}">
           <span class="status-dot ${escapeAttribute(item.variant)}"></span>
           <span>
-            <span class="snapshot-name">${escapeHtml(item.raw)}</span>
-            <span class="snapshot-sub">${escapeHtml(item.group)} · ${escapeHtml(statusLabel(item.variant))}</span>
+            <span class="snapshot-name">${escapeHtml(itemTitle(item))}</span>
+            <span class="snapshot-sub">${escapeHtml(statusLabel(item.variant))} · ${escapeHtml(itemSubtitle(item))}</span>
+            <span class="snapshot-raw">${escapeHtml(item.raw)}</span>
           </span>
           <span class="review-state ${escapeAttribute(reviewState)}">${escapeHtml(reviewState || 'open')}</span>
         </button>
@@ -392,6 +497,76 @@ import {
     `
   }
 
+  function renderReviewMetadata(item) {
+    const review = item.review
+    if (!review) return ''
+
+    const primaryDetails = [
+      metadataItem('Kind', review.kind || context.surfaceLabel),
+      review.sourceFile ? metadataItem('Source', review.sourceFile) : '',
+      review.testTitle ? metadataItem('Test', review.testTitle) : '',
+      review.storyName ? metadataItem('Story', review.storyName) : '',
+      review.storyId ? metadataItem('Story ID', review.storyId) : '',
+      metadataItem('Raw file', item.raw),
+    ].filter(Boolean).join('')
+
+    return `
+      <article class="review-metadata-card" aria-labelledby="review-metadata-title">
+        <div class="review-metadata-header">
+          <div>
+            <p class="metadata-kicker">${escapeHtml(review.kind || context.surfaceLabel)} review context</p>
+            <h2 id="review-metadata-title">${escapeHtml(itemTitle(item))}</h2>
+            ${review.description ? `<p>${escapeHtml(review.description)}</p>` : ''}
+          </div>
+          ${review.tags.length ? `<div class="metadata-chip-row">${review.tags.map((tag) => `<span class="metadata-chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+        </div>
+        <div class="metadata-grid">${primaryDetails}</div>
+        ${review.expected ? `
+          <section class="metadata-section">
+            <h3>Expected state</h3>
+            <p>${escapeHtml(review.expected)}</p>
+          </section>
+        ` : ''}
+        ${review.focus.length ? `
+          <section class="metadata-section">
+            <h3>Reviewer focus</h3>
+            <ul class="metadata-focus-list">
+              ${review.focus.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
+            </ul>
+          </section>
+        ` : ''}
+        ${review.testTitlePath.length ? `
+          <section class="metadata-section">
+            <h3>Playwright path</h3>
+            <p>${escapeHtml(review.testTitlePath.join(' > '))}</p>
+          </section>
+        ` : ''}
+        ${review.testAnnotations.length ? `
+          <section class="metadata-section">
+            <h3>Annotations</h3>
+            <div class="annotation-list">
+              ${review.testAnnotations.map((annotation) => `
+                <div class="annotation-row">
+                  <strong>${escapeHtml(annotation.type)}</strong>
+                  <span>${escapeHtml(annotation.description || 'No description')}</span>
+                </div>
+              `).join('')}
+            </div>
+          </section>
+        ` : ''}
+      </article>
+    `
+  }
+
+  function metadataItem(label, value) {
+    return `
+      <div class="metadata-item">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value)}</strong>
+      </div>
+    `
+  }
+
   function renderViewer(item) {
     const canCompare = item.variant === 'changed'
     const allowedModes = canCompare ? ['side-by-side', 'diff', 'overlay', 'blink'] : ['single']
@@ -400,8 +575,8 @@ import {
       <article class="viewer-card">
         <div class="viewer-toolbar">
           <div class="snapshot-heading">
-            <h2>${escapeHtml(item.raw)}</h2>
-            <p>${escapeHtml(statusLabel(item.variant))} · ${escapeHtml(item.group)}</p>
+            <h2>${escapeHtml(itemTitle(item))}</h2>
+            <p>${escapeHtml(statusLabel(item.variant))} · ${escapeHtml(itemSubtitle(item))}</p>
           </div>
           <div class="toolbar-controls">
             ${canCompare ? `
@@ -481,8 +656,10 @@ import {
       <article class="context-card">
         <div class="context-grid">
           ${contextItem('Snapshot', item.raw)}
+          ${item.review?.title ? contextItem('Display name', item.review.title) : ''}
           ${contextItem('Group', item.group)}
           ${contextItem('Status', `${statusLabel(item.variant)} / ${reviewState}`)}
+          ${item.review?.sourceFile ? contextItem('Source', item.review.sourceFile) : ''}
           ${contextItem('Permalink', `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(item.id)}`)}
           ${contextItem('Baseline', context.baseRef)}
           ${contextItem('Current', context.headRef)}
@@ -679,7 +856,7 @@ import {
     ]
     if (rejected.length) {
       lines.push('', 'Rejected snapshots:')
-      rejected.slice(0, 20).forEach((item) => lines.push(`- ${item.raw}`))
+      rejected.slice(0, 20).forEach((item) => lines.push(`- ${itemTitle(item)} (${item.raw})`))
     }
     await navigator.clipboard.writeText(lines.join('\n'))
   }

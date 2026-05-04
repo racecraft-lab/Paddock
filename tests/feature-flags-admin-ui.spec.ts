@@ -27,6 +27,13 @@ async function attachReviewScreenshot(
   await captureVisualSnapshot(page, testInfo, {
     domain: 'feature-flag-admin',
     name,
+    description: 'Review the Platform Feature Flags admin state for the selected seeded workspace.',
+    expected: 'Feature flag cards, stored override state, and admin-only warnings should match the toggle journey state without clipped copy.',
+    reviewFocus: [
+      'Target workspace selection',
+      'Evaluated and stored feature flag states',
+      'Admin-only warning copy and controls',
+    ],
     tags: VISUAL_SNAPSHOT_TAGS,
     fullPage: options.fullPage,
   })

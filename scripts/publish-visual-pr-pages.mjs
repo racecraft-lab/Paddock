@@ -123,12 +123,12 @@ function extractReportPayload(reportHtml) {
   }
 }
 
-function localizeReportAssetPaths(reportHtml, extracted) {
-  const payload = localizedReportPayload(extracted.payload)
+function localizeReportAssetPaths(reportHtml, extracted, payload) {
+  const localizedPayload = localizedReportPayload(payload)
 
   return reportHtml.replace(
     extracted.token,
-    `${extracted.prefix}${JSON.stringify(payload)}${extracted.suffix}`
+    `${extracted.prefix}${JSON.stringify(localizedPayload)}${extracted.suffix}`
   )
 }
 
@@ -138,6 +138,174 @@ function localizedReportPayload(payload) {
     actualDir: './__reg__/1_actual',
     expectedDir: './__reg__/2_expected',
     diffDir: './__reg__/0_diff',
+  }
+}
+
+function manifestFileName(fileName) {
+  const parsed = path.parse(fileName)
+  return parsed.dir ? `${parsed.dir}/${parsed.name}.visual.json` : `${parsed.name}.visual.json`
+}
+
+function uniqueStrings(values) {
+  return Array.from(new Set(values.filter(Boolean)))
+}
+
+function manifestPathCandidates(baseDir, fileName) {
+  const candidates = [fileName]
+  try {
+    candidates.push(decodeURIComponent(fileName))
+  } catch {
+    // Keep the encoded candidate only.
+  }
+  return uniqueStrings(candidates).flatMap((candidate) => {
+    try {
+      return [resolveInside(baseDir, manifestFileName(candidate))]
+    } catch {
+      return []
+    }
+  })
+}
+
+function fallbackDisplayName(input) {
+  return String(input || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/[-_.]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function stringOrNull(value) {
+  return typeof value === 'string' && value.length > 0 ? value : null
+}
+
+function stringArray(value) {
+  return Array.isArray(value)
+    ? value.filter((entry) => typeof entry === 'string' && entry.length > 0)
+    : []
+}
+
+function annotationArray(value) {
+  return Array.isArray(value)
+    ? value
+      .filter((entry) => entry && typeof entry === 'object')
+      .map((entry) => ({
+        type: stringOrNull(entry.type) || 'note',
+        description: stringOrNull(entry.description) || '',
+      }))
+    : []
+}
+
+function storyDisplayName(story, fallback) {
+  const name = typeof story?.name === 'string' && story.name
+    ? story.name
+    : typeof story?.id === 'string'
+      ? story.id.split('--').pop()
+      : fallback
+  return fallbackDisplayName(name)
+}
+
+function reviewMetadataFromManifest(manifest) {
+  if (!manifest || typeof manifest !== 'object') return null
+  const sourceFile = manifest.test?.sourceFile || manifest.story?.sourceFile || manifest.sourceFile || null
+  const line = manifest.test?.line ? `:${manifest.test.line}` : ''
+  const review = manifest.review && typeof manifest.review === 'object' ? manifest.review : {}
+  const reviewTags = stringArray(review.tags)
+  const manifestTags = stringArray(manifest.tags)
+
+  if (manifest.kind === 'playwright') {
+    const titlePath = Array.isArray(manifest.test?.titlePath)
+      ? manifest.test.titlePath.filter(Boolean)
+      : []
+    return {
+      description: stringOrNull(review.description) || '',
+      domain: manifest.domain || null,
+      expected: stringOrNull(review.expected) || '',
+      focus: stringArray(review.focus),
+      kind: manifest.kind,
+      name: manifest.name || null,
+      sourceFile: sourceFile ? `${sourceFile}${line}` : null,
+      subtitle: titlePath.length > 1 ? titlePath.join(' > ') : sourceFile,
+      tags: reviewTags.length ? reviewTags : manifestTags,
+      testAnnotations: annotationArray(manifest.test?.annotations),
+      testTitle: stringOrNull(manifest.test?.title),
+      testTitlePath: titlePath,
+      title: stringOrNull(review.title) || stringOrNull(manifest.test?.title) || fallbackDisplayName(manifest.name),
+    }
+  }
+
+  if (manifest.kind === 'storybook') {
+    const title = manifest.story?.title || manifest.name || null
+    const storyName = storyDisplayName(manifest.story, manifest.name)
+    const storyTags = stringArray(manifest.story?.tags)
+    return {
+      description: stringOrNull(review.description) || '',
+      domain: manifest.domain || null,
+      expected: stringOrNull(review.expected) || '',
+      focus: stringArray(review.focus),
+      kind: manifest.kind,
+      name: manifest.name || null,
+      sourceFile,
+      subtitle: sourceFile,
+      tags: reviewTags.length ? reviewTags : (storyTags.length ? storyTags : manifestTags),
+      storyExportName: stringOrNull(manifest.story?.exportName),
+      storyId: stringOrNull(manifest.story?.id),
+      storyName,
+      storyTitle: stringOrNull(title),
+      title: stringOrNull(review.title) || (title && storyName ? `${title} / ${storyName}` : (title || storyName || null)),
+    }
+  }
+
+  return {
+    description: stringOrNull(review.description) || '',
+    domain: manifest.domain || null,
+    expected: stringOrNull(review.expected) || '',
+    focus: stringArray(review.focus),
+    kind: manifest.kind || null,
+    name: manifest.name || null,
+    sourceFile,
+    subtitle: sourceFile,
+    tags: reviewTags.length ? reviewTags : manifestTags,
+    title: stringOrNull(review.title) || fallbackDisplayName(manifest.name),
+  }
+}
+
+async function readVisualMetadata(baseDirs, fileName) {
+  if (!fileName) return null
+  for (const baseDir of baseDirs.filter(Boolean)) {
+    for (const candidate of manifestPathCandidates(baseDir, fileName)) {
+      if (!existsSync(candidate)) continue
+      try {
+        return reviewMetadataFromManifest(JSON.parse(await readFile(candidate, 'utf8')))
+      } catch {
+        return null
+      }
+    }
+  }
+  return null
+}
+
+async function attachVisualMetadata(items, baseDirs) {
+  const enriched = []
+  for (const item of items) {
+    const fileName = itemFileName(item)
+    const review = await readVisualMetadata(baseDirs, fileName)
+    enriched.push(review ? { ...item, review } : item)
+  }
+  return enriched
+}
+
+async function enrichReportPayload(payload, reportDir) {
+  const actualDir = path.resolve(reportDir, payload.actualDir)
+  const expectedDir = path.resolve(reportDir, payload.expectedDir)
+
+  return {
+    ...payload,
+    deletedItems: await attachVisualMetadata(reportItems(payload, 'deletedItems'), [expectedDir, actualDir]),
+    failedItems: await attachVisualMetadata(reportItems(payload, 'failedItems'), [actualDir, expectedDir]),
+    newItems: await attachVisualMetadata(reportItems(payload, 'newItems'), [actualDir]),
+    passedItems: await attachVisualMetadata(reportItems(payload, 'passedItems'), [actualDir]),
   }
 }
 
@@ -233,8 +401,9 @@ async function copyReportAssetDir({ label, sourceDir, targetDir, requiredFiles }
 
 async function writeReportBundle({ reportFile, reportHtml, extracted, targetDir, context }) {
   const payload = extracted.payload
-  const requiredFiles = requiredAssetFiles(payload)
   const reportDir = path.dirname(reportFile)
+  const enrichedPayload = await enrichReportPayload(payload, reportDir)
+  const requiredFiles = requiredAssetFiles(payload)
   const assetRoot = path.join(targetDir, '__reg__')
 
   await mkdir(targetDir, { recursive: true })
@@ -257,7 +426,7 @@ async function writeReportBundle({ reportFile, reportHtml, extracted, targetDir,
     requiredFiles: requiredFiles.diff,
   })
 
-  const localizedHtml = localizeReportAssetPaths(reportHtml, extracted)
+  const localizedHtml = localizeReportAssetPaths(reportHtml, extracted, enrichedPayload)
   await writeFile(path.join(targetDir, 'reg-viz.html'), localizedHtml)
   await writeFile(
     path.join(targetDir, 'visual-review-app.css'),
@@ -275,7 +444,7 @@ async function writeReportBundle({ reportFile, reportHtml, extracted, targetDir,
     path.join(targetDir, 'index.html'),
     generateVisualReviewAppIndex({
       context,
-      payload: localizedReportPayload(payload),
+      payload: localizedReportPayload(enrichedPayload),
     })
   )
 }

@@ -24,7 +24,24 @@ const payload = {
   diffDir: './__reg__/0_diff',
   diffImageExtention: 'webp',
   expectedDir: './__reg__/2_expected',
-  failedItems: [{ encoded: 'governance/dashboard.png', raw: 'governance/dashboard.png' }],
+  failedItems: [{
+    encoded: 'governance/dashboard.png',
+    raw: 'governance/dashboard.png',
+    review: {
+      description: 'Budget guardrail coverage for the governance policy summary.',
+      domain: 'spec-008',
+      expected: 'The policy summary should show active budgets without clipping the utilization copy.',
+      focus: ['Budget cards stay readable', 'Policy status badges remain visible'],
+      kind: 'playwright',
+      sourceFile: 'tests/e2e/governance-tab-landing.e2e.ts:42',
+      subtitle: 'tests/e2e/governance-tab-landing.e2e.ts > governance tab landing > renders policy summary',
+      tags: ['spec-008', 'visual', 'budget-guardrail'],
+      testAnnotations: [{ type: 'review-focus', description: 'Check budget guardrail labels.' }],
+      testTitle: 'renders policy summary',
+      testTitlePath: ['governance tab landing', 'renders policy summary'],
+      title: 'renders policy summary',
+    },
+  }],
   newItems: [{ encoded: 'governance/new-modal.png', raw: 'governance/new-modal.png' }],
   passedItems: [],
 }
@@ -61,6 +78,16 @@ describe('visual review app guidance', () => {
   it('renders a guided reviewer checklist with progress checkpoints', async () => {
     await loadVisualReviewApp()
 
+    expect(document.querySelector('.snapshot-name')?.textContent).toContain('renders policy summary')
+    expect(document.querySelector('.snapshot-sub')?.textContent).toContain('governance tab landing')
+    expect(document.querySelector('.snapshot-raw')?.textContent).toContain('governance/dashboard.png')
+    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('Budget guardrail coverage')
+    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('The policy summary should show active budgets')
+    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('Budget cards stay readable')
+    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('budget-guardrail')
+    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('review-focus')
+    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('Check budget guardrail labels')
+    expect(document.querySelector('.context-card')?.textContent).toContain('tests/e2e/governance-tab-landing.e2e.ts:42')
     expect(document.querySelector('.review-guide')?.textContent).toContain('Review Playwright UI E2E in five steps')
     expect(document.querySelector('.review-guide')?.textContent).toContain('Start with shared state')
     expect(document.querySelector('.review-guide')?.textContent).toContain('Inspect every open snapshot')
@@ -68,6 +95,20 @@ describe('visual review app guidance', () => {
     expect(document.querySelector('.review-guide')?.textContent).toContain('Leave a durable trail')
     expect(document.querySelector('.review-guide')?.textContent).toContain('Finish both surfaces')
     expect(document.querySelector('[data-guide-checkpoint="open"] strong')?.textContent).toBe('3')
+  })
+
+  it('searches reviewer metadata, tags, and source context', async () => {
+    await loadVisualReviewApp()
+
+    const search = document.querySelector<HTMLInputElement>('[data-action="search"]')
+    expect(search).not.toBeNull()
+
+    search!.value = 'budget guardrail'
+    search!.dispatchEvent(new Event('input', { bubbles: true }))
+
+    expect(document.querySelector('.snapshot-list')?.textContent).toContain('renders policy summary')
+    expect(document.querySelector('.snapshot-list')?.textContent).not.toContain('new-modal')
+    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('budget-guardrail')
   })
 
   it('updates guide checkpoints as reviewers make decisions', async () => {

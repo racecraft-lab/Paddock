@@ -22,6 +22,13 @@ async function attachReviewScreenshot(
   await captureVisualSnapshot(page, testInfo, {
     domain: 'spec-007',
     name,
+    description: 'Review the SPEC-007 disposition artifact state for the active product-line fixture.',
+    expected: 'Disposition rollups, artifact previews, and security/redaction states should match the seeded SPEC-007 workflow.',
+    reviewFocus: [
+      'Disposition counts and filters',
+      'Artifact redaction and quarantine states',
+      'Preview panel copy and action affordances',
+    ],
     tags: VISUAL_SNAPSHOT_TAGS,
     fullPage: options.fullPage,
   })

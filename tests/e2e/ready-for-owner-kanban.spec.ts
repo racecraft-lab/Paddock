@@ -283,6 +283,13 @@ async function attachReadyForOwnerScreenshot(page: Page, testInfo: TestInfo, nam
   await captureVisualSnapshot(page, testInfo, {
     domain: 'ready-for-owner',
     name,
+    description: 'Review the Ready-for-Owner workflow state from the seeded SPEC-005 owner handoff fixture.',
+    expected: 'The Ready for Owner lane, focused task card, and owner notification states should preserve the owner-action contract.',
+    reviewFocus: [
+      'Ready for Owner lane order and counts',
+      'Owner-action task card copy and controls',
+      'Notification and merge-gate status visibility',
+    ],
     tags: READY_FOR_OWNER_VISUAL_TAGS,
   })
 }

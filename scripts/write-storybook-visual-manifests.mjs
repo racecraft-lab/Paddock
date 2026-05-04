@@ -50,6 +50,54 @@ function storybookId(input) {
     .replace(/^-+|-+$/g, '')
 }
 
+function storybookExportId(input) {
+  return storybookId(
+    input
+      .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+      .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+  )
+}
+
+function humanize(input) {
+  return String(input || '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/[-_.]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function titleDisplayName(title) {
+  return String(title || '')
+    .split('/')
+    .map((segment) => humanize(segment))
+    .filter(Boolean)
+    .join(' / ')
+}
+
+function parseStoryExports(source) {
+  const exportMatches = Array.from(source.matchAll(/export\s+const\s+([A-Za-z_$][\w$]*)\s*:\s*Story\b/g))
+  const stories = new Map()
+
+  for (let index = 0; index < exportMatches.length; index += 1) {
+    const match = exportMatches[index]
+    const exportName = match[1]
+    const nextMatch = exportMatches[index + 1]
+    const storySource = source.slice(match.index, nextMatch?.index ?? source.length)
+    const explicitName = storySource.match(/\bname:\s*['"]([^'"]+)['"]/)?.[1]
+    const id = storybookExportId(exportName)
+
+    stories.set(id, {
+      exportName,
+      id,
+      name: explicitName || humanize(exportName),
+    })
+  }
+
+  return stories
+}
+
 function parseMeta(source) {
   const metaMatch = source.match(/const\s+meta\s*[:\w\s<>,]*=\s*\{([\s\S]*?)\}\s+satisfies\s+Meta/)
     || source.match(/const\s+meta\s*[:\w\s<>,]*=\s*\{([\s\S]*?)\}\s*(?:export\s+default|$)/)
@@ -105,9 +153,11 @@ async function collectStoryMetadata(storiesRoot) {
 
     metadata.set(storybookId(title), {
       title,
+      displayTitle: titleDisplayName(title),
       tags,
       domain,
       sourceFile: path.relative(process.cwd(), filePath),
+      stories: parseStoryExports(source),
     })
   }
 
@@ -134,7 +184,11 @@ async function main() {
   for (const pngPath of pngs) {
     const storyId = path.basename(pngPath, '.png')
     const [titleId = storyId] = storyId.split('--')
+    const storySlug = storyId.slice(titleId.length + 2) || storyId
     const metadata = storyMetadata.get(titleId)
+    const story = metadata?.stories.get(storySlug)
+    const componentName = metadata?.displayTitle || titleDisplayName(metadata?.title || titleId)
+    const storyName = story?.name || humanize(storySlug)
     const domain = metadata?.domain || 'unknown'
     const tags = metadata?.tags || []
     const manifest = {
@@ -152,10 +206,22 @@ async function main() {
         fullPage: true,
         viewport: { width: 1366, height: 768 },
       },
+      review: {
+        title: `${componentName}: ${storyName}`,
+        description: `Review the ${storyName} Storybook state for ${componentName}.`,
+        expected: '',
+        focus: [
+          'Story args and mocked state',
+          'Responsive layout and spacing',
+          'Visible copy, controls, and state badges',
+        ],
+        tags,
+      },
       story: {
         id: storyId,
         title: metadata?.title || null,
-        name: storyId.slice(titleId.length + 2) || storyId,
+        name: storyName,
+        exportName: story?.exportName || null,
         titleId,
         sourceFile: metadata?.sourceFile || null,
         tags,

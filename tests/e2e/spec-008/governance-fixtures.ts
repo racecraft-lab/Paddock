@@ -132,6 +132,13 @@ export async function snapshotState(
   await captureVisualSnapshot(page, testInfo, {
     domain: VISUAL_TAG_PREFIX,
     name: stateName,
+    description: 'Review the SPEC-008 resource-governance operator state captured by this Playwright scenario.',
+    expected: 'Governance policies, budgets, overrides, diagnostics, and safety states should match the named fixture state with no unexpected visual drift.',
+    reviewFocus: [
+      'Policy or budget state shown by the scenario name',
+      'Operator action controls and disabled states',
+      'Diagnostic, breaker, and recovery copy readability',
+    ],
     tags: [VISUAL_TAG_PREFIX],
   })
 }

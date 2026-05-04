@@ -21,6 +21,13 @@ async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: stri
   await captureVisualSnapshot(page, testInfo, {
     domain: 'product-line-switcher',
     name,
+    description: 'Review the Product Line scope switching state captured during the seeded task-board journey.',
+    expected: 'The visible workspace scope, switcher menu, and task cards should reflect the selected Facility or Product Line without cross-scope leakage.',
+    reviewFocus: [
+      'Scope switcher label and selected option',
+      'Facility versus Product Line task visibility',
+      'Responsive header and menu fit',
+    ],
     tags: VISUAL_SNAPSHOT_TAGS,
   })
 }

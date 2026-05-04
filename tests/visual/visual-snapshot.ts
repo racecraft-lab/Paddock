@@ -12,7 +12,11 @@ interface VisualSnapshotOptions {
   domain: string
   name: string
   tags: readonly string[]
+  description?: string
+  expected?: string
   fullPage?: boolean
+  reviewFocus?: readonly string[]
+  title?: string
 }
 
 function visualOutputRoot() {
@@ -29,6 +33,22 @@ function normalizeSegment(input: string) {
 function relativeToProject(filePath: string) {
   return path.relative(process.cwd(), filePath)
 }
+
+function humanize(input: string) {
+  return input
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/[-_.]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+const DEFAULT_REVIEW_FOCUS = [
+  'Primary UI state matches the named scenario',
+  'Visible copy, controls, and data are not clipped',
+  'Feature flag and seeded data state are intentional',
+] as const
 
 async function sha256(filePath: string) {
   const bytes = await readFile(filePath)
@@ -55,6 +75,7 @@ export async function captureVisualSnapshot(
   await page.screenshot({ path: pngPath, fullPage })
 
   const viewport = page.viewportSize()
+  const reviewTitle = options.title || `${humanize(domain)} / ${humanize(name)}`
   const manifest = {
     version: 1,
     tool: 'mission-control-visual',
@@ -70,10 +91,21 @@ export async function captureVisualSnapshot(
       fullPage,
       viewport,
     },
+    review: {
+      title: reviewTitle,
+      description: options.description || `Review the ${reviewTitle} visual state captured by this Playwright scenario.`,
+      expected: options.expected || 'The current screenshot should match the named scenario and only contain intentional UI changes.',
+      focus: [...(options.reviewFocus?.length ? options.reviewFocus : DEFAULT_REVIEW_FOCUS)],
+      tags: [...options.tags],
+    },
     test: {
       title: testInfo.title,
       titlePath: testInfo.titlePath,
       tags: [...testInfo.tags],
+      annotations: testInfo.annotations.map((annotation) => ({
+        type: annotation.type,
+        description: annotation.description || '',
+      })),
       sourceFile: relativeToProject(testInfo.file),
       line: testInfo.line,
       projectName: testInfo.project.name,

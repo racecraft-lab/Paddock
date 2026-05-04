@@ -151,6 +151,9 @@ function validateCommonManifest(manifest, filePath, expectedKind) {
   if (typeof manifest.sourceFile !== 'string' || manifest.sourceFile.length === 0) failures.push('missing sourceFile')
   if (typeof manifest.name !== 'string' || manifest.name.length === 0) failures.push('missing name')
   if (typeof manifest.screenshot?.sha256 !== 'string') failures.push('missing screenshot.sha256')
+  if (typeof manifest.review?.title !== 'string' || manifest.review.title.length === 0) failures.push('missing review.title')
+  if (!Array.isArray(manifest.review?.tags)) failures.push('missing review.tags')
+  if (!Array.isArray(manifest.review?.focus)) failures.push('missing review.focus')
   return failures.map((failure) => `${path.relative(process.cwd(), filePath)}: ${failure}`)
 }
 
