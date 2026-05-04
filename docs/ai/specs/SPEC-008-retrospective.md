@@ -201,7 +201,7 @@ Phase 12B (T284-T308) added 14 Playwright e2e specs that all need
   `axeAssert(` literal text — anything fancier (regex, AST) breaks on minor
   reformatting.
 
-Plus the Storybook + Argos pipeline needed axe enabled via env
+Plus the Storybook + visual regression pipeline needed axe enabled via env
 (`SPEC_008_AXE_ENABLED=1`). This consumed most of one session.
 
 **Lesson**: a11y wiring is infrastructure, not feature work. Land the shim
@@ -388,8 +388,8 @@ What's deferred to the production roll-out PR.
 | --- | --- | --- | --- |
 | T001-T004 | Phase 0 verification spike evidence (claude-code OTel, claude-mcp OTel, codex stdout/rollout parity, copilot events CI) | Requires CLI subprocess + real collector | Operator desktop or deployed instance |
 | T363 | `pnpm test:e2e` (14 governance Playwright specs) | Requires running Mission Control + `/api/admin/spec-008/seed-fixture` | Operator desktop or staging |
-| T364 | `pnpm test:visual:storybook` with `SPEC_008_AXE_ENABLED=1` + Argos | Requires Argos credentials | CI or operator desktop |
-| T365 / T366 | Argos metadata gates | Same | Same |
+| T364 | `pnpm test:visual:storybook` with `SPEC_008_AXE_ENABLED=1` + visual regression | Requires visual regression credentials | CI or operator desktop |
+| T365 / T366 | Visual manifest gates | Same | Same |
 | T367 | `pnpm test:soak` (30 min @ 100 admissions/sec) | Long-running benchmark | Operator desktop |
 | T368 | `pnpm test:chaos` (every runbook `## Verification` step) | Tears down infra it doesn't own | Operator desktop / staging |
 | T369 | `pnpm test:all` (superset) | Combines all of the above | Operator desktop / staging |

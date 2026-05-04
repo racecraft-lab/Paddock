@@ -259,8 +259,8 @@ Each evidence file: `{decision_q, hypothesis, sample_size_min, observed, verdict
 | Benchmark | Vitest bench | p50<5ms, p95<15ms, p99<25ms; +10% regression blocks | FR-222, AC-Bench-1 |
 | Soak | Vitest long-run | 30 min @ 100/sec; p95<15ms; mem<+50MB | FR-224, AC-Soak-1 |
 | Chaos | `pnpm test:chaos` | 10 runbook scenarios + 7 chaos categories | FR-090m, FR-223 |
-| e2e (real Playwright) | Playwright | Docker-backed; Argos metadata gate | FR-296..305, Principle XIV |
-| Visual regression | Storybook + Argos | Default/loading/error/empty/dense/disabled-by-flag | FR-306..315, Principle XIV |
+| e2e (real Playwright) | Playwright | Docker-backed; visual manifest gate | FR-296..305, Principle XIV |
+| Visual regression | Storybook + visual regression | Default/loading/error/empty/dense/disabled-by-flag | FR-306..315, Principle XIV |
 | Spike-evidence | Vitest integration | All `[VERIFY]`-tagged FRs have evidence files | FR-090a |
 | Supply-chain | CI script | License allow-list + lockfile audit | FR-227, FR-239, Principle VI |
 | Byte-compat regression | Playwright | Flag-OFF snapshot diff = 0 | FR-238, FR-305, Principle I |

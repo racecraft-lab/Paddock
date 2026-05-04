@@ -34,11 +34,11 @@ Technical approach (per design-concept Q1-Q73 + workflow Architecture Notes):
 - `@opentelemetry/otlp-transformer` (NEW pinned dep) — OTLP/HTTP protobuf decode in MC OTLP receiver.
 - `zod` (NEW pinned dep) — REST request validation per Q41 / FR-039 / FR-206.
 - Native Node `fs.watch` + inotify (no new dep) — file-based ingestion adapters.
-- `@argos-ci/playwright` (existing) — Playwright Argos snapshots; Storybook Argos for component snapshots.
+- `@visualproviderprovider-neutral Playwright capture` (existing) — Playwright visual snapshots; Storybook visual for component snapshots.
 - `otelcol-contrib` v0.108.0 — operator-managed systemd unit on HAL; **NOT** in repo (FR-090b).
 
 **Storage**: SQLite via `better-sqlite3`, single-process, append-only ledger semantics; monthly partition tables; archive partitions written to `<MISSION_CONTROL_DATA_DIR>/archives/`.
-**Testing**: Vitest (unit + integration + benchmark + chaos suites), Playwright e2e against running app (Constitution Principle XIV NON-NEGOTIABLE), Storybook Argos visual regression.
+**Testing**: Vitest (unit + integration + benchmark + chaos suites), Playwright e2e against running app (Constitution Principle XIV NON-NEGOTIABLE), Storybook visual regression.
 **Target Platform**: Linux (HAL operator node — Ryzen 5900XT + 64GB RAM reference profile); single-process Node.js ≥22; multi-region/multi-node out of scope per spec.
 **Project Type**: Web service + UI (Next.js full-stack monolith, in-place extension of `mission-control`).
 **Performance Goals**: `p50<5ms, p95<15ms, p99<25ms` admission latency under 1k policies + 300k ledger rows + concurrent gates active (FR-004, AC-Bench-1). Soak: 30 min @ 100 admissions/sec p95 < 15 ms, memory growth < 50 MB (AC-Soak-1).
@@ -243,7 +243,7 @@ If a future task adds a TS/TSX file not on this list, the strict-scope check (`s
 - **Real Playwright e2e** against running app (FR-296..305) — every operator journey covered: WIP policy authoring, budget enforcement, blackout windows, override grants (happy path + 409/412/422/423), Cost Tracker tab landing, diagnostic feed pagination/filter, telemetry health drilldown, Aegis starvation+reserve+escalation, system-health one-click recovery, byte-compat flag-OFF check, bulk-promote single-workspace + cross-workspace reject, dispatch feed cursor + SSE live-append. Spec files: `tests/e2e/governance-{wip-policy,budget,windows,override-grant,tab-landing,diagnostic-feed,telemetry-health,aegis-starvation,system-health-recovery,bulk-promote,dispatch-feed,flag-off-byte-compat}.e2e.ts`.
 - **Docker-backed execution** via `scripts/e2e-docker.sh` (existing) with disposable data dir + deterministic seed data per `seed-e2e-workspace-switcher.cjs` pattern.
 - **Screenshot artifacts** for human-in-the-loop review covering before/during/after/responsive states (FR-296..305).
-- **Argos metadata gates**: `pnpm test:e2e:argos-metadata --mode playwright` AND `pnpm test:visual:argos-metadata --mode storybook` MUST pass (FR-229, AC-UI-Argos-Playwright-1, AC-UI-Argos-Storybook-1). Non-visual e2e runs MUST NOT upload empty Argos builds.
+- **Visual manifest gates**: `pnpm test:e2e:visual-manifest` AND `pnpm test:visual:manifest` MUST pass (FR-229, AC-UI-Visual-Playwright-1, AC-UI-Visual-Storybook-1). Non-visual e2e runs MUST NOT upload empty visual builds.
 - **Storybook coverage** — every newly authored UI component (FR-306..315) ships `*.stories.tsx` covering default / loading / error / empty / dense data / disabled-by-flag states.
 - **Defect-remediation gate**: failing e2e output + screenshots reviewed before PR update; known UI journey bugs fixed before PR is opened/marked ready.
 - **System Health gesture matrix** (FR-090i) — explicitly enumerated:
@@ -262,7 +262,7 @@ If a future task adds a TS/TSX file not on this list, the strict-scope check (`s
 
 ### Principle XV — Spec Artifact Provenance and Archive Sweep (NON-NEGOTIABLE)
 
-- Archive Sweep already ran for previously merged specs (SPEC-001..006, SPEC-002A, SPEC-003) before Phase 0; current target SPEC-008 is excluded from same-run archival per `.specify/extensions.yml` `before_plan` hook policy. Generated screenshots are Argos/CI artifacts only — `.gitignore` excludes `playwright-report/**` and `test-results/**`. `scripts/verify-spec-evidence-screenshots.mjs` runs in CI to flag any committed binary screenshot without a manifest-backed exception. **PASS**.
+- Archive Sweep already ran for previously merged specs (SPEC-001..006, SPEC-002A, SPEC-003) before Phase 0; current target SPEC-008 is excluded from same-run archival per `.specify/extensions.yml` `before_plan` hook policy. Generated screenshots are visual regression/CI artifacts only — `.gitignore` excludes `playwright-report/**` and `test-results/**`. `scripts/verify-spec-evidence-screenshots.mjs` runs in CI to flag any committed binary screenshot without a manifest-backed exception. **PASS**.
 
 ### Convention J — Strict new-module scope
 
@@ -440,7 +440,7 @@ Per FR-221..240 + Constitution Principle XIV:
 9. **Retention tests** (FR-236) — monthly partition archival + recovery at 50M-row scale.
 10. **Playwright e2e** against running app (FR-296..305) — Constitution Principle XIV; Docker-backed via `scripts/e2e-docker.sh`.
 11. **Storybook visual regression** (FR-306..315) — every component covers default/loading/error/empty/dense/disabled-by-flag.
-12. **Argos metadata gate** (FR-228, FR-229) — `pnpm test:e2e:argos-metadata --mode playwright` + Storybook variant.
+12. **Visual manifest gate** (FR-228, FR-229) — `pnpm test:e2e:visual-manifest` + Storybook variant.
 13. **Spike-evidence CI gate** (FR-090a) — `tests/integration/spec-spike-gates.test.ts` fails closed if any `[VERIFY]`-tagged FR lacks an evidence file with verdict matching FR-prescribed value.
 14. **Byte-compat regression** (FR-238, FR-305) — flag OFF baseline snapshot diff = 0.
 15. **Supply-chain CI** (FR-227, FR-239) — license allow-list + lockfile audit on every PR.

@@ -1,21 +1,17 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
-import { argosScreenshot } from '@argos-ci/playwright'
 import {
   dismissOnboardingForE2E,
   loginAsE2EAdmin,
 } from '../helpers'
+import { captureVisualSnapshot } from '../visual/visual-snapshot'
 import {
   SPEC_007_FIXED_NOW,
   seedSpec007E2E,
   type Spec007E2EFixture,
 } from '../../scripts/seed-spec-007'
 
-const ARGOS_SCREENSHOT_TAGS = ['spec-007']
-const ARGOS_TEST_TAGS = ['@spec-007']
-const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1'
-const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1'
+const VISUAL_SNAPSHOT_TAGS = ['spec-007']
+const VISUAL_TEST_TAGS = ['@spec-007']
 
 async function attachReviewScreenshot(
   page: Page,
@@ -23,27 +19,12 @@ async function attachReviewScreenshot(
   name: string,
   options: { fullPage?: boolean } = {},
 ) {
-  const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
-  const fullPage = options.fullPage ?? true
-
-  if (REVIEW_SCREENSHOTS_ENABLED) {
-    const dir = process.env.MC_E2E_SCREENSHOT_DIR ||
-      path.join(process.cwd(), 'test-results', 'spec-007-screenshots')
-    const screenshotPath = path.join(dir, `${normalizedName}.png`)
-    await fs.mkdir(dir, { recursive: true })
-    await page.screenshot({ path: screenshotPath, fullPage })
-    await testInfo.attach(`spec-007-${name}`, {
-      path: screenshotPath,
-      contentType: 'image/png',
-    })
-  }
-
-  if (ARGOS_SCREENSHOTS_ENABLED) {
-    await argosScreenshot(page, `spec-007-${normalizedName}`, {
-      fullPage,
-      tag: ARGOS_SCREENSHOT_TAGS,
-    })
-  }
+  await captureVisualSnapshot(page, testInfo, {
+    domain: 'spec-007',
+    name,
+    tags: VISUAL_SNAPSHOT_TAGS,
+    fullPage: options.fullPage,
+  })
 }
 
 async function prepareAuthenticatedSpec007Page(
@@ -81,7 +62,7 @@ test.describe.serial('SPEC-007 disposition and artifact UI journeys', () => {
     await prepareAuthenticatedSpec007Page(page, request, fixture)
   })
 
-  test('shows the dashboard 7-day disposition rollup for the active product line', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('shows the dashboard 7-day disposition rollup for the active product line', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/')
     const widget = page.getByTestId('last-7d-triage-totals-widget')
     await expect(widget).toBeVisible()
@@ -91,7 +72,7 @@ test.describe.serial('SPEC-007 disposition and artifact UI journeys', () => {
     await attachReviewScreenshot(page, testInfo, 'dashboard-rollup-widget', { fullPage: false })
   })
 
-  test('filters and pages the Dispositions audit tab', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('filters and pages the Dispositions audit tab', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/audit')
     await page.getByTestId('audit-tab-dispositions').click()
     await expect(page.getByTestId('dispositions-tab')).toBeVisible()
@@ -111,7 +92,7 @@ test.describe.serial('SPEC-007 disposition and artifact UI journeys', () => {
     await attachReviewScreenshot(page, testInfo, 'audit-dispositions-validation-filter', { fullPage: false })
   })
 
-  test('loads Artifact Admin health, list, preview, and quarantine action states', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('loads Artifact Admin health, list, preview, and quarantine action states', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/audit')
     await page.getByTestId('audit-tab-artifacts').click()
     await expect(page.getByTestId('artifact-admin-panel')).toBeVisible()

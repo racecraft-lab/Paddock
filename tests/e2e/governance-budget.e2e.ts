@@ -2,7 +2,7 @@
  * SPEC-008 — T285 — Daily USD budget admission journey.
  *
  * Operator authors a workspace-scoped daily USD budget; soft 80% +
- * hard 100% precedence enforced. Argos snapshots at 0/50/80/95/100%
+ * hard 100% precedence enforced. Visual snapshots at 0/50/80/95/100%
  * utilization (FR-296, US2). axe-core scans on each state.
  *
  * @see specs/008-resource-governance/spec.md FR-296, US2

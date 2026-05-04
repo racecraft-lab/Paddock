@@ -11,13 +11,13 @@ Archive records for UI-facing specs should preserve:
 - PR URL
 - merge commit or tree reference
 - CI run URL
-- Argos build or review URL
+- visual regression report URL or workflow artifact URL
 - command provenance
 - metadata gate outcomes
 - optional artifact manifest entries
 - recovery commands for raw spec artifacts
 
-Generated screenshots should remain in Argos builds or short-lived CI artifacts
+Generated screenshots should remain in visual reports or short-lived CI artifacts
 unless a spec explicitly documents a durable image exception.
 
 ## Evidence Manifest Fields
@@ -60,7 +60,7 @@ typecheck, unit tests, build, and e2e tests.
 A UI spec PR is not ready when any of these are true:
 
 - required evidence links are missing
-- Argos metadata gates fail
+- visual manifest gates fail
 - visible UI defects are present
 - controls are clipped or overlapping
 - seeded data is wrong
@@ -68,8 +68,8 @@ A UI spec PR is not ready when any of these are true:
 - user journeys are broken
 - generated screenshots are committed without a manifest-backed exception
 
-## Argos No-Empty-Build Policy
+## Visual No-Empty-Run Policy
 
 Visual runs must retain SPEC-002-style metadata for test or story identity,
 source location, and spec-scoped tags. Non-visual or flag-off regression runs
-must not upload empty Argos builds.
+must not publish empty visual runs.

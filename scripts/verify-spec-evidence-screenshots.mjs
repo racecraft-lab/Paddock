@@ -155,7 +155,6 @@ function validateManifestEntry(root, filePath, fileStat, hash, manifestRecord) {
 async function runGuard(root, maxBytes) {
   const specsDir = path.join(root, 'specs')
   const imageFiles = await collectFiles(specsDir, filePath => {
-    if (filePath.endsWith('.argos.json')) return false
     return IMAGE_EXTENSIONS.has(path.extname(filePath).toLowerCase())
   })
   const { artifacts, failures } = await loadManifests(root)

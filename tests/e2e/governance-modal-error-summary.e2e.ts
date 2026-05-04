@@ -13,7 +13,7 @@
  *
  * This live e2e drives the override-grant form through a validation
  * failure and verifies the rendered ModalErrorSummary focus behavior,
- * `role="alert"` semantics, axe state, and Argos snapshot.
+ * `role="alert"` semantics, axe state, and visual snapshot.
  *
  * @see specs/008-resource-governance/spec.md FR-206, FR-090p
  * @see specs/008-resource-governance/tasks.md T319

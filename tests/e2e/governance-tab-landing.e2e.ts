@@ -3,7 +3,7 @@
  *
  * Flag-ON: Governance tab is the 4th tab in cost-tracker; default
  * subview is Policies; ArrowLeft/ArrowRight navigation per FR-200;
- * every sub-view × every state Argos-snapshotted (FR-296).
+ * every sub-view × every state visual-snapshotted (FR-296).
  *
  * @see specs/008-resource-governance/spec.md FR-296, US5
  * @see specs/008-resource-governance/tasks.md T288, T303

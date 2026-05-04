@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { argosScreenshot } from '@argos-ci/storybook/vitest'
 import { expect, fireEvent, userEvent, within } from 'storybook/test'
 
 import { OrchestrationBar } from '@/components/panels/orchestration-bar'
@@ -174,8 +173,8 @@ const meta = {
     },
   ],
   parameters: {
-    argos: {
-      fitToContent: false,
+    screenshot: {
+      fullPage: true,
     },
   },
 } satisfies Meta<typeof TaskPipelineOrchestrationSurface>
@@ -198,7 +197,6 @@ export const WorkflowChainEditFields: Story = {
     await expect(canvas.getByLabelText('Allow redacted artifacts')).toBeChecked()
     await expect(canvas.getByDisplayValue(/"outcome"/)).toBeVisible()
     await expect(canvas.getByDisplayValue(/"next_template_slug": "implementation-review"/)).toBeVisible()
-    await argosScreenshot(ctx, 'task-pipeline-workflow-edit-chain-fields')
   },
 }
 
@@ -217,6 +215,5 @@ export const WorkflowRoutingValidationError: Story = {
     await userEvent.click(canvas.getByRole('button', { name: /^save$/i }))
 
     await expect(await canvas.findByRole('alert')).toHaveTextContent(/routing_rules require output_schema/i)
-    await argosScreenshot(ctx, 'task-pipeline-workflow-validation-error')
   },
 }

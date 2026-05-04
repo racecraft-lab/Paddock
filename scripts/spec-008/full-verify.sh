@@ -2,7 +2,7 @@
 # SPEC-008 — T368 — full-verify pipeline.
 #
 # Runs the SPEC-008 local verification suite. Browser-backed UI,
-# Docker-backed production e2e, Storybook visual, and Argos metadata
+# Docker-backed production e2e, Storybook visual, and visual manifest
 # gates are run separately because they require runtime services.
 # Soak (T367) and chaos (T368 verification steps) remain operator-gated.
 #
@@ -26,7 +26,7 @@ echo "**Generated**: $DATE"
 echo "**HEAD**: $GIT_HEAD"
 echo
 echo "Runs the SPEC-008 local verification suite. Browser-backed UI,"
-echo "Docker-backed production e2e, Storybook visual, and Argos metadata"
+echo "Docker-backed production e2e, Storybook visual, and visual manifest"
 echo "gates are run separately because they require runtime services."
 echo "Soak (T367) and chaos (T368 verification steps) remain operator-gated."
 echo
@@ -74,13 +74,13 @@ echo
 echo "## Runtime UI / visual gates — run separately"
 echo
 echo "- **T363 Docker-backed Playwright UI e2e** —"
-echo "  \`MC_E2E_DOCKER_PRESEED=1 ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh\`."
+echo "  \`MC_E2E_DOCKER_PRESEED=1 MC_VISUAL_SNAPSHOTS=1 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh\`."
 echo "- **T364 Storybook visual** —"
 echo "  \`SPEC_008_AXE_ENABLED=1 pnpm test:visual:storybook\`."
-echo "- **T365 Playwright Argos metadata** —"
-echo "  \`node scripts/verify-argos-metadata.mjs --mode playwright\`."
-echo "- **T366 Storybook Argos metadata** —"
-echo "  \`node scripts/verify-argos-metadata.mjs --mode storybook\`."
+echo "- **T365 Playwright visual manifest** —"
+echo "  \`node scripts/verify-visual-manifest.mjs --mode playwright\`."
+echo "- **T366 Storybook visual manifest** —"
+echo "  \`node scripts/verify-visual-manifest.mjs --mode storybook\`."
 echo
 echo "## Deferred — operator-gated"
 echo

@@ -9,7 +9,7 @@
  *
  * This live e2e drives the PolicyEditor from the Governance Policies
  * subview, stubs the policy PUT as a 412 response, and verifies the
- * conflict toast plus refreshed edit context with an Argos/axe snapshot.
+ * conflict toast plus refreshed edit context with a visual/axe snapshot.
  *
  * @see specs/008-resource-governance/spec.md FR-205, FR-288
  * @see specs/008-resource-governance/tasks.md T188 (component), T319

@@ -12,7 +12,7 @@
 ## Playwright e2e Journey Coverage (FR-296..305)
 
 - [ ] CHK001 - Is the exhaustive list of operator UI journeys requiring Playwright e2e specs explicitly enumerated, with each journey mapped to a named spec file under `tests/e2e/`? [Completeness, Spec §FR-296..305, plan.md §Principle XIV]
-- [ ] CHK002 - Are the empty / populated / loading / error states for the Governance tab landing surface explicitly required to each emit an Argos snapshot? [Completeness, Spec §FR-296, FR-188]
+- [ ] CHK002 - Are the empty / populated / loading / error states for the Governance tab landing surface explicitly required to each emit a visual snapshot? [Completeness, Spec §FR-296, FR-188]
 - [ ] CHK003 - Is the dispatch diagnostic feed Playwright coverage requirement enumerated for each interaction class (initial page, infinite-scroll next-page, live SSE append, filter-change reset, empty)? [Coverage, Spec §FR-090j, FR-297]
 - [ ] CHK004 - Is the override-grant Playwright coverage requirement complete for every error-class status code the API can return (409 / 412 / 422 / 423), or is FR-299 inconsistent with FR-300 which adds 412? [Consistency, Spec §FR-299 vs §FR-300, §FR-183]
 - [ ] CHK005 - Is window CRUD ETag-conflict coverage scoped to HTTP 412 specifically, with the precondition-failed spec path and the ETag header semantics defined? [Clarity, Spec §FR-300]
@@ -31,20 +31,20 @@
 - [ ] CHK015 - Are the *additional* state coverages for individual components specified as supersets of the canonical set rather than replacements (e.g., system-health-card adds green/amber/red BUT must still ship loading/error)? [Clarity, Spec §FR-307]
 - [ ] CHK016 - Does the override grant form story FR-309 cover all four error states (409/412/422/423) and is "412" present given FR-299 omits it? [Conflict, Spec §FR-309 vs §FR-299]
 - [ ] CHK017 - Is the budget utilization chart's threshold-zone story set (0%/50%/80%/95%/100%) reconciled with the spec.md US2 Independent Test which references "six threshold zones"? [Conflict, Spec §FR-311 vs §US2]
-- [ ] CHK018 - Are story names, file paths, and exported story IDs deterministic enough that the Argos metadata gate can match snapshots to FR IDs? [Measurability, Spec §FR-229]
+- [ ] CHK018 - Are story names, file paths, and exported story IDs deterministic enough that the Visual manifest gate can match snapshots to FR IDs? [Measurability, Spec §FR-229]
 - [ ] CHK019 - Is the "disabled-by-flag" state defined with measurable rendering criteria (e.g., component returns null vs renders disabled shim component `feature-flag-disabled-shim.tsx`)? [Clarity, plan.md §UI components, Spec §FR-306]
 - [ ] CHK020 - Are story coverage requirements specified for FR-090k backup-state extensions to `system-health-card.stories.tsx` (`backup-healthy / backup-stale / backup-no-offnode-warning / backup-failed`)? [Completeness, Spec §FR-090k]
 
-## Argos Visual Regression Pipeline (FR-228, FR-229, AC-UI-Argos-*)
+## Visual Regression Pipeline (FR-228, FR-229, AC-UI-Visual-*)
 
-- [ ] CHK021 - Is the dual-snapshot-source requirement (Playwright via `@argos-ci/playwright` AND Storybook via `@argos-ci/storybook` + `vitest.storybook.config.ts`) stated in a single normative requirement? [Consistency, Spec §FR-228, plan.md §Testing]
-- [ ] CHK022 - Are the metadata-tag schema and required fields for each Argos snapshot (test/story identity, spec-scoped tags, FR ID) specified? [Clarity, Spec §FR-229]
-- [ ] CHK023 - Is the CI wiring for `pnpm test:e2e:argos-metadata --mode playwright` and `pnpm test:visual:argos-metadata --mode storybook` defined as a required PR gate, with explicit fail-closed behavior on missing metadata? [Completeness, Spec §FR-229, §FR-237]
-- [ ] CHK024 - Is the Argos token / project-id provisioning policy specified (where stored, rotation cadence, who has access, behavior when missing in PR CI vs main)? [Gap, Non-Functional/Security]
+- [ ] CHK021 - Is the dual-snapshot-source requirement (Playwright provider-neutral capture AND Storybook via Storycap + `vitest.storybook.config.ts`) stated in a single normative requirement? [Consistency, Spec §FR-228, plan.md §Testing]
+- [ ] CHK022 - Are the metadata-tag schema and required fields for each visual snapshot (test/story identity, spec-scoped tags, FR ID) specified? [Clarity, Spec §FR-229]
+- [ ] CHK023 - Is the CI wiring for `pnpm test:e2e:visual-manifest` and `pnpm test:visual:manifest` defined as a required PR gate, with explicit fail-closed behavior on missing metadata? [Completeness, Spec §FR-229, §FR-237]
+- [ ] CHK024 - Is the GitHub Pages visual baseline publishing policy specified (branch, token, access, and behavior when publishing fails on main)? [Gap, Non-Functional/Security]
 - [ ] CHK025 - Is the visual-snapshot baseline approval workflow for the FIRST PR documented (who approves, accept-baseline command, audit trail)? [Gap]
 - [ ] CHK026 - Is the baseline rotation policy defined (when baselines are refreshed, who triggers refresh, how stale baselines are detected)? [Gap]
 - [ ] CHK027 - Is the false-positive triage workflow for visual regressions defined (anti-aliasing tolerance, font rendering jitter, dynamic timestamps in fixtures)? [Gap, Spec §FR-228]
-- [ ] CHK028 - Is the policy specified for non-visual e2e runs to NOT upload empty Argos builds, and is the detection mechanism measurable? [Clarity, plan.md §Principle XIV "Non-visual e2e runs MUST NOT upload empty Argos builds"]
+- [ ] CHK028 - Is the policy specified for non-visual e2e runs to NOT upload empty visual builds, and is the detection mechanism measurable? [Clarity, plan.md §Principle XIV "Non-visual e2e runs MUST NOT upload empty visual builds"]
 - [ ] CHK029 - Is snapshot determinism specified across local dev / CI / Docker-backed `scripts/e2e-docker.sh` runs (font availability, headless-Chromium version pinning)? [Gap]
 
 ## Feature-Flag Matrix Coverage (FR-316..325, AC-FF-Matrix-1..4)
@@ -72,7 +72,7 @@
 - [ ] CHK044 - Are loading-state requirements defined for asynchronous data sources (diagnostic feed pagination, telemetry health polling, budget ledger queries)? [Coverage, Spec §FR-188, §FR-296..305]
 - [ ] CHK045 - Are dense-data requirements quantified (e.g., diagnostic feed dense state at >50 rows; budget chart dense state at >5 concurrent budgets) so visual snapshots are reproducible? [Measurability, Spec §FR-308, §US7 "50+ recent decisions"]
 - [ ] CHK046 - Are error states for the override grant form specified consistently across spec, FR, and Storybook (409 / 412 / 422 / 423) with the same wording for each error class? [Consistency, Spec §FR-183 vs §FR-309 vs §FR-299]
-- [ ] CHK047 - Is the recovery / rollback requirement defined when an Argos baseline is wrongly accepted (revert flow, audit trail of baseline acceptance decisions)? [Gap, Recovery]
+- [ ] CHK047 - Is the recovery / rollback requirement defined when a visual baseline is wrongly accepted (revert flow, audit trail of baseline acceptance decisions)? [Gap, Recovery]
 - [ ] CHK048 - Are concurrent-operator UI scenarios addressed (two operators editing same window, ETag conflict surfacing)? [Coverage, Spec §FR-300]
 
 ## Non-Functional / Operational
@@ -80,4 +80,4 @@
 - [ ] CHK049 - Is the visual-regression CI runtime budget specified (max minutes for `pnpm test:visual:storybook` + `pnpm test:e2e`) so fail-closed gates do not become bypass pressure? [Gap, Non-Functional]
 - [ ] CHK050 - Are responsive / viewport requirements specified for snapshots (single viewport vs multi-viewport matrix; mobile breakpoint coverage if Governance tab targets desktop only)? [Gap, Spec §FR-188]
 - [ ] CHK051 - Is the "extended component" definition specified (what counts as a SPEC-008-extension of a pre-existing component, e.g., `system-health-card.stories.tsx` extended for FR-090k backup states)? [Clarity, plan.md §UI components, Spec §FR-090k]
-- [ ] CHK052 - Is a requirement & acceptance-criteria ID scheme established that links each Playwright spec, each story file, each axe violation report, and each Argos snapshot back to the originating FR ID? [Traceability, Spec §FR-229]
+- [ ] CHK052 - Is a requirement & acceptance-criteria ID scheme established that links each Playwright spec, each story file, each axe violation report, and each visual snapshot back to the originating FR ID? [Traceability, Spec §FR-229]

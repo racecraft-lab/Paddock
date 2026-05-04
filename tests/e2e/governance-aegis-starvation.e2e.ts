@@ -3,7 +3,7 @@
  *
  * Exercises AC-Aegis-1..6: starvation detector trips → emergency
  * reserve grants → operator escalation banner appears in System
- * Health. Argos snapshots per state. axe per FR-090n.
+ * Health. Visual snapshots per state. axe per FR-090n.
  *
  * @see specs/008-resource-governance/spec.md FR-303, FR-169, US4
  * @see specs/008-resource-governance/tasks.md T291, T306

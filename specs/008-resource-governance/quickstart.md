@@ -279,7 +279,7 @@ sqlite3 ~/.local/share/mission-control/.data/mission-control.db \
 # Run the e2e regression spec (FR-305)
 pnpm test:e2e tests/e2e/governance-flag-off-byte-compat.e2e.ts
 
-# Snapshot diff = 0 vs pre-SPEC-008 baseline. Argos comparison passes.
+# Snapshot diff = 0 vs pre-SPEC-008 baseline. visual regression comparison passes.
 ```
 
 ### 3.5 DR rehearsal (FR-235, AC-DR-1..4)

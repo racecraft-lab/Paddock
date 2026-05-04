@@ -16,7 +16,7 @@
 - [x] No [NEEDS CLARIFICATION] markers remain — 0 markers in spec.md
 - [x] Requirements are testable and unambiguous — every FR has Q-number traceability and a measurable / observable assertion
 - [x] Success criteria are measurable — SC-001..018 each cite a numeric threshold or a binary observable outcome
-- [x] Success criteria are technology-agnostic where possible — implementation citations exist only where Constitution principles require them (resolveFlag, Playwright, Storybook, Argos) and the citations are user-observable test outcomes
+- [x] Success criteria are technology-agnostic where possible — implementation citations exist only where Constitution principles require them (resolveFlag, Playwright, Storybook, visual regression) and the citations are user-observable test outcomes
 - [x] All acceptance scenarios are defined — 9 user stories with 2-5 acceptance scenarios each (29 scenarios total)
 - [x] Edge cases are identified — 11 edge cases enumerated covering DST, drift, starvation, race, OpenAI $0, retention, reaper, hard-disable
 - [x] Scope is clearly bounded — Constraints + Out of Scope sections preserved verbatim from workflow prompt
@@ -24,10 +24,10 @@
 
 ## Feature Readiness
 
-- [x] All functional requirements have clear acceptance criteria — 12 P7-AC + 30+ augmented ACs (AC-Race-1, AC-Drift-1..3, AC-Aegis-1..6, AC-DR-1..4, AC-Retention-1..3, AC-Bench-1, AC-Soak-1, AC-DST-1, AC-UI-Playwright-1, AC-UI-Argos-Playwright-1, AC-UI-Storybook-1, AC-UI-Argos-Storybook-1, AC-FF-Matrix-1..4) all cited inline within FR text or US scenarios
+- [x] All functional requirements have clear acceptance criteria — 12 P7-AC + 30+ augmented ACs (AC-Race-1, AC-Drift-1..3, AC-Aegis-1..6, AC-DR-1..4, AC-Retention-1..3, AC-Bench-1, AC-Soak-1, AC-DST-1, AC-UI-Playwright-1, AC-UI-Visual-Playwright-1, AC-UI-Storybook-1, AC-UI-Visual-Storybook-1, AC-FF-Matrix-1..4) all cited inline within FR text or US scenarios
 - [x] User scenarios cover primary flows — US1 (WIP), US2 (budgets), US3 (windows), US4 (overrides), US5 (UI), US6 (diagnostic), US7 (telemetry), US8 (DR/runbooks), US9 (test coverage NON-NEGOTIABLE)
 - [x] Feature meets measurable outcomes defined in Success Criteria — SC-001 through SC-018 each map to one or more FR ranges
-- [x] No implementation details leak into specification — `resolveFlag`, Playwright, Storybook, Argos, ETag, IANA timezone, `better-sqlite3` are cited where Constitution principles or peer-review-confirmed decisions require them; everything else stays at WHAT/WHY
+- [x] No implementation details leak into specification — `resolveFlag`, Playwright, Storybook, visual regression, ETag, IANA timezone, `better-sqlite3` are cited where Constitution principles or peer-review-confirmed decisions require them; everything else stays at WHAT/WHY
 
 ## Constitution Traceability
 
@@ -64,6 +64,6 @@ All 73 Q-numbers from `docs/ai/specs/SPEC-008-design-concept.md` are cited in at
 - Items marked incomplete require spec updates before `/speckit.clarify` or `/speckit.plan`.
 - Total functional requirements: 325 (FR-001..FR-325).
 - Total user stories: 9 (US1..US9), with US9 (test-coverage) marked NON-NEGOTIABLE per Constitution Principle XIV.
-- Total acceptance criteria: 12 P7-AC1..AC12 + 30+ augmented (AC-Race-1, AC-Drift-1..3, AC-Aegis-1..6, AC-DR-1..4, AC-Retention-1..3, AC-Bench-1, AC-Soak-1, AC-DST-1, AC-UI-Playwright-1, AC-UI-Argos-Playwright-1, AC-UI-Storybook-1, AC-UI-Argos-Storybook-1, AC-FF-Matrix-1..4) — all cited inline within FR text and acceptance scenarios.
+- Total acceptance criteria: 12 P7-AC1..AC12 + 30+ augmented (AC-Race-1, AC-Drift-1..3, AC-Aegis-1..6, AC-DR-1..4, AC-Retention-1..3, AC-Bench-1, AC-Soak-1, AC-DST-1, AC-UI-Playwright-1, AC-UI-Visual-Playwright-1, AC-UI-Storybook-1, AC-UI-Visual-Storybook-1, AC-FF-Matrix-1..4) — all cited inline within FR text and acceptance scenarios.
 - Constraints + Out of Scope sections preserved verbatim from the workflow prompt at `docs/ai/specs/SPEC-008-workflow.md` lines 224-241.
 - Hook decision: orchestrator created branch `008-resource-governance` and worktree before invocation; the mandatory `before_specify` hook (`speckit.git.feature` → `create-new-feature.sh`) was deliberately bypassed to honor the orchestrator-provided branch state, per parent agent's hard constraint "Do NOT run `create-new-feature.sh` or any branch-creation script."

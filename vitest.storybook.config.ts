@@ -1,14 +1,16 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
-import { argosVitestPlugin } from '@argos-ci/storybook/vitest-plugin'
+import storycap from '@storycap-testrun/browser/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
+import type { PluginOption } from 'vite'
 
 const dirname = typeof __dirname !== 'undefined'
   ? __dirname
   : path.dirname(fileURLToPath(import.meta.url))
-const uploadToArgos = process.env.ARGOS_UPLOAD_TO_ARGOS === '1'
+const visualOutputRoot = process.env.MC_VISUAL_OUTPUT_DIR ||
+  path.join(process.cwd(), 'test-results', 'visual-current')
 
 export default defineConfig({
   test: {
@@ -20,12 +22,16 @@ export default defineConfig({
             configDir: path.join(dirname, '.storybook'),
             tags: { include: ['visual'] },
           }),
-          argosVitestPlugin({
-            root: process.env.ARGOS_STORYBOOK_SCREENSHOT_DIR || './screenshots/storybook',
-            uploadToArgos,
-            buildName: 'mission-control-storybook',
-            token: process.env.ARGOS_TOKEN,
-          }),
+          storycap({
+            output: {
+              dir: path.join(visualOutputRoot, 'storybook'),
+              file: '[id].png',
+            },
+            viewport: {
+              width: 1366,
+              height: 768,
+            },
+          }) as unknown as PluginOption,
         ],
         test: {
           name: 'storybook',

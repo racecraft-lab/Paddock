@@ -8,7 +8,7 @@
  *   - Diagnostic feed shows the deny + the second-task defer.
  *   - System Health shows the WIP counter at 1/1.
  *
- * States exercised (Argos snapshots per FR-228 + FR-229):
+ * States exercised (visual snapshots per FR-228 + FR-229):
  *   - default
  *   - loading
  *   - error

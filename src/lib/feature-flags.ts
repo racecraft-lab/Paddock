@@ -53,7 +53,7 @@ export interface FeatureFlagDefinition {
   rollbackBehavior: string
   evidence: {
     playwright?: string[]
-    argos?: string[]
+    visual?: string[]
     storybook?: string[]
   }
 }
@@ -119,7 +119,7 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
         'src/components/layout/product-line-visual.stories.tsx',
         'src/components/settings/feature-flags-section.stories.tsx',
       ],
-      argos: ['mission-control-storybook', 'mission-control-playwright'],
+      visual: ['mission-control-storybook', 'mission-control-playwright'],
     },
   },
   FEATURE_GLOBAL_AEGIS: {

@@ -76,7 +76,7 @@ Mission Control Constitution v1.4.1 — 15 principles + 11 autopilot conventions
 | IX. Safe Evaluation | Untrusted-input safety: AJV constrained, no eval | Code review; CI grep | ⏳ G6 |
 | X. Observability | resource_policy_events row + activity for every non-allow | TDD + integration | ⏳ ongoing |
 | XIII. Defensive Boundaries | Try/catch at boundaries (HTTP, DB, child process); not interior | Code review at G6 | ⏳ ongoing |
-| **XIV. Real UI Journey Quality Gate (NON-NEGOTIABLE)** | Real Playwright e2e against running app + Storybook/Argos visual evidence; argos metadata gate | `pnpm test:e2e`; `pnpm test:visual:storybook`; `pnpm test:e2e:argos-metadata`; `pnpm test:visual:argos-metadata` | ⏳ Phase 12B |
+| **XIV. Real UI Journey Quality Gate (NON-NEGOTIABLE)** | Real Playwright e2e against running app + Storybook/visual evidence; Visual manifest gate | `pnpm test:e2e`; `pnpm test:visual:storybook`; `pnpm test:e2e:visual-manifest`; `pnpm test:visual:manifest` | ⏳ Phase 12B |
 | XV. Spec Artifact Provenance | Archive Sweep startup; provenance + recovery commands | Step -1 sweep report (✅ done) | ✅ Step -1 |
 | Conv. G. Rollback Presence | Every migration → matching rollback-M<id>.sql | `validate-gate.sh` G7 | ⏳ G7 |
 | Conv. J. Strict New-Module Scope | All new TS/TSX in tsconfig.spec-strict.json + eslint.config.mjs | tsconfig diff at G3 | ⏳ G3 |
@@ -146,9 +146,9 @@ Drawn from Phase 7 P7-AC1..AC12 in the roadmap, AUGMENTED with peer-review-deriv
 - [AC-Soak-1] 30-min soak at 100 admission/sec + reconciler load: p95 stays <15ms; memory growth <50MB (per Q46).
 - [AC-DST-1] Calendar windows handle DST transitions correctly (per Q46).
 - [AC-UI-Playwright-1] 100% of new operator journeys have Playwright e2e specs; `pnpm test:e2e` green (per FR-296..305).
-- [AC-UI-Argos-Playwright-1] Every Playwright spec emits Argos snapshot metadata; `pnpm test:e2e:argos-metadata --mode playwright` passes (per FR-296..305).
+- [AC-UI-Visual-Playwright-1] Every Playwright spec emits visual snapshot metadata; `pnpm test:e2e:visual-manifest` passes (per FR-296..305).
 - [AC-UI-Storybook-1] Every newly authored React component has a `*.stories.tsx` covering default/loading/error/empty/dense/disabled-by-flag states; `pnpm storybook` builds clean (per FR-306..315).
-- [AC-UI-Argos-Storybook-1] Argos visual snapshots green via `pnpm test:visual:storybook` and `pnpm test:visual:argos-metadata --mode storybook` (per FR-306..315).
+- [AC-UI-Visual-Storybook-1] visual snapshots green via `pnpm test:visual:storybook` and `pnpm test:visual:manifest` (per FR-306..315).
 - [AC-FF-Matrix-1] All 9 feature flags exercised in unit/integration/e2e tests (OFF, ON, dependency-chain, all-on baseline) per FR-316..325.
 - [AC-FF-Matrix-2] FEATURE_RESOURCE_GOVERNANCE=OFF: Governance tab hidden from Cost Tracker; legacy hard-coded LIMIT 3 + "3+ in_progress" capacity preserved byte-compat (P7-AC1 reinforced).
 - [AC-FF-Matrix-3] `resolveFlag` env override semantics tested: env='0' forces OFF, env='1' does NOT force ON (CLAUDE.md pitfall guarded by automated test).
@@ -195,7 +195,7 @@ Mission Control's resource_policies and resource_policy_events tables landed emp
 - US6: As an operator, I see WHY a specific dispatch was deferred / blocked via the diagnostic view (Q44).
 - US7: As an operator, I rely on multi-source defense-in-depth telemetry ingestion so my budgets are correct even when a single source is degraded (Q16, Q18, Q19).
 - US8: As an operator, I recover from collector outages, schema breaks, drift detection, and DR scenarios via documented runbooks (Q60, Q61, Q62).
-- US9 (test-coverage user story): As a maintainer, I have **100% test coverage for every new UI/UX journey** (Playwright e2e + Storybook Argos visual snapshots) and **complete feature-flag-matrix activation testing** (every past + present feature flag in `src/lib/feature-flags.ts` exercised in unit/integration/e2e/Playwright/Storybook with the dependency graph honored, including OFF/ON pairs and required-prerequisite chains) so SPEC-008 cannot regress prior specs (SPEC-002 workspace switcher, SPEC-003 global Aegis, SPEC-004 pipelines, SPEC-006 area labels, plus FEATURE_TWO_STEP_TERMINAL, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS) and the SPEC-008 governance UX is verifiably correct.
+- US9 (test-coverage user story): As a maintainer, I have **100% test coverage for every new UI/UX journey** (Playwright e2e + Storybook visual snapshots) and **complete feature-flag-matrix activation testing** (every past + present feature flag in `src/lib/feature-flags.ts` exercised in unit/integration/e2e/Playwright/Storybook with the dependency graph honored, including OFF/ON pairs and required-prerequisite chains) so SPEC-008 cannot regress prior specs (SPEC-002 workspace switcher, SPEC-003 global Aegis, SPEC-004 pipelines, SPEC-006 area labels, plus FEATURE_TWO_STEP_TERMINAL, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS) and the SPEC-008 governance UX is verifiably correct.
 
 ### Functional Requirements
 
@@ -217,8 +217,8 @@ Reference design-concept Q-sections for each FR family:
 - FR-261..275: Backup/DR + runbooks + bulk policy promotion (Q60, Q61)
 - FR-276..285: Self-observability + ingest admission control (Q45, Q47, Q48)
 - FR-286..295: Concurrent-edit safety + DST handling + retention sweep (Q46, Q63, Q66)
-- FR-296..305: **UI/UX coverage — Playwright e2e**: every new operator journey introduced by SPEC-008 (Cost Tracker → Governance tab landing/empty/populated/loading/error states, dispatch diagnostic feed pagination + filter, system health dashboard read-only and one-click recovery affordances, override grant happy-path + 409/422/423 error responses, blackout/degraded window create/edit/delete with ETag concurrency conflict, bulk policy promotion typed-confirmation flow, calibration milestone progression view, Aegis emergency-reserve indicator, telemetry health drilldown, FEATURE_RESOURCE_GOVERNANCE OFF byte-compat regression check) MUST have a Playwright spec under `tests/e2e/` AND emit Argos visual snapshots via `@argos-ci/playwright`. Coverage target: 100% of newly introduced operator paths; verified by `pnpm test:e2e:argos-metadata`.
-- FR-306..315: **UI/UX coverage — Storybook Argos visual regression**: every new React component or extended component (Governance tab subcomponents, system health card, diagnostic feed row, override grant form, window editor, budget utilization chart, WIP indicator panel, telemetry source health pill, breaker-open banner, Aegis emergency-reserve badge) MUST ship with a `*.stories.tsx` file rendering each meaningful state (default/loading/error/empty/dense data/disabled-by-flag) AND be captured by Argos via `pnpm test:visual:storybook`. Storybook coverage target: 100% of newly authored components have stories; `pnpm test:visual:argos-metadata --mode storybook` MUST pass.
+- FR-296..305: **UI/UX coverage — Playwright e2e**: every new operator journey introduced by SPEC-008 (Cost Tracker → Governance tab landing/empty/populated/loading/error states, dispatch diagnostic feed pagination + filter, system health dashboard read-only and one-click recovery affordances, override grant happy-path + 409/422/423 error responses, blackout/degraded window create/edit/delete with ETag concurrency conflict, bulk policy promotion typed-confirmation flow, calibration milestone progression view, Aegis emergency-reserve indicator, telemetry health drilldown, FEATURE_RESOURCE_GOVERNANCE OFF byte-compat regression check) MUST have a Playwright spec under `tests/e2e/` AND emit visual snapshots via `@visualproviderprovider-neutral Playwright capture`. Coverage target: 100% of newly introduced operator paths; verified by `pnpm test:e2e:visual-manifest`.
+- FR-306..315: **UI/UX coverage — Storybook visual regression**: every new React component or extended component (Governance tab subcomponents, system health card, diagnostic feed row, override grant form, window editor, budget utilization chart, WIP indicator panel, telemetry source health pill, breaker-open banner, Aegis emergency-reserve badge) MUST ship with a `*.stories.tsx` file rendering each meaningful state (default/loading/error/empty/dense data/disabled-by-flag) AND be captured by visual regression via `pnpm test:visual:storybook`. Storybook coverage target: 100% of newly authored components have stories; `pnpm test:visual:manifest` MUST pass.
 - FR-316..325: **Feature-flag matrix activation tests**: SPEC-008's test suite MUST exercise the full feature-flag matrix declared in `src/lib/feature-flags.ts` (FEATURE_WORKSPACE_SWITCHER, FEATURE_GLOBAL_AEGIS, FEATURE_TASK_PIPELINES, FEATURE_TWO_STEP_TERMINAL, FEATURE_AREA_LABEL_ROUTING, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS, FEATURE_RESOURCE_GOVERNANCE, FEATURE_OPENCLAW_HEALTH_COSTS) at unit, integration, and e2e levels. The matrix MUST cover: (a) each flag OFF in isolation (legacy parity); (b) each flag ON in isolation where its `enableRequires` chain permits; (c) all flags ON together (production-fully-on baseline); (d) the documented `enableRequires` dependency chains (FEATURE_GLOBAL_AEGIS requires FEATURE_WORKSPACE_SWITCHER; FEATURE_TASK_PIPELINES requires FEATURE_GLOBAL_AEGIS; etc.); (e) the SPEC-008-specific gate matrix where FEATURE_RESOURCE_GOVERNANCE controls evaluator activation and FEATURE_OPENCLAW_HEALTH_COSTS controls health adapter activation; (f) one Playwright e2e per flag confirming the gated UI surface renders correctly under both OFF and ON, including the FEATURE_RESOURCE_GOVERNANCE=OFF byte-compat path that hides the Governance tab entirely; (g) `resolveFlag` env-override semantics ('0' forces OFF; '1' does NOT force ON) per CLAUDE.md pitfall.
 
 ### Constraints
@@ -251,7 +251,7 @@ Reference design-concept Q-sections for each FR family:
 | Success Criteria (SC) | **18** |
 | Edge Cases | **11** |
 | Key Entities | **15** |
-| AC count | 12 P7-AC + AC-Race-1 + AC-Drift-1..3 + AC-Aegis-1..6 + AC-DR-1..4 + AC-Retention-1..3 + AC-Bench-1 + AC-Soak-1 + AC-DST-1 + AC-UI-Playwright-1 + AC-UI-Argos-Playwright-1 + AC-UI-Storybook-1 + AC-UI-Argos-Storybook-1 + AC-FF-Matrix-1..4 |
+| AC count | 12 P7-AC + AC-Race-1 + AC-Drift-1..3 + AC-Aegis-1..6 + AC-DR-1..4 + AC-Retention-1..3 + AC-Bench-1 + AC-Soak-1 + AC-DST-1 + AC-UI-Playwright-1 + AC-UI-Visual-Playwright-1 + AC-UI-Storybook-1 + AC-UI-Visual-Storybook-1 + AC-FF-Matrix-1..4 |
 | `[NEEDS CLARIFICATION]` markers | **0** |
 | Q-number coverage | **100%** (Q1-Q73) |
 | Principle XIV citations | 17 |
@@ -520,13 +520,13 @@ Focus on SPEC-008 requirements:
 Focus on SPEC-008 requirements:
 - Every new operator UI journey has a Playwright e2e spec under tests/e2e/ (Governance tab states, dispatch diagnostic feed, system health dashboard, override grant happy + 409/422/423 paths, window CRUD with ETag conflict, bulk policy promotion typed-confirmation, calibration milestones, Aegis emergency-reserve indicator, telemetry health drilldown, FEATURE_RESOURCE_GOVERNANCE OFF regression)
 - Every new React component has a `*.stories.tsx` covering default/loading/error/empty/dense/disabled-by-flag states
-- Argos snapshots emitted from BOTH Playwright (via @argos-ci/playwright) AND Storybook (via @argos-ci/storybook + vitest.storybook.config.ts)
-- `pnpm test:e2e:argos-metadata --mode playwright` and `pnpm test:visual:argos-metadata --mode storybook` are wired into PR CI
+- visual snapshots emitted from BOTH Playwright provider-neutral capture AND Storybook (via Storycap + vitest.storybook.config.ts)
+- `pnpm test:e2e:visual-manifest` and `pnpm test:visual:manifest` are wired into PR CI
 - Feature-flag matrix coverage: every flag in FEATURE_FLAG_KEYS (FEATURE_WORKSPACE_SWITCHER, FEATURE_GLOBAL_AEGIS, FEATURE_TASK_PIPELINES, FEATURE_TWO_STEP_TERMINAL, FEATURE_AREA_LABEL_ROUTING, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS, FEATURE_RESOURCE_GOVERNANCE, FEATURE_OPENCLAW_HEALTH_COSTS) is exercised in OFF, ON, dependency-chain, and all-on configurations across unit / integration / e2e / Playwright / Storybook
 - Storybook stories include flag-aware variants (default, OFF, ON) using a flag-mocking decorator
-- Visual snapshot baseline approval flow documented for first PR (Argos accept-baseline procedure)
+- Visual snapshot baseline approval flow documented for first PR (visual regression accept-baseline procedure)
 - Accessibility coverage: axe-core run inside Playwright for each new journey; WCAG 2.1 AA failures block PR merge
-- Pay special attention to: visual regression false-positive triage workflow; baseline rotation policy; Argos token / project-id provisioning in CI
+- Pay special attention to: visual regression false-positive triage workflow; baseline rotation policy; GitHub Pages baseline publishing in CI
 ```
 
 ### Checklist Results
@@ -572,7 +572,7 @@ Focus on SPEC-008 requirements:
 11. **Phase 10: Backup/DR + runbooks** (US US8) — backup-mc-db.sh script, post-restore counter rebuild, 10 runbook pages, retention sweep default-on
 12. **Phase 11: Self-observability + ingest admission control** — governance_health_events, ingest_rate_state, quarantined_raw_events, mc.governance.* metrics
 13. **Phase 12: Test coverage (backend)** — TDD red-green for all FRs, benchmark CI gate, chaos tests for collector failure, soak test, DST AC, concurrent-edit AC
-14. **Phase 12B: UI/UX test coverage (Playwright + Storybook + Argos)** (US US9) — for EVERY new operator journey introduced by SPEC-008: write a Playwright spec under `tests/e2e/SPEC-008-*` covering default/loading/error/empty/dense and FEATURE_RESOURCE_GOVERNANCE OFF/ON variants; emit Argos snapshots via `@argos-ci/playwright`. For EVERY new React component: write a `*.stories.tsx` covering default/loading/error/empty/dense/disabled-by-flag states; emit Argos snapshots via `@argos-ci/storybook`. Wire CI to run `pnpm test:e2e:argos-metadata --mode playwright` and `pnpm test:visual:argos-metadata --mode storybook`. Add axe-core a11y assertions to each Playwright spec (WCAG 2.1 AA). Document Argos baseline approval procedure for the first PR. Mandatory paths: Cost Tracker → Governance tab (all states), dispatch diagnostic feed, system health dashboard, override grant happy + 409/422/423 paths, window CRUD with ETag conflict, bulk policy promotion typed-confirmation, calibration milestones view, Aegis emergency-reserve indicator, telemetry health drilldown, FEATURE_RESOURCE_GOVERNANCE OFF byte-compat regression.
+14. **Phase 12B: UI/UX test coverage (Playwright + Storybook + visual regression)** (US US9) — for EVERY new operator journey introduced by SPEC-008: write a Playwright spec under `tests/e2e/SPEC-008-*` covering default/loading/error/empty/dense and FEATURE_RESOURCE_GOVERNANCE OFF/ON variants; emit visual snapshots via providerprovider-neutral Playwright capture. For EVERY new React component: write a `*.stories.tsx` covering default/loading/error/empty/dense/disabled-by-flag states; emit visual snapshots via Storycap. Wire CI to run `pnpm test:e2e:visual-manifest` and `pnpm test:visual:manifest`. Add axe-core a11y assertions to each Playwright spec (WCAG 2.1 AA). Document visual baseline approval procedure for the first PR. Mandatory paths: Cost Tracker → Governance tab (all states), dispatch diagnostic feed, system health dashboard, override grant happy + 409/422/423 paths, window CRUD with ETag conflict, bulk policy promotion typed-confirmation, calibration milestones view, Aegis emergency-reserve indicator, telemetry health drilldown, FEATURE_RESOURCE_GOVERNANCE OFF byte-compat regression.
 15. **Phase 12C: Feature-flag matrix tests** (US US9) — implement a flag-matrix test harness that programmatically toggles each entry in `src/lib/feature-flags.ts FEATURE_FLAG_KEYS` (currently 9 flags: FEATURE_WORKSPACE_SWITCHER, FEATURE_GLOBAL_AEGIS, FEATURE_TASK_PIPELINES, FEATURE_TWO_STEP_TERMINAL, FEATURE_AREA_LABEL_ROUTING, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS, FEATURE_RESOURCE_GOVERNANCE, FEATURE_OPENCLAW_HEALTH_COSTS). Coverage matrix MUST exercise: (a) each flag OFF in isolation; (b) each flag ON in isolation where `enableRequires` permits; (c) all flags ON; (d) `enableRequires` dependency chains (FEATURE_GLOBAL_AEGIS→FEATURE_WORKSPACE_SWITCHER, FEATURE_TASK_PIPELINES→FEATURE_GLOBAL_AEGIS, plus SPEC-008 prerequisite chains); (e) `resolveFlag` env-override semantics ('0' forces OFF; '1' does NOT force ON); (f) one Playwright spec per flag confirming OFF/ON UI gating. Test layers: unit (resolveFlag), integration (each flag ON behavior), e2e (Playwright UI gating), Storybook (flag-aware story variants). At minimum 9 unit × 9 integration × 9 e2e + 1 all-on baseline + 1 all-off legacy parity baseline.
 16. **Phase 13: Polish + verification + documentation** — docs/observability/* setup guides, docs/runbook/*, docs/feature-flags-runbook.md update (add FEATURE_RESOURCE_GOVERNANCE + FEATURE_OPENCLAW_HEALTH_COSTS rows + matrix-test reference), docs/orchestration.md cross-ref, FULL_VERIFY
 
@@ -590,7 +590,7 @@ Focus on SPEC-008 requirements:
 
 | Metric | Target |
 |--------|-------|
-| **Total Tasks** | ~340-420 (incl. ~50 verification spikes + benchmark + soak + chaos + ~60 UI Playwright/Storybook/Argos + ~30 feature-flag matrix) |
+| **Total Tasks** | ~340-420 (incl. ~50 verification spikes + benchmark + soak + chaos + ~60 UI Playwright/Storybook/visual regression + ~30 feature-flag matrix) |
 | **Phases** | 16 |
 | **Parallel Opportunities** | High in Phase 4 (4 adapters), Phase 9 (UI components), Phase 12 (backend tests), Phase 12B (UI tests), Phase 12C (FF matrix) |
 | **User Stories Covered** | 9/9 |
@@ -682,7 +682,7 @@ Before starting any task:
 | 10 - Backup/DR + runbooks | (TBD) | | |
 | 11 - Self-observability | (TBD) | | |
 | 12 - Test coverage (backend) | (TBD) | | |
-| 12B - UI/UX coverage (Playwright + Storybook + Argos) | (TBD) | | US9; FR-296..315; AC-UI-* |
+| 12B - UI/UX coverage (Playwright + Storybook + visual regression) | (TBD) | | US9; FR-296..315; AC-UI-* |
 | 12C - Feature-flag matrix tests | (TBD) | | US9; FR-316..325; AC-FF-* |
 | 13 - Polish + verification | (TBD) | | |
 
@@ -698,8 +698,8 @@ Before starting any task:
 - [ ] Build succeeds: `pnpm build`
 - [ ] Storybook builds clean: `pnpm build-storybook`
 - [ ] Storybook visual tests pass: `pnpm test:visual:storybook`
-- [ ] Storybook Argos metadata verified: `pnpm test:visual:argos-metadata --mode storybook`
-- [ ] Playwright Argos metadata verified: `pnpm test:e2e:argos-metadata --mode playwright`
+- [ ] Storybook visual manifest verified: `pnpm test:visual:manifest`
+- [ ] Playwright visual manifest verified: `pnpm test:e2e:visual-manifest`
 - [ ] 100% Playwright coverage of new operator journeys (audit script in `tests/e2e/SPEC-008-coverage-audit.ts` reports zero missing journeys)
 - [ ] 100% Storybook coverage of new components (audit script reports zero missing stories)
 - [ ] Feature-flag matrix tests green for all 9 flags (unit + integration + e2e + Storybook variants)

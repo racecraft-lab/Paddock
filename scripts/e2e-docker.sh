@@ -103,11 +103,9 @@ run_playwright() {
   AUTH_USER="$AUTH_USER" \
   AUTH_PASS="$AUTH_PASS" \
   API_KEY="$API_KEY" \
+  MC_VISUAL_SNAPSHOTS="${MC_VISUAL_SNAPSHOTS:-1}" \
+  MC_VISUAL_OUTPUT_DIR="${MC_VISUAL_OUTPUT_DIR:-test-results/visual-current}" \
   MC_E2E_SCREENSHOTS="${MC_E2E_SCREENSHOTS:-1}" \
-  ARGOS_PLAYWRIGHT_SCREENSHOTS="${ARGOS_PLAYWRIGHT_SCREENSHOTS:-0}" \
-  ARGOS_PLAYWRIGHT_TRACES="${ARGOS_PLAYWRIGHT_TRACES:-0}" \
-  ARGOS_UPLOAD_TO_ARGOS="${ARGOS_UPLOAD_TO_ARGOS:-0}" \
-  ARGOS_TOKEN="${ARGOS_TOKEN:-}" \
   MC_E2E_WORKSPACE_SWITCHER_PRESEEDED="$preseeded" \
   MC_READY_FOR_OWNER_PRESEEDED="$ready_for_owner_preseeded" \
   MC_SPEC_007_PRESEEDED="$spec_007_preseeded" \
@@ -154,7 +152,7 @@ if [ "$#" -eq 0 ]; then
   start_container "$FLAG_OFF_CONTAINER" "$FLAG_OFF_DATA_DIR"
 
   echo "[e2e-docker] running clean flag-off regression suite."
-  ARGOS_UPLOAD_TO_ARGOS=0 ARGOS_PLAYWRIGHT_SCREENSHOTS=0 ARGOS_PLAYWRIGHT_TRACES=0 \
+  MC_VISUAL_SNAPSHOTS=0 MC_E2E_SCREENSHOTS=0 \
     run_playwright "$FLAG_OFF_DATA_DIR" 0 0 0 0 tests/workspace-switcher-flag-off.spec.ts
 
   docker rm -f "$FLAG_OFF_CONTAINER" >/dev/null

@@ -1,13 +1,13 @@
 /**
  * SPEC-008 — shared Playwright fixtures for governance e2e specs.
  *
- * Centralizes auth + workspace setup + flag toggling + Argos
+ * Centralizes auth + workspace setup + flag toggling + visual
  * snapshot wiring so the 11 specs (T284..T297) stay terse and
  * convergent. Each spec calls `seedGovernanceFixture(...)` once in
  * `beforeAll` and the cleanup runs in `afterAll`.
  *
- * Argos integration: `argosScreenshot(page, name, { tag: ['spec-008'] })`
- * is wrapped here so test bodies don't need to import argos directly.
+ * Visual integration writes provider-neutral PNGs and manifests so the
+ * regression backend can run without paid SaaS.
  *
  * Flag toggling: writes `feature_flags` JSON onto the seeded
  * workspace per `resolveFlag` semantics. Constructor argument
@@ -19,6 +19,7 @@
 
 import type { APIRequestContext, Page, TestInfo } from '@playwright/test'
 import { dismissOnboardingForE2E, loginAsE2EAdmin } from '../../helpers'
+import { captureVisualSnapshot } from '../../visual/visual-snapshot'
 import {
   expandFeatureFlagCascade,
   FEATURE_FLAG_KEYS,
@@ -26,9 +27,7 @@ import {
   type FeatureFlagKey,
 } from '../../../src/lib/feature-flags'
 
-const ARGOS_TAG_PREFIX = 'spec-008'
-const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1'
-const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1'
+const VISUAL_TAG_PREFIX = 'spec-008'
 const AUTH_WORKSPACE_ID = 1
 
 const authWorkspaceFlagSnapshots = new Map<number, Partial<Record<FeatureFlagKey, boolean>>>()
@@ -114,9 +113,8 @@ export async function loginAsGovernanceOperator(
 }
 
 /**
- * Capture both Argos snapshot + a local PNG attachment (when the
- * env vars are set). The local PNG is convenient for debugging
- * failing Playwright runs in the operator's terminal.
+ * Capture a local visual regression PNG attachment and manifest when
+ * visual snapshot env vars are set.
  *
  * Per FR-228 + FR-229: every operator-meaningful state gets a
  * snapshot; per FR-374 we use a deterministic name format.
@@ -131,33 +129,11 @@ export async function snapshotState(
   testInfo: TestInfo,
   stateName: string,
 ): Promise<void> {
-  const safeName = stateName.replace(/[^a-z0-9.-]+/gi, '-').toLowerCase()
-
-  if (REVIEW_SCREENSHOTS_ENABLED) {
-    await testInfo.attach(`spec-008-${safeName}`, {
-      body: await page.screenshot({ fullPage: true }),
-      contentType: 'image/png',
-    })
-  }
-
-  if (ARGOS_SCREENSHOTS_ENABLED) {
-    try {
-      // Defer the dynamic import so unit-test runs of these helpers
-      // don't pull in @argos-ci at module-resolution time.
-      const dyn = (Function('m', 'return import(m)') as unknown) as (m: string) => Promise<unknown>
-      const mod = (await dyn('@argos-ci/playwright')) as
-        | { argosScreenshot: (p: Page, n: string, o: unknown) => Promise<void> }
-        | undefined
-      if (mod && typeof mod.argosScreenshot === 'function') {
-        await mod.argosScreenshot(page, `${ARGOS_TAG_PREFIX}-${safeName}`, {
-          fullPage: true,
-          tag: [ARGOS_TAG_PREFIX],
-        })
-      }
-    } catch {
-      // Local-runner fallback — attach captured screenshot only.
-    }
-  }
+  await captureVisualSnapshot(page, testInfo, {
+    domain: VISUAL_TAG_PREFIX,
+    name: stateName,
+    tags: [VISUAL_TAG_PREFIX],
+  })
 }
 
 /**

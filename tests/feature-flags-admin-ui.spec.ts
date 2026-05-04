@@ -1,7 +1,4 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
 import { expect, test, type Page, type TestInfo } from '@playwright/test'
-import { argosScreenshot } from '@argos-ci/playwright'
 import {
   API_KEY_HEADER,
   dismissOnboardingForE2E,
@@ -10,11 +7,10 @@ import {
   loginAsE2EAdmin,
   resetFeatureFlagAdminVisualFixture,
 } from './helpers'
+import { captureVisualSnapshot } from './visual/visual-snapshot'
 
-const ARGOS_SCREENSHOT_TAGS = ['feature-flag-admin']
-const ARGOS_TEST_TAGS = ['@feature-flag-admin']
-const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1'
-const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1'
+const VISUAL_SNAPSHOT_TAGS = ['feature-flag-admin']
+const VISUAL_TEST_TAGS = ['@feature-flag-admin']
 
 interface SeededWorkspace {
   id: number
@@ -28,27 +24,12 @@ async function attachReviewScreenshot(
   name: string,
   options: { fullPage?: boolean } = {}
 ) {
-  const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
-  const fullPage = options.fullPage ?? true
-
-  if (REVIEW_SCREENSHOTS_ENABLED) {
-    const dir = process.env.MC_E2E_SCREENSHOT_DIR ||
-      path.join(process.cwd(), 'test-results', 'feature-flag-admin-screenshots')
-    const screenshotPath = path.join(dir, `${normalizedName}.png`)
-    await fs.mkdir(dir, { recursive: true })
-    await page.screenshot({ path: screenshotPath, fullPage })
-    await testInfo.attach(`feature-flag-admin-${name}`, {
-      path: screenshotPath,
-      contentType: 'image/png',
-    })
-  }
-
-  if (ARGOS_SCREENSHOTS_ENABLED) {
-    await argosScreenshot(page, `feature-flag-admin-${normalizedName}`, {
-      fullPage,
-      tag: ARGOS_SCREENSHOT_TAGS,
-    })
-  }
+  await captureVisualSnapshot(page, testInfo, {
+    domain: 'feature-flag-admin',
+    name,
+    tags: VISUAL_SNAPSHOT_TAGS,
+    fullPage: options.fullPage,
+  })
 }
 
 async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof loginAsE2EAdmin>[1]) {
@@ -89,7 +70,7 @@ test.describe.serial('Platform Feature Flag admin UI journey', () => {
     await prepareAuthenticatedPage(page, request)
   })
 
-  test('loads the admin Feature Flags tab and toggles the Product Line switcher for one workspace', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('loads the admin Feature Flags tab and toggles the Product Line switcher for one workspace', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/settings')
     await expect(page).not.toHaveURL(/\/login/)
 

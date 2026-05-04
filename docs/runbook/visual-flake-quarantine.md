@@ -24,7 +24,7 @@ a `governance_visual_flake_quarantined` alert.
 2. Investigate the flake — typical causes:
    - Animation not awaited.
    - Time-sensitive snapshot (clock not pinned).
-   - Argos screenshot taken mid-layout.
+   - Visual screenshot taken mid-layout.
 3. Fix the spec. Remove the `test.fixme()` and the audit row.
 4. Watch for re-flake — the quarantine threshold reapplies.
 

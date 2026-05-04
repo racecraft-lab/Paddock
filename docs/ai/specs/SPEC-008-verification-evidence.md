@@ -28,9 +28,9 @@ remote CodeQL annotations reported on the pushed PR head:
   The command runner now resolves executables through an audited allowlist
   before reaching the spawn sink; the E2E helper now uses `crypto.randomInt`
   for the randomized login IP.
-- Argos uploads are temporarily disabled in PR CI while the account is quota
+- visual snapshot captures are temporarily disabled in PR CI while the account is quota
   blocked. Storybook and Docker visual jobs still generate screenshots and
-  enforce Argos metadata locally; the external Argos upload/status is no
+  enforce visual manifest locally; the external visual snapshot capture/status is no
   longer part of the required CI path for now.
 
 | Command | Result |
@@ -42,15 +42,15 @@ remote CodeQL annotations reported on the pushed PR head:
 | `pnpm vitest run src/lib/__tests__/command.test.ts` | PASS, 2 tests |
 | `pnpm build` | PASS after rerun with network for `next/font` |
 | `pnpm exec playwright test tests/e2e/feature-flag-matrix.e2e.ts tests/workspace-switcher-flag-off.spec.ts --reporter=list` | PASS, 21 tests |
-| `MC_E2E_DOCKER_PRESEED=1 ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh tests/e2e/governance-diagnostic-feed.e2e.ts tests/e2e/governance-dispatch-feed.spec.ts` | PASS, 6 tests |
-| `MC_E2E_DOCKER_PRESEED=1 ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh` | PASS, clean flag-off + 123 seeded tests |
+| `MC_E2E_DOCKER_PRESEED=1 MC_VISUAL_SNAPSHOTS=1 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh tests/e2e/governance-diagnostic-feed.e2e.ts tests/e2e/governance-dispatch-feed.spec.ts` | PASS, 6 tests |
+| `MC_E2E_DOCKER_PRESEED=1 MC_VISUAL_SNAPSHOTS=1 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh` | PASS, clean flag-off + 123 seeded tests |
 | `pnpm test:e2e` | PASS, 645 tests |
 | `pnpm lint` | PASS |
 | `pnpm test` | PASS after socket-bind approval for `mc-provisioner-daemon`: 252 files; 2708 tests passed, 1 skipped, 84 todo |
-| `ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 SPEC_008_AXE_ENABLED=1 pnpm exec playwright test ...` visual subset | PASS, 123 tests |
-| `CI=true ARGOS_UPLOAD_TO_ARGOS=0 pnpm test:visual:storybook` | PASS after socket-bind approval, 30 files / 152 stories |
-| `node scripts/verify-argos-metadata.mjs --mode playwright` | PASS, 149 metadata files across 118 Playwright tests |
-| `node scripts/verify-argos-metadata.mjs --mode storybook` | PASS, 170 metadata files across 152 Storybook stories |
+| `MC_VISUAL_SNAPSHOTS=1 SPEC_008_AXE_ENABLED=1 pnpm exec playwright test ...` visual subset | PASS, 123 tests |
+| `CI=true MC_VISUAL_SNAPSHOTS=1 pnpm test:visual:storybook` | PASS after socket-bind approval, 30 files / 152 stories |
+| `node scripts/verify-visual-manifest.mjs --mode playwright` | PASS, 149 metadata files across 118 Playwright tests |
+| `node scripts/verify-visual-manifest.mjs --mode storybook` | PASS, 170 metadata files across 152 Storybook stories |
 | `git diff --check` | PASS |
 
 ---
@@ -330,13 +330,13 @@ AssertionError: expected [ …(357) ] to deeply equal []
 +   "docs/observability/provider-tos-considerations.md",
 +   "docs/observability/setup.md",
 +   "docs/observability/troubleshooting.md",
-+   "docs/operator-guides/argos-baseline-approval.md",
++   "docs/operator-guides/visual-baseline-approval.md",
 +   "docs/orchestration.md",
 +   "docs/runbook/aegis-deferred-no-fallback.md",
 +   "docs/runbook/aegis-emergency-reserve-depletion.md",
 +   "docs/runbook/aegis-local-mode-fallback.md",
-+   "docs/runbook/argos-false-positive-triage.md",
-+   "docs/runbook/argos-rollback-baseline.md",
++   "docs/runbook/visual-false-positive-triage.md",
++   "docs/runbook/visual-rollback-baseline.md",
 +   "docs/runbook/audit-chain-mismatch.md",
 +   "docs/runbook/audit-chain-tamper.md",
 +   "docs/runbook/auth-secret-rotation.md",
@@ -354,7 +354,7 @@ AssertionError: expected [ …(357) ] to deeply equal []
 +   "docs/runbook/ollama-proxy-port-collision.md",
 +   "docs/runbook/reconciler-stall.md",
 +   "docs/runbook/retention-sweep-failure.md",
-+   "docs/runbook/rotate-argos-credentials.md",
++   "docs/runbook/visual-regression-pages-recovery.md",
 +   "docs/runbook/rotate-otelcol-api-key.md",
 +   "docs/runbook/source-schema-break.md",
 +   "docs/runbook/visual-flake-quarantine.md",
@@ -731,11 +731,11 @@ guards were removed, and the UI/visual gates were executed locally with
 
 ### Runtime UI and visual gates
 
-- `SPEC_008_AXE_ENABLED=1 MC_E2E_SCREENSHOTS=1 ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 pnpm exec playwright test tests/e2e/feature-flag-matrix.e2e.ts tests/e2e/governance-aegis-starvation.e2e.ts tests/e2e/governance-budget.e2e.ts tests/e2e/governance-bulk-promote.e2e.ts tests/e2e/governance-calibration-progress.e2e.ts tests/e2e/governance-diagnostic-feed.e2e.ts tests/e2e/governance-dispatch-feed.spec.ts tests/e2e/governance-etag-conflict-toast.e2e.ts tests/e2e/governance-flag-off-byte-compat.e2e.ts tests/e2e/governance-modal-error-summary.e2e.ts tests/e2e/governance-override-grant.e2e.ts tests/e2e/governance-system-health-recovery.e2e.ts tests/e2e/governance-system-health.spec.ts tests/e2e/governance-tab-landing.e2e.ts tests/e2e/governance-telemetry-health.e2e.ts tests/e2e/governance-windows.e2e.ts tests/e2e/governance-wip-policy.e2e.ts` — PASS: 107 tests; axe reported no accessibility violations across checked states.
-- `MC_E2E_DOCKER_PRESEED=1 ARGOS_PLAYWRIGHT_SCREENSHOTS=1 ARGOS_UPLOAD_TO_ARGOS=0 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh` — PASS: Docker build passed, clean flag-OFF regression 1 passed, and seeded Product Line + Ready for Owner + SPEC-007 + SPEC-008 suite 123 passed with all current RC Factory flags seeded ON.
+- `SPEC_008_AXE_ENABLED=1 MC_E2E_SCREENSHOTS=1 MC_VISUAL_SNAPSHOTS=1 pnpm exec playwright test tests/e2e/feature-flag-matrix.e2e.ts tests/e2e/governance-aegis-starvation.e2e.ts tests/e2e/governance-budget.e2e.ts tests/e2e/governance-bulk-promote.e2e.ts tests/e2e/governance-calibration-progress.e2e.ts tests/e2e/governance-diagnostic-feed.e2e.ts tests/e2e/governance-dispatch-feed.spec.ts tests/e2e/governance-etag-conflict-toast.e2e.ts tests/e2e/governance-flag-off-byte-compat.e2e.ts tests/e2e/governance-modal-error-summary.e2e.ts tests/e2e/governance-override-grant.e2e.ts tests/e2e/governance-system-health-recovery.e2e.ts tests/e2e/governance-system-health.spec.ts tests/e2e/governance-tab-landing.e2e.ts tests/e2e/governance-telemetry-health.e2e.ts tests/e2e/governance-windows.e2e.ts tests/e2e/governance-wip-policy.e2e.ts` — PASS: 107 tests; axe reported no accessibility violations across checked states.
+- `MC_E2E_DOCKER_PRESEED=1 MC_VISUAL_SNAPSHOTS=1 SPEC_008_AXE_ENABLED=1 bash scripts/e2e-docker.sh` — PASS: Docker build passed, clean flag-OFF regression 1 passed, and seeded Product Line + Ready for Owner + SPEC-007 + SPEC-008 suite 123 passed with all current RC Factory flags seeded ON.
 - `SPEC_008_AXE_ENABLED=1 pnpm test:visual:storybook` — PASS: 30 files / 152 stories.
-- `node scripts/verify-argos-metadata.mjs --mode playwright` — PASS: 149 screenshot metadata files across 118 Playwright tests.
-- `node scripts/verify-argos-metadata.mjs --mode storybook` — PASS: 170 screenshot metadata files across 152 Storybook stories; 152 stories include test/source metadata.
+- `node scripts/verify-visual-manifest.mjs --mode playwright` — PASS: 149 screenshot metadata files across 118 Playwright tests.
+- `node scripts/verify-visual-manifest.mjs --mode storybook` — PASS: 170 screenshot metadata files across 152 Storybook stories; 152 stories include test/source metadata.
 
 ### Remaining operator-gated gates
 

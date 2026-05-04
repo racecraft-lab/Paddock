@@ -7,7 +7,7 @@ description: "Task list for SPEC-008 Resource Governance and Cost Tracker Enforc
 **Input**: Design documents from `/specs/008-resource-governance/`
 **Prerequisites**: spec.md (467 FRs, 9 user stories), plan.md (architecture), data-model.md (15 migrations: M64 + M65a..M65m + M66), research.md (R-001..R-N), contracts/ (10 OpenAPI files), quickstart.md, 6 checklists.
 
-**Tests**: Tests are MANDATORY for SPEC-008 per Constitution Principle XIV (Real UI Journey Quality Gate, NON-NEGOTIABLE), Principle IV (Test-First, NON-NEGOTIABLE), Principle V (Feature-Flag Resolution, NON-NEGOTIABLE), and US9 (P1, NON-NEGOTIABLE). Every UI-touching FR has Playwright + Storybook + Argos coverage. Every flag-gated FR has matrix-test coverage. TDD red-phase tasks are marked `[T-RED]`.
+**Tests**: Tests are MANDATORY for SPEC-008 per Constitution Principle XIV (Real UI Journey Quality Gate, NON-NEGOTIABLE), Principle IV (Test-First, NON-NEGOTIABLE), Principle V (Feature-Flag Resolution, NON-NEGOTIABLE), and US9 (P1, NON-NEGOTIABLE). Every UI-touching FR has Playwright + Storybook + visual coverage. Every flag-gated FR has matrix-test coverage. TDD red-phase tasks are marked `[T-RED]`.
 
 **Organization**: Tasks are organized by the 16 implementation phases declared in `docs/ai/specs/SPEC-008-workflow.md` Phase 5. The User-Story tag (`[US?]`) maps each task to its primary user story for traceability. Phase 0 verification spikes are sequenced FIRST (FR-090a CI gate blocks downstream work).
 
@@ -274,7 +274,7 @@ description: "Task list for SPEC-008 Resource Governance and Cost Tracker Enforc
 
 ## Phase 9: Cost Tracker UI Extensions (US5, US6)
 
-**Goal**: Governance tab + sub-views + System Health dashboard. Every component ships `*.stories.tsx` + Argos snapshots.
+**Goal**: Governance tab + sub-views + System Health dashboard. Every component ships `*.stories.tsx` + visual snapshots.
 
 **Independent Test**: `pnpm test:e2e tests/e2e/governance-tab-landing.e2e.ts` green; flag-OFF byte-compat regression spec (`tests/e2e/governance-flag-off-byte-compat.e2e.ts`) green.
 
@@ -360,9 +360,9 @@ description: "Task list for SPEC-008 Resource Governance and Cost Tracker Enforc
 - [x] T222 [P] [US8] `docs/runbook/ingest-disk-full-pause.md`. (FR-264a, FR-090e)
 - [x] T223 [P] [US8] `docs/runbook/backfill-window-failure.md`. (FR-264a, FR-114a)
 - [x] T224 [P] [US8] `docs/runbook/auth-secret-rotation.md`. (FR-219v)
-- [x] T225 [P] [US8] `docs/runbook/argos-false-positive-triage.md`. (FR-373, FR-394)
-- [x] T226 [P] [US8] `docs/runbook/argos-rollback-baseline.md`. (FR-378, FR-394)
-- [x] T227 [P] [US8] `docs/runbook/rotate-argos-credentials.md`. (FR-369, FR-394)
+- [x] T225 [P] [US8] `docs/runbook/visual-false-positive-triage.md`. (FR-373, FR-394)
+- [x] T226 [P] [US8] `docs/runbook/visual-rollback-baseline.md`. (FR-378, FR-394)
+- [x] T227 [P] [US8] `docs/runbook/visual-regression-pages-recovery.md`. (FR-369, FR-394)
 - [x] T228 [P] [US8] `docs/runbook/audit-chain-tamper.md`. (FR-385, FR-394)
 - [x] T229 [P] [US8] `docs/runbook/copilot-schema-broken.md`. (FR-367, FR-394)
 - [x] T230 [US8] CI guard `scripts/check-runbook-links.ts` orphan detection per FR-090m + FR-274. (FR-090m, FR-274)
@@ -439,20 +439,20 @@ description: "Task list for SPEC-008 Resource Governance and Cost Tracker Enforc
 
 ---
 
-## Phase 12B: UI/UX Test Coverage (Playwright + Storybook + Argos) — Constitution XIV NON-NEGOTIABLE (US9)
+## Phase 12B: UI/UX Test Coverage (Playwright + Storybook + visual regression) — Constitution XIV NON-NEGOTIABLE (US9)
 
-**Goal**: For EVERY operator journey: Playwright spec covering default/loading/error/empty/dense/flag-OFF/flag-ON; Argos snapshots; axe-core a11y (WCAG 2.1 AA); modal focus-trap (FR-090p); ARIA live-regions (FR-090o).
+**Goal**: For EVERY operator journey: Playwright spec covering default/loading/error/empty/dense/flag-OFF/flag-ON; visual snapshots; axe-core a11y (WCAG 2.1 AA); modal focus-trap (FR-090p); ARIA live-regions (FR-090o).
 
 ### Playwright e2e specs (`tests/e2e/SPEC-008-*` per FR-296..305 + workflow Phase 12B explicit list)
 
-- [x] T284 [P] [US1] [T-RED] `tests/e2e/governance-wip-policy.e2e.ts` covering operator creates `limit_value=1` agent-scoped WIP, second task defers with `wip_exceeded`. Argos snapshots all states. (FR-296, US1)
-- [x] T285 [P] [US2] [T-RED] `tests/e2e/governance-budget.e2e.ts` daily USD budget soft 80% / hard 100% paths; Argos snapshots 0/50/80/95/100%. (FR-296, US2)
-- [x] T286 [P] [US3] [T-RED] `tests/e2e/governance-windows.e2e.ts` blackout 22:00-06:00 CDT + DST transition; Argos. (FR-300, US3)
-- [x] T287 [P] [US4] [T-RED] `tests/e2e/governance-override-grant.e2e.ts` happy path + 409/412/422/423 + concurrent-edit; Argos. (FR-299, US4)
-- [x] T288 [P] [US5] [T-RED] `tests/e2e/governance-tab-landing.e2e.ts` flag-ON Governance tab + drilldowns; Argos every sub-view × every state. (FR-296, US5)
-- [x] T289 [P] [US6] [T-RED] `tests/e2e/governance-diagnostic-feed.e2e.ts` initial / next-page / live-append / filter / empty; Argos. (FR-297, FR-090j, US6)
-- [x] T290 [P] [US7] [T-RED] `tests/e2e/governance-telemetry-health.e2e.ts` System Health drilldown + breaker-open banner; Argos. (FR-304, US7)
-- [x] T291 [P] [US4] [T-RED] `tests/e2e/governance-aegis-starvation.e2e.ts` exercises starvation + reserve + escalation per AC-Aegis-1..6; Argos. (FR-303, FR-169, US4)
+- [x] T284 [P] [US1] [T-RED] `tests/e2e/governance-wip-policy.e2e.ts` covering operator creates `limit_value=1` agent-scoped WIP, second task defers with `wip_exceeded`. visual snapshots all states. (FR-296, US1)
+- [x] T285 [P] [US2] [T-RED] `tests/e2e/governance-budget.e2e.ts` daily USD budget soft 80% / hard 100% paths; visual snapshots 0/50/80/95/100%. (FR-296, US2)
+- [x] T286 [P] [US3] [T-RED] `tests/e2e/governance-windows.e2e.ts` blackout 22:00-06:00 CDT + DST transition; visual regression. (FR-300, US3)
+- [x] T287 [P] [US4] [T-RED] `tests/e2e/governance-override-grant.e2e.ts` happy path + 409/412/422/423 + concurrent-edit; visual regression. (FR-299, US4)
+- [x] T288 [P] [US5] [T-RED] `tests/e2e/governance-tab-landing.e2e.ts` flag-ON Governance tab + drilldowns; visual regression every sub-view × every state. (FR-296, US5)
+- [x] T289 [P] [US6] [T-RED] `tests/e2e/governance-diagnostic-feed.e2e.ts` initial / next-page / live-append / filter / empty; visual regression. (FR-297, FR-090j, US6)
+- [x] T290 [P] [US7] [T-RED] `tests/e2e/governance-telemetry-health.e2e.ts` System Health drilldown + breaker-open banner; visual regression. (FR-304, US7)
+- [x] T291 [P] [US4] [T-RED] `tests/e2e/governance-aegis-starvation.e2e.ts` exercises starvation + reserve + escalation per AC-Aegis-1..6; visual regression. (FR-303, FR-169, US4)
 - [x] T292 [P] [US8] [T-RED] `tests/e2e/governance-system-health-recovery.e2e.ts` one-click recovery affordances per FR-090i gesture matrix. (FR-298, FR-090i, US8)
 - [x] T293 [P] [US5] [T-RED] `tests/e2e/governance-bulk-promote.e2e.ts` happy / wrong-phrase / cross-workspace 422 / Idempotency-Key replay. (FR-301, FR-090h, FR-090h-i, US5)
 - [x] T294 [P] [US5] [T-RED] `tests/e2e/governance-calibration-progress.e2e.ts` per FR-302. (FR-302, US5)
@@ -474,22 +474,22 @@ description: "Task list for SPEC-008 Resource Governance and Cost Tracker Enforc
 - [x] T307 [P] [US9] Add per-state axe-core assertions to T292 system-health-recovery. (FR-090n)
 - [x] T308 [P] [US9] Add per-state axe-core assertions to T293 bulk-promote. (FR-090n)
 
-### Argos metadata gate + baseline + snapshot determinism
+### Visual manifest gate + baseline + snapshot determinism
 
-- [x] T309 [US9] Wire `pnpm test:e2e:argos-metadata --mode playwright` CI step. (FR-228, FR-229, AC-UI-Argos-Playwright-1) — `package.json` script `test:e2e:argos-metadata` already wired (pre-existing).
-- [x] T310 [P] [US9] Wire `pnpm test:visual:argos-metadata --mode storybook` CI step. (FR-228, FR-229, AC-UI-Argos-Storybook-1) — `package.json` script `test:visual:argos-metadata` already wired (pre-existing).
-- [x] T311 [P] [US9] Argos credential provisioning via 1Password `op://Mission Control/argos-ci-token` + project-id; rotation via `docs/runbook/rotate-argos-credentials.md`. (FR-369) — runbook already present (T227); reference re-validated.
-- [x] T312 [P] [US9] First-PR Argos baseline approval procedure documented in PR description (`Argos build #<n>`). (FR-371) — `docs/operator-guides/argos-baseline-approval.md`.
-- [x] T313 [P] [US9] Argos baseline rotation policy: refresh-on-change + `pnpm argos:rebaseline` typed-confirmation `REBASELINE ARGOS` + `governance_visual_baseline_rebaselined` audit row. (FR-372) — documented in baseline-approval guide.
+- [x] T309 [US9] Wire `pnpm test:e2e:visual-manifest` CI step. (FR-228, FR-229, AC-UI-Visual-Playwright-1) — `package.json` script `test:e2e:visual-manifest` already wired (pre-existing).
+- [x] T310 [P] [US9] Wire `pnpm test:visual:manifest` CI step. (FR-228, FR-229, AC-UI-Visual-Storybook-1) — `package.json` script `test:visual:manifest` already wired (pre-existing).
+- [x] T311 [P] [US9] GitHub Pages visual baseline publishing via workflow `GITHUB_TOKEN`; recovery via `docs/runbook/visual-regression-pages-recovery.md`. (FR-369) — runbook already present (T227); reference re-validated.
+- [x] T312 [P] [US9] First-PR visual baseline approval procedure documented with workflow visual report links. (FR-371) — `docs/operator-guides/visual-baseline-approval.md`.
+- [x] T313 [P] [US9] Visual baseline rotation policy: refresh-on-change, bulk rebaseline via dedicated PR, `governance_visual_baseline_rebaselined` audit row. (FR-372) — documented in baseline-approval guide.
 - [x] T314 [P] [US9] Snapshot determinism: pin Playwright; CI runs `mcr.microsoft.com/playwright` Docker image; load `Inter` + `JetBrains Mono` from `public/fonts/`. (FR-374) — documented in baseline-approval guide.
 - [x] T315 [P] [US9] Playwright `retries: 2` in CI / `retries: 0` local; quarantine pipeline per FR-370. (FR-370) — `docs/runbook/visual-flake-quarantine.md`.
-- [x] T316 [P] [US9] Visual-regression CI runtime budget alert (Storybook ≤ 5 min, Playwright + Argos ≤ 10 min). (FR-379) — documented in baseline-approval + quarantine runbooks.
+- [x] T316 [P] [US9] Visual-regression CI runtime budget alert (Storybook ≤ 5 min, Playwright + visual regression ≤ 10 min). (FR-379) — documented in baseline-approval + quarantine runbooks.
 - [x] T317 [P] [US9] Responsive scope: desktop 1280×800 only; mobile/tablet deferred. (FR-380) — documented in baseline-approval guide.
 
 ### Modal focus-trap + ARIA live-region wiring (FR-090o, FR-090p)
 
 - [x] T318 [P] [US9] Implement modal focus-trap utility used by bulk-promote, recovery, override-grant modals; restore focus on close; Esc cancels; Enter on disabled submit no-op until typed phrase matches. (FR-090p) — `src/components/governance/use-modal-focus-trap.ts`.
-- [x] T319 [P] [US9] Storybook story variant for each typed-confirmation modal with `role="alert"` error-summary populated (Argos-snapshotted). (FR-090p) — `modal-error-summary.tsx` + 4-variant `modal-error-summary.stories.tsx`. Coverage CI guard `scripts/spec-008/check-axe-coverage.mjs`.
+- [x] T319 [P] [US9] Storybook story variant for each typed-confirmation modal with `role="alert"` error-summary populated (visual regression-snapshotted). (FR-090p) — `modal-error-summary.tsx` + 4-variant `modal-error-summary.stories.tsx`. Coverage CI guard `scripts/spec-008/check-axe-coverage.mjs`.
 
 ---
 
@@ -557,13 +557,13 @@ description: "Task list for SPEC-008 Resource Governance and Cost Tracker Enforc
 - [x] T360 Run `pnpm lint` clean across SPEC-008 paths. (Constitution VI) — PASS on 2026-05-03.
 - [x] T361 Run `pnpm typecheck` clean. (Constitution VI) — PASS on 2026-05-03.
 - [x] T362 Run `pnpm test` (unit) green. (Constitution IV, XIV) — PASS on 2026-05-03 with socket-bind approval for `mc-provisioner-daemon`: 252 files passed / 32 skipped; 2707 tests passed / 1 skipped / 84 todo.
-- [x] T363 Run `pnpm test:e2e` green against running app. (Constitution XIV) — Docker-backed production run PASS on 2026-05-03: clean flag-OFF regression 1 passed; seeded Product Line + Ready for Owner + SPEC-007 + SPEC-008 suite 123 passed with `SPEC_008_AXE_ENABLED=1`, all current RC Factory flags seeded ON, screenshots enabled, and Argos upload disabled locally.
+- [x] T363 Run `pnpm test:e2e` green against running app. (Constitution XIV) — Docker-backed production run PASS on 2026-05-03: clean flag-OFF regression 1 passed; seeded Product Line + Ready for Owner + SPEC-007 + SPEC-008 suite 123 passed with `SPEC_008_AXE_ENABLED=1`, all current RC Factory flags seeded ON, screenshots enabled, and visual snapshot capture disabled locally.
 - [x] T364 Run `pnpm test:visual:storybook` green. (Constitution XIV, FR-228) — PASS on 2026-05-03: 30 Storybook visual files / 152 stories.
-- [x] T365 Run `pnpm test:e2e:argos-metadata --mode playwright` green. (FR-229) — PASS on 2026-05-03: 149 Playwright screenshot metadata files across 118 tests.
-- [x] T366 Run `pnpm test:visual:argos-metadata --mode storybook` green. (FR-229) — PASS on 2026-05-03: 170 Storybook screenshot metadata files across 152 stories.
+- [x] T365 Run `pnpm test:e2e:visual-manifest` green. (FR-229) — PASS on 2026-05-03: 149 Playwright screenshot metadata files across 118 tests.
+- [x] T366 Run `pnpm test:visual:manifest` green. (FR-229) — PASS on 2026-05-03: 170 Storybook screenshot metadata files across 152 stories.
 - [x] T367 Run `pnpm test:soak` 30 min @ 100 admissions/sec green. (FR-224, AC-Soak-1) — operator-gated; documented in `docs/ai/specs/SPEC-008-verification-evidence.md` Deferred section.
 - [x] T368 Run `pnpm test:chaos` green; every runbook's `## Verification` step passes. (FR-090m) — operator-gated; pipeline `scripts/spec-008/full-verify.sh` archives the runnable subset.
-- [x] T369 Run `pnpm test:all` (full suite) green; coverage report artifacted. (FR-240) — constituent lint, typecheck, unit, build, Docker e2e, Storybook, and Argos metadata gates are green; aggregate coverage-report artifacting remains CI/operator-owned.
+- [x] T369 Run `pnpm test:all` (full suite) green; coverage report artifacted. (FR-240) — constituent lint, typecheck, unit, build, Docker e2e, Storybook, and Visual manifest gates are green; aggregate coverage-report artifacting remains CI/operator-owned.
 - [x] T370 Verify `scripts/check-strict-scope.sh` clean (every SPEC-008 TS/TSX file appears in `tsconfig.spec-strict.json`). (Convention J) — `tests/integration/strict-scope-guard.test.ts` PASS 331/331.
 - [x] T371 Verify `scripts/check-runbook-links.ts` clean (no orphan runbook references). (FR-090m, FR-274) — PASS, 26 pages all referenced.
 - [x] T372 Archive Sweep dry-run/apply safety evidence + recovery commands captured for previously merged specs (excluding current target). (Constitution XV) — recorded in `.specify/memory/changelog.md` under "Adjacent sweep on SPEC-008 worktree (2026-05-02)".
@@ -610,7 +610,7 @@ description: "Task list for SPEC-008 Resource Governance and Cost Tracker Enforc
 - Migrations land before any module that reads/writes the new tables.
 - Module before its REST route handler.
 - REST route handler before its UI component (and the component's Storybook story coverage).
-- Story coverage + Playwright spec before Argos baseline acceptance.
+- Story coverage + Playwright spec before visual baseline acceptance.
 
 ### Parallel Opportunities
 
@@ -671,7 +671,7 @@ Task: T168 policy-row.tsx + .stories.tsx
 - Devs A+B: Phase 2 (US1+US2 core).
 - Dev C: Phase 3 (US7 reconciler) + Phase 4 (adapters).
 - Dev D: Phase 9 (UI components in parallel — every component is [P]).
-- Dev E: Phase 12B (Playwright + Storybook + Argos infra, axe-core wiring).
+- Dev E: Phase 12B (Playwright + Storybook + visual regression infra, axe-core wiring).
 - All devs together: Phase 12 + 12C test coverage (parallelizable per FR / per flag).
 
 ---

@@ -3,7 +3,7 @@
  *
  * Exercises every gesture in the FR-090i recovery matrix: typed
  * confirmation modal, focus-trap, Esc cancels, Enter on disabled
- * submit no-op until phrase matches. Argos snapshots; axe scans.
+ * submit no-op until phrase matches. Visual snapshots; axe scans.
  *
  * @see specs/008-resource-governance/spec.md FR-298, FR-090i, US8
  * @see specs/008-resource-governance/tasks.md T292, T307

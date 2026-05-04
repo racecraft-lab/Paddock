@@ -9,7 +9,7 @@
  *
  * The tests render the relevant components and assert the ARIA
  * attributes are present. Full axe-core integration runs in
- * Storybook (Argos pipeline) — this file is the unit-level guard
+ * Storybook visual pipeline — this file is the unit-level guard
  * that the source markup carries the wiring axe-core would check.
  *
  * @see specs/008-resource-governance/tasks.md T201, T202

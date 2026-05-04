@@ -29,7 +29,7 @@ interface FeatureFlagDefinition {
   rollbackBehavior: string
   evidence: {
     playwright?: string[]
-    argos?: string[]
+    visual?: string[]
     storybook?: string[]
   }
 }
@@ -222,7 +222,7 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
             const blocked = flag.enable_blockers.length > 0
             const evidenceCount = [
               ...(flag.definition.evidence.playwright || []),
-              ...(flag.definition.evidence.argos || []),
+              ...(flag.definition.evidence.visual || []),
               ...(flag.definition.evidence.storybook || []),
             ].length
             const nextValue = !flag.evaluated_value

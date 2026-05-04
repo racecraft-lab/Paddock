@@ -7,8 +7,8 @@
  *   - The submit fails (server returned a 4xx/5xx).
  *
  * The summary is keyboard-focusable on render so screen-readers
- * announce the failure immediately. Argos-snapshotted via
- * the per-modal Storybook variants.
+ * announce the failure immediately. Visual snapshots are captured
+ * via the per-modal Storybook variants.
  *
  * @see specs/008-resource-governance/spec.md FR-090p
  * @see specs/008-resource-governance/tasks.md T319
@@ -23,7 +23,7 @@ interface ModalErrorSummaryProps {
   message: string | null
   /** Optional secondary instruction text shown beneath the message. */
   hint?: string | undefined
-  /** Stable test id for Playwright + Argos snapshots. */
+  /** Stable test id for Playwright + visual snapshots. */
   testId?: string
 }
 

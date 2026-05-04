@@ -1,6 +1,4 @@
-import fs from 'node:fs/promises'
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from '@playwright/test'
-import { argosScreenshot } from '@argos-ci/playwright'
 import Database from 'better-sqlite3'
 import path from 'node:path'
 
@@ -11,6 +9,7 @@ import {
   freezeProductLineVisualClock,
   loginAsE2EAdmin,
 } from '../helpers'
+import { captureVisualSnapshot } from '../visual/visual-snapshot'
 
 type SeededTask = {
   id: number
@@ -34,10 +33,8 @@ const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ||
   path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
 const FACILITY_SCOPE_QUERY = 'workspace_scope=facility'
 const READY_FOR_OWNER_RECIPIENT = 'owner-e2e-ready-for-owner-visual'
-const READY_FOR_OWNER_SCREENSHOT_TAGS = ['ready-for-owner']
+const READY_FOR_OWNER_VISUAL_TAGS = ['ready-for-owner']
 const READY_FOR_OWNER_TEST_TAGS = ['@ready-for-owner']
-const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1'
-const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1'
 const FIXTURE_NOW_SECONDS = Math.floor(new Date('2026-04-28T12:00:00.000Z').getTime() / 1000)
 const FIXTURE_TITLES = {
   awaitingOwner: 'SPEC-005 Ready for Owner - Awaiting Owner',
@@ -283,26 +280,11 @@ function configureReadyForOwnerTemplate(workspaceId: number, taskId: number) {
 }
 
 async function attachReadyForOwnerScreenshot(page: Page, testInfo: TestInfo, name: string) {
-  const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
-
-  if (REVIEW_SCREENSHOTS_ENABLED) {
-    const dir = process.env.MC_E2E_SCREENSHOT_DIR ||
-      path.join(process.cwd(), 'test-results', 'ready-for-owner-screenshots')
-    const screenshotPath = path.join(dir, `${normalizedName}.png`)
-    await fs.mkdir(dir, { recursive: true })
-    await page.screenshot({ path: screenshotPath, fullPage: true })
-    await testInfo.attach(`ready-for-owner-${name}`, {
-      path: screenshotPath,
-      contentType: 'image/png',
-    })
-  }
-
-  if (ARGOS_SCREENSHOTS_ENABLED) {
-    await argosScreenshot(page, `ready-for-owner-${normalizedName}`, {
-      fullPage: true,
-      tag: READY_FOR_OWNER_SCREENSHOT_TAGS,
-    })
-  }
+  await captureVisualSnapshot(page, testInfo, {
+    domain: 'ready-for-owner',
+    name,
+    tags: READY_FOR_OWNER_VISUAL_TAGS,
+  })
 }
 
 async function createReadyForOwnerWorkspace(request: APIRequestContext): Promise<SeededWorkspace> {

@@ -1,0 +1,140 @@
+name: Visual Storybook Snapshots
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/visual-storybook.yml'
+      - '.storybook/**'
+      - 'src/**/*.stories.tsx'
+      - 'src/components/layout/**'
+      - 'src/components/panels/orchestration-bar.tsx'
+      - 'src/components/panels/task-board-panel.tsx'
+      - 'src/components/panels/notifications-panel.tsx'
+      - 'src/components/settings/**'
+      - 'src/components/ui/**'
+      - 'src/store/**'
+      - 'src/types/product-line.ts'
+      - 'src/types/workflow-template.ts'
+      - 'src/lib/feature-flags.ts'
+      - 'messages/en.json'
+      - 'src/app/globals.css'
+      - 'tailwind.config.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vitest.storybook.config.ts'
+      - 'scripts/clean-visual-output.mjs'
+      - 'scripts/write-storybook-visual-manifests.mjs'
+      - 'scripts/verify-visual-manifest.mjs'
+      - 'regconfig*.json'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/visual-storybook.yml'
+      - '.storybook/**'
+      - 'src/**/*.stories.tsx'
+      - 'src/components/layout/**'
+      - 'src/components/panels/orchestration-bar.tsx'
+      - 'src/components/panels/task-board-panel.tsx'
+      - 'src/components/panels/notifications-panel.tsx'
+      - 'src/components/settings/**'
+      - 'src/components/ui/**'
+      - 'src/store/**'
+      - 'src/types/product-line.ts'
+      - 'src/types/workflow-template.ts'
+      - 'src/lib/feature-flags.ts'
+      - 'messages/en.json'
+      - 'src/app/globals.css'
+      - 'tailwind.config.js'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'vitest.storybook.config.ts'
+      - 'scripts/clean-visual-output.mjs'
+      - 'scripts/write-storybook-visual-manifests.mjs'
+      - 'scripts/verify-visual-manifest.mjs'
+      - 'regconfig*.json'
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+permissions:
+  contents: write
+  actions: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  visual-storybook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Storybook visual tests
+        id: storybook
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MC_VISUAL_OUTPUT_DIR: test-results/visual-current
+        run: pnpm test:visual:storybook
+
+      - name: Verify Storybook visual manifests
+        id: storybook-metadata
+        if: always()
+        continue-on-error: true
+        env:
+          MC_VISUAL_STORYBOOK_EXPECTED_SNAPSHOTS: '152'
+          MC_VISUAL_STORYBOOK_EXPECTED_STORIES: '152'
+          MC_VISUAL_STORYBOOK_REQUIRED_TAGS: 'visual'
+          MC_VISUAL_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS: 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,ready-for-owner:3,spec-007:3,spec-008:120'
+        run: pnpm test:visual:manifest
+
+      - name: Prepare Storybook visual report directory
+        if: steps.storybook.outcome == 'success' && steps.storybook-metadata.outcome == 'success'
+        run: mkdir -p test-results/visual-report
+
+      - name: Compare Storybook visual snapshots
+        id: visual-regression
+        if: steps.storybook.outcome == 'success' && steps.storybook-metadata.outcome == 'success'
+        continue-on-error: true
+        uses: reg-viz/reg-actions@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          image-directory-path: test-results/visual-current/storybook
+          artifact-name: mission-control-storybook-visual
+          branch: visual-regression-artifacts
+          report-file-path: test-results/visual-report/storybook.html
+          comment-report-format: summarized
+          outdated-comment-action: minimize
+          retention-days: 30
+
+      - name: Publish Storybook visual report to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.storybook.outcome == 'success' && steps.storybook-metadata.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm visual:reg-suit:storybook
+
+      - name: Fail on Storybook, visual manifest, or visual regression defects
+        if: steps.storybook.outcome != 'success' || steps.storybook-metadata.outcome != 'success' || steps.visual-regression.outcome == 'failure'
+        run: exit 1

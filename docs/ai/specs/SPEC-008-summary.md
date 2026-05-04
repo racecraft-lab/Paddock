@@ -28,7 +28,7 @@ path when the feature flag is OFF.
 - **Cost Tracker UI**: `src/components/governance/**` — tab adds when
   `FEATURE_RESOURCE_GOVERNANCE` is ON; six subviews (Policies,
   Budgets, Windows, Overrides, Diagnostics, System Health) with axe-
-  assert + Argos snapshots on every state.
+  assert + visual snapshots on every state.
 - **Feature-flag matrix**: `src/lib/feature-flag-matrix.ts` runner +
   `tests/integration/feature-flag-matrix.test.ts` (47 tests) +
   `tests/e2e/feature-flag-matrix.e2e.ts` (9 flag rows × OFF/ON).
@@ -129,5 +129,5 @@ the schema additions are themselves a problem.
 - `docs/orchestration.md` — evaluator integration in dispatch.
 - `docs/observability/setup.md` — OTLP receiver + adapter activation.
 - `docs/observability/troubleshooting.md` — common ingest issues.
-- `docs/operator-guides/argos-baseline-approval.md` — visual review.
+- `docs/operator-guides/visual-baseline-approval.md` — visual review.
 - `docs/runbook/visual-flake-quarantine.md` — flaky-spec lifecycle.

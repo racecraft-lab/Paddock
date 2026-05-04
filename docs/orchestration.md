@@ -409,7 +409,7 @@ For runbook references see:
 - `docs/feature-flags-runbook.md` — flag policy + matrix tests.
 - `docs/runbook/breaker-stuck-open.md` — circuit breaker recovery.
 - `docs/runbook/aegis-emergency-reserve-depletion.md` — Aegis reserve.
-- `docs/operator-guides/argos-baseline-approval.md` — visual review.
+- `docs/operator-guides/visual-baseline-approval.md` — visual review.
 
 ## Reference
 

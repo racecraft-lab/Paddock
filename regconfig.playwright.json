@@ -1,0 +1,20 @@
+{
+  "core": {
+    "actualDir": "test-results/visual-current/playwright",
+    "workingDir": ".reg/playwright",
+    "enableAntialias": true,
+    "thresholdRate": 0,
+    "ximgdiff": {
+      "invocationType": "client"
+    }
+  },
+  "plugins": {
+    "reg-keygen-git-hash-plugin": {},
+    "reg-publish-github-pages-plugin": {
+      "repository": "racecraft-lab/mission-control",
+      "branchName": "visual-regression-pages",
+      "token": "$GITHUB_TOKEN",
+      "pathPrefix": "playwright"
+    }
+  }
+}

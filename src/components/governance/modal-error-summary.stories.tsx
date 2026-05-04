@@ -1,7 +1,7 @@
 /**
  * SPEC-008 — T319 — Storybook variants for the modal error summary.
  *
- * Argos-snapshotted via the existing storybook → argos pipeline.
+ * Visual-snapshotted via the Storybook visual pipeline.
  *
  * @see specs/008-resource-governance/tasks.md T319
  */

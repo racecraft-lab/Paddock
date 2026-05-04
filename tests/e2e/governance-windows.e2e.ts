@@ -4,7 +4,7 @@
  * Operator authors a blackout window 22:00-06:00 in `America/Chicago`.
  * Test exercises before/in/after window + the DST spring-forward
  * boundary (2026-03-08 02:00 → 03:00 CDT) confirming the materializer
- * picks the right local-time anchor. axe + Argos per FR-090n + FR-228.
+ * picks the right local-time anchor. axe + visual snapshots per FR-090n + FR-228.
  *
  * @see specs/008-resource-governance/spec.md FR-300, US3
  * @see specs/008-resource-governance/tasks.md T286, T301

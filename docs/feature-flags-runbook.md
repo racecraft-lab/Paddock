@@ -15,7 +15,7 @@ admins in the UI.
 - Every production-impacting flag must document its upstream impact, risk level,
   dependencies, and rollback path in the registry before it can be enabled.
 - Do not update a PR, merge a PR, or open a follow-up PR with known UI journey
-  bugs shown in Argos, Playwright, or Storybook evidence.
+  bugs shown in Playwright, Storybook, or visual regression evidence.
 
 ## Current Implementation
 
@@ -87,8 +87,8 @@ See `docs/github-sync.md` for the full sync behavior and rollback path.
    acceptance reason.
 6. Enable the flag and provide an operator reason when prompted.
 7. Verify the affected user journey in the running app.
-8. For PR review, confirm the PR description links to the relevant Argos
-   Storybook and Playwright builds before merge.
+8. For PR review, confirm the workflow run includes relevant Storybook and
+   Playwright visual regression reports before merge.
 
 ## Safe Disable And Rollback
 
@@ -139,19 +139,19 @@ Before a new flag can ship:
 4. Add or update the admin UI story in Storybook.
 5. Add Playwright coverage for the operator journey when the flag affects UI or
    user-visible behavior.
-6. Ensure Argos receives screenshots for the affected Storybook states and
+6. Ensure visual snapshots cover the affected Storybook states and
    Playwright journeys.
-7. Update Argos metadata gates when new screenshot domains or counts are added.
+7. Update visual manifest gates when new screenshot domains or counts are added.
 8. Update OpenAPI when request or response contracts change.
-9. Update the PR description with the relevant Argos build links and any manual
-   operator verification notes.
+9. Update the PR description with the relevant visual report links and any
+   manual operator verification notes.
 
 ## CI And Visual Review
 
-- Storybook visual coverage runs through the Argos Storybook workflow.
-- User journey visual coverage runs through Playwright and Argos upload.
-- Argos should run on pull requests and on merged main builds so main can set
-  the visual baseline.
+- Storybook visual coverage runs through the Visual Storybook Snapshots workflow.
+- User journey visual coverage runs through Playwright plus visual manifests.
+- `reg-suit` publishes merged-main baselines to GitHub Pages so main can set
+  the visual baseline without paid SaaS.
 - Screenshots are review artifacts, not source artifacts. Do not commit generated
   screenshots unless a spec explicitly requires a tracked image asset.
 - If screenshots show a defect, remediate the defect and rerun the visual checks
@@ -201,8 +201,8 @@ constitution's matrix-test convention.
   `resource_governance_breaker` row exists.
 - **Rollback**: set the workspace flag to `false`, OR set
   `FEATURE_RESOURCE_GOVERNANCE='0'` in the deployment env.
-- **Argos build**: every PR touching governance UI must reference an
-  Argos build number — see `docs/operator-guides/argos-baseline-approval.md`.
+- **Visual report**: every PR touching governance UI must reference a
+  visual workflow report — see `docs/operator-guides/visual-baseline-approval.md`.
 
 ### `FEATURE_OPENCLAW_HEALTH_COSTS`
 

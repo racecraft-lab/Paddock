@@ -19,7 +19,7 @@ As an operator I configure WIP (work-in-progress) policies per agent, project, w
 
 **Why this priority**: WIP throttling is the foundational governance capability that retires the hard-coded scheduler constants (the core regression-risk surface). It must ship in MVP before budgets, windows, or override grants because every higher-tier policy depends on the same evaluator and decision-precedence pipeline [Q1].
 
-**Independent Test**: Real Playwright e2e journey under `tests/e2e/governance-wip-policy.e2e.ts` — operator opens the **Cost Tracker → Governance** tab, creates an agent-scoped WIP policy with `limit_value=1`, submits a second autonomous task to that agent, observes the dispatcher emits a `defer` decision with reason `wip_exceeded`, and the diagnostic feed shows the matched policy id. Argos visual snapshots cover empty/populated/loading/error states of the policy editor. Storybook stories cover the WIP indicator panel + policy-row component. Constitution Principle XIV verification: `pnpm test:e2e` + `pnpm test:visual:storybook` both green; `pnpm test:e2e:argos-metadata --mode playwright` confirms snapshot identity tags.
+**Independent Test**: Real Playwright e2e journey under `tests/e2e/governance-wip-policy.e2e.ts` — operator opens the **Cost Tracker → Governance** tab, creates an agent-scoped WIP policy with `limit_value=1`, submits a second autonomous task to that agent, observes the dispatcher emits a `defer` decision with reason `wip_exceeded`, and the diagnostic feed shows the matched policy id. Visual snapshots cover empty/populated/loading/error states of the policy editor. Storybook stories cover the WIP indicator panel + policy-row component. Constitution Principle XIV verification: `pnpm test:e2e` + `pnpm test:visual:storybook` both green; `pnpm test:e2e:visual-manifest` confirms snapshot identity tags.
 
 **Acceptance Scenarios**:
 
@@ -35,7 +35,7 @@ As an operator I configure budgets in USD, tokens, requests, or sessions with bo
 
 **Why this priority**: Budget enforcement is the second-highest cost-control surface. It must be Priority P1 because subscription accounts (Claude Code Max 20x, ChatGPT Pro, Copilot Pro+) silently degrade or rate-limit when caps are exceeded; without budget governance the operator has no way to detect the slope of spend before the cliff [Q9, Q15].
 
-**Independent Test**: Playwright e2e under `tests/e2e/governance-budget.e2e.ts` — operator creates a daily USD budget with `soft_threshold_pct=80` and `hard_threshold_pct=100`, the synthetic test driver advances the budget ledger past 80% (soft alert fires, work continues), then past 100% (hard block, override grant required). Argos snapshots: budget utilization chart at 0/50/80/95/100%. Storybook: budget chart story renders all six threshold zones. Constitution XIV verification per US1.
+**Independent Test**: Playwright e2e under `tests/e2e/governance-budget.e2e.ts` — operator creates a daily USD budget with `soft_threshold_pct=80` and `hard_threshold_pct=100`, the synthetic test driver advances the budget ledger past 80% (soft alert fires, work continues), then past 100% (hard block, override grant required). visual snapshots: budget utilization chart at 0/50/80/95/100%. Storybook: budget chart story renders all six threshold zones. Constitution XIV verification per US1.
 
 **Acceptance Scenarios**:
 
@@ -51,7 +51,7 @@ As an operator I configure blackout and degraded windows in my local timezone (d
 
 **Why this priority**: P2 because windows are predictable schedule shaping rather than emergency stop. They are valuable but the operator can survive without them by deferring tasks manually; budgets and WIP cannot be substituted manually.
 
-**Independent Test**: Playwright e2e under `tests/e2e/governance-windows.e2e.ts` — operator creates a blackout window for "tonight 22:00-06:00 CDT", advances the synthetic clock into the window, observes new autonomous dispatch is blocked while running tasks checkpoint and complete; advances clock past DST spring-forward, confirms the next instance is correctly placed. Argos snapshots: window editor, calendar-mode preview, DST-warning banner. Storybook: window editor stories. Constitution XIV verification per US1.
+**Independent Test**: Playwright e2e under `tests/e2e/governance-windows.e2e.ts` — operator creates a blackout window for "tonight 22:00-06:00 CDT", advances the synthetic clock into the window, observes new autonomous dispatch is blocked while running tasks checkpoint and complete; advances clock past DST spring-forward, confirms the next instance is correctly placed. visual snapshots: window editor, calendar-mode preview, DST-warning banner. Storybook: window editor stories. Constitution XIV verification per US1.
 
 **Acceptance Scenarios**:
 
@@ -67,7 +67,7 @@ As an operator I grant temporary overrides on blocked decisions with budget rese
 
 **Why this priority**: P2 because overrides only make sense once US2 (budgets) is enforcing. The race-free reservation requirement is a NON-NEGOTIABLE correctness property — the system must never permit two concurrent grants to both reserve the same dollar.
 
-**Independent Test**: Playwright e2e under `tests/e2e/governance-override-grant.e2e.ts` — happy-path: operator grants a $5/2-hour override for a `defer:budget_exceeded` decision; conflict-path: synthetic load fires 5 concurrent grant POSTs for the last $1 of budget, exactly one returns 201 and four return 409 with deterministic error body [Q6, Q41]; precondition-failure path: concurrent edits to the policy return 423 (locked) and stale ETag returns 412 (precondition failed) [Q41]. Argos snapshots: override grant form, 409/422/423/412 error toasts. Storybook: override grant form stories with all error states.
+**Independent Test**: Playwright e2e under `tests/e2e/governance-override-grant.e2e.ts` — happy-path: operator grants a $5/2-hour override for a `defer:budget_exceeded` decision; conflict-path: synthetic load fires 5 concurrent grant POSTs for the last $1 of budget, exactly one returns 201 and four return 409 with deterministic error body [Q6, Q41]; precondition-failure path: concurrent edits to the policy return 423 (locked) and stale ETag returns 412 (precondition failed) [Q41]. visual snapshots: override grant form, 409/422/423/412 error toasts. Storybook: override grant form stories with all error states.
 
 **Acceptance Scenarios**:
 
@@ -83,13 +83,13 @@ As an operator I see budget utilization, WIP, windows, and recent decisions in t
 
 **Why this priority**: P2 because the operator can configure governance via REST/CLI without UI, but the UI is required for the at-a-glance utilization signal that drives operational decisions; it is also the surface that satisfies Constitution Principle XIV's Real UI Journey Quality Gate.
 
-**Independent Test**: Playwright e2e under `tests/e2e/governance-tab-landing.e2e.ts` — operator opens Cost Tracker, sees the Governance tab when flag ON, does NOT see the tab when flag OFF (byte-compat regression check), drills into each sub-view, observes empty/populated/loading/error states. Argos snapshots: every sub-view × every state. Storybook: every newly authored component (governance tab subcomponents, system-health card, diagnostic-feed row, override grant form, window editor, budget utilization chart, WIP indicator panel, telemetry source health pill, breaker-open banner, Aegis emergency-reserve badge) has a `*.stories.tsx` covering default/loading/error/empty/dense data/disabled-by-flag states.
+**Independent Test**: Playwright e2e under `tests/e2e/governance-tab-landing.e2e.ts` — operator opens Cost Tracker, sees the Governance tab when flag ON, does NOT see the tab when flag OFF (byte-compat regression check), drills into each sub-view, observes empty/populated/loading/error states. visual snapshots: every sub-view × every state. Storybook: every newly authored component (governance tab subcomponents, system-health card, diagnostic-feed row, override grant form, window editor, budget utilization chart, WIP indicator panel, telemetry source health pill, breaker-open banner, Aegis emergency-reserve badge) has a `*.stories.tsx` covering default/loading/error/empty/dense data/disabled-by-flag states.
 
 **Acceptance Scenarios**:
 
 1. **Given** `FEATURE_RESOURCE_GOVERNANCE=true` resolved via `resolveFlag` against the active workspace, **When** the operator opens Cost Tracker, **Then** the Governance tab is visible with badge counts (active policies, open overrides, breaker state). [Q10, Q62, Constitution Principle V]
 2. **Given** `FEATURE_RESOURCE_GOVERNANCE=false`, **When** the operator opens Cost Tracker, **Then** the Governance tab is NOT rendered and the legacy Cost Tracker is byte-identical to the pre-SPEC-008 baseline. [P7-AC1, AC-FF-Matrix-2, Constitution Principle I]
-3. **Given** a populated governance tab with 50+ recent decisions, **When** the operator scrolls/paginates the diagnostic feed, **Then** decisions render with policy-id, reason, matched-rule, and the Argos visual snapshot for the dense-data state passes. [Q44, FR-296..305, Constitution XIV]
+3. **Given** a populated governance tab with 50+ recent decisions, **When** the operator scrolls/paginates the diagnostic feed, **Then** decisions render with policy-id, reason, matched-rule, and the visual snapshot for the dense-data state passes. [Q44, FR-296..305, Constitution XIV]
 
 ---
 
@@ -99,7 +99,7 @@ As an operator I see WHY a specific dispatch was deferred or blocked via the dia
 
 **Why this priority**: P2 — the diagnostic view is the operator's debugging tool when a task does not advance and converts an "unexplained block" into an actionable next step. Independent of US5's at-a-glance summary view.
 
-**Independent Test**: Playwright e2e under `tests/e2e/governance-diagnostic-feed.e2e.ts` — operator filters the diagnostic feed by `agent=Aegis` + `reason=budget_exceeded`, paginates 100+ entries, expands one entry to see the full evaluation trace, follows the audit deep-link. Argos snapshots: feed empty/populated/dense/expanded states. Storybook: diagnostic-feed-row component stories.
+**Independent Test**: Playwright e2e under `tests/e2e/governance-diagnostic-feed.e2e.ts` — operator filters the diagnostic feed by `agent=Aegis` + `reason=budget_exceeded`, paginates 100+ entries, expands one entry to see the full evaluation trace, follows the audit deep-link. visual snapshots: feed empty/populated/dense/expanded states. Storybook: diagnostic-feed-row component stories.
 
 **Acceptance Scenarios**:
 
@@ -115,7 +115,7 @@ As an operator I rely on multi-source defense-in-depth telemetry ingestion so my
 
 **Why this priority**: P2 because the multi-source story is what makes US2 (budgets) trustworthy. Without it, a single CLI degradation makes budget counters silently drift. Independent of US1 (WIP only depends on Mission Control's own task table).
 
-**Independent Test**: Playwright e2e under `tests/e2e/governance-telemetry-health.e2e.ts` — operator opens System Health dashboard, sees per-source health pills (green/amber/red), clicks a red pill to drill into staleness/lag/admission-rejected counts, observes the breaker-open banner when admission control trips. Argos snapshots: every health-pill state, breaker-open banner, drilldown panel. Storybook: source health pill, breaker banner, drilldown stories.
+**Independent Test**: Playwright e2e under `tests/e2e/governance-telemetry-health.e2e.ts` — operator opens System Health dashboard, sees per-source health pills (green/amber/red), clicks a red pill to drill into staleness/lag/admission-rejected counts, observes the breaker-open banner when admission control trips. visual snapshots: every health-pill state, breaker-open banner, drilldown panel. Storybook: source health pill, breaker banner, drilldown stories.
 
 **Acceptance Scenarios**:
 
@@ -131,7 +131,7 @@ As an operator I recover from collector outages, schema breaks, drift detection,
 
 **Why this priority**: P3 — DR/runbooks pay off at incident time, not steady-state. They block GA but not MVP demo.
 
-**Independent Test**: Playwright e2e under `tests/e2e/governance-system-health-recovery.e2e.ts` — operator opens the System Health dashboard, simulates a "collector stalled" condition, clicks the one-click "Restart Collector" affordance, observes telemetry resumes within RPO. Argos snapshots: dashboard pre/during/post recovery. Constitution XIV verification per US1.
+**Independent Test**: Playwright e2e under `tests/e2e/governance-system-health-recovery.e2e.ts` — operator opens the System Health dashboard, simulates a "collector stalled" condition, clicks the one-click "Restart Collector" affordance, observes telemetry resumes within RPO. visual snapshots: dashboard pre/during/post recovery. Constitution XIV verification per US1.
 
 **Acceptance Scenarios**:
 
@@ -143,17 +143,17 @@ As an operator I recover from collector outages, schema breaks, drift detection,
 
 ### User Story 9 — Test-Coverage and Feature-Flag-Matrix Verification (Priority: P1, NON-NEGOTIABLE)
 
-As a maintainer I have **100% test coverage for every new UI/UX journey** (Playwright e2e + Storybook Argos visual snapshots) and **complete feature-flag-matrix activation testing** (every past + present feature flag in `src/lib/feature-flags.ts` exercised in unit / integration / e2e / Playwright / Storybook with the dependency graph honored, including OFF/ON pairs and required-prerequisite chains) so SPEC-008 cannot regress prior specs (SPEC-002 workspace switcher, SPEC-003 global Aegis, SPEC-004 pipelines, SPEC-006 area labels, plus FEATURE_TWO_STEP_TERMINAL, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS) and the SPEC-008 governance UX is verifiably correct.
+As a maintainer I have **100% test coverage for every new UI/UX journey** (Playwright e2e + Storybook visual snapshots) and **complete feature-flag-matrix activation testing** (every past + present feature flag in `src/lib/feature-flags.ts` exercised in unit / integration / e2e / Playwright / Storybook with the dependency graph honored, including OFF/ON pairs and required-prerequisite chains) so SPEC-008 cannot regress prior specs (SPEC-002 workspace switcher, SPEC-003 global Aegis, SPEC-004 pipelines, SPEC-006 area labels, plus FEATURE_TWO_STEP_TERMINAL, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS) and the SPEC-008 governance UX is verifiably correct.
 
 **Why this priority**: P1 NON-NEGOTIABLE per Constitution Principle XIV (Real UI Journey Quality Gate) and Principle V (Feature-Flag Resolution Discipline). This story is the meta-quality-gate that prevents SPEC-008 from regressing any prior spec; it is INDEPENDENTLY testable as a fully automated test-suite invocation.
 
-**Independent Test**: Programmatic verification — `pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm test:visual:storybook && pnpm test:e2e:argos-metadata --mode playwright && pnpm test:visual:argos-metadata --mode storybook` all green; the feature-flag-matrix runner under `tests/integration/feature-flag-matrix.test.ts` produces a coverage report listing every flag × every scenario (OFF, ON, dependency-chain, all-on baseline, env-override semantics).
+**Independent Test**: Programmatic verification — `pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm test:visual:storybook && pnpm test:e2e:visual-manifest && pnpm test:visual:manifest` all green; the feature-flag-matrix runner under `tests/integration/feature-flag-matrix.test.ts` produces a coverage report listing every flag × every scenario (OFF, ON, dependency-chain, all-on baseline, env-override semantics).
 
 **Acceptance Scenarios**:
 
 1. **Given** the SPEC-008 test suite runs in CI, **When** the matrix runner executes, **Then** every flag in `src/lib/feature-flags.ts` (FEATURE_WORKSPACE_SWITCHER, FEATURE_GLOBAL_AEGIS, FEATURE_TASK_PIPELINES, FEATURE_TWO_STEP_TERMINAL, FEATURE_AREA_LABEL_ROUTING, FEATURE_DISPOSITION_LOGGING, FEATURE_TASK_ARTIFACTS, FEATURE_RESOURCE_GOVERNANCE, FEATURE_OPENCLAW_HEALTH_COSTS) is exercised under: (a) OFF in isolation; (b) ON in isolation where its `enableRequires` chain permits; (c) all flags ON together; (d) declared dependency chains; (e) SPEC-008-specific gate matrix; (f) Playwright e2e per flag confirming the gated UI surface; (g) `resolveFlag` env-override semantics. [AC-FF-Matrix-1..4]
-2. **Given** every newly introduced operator journey from SPEC-008, **When** the e2e suite runs, **Then** each journey has a Playwright spec under `tests/e2e/` AND emits Argos visual snapshot metadata, verified by `pnpm test:e2e:argos-metadata --mode playwright`. [AC-UI-Playwright-1, AC-UI-Argos-Playwright-1]
-3. **Given** every newly authored React component or extended component, **When** Storybook builds, **Then** each ships a `*.stories.tsx` file rendering default/loading/error/empty/dense data/disabled-by-flag states, and `pnpm test:visual:argos-metadata --mode storybook` passes. [AC-UI-Storybook-1, AC-UI-Argos-Storybook-1]
+2. **Given** every newly introduced operator journey from SPEC-008, **When** the e2e suite runs, **Then** each journey has a Playwright spec under `tests/e2e/` AND emits visual snapshot metadata, verified by `pnpm test:e2e:visual-manifest`. [AC-UI-Playwright-1, AC-UI-Visual-Playwright-1]
+3. **Given** every newly authored React component or extended component, **When** Storybook builds, **Then** each ships a `*.stories.tsx` file rendering default/loading/error/empty/dense data/disabled-by-flag states, and `pnpm test:visual:manifest` passes. [AC-UI-Storybook-1, AC-UI-Visual-Storybook-1]
 4. **Given** `process.env.FEATURE_RESOURCE_GOVERNANCE='1'` is set without the workspace `feature_flags` JSON opt-in, **When** `resolveFlag` is invoked against a workspace context, **Then** the flag resolves OFF (env='1' does NOT force ON per CLAUDE.md pitfall). [AC-FF-Matrix-3]
 5. **Given** `process.env.FEATURE_RESOURCE_GOVERNANCE='0'`, **When** `resolveFlag` is invoked, **Then** the flag resolves OFF regardless of workspace opt-in (env='0' forces OFF). [AC-FF-Matrix-3]
 
@@ -177,7 +177,7 @@ As a maintainer I have **100% test coverage for every new UI/UX journey** (Playw
 
 ## Requirements *(mandatory)*
 
-All FRs MUST be testable. Each FR cites the design-concept Q-section(s) it derives from via `[Q<n>]` markers. Every UI-touching FR cites Constitution Principle XIV (Playwright + Storybook + Argos). Every flag-gated FR cites Constitution Principle V (`resolveFlag`).
+All FRs MUST be testable. Each FR cites the design-concept Q-section(s) it derives from via `[Q<n>]` markers. Every UI-touching FR cites Constitution Principle XIV (Playwright + Storybook + visual regression). Every flag-gated FR cites Constitution Principle V (`resolveFlag`).
 
 ### FR-001..030: Evaluator + Decision Precedence + Scheduler Gates [Q1, Q5, Q11, Q13, Q21, Q35, Q59]
 
@@ -315,7 +315,7 @@ All FRs MUST be testable. Each FR cites the design-concept Q-section(s) it deriv
 
 - **FR-090n**: Every SPEC-008 Playwright e2e spec (FR-296..305) MUST run an axe-core scan via `@axe-core/playwright` on each rendered page-state asserted in that spec (empty / populated / loading / error / dense / disabled-by-flag where applicable). Conformance level is **WCAG 2.1 AA**. PR CI MUST fail-closed on any axe violation with `impact='serious'` or `impact='critical'`; `impact='minor'` and `impact='moderate'` MUST be reported but do NOT block merge. The axe scan MUST exclude only third-party portal-mounted nodes that are out of repo scope; all SPEC-008-authored components MUST be in scope. [Constitution Principle XIV NON-NEGOTIABLE, FR-200, AC-UI-Playwright-1, WCAG 2.1 AA, axe-core best practice]
 - **FR-090o**: The dispatch diagnostic feed (FR-090j) live-append region MUST use `aria-live="polite"` and `aria-relevant="additions"` on the SSE-fed list container so screen-reader users are notified of new `dispatch_decision` rows without focus stealing. New rows MUST carry an accessible name composed of `(decision, reason, agent, ts)` so the announcement is actionable. The Aegis emergency-reserve indicator (FR-156, FR-303) state-change MUST also use `aria-live="polite"` when transitioning between `inactive`/`engaged`/`cooling_down`. [Constitution Principle XIV, FR-090j, FR-200, WAI-ARIA APG live-region pattern]
-- **FR-090p**: Typed-confirmation modals (bulk-promote per FR-090h, recovery actions per FR-090i, override-grant per FR-159) MUST: (a) trap focus within the modal until dismissed; (b) restore focus to the originating control on close; (c) label the typed-confirmation input with an explicit `<label for>` carrying the required exact phrase; (d) link any 409/412/422/423 error to the form via `aria-describedby` pointing to an `role="alert"` error-summary node; (e) be reachable and dismissable by keyboard alone (Esc to cancel; Enter on disabled submit MUST be a no-op until the typed phrase matches). Storybook stories (FR-309 / FR-090h / FR-090i story coverage) MUST include a story variant with the error-summary populated so its ARIA wiring is Argos-snapshotted. [Constitution Principle XIV, FR-090h, FR-090i, FR-200, WAI-ARIA APG dialog + alert patterns]
+- **FR-090p**: Typed-confirmation modals (bulk-promote per FR-090h, recovery actions per FR-090i, override-grant per FR-159) MUST: (a) trap focus within the modal until dismissed; (b) restore focus to the originating control on close; (c) label the typed-confirmation input with an explicit `<label for>` carrying the required exact phrase; (d) link any 409/412/422/423 error to the form via `aria-describedby` pointing to an `role="alert"` error-summary node; (e) be reachable and dismissable by keyboard alone (Esc to cancel; Enter on disabled submit MUST be a no-op until the typed phrase matches). Storybook stories (FR-309 / FR-090h / FR-090i story coverage) MUST include a story variant with the error-summary populated so its ARIA wiring is visual regression-snapshotted. [Constitution Principle XIV, FR-090h, FR-090i, FR-200, WAI-ARIA APG dialog + alert patterns]
 
 ### FR-091..110: Raw + Canonical Event Model + Reconciler [Q18, Q24, Q26, Q30, Q34, Q36, Q37, Q58, Q67, Q73]
 
@@ -436,7 +436,7 @@ All FRs MUST be testable. Each FR cites the design-concept Q-section(s) it deriv
 
 - **FR-186**: Cost Tracker MUST render a Governance tab gated by `FEATURE_RESOURCE_GOVERNANCE` resolved via `resolveFlag`. [Q10, Q62, Constitution Principle V]
 - **FR-187**: Governance tab MUST contain sub-views: Policies, Budgets, Windows, Overrides, Diagnostics, System Health. [Q10, Q62]
-- **FR-188**: Each sub-view MUST render empty / populated / loading / error states; each state MUST be Argos-snapshotted. [Q10, FR-296..305, Constitution Principle XIV]
+- **FR-188**: Each sub-view MUST render empty / populated / loading / error states; each state MUST be visual regression-snapshotted. [Q10, FR-296..305, Constitution Principle XIV]
 - **FR-189**: Diagnostic feed MUST paginate decisions with filter-by `agent`, `reason`, `time_range`, `policy_id`. [Q44, Q54]
 - **FR-190**: Diagnostic feed entry MUST expand to show full evaluation trace, matched policy ids, budget snapshot, breaker state, and an audit deep-link. [Q44]
 - **FR-191**: System Health dashboard MUST render per-source health pills (green/amber/red), collector freshness, breaker states, drift alerts, and recent runbook links. [Q62, FR-119]
@@ -522,8 +522,8 @@ All FRs MUST be testable. Each FR cites the design-concept Q-section(s) it deriv
 - **FR-225**: Determinism tests MUST verify evaluator output is identical for replayed inputs given an injected clock. [Q14, Q20]
 - **FR-226**: Test fixtures MUST cover known PII patterns to prevent regressions in the redaction module. [Q67, Q73]
 - **FR-227**: Supply-chain CI gate MUST enforce dependency pinning + license-allow-list; new dependencies fail CI without an explicit allow-list entry. [Q72]
-- **FR-228**: Visual-regression CI MUST capture Argos snapshots for every Playwright spec and every Storybook story. [Constitution Principle XIV, FR-296..315]
-- **FR-229**: Argos metadata gate MUST verify each snapshot carries test/story identity and spec-scoped tags via `pnpm test:e2e:argos-metadata --mode playwright` and `pnpm test:visual:argos-metadata --mode storybook`. [AC-UI-Argos-Playwright-1, AC-UI-Argos-Storybook-1]
+- **FR-228**: Visual-regression CI MUST capture visual snapshots for every Playwright spec and every Storybook story. [Constitution Principle XIV, FR-296..315]
+- **FR-229**: Visual manifest gate MUST verify each snapshot carries test/story identity and spec-scoped tags via `pnpm test:e2e:visual-manifest` and `pnpm test:visual:manifest`. [AC-UI-Visual-Playwright-1, AC-UI-Visual-Storybook-1]
 - **FR-230**: Feature-flag matrix runner MUST execute every flag × OFF/ON × dependency-chain combination per US9. [AC-FF-Matrix-1..4]
 - **FR-231**: Race-test for reservation concurrency MUST simulate ≥ 5 concurrent attempts and assert: (a) exactly one HTTP 201 + N-1 HTTP 409; (b) exactly one row inserted into `resource_reservations` (`SELECT COUNT(*) FROM resource_reservations WHERE originating_decision_id=? AND state='active'` returns 1); (c) post-race `resource_budget_counters.counter_value` equals 0 (NOT negative, NOT positive); (d) post-race `resource_budget_ledger` has exactly one new row with `delta = -granted_amount`; (e) post-race `resource_decision_audit` chain validates end-to-end via the FR-176 verifier (no chain breaks under contention). The 4 failed-grant 409 responses MUST share an identical body shape `{"error":"reservation_unavailable","reason":"budget_concurrent","remaining_usd":0}` (the `remaining_usd` field is allowed to differ ONLY if the value 0 is reached mid-race; the AC asserts all 4 read 0 because the winner committed first). The race-test MUST run against the production-equivalent SQLite configuration (WAL mode, `busy_timeout=50ms` foreground per FR-060 / Q29), NOT only an in-memory test DB. [AC-Race-1, Q6, FR-054, FR-055, FR-176]
 - **FR-232**: DST tests MUST cover spring-forward and fall-back across all supported IANA timezones in the test corpus. [AC-DST-1, Q46]
@@ -608,20 +608,20 @@ All FRs MUST be testable. Each FR cites the design-concept Q-section(s) it deriv
 
 ### FR-296..305: UI/UX Coverage — Playwright e2e [Constitution Principle XIV NON-NEGOTIABLE]
 
-- **FR-296**: Cost Tracker → Governance tab landing/empty/populated/loading/error states MUST have Playwright spec coverage under `tests/e2e/` AND emit Argos visual snapshots. [AC-UI-Playwright-1, AC-UI-Argos-Playwright-1]
-- **FR-297**: Dispatch diagnostic feed pagination + filter MUST have Playwright spec coverage AND emit Argos snapshots. [Q44, Q54, AC-UI-Playwright-1]
-- **FR-298**: System Health dashboard read-only view + one-click recovery affordances MUST have Playwright spec coverage AND emit Argos snapshots. [Q62, AC-UI-Playwright-1]
-- **FR-299**: Override grant happy-path + 409 / 422 / 423 error responses MUST have Playwright spec coverage AND emit Argos snapshots. [Q6, Q41, AC-UI-Playwright-1]
-- **FR-300**: Blackout / degraded window create / edit / delete with ETag concurrency conflict (HTTP 412) MUST have Playwright spec coverage AND emit Argos snapshots. [Q2, Q41, AC-UI-Playwright-1]
-- **FR-301**: Bulk policy promotion typed-confirmation flow MUST have Playwright spec coverage AND emit Argos snapshots. [Q56, AC-UI-Playwright-1]
-- **FR-302**: Calibration milestone progression view MUST have Playwright spec coverage AND emit Argos snapshots. [Q33, AC-UI-Playwright-1]
-- **FR-303**: Aegis emergency-reserve indicator MUST have Playwright spec coverage AND emit Argos snapshots. [Q53, AC-UI-Playwright-1]
-- **FR-304**: Telemetry health drilldown MUST have Playwright spec coverage AND emit Argos snapshots. [Q48, Q62, AC-UI-Playwright-1]
+- **FR-296**: Cost Tracker → Governance tab landing/empty/populated/loading/error states MUST have Playwright spec coverage under `tests/e2e/` AND emit visual snapshots. [AC-UI-Playwright-1, AC-UI-Visual-Playwright-1]
+- **FR-297**: Dispatch diagnostic feed pagination + filter MUST have Playwright spec coverage AND emit visual snapshots. [Q44, Q54, AC-UI-Playwright-1]
+- **FR-298**: System Health dashboard read-only view + one-click recovery affordances MUST have Playwright spec coverage AND emit visual snapshots. [Q62, AC-UI-Playwright-1]
+- **FR-299**: Override grant happy-path + 409 / 422 / 423 error responses MUST have Playwright spec coverage AND emit visual snapshots. [Q6, Q41, AC-UI-Playwright-1]
+- **FR-300**: Blackout / degraded window create / edit / delete with ETag concurrency conflict (HTTP 412) MUST have Playwright spec coverage AND emit visual snapshots. [Q2, Q41, AC-UI-Playwright-1]
+- **FR-301**: Bulk policy promotion typed-confirmation flow MUST have Playwright spec coverage AND emit visual snapshots. [Q56, AC-UI-Playwright-1]
+- **FR-302**: Calibration milestone progression view MUST have Playwright spec coverage AND emit visual snapshots. [Q33, AC-UI-Playwright-1]
+- **FR-303**: Aegis emergency-reserve indicator MUST have Playwright spec coverage AND emit visual snapshots. [Q53, AC-UI-Playwright-1]
+- **FR-304**: Telemetry health drilldown MUST have Playwright spec coverage AND emit visual snapshots. [Q48, Q62, AC-UI-Playwright-1]
 - **FR-305**: `FEATURE_RESOURCE_GOVERNANCE=false` byte-compat regression check MUST have a Playwright spec verifying the Governance tab is absent and the legacy Cost Tracker is byte-identical. [P7-AC1, AC-FF-Matrix-2, AC-UI-Playwright-1, Constitution Principle I]
 
-### FR-306..315: UI/UX Coverage — Storybook Argos Visual Regression [Constitution Principle XIV NON-NEGOTIABLE]
+### FR-306..315: UI/UX Coverage — Storybook visual Visual Regression [Constitution Principle XIV NON-NEGOTIABLE]
 
-- **FR-306**: Governance tab subcomponents MUST ship `*.stories.tsx` covering default / loading / error / empty / dense data / disabled-by-flag states. [AC-UI-Storybook-1, AC-UI-Argos-Storybook-1]
+- **FR-306**: Governance tab subcomponents MUST ship `*.stories.tsx` covering default / loading / error / empty / dense data / disabled-by-flag states. [AC-UI-Storybook-1, AC-UI-Visual-Storybook-1]
 - **FR-307**: System health card MUST ship `*.stories.tsx` covering green / amber / red / loading / error / disabled-by-flag states. [Q62, AC-UI-Storybook-1]
 - **FR-308**: Diagnostic feed row MUST ship `*.stories.tsx` covering allow / defer / block / expanded / dense states. [Q44, Q54, AC-UI-Storybook-1]
 - **FR-309**: Override grant form MUST ship `*.stories.tsx` covering default / submitting / 409 / 412 / 422 / 423 / disabled-by-flag states. [Q6, Q41, AC-UI-Storybook-1]
@@ -693,7 +693,7 @@ This section consolidates performance NFRs cross-cutting the evaluator hot path,
 - The current target spec (`008-resource-governance`) is excluded from same-run archival.
 - Unsafe branches or dirty worktrees use dry-run or stop behavior, not cleanup.
 - Cleanup of completed spec folders requires archive success, merge/tree references, and recovery commands.
-- Generated UI screenshots are Argos/CI artifacts by default; committed binaries require a manifest-backed exception.
+- Generated UI screenshots are visual regression/CI artifacts by default; committed binaries require a manifest-backed exception.
 
 ### Key Entities
 
@@ -728,8 +728,8 @@ This section consolidates performance NFRs cross-cutting the evaluator hot path,
 - **SC-006**: Multi-source telemetry survives single-source degradation: budgets remain accurate when any one of (Claude Code OTel, Codex CLI, Copilot CLI, Ollama, LM Studio, OpenClaw gateway) is unavailable. [US7, Q16, Q18]
 - **SC-007**: Aegis review pipeline never starves under steady-state policy enforcement; emergency reserve replenishes daily. [Q20, Q53]
 - **SC-008**: Operator can recover from a 24-hour collector outage with RTO < 30 min, RPO < 24 h. [AC-DR-1..4, Q60]
-- **SC-009**: 100% of newly introduced operator UI journeys have Playwright e2e specs and Argos visual snapshots. [AC-UI-Playwright-1, AC-UI-Argos-Playwright-1, Constitution Principle XIV]
-- **SC-010**: 100% of newly authored UI components have `*.stories.tsx` covering default / loading / error / empty / dense / disabled-by-flag states. [AC-UI-Storybook-1, AC-UI-Argos-Storybook-1, Constitution Principle XIV]
+- **SC-009**: 100% of newly introduced operator UI journeys have Playwright e2e specs and visual snapshots. [AC-UI-Playwright-1, AC-UI-Visual-Playwright-1, Constitution Principle XIV]
+- **SC-010**: 100% of newly authored UI components have `*.stories.tsx` covering default / loading / error / empty / dense / disabled-by-flag states. [AC-UI-Storybook-1, AC-UI-Visual-Storybook-1, Constitution Principle XIV]
 - **SC-011**: Feature-flag matrix runner exercises every flag × every scenario; CI fails closed on any uncovered combination. [AC-FF-Matrix-1..4, Constitution Principle V]
 - **SC-012**: All production flag checks route through `resolveFlag(name, ctx)`; CI lint rule prevents inline `process.env.FEATURE_*`. [Constitution Principle V, FR-325]
 - **SC-013**: Calendar windows handle DST transitions deterministically (no double-fire, no skipped fire). [AC-DST-1, Q46]
@@ -773,8 +773,8 @@ This section consolidates performance NFRs cross-cutting the evaluator hot path,
 - Default retention horizons (FR-258) are sized for a solo developer / small team; larger deployments override per workspace.
 - Encryption at rest for `provider_accounts.config_json` uses a sealed-secret fallback when no KMS is available; key rotation is a documented operator procedure (FR-138).
 - ETag / If-Match optimistic locking is applied to mutable resources; clients are expected to handle 412 by refresh-and-retry.
-- Argos visual regression is integrated via `@argos-ci/playwright` for e2e and via the Storybook integration for component snapshots; Argos metadata gates run on every PR.
-- Constitution Principle XIV (Real UI Journey Quality Gate) is NON-NEGOTIABLE: every UI-touching FR cites Playwright + Storybook + Argos and must have running spec/story coverage before merge.
+- Visual regression is integrated via providerprovider-neutral Playwright capture for e2e and Storycap Storybook capture for component snapshots; Visual manifest gates run on every PR.
+- Constitution Principle XIV (Real UI Journey Quality Gate) is NON-NEGOTIABLE: every UI-touching FR cites Playwright + Storybook + visual regression and must have running spec/story coverage before merge.
 - Constitution Principle V (Feature-Flag Resolution Discipline) is NON-NEGOTIABLE: every flag-gated FR routes through `resolveFlag(name, ctx)`; a CI lint rule enforces this.
 - Constitution Principle I (Zero-Regression Contract) requires byte-compat behavior when `FEATURE_RESOURCE_GOVERNANCE=false`; a Playwright regression spec asserts this.
 - Constitution Principle VII / Convention G requires every new migration to ship a rollback file at `docs/migrations/rollback-M<id>.sql`.
@@ -807,19 +807,19 @@ The 31 escalated items from Phase 4 checklist consensus rounds (data-integrity 1
 
 - **FR-368**: All audit chains in SPEC-008 (`resource_decision_audit` per FR-176, `resource_budget_ledger` audit chain per FR-176a, recovery action chain per FR-219o, override grant audit per FR-184, Aegis fallback activity per FR-361) SHALL share the single `governance_audit_chain` algorithm: SHA-256 over JCS-canonical JSON of `(prev_hash, content_columns_in_canonical_order)` with 64-char zero-string genesis. No domain-scoped chains. Verification cursor walks the unified chain across all source tables. [Q69, FR-176/176a/177a/219m/219n/219o/184/361]
 
-### Argos / UI-Coverage Policy
+### Visual Regression / UI-Coverage Policy
 
-- **FR-369**: Argos token + project-id provisioning uses 1Password (`op://Mission Control/argos-ci-token`, `op://Mission Control/argos-ci-project-id`) resolved into CI by GitHub Actions secret-fetch step; rotation cadence 90 days via `docs/runbook/rotate-argos-credentials.md`. Missing-in-PR-CI: Argos metadata steps fail-soft to "snapshot upload skipped" warning AND PR cannot be merged (CI required-check `argos-metadata` blocks). [Q72, FR-219u/v]
+- **FR-369**: Visual baselines publish to GitHub Pages from the `visual-regression-pages` branch using the workflow `GITHUB_TOKEN`; no long-lived visual-regression SaaS token or project id is required. Pages recovery is documented in `docs/runbook/visual-regression-pages-recovery.md`. Missing Pages publishing does not hide PR artifacts, but rebaseline-only PRs must not merge until publishing is restored. [Q72, FR-219u/v]
 - **FR-370**: Playwright flaky-retry / quarantine: `retries: 2` in CI, `retries: 0` locally; specs failing 3 consecutive nightly runs auto-quarantined to `tests/e2e/quarantine/` with GitHub issue `area:flaky-test`; reviewed monthly by file's git-blame primary author. [Q14, Constitution XIV]
-- **FR-371**: First-PR Argos baseline approval: PR author runs `pnpm test:visual:storybook` + `pnpm test:e2e` locally; PR reviewer (operator role) clicks "Accept all" in Argos UI; baseline acceptance referenced in PR description as `Argos build #<n>`. [Constitution XIV]
-- **FR-372**: Argos baseline rotation policy: refresh-on-change only; operator-triggered "wipe-and-rebaseline" command `pnpm argos:rebaseline` gated by typed-confirmation `REBASELINE ARGOS` and emits `governance_visual_baseline_rebaselined` audit row. [FR-090h pattern]
-- **FR-373**: Visual-regression false-positive triage runbook `docs/runbook/argos-false-positive-triage.md` lists four standard remediations: (a) `data-testid` stable subtree; (b) freeze animations via `await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important; }' })`; (c) pin font via Storybook decorator; (d) accept-or-reject in Argos UI within 24h. [FR-090n]
+- **FR-371**: First-PR visual baseline approval: PR author runs `pnpm test:visual:storybook` + `pnpm test:e2e` locally; PR reviewer (operator role) reviews the workflow visual report artifacts; baseline acceptance is recorded as PR approval with links to the reports. [Constitution XIV]
+- **FR-372**: Visual baseline rotation policy: refresh-on-change only; bulk rebaseline changes require a dedicated PR that explains the domains changed and why the previous baseline is obsolete. [FR-090h pattern]
+- **FR-373**: Visual-regression false-positive triage runbook `docs/runbook/visual-false-positive-triage.md` lists standard remediations: (a) `data-testid` stable subtree; (b) freeze animations via `await page.addStyleTag({ content: '*, *::before, *::after { animation: none !important; transition: none !important; }' })`; (c) pin font via Storybook decorator; (d) request changes or approve the report artifact within 24h. [FR-090n]
 - **FR-374**: Snapshot determinism: Playwright `playwright/test` pinned (no caret); CI runs Playwright in `mcr.microsoft.com/playwright` Docker container matching minor version; Storybook + Playwright load `Inter` and `JetBrains Mono` from `public/fonts/` to avoid system-font drift. [Constitution VI]
 - **FR-375**: Storybook flag-aware variant decorator `withFeatureFlags(flags)` lives at `src/components/__storybook__/decorators/with-feature-flags.tsx`; accepts `Partial<Record<FeatureFlagKey, boolean>>`; overrides `resolveFlag(name, ctx)` for the rendered story via Zustand store mock; each new story declares `parameters.featureFlags` for flag combinations. [FR-316..325, Constitution V]
 - **FR-376**: FF matrix runner — `enableRequires` blocked-flag handling: when a flag's prerequisite chain cannot be satisfied in isolation, the runner SHALL test the flag with prerequisites enabled (auto-satisfy chain) AND report as `[flag-with-prereqs-on]`. Invalid configurations (e.g., `FEATURE_GLOBAL_AEGIS=ON` while `FEATURE_WORKSPACE_SWITCHER=OFF`) throw `InvalidFeatureFlagConfigurationError` at `resolveFlag` time. [FR-316..325]
 - **FR-377**: Flag-removal / sunset: removed flags are auto-detected via `FeatureFlagKey` union narrowing; deprecated flags (`deprecated: true` in `FEATURE_FLAG_REGISTRY`) continue to be exercised in matrix until physical removal. [FR-316..325]
-- **FR-378**: Argos baseline-wrongly-accepted rollback: per-snapshot revert via Argos UI; runbook `docs/runbook/argos-rollback-baseline.md`; audit row `governance_visual_baseline_reverted`. [FR-372]
-- **FR-379**: Visual-regression CI runtime budget: Storybook ≤ 5 min; Playwright + Argos ≤ 10 min per browser on standard GitHub-hosted runner (8-core Linux, 16 GB RAM); exceedance fires `argos.metadata.runtime_budget_exceeded` warning (non-blocking) + follow-up issue `area:test-perf`. [Constitution XIV]
+- **FR-378**: Visual baseline-wrongly-accepted rollback restores or regenerates the `visual-regression-pages` branch from the last known-good main run; runbook `docs/runbook/visual-rollback-baseline.md`; audit row `governance_visual_baseline_reverted`. [FR-372]
+- **FR-379**: Visual-regression CI runtime budget: Storybook ≤ 5 min; Playwright + visual regression ≤ 10 min per browser on standard GitHub-hosted runner (8-core Linux, 16 GB RAM); exceedance fires `visual.runtime_budget_exceeded` warning (non-blocking) + follow-up issue `area:test-perf`. [Constitution XIV]
 - **FR-380**: Responsive / viewport snapshot scope: v1 covers desktop 1280×800 only; mobile/tablet deferred to SPEC-009 Pilot. [SPEC-008 v1 scope]
 
 ### Migration Idempotency / Orphan / Timing
@@ -846,7 +846,7 @@ The 31 escalated items from Phase 4 checklist consensus rounds (data-integrity 1
 ### Closure
 
 - **FR-393**: All 31 escalated items from Phase 4 checklist consensus rounds are resolved by FR-361..392. Mapping in Consensus Resolution Log of `docs/ai/specs/SPEC-008-workflow.md`. [Phase 4 closure]
-- **FR-394**: New runbook deliverables (`aegis-deferred-no-fallback.md`, `argos-false-positive-triage.md`, `argos-rollback-baseline.md`, `audit-chain-tamper.md`, `copilot-schema-broken.md`, `rotate-argos-credentials.md`) MUST follow FR-090l 7-section structure; `scripts/check-runbook-links.ts` (FR-090m) MUST cover them. [FR-090l/m]
+- **FR-394**: New runbook deliverables (`aegis-deferred-no-fallback.md`, `visual-false-positive-triage.md`, `visual-rollback-baseline.md`, `audit-chain-tamper.md`, `copilot-schema-broken.md`, `rotate-visual-credentials.md`) MUST follow FR-090l 7-section structure; `scripts/check-runbook-links.ts` (FR-090m) MUST cover them. [FR-090l/m]
 - **FR-395**: New audit row kinds (`governance_aegis_fallback_*`, `governance_codex_dedupe_downgraded`, `governance_copilot_auto_disabled`, `governance_visual_baseline_rebaselined`, `governance_visual_baseline_reverted`, `governance_orphan_event`) MUST be enumerated in the audit-row taxonomy table in `data-model.md` and participate in the FR-368 unified hash chain. [Q69, FR-368]
 
 ---
