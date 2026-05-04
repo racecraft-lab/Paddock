@@ -478,23 +478,48 @@ import {
   }
 
   function renderSyncPanel() {
-    const tokenLabel = state.githubUser ? `@${state.githubUser}` : (state.githubToken ? 'Token ready' : 'No token')
+    const tokenLabel = state.githubUser ? `Signed in @${state.githubUser}` : (state.githubToken ? 'Token entered' : 'Token optional')
     return `
       <article class="sync-panel ${escapeAttribute(state.syncState)}">
         <div class="sync-main">
           <div>
-            <strong>PR review state</strong>
-            <p>${escapeHtml(state.syncMessage)}</p>
+            <span class="sync-kicker">Shared PR state</span>
+            <strong>Keep reviewers in sync</strong>
+            <p class="sync-description">Review decisions are saved in this browser. Use a GitHub token only when you need to load or publish the shared PR comment.</p>
           </div>
           <span class="sync-badge">${escapeHtml(tokenLabel)}</span>
         </div>
-        <div class="sync-controls">
-          <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="GitHub token" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
+        <div class="sync-status-line">
+          <span>Status</span>
+          <strong>${escapeHtml(state.syncMessage)}</strong>
+        </div>
+        <ol class="sync-steps" aria-label="Shared review workflow">
+          <li>
+            <span>1</span>
+            <p><strong>Create token</strong> opens setup instructions with the exact GitHub link and required permissions.</p>
+          </li>
+          <li>
+            <span>2</span>
+            <p><strong>Use token</strong> verifies the pasted token for this tab.</p>
+          </li>
+          <li>
+            <span>3</span>
+            <p><strong>Load PR state</strong> imports teammates' shared decisions. <strong>Publish to PR</strong> writes yours back.</p>
+          </li>
+        </ol>
+        <label class="token-field">
+          <span>GitHub token</span>
+          <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste token after creating it on GitHub" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
+          <small>Stored only in this tab's sessionStorage. Not included in PR comments or downloaded JSON.</small>
+        </label>
+        <div class="sync-action-group" aria-label="Token actions">
           <button class="btn" type="button" data-action="open-token-help">Create token</button>
           <button class="btn" type="button" data-action="save-token">Use token</button>
+          <button class="btn" type="button" data-action="forget-token">Forget</button>
+        </div>
+        <div class="sync-action-group sync-action-group-final" aria-label="Shared PR state actions">
           <button class="btn" type="button" data-action="load-pr-state">Load PR state</button>
           <button class="btn primary" type="button" data-action="publish-pr-state">Publish to PR</button>
-          <button class="btn" type="button" data-action="forget-token">Forget</button>
         </div>
       </article>
     `

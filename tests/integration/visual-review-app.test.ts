@@ -121,6 +121,19 @@ describe('visual review app guidance', () => {
   it('opens and dismisses GitHub token creation instructions', async () => {
     await loadVisualReviewApp()
 
+    const syncPanel = document.querySelector<HTMLElement>('.sync-panel')
+    expect(syncPanel?.textContent).toContain('Keep reviewers in sync')
+    expect(syncPanel?.textContent).toContain('Review decisions are saved in this browser')
+    expect(syncPanel?.textContent).toContain('Create token')
+    expect(syncPanel?.textContent).toContain('opens setup instructions')
+    expect(syncPanel?.textContent).toContain('Use token')
+    expect(syncPanel?.textContent).toContain('verifies the pasted token')
+    expect(syncPanel?.textContent).toContain('Load PR state')
+    expect(syncPanel?.textContent).toContain("imports teammates' shared decisions")
+    expect(syncPanel?.textContent).toContain('Publish to PR')
+    expect(syncPanel?.querySelector('.sync-controls')).toBeNull()
+    expect(syncPanel?.querySelector('.sync-controls [data-token-create-link]')).toBeNull()
+
     document.querySelector<HTMLButtonElement>('[data-action="open-token-help"]')?.click()
 
     const dialog = document.querySelector<HTMLElement>('[role="dialog"]')
