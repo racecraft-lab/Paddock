@@ -14,10 +14,10 @@
     filter: 'reviewable',
     group: 'all',
     mode: localStorage.getItem(storageKey('mode')) || 'side-by-side',
-    overlay: Number(localStorage.getItem(storageKey('overlay')) || 50),
+    overlay: clamp(Number(localStorage.getItem(storageKey('overlay')) || 50), 0, 100),
     query: '',
     reviews: readReviews(),
-    zoom: Number(localStorage.getItem(storageKey('zoom')) || 100),
+    zoom: clamp(Number(localStorage.getItem(storageKey('zoom')) || 100), 50, 200),
   }
 
   const items = buildItems()
@@ -203,6 +203,8 @@
       </div>
     `
     bindEvents()
+    applyZoomState()
+    applyOverlayState()
   }
 
   function filterButton(filter, label) {
@@ -247,13 +249,13 @@
                 ${modeButton('blink', 'Blink')}
               </div>
             ` : ''}
-            <label class="range-row">Zoom <input type="range" min="50" max="200" step="10" value="${state.zoom}" data-action="zoom" /> ${state.zoom}%</label>
+            <label class="range-row">Zoom <input type="range" min="50" max="200" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
             <button class="btn approve" type="button" data-review="approved">Approve</button>
             <button class="btn reject" type="button" data-review="rejected">Reject</button>
           </div>
         </div>
         <div class="stage">
-          <div class="stage-inner" style="transform: scale(${state.zoom / 100});">
+          <div class="stage-inner" data-stage-inner>
             ${renderImageMode(item)}
           </div>
         </div>
@@ -278,10 +280,10 @@
     if (state.mode === 'overlay') {
       return `
         <div class="image-grid">
-          <label class="range-row">Reveal current <input type="range" min="0" max="100" value="${state.overlay}" data-action="overlay" /> ${state.overlay}%</label>
+          <label class="range-row">Reveal current <input type="range" min="0" max="100" value="${state.overlay}" data-action="overlay" /> <span data-overlay-value>${state.overlay}%</span></label>
           <div class="overlay-frame">
             <img src="${escapeAttribute(item.expected)}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
-            <div class="overlay-top" style="width: ${state.overlay}%">
+            <div class="overlay-top" data-overlay-top style="width: ${state.overlay}%">
               <img src="${escapeAttribute(item.actual)}" alt="Current screenshot for ${escapeAttribute(item.raw)}" />
             </div>
           </div>
@@ -373,16 +375,32 @@
       render()
     })
     root.querySelector('[data-action="zoom"]')?.addEventListener('input', (event) => {
-      state.zoom = Number(event.target.value)
+      state.zoom = clamp(Number(event.target.value), 50, 200)
+      event.target.value = String(state.zoom)
       persistViewState()
-      render()
+      applyZoomState()
     })
     root.querySelector('[data-action="overlay"]')?.addEventListener('input', (event) => {
-      state.overlay = Number(event.target.value)
+      state.overlay = clamp(Number(event.target.value), 0, 100)
+      event.target.value = String(state.overlay)
       persistViewState()
-      render()
+      applyOverlayState()
     })
     root.querySelector('[data-action="copy-summary"]')?.addEventListener('click', copySummary)
+  }
+
+  function applyZoomState() {
+    const stageInner = root.querySelector('[data-stage-inner]')
+    const zoomValue = root.querySelector('[data-zoom-value]')
+    if (stageInner) stageInner.style.zoom = String(state.zoom / 100)
+    if (zoomValue) zoomValue.textContent = `${state.zoom}%`
+  }
+
+  function applyOverlayState() {
+    const overlayTop = root.querySelector('[data-overlay-top]')
+    const overlayValue = root.querySelector('[data-overlay-value]')
+    if (overlayTop) overlayTop.style.width = `${state.overlay}%`
+    if (overlayValue) overlayValue.textContent = `${state.overlay}%`
   }
 
   function setActive(id) {
@@ -479,6 +497,11 @@
       new: 'New',
       passed: 'Unchanged',
     }[variant] || variant
+  }
+
+  function clamp(value, min, max) {
+    const numeric = Number.isFinite(value) ? value : min
+    return Math.min(max, Math.max(min, numeric))
   }
 
   function escapeHtml(value) {
