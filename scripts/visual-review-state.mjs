@@ -57,7 +57,14 @@ export const DEFAULT_VISUAL_REVIEW_PATHS = [
 const REVIEWABLE_VARIANTS = new Set(['changed', 'new', 'deleted'])
 const REVIEW_DECISIONS = new Set(['approved', 'rejected'])
 
-export function buildSurfaceReviewState({ context, items, reviews = {}, reviewer = '', updatedAt = new Date().toISOString() }) {
+export function buildSurfaceReviewState({
+  comments = {},
+  context,
+  items,
+  reviews = {},
+  reviewer = '',
+  updatedAt = new Date().toISOString(),
+}) {
   const decisions = {}
   const reviewableItems = Array.isArray(items)
     ? items.filter((item) => REVIEWABLE_VARIANTS.has(item?.variant))
@@ -71,6 +78,10 @@ export function buildSurfaceReviewState({ context, items, reviews = {}, reviewer
       snapshot: String(item.raw || item.encoded || item.id),
       updatedAt: decision === 'open' ? null : updatedAt,
       variant: item.variant,
+    }
+    const comment = typeof comments[item.id] === 'string' ? comments[item.id].trim() : ''
+    if (comment && decision !== 'open') {
+      decisions[item.id].comment = comment
     }
     if (decision !== 'open' && reviewer) {
       decisions[item.id].reviewer = reviewer

@@ -44,6 +44,9 @@ describe('visual review state', () => {
         'changed-dashboard': 'approved',
         'new-modal': 'rejected',
       },
+      comments: {
+        'new-modal': 'Rejecting because the budget copy is clipped.',
+      },
       reviewer: 'nyk',
       updatedAt: '2026-05-04T12:00:00.000Z',
     })
@@ -62,6 +65,11 @@ describe('visual review state', () => {
       reviewer: 'nyk',
       snapshot: 'dashboard.png',
       variant: 'changed',
+    })
+    expect(surface.decisions['new-modal']).toMatchObject({
+      comment: 'Rejecting because the budget copy is clipped.',
+      decision: 'rejected',
+      reviewer: 'nyk',
     })
     expect(surface.decisions['deleted-old']).toMatchObject({
       decision: 'open',

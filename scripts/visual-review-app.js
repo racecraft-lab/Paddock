@@ -9,7 +9,7 @@ import {
   VISUAL_REVIEW_STATUS_CONTEXT,
 } from './visual-review-state.mjs'
 
-/* global Blob, FileReader, document, window, localStorage, navigator, history, sessionStorage, URLSearchParams */
+/* global document, window, localStorage, history, sessionStorage, URLSearchParams */
 (() => {
   const dataElement = document.getElementById('visual-review-data')
   const root = document.getElementById('visual-review-root')
@@ -27,12 +27,15 @@ import {
     githubToken: sessionStorage.getItem(githubTokenKey()) || '',
     githubUser: '',
     group: 'all',
+    inlineCommentMessage: '',
+    inlineCommentState: 'idle',
     mode: localStorage.getItem(storageKey('mode')) || 'side-by-side',
     overlay: clamp(Number(localStorage.getItem(storageKey('overlay')) || 50), 0, 100),
     query: '',
     remoteAuthor: '',
     remoteCommentId: null,
     remoteState: null,
+    reviewComments: readReviewComments(),
     reviews: readReviews(),
     syncMessage: 'Loading PR state...',
     syncState: 'loading',
@@ -66,6 +69,7 @@ import {
       expires_in: '30',
       issues: 'write',
       name: 'Mission Control visual review',
+      pull_requests: 'write',
       statuses: 'write',
     })
 
@@ -84,6 +88,18 @@ import {
 
   function saveReviews() {
     localStorage.setItem(storageKey('reviews'), JSON.stringify(state.reviews))
+  }
+
+  function readReviewComments() {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey('review-comments')) || '{}')
+    } catch {
+      return {}
+    }
+  }
+
+  function saveReviewComments() {
+    localStorage.setItem(storageKey('review-comments'), JSON.stringify(state.reviewComments))
   }
 
   function persistViewState() {
@@ -347,7 +363,6 @@ import {
           <aside class="review-panel" aria-label="Review details and decision">
             ${current ? renderReviewBrief(current, currentCounts) : ''}
             ${renderSyncPanel()}
-            ${renderUtilityPanel()}
           </aside>
         </main>
         ${state.tokenHelpOpen ? renderTokenHelpModal() : ''}
@@ -363,6 +378,10 @@ import {
     const reviewState = state.reviews[item.id] || 'open'
     const open = currentCounts.reviewable - currentCounts.reviewed
     const decisionTone = reviewState === 'approved' ? 'approved' : reviewState === 'rejected' ? 'rejected' : 'open'
+    const comment = reviewCommentFor(item)
+    const commentRequired = !comment.trim()
+    const target = inlineCommentTarget(item)
+    const postDisabled = !canPostInlineComment(item, comment)
 
     return `
       <section class="review-brief" aria-labelledby="review-brief-title" data-review-brief>
@@ -373,37 +392,65 @@ import {
         <h2 id="review-brief-title">${escapeHtml(itemTitle(item))}</h2>
         ${review.description ? `<p class="brief-description">${escapeHtml(review.description)}</p>` : ''}
         ${review.tags?.length ? `<div class="metadata-chip-row">${review.tags.map((tag) => `<span class="metadata-chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
-        <div class="brief-section">
-          <h3>How to review</h3>
-          <ul class="review-focus-list">
-            ${(review.focus?.length ? review.focus : defaultReviewFocus(item)).map((focus) => `<li>${escapeHtml(focus)}</li>`).join('')}
-          </ul>
-        </div>
-        ${review.expected ? `
-          <div class="brief-section">
-            <h3>Expected state</h3>
-            <p>${escapeHtml(review.expected)}</p>
+        <div class="review-sequence" aria-label="Review sequence">
+          <div class="review-sequence-heading">
+            <h3>Review sequence</h3>
+            <p>${escapeHtml(`${open} open on this surface`)}</p>
           </div>
-        ` : ''}
-        <div class="brief-section">
-          <h3>What this is</h3>
-          <div class="brief-facts">
-            ${briefFact('Surface', context.surfaceLabel)}
-            ${briefFact(review.kind === 'storybook' ? 'Story' : 'Test', review.storyName || review.testTitle || itemTitle(item))}
-            ${review.sourceFile ? briefFact('Source', review.sourceFile) : ''}
-            ${review.storyId ? briefFact('Story ID', review.storyId) : ''}
-            ${review.testTitlePath?.length ? briefFact('Path', review.testTitlePath.join(' > ')) : ''}
-            ${briefFact('File', item.raw)}
-          </div>
-        </div>
-        <div class="decision-card">
-          <h3>Decision rule</h3>
-          <p>Approve only intentional UI changes. Reject clipped text, missing data, broken spacing, wrong feature-flag state, unexpected new screenshots, or unexpected removals.</p>
-          <div class="decision-actions">
-            <button class="btn approve" type="button" data-review="approved">Approve</button>
-            <button class="btn reject" type="button" data-review="rejected">Reject</button>
-          </div>
-          <p class="decision-progress">${escapeHtml(`${open} open on this surface`)}</p>
+          <ol class="review-step-list">
+            <li class="review-step">
+              <span class="step-number">1</span>
+              <div class="step-body">
+                <h4>Identify the ${escapeHtml(reviewSubjectLabel(item))}</h4>
+                <p>${escapeHtml(itemSubtitle(item))}</p>
+                <div class="brief-facts">
+                  ${review.sourceFile ? briefFact('Source', review.sourceFile) : ''}
+                  ${briefFact(review.kind === 'storybook' ? 'Story' : 'Test', review.storyName || review.testTitle || itemTitle(item))}
+                  ${review.storyId ? briefFact('Story ID', review.storyId) : ''}
+                  ${briefFact('Snapshot', item.raw)}
+                </div>
+                ${renderReviewLinks(item, target)}
+              </div>
+            </li>
+            <li class="review-step">
+              <span class="step-number">2</span>
+              <div class="step-body">
+                <h4>Inspect the visual state</h4>
+                ${review.expected ? `<p><strong>Expected:</strong> ${escapeHtml(review.expected)}</p>` : ''}
+                <ul class="review-focus-list">
+                  ${(review.focus?.length ? review.focus : defaultReviewFocus(item)).map((focus) => `<li>${escapeHtml(focus)}</li>`).join('')}
+                </ul>
+                <p class="decision-rule">Approve only intentional UI changes. Reject clipped text, missing data, broken spacing, wrong feature-flag state, unexpected new screenshots, or unexpected removals.</p>
+              </div>
+            </li>
+            <li class="review-step">
+              <span class="step-number">3</span>
+              <div class="step-body">
+                <h4>Comment before rejecting</h4>
+                <p>A rejection needs a written reason. The same note can be posted as an inline PR review comment on the selected source file.</p>
+                ${renderInlineCommentTarget(target)}
+                <label class="review-comment-field">
+                  <span>Reviewer comment</span>
+                  <textarea data-action="review-comment" rows="4" placeholder="Describe what is wrong, what should change, or why this visual state needs another pass.">${escapeHtml(comment)}</textarea>
+                </label>
+                <div class="inline-comment-actions">
+                  <button class="btn" type="button" data-action="post-inline-comment"${postDisabled ? ' disabled' : ''}>Post inline PR comment</button>
+                  <p class="comment-status ${escapeAttribute(state.inlineCommentState)}" data-comment-status>${escapeHtml(commentStatusMessage(item, target, comment))}</p>
+                </div>
+              </div>
+            </li>
+            <li class="review-step decision-step">
+              <span class="step-number">4</span>
+              <div class="step-body">
+                <h4>Decide</h4>
+                <div class="decision-actions">
+                  <button class="btn approve" type="button" data-review="approved">Approve</button>
+                  <button class="btn reject" type="button" data-review="rejected"${commentRequired ? ' disabled' : ''}>Reject</button>
+                </div>
+                <p class="decision-progress" data-decision-helper>${commentRequired ? 'Write a comment in step 3 to enable Reject.' : 'Reject will save this comment with the visual review state.'}</p>
+              </div>
+            </li>
+          </ol>
         </div>
       </section>
     `
@@ -427,21 +474,105 @@ import {
     `
   }
 
-  function renderUtilityPanel() {
-    return `
-      <section class="utility-panel" aria-label="Review actions">
-        <h2>Share and publish</h2>
-        <div class="utility-actions">
-          <button class="btn" type="button" data-action="copy-summary">Copy summary</button>
-          <button class="btn" type="button" data-action="copy-pr-comment">Copy PR comment</button>
-          <button class="btn" type="button" data-action="download-json">Download JSON</button>
-          <label class="btn file-btn">Import JSON<input class="file-hidden" type="file" accept="application/json" data-action="import-json" /></label>
-          <a class="btn" href="${escapeAttribute(context.regVizHref)}">Open reg-viz</a>
-          <a class="btn" href="${escapeAttribute(context.runUrl)}">Workflow run</a>
-          <a class="btn primary" href="${escapeAttribute(context.prUrl)}">Open PR</a>
+  function renderReviewLinks(item, target) {
+    const links = [
+      `<a class="btn" href="${escapeAttribute(reviewPageHref(item))}" target="_blank" rel="noopener noreferrer" data-review-page-link>Open review page</a>`,
+    ]
+    if (target) {
+      links.push(`<a class="btn" href="${escapeAttribute(sourceFileHref(target))}" target="_blank" rel="noopener noreferrer" data-source-link>Open source file</a>`)
+    }
+    if (item.actual && item.variant !== 'deleted') {
+      links.push(`<a class="btn" href="${escapeAttribute(item.actual)}" target="_blank" rel="noopener noreferrer">Open current image</a>`)
+    }
+    if (item.expected && item.variant !== 'new') {
+      links.push(`<a class="btn" href="${escapeAttribute(item.expected)}" target="_blank" rel="noopener noreferrer">Open baseline image</a>`)
+    }
+    if (item.diff && item.variant === 'changed') {
+      links.push(`<a class="btn" href="${escapeAttribute(item.diff)}" target="_blank" rel="noopener noreferrer">Open diff image</a>`)
+    }
+    return `<div class="review-link-row">${links.join('')}</div>`
+  }
+
+  function renderInlineCommentTarget(target) {
+    if (!target) {
+      return `
+        <div class="inline-comment-target missing">
+          <span>Inline target</span>
+          <strong>No source file metadata found</strong>
+          <p>This note can still explain the visual decision locally, but GitHub cannot place it on a changed file.</p>
         </div>
-      </section>
+      `
+    }
+
+    return `
+      <div class="inline-comment-target">
+        <span>Inline target</span>
+        <strong>${escapeHtml(sourceLabel(target))}</strong>
+        <a href="${escapeAttribute(sourceFileHref(target))}" target="_blank" rel="noopener noreferrer" data-source-link>View related code file</a>
+      </div>
     `
+  }
+
+  function reviewSubjectLabel(item) {
+    const kind = item.review?.kind
+    if (kind === 'storybook') return 'Storybook story'
+    if (kind === 'playwright') return 'Playwright test'
+    if (item.variant === 'new') return 'new screen'
+    if (item.variant === 'deleted') return 'removed screen'
+    return 'screen'
+  }
+
+  function reviewCommentFor(item) {
+    return String(state.reviewComments[item.id] || '')
+  }
+
+  function reviewPageHref(item) {
+    return `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(item.id)}`
+  }
+
+  function inlineCommentTarget(item) {
+    return parseSourceReference(item.review?.sourceFile || item.review?.subtitle || '')
+  }
+
+  function canPostInlineComment(item, comment = reviewCommentFor(item)) {
+    return Boolean(
+      item &&
+      state.inlineCommentState !== 'loading' &&
+      state.githubToken.trim() &&
+      comment.trim() &&
+      inlineCommentTarget(item)
+    )
+  }
+
+  function parseSourceReference(value) {
+    const candidate = String(value || '').split(' > ')[0].trim()
+    if (!candidate) return null
+    const match = candidate.match(/^(.+?):(\d+)(?::\d+)?$/)
+    const path = (match ? match[1] : candidate).replace(/^\/+/, '')
+    if (!path || /\s/.test(path)) return null
+    return {
+      line: match ? Number(match[2]) : null,
+      path,
+    }
+  }
+
+  function sourceLabel(target) {
+    return target?.line ? `${target.path}:${target.line}` : target?.path || ''
+  }
+
+  function sourceFileHref(target) {
+    if (!target?.path) return context.prUrl
+    const line = target.line ? `#L${target.line}` : ''
+    return `https://github.com/${context.repository}/blob/${context.headSha}/${target.path}${line}`
+  }
+
+  function commentStatusMessage(item, target, comment) {
+    if (state.inlineCommentMessage) return state.inlineCommentMessage
+    if (!comment.trim()) return 'Write a review comment before rejecting this snapshot.'
+    if (!target) return 'Comment saved locally. Add source metadata to post it inline on GitHub.'
+    if (!state.githubToken.trim()) return 'Comment saved locally. Add a GitHub token to post it inline on the PR.'
+    if (state.inlineCommentState === 'loading') return 'Posting inline PR comment...'
+    return 'Ready to post inline or reject with this reason.'
   }
 
   function filterButton(filter, label) {
@@ -485,7 +616,7 @@ import {
           <div>
             <span class="sync-kicker">Shared PR state</span>
             <strong>Keep reviewers in sync</strong>
-            <p class="sync-description">Review decisions are saved in this browser. Use a GitHub token only when you need to load or publish the shared PR comment.</p>
+            <p class="sync-description">Review decisions are saved in this browser. Use a GitHub token when you need to post inline comments or load/publish shared PR state.</p>
           </div>
           <span class="sync-badge">${escapeHtml(tokenLabel)}</span>
         </div>
@@ -510,7 +641,7 @@ import {
         <label class="token-field">
           <span>GitHub token</span>
           <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste token after creating it on GitHub" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
-          <small>Stored only in this tab's sessionStorage. Not included in PR comments or downloaded JSON.</small>
+          <small>Stored only in this tab's sessionStorage. Never included in PR comments.</small>
         </label>
         <div class="sync-action-group" aria-label="Token actions">
           <button class="btn" type="button" data-action="open-token-help">Create token</button>
@@ -539,7 +670,7 @@ import {
             <button class="btn" type="button" data-action="close-token-help" aria-label="Close token instructions">Close</button>
           </header>
           <p class="token-help-intro">
-            Use a fine-grained personal access token when GitHub asks for authentication. The token lets this browser publish the shared PR visual review comment and update the visual approval status.
+            Use a fine-grained personal access token when GitHub asks for authentication. The token lets this browser post inline PR review comments, publish the shared PR visual review comment, and update the visual approval status.
           </p>
           <p class="token-help-direct">
             <a href="${escapeAttribute(tokenCreationUrl)}" target="_blank" rel="noopener noreferrer" data-token-create-link>Open the prefilled GitHub token page</a>
@@ -549,7 +680,7 @@ import {
             <li>Name the token for this review workflow and choose a short expiration.</li>
             <li>Set Resource owner to the owner of ${escapeHtml(context.repository)}.</li>
             <li>Choose Only select repositories, then select ${escapeHtml(context.repository)}.</li>
-            <li>Under Repository permissions, set Issues to Read and write and Commit statuses to Read and write. Metadata stays Read-only automatically.</li>
+            <li>Under Repository permissions, set Issues, Pull requests, and Commit statuses to Read and write. Metadata stays Read-only automatically.</li>
             <li>Generate the token, copy it once, paste it into the GitHub token field here, then select Use token.</li>
           </ol>
           <div class="token-help-permissions" aria-label="Required token permissions">
@@ -562,12 +693,16 @@ import {
               <strong>Read and write</strong>
             </div>
             <div>
+              <span>Pull requests</span>
+              <strong>Read and write</strong>
+            </div>
+            <div>
               <span>Commit statuses</span>
               <strong>Read and write</strong>
             </div>
           </div>
           <p class="token-help-note">
-            Tokens are stored only in this tab's sessionStorage and are never included in downloaded JSON or PR comments. If organization approval is pending or you do not want to use a token, use Download JSON, Import JSON, or Copy PR comment instead.
+            Tokens are stored only in this tab's sessionStorage and are never included in PR comments. If organization approval is pending or you do not want to use a token, decisions and comments stay local until another reviewer publishes the shared PR state.
           </p>
           <div class="token-help-actions">
             <a class="btn primary" href="${escapeAttribute(tokenCreationUrl)}" target="_blank" rel="noopener noreferrer" data-token-create-link>Open GitHub token page</a>
@@ -736,10 +871,8 @@ import {
       persistViewState()
       applyOverlayState()
     })
-    root.querySelector('[data-action="copy-summary"]')?.addEventListener('click', copySummary)
-    root.querySelector('[data-action="copy-pr-comment"]')?.addEventListener('click', copyPrComment)
-    root.querySelector('[data-action="download-json"]')?.addEventListener('click', downloadReviewJson)
-    root.querySelector('[data-action="import-json"]')?.addEventListener('change', importReviewJson)
+    root.querySelector('[data-action="review-comment"]')?.addEventListener('input', updateReviewComment)
+    root.querySelector('[data-action="post-inline-comment"]')?.addEventListener('click', postInlineReviewComment)
     root.querySelector('[data-action="open-token-help"]')?.addEventListener('click', openTokenHelp)
     root.querySelectorAll('[data-action="close-token-help"]').forEach((button) => {
       button.addEventListener('click', closeTokenHelp)
@@ -767,8 +900,47 @@ import {
     if (overlayValue) overlayValue.textContent = `${state.overlay}%`
   }
 
+  function updateReviewComment(event) {
+    const current = activeItem()
+    if (!current) return
+    const value = event.target.value
+    if (value) {
+      state.reviewComments[current.id] = value
+    } else {
+      delete state.reviewComments[current.id]
+    }
+    state.inlineCommentMessage = ''
+    state.inlineCommentState = 'idle'
+    saveReviewComments()
+    syncCommentControls()
+  }
+
+  function syncCommentControls() {
+    const current = activeItem()
+    if (!current) return
+    const comment = reviewCommentFor(current)
+    const target = inlineCommentTarget(current)
+    const reject = root.querySelector('[data-review="rejected"]')
+    const post = root.querySelector('[data-action="post-inline-comment"]')
+    const status = root.querySelector('[data-comment-status]')
+    const decisionHelper = root.querySelector('[data-decision-helper]')
+    if (reject) reject.disabled = !comment.trim()
+    if (post) post.disabled = !canPostInlineComment(current, comment)
+    if (status) {
+      status.textContent = commentStatusMessage(current, target, comment)
+      status.className = `comment-status ${state.inlineCommentState}`
+    }
+    if (decisionHelper) {
+      decisionHelper.textContent = comment.trim()
+        ? 'Reject will save this comment with the visual review state.'
+        : 'Write a comment in step 3 to enable Reject.'
+    }
+  }
+
   function setActive(id) {
     state.activeId = id
+    state.inlineCommentMessage = ''
+    state.inlineCommentState = 'idle'
     const url = new URL(window.location.href)
     url.searchParams.set('id', id)
     history.replaceState(null, '', url)
@@ -793,9 +965,77 @@ import {
   function reviewActive(reviewState) {
     const current = activeItem()
     if (!current || !reviewableVariants.has(current.variant)) return
+    if (reviewState === 'rejected' && !reviewCommentFor(current).trim()) {
+      setInlineCommentState('error', 'Write a review comment before rejecting this snapshot.')
+      root.querySelector('[data-action="review-comment"]')?.focus()
+      return
+    }
     state.reviews[current.id] = reviewState
     saveReviews()
+    saveReviewComments()
+    state.inlineCommentMessage = ''
+    state.inlineCommentState = 'idle'
     navigate(1)
+  }
+
+  async function postInlineReviewComment() {
+    const current = activeItem()
+    if (!current) return
+    const comment = reviewCommentFor(current).trim()
+    const target = inlineCommentTarget(current)
+    if (!comment) {
+      setInlineCommentState('error', 'Write a review comment before posting to GitHub.')
+      root.querySelector('[data-action="review-comment"]')?.focus()
+      return
+    }
+    if (!target) {
+      setInlineCommentState('error', 'No source file metadata is available for an inline PR comment.')
+      return
+    }
+    if (!state.githubToken.trim()) {
+      setInlineCommentState('error', 'GitHub token required to post an inline PR comment.')
+      return
+    }
+
+    setInlineCommentState('loading', 'Posting inline PR comment...')
+    try {
+      await loadGithubUser()
+      const response = await githubRequest(`/repos/${context.repository}/pulls/${context.prNumber}/comments`, {
+        body: {
+          body: inlineReviewCommentBody(current, comment, target),
+          commit_id: context.headSha,
+          path: target.path,
+          subject_type: 'file',
+        },
+        method: 'POST',
+        requireToken: true,
+      })
+      setInlineCommentState(
+        'ready',
+        response?.html_url ? 'Inline PR comment posted.' : 'Inline PR comment posted to the selected source file.'
+      )
+    } catch (error) {
+      setInlineCommentState('error', error.message)
+    }
+  }
+
+  function inlineReviewCommentBody(item, comment, target) {
+    return [
+      comment,
+      '',
+      '---',
+      `Visual review page: [${itemTitle(item)}](${reviewPageHref(item)})`,
+      `Related source file: [${sourceLabel(target)}](${sourceFileHref(target)})`,
+      `Snapshot artifact: \`${item.raw}\``,
+      `Surface: ${context.surfaceLabel}`,
+      `Head: \`${String(context.headSha || '').slice(0, 7)}\``,
+    ].join('\n')
+  }
+
+  function setInlineCommentState(inlineCommentState, message) {
+    state.inlineCommentState = inlineCommentState
+    state.inlineCommentMessage = message
+    render()
   }
 
   function openTokenHelp() {
@@ -849,73 +1089,13 @@ import {
     render()
   }
 
-  async function copySummary() {
-    const currentCounts = counts()
-    const rejected = items.filter((item) => state.reviews[item.id] === 'rejected')
-    const approved = items.filter((item) => state.reviews[item.id] === 'approved')
-    const open = items.filter((item) => reviewableVariants.has(item.variant) && !state.reviews[item.id])
-    const lines = [
-      `Visual review: ${context.surfaceLabel}`,
-      `PR #${context.prNumber}: ${context.prTitle}`,
-      `Reviewed ${currentCounts.reviewed}/${currentCounts.reviewable} snapshots.`,
-      `Approved: ${approved.length}`,
-      `Rejected: ${rejected.length}`,
-      `Open: ${open.length}`,
-      '',
-      `Report: ${window.location.href}`,
-    ]
-    if (rejected.length) {
-      lines.push('', 'Rejected snapshots:')
-      rejected.slice(0, 20).forEach((item) => lines.push(`- ${itemTitle(item)} (${item.raw})`))
-    }
-    await navigator.clipboard.writeText(lines.join('\n'))
-  }
-
-  async function copyPrComment() {
-    await navigator.clipboard.writeText(renderReviewComment(currentReviewState()))
-    setSyncState('ready', 'PR comment copied.')
-  }
-
-  function downloadReviewJson() {
-    const blob = new Blob([`${JSON.stringify(currentReviewState(), null, 2)}\n`], { type: 'application/json' })
-    const href = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = href
-    link.download = `mission-control-pr-${context.prNumber}-${context.surface}-visual-review.json`
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.URL.revokeObjectURL(href)
-    setSyncState('ready', 'Review JSON downloaded.')
-  }
-
-  async function importReviewJson(event) {
-    const file = event.target.files?.[0]
-    event.target.value = ''
-    if (!file) return
-    try {
-      const imported = JSON.parse(await readFileAsText(file))
-      applyImportedReviewState(imported, 'Imported JSON')
-    } catch {
-      setSyncState('error', 'Unable to import review JSON.')
-    }
-  }
-
-  function readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.addEventListener('load', () => resolve(String(reader.result || '')))
-      reader.addEventListener('error', () => reject(reader.error || new Error('file read failed')))
-      reader.readAsText(file)
-    })
-  }
-
   function currentSurfaceReviewState() {
     return buildSurfaceReviewState({
       context: {
         ...context,
         reportHref: `${window.location.origin}${window.location.pathname}`,
       },
+      comments: state.reviewComments,
       items,
       reviewer: state.githubUser,
       reviews: state.reviews,
@@ -924,19 +1104,6 @@ import {
 
   function currentReviewState() {
     return mergeSurfaceReviewState(state.remoteState, currentSurfaceReviewState())
-  }
-
-  function applyImportedReviewState(imported, sourceLabel) {
-    const surface = imported?.surfaces?.[context.surface] || imported
-    if (!surface?.decisions || surface.surface !== context.surface) {
-      setSyncState('error', `${sourceLabel} has no ${context.surface} review state.`)
-      return
-    }
-
-    const importedCount = replaceLocalSurfaceDecisions(surface)
-    state.remoteState = imported?.surfaces ? imported : mergeSurfaceReviewState(state.remoteState, surface)
-    saveReviews()
-    setSyncState('ready', `${sourceLabel}: imported ${importedCount} decision(s).`)
   }
 
   function applyRemoteReviewState(remoteState, sourceLabel) {
@@ -948,6 +1115,7 @@ import {
 
     const importedCount = replaceLocalSurfaceDecisions(surface)
     saveReviews()
+    saveReviewComments()
     setSyncState('ready', `${sourceLabel}: loaded ${importedCount} decision(s).`)
   }
 
@@ -957,6 +1125,7 @@ import {
       .map((item) => item.id))
     for (const itemId of reviewableIds) {
       delete state.reviews[itemId]
+      delete state.reviewComments[itemId]
     }
 
     let importedCount = 0
@@ -964,6 +1133,9 @@ import {
       if (!reviewableIds.has(itemId)) continue
       if (decision?.decision === 'approved' || decision?.decision === 'rejected') {
         state.reviews[itemId] = decision.decision
+        if (typeof decision.comment === 'string' && decision.comment.trim()) {
+          state.reviewComments[itemId] = decision.comment
+        }
         importedCount += 1
       }
     }
