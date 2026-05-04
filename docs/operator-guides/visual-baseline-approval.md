@@ -26,9 +26,10 @@ Merged `main` runs publish provider-neutral baselines with `reg-suit` to
 GitHub Pages on the `visual-regression-pages` branch. PR checks compare
 against those baselines without relying on a paid visual SaaS account.
 
-PR runs also publish their generated `reg-actions` report HTML to the same
-Pages branch under `/pr/<PR>/`. The report links expose the baseline,
-current, and diff panes for peer review without downloading Actions artifacts.
+PR runs also publish their generated `reg-actions` report HTML and referenced
+`__reg__` image assets to the same Pages branch under `/pr/<PR>/`. The report
+links expose the baseline, current, and diff panes for peer review without
+downloading Actions artifacts.
 
 Required repository setting:
 

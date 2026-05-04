@@ -2,7 +2,7 @@
 import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import {
-  copyFile,
+  cp,
   mkdir,
   mkdtemp,
   readFile,
@@ -99,6 +99,129 @@ function run(command, args, options = {}) {
 
 function safeBranchName(branch) {
   return String(branch || 'unknown').replace(/[^\w./-]+/g, '-')
+}
+
+function extractReportPayload(reportHtml) {
+  const match = reportHtml.match(/(window\[['"]__reg__['"]\]\s*=\s*)(\{[\s\S]*?\})(;\s*<\/script>)/)
+  if (!match) {
+    throw new Error('visual report does not contain window.__reg__ payload')
+  }
+
+  try {
+    return {
+      prefix: match[1],
+      payload: JSON.parse(match[2]),
+      suffix: match[3],
+      token: match[0],
+    }
+  } catch (error) {
+    throw new Error(`unable to parse visual report payload: ${error.message}`)
+  }
+}
+
+function localizeReportAssetPaths(reportHtml, extracted) {
+  const payload = {
+    ...extracted.payload,
+    actualDir: './__reg__/1_actual',
+    expectedDir: './__reg__/2_expected',
+    diffDir: './__reg__/0_diff',
+  }
+
+  return reportHtml.replace(
+    extracted.token,
+    `${extracted.prefix}${JSON.stringify(payload)}${extracted.suffix}`
+  )
+}
+
+function reportItems(payload, key) {
+  return Array.isArray(payload[key]) ? payload[key] : []
+}
+
+function itemFileName(item) {
+  const fileName = item?.encoded || item?.raw
+  return typeof fileName === 'string' && fileName.length > 0 ? fileName : null
+}
+
+function diffFileName(item, payload) {
+  const fileName = itemFileName(item)
+  if (!fileName) return null
+
+  const extension = String(payload.diffImageExtention || payload.diffImageExtension || 'webp')
+    .replace(/^\./, '')
+  const parsed = path.parse(fileName)
+  return `${parsed.name}.${extension}`
+}
+
+function requiredAssetFiles(payload) {
+  const newItems = reportItems(payload, 'newItems')
+  const passedItems = reportItems(payload, 'passedItems')
+  const failedItems = reportItems(payload, 'failedItems')
+  const deletedItems = reportItems(payload, 'deletedItems')
+
+  return {
+    actual: [...newItems, ...passedItems, ...failedItems].map(itemFileName).filter(Boolean),
+    expected: [...deletedItems, ...failedItems].map(itemFileName).filter(Boolean),
+    diff: failedItems.map((item) => diffFileName(item, payload)).filter(Boolean),
+  }
+}
+
+function resolveInside(rootDir, relativePath) {
+  const root = path.resolve(rootDir)
+  const resolved = path.resolve(root, relativePath)
+  if (resolved !== root && !resolved.startsWith(`${root}${path.sep}`)) {
+    throw new Error(`visual report asset escapes expected directory: ${relativePath}`)
+  }
+  return resolved
+}
+
+async function copyReportAssetDir({ label, sourceDir, targetDir, requiredFiles }) {
+  if (!existsSync(sourceDir)) {
+    if (requiredFiles.length > 0) {
+      throw new Error(`missing ${label} visual image directory: ${sourceDir}`)
+    }
+    return
+  }
+
+  await rm(targetDir, { recursive: true, force: true })
+  await mkdir(path.dirname(targetDir), { recursive: true })
+  await cp(sourceDir, targetDir, { recursive: true })
+
+  const missing = requiredFiles.filter((fileName) => !existsSync(resolveInside(targetDir, fileName)))
+  if (missing.length > 0) {
+    const sample = missing.slice(0, 5).join(', ')
+    throw new Error(
+      `missing ${missing.length.toString()} ${label} visual image file(s) after copy from ${sourceDir}: ${sample}`
+    )
+  }
+}
+
+async function writeReportBundle({ reportFile, reportHtml, extracted, targetDir }) {
+  const payload = extracted.payload
+  const requiredFiles = requiredAssetFiles(payload)
+  const reportDir = path.dirname(reportFile)
+  const assetRoot = path.join(targetDir, '__reg__')
+
+  await mkdir(targetDir, { recursive: true })
+  await copyReportAssetDir({
+    label: 'actual',
+    sourceDir: path.resolve(reportDir, payload.actualDir),
+    targetDir: path.join(assetRoot, '1_actual'),
+    requiredFiles: requiredFiles.actual,
+  })
+  await copyReportAssetDir({
+    label: 'expected',
+    sourceDir: path.resolve(reportDir, payload.expectedDir),
+    targetDir: path.join(assetRoot, '2_expected'),
+    requiredFiles: requiredFiles.expected,
+  })
+  await copyReportAssetDir({
+    label: 'diff',
+    sourceDir: path.resolve(reportDir, payload.diffDir),
+    targetDir: path.join(assetRoot, '0_diff'),
+    requiredFiles: requiredFiles.diff,
+  })
+
+  await writeFile(path.join(targetDir, 'index.html'), localizeReportAssetPaths(reportHtml, extracted))
 }
 
 async function clonePagesBranch({ repository, token, branch }) {
@@ -482,10 +605,10 @@ async function publishReport(options) {
   const prRoot = path.join(pagesDir, 'pr', prNumber)
   const runReportDir = path.join(prRoot, 'runs', runKey, surface)
   const latestReportDir = path.join(prRoot, surface, 'latest')
-  await mkdir(runReportDir, { recursive: true })
-  await mkdir(latestReportDir, { recursive: true })
-  await copyFile(reportFile, path.join(runReportDir, 'index.html'))
-  await copyFile(reportFile, path.join(latestReportDir, 'index.html'))
+  const reportHtml = await readFile(reportFile, 'utf8')
+  const extractedReport = extractReportPayload(reportHtml)
+  await writeReportBundle({ reportFile, reportHtml, extracted: extractedReport, targetDir: runReportDir })
+  await writeReportBundle({ reportFile, reportHtml, extracted: extractedReport, targetDir: latestReportDir })
 
   const reportHref = `${baseUrl}/pr/${prNumber}/runs/${runKey}/${surface}/`
   const latestHref = `${baseUrl}/pr/${prNumber}/${surface}/latest/`

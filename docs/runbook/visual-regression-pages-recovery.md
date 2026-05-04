@@ -58,6 +58,8 @@
 - The latest `main` visual workflow publishes without errors.
 - The affected PR has Pages links under
   `https://racecraft-lab.github.io/mission-control/pr/<PR>/`.
+- Each affected PR report path contains report-local `__reg__` image assets,
+  for example `/pr/<PR>/storybook/latest/__reg__/1_actual/`.
 
 ## 7. Postmortem
 
