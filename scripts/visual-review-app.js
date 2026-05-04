@@ -221,6 +221,7 @@ import {
             </div>
           </aside>
           <section class="content">
+            ${renderReviewGuide(currentCounts)}
             ${renderSyncPanel()}
             ${current ? renderViewer(current) : '<article class="viewer-card"><div class="empty-list">No snapshots match the current filters.</div></article>'}
             ${current ? renderContext(current) : ''}
@@ -231,6 +232,67 @@ import {
     bindEvents()
     applyZoomState()
     applyOverlayState()
+  }
+
+  function renderReviewGuide(currentCounts) {
+    const open = currentCounts.reviewable - currentCounts.reviewed
+    const approved = currentCounts.reviewed - currentCounts.rejected
+    const statusTone = currentCounts.rejected > 0
+      ? 'rejected'
+      : open > 0
+        ? 'pending'
+        : 'approved'
+    const checkpoint = currentCounts.rejected > 0
+      ? `${currentCounts.rejected} rejected snapshot${currentCounts.rejected === 1 ? '' : 's'} must be resolved or called out before approval.`
+      : open > 0
+        ? `${open} snapshot${open === 1 ? '' : 's'} still need a decision on this surface.`
+        : 'This surface is locally complete. Publish PR state, then repeat on the other visual surface.'
+
+    return `
+      <section class="review-guide" aria-labelledby="review-guide-title">
+        <div class="guide-heading">
+          <div>
+            <p class="guide-kicker">Reviewer guide</p>
+            <h2 id="review-guide-title">Review ${escapeHtml(context.surfaceLabel)} in five steps</h2>
+          </div>
+          <span class="guide-status ${escapeAttribute(statusTone)}">${escapeHtml(checkpoint)}</span>
+        </div>
+        <ol class="guide-steps">
+          ${guideStep('1', 'Start with shared state', 'Use Load PR state first. If GitHub asks for a token, use a fine-grained token with Issues and Commit statuses write access, or import a JSON handoff from another reviewer.')}
+          ${guideStep('2', 'Inspect every open snapshot', 'Work from the Open filter until it is empty. For changed screenshots, compare Baseline and Current, then use Highlighter, Overlay, or Blink when the difference is subtle.')}
+          ${guideStep('3', 'Apply the decision rule', 'Approve only intentional UI changes. Reject clipped text, missing data, broken spacing, wrong feature-flag state, unexpected new screenshots, or unexpected removals.')}
+          ${guideStep('4', 'Leave a durable trail', 'When this surface is complete, publish to the PR. Without a token, download JSON for handoff or copy the generated PR comment and paste it into the pull request.')}
+          ${guideStep('5', 'Finish both surfaces', 'Playwright and Storybook must both be approved for the current head commit before visual-review-approval can turn green.')}
+        </ol>
+        <div class="guide-checkpoints" aria-label="Current review checkpoints">
+          ${checkpointItem('Surface', context.surfaceLabel)}
+          ${checkpointItem('Approved', String(approved))}
+          ${checkpointItem('Open', String(open))}
+          ${checkpointItem('Rejected', String(currentCounts.rejected))}
+        </div>
+      </section>
+    `
+  }
+
+  function guideStep(number, title, body) {
+    return `
+      <li>
+        <span class="guide-step-number">${escapeHtml(number)}</span>
+        <div>
+          <strong>${escapeHtml(title)}</strong>
+          <p>${escapeHtml(body)}</p>
+        </div>
+      </li>
+    `
+  }
+
+  function checkpointItem(label, value) {
+    return `
+      <div data-guide-checkpoint="${escapeAttribute(label.toLowerCase())}">
+        <span>${escapeHtml(label)}</span>
+        <strong>${escapeHtml(value)}</strong>
+      </div>
+    `
   }
 
   function filterButton(filter, label) {
