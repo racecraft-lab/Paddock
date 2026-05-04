@@ -1147,6 +1147,10 @@ import {
       setSyncState('ready', `${sourceLabel}: no ${context.surface} state yet.`)
       return
     }
+    if (surface.headSha && context.headSha && surface.headSha !== context.headSha) {
+      setSyncState('ready', `${sourceLabel}: ${context.surface} state is for ${shortSha(surface.headSha)}, not current head ${shortSha(context.headSha)}.`)
+      return
+    }
 
     const importedCount = replaceLocalSurfaceDecisions(surface)
     saveReviews()
@@ -1360,6 +1364,10 @@ import {
   function clamp(value, min, max) {
     const numeric = Number.isFinite(value) ? value : min
     return Math.min(max, Math.max(min, numeric))
+  }
+
+  function shortSha(value) {
+    return String(value || '').slice(0, 7) || 'unknown'
   }
 
   function escapeHtml(value) {

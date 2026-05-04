@@ -214,6 +214,54 @@ describe('visual review app guidance', () => {
     expect(body.body).toContain('tests/e2e/governance-tab-landing.e2e.ts:42')
   })
 
+  it('does not import shared review decisions from a stale head SHA', async () => {
+    const {
+      buildSurfaceReviewState,
+      mergeSurfaceReviewState,
+      renderReviewComment,
+    } = await import('../../scripts/visual-review-state.mjs')
+    const staleSurface = buildSurfaceReviewState({
+      context: {
+        ...context,
+        headSha: '8492e3e000000000000000000000000000000000',
+        reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/playwright/latest/',
+      },
+      items: [
+        { id: 'changed-governance/dashboard.png', group: 'spec-008', raw: 'governance/dashboard.png', variant: 'changed' },
+        { id: 'new-governance/new-modal.png', group: 'governance', raw: 'governance/new-modal.png', variant: 'new' },
+        { id: 'deleted-legacy/removed.png', group: 'legacy', raw: 'legacy/removed.png', variant: 'deleted' },
+      ],
+      reviewer: 'reviewer',
+      reviews: {
+        'changed-governance/dashboard.png': 'approved',
+        'new-governance/new-modal.png': 'approved',
+        'deleted-legacy/removed.png': 'approved',
+      },
+    })
+    const staleBody = renderReviewComment(mergeSurfaceReviewState(null, staleSurface))
+    vi.stubGlobal('fetch', vi.fn(async () => ({
+      json: async () => [{
+        body: staleBody,
+        created_at: '2026-05-04T20:00:00Z',
+        id: 1234,
+        updated_at: '2026-05-04T20:00:00Z',
+        user: { login: 'reviewer' },
+      }],
+      ok: true,
+      status: 200,
+    })))
+
+    await loadVisualReviewApp()
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('.sync-status-line')?.textContent).toContain(
+        'playwright state is for 8492e3e, not current head abcdef1'
+      )
+    })
+    expect(document.querySelector('[data-summary="reviewed"] strong')?.textContent).toBe('0/3')
+    expect(document.querySelector('.decision-pill')?.textContent).toBe('open')
+  })
+
   it('opens and dismisses GitHub token creation instructions', async () => {
     await loadVisualReviewApp()
 
