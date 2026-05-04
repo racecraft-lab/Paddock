@@ -7,6 +7,21 @@
   "baseRef": "main",
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "25333503937",
+      "runAttempt": "1",
+      "runKey": "25333503937-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25333503937",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/26/runs/25333503937-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/26/storybook/latest/",
+      "headSha": "58aeecb267a213745d8d73a4affaa91586c1d728",
+      "headRef": "008-resource-governance",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "createdAt": "2026-05-04T17:36:42.909Z"
+    },
+    {
       "surface": "playwright",
       "runId": "25331234161",
       "runAttempt": "1",
@@ -157,5 +172,5 @@
       "createdAt": "2026-05-04T03:29:33.645Z"
     }
   ],
-  "updatedAt": "2026-05-04T16:53:12.291Z"
+  "updatedAt": "2026-05-04T17:36:42.909Z"
 }
