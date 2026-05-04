@@ -35,6 +35,7 @@ import {
     reviews: readReviews(),
     syncMessage: 'Loading PR state...',
     syncState: 'loading',
+    tokenHelpOpen: false,
     zoom: clamp(Number(localStorage.getItem(storageKey('zoom')) || 100), 50, 200),
   }
 
@@ -227,6 +228,7 @@ import {
             ${current ? renderContext(current) : ''}
           </section>
         </main>
+        ${state.tokenHelpOpen ? renderTokenHelpModal() : ''}
       </div>
     `
     bindEvents()
@@ -330,12 +332,63 @@ import {
         </div>
         <div class="sync-controls">
           <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="GitHub token" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
+          <button class="btn" type="button" data-action="open-token-help">Create token</button>
           <button class="btn" type="button" data-action="save-token">Use token</button>
           <button class="btn" type="button" data-action="load-pr-state">Load PR state</button>
           <button class="btn primary" type="button" data-action="publish-pr-state">Publish to PR</button>
           <button class="btn" type="button" data-action="forget-token">Forget</button>
         </div>
       </article>
+    `
+  }
+
+  function renderTokenHelpModal() {
+    const docsUrl = 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token'
+    return `
+      <div class="modal-backdrop" data-action="close-token-help" aria-hidden="true"></div>
+      <section class="token-help-modal" role="dialog" aria-modal="true" aria-labelledby="token-help-title">
+        <div class="token-help-card">
+          <header class="token-help-header">
+            <div>
+              <p class="token-help-kicker">GitHub token</p>
+              <h2 id="token-help-title">Create a GitHub token</h2>
+            </div>
+            <button class="btn" type="button" data-action="close-token-help" aria-label="Close token instructions">Close</button>
+          </header>
+          <p class="token-help-intro">
+            Use a fine-grained personal access token when GitHub asks for authentication. The token lets this browser publish the shared PR visual review comment and update the visual approval status.
+          </p>
+          <ol class="token-help-steps">
+            <li>Open GitHub, then choose your profile picture, Settings, Developer settings, Personal access tokens, Fine-grained tokens, and Generate new token.</li>
+            <li>Name the token for this review workflow and choose a short expiration.</li>
+            <li>Set Resource owner to the owner of ${escapeHtml(context.repository)}.</li>
+            <li>Choose Only select repositories, then select ${escapeHtml(context.repository)}.</li>
+            <li>Under Repository permissions, set Issues to Read and write and Commit statuses to Read and write. Metadata stays Read-only automatically.</li>
+            <li>Generate the token, copy it once, paste it into the GitHub token field here, then select Use token.</li>
+          </ol>
+          <div class="token-help-permissions" aria-label="Required token permissions">
+            <div>
+              <span>Repository</span>
+              <strong>${escapeHtml(context.repository)}</strong>
+            </div>
+            <div>
+              <span>Issues</span>
+              <strong>Read and write</strong>
+            </div>
+            <div>
+              <span>Commit statuses</span>
+              <strong>Read and write</strong>
+            </div>
+          </div>
+          <p class="token-help-note">
+            Tokens are stored only in this tab's sessionStorage and are never included in downloaded JSON or PR comments. If organization approval is pending or you do not want to use a token, use Download JSON, Import JSON, or Copy PR comment instead.
+          </p>
+          <div class="token-help-actions">
+            <a class="btn" href="${escapeAttribute(docsUrl)}" target="_blank" rel="noopener noreferrer">Open GitHub docs</a>
+            <button class="btn primary" type="button" data-action="close-token-help">Done</button>
+          </div>
+        </div>
+      </section>
     `
   }
 
@@ -500,6 +553,10 @@ import {
     root.querySelector('[data-action="copy-pr-comment"]')?.addEventListener('click', copyPrComment)
     root.querySelector('[data-action="download-json"]')?.addEventListener('click', downloadReviewJson)
     root.querySelector('[data-action="import-json"]')?.addEventListener('change', importReviewJson)
+    root.querySelector('[data-action="open-token-help"]')?.addEventListener('click', openTokenHelp)
+    root.querySelectorAll('[data-action="close-token-help"]').forEach((button) => {
+      button.addEventListener('click', closeTokenHelp)
+    })
     root.querySelector('[data-action="github-token"]')?.addEventListener('input', (event) => {
       state.githubToken = event.target.value
     })
@@ -554,7 +611,24 @@ import {
     navigate(1)
   }
 
+  function openTokenHelp() {
+    state.tokenHelpOpen = true
+    render()
+    root.querySelector('[data-action="close-token-help"]')?.focus()
+  }
+
+  function closeTokenHelp() {
+    state.tokenHelpOpen = false
+    render()
+    root.querySelector('[data-action="open-token-help"]')?.focus()
+  }
+
   function handleKeys(event) {
+    if (state.tokenHelpOpen && event.key === 'Escape') {
+      event.preventDefault()
+      closeTokenHelp()
+      return
+    }
     if (['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target?.tagName)) return
     if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
       event.preventDefault()

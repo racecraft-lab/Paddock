@@ -838,6 +838,120 @@ kbd {
   font-size: 13px;
 }
 
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(20, 32, 51, 0.48);
+}
+
+.token-help-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  pointer-events: none;
+}
+
+.token-help-card {
+  width: min(720px, 100%);
+  max-height: min(720px, calc(100vh - 40px));
+  overflow: auto;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 28px 80px rgba(20, 32, 51, 0.28);
+  pointer-events: auto;
+}
+
+.token-help-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.token-help-kicker {
+  margin: 0 0 4px;
+  color: var(--accent-dark);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.token-help-header h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.token-help-intro,
+.token-help-note {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.token-help-steps {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding-left: 22px;
+}
+
+.token-help-steps li {
+  padding-left: 4px;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.token-help-permissions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.token-help-permissions div {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--panel-2);
+}
+
+.token-help-permissions span {
+  display: block;
+  color: var(--subtle);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.token-help-permissions strong {
+  display: block;
+  margin-top: 3px;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.token-help-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
 @media (max-width: 1180px) {
   .topbar-inner,
   .layout {
@@ -869,6 +983,10 @@ kbd {
   .guide-checkpoints {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .token-help-permissions {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 760px) {
@@ -896,6 +1014,23 @@ kbd {
   .stage {
     height: clamp(420px, 68vh, 620px);
     min-height: 420px;
+  }
+
+  .token-help-modal {
+    padding: 12px;
+  }
+
+  .token-help-card {
+    max-height: calc(100vh - 24px);
+    padding: 14px;
+  }
+
+  .token-help-header {
+    grid-template-columns: 1fr;
+  }
+
+  .token-help-actions {
+    justify-content: flex-start;
   }
 
   .context-grid {
