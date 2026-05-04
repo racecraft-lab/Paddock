@@ -79,4 +79,29 @@ describe('visual review app guidance', () => {
     expect(document.querySelector('[data-guide-checkpoint="open"] strong')?.textContent).toBe('2')
     expect(document.querySelector('.guide-status')?.textContent).toContain('2 snapshots still need a decision')
   })
+
+  it('opens and dismisses GitHub token creation instructions', async () => {
+    await loadVisualReviewApp()
+
+    document.querySelector<HTMLButtonElement>('[data-action="open-token-help"]')?.click()
+
+    const dialog = document.querySelector<HTMLElement>('[role="dialog"]')
+    expect(dialog?.textContent).toContain('Create a GitHub token')
+    expect(dialog?.textContent).toContain('Fine-grained tokens')
+    expect(dialog?.textContent).toContain('Only select repositories')
+    expect(dialog?.textContent).toContain('racecraft-lab/mission-control')
+    expect(dialog?.textContent).toContain('Issues to Read and write')
+    expect(dialog?.textContent).toContain('Commit statuses to Read and write')
+    expect(dialog?.textContent).toContain('sessionStorage')
+    expect(dialog?.querySelector<HTMLAnchorElement>('a[href*="docs.github.com"]')?.href).toContain(
+      'managing-your-personal-access-tokens'
+    )
+
+    dialog?.querySelector<HTMLButtonElement>('[data-action="close-token-help"]')?.click()
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+
+    document.querySelector<HTMLButtonElement>('[data-action="open-token-help"]')?.click()
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    expect(document.querySelector('[role="dialog"]')).toBeNull()
+  })
 })
