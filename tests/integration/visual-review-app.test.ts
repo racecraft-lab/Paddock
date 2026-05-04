@@ -100,10 +100,15 @@ describe('visual review app guidance', () => {
     expect(document.querySelector<HTMLAnchorElement>('[data-source-link]')?.href).toContain(
       '/blob/abcdef1234567890/tests/e2e/governance-tab-landing.e2e.ts#L42'
     )
+    expect(document.querySelector('[data-review-page-link]')).toBeNull()
+    expect(document.querySelector('[data-review-brief]')?.textContent).not.toContain('Open review page')
     expect(document.querySelector('.review-panel .sync-panel')).toBeNull()
     expect(document.querySelector('.submission-footer .sync-panel')?.textContent).toContain('Final review submission')
     expect(document.querySelector('.utility-panel')?.textContent || '').not.toContain('Copy summary')
-    expect(document.querySelector('.context-card')?.textContent).toContain('tests/e2e/governance-tab-landing.e2e.ts:42')
+    expect(document.querySelector('.context-card')?.textContent).toContain('Keyboard:')
+    expect(document.querySelector('.context-card')?.textContent).not.toContain('Display name')
+    expect(document.querySelector('.context-card')?.textContent).not.toContain('tests/e2e/governance-tab-landing.e2e.ts:42')
+    expect(document.querySelector('.context-grid')).toBeNull()
     expect(document.querySelector('.viewer-card')?.textContent).toContain('renders policy summary')
     expect(document.querySelector('[data-summary="open"] strong')?.textContent).toBe('3')
     expect(document.querySelector('[data-summary="reviewed"] strong')?.textContent).toBe('0/3')

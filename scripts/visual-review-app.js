@@ -477,9 +477,7 @@ import {
   }
 
   function renderReviewLinks(item, target) {
-    const links = [
-      `<a class="btn" href="${escapeAttribute(reviewPageHref(item))}" target="_blank" rel="noopener noreferrer" data-review-page-link>Open review page</a>`,
-    ]
+    const links = []
     if (target) {
       links.push(`<a class="btn" href="${escapeAttribute(sourceFileHref(target))}" target="_blank" rel="noopener noreferrer" data-source-link>Open source file</a>`)
     }
@@ -831,34 +829,12 @@ import {
   }
 
   function renderContext(item) {
-    const reviewState = state.reviews[item.id] || 'open'
     return `
       <article class="context-card">
-        <div class="context-grid">
-          ${contextItem('Snapshot', item.raw)}
-          ${item.review?.title ? contextItem('Display name', item.review.title) : ''}
-          ${contextItem('Group', item.group)}
-          ${contextItem('Status', `${statusLabel(item.variant)} / ${reviewState}`)}
-          ${item.review?.sourceFile ? contextItem('Source', item.review.sourceFile) : ''}
-          ${contextItem('Permalink', `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(item.id)}`)}
-          ${contextItem('Baseline', context.baseRef)}
-          ${contextItem('Current', context.headRef)}
-          ${contextItem('Workflow', context.workflowName)}
-          ${contextItem('Run', context.runKey)}
-        </div>
         <p class="keyboard-help">
           Keyboard: <kbd>Down</kbd>/<kbd>Up</kbd> navigate, <kbd>Y</kbd> approve, <kbd>N</kbd> reject, <kbd>/</kbd> search, <kbd>D</kbd> highlighter, <kbd>S</kbd> side by side, <kbd>O</kbd> overlay, <kbd>B</kbd> blink.
         </p>
       </article>
-    `
-  }
-
-  function contextItem(label, value) {
-    return `
-      <div class="context-item">
-        <div class="context-label">${escapeHtml(label)}</div>
-        <div class="context-value">${escapeHtml(value)}</div>
-      </div>
     `
   }
 
