@@ -75,26 +75,22 @@ describe('visual review app guidance', () => {
     document.body.innerHTML = ''
   })
 
-  it('renders a guided reviewer checklist with progress checkpoints', async () => {
+  it('renders an image-first review desk with focused reviewer context', async () => {
     await loadVisualReviewApp()
 
     expect(document.querySelector('.snapshot-name')?.textContent).toContain('renders policy summary')
-    expect(document.querySelector('.snapshot-sub')?.textContent).toContain('governance tab landing')
-    expect(document.querySelector('.snapshot-raw')?.textContent).toContain('governance/dashboard.png')
-    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('Budget guardrail coverage')
-    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('The policy summary should show active budgets')
-    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('Budget cards stay readable')
-    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('budget-guardrail')
-    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('review-focus')
-    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('Check budget guardrail labels')
+    expect(document.querySelector('.snapshot-sub')?.textContent).toContain('governance-tab-landing.e2e.ts')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('Budget guardrail coverage')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('The policy summary should show active budgets')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('Budget cards stay readable')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('budget-guardrail')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('Decision rule')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('Approve only intentional UI changes')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('tests/e2e/governance-tab-landing.e2e.ts:42')
     expect(document.querySelector('.context-card')?.textContent).toContain('tests/e2e/governance-tab-landing.e2e.ts:42')
-    expect(document.querySelector('.review-guide')?.textContent).toContain('Review Playwright UI E2E in five steps')
-    expect(document.querySelector('.review-guide')?.textContent).toContain('Start with shared state')
-    expect(document.querySelector('.review-guide')?.textContent).toContain('Inspect every open snapshot')
-    expect(document.querySelector('.review-guide')?.textContent).toContain('Apply the decision rule')
-    expect(document.querySelector('.review-guide')?.textContent).toContain('Leave a durable trail')
-    expect(document.querySelector('.review-guide')?.textContent).toContain('Finish both surfaces')
-    expect(document.querySelector('[data-guide-checkpoint="open"] strong')?.textContent).toBe('3')
+    expect(document.querySelector('.viewer-card')?.textContent).toContain('renders policy summary')
+    expect(document.querySelector('[data-summary="open"] strong')?.textContent).toBe('3')
+    expect(document.querySelector('[data-summary="reviewed"] strong')?.textContent).toBe('0/3')
   })
 
   it('searches reviewer metadata, tags, and source context', async () => {
@@ -108,17 +104,18 @@ describe('visual review app guidance', () => {
 
     expect(document.querySelector('.snapshot-list')?.textContent).toContain('renders policy summary')
     expect(document.querySelector('.snapshot-list')?.textContent).not.toContain('new-modal')
-    expect(document.querySelector('.review-metadata-card')?.textContent).toContain('budget-guardrail')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('budget-guardrail')
   })
 
-  it('updates guide checkpoints as reviewers make decisions', async () => {
+  it('updates review progress as reviewers make decisions', async () => {
     await loadVisualReviewApp()
 
     document.querySelector<HTMLButtonElement>('[data-review="approved"]')?.click()
 
-    expect(document.querySelector('[data-guide-checkpoint="approved"] strong')?.textContent).toBe('1')
-    expect(document.querySelector('[data-guide-checkpoint="open"] strong')?.textContent).toBe('2')
-    expect(document.querySelector('.guide-status')?.textContent).toContain('2 snapshots still need a decision')
+    expect(document.querySelector('[data-summary="reviewed"] strong')?.textContent).toBe('1/3')
+    expect(document.querySelector('[data-summary="open"] strong')?.textContent).toBe('2')
+    expect(document.querySelector('.progress-line')?.textContent).toContain('33% complete')
+    expect(document.querySelector('[data-review-brief]')?.textContent).toContain('2 open on this surface')
   })
 
   it('opens and dismisses GitHub token creation instructions', async () => {

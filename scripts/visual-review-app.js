@@ -22,7 +22,7 @@ import {
 
   const state = {
     activeId: null,
-    filter: 'reviewable',
+    filter: 'unreviewed',
     githubToken: sessionStorage.getItem(githubTokenKey()) || '',
     githubUser: '',
     group: 'all',
@@ -51,7 +51,7 @@ import {
   loadRemoteReviewState({ silent: true })
 
   function storageKey(suffix) {
-    return `visual-review:${context.prNumber}:${context.surface}:${context.runKey}:${suffix}`
+    return `visual-review:${context.prNumber}:${context.surface}:${context.runKey}:${context.headSha}:${suffix}`
   }
 
   function githubTokenKey() {
@@ -269,7 +269,7 @@ import {
       <div class="review-shell">
         <header class="topbar">
           <div class="topbar-inner">
-            <div>
+            <div class="topbar-title">
               <nav class="crumbs" aria-label="Breadcrumb">
                 <a href="${escapeAttribute(context.prIndexHref)}">PR #${escapeHtml(context.prNumber)}</a>
                 <span>/</span>
@@ -277,44 +277,44 @@ import {
                 <span>/</span>
                 <span>Run ${escapeHtml(context.runId)}</span>
               </nav>
-              <div class="title-row">
-                <h1>${escapeHtml(context.prTitle)}</h1>
-                <span class="pill changed">${currentCounts.reviewable} need review</span>
-                <span class="pill approved">${currentCounts.reviewed}/${currentCounts.reviewable} reviewed</span>
-                ${currentCounts.rejected ? `<span class="pill rejected">${currentCounts.rejected} rejected</span>` : ''}
-              </div>
+              <h1>${escapeHtml(context.prTitle)}</h1>
               <div class="meta-row">
                 <span>${escapeHtml(context.headRef)} into ${escapeHtml(context.baseRef)}</span>
                 <span>Commit ${escapeHtml(String(context.headSha || '').slice(0, 7))}</span>
                 <span>${escapeHtml(context.surfaceLabel)}</span>
               </div>
             </div>
-            <div class="actions">
-              <button class="btn" type="button" data-action="copy-summary">Copy summary</button>
-              <button class="btn" type="button" data-action="copy-pr-comment">Copy PR comment</button>
-              <button class="btn" type="button" data-action="download-json">Download JSON</button>
-              <label class="btn file-btn">Import JSON<input class="file-hidden" type="file" accept="application/json" data-action="import-json" /></label>
-              <a class="btn" href="${escapeAttribute(context.regVizHref)}">Open reg-viz</a>
-              <a class="btn" href="${escapeAttribute(context.runUrl)}">Workflow run</a>
-              <a class="btn primary" href="${escapeAttribute(context.prUrl)}">Open PR</a>
+            <div class="status-summary" aria-label="Review progress">
+              <div data-summary="open">
+                <span>Open</span>
+                <strong>${escapeHtml(String(currentCounts.reviewable - currentCounts.reviewed))}</strong>
+              </div>
+              <div data-summary="reviewed">
+                <span>Reviewed</span>
+                <strong>${escapeHtml(`${currentCounts.reviewed}/${currentCounts.reviewable}`)}</strong>
+              </div>
+              <div data-summary="rejected">
+                <span>Rejected</span>
+                <strong>${escapeHtml(String(currentCounts.rejected))}</strong>
+              </div>
             </div>
           </div>
         </header>
-        <main class="layout">
+        <main class="review-workspace">
           <aside class="sidebar" aria-label="Snapshot queue">
             <div class="sidebar-header">
               <div class="progress-line">
-                <strong>Review queue</strong>
+                <strong>Queue</strong>
                 <span>${progress}% complete</span>
               </div>
               <div class="progress-track" aria-hidden="true"><div class="progress-bar" style="width: ${progress}%"></div></div>
               <div class="filters" role="group" aria-label="Filters">
+                ${filterButton('unreviewed', `Open ${currentCounts.reviewable - currentCounts.reviewed}`)}
                 ${filterButton('reviewable', `Review ${currentCounts.reviewable}`)}
-                ${filterButton('unreviewed', 'Open')}
                 ${filterButton('changed', `Changed ${currentCounts.changed}`)}
                 ${filterButton('all', `All ${items.length}`)}
               </div>
-              <input class="search" type="search" value="${escapeAttribute(state.query)}" placeholder="Search snapshots" aria-label="Search snapshots" data-action="search" />
+              <input class="search" type="search" value="${escapeAttribute(state.query)}" placeholder="Find by story, test, source, or tag" aria-label="Search snapshots" data-action="search" />
               <select class="group-select" aria-label="Filter by group" data-action="group">
                 <option value="all">All groups</option>
                 ${groups.map((group) => `<option value="${escapeAttribute(group)}"${group === state.group ? ' selected' : ''}>${escapeHtml(group)}</option>`).join('')}
@@ -324,13 +324,15 @@ import {
               ${renderSnapshotList()}
             </div>
           </aside>
-          <section class="content">
-            ${renderReviewGuide(currentCounts)}
-            ${renderSyncPanel()}
-            ${current ? renderReviewMetadata(current) : ''}
+          <section class="canvas-column">
             ${current ? renderViewer(current) : '<article class="viewer-card"><div class="empty-list">No snapshots match the current filters.</div></article>'}
             ${current ? renderContext(current) : ''}
           </section>
+          <aside class="review-panel" aria-label="Review details and decision">
+            ${current ? renderReviewBrief(current, currentCounts) : ''}
+            ${renderSyncPanel()}
+            ${renderUtilityPanel()}
+          </aside>
         </main>
         ${state.tokenHelpOpen ? renderTokenHelpModal() : ''}
       </div>
@@ -340,64 +342,89 @@ import {
     applyOverlayState()
   }
 
-  function renderReviewGuide(currentCounts) {
+  function renderReviewBrief(item, currentCounts) {
+    const review = item.review || {}
+    const reviewState = state.reviews[item.id] || 'open'
     const open = currentCounts.reviewable - currentCounts.reviewed
-    const approved = currentCounts.reviewed - currentCounts.rejected
-    const statusTone = currentCounts.rejected > 0
-      ? 'rejected'
-      : open > 0
-        ? 'pending'
-        : 'approved'
-    const checkpoint = currentCounts.rejected > 0
-      ? `${currentCounts.rejected} rejected snapshot${currentCounts.rejected === 1 ? '' : 's'} must be resolved or called out before approval.`
-      : open > 0
-        ? `${open} snapshot${open === 1 ? '' : 's'} still need a decision on this surface.`
-        : 'This surface is locally complete. Publish PR state, then repeat on the other visual surface.'
+    const decisionTone = reviewState === 'approved' ? 'approved' : reviewState === 'rejected' ? 'rejected' : 'open'
 
     return `
-      <section class="review-guide" aria-labelledby="review-guide-title">
-        <div class="guide-heading">
-          <div>
-            <p class="guide-kicker">Reviewer guide</p>
-            <h2 id="review-guide-title">Review ${escapeHtml(context.surfaceLabel)} in five steps</h2>
-          </div>
-          <span class="guide-status ${escapeAttribute(statusTone)}">${escapeHtml(checkpoint)}</span>
+      <section class="review-brief" aria-labelledby="review-brief-title" data-review-brief>
+        <div class="brief-topline">
+          <span>${escapeHtml(statusLabel(item.variant))}</span>
+          <span class="decision-pill ${escapeAttribute(decisionTone)}">${escapeHtml(reviewState)}</span>
         </div>
-        <ol class="guide-steps">
-          ${guideStep('1', 'Start with shared state', 'Use Load PR state first. If GitHub asks for a token, use a fine-grained token with Issues and Commit statuses write access, or import a JSON handoff from another reviewer.')}
-          ${guideStep('2', 'Inspect every open snapshot', 'Work from the Open filter until it is empty. For changed screenshots, compare Baseline and Current, then use Highlighter, Overlay, or Blink when the difference is subtle.')}
-          ${guideStep('3', 'Apply the decision rule', 'Approve only intentional UI changes. Reject clipped text, missing data, broken spacing, wrong feature-flag state, unexpected new screenshots, or unexpected removals.')}
-          ${guideStep('4', 'Leave a durable trail', 'When this surface is complete, publish to the PR. Without a token, download JSON for handoff or copy the generated PR comment and paste it into the pull request.')}
-          ${guideStep('5', 'Finish both surfaces', 'Playwright and Storybook must both be approved for the current head commit before visual-review-approval can turn green.')}
-        </ol>
-        <div class="guide-checkpoints" aria-label="Current review checkpoints">
-          ${checkpointItem('Surface', context.surfaceLabel)}
-          ${checkpointItem('Approved', String(approved))}
-          ${checkpointItem('Open', String(open))}
-          ${checkpointItem('Rejected', String(currentCounts.rejected))}
+        <h2 id="review-brief-title">${escapeHtml(itemTitle(item))}</h2>
+        ${review.description ? `<p class="brief-description">${escapeHtml(review.description)}</p>` : ''}
+        ${review.tags?.length ? `<div class="metadata-chip-row">${review.tags.map((tag) => `<span class="metadata-chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
+        <div class="brief-section">
+          <h3>How to review</h3>
+          <ul class="review-focus-list">
+            ${(review.focus?.length ? review.focus : defaultReviewFocus(item)).map((focus) => `<li>${escapeHtml(focus)}</li>`).join('')}
+          </ul>
+        </div>
+        ${review.expected ? `
+          <div class="brief-section">
+            <h3>Expected state</h3>
+            <p>${escapeHtml(review.expected)}</p>
+          </div>
+        ` : ''}
+        <div class="brief-section">
+          <h3>What this is</h3>
+          <div class="brief-facts">
+            ${briefFact('Surface', context.surfaceLabel)}
+            ${briefFact(review.kind === 'storybook' ? 'Story' : 'Test', review.storyName || review.testTitle || itemTitle(item))}
+            ${review.sourceFile ? briefFact('Source', review.sourceFile) : ''}
+            ${review.storyId ? briefFact('Story ID', review.storyId) : ''}
+            ${review.testTitlePath?.length ? briefFact('Path', review.testTitlePath.join(' > ')) : ''}
+            ${briefFact('File', item.raw)}
+          </div>
+        </div>
+        <div class="decision-card">
+          <h3>Decision rule</h3>
+          <p>Approve only intentional UI changes. Reject clipped text, missing data, broken spacing, wrong feature-flag state, unexpected new screenshots, or unexpected removals.</p>
+          <div class="decision-actions">
+            <button class="btn approve" type="button" data-review="approved">Approve</button>
+            <button class="btn reject" type="button" data-review="rejected">Reject</button>
+          </div>
+          <p class="decision-progress">${escapeHtml(`${open} open on this surface`)}</p>
         </div>
       </section>
     `
   }
 
-  function guideStep(number, title, body) {
-    return `
-      <li>
-        <span class="guide-step-number">${escapeHtml(number)}</span>
-        <div>
-          <strong>${escapeHtml(title)}</strong>
-          <p>${escapeHtml(body)}</p>
-        </div>
-      </li>
-    `
+  function defaultReviewFocus(item) {
+    return [
+      `${statusLabel(item.variant)} screenshot is expected for this PR`,
+      'Visible copy, controls, and state badges are readable',
+      'Layout spacing and feature-flag state match the scenario',
+    ]
   }
 
-  function checkpointItem(label, value) {
+  function briefFact(label, value) {
+    if (!value) return ''
     return `
-      <div data-guide-checkpoint="${escapeAttribute(label.toLowerCase())}">
+      <div>
         <span>${escapeHtml(label)}</span>
         <strong>${escapeHtml(value)}</strong>
       </div>
+    `
+  }
+
+  function renderUtilityPanel() {
+    return `
+      <section class="utility-panel" aria-label="Review actions">
+        <h2>Share and publish</h2>
+        <div class="utility-actions">
+          <button class="btn" type="button" data-action="copy-summary">Copy summary</button>
+          <button class="btn" type="button" data-action="copy-pr-comment">Copy PR comment</button>
+          <button class="btn" type="button" data-action="download-json">Download JSON</button>
+          <label class="btn file-btn">Import JSON<input class="file-hidden" type="file" accept="application/json" data-action="import-json" /></label>
+          <a class="btn" href="${escapeAttribute(context.regVizHref)}">Open reg-viz</a>
+          <a class="btn" href="${escapeAttribute(context.runUrl)}">Workflow run</a>
+          <a class="btn primary" href="${escapeAttribute(context.prUrl)}">Open PR</a>
+        </div>
+      </section>
     `
   }
 
@@ -410,18 +437,28 @@ import {
     if (visible.length === 0) return '<div class="empty-list">No snapshots match the current filters.</div>'
     return visible.map((item) => {
       const reviewState = state.reviews[item.id] || ''
+      const source = compactSource(item.review?.sourceFile || itemSubtitle(item))
       return `
-        <button class="snapshot-button${item.id === state.activeId ? ' active' : ''}" type="button" data-id="${escapeAttribute(item.id)}">
+        <button class="snapshot-button${item.id === state.activeId ? ' active' : ''}" type="button" data-id="${escapeAttribute(item.id)}" title="${escapeAttribute(item.raw)}">
           <span class="status-dot ${escapeAttribute(item.variant)}"></span>
           <span>
             <span class="snapshot-name">${escapeHtml(itemTitle(item))}</span>
-            <span class="snapshot-sub">${escapeHtml(statusLabel(item.variant))} · ${escapeHtml(itemSubtitle(item))}</span>
-            <span class="snapshot-raw">${escapeHtml(item.raw)}</span>
+            <span class="snapshot-sub">${escapeHtml(source)}</span>
+            <span class="snapshot-meta">
+              <span>${escapeHtml(statusLabel(item.variant))}</span>
+              <span>${escapeHtml(item.group)}</span>
+            </span>
           </span>
           <span class="review-state ${escapeAttribute(reviewState)}">${escapeHtml(reviewState || 'open')}</span>
         </button>
       `
     }).join('')
+  }
+
+  function compactSource(value) {
+    const text = String(value || '').split(' > ').pop() || ''
+    const parts = text.split('/').filter(Boolean)
+    return parts.length > 2 ? parts.slice(-2).join('/') : (text || value)
   }
 
   function renderSyncPanel() {
@@ -497,76 +534,6 @@ import {
     `
   }
 
-  function renderReviewMetadata(item) {
-    const review = item.review
-    if (!review) return ''
-
-    const primaryDetails = [
-      metadataItem('Kind', review.kind || context.surfaceLabel),
-      review.sourceFile ? metadataItem('Source', review.sourceFile) : '',
-      review.testTitle ? metadataItem('Test', review.testTitle) : '',
-      review.storyName ? metadataItem('Story', review.storyName) : '',
-      review.storyId ? metadataItem('Story ID', review.storyId) : '',
-      metadataItem('Raw file', item.raw),
-    ].filter(Boolean).join('')
-
-    return `
-      <article class="review-metadata-card" aria-labelledby="review-metadata-title">
-        <div class="review-metadata-header">
-          <div>
-            <p class="metadata-kicker">${escapeHtml(review.kind || context.surfaceLabel)} review context</p>
-            <h2 id="review-metadata-title">${escapeHtml(itemTitle(item))}</h2>
-            ${review.description ? `<p>${escapeHtml(review.description)}</p>` : ''}
-          </div>
-          ${review.tags.length ? `<div class="metadata-chip-row">${review.tags.map((tag) => `<span class="metadata-chip">${escapeHtml(tag)}</span>`).join('')}</div>` : ''}
-        </div>
-        <div class="metadata-grid">${primaryDetails}</div>
-        ${review.expected ? `
-          <section class="metadata-section">
-            <h3>Expected state</h3>
-            <p>${escapeHtml(review.expected)}</p>
-          </section>
-        ` : ''}
-        ${review.focus.length ? `
-          <section class="metadata-section">
-            <h3>Reviewer focus</h3>
-            <ul class="metadata-focus-list">
-              ${review.focus.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}
-            </ul>
-          </section>
-        ` : ''}
-        ${review.testTitlePath.length ? `
-          <section class="metadata-section">
-            <h3>Playwright path</h3>
-            <p>${escapeHtml(review.testTitlePath.join(' > '))}</p>
-          </section>
-        ` : ''}
-        ${review.testAnnotations.length ? `
-          <section class="metadata-section">
-            <h3>Annotations</h3>
-            <div class="annotation-list">
-              ${review.testAnnotations.map((annotation) => `
-                <div class="annotation-row">
-                  <strong>${escapeHtml(annotation.type)}</strong>
-                  <span>${escapeHtml(annotation.description || 'No description')}</span>
-                </div>
-              `).join('')}
-            </div>
-          </section>
-        ` : ''}
-      </article>
-    `
-  }
-
-  function metadataItem(label, value) {
-    return `
-      <div class="metadata-item">
-        <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(value)}</strong>
-      </div>
-    `
-  }
-
   function renderViewer(item) {
     const canCompare = item.variant === 'changed'
     const allowedModes = canCompare ? ['side-by-side', 'diff', 'overlay', 'blink'] : ['single']
@@ -588,8 +555,6 @@ import {
               </div>
             ` : ''}
             <label class="range-row">Zoom <input type="range" min="50" max="200" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
-            <button class="btn approve" type="button" data-review="approved">Approve</button>
-            <button class="btn reject" type="button" data-review="rejected">Reject</button>
           </div>
         </div>
         <div class="stage">
@@ -923,13 +888,7 @@ import {
       return
     }
 
-    let importedCount = 0
-    for (const [itemId, decision] of Object.entries(surface.decisions)) {
-      if (decision?.decision === 'approved' || decision?.decision === 'rejected') {
-        state.reviews[itemId] = decision.decision
-        importedCount += 1
-      }
-    }
+    const importedCount = replaceLocalSurfaceDecisions(surface)
     state.remoteState = imported?.surfaces ? imported : mergeSurfaceReviewState(state.remoteState, surface)
     saveReviews()
     setSyncState('ready', `${sourceLabel}: imported ${importedCount} decision(s).`)
@@ -942,15 +901,28 @@ import {
       return
     }
 
+    const importedCount = replaceLocalSurfaceDecisions(surface)
+    saveReviews()
+    setSyncState('ready', `${sourceLabel}: loaded ${importedCount} decision(s).`)
+  }
+
+  function replaceLocalSurfaceDecisions(surface) {
+    const reviewableIds = new Set(items
+      .filter((item) => reviewableVariants.has(item.variant))
+      .map((item) => item.id))
+    for (const itemId of reviewableIds) {
+      delete state.reviews[itemId]
+    }
+
     let importedCount = 0
     for (const [itemId, decision] of Object.entries(surface.decisions || {})) {
-      if (!state.reviews[itemId] && (decision?.decision === 'approved' || decision?.decision === 'rejected')) {
+      if (!reviewableIds.has(itemId)) continue
+      if (decision?.decision === 'approved' || decision?.decision === 'rejected') {
         state.reviews[itemId] = decision.decision
         importedCount += 1
       }
     }
-    saveReviews()
-    setSyncState('ready', `${sourceLabel}: loaded ${importedCount} decision(s).`)
+    return importedCount
   }
 
   async function loadRemoteReviewState(options = {}) {
