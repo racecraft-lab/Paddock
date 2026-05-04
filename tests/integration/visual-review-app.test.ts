@@ -100,6 +100,8 @@ describe('visual review app guidance', () => {
     expect(document.querySelector<HTMLAnchorElement>('[data-source-link]')?.href).toContain(
       '/blob/abcdef1234567890/tests/e2e/governance-tab-landing.e2e.ts#L42'
     )
+    expect(document.querySelector('.review-panel .sync-panel')).toBeNull()
+    expect(document.querySelector('.submission-footer .sync-panel')?.textContent).toContain('Final review submission')
     expect(document.querySelector('.utility-panel')?.textContent || '').not.toContain('Copy summary')
     expect(document.querySelector('.context-card')?.textContent).toContain('tests/e2e/governance-tab-landing.e2e.ts:42')
     expect(document.querySelector('.viewer-card')?.textContent).toContain('renders policy summary')
@@ -216,15 +218,18 @@ describe('visual review app guidance', () => {
     await loadVisualReviewApp()
 
     const syncPanel = document.querySelector<HTMLElement>('.sync-panel')
-    expect(syncPanel?.textContent).toContain('Keep reviewers in sync')
-    expect(syncPanel?.textContent).toContain('Review decisions are saved in this browser')
+    expect(syncPanel?.textContent).toContain('Final review submission')
+    expect(syncPanel?.textContent).toContain('Publish surface decisions to the PR')
+    expect(syncPanel?.textContent).toContain('Review in progress')
+    expect(syncPanel?.textContent).toContain('Open3')
+    expect(syncPanel?.textContent).toContain('Rejected0')
+    expect(syncPanel?.textContent).toContain('Finish the queue')
     expect(syncPanel?.textContent).toContain('Create token')
-    expect(syncPanel?.textContent).toContain('opens setup instructions')
-    expect(syncPanel?.textContent).toContain('Use token')
-    expect(syncPanel?.textContent).toContain('verifies the pasted token')
+    expect(syncPanel?.textContent).toContain('GitHub token')
     expect(syncPanel?.textContent).toContain('Load PR state')
-    expect(syncPanel?.textContent).toContain("imports teammates' shared decisions")
+    expect(syncPanel?.textContent).toContain("preserves teammate decisions")
     expect(syncPanel?.textContent).toContain('Publish to PR')
+    expect(syncPanel?.textContent).toContain('visual-review-approval')
     expect(syncPanel?.querySelector('.sync-controls')).toBeNull()
     expect(syncPanel?.querySelector('.sync-controls [data-token-create-link]')).toBeNull()
 

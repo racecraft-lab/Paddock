@@ -142,11 +142,17 @@ a {
 .review-workspace {
   width: min(1780px, calc(100vw - 28px));
   margin: 0 auto;
-  padding: 14px 0 22px;
+  padding: 14px 0 14px;
   display: grid;
   grid-template-columns: 320px minmax(560px, 1fr) 430px;
   gap: 14px;
   align-items: start;
+}
+
+.submission-footer {
+  width: min(1780px, calc(100vw - 28px));
+  margin: 0 auto;
+  padding: 0 0 24px;
 }
 
 .sidebar,
@@ -734,23 +740,13 @@ a {
   border-bottom: 0;
 }
 
-.review-step:nth-last-child(2) {
-  padding-bottom: 112px;
-}
-
 .decision-step {
-  position: sticky;
-  bottom: -14px;
-  z-index: 3;
-  margin: 0 -14px -14px;
-  padding: 12px 14px 14px;
-  border-top: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 -14px 28px rgba(23, 32, 51, 0.1);
+  margin-top: 2px;
+  padding: 15px 0 2px;
 }
 
 .review-step.decision-step:last-child {
-  padding-bottom: 14px;
+  padding-bottom: 2px;
 }
 
 .step-number {
@@ -972,6 +968,21 @@ a {
   background: var(--rejected-soft);
 }
 
+.submission-footer .sync-panel {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: minmax(300px, 0.95fr) minmax(360px, 1fr) minmax(380px, 0.95fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.submission-overview {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
 .sync-main {
   display: flex;
   align-items: start;
@@ -1007,6 +1018,83 @@ a {
   font-weight: 850;
 }
 
+.submission-readiness,
+.sync-submit-column {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.submission-readiness > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.submission-readiness > strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.submission-readiness p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.submission-readiness.ready {
+  border-color: #a7dcbf;
+  background: var(--approved-soft);
+}
+
+.submission-readiness.open {
+  border-color: #f0c67a;
+  background: var(--open-soft);
+}
+
+.submission-readiness.blocked {
+  border-color: #f7b7b0;
+  background: var(--rejected-soft);
+}
+
+.submission-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.submission-metrics div {
+  min-width: 0;
+  padding: 7px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.submission-metrics span {
+  display: block;
+  color: var(--subtle);
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.submission-metrics strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.1;
+}
+
 .sync-status-line {
   display: grid;
   gap: 3px;
@@ -1015,6 +1103,10 @@ a {
   border: 1px solid var(--line);
   border-radius: 7px;
   background: #fff;
+}
+
+.sync-submit-column .sync-status-line {
+  margin-top: 0;
 }
 
 .sync-status-line span,
@@ -1034,7 +1126,7 @@ a {
 .sync-steps {
   display: grid;
   gap: 9px;
-  margin: 12px 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -1099,6 +1191,12 @@ a {
 
 .sync-action-group-final .btn {
   flex-basis: 100%;
+}
+
+.submission-footer .sync-action-group-final {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
 }
 
 .context-card {
@@ -1259,16 +1357,25 @@ kbd {
   .review-panel {
     position: static;
     grid-column: 1 / -1;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     max-height: none;
     min-height: auto;
     overflow: visible;
+  }
+
+  .submission-footer .sync-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .sync-submit-column {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 980px) {
   .topbar-inner,
-  .review-workspace {
+  .review-workspace,
+  .submission-footer {
     width: min(100vw - 20px, 100%);
   }
 
@@ -1277,6 +1384,14 @@ kbd {
   .review-panel,
   .viewer-toolbar {
     grid-template-columns: 1fr;
+  }
+
+  .submission-footer .sync-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .sync-submit-column {
+    grid-column: auto;
   }
 
   .status-summary {

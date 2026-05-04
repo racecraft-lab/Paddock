@@ -362,9 +362,11 @@ import {
           </section>
           <aside class="review-panel" aria-label="Review details and decision">
             ${current ? renderReviewBrief(current, currentCounts) : ''}
-            ${renderSyncPanel()}
           </aside>
         </main>
+        <footer class="submission-footer" aria-label="Final review submission">
+          ${renderSyncPanel(currentCounts)}
+        </footer>
         ${state.tokenHelpOpen ? renderTokenHelpModal() : ''}
       </div>
     `
@@ -608,49 +610,82 @@ import {
     return parts.length > 2 ? parts.slice(-2).join('/') : (text || value)
   }
 
-  function renderSyncPanel() {
+  function renderSyncPanel(currentCounts = counts()) {
     const tokenLabel = state.githubUser ? `Signed in @${state.githubUser}` : (state.githubToken ? 'Token entered' : 'Token optional')
+    const open = currentCounts.reviewable - currentCounts.reviewed
+    const approved = currentCounts.reviewed - currentCounts.rejected
+    const readiness = currentCounts.rejected > 0
+      ? {
+          label: 'Changes requested',
+          text: 'Rejected items keep the visual approval check blocked until the UI is fixed and this surface is reviewed again.',
+          tone: 'blocked',
+        }
+      : open > 0
+        ? {
+            label: 'Review in progress',
+            text: 'Finish every open item before publishing final approval for this surface.',
+            tone: 'open',
+          }
+        : {
+            label: 'Ready to publish',
+            text: 'Publish this surface state to update the managed PR comment and visual-review-approval status.',
+            tone: 'ready',
+          }
     return `
       <article class="sync-panel ${escapeAttribute(state.syncState)}">
-        <div class="sync-main">
-          <div>
-            <span class="sync-kicker">Shared PR state</span>
-            <strong>Keep reviewers in sync</strong>
-            <p class="sync-description">Review decisions are saved in this browser. Use a GitHub token when you need to post inline comments or load/publish shared PR state.</p>
+        <div class="submission-overview">
+          <div class="sync-main">
+            <div>
+              <span class="sync-kicker">Final review submission</span>
+              <strong>Publish surface decisions to the PR</strong>
+              <p class="sync-description">Approve and reject decisions stay in this browser until this footer writes the shared review state back to GitHub.</p>
+            </div>
+            <span class="sync-badge">${escapeHtml(tokenLabel)}</span>
           </div>
-          <span class="sync-badge">${escapeHtml(tokenLabel)}</span>
-        </div>
-        <div class="sync-status-line">
-          <span>Status</span>
-          <strong>${escapeHtml(state.syncMessage)}</strong>
+          <div class="submission-readiness ${escapeAttribute(readiness.tone)}">
+            <span>Submission state</span>
+            <strong>${escapeHtml(readiness.label)}</strong>
+            <p>${escapeHtml(readiness.text)}</p>
+            <div class="submission-metrics" aria-label="Current surface submission progress">
+              <div><span>Open</span><strong>${escapeHtml(String(open))}</strong></div>
+              <div><span>Approved</span><strong>${escapeHtml(String(approved))}</strong></div>
+              <div><span>Rejected</span><strong>${escapeHtml(String(currentCounts.rejected))}</strong></div>
+            </div>
+          </div>
         </div>
         <ol class="sync-steps" aria-label="Shared review workflow">
           <li>
             <span>1</span>
-            <p><strong>Create token</strong> opens setup instructions with the exact GitHub link and required permissions.</p>
+            <p><strong>Finish the queue</strong> until Open is 0. A rejection is a changes-requested outcome.</p>
           </li>
           <li>
             <span>2</span>
-            <p><strong>Use token</strong> verifies the pasted token for this tab.</p>
+            <p><strong>Load PR state</strong> first so publishing preserves teammate decisions from the other visual surface.</p>
           </li>
           <li>
             <span>3</span>
-            <p><strong>Load PR state</strong> imports teammates' shared decisions. <strong>Publish to PR</strong> writes yours back.</p>
+            <p><strong>Publish to PR</strong> updates the managed review comment and the visual-review-approval status.</p>
           </li>
         </ol>
-        <label class="token-field">
-          <span>GitHub token</span>
-          <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste token after creating it on GitHub" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
-          <small>Stored only in this tab's sessionStorage. Never included in PR comments.</small>
-        </label>
-        <div class="sync-action-group" aria-label="Token actions">
-          <button class="btn" type="button" data-action="open-token-help">Create token</button>
-          <button class="btn" type="button" data-action="save-token">Use token</button>
-          <button class="btn" type="button" data-action="forget-token">Forget</button>
-        </div>
-        <div class="sync-action-group sync-action-group-final" aria-label="Shared PR state actions">
-          <button class="btn" type="button" data-action="load-pr-state">Load PR state</button>
-          <button class="btn primary" type="button" data-action="publish-pr-state">Publish to PR</button>
+        <div class="sync-submit-column">
+          <div class="sync-status-line">
+            <span>GitHub state</span>
+            <strong>${escapeHtml(state.syncMessage)}</strong>
+          </div>
+          <label class="token-field">
+            <span>GitHub token</span>
+            <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="Paste token after creating it on GitHub" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
+            <small>Stored only in this tab's sessionStorage. Never included in PR comments.</small>
+          </label>
+          <div class="sync-action-group" aria-label="Token actions">
+            <button class="btn" type="button" data-action="open-token-help">Create token</button>
+            <button class="btn" type="button" data-action="save-token">Use token</button>
+            <button class="btn" type="button" data-action="forget-token">Forget</button>
+          </div>
+          <div class="sync-action-group sync-action-group-final" aria-label="Final submission actions">
+            <button class="btn" type="button" data-action="load-pr-state">Load PR state</button>
+            <button class="btn primary" type="button" data-action="publish-pr-state">Publish to PR</button>
+          </div>
         </div>
       </article>
     `
