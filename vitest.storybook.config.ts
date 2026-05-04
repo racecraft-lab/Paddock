@@ -8,6 +8,7 @@ import { defineConfig } from 'vitest/config'
 const dirname = typeof __dirname !== 'undefined'
   ? __dirname
   : path.dirname(fileURLToPath(import.meta.url))
+const uploadToArgos = process.env.ARGOS_UPLOAD_TO_ARGOS === '1'
 
 export default defineConfig({
   test: {
@@ -21,7 +22,7 @@ export default defineConfig({
           }),
           argosVitestPlugin({
             root: process.env.ARGOS_STORYBOOK_SCREENSHOT_DIR || './screenshots/storybook',
-            uploadToArgos: process.env.CI === 'true',
+            uploadToArgos,
             buildName: 'mission-control-storybook',
             token: process.env.ARGOS_TOKEN,
           }),

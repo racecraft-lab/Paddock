@@ -71,7 +71,7 @@ export function AgentSquadPanel() {
     } finally {
       setLoading(false)
     }
-  }, [activeProductLineScope, agents.length])
+  }, [activeProductLineScope, agents.length, t])
 
   // Initial load
   useEffect(() => {

@@ -354,10 +354,11 @@ describe('runAegisReviews resolver integration', () => {
       INSERT INTO agents (id, name, workspace_id, scope, config)
       VALUES (10, 'Aegis', 1, 'workspace', '{"openclawId":"aegis"}')
     `).run()
-    dispatchDb.prepare(`
-      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug)
-      VALUES (210, 'Non-PR task', 'No PR required', 'review', 'high', 'Done', 'builder', 1, 1, 22, 2, 'non-pr-template')
-    `).run()
+	    dispatchDb.prepare(`
+	      INSERT INTO tasks (id, title, description, status, priority, resolution, assigned_to, workspace_id, project_id, project_ticket_no, workflow_template_id, workflow_template_slug)
+	      VALUES (210, 'Non-PR task', 'No PR required', 'review', 'high', 'Done', 'builder', 1, 1, 22, 2, 'non-pr-template')
+	    `).run()
+	    dispatchDb.prepare('UPDATE tasks SET workflow_template_id = NULL, workflow_template_slug = NULL WHERE id = 210').run()
     const runOpenClaw = vi.fn().mockResolvedValue({
       stdout: JSON.stringify({ payloads: [{ text: 'VERDICT: APPROVED\nNOTES: pass' }] }),
     })

@@ -1,0 +1,37 @@
+# Runbook: Ingest Schema Malicious
+
+> Status: SPEC-008 T221 (FR-264a, FR-366, FR-090l)
+
+---
+
+## 1. Symptom
+
+- `quarantined_raw_events.reason='schema_malicious'` rows fire.
+- `malicious_rule_id` populated.
+
+## 2. Impact
+
+- Adversarial-pattern detection triggered. Source is paused per
+  FR-366 until cleared.
+
+## 3. Diagnose
+
+- Pull the matched rule id from `malicious_rule_id`.
+- Inspect the raw payload (sealed under FR-219m).
+
+## 4. Mitigate
+
+- Block the source at the network boundary if necessary.
+
+## 5. Recover
+
+- After investigation, mark the quarantined rows
+  `disposition='discard'` and resume the source.
+
+## 6. Validate
+
+- No further malicious-rule hits for 1 hour.
+
+## 7. Postmortem
+
+- File security incident under `docs/security/incidents/`.

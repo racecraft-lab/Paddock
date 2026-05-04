@@ -1,4 +1,5 @@
-import { spawn } from 'node:child_process'
+import { spawn, type ChildProcessWithoutNullStreams, type SpawnOptionsWithoutStdio } from 'node:child_process'
+import path from 'node:path'
 import { config } from './config'
 
 interface CommandOptions {
@@ -15,8 +16,71 @@ interface CommandResult {
   code: number | null
 }
 
-const SHELL_INTERPRETERS = new Set(['sh', 'bash', 'zsh', 'cmd', 'powershell', 'pwsh'])
-const SHELL_INLINE_FLAGS = new Set(['-c', '/c', '-Command', '-command', '-EncodedCommand', '-encodedcommand'])
+type SafeCommand =
+  | '/usr/bin/chown'
+  | '/usr/bin/cp'
+  | '/usr/bin/install'
+  | '/usr/bin/rm'
+  | '/usr/bin/systemctl'
+  | '/usr/sbin/useradd'
+  | '/usr/sbin/userdel'
+  | 'claude'
+  | 'clawdbot'
+  | 'codex'
+  | 'curl'
+  | 'df'
+  | 'free'
+  | 'hermes'
+  | 'lspci'
+  | 'netstat'
+  | 'nvidia-smi'
+  | 'open'
+  | 'openclaw'
+  | 'opencode'
+  | 'ps'
+  | 'sed'
+  | 'sudo'
+  | 'sysctl'
+  | 'system_profiler'
+  | 'uptime'
+  | 'vm_stat'
+  | 'wget'
+  | 'which'
+
+const SAFE_ABSOLUTE_COMMANDS: Record<string, SafeCommand> = {
+  '/usr/bin/chown': '/usr/bin/chown',
+  '/usr/bin/cp': '/usr/bin/cp',
+  '/usr/bin/install': '/usr/bin/install',
+  '/usr/bin/rm': '/usr/bin/rm',
+  '/usr/bin/systemctl': '/usr/bin/systemctl',
+  '/usr/sbin/useradd': '/usr/sbin/useradd',
+  '/usr/sbin/userdel': '/usr/sbin/userdel',
+}
+
+const SAFE_COMMAND_BASENAMES: Record<string, SafeCommand> = {
+  claude: 'claude',
+  clawdbot: 'clawdbot',
+  codex: 'codex',
+  curl: 'curl',
+  df: 'df',
+  free: 'free',
+  hermes: 'hermes',
+  lspci: 'lspci',
+  netstat: 'netstat',
+  'nvidia-smi': 'nvidia-smi',
+  open: 'open',
+  openclaw: 'openclaw',
+  opencode: 'opencode',
+  ps: 'ps',
+  sed: 'sed',
+  sudo: 'sudo',
+  sysctl: 'sysctl',
+  system_profiler: 'system_profiler',
+  uptime: 'uptime',
+  vm_stat: 'vm_stat',
+  wget: 'wget',
+  which: 'which',
+}
 
 export class CommandValidationError extends Error {
   readonly code = 'COMMAND_VALIDATION_ERROR'
@@ -33,7 +97,7 @@ function getCommandBasename(command: string): string {
   return (parts[parts.length - 1] || '').toLowerCase()
 }
 
-function assertSafeCommandInvocation(command: string, args: string[]): void {
+function assertSafeCommandInvocation(command: string): SafeCommand {
   if (typeof command !== 'string' || !command.trim()) {
     throw new CommandValidationError('Executable is required')
   }
@@ -43,11 +107,106 @@ function assertSafeCommandInvocation(command: string, args: string[]): void {
   }
 
   const basename = getCommandBasename(command)
-  if (SHELL_INTERPRETERS.has(basename)) {
-    const hasInlineShellPayload = args.some((arg) => SHELL_INLINE_FLAGS.has(String(arg)))
-    if (hasInlineShellPayload) {
-      throw new CommandValidationError('Shell interpreter inline execution is not allowed')
-    }
+
+  const safeCommand = SAFE_ABSOLUTE_COMMANDS[command] || SAFE_COMMAND_BASENAMES[basename]
+  if (!safeCommand) {
+    throw new CommandValidationError(`Executable is not allowlisted: ${basename || command}`)
+  }
+
+  return safeCommand
+}
+
+export function envWithExecutablePath(
+  command: string,
+  env: NodeJS.ProcessEnv = process.env
+): NodeJS.ProcessEnv {
+  const basename = getCommandBasename(command)
+  const safeCommand = SAFE_ABSOLUTE_COMMANDS[command] || SAFE_COMMAND_BASENAMES[basename]
+  if (!safeCommand || !/[\\/]/.test(command)) {
+    return env
+  }
+
+  const executableDir = path.dirname(command)
+  if (!executableDir || executableDir === '.' || executableDir === command) {
+    return env
+  }
+
+  const currentPath = env.PATH || process.env.PATH || ''
+  const pathEntries = currentPath.split(path.delimiter).filter(Boolean)
+  if (pathEntries.includes(executableDir)) {
+    return env
+  }
+
+  return {
+    ...env,
+    PATH: [executableDir, currentPath].filter(Boolean).join(path.delimiter),
+  }
+}
+
+function spawnSafeCommand(
+  command: SafeCommand,
+  args: string[],
+  options: SpawnOptionsWithoutStdio
+): ChildProcessWithoutNullStreams {
+  switch (command) {
+    case '/usr/bin/chown':
+      return spawn('/usr/bin/chown', args, options)
+    case '/usr/bin/cp':
+      return spawn('/usr/bin/cp', args, options)
+    case '/usr/bin/install':
+      return spawn('/usr/bin/install', args, options)
+    case '/usr/bin/rm':
+      return spawn('/usr/bin/rm', args, options)
+    case '/usr/bin/systemctl':
+      return spawn('/usr/bin/systemctl', args, options)
+    case '/usr/sbin/useradd':
+      return spawn('/usr/sbin/useradd', args, options)
+    case '/usr/sbin/userdel':
+      return spawn('/usr/sbin/userdel', args, options)
+    case 'claude':
+      return spawn('claude', args, options)
+    case 'clawdbot':
+      return spawn('clawdbot', args, options)
+    case 'codex':
+      return spawn('codex', args, options)
+    case 'curl':
+      return spawn('curl', args, options)
+    case 'df':
+      return spawn('df', args, options)
+    case 'free':
+      return spawn('free', args, options)
+    case 'hermes':
+      return spawn('hermes', args, options)
+    case 'lspci':
+      return spawn('lspci', args, options)
+    case 'netstat':
+      return spawn('netstat', args, options)
+    case 'nvidia-smi':
+      return spawn('nvidia-smi', args, options)
+    case 'open':
+      return spawn('open', args, options)
+    case 'openclaw':
+      return spawn('openclaw', args, options)
+    case 'opencode':
+      return spawn('opencode', args, options)
+    case 'ps':
+      return spawn('ps', args, options)
+    case 'sed':
+      return spawn('sed', args, options)
+    case 'sudo':
+      return spawn('sudo', args, options)
+    case 'sysctl':
+      return spawn('sysctl', args, options)
+    case 'system_profiler':
+      return spawn('system_profiler', args, options)
+    case 'uptime':
+      return spawn('uptime', args, options)
+    case 'vm_stat':
+      return spawn('vm_stat', args, options)
+    case 'wget':
+      return spawn('wget', args, options)
+    case 'which':
+      return spawn('which', args, options)
   }
 }
 
@@ -56,10 +215,10 @@ export function runCommand(
   args: string[],
   options: CommandOptions = {}
 ): Promise<CommandResult> {
-  assertSafeCommandInvocation(command, args)
+  const safeCommand = assertSafeCommandInvocation(command)
 
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, {
+    const child = spawnSafeCommand(safeCommand, args, {
       cwd: options.cwd,
       env: options.env,
       shell: false
@@ -124,16 +283,18 @@ export function runOpenClaw(args: string[], options: CommandOptions = {}) {
     OPENCLAW_STATE_DIR: config.openclawStateDir,
     ...options.env,
   }
-  return runCommand(config.openclawBin, args, {
+  return runCommand('openclaw', args, {
     ...options,
-    env,
+    env: envWithExecutablePath(config.openclawBin, env),
     cwd: options.cwd || config.openclawStateDir || process.cwd()
   })
 }
 
 export function runClawdbot(args: string[], options: CommandOptions = {}) {
-  return runCommand(config.clawdbotBin, args, {
+  const env = envWithExecutablePath(config.clawdbotBin, options.env || process.env)
+  return runCommand('clawdbot', args, {
     ...options,
+    env,
     cwd: options.cwd || config.openclawStateDir || process.cwd()
   })
 }

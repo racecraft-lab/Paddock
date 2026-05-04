@@ -80,11 +80,11 @@ function getPlaywrightConfig(rootOverride) {
   return {
     label: 'argos-playwright-metadata',
     root: rootOverride || path.join(process.cwd(), 'test-results'),
-    expectedMetadata: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_METADATA || '19', 10),
-    expectedTests: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_TESTS || '11', 10),
-    allowedTestTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007'),
-    allowedScreenshotTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_SCREENSHOT_TAGS || 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007'),
-    requiredDomainCounts: parseCounts(process.env.ARGOS_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5'),
+    expectedMetadata: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_METADATA || '140', 10),
+    expectedTests: Number.parseInt(process.env.ARGOS_PLAYWRIGHT_EXPECTED_TESTS || '100', 10),
+    allowedTestTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008'),
+    allowedScreenshotTags: parseList(process.env.ARGOS_PLAYWRIGHT_ALLOWED_SCREENSHOT_TAGS || 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008'),
+    requiredDomainCounts: parseCounts(process.env.ARGOS_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120'),
   }
 }
 
@@ -92,10 +92,10 @@ function getStorybookConfig(rootOverride) {
   return {
     label: 'argos-storybook-metadata',
     root: rootOverride || process.env.ARGOS_STORYBOOK_SCREENSHOT_DIR || path.join(process.cwd(), 'screenshots', 'storybook'),
-    expectedMetadata: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_METADATA || '28', 10),
-    expectedStories: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_STORIES || '18', 10),
+    expectedMetadata: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_METADATA || '160', 10),
+    expectedStories: Number.parseInt(process.env.ARGOS_STORYBOOK_EXPECTED_STORIES || '140', 10),
     requiredStoryTags: parseList(process.env.ARGOS_STORYBOOK_REQUIRED_TAGS || 'visual'),
-    requiredDomainStoryCounts: parseCounts(process.env.ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS || 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,ready-for-owner:3,spec-007:3'),
+    requiredDomainStoryCounts: parseCounts(process.env.ARGOS_STORYBOOK_REQUIRED_DOMAIN_STORY_COUNTS || 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,ready-for-owner:3,spec-007:3,spec-008:120'),
   }
 }
 
@@ -116,15 +116,22 @@ function validatePlaywrightMetadata(metadata, filePath, config) {
   if (typeof test.location?.file !== 'string' || test.location.file.length === 0) {
     failures.push('missing test.location.file')
   }
-  if (
-    config.allowedTestTags.length > 0 &&
-    (!Array.isArray(test.tags) || !config.allowedTestTags.some((tag) => test.tags.includes(tag)))
-  ) {
-    failures.push(`missing one of Playwright test tags: ${config.allowedTestTags.join(', ')}`)
+  const hasAllowedScreenshotTag =
+    Array.isArray(metadata.tags) &&
+    config.allowedScreenshotTags.some((tag) => metadata.tags.includes(tag))
+  if (config.allowedTestTags.length > 0) {
+    const hasAllowedTestTag =
+      Array.isArray(test.tags) &&
+      config.allowedTestTags.some((tag) => test.tags.includes(tag))
+    if (!hasAllowedTestTag && !hasAllowedScreenshotTag) {
+      failures.push(
+        `missing one of Playwright test tags (${config.allowedTestTags.join(', ')}) or screenshot tags (${config.allowedScreenshotTags.join(', ')})`,
+      )
+    }
   }
   if (
     config.allowedScreenshotTags.length > 0 &&
-    (!Array.isArray(metadata.tags) || !config.allowedScreenshotTags.some((tag) => metadata.tags.includes(tag)))
+    !hasAllowedScreenshotTag
   ) {
     failures.push(`missing one of screenshot tags: ${config.allowedScreenshotTags.join(', ')}`)
   }

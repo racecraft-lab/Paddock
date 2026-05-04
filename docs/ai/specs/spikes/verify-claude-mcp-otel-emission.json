@@ -1,0 +1,15 @@
+{
+  "decision_q": "Q16",
+  "hypothesis": "Claude Code 'mcp serve' (stdio MCP transport) DOES emit OTLP/HTTP frames to the configured OTEL_EXPORTER_OTLP_ENDPOINT alongside MCP protocol traffic on stdout. Expected empirical verdict: 'downgraded' (stdout reservation prevents reliable OTel parity).",
+  "sample_size_min": 3,
+  "observed": {
+    "frames_received": 0,
+    "frames_with_token_usage": 0,
+    "sessions_with_mcp_traffic": 3,
+    "sessions_attempted": 3,
+    "stderr_hint": ""
+  },
+  "verdict": "downgraded",
+  "downgrade_target": "claude_code.transcript_replay",
+  "captured_at": "2026-05-03T18:25:09.424Z"
+}

@@ -19,6 +19,34 @@ const specStrictFiles = [
   'src/lib/aegis-review.ts',
   'src/lib/task-artifacts.ts',
   'src/lib/__tests__/task-artifacts.enums.test.ts',
+  // SPEC-008 strict-scope additions (Convention J).
+  // Globs match the strict-scope CI guard (T374) and tsconfig.spec-strict.json.
+  // NOTE: provider-* is intentionally tightened to provider-account* and
+  // provider-entitlement* because the legacy `src/lib/provider-subscriptions.ts`
+  // is pre-spec code that SPEC-008 supersedes (M64l replaces it with
+  // provider_accounts) and is not strict-compliant.
+  'src/lib/db/connection-pool.ts',
+  'src/lib/governance-*.ts',
+  'src/lib/governance-route-context.ts',
+  'src/lib/observability/*.ts',
+  'src/lib/observability/**/*.ts',
+  'src/lib/resource-*.ts',
+  'src/lib/provider-account*.ts',
+  'src/lib/provider-entitlement*.ts',
+  'src/lib/token-pricing-resolver.ts',
+  'src/types/resource-*.ts',
+  'src/types/observability.ts',
+  'src/types/provider-account.ts',
+  'src/types/governance-api.ts',
+  'src/components/governance/**/*.tsx',
+  'src/components/governance/**/*.ts',
+  'src/app/api/governance/**/*.ts',
+  'src/app/api/resource-*/**/*.ts',
+  'src/app/api/otlp/v1/**/*.ts',
+  // SPEC-008 e2e fixture infra (Gap 0 of UI/UX coverage closure).
+  // Test-mode + admin-gated; not reachable in production.
+  'src/app/api/admin/spec-008/**/*.ts',
+  'src/app/api/admin/workspaces/**/*.ts',
 ]
 
 const config = tseslint.config(

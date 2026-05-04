@@ -43,6 +43,8 @@ interface FeatureFlagState {
   env_value: string | null
   can_update: boolean
   enable_blockers: string[]
+  cascade_requires: string[]
+  cascade_disables: string[]
   warnings: string[]
   last_change: {
     actor: string
@@ -171,7 +173,7 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
           <div>
             <h3 className="text-sm font-medium text-foreground">Feature Flags</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Roadmap-scoped release controls. Evaluation is server-owned and defaults off.
+              Roadmap-scoped release controls. Later phases are additive and enable all earlier phase flags.
             </p>
           </div>
           <label className="text-xs text-muted-foreground flex flex-col gap-1 sm:min-w-64">
@@ -224,6 +226,8 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
               ...(flag.definition.evidence.storybook || []),
             ].length
             const nextValue = !flag.evaluated_value
+            const cascadeRequires = flag.cascade_requires || []
+            const cascadeDisables = flag.cascade_disables || []
 
             return (
               <div
@@ -235,7 +239,7 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium text-foreground">{flag.definition.label}</span>
-                      <span className={`text-2xs px-1.5 py-0.5 rounded ${flag.evaluated_value ? 'bg-green-500/15 text-green-300' : 'bg-muted text-muted-foreground'}`}>
+                      <span className={`text-2xs px-1.5 py-0.5 rounded ${flag.evaluated_value ? 'bg-green-500/15 text-green-300' : 'bg-secondary text-foreground'}`}>
                         {flag.evaluated_value ? 'Evaluated ON' : 'Evaluated OFF'}
                       </span>
                       <span className={`text-2xs px-1.5 py-0.5 rounded ${impactClass(flag.definition.upstreamImpact)}`}>
@@ -249,9 +253,19 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
                           env forced OFF
                         </span>
                       )}
+                      {cascadeRequires.length > 0 && (
+                        <span className="text-2xs px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300">
+                          cascade +{cascadeRequires.length}
+                        </span>
+                      )}
+                      {flag.evaluated_value && cascadeDisables.length > 0 && (
+                        <span className="text-2xs px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300">
+                          disables +{cascadeDisables.length}
+                        </span>
+                      )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">{flag.definition.description}</p>
-                    <p className="text-2xs text-muted-foreground/70 mt-1 font-mono">{flag.definition.key}</p>
+                    <p className="text-xs text-foreground/80 mt-1">{flag.definition.description}</p>
+                    <p className="text-2xs text-foreground/70 mt-1 font-mono">{flag.definition.key}</p>
                   </div>
 
                   <div className="flex flex-col gap-2 lg:items-end">
@@ -260,13 +274,18 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
                       disabled={savingKey === flag.definition.key || (nextValue && blocked) || flag.env_locked}
                       variant={flag.evaluated_value ? 'outline' : 'default'}
                       size="sm"
+                      className={flag.evaluated_value ? 'bg-secondary text-foreground' : undefined}
                       aria-label={`${flag.evaluated_value ? 'Disable' : 'Enable'} ${flag.definition.label}`}
                     >
                       {savingKey === flag.definition.key
                         ? 'Saving...'
                         : flag.evaluated_value
-                          ? 'Disable'
-                          : 'Enable'}
+                          ? cascadeDisables.length > 0
+                            ? 'Disable cascade'
+                            : 'Disable'
+                          : cascadeRequires.length > 0
+                            ? 'Enable cascade'
+                            : 'Enable'}
                     </Button>
                     {flag.definition.requiresReason && (
                       <input
@@ -298,9 +317,14 @@ export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boole
                   </div>
                 </div>
 
-                {flag.definition.enableRequires.length > 0 && (
+                {cascadeRequires.length > 0 && (
                   <p className="text-2xs text-muted-foreground">
-                    Requires: {flag.definition.enableRequires.join(', ')}
+                    Cascade enables prior phases: {cascadeRequires.join(', ')}
+                  </p>
+                )}
+                {flag.evaluated_value && cascadeDisables.length > 0 && (
+                  <p className="text-2xs text-muted-foreground">
+                    Disabling turns later dependent phases off: {cascadeDisables.join(', ')}
                   </p>
                 )}
 

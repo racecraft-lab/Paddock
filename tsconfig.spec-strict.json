@@ -31,6 +31,26 @@
     "src/lib/secret-detector.ts",
     "src/lib/secret-detector.rules.ts",
     "src/lib/aegis-review.ts",
-    "src/lib/task-artifacts.ts"
+    "src/lib/task-artifacts.ts",
+    "src/lib/db/connection-pool.ts",
+    "src/lib/governance-*.ts",
+    "src/lib/governance-route-context.ts",
+    "src/lib/observability/*.ts",
+    "src/lib/observability/**/*.ts",
+    "src/lib/resource-*.ts",
+    "src/lib/provider-account*.ts",
+    "src/lib/provider-entitlement*.ts",
+    "src/lib/token-pricing-resolver.ts",
+    "src/types/resource-*.ts",
+    "src/types/observability.ts",
+    "src/types/provider-account.ts",
+    "src/types/governance-api.ts",
+    "src/components/governance/**/*.tsx",
+    "src/components/governance/**/*.ts",
+    "src/app/api/governance/**/*.ts",
+    "src/app/api/resource-*/**/*.ts",
+    "src/app/api/otlp/v1/**/*.ts",
+    "src/app/api/admin/spec-008/**/*.ts",
+    "src/app/api/admin/workspaces/**/*.ts"
   ]
 }

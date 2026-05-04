@@ -59,6 +59,7 @@ Groups:
   skills       list/content/upsert/delete/check
   cron         list/create/update/pause/resume/remove/run
   events       watch
+  secrets      rotate (--provider-accounts)
   status       health/overview/dashboard/gateway/models/capabilities
   export       audit/tasks/activities/pipelines
   raw          request fallback
@@ -83,6 +84,7 @@ Examples:
   mc tokens export --format csv
   mc status health
   mc events watch --types agent,task
+  mc secrets rotate --provider-accounts   # SPEC-008 FR-219v (AUTH_SECRET + AUTH_SECRET_PREVIOUS env)
   mc raw --method GET --path /api/status --json
 `);
 }
@@ -586,6 +588,39 @@ const commands = {
   },
 };
 
+// --- Secrets rotate (local DB; no REST round-trip) ---
+//
+// SPEC-008 T125 (FR-219v). `pnpm mc secrets rotate --provider-accounts`
+// re-encrypts every provider_accounts.config_json envelope under a NEW
+// AUTH_SECRET, with optional AUTH_SECRET_PREVIOUS grace fallback. The
+// rotation logic lives in scripts/secrets-rotate-provider-accounts.cjs
+// so the runner can be invoked from CI / cron without spinning up the
+// Next.js process. mc-cli forwards stdout/stderr verbatim and surfaces
+// the runner's exit code.
+
+function handleSecretsRotate(flags, ctx) {
+  if (!flags['provider-accounts']) {
+    console.error('USAGE ERROR: secrets rotate requires --provider-accounts');
+    console.error('Example: pnpm mc secrets rotate --provider-accounts');
+    process.exit(EXIT.USAGE);
+  }
+  const { spawnSync } = require('node:child_process');
+  const runnerPath = path.join(__dirname, 'secrets-rotate-provider-accounts.cjs');
+  if (!fs.existsSync(runnerPath)) {
+    console.error(`secrets rotate: runner not found at ${runnerPath}`);
+    process.exit(EXIT.SERVER);
+  }
+  const result = spawnSync(process.execPath, [runnerPath], {
+    stdio: 'inherit',
+    env: process.env,
+  });
+  if (result.error) {
+    console.error(`secrets rotate: ${result.error.message}`);
+    process.exit(EXIT.SERVER);
+  }
+  process.exit(typeof result.status === 'number' ? result.status : EXIT.SERVER);
+}
+
 // --- Events watch (SSE streaming) ---
 
 async function handleEventsWatch(flags, ctx) {
@@ -671,6 +706,12 @@ async function run() {
     // Events watch (SSE)
     if (group === 'events' && action === 'watch') {
       await handleEventsWatch(parsed.flags, { ...ctx, timeoutMs: Number(parsed.flags['timeout-ms'] || 3600000) });
+      return;
+    }
+
+    // SPEC-008 T125: secrets rotate --provider-accounts (local DB; no REST)
+    if (group === 'secrets' && action === 'rotate') {
+      handleSecretsRotate(parsed.flags, ctx);
       return;
     }
 

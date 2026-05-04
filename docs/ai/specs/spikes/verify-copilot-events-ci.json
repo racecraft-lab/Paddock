@@ -1,0 +1,19 @@
+{
+  "decision_q": "Q25",
+  "hypothesis": "Copilot CLI in CI / non-TTY mode emits ~/.copilot/events.jsonl with rows whose required-field set matches the schema declared in ~/.copilot/config.json (T1 strict guard passes; T2 full validation passes for ≥ sample-size rows).",
+  "sample_size_min": 3,
+  "observed": {
+    "copilot_config_version": "unknown",
+    "events_path_exists": false,
+    "events_path_mtime_before_ms": -1,
+    "rows_examined": 0,
+    "rows_t1_passed": 0,
+    "rows_t1_failed": 0,
+    "rows_with_schema_probe_field": 0,
+    "schema_probe_field": "cost",
+    "stderr_hint": "error: unknown option '-t'\n\nTry 'copilot --help' for more information.\n"
+  },
+  "verdict": "downgraded",
+  "downgrade_target": "schema_broken",
+  "captured_at": "2026-05-03T18:25:33.055Z"
+}

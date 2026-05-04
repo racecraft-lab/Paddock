@@ -167,3 +167,73 @@ Before a new flag can ship:
   workspace setting and owning spec are reviewed.
 - Keep flag names stable. Renaming a flag can strand stored workspace overrides
   unless a migration handles the old key.
+
+## SPEC-008 Resource Governance Flags
+
+SPEC-008 adds two flags. Both default OFF; both follow the
+constitution's matrix-test convention.
+
+### `FEATURE_RESOURCE_GOVERNANCE`
+
+- **Scope**: workspace.
+- **Risk**: high. Affects the synchronous admission path.
+- **Dependencies (`enableRequires`)**: none at the registry level
+  (the policy evaluator depends on schema readiness, not on other
+  flags).
+- **Activation**: workspace `feature_flags.FEATURE_RESOURCE_GOVERNANCE = true`.
+- **Env override**:
+  - `FEATURE_RESOURCE_GOVERNANCE='0'` forces OFF (emergency rollback).
+  - `FEATURE_RESOURCE_GOVERNANCE='1'` does NOT force ON. Only the
+    workspace JSON value can opt in. This is enforced by
+    `resolveFlag` (FR-323).
+- **OFF behavior (byte-compat per FR-305)**:
+  - Cost Tracker renders without the Governance tab.
+  - The legacy 3-row LIMIT for the cost summary is preserved.
+  - The evaluator returns `allow:feature_flag_off` for every dispatch.
+  - No governance JS is eagerly fetched.
+- **ON behavior**:
+  - Governance tab appears as the 4th tab in Cost Tracker.
+  - Resource policy evaluator runs synchronously on every dispatch.
+  - Diagnostic feed, System Health, Overrides, Budgets, Windows
+    subviews are reachable.
+- **Pre-flight**: confirm the workspace seed migrations M65a..m + M66
+  ran clean; confirm `governance.json` parses; confirm the
+  `resource_governance_breaker` row exists.
+- **Rollback**: set the workspace flag to `false`, OR set
+  `FEATURE_RESOURCE_GOVERNANCE='0'` in the deployment env.
+- **Argos build**: every PR touching governance UI must reference an
+  Argos build number — see `docs/operator-guides/argos-baseline-approval.md`.
+
+### `FEATURE_OPENCLAW_HEALTH_COSTS`
+
+- **Scope**: workspace.
+- **Risk**: medium. Adds the OpenClaw health adapter as a source.
+- **Dependencies (`enableRequires`)**: `FEATURE_RESOURCE_GOVERNANCE`.
+- **Env override**: same semantics as `FEATURE_RESOURCE_GOVERNANCE`.
+- **OFF behavior**: System Health subview hides the OpenClaw card.
+- **ON behavior**: OpenClaw health adapter is registered as a source
+  (heartbeat, freshness, ingest pressure visible in System Health).
+- **Pre-flight**: `FEATURE_RESOURCE_GOVERNANCE` must be ON first.
+
+### Matrix coverage reference
+
+Per Constitution V (NON-NEGOTIABLE) every flag is exercised by the
+matrix harness:
+
+- Harness: `src/lib/feature-flag-matrix.ts`.
+- Integration test (9 unit + 9 integration scenarios): `tests/integration/feature-flag-matrix.test.ts`.
+- E2E test (9 UI gating scenarios): `tests/e2e/feature-flag-matrix.e2e.ts`.
+- Coverage assertion: `tests/integration/feature-flag-matrix-coverage.test.ts`.
+- Env-leak guard: `scripts/spec-008/check-feature-flag-env-leak.mjs`.
+
+Run all matrix tests with:
+
+```bash
+pnpm vitest run \
+  tests/integration/feature-flag-matrix.test.ts \
+  tests/integration/feature-flag-matrix-coverage.test.ts
+```
+
+The harness is the single source of truth for scenario semantics —
+adding a new flag MUST update the registry **and** must continue to
+pass the matrix integration test without changes.

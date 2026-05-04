@@ -1,0 +1,129 @@
+{
+  "$comment": "SPEC-008 default governance configuration template. Operator copies to <MISSION_CONTROL_DATA_DIR>/governance.json on first deploy. All values are FR-NORMATIVE defaults — operators MAY tune within the documented ranges; reducing values below the min OR raising above the max is a spec deviation and MUST be banner-warned in System Health. See specs/008-resource-governance/spec.md and src/lib/observability/governance-config-schema.ts for source-of-truth.",
+  "schema_version": 1,
+  "audit_chain_verify_period_seconds": 900,
+  "audit": {
+    "write_freeze": false,
+    "$comment_write_freeze": "FR-385 IR-only switch — flips audit chain to read-only on tamper detection."
+  },
+  "retention": {
+    "audit_log_days": 1825,
+    "raw_events_days": 90,
+    "canonical_events_days": 1825,
+    "snapshots_days": 730,
+    "ledger_days": 1825,
+    "decisions_days": 365,
+    "dispatch_log_days": 30,
+    "quarantined_events_days": 30,
+    "$comment": "FR-178 / FR-219i / FR-219p / FR-090j / Q63. audit_log_days MUST NOT be reduced below 1825 without operator banner."
+  },
+  "throttle": {
+    "engage_p95_ms": 25,
+    "resume_p95_ms": 15,
+    "dwell_seconds": 120,
+    "$comment": "FR-335 / FR-337. Background-worker throttle hysteresis."
+  },
+  "breaker": {
+    "half_open_probe_budget": 3,
+    "$comment_range": "FR-356 valid range [1, 10]"
+  },
+  "reconciler": {
+    "max_rows_per_txn": 500,
+    "max_wall_clock_per_txn_ms": 200,
+    "$comment": "FR-339. Caps writer-lock hold so background never starves admission beyond FR-332 50ms foreground budget."
+  },
+  "backfill": {
+    "target_rows_per_min": 12000,
+    "chunk_size_rows": 2000,
+    "$comment": "FR-342 / FR-343. CI-gate MANDATORY default: 12,000 rows/min on AC-Bench-1 reference hardware."
+  },
+  "counter_rebuild": {
+    "chunk_size_rows": 5000,
+    "$comment_range": "FR-347 valid range [500, 50000]"
+  },
+  "drift": {
+    "detection_period_seconds": 86400,
+    "$comment_range": "FR-345 minimum 3600 (hourly), maximum 604800 (weekly). Default 86400 (daily)."
+  },
+  "aegis": {
+    "local_model_id": "qwen2.5-coder-32b-instruct@q4_0",
+    "emergency_reserve_usd": 5.0,
+    "emergency_reserve_tokens": 100000,
+    "$comment": "FR-362 LM Studio model resolution + FR-152/FR-153 emergency-reserve seeds."
+  },
+  "tos_surfaces": {
+    "$comment": "FR-219y. Per-surface UA override; default is 'MissionControl/<version> (+governance-telemetry)'.",
+    "default": {
+      "user_agent": null
+    }
+  },
+  "rate_limits": {
+    "operator": { "steady_per_min": 60, "burst_per_window": 120, "window_seconds": 60 },
+    "agent": { "steady_per_min": 60, "burst_per_window": 120, "window_seconds": 60 },
+    "override_grant": { "steady_per_min": 10, "burst_per_window": 20, "window_seconds": 60 },
+    "otlp_auth": { "steady_per_min": 10, "burst_per_window": 20, "window_seconds": 60 },
+    "auth_failure": { "steady_per_min": 5, "burst_per_window": 10, "window_seconds": 60 },
+    "$comment": "FR-203 / FR-203a / FR-203b. Bucket-key namespace MUST match {operator|agent|override_grant|otlp_auth|auth_failure}."
+  },
+  "ingest_disk": {
+    "amber_bytes": 5368709120,
+    "amber_pct": 10,
+    "red_bytes": 2147483648,
+    "red_pct": 5,
+    "amber_up_bytes": 3221225472,
+    "amber_up_pct": 7,
+    "healthy_up_bytes": 6442450944,
+    "healthy_up_pct": 12,
+    "hysteresis_dwell_seconds": 60,
+    "$comment": "FR-090e / FR-090e1. Bytes are int64; pct is 0-100 integer. Env-var override prefix MC_INGEST_DISK_*."
+  },
+  "ingest_rate": {
+    "envelope_bytes_native_otel": 8192,
+    "envelope_bytes_cli_stdout_json": 8192,
+    "envelope_bytes_gateway_otel": 16384,
+    "envelope_bytes_transcript_replay": 4096,
+    "envelope_bytes_manual_post": 4096,
+    "envelope_bytes_provider_quota": 2048,
+    "circuit_open_recovery_drops_per_min_floor": 10,
+    "circuit_open_recovery_window_minutes": 5,
+    "$comment": "FR-090e per-source bytes/sec budget = steady_state_events_per_min * envelope_bytes. Env-var override prefix MC_INGEST_RATE_<SOURCE>_*."
+  },
+  "backup": {
+    "destination_dir": null,
+    "destination_dir_relative_to_data_dir": "backups",
+    "remote_rsync_path_env_var": "MC_BACKUP_REMOTE_RSYNC_PATH",
+    "encrypt_gpg_recipient_env_var": "MC_BACKUP_GPG_RECIPIENT",
+    "file_mode": "0600",
+    "rotation_keep_days": 30,
+    "$comment": "FR-090k / FR-261 / FR-263 / FR-271. Default destination is <MISSION_CONTROL_DATA_DIR>/backups (file mode 0600). Off-node mirror is opt-in via MC_BACKUP_REMOTE_RSYNC_PATH; encryption-at-rest opt-in via MC_BACKUP_GPG_RECIPIENT."
+  },
+  "entitlement_detection": {
+    "daily_cron_utc": "00:15",
+    "near_expiry_refresh_hours": 6,
+    "near_expiry_threshold_hours": 24,
+    "on_admission_inline_cap_ms": 50,
+    "on_admission_stale_after_days": 7,
+    "$comment": "FR-134a three-cadence detection: daily 00:15 UTC + 6h refresh near-expiry + on-admission inline ≤ 50ms."
+  },
+  "performance": {
+    "admission_p50_ms_target": 5,
+    "admission_p95_ms_target": 15,
+    "admission_p99_ms_target": 25,
+    "cold_start_p50_ms_target": 10,
+    "cold_start_p95_ms_target": 30,
+    "cold_start_p99_ms_target": 50,
+    "dry_run_p95_added_ms_max": 1,
+    "evaluator_histogram_buckets_ms": [0.5, 1, 2, 5, 10, 15, 25, 50, 100, 250, 500, 1000, 2500],
+    "$comment": "FR-326 / FR-329 / FR-330 / FR-354. Buckets are MANDATORY-fixed for v1 dashboard apples-to-apples comparison."
+  },
+  "self_observability": {
+    "metrics_namespace": "mc.governance",
+    "evaluator_postcommit_dispatch_max_retries": 3,
+    "$comment": "FR-005a self-obs counter retry envelope; FR-280 / FR-284 metric namespace."
+  },
+  "alert_throttle": {
+    "max_alerts_per_minute": 60,
+    "high_priority_bypass": true,
+    "$comment": "FR-194 / FR-195 / FR-285 / FR-355."
+  }
+}

@@ -151,3 +151,19 @@ git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sy
 <!-- Branch: 007-disposition-artifacts (feature branch — cleanup applies per SPEC-002A policy) -->
 <!-- Sweep run: 2026-05-01 | archiveExtension: 1.1.0 | excludedCurrentSpec: specs/007-disposition-artifacts -->
 <!-- Backfilled SPEC-004 (PR #22) and SPEC-006 (PR #21); both merged on main but 005-ready-for-owner worktree never executed Phase 0 archive sweep, leaving residual specs/004 and specs/006 directories that this run cleans up. -->
+
+<!-- Adjacent sweep on SPEC-008 worktree (2026-05-02) -->
+<!-- Branch: 008-resource-governance (feature branch — cleanup applies per SPEC-002A policy) -->
+<!-- Sweep run: 2026-05-02 | archiveExtension: 1.1.0 | excludedCurrentSpec: specs/008-resource-governance -->
+<!-- Backfill note: 008 worktree was forked from main pre-SPEC-007-merge, so specs/004 and specs/006 directories were still present at the time. After origin/main merge brought in SPEC-007's cleanup commits, both backfill entries above are reconciled to the canonical SPEC-007 record. Adjacent-addition resolved by keeping SPEC-007's canonical entry. -->
+
+
+<!-- SPEC-008 — Resource Governance + Observability (branch 008-resource-governance) -->
+<!-- Implementation complete 2026-05-02 -->
+<!-- Phases 7.1-7.13 closed; Phase 7.14 Phase 6 Analyze remediation pending. -->
+<!-- Two new flags: FEATURE_RESOURCE_GOVERNANCE (workspace, default OFF, no enableRequires), FEATURE_OPENCLAW_HEALTH_COSTS (workspace, default OFF, enableRequires FEATURE_RESOURCE_GOVERNANCE). -->
+<!-- Migrations M65a..m + M66 additive + rerun-safe. -->
+<!-- Cost Tracker Governance tab gated by FEATURE_RESOURCE_GOVERNANCE; flag-OFF preserves byte-compat per FR-305 / FR-238. -->
+<!-- Constitution V matrix coverage: src/lib/feature-flag-matrix.ts harness + tests/integration/feature-flag-matrix.test.ts (47 tests) + tests/e2e/feature-flag-matrix.e2e.ts (9 flag rows OFF/ON). -->
+<!-- CI guards added: scripts/spec-008/check-axe-coverage.mjs (FR-090n WCAG 2.1 AA), scripts/spec-008/check-feature-flag-env-leak.mjs (FR-019 / FR-325). -->
+<!-- Verification evidence archived at docs/ai/specs/SPEC-008-verification-evidence.md. -->

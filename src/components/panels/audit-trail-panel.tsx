@@ -270,7 +270,7 @@ function AuditEventsTab() {
     } finally {
       setLoading(false)
     }
-  }, [filter, page])
+  }, [filter, page, t])
 
   useEffect(() => { fetchEvents() }, [fetchEvents])
   useSmartPoll(fetchEvents, 30000, { pauseWhenDisconnected: true })

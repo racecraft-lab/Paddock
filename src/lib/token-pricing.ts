@@ -1,6 +1,6 @@
 import { getProviderFromModel } from '@/lib/provider-subscriptions'
 
-interface ModelPricing {
+export interface ModelPricing {
   inputPerMTok: number
   outputPerMTok: number
 }
@@ -10,7 +10,7 @@ const DEFAULT_MODEL_PRICING: ModelPricing = {
   outputPerMTok: 15.0,
 }
 
-const MODEL_PRICING: Record<string, ModelPricing> = {
+export const MODEL_PRICING: Record<string, ModelPricing> = {
   'anthropic/claude-3-5-haiku-latest': { inputPerMTok: 0.8, outputPerMTok: 4.0 },
   'claude-3-5-haiku': { inputPerMTok: 0.8, outputPerMTok: 4.0 },
   'anthropic/claude-haiku-4-5': { inputPerMTok: 0.8, outputPerMTok: 4.0 },

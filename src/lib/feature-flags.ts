@@ -66,7 +66,7 @@ export interface FeatureFlagContext {
 export interface FeatureFlagResolution {
   key: string
   value: boolean
-  reason: 'env_force_off' | 'env_force_on_exception' | 'workspace_override' | 'default_off' | 'error_default_off'
+  reason: 'env_force_off' | 'env_force_on_exception' | 'workspace_override' | 'cascade_implied_on' | 'cascade_dependency_off' | 'default_off' | 'error_default_off'
   envLocked: boolean
   envValue: string | null
   storedValue: boolean | null
@@ -367,12 +367,86 @@ export function getAllFeatureFlagDefinitions(): FeatureFlagDefinition[] {
   return FEATURE_FLAG_KEYS.map((key) => FEATURE_FLAG_REGISTRY[key])
 }
 
+export function getFeatureFlagCascadePrerequisites(key: FeatureFlagKey): FeatureFlagKey[] {
+  const definition = FEATURE_FLAG_REGISTRY[key]
+  const required = new Set<FeatureFlagKey>()
+
+  for (const candidate of FEATURE_FLAG_KEYS) {
+    if (candidate === key) continue
+    if (FEATURE_FLAG_REGISTRY[candidate].phase < definition.phase) {
+      required.add(candidate)
+    }
+  }
+
+  const visit = (current: FeatureFlagKey): void => {
+    for (const prerequisite of FEATURE_FLAG_REGISTRY[current].enableRequires) {
+      if (prerequisite === key || required.has(prerequisite)) continue
+      required.add(prerequisite)
+      visit(prerequisite)
+    }
+  }
+  visit(key)
+
+  return FEATURE_FLAG_KEYS.filter((candidate) => required.has(candidate))
+}
+
+export function getFeatureFlagCascadeDependents(key: FeatureFlagKey): FeatureFlagKey[] {
+  return FEATURE_FLAG_KEYS.filter((candidate) => (
+    candidate !== key && getFeatureFlagCascadePrerequisites(candidate).includes(key)
+  ))
+}
+
+export function expandFeatureFlagCascade(
+  key: FeatureFlagKey,
+  value: boolean,
+): Partial<Record<FeatureFlagKey, boolean>> {
+  if (!value) {
+    const flags: Partial<Record<FeatureFlagKey, boolean>> = { [key]: false }
+    for (const dependent of getFeatureFlagCascadeDependents(key)) {
+      flags[dependent] = false
+    }
+    return flags
+  }
+  const flags: Partial<Record<FeatureFlagKey, boolean>> = {}
+  for (const prerequisite of getFeatureFlagCascadePrerequisites(key)) {
+    flags[prerequisite] = true
+  }
+  flags[key] = true
+  return flags
+}
+
 export function readWorkspaceFlagValue(
   name: string,
   workspaceFlags: FeatureFlagContext['workspaceFlags']
 ): boolean | null {
   const flags = parseWorkspaceFlags(workspaceFlags)
   return normalizeBoolean(flags[name])
+}
+
+function explicitlyDisabledCascadePrerequisite(
+  name: string,
+  workspaceFlags: FeatureFlagContext['workspaceFlags'],
+): FeatureFlagKey | null {
+  if (!isFeatureFlagKey(name)) return null
+  for (const prerequisite of getFeatureFlagCascadePrerequisites(name)) {
+    if (readWorkspaceFlagValue(prerequisite, workspaceFlags) === false) {
+      return prerequisite
+    }
+  }
+  return null
+}
+
+function cascadeImpliedByDependent(
+  name: string,
+  workspaceFlags: FeatureFlagContext['workspaceFlags'],
+): FeatureFlagKey | null {
+  if (!isFeatureFlagKey(name)) return null
+  for (const dependent of getFeatureFlagCascadeDependents(name)) {
+    if (readWorkspaceFlagValue(dependent, workspaceFlags) === true) {
+      return dependent
+    }
+  }
+  return null
 }
 
 export function evaluateFeatureFlagCore(name: string, ctx: FeatureFlagContext = {}): FeatureFlagResolution {
@@ -392,7 +466,23 @@ export function evaluateFeatureFlagCore(name: string, ctx: FeatureFlagContext = 
       return { key: name, value: true, reason: 'env_force_on_exception', envLocked: false, envValue, storedValue }
     }
     if (storedValue !== null) {
+      if (storedValue) {
+        const missing = explicitlyDisabledCascadePrerequisite(name, ctx.workspaceFlags)
+        if (missing !== null) {
+          return {
+            key: name,
+            value: false,
+            reason: 'cascade_dependency_off',
+            envLocked: false,
+            envValue,
+            storedValue,
+          }
+        }
+      }
       return { key: name, value: storedValue, reason: 'workspace_override', envLocked: false, envValue, storedValue }
+    }
+    if (cascadeImpliedByDependent(name, ctx.workspaceFlags) !== null) {
+      return { key: name, value: true, reason: 'cascade_implied_on', envLocked: false, envValue, storedValue }
     }
     return { key: name, value: false, reason: 'default_off', envLocked: false, envValue, storedValue }
   } catch {

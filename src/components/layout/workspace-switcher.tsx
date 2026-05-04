@@ -121,7 +121,7 @@ export function WorkspaceSwitcher() {
       : null
 
   return (
-    <div ref={rootRef} className="relative min-w-0">
+    <div ref={rootRef} className="relative min-w-0" data-testid="workspace-switcher">
       <Button
         ref={triggerRef}
         type="button"

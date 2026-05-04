@@ -21,16 +21,17 @@ ships to any operator it must NOT be renumbered.
 |--------------|------|-------------|
 | M53–M61 | SPEC-001 (Foundation Migrations, PR #15) | Agent scope backfill, workflow-template routing/artifact-policy columns, task lineage, workspace feature-flag storage, dispositions, artifacts, facility seed, resource policies, resource policy events |
 | M62 | SPEC-004 (Task Pipeline Engine, PR #22) | `idx_tasks_one_successor_per_parent` partial unique index — DB-backed duplicate-successor protection |
+| M63 | SPEC-006 (Area-Label GitHub Sync, PR #21) | `063_area_label_routing_sync_owner_triage` — `projects.area_slug`, `projects.is_triage_project`, `projects.is_repo_sync_owner`, `tasks.area_routing_backfilled_at`, plus four indexes |
 
-Last shipped id: **M62** (`062_task_successor_unique_parent_index`).
+Last shipped id: **M63** (`063_area_label_routing_sync_owner_triage`).
 
-Next available id: **M63** (reserved by SPEC-006, in flight).
+Next available id: **M64** (reserved by SPEC-008, in flight).
 
 ## Reservations (in-flight)
 
 | Migration ID | Spec | Description | Status |
 |--------------|------|-------------|--------|
-| M63 | SPEC-006 (Area-Label GitHub Sync) | `063_area_label_routing_sync_owner_triage` — adds `projects.area_slug`, `projects.is_triage_project`, `projects.is_repo_sync_owner`, `tasks.area_routing_backfilled_at`, plus four indexes | In flight in `.worktrees/006-area-label-github-sync/` (rebased from M62 to M63 on 2026-05-01 after SPEC-004 PR #22 merged first) |
+| M64 + M65a..m + M66 | SPEC-008 (Resource Governance and Cost Tracker Enforcement) | M64 (`064_resource_governance_default_policies`) — extends `resource_policies`/`resource_policy_events`, creates `resource_decision_audit` (genesis row + audit chain), `retention_policy` (Q63 horizon seeds), `provider_accounts` skeleton, `governance_health_events`. M65a..m + M66 follow. | In flight in `.worktrees/008-resource-governance/` (rebased from M63 to M64 on 2026-05-02 after SPEC-006 PR #21 merged first) |
 
 ## Rebase rule
 

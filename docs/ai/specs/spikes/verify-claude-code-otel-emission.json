@@ -1,0 +1,26 @@
+{
+  "decision_q": "Q16",
+  "hypothesis": "Setting CLAUDE_CODE_ENABLE_TELEMETRY=1 + OTEL_EXPORTER_OTLP_ENDPOINT causes 'claude -p' subprocess to emit canonical OTLP frames containing claude_code.token.usage with full FR-071a field parity.",
+  "sample_size_min": 3,
+  "observed": {
+    "frames_received": 0,
+    "frames_with_token_usage": 0,
+    "frames_with_cost_usage": 0,
+    "fields_present": [],
+    "fields_missing": [
+      "input_tokens",
+      "output_tokens",
+      "cache_read_input_tokens",
+      "cache_creation_input_tokens",
+      "model",
+      "request_id",
+      "session_id",
+      "cost_usd",
+      "duration_ms"
+    ],
+    "stderr_hint": null
+  },
+  "verdict": "downgraded",
+  "downgrade_target": "claude_code.transcript_replay",
+  "captured_at": "2026-05-03T18:20:28.257Z"
+}

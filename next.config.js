@@ -5,7 +5,7 @@ const nextConfig = {
   output: 'standalone',
   outputFileTracingRoot: __dirname,
   outputFileTracingExcludes: {
-    '/*': ['./.data/**/*'],
+    '/*': ['./.data/**/*', './next.config.js'],
   },
   turbopack: {
     root: __dirname,

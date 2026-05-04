@@ -1,0 +1,167 @@
+openapi: 3.1.0
+info:
+  title: SPEC-008 Governance — Budgets
+  version: 1.0.0
+  description: |
+    Budget policy CRUD + budget counter read endpoints. Budget policies are
+    a subset of `resource_policies` with `policy_type='budget'`.
+    Sources: spec.md FR-051..070, FR-201, FR-090e.
+servers:
+  - url: /api/governance
+paths:
+  /budgets:
+    get:
+      summary: List budget policies + current counter values
+      parameters:
+        - in: query
+          name: workspace_id
+          schema: { type: integer }
+        - in: query
+          name: unit
+          schema: { type: string, enum: [usd, tokens_in, tokens_out, tokens_total, requests, sessions] }
+      responses:
+        '200':
+          description: Budget policies with utilization
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [rows]
+                properties:
+                  rows:
+                    type: array
+                    items: { $ref: '#/components/schemas/BudgetPolicyWithUtilization' }
+    post:
+      summary: Create a budget policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetPolicyCreate' }
+      responses:
+        '201':
+          description: Created
+          headers: { ETag: { schema: { type: string } } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetPolicyWithUtilization' }
+        '422':
+          description: Validation failed (incl. sanity-bound violation per FR-046)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+  /budgets/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      responses:
+        '200':
+          description: Budget policy
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetPolicyWithUtilization' }
+    put:
+      parameters:
+        - in: header
+          name: If-Match
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetPolicyUpdate' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetPolicyWithUtilization' }
+        '412':
+          description: ETag stale
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+components:
+  schemas:
+    BudgetPolicyWithUtilization:
+      type: object
+      additionalProperties: false
+      required: [id, unit, window_type, limit_value, soft_threshold_pct, hard_threshold_pct, enforce_mode, etag, counters]
+      properties:
+        id: { type: integer }
+        unit:
+          type: string
+          enum: [usd, tokens_in, tokens_out, tokens_total, requests, sessions]
+        window_type:
+          type: string
+          enum: [rolling_1h, rolling_6h, rolling_24h, calendar_daily, calendar_weekly, calendar_monthly]
+        limit_value: { type: number }
+        soft_threshold_pct: { type: number }
+        hard_threshold_pct: { type: number }
+        enforce_mode:
+          type: string
+          enum: [shadow, soft, hard, dry_run]
+        etag: { type: string }
+        counters:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [window_id, counter_value, reserved_value, utilization_pct]
+            properties:
+              window_id: { type: string }
+              counter_value: { type: number }
+              reserved_value: { type: number }
+              utilization_pct: { type: number }
+              pending_rebuild_job_id: { type: string, nullable: true }
+    BudgetPolicyCreate:
+      type: object
+      additionalProperties: false
+      required: [unit, window_type, limit_value, enforce_mode]
+      properties:
+        unit:
+          type: string
+          enum: [usd, tokens_in, tokens_out, tokens_total, requests, sessions]
+        window_type:
+          type: string
+          enum: [rolling_1h, rolling_6h, rolling_24h, calendar_daily, calendar_weekly, calendar_monthly]
+        limit_value: { type: number, minimum: 0 }
+        soft_threshold_pct: { type: number, minimum: 0, maximum: 100, default: 80 }
+        hard_threshold_pct: { type: number, minimum: 0, maximum: 100, default: 100 }
+        enforce_mode:
+          type: string
+          enum: [shadow, soft, hard, dry_run]
+        scope: { type: string }
+        owner_workspace_id: { type: integer }
+    BudgetPolicyUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        limit_value: { type: number }
+        soft_threshold_pct: { type: number }
+        hard_threshold_pct: { type: number }
+        enforce_mode:
+          type: string
+          enum: [shadow, soft, hard, dry_run]
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error, retryable]
+      properties:
+        error: { type: string }
+        reason: { type: string }
+        retryable:
+          type: boolean
+          description: FR-214a. true for transient (409 reservation_unavailable, 423, 429, 503); false otherwise.
+        retry_after_ms: { type: integer }
+        details:
+          type: object
+          additionalProperties: true
+          description: |
+            For 412 follow FR-205a (current_etag, current_version);
+            for 422 follow FR-206a Zod-issue-tree shape.

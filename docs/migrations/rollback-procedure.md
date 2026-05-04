@@ -1,6 +1,28 @@
-# SPEC-001 / SPEC-004 / SPEC-006 Manual Rollback Procedure
+# SPEC-001 / SPEC-004 / SPEC-006 / SPEC-008 Manual Rollback Procedure
 
-SPEC-001 adds forward-only migrations M53 through M61; SPEC-004 adds M62 (`idx_tasks_one_successor_per_parent`); SPEC-006 adds M63 (area-label routing schema). The live migration runner has no `down()` hook, so rollback is an operator-initiated manual SQL procedure.
+SPEC-001 adds forward-only migrations M53 through M61; SPEC-004 adds M62 (`idx_tasks_one_successor_per_parent`); SPEC-006 adds M63 (area-label routing schema); SPEC-008 adds M65a..m + M66 (resource governance schema, see SPEC-008 row below). The live migration runner has no `down()` hook, so rollback is an operator-initiated manual SQL procedure.
+
+## SPEC-008 (Resource Governance) Reverse Order
+
+Per FR-243 the SPEC-008 rollback files MUST be applied in strict reverse order, M66 → M65m → M65l → ... → M65a → M64. The M64 file is the SPEC-001 tail rollback (M64 was reserved for SPEC-008 pre-rename — the canonical SPEC-008 chain begins at M65a):
+
+1. `docs/migrations/rollback-M66.sql` (token_pricing)
+2. `docs/migrations/rollback-M65m.sql` (final 8 governance tables)
+3. `docs/migrations/rollback-M65l.sql` (provider_accounts extensions)
+4. `docs/migrations/rollback-M65k.sql` (resource_snapshots)
+5. `docs/migrations/rollback-M65j.sql` (correction_ledger)
+6. `docs/migrations/rollback-M65i.sql` (reconciliation_batches)
+7. `docs/migrations/rollback-M65h.sql` (resource_overrides)
+8. `docs/migrations/rollback-M65g.sql` (resource_reservations)
+9. `docs/migrations/rollback-M65f.sql` (resource_budget_counters)
+10. `docs/migrations/rollback-M65e.sql` (resource_budget_ledger)
+11. `docs/migrations/rollback-M65d.sql` (canonical_budget_effects)
+12. `docs/migrations/rollback-M65c.sql` (canonical_usage_events)
+13. `docs/migrations/rollback-M65b.sql` (raw_usage_events)
+14. `docs/migrations/rollback-M65a.sql` (source_emission_capability)
+15. `docs/migrations/rollback-M64.sql` (SPEC-001 tail; only when fully unwinding)
+
+After step 2, run `PRAGMA foreign_key_check;` and verify the result is clean. The M65m rollback file embeds this assertion (FR-243).
 
 ## Preconditions
 

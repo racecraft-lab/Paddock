@@ -32,12 +32,12 @@ function countSectionEntries(content: string): number {
 }
 
 function readMemoryFile(filePath: string): { content: string | null; size: number; entries: number } {
-  if (!existsSync(filePath)) {
+  if (!existsSync(/* turbopackIgnore: true */ filePath)) {
     return { content: null, size: 0, entries: 0 }
   }
 
   try {
-    const content = readFileSync(filePath, 'utf-8')
+    const content = readFileSync(/* turbopackIgnore: true */ filePath, 'utf-8')
     return {
       content,
       size: content.length,

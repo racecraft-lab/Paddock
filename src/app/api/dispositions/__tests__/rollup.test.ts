@@ -65,10 +65,22 @@ import { runMigrations } from '../../../../lib/migrations'
 import { GET, __resetRollupCacheForTests } from '../rollup/route'
 
 const openDbs: Database.Database[] = []
+const ORIGINAL_MISSION_CONTROL_TEST_MODE = process.env.MISSION_CONTROL_TEST_MODE
+const ORIGINAL_MC_SPEC_007_FIXED_NOW = process.env.MC_SPEC_007_FIXED_NOW
 
 afterEach(() => {
   while (openDbs.length > 0) {
     openDbs.pop()?.close()
+  }
+  if (ORIGINAL_MISSION_CONTROL_TEST_MODE === undefined) {
+    delete process.env.MISSION_CONTROL_TEST_MODE
+  } else {
+    process.env.MISSION_CONTROL_TEST_MODE = ORIGINAL_MISSION_CONTROL_TEST_MODE
+  }
+  if (ORIGINAL_MC_SPEC_007_FIXED_NOW === undefined) {
+    delete process.env.MC_SPEC_007_FIXED_NOW
+  } else {
+    process.env.MC_SPEC_007_FIXED_NOW = ORIGINAL_MC_SPEC_007_FIXED_NOW
   }
 })
 
@@ -259,6 +271,34 @@ describe('SPEC-007 / US4 — GET /api/dispositions/rollup (FR-070, FR-071, FR-07
     expect(counts.rejected).toBe(1)
     expect(counts.merged).toBe(1)
     expect(counts.duplicate).toBe(1)
+  })
+
+  it('uses the test-mode fixed clock for deterministic e2e rollup windows', async () => {
+    process.env.MISSION_CONTROL_TEST_MODE = '1'
+    process.env.MC_SPEC_007_FIXED_NOW = '2026-05-02T12:00:00.000Z'
+
+    const db = freshMigratedDb()
+    const wsId = seedProductLineWorkspace(db)
+    setWorkspaceFlag(db, wsId, true)
+    const taskId = seedTask(db, wsId, 'fixed-clock-task')
+    const fixedNow = Math.floor(Date.parse(process.env.MC_SPEC_007_FIXED_NOW) / 1000)
+
+    seedDisposition(db, { workspaceId: wsId, taskId, disposition: 'closed', triagedAt: fixedNow - 60 })
+    seedDisposition(db, { workspaceId: wsId, taskId, disposition: 'merged', triagedAt: fixedNow - 6 * 24 * 3600 })
+    seedDisposition(db, { workspaceId: wsId, taskId, disposition: 'duplicate', triagedAt: fixedNow - 7 * 24 * 3600 })
+
+    getDatabaseMock.mockReturnValue(db)
+    setupAuthOk()
+    setupScopeProductLine(wsId)
+
+    const res = await GET(buildRequest(`workspace_id=${String(wsId)}`))
+    expect(res.status).toBe(200)
+    const body = await res.json() as RollupResponse
+
+    expect(body.days).toHaveLength(7)
+    expect(body.days[0]?.date).toBe('2026-04-26')
+    expect(body.days[6]?.date).toBe('2026-05-02')
+    expect(body.total).toBe(2)
   })
 
   it("treats 'unknown' as its own segment (FR-139)", async () => {

@@ -86,6 +86,8 @@ function featureFlagPayload(workspaceSwitcherEnabled: boolean) {
         env_value: null,
         can_update: true,
         enable_blockers: [],
+        cascade_requires: [],
+        cascade_disables: ['FEATURE_GLOBAL_AEGIS'],
         warnings: ['This flag controls the Product Line switcher currently under review.'],
         last_change: workspaceSwitcherEnabled
           ? {
@@ -106,8 +108,9 @@ function featureFlagPayload(workspaceSwitcherEnabled: boolean) {
         can_update: false,
         enable_blockers: [
           'This feature is not implemented yet.',
-          'Requires FEATURE_WORKSPACE_SWITCHER to be enabled first.',
         ],
+        cascade_requires: ['FEATURE_WORKSPACE_SWITCHER'],
+        cascade_disables: [],
         warnings: ['Potential fork pressure: upstream-divergent behavior requires explicit review.'],
         last_change: null,
       },

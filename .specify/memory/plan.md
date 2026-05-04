@@ -6,6 +6,8 @@ Revision 2026-05-01: Backfilling SPEC-003 (PR #20 merged 2026-04-30) — origina
 sweep silently no-op'd due to unwired /speckit.archive.run command (now fixed).
 Revision 2026-05-01 (later): Archiving SPEC-004 (PR #22 merged 2026-05-01) and
 SPEC-006 (PR #21 merged 2026-05-01) under SPEC-007 autopilot Phase 0 sweep.
+Revision 2026-05-02: SPEC-008 autopilot Phase 0 sweep re-confirmed prior
+SPEC-004/006 archive after SPEC-007 cleanup landed on main.
 
 ---
 
@@ -78,7 +80,7 @@ docs/
 └── scripts/bash/                   # check-prerequisites.sh, validate-gate.sh, etc.
 
 specs/
-└── 007-disposition-artifacts/      # SPEC-007: In progress (current target — excluded from this sweep)
+└── 008-resource-governance/        # SPEC-008: In progress (current target — excluded from this sweep)
 
 # Archived (cleanup applied):
 # - 001-foundation-migrations    (SPEC-001, archived 2026-04-28)
@@ -86,7 +88,9 @@ specs/
 # - 002a-spec-archive-evidence   (SPEC-002A, archived 2026-04-28)
 # - 003-global-aegis             (SPEC-003, archived 2026-05-01)
 # - 004-task-pipeline-engine     (SPEC-004, archived 2026-05-01 — PR #22 merge 20643d8)
+# - 005-ready-for-owner          (SPEC-005, archived after PR #23 merge — landed on main 2026-05-02)
 # - 006-area-label-github-sync   (SPEC-006, archived 2026-05-01 — PR #21 merge dbb6c75)
+# - 007-disposition-artifacts    (SPEC-007, archived after PR #25 merge — landed on main 2026-05-02)
 ```
 
 ---
@@ -488,3 +492,8 @@ From SPEC-006:
 - **SPEC-006 PUT 400 wins over 409**: Format validation (`area_slug` regex, FR-040a flag-OFF rejection) MUST run BEFORE uniqueness check. When both apply, return 400. No SELECT-for-conflict and no UPDATE on the 400 path. UNIQUE-violation race translates back to matching 409 (never leaks 500).
 - **SPEC-006 sync-owner lifecycle is preflight-visible, not auto-recovered**: If the sync-owner project is deleted/archived/`github_sync_enabled=0` for a `(workspace_id, github_repo)` group, polling stops cleanly. The `FEATURE_AREA_LABEL_ROUTING` preflight checklist requires verifying exactly one owner per repo group; ownership loss is an operator signal, not a runtime self-heal. Auto re-election deferred (Article XII).
 - **M62 ordering reconciled**: SPEC-004 and SPEC-006 both shipped within the same week and both reserved M62. SPEC-004 merged first as PR #22 (kept M62); SPEC-006 (PR #21) reconciled at rebase time per `docs/migrations/migration-id-reservations.md`. Migration body is unchanged regardless of final id; only the numeric id, file name, and string references change.
+- **SPEC-008 byte-compat**: Flag-OFF rendering of the cost-tracker panel MUST be byte-identical to the legacy panel (FR-305). The Governance tab is added only when `FEATURE_RESOURCE_GOVERNANCE` is ON; the legacy `LIMIT 3` clause for the cost summary is preserved (FR-238). The evaluator returns `allow:feature_flag_off` and short-circuits when the flag is OFF (FR-008). E2e regression at `tests/e2e/governance-flag-off-byte-compat.e2e.ts`.
+- **SPEC-008 env override semantics**: `process.env.FEATURE_RESOURCE_GOVERNANCE='1'` does NOT force a flag ON (FR-323). Only `workspaces.feature_flags` JSON can opt a workspace in. `'0'` forces OFF (emergency rollback). The matrix harness (`src/lib/feature-flag-matrix.ts`) and integration test (`tests/integration/feature-flag-matrix.test.ts` FR-323 assertion) lock this in.
+- **SPEC-008 enableRequires chain**: `FEATURE_OPENCLAW_HEALTH_COSTS` requires `FEATURE_RESOURCE_GOVERNANCE` (registry `enableRequires: ['FEATURE_RESOURCE_GOVERNANCE']`). The matrix harness's `buildScenarioFlags(flag, 'on-isolation')` walks the chain and auto-satisfies prerequisites. `assertEnableRequires` in the harness throws `InvalidFeatureFlagConfigurationError` when a prerequisite is OFF.
+- **SPEC-008 axe-core fixture**: `tests/e2e/spec-008/governance-axe-shim.ts` exposes `axeAssert(page, stateLabel)`. The shim defers `@axe-core/playwright` import behind `SPEC_008_AXE_ENABLED=1` so local runs without the dep installed are no-ops. CI installs the dep and sets the env var. Static-source CI guard `scripts/spec-008/check-axe-coverage.mjs` scans every spec for `axeAssert(` calls and fails closed.
+- **SPEC-008 strict-scope**: every `src/lib/resource-*.ts`, `src/lib/observability/**/*.ts`, `src/lib/feature-flag-matrix.ts`, `src/types/{resource-*,observability,provider-account,governance-api}.ts`, `src/components/governance/**/*.{ts,tsx}`, `src/app/api/{governance,resource-*,otlp}/**/*.ts` MUST appear in BOTH `tsconfig.spec-strict.json` `include` AND `eslint.config.mjs` `specStrictFiles`. Layer-1 family check + Layer-2 file check at `tests/integration/strict-scope-guard.test.ts`. The glob-to-regex translator handles `**/` as `(?:.*/)?` so files DIRECTLY in a globbed directory match.
