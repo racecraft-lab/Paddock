@@ -1,0 +1,229 @@
+openapi: 3.1.0
+info:
+  title: SPEC-008 Governance — System Health + Recovery
+  version: 1.0.0
+  description: |
+    Read-only health surface + one-click recovery affordances. Recovery
+    affordances follow the FR-090i gesture matrix; each successful action
+    writes one `recovery_actions` audit row.
+    Sources: spec.md FR-191, FR-192, FR-199, FR-298, FR-090i.
+servers:
+  - url: /api/governance
+paths:
+  /system-health:
+    get:
+      summary: Get aggregate system health
+      responses:
+        '200':
+          description: System health snapshot
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SystemHealth' }
+  /system-health/recovery:
+    post:
+      summary: Execute a one-click recovery affordance (FR-090i)
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecoveryRequest' }
+      responses:
+        '200':
+          description: Recovery accepted; audit row written
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecoveryResult' }
+        '422':
+          description: Validation failed (incl. missing/wrong typed phrase)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '423':
+          description: Affordance is locked (concurrent operator)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '409':
+          description: Operation rejected (target not in expected state)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+  /system-health/rebuild:
+    post:
+      summary: Trigger an async chunked counter rebuild (FR-058)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [policy_id, window_id]
+              properties:
+                policy_id: { type: integer }
+                window_id: { type: string }
+      responses:
+        '202':
+          description: Rebuild scheduled; counter enters pending_rebuild_job_id state
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [job_id]
+                properties:
+                  job_id: { type: string }
+components:
+  schemas:
+    SystemHealth:
+      type: object
+      additionalProperties: false
+      required: [collector, sources, breaker_states, drift_alerts, runbook_links, recovery_affordances]
+      properties:
+        runbook_links:
+          type: array
+          description: FR-191a + FR-090l. Active runbook deep-links per current alerts/health-events.
+          items:
+            type: object
+            additionalProperties: false
+            required: [slug, title, url]
+            properties:
+              slug: { type: string, description: 'kebab-case, e.g., restart-collector' }
+              title: { type: string }
+              url: { type: string, description: 'docs/runbook/<slug>.md' }
+              anchor: { type: string, description: 'optional; e.g., #recovery-steps' }
+        recovery_affordances:
+          type: array
+          description: FR-191a. Per-affordance availability so UI can render disabled-with-tooltip.
+          items:
+            type: object
+            additionalProperties: false
+            required: [kind, available]
+            properties:
+              kind:
+                type: string
+                enum:
+                  - restart_collector
+                  - force_resume_hard_enforcement
+                  - manually_close_breaker
+                  - top_up_reserve
+                  - pause_aegis
+                  - force_local_mode
+                  - run_rebuild
+                  - mark_acknowledged
+                  - backup_acknowledged_no_offnode
+              available: { type: boolean }
+              reason_unavailable: { type: string }
+        collector:
+          type: object
+          additionalProperties: false
+          required: [state, last_heartbeat_at]
+          properties:
+            state: { type: string, enum: [healthy, degraded, unhealthy, restarting] }
+            last_heartbeat_at: { type: string, format: date-time }
+            installed_version: { type: string }
+            config_hash: { type: string }
+            backup:
+              type: object
+              additionalProperties: false
+              properties:
+                state: { type: string, enum: [healthy, stale, no_offnode_warning, failed] }
+                last_backup_at: { type: string, format: date-time }
+        sources:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [source_id, state, freshness_ms]
+            properties:
+              source_id: { type: string }
+              state:
+                type: string
+                enum: [healthy, rate_limited, circuit_open, degraded, disk_full_pause, schema_broken_quarantine]
+              freshness_ms: { type: integer }
+              events_admitted_per_min: { type: number }
+              drops_per_min: { type: integer }
+              schema_broken_count: { type: integer }
+        breaker_states:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [scope_key, state]
+            properties:
+              scope_key: { type: string }
+              state: { type: string, enum: [closed, half_open, open] }
+              opened_at: { type: string, format: date-time, nullable: true }
+        drift_alerts:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              policy_id: { type: integer }
+              window_id: { type: string }
+              tier: { type: string, enum: [auto_repair, operator_confirmed, hard_block] }
+              detected_at: { type: string, format: date-time }
+        aegis_emergency_reserve:
+          type: object
+          additionalProperties: false
+          properties:
+            state: { type: string, enum: [inactive, engaged, cooling_down] }
+            balance_usd: { type: number }
+            balance_tokens: { type: integer }
+    RecoveryRequest:
+      type: object
+      additionalProperties: false
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum:
+            - restart_collector
+            - force_resume_hard_enforcement
+            - manually_close_breaker
+            - top_up_reserve
+            - pause_aegis
+            - force_local_mode
+            - run_rebuild
+            - mark_acknowledged
+            - backup_acknowledged_no_offnode
+        target: { type: string }
+        confirmation_phrase:
+          type: string
+          description: |
+            Required for kinds that demand a typed phrase per FR-090i:
+              - force_resume_hard_enforcement → "RESUME HARD ENFORCEMENT"
+              - pause_aegis → "PAUSE AEGIS"
+        delta:
+          type: number
+          description: For top_up_reserve; capped at 100% of policy limit
+    RecoveryResult:
+      type: object
+      additionalProperties: false
+      required: [audit_id, kind, ts]
+      properties:
+        audit_id: { type: integer }
+        kind: { type: string }
+        ts: { type: string, format: date-time }
+        runbook_url:
+          type: string
+          description: Deep-link to docs/runbook/<slug>.md#<affordance-id>
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error, retryable]
+      properties:
+        error: { type: string }
+        reason: { type: string }
+        retryable: { type: boolean, description: FR-214a }
+        retry_after_ms: { type: integer }
+        details:
+          type: object
+          additionalProperties: true
+          description: For 422 follow FR-206a Zod-issue-tree shape.

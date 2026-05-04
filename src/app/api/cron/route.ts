@@ -315,13 +315,13 @@ export async function POST(request: NextRequest) {
 
       // For OpenClaw cron jobs, trigger via the openclaw CLI
       const triggerMode = body.mode || 'force'
-      const { runCommand } = await import('@/lib/command')
+      const { runOpenClaw } = await import('@/lib/command')
       try {
         const args = ['cron', 'trigger', job.id]
         if (triggerMode === 'due') {
           args.push('--if-due')
         }
-        const { stdout, stderr } = await runCommand(config.openclawBin, args, { timeoutMs: 30000 })
+        const { stdout, stderr } = await runOpenClaw(args, { timeoutMs: 30000 })
 
         return NextResponse.json({
           success: true,

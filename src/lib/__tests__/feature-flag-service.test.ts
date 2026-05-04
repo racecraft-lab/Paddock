@@ -1,6 +1,10 @@
 import Database from 'better-sqlite3'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getFeatureFlagPreflight, getFeatureFlagMutationBlockers } from '@/lib/feature-flag-service'
+import {
+  getFeatureFlagPreflight,
+  getFeatureFlagMutationBlockers,
+  updateWorkspaceFeatureFlag,
+} from '@/lib/feature-flag-service'
 
 let db: Database.Database
 
@@ -88,6 +92,7 @@ describe('getFeatureFlagPreflight runtime readiness (Finding F3)', () => {
     const runtimeCheck = result.checks.find((c) => c.id === 'runtime-readiness')
     expect(runtimeCheck?.status).toBe('pass')
     expect(result.can_enable).toBe(true)
+    expect(result.checks.find((c) => c.id === 'dependencies')?.detail).toMatch(/also enables FEATURE_WORKSPACE_SWITCHER/)
   })
 
   it('passes runtime readiness when only a tenant-scoped backfilled global exists', () => {
@@ -147,5 +152,55 @@ describe('getFeatureFlagMutationBlockers (Finding F2)', () => {
   it('blocks mutation when flag is not admin-manageable', () => {
     const blockers = getFeatureFlagMutationBlockers(db, 1, 1, 'FEATURE_TASK_PIPELINES')
     expect(blockers).toContain('This flag is not admin-manageable yet')
+  })
+})
+
+describe('updateWorkspaceFeatureFlag cascade persistence', () => {
+  it('enabling a later phase stores every earlier phase flag as enabled', () => {
+    const result = updateWorkspaceFeatureFlag(db, 1, 'FEATURE_RESOURCE_GOVERNANCE', true)
+    const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = 1').get() as {
+      feature_flags: string
+    }
+    const flags = JSON.parse(row.feature_flags) as Record<string, boolean>
+
+    expect(result.cascadeEnabled).toEqual([
+      'FEATURE_WORKSPACE_SWITCHER',
+      'FEATURE_GLOBAL_AEGIS',
+      'FEATURE_TASK_PIPELINES',
+      'FEATURE_TWO_STEP_TERMINAL',
+      'FEATURE_AREA_LABEL_ROUTING',
+      'FEATURE_DISPOSITION_LOGGING',
+      'FEATURE_TASK_ARTIFACTS',
+    ])
+    expect(flags.FEATURE_WORKSPACE_SWITCHER).toBe(true)
+    expect(flags.FEATURE_GLOBAL_AEGIS).toBe(true)
+    expect(flags.FEATURE_TASK_ARTIFACTS).toBe(true)
+    expect(flags.FEATURE_RESOURCE_GOVERNANCE).toBe(true)
+  })
+
+  it('disabling an earlier phase stores every dependent later phase as disabled', () => {
+    updateWorkspaceFeatureFlag(db, 1, 'PILOT_PRODUCT_LINE_A_E2E', true)
+
+    const result = updateWorkspaceFeatureFlag(db, 1, 'FEATURE_WORKSPACE_SWITCHER', false)
+    const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = 1').get() as {
+      feature_flags: string
+    }
+    const flags = JSON.parse(row.feature_flags) as Record<string, boolean>
+
+    expect(result.cascadeDisabled).toEqual([
+      'FEATURE_GLOBAL_AEGIS',
+      'FEATURE_TASK_PIPELINES',
+      'FEATURE_TWO_STEP_TERMINAL',
+      'FEATURE_AREA_LABEL_ROUTING',
+      'FEATURE_DISPOSITION_LOGGING',
+      'FEATURE_TASK_ARTIFACTS',
+      'FEATURE_RESOURCE_GOVERNANCE',
+      'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'PILOT_PRODUCT_LINE_A_E2E',
+    ])
+    expect(flags.FEATURE_WORKSPACE_SWITCHER).toBe(false)
+    expect(flags.FEATURE_GLOBAL_AEGIS).toBe(false)
+    expect(flags.FEATURE_RESOURCE_GOVERNANCE).toBe(false)
+    expect(flags.PILOT_PRODUCT_LINE_A_E2E).toBe(false)
   })
 })

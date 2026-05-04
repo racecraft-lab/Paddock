@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { POST } from '@/app/api/sessions/continue/route'
 
 const mocks = vi.hoisted(() => ({
+  envWithExecutablePath: vi.fn(() => ({ PATH: '/custom/bin:/usr/bin' })),
   runCommand: vi.fn(async () => ({ stdout: '', stderr: '', code: 0 })),
 }))
 
@@ -10,6 +11,7 @@ vi.mock('@/lib/auth', () => ({
 }))
 
 vi.mock('@/lib/command', () => ({
+  envWithExecutablePath: mocks.envWithExecutablePath,
   runCommand: mocks.runCommand,
 }))
 
@@ -19,6 +21,8 @@ vi.mock('@/lib/opencode-sessions', () => ({
 
 describe('OpenCode session continue route', () => {
   beforeEach(() => {
+    mocks.envWithExecutablePath.mockClear()
+    mocks.envWithExecutablePath.mockReturnValue({ PATH: '/custom/bin:/usr/bin' })
     mocks.runCommand.mockClear()
   })
 
@@ -30,10 +34,14 @@ describe('OpenCode session continue route', () => {
     })
     const response = await POST(request as any)
     expect(response.status).not.toBe(400)
+    expect(mocks.envWithExecutablePath).toHaveBeenCalledWith('/custom/bin/opencode')
     expect(mocks.runCommand).toHaveBeenCalledWith(
-      '/custom/bin/opencode',
+      'opencode',
       ['run', '--session', 'ses_open_1', 'continue'],
-      expect.objectContaining({ timeoutMs: 180000 }),
+      expect.objectContaining({
+        env: { PATH: '/custom/bin:/usr/bin' },
+        timeoutMs: 180000,
+      }),
     )
   })
 

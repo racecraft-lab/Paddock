@@ -9,8 +9,12 @@ if (!dbPath) {
   process.exit(1)
 }
 
-const FIXED_NOW = new Date('2026-05-02T12:00:00.000Z')
-const NOW_SECONDS = Math.floor(FIXED_NOW.getTime() / 1000)
+// Anchor to real "now" so disposition triaged_at values always fall inside
+// the rolling 7-day window the rollup API computes from Date.now(). A fixed
+// historical anchor causes the dashboard rollup widget to drop rows once the
+// real clock advances past the seeded last-7d band (e.g. 50 → 43 once a day
+// rolls off), failing tests/e2e/spec-007-ui-visual.spec.ts:84.
+const NOW_SECONDS = Math.floor(Date.now() / 1000)
 const FIXTURE = {
   alphaWorkspace: { name: 'Spec 007 Alpha', slug: 'spec-007-alpha' },
   betaWorkspace: { name: 'Spec 007 Beta', slug: 'spec-007-beta' },

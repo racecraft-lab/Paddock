@@ -1,6 +1,11 @@
 import Database from 'better-sqlite3'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { getAegis, hasGlobalAegisCandidate } from '@/lib/aegis'
+import {
+  expandFeatureFlagCascade,
+  isFeatureFlagKey,
+  type FeatureFlagKey,
+} from '@/lib/feature-flags'
 
 let db: Database.Database
 
@@ -43,8 +48,18 @@ function insertWorkspace(id: number, slug: string, tenantId: number): void {
 }
 
 function setWorkspaceFlags(workspaceId: number, flags: string | Record<string, unknown> | null): void {
+  const expanded = typeof flags === 'string' || flags === null
+    ? flags
+    : Object.entries(flags).reduce<Record<string, unknown>>((next, [key, value]) => {
+        if (isFeatureFlagKey(key) && typeof value === 'boolean') {
+          Object.assign(next, expandFeatureFlagCascade(key as FeatureFlagKey, value))
+        } else {
+          next[key] = value
+        }
+        return next
+      }, {})
   db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?')
-    .run(typeof flags === 'string' ? flags : flags ? JSON.stringify(flags) : null, workspaceId)
+    .run(typeof expanded === 'string' ? expanded : expanded ? JSON.stringify(expanded) : null, workspaceId)
 }
 
 function insertAegis(row: {

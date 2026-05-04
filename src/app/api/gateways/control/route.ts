@@ -3,6 +3,7 @@ import { requireRole } from '@/lib/auth'
 import { logger } from '@/lib/logger'
 import { config } from '@/lib/config'
 import { isHermesGatewayRunning } from '@/lib/hermes-sessions'
+import { envWithExecutablePath, runCommand, runOpenClaw } from '@/lib/command'
 import { existsSync, readFileSync, writeFileSync, mkdirSync, openSync } from 'node:fs'
 import { join } from 'node:path'
 import { spawn } from 'node:child_process'
@@ -32,10 +33,10 @@ function startHermesGatewayDetached(hermesBin: string, homeDir: string): { pid: 
   try {
     // Open log file for append; route stdout and stderr into it
     const logFd = openSync(logPath, 'a')
-    const child = spawn(hermesBin, ['gateway', 'run'], {
+    const child = spawn('hermes', ['gateway', 'run'], {
       detached: true,
       stdio: ['ignore', logFd, logFd],
-      env: { ...process.env, HERMES_NONINTERACTIVE: '1', CI: '1' },
+      env: envWithExecutablePath(hermesBin, { ...process.env, HERMES_NONINTERACTIVE: '1', CI: '1' }),
     })
 
     if (!child.pid) {
@@ -181,15 +182,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
-    const { runCommand } = require('@/lib/command')
-
     if (gateway === 'hermes') {
       const bin = join(config.homeDir, '.local', 'bin', 'hermes')
       const hermesBin = existsSync(bin) ? bin : 'hermes'
+      const hermesEnv = envWithExecutablePath(hermesBin, {
+        ...process.env,
+        HERMES_NONINTERACTIVE: '1',
+        CI: '1',
+      })
       const inDocker = isDockerEnvironment()
 
       if (action === 'diagnose') {
-        const result = await runCommand(hermesBin, ['doctor'], { timeoutMs: 30_000 })
+        const result = await runCommand('hermes', ['doctor'], {
+          timeoutMs: 30_000,
+          env: hermesEnv,
+        })
         return NextResponse.json({
           success: result.code === 0,
           output: ((result.stdout || '') + '\n' + (result.stderr || '')).trim(),
@@ -250,9 +257,9 @@ export async function POST(request: NextRequest) {
       }
 
       // Bare metal: use the hermes CLI directly (systemd-managed service)
-      const result = await runCommand(hermesBin, ['gateway', action], {
+      const result = await runCommand('hermes', ['gateway', action], {
         timeoutMs: 15_000,
-        env: { ...process.env, HERMES_NONINTERACTIVE: '1', CI: '1' },
+        env: hermesEnv,
       })
 
       logger.info({ gateway, action, code: result.code }, 'Gateway control action executed')
@@ -265,10 +272,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (gateway === 'openclaw') {
-      const openclawBin = config.openclawBin || 'openclaw'
-
       if (action === 'diagnose') {
-        const result = await runCommand(openclawBin, ['doctor'], { timeoutMs: 30_000 })
+        const result = await runOpenClaw(['doctor'], { timeoutMs: 30_000 })
         return NextResponse.json({
           success: result.code === 0,
           output: ((result.stdout || '') + '\n' + (result.stderr || '')).trim(),
@@ -276,7 +281,7 @@ export async function POST(request: NextRequest) {
       }
 
       // OpenClaw gateway uses `openclaw gateway start/stop/restart`
-      const result = await runCommand(openclawBin, ['gateway', action], {
+      const result = await runOpenClaw(['gateway', action], {
         timeoutMs: 15_000,
       })
 

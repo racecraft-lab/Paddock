@@ -648,7 +648,24 @@ if (typeof window === 'undefined' && !isBuildPhase) {
   }
 }
 
-// Cleanup on process exit
-process.on('exit', closeDatabase);
-process.on('SIGINT', closeDatabase);
-process.on('SIGTERM', closeDatabase);
+type DbProcessGlobal = typeof globalThis & {
+  __missionControlDbCloseHandlers?: Set<() => void>
+  __missionControlDbProcessListenersRegistered?: boolean
+}
+
+const dbProcessGlobal = globalThis as DbProcessGlobal
+const dbCloseHandlers = dbProcessGlobal.__missionControlDbCloseHandlers ?? new Set<() => void>()
+dbCloseHandlers.add(closeDatabase)
+dbProcessGlobal.__missionControlDbCloseHandlers = dbCloseHandlers
+
+if (!dbProcessGlobal.__missionControlDbProcessListenersRegistered) {
+  const closeAllDatabases = () => {
+    for (const close of dbCloseHandlers) {
+      close()
+    }
+  }
+  process.on('exit', closeAllDatabases)
+  process.on('SIGINT', closeAllDatabases)
+  process.on('SIGTERM', closeAllDatabases)
+  dbProcessGlobal.__missionControlDbProcessListenersRegistered = true
+}

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { argosScreenshot } from '@argos-ci/storybook/vitest'
 import { expect, userEvent, within } from 'storybook/test'
 import { HeaderBar } from '@/components/layout/header-bar'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
@@ -294,8 +293,8 @@ const meta = {
     },
   ],
   parameters: {
-    argos: {
-      fitToContent: false,
+    screenshot: {
+      fullPage: true,
     },
   },
 } satisfies Meta<typeof ProductLineVisualSurface>
@@ -313,7 +312,6 @@ export const WorkspaceSwitcherMenuOpen: Story = {
     const canvas = within(ctx.canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /change facility or product line scope/i }))
     await expect(canvas.getByRole('listbox', { name: /facility and product line scopes/i })).toBeVisible()
-    await argosScreenshot(ctx, 'scope-menu-options')
   },
 }
 
@@ -323,7 +321,6 @@ export const WorkspaceSwitcherLoading: Story = {
     const canvas = within(ctx.canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /change facility or product line scope/i }))
     await expect(canvas.getByRole('status')).toHaveTextContent(/loading scopes/i)
-    await argosScreenshot(ctx, 'loading-state')
   },
 }
 
@@ -333,7 +330,6 @@ export const WorkspaceSwitcherError: Story = {
     const canvas = within(ctx.canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /change facility or product line scope/i }))
     await expect(canvas.getByRole('alert')).toHaveTextContent(/failed to load/i)
-    await argosScreenshot(ctx, 'load-error-state')
   },
 }
 
@@ -344,20 +340,14 @@ export const HeaderDesktopFacility: Story = {
 export const HeaderMobileScopeMenu: Story = {
   args: { surface: 'header', scenario: 'facility' },
   parameters: {
-    argos: {
-      fitToContent: false,
-      modes: {
-        mobile320: { viewport: 'mobile320' },
-        mobile375: { viewport: 'mobile375' },
-        mobile390: { viewport: 'mobile390' },
-      },
+    screenshot: {
+      fullPage: true,
     },
   },
   play: async (ctx) => {
     const canvas = within(ctx.canvasElement)
     await userEvent.click(canvas.getByRole('button', { name: /change facility or product line scope/i }))
     await expect(canvas.getByRole('listbox', { name: /facility and product line scopes/i })).toBeVisible()
-    await argosScreenshot(ctx, 'mobile-scope-menu')
   },
 }
 

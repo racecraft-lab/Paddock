@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import type { ComponentProps, ReactNode } from 'react'
-import { argosScreenshot } from '@argos-ci/storybook/vitest'
 import { expect, userEvent, within } from 'storybook/test'
 import { Last7dTriageTotalsWidget } from '@/components/dashboard/dashboard'
 import { AuditTrailPanel } from '@/components/panels/audit-trail-panel'
@@ -247,8 +246,8 @@ const meta = {
     },
   ],
   parameters: {
-    argos: {
-      fitToContent: false,
+    screenshot: {
+      fullPage: true,
     },
   },
 } satisfies Meta
@@ -270,7 +269,6 @@ export const DashboardRollupWidget: Story = {
     await expect(canvas.getByTestId('last-7d-triage-totals-total')).toHaveTextContent('50')
     await expect(canvas.getAllByTestId('last-7d-triage-totals-day')).toHaveLength(7)
     await expect(canvas.getByText('validation_failed')).toBeVisible()
-    await argosScreenshot(ctx, 'spec-007-dashboard-rollup-widget')
   },
 }
 
@@ -286,7 +284,6 @@ export const AuditDispositionsTab: Story = {
     await expect(await canvas.findByTestId('dispositions-tab')).toBeVisible()
     await expect(await canvas.findByTestId('dispositions-list')).toBeVisible()
     await expect(canvas.getByTestId('dispositions-filter-chip-unknown')).toHaveTextContent('validation_failed')
-    await argosScreenshot(ctx, 'spec-007-audit-dispositions-tab')
   },
 }
 
@@ -303,6 +300,5 @@ export const ArtifactAdminPanelMixedState: Story = {
     await expect(canvas.getByTestId('artifact-p95-tile')).toHaveTextContent('insufficient data')
     await expect(await canvas.findByTestId('artifact-row-7003')).toHaveTextContent('quarantined')
     await expect(canvas.getByTestId('artifact-row-7003')).toHaveTextContent('triage_outcome')
-    await argosScreenshot(ctx, 'spec-007-artifact-admin-mixed-state')
   },
 }

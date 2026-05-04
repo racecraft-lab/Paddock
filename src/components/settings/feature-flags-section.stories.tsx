@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { argosScreenshot } from '@argos-ci/storybook/vitest'
 import { expect, userEvent, within } from 'storybook/test'
 import { FeatureFlagsSection } from '@/components/settings/feature-flags-section'
 import { useMissionControl } from '@/store'
@@ -61,7 +60,7 @@ function flagDefinition(key: string, overrides: Record<string, unknown> = {}) {
       playwright: key === 'FEATURE_WORKSPACE_SWITCHER'
         ? ['tests/feature-flags-admin-ui.spec.ts']
         : [],
-      argos: key === 'FEATURE_WORKSPACE_SWITCHER'
+      visual: key === 'FEATURE_WORKSPACE_SWITCHER'
         ? ['mission-control-playwright', 'mission-control-storybook']
         : [],
       storybook: key === 'FEATURE_WORKSPACE_SWITCHER'
@@ -86,6 +85,8 @@ function featureFlagPayload(workspaceSwitcherEnabled: boolean) {
         env_value: null,
         can_update: true,
         enable_blockers: [],
+        cascade_requires: [],
+        cascade_disables: ['FEATURE_GLOBAL_AEGIS'],
         warnings: ['This flag controls the Product Line switcher currently under review.'],
         last_change: workspaceSwitcherEnabled
           ? {
@@ -106,8 +107,9 @@ function featureFlagPayload(workspaceSwitcherEnabled: boolean) {
         can_update: false,
         enable_blockers: [
           'This feature is not implemented yet.',
-          'Requires FEATURE_WORKSPACE_SWITCHER to be enabled first.',
         ],
+        cascade_requires: ['FEATURE_WORKSPACE_SWITCHER'],
+        cascade_disables: [],
         warnings: ['Potential fork pressure: upstream-divergent behavior requires explicit review.'],
         last_change: null,
       },
@@ -189,8 +191,8 @@ const meta = {
     },
   ],
   parameters: {
-    argos: {
-      fitToContent: false,
+    screenshot: {
+      fullPage: true,
     },
   },
 } satisfies Meta<typeof FeatureFlagAdminSurface>
@@ -205,7 +207,6 @@ export const AdminDefaultState: Story = {
     await expect(await canvas.findByRole('heading', { name: /feature flags/i })).toBeVisible()
     await expect(canvas.getByTestId('feature-flag-card-FEATURE_WORKSPACE_SWITCHER')).toHaveTextContent(/Evaluated OFF/)
     await expect(canvas.getByTestId('feature-flag-card-FEATURE_GLOBAL_AEGIS')).toHaveTextContent(/not implemented/i)
-    await argosScreenshot(ctx, 'feature-flag-admin-default')
   },
 }
 
@@ -219,6 +220,5 @@ export const AdminToggleJourney: Story = {
     await expect(await canvas.findByRole('status')).toHaveTextContent(/Product Line switcher enabled/i)
     await expect(switcherCard).toHaveTextContent(/Evaluated ON/)
     await expect(switcherCard).toHaveTextContent(/Stored override\s*true/i)
-    await argosScreenshot(ctx, 'feature-flag-admin-toggle-on')
   },
 }

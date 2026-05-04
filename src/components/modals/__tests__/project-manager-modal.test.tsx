@@ -31,6 +31,7 @@ import {
   createProductLineScope,
   type ProductLine,
 } from '../../../types/product-line'
+import { expandFeatureFlagCascade } from '../../../lib/feature-flags'
 
 // ── Type-safe project shape for the /api/projects response ───────
 interface ProjectFixture {
@@ -56,7 +57,7 @@ function buildWorkspace(overrides: Partial<ProductLine> = {}): ProductLine {
     slug: 'assembly',
     name: 'Assembly',
     tenant_id: 7,
-    feature_flags: '{"FEATURE_WORKSPACE_SWITCHER":true,"FEATURE_AREA_LABEL_ROUTING":true}',
+    feature_flags: JSON.stringify(expandFeatureFlagCascade('FEATURE_AREA_LABEL_ROUTING', true)),
     ...overrides,
   }
 }

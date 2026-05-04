@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs'
+import { join, resolve } from 'node:path'
 import { requireRole } from '@/lib/auth'
 import { config } from '@/lib/config'
 import { isHermesInstalled, isHermesGatewayRunning, scanHermesSessions } from '@/lib/hermes-sessions'
 import { getHermesTasks } from '@/lib/hermes-tasks'
 import { getHermesMemory } from '@/lib/hermes-memory'
+import { envWithExecutablePath, runCommand } from '@/lib/command'
 import { logger } from '@/lib/logger'
 
 // In Docker, HOME=/nonexistent — check dataDir first, then homeDir
-import { resolve } from 'node:path'
-const dataDir = resolve(config.dataDir || '.data')
+const dataDir = resolve(/* turbopackIgnore: true */ config.dataDir || '.data')
 const homeDir = config.homeDir || ''
-const HERMES_HOME = existsSync(join(dataDir, '.hermes'))
-  ? join(dataDir, '.hermes')
-  : existsSync(join(homeDir, '.hermes'))
-    ? join(homeDir, '.hermes')
-    : join(dataDir, '.hermes') // default to dataDir for new installs
+const dataHermesHome = join(dataDir, '.hermes')
+const userHermesHome = homeDir ? join(homeDir, '.hermes') : ''
+const HERMES_HOME = existsSync(/* turbopackIgnore: true */ dataHermesHome)
+  ? dataHermesHome
+  : userHermesHome && existsSync(/* turbopackIgnore: true */ userHermesHome)
+    ? userHermesHome
+    : dataHermesHome // default to dataDir for new installs
 const HOOK_DIR = join(HERMES_HOME, 'hooks', 'mission-control')
 
 export async function GET(request: NextRequest) {
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest) {
   try {
     const installed = isHermesInstalled()
     const gatewayRunning = installed ? isHermesGatewayRunning() : false
-    const hookInstalled = existsSync(join(HOOK_DIR, 'HOOK.yaml'))
+    const hookInstalled = existsSync(/* turbopackIgnore: true */ join(HOOK_DIR, 'HOOK.yaml'))
     const activeSessions = installed ? scanHermesSessions(50).filter(s => s.isActive).length : 0
 
     const cronJobCount = installed ? getHermesTasks().cronJobs.length : 0
@@ -77,21 +79,21 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Hermes is not installed (~/.hermes/ not found)' }, { status: 400 })
       }
 
-      mkdirSync(HOOK_DIR, { recursive: true })
+      mkdirSync(/* turbopackIgnore: true */ HOOK_DIR, { recursive: true })
 
       // Write HOOK.yaml
-      writeFileSync(join(HOOK_DIR, 'HOOK.yaml'), HOOK_YAML, 'utf8')
+      writeFileSync(/* turbopackIgnore: true */ join(HOOK_DIR, 'HOOK.yaml'), HOOK_YAML, 'utf8')
 
       // Write handler.py
-      writeFileSync(join(HOOK_DIR, 'handler.py'), HANDLER_PY, 'utf8')
+      writeFileSync(/* turbopackIgnore: true */ join(HOOK_DIR, 'handler.py'), HANDLER_PY, 'utf8')
 
       logger.info('Installed Mission Control hook for Hermes Agent')
       return NextResponse.json({ success: true, message: 'Hook installed', hookDir: HOOK_DIR })
     }
 
     if (action === 'uninstall-hook') {
-      if (existsSync(HOOK_DIR)) {
-        rmSync(HOOK_DIR, { recursive: true, force: true })
+      if (existsSync(/* turbopackIgnore: true */ HOOK_DIR)) {
+        rmSync(/* turbopackIgnore: true */ HOOK_DIR, { recursive: true, force: true })
       }
 
       logger.info('Uninstalled Mission Control hook for Hermes Agent')
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
 
       const envPath = join(HERMES_HOME, '.env')
       let envContent = ''
-      try { envContent = require('node:fs').readFileSync(envPath, 'utf8') } catch { /* new file */ }
+      try { envContent = readFileSync(/* turbopackIgnore: true */ envPath, 'utf8') } catch { /* new file */ }
 
       // Replace existing key or append
       const regex = new RegExp(`^${key}=.*$`, 'm')
@@ -121,7 +123,7 @@ export async function POST(request: NextRequest) {
         envContent = envContent.trimEnd() + `\n${key}=${value}\n`
       }
 
-      writeFileSync(envPath, envContent, 'utf8')
+      writeFileSync(/* turbopackIgnore: true */ envPath, envContent, 'utf8')
       logger.info({ key }, 'Hermes env var set via setup wizard')
       return NextResponse.json({ success: true })
     }
@@ -133,7 +135,7 @@ export async function POST(request: NextRequest) {
       }
 
       const soulPath = join(HERMES_HOME, 'SOUL.md')
-      writeFileSync(soulPath, content, 'utf8')
+      writeFileSync(/* turbopackIgnore: true */ soulPath, content, 'utf8')
       logger.info('Hermes SOUL.md updated via setup wizard')
       return NextResponse.json({ success: true })
     }
@@ -141,17 +143,15 @@ export async function POST(request: NextRequest) {
     if (action === 'run-oauth-model') {
       const { model, provider, authMethod } = body
       const hermesBin = join(HERMES_HOME, 'hermes-agent', 'venv', 'bin', 'hermes')
-      const bin = existsSync(hermesBin) ? hermesBin : 'hermes'
-      const HOME_DIR = existsSync(join(dataDir, '.hermes')) ? dataDir : homeDir
-      const baseEnv = {
+      const bin = existsSync(/* turbopackIgnore: true */ hermesBin) ? hermesBin : 'hermes'
+      const HOME_DIR = existsSync(/* turbopackIgnore: true */ dataHermesHome) ? dataDir : homeDir
+      const baseEnv = envWithExecutablePath(bin, {
         ...process.env,
         HOME: HOME_DIR,
         PATH: `${join(dataDir, '.local', 'bin')}:${process.env.PATH || ''}`,
-      }
+      })
 
       try {
-        const { runCommand } = require('@/lib/command')
-
         const requestedProvider = typeof provider === 'string' && provider.trim() ? provider.trim() : 'openai-codex'
         const providerForOAuth = requestedProvider === 'openai' ? 'openai-codex' : requestedProvider
         const requestedAuthMethod = typeof authMethod === 'string' ? authMethod.trim().toLowerCase() : 'device_code'
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Ensure provider/model are preselected before invoking device-code auth.
-        await runCommand(bin, ['config', 'set', 'model.provider', providerForOAuth], {
+        await runCommand('hermes', ['config', 'set', 'model.provider', providerForOAuth], {
           timeoutMs: 15_000,
           env: {
             ...baseEnv,
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
         })
 
         if (typeof model === 'string' && model.trim()) {
-          await runCommand(bin, ['config', 'set', 'model.default', model.trim()], {
+          await runCommand('hermes', ['config', 'set', 'model.default', model.trim()], {
             timeoutMs: 15_000,
             env: {
               ...baseEnv,
@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
           let output = ''
           let done = false
 
-          const pty = ptySpawn(bin, ['model'], {
+          const pty = ptySpawn('hermes', ['model'], {
             name: 'xterm-256color',
             cols: 120,
             rows: 30,
@@ -265,21 +265,20 @@ export async function POST(request: NextRequest) {
       // Parse command into binary + args
       const parts = trimmed.split(/\s+/)
       const hermesBin = join(HERMES_HOME, 'hermes-agent', 'venv', 'bin', 'hermes')
-      const bin = existsSync(hermesBin) ? hermesBin : parts[0]
+      const bin = existsSync(/* turbopackIgnore: true */ hermesBin) ? hermesBin : parts[0]
       const args = parts.slice(1)
 
       // Add --non-interactive flags for commands that might prompt
-      const env = {
+      const env = envWithExecutablePath(bin, {
         ...process.env,
-        HOME: existsSync(join(dataDir, '.hermes')) ? dataDir : homeDir,
+        HOME: existsSync(/* turbopackIgnore: true */ dataHermesHome) ? dataDir : homeDir,
         HERMES_NONINTERACTIVE: '1',
         CI: '1',
         PATH: `${join(dataDir, '.local', 'bin')}:${process.env.PATH || ''}`,
-      }
+      })
 
       try {
-        const { runCommand } = require('@/lib/command')
-        const result = await runCommand(bin, args, {
+        const result = await runCommand('hermes', args, {
           timeoutMs: 30_000,
           env,
         })

@@ -119,6 +119,8 @@ export async function PATCH(
         flag_key: key,
         old_stored_value: updated.oldValue,
         new_stored_value: updated.newValue,
+        cascade_enabled: updated.cascadeEnabled,
+        cascade_disabled: updated.cascadeDisabled,
         evaluated_value: after?.evaluated_value ?? null,
         env_locked: after?.env_locked ?? false,
         actor_kind: 'human_admin_session',

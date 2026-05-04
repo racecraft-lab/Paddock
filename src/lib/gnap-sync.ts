@@ -81,7 +81,15 @@ export interface GnapTask {
 
 function git(repoPath: string, args: string[]): string {
   try {
-    return execFileSync('git', args, {
+    return execFileSync('git', [
+      '-c',
+      'commit.gpgsign=false',
+      '-c',
+      'tag.gpgsign=false',
+      '-c',
+      'core.hooksPath=/dev/null',
+      ...args,
+    ], {
       cwd: repoPath,
       encoding: 'utf-8',
       timeout: 15_000,

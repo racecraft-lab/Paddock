@@ -12,7 +12,14 @@ export default defineConfig(async () => {
       environment: 'jsdom',
       globals: true,
       setupFiles: ['src/test/setup.ts'],
-      include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+      // SPEC-008 adds tests/integration/**/*.test.ts (T005 spike-gate, T374
+      // strict-scope guard) — kept narrow so Playwright `tests/*.spec.ts`
+      // files do not collide.
+      include: [
+        'src/**/*.test.ts',
+        'src/**/*.test.tsx',
+        'tests/integration/**/*.test.ts',
+      ],
       coverage: {
         provider: 'v8' as const,
         include: ['src/lib/**/*.ts'],

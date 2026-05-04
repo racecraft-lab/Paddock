@@ -333,9 +333,10 @@ export function SecurityAuditPanel() {
   const dataCacheRef = useRef(new Map<Timeframe, CachedSecurityAuditData>())
 
   useEffect(() => {
+    const prefetchControllers = prefetchControllersRef.current
     return () => {
       abortRef.current?.abort()
-      for (const controller of prefetchControllersRef.current.values()) {
+      for (const controller of prefetchControllers.values()) {
         controller.abort()
       }
     }

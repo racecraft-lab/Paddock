@@ -2,6 +2,7 @@ import { createHash } from 'crypto'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import type Database from 'better-sqlite3'
+import { MODEL_PRICING } from './token-pricing'
 
 export type Migration = {
   id: string
@@ -1792,7 +1793,1397 @@ const migrations: Migration[] = [
         )
       `)
     }
-  }
+  },
+  {
+    // SPEC-008 - Resource Governance and Cost Tracker Enforcement.
+    //
+    // Migration ID was rebased from M63 to M64 per
+    // docs/migrations/migration-id-reservations.md (first-to-merge rule):
+    // SPEC-006 (PR #21) merged M63 (063_area_label_routing_sync_owner_triage)
+    // first, so SPEC-008 takes M64. Rollback file lives at
+    // docs/migrations/rollback-M64.sql.
+    //
+    // M64 lays the governance-defaults foundation referenced by every
+    // subsequent SPEC-008 sub-migration (M65a..M65m, M66):
+    //   1. Extends resource_policies (M60) and resource_policy_events (M61)
+    //      with the columns needed by the policy loader, decision writer,
+    //      and audit chain.
+    //   2. Creates resource_decision_audit (tamper-evident audit chain;
+    //      genesis row inserted with the FR-176 / FR-219m 64-character
+    //      zero prev_hash).
+    //   3. Creates retention_policy and seeds the Q63 default horizons.
+    //   4. Creates the provider_accounts skeleton (M65l completes the
+    //      schema).
+    //   5. Creates governance_health_events for the local-health channel
+    //      (FR-090b, FR-090f).
+    //
+    // All operations are additive and idempotent: ALTER TABLE guarded by
+    // addColumnIfMissing; CREATE TABLE / CREATE INDEX guarded by
+    // IF NOT EXISTS; seed rows guarded by INSERT OR IGNORE / WHERE NOT
+    // EXISTS. Schema column names follow the T015 task prompt
+    // (actor, decision, payload_json, row_hash); cross-references to
+    // FR-176's (actor_id, kind, before_json, after_json, curr_hash) shape
+    // MUST map names - see src/lib/resource-audit-chain.ts (T148+) for
+    // the canonical hashing implementation.
+    //
+    // TODO(SPEC-008): The M60 policy_type CHECK constraint allows only
+    // {wip_limit, budget, blackout, degraded_window}. The wider FR-031
+    // value set (wip|budget|window|composite|aegis_emergency_reserve)
+    // requires a follow-up migration (table-rebuild) to widen or drop
+    // the CHECK before operator-promoted policies use the new values.
+    id: '064_resource_governance_default_policies',
+    up(db: Database.Database) {
+      addColumnIfMissing(db, 'resource_policies', 'policy_type', 'policy_type TEXT')
+      addColumnIfMissing(db, 'resource_policies', 'limit_value', 'limit_value REAL')
+      addColumnIfMissing(db, 'resource_policies', 'window_spec_json', 'window_spec_json TEXT')
+      addColumnIfMissing(db, 'resource_policies', 'enforce_mode', "enforce_mode TEXT DEFAULT 'shadow'")
+      addColumnIfMissing(db, 'resource_policies', 'enabled_at', 'enabled_at TEXT')
+      addColumnIfMissing(db, 'resource_policies', 'disabled_at', 'disabled_at TEXT')
+      addColumnIfMissing(db, 'resource_policies', 'owner_workspace_id', 'owner_workspace_id INTEGER')
+      addColumnIfMissing(db, 'resource_policies', 'version', 'version INTEGER NOT NULL DEFAULT 1')
+      addColumnIfMissing(db, 'resource_policies', 'etag', 'etag TEXT')
+      addColumnIfMissing(db, 'resource_policies', 'notes', 'notes TEXT')
+      addColumnIfMissing(db, 'resource_policies', 'default_template', 'default_template INTEGER NOT NULL DEFAULT 0')
+      addColumnIfMissing(db, 'resource_policies', 'updated_by', 'updated_by TEXT')
+
+      addColumnIfMissing(db, 'resource_policy_events', 'decision_id', 'decision_id TEXT')
+      addColumnIfMissing(db, 'resource_policy_events', 'policy_id', 'policy_id INTEGER')
+      addColumnIfMissing(db, 'resource_policy_events', 'actor', 'actor TEXT')
+      addColumnIfMissing(db, 'resource_policy_events', 'reason', 'reason TEXT')
+      addColumnIfMissing(db, 'resource_policy_events', 'details_json', 'details_json TEXT')
+      addColumnIfMissing(db, 'resource_policy_events', 'confirmation_phrase', 'confirmation_phrase TEXT')
+      addColumnIfMissing(db, 'resource_policy_events', 'prev_hash', 'prev_hash TEXT')
+      addColumnIfMissing(db, 'resource_policy_events', 'row_hash', 'row_hash TEXT')
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_decision_audit (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          decision_id TEXT NOT NULL,
+          workspace_id INTEGER,
+          actor TEXT,
+          decision TEXT NOT NULL,
+          reason TEXT,
+          payload_json TEXT,
+          prev_hash TEXT NOT NULL,
+          row_hash TEXT NOT NULL,
+          captured_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_decision_audit_decision_id
+        ON resource_decision_audit(decision_id)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_decision_audit_captured_at
+        ON resource_decision_audit(captured_at)
+      `)
+
+      const ZERO_PREV_HASH = '0000000000000000000000000000000000000000000000000000000000000000'
+      const genesisExists = db
+        .prepare(`SELECT id FROM resource_decision_audit WHERE decision_id = 'genesis' LIMIT 1`)
+        .get() as { id: number } | undefined
+      if (!genesisExists) {
+        const decision_id = 'genesis'
+        const actor = 'system'
+        const decision = 'genesis'
+        const reason = 'M64 audit chain genesis'
+        const payload_json = '{"chain":"resource_decision_audit","schema_version":1}'
+        const canonical = [ZERO_PREV_HASH, decision_id, actor, decision, reason, payload_json].join('|')
+        const row_hash = createHash('sha256').update(canonical, 'utf8').digest('hex')
+        db.prepare(
+          `INSERT INTO resource_decision_audit
+             (decision_id, workspace_id, actor, decision, reason, payload_json, prev_hash, row_hash)
+           VALUES (?, NULL, ?, ?, ?, ?, ?, ?)`
+        ).run(decision_id, actor, decision, reason, payload_json, ZERO_PREV_HASH, row_hash)
+      }
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS retention_policy (
+          table_name TEXT PRIMARY KEY,
+          horizon_days INTEGER NOT NULL,
+          last_swept_at TEXT,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      const seedRetention = db.prepare(
+        `INSERT OR IGNORE INTO retention_policy (table_name, horizon_days) VALUES (?, ?)`
+      )
+      seedRetention.run('resource_decision_audit', 730)
+      seedRetention.run('raw_usage_events', 90)
+      seedRetention.run('canonical_usage_events', 730)
+      seedRetention.run('governance_dispatch_log', 30)
+      seedRetention.run('governance_health_events', 30)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS provider_accounts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          provider TEXT NOT NULL,
+          account_label TEXT NOT NULL,
+          billing_mode TEXT,
+          config_json TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          deleted_at TEXT,
+          UNIQUE(provider, account_label)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_provider_accounts_active
+        ON provider_accounts(provider) WHERE deleted_at IS NULL
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS governance_health_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          component TEXT NOT NULL,
+          state TEXT NOT NULL,
+          metric_json TEXT,
+          captured_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_governance_health_events_component_captured
+        ON governance_health_events(component, captured_at DESC)
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65a: source_emission_capability registry.
+    //
+    // Per FR-076, FR-082, FR-085, FR-086, FR-087 and tasks.md T017. Six seed
+    // rows describe the per-source enforcement defaults that govern downstream
+    // collectors, the canonical-event reconciler, and the budget-effects writer.
+    //
+    // FR-082 note: cli_stdout_json starts at enforcement_eligibility='hard' /
+    // dedupe_confidence_default='high'. The Codex parity spike (T003) is the
+    // only path that downgrades it to ('soft','medium'); that downgrade is a
+    // follow-up data update, not part of this seed.
+    //
+    // Schema column set follows the task prompt verbatim. Note that
+    // specs/008-resource-governance/data-model.md M65a documents an extended
+    // shape (units_emitted_json, fields_present_json, refresh_cadence_seconds)
+    // and 11 seed rows; the orchestrator's task prompt narrows that to 6 seeds
+    // and the columns reflected here. Additional columns and seeds will land
+    // in a later sub-migration if subsequent tasks require them.
+    id: '065a_source_emission_capability',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS source_emission_capability (
+          source_id TEXT PRIMARY KEY,
+          display_name TEXT NOT NULL,
+          enforcement_eligibility TEXT NOT NULL DEFAULT 'reconciliation_only',
+          dedupe_confidence_default TEXT NOT NULL DEFAULT 'medium',
+          expected_envelope_bytes INTEGER NOT NULL DEFAULT 4096,
+          active INTEGER NOT NULL DEFAULT 1,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+
+      const seed = db.prepare(
+        `INSERT OR IGNORE INTO source_emission_capability
+           (source_id, display_name, enforcement_eligibility,
+            dedupe_confidence_default, expected_envelope_bytes)
+         VALUES (?, ?, ?, ?, ?)`
+      )
+      const seeds: Array<[string, string, string, string, number]> = [
+        ['native_otel', 'Claude Code OTel', 'hard', 'high', 8192],
+        ['cli_stdout_json', 'Codex CLI stdout', 'hard', 'high', 8192],
+        ['transcript_replay', 'Claude Code transcript replay', 'soft', 'medium', 4096],
+        ['gateway_otel', 'OpenClaw gateway OTel', 'hard', 'high', 16384],
+        ['manual_post', 'Operator POST /api/tokens', 'advisory', 'singleton', 4096],
+        ['provider_quota', 'Provider quota fetcher', 'advisory', 'singleton', 2048],
+      ]
+      for (const row of seeds) seed.run(...row)
+    }
+  },
+  {
+    // SPEC-008 - M65b: raw_usage_events (append-only, monthly partition layout).
+    //
+    // Per FR-091, FR-249, FR-090d, FR-365 and tasks.md T019. Holds per-source
+    // ingested event envelopes before canonicalization. Append-only by
+    // convention; retention sweeps by partition_month per Q51.
+    //
+    // FR-090d: parser_version + schema_version_observed track the parser/
+    // schema vintage that produced the row, so future migrations can replay
+    // raw events through an updated canonicalizer.
+    //
+    // FR-365: reconcile_status uses the four-state CHECK ('ok',
+    // 'schema_broken', 'schema_malicious', 'quarantined') from the task
+    // prompt. data-model.md still documents a five-state CHECK that
+    // includes 'pending' / 'canonicalized' / 'dropped'; the orchestrator
+    // narrowed the set here. The partial index over !='ok' keeps lookups
+    // for the abnormal-state subset cheap.
+    //
+    // FK source_id -> source_emission_capability(source_id) ties every raw
+    // row to its registered emission capability (M65a).
+    id: '065b_raw_usage_events',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS raw_usage_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          source_id TEXT NOT NULL,
+          workspace_id INTEGER,
+          agent_id INTEGER,
+          task_id INTEGER,
+          provider TEXT,
+          provider_request_id TEXT,
+          provider_timestamp_ms INTEGER,
+          session_id TEXT,
+          generation_id INTEGER,
+          raw_attributes_json TEXT NOT NULL,
+          parser_version TEXT NOT NULL,
+          schema_version_observed TEXT,
+          reconcile_status TEXT NOT NULL DEFAULT 'ok'
+            CHECK (reconcile_status IN ('ok','schema_broken','schema_malicious','quarantined')),
+          dedupe_confidence TEXT NOT NULL DEFAULT 'medium',
+          enforcement_eligibility TEXT NOT NULL DEFAULT 'reconciliation_only',
+          partition_month TEXT NOT NULL,
+          ingested_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (source_id) REFERENCES source_emission_capability(source_id)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_raw_usage_events_source_ingested
+        ON raw_usage_events(source_id, ingested_at DESC)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_raw_usage_events_partition
+        ON raw_usage_events(partition_month)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_raw_usage_events_session
+        ON raw_usage_events(session_id, generation_id)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_raw_usage_events_reconcile_status
+        ON raw_usage_events(reconcile_status) WHERE reconcile_status != 'ok'
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65c: canonical_usage_events + UNIQUE INDEX idx_canonical_dedup.
+    //
+    // Per FR-091, FR-092, FR-102 and tasks.md T021. Canonicalized form of
+    // raw_usage_events: one row per (provider, provider_request_id,
+    // provider_timestamp_ms) tuple after dedup + cross-source coalescing.
+    //
+    // The dedup index is PARTIAL (WHERE provider_request_id IS NOT NULL):
+    // rows lacking a request id may collide and rely on alternative join
+    // heuristics tracked via merge_sources_json + dedupe_confidence. This
+    // matches data-model.md M65c plus the explicit task-prompt clause.
+    //
+    // provenance is the row-level shape (single | merged); the data-model
+    // documented an extended set including 'corrected' which the task
+    // prompt narrows to the two-value case at this commit. Subsequent
+    // sub-migrations may widen the set if downstream tasks require it.
+    id: '065c_canonical_usage_events',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS canonical_usage_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER,
+          agent_id INTEGER,
+          task_id INTEGER,
+          provider TEXT NOT NULL,
+          provider_request_id TEXT,
+          provider_timestamp_ms INTEGER NOT NULL,
+          model TEXT,
+          tokens_in INTEGER NOT NULL DEFAULT 0,
+          tokens_out INTEGER NOT NULL DEFAULT 0,
+          cache_read_in INTEGER NOT NULL DEFAULT 0,
+          cache_creation_in INTEGER NOT NULL DEFAULT 0,
+          cost_usd REAL NOT NULL DEFAULT 0,
+          duration_ms INTEGER,
+          session_id TEXT,
+          provenance TEXT NOT NULL DEFAULT 'single',
+          merge_sources_json TEXT,
+          dedupe_confidence TEXT NOT NULL DEFAULT 'high',
+          partition_month TEXT NOT NULL,
+          emitted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_canonical_dedup
+        ON canonical_usage_events(provider, provider_request_id, provider_timestamp_ms)
+        WHERE provider_request_id IS NOT NULL
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_canonical_workspace_emitted
+        ON canonical_usage_events(workspace_id, emitted_at DESC)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_canonical_partition
+        ON canonical_usage_events(partition_month)
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65d: canonical_budget_effects (posted-effect lifecycle, Q30).
+    //
+    // Per FR-093, FR-104 and tasks.md T023. Tracks the budget impact of each
+    // canonical_usage_events row against the policies and counters that saw
+    // the effect, with a posted/reverted lifecycle so corrections (Q30) can
+    // unwind a previously applied delta without rewriting history.
+    //
+    // The UNIQUE(canonical_event_id, policy_id, counter_id, window_start)
+    // constraint prevents double-posting for the same (event, policy,
+    // counter, window) tuple when a writer retries.
+    //
+    // Indexes:
+    //   - idx_canonical_budget_effects_counter accelerates per-counter
+    //     window reads ("what's the current applied amount for counter X
+    //     in window Y?").
+    //   - idx_canonical_budget_effects_active is a partial index on
+    //     reverted_at IS NULL so the active-effect set stays cheap.
+    //
+    // No FK declared at the schema level - canonical_event_id and
+    // policy_id are validated by the application writer at insert time.
+    // This matches the data-model.md M65d shape on those columns; the
+    // task prompt adds counter_id to the unique key, which this commit
+    // adopts verbatim.
+    id: '065d_canonical_budget_effects',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS canonical_budget_effects (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          canonical_event_id INTEGER NOT NULL,
+          policy_id INTEGER NOT NULL,
+          counter_id INTEGER NOT NULL,
+          window_start TEXT NOT NULL,
+          amount REAL NOT NULL,
+          unit TEXT NOT NULL,
+          posted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          reverted_at TEXT,
+          reverted_reason TEXT,
+          UNIQUE(canonical_event_id, policy_id, counter_id, window_start)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_canonical_budget_effects_counter
+        ON canonical_budget_effects(counter_id, window_start)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_canonical_budget_effects_active
+        ON canonical_budget_effects(policy_id) WHERE reverted_at IS NULL
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65e: resource_budget_ledger (append-only, hash-chained).
+    //
+    // Per FR-051, FR-176a, FR-219m, FR-249 and tasks.md T025. Tracks every
+    // budget delta as an append-only row with prev_hash/row_hash chaining so
+    // operators can verify the chain end-to-end without a separate audit
+    // table.
+    //
+    // Schema follows the task prompt. data-model.md M65e shows a leaner
+    // shape (account_id, ts, source, balance_after) that predates the FR
+    // consolidation; the FR-current shape adds kind, prev_hash/row_hash,
+    // partition_month, decision_id, notes_json, and the per-row
+    // append-only triggers (FR-176a). The task prompt is authoritative
+    // here.
+    //
+    // Append-only enforcement: BEFORE UPDATE/DELETE triggers RAISE(ABORT)
+    // so even row-level mutations are rejected at the storage layer. The
+    // prompt's regex string is preserved verbatim ('resource_budget_ledger
+    // is append-only').
+    //
+    // Genesis row (FR-219m):
+    //   policy_id=0, kind='credit', amount=0, unit='usd',
+    //   prev_hash='0' x 64, row_hash=SHA-256 of the canonical pipe-delimited
+    //   form, partition_month=current YYYY-MM at apply time. The canonical
+    //   form is documented in the test file at
+    //   migrations-M65e-h.test.ts: prev_hash | policy_id | counter_id |
+    //   window_start | kind | amount | unit | source_event_id | decision_id |
+    //   partition_month | notes_json (NULL rendered as empty string).
+    //
+    // Idempotency: the genesis insert guards against re-insertion via
+    // INSERT INTO ... SELECT ... WHERE NOT EXISTS so re-running the
+    // migration after the marker has been deleted does NOT create a
+    // duplicate genesis row.
+    //
+    // No FK declared. policy_id=0 is a reserved sentinel for the genesis
+    // row and does not resolve to a real resource_policies entry.
+    id: '065e_resource_budget_ledger',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_budget_ledger (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          policy_id INTEGER NOT NULL,
+          counter_id INTEGER,
+          window_start TEXT NOT NULL,
+          kind TEXT NOT NULL CHECK (kind IN ('debit','credit','correction','reservation','release')),
+          amount REAL NOT NULL,
+          unit TEXT NOT NULL CHECK (unit IN ('usd','token','request','session')),
+          source_event_id INTEGER,
+          decision_id TEXT,
+          prev_hash TEXT NOT NULL,
+          row_hash TEXT NOT NULL,
+          partition_month TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          notes_json TEXT
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_budget_ledger_policy_window
+        ON resource_budget_ledger(policy_id, window_start)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_budget_ledger_partition
+        ON resource_budget_ledger(partition_month)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_budget_ledger_decision
+        ON resource_budget_ledger(decision_id) WHERE decision_id IS NOT NULL
+      `)
+      db.exec(`
+        CREATE TRIGGER IF NOT EXISTS trg_resource_budget_ledger_no_update
+        BEFORE UPDATE ON resource_budget_ledger
+        BEGIN
+          SELECT RAISE(ABORT, 'resource_budget_ledger is append-only');
+        END
+      `)
+      db.exec(`
+        CREATE TRIGGER IF NOT EXISTS trg_resource_budget_ledger_no_delete
+        BEFORE DELETE ON resource_budget_ledger
+        BEGIN
+          SELECT RAISE(ABORT, 'resource_budget_ledger is append-only');
+        END
+      `)
+
+      // Genesis row (FR-219m). Use INSERT...SELECT...WHERE NOT EXISTS so
+      // re-running the migration after marker-deletion does not create a
+      // second genesis row.
+      const ZERO_PREV = '0000000000000000000000000000000000000000000000000000000000000000'
+      const partition_month = new Date().toISOString().slice(0, 7)
+      const policy_id = 0
+      const counter_id = null
+      const window_start = '1970-01-01T00:00:00Z'
+      const kind = 'credit'
+      const amount = 0
+      const unit = 'usd'
+      const source_event_id = null
+      const decision_id = null
+      const notes_json = null
+
+      // Canonical form documented in M65e migration comment + test file.
+      const canonical = [
+        ZERO_PREV,
+        String(policy_id),
+        counter_id == null ? '' : String(counter_id),
+        window_start,
+        kind,
+        String(amount),
+        unit,
+        source_event_id == null ? '' : String(source_event_id),
+        decision_id == null ? '' : decision_id,
+        partition_month,
+        notes_json == null ? '' : notes_json,
+      ].join('|')
+      const row_hash = createHash('sha256').update(canonical, 'utf8').digest('hex')
+
+      db.prepare(
+        `INSERT INTO resource_budget_ledger
+           (policy_id, counter_id, window_start, kind, amount, unit,
+            source_event_id, decision_id, prev_hash, row_hash, partition_month, notes_json)
+         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+         WHERE NOT EXISTS (
+           SELECT 1 FROM resource_budget_ledger
+           WHERE prev_hash = ? AND policy_id = 0
+         )`,
+      ).run(
+        policy_id,
+        counter_id,
+        window_start,
+        kind,
+        amount,
+        unit,
+        source_event_id,
+        decision_id,
+        ZERO_PREV,
+        row_hash,
+        partition_month,
+        notes_json,
+        ZERO_PREV,
+      )
+    }
+  },
+  {
+    // SPEC-008 - M65f: resource_budget_counters (precomputed per-window
+    // balances).
+    //
+    // Per FR-052, FR-058a, FR-070, FR-389 and tasks.md T027. Caches each
+    // policy's consumed/reserved totals per window so the admission hot
+    // path is one indexed point lookup instead of a ledger scan.
+    //
+    // Schema follows the task prompt. Counters are dimensioned by unit
+    // (consumed_usd / consumed_token / consumed_request / consumed_session
+    // and the matching reserved_* columns) so a single row carries the
+    // full set of per-unit totals for a (policy, window) tuple. Most
+    // policies will populate only one or two columns; the rest stay at 0.
+    // data-model.md M65f shows a leaner shape with single counter_value /
+    // reserved_value pair; the FR-current shape adds the per-unit
+    // explosion plus the pending_rebuild_job_id field (FR-058a).
+    //
+    // pending_rebuild_job_id is NULL when no rebuild is in progress; a
+    // rebuild job claims the counter row by writing its job id, then
+    // releases the claim by writing NULL. The partial index on
+    // pending_rebuild_job_id IS NOT NULL keeps the in-flight set cheap.
+    //
+    // version starts at 1 and is bumped by writers on each update so
+    // optimistic-concurrency callers can detect lost updates.
+    //
+    // No FK declared. policy_id is a soft reference to resource_policies;
+    // the application writer enforces validity at insert time.
+    id: '065f_resource_budget_counters',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_budget_counters (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          policy_id INTEGER NOT NULL,
+          window_start TEXT NOT NULL,
+          consumed_usd REAL NOT NULL DEFAULT 0,
+          consumed_token INTEGER NOT NULL DEFAULT 0,
+          consumed_request INTEGER NOT NULL DEFAULT 0,
+          consumed_session INTEGER NOT NULL DEFAULT 0,
+          reserved_usd REAL NOT NULL DEFAULT 0,
+          reserved_token INTEGER NOT NULL DEFAULT 0,
+          reserved_request INTEGER NOT NULL DEFAULT 0,
+          reserved_session INTEGER NOT NULL DEFAULT 0,
+          version INTEGER NOT NULL DEFAULT 1,
+          pending_rebuild_job_id TEXT,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(policy_id, window_start)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_budget_counters_lookup
+        ON resource_budget_counters(policy_id, window_start)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_budget_counters_pending_rebuild
+        ON resource_budget_counters(pending_rebuild_job_id)
+        WHERE pending_rebuild_job_id IS NOT NULL
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65g: resource_reservations (with state-transition trigger).
+    //
+    // Per FR-069, FR-294 and tasks.md T029. Atomic reservation rows that
+    // hold budget aside between admission and final consumption. The
+    // BEFORE UPDATE OF state trigger enforces the documented state
+    // machine: active -> {consumed, released, expired}; no other
+    // transitions allowed.
+    //
+    // Schema follows the task prompt. data-model.md M65g shows a leaner
+    // shape (reserved_window_id, created_at) that predates the FR
+    // consolidation; the FR-current shape adds counter_id, window_start,
+    // finalized_at, finalized_reason and uses reserved_at for the create
+    // timestamp.
+    //
+    // No FK declared. policy_id and counter_id are soft references; the
+    // application writer enforces validity at insert time.
+    //
+    // Indexes:
+    //   - idx_resource_reservations_active partial on state='active' so
+    //     the admission hot path scans only outstanding holds.
+    //   - idx_resource_reservations_expires_at partial on state='active'
+    //     so the expiry reaper sees only active reservations whose TTL
+    //     has lapsed.
+    id: '065g_resource_reservations',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_reservations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          policy_id INTEGER NOT NULL,
+          counter_id INTEGER,
+          window_start TEXT NOT NULL,
+          amount REAL NOT NULL,
+          unit TEXT NOT NULL CHECK (unit IN ('usd','token','request','session')),
+          state TEXT NOT NULL CHECK (state IN ('active','consumed','released','expired')),
+          granted_by TEXT NOT NULL,
+          originating_decision_id TEXT,
+          expires_at TEXT NOT NULL,
+          reserved_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          finalized_at TEXT,
+          finalized_reason TEXT
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_reservations_active
+        ON resource_reservations(policy_id, window_start) WHERE state = 'active'
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_reservations_expires_at
+        ON resource_reservations(expires_at) WHERE state = 'active'
+      `)
+      db.exec(`
+        CREATE TRIGGER IF NOT EXISTS trg_resource_reservations_state_transition
+        BEFORE UPDATE OF state ON resource_reservations
+        WHEN OLD.state != NEW.state
+        BEGIN
+          SELECT CASE
+            WHEN OLD.state = 'active' AND NEW.state IN ('consumed','released','expired') THEN NULL
+            ELSE RAISE(ABORT, 'resource_reservations: invalid state transition')
+          END;
+        END
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65h: resource_overrides (operator grants).
+    //
+    // Per FR-171..185 and tasks.md T031. Operator-issued grants that
+    // either widen a budget (granted_amount/granted_unit) or attach to a
+    // reservation_id. UNIQUE(idempotency_key, actor) makes retries
+    // idempotent per-actor; two actors may share a single key.
+    //
+    // Schema follows the task prompt. data-model.md M65h shows a
+    // narrower shape (reservation_id NOT NULL, ttl_seconds, justification,
+    // workspace_id, state) that predates the FR-171..185 consolidation.
+    // The FR-current shape generalises the table to also carry standalone
+    // grants that are not tied to a reservation (reservation_id NULL,
+    // granted_amount/granted_unit set), and replaces the ttl/state/
+    // workspace_id columns with the more-specific scope_kind / scope_id /
+    // policy_id / expires_at / revoked_at vocabulary used by the
+    // approve / revoke endpoints.
+    //
+    // No FK declared. policy_id, scope_id, and reservation_id are soft
+    // references; the application writer enforces validity at insert
+    // time.
+    //
+    // Indexes:
+    //   - idx_resource_overrides_active partial on revoked_at IS NULL so
+    //     the active-grant lookup is cheap.
+    //   - idx_resource_overrides_expires partial on revoked_at IS NULL so
+    //     the expiry sweep scans only live grants.
+    //   - idx_resource_overrides_idempotency mirrors the UNIQUE
+    //     constraint in indexed form for explicit dedup lookups.
+    id: '065h_resource_overrides',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_overrides (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          scope_kind TEXT NOT NULL CHECK (scope_kind IN ('facility','workspace','agent','project','task_status','specific_task')),
+          scope_id INTEGER,
+          policy_id INTEGER,
+          granted_amount REAL,
+          granted_unit TEXT CHECK (granted_unit IN ('usd','token','request','session') OR granted_unit IS NULL),
+          reservation_id INTEGER,
+          reason TEXT NOT NULL,
+          actor TEXT NOT NULL,
+          idempotency_key TEXT NOT NULL,
+          granted_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          expires_at TEXT NOT NULL,
+          revoked_at TEXT,
+          revoked_reason TEXT,
+          UNIQUE(idempotency_key, actor)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_overrides_active
+        ON resource_overrides(policy_id) WHERE revoked_at IS NULL
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_overrides_expires
+        ON resource_overrides(expires_at) WHERE revoked_at IS NULL
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_overrides_idempotency
+        ON resource_overrides(idempotency_key, actor)
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65i: reconciliation_batches (state machine).
+    //
+    // Per FR-097, FR-114, FR-114a, FR-118, FR-344, FR-387 and tasks.md T033.
+    // Tracks the lifecycle of each reconciliation batch as it progresses
+    // through pending -> running -> completed/failed* states. The
+    // last_row_cursor column lets a stalled batch resume mid-window
+    // (FR-118 / FR-344).
+    //
+    // UNIQUE(source_id, window_start, window_end) implements the FR-387
+    // reconciler_lease pattern: at most one batch row exists per
+    // (source, window) tuple. Multiple workers race to insert; the
+    // loser's INSERT fails with UNIQUE and the winner becomes the
+    // owner of that window's reconciliation.
+    //
+    // Indexes:
+    //   - idx_reconciliation_batches_state: (state, source_id) for
+    //     "show me everything currently failed_timeout for source X".
+    //   - idx_reconciliation_batches_active partial on state IN
+    //     ('pending','running') so the active-set scan stays cheap as
+    //     the table grows.
+    //
+    // No FK declared. source_id is a soft reference to
+    // source_emission_capability(source_id); the application writer
+    // enforces validity at insert time.
+    id: '065i_reconciliation_batches',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS reconciliation_batches (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          source_id TEXT NOT NULL,
+          window_start TEXT NOT NULL,
+          window_end TEXT NOT NULL,
+          state TEXT NOT NULL CHECK (state IN ('pending','running','completed','failed','failed_timeout','failed_permanent')),
+          rows_processed INTEGER NOT NULL DEFAULT 0,
+          last_row_cursor TEXT,
+          attempts INTEGER NOT NULL DEFAULT 0,
+          max_attempts INTEGER NOT NULL DEFAULT 5,
+          max_duration_seconds INTEGER NOT NULL DEFAULT 600,
+          started_at TEXT,
+          completed_at TEXT,
+          error_message TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(source_id, window_start, window_end)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_reconciliation_batches_state
+        ON reconciliation_batches(state, source_id)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_reconciliation_batches_active
+        ON reconciliation_batches(source_id) WHERE state IN ('pending','running')
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65j: correction_ledger (coalesced corrections).
+    //
+    // Per FR-103, FR-104, FR-106 and tasks.md T035. Records each
+    // correction applied to a canonical event after-the-fact, with the
+    // prior_amount/corrected_amount/delta triple so the audit trail
+    // captures the full transition (Q30). Reasons are constrained to the
+    // five FR-documented values: late_arrival (event arrived after the
+    // window closed), dedupe_repair (cross-source merge revisit),
+    // price_correction (token_pricing rate change), manual (operator
+    // adjustment), schema_repair (parser regression replay).
+    //
+    // ledger_entry_id is a soft (weak) FK to resource_budget_ledger so
+    // the application writer can pair each correction with the ledger
+    // row that posted it. Schema-level FK is intentionally omitted to
+    // keep the table append-friendly under crash/recovery scenarios.
+    //
+    // Indexes:
+    //   - idx_correction_ledger_event: lookup by canonical_event_id for
+    //     "show me every correction applied to event X".
+    //   - idx_correction_ledger_applied: timeline scan ordered by
+    //     applied_at DESC for the operator dashboard.
+    id: '065j_correction_ledger',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS correction_ledger (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          canonical_event_id INTEGER NOT NULL,
+          prior_amount REAL NOT NULL,
+          corrected_amount REAL NOT NULL,
+          delta REAL NOT NULL,
+          reason TEXT NOT NULL CHECK (reason IN ('late_arrival','dedupe_repair','price_correction','manual','schema_repair')),
+          ledger_entry_id INTEGER,
+          applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          applied_by TEXT NOT NULL,
+          notes_json TEXT
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_correction_ledger_event
+        ON correction_ledger(canonical_event_id)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_correction_ledger_applied
+        ON correction_ledger(applied_at DESC)
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65k: resource_snapshots (cumulative deltas).
+    //
+    // Per FR-111, FR-117, FR-121 and tasks.md T037. Captures cumulative
+    // counters reported by external sources (Anthropic Console, OpenAI
+    // Usage API, native OTLP) at periodic snapshot points. The
+    // governance reconciler computes delta_from_prior between adjacent
+    // snapshots in the same (source_id, scope_kind, scope_id) lane to
+    // derive the per-window usage that did not arrive as discrete
+    // events (FR-111). source_emission_fingerprint is required (NOT
+    // NULL) so every snapshot is anchored to the upstream emitter that
+    // produced it (FR-117 audit chain). partition_month ('YYYY-MM')
+    // enables the same 90-day partition lifecycle as raw_usage_events
+    // / canonical_usage_events.
+    //
+    // delta_from_prior is nullable: the first snapshot in a lane has
+    // no prior to subtract from. The application writer is responsible
+    // for computing the delta on subsequent inserts.
+    //
+    // UNIQUE(source_id, scope_kind, scope_id, snapshot_at) prevents
+    // double-ingest of the same upstream snapshot tuple (FR-121
+    // idempotency).
+    //
+    // Indexes:
+    //   - idx_resource_snapshots_scope: lane scan ordered by
+    //     snapshot_at DESC for "show me the latest snapshots in this
+    //     scope".
+    //   - idx_resource_snapshots_partition: partition_month scan for
+    //     the partition-rotation sweeper.
+    //
+    // No FK declared. source_id is a soft reference to
+    // source_emission_capability(source_id); scope_id is a soft
+    // reference to workspaces(id) when scope_kind='workspace' (and
+    // NULL for scope_kind='facility').
+    id: '065k_resource_snapshots',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_snapshots (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          source_id TEXT NOT NULL,
+          scope_kind TEXT NOT NULL,
+          scope_id INTEGER,
+          snapshot_at TEXT NOT NULL,
+          cumulative_tokens_in INTEGER NOT NULL DEFAULT 0,
+          cumulative_tokens_out INTEGER NOT NULL DEFAULT 0,
+          cumulative_cost_usd REAL NOT NULL DEFAULT 0,
+          cumulative_requests INTEGER NOT NULL DEFAULT 0,
+          delta_from_prior INTEGER,
+          source_emission_fingerprint TEXT NOT NULL,
+          partition_month TEXT NOT NULL,
+          ingested_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(source_id, scope_kind, scope_id, snapshot_at)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_snapshots_scope
+        ON resource_snapshots(scope_kind, scope_id, snapshot_at DESC)
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_snapshots_partition
+        ON resource_snapshots(partition_month)
+      `)
+    }
+  },
+  {
+    // SPEC-008 - M65l: extend provider_accounts + new provider_entitlements
+    // history.
+    //
+    // Per FR-131, FR-134, FR-134a, FR-139, FR-143, FR-219u, FR-219v and
+    // tasks.md T039.
+    //
+    // M64 created the provider_accounts skeleton (id, provider,
+    // account_label, billing_mode, config_json, created_at,
+    // deleted_at). M65l fills in the columns the governance
+    // entitlements/automation flow needs at runtime:
+    //   - entitlements_json: snapshot of the active tier's caps so the
+    //     policy resolver does not need to JOIN against the history
+    //     table on every check.
+    //   - config_json: already present from M64 - addColumnIfMissing
+    //     no-ops here. Listed explicitly so the SPEC-008 audit shows
+    //     the column was expected to exist after M65l.
+    //   - tos_acknowledged_at: operator's acceptance timestamp for the
+    //     provider terms of service (FR-219u).
+    //   - automation_class: 'manual' | 'assisted' | 'autonomous'
+    //     classification of how this account is used (FR-219v). Stored
+    //     as plain TEXT so future classes can be added without an
+    //     ALTER.
+    //
+    // provider_entitlements is the append-only history table for tier
+    // changes detected from upstream signals (account ToS upgrades,
+    // billing-mode changes, manual operator confirmations). Each row
+    // records the active rate_limits_json + monthly_token_cap as of
+    // effective_at; expires_at is filled in when a newer row
+    // supersedes this one. source records who/what detected the change
+    // ('console_scrape', 'usage_api', 'operator', 'manual'). FK to
+    // provider_accounts(id) is declared because deleting an account
+    // should cascade through application logic (no ON DELETE clause -
+    // the writer enforces lifecycle explicitly).
+    //
+    // provider_subscriptions table does not exist as a DB table in this
+    // codebase - it lives as a JSON detector helper in
+    // src/lib/provider-subscriptions.ts. The optional backfill block
+    // is therefore implemented as a tableExists guard around an
+    // empty body, which keeps the migration future-proof if a real
+    // table is introduced later without changing this file.
+    id: '065l_provider_accounts_entitlements',
+    up(db: Database.Database) {
+      addColumnIfMissing(db, 'provider_accounts', 'entitlements_json', 'entitlements_json TEXT')
+      addColumnIfMissing(db, 'provider_accounts', 'config_json', 'config_json TEXT')
+      addColumnIfMissing(db, 'provider_accounts', 'tos_acknowledged_at', 'tos_acknowledged_at TEXT')
+      addColumnIfMissing(db, 'provider_accounts', 'automation_class', 'automation_class TEXT')
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS provider_entitlements (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          account_id INTEGER NOT NULL,
+          tier TEXT NOT NULL,
+          rate_limits_json TEXT,
+          monthly_token_cap INTEGER,
+          effective_at TEXT NOT NULL,
+          expires_at TEXT,
+          source TEXT NOT NULL,
+          detected_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (account_id) REFERENCES provider_accounts(id)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_provider_entitlements_account_effective
+        ON provider_entitlements(account_id, effective_at DESC)
+      `)
+
+      // Optional: backfill from provider_subscriptions if a future
+      // schema introduces it as a DB table. Today the helper of that
+      // name is a JSON detector in src/lib/provider-subscriptions.ts,
+      // not a table - tableExists() returns false and this block is a
+      // no-op.
+      if (tableExists(db, 'provider_subscriptions')) {
+        // Future: copy historical tier data into provider_entitlements.
+        // Intentionally empty until that table is introduced.
+      }
+    }
+  },
+  {
+    // SPEC-008 - M65m: governance final tables (8 tables) + integrity check.
+    //
+    // Per FR-006, FR-035, FR-090e, FR-199, FR-219h, FR-219i, FR-219n,
+    // FR-382, FR-387 and tasks.md T041. Closes out the SPEC-008
+    // schema by adding the eight remaining infrastructure tables for
+    // breaker state, materialized policy windows, recovery audit,
+    // quarantine, ingest rate-limiting state, audit verification,
+    // reconciler leasing, and orphan-event tracking.
+    //
+    // Tables (in dependency-free creation order):
+    //
+    //   1. resource_governance_breaker - per-scope circuit-breaker state
+    //      (closed/half_open/open) with consecutive_errors and notes.
+    //      UNIQUE(scope_kind, scope_id) so each scope has at most one
+    //      live breaker row.
+    //   2. resource_window_instances - materialized window tuples
+    //      (policy_id, window_kind, window_start, window_end) so the
+    //      counters table can refer to a stable window key. UNIQUE on
+    //      (policy_id, window_start) prevents accidental duplicates.
+    //   3. recovery_action - hash-chained audit trail of recovery
+    //      actions (manual override grants, breaker resets, batch
+    //      replays). prev_hash + row_hash chain detects tampering.
+    //   4. quarantined_raw_events - rate-limited / oversized / malicious
+    //      / broken / adversarial raw payloads diverted from the
+    //      ingest path so reviewers can decide manual disposition.
+    //   5. ingest_rate_state - per-source-path rate-limit FSM
+    //      (accepting / rate_limited / circuit_open / disk_full_pause)
+    //      with consecutive_drops and last_drop_at counters.
+    //   6. governance_audit_verification_state - rolling cursor for
+    //      hash-chain audit verification per table_name.
+    //   7. reconciler_lease - composite-PK lease table preventing two
+    //      reconcilers from racing on the same (source, window) tuple.
+    //   8. governance_orphan_event - observed-but-unattributable events
+    //      (FK target missing). resolved_at NULL means unresolved;
+    //      partial index speeds up the unresolved-set scan.
+    //
+    // Indexes:
+    //   - idx_resource_window_instances_lookup: (policy_id,
+    //     window_start, window_end) for window-resolution lookups.
+    //   - idx_recovery_action_taken_at: timeline scan ordered DESC.
+    //   - idx_quarantined_raw_events_source_quarantined: per-source
+    //     timeline scan ordered DESC.
+    //   - idx_governance_orphan_event_unresolved: partial index on
+    //     resolved_at IS NULL for the unresolved-orphan dashboard.
+    //
+    // Integrity guard: at the end of up(), run PRAGMA foreign_key_check
+    // and throw if any violation is reported. Throwing inside the
+    // migration up() rolls back the wrapping db.transaction() in
+    // runMigrations, leaving the schema unchanged so an operator can
+    // diagnose the violation before re-running. None of the M65m
+    // tables declare a FOREIGN KEY clause; the check guards against
+    // any latent violation introduced by earlier migrations or by
+    // application data accumulated between M65l and M65m.
+    id: '065m_governance_final_tables',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_governance_breaker (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          scope_kind TEXT NOT NULL,
+          scope_id INTEGER,
+          state TEXT NOT NULL CHECK (state IN ('closed','half_open','open')),
+          consecutive_errors INTEGER NOT NULL DEFAULT 0,
+          opened_at TEXT,
+          reset_at TEXT,
+          notes_json TEXT,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(scope_kind, scope_id)
+        )
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS resource_window_instances (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          policy_id INTEGER NOT NULL,
+          window_kind TEXT NOT NULL,
+          window_start TEXT NOT NULL,
+          window_end TEXT NOT NULL,
+          materialized_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(policy_id, window_start)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_resource_window_instances_lookup
+        ON resource_window_instances(policy_id, window_start, window_end)
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS recovery_action (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          kind TEXT NOT NULL,
+          actor TEXT NOT NULL,
+          scope_kind TEXT,
+          scope_id INTEGER,
+          payload_json TEXT,
+          prev_hash TEXT NOT NULL,
+          row_hash TEXT NOT NULL,
+          taken_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_recovery_action_taken_at
+        ON recovery_action(taken_at DESC)
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS quarantined_raw_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          source_id TEXT NOT NULL,
+          reason TEXT NOT NULL CHECK (reason IN ('rate_limit','disk_full','schema_malicious','oversized','schema_broken','adversarial_pattern')),
+          raw_payload_json TEXT NOT NULL,
+          malicious_rule_id TEXT,
+          quarantined_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          reviewed_at TEXT,
+          reviewer TEXT,
+          disposition TEXT
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_quarantined_raw_events_source_quarantined
+        ON quarantined_raw_events(source_id, quarantined_at DESC)
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS ingest_rate_state (
+          source_path TEXT PRIMARY KEY,
+          state TEXT NOT NULL CHECK (state IN ('accepting','rate_limited','circuit_open','disk_full_pause')),
+          consecutive_drops INTEGER NOT NULL DEFAULT 0,
+          last_drop_at TEXT,
+          last_state_change_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          metadata_json TEXT
+        )
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS governance_audit_verification_state (
+          table_name TEXT PRIMARY KEY,
+          last_verified_id INTEGER NOT NULL DEFAULT 0,
+          last_verified_at TEXT,
+          verification_status TEXT,
+          notes_json TEXT
+        )
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS reconciler_lease (
+          source_id TEXT NOT NULL,
+          window_start TEXT NOT NULL,
+          window_end TEXT NOT NULL,
+          leaseholder TEXT NOT NULL,
+          acquired_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          expires_at TEXT NOT NULL,
+          PRIMARY KEY (source_id, window_start, window_end)
+        )
+      `)
+
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS governance_orphan_event (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          table_name TEXT NOT NULL,
+          fk_column TEXT NOT NULL,
+          orphan_id INTEGER NOT NULL,
+          observed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          resolved_at TEXT
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_governance_orphan_event_unresolved
+        ON governance_orphan_event(table_name) WHERE resolved_at IS NULL
+      `)
+
+      // Per FR-382: assert no foreign-key violations exist after M65m
+      // closes the schema. db.pragma('foreign_key_check') returns an
+      // array of violation rows ([] when clean). Throwing here rolls
+      // back the wrapping db.transaction() so the schema stays
+      // unchanged for the operator to diagnose.
+      const violations = db.pragma('foreign_key_check') as unknown[]
+      if (Array.isArray(violations) && violations.length > 0) {
+        throw new Error(
+          `M65m foreign_key_check failed: ${JSON.stringify(violations)}`,
+        )
+      }
+    }
+  },
+  {
+    // SPEC-008 — M66 token_pricing
+    //
+    // Promotes facility-default model pricing from `src/lib/token-pricing.ts`
+    // `MODEL_PRICING` to a DB-backed table with optional per-workspace
+    // override per FR-260a / Q17. Cost calculations on `canonical_usage_events`
+    // resolve via the most-recent
+    //   `effective_at <= event_timestamp AND (expires_at IS NULL OR expires_at > event_timestamp)`
+    // row, preferring `scope_kind='workspace'` over `scope_kind='facility'`.
+    //
+    // Seed: every entry in `MODEL_PRICING` is inserted as
+    // `(scope_kind='facility', scope_id=NULL, source='facility-default')`.
+    // INSERT OR IGNORE guards idempotency against the unique index.
+    id: '066_token_pricing',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS token_pricing (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          provider TEXT NOT NULL,
+          model TEXT NOT NULL,
+          scope_kind TEXT NOT NULL CHECK (scope_kind IN ('facility','workspace')),
+          scope_id INTEGER,
+          input_per_mtok_usd NUMERIC NOT NULL,
+          output_per_mtok_usd NUMERIC NOT NULL,
+          effective_at TEXT NOT NULL,
+          expires_at TEXT,
+          source TEXT NOT NULL DEFAULT 'operator',
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+
+      db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_token_pricing_unique
+        ON token_pricing(provider, model, scope_kind, scope_id, effective_at)
+      `)
+
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_token_pricing_lookup
+        ON token_pricing(provider, model, effective_at DESC)
+        WHERE scope_kind='facility' AND expires_at IS NULL
+      `)
+
+      // Seed facility defaults from src/lib/token-pricing.ts MODEL_PRICING
+      // (top-of-file ESM import). INSERT OR IGNORE guards idempotency
+      // against the unique index.
+      const insert = db.prepare(
+        `INSERT OR IGNORE INTO token_pricing
+           (provider, model, scope_kind, scope_id, input_per_mtok_usd, output_per_mtok_usd, effective_at, source)
+         VALUES (?, ?, 'facility', NULL, ?, ?, CURRENT_TIMESTAMP, 'facility-default')`,
+      )
+      for (const [model, p] of Object.entries(MODEL_PRICING)) {
+        const provider = model.includes('/') ? model.split('/')[0] : 'unknown'
+        insert.run(provider, model, p.inputPerMTok, p.outputPerMTok)
+      }
+    },
+  },
+  {
+    // SPEC-008 — M67 provider_accounts ToS + version + deactivated_at columns.
+    //
+    // Per FR-131..FR-149, FR-219u..FR-219y, and tasks.md T116/T121.
+    // M64 created the provider_accounts skeleton with `deleted_at`; M65l
+    // added `entitlements_json`, `config_json`, `tos_acknowledged_at`, and
+    // `automation_class`. T116 / T121 require:
+    //
+    //   1. version INTEGER for optimistic concurrency. Defaults to 1 so
+    //      pre-existing rows participate in expectedVersion semantics.
+    //   2. deactivated_at TEXT — soft-delete column distinct from
+    //      deleted_at. The application layer (`provider-accounts.ts`) sets
+    //      this column on softDeleteProviderAccount() while preserving
+    //      historical event linkage. `deleted_at` from M64 is retained
+    //      untouched (forward-compat hard-delete reservation).
+    //   3. governance_tos_acknowledgments_json TEXT — operator-supplied
+    //      `{ ack_version, acknowledged_at, acknowledged_by, banner_state }`
+    //      payload that the ToS lifecycle (T121, FR-139/FR-146/FR-147)
+    //      reads + bumps on `ack_version` change with a 7-day grace banner.
+    //
+    // The `automation_class` CHECK constraint ('allowed','restricted',
+    // 'forbidden') is enforced at the application layer (Zod) per advisor
+    // guidance — SQLite cannot ALTER a column to add a CHECK without a
+    // table rebuild, and a rebuild on a live table is higher risk than a
+    // typed-write enforcement. provider-accounts.ts validates the column
+    // on every write path. (FR-219w hard-block on 'forbidden' is enforced
+    // by adapter activation gate, not by the DB.)
+    id: '067_provider_accounts_governance_columns',
+    up(db: Database.Database) {
+      addColumnIfMissing(db, 'provider_accounts', 'version', 'version INTEGER NOT NULL DEFAULT 1')
+      addColumnIfMissing(db, 'provider_accounts', 'deactivated_at', 'deactivated_at TEXT')
+      addColumnIfMissing(
+        db,
+        'provider_accounts',
+        'governance_tos_acknowledgments_json',
+        'governance_tos_acknowledgments_json TEXT'
+      )
+    },
+  },
+  {
+    // SPEC-008 — M68 Aegis emergency reserve + governance mode (T130 / T131).
+    //
+    // Per FR-152, FR-155, FR-157, FR-159, FR-166. M60's
+    // `resource_policies.policy_type` CHECK accepts only
+    // {wip_limit, budget, blackout, degraded_window} (see TODO at M64) —
+    // a table-rebuild to widen the CHECK touches every downstream FK and is
+    // higher risk than a dedicated companion table. M68 instead introduces
+    // `aegis_emergency_reserves` whose semantics (running balance + last
+    // replenished + depleted_at) differ from policy-threshold rows anyway.
+    //
+    // Two columns:
+    //   1. `aegis_emergency_reserves` — per-workspace reserve balance.
+    //      `usd_remaining` and `tokens_remaining` count down on
+    //      `allocateFromReserve`. `last_replenished_at` is stamped on every
+    //      `replenishReserve` (policy window roll). `depleted_at` is stamped
+    //      the first time balance hits 0 in a window (cleared on next
+    //      replenish) so `depletionAlert` can de-dup per (workspace, hour).
+    //   2. `workspaces.aegis_governance_mode` ('soft_alert' | 'hard_block')
+    //      defaulting to 'soft_alert' per FR-155. The column is the
+    //      authoritative store; FR-166's workspace-level override may be
+    //      surfaced via `workspaces.feature_flags.aegis_governance_mode_override`
+    //      JSON for legacy callers but the column wins on read.
+    //
+    // Additive + idempotent: both `addColumnIfMissing` and `CREATE TABLE
+    // IF NOT EXISTS` paths are no-ops on rerun.
+    id: '068_aegis_emergency_reserve_governance_mode',
+    up(db: Database.Database) {
+      // 1) Per-workspace emergency reserve balance.
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS aegis_emergency_reserves (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          usd_remaining REAL NOT NULL DEFAULT 0,
+          tokens_remaining INTEGER NOT NULL DEFAULT 0,
+          usd_seed REAL NOT NULL DEFAULT 0,
+          tokens_seed INTEGER NOT NULL DEFAULT 0,
+          last_replenished_at TEXT,
+          depleted_at TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE (workspace_id)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_aegis_emergency_reserves_workspace
+        ON aegis_emergency_reserves(workspace_id)
+      `)
+
+      // 2) Workspace-level Aegis governance mode (default 'soft_alert' per
+      //    FR-155). Pre-existing workspaces get the default via column
+      //    default; FR-166 overrides land via the feature_flags JSON path.
+      addColumnIfMissing(
+        db,
+        'workspaces',
+        'aegis_governance_mode',
+        "aegis_governance_mode TEXT NOT NULL DEFAULT 'soft_alert'"
+      )
+
+      // 3) Aegis fallback de-dup table. Records `governance_aegis_fallback_<step>`
+      //    activity emissions so the same (workspace_id, step, hour_bucket)
+      //    can not double-write per FR-361.
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS aegis_fallback_activity (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          step TEXT NOT NULL CHECK (step IN ('emergency_reserve','local_mode','deferred_no_fallback')),
+          hour_bucket TEXT NOT NULL,
+          payload_json TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE (workspace_id, step, hour_bucket)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_aegis_fallback_activity_workspace_hour
+        ON aegis_fallback_activity(workspace_id, hour_bucket)
+      `)
+    },
+  },
+  {
+    // SPEC-008 — M69 Idempotency-Key cache + governance grant-disable column.
+    //
+    // Per FR-209 / FR-219a (Idempotency-Key 24h replay window) and FR-219d
+    // (override-anomaly auto-disable + admin re-enable). Both surfaces are
+    // additive — no rebuilds, no data backfill — and serve Phase 7.7
+    // (T138-T154).
+    //
+    // 1. `governance_idempotency_keys`: per-actor replay cache.
+    //    - PRIMARY KEY (actor_id, idempotency_key): a single key may be
+    //      reused across actors but is unique within an actor.
+    //    - `request_body_hash`: SHA-256 hex of the canonical request body.
+    //      Replay rule (FR-219a): same (actor, key) + same hash → return
+    //      cached `response_body_json`; same key + DIFFERENT hash → 422
+    //      `idempotency_key_body_mismatch` (FR-391).
+    //    - `response_body_json`: serialized 2xx response captured at
+    //      first-write. Stored verbatim so replays are byte-identical.
+    //    - `response_status`: HTTP status code stored alongside the body
+    //      so replays return the original status.
+    //    - `expires_at`: created_at + 24h. The reaper sweeps expired rows.
+    //    - Index `idx_governance_idempotency_keys_expires_at` powers the
+    //      24h sweep.
+    //
+    // 2. `users.governance_grants_disabled_at`: nullable TEXT timestamp.
+    //    Set by the FR-219d auto-disable detector when an actor causes ≥3
+    //    `defer:anomaly` overrides within 1h. Cleared by the admin
+    //    re-enable endpoint (`POST /api/governance/operators/<id>/reenable-grants`).
+    //    Adding the column to `users` (vs. inventing a parallel actor
+    //    table) keeps the actor-class story aligned with the existing
+    //    role hierarchy ('admin' = SUPER-actor per FR-219d).
+    id: '069_governance_idempotency_keys_grant_disable',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS governance_idempotency_keys (
+          actor_id INTEGER NOT NULL,
+          idempotency_key TEXT NOT NULL,
+          request_body_hash TEXT NOT NULL,
+          response_body_json TEXT NOT NULL,
+          response_status INTEGER NOT NULL,
+          response_headers_json TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          expires_at TEXT NOT NULL,
+          PRIMARY KEY (actor_id, idempotency_key)
+        )
+      `)
+      db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_governance_idempotency_keys_expires_at
+        ON governance_idempotency_keys(expires_at)
+      `)
+
+      addColumnIfMissing(
+        db,
+        'users',
+        'governance_grants_disabled_at',
+        'governance_grants_disabled_at TEXT'
+      )
+    },
+  },
+  {
+    // SPEC-008 — M070 manually_reset_at column on resource_governance_breaker.
+    //
+    // Per FR-006 / FR-219d: the breaker REST surface (T160-T162) supports an
+    // admin-only manual reset (POST /api/governance/breaker/reset). When a
+    // reset lands we want to record the wall-time of the operator action
+    // separately from `reset_at` (which is also written by the live
+    // half_open -> closed self-recovery path). The new column lets the
+    // System Health UI distinguish "the breaker recovered on its own" from
+    // "an operator forced it closed". Additive nullable column; rerun-safe
+    // via addColumnIfMissing.
+    id: '070_breaker_manually_reset_at',
+    up(db: Database.Database) {
+      addColumnIfMissing(
+        db,
+        'resource_governance_breaker',
+        'manually_reset_at',
+        'manually_reset_at TEXT'
+      )
+      addColumnIfMissing(
+        db,
+        'resource_governance_breaker',
+        'manually_reset_by',
+        'manually_reset_by TEXT'
+      )
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {

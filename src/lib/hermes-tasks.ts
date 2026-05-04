@@ -35,10 +35,13 @@ function getHermesCronDir(): string {
 function peekLatestOutput(cronDir: string, jobId: string): { lastRunAt: string | null; lastOutput: string | null; runCount: number } {
   const outputDir = join(cronDir, 'output', jobId)
   try {
-    if (!existsSync(outputDir) || !statSync(outputDir).isDirectory()) {
+    if (
+      !existsSync(/* turbopackIgnore: true */ outputDir) ||
+      !statSync(/* turbopackIgnore: true */ outputDir).isDirectory()
+    ) {
       return { lastRunAt: null, lastOutput: null, runCount: 0 }
     }
-    const files = readdirSync(outputDir)
+    const files = readdirSync(/* turbopackIgnore: true */ outputDir)
       .filter(f => f.endsWith('.md'))
       .sort()
       .reverse()
@@ -55,7 +58,7 @@ function peekLatestOutput(cronDir: string, jobId: string): { lastRunAt: string |
     const filePath = join(outputDir, latestFile)
     let content: string | null = null
     try {
-      const raw = readFileSync(filePath, 'utf-8')
+      const raw = readFileSync(/* turbopackIgnore: true */ filePath, 'utf-8')
       content = raw.slice(0, 500)
     } catch { /* ignore */ }
 
@@ -73,10 +76,10 @@ function scanCronJobs(): HermesCronJob[] {
   const cronDir = getHermesCronDir()
   const jobsFile = join(cronDir, 'jobs.json')
 
-  if (!existsSync(jobsFile)) return []
+  if (!existsSync(/* turbopackIgnore: true */ jobsFile)) return []
 
   try {
-    const raw = readFileSync(jobsFile, 'utf-8')
+    const raw = readFileSync(/* turbopackIgnore: true */ jobsFile, 'utf-8')
     const jobs = JSON.parse(raw)
 
     if (!Array.isArray(jobs)) return []

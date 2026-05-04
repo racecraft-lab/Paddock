@@ -181,7 +181,6 @@ export async function initializeLabels(
   // production log aggregators see the same payload.
   for (const f of failures) {
     const message = f.err instanceof Error ? f.err.message : String(f.err)
-    /* eslint-disable-next-line no-console */
     console.error({
       event: 'label_provisioning_failed',
       workspace_id: workspaceId,

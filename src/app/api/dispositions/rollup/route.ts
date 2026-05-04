@@ -51,6 +51,20 @@ interface CacheEntry {
 const rollupCache = new Map<string, CacheEntry>()
 const TTL_MS = 15_000
 
+function nowSeconds(): number {
+  const fixedNow =
+    process.env.MISSION_CONTROL_TEST_MODE === '1'
+      ? process.env.MC_SPEC_007_FIXED_NOW
+      : undefined
+  if (fixedNow) {
+    const parsed = Date.parse(fixedNow)
+    if (Number.isFinite(parsed)) {
+      return Math.floor(parsed / 1000)
+    }
+  }
+  return Math.floor(Date.now() / 1000)
+}
+
 function cacheKey(workspaceId: number, dayBucket: string): string {
   return `${String(workspaceId)}:${dayBucket}`
 }
@@ -204,8 +218,8 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // ── 5. Cache lookup. ───────────────────────────────────────────────
-    const nowSeconds = Math.floor(Date.now() / 1000)
-    const dayBucket = utcDateString(nowSeconds)
+    const currentNowSeconds = nowSeconds()
+    const dayBucket = utcDateString(currentNowSeconds)
     // Cache is per-scope. Use the scope's workspaceId for productLine (single
     // workspace) and a stable sentinel for facility. Sentinel is the joined
     // workspace ids — unique per facility membership and also per-day.
@@ -222,7 +236,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // ── 6. Compute and cache. ──────────────────────────────────────────
-    const body = queryRollup(db, acceptedScope, nowSeconds)
+    const body = queryRollup(db, acceptedScope, currentNowSeconds)
     rollupCache.set(key, { body, expiresAt: nowMs + TTL_MS })
 
     return NextResponse.json(body)

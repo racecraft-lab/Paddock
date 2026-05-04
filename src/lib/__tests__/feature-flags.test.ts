@@ -3,8 +3,11 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   evaluateFeatureFlagCore,
+  expandFeatureFlagCascade,
   FEATURE_FLAG_KEYS,
   FEATURE_FLAG_REGISTRY,
+  getFeatureFlagCascadeDependents,
+  getFeatureFlagCascadePrerequisites,
   resolveFlag,
 } from '@/lib/feature-flags'
 import { evaluateFeatureFlagWithOpenFeature } from '@/lib/feature-flags-openfeature'
@@ -35,15 +38,68 @@ describe('resolveFlag', () => {
     })).toBe(false)
   })
 
-  it('evaluates FEATURE_GLOBAL_AEGIS from workspace context only', () => {
+  it('evaluates FEATURE_GLOBAL_AEGIS from workspace context only when earlier phases are enabled', () => {
     expect(resolveFlag('FEATURE_GLOBAL_AEGIS', {
       env: {},
-      workspaceFlags: { FEATURE_GLOBAL_AEGIS: true },
+      workspaceFlags: { FEATURE_WORKSPACE_SWITCHER: true, FEATURE_GLOBAL_AEGIS: true },
     })).toBe(true)
     expect(resolveFlag('FEATURE_GLOBAL_AEGIS', {
       env: { FEATURE_GLOBAL_AEGIS: '1' },
       workspaceFlags: null,
     })).toBe(false)
+  })
+
+  it('implies earlier cascade phases when only a later flag is stored on', () => {
+    const resolution = evaluateFeatureFlagCore('FEATURE_RESOURCE_GOVERNANCE', {
+      env: {},
+      workspaceFlags: { FEATURE_RESOURCE_GOVERNANCE: true },
+    })
+
+    expect(resolution.value).toBe(true)
+    expect(resolution.reason).toBe('workspace_override')
+    expect(resolution.storedValue).toBe(true)
+
+    const implied = evaluateFeatureFlagCore('FEATURE_TASK_ARTIFACTS', {
+      env: {},
+      workspaceFlags: { FEATURE_RESOURCE_GOVERNANCE: true },
+    })
+    expect(implied.value).toBe(true)
+    expect(implied.reason).toBe('cascade_implied_on')
+    expect(implied.storedValue).toBeNull()
+  })
+
+  it('keeps later flags effectively off when an earlier cascade phase is explicitly disabled', () => {
+    const resolution = evaluateFeatureFlagCore('FEATURE_RESOURCE_GOVERNANCE', {
+      env: {},
+      workspaceFlags: {
+        FEATURE_RESOURCE_GOVERNANCE: true,
+        FEATURE_TASK_ARTIFACTS: false,
+      },
+    })
+
+    expect(resolution.value).toBe(false)
+    expect(resolution.reason).toBe('cascade_dependency_off')
+    expect(resolution.storedValue).toBe(true)
+  })
+
+  it('resolves SPEC-008 flags on when the full prior cascade is enabled', () => {
+    const workspaceFlags = expandFeatureFlagCascade('FEATURE_RESOURCE_GOVERNANCE', true)
+
+    expect(resolveFlag('FEATURE_RESOURCE_GOVERNANCE', {
+      env: {},
+      workspaceFlags,
+    })).toBe(true)
+    expect(workspaceFlags.FEATURE_WORKSPACE_SWITCHER).toBe(true)
+    expect(workspaceFlags.FEATURE_TASK_ARTIFACTS).toBe(true)
+  })
+
+  it('turns dependent later phases off when disabling a cascade prerequisite', () => {
+    const workspaceFlags = expandFeatureFlagCascade('FEATURE_WORKSPACE_SWITCHER', false)
+
+    expect(workspaceFlags.FEATURE_WORKSPACE_SWITCHER).toBe(false)
+    expect(workspaceFlags.FEATURE_GLOBAL_AEGIS).toBe(false)
+    expect(workspaceFlags.FEATURE_RESOURCE_GOVERNANCE).toBe(false)
+    expect(workspaceFlags.PILOT_PRODUCT_LINE_A_E2E).toBe(false)
   })
 
   it('lets env 0 kill-switch FEATURE_GLOBAL_AEGIS even when workspace flags enable it', () => {
@@ -107,6 +163,42 @@ describe('feature flag registry', () => {
     expect(FEATURE_FLAG_REGISTRY.FEATURE_AREA_LABEL_ROUTING.enableRequires).toEqual(['FEATURE_WORKSPACE_SWITCHER'])
     expect(FEATURE_FLAG_REGISTRY.PILOT_PRODUCT_LINE_A_E2E.enableRequires).toContain('FEATURE_OPENCLAW_HEALTH_COSTS')
     expect(FEATURE_FLAG_REGISTRY.PILOT_PRODUCT_LINE_A_E2E.enableRequires).toHaveLength(9)
+  })
+
+  it('derives additive cascade prerequisites from roadmap phase order', () => {
+    expect(getFeatureFlagCascadePrerequisites('FEATURE_GLOBAL_AEGIS')).toEqual([
+      'FEATURE_WORKSPACE_SWITCHER',
+    ])
+    expect(getFeatureFlagCascadePrerequisites('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
+      'FEATURE_WORKSPACE_SWITCHER',
+      'FEATURE_GLOBAL_AEGIS',
+      'FEATURE_TASK_PIPELINES',
+      'FEATURE_TWO_STEP_TERMINAL',
+      'FEATURE_AREA_LABEL_ROUTING',
+      'FEATURE_DISPOSITION_LOGGING',
+      'FEATURE_TASK_ARTIFACTS',
+    ])
+    expect(getFeatureFlagCascadePrerequisites('FEATURE_OPENCLAW_HEALTH_COSTS')).toContain(
+      'FEATURE_RESOURCE_GOVERNANCE',
+    )
+  })
+
+  it('derives additive cascade dependents for disabling earlier phases', () => {
+    expect(getFeatureFlagCascadeDependents('FEATURE_WORKSPACE_SWITCHER')).toEqual([
+      'FEATURE_GLOBAL_AEGIS',
+      'FEATURE_TASK_PIPELINES',
+      'FEATURE_TWO_STEP_TERMINAL',
+      'FEATURE_AREA_LABEL_ROUTING',
+      'FEATURE_DISPOSITION_LOGGING',
+      'FEATURE_TASK_ARTIFACTS',
+      'FEATURE_RESOURCE_GOVERNANCE',
+      'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'PILOT_PRODUCT_LINE_A_E2E',
+    ])
+    expect(getFeatureFlagCascadeDependents('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
+      'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'PILOT_PRODUCT_LINE_A_E2E',
+    ])
   })
 
   it('marks FEATURE_GLOBAL_AEGIS implemented but gated by workspace switcher preflight', () => {

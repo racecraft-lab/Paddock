@@ -58,8 +58,8 @@ const preview: Preview = {
       viewports,
       defaultViewport: 'desktop1366',
     },
-    argos: {
-      fitToContent: false,
+    screenshot: {
+      fullPage: true,
     },
   },
   decorators: [

@@ -12,9 +12,9 @@ Workflow files under `docs/ai/specs/SPEC-*-workflow.md` are execution records cr
 
 Spec archive and evidence retention is governed by SPEC-002A. Autopilot starts
 with Archive Sweep discovery for previously merged specs, excludes the current
-target spec, records recovery commands before cleanup, and treats Argos/CI
-provenance as the durable UI evidence path instead of committing generated
-screenshots by default.
+target spec, records recovery commands before cleanup, and treats visual
+regression/CI provenance as the durable UI evidence path instead of committing
+generated screenshots by default.
 
 This PRD should preserve the durable **why**, **what**, **success criteria**, and **constraints** for the architecture. It should not become the per-spec execution ledger or duplicate the detailed workflow records.
 

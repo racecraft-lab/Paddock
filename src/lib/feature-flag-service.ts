@@ -2,8 +2,11 @@ import type Database from 'better-sqlite3'
 import { hasGlobalAegisCandidate } from '@/lib/aegis'
 import {
   evaluateFeatureFlagCore,
+  expandFeatureFlagCascade,
   FEATURE_FLAG_KEYS,
   FEATURE_FLAG_REGISTRY,
+  getFeatureFlagCascadeDependents,
+  getFeatureFlagCascadePrerequisites,
   getFeatureFlagDefinition,
   isFeatureFlagKey,
   readWorkspaceFlagValue,
@@ -40,6 +43,8 @@ export interface FeatureFlagAdminState {
   env_value: string | null
   can_update: boolean
   enable_blockers: string[]
+  cascade_requires: FeatureFlagKey[]
+  cascade_disables: FeatureFlagKey[]
   warnings: string[]
   last_change: FeatureFlagLastChange | null
 }
@@ -112,11 +117,14 @@ function lastFeatureFlagChange(
 }
 
 function dependencyBlockers(workspace: WorkspaceRecord, definition: FeatureFlagDefinition): string[] {
-  return definition.enableRequires
-    .filter((dependencyKey) => !evaluateFeatureFlagCore(dependencyKey, {
-      workspaceFlags: workspace.feature_flags ?? null,
-    }).value)
-    .map((dependencyKey) => `${dependencyKey} must be enabled first`)
+  return getFeatureFlagCascadePrerequisites(definition.key)
+    .filter((dependencyKey) => {
+      const resolution = evaluateFeatureFlagCore(dependencyKey, {
+        workspaceFlags: workspace.feature_flags ?? null,
+      })
+      return resolution.envLocked
+    })
+    .map((dependencyKey) => `${dependencyKey} is forced OFF by deployment configuration`)
 }
 
 function scopeBlockers(workspace: WorkspaceRecord, definition: FeatureFlagDefinition): string[] {
@@ -207,6 +215,8 @@ export function getFeatureFlagAdminStates(
     const definition = getFeatureFlagDefinition(key)
     const evaluation = evaluateFeatureFlagCore(key, { workspaceFlags: workspace.feature_flags ?? null })
     const enableBlockers = featureFlagBlockers(workspace, definition, evaluation)
+    const cascadeRequires = getFeatureFlagCascadePrerequisites(key)
+    const cascadeDisables = getFeatureFlagCascadeDependents(key)
     return {
       definition,
       stored_value: readWorkspaceFlagValue(key, workspace.feature_flags ?? null),
@@ -216,6 +226,8 @@ export function getFeatureFlagAdminStates(
       env_value: evaluation.envValue,
       can_update: enableBlockers.length === 0,
       enable_blockers: enableBlockers,
+      cascade_requires: cascadeRequires,
+      cascade_disables: cascadeDisables,
       warnings: featureFlagWarnings(workspace, authWorkspaceId, definition),
       last_change: lastFeatureFlagChange(db, workspace.id, key),
     }
@@ -247,11 +259,11 @@ export function getFeatureFlagPreflight(
 
   checks.push({
     id: 'dependencies',
-    label: 'Flag dependencies',
+    label: 'Cascade dependencies',
     status: dependencyBlockers(workspace, definition).length === 0 ? 'pass' : 'fail',
-    detail: definition.enableRequires.length === 0
-      ? 'No flag dependencies'
-      : `Requires ${definition.enableRequires.join(', ')}`,
+    detail: getFeatureFlagCascadePrerequisites(key).length === 0
+      ? 'No earlier roadmap flags are required'
+      : `Enabling ${key} also enables ${getFeatureFlagCascadePrerequisites(key).join(', ')}`,
   })
 
   checks.push({
@@ -332,7 +344,13 @@ export function updateWorkspaceFeatureFlag(
   workspaceId: number,
   key: FeatureFlagKey,
   value: boolean
-): { oldValue: boolean | null; newValue: boolean; flagsJson: string } {
+): {
+  oldValue: boolean | null
+  newValue: boolean
+  flagsJson: string
+  cascadeEnabled: FeatureFlagKey[]
+  cascadeDisabled: FeatureFlagKey[]
+} {
   const row = db.prepare('SELECT id, feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as {
     id: number
     feature_flags: string | null
@@ -341,13 +359,22 @@ export function updateWorkspaceFeatureFlag(
 
   const flags = parseWorkspaceFeatureFlags(row.feature_flags)
   const oldValue = readWorkspaceFlagValue(key, row.feature_flags)
-  flags[key] = value
+  const cascade = expandFeatureFlagCascade(key, value)
+  for (const [cascadeKey, cascadeValue] of Object.entries(cascade)) {
+    flags[cascadeKey] = cascadeValue
+  }
   const flagsJson = JSON.stringify(flags)
 
   db.prepare('UPDATE workspaces SET feature_flags = ?, updated_at = unixepoch() WHERE id = ?')
     .run(flagsJson, workspaceId)
 
-  return { oldValue, newValue: value, flagsJson }
+  return {
+    oldValue,
+    newValue: value,
+    flagsJson,
+    cascadeEnabled: value ? getFeatureFlagCascadePrerequisites(key) : [],
+    cascadeDisabled: value ? [] : getFeatureFlagCascadeDependents(key),
+  }
 }
 
 export function assertFeatureFlagKey(raw: string): FeatureFlagKey | null {

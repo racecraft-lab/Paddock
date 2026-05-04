@@ -3,7 +3,7 @@ import path from 'node:path'
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole } from '@/lib/auth'
 import { logger } from '@/lib/logger'
-import { runCommand } from '@/lib/command'
+import { envWithExecutablePath, runCommand } from '@/lib/command'
 import { getOpenCodeExecutable } from '@/lib/opencode-sessions'
 
 type ContinueKind = 'claude-code' | 'codex-cli' | 'opencode'
@@ -65,7 +65,9 @@ export async function POST(request: NextRequest) {
         // ignore
       }
     } else {
-      const result = await runCommand(getOpenCodeExecutable(), ['run', '--session', sessionId, prompt], {
+      const executable = getOpenCodeExecutable()
+      const result = await runCommand('opencode', ['run', '--session', sessionId, prompt], {
+        env: envWithExecutablePath(executable),
         timeoutMs: 180000,
       })
       reply = (result.stdout || '').trim() || (result.stderr || '').trim()
