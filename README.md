@@ -179,6 +179,8 @@ For the full walkthrough, see the **[Quickstart Guide](docs/quickstart.md)**.
 | [Security Hardening](docs/SECURITY-HARDENING.md) | Docker hardening, CSP, network isolation |
 | [Release Process](RELEASE.md) | SemVer policy, branch strategy, tag/release checklist |
 | [API Reference](openapi.json) | OpenAPI 3.1 spec — 101 REST endpoints with Scalar UI at `/api-docs` |
+| [Resource Governance](docs/feature-flags-runbook.md) | `FEATURE_RESOURCE_GOVERNANCE` admission policies, budgets, windows, overrides; matrix-test convention (SPEC-008) |
+| [Observability Setup](docs/observability/setup.md) | OTLP receiver, source adapter activation (Claude Code, Codex, Copilot, Ollama, LM Studio, OpenClaw); SPEC-008 |
 
 ### Gateway Optional Mode
 

@@ -16,15 +16,28 @@ on:
       - 'src/app/api/**'
       - 'tests/product-line-*.spec.ts'
       - 'tests/feature-flags-*.spec.ts'
+      - 'tests/e2e/feature-flag-matrix.e2e.ts'
+      - 'tests/e2e/governance-*.e2e.ts'
+      - 'tests/e2e/governance-*.spec.ts'
       - 'tests/e2e/ready-for-owner-kanban.spec.ts'
       - 'tests/e2e/spec-007-ui-visual.spec.ts'
+      - 'tests/e2e/spec-008/**'
       - 'tests/workspace-switcher-*.spec.ts'
       - 'tests/helpers.ts'
       - 'scripts/e2e-docker.sh'
       - 'scripts/seed-e2e-workspace-switcher.cjs'
       - 'scripts/seed-e2e-spec-007.cjs'
+      - 'scripts/seed-e2e-spec-008.cjs'
       - 'scripts/seed-spec-007.ts'
-      - 'scripts/verify-argos-metadata.mjs'
+      - 'scripts/clean-visual-output.mjs'
+      - 'scripts/check-visual-review-approval.mjs'
+      - 'scripts/publish-visual-pr-pages.mjs'
+      - 'scripts/verify-visual-manifest.mjs'
+      - 'scripts/visual-review-app.css'
+      - 'scripts/visual-review-app.js'
+      - 'scripts/visual-review-state.mjs'
+      - 'tests/visual/**'
+      - 'regconfig*.json'
       - 'playwright*.config.ts'
       - 'Dockerfile'
       - 'docker-entrypoint.sh'
@@ -48,15 +61,28 @@ on:
       - 'src/app/api/**'
       - 'tests/product-line-*.spec.ts'
       - 'tests/feature-flags-*.spec.ts'
+      - 'tests/e2e/feature-flag-matrix.e2e.ts'
+      - 'tests/e2e/governance-*.e2e.ts'
+      - 'tests/e2e/governance-*.spec.ts'
       - 'tests/e2e/ready-for-owner-kanban.spec.ts'
       - 'tests/e2e/spec-007-ui-visual.spec.ts'
+      - 'tests/e2e/spec-008/**'
       - 'tests/workspace-switcher-*.spec.ts'
       - 'tests/helpers.ts'
       - 'scripts/e2e-docker.sh'
       - 'scripts/seed-e2e-workspace-switcher.cjs'
       - 'scripts/seed-e2e-spec-007.cjs'
+      - 'scripts/seed-e2e-spec-008.cjs'
       - 'scripts/seed-spec-007.ts'
-      - 'scripts/verify-argos-metadata.mjs'
+      - 'scripts/clean-visual-output.mjs'
+      - 'scripts/check-visual-review-approval.mjs'
+      - 'scripts/publish-visual-pr-pages.mjs'
+      - 'scripts/verify-visual-manifest.mjs'
+      - 'scripts/visual-review-app.css'
+      - 'scripts/visual-review-app.js'
+      - 'scripts/visual-review-state.mjs'
+      - 'tests/visual/**'
+      - 'regconfig*.json'
       - 'playwright*.config.ts'
       - 'Dockerfile'
       - 'docker-entrypoint.sh'
@@ -68,7 +94,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 permissions:
-  contents: read
+  contents: write
   actions: read
   issues: write
   pull-requests: write
@@ -105,24 +131,55 @@ jobs:
         id: e2e
         continue-on-error: true
         env:
-          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ARGOS_UPLOAD_TO_ARGOS: '1'
-          ARGOS_PLAYWRIGHT_SCREENSHOTS: '1'
-          ARGOS_PLAYWRIGHT_TRACES: '1'
+          MC_VISUAL_SNAPSHOTS: '1'
+          MC_VISUAL_OUTPUT_DIR: test-results/visual-current
+          SPEC_008_AXE_ENABLED: '1'
         run: pnpm test:e2e:docker
 
-      - name: Verify Argos test metadata
-        id: argos-metadata
+      - name: Verify Playwright visual manifests
+        id: visual-manifest
         if: always()
         continue-on-error: true
         env:
-          ARGOS_PLAYWRIGHT_EXPECTED_METADATA: '19'
-          ARGOS_PLAYWRIGHT_EXPECTED_TESTS: '11'
-          ARGOS_PLAYWRIGHT_ALLOWED_TEST_TAGS: '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007'
-          ARGOS_PLAYWRIGHT_ALLOWED_SCREENSHOT_TAGS: 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007'
-          ARGOS_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS: 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5'
-        run: pnpm test:e2e:argos-metadata
+          MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS: '140'
+          MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS: '100'
+          MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS: '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008'
+          MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS: 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008'
+          MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS: 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120'
+        run: pnpm test:e2e:visual-manifest
+
+      - name: Prepare Playwright visual report directory
+        if: steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
+        run: mkdir -p test-results/visual-report
+
+      - name: Compare Playwright visual snapshots
+        id: visual-regression
+        if: steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
+        continue-on-error: true
+        uses: reg-viz/reg-actions@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          image-directory-path: test-results/visual-current/playwright
+          artifact-name: mission-control-playwright-visual
+          branch: visual-regression-artifacts
+          report-file-path: test-results/visual-report/playwright.html
+          custom-report-page: ${{ github.event_name == 'pull_request' && format('https://racecraft-lab.github.io/mission-control/pr/{0}/playwright/latest/', github.event.pull_request.number) || '' }}
+          comment-report-format: summarized
+          outdated-comment-action: minimize
+          retention-days: 30
+
+      - name: Publish Playwright PR visual report to GitHub Pages
+        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/publish-visual-pr-pages.mjs --surface playwright --report-file test-results/visual-report/playwright.html
+
+      - name: Publish Playwright visual report to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm visual:reg-suit:playwright
 
       - name: Upload Playwright artifacts
         if: always()
@@ -142,18 +199,18 @@ jobs:
           script: |
             const marker = '<!-- mission-control-ui-e2e -->';
             const outcome = '${{ steps.e2e.outcome }}';
-            const metadataOutcome = '${{ steps.argos-metadata.outcome }}';
+            const metadataOutcome = '${{ steps.visual-manifest.outcome }}';
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const body = [
               marker,
               `Mission Control Docker-backed UI journey: **${outcome}**`,
-              `Argos Playwright test metadata gate: **${metadataOutcome}**`,
+              `Playwright visual manifest gate: **${metadataOutcome}**`,
               '',
               `Review screenshots and traces in the \`mission-control-ui-e2e-artifacts\` artifact: ${runUrl}`,
               '',
-              'Argos metadata gate: CI must find at least 19 Argos screenshot metadata files across 11 Playwright tests with Product Line switcher, Feature Flag admin, Ready for Owner, and SPEC-007 domain tags before this check can pass.',
+              'Visual manifest gate: CI must find at least 140 Playwright visual snapshots across 100 tests, including at least 120 SPEC-008 governance screenshots, before this check can pass.',
               '',
-              'Covered states: Facility task board, scope menu options, selected Product Line task board, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile scope menus, cross-tab Product Line sync, Feature Flags admin default state, Feature Flags admin toggle-on state, Ready for Owner Kanban lane order, focused Ready for Owner card, action-required notification panel state, SPEC-007 dashboard rollup, SPEC-007 dispositions loaded/filter states, and SPEC-007 Artifact Admin mixed state, preview, and quarantine action.'
+              'Covered states: Facility task board, scope menu options, selected Product Line task board, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile scope menus, cross-tab Product Line sync, Feature Flags admin default/toggle states, Ready for Owner states, SPEC-007 visual states, and SPEC-008 governance journeys for WIP policy, budgets, windows, overrides, diagnostics, dispatch feed, system health, recovery modals, calibration, Aegis reserve, feature-flag matrix, and all-flags-on baseline.'
             ].join('\n');
             const { owner, repo } = context.repo;
             const issue_number = context.payload.pull_request.number;
@@ -165,6 +222,6 @@ jobs:
               await github.rest.issues.createComment({ owner, repo, issue_number, body });
             }
 
-      - name: Fail on E2E or Argos metadata defects
-        if: steps.e2e.outcome != 'success' || steps.argos-metadata.outcome != 'success'
+      - name: Fail on E2E, visual manifest, or visual regression defects
+        if: steps.e2e.outcome != 'success' || steps.visual-manifest.outcome != 'success' || steps.visual-regression.outcome == 'failure'
         run: exit 1

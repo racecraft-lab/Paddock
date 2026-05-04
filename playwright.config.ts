@@ -1,10 +1,10 @@
 import { defineConfig, devices } from '@playwright/test'
-import { createArgosReporterOptions } from '@argos-ci/playwright/reporter'
 
-const uploadToArgos = process.env.ARGOS_UPLOAD_TO_ARGOS === '1'
+delete process.env.NO_COLOR
 
 export default defineConfig({
   testDir: 'tests',
+  testMatch: /\.(spec|e2e)\.ts$/,
   testIgnore: /openclaw-harness\.spec\.ts/,
   timeout: 60_000,
   expect: {
@@ -12,16 +12,7 @@ export default defineConfig({
   },
   fullyParallel: false,
   workers: 1,
-  reporter: [
-    ['list'],
-    [
-      '@argos-ci/playwright/reporter',
-      createArgosReporterOptions({
-        uploadToArgos,
-        buildName: process.env.ARGOS_PLAYWRIGHT_BUILD_NAME || 'mission-control-playwright',
-      }),
-    ],
-  ],
+  reporter: [['list']],
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://127.0.0.1:3005',
     trace: 'retain-on-failure'
@@ -42,6 +33,7 @@ export default defineConfig({
       MC_WORKLOAD_QUEUE_DEPTH_SHED: process.env.MC_WORKLOAD_QUEUE_DEPTH_SHED || '2000',
       MC_WORKLOAD_ERROR_RATE_THROTTLE: process.env.MC_WORKLOAD_ERROR_RATE_THROTTLE || '1',
       MC_WORKLOAD_ERROR_RATE_SHED: process.env.MC_WORKLOAD_ERROR_RATE_SHED || '1',
+      MC_SPEC_007_FIXED_NOW: process.env.MC_SPEC_007_FIXED_NOW || '2026-05-02T12:00:00.000Z',
       API_KEY: process.env.API_KEY || 'test-api-key-e2e-12345',
       AUTH_USER: process.env.AUTH_USER || 'testadmin',
       AUTH_PASS: process.env.AUTH_PASS || 'testpass1234!',

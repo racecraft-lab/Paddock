@@ -68,6 +68,7 @@ vi.mock('@/lib/workspaces', async () => {
 })
 
 import { runMigrations } from '../../../../../lib/migrations'
+import { expandFeatureFlagCascade } from '../../../../../lib/feature-flags'
 import { PUT } from '../route'
 
 const openDbs: Database.Database[] = []
@@ -131,7 +132,7 @@ function seedProject(db: Database.Database, args: SeedProjectArgs): number {
 
 function setWorkspaceFlag(db: Database.Database, workspaceId: number, on: boolean): void {
   db.prepare(`UPDATE workspaces SET feature_flags = ? WHERE id = ?`).run(
-    JSON.stringify({ FEATURE_AREA_LABEL_ROUTING: on }),
+    JSON.stringify(expandFeatureFlagCascade('FEATURE_AREA_LABEL_ROUTING', on)),
     workspaceId,
   )
 }
@@ -536,13 +537,10 @@ describe('SPEC-006 / T032 — structured log on activity-INSERT failure (FR-027b
     db.prepare = ((sql: string) => {
       const stmt = origPrepare(sql)
       if (/INSERT INTO activities/i.test(sql)) {
-        const origRun = stmt.run.bind(stmt)
         stmt.run = ((..._args: unknown[]) => {
           // Force a controllable error class.
           const err = new Error('disk full')
           throw err
-          // Unreachable — preserved for type symmetry with the original signature.
-          return origRun() // eslint-disable-line no-unreachable
         }) as typeof stmt.run
       }
       return stmt

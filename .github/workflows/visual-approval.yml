@@ -1,0 +1,48 @@
+name: Visual Approval
+
+on:
+  pull_request:
+  issue_comment:
+    types:
+      - created
+      - edited
+      - deleted
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to recheck
+        required: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  visual-approval-status:
+    if: github.event_name != 'issue_comment' || github.event.issue.pull_request
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Publish visual approval status
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            node scripts/check-visual-review-approval.mjs --pr-number "${{ inputs.pr_number }}" --repository "${{ github.repository }}" --set-status --skip-if-no-visual-changes --soft-fail
+          else
+            node scripts/check-visual-review-approval.mjs --set-status --skip-if-no-visual-changes --soft-fail
+          fi

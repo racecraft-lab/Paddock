@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
-import { argosScreenshot } from '@argos-ci/storybook/vitest'
 import { expect, within } from 'storybook/test'
 
 import { NotificationsPanel } from '@/components/panels/notifications-panel'
@@ -258,8 +257,8 @@ const meta = {
     },
   ],
   parameters: {
-    argos: {
-      fitToContent: false,
+    screenshot: {
+      fullPage: true,
     },
   },
 } satisfies Meta<typeof ReadyForOwnerSurface>
@@ -275,7 +274,6 @@ export const KanbanLaneOrder: Story = {
     await expect(readyForOwnerColumn).toBeVisible()
     await expect(within(readyForOwnerColumn).getByRole('button', { name: /Owner merge gate for SPEC-005/i })).toBeVisible()
     await expect(readyForOwnerColumn).toHaveTextContent(/Owner action required/i)
-    await argosScreenshot(ctx, 'ready-for-owner-kanban-lane')
   },
 }
 
@@ -286,7 +284,6 @@ export const FocusedReadyForOwnerCard: Story = {
     const card = await canvas.findByRole('button', { name: /Owner merge gate for SPEC-005.*Owner action required/i })
     card.focus()
     await expect(card).toHaveFocus()
-    await argosScreenshot(ctx, 'ready-for-owner-focused-card')
   },
 }
 
@@ -300,6 +297,5 @@ export const NotificationActionRequired: Story = {
     const markRead = canvas.getByRole('button', { name: /Mark read/i })
     markRead.focus()
     await expect(markRead).toHaveFocus()
-    await argosScreenshot(ctx, 'ready-for-owner-notification-action-required')
   },
 }

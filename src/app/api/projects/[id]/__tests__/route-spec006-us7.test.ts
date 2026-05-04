@@ -87,6 +87,7 @@ vi.mock('@/lib/github-sync-engine', async () => {
 })
 
 import { runMigrations } from '../../../../../lib/migrations'
+import { expandFeatureFlagCascade } from '../../../../../lib/feature-flags'
 import { PUT } from '../route'
 
 const openDbs: Database.Database[] = []
@@ -148,7 +149,7 @@ function seedProject(db: Database.Database, args: SeedProjectArgs): number {
 
 function setWorkspaceFlag(db: Database.Database, workspaceId: number, on: boolean): void {
   db.prepare(`UPDATE workspaces SET feature_flags = ? WHERE id = ?`).run(
-    JSON.stringify({ FEATURE_AREA_LABEL_ROUTING: on }),
+    JSON.stringify(expandFeatureFlagCascade('FEATURE_AREA_LABEL_ROUTING', on)),
     workspaceId,
   )
 }

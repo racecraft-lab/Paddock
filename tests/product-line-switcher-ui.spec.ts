@@ -1,7 +1,4 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
 import { expect, test, type Locator, type Page, type TestInfo } from '@playwright/test'
-import { argosScreenshot } from '@argos-ci/playwright'
 import {
   dismissOnboardingForE2E,
   freezeProductLineVisualClock,
@@ -9,39 +6,30 @@ import {
   seedProductLineE2EData,
   type ProductLineE2EFixture,
 } from './helpers'
+import { captureVisualSnapshot } from './visual/visual-snapshot'
 
 const SWITCHER_NAME = /change facility or product line scope/i
 const LISTBOX_NAME = /facility and product line scopes/i
-const ARGOS_SCREENSHOT_TAGS = ['product-line-switcher']
-const ARGOS_TEST_TAGS = ['@product-line-switcher']
-const REVIEW_SCREENSHOTS_ENABLED = process.env.MC_E2E_SCREENSHOTS === '1'
-const ARGOS_SCREENSHOTS_ENABLED = process.env.ARGOS_PLAYWRIGHT_SCREENSHOTS === '1'
+const VISUAL_SNAPSHOT_TAGS = ['product-line-switcher']
+const VISUAL_TEST_TAGS = ['@product-line-switcher']
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
 async function attachReviewScreenshot(page: Page, testInfo: TestInfo, name: string) {
-  const normalizedName = name.replace(/[^a-z0-9-]+/gi, '-')
-
-  if (REVIEW_SCREENSHOTS_ENABLED) {
-    const dir = process.env.MC_E2E_SCREENSHOT_DIR ||
-      path.join(process.cwd(), 'test-results', 'product-line-screenshots')
-    const screenshotPath = path.join(dir, `${normalizedName}.png`)
-    await fs.mkdir(dir, { recursive: true })
-    await page.screenshot({ path: screenshotPath, fullPage: true })
-    await testInfo.attach(`product-line-${name}`, {
-      path: screenshotPath,
-      contentType: 'image/png',
-    })
-  }
-
-  if (ARGOS_SCREENSHOTS_ENABLED) {
-    await argosScreenshot(page, `product-line-${normalizedName}`, {
-      fullPage: true,
-      tag: ARGOS_SCREENSHOT_TAGS,
-    })
-  }
+  await captureVisualSnapshot(page, testInfo, {
+    domain: 'product-line-switcher',
+    name,
+    description: 'Review the Product Line scope switching state captured during the seeded task-board journey.',
+    expected: 'The visible workspace scope, switcher menu, and task cards should reflect the selected Facility or Product Line without cross-scope leakage.',
+    reviewFocus: [
+      'Scope switcher label and selected option',
+      'Facility versus Product Line task visibility',
+      'Responsive header and menu fit',
+    ],
+    tags: VISUAL_SNAPSHOT_TAGS,
+  })
 }
 
 async function prepareAuthenticatedPage(page: Page, request: Parameters<typeof loginAsE2EAdmin>[1]) {
@@ -86,7 +74,7 @@ test.describe.serial('Product Line switcher real UI journey', () => {
     await prepareAuthenticatedPage(page, request)
   })
 
-  test('switches Facility and Product Line scopes against seeded task data', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('switches Facility and Product Line scopes against seeded task data', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/tasks')
     await expect(page).not.toHaveURL(/\/login/)
     await expect(page.getByRole('region', { name: /task board/i })).toBeVisible()
@@ -112,7 +100,7 @@ test.describe.serial('Product Line switcher real UI journey', () => {
     await attachReviewScreenshot(page, testInfo, 'facility-aggregate-task-board-after-switch')
   })
 
-  test('supports keyboard navigation and focus return on the real listbox', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('supports keyboard navigation and focus return on the real listbox', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     await page.goto('/tasks')
     const trigger = page.getByRole('button', { name: SWITCHER_NAME })
     await expect(trigger).toBeVisible()
@@ -133,7 +121,7 @@ test.describe.serial('Product Line switcher real UI journey', () => {
     await expect(trigger).toBeFocused()
   })
 
-  test('keeps the switcher and header controls usable on narrow mobile widths', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('keeps the switcher and header controls usable on narrow mobile widths', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     for (const width of [320, 375, 390]) {
       await page.setViewportSize({ width, height: 844 })
       await page.goto('/tasks')
@@ -154,7 +142,7 @@ test.describe.serial('Product Line switcher real UI journey', () => {
     }
   })
 
-  test('broadcasts selected Product Line scope to another real app tab', { tag: ARGOS_TEST_TAGS }, async ({ page }, testInfo) => {
+  test('broadcasts selected Product Line scope to another real app tab', { tag: VISUAL_TEST_TAGS }, async ({ page }, testInfo) => {
     const pageB = await page.context().newPage()
     await freezeProductLineVisualClock(pageB)
     await page.goto('/tasks')

@@ -1,0 +1,17 @@
+{
+  "decision_q": "Q39",
+  "hypothesis": "For ≥ sample-size codex turns, every stdout 'turn.completed.usage' event's provider_timestamp_ms matches the rollout-*.jsonl row for the same (session_id, turn_id). Confirmed verdict locks cli_stdout_json enforcement_eligibility='hard' and dedupe_confidence='high'.",
+  "sample_size_min": 3,
+  "observed": {
+    "stdout_events": 0,
+    "rollout_events_new": 0,
+    "matched": 0,
+    "mismatched": 0,
+    "stdout_only": 0,
+    "rollout_only": 0,
+    "stderr_hint": "Reading additional input from stdin...\n"
+  },
+  "verdict": "downgraded",
+  "downgrade_target": "medium-confidence",
+  "captured_at": "2026-05-03T18:25:26.637Z"
+}

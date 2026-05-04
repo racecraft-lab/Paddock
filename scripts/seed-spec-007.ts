@@ -19,7 +19,7 @@
  * but is NOT a requirement for the SPEC-007 quality gate.
  *
  * Determinism: all timestamps derive from `SPEC_007_FIXED_NOW`
- * (2026-05-02T12:00:00.000Z) so Argos screenshots are byte-stable.
+ * (2026-05-02T12:00:00.000Z) so visual snapshots are byte-stable.
  *
  * Strict-scope note: this file is registered in the SPEC-007 allowlist via
  * `ALLOWED_PREFIXES` in `src/lib/__tests__/task-artifacts.enums.test.ts`

@@ -25,7 +25,7 @@ Manage agent fleets, track tasks, monitor costs, and orchestrate workflows — a
 - 165 unit tests (Vitest)
 - 295 E2E tests (Playwright)
 
-**Hero visual:** Use current Argos or release-page visual artifacts. Do not add generated dashboard screenshots back to source control by default.
+**Hero visual:** Use current visual-regression or release-page visual artifacts. Do not add generated dashboard screenshots back to source control by default.
 
 ---
 

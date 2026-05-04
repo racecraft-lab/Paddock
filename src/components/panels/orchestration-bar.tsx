@@ -303,6 +303,7 @@ export function OrchestrationBar() {
             onClick={() => setActiveTab(tab)}
             variant="ghost"
             size="sm"
+            data-testid={tab === 'pipelines' ? 'pipeline-editor-entry' : undefined}
             className={`rounded-t-md rounded-b-none ${
               activeTab === tab
                 ? 'bg-secondary text-foreground border border-border border-b-transparent'

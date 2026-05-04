@@ -836,7 +836,7 @@ export function TaskBoardPanel() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowProjectManager(true)}>
+          <Button variant="outline" onClick={() => setShowProjectManager(true)} data-testid="project-manager-open">
             {t('projects')}
           </Button>
           {!isLocal && (
@@ -956,6 +956,7 @@ export function TaskBoardPanel() {
             key={column.key}
             role="region"
             aria-label={t('columnAriaLabel', { title: column.title, count: tasksByStatus[column.key]?.length || 0 })}
+            data-testid={column.key === 'ready_for_owner' ? 'ready-for-owner-kanban-col' : undefined}
             className="flex-1 min-w-80 min-h-0 bg-surface-0 border border-border/60 rounded-xl flex flex-col transition-colors duration-200 [&.drag-over]:border-primary/40 [&.drag-over]:bg-primary/[0.02]"
             onDragEnter={(e) => handleDragEnter(e)}
             onDragLeave={handleDragLeave}

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'node:crypto'
+import { readFile, writeFile } from 'node:fs/promises'
 import { requireRole } from '@/lib/auth'
 import { logAuditEvent } from '@/lib/db'
 import { config } from '@/lib/config'
@@ -47,8 +48,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { readFile } = require('fs/promises')
-    const raw = await readFile(configPath, 'utf-8')
+    const raw = await readFile(/* turbopackIgnore: true */ configPath, 'utf-8')
     const parsed = parseJsonRelaxed<Record<string, unknown>>(raw)
     const hash = computeHash(raw)
 
@@ -137,8 +137,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const { readFile, writeFile } = require('fs/promises')
-    const raw = await readFile(configPath, 'utf-8')
+    const raw = await readFile(/* turbopackIgnore: true */ configPath, 'utf-8')
 
     // Hash-based concurrency check
     const clientHash = (body as any).hash
@@ -173,7 +172,7 @@ export async function PUT(request: NextRequest) {
 
     // Write back with pretty formatting
     const newRaw = JSON.stringify(parsed, null, 2) + '\n'
-    await writeFile(configPath, newRaw)
+    await writeFile(/* turbopackIgnore: true */ configPath, newRaw)
 
     const ipAddress = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
     logAuditEvent({

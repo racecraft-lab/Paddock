@@ -770,43 +770,34 @@ export const useMissionControl = create<MissionControlStore>()(
     showOnboarding: false,
     setShowOnboarding: (show) => set({ showOnboarding: show }),
 
-    // Update availability
-    updateAvailable: null,
-    updateDismissedVersion: (() => {
-      if (typeof window === 'undefined') return null
-      try { return localStorage.getItem('mc-update-dismissed-version') } catch { return null }
-    })(),
-    setUpdateAvailable: (info) => set({ updateAvailable: info }),
-    dismissUpdate: (version) => {
-      try { localStorage.setItem('mc-update-dismissed-version', version) } catch {}
-      set({ updateDismissedVersion: version })
-    },
+	    // Update availability
+	    updateAvailable: null,
+	    updateDismissedVersion: getStorageItem('mc-update-dismissed-version'),
+	    setUpdateAvailable: (info) => set({ updateAvailable: info }),
+	    dismissUpdate: (version) => {
+	      setStorageItem('mc-update-dismissed-version', version)
+	      set({ updateDismissedVersion: version })
+	    },
 
-    // OpenClaw update availability
-    openclawUpdate: null,
-    openclawUpdateDismissedVersion: (() => {
-      if (typeof window === 'undefined') return null
-      try { return localStorage.getItem('mc-openclaw-update-dismissed') } catch { return null }
-    })(),
-    setOpenclawUpdate: (info) => set({ openclawUpdate: info }),
-    dismissOpenclawUpdate: (version) => {
-      try { localStorage.setItem('mc-openclaw-update-dismissed', version) } catch {}
-      set({ openclawUpdateDismissedVersion: version })
-    },
+	    // OpenClaw update availability
+	    openclawUpdate: null,
+	    openclawUpdateDismissedVersion: getStorageItem('mc-openclaw-update-dismissed'),
+	    setOpenclawUpdate: (info) => set({ openclawUpdate: info }),
+	    dismissOpenclawUpdate: (version) => {
+	      setStorageItem('mc-openclaw-update-dismissed', version)
+	      set({ openclawUpdateDismissedVersion: version })
+	    },
 
     // OpenClaw Doctor banner dismiss
-    doctorDismissedAt: (() => {
-      if (typeof window === 'undefined') return null
-      try {
-        const raw = localStorage.getItem('mc-doctor-dismissed-at')
-        return raw ? Number(raw) : null
-      } catch { return null }
-    })(),
-    dismissDoctor: () => {
-      const now = Date.now()
-      try { localStorage.setItem('mc-doctor-dismissed-at', String(now)) } catch {}
-      set({ doctorDismissedAt: now })
-    },
+	    doctorDismissedAt: (() => {
+	      const raw = getStorageItem('mc-doctor-dismissed-at')
+	      return raw ? Number(raw) : null
+	    })(),
+	    dismissDoctor: () => {
+	      const now = Date.now()
+	      setStorageItem('mc-doctor-dismissed-at', String(now))
+	      set({ doctorDismissedAt: now })
+	    },
 
     // Connection state
     connection: {
@@ -956,25 +947,24 @@ export const useMissionControl = create<MissionControlStore>()(
     currentUser: null,
     setCurrentUser: (user) => set({ currentUser: user }),
 
-    // Tenant / Organization context
-    activeTenant: (() => {
-      if (typeof window === 'undefined') return null
-      try {
-        const raw = localStorage.getItem('mc-active-tenant')
-        return raw ? JSON.parse(raw) as Tenant : null
-      } catch { return null }
-    })(),
+	    // Tenant / Organization context
+	    activeTenant: (() => {
+	      try {
+	        const raw = getStorageItem('mc-active-tenant')
+	        return raw ? JSON.parse(raw) as Tenant : null
+	      } catch { return null }
+	    })(),
     tenants: [],
     osUsers: [],
-    setActiveTenant: (tenant) => {
-      try {
-        if (tenant) {
-          localStorage.setItem('mc-active-tenant', JSON.stringify(tenant))
-        } else {
-          localStorage.removeItem('mc-active-tenant')
-        }
-      } catch {}
-      set({ activeTenant: tenant })
+	    setActiveTenant: (tenant) => {
+	      try {
+	        if (tenant) {
+	          setStorageItem('mc-active-tenant', JSON.stringify(tenant))
+	        } else {
+	          removeStorageItem('mc-active-tenant')
+	        }
+	      } catch {}
+	      set({ activeTenant: tenant })
     },
     setTenants: (tenants) => set({ tenants }),
     fetchTenants: async () => {
@@ -995,24 +985,23 @@ export const useMissionControl = create<MissionControlStore>()(
       } catch {}
     },
 
-    // Project context
-    activeProject: (() => {
-      if (typeof window === 'undefined') return null
-      try {
-        const raw = localStorage.getItem('mc-active-project')
-        return raw ? JSON.parse(raw) as Project : null
-      } catch { return null }
-    })(),
+	    // Project context
+	    activeProject: (() => {
+	      try {
+	        const raw = getStorageItem('mc-active-project')
+	        return raw ? JSON.parse(raw) as Project : null
+	      } catch { return null }
+	    })(),
     projects: [],
-    setActiveProject: (project) => {
-      try {
-        if (project) {
-          localStorage.setItem('mc-active-project', JSON.stringify(project))
-        } else {
-          localStorage.removeItem('mc-active-project')
-        }
-      } catch {}
-      set({ activeProject: project })
+	    setActiveProject: (project) => {
+	      try {
+	        if (project) {
+	          setStorageItem('mc-active-project', JSON.stringify(project))
+	        } else {
+	          removeStorageItem('mc-active-project')
+	        }
+	      } catch {}
+	      set({ activeProject: project })
     },
     setProjects: (projects) => set({ projects }),
     fetchProjects: async () => {
@@ -1182,27 +1171,26 @@ export const useMissionControl = create<MissionControlStore>()(
     securityPosture: undefined,
     setSecurityPosture: (posture) => set({ securityPosture: posture }),
 
-    // Dashboard Layout
-    dashboardLayout: (() => {
-      if (typeof window === 'undefined') return null
-      try {
-        const raw = localStorage.getItem('mc-dashboard-layout')
-        return raw ? JSON.parse(raw) as string[] : null
-      } catch { return null }
-    })(),
+	    // Dashboard Layout
+	    dashboardLayout: (() => {
+	      try {
+	        const raw = getStorageItem('mc-dashboard-layout')
+	        return raw ? JSON.parse(raw) as string[] : null
+	      } catch { return null }
+	    })(),
     setDashboardLayout: (layoutOrUpdater) => {
       const currentLayout = get().dashboardLayout
       const layout = typeof layoutOrUpdater === 'function'
         ? layoutOrUpdater(currentLayout)
         : layoutOrUpdater
-      try {
-        if (layout) {
-          localStorage.setItem('mc-dashboard-layout', JSON.stringify(layout))
-        } else {
-          localStorage.removeItem('mc-dashboard-layout')
-        }
-      } catch {}
-      set({ dashboardLayout: layout })
+	      try {
+	        if (layout) {
+	          setStorageItem('mc-dashboard-layout', JSON.stringify(layout))
+	        } else {
+	          removeStorageItem('mc-dashboard-layout')
+	        }
+	      } catch {}
+	      set({ dashboardLayout: layout })
     },
 
     // Interface Mode
@@ -1210,58 +1198,48 @@ export const useMissionControl = create<MissionControlStore>()(
     setInterfaceMode: (mode) => set({ interfaceMode: mode }),
 
     // UI State — sidebar & layout persistence
-    activeTab: 'overview',
-    sidebarExpanded: (() => {
-      if (typeof window === 'undefined') return false
-      try { return localStorage.getItem('mc-sidebar-expanded') === 'true' } catch { return false }
-    })(),
-    collapsedGroups: (() => {
-      if (typeof window === 'undefined') return [] as string[]
-      try {
-        const raw = localStorage.getItem('mc-sidebar-groups')
-        return raw ? JSON.parse(raw) as string[] : []
-      } catch { return [] as string[] }
-    })(),
-    liveFeedOpen: (() => {
-      if (typeof window === 'undefined') return true
-      try { return localStorage.getItem('mc-livefeed-open') !== 'false' } catch { return true }
-    })(),
-    headerDensity: (() => {
-      if (typeof window === 'undefined') return 'focus' as const
-      try {
-        const raw = localStorage.getItem('mc-header-density')
-        return raw === 'compact' ? 'compact' : 'focus'
-      } catch { return 'focus' as const }
-    })(),
+	    activeTab: 'overview',
+	    sidebarExpanded: getStorageItem('mc-sidebar-expanded') === 'true',
+	    collapsedGroups: (() => {
+	      try {
+	        const raw = getStorageItem('mc-sidebar-groups')
+	        return raw ? JSON.parse(raw) as string[] : []
+	      } catch { return [] as string[] }
+	    })(),
+	    liveFeedOpen: getStorageItem('mc-livefeed-open') !== 'false',
+	    headerDensity: (() => {
+	      const raw = getStorageItem('mc-header-density')
+	      return raw === 'compact' ? 'compact' : 'focus'
+	    })(),
     setActiveTab: (tab) => set({ activeTab: tab }),
     toggleSidebar: () =>
-      set((state) => {
-        const next = !state.sidebarExpanded
-        try { localStorage.setItem('mc-sidebar-expanded', String(next)) } catch {}
-        return { sidebarExpanded: next }
-      }),
-    setSidebarExpanded: (expanded) => {
-      try { localStorage.setItem('mc-sidebar-expanded', String(expanded)) } catch {}
-      set({ sidebarExpanded: expanded })
-    },
+	      set((state) => {
+	        const next = !state.sidebarExpanded
+	        setStorageItem('mc-sidebar-expanded', String(next))
+	        return { sidebarExpanded: next }
+	      }),
+	    setSidebarExpanded: (expanded) => {
+	      setStorageItem('mc-sidebar-expanded', String(expanded))
+	      set({ sidebarExpanded: expanded })
+	    },
     toggleGroup: (groupId) =>
       set((state) => {
-        const next = state.collapsedGroups.includes(groupId)
-          ? state.collapsedGroups.filter(g => g !== groupId)
-          : [...state.collapsedGroups, groupId]
-        try { localStorage.setItem('mc-sidebar-groups', JSON.stringify(next)) } catch {}
-        return { collapsedGroups: next }
-      }),
+	        const next = state.collapsedGroups.includes(groupId)
+	          ? state.collapsedGroups.filter(g => g !== groupId)
+	          : [...state.collapsedGroups, groupId]
+	        setStorageItem('mc-sidebar-groups', JSON.stringify(next))
+	        return { collapsedGroups: next }
+	      }),
     toggleLiveFeed: () =>
-      set((state) => {
-        const next = !state.liveFeedOpen
-        try { localStorage.setItem('mc-livefeed-open', String(next)) } catch {}
-        return { liveFeedOpen: next }
-      }),
-    setHeaderDensity: (mode) => {
-      try { localStorage.setItem('mc-header-density', mode) } catch {}
-      set({ headerDensity: mode })
-    },
+	      set((state) => {
+	        const next = !state.liveFeedOpen
+	        setStorageItem('mc-livefeed-open', String(next))
+	        return { liveFeedOpen: next }
+	      }),
+	    setHeaderDensity: (mode) => {
+	      setStorageItem('mc-header-density', mode)
+	      set({ headerDensity: mode })
+	    },
 
     // Mission Control Phase 2 - Tasks
     tasks: [],

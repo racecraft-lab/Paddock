@@ -6,7 +6,7 @@
  */
 
 import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { spawnSync } from 'node:child_process'
 import Database from 'better-sqlite3'
 import { config } from './config'
@@ -61,7 +61,7 @@ function hasHermesCliBinary(): boolean {
 
   // Check common install locations including the data directory's local bin.
   // In Docker, HOME=/nonexistent so we also check dataDir as effective HOME.
-  const dataDir = require('node:path').resolve(config.dataDir || '.data')
+  const dataDir = resolve(/* turbopackIgnore: true */ config.dataDir || '.data')
   const homeDir = config.homeDir || process.env.HOME || ''
   const candidates = [
     process.env.HERMES_BIN,
@@ -75,7 +75,7 @@ function hasHermesCliBinary(): boolean {
   const installed = candidates.some((bin) => {
     try {
       // First check if the file exists (fast path for absolute paths)
-      if (bin.startsWith('/') && !existsSync(bin)) {
+      if (bin.startsWith('/') && !existsSync(/* turbopackIgnore: true */ bin)) {
         logger.debug({ bin }, 'hermes candidate not found on disk')
         return false
       }
@@ -132,10 +132,10 @@ function parseGatewayPid(raw: string): number | null {
 
 export function isHermesGatewayRunning(): boolean {
   const pidPath = getHermesPidPath()
-  if (!existsSync(pidPath)) return false
+  if (!existsSync(/* turbopackIgnore: true */ pidPath)) return false
 
   try {
-    const pidStr = readFileSync(pidPath, 'utf8')
+    const pidStr = readFileSync(/* turbopackIgnore: true */ pidPath, 'utf8')
     const pid = parseGatewayPid(pidStr)
     if (!pid) return false
     // Check if process exists (signal 0 doesn't kill, just checks)
@@ -154,7 +154,7 @@ function epochSecondsToISO(epoch: number | null): string | null {
 
 export function scanHermesSessions(limit = DEFAULT_SESSION_LIMIT): HermesSessionStats[] {
   const dbPath = getHermesDbPath()
-  if (!existsSync(dbPath)) return []
+  if (!existsSync(/* turbopackIgnore: true */ dbPath)) return []
 
   let db: Database.Database | null = null
   try {

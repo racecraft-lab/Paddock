@@ -4,9 +4,10 @@
 # directories, then run Playwright against those containers.
 #
 # The host-mounted data directories are intentional: the default run validates a
-# clean flag-off container first, then seeds FEATURE_WORKSPACE_SWITCHER and
-# SPEC-005 ready-for-owner fixtures into a fresh mounted SQLite database before
-# running the flag-on Product Line, Ready for Owner, and SPEC-007 journeys.
+# clean flag-off container first, then seeds every current RC Factory feature
+# flag plus SPEC-005, SPEC-007, and SPEC-008 fixtures into a fresh mounted
+# SQLite database before running the flag-on Product Line, Ready for Owner,
+# SPEC-007, and SPEC-008 journeys.
 #
 # Usage:
 #   bash scripts/e2e-docker.sh
@@ -96,19 +97,19 @@ run_playwright() {
   local preseeded="$2"
   local ready_for_owner_preseeded="$3"
   local spec_007_preseeded="$4"
-  shift 4
+  local spec_008_preseeded="$5"
+  shift 5
 
   AUTH_USER="$AUTH_USER" \
   AUTH_PASS="$AUTH_PASS" \
   API_KEY="$API_KEY" \
+  MC_VISUAL_SNAPSHOTS="${MC_VISUAL_SNAPSHOTS:-1}" \
+  MC_VISUAL_OUTPUT_DIR="${MC_VISUAL_OUTPUT_DIR:-test-results/visual-current}" \
   MC_E2E_SCREENSHOTS="${MC_E2E_SCREENSHOTS:-1}" \
-  ARGOS_PLAYWRIGHT_SCREENSHOTS="${ARGOS_PLAYWRIGHT_SCREENSHOTS:-0}" \
-  ARGOS_PLAYWRIGHT_TRACES="${ARGOS_PLAYWRIGHT_TRACES:-0}" \
-  ARGOS_UPLOAD_TO_ARGOS="${ARGOS_UPLOAD_TO_ARGOS:-0}" \
-  ARGOS_TOKEN="${ARGOS_TOKEN:-}" \
   MC_E2E_WORKSPACE_SWITCHER_PRESEEDED="$preseeded" \
   MC_READY_FOR_OWNER_PRESEEDED="$ready_for_owner_preseeded" \
   MC_SPEC_007_PRESEEDED="$spec_007_preseeded" \
+  MC_SPEC_008_PRESEEDED="$spec_008_preseeded" \
   E2E_BASE_URL="http://127.0.0.1:${PORT}" \
   MISSION_CONTROL_DB_PATH="$data_dir/mission-control.db" \
   pnpm exec playwright test -c playwright.docker.config.ts "$@"
@@ -132,6 +133,15 @@ should_seed_spec_007() {
   return 1
 }
 
+should_seed_spec_008() {
+  for target in "$@"; do
+    if [[ "$target" == *"governance-"*".e2e.ts"* ]] || [[ "$target" == *"governance-"*".spec.ts"* ]] || [[ "$target" == *"feature-flag-matrix.e2e.ts"* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 echo "[e2e-docker] building image ${IMAGE}..."
 docker build -t "$IMAGE" .
 
@@ -142,8 +152,8 @@ if [ "$#" -eq 0 ]; then
   start_container "$FLAG_OFF_CONTAINER" "$FLAG_OFF_DATA_DIR"
 
   echo "[e2e-docker] running clean flag-off regression suite."
-  ARGOS_UPLOAD_TO_ARGOS=0 ARGOS_PLAYWRIGHT_SCREENSHOTS=0 ARGOS_PLAYWRIGHT_TRACES=0 \
-    run_playwright "$FLAG_OFF_DATA_DIR" 0 0 0 tests/workspace-switcher-flag-off.spec.ts
+  MC_VISUAL_SNAPSHOTS=0 MC_E2E_SCREENSHOTS=0 \
+    run_playwright "$FLAG_OFF_DATA_DIR" 0 0 0 0 tests/workspace-switcher-flag-off.spec.ts
 
   docker rm -f "$FLAG_OFF_CONTAINER" >/dev/null
 
@@ -158,20 +168,39 @@ if [ "$#" -eq 0 ]; then
   MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-ready-for-owner.cjs
   echo "[e2e-docker] seeding SPEC-007 disposition/artifact fixture in mounted database..."
   MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-007.cjs
+  echo "[e2e-docker] seeding SPEC-008 governance fixture in mounted database..."
+  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-008.cjs
 
   echo "[e2e-docker] restarting container so seeded database state is read at boot..."
   docker restart "$FLAG_ON_CONTAINER" >/dev/null
   wait_for_health "$FLAG_ON_CONTAINER"
 
-  echo "[e2e-docker] running seeded Product Line, Ready for Owner, and SPEC-007 e2e suite."
-  run_playwright "$FLAG_ON_DATA_DIR" 1 1 1 \
+  echo "[e2e-docker] running seeded Product Line, Ready for Owner, SPEC-007, and SPEC-008 e2e suite."
+  run_playwright "$FLAG_ON_DATA_DIR" 1 1 1 1 \
     tests/product-line-switcher-ui.spec.ts \
     tests/feature-flags-admin-ui.spec.ts \
     tests/e2e/ready-for-owner-kanban.spec.ts \
     tests/e2e/spec-007-ui-visual.spec.ts \
     tests/product-line-scope-api.spec.ts \
     tests/product-line-scope-matrix.spec.ts \
-    tests/product-line-events.spec.ts
+    tests/product-line-events.spec.ts \
+    tests/e2e/feature-flag-matrix.e2e.ts \
+    tests/e2e/governance-aegis-starvation.e2e.ts \
+    tests/e2e/governance-budget.e2e.ts \
+    tests/e2e/governance-bulk-promote.e2e.ts \
+    tests/e2e/governance-calibration-progress.e2e.ts \
+    tests/e2e/governance-diagnostic-feed.e2e.ts \
+    tests/e2e/governance-dispatch-feed.spec.ts \
+    tests/e2e/governance-etag-conflict-toast.e2e.ts \
+    tests/e2e/governance-flag-off-byte-compat.e2e.ts \
+    tests/e2e/governance-modal-error-summary.e2e.ts \
+    tests/e2e/governance-override-grant.e2e.ts \
+    tests/e2e/governance-system-health-recovery.e2e.ts \
+    tests/e2e/governance-system-health.spec.ts \
+    tests/e2e/governance-tab-landing.e2e.ts \
+    tests/e2e/governance-telemetry-health.e2e.ts \
+    tests/e2e/governance-windows.e2e.ts \
+    tests/e2e/governance-wip-policy.e2e.ts
 else
   DATA_DIR="$(create_data_dir)"
   DATA_DIRS+=("$DATA_DIR")
@@ -193,6 +222,12 @@ else
       MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-007.cjs
       SPEC_007_PRESEEDED=1
     fi
+    SPEC_008_PRESEEDED=0
+    if should_seed_spec_008 "$@"; then
+      echo "[e2e-docker] seeding SPEC-008 governance fixture in mounted database..."
+      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-008.cjs
+      SPEC_008_PRESEEDED=1
+    fi
     echo "[e2e-docker] restarting container so seeded database state is read at boot..."
     docker restart "$CONTAINER" >/dev/null
     wait_for_health "$CONTAINER"
@@ -201,10 +236,11 @@ else
     PRESEEDED=0
     READY_FOR_OWNER_PRESEEDED=0
     SPEC_007_PRESEEDED=0
+    SPEC_008_PRESEEDED=0
   fi
 
   echo "[e2e-docker] container ready; running Playwright."
-  run_playwright "$DATA_DIR" "$PRESEEDED" "$READY_FOR_OWNER_PRESEEDED" "$SPEC_007_PRESEEDED" "$@"
+  run_playwright "$DATA_DIR" "$PRESEEDED" "$READY_FOR_OWNER_PRESEEDED" "$SPEC_007_PRESEEDED" "$SPEC_008_PRESEEDED" "$@"
 fi
 
 echo "[e2e-docker] done. Container and data directory will be removed."

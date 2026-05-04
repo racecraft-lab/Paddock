@@ -1,0 +1,127 @@
+openapi: 3.1.0
+info:
+  title: SPEC-008 Governance — Decisions + Dispatch Feed
+  version: 1.0.0
+  description: |
+    Read-only diagnostic feed for evaluator decisions, with cursor-based
+    pagination and SSE live-append per FR-090j.
+    Sources: spec.md FR-189, FR-190, FR-196, FR-215, FR-090j, FR-297, FR-308.
+servers:
+  - url: /api/governance
+paths:
+  /decisions:
+    get:
+      summary: List decisions (cursor-paginated; filter-by per FR-189)
+      parameters:
+        - in: query
+          name: cursor
+          description: Base64-encoded `(created_at,id)` from prior `next_cursor`.
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50, maximum: 200 }
+        - in: query
+          name: agent
+          schema: { type: string }
+        - in: query
+          name: reason
+          schema: { type: string }
+        - in: query
+          name: policy_id
+          schema: { type: integer }
+        - in: query
+          name: from_ts
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to_ts
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Decision page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DecisionPage' }
+  /dispatch:
+    get:
+      summary: Dispatch decision feed (FR-090j)
+      description: |
+        Cursor pagination keyed `(created_at DESC, id DESC)`; default limit 50,
+        max 200. Live updates streamed via SSE event `dispatch_decision` and
+        prepended to the current page (no re-query on insert).
+      parameters:
+        - in: query
+          name: cursor
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50, maximum: 200 }
+        - in: query
+          name: agent
+          schema: { type: string }
+        - in: query
+          name: decision
+          schema: { type: string, enum: [allow, defer, block] }
+      responses:
+        '200':
+          description: Dispatch decision page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DispatchPage' }
+            text/event-stream:
+              description: |
+                SSE stream when `Accept: text/event-stream`. Events:
+                  - `dispatch_decision`: full DispatchDecision JSON payload.
+                  - `heartbeat`: 15s keep-alive.
+              schema:
+                type: string
+                example: |
+                  event: dispatch_decision
+                  data: {"decision_id":"...", "decision":"defer", ...}
+
+                  event: heartbeat
+                  data: {}
+components:
+  schemas:
+    Decision:
+      type: object
+      additionalProperties: false
+      required: [decision_id, ts, decision, policy_ids, reasons, latency_ms]
+      properties:
+        decision_id: { type: string, format: uuid }
+        ts: { type: string, format: date-time }
+        task_id: { type: string }
+        agent_id: { type: string }
+        workspace_id: { type: integer }
+        evaluator_version: { type: integer }
+        decision: { type: string, enum: [allow, defer, block] }
+        precedence_rank: { type: integer }
+        policy_ids:
+          type: array
+          items: { type: integer }
+        reasons:
+          type: array
+          items: { type: string }
+        latency_ms: { type: number }
+        breaker_state: { type: string, enum: [closed, half_open, open] }
+        evaluation_snapshot: { type: object, additionalProperties: true }
+    DispatchDecision:
+      allOf:
+        - $ref: '#/components/schemas/Decision'
+    DecisionPage:
+      type: object
+      additionalProperties: false
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/Decision' }
+        next_cursor: { type: string, nullable: true }
+    DispatchPage:
+      type: object
+      additionalProperties: false
+      required: [rows]
+      properties:
+        rows:
+          type: array
+          items: { $ref: '#/components/schemas/DispatchDecision' }
+        next_cursor: { type: string, nullable: true }
