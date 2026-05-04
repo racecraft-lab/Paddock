@@ -9,6 +9,8 @@
 - Visual reports fail to publish to GitHub Pages.
 - Or: the `visual-regression-pages` branch was deleted or Pages was
   reconfigured away from that branch.
+- Or: Pages report directories load but the review queue, raw reg-viz fallback,
+  or report-local image assets are missing.
 
 ## 2. Impact
 
@@ -60,6 +62,12 @@
   `https://racecraft-lab.github.io/mission-control/pr/<PR>/`.
 - Each affected PR report path contains report-local `__reg__` image assets,
   for example `/pr/<PR>/storybook/latest/__reg__/1_actual/`.
+- Each affected PR report path contains:
+  - `index.html` for the visual review app.
+  - `reg-viz.html` for the raw reg-viz fallback report.
+  - `visual-review-app.css` and `visual-review-app.js`.
+  - `__reg__/0_diff`, `__reg__/1_actual`, and `__reg__/2_expected` when that
+    report includes changed/current/baseline images.
 
 ## 7. Postmortem
 

@@ -14,10 +14,16 @@ merging the PR must confirm the visual baseline before merge.
 3. Open the GitHub Pages PR visual review links posted by the workflows:
    - `https://racecraft-lab.github.io/mission-control/pr/<PR>/playwright/latest/`
    - `https://racecraft-lab.github.io/mission-control/pr/<PR>/storybook/latest/`
-4. Review every changed baseline, current, and diff image in the report.
-5. Approve intentional UI changes in the PR review. For accidental diffs,
+4. Use the review queue to inspect every changed, new, and removed snapshot.
+   Changed snapshots expose baseline/current side-by-side, highlighter,
+   overlay, and blink views. `reg-viz.html` remains available in each report
+   directory as the raw fallback report.
+5. Mark each intentional local review decision in the Pages app, copy the
+   summary, and paste the final approval or request-changes note into the PR.
+   The Pages app stores review marks in browser-local storage only.
+6. Approve intentional UI changes in the PR review. For accidental diffs,
    request changes and link the failing report artifact.
-6. Operators may merge once the visual regression, manifest, accessibility,
+7. Operators may merge once the visual regression, manifest, accessibility,
    lint, typecheck, unit, and e2e checks are green.
 
 ## Main Baselines
@@ -26,10 +32,13 @@ Merged `main` runs publish provider-neutral baselines with `reg-suit` to
 GitHub Pages on the `visual-regression-pages` branch. PR checks compare
 against those baselines without relying on a paid visual SaaS account.
 
-PR runs also publish their generated `reg-actions` report HTML and referenced
-`__reg__` image assets to the same Pages branch under `/pr/<PR>/`. The report
-links expose the baseline, current, and diff panes for peer review without
-downloading Actions artifacts.
+PR runs also publish a static visual review app, the generated `reg-actions`
+report HTML, and referenced `__reg__` image assets to the same Pages branch
+under `/pr/<PR>/`. The Pages entrypoint exposes the queue, filters, baseline,
+current, diff, new, and removed image panes for peer review without downloading
+Actions artifacts. The reusable app source is maintained in the private
+`racecraft-lab/visual-review-pages` repository and vendored into
+`scripts/visual-review-app.{css,js}` for this workflow.
 
 Required repository setting:
 
