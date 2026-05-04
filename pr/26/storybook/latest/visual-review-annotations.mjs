@@ -24,16 +24,28 @@ export function annotationPageHref({ asset = 'current', basePath, itemId }) {
   return url.href
 }
 
-export function imageCoordinatesFromAnnotation({ annotation, imageRect, naturalSize }) {
-  const point = annotationPoint(annotation)
-  const xPct = clampPercent(((point.x - imageRect.x) / imageRect.width) * 100)
-  const yPct = clampPercent(((point.y - imageRect.y) / imageRect.height) * 100)
+export function annotationPointIntersectsImage({ annotation, imageRect, viewport }) {
+  const point = annotationViewportPoint(annotation, viewport)
+  return point.x >= imageRect.x &&
+    point.x <= imageRect.x + imageRect.width &&
+    point.y >= imageRect.y &&
+    point.y <= imageRect.y + imageRect.height
+}
+
+export function imageCoordinatesFromAnnotation({ annotation, imageRect, naturalSize, viewport }) {
+  const point = annotationViewportPoint(annotation, viewport)
+  if (!annotationPointIntersectsImage({ annotation, imageRect, viewport })) {
+    throw new RangeError('Annotation point is outside the reviewed image bounds.')
+  }
+
+  const xPct = round(((point.x - imageRect.x) / imageRect.width) * 100, 3)
+  const yPct = round(((point.y - imageRect.y) / imageRect.height) * 100, 3)
   const pixelX = Math.round((xPct / 100) * naturalSize.width)
   const pixelY = Math.round((yPct / 100) * naturalSize.height)
   const boxPct = annotation.boundingBox
     ? {
         x: clampPercent(((annotation.boundingBox.x - imageRect.x) / imageRect.width) * 100),
-        y: clampPercent(((annotation.boundingBox.y - imageRect.y) / imageRect.height) * 100),
+        y: clampPercent(((annotationBoxTop(annotation, viewport) - imageRect.y) / imageRect.height) * 100),
         width: clampPercent((annotation.boundingBox.width / imageRect.width) * 100),
         height: clampPercent((annotation.boundingBox.height / imageRect.height) * 100),
       }
@@ -164,17 +176,21 @@ function annotationMarkerPayload(annotation) {
   }
 }
 
-function annotationPoint(annotation) {
-  if (annotation?.boundingBox) {
-    return {
-      x: annotation.boundingBox.x + (annotation.boundingBox.width / 2),
-      y: annotation.boundingBox.y + (annotation.boundingBox.height / 2),
-    }
-  }
+function annotationViewportPoint(annotation, viewport = {}) {
+  const viewportWidth = Number(viewport.width || globalThis.innerWidth || 0)
+  const scrollY = Number(viewport.scrollY ?? globalThis.scrollY ?? 0)
+  const x = Number(annotation?.x || 0)
+  const y = Number(annotation?.y || 0)
   return {
-    x: Number(annotation?.x || 0),
-    y: Number(annotation?.y || 0),
+    x: viewportWidth > 0 ? (x / 100) * viewportWidth : x,
+    y: annotation?.isFixed ? y : y - scrollY,
   }
+}
+
+function annotationBoxTop(annotation, viewport = {}) {
+  const y = Number(annotation?.boundingBox?.y || 0)
+  const scrollY = Number(viewport.scrollY ?? globalThis.scrollY ?? 0)
+  return annotation?.isFixed ? y : y - scrollY
 }
 
 function sourceLabel(target) {

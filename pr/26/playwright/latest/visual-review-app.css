@@ -1510,6 +1510,45 @@ kbd {
   max-width: none;
 }
 
+.annotation-image-frame {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+
+.annotation-image-marker-layer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.annotation-image-marker {
+  position: absolute;
+  z-index: 2;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  background: #107e85;
+  box-shadow: 0 2px 8px rgba(23, 32, 51, 0.28);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.annotation-image-marker.posted {
+  background: #2f7c49;
+}
+
+[data-agentation-root] [data-annotation-marker] {
+  display: none !important;
+}
+
 .annotation-list {
   display: grid;
   gap: 8px;
