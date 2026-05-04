@@ -18,13 +18,26 @@ merging the PR must confirm the visual baseline before merge.
    Changed snapshots expose baseline/current side-by-side, highlighter,
    overlay, and blink views. `reg-viz.html` remains available in each report
    directory as the raw fallback report.
-5. Mark each intentional local review decision in the Pages app, copy the
-   summary, and paste the final approval or request-changes note into the PR.
-   The Pages app stores review marks in browser-local storage only.
-6. Approve intentional UI changes in the PR review. For accidental diffs,
+5. Mark each intentional review decision in the Pages app. The app persists
+   in browser-local storage immediately and can also export deterministic JSON
+   or copy a marker-delimited PR comment for manual backup.
+6. Publish shared PR review state:
+   - Preferred: enter a GitHub token in the Pages app, load current PR state,
+     then publish. For private repositories, use a fine-grained token with
+     repository metadata read access, Issues read/write access, and Commit
+     statuses read/write access.
+   - Fallback: use `Download JSON` / `Import JSON` to move review state between
+     browsers, or `Copy PR comment` and paste the generated comment into the PR.
+7. Repeat the review state publish from both report surfaces:
+   - `Playwright UI E2E`
+   - `Storybook Components`
+8. Confirm the `visual-review-approval` PR status is green. That status fails
+   until every required surface is approved, has zero rejected or open
+   snapshots, and was reviewed against the current PR head SHA.
+9. Approve intentional UI changes in the PR review. For accidental diffs,
    request changes and link the failing report artifact.
-7. Operators may merge once the visual regression, manifest, accessibility,
-   lint, typecheck, unit, and e2e checks are green.
+10. Operators may merge once the visual regression, manifest, accessibility,
+   lint, typecheck, unit, e2e, and `visual-review-approval` checks are green.
 
 ## Main Baselines
 
@@ -36,9 +49,23 @@ PR runs also publish a static visual review app, the generated `reg-actions`
 report HTML, and referenced `__reg__` image assets to the same Pages branch
 under `/pr/<PR>/`. The Pages entrypoint exposes the queue, filters, baseline,
 current, diff, new, and removed image panes for peer review without downloading
-Actions artifacts. The reusable app source is maintained in the private
-`racecraft-lab/visual-review-pages` repository and vendored into
-`scripts/visual-review-app.{css,js}` for this workflow.
+Actions artifacts.
+
+Review decisions are stored in three free, repository-native layers:
+
+- browser-local storage for immediate draft persistence;
+- exported JSON files for manual handoff or archival;
+- a marker-delimited GitHub PR comment for shared reviewer state.
+
+The `Visual Approval` workflow reads that PR comment and publishes the
+`visual-review-approval` commit status. The status is intentionally independent
+of paid visual SaaS services and can be marked as a required status check in
+branch protection rules.
+
+The Pages app also attempts to refresh `visual-review-approval` immediately
+after publishing the shared PR comment. This lets the PR status update without
+waiting for an `issue_comment` workflow run, provided the reviewer token has
+Commit statuses write access.
 
 Required repository setting:
 

@@ -163,7 +163,7 @@ function generateVisualReviewAppIndex({ context, payload }) {
     <div id="visual-review-root"></div>
     <noscript>This visual review app requires JavaScript. Open reg-viz.html for the static fallback report.</noscript>
     <script id="visual-review-data" type="application/json">${escapeJsonScript({ context, payload })}</script>
-    <script src="./visual-review-app.js" defer></script>
+    <script src="./visual-review-app.js" type="module"></script>
   </body>
 </html>
 `
@@ -266,6 +266,10 @@ async function writeReportBundle({ reportFile, reportHtml, extracted, targetDir,
   await writeFile(
     path.join(targetDir, 'visual-review-app.js'),
     await readFile(scriptAssetUrl('visual-review-app.js'), 'utf8')
+  )
+  await writeFile(
+    path.join(targetDir, 'visual-review-state.mjs'),
+    await readFile(scriptAssetUrl('visual-review-state.mjs'), 'utf8')
   )
   await writeFile(
     path.join(targetDir, 'index.html'),
@@ -639,7 +643,7 @@ async function publishReport(options) {
   const runKey = `${runId}-attempt-${runAttempt}`
   const headRef = safeBranchName(options['head-ref'] || process.env.GITHUB_HEAD_REF || prPayload.head?.ref)
   const baseRef = safeBranchName(options['base-ref'] || process.env.GITHUB_BASE_REF || prPayload.base?.ref)
-  const headSha = String(options.sha || process.env.GITHUB_SHA || prPayload.head?.sha || 'unknown')
+  const headSha = String(options.sha || prPayload.head?.sha || process.env.GITHUB_SHA || 'unknown')
   const workflowName = options.workflow || process.env.GITHUB_WORKFLOW || SURFACES[surface].label
   const runUrl = options['run-url'] || `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${repository}/actions/runs/${runId}`
   const prUrl = options['pr-url'] || prPayload.html_url || `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${repository}/pull/${prNumber}`

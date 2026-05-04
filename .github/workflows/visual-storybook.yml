@@ -23,9 +23,13 @@ on:
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
       - 'scripts/clean-visual-output.mjs'
+      - 'scripts/check-visual-review-approval.mjs'
       - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/write-storybook-visual-manifests.mjs'
       - 'scripts/verify-visual-manifest.mjs'
+      - 'scripts/visual-review-app.css'
+      - 'scripts/visual-review-app.js'
+      - 'scripts/visual-review-state.mjs'
       - 'regconfig*.json'
   push:
     branches:
@@ -51,9 +55,13 @@ on:
       - 'pnpm-lock.yaml'
       - 'vitest.storybook.config.ts'
       - 'scripts/clean-visual-output.mjs'
+      - 'scripts/check-visual-review-approval.mjs'
       - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/write-storybook-visual-manifests.mjs'
       - 'scripts/verify-visual-manifest.mjs'
+      - 'scripts/visual-review-app.css'
+      - 'scripts/visual-review-app.js'
+      - 'scripts/visual-review-state.mjs'
       - 'regconfig*.json'
 
 env:
