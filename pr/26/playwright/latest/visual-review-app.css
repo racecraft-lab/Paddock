@@ -257,7 +257,8 @@ a {
 .filter-btn:focus-visible,
 .btn:focus-visible,
 .snapshot-button:focus-visible,
-.segmented button:focus-visible {
+.segmented button:focus-visible,
+.annotation-edit-field:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
 }
@@ -265,7 +266,8 @@ a {
 .search,
 .group-select,
 .token-input,
-.review-comment-field textarea {
+.review-comment-field textarea,
+.annotation-edit-field {
   width: 100%;
   border: 1px solid var(--line-strong);
   border-radius: 7px;
@@ -1489,6 +1491,21 @@ kbd {
   font-size: 14px;
 }
 
+.annotation-card kbd {
+  display: inline-flex;
+  min-width: 20px;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: #fff;
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .annotation-steps {
   margin-top: 12px;
 }
@@ -1555,9 +1572,20 @@ kbd {
   margin-top: 10px;
 }
 
+.annotation-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.annotation-section-header .btn {
+  flex: 0 0 auto;
+}
+
 .annotation-note {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(110px, auto);
   gap: 10px;
   padding: 10px;
   border: 1px solid var(--line);
@@ -1573,6 +1601,11 @@ kbd {
 .annotation-note.failed {
   border-color: #f7b7b0;
   background: var(--rejected-soft);
+}
+
+.annotation-note-main,
+.annotation-note-side {
+  min-width: 0;
 }
 
 .annotation-note strong,
@@ -1593,11 +1626,49 @@ kbd {
   font-size: 12px;
 }
 
-.annotation-note > span {
+.annotation-note-side > span {
   color: var(--subtle);
   font-size: 10px;
   font-weight: 900;
   text-transform: uppercase;
+}
+
+.annotation-note-side {
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  gap: 8px;
+}
+
+.annotation-note-actions {
+  display: grid;
+  gap: 6px;
+  justify-items: stretch;
+}
+
+.annotation-note-actions .btn {
+  min-width: 112px;
+  min-height: 30px;
+  padding: 5px 8px;
+  white-space: nowrap;
+}
+
+.annotation-edit-form {
+  display: grid;
+  gap: 6px;
+}
+
+.annotation-edit-form span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.annotation-edit-field {
+  min-height: 82px;
+  resize: vertical;
+  line-height: 1.45;
 }
 
 .annotation-empty {
@@ -1729,6 +1800,24 @@ kbd {
 
   .range-row input {
     flex: 1;
+  }
+
+  .annotation-section-header,
+  .annotation-note {
+    grid-template-columns: 1fr;
+  }
+
+  .annotation-section-header {
+    display: grid;
+  }
+
+  .annotation-section-header .btn,
+  .annotation-note-actions .btn {
+    width: 100%;
+  }
+
+  .annotation-note-side {
+    justify-items: stretch;
   }
 
   .token-help-modal {

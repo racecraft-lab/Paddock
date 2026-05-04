@@ -1197,21 +1197,7 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
       await loadGithubUser()
       const merged = currentReviewState()
       const body = renderReviewComment(merged)
-      let comment = null
-
-      if (state.remoteCommentId) {
-        comment = await githubRequest(`/repos/${context.repository}/issues/comments/${state.remoteCommentId}`, {
-          body: { body },
-          method: 'PATCH',
-          requireToken: true,
-        })
-      } else {
-        comment = await githubRequest(`/repos/${context.repository}/issues/${context.prNumber}/comments`, {
-          body: { body },
-          method: 'POST',
-          requireToken: true,
-        })
-      }
+      const comment = await upsertManagedReviewComment(body)
 
       state.remoteAuthor = comment.user?.login || state.githubUser
       state.remoteCommentId = comment.id
@@ -1231,6 +1217,33 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     } catch (error) {
       setSyncState('error', error.message)
     }
+  }
+
+  async function upsertManagedReviewComment(body) {
+    const canPatchExistingComment = state.remoteCommentId &&
+      (!state.remoteAuthor || !state.githubUser || state.remoteAuthor === state.githubUser)
+
+    if (canPatchExistingComment) {
+      try {
+        return await githubRequest(`/repos/${context.repository}/issues/comments/${state.remoteCommentId}`, {
+          body: { body },
+          method: 'PATCH',
+          requireToken: true,
+        })
+      } catch (error) {
+        if (!isRecoverableManagedCommentPatchError(error)) throw error
+      }
+    }
+
+    return githubRequest(`/repos/${context.repository}/issues/${context.prNumber}/comments`, {
+      body: { body },
+      method: 'POST',
+      requireToken: true,
+    })
+  }
+
+  function isRecoverableManagedCommentPatchError(error) {
+    return error?.status === 403 || error?.status === 404
   }
 
   async function publishApprovalStatus(reviewState) {
@@ -1317,10 +1330,29 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
       } catch {
         detail = response.statusText
       }
-      throw new Error(`GitHub API ${response.status}: ${detail}`)
+      const error = new Error(githubErrorMessage(response.status, detail, path))
+      error.status = response.status
+      error.detail = detail
+      error.path = path
+      throw error
     }
 
     return response.status === 204 ? null : response.json()
+  }
+
+  function githubErrorMessage(status, detail, path) {
+    const base = `GitHub API ${status}: ${detail}`
+    if (status !== 403) return base
+
+    if (path.includes(`/repos/${context.repository}/statuses/`)) {
+      return `${base}. Token needs Commit statuses: Read and write for ${context.repository}, and organization approval if required.`
+    }
+
+    if (path.includes(`/repos/${context.repository}/issues/`) || path.includes(`/repos/${context.repository}/pulls/`)) {
+      return `${base}. Token needs Issues or Pull requests: Read and write for ${context.repository}, and organization approval if required.`
+    }
+
+    return `${base}. Recreate the token from this page and confirm repository access plus organization approval.`
   }
 
   function setSyncState(syncState, message) {
