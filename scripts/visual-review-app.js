@@ -490,8 +490,7 @@ import {
         </div>
         <div class="sync-controls">
           <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="GitHub token" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
-          <a class="btn" href="${escapeAttribute(githubTokenCreationUrl())}" target="_blank" rel="noopener noreferrer" data-token-create-link>Create token on GitHub</a>
-          <button class="btn" type="button" data-action="open-token-help">Token setup</button>
+          <button class="btn" type="button" data-action="open-token-help">Create token</button>
           <button class="btn" type="button" data-action="save-token">Use token</button>
           <button class="btn" type="button" data-action="load-pr-state">Load PR state</button>
           <button class="btn primary" type="button" data-action="publish-pr-state">Publish to PR</button>
