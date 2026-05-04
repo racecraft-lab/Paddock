@@ -896,10 +896,16 @@ kbd {
 }
 
 .token-help-intro,
+.token-help-direct,
 .token-help-note {
   margin: 12px 0 0;
   color: var(--muted);
   font-size: 14px;
+}
+
+.token-help-direct a {
+  color: var(--accent);
+  font-weight: 850;
 }
 
 .token-help-steps {

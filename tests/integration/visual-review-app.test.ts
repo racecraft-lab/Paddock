@@ -121,16 +121,25 @@ describe('visual review app guidance', () => {
   it('opens and dismisses GitHub token creation instructions', async () => {
     await loadVisualReviewApp()
 
+    const directTokenLink = document.querySelector<HTMLAnchorElement>('[data-token-create-link]')
+    expect(directTokenLink?.href).toContain('https://github.com/settings/personal-access-tokens/new')
+    expect(directTokenLink?.href).toContain('target_name=racecraft-lab')
+    expect(directTokenLink?.href).toContain('issues=write')
+    expect(directTokenLink?.href).toContain('statuses=write')
+
     document.querySelector<HTMLButtonElement>('[data-action="open-token-help"]')?.click()
 
     const dialog = document.querySelector<HTMLElement>('[role="dialog"]')
     expect(dialog?.textContent).toContain('Create a GitHub token')
-    expect(dialog?.textContent).toContain('Fine-grained tokens')
+    expect(dialog?.textContent).toContain('prefilled GitHub token page')
     expect(dialog?.textContent).toContain('Only select repositories')
     expect(dialog?.textContent).toContain('racecraft-lab/mission-control')
     expect(dialog?.textContent).toContain('Issues to Read and write')
     expect(dialog?.textContent).toContain('Commit statuses to Read and write')
     expect(dialog?.textContent).toContain('sessionStorage')
+    expect(dialog?.querySelector<HTMLAnchorElement>('[data-token-create-link]')?.href).toContain(
+      'https://github.com/settings/personal-access-tokens/new'
+    )
     expect(dialog?.querySelector<HTMLAnchorElement>('a[href*="docs.github.com"]')?.href).toContain(
       'managing-your-personal-access-tokens'
     )

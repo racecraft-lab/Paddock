@@ -19,6 +19,7 @@ import {
   const payload = data.payload
   const context = data.context
   const reviewableVariants = new Set(['changed', 'new', 'deleted'])
+  const githubTokenDocsUrl = 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token'
 
   const state = {
     activeId: null,
@@ -56,6 +57,21 @@ import {
 
   function githubTokenKey() {
     return `visual-review:${context.repository}:${context.prNumber}:github-token`
+  }
+
+  function githubTokenCreationUrl() {
+    const repositoryOwner = String(context.repository || '').split('/')[0]
+    const params = new URLSearchParams({
+      description: `Publish visual review state for ${context.repository}`,
+      expires_in: '30',
+      issues: 'write',
+      name: 'Mission Control visual review',
+      statuses: 'write',
+    })
+
+    if (repositoryOwner) params.set('target_name', repositoryOwner)
+
+    return `https://github.com/settings/personal-access-tokens/new?${params.toString()}`
   }
 
   function readReviews() {
@@ -474,7 +490,8 @@ import {
         </div>
         <div class="sync-controls">
           <input class="token-input" type="password" autocomplete="off" spellcheck="false" placeholder="GitHub token" value="${escapeAttribute(state.githubToken)}" data-action="github-token" />
-          <button class="btn" type="button" data-action="open-token-help">Create token</button>
+          <a class="btn" href="${escapeAttribute(githubTokenCreationUrl())}" target="_blank" rel="noopener noreferrer" data-token-create-link>Create token on GitHub</a>
+          <button class="btn" type="button" data-action="open-token-help">Token setup</button>
           <button class="btn" type="button" data-action="save-token">Use token</button>
           <button class="btn" type="button" data-action="load-pr-state">Load PR state</button>
           <button class="btn primary" type="button" data-action="publish-pr-state">Publish to PR</button>
@@ -485,7 +502,7 @@ import {
   }
 
   function renderTokenHelpModal() {
-    const docsUrl = 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token'
+    const tokenCreationUrl = githubTokenCreationUrl()
     return `
       <div class="modal-backdrop" data-action="close-token-help" aria-hidden="true"></div>
       <section class="token-help-modal" role="dialog" aria-modal="true" aria-labelledby="token-help-title">
@@ -500,8 +517,11 @@ import {
           <p class="token-help-intro">
             Use a fine-grained personal access token when GitHub asks for authentication. The token lets this browser publish the shared PR visual review comment and update the visual approval status.
           </p>
+          <p class="token-help-direct">
+            <a href="${escapeAttribute(tokenCreationUrl)}" target="_blank" rel="noopener noreferrer" data-token-create-link>Open the prefilled GitHub token page</a>
+          </p>
           <ol class="token-help-steps">
-            <li>Open GitHub, then choose your profile picture, Settings, Developer settings, Personal access tokens, Fine-grained tokens, and Generate new token.</li>
+            <li>Open the prefilled GitHub token page, then confirm the generated fine-grained token settings.</li>
             <li>Name the token for this review workflow and choose a short expiration.</li>
             <li>Set Resource owner to the owner of ${escapeHtml(context.repository)}.</li>
             <li>Choose Only select repositories, then select ${escapeHtml(context.repository)}.</li>
@@ -526,8 +546,9 @@ import {
             Tokens are stored only in this tab's sessionStorage and are never included in downloaded JSON or PR comments. If organization approval is pending or you do not want to use a token, use Download JSON, Import JSON, or Copy PR comment instead.
           </p>
           <div class="token-help-actions">
-            <a class="btn" href="${escapeAttribute(docsUrl)}" target="_blank" rel="noopener noreferrer">Open GitHub docs</a>
-            <button class="btn primary" type="button" data-action="close-token-help">Done</button>
+            <a class="btn primary" href="${escapeAttribute(tokenCreationUrl)}" target="_blank" rel="noopener noreferrer" data-token-create-link>Open GitHub token page</a>
+            <a class="btn" href="${escapeAttribute(githubTokenDocsUrl)}" target="_blank" rel="noopener noreferrer">Open GitHub docs</a>
+            <button class="btn" type="button" data-action="close-token-help">Done</button>
           </div>
         </div>
       </section>
