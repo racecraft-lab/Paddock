@@ -89,7 +89,7 @@
 
       .brand h1 {
         margin: 0;
-        font-size: clamp(1.45rem, 2.4vw, 2.2rem);
+        font-size: 2rem;
         line-height: 1.05;
         letter-spacing: 0;
       }
@@ -259,7 +259,7 @@
         color: var(--muted);
         font-size: 0.72rem;
         font-weight: 850;
-        letter-spacing: 0.06em;
+        letter-spacing: 0;
         text-transform: uppercase;
       }
 
@@ -437,6 +437,10 @@
           justify-content: flex-start;
         }
 
+        .brand h1 {
+          font-size: 1.45rem;
+        }
+
         .layout,
         .report-grid,
         .decision-grid {
@@ -473,6 +477,12 @@
             </svg>
             Open PRs
           </a>
+          <a class="button" href="./pr/">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 5h14v14H5zM8 9h8M8 13h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            PR Reports
+          </a>
           <a class="button" href="https://github.com/racecraft-lab/mission-control/actions">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h4l2-7 3 14 2-7h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -488,7 +498,7 @@
             <div class="panel-header">
               <div>
                 <h2 id="reports-title">Review Entry Points</h2>
-                <p>Use workflow artifacts for PR diffs; merged-main baselines publish under this Pages site.</p>
+                <p>Use PR report pages for active diffs; merged-main baselines publish under this Pages site.</p>
               </div>
               <span class="status-pill">Pages built</span>
             </div>
@@ -513,6 +523,16 @@
                   <a class="mini-link" href="./storybook/">Published baselines</a>
                 </footer>
               </article>
+              <article class="report">
+                <div>
+                  <h3>Pull request visual reports</h3>
+                  <p>Latest PR reports expose baseline, current, and diff panes from CI without downloading Actions artifacts.</p>
+                </div>
+                <footer>
+                  <a class="mini-link" href="./pr/">PR report index</a>
+                  <a class="mini-link" href="./pr/26/">PR #26 reports</a>
+                </footer>
+              </article>
             </div>
           </section>
 
@@ -523,8 +543,8 @@
               <li>
                 <span class="num">1</span>
                 <div>
-                  <strong>Open the PR workflow artifacts first.</strong>
-                  <span>Use the current PR run, not an older main baseline. Check both Playwright and Storybook reports when both workflows ran.</span>
+                  <strong>Open the PR report pages first.</strong>
+                  <span>Use the current PR report, not an older main baseline. Check both Playwright and Storybook reports when both workflows ran.</span>
                 </div>
               </li>
               <li>
@@ -650,7 +670,7 @@ Reason: &lt;clipped control, unstable data, unrelated diff, etc.&gt;</pre>
           </section>
 
           <div class="notice">
-            PR artifacts are the source of truth for review. Pages baselines are durable main-branch evidence and may lag a just-pushed PR run.
+            PR report pages are the source of truth for review. Pages baselines are durable main-branch evidence and may lag a just-pushed PR run.
           </div>
         </aside>
       </div>
