@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-04T18:52:34.240Z",
+  "updatedAt": "2026-05-04T19:03:00.461Z",
   "prs": [
     {
       "prNumber": "26",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/26/",
       "headRef": "008-resource-governance",
       "baseRef": "main",
-      "updatedAt": "2026-05-04T18:52:34.240Z",
+      "updatedAt": "2026-05-04T19:03:00.461Z",
       "latest": {
         "playwright": {
           "runId": "25336849998",
           "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25336849998",
           "latestHref": "https://racecraft-lab.github.io/mission-control/pr/26/playwright/latest/",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/26/runs/25336849998-attempt-1/playwright/",
-          "updatedAt": "2026-05-04T18:52:34.240Z"
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/26/runs/25336849998-attempt-2/playwright/",
+          "updatedAt": "2026-05-04T19:03:00.461Z"
         },
         "storybook": {
           "runId": "25336849993",
