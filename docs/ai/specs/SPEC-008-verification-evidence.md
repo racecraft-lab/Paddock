@@ -59,11 +59,11 @@ remote CodeQL annotations reported on the pushed PR head:
 
 ```
 
-> mission-control@2.0.1 typecheck /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
+> mission-control@2.0.1 typecheck <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
 > pnpm run verify:node && tsc -b --pretty false
 
 
-> mission-control@2.0.1 verify:node /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
+> mission-control@2.0.1 verify:node <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
 > node scripts/check-node-version.mjs
 
 ```
@@ -74,53 +74,53 @@ remote CodeQL annotations reported on the pushed PR head:
 
 ```
 
-> mission-control@2.0.1 lint /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
+> mission-control@2.0.1 lint <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
 > pnpm run verify:node && eslint .
 
 
-> mission-control@2.0.1 verify:node /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
+> mission-control@2.0.1 verify:node <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
 > node scripts/check-node-version.mjs
 
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/app/api/governance/windows/[id]/route.ts
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/app/api/governance/windows/[id]/route.ts
   48:1  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/require-await')
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/app/api/projects/[id]/__tests__/route.test.ts
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/app/api/projects/[id]/__tests__/route.test.ts
   545:28  warning  Unused eslint-disable directive (no problems were reported from 'no-unreachable')
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/modals/exec-approval-overlay.tsx
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/modals/exec-approval-overlay.tsx
   57:6  warning  React Hook useEffect has a missing dependency: 'active'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/agent-detail-tabs.tsx
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/agent-detail-tabs.tsx
   2185:36  warning  React Hook useEffect has a missing dependency: 'loadFiles'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/agent-squad-panel.tsx
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/agent-squad-panel.tsx
   74:6  warning  React Hook useCallback has a missing dependency: 't'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/audit-trail-panel.tsx
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/audit-trail-panel.tsx
   273:6  warning  React Hook useCallback has a missing dependency: 't'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/memory-graph.tsx
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/memory-graph.tsx
   104:9  warning  The 'agents' logical expression could make the dependencies of useMemo Hook (at line 146) change on every render. To fix this, wrap the initialization of 'agents' in its own useMemo() Hook      react-hooks/exhaustive-deps
   104:9  warning  The 'agents' logical expression could make the dependencies of useMemo Hook (at line 256) change on every render. To fix this, wrap the initialization of 'agents' in its own useMemo() Hook      react-hooks/exhaustive-deps
   104:9  warning  The 'agents' logical expression could make the dependencies of useCallback Hook (at line 312) change on every render. To fix this, wrap the initialization of 'agents' in its own useMemo() Hook  react-hooks/exhaustive-deps
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/security-audit-panel.tsx
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/security-audit-panel.tsx
   338:55  warning  The ref value 'prefetchControllersRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'prefetchControllersRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/user-management-panel.tsx
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/components/panels/user-management-panel.tsx
   94:6  warning  React Hook useCallback has a missing dependency: 't'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/lib/__tests__/mc-provisioner-daemon.test.ts
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/lib/__tests__/mc-provisioner-daemon.test.ts
   12:3  warning  Unused eslint-disable directive (no problems were reported from 'no-constant-condition')
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/lib/github-sync-engine.ts
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/lib/github-sync-engine.ts
   184:5  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/lib/governance-activity-middleware.ts
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/src/lib/governance-activity-middleware.ts
   219:7  warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/only-throw-error')
 
-/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/tests/e2e/spec-008/governance-axe-shim.ts
+<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/tests/e2e/spec-008/governance-axe-shim.ts
   41:5  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
   59:5  warning  Unused eslint-disable directive (no problems were reported from 'no-console')
 
@@ -151,7 +151,7 @@ remote CodeQL annotations reported on the pushed PR head:
 
 ```
 
- RUN  v4.1.5 /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
+ RUN  v4.1.5 <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
 
 
  Test Files  1 passed (1)
@@ -167,7 +167,7 @@ remote CodeQL annotations reported on the pushed PR head:
 
 ```
 
- RUN  v4.1.5 /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
+ RUN  v4.1.5 <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
 
 
  Test Files  2 passed (2)
@@ -183,7 +183,7 @@ remote CodeQL annotations reported on the pushed PR head:
 
 ```
 
- RUN  v4.1.5 /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
+ RUN  v4.1.5 <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance
 
  ❯ tests/integration/spec-spike-gates.test.ts (12 tests | 4 failed) 8ms
        × evidence file MUST exist at docs/ai/specs/spikes/<slug>.json 5ms
@@ -692,9 +692,9 @@ AssertionError: expected [ …(357) ] to deeply equal []
 
 ```
 runbook-links: 26 pages, all referenced
-(node:56320) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/scripts/check-runbook-links.ts is not specified and it doesn't parse as CommonJS.
+(node:56320) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file://<local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/scripts/check-runbook-links.ts is not specified and it doesn't parse as CommonJS.
 Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
-To eliminate this warning, add "type": "module" to /Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/package.json.
+To eliminate this warning, add "type": "module" to <local-home>/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/008-resource-governance/package.json.
 (Use `node --trace-warnings ...` to show where the warning was created)
 ```
 

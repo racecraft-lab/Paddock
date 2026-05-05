@@ -75,7 +75,7 @@ As of 2026-05-04, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged 
 - **Existing**: Next.js 16, React 19, TypeScript 5.x (`package.json` spec `^5.7.2`; current lockfile resolves 5.9.3), better-sqlite3 (SQLite), Zustand, xyflow/react, reagraph, pnpm, Node ≥22, existing REST + SSE API surface.
 - **New**: Phase 0 schema additions only: one new column on `agents` (`scope`), four new tables (`task_dispositions`, `task_artifacts`, `resource_policies`, `resource_policy_events`), a feature-flag storage column on `workspaces` (`feature_flags JSON`), routing/chain/artifact-policy columns on `workflow_templates`, and task-chain binding/lineage columns on `tasks`. Later v1 runtime specs add the pinned schema-validation dependency (`ajv`), the application-level `ready_for_owner` vocabulary, and the UI/config/doc-copy rename from agent filesystem "workspace" to "Sandbox" while the existing `agents.workspace_path` SQL column remains unchanged. OpenClaw electricity / infra cost support is **not** a schema feature in v1; it is a runtime-only optional adapter.
 - **Testing**: existing Playwright/Vitest patterns + new migration tests + scheduler unit tests for routing + pilot smoke (see Smoke Plan).
-- **Security (fork-only optional):** CrabTrap (`github.com/brexhq/CrabTrap`) honeypot on HAL — decoy endpoints detect unauthorized access attempts against the AI/software factory REST API and agent sandboxes. Absent-safe and disabled by default; no-ops cleanly when config is missing.
+- **Security (fork-only optional):** CrabTrap (`github.com/brexhq/CrabTrap`) honeypot on the operator node — decoy endpoints detect unauthorized access attempts against the AI/software factory REST API and agent sandboxes. Absent-safe and disabled by default; no-ops cleanly when config is missing.
 
 ---
 
@@ -188,7 +188,7 @@ This is the current honest fork-pressure picture.
 
 ### Explicitly `fork-only optional`
 
-- Running CrabTrap honeypot decoy service on HAL to detect unauthorized access to Mission Control API surfaces and agent sandboxes
+- Running CrabTrap honeypot decoy service on the operator node to detect unauthorized access to Mission Control API surfaces and agent sandboxes
 - Processing CrabTrap alert webhooks to create `activities` rows of kind `security_intrusion_detected` in Mission Control
 - Reading electricity / infra telemetry from `~/.openclaw/health/readings.jsonl`
 - Reading `~/.openclaw/health/current-rate.json`
@@ -231,7 +231,7 @@ Agent filesystem "Sandbox" terminology is UI/config-level in v1. The live schema
 ### B. Agent scope (D3, D4a)
 
 - **FR-B1:** `agents.scope TEXT NOT NULL DEFAULT 'workspace' CHECK (scope IN ('workspace','global'))` added via additive migration.
-- **FR-B2:** Backfill migration: `UPDATE agents SET scope='global' WHERE LOWER(name) IN ('aegis','security-guardian','hal')`.
+- **FR-B2:** Backfill migration: `UPDATE agents SET scope='global' WHERE LOWER(name) IN ('aegis','security-guardian','<operator-agent>')`.
 - **FR-B3:** Agent-visibility query replaces single-workspace lookup with `WHERE scope='global' OR workspace_id = :current` across all affected endpoints.
 - **FR-B4:** `task-dispatch.ts` Aegis resolution: `aegisAgentByWorkspace` replaced by a single global Aegis lookup; fallback to per-workspace only if a workspace has an explicit legacy local Aegis record.
 - **FR-B5:** Cross-product agent sharing is NOT supported by default (D4a strict-twin). A `scope='global'` promotion is the only path to cross-product visibility.
@@ -415,7 +415,7 @@ Agent filesystem "Sandbox" terminology is UI/config-level in v1. The live schema
 -- M53: agent_scope
 ALTER TABLE agents ADD COLUMN scope TEXT NOT NULL DEFAULT 'workspace'
   CHECK (scope IN ('workspace','global'));
-UPDATE agents SET scope='global' WHERE LOWER(name) IN ('aegis','security-guardian','hal');
+UPDATE agents SET scope='global' WHERE LOWER(name) IN ('aegis','security-guardian','<operator-agent>');
 
 -- Phase 0 safety gate, no migration entry:
 -- agents.workspace_path exists and remains unchanged in v1.
@@ -636,7 +636,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 5 | Area labels + GitHub sync updates | Complete | Yes — fallback to `area:triage` | `upstream-safe` |
 | 6 | Disposition logging + artifact store + audit/admin panels | Complete | Yes — purely additive | `upstream-divergent` |
 | 7 | Resource governance + Cost Tracker enforcement | Complete | Yes — flag-off default | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` |
-| 7.5 | CrabTrap honeypot — HAL security adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
+| 7.5 | CrabTrap honeypot — operator-node security adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
 | 8 | Mission Control Symphony-style pilot (two live or synthetic issues) | Pending | Gated behind pilot feature flag | Fork rollout only |
 | 9 | Second product line onboarding (Product Line B) | Pending | Post-pilot | Fork rollout only |
 | 10 | Agent-legible repository knowledge and harness guardrails | Pending | Process/tooling only | `upstream-safe` |
@@ -645,7 +645,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 
 **V2 readiness item:** Tenant-aware gateway isolation is deliberately deferred from v1 implementation. Before hosting multiple live tenant/facility accounts in one Mission Control instance, add a dedicated v2 spec to give gateway registry, runtime resolution, health checks, and OpenClaw config paths an explicit tenant context, with compatibility fallbacks for the current process-global primary gateway behavior.
 
-**Phase 0 completion note:** SPEC-001 is complete on PR #15 after HAL UAT acceptance on 2026-04-26. Acceptance evidence: M53-M61 migration markers present, `PRAGMA quick_check` OK, `workspaces.slug='facility'` seeded, Aegis/HAL/Security Guardian backfilled to `scope='global'`, and operator UAT found no blocking regressions in the core app flows.
+**Phase 0 completion note:** SPEC-001 is complete on PR #15 after operator-node UAT acceptance on 2026-04-26. Acceptance evidence: M53-M61 migration markers present, `PRAGMA quick_check` OK, `workspaces.slug='facility'` seeded, Aegis/<operator-agent>/Security Guardian backfilled to `scope='global'`, and operator UAT found no blocking regressions in the core app flows.
 
 **Phase 1 completion note:** SPEC-002 is complete on PR #16 after merge to `main` as `65f2e7c`. Evidence: all 50 generated tasks checked, `pnpm typecheck`, `pnpm lint`, `pnpm test` (106 files / 1035 tests), `pnpm build`, and `pnpm test:e2e` (526 tests) passed before merge.
 

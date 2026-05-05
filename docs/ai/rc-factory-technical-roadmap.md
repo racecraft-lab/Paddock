@@ -7,7 +7,7 @@
 1. **Additive or compatibility-preserving migrations only.** No destructive schema changes. Do not assume column renames or CHECK rebuilds are safe unless the live schema proves the column/constraint exists and rollback compatibility is documented.
 2. **Feature flags for every new runtime behavior.** All flags default OFF. Flipping ON is an explicit operator action per product line, stored in the documented feature-flag storage mechanism.
 3. **Ship each phase to production** behind its flag before enabling. Deploy code ≠ activate behavior.
-4. **Dev-first, flag-scoped canary on live.** Write and commit changes in the PR worktree, merge through GitHub, then promote the merged `main` branch on HAL. As of live verification on 2026-05-05, `mission-control.service` runs from `/home/fredrick-gabelmann/mission-control` on `main`, with runtime data in `/home/fredrick-gabelmann/mission-control-data`; `/home/fredrick-gabelmann/mission-control-sync` is no longer present. Promotion is `git fetch`/update, `pnpm build`, and restart of `mission-control.service`. The "canary" is a feature flag flipped for ONE workspace (e.g., the facility workspace or a dedicated test workspace) on the live service, validated, then promoted to wider workspaces. OpenClaw is a separate active service from `/home/fredrick-gabelmann/openclaw-release-current` and should be restarted only when gateway/runtime code or config changes.
+4. **Dev-first, flag-scoped canary on live.** Write and commit changes in the PR worktree, merge through GitHub, then promote the merged `main` branch on the operator node. As of live verification on 2026-05-05, `mission-control.service` runs from `<operator-home>/mission-control` on `main`, with runtime data in `<operator-data-dir>`; `<retired-live-worktree>` is no longer present. Promotion is `git fetch`/update, `pnpm build`, and restart of `mission-control.service`. The "canary" is a feature flag flipped for ONE workspace (e.g., the facility workspace or a dedicated test workspace) on the live service, validated, then promoted to wider workspaces. OpenClaw is a separate active service from `<openclaw-release-symlink>` and should be restarted only when gateway/runtime code or config changes.
 5. **Upstream compat gate** on every PR: cherry-pick candidates from `builderz-labs/main` should still apply cleanly.
 6. **Prefer upstream-safe extensions over schema divergence.** If the same goal can be achieved with an additive adapter, config path, or feature-flagged runtime hook, choose that before adding schema.
 7. **OpenClaw-specific features are fork-only adapters.** They must be disabled by default and no-op cleanly when absent.
@@ -33,7 +33,7 @@ SPEC-013 and SPEC-014 must extend the existing Mission Control control-plane sea
 - `src/app/api/sessions/route.ts`, `src/lib/sessions.ts`, and the local session scanners already normalize OpenClaw gateway, Claude Code, Codex CLI, Hermes, and OpenCode session observations into one session surface. The runner must reuse that observation model and add launch/continue semantics only when an adapter proves the capability.
 - `src/lib/runs.ts` already stores `AgentRun` records with runtime, task id, steps, cost, provenance, git, workspace, tags, metadata, and eval fields. Symphony-style attempts/processes should reuse or extend this run spine before adding a new concept.
 - `src/lib/task-dispatch.ts` and `src/lib/scheduler.ts` are the current dispatch path, including resource-governance gates, OpenClaw gateway invocation, direct Claude fallback, Aegis review, stale-task requeue, and task-chain advancement. SPEC-013 owns claim/reconciliation authority; SPEC-014 owns execution inside an already-claimed run. Neither spec should duplicate successor selection or bypass governance.
-- HAL proves the desired separation: Mission Control is the product/task/governance control plane, while OpenClaw gateway/node services provide an optional harness/runtime substrate. The same adapter contract must also support Mission Control-owned worktrees/sandboxes when Codex, Claude Code, Hermes, OpenCode, or another harness is selected directly.
+- The operator node deployment proves the desired separation: Mission Control is the product/task/governance control plane, while OpenClaw gateway/node services provide an optional harness/runtime substrate. The same adapter contract must also support Mission Control-owned worktrees/sandboxes when Codex, Claude Code, Hermes, OpenCode, or another harness is selected directly.
 
 ## Phase Map (At a Glance)
 
@@ -48,7 +48,7 @@ SPEC-013 and SPEC-014 must extend the existing Mission Control control-plane sea
 | 5 | Area-label GitHub sync | Yes | `FEATURE_AREA_LABEL_ROUTING` | `upstream-safe` | Phase 8 |
 | 6 | Disposition logging + artifact store + audit/admin panels | Yes | `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS` | `upstream-divergent` | Phase 8 |
 | 7 | Resource governance + Cost Tracker enforcement | Yes | `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS` | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` | Phase 8 |
-| 7.5 | CrabTrap honeypot — HAL security adapter | Yes | `FEATURE_CRABTRAP_HONEYPOT` | `fork-only optional` | — |
+| 7.5 | CrabTrap honeypot — operator-node security adapter | Yes | `FEATURE_CRABTRAP_HONEYPOT` | `fork-only optional` | — |
 | 8 | Mission Control Product Line pilot — end-to-end smoke | Pilot gate | `PILOT_MISSION_CONTROL_E2E` | Fork rollout only | Phase 9 |
 | 9 | Product Line B onboarding | Post-pilot | — | Fork rollout only | — |
 | 10 | Agent-legible repository knowledge + harness guardrails | Yes | None — process/tooling | `upstream-safe` | Phase 11 |
@@ -107,24 +107,24 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Complete | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
 | SPEC-009 | 8 | Mission Control Product Line Pilot End-to-End Smoke | mission-control-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
 | SPEC-010 | 9 | Product Line B Product-Line Onboarding | product-line-b-onboarding | Pending | P3 | SPEC-002A, SPEC-009 | SPEC-012 | Phase 9 |
-| SPEC-011 | 7.5 | CrabTrap Honeypot — HAL Security Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
+| SPEC-011 | 7.5 | CrabTrap Honeypot — Operator Node Security Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
 | SPEC-012 | 10 | Agent-Legible Repository Knowledge and Harness Guardrails | agent-legible-harness | Pending | P2 | SPEC-002A, SPEC-010 | SPEC-013 | Phase 10 |
 | SPEC-013 | 11 | GitHub-Backed Task Control Plane and Run-State Reconciliation | task-control-plane | Pending | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-012 | SPEC-014 | Phase 11 |
 | SPEC-014 | 12 | Per-Task Sandbox Runner and Harness Adapter Registry | task-sandbox-runner | Pending | P1 | SPEC-004, SPEC-007, SPEC-008, SPEC-013 | — | Phase 12 |
 
-### SPEC-011: CrabTrap Honeypot — HAL Security Adapter
+### SPEC-011: CrabTrap Honeypot — Operator Node Security Adapter
 
 - **Status:** Pending
 - **Priority:** P2
 - **Branch short name:** `crabtrap-honeypot`
 - **Dependencies:** SPEC-008 (resource governance — shares the `activities` table and `resource_policy_events` audit surface)
 - **Enables:** —
-- **Scope source:** Phase 7.5 — CrabTrap Honeypot (HAL Security Adapter)
-- **Upstream impact:** `fork-only optional` — HAL-node-specific; must be absent-safe, config-gated, and disabled by default. No schema migration in v1.
+- **Scope source:** Phase 7.5 — CrabTrap Honeypot (Operator Node Security Adapter)
+- **Upstream impact:** `fork-only optional` — operator-node-specific; must be absent-safe, config-gated, and disabled by default. No schema migration in v1.
 - **Feature flag:** `FEATURE_CRABTRAP_HONEYPOT`
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `src/lib/crabtrap-adapter.ts` (new, runtime-only). No schema migrations. No changes to upstream Mission Control tables.
-- **Scope summary:** Deploy CrabTrap (`github.com/brexhq/CrabTrap`) as a honeypot sidecar on HAL to detect unauthorized access to Mission Control REST API endpoints and agent sandboxes. When CrabTrap fires a webhook alert, the adapter writes an `activities` row of kind `security_intrusion_detected` to the relevant workspace (or the facility workspace for global-scope probes), making the intrusion signal visible in Mission Control's operator UI and governance surface. If `FEATURE_CRABTRAP_HONEYPOT` is OFF or CrabTrap is absent/misconfigured, Mission Control behaves exactly as it does today.
+- **Scope summary:** Deploy CrabTrap (`github.com/brexhq/CrabTrap`) as a honeypot sidecar on the operator node to detect unauthorized access to Mission Control REST API endpoints and agent sandboxes. When CrabTrap fires a webhook alert, the adapter writes an `activities` row of kind `security_intrusion_detected` to the relevant workspace (or the facility workspace for global-scope probes), making the intrusion signal visible in Mission Control's operator UI and governance surface. If `FEATURE_CRABTRAP_HONEYPOT` is OFF or CrabTrap is absent/misconfigured, Mission Control behaves exactly as it does today.
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
@@ -159,7 +159,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** N/A — migration-only/no-new-module spec
 - **Autopilot notes:** Treat migrations as the only implementation surface. Verify live schema truth before assuming `agents.workspace_path` or a `tasks.status` CHECK constraint. Preserve null-default / flag-off compatibility and document upstream-divergent fork pressure.
 - **Definition of done:** Phase 0 deliverables are implemented, P0 acceptance criteria pass, migrations are idempotent on production-shape data, existing tests pass unchanged, and rollback scripts plus documented manual reverse steps exist for each SQL-changing migration or seed.
-- **Completion evidence:** Complete on PR #15 (`001-foundation-migrations`) after local verification and HAL UAT acceptance on 2026-04-26. HAL UAT confirmed M53-M61 migration markers, `PRAGMA quick_check = ok`, the `facility` workspace seed, Aegis/HAL/Security Guardian `scope='global'` backfill, and unchanged core app flows.
+- **Completion evidence:** Complete on PR #15 (`001-foundation-migrations`) after local verification and operator-node UAT acceptance on 2026-04-26. operator-node UAT confirmed M53-M61 migration markers, `PRAGMA quick_check = ok`, the `facility` workspace seed, Aegis/<operator-agent>/Security Guardian `scope='global'` backfill, and unchanged core app flows.
 
 ### SPEC-002: Product-Line Switcher and activeWorkspace Scoping
 
@@ -192,7 +192,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `.specify` archive integration and hooks, SpecKit workflow docs/templates, screenshot/evidence manifest conventions, CI/local guards for `specs/**/screenshots`, and PR evidence guidance. No runtime product feature behavior ships in this spec.
 - **Autopilot notes:** Use `specs/002-product-line-switcher` as the dry-run source because it contains real Playwright screenshots. Do not delete or move existing spec folders automatically. If archive cleanup is needed, produce an explicit reviewed change rather than a silent post-merge mutation.
 - **Definition of done:** Phase 1A deliverables are implemented, the archive command dry-runs against SPEC-002, screenshot guard behavior is verified locally and in CI, constitution/workflow docs distinguish durable memory from ephemeral CI artifacts and curated permanent screenshots, and SPEC-003 setup can proceed without unresolved artifact-retention decisions.
-- **Implementation evidence:** Complete on PR #18 after merge to `main` as `daab0c1`. G7 passed locally on 2026-04-28 with all 47 generated tasks checked and zero markers. Final evidence includes `spec-kit-archive` PR #1 merged and `v1.1.0` released, vendored Mission Control archive extension pinning, Archive Sweep dry-run evidence for SPEC-001/SPEC-002, screenshot guard verification, `speckit-pro` PR #20 and release-please PR #21 merged, official `speckit-pro-v1.9.0` release recreated at main commit `75a5b727cd0868d647c9afa968e0edbe398c3f94`, local Codex plugin refresh evidence, HAL deployment verification, and retrospective evidence.
+- **Implementation evidence:** Complete on PR #18 after merge to `main` as `daab0c1`. G7 passed locally on 2026-04-28 with all 47 generated tasks checked and zero markers. Final evidence includes `spec-kit-archive` PR #1 merged and `v1.1.0` released, vendored Mission Control archive extension pinning, Archive Sweep dry-run evidence for SPEC-001/SPEC-002, screenshot guard verification, `speckit-pro` PR #20 and release-please PR #21 merged, official `speckit-pro-v1.9.0` release recreated at main commit `75a5b727cd0868d647c9afa968e0edbe398c3f94`, local Codex plugin refresh evidence, operator node deployment verification, and retrospective evidence.
 
 ### SPEC-003: Aegis Facility Singleton Refactor
 
@@ -397,7 +397,7 @@ Foundation migrations/seed steps M53–M61 (nine additive SQL-changing migration
 
 - **Safety gate: Sandbox terminology** — live schema verification on 2026-04-24 confirms `agents.workspace_path` DOES exist (added by an earlier migration that conditionally runs `ALTER TABLE agents ADD COLUMN workspace_path TEXT`). SPEC-001 keeps the SQL column name `workspace_path` as-is, does not add `sandbox_path`, and does not ship UI/config/type/doc terminology changes. Sandbox runtime/copy cleanup belongs to SPEC-002+.
 - **Safety gate: `ready_for_owner` vocabulary** — live schema verification on 2026-04-24 confirms `tasks.status` is `TEXT NOT NULL DEFAULT 'inbox'` with NO database CHECK constraint (only an inline comment listing valid values at `src/lib/schema.sql:9`). SPEC-001 makes no DB-level CHECK change and does not extend TypeScript/Zod/GitHub-label/Kanban/runtime vocabulary. Application-level support belongs to SPEC-005.
-- **M53** — `agents.scope` column + backfill of Aegis / Security Guardian / HAL (`LOWER(name) IN ('aegis','security-guardian','hal')`) to `global`.
+- **M53** — `agents.scope` column + backfill of Aegis / Security Guardian / <operator-agent> (`LOWER(name) IN ('aegis','security-guardian','<operator-agent>')`) to `global`.
 - **M54** — `workflow_templates` gains task-chain and artifact-policy columns: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, `allow_redacted_artifacts`. A "task-chain template" is a domain alias over `workflow_templates`, not a new SQL table.
 - **M55** — `tasks` gains workflow-template binding and lineage: `workflow_template_id`, `workflow_template_slug`, `parent_task_id`, `root_task_id`, `chain_id`, `chain_stage`.
 - **M56** — `workspaces.feature_flags JSON` stores per-product-line feature-flag overrides. `NULL` = hardcoded default OFF.

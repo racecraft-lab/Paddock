@@ -103,7 +103,7 @@ specs/
 
 | Migration | Purpose | Status |
 |-----------|---------|--------|
-| M53 | `agents.scope` + global backfill for Aegis/Security Guardian/HAL | Complete |
+| M53 | `agents.scope` + global backfill for Aegis/Security Guardian/operator node | Complete |
 | M54 | `workflow_templates` routing/artifact-policy metadata + slug partial unique index | Complete |
 | M55 | `tasks` lineage fields (workflow_template binding, predecessor/root) | Complete |
 | M56 | `workspaces.feature_flags` JSON storage (no runtime resolution) | Complete |

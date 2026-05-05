@@ -35,11 +35,11 @@ Technical approach (per design-concept Q1-Q73 + workflow Architecture Notes):
 - `zod` (NEW pinned dep) — REST request validation per Q41 / FR-039 / FR-206.
 - Native Node `fs.watch` + inotify (no new dep) — file-based ingestion adapters.
 - `@visualproviderprovider-neutral Playwright capture` (existing) — Playwright visual snapshots; Storybook visual for component snapshots.
-- `otelcol-contrib` v0.108.0 — operator-managed systemd unit on HAL; **NOT** in repo (FR-090b).
+- `otelcol-contrib` v0.108.0 — operator-managed systemd unit on the operator node; **NOT** in repo (FR-090b).
 
 **Storage**: SQLite via `better-sqlite3`, single-process, append-only ledger semantics; monthly partition tables; archive partitions written to `<MISSION_CONTROL_DATA_DIR>/archives/`.
 **Testing**: Vitest (unit + integration + benchmark + chaos suites), Playwright e2e against running app (Constitution Principle XIV NON-NEGOTIABLE), Storybook visual regression.
-**Target Platform**: Linux (HAL operator node — Ryzen 5900XT + 64GB RAM reference profile); single-process Node.js ≥22; multi-region/multi-node out of scope per spec.
+**Target Platform**: Linux (self-hosted operator node — Ryzen 5900XT + 64GB RAM reference profile); single-process Node.js ≥22; multi-region/multi-node out of scope per spec.
 **Project Type**: Web service + UI (Next.js full-stack monolith, in-place extension of `mission-control`).
 **Performance Goals**: `p50<5ms, p95<15ms, p99<25ms` admission latency under 1k policies + 300k ledger rows + concurrent gates active (FR-004, AC-Bench-1). Soak: 30 min @ 100 admissions/sec p95 < 15 ms, memory growth < 50 MB (AC-Soak-1).
 **Constraints**:

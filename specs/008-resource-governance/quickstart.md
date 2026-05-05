@@ -1,7 +1,7 @@
 # SPEC-008 Operator Quickstart
 
 **Audience**: Mission Control operator deploying SPEC-008 Resource Governance for the first time.
-**Prereqs**: Mission Control running on `main` with SPEC-001..006 + SPEC-002A + SPEC-003 merged. Node ≥22, pnpm, systemd-user (HAL).
+**Prereqs**: Mission Control running on `main` with SPEC-001..006 + SPEC-002A + SPEC-003 merged. Node ≥22, pnpm, systemd-user (operator node).
 **Default state**: `FEATURE_RESOURCE_GOVERNANCE=false` (flag OFF). Migrations apply automatically; no behavioral change until you opt in.
 
 This guide walks you from "merged PR" through to "first hard-budget enforcement working" in three stages: install, configure, verify.
@@ -13,7 +13,7 @@ This guide walks you from "merged PR" through to "first hard-budget enforcement 
 ### 1.1 Pull and migrate
 
 ```bash
-cd ~/mission-control-sync
+cd <live-worktree>
 git pull --ff-only
 pnpm install
 pnpm build
@@ -204,7 +204,7 @@ echo 'MC_BACKUP_REMOTE_RSYNC_PATH=user@offsite.example.com:/srv/mc-backups/' \
   >> ~/.config/mission-control/env
 
 # Optional: encrypt-at-rest with GPG
-echo 'MC_BACKUP_GPG_RECIPIENT=ops-team@racecraft.co' \
+echo 'MC_BACKUP_GPG_RECIPIENT=ops-team@example.com' \
   >> ~/.config/mission-control/env
 
 systemctl --user restart mission-control.service
