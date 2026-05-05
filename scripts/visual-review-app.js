@@ -20,6 +20,7 @@ import {
   const context = data.context
   const reviewableVariants = new Set(['changed', 'new', 'deleted'])
   const githubTokenDocsUrl = 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token'
+  const embeddedReviewState = initialReviewStateContext()
 
   const state = {
     activeId: null,
@@ -32,13 +33,15 @@ import {
     mode: localStorage.getItem(storageKey('mode')) || 'side-by-side',
     overlay: clamp(Number(localStorage.getItem(storageKey('overlay')) || 50), 0, 100),
     query: '',
-    remoteAuthor: '',
-    remoteCommentId: null,
-    remoteState: null,
+    remoteAuthor: embeddedReviewState ? String(context.initialReviewStateAuthor || '') : '',
+    remoteCommentId: embeddedReviewState ? context.initialReviewStateCommentId || null : null,
+    remoteState: embeddedReviewState,
     reviewComments: readReviewComments(),
     reviews: readReviews(),
-    syncMessage: 'Loading PR state...',
-    syncState: 'loading',
+    syncMessage: embeddedReviewState
+      ? 'Loading merged PR review state...'
+      : (hasReviewStateTarget() ? 'Loading PR state...' : 'No linked PR review state is available.'),
+    syncState: embeddedReviewState || !hasReviewStateTarget() ? 'ready' : 'loading',
     tokenHelpOpen: false,
     zoom: clamp(Number(localStorage.getItem(storageKey('zoom')) || 100), 50, 200),
   }
@@ -52,7 +55,24 @@ import {
 
   render()
   window.addEventListener('keydown', handleKeys)
-  loadRemoteReviewState({ silent: true })
+  if (embeddedReviewState) {
+    applyRemoteReviewState(
+      embeddedReviewState,
+      state.remoteAuthor ? `@${state.remoteAuthor}` : 'Merged PR state'
+    )
+  } else if (hasReviewStateTarget()) {
+    loadRemoteReviewState({ silent: true })
+  }
+
+  function initialReviewStateContext() {
+    return context.initialReviewState && typeof context.initialReviewState === 'object'
+      ? context.initialReviewState
+      : null
+  }
+
+  function hasReviewStateTarget() {
+    return Boolean(context.prNumber)
+  }
 
   function storageKey(suffix) {
     return `visual-review:${context.prNumber}:${context.surface}:${context.runKey}:${context.headSha}:${suffix}`
@@ -1117,14 +1137,36 @@ import {
     return mergeSurfaceReviewState(state.remoteState, currentSurfaceReviewState())
   }
 
+  function acceptedReviewHeadShas() {
+    return [
+      context.headSha,
+      context.sourcePullRequest?.headSha,
+      context.sourcePullRequest?.mergeCommitSha,
+    ].filter(Boolean)
+  }
+
+  function reviewStateMatchesCurrentReport(surface) {
+    if (!surface.headSha) return true
+    const accepted = acceptedReviewHeadShas()
+    return accepted.length === 0 || accepted.includes(surface.headSha)
+  }
+
+  function acceptedReviewHeadLabel() {
+    const accepted = acceptedReviewHeadShas().map(shortSha)
+    return accepted.length > 0 ? accepted.join(' or ') : 'current report'
+  }
+
   function applyRemoteReviewState(remoteState, sourceLabel) {
     const surface = remoteState?.surfaces?.[context.surface]
     if (!surface) {
       setSyncState('ready', `${sourceLabel}: no ${context.surface} state yet.`)
       return
     }
-    if (surface.headSha && context.headSha && surface.headSha !== context.headSha) {
-      setSyncState('ready', `${sourceLabel}: ${context.surface} state is for ${shortSha(surface.headSha)}, not current head ${shortSha(context.headSha)}.`)
+    if (!reviewStateMatchesCurrentReport(surface)) {
+      setSyncState(
+        'ready',
+        `${sourceLabel}: ${context.surface} state is for ${shortSha(surface.headSha)}, not current head ${acceptedReviewHeadLabel()}.`
+      )
       return
     }
 
@@ -1158,6 +1200,10 @@ import {
   }
 
   async function loadRemoteReviewState(options = {}) {
+    if (!hasReviewStateTarget()) {
+      setSyncState('ready', 'No linked PR review state is available for this report.')
+      return
+    }
     if (!options.silent) setSyncState('loading', 'Loading PR state...')
     try {
       const comments = await githubRequest(`/repos/${context.repository}/issues/${context.prNumber}/comments?per_page=100&sort=updated&direction=desc`, {
@@ -1186,6 +1232,10 @@ import {
   }
 
   async function publishRemoteReviewState() {
+    if (!hasReviewStateTarget()) {
+      setSyncState('error', 'No linked PR is available for publishing review state.')
+      return
+    }
     if (!state.githubToken.trim()) {
       setSyncState('error', 'GitHub token required to publish PR state.')
       return

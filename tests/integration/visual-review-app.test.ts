@@ -46,11 +46,11 @@ const payload = {
   passedItems: [],
 }
 
-function prepareDom() {
+function prepareDom(data: unknown = { context, payload }) {
   window.history.replaceState(null, '', '/visual-review.html')
   document.body.innerHTML = `
     <div id="visual-review-root"></div>
-    <script id="visual-review-data" type="application/json">${JSON.stringify({ context, payload })}</script>
+    <script id="visual-review-data" type="application/json">${JSON.stringify(data)}</script>
   `
 }
 
@@ -265,6 +265,63 @@ describe('visual review app guidance', () => {
     })
     expect(document.querySelector('[data-summary="reviewed"] strong')?.textContent).toBe('0/3')
     expect(document.querySelector('.decision-pill')?.textContent).toBe('open')
+  })
+
+  it('imports embedded merged PR state that was approved on the PR head SHA', async () => {
+    const {
+      buildSurfaceReviewState,
+      mergeSurfaceReviewState,
+    } = await import('../../scripts/visual-review-state.mjs')
+    const prHeadSha = '645f75c000000000000000000000000000000000'
+    const surfaceState = buildSurfaceReviewState({
+      context: {
+        ...context,
+        headSha: prHeadSha,
+        reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/playwright/latest/',
+      },
+      items: [
+        { id: 'changed-governance/dashboard.png', group: 'spec-008', raw: 'governance/dashboard.png', variant: 'changed' },
+        { id: 'new-governance/new-modal.png', group: 'governance', raw: 'governance/new-modal.png', variant: 'new' },
+        { id: 'deleted-legacy/removed.png', group: 'legacy', raw: 'legacy/removed.png', variant: 'deleted' },
+      ],
+      reviewer: 'reviewer',
+      reviews: {
+        'changed-governance/dashboard.png': 'approved',
+        'new-governance/new-modal.png': 'approved',
+        'deleted-legacy/removed.png': 'approved',
+      },
+    })
+    const embeddedState = mergeSurfaceReviewState(null, surfaceState)
+    const fetchMock = vi.fn(async () => ({
+      json: async () => [],
+      ok: true,
+      status: 200,
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+    prepareDom({
+      context: {
+        ...context,
+        headSha: 'abcdef1234567890',
+        initialReviewState: embeddedState,
+        initialReviewStateAuthor: 'fgabelmannjr',
+        initialReviewStateCommentId: 2600,
+        reportMode: 'main',
+        sourcePullRequest: {
+          headSha: prHeadSha,
+          mergeCommitSha: 'abcdef1234567890',
+          number: '26',
+        },
+      },
+      payload,
+    })
+
+    await loadVisualReviewApp()
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('[data-summary="reviewed"] strong')?.textContent).toBe('3/3')
+    })
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(document.querySelector('.sync-status-line')?.textContent).toContain('@fgabelmannjr: loaded 3 decision')
   })
 
   it('opens and dismisses GitHub token creation instructions', async () => {

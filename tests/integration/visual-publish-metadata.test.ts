@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 function extractReviewData(html: string) {
@@ -122,11 +123,175 @@ describe('visual PR Pages publisher metadata', () => {
     const reportDir = path.join(tempDir, 'visual-report')
     const actualDir = path.join(reportDir, '__reg__', '1_actual')
     const pagesDir = path.join(tempDir, 'pages')
+    const eventFile = path.join(tempDir, 'push-event.json')
     const snapshot = 'governance-main--default.png'
 
     try {
       mkdirSync(actualDir, { recursive: true })
       writeFileSync(path.join(actualDir, snapshot), 'png')
+
+      const payload = {
+        actualDir: '__reg__/1_actual',
+        deletedItems: [],
+        diffDir: '__reg__/0_diff',
+        expectedDir: '__reg__/2_expected',
+        failedItems: [],
+        newItems: [{ raw: snapshot, encoded: snapshot }],
+        passedItems: [],
+      }
+      const reportFile = path.join(reportDir, 'storybook.html')
+      mkdirSync(reportDir, { recursive: true })
+      writeFileSync(reportFile, `<script>window['__reg__'] = ${JSON.stringify(payload)};</script>`)
+      writeFileSync(
+        eventFile,
+        `${JSON.stringify({
+          head_commit: {
+            message: 'feat(SPEC-008): Resource Governance + Cost Tracker Enforcement (RC Factory Phase 7) (#26)',
+          },
+        })}\n`
+      )
+
+      const result = spawnSync(process.execPath, [
+        path.join(repoRoot, 'scripts', 'publish-visual-pr-pages.mjs'),
+        '--surface',
+        'storybook',
+        '--report-file',
+        reportFile,
+        '--pages-dir',
+        pagesDir,
+        '--repository',
+        'racecraft-lab/mission-control',
+        '--mode',
+        'main',
+        '--run-id',
+        '456',
+        '--run-attempt',
+        '1',
+        '--base-url',
+        'https://racecraft-lab.github.io/mission-control',
+      ], {
+        cwd: tempDir,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          GITHUB_REF_NAME: 'main',
+          GITHUB_SHA: 'abcdef1234567890',
+          GITHUB_EVENT_PATH: eventFile,
+        },
+      })
+
+      expect(`${result.stdout}\n${result.stderr}`).toContain('published storybook report')
+      expect(result.status).toBe(0)
+
+      const latestHtml = readFileSync(path.join(pagesDir, 'storybook', 'latest', 'index.html'), 'utf8')
+      const latestData = extractReviewData(latestHtml)
+      expect(latestData.context).toMatchObject({
+        baseRef: 'main',
+        headRef: 'main',
+        headSha: 'abcdef1234567890',
+        prIndexHref: 'https://racecraft-lab.github.io/mission-control/pr/26/',
+        prNumber: '26',
+        prTitle: 'feat(SPEC-008): Resource Governance + Cost Tracker Enforcement (RC Factory Phase 7)',
+        prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
+        reportScope: 'latest',
+        surface: 'storybook',
+      })
+
+      expect(readFileSync(path.join(pagesDir, 'storybook', 'abcdef1234567890', 'index.html'), 'utf8')).toContain('visual-review-data')
+      expect(readFileSync(path.join(pagesDir, 'index.html'), 'utf8')).toContain('Main Branch Visual Reports')
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
+
+  it('embeds approved PR review state into main reports during the publish action', () => {
+    const repoRoot = process.cwd()
+    const tempDir = mkdtempSync(path.join(os.tmpdir(), 'visual-main-pr-state-'))
+    const reportDir = path.join(tempDir, 'visual-report')
+    const actualDir = path.join(reportDir, '__reg__', '1_actual')
+    const pagesDir = path.join(tempDir, 'pages')
+    const fetchStub = path.join(tempDir, 'fetch-stub.mjs')
+    const snapshot = 'governance-main--default.png'
+    const mergedSha = 'abcdef1234567890'
+    const prHeadSha = '645f75c000000000000000000000000000000000'
+    const approvedState = {
+      prNumber: '26',
+      prTitle: 'SPEC-008 governance',
+      prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
+      repository: 'racecraft-lab/mission-control',
+      schema: 'mission-control.visual-review-state.v1',
+      surfaces: {
+        storybook: {
+          baseRef: 'main',
+          decisions: {
+            [`new-${snapshot}`]: {
+              decision: 'approved',
+              group: 'spec-008',
+              snapshot,
+              updatedAt: '2026-05-04T20:00:00.000Z',
+              variant: 'new',
+            },
+          },
+          headRef: '008-resource-governance',
+          headSha: prHeadSha,
+          prNumber: '26',
+          prTitle: 'SPEC-008 governance',
+          prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
+          reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/storybook/latest/',
+          repository: 'racecraft-lab/mission-control',
+          runAttempt: '1',
+          runId: '123',
+          runKey: '123-attempt-1',
+          runUrl: 'https://github.com/racecraft-lab/mission-control/actions/runs/123',
+          summary: {
+            approved: 1,
+            open: 0,
+            rejected: 0,
+            reviewable: 1,
+            reviewed: 1,
+            status: 'approved',
+          },
+          surface: 'storybook',
+          surfaceLabel: 'Storybook Components',
+          updatedAt: '2026-05-04T20:00:00.000Z',
+        },
+      },
+      updatedAt: '2026-05-04T20:00:00.000Z',
+      version: 1,
+    }
+    try {
+      mkdirSync(actualDir, { recursive: true })
+      writeFileSync(path.join(actualDir, snapshot), 'png')
+      const pullsResponse = JSON.stringify([{
+        head: { sha: prHeadSha },
+        html_url: 'https://github.com/racecraft-lab/mission-control/pull/26',
+        merge_commit_sha: mergedSha,
+        merged_at: '2026-05-04T23:42:05Z',
+        number: 26,
+        title: 'SPEC-008 governance',
+      }])
+      const commentsResponse = JSON.stringify([{
+        body: `<!-- mission-control-visual-review-state:v1\n${JSON.stringify(approvedState, null, 2)}\n-->`,
+        created_at: '2026-05-04T20:00:00Z',
+        id: 2600,
+        updated_at: '2026-05-04T20:00:00Z',
+        user: { login: 'fgabelmannjr' },
+      }])
+      writeFileSync(
+        fetchStub,
+        `
+globalThis.fetch = async (url) => {
+  const value = String(url)
+  if (value.includes('/repos/racecraft-lab/mission-control/commits/${mergedSha}/pulls')) {
+    return new Response(${JSON.stringify(pullsResponse)}, { status: 200, headers: { 'content-type': 'application/json' } })
+  }
+  if (value.includes('/repos/racecraft-lab/mission-control/issues/26/comments')) {
+    return new Response(${JSON.stringify(commentsResponse)}, { status: 200, headers: { 'content-type': 'application/json' } })
+  }
+  return new Response(JSON.stringify({ message: 'not found' }), { status: 404 })
+}
+`
+      )
 
       const payload = {
         actualDir: '__reg__/1_actual',
@@ -165,7 +330,9 @@ describe('visual PR Pages publisher metadata', () => {
         env: {
           ...process.env,
           GITHUB_REF_NAME: 'main',
-          GITHUB_SHA: 'abcdef1234567890',
+          GITHUB_SHA: mergedSha,
+          GITHUB_TOKEN: 'ghs_test',
+          NODE_OPTIONS: `--import=${pathToFileURL(fetchStub).href}`,
         },
       })
 
@@ -175,15 +342,17 @@ describe('visual PR Pages publisher metadata', () => {
       const latestHtml = readFileSync(path.join(pagesDir, 'storybook', 'latest', 'index.html'), 'utf8')
       const latestData = extractReviewData(latestHtml)
       expect(latestData.context).toMatchObject({
-        baseRef: 'main',
-        headRef: 'main',
-        headSha: 'abcdef1234567890',
-        reportScope: 'latest',
-        surface: 'storybook',
+        headSha: mergedSha,
+        initialReviewState: approvedState,
+        initialReviewStateAuthor: 'fgabelmannjr',
+        initialReviewStateCommentId: 2600,
+        prNumber: '26',
+        sourcePullRequest: {
+          headSha: prHeadSha,
+          mergeCommitSha: mergedSha,
+          number: '26',
+        },
       })
-
-      expect(readFileSync(path.join(pagesDir, 'storybook', 'abcdef1234567890', 'index.html'), 'utf8')).toContain('visual-review-data')
-      expect(readFileSync(path.join(pagesDir, 'index.html'), 'utf8')).toContain('Main Branch Visual Reports')
     } finally {
       rmSync(tempDir, { recursive: true, force: true })
     }
