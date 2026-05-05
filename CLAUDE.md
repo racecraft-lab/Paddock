@@ -6,13 +6,13 @@ Open-source dashboard for AI agent orchestration. Manage agent fleets, track tas
 
 ## OpenClaw Node Deployment Notes
 
-- These notes apply to OpenClaw node Mission Control worktrees: `<live-worktree>` (live `main`) and `<dev-worktree>` (dev branch).
+- These notes apply to operator-managed Mission Control worktrees: one live `main` checkout and one development checkout.
 - Mission Control should run from `racecraft-lab/mission-control` `main`.
 - Active systemd unit: `mission-control.service`
 - Active startup wrapper: `~/.local/bin/mc-start.sh`
-- The wrapper resolves `AUTH_PASS`, `API_KEY`, `AUTH_SECRET`, `OPENCLAW_GATEWAY_TOKEN`, and `GITHUB_TOKEN` from 1Password at startup.
-- Active service worktree: `<live-worktree>` on `main`; `<dev-worktree>` is the dev worktree on `<feature-branch>`.
-- OpenClaw is a separate deploy surface on the operator node. The gateway should run from `<openclaw-release-symlink>`, which should point at the clean tagged release tree, not from a Homebrew global package path.
+- The wrapper resolves runtime secrets from the operator's configured secret manager at startup.
+- Active service worktree: live checkout on `main`; development checkout on the active feature branch.
+- OpenClaw is a separate deploy surface on the operator node. The gateway should run from a clean tagged release tree, not from a Homebrew global package path.
 - If you change startup assumptions, verify both:
   - `systemctl --user status --no-pager mission-control.service`
   - `systemctl --user status --no-pager openclaw-gateway.service`
@@ -159,6 +159,6 @@ Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator 
 
 ## GitNexus
 
-- User-level Codex and Claude MCP configs register GitNexus with `<local-home>/.nvm/versions/node/v24.11.1/bin/gitnexus mcp`; do not add project-local MCP, skill, or hook installs.
+- User-level Codex and Claude MCP configs register GitNexus with an absolute user-local Node binary path; do not add project-local MCP, skill, or hook installs.
 - To create or refresh this repo index, run `gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
 - GitNexus stores the generated local index under `.gitnexus/`, which is ignored.

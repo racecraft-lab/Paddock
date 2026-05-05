@@ -221,7 +221,7 @@ For other artifact types, the cascade adapts its search strategies but with decr
 
 ## Authors
 
-**Upstream Maintainers** ([upstream-maintainers@example.com](mailto:upstream-maintainers@example.com)) at **[dataStone Inc.](https://github.com/datastone-inc)**: concept, design, and development
+Original upstream project: **[dataStone Inc.](https://github.com/datastone-inc/spec-kit-verify-tasks)**
 
 **[Claude (Anthropic)](https://www.anthropic.com)**: co-developed the implementation and test fixtures via GitHub Copilot
 

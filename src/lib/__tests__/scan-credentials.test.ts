@@ -69,7 +69,7 @@ describe('scanForSecrets', () => {
   })
 
   it('detects mongodb+srv connection strings', () => {
-    const hits = scanForSecrets('mongodb+srv://admin:pass@localhost/db')
+    const hits = scanForSecrets('mongodb+srv://admin:pw123@localhost/db')
     expect(hits.some(h => h.type === 'db_connection_string')).toBe(true)
   })
 

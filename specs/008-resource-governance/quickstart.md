@@ -13,7 +13,7 @@ This guide walks you from "merged PR" through to "first hard-budget enforcement 
 ### 1.1 Pull and migrate
 
 ```bash
-cd <live-worktree>
+cd /path/to/mission-control
 git pull --ff-only
 pnpm install
 pnpm build

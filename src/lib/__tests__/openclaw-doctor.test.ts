@@ -22,7 +22,7 @@ Run: openclaw doctor --fix
 
   it('marks invalid config output as an error', () => {
     const result = parseOpenClawDoctorOutput(`
-Invalid config at /home/openclaw/.openclaw/openclaw.json:
+Invalid config at /tmp/openclaw-active/openclaw.json:
 - <root>: Unrecognized key: "test"
 Config invalid
 File: $OPENCLAW_HOME/openclaw.json
@@ -55,11 +55,11 @@ Run "openclaw doctor --fix" to apply changes.
     const result = parseOpenClawDoctorOutput(`
 ◇  State integrity
 - Multiple state directories detected. This can split session history.
-  - /home/nefes/.openclaw
+  - /tmp/openclaw-foreign
   Active state dir: ~/.openclaw
 - Found 1 orphan transcript file(s) in ~/.openclaw/agents/jarv/sessions.
 Run "openclaw doctor --fix" to apply changes.
-`, 0, { stateDir: '/home/openclaw/.openclaw' })
+`, 0, { stateDir: '/tmp/openclaw-active' })
 
     expect(result.healthy).toBe(false)
     expect(result.level).toBe('warning')
@@ -67,7 +67,7 @@ Run "openclaw doctor --fix" to apply changes.
     expect(result.issues).toEqual([
       'Found 1 orphan transcript file(s) in ~/.openclaw/agents/jarv/sessions.',
     ])
-    expect(result.raw).not.toContain('/home/nefes/.openclaw')
+    expect(result.raw).not.toContain('/tmp/openclaw-foreign')
   })
 
   it('suppresses foreign state-directory warnings when the active dir is shown via OPENCLAW_HOME alias', () => {
@@ -78,14 +78,14 @@ Run "openclaw doctor --fix" to apply changes.
 ◇  State integrity
 - Multiple state directories detected. This can split session history.
   - $OPENCLAW_HOME/.openclaw
-  - /home/nefes/.openclaw
+  - /tmp/openclaw-foreign
   Active state dir: $OPENCLAW_HOME
 - Found 11 orphan transcript file(s) in $OPENCLAW_HOME/agents/jarv/sessions.
 Run "openclaw doctor --fix" to apply changes.
-`, 0, { stateDir: '/home/openclaw/.openclaw' })
+`, 0, { stateDir: '/tmp/openclaw-active' })
 
     expect(result.summary).toContain('Found 11 orphan transcript file(s)')
-    expect(result.raw).not.toContain('/home/nefes/.openclaw')
+    expect(result.raw).not.toContain('/tmp/openclaw-foreign')
     expect(result.raw).not.toContain('Multiple state directories detected')
   })
 
@@ -96,18 +96,18 @@ Run "openclaw doctor --fix" to apply changes.
 ◇  State integrity
 │  - Multiple state directories detected. This can split session history.
 │    - $OPENCLAW_HOME/.openclaw
-│    - /home/nefes/.openclaw
+│    - /tmp/openclaw-foreign
 │    Active state dir: $OPENCLAW_HOME
 │  - Found 11 orphan transcript file(s) in $OPENCLAW_HOME/agents/jarv/sessions.
 Run "openclaw doctor --fix" to apply changes.
-`, 0, { stateDir: '/home/openclaw/.openclaw' })
+`, 0, { stateDir: '/tmp/openclaw-active' })
 
     expect(result.level).toBe('warning')
     expect(result.category).toBe('state')
     expect(result.issues).toEqual([
       'Found 11 orphan transcript file(s) in $OPENCLAW_HOME/agents/jarv/sessions.',
     ])
-    expect(result.raw).not.toContain('/home/nefes/.openclaw')
+    expect(result.raw).not.toContain('/tmp/openclaw-foreign')
     expect(result.raw).not.toContain('Multiple state directories detected')
   })
 

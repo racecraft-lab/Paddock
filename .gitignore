@@ -59,6 +59,7 @@ docs/_diffs/
 !.env.example
 !.env.sample
 !.env.template
+.specify/extensions/**/.cache/
 *.sqlite
 *.sqlite-*
 *.db

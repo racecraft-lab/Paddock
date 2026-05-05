@@ -5,7 +5,7 @@ extension:
   name: "Verify Tasks Extension"
   version: "1.0.0"
   description: "Detect phantom completions: tasks marked [X] in tasks.md with no real implementation."
-  author: "upstream-maintainers@example.com"
+  author: "spec-kit-verify-tasks upstream maintainers"
   repository: "https://github.com/datastone-inc/spec-kit-verify-tasks"
   license: "MIT"
   homepage: "https://github.com/datastone-inc/spec-kit-verify-tasks"

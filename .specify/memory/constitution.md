@@ -566,7 +566,7 @@ pushed to `origin`; PR merge moves the spec to Complete.
 
 ### OpenClaw deployment note
 
-Mission Control runs on the OpenClaw node from `<live-worktree>` on `main`.
+Mission Control runs on the OpenClaw node from an operator-managed `main` checkout.
 Changes to `.specify/` and `.claude/` reach the running service on next
 pull but are not required by `mc-start.sh` — they are operator-side
 tooling only. If operator-side behavior changes, update the OpenClaw deployment section

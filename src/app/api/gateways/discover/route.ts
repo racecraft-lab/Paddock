@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const gwLines = output.split('\n').filter(l => l.includes('openclaw') && l.includes('gateway'))
 
     for (const line of gwLines) {
-      // e.g. "openclaw-gateway instance loaded active running OpenClaw Gateway (quant)"
+      // e.g. "openclaw-gateway instance loaded active running OpenClaw Gateway"
       const parts = line.trim().split(/\s+/)
       const serviceName = parts[0] || ''
       const state = parts[2] || '' // active/inactive
