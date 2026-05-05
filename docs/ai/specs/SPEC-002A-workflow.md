@@ -45,7 +45,7 @@ Generated artifact targets:
 - `racecraft-lab/spec-kit-archive` PR #1 merged and `v1.1.0` was published: <https://github.com/racecraft-lab/spec-kit-archive/releases/tag/v1.1.0>.
 - `racecraft-lab/racecraft-plugins-public` PR #20 and release-please PR #21 merged; stale branch-cut `speckit-pro-v1.9.0` release/tag was removed and recreated at main commit `75a5b727cd0868d647c9afa968e0edbe398c3f94`: <https://github.com/racecraft-lab/racecraft-plugins-public/releases/tag/speckit-pro-v1.9.0>.
 - Local Codex `speckit-pro` install and cache report version `1.9.0`; marketplace wiring remains `./.codex/plugins/speckit-pro`.
-- Mission Control was deployed on HAL from `main`; `mission-control.service` and `openclaw-gateway.service` were active and `/login` returned HTTP 200 after deployment verification.
+- Mission Control was deployed on the operator node from `main`; `mission-control.service` and `openclaw-gateway.service` were active and `/login` returned HTTP 200 after deployment verification.
 
 ## Implementation Brief
 

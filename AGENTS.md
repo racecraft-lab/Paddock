@@ -6,13 +6,13 @@ Open-source dashboard for AI agent orchestration. Manage agent fleets, track tas
 
 ## OpenClaw Node Deployment Notes
 
-- These notes apply to operator-managed Mission Control worktrees: one live `main` checkout and one development checkout.
+- These notes apply to operator-managed Mission Control worktrees: `<live-worktree>` (live `main`) and `<dev-worktree>` (dev branch).
 - Mission Control should run from `racecraft-lab/mission-control` `main`.
 - Active systemd unit: `mission-control.service`
 - Active startup wrapper: `~/.local/bin/mc-start.sh`
 - The wrapper resolves runtime secrets from the operator's configured secret manager at startup.
-- Active service worktree: live checkout on `main`; development checkout on the active feature branch.
-- OpenClaw is a separate deploy surface on the operator node. The gateway should run from a clean tagged release tree, not from a Homebrew global package path.
+- Active service worktree: `<live-worktree>` on `main`; `<dev-worktree>` is the development worktree on the active feature branch.
+- OpenClaw is a separate deploy surface on the operator node. The gateway should run from `<openclaw-release-symlink>`, which should point at the clean tagged release tree, not from a Homebrew global package path.
 - If you change startup assumptions, verify both:
   - `systemctl --user status --no-pager mission-control.service`
   - `systemctl --user status --no-pager openclaw-gateway.service`

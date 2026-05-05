@@ -27,7 +27,6 @@ jobs:
       required_surfaces: playwright,storybook
       visual_review_paths: >-
         .storybook/**,
-        .specify/memory/constitution.md,
         Dockerfile,
         docker-entrypoint.sh,
         messages/en.json,

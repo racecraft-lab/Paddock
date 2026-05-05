@@ -14,7 +14,7 @@ verdict: not-ready (small set of spec-level gaps; otherwise plan-phase fixable)
 
 ## Framing
 
-This is a runbook-and-on-call review, not another correctness review. Round 1 closed the distributed-systems and data-correctness gaps; Q39–Q46 are responses to that round and credited where they apply. The lens here is: "I have to keep this running for 12 months on HAL, alone. What breaks, what wakes me up, and is the doc detailed enough that I won't be guessing at 3am?"
+This is a runbook-and-on-call review, not another correctness review. Round 1 closed the distributed-systems and data-correctness gaps; Q39–Q46 are responses to that round and credited where they apply. The lens here is: "I have to keep this running for 12 months on the operator node, alone. What breaks, what wakes me up, and is the doc detailed enough that I won't be guessing at 3am?"
 
 I do not re-litigate items addressed by Q39–Q46. Where the doc covers something, I cite the Q and spend the words on what's still missing.
 
@@ -71,7 +71,7 @@ M64 is split into M64a..M64k (11 idempotent steps per Q28). Each migration is wr
 The system is a single SQLite file. Q43's growth estimate (~10 GB at 3 years) is conservative — `raw_usage_events` alone at 945M rows × ~100 bytes is ~95 GB. The doc does not address:
 
 - **Backup cadence and destination.** Mechanism (`sqlite3 .backup` or C API), location, encryption-at-rest, off-node policy.
-- **Restore procedure.** Exact sequence when the SQLite file is corrupted or HAL's disk fails.
+- **Restore procedure.** Exact sequence when the SQLite file is corrupted or the operator node's disk fails.
 - **Counter rebuild after restore.** Restoring a 6h-stale snapshot keeps ledger/effects/counters internally coherent, but post-snapshot `raw_usage_events` will be re-ingested if collector buffered them. Q19's UNIQUE on `(source, source_event_id)` *should* prevent double-counting — needs an explicit AC.
 - **In-flight reservations across restore.** A reservation `consumed` in real time but `active` in the backup will be expired by Q6's reaper, releasing budget that was actually spent. Drift verifier (Q36) catches it hourly; in that hour, the workspace can over-spend.
 - **WAL file at restore.** A `cp` of `.db` without `.db-wal` loses the most recent transactions. Runbook MUST mandate `sqlite3 .backup`, never `cp`.
@@ -88,7 +88,7 @@ Per-workspace overhead is unstated. From the schemas:
 - Each workspace adds: ~1 `resource_governance_breaker` row per component (4), ~8 seeded `resource_policies` rows (Q4), ~1 `aegis_emergency_reserve` policy, N `provider_accounts` (operator-driven, ~5), N `provider_entitlements` (~5).
 - Per-day-per-workspace: ~600 raw events/min × 1440 min = 864K raw rows. After dedup, ~150K canonical. Counter rotation creates new rows daily.
 
-That is workspace 1. Workspace 2 doubles raw event throughput if the operator is also running 5 CLIs there. The benchmark's 10-workspace seed assumes much lower per-workspace activity than the single-operator HAL profile.
+That is workspace 1. Workspace 2 doubles raw event throughput if the operator is also running 5 CLIs there. The benchmark's 10-workspace seed assumes much lower per-workspace activity than the single-operator node profile.
 
 **Action item:** add an explicit "scaling envelope" subsection. State that v1 supports N=10 workspaces with the per-workspace event rate capped at 600 events/min. State the breakpoint where the operator should evaluate sharding (Q43 mentions 500M rows in `raw_usage_events`; tie that to the workspace count).
 
@@ -183,7 +183,7 @@ Several major operational concerns are not addressed at all by the spec:
 
 - **Backup / restore / DR (§4 above).** Largest gap.
 - **SQLite WAL corruption recovery.** What does the operator do if `mission-control.db-wal` is corrupted on disk? `.recover` procedure documented?
-- **Single-node-failure recovery.** HAL is one machine. If HAL dies, MC is down. Out of scope, but the doc could explicitly note "recovery is restore-from-backup; ~RTO 30min depending on backup size."
+- **Single-node-failure recovery.** The operator node is one machine. If the operator node dies, MC is down. Out of scope, but the doc could explicitly note "recovery is restore-from-backup; ~RTO 30min depending on backup size."
 - **Audit-log retention requirements for compliance.** Q43 keeps ledger 5 years. Is that contractually required? Operationally chosen? Either way, it should be tied to a stated requirement so v2 doesn't accidentally shorten it.
 - **Rate limiting on REST endpoints.** `/api/resource-overrides`, `/api/resource-policies` — no rate limit declared. Single operator means low actual exposure; but if the API key leaks, an attacker can DoS via thousands of invalid POSTs that all return 422. Doc should declare per-IP-per-route rate limits (or "deferred to gateway-layer rate limiting" with a pointer).
 - **Hash-chained ledger for tamper-evidence (§8 above).**

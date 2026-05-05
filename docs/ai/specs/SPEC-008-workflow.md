@@ -372,7 +372,7 @@ Use `[Q<n>]` markers in spec.md to cross-reference design concept (e.g., `[Q17]`
 - Native Node fs.watch + inotify for file-based ingestion adapters (Codex rollout, Claude Code transcript, Copilot events.jsonl, OpenClaw health)
 - Vitest for unit + integration + benchmark + chaos tests
 - Playwright for governance UI e2e (1-3 tests per Q14)
-- otelcol-contrib (operator-managed systemd unit on HAL; not in repo)
+- otelcol-contrib (operator-managed systemd unit on the operator node; not in repo)
 
 ## Constraints
 

@@ -12,10 +12,10 @@ Auto-generated from Archive Sweep on 2026-04-28.
 - **PR URL**: https://github.com/racecraft-lab/mission-control/pull/15
 - **Merge Commit**: `85baf27c218617f412a4a74f9feae13948fc26cd`
 - **Tree Reference**: `git show 85baf27c218617f412a4a74f9feae13948fc26cd:specs/001-foundation-migrations/spec.md`
-- **CI URL**: N/A (local HAL UAT accepted 2026-04-26)
+- **CI URL**: N/A (local operator-node UAT accepted 2026-04-26)
 - **Argos URL**: N/A (migration-only spec, no UI evidence)
 - **Task Completion**: 35/35
-- **Summary**: Appended migrations M53-M61 to `src/lib/migrations.ts` adding agent scope backfill (global for Aegis, Security Guardian, HAL), workflow-template routing metadata, task lineage fields, workspace feature-flag storage, task dispositions, task artifacts, facility workspace seed, resource policies, and resource policy events. All changes additive and rerun-safe. Paired with 9 rollback SQL files and rollback-procedure.md. No runtime behavior added.
+- **Summary**: Appended migrations M53-M61 to `src/lib/migrations.ts` adding agent scope backfill (global for Aegis, Security Guardian, <operator-agent>), workflow-template routing metadata, task lineage fields, workspace feature-flag storage, task dispositions, task artifacts, facility workspace seed, resource policies, and resource policy events. All changes additive and rerun-safe. Paired with 9 rollback SQL files and rollback-procedure.md. No runtime behavior added.
 
 **Recovery Commands**:
 ```text

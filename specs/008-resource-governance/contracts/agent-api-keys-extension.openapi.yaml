@@ -18,9 +18,9 @@ paths:
       summary: Create a new API key (operator-only)
       description: |
         For SPEC-008 collector key, set `key_label` to `otelcol-contrib@<hostname>`
-        and `role` to `operator`. The plaintext key is stored in 1Password as
-        `op://<vault-name>/<collector-api-key-item>` and resolved at
-        collector unit startup via systemd drop-in.
+        and `role` to `operator`. The plaintext key is stored in the operator
+        secret manager under a collector API key item and resolved at collector
+        unit startup via systemd drop-in.
       requestBody:
         required: true
         content:

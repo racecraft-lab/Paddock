@@ -1,7 +1,7 @@
 # SPEC-008 Operator Quickstart
 
 **Audience**: Mission Control operator deploying SPEC-008 Resource Governance for the first time.
-**Prereqs**: Mission Control running on `main` with SPEC-001..006 + SPEC-002A + SPEC-003 merged. Node ≥22, pnpm, systemd-user (HAL).
+**Prereqs**: Mission Control running on `main` with SPEC-001..006 + SPEC-002A + SPEC-003 merged. Node ≥22, pnpm, systemd-user (operator node).
 **Default state**: `FEATURE_RESOURCE_GOVERNANCE=false` (flag OFF). Migrations apply automatically; no behavioral change until you opt in.
 
 This guide walks you from "merged PR" through to "first hard-budget enforcement working" in three stages: install, configure, verify.
@@ -57,9 +57,9 @@ curl -sS -X POST http://127.0.0.1:3000/api/agent-api-keys \
   -d "{\"key_label\":\"otelcol-contrib@$(hostname)\",\"role\":\"operator\"}" \
   | tee /tmp/otelcol-key.json
 
-# Persist plaintext to 1Password (do not commit; do not echo)
-op item create --category 'API Credential' --title 'otelcol-collector-api-key' \
-  --vault 'Mission Control' \
+# Persist plaintext to the operator secret manager (do not commit; do not echo)
+op item create --category 'API Credential' --title '<collector-api-key-item>' \
+  --vault '<vault-name>' \
   apiKey="$(jq -r .plaintext_key /tmp/otelcol-key.json)"
 shred -u /tmp/otelcol-key.json
 ```

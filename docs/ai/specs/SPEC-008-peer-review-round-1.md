@@ -58,7 +58,7 @@ Per component:
 
 **This is the weakest section of the doc and a real production risk.**
 
-The doc adds 11 tables. Estimated growth on the operator's HAL with realistic usage:
+The doc adds 11 tables. Estimated growth on the operator's self-hosted node with realistic usage:
 
 | Table | Rows/day estimate | After 1y | After 3y |
 |---|---|---|---|
