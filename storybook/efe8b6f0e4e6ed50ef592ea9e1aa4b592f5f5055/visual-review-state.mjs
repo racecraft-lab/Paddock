@@ -33,7 +33,6 @@ export const DEFAULT_VISUAL_REVIEW_PATHS = [
 
 export const MISSION_CONTROL_VISUAL_REVIEW_PATHS = [
   '.storybook/**',
-  '.specify/memory/constitution.md',
   'Dockerfile',
   'docker-entrypoint.sh',
   'messages/en.json',
