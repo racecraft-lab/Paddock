@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "25354852464",
+      "runAttempt": "1",
+      "runKey": "25354852464-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25354852464",
+      "reportKey": "efe8b6f0e4e6ed50ef592ea9e1aa4b592f5f5055",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/playwright/efe8b6f0e4e6ed50ef592ea9e1aa4b592f5f5055/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/playwright/latest/",
+      "headSha": "efe8b6f0e4e6ed50ef592ea9e1aa4b592f5f5055",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "008-resource-governance",
+        "headSha": "645f75c230577f97f35ea5629abef97ea37ab7f9",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/26/",
+        "mergeCommitSha": "",
+        "number": "26",
+        "title": "feat(SPEC-008): Resource Governance + Cost Tracker Enforcement (RC Factory Phase 7)",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/26"
+      },
+      "createdAt": "2026-05-05T02:44:25.255Z"
+    },
+    {
       "surface": "storybook",
       "runId": "25354852450",
       "runAttempt": "1",
@@ -147,5 +174,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-05T02:39:09.489Z"
+  "updatedAt": "2026-05-05T02:44:25.255Z"
 }
