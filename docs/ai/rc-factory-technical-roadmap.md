@@ -7,7 +7,7 @@
 1. **Additive or compatibility-preserving migrations only.** No destructive schema changes. Do not assume column renames or CHECK rebuilds are safe unless the live schema proves the column/constraint exists and rollback compatibility is documented.
 2. **Feature flags for every new runtime behavior.** All flags default OFF. Flipping ON is an explicit operator action per product line, stored in the documented feature-flag storage mechanism.
 3. **Ship each phase to production** behind its flag before enabling. Deploy code ≠ activate behavior.
-4. **Dev-first, flag-scoped canary on live.** Write and commit changes in `~/mission-control` (dev worktree, `codex/openclaw-nodes-fallback`). Promote via PR merge to `main` → `git fetch` + `pnpm build` + restart `next-server` in `~/mission-control-sync` (the live worktree). The "canary" is a feature flag flipped for ONE workspace (e.g., the facility workspace or a dedicated test workspace) on the live service, validated, then promoted to wider workspaces. There is no separate canary environment on the OpenClaw node; there is ONE live MC and flag-scoping provides the safety.
+4. **Dev-first, flag-scoped canary on live.** Write and commit changes in the PR worktree, merge through GitHub, then promote the merged `main` branch on HAL. As of live verification on 2026-05-05, `mission-control.service` runs from `/home/fredrick-gabelmann/mission-control` on `main`, with runtime data in `/home/fredrick-gabelmann/mission-control-data`; `/home/fredrick-gabelmann/mission-control-sync` is no longer present. Promotion is `git fetch`/update, `pnpm build`, and restart of `mission-control.service`. The "canary" is a feature flag flipped for ONE workspace (e.g., the facility workspace or a dedicated test workspace) on the live service, validated, then promoted to wider workspaces. OpenClaw is a separate active service from `/home/fredrick-gabelmann/openclaw-release-current` and should be restarted only when gateway/runtime code or config changes.
 5. **Upstream compat gate** on every PR: cherry-pick candidates from `builderz-labs/main` should still apply cleanly.
 6. **Prefer upstream-safe extensions over schema divergence.** If the same goal can be achieved with an additive adapter, config path, or feature-flagged runtime hook, choose that before adding schema.
 7. **OpenClaw-specific features are fork-only adapters.** They must be disabled by default and no-op cleanly when absent.
@@ -24,6 +24,16 @@
 | `upstream-safe` | additive, opt-in, and realistic to upstream |
 | `upstream-divergent` | runtime-safe for current installs, but introduces schema/state/API divergence that increases permanent-fork pressure unless upstream accepts it |
 | `fork-only optional` | OpenClaw/local-environment-specific adapter that must remain absent-safe and disabled by default |
+
+## Current Codebase Baseline for Harness Work
+
+SPEC-013 and SPEC-014 must extend the existing Mission Control control-plane seams instead of designing a parallel runner:
+
+- `src/lib/adapters/adapter.ts` currently defines the narrow framework-adapter surface (`register`, `heartbeat`, `reportTask`, `getAssignments`, `disconnect`). SPEC-014's harness adapter is a new, stricter execution contract layered above this shape, not a rename of the existing framework adapter.
+- `src/app/api/sessions/route.ts`, `src/lib/sessions.ts`, and the local session scanners already normalize OpenClaw gateway, Claude Code, Codex CLI, Hermes, and OpenCode session observations into one session surface. The runner must reuse that observation model and add launch/continue semantics only when an adapter proves the capability.
+- `src/lib/runs.ts` already stores `AgentRun` records with runtime, task id, steps, cost, provenance, git, workspace, tags, metadata, and eval fields. Symphony-style attempts/processes should reuse or extend this run spine before adding a new concept.
+- `src/lib/task-dispatch.ts` and `src/lib/scheduler.ts` are the current dispatch path, including resource-governance gates, OpenClaw gateway invocation, direct Claude fallback, Aegis review, stale-task requeue, and task-chain advancement. SPEC-013 owns claim/reconciliation authority; SPEC-014 owns execution inside an already-claimed run. Neither spec should duplicate successor selection or bypass governance.
+- HAL proves the desired separation: Mission Control is the product/task/governance control plane, while OpenClaw gateway/node services provide an optional harness/runtime substrate. The same adapter contract must also support Mission Control-owned worktrees/sandboxes when Codex, Claude Code, Hermes, OpenCode, or another harness is selected directly.
 
 ## Phase Map (At a Glance)
 
@@ -354,10 +364,10 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** —
 - **Scope source:** Phase 12 — Per-Task Sandbox Runner and Harness Adapter Registry
 - **Acceptance criteria source:** Phase 12 Acceptance Criteria
-- **Scope summary:** Execute claimed GitHub-linked task-stage work in deterministic per-task sandboxes, resolve a declared harness adapter, launch or continue the selected Codex/ChatGPT, Claude Code, OpenClaw gateway, Hermes, OpenCode, or future runner where its capabilities are proven, stream run events into Mission Control, persist session/token/runtime/error summaries, and publish handoff artifacts. Inspired by Symphony's workspace + app-server execution layer without making one harness mandatory.
+- **Scope summary:** Execute claimed GitHub-linked task-stage work in deterministic per-task sandboxes, resolve a declared harness adapter and sandbox owner, launch or continue the selected Codex/ChatGPT, Claude Code, OpenClaw gateway, Hermes, OpenCode, or future runner where its capabilities are proven, stream run events into Mission Control, persist session/token/runtime/error summaries, and publish handoff artifacts. Inspired by Symphony's workspace + app-server execution layer without making one harness mandatory.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `src/lib/task-sandbox-runner.ts`, runner adapter modules, sandbox lifecycle hooks, run-event ingestion, and artifact handoff integration. OpenClaw-specific adapter paths must remain fork-only optional.
-- **Autopilot notes:** The runner executes claimed GitHub-linked work only; it does not choose successor templates, bypass policy, create local-only pilot tasks, or auto-merge. Approval and sandbox posture must be documented explicitly for every adapter. The Symphony Elixir prototype is not a dependency.
+- **Autopilot notes:** The runner executes claimed GitHub-linked work only; it does not choose successor templates, bypass policy, create local-only pilot tasks, or auto-merge. Approval, sandbox ownership, and sandbox posture must be documented explicitly for every adapter. The Symphony Elixir prototype is not a dependency.
 - **Definition of done:** Phase 12 deliverables are implemented, acceptance criteria pass for sandbox path determinism, lifecycle hooks, adapter selection, harness startup/continue/timeout/stall handling, unsupported tool-call failure handling, token/runtime accounting, artifact publication, and operator-visible run debug endpoints.
 
 ---
@@ -1080,6 +1090,7 @@ Make synced GitHub issues behave as the durable tracker record and Mission Contr
 ### Deliverables
 
 - **Run-state model:** task-stage run attempt records or equivalent append-only state for claimed/running/retrying/released work, tied to `task_id`, `chain_id`, `chain_stage`, `workspace_id`, and `workflow_template_id`.
+- **Run spine reuse:** evaluate `src/lib/runs.ts` as the first persistence target for attempts/processes before adding a new table; any new state must explain why `AgentRun.metadata`/steps/provenance are insufficient.
 - **Tracker identity gate:** claimable pilot work must have durable GitHub identity (`github_repo`, `github_issue_number`, and linked PR evidence when required by the template). Local-only tasks remain outside the autonomous runner unless a later tracker adapter explicitly owns them.
 - **Claim and dispatch authority:** a single coordination path prevents duplicate dispatch, applies resource governance before launch, and respects task/GitHub terminal state.
 - **Retry/backoff:** continuation retry and failure retry policies with bounded attempts, reason codes, and operator-visible last error.
@@ -1121,9 +1132,11 @@ Execute claimed GitHub-linked task-stage work in deterministic per-task sandboxe
 
 ### Deliverables
 
-- **Sandbox lifecycle:** deterministic sandbox key/path from task id, chain id/stage, and product-line scope; hooks for create, before-run, after-run, and cleanup.
-- **Harness adapter contract:** typed adapter interface for launch, resume/continue, stop/cancel, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, tool/MCP exposure, memory scopes, skill/plugin roots, provider-account constraints, approval, timeout, and user-input policy.
+- **Sandbox ownership model:** every run records whether `sandbox_owner` is `mission_control`, `openclaw`, or `external_harness`. Mission Control-owned sandboxes create deterministic git worktrees under an allowlisted root; OpenClaw-owned sandboxes delegate create/run/cleanup to the gateway adapter; external harnesses must return a bounded workspace/session handle and cleanup policy.
+- **Sandbox lifecycle:** deterministic sandbox key/path from task id, chain id/stage, product-line scope, and sandbox owner; hooks for create, before-run, after-run, and cleanup.
+- **Harness adapter contract:** typed adapter interface for launch, resume/continue, stop/cancel, transcript/event read, token/runtime accounting, artifact publication, sandbox ownership/posture, tool/MCP exposure, memory scopes, skill/plugin roots, provider-account constraints, approval, timeout, and user-input policy.
 - **Initial adapter registry:** Codex/ChatGPT through Codex app-server or Codex CLI where available; Claude Code through local CLI/API or OpenClaw CLI backend where configured; OpenClaw gateway as a fork-only optional runtime/sandbox/session substrate; Hermes and OpenCode as observation or execution adapters only for capabilities they can prove from local session stores and continue APIs.
+- **Codex app-server adapter path:** when available, prefer Codex app-server over CLI scraping because its structured thread/turn/item stream, command/file/tool requests, dynamic tools, approvals, and token/runtime events map cleanly to Mission Control run-state and review-packet records.
 - **Capability resolution packet:** before dispatch, Mission Control materializes the workflow contract, GitHub issue/task state, artifact refs, SOUL/comment context, memory scopes, skill/plugin/MCP availability, sandbox policy, provider/account policy, and adapter manifest into a run-context record agents and reviewers can inspect.
 - **OpenClaw substrate boundary:** OpenClaw may provide gateway/session messaging, sandbox preparation, process control, plugin harness selection, MCP/skills exposure, memory injection, and optional health/cost telemetry. It does not own tracker state, choose successor templates, or bypass Mission Control claim/governance/reconciliation.
 - **Run event ingestion:** persist summarized session id, last event, last message, token/runtime totals, rate-limit snapshots, and failure reason.
@@ -1140,6 +1153,7 @@ Execute claimed GitHub-linked task-stage work in deterministic per-task sandboxe
 - [P12-AC6] Downstream stages consume artifact references/previews from Mission Control, not another agent's private sandbox.
 - [P12-AC7] OpenClaw or runner-adapter failure records the run attempt as failed/stalled/released without changing GitHub issue state or task terminal state outside the documented reconciliation path.
 - [P12-AC8] At least two non-identical adapter implementations or fakes exercise the same contract in tests, proving Mission Control runner state is not Codex-specific.
+- [P12-AC9] Tests cover both Mission Control-owned sandbox lifecycle and OpenClaw-owned or fake external sandbox lifecycle through the same adapter interface, proving sandbox ownership is a user/workflow choice rather than an OpenClaw assumption.
 
 ### Rollback
 
