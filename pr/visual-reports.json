@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-04T20:35:23.592Z",
+  "updatedAt": "2026-05-05T14:53:34.923Z",
   "prs": [
+    {
+      "prNumber": "27",
+      "prTitle": "docs: align factory roadmap with Symphony",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/27",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/27/",
+      "headRef": "symphony-prd-roadmap",
+      "baseRef": "main",
+      "updatedAt": "2026-05-05T14:53:34.923Z",
+      "latest": {
+        "playwright": {
+          "runId": "25383474812",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25383474812",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/27/playwright/latest/",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/27/runs/25383474812-attempt-1/playwright/",
+          "updatedAt": "2026-05-05T14:53:34.923Z"
+        }
+      }
+    },
     {
       "prNumber": "26",
       "prTitle": "feat(SPEC-008): Resource Governance + Cost Tracker Enforcement (RC Factory Phase 7)",
