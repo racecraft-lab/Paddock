@@ -798,6 +798,142 @@ function generateRegistryIndex(registry, baseUrl) {
 `
 }
 
+function generateMainIndex(meta, baseUrl) {
+  const latestBySurface = new Map()
+  for (const report of meta.reports) {
+    const current = latestBySurface.get(report.surface)
+    if (!current || new Date(report.createdAt) > new Date(current.createdAt)) {
+      latestBySurface.set(report.surface, report)
+    }
+  }
+
+  const cards = Array.from(latestBySurface.values())
+    .sort((a, b) => a.surface.localeCompare(b.surface))
+    .map((report) => {
+      const surface = SURFACES[report.surface]?.label || report.surface
+      return `
+        <article class="card">
+          <p class="eyebrow">${escapeHtml(surface)}</p>
+          <h2>Latest main report</h2>
+          <p>Visual assets generated from the current <code>main</code> branch. Use this as the baseline reference when reviewing future pull requests.</p>
+          <a class="button" href="${escapeHtml(report.latestHref)}">Open latest report</a>
+          <a class="link" href="${escapeHtml(report.runUrl)}">Workflow run ${escapeHtml(report.runId)}</a>
+        </article>
+      `
+    })
+    .join('\n')
+
+  const rows = meta.reports
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map((report) => {
+      const surface = SURFACES[report.surface]?.label || report.surface
+      const current = latestBySurface.get(report.surface)?.reportKey === report.reportKey
+      const activeClass = current ? ' class="current"' : ''
+      return `
+        <tr${activeClass}>
+          <td>${escapeHtml(surface)}</td>
+          <td><a href="${escapeHtml(report.reportHref)}">Open report</a></td>
+          <td><a href="${escapeHtml(report.runUrl)}">Run ${escapeHtml(report.runId)}</a></td>
+          <td><code>${escapeHtml(report.headSha.slice(0, 7))}</code></td>
+          <td>${escapeHtml(new Date(report.createdAt).toLocaleString('en-US', { timeZone: 'UTC' }))} UTC</td>
+        </tr>
+      `
+    })
+    .join('\n')
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Main Branch Visual Reports</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f8fb;
+        --panel: #ffffff;
+        --text: #17202f;
+        --muted: #5b6678;
+        --line: #d9dee8;
+        --accent: #0a7f86;
+        --accent-dark: #065c62;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+      header { border-bottom: 1px solid var(--line); background: var(--panel); }
+      .wrap { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; padding: 32px 0; }
+      .crumbs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; color: var(--muted); font-size: 13px; }
+      a { color: var(--accent-dark); font-weight: 650; }
+      h1 { margin: 0; font-size: 40px; line-height: 1.08; letter-spacing: 0; }
+      h2 { margin: 0 0 10px; font-size: 20px; }
+      p { margin: 0 0 14px; color: var(--muted); }
+      .summary { max-width: 780px; margin-top: 14px; font-size: 17px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+      .card, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+      .eyebrow { margin: 0 0 8px; color: var(--accent-dark); font-size: 12px; font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
+      .button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 8px 12px; margin: 4px 8px 4px 0; border-radius: 6px; background: var(--accent); color: #fff; text-decoration: none; }
+      .link { display: inline-flex; min-height: 38px; align-items: center; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+      th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0; }
+      tr.current td { background: #eef8f7; }
+      code { padding: 2px 5px; border-radius: 5px; background: #eef1f6; font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+      @media (max-width: 720px) {
+        table, thead, tbody, th, td, tr { display: block; }
+        thead { display: none; }
+        td { padding: 10px 0; }
+        tr { border-bottom: 1px solid var(--line); }
+        h1 { font-size: 30px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <a href="${escapeHtml(baseUrl)}/">Mission Control visual reviews</a>
+          <span>/</span>
+          <a href="${escapeHtml(baseUrl)}/pr/">PR reports</a>
+        </nav>
+        <p class="eyebrow">Main Branch</p>
+        <h1>Main Branch Visual Reports</h1>
+        <p class="summary">Latest Storybook and Playwright visual reports generated from <code>main</code>. Pull request reports remain available from <a href="${escapeHtml(baseUrl)}/pr/">PR reports</a>.</p>
+      </div>
+    </header>
+    <main class="wrap">
+      <section class="grid" aria-label="Latest main visual reports">
+        ${cards || '<article class="card"><h2>No main reports yet</h2><p>Main visual report publishing has not completed yet.</p></article>'}
+      </section>
+      <section class="panel" style="margin-top: 16px;">
+        <h2>Run History</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Surface</th>
+              <th>Report</th>
+              <th>Workflow</th>
+              <th>Commit</th>
+              <th>Published</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows || '<tr><td colspan="5">No main visual reports have been published yet.</td></tr>'}
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </body>
+</html>
+`
+}
+
 function latestMapForReports(reports, baseUrl, prNumber) {
   const latest = {}
   for (const report of reports) {
@@ -829,16 +965,20 @@ async function publishReport(options) {
   const event = await readGitHubEvent()
   const repository = options.repository || process.env.GITHUB_REPOSITORY
   const baseUrl = pageBaseUrl(repository, options['base-url'] || process.env.MC_VISUAL_PAGES_BASE_URL)
+  const mode = options.mode || 'pr'
+  if (!['pr', 'main'].includes(mode)) {
+    throw new Error('--mode must be pr or main')
+  }
   const prPayload = event.pull_request || {}
   const prNumber = String(options['pr-number'] || prPayload.number || '')
-  if (!prNumber) throw new Error('--pr-number or pull_request event payload is required')
+  if (mode === 'pr' && !prNumber) throw new Error('--pr-number or pull_request event payload is required')
 
   const branch = options.branch || process.env.MC_VISUAL_PAGES_BRANCH || 'visual-regression-pages'
   const runId = String(options['run-id'] || process.env.GITHUB_RUN_ID || 'local')
   const runAttempt = String(options['run-attempt'] || process.env.GITHUB_RUN_ATTEMPT || '1')
   const runKey = `${runId}-attempt-${runAttempt}`
-  const headRef = safeBranchName(options['head-ref'] || process.env.GITHUB_HEAD_REF || prPayload.head?.ref)
-  const baseRef = safeBranchName(options['base-ref'] || process.env.GITHUB_BASE_REF || prPayload.base?.ref)
+  const headRef = safeBranchName(options['head-ref'] || process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || prPayload.head?.ref)
+  const baseRef = safeBranchName(options['base-ref'] || process.env.GITHUB_BASE_REF || (mode === 'main' ? process.env.GITHUB_REF_NAME : prPayload.base?.ref))
   const headSha = String(options.sha || prPayload.head?.sha || process.env.GITHUB_SHA || 'unknown')
   const workflowName = options.workflow || process.env.GITHUB_WORKFLOW || SURFACES[surface].label
   const runUrl = options['run-url'] || `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${repository}/actions/runs/${runId}`
@@ -852,6 +992,121 @@ async function publishReport(options) {
     if (!token) throw new Error('GITHUB_TOKEN is required when --pages-dir is not provided')
     pagesDir = await clonePagesBranch({ repository, token, branch })
     shouldCleanup = true
+  }
+
+  if (mode === 'main') {
+    const reportHtml = await readFile(reportFile, 'utf8')
+    const extractedReport = extractReportPayload(reportHtml)
+    const reportKey = safeBranchName(options['report-key'] || headSha || runKey)
+    const runReportDir = path.join(pagesDir, surface, reportKey)
+    const latestReportDir = path.join(pagesDir, surface, 'latest')
+    const reportHref = `${baseUrl}/${surface}/${reportKey}/`
+    const latestHref = `${baseUrl}/${surface}/latest/`
+    const reviewContext = {
+      repository,
+      baseUrl,
+      prNumber: '',
+      prTitle: 'Main branch visual report',
+      prUrl: '',
+      prIndexHref: `${baseUrl}/`,
+      reportMode: 'main',
+      surface,
+      surfaceLabel: SURFACES[surface].label,
+      workflowName,
+      workflowFile: SURFACES[surface].workflowFile,
+      runId,
+      runAttempt,
+      runKey,
+      runUrl,
+      headRef,
+      baseRef,
+      headSha,
+      createdAt,
+      regVizHref: './reg-viz.html',
+    }
+
+    await writeReportBundle({
+      reportFile,
+      reportHtml,
+      extracted: extractedReport,
+      targetDir: runReportDir,
+      manifestDirs: manifestDirsForOptions(options),
+      context: {
+        ...reviewContext,
+        reportHref,
+        reportScope: 'run',
+      },
+    })
+    await writeReportBundle({
+      reportFile,
+      reportHtml,
+      extracted: extractedReport,
+      targetDir: latestReportDir,
+      manifestDirs: manifestDirsForOptions(options),
+      context: {
+        ...reviewContext,
+        reportHref: latestHref,
+        reportScope: 'latest',
+      },
+    })
+
+    const metaPath = path.join(pagesDir, 'visual-main-runs.json')
+    const meta = await readJsonIfPresent(metaPath, {
+      version: 1,
+      reports: [],
+    })
+    meta.version = 1
+    meta.updatedAt = createdAt
+    meta.reports = Array.isArray(meta.reports) ? meta.reports : []
+
+    const reportRecord = {
+      surface,
+      runId,
+      runAttempt,
+      runKey,
+      runUrl,
+      reportKey,
+      reportHref,
+      latestHref,
+      headSha,
+      headRef,
+      baseRef,
+      workflowName,
+      workflowFile: SURFACES[surface].workflowFile,
+      createdAt,
+    }
+
+    meta.reports = [
+      reportRecord,
+      ...meta.reports.filter((report) => !(report.surface === surface && report.reportKey === reportKey)),
+    ]
+
+    await writeFile(metaPath, `${JSON.stringify(meta, null, 2)}\n`)
+    await writeFile(path.join(pagesDir, 'index.html'), generateMainIndex(meta, baseUrl))
+
+    if (!options['pages-dir']) {
+      run('git', ['config', 'user.name', 'github-actions[bot]'], { cwd: pagesDir })
+      run('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'], { cwd: pagesDir })
+      run('git', ['add', surface, 'visual-main-runs.json', 'index.html'], { cwd: pagesDir })
+      const diff = run('git', ['diff', '--cached', '--quiet'], { cwd: pagesDir, allowFailure: true, quiet: true })
+      if (diff.status !== 0) {
+        run('git', ['commit', '-m', `docs: publish main ${surface} visual report`], { cwd: pagesDir })
+        const push = run('git', ['push', 'origin', `HEAD:${branch}`], { cwd: pagesDir, allowFailure: true })
+        if (push.status !== 0) {
+          run('git', ['pull', '--rebase', 'origin', branch], { cwd: pagesDir })
+          run('git', ['push', 'origin', `HEAD:${branch}`], { cwd: pagesDir })
+        }
+      } else {
+        console.log('[visual-pr-pages] no Pages changes to publish')
+      }
+    }
+
+    console.log(`[visual-pr-pages] published ${surface} report: ${latestHref}`)
+
+    if (shouldCleanup) {
+      await rm(pagesDir, { recursive: true, force: true })
+    }
+    return
   }
 
   const prRoot = path.join(pagesDir, 'pr', prNumber)

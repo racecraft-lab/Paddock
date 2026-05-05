@@ -103,6 +103,9 @@ jobs:
   docker-ui-e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    concurrency:
+      group: visual-pages-${{ github.event_name }}-${{ github.ref }}
+      cancel-in-progress: false
 
     steps:
       - name: Checkout
@@ -179,7 +182,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm visual:reg-suit:playwright
+        run: node scripts/publish-visual-pr-pages.mjs --surface playwright --report-file test-results/visual-report/playwright.html --mode main
 
       - name: Upload Playwright artifacts
         if: always()
