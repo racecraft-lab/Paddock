@@ -4,6 +4,21 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Mission Control Main Branch Visual Reports</title>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem('visual-review:theme')
+          const theme = stored === 'dark' || stored === 'light'
+            ? stored
+            : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          document.documentElement.dataset.theme = theme
+          document.documentElement.style.colorScheme = theme
+        } catch {
+          document.documentElement.dataset.theme = 'light'
+          document.documentElement.style.colorScheme = 'light'
+        }
+      })()
+    </script>
     <style>
       :root {
         color-scheme: light;
@@ -14,6 +29,81 @@
         --line: #d9dee8;
         --accent: #0a7f86;
         --accent-dark: #065c62;
+        --current: #eef8f7;
+        --code-bg: #eef1f6;
+        --button-text: #ffffff;
+        --control: #ffffff;
+        --control-hover: #f7f9fc;
+        --focus-ring: #8ac8ce;
+      }
+      
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #0e121b;
+        --panel: #151b27;
+        --text: #eef4ff;
+        --muted: #aab6c8;
+        --line: #2a3546;
+        --accent: #67d5df;
+        --accent-dark: #7ee5ec;
+        --warn: #f0bd62;
+        --current: #102f36;
+        --code-bg: #1b2331;
+        --button-text: #071018;
+        --control: #111827;
+        --control-hover: #1a2433;
+        --focus-ring: #4fc4cf;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          color-scheme: dark;
+          --bg: #0e121b;
+          --panel: #151b27;
+          --text: #eef4ff;
+          --muted: #aab6c8;
+          --line: #2a3546;
+          --accent: #67d5df;
+          --accent-dark: #7ee5ec;
+          --warn: #f0bd62;
+          --current: #102f36;
+          --code-bg: #1b2331;
+          --button-text: #071018;
+          --control: #111827;
+          --control-hover: #1a2433;
+          --focus-ring: #4fc4cf;
+        }
+      }
+      .header-top {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+      .theme-toggle {
+        flex: 0 0 auto;
+        min-height: 38px;
+        padding: 8px 14px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--control);
+        color: var(--text);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 750;
+        cursor: pointer;
+      }
+      .theme-toggle:hover {
+        background: var(--control-hover);
+        border-color: var(--accent);
+      }
+      .theme-toggle:focus-visible {
+        outline: 3px solid var(--focus-ring);
+        outline-offset: 2px;
+      }
+      @media (max-width: 720px) {
+        .header-top { align-items: stretch; flex-direction: column; }
+        .theme-toggle { width: 100%; }
       }
       * { box-sizing: border-box; }
       body {
@@ -25,7 +115,7 @@
       }
       header { border-bottom: 1px solid var(--line); background: var(--panel); }
       .wrap { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; padding: 32px 0; }
-      .crumbs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; color: var(--muted); font-size: 13px; }
+      .crumbs { display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
       a { color: var(--accent-dark); font-weight: 650; }
       h1 { margin: 0; font-size: 40px; line-height: 1.08; letter-spacing: 0; }
       h2 { margin: 0 0 10px; font-size: 20px; }
@@ -34,13 +124,13 @@
       .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
       .card, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
       .eyebrow { margin: 0 0 8px; color: var(--accent-dark); font-size: 12px; font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
-      .button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 8px 12px; margin: 4px 8px 4px 0; border-radius: 6px; background: var(--accent); color: #fff; text-decoration: none; }
+      .button { display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 8px 12px; margin: 4px 8px 4px 0; border-radius: 6px; background: var(--accent); color: var(--button-text); text-decoration: none; }
       .link { display: inline-flex; min-height: 38px; align-items: center; }
       table { width: 100%; border-collapse: collapse; font-size: 14px; }
       th, td { padding: 12px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
       th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0; }
-      tr.current td { background: #eef8f7; }
-      code { padding: 2px 5px; border-radius: 5px; background: #eef1f6; font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+      tr.current td { background: var(--current); }
+      code { padding: 2px 5px; border-radius: 5px; background: var(--code-bg); font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
       @media (max-width: 720px) {
         table, thead, tbody, th, td, tr { display: block; }
         thead { display: none; }
@@ -53,11 +143,14 @@
   <body>
     <header>
       <div class="wrap">
-        <nav class="crumbs" aria-label="Breadcrumb">
-          <a href="https://racecraft-lab.github.io/mission-control/">Mission Control visual reviews</a>
-          <span>/</span>
-          <a href="https://racecraft-lab.github.io/mission-control/pr/">PR reports</a>
-        </nav>
+        <div class="header-top">
+          <nav class="crumbs" aria-label="Breadcrumb">
+            <a href="https://racecraft-lab.github.io/mission-control/">Mission Control visual reviews</a>
+            <span>/</span>
+            <a href="https://racecraft-lab.github.io/mission-control/pr/">PR reports</a>
+          </nav>
+          <button class="theme-toggle" type="button" data-theme-toggle aria-pressed="false">Dark</button>
+        </div>
         <p class="eyebrow">Main Branch</p>
         <h1>Main Branch Visual Reports</h1>
         <p class="summary">Latest visual reports generated from <code>main</code>. Pull request reports remain available from <a href="https://racecraft-lab.github.io/mission-control/pr/">PR reports</a>.</p>
@@ -103,7 +196,7 @@
           <td><a href="https://racecraft-lab.github.io/mission-control/storybook/efe8b6f0e4e6ed50ef592ea9e1aa4b592f5f5055/">Open report</a></td>
           <td><a href="https://github.com/racecraft-lab/mission-control/actions/runs/25354852450">Run 25354852450</a></td>
           <td><code>efe8b6f</code></td>
-          <td>5/5/2026, 2:55:14 AM UTC</td>
+          <td>5/5/2026, 3:39:14 AM UTC</td>
         </tr>
       
 
@@ -173,5 +266,26 @@
         </table>
       </section>
     </main>
+    <script>
+      (() => {
+        const button = document.querySelector('[data-theme-toggle]')
+        if (!button) return
+
+        const applyTheme = (theme) => {
+          document.documentElement.dataset.theme = theme
+          document.documentElement.style.colorScheme = theme
+          button.textContent = theme === 'dark' ? 'Light' : 'Dark'
+          button.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false')
+          try {
+            localStorage.setItem('visual-review:theme', theme)
+          } catch {}
+        }
+
+        applyTheme(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light')
+        button.addEventListener('click', () => {
+          applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark')
+        })
+      })()
+    </script>
   </body>
 </html>
