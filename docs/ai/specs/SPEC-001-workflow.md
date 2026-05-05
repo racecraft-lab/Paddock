@@ -30,7 +30,7 @@ Do not start downstream specs from this worktree. SPEC-001 stops after the Phase
 | Checklist | `$speckit-checklist` | Complete | Three checklist domains completed; 3 total gaps remediated; G4 passed with 0 markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 35 dependency-ordered tasks with full P0-AC1..P0-AC14 coverage; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Found and remediated 2 HIGH issues; G6 passed with 0 CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | Complete | M53-M61, rollback package, roadmap/PRD status, full verification matrix, and HAL UAT acceptance completed |
+| Implement | `$speckit-implement` | Complete | M53-M61, rollback package, roadmap/PRD status, full verification matrix, and operator-node UAT acceptance completed |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -88,7 +88,7 @@ Before starting any phase, verify alignment with `.specify/memory/constitution.m
 
 Implement additive migrations and seed steps M53-M61:
 
-- M53: `agents.scope` column plus global backfill for Aegis, Security Guardian, and HAL.
+- M53: `agents.scope` column plus global backfill for Aegis, Security Guardian, and <operator-agent>.
 - M54: `workflow_templates` task-chain and artifact-policy columns: `slug`, `output_schema`, `routing_rules`, `next_template_slug`, `produces_pr`, `external_terminal_event`, `allow_redacted_artifacts`.
 - M55: `tasks` workflow-template binding and lineage columns.
 - M56: `workspaces.feature_flags JSON`, with NULL meaning all flags default OFF.
@@ -159,7 +159,7 @@ RC Factory v1 requires a compatibility-preserving schema tail before runtime spe
 - Preserve application-level-only `tasks.status` validation; do not add or rebuild a DB CHECK for `ready_for_owner`.
 - Use `workflow_templates`, not a `task_templates` table.
 - Use `workspaces.name`, not `workspaces.display_name`.
-- Backfill `agents.scope='global'` for `LOWER(name) IN ('aegis','security-guardian','hal')`.
+- Backfill `agents.scope='global'` for `LOWER(name) IN ('aegis','security-guardian','<operator-agent>')`.
 - Seed the `facility` workspace by resolving the default tenant from live data; do not hardcode `tenant_id=1`.
 - Add rollback files `docs/migrations/rollback-M53.sql` through `docs/migrations/rollback-M61.sql`.
 - Add `docs/migrations/rollback-procedure.md` with reverse order M61 to M53, SQLite column-rebuild rollback guidance, and DB snapshot instructions.
@@ -538,7 +538,7 @@ Run the smallest reliable subset first, then broader checks if time permits:
 - [x] Prohibited-drift grep checks pass.
 - [x] `docs/ai/rc-factory-technical-roadmap.md` marks SPEC-001 complete in the spec branch after implementation.
 - [x] `docs/rc-factory-v1-prd.md` reflects SPEC-001 completion after implementation.
-- [x] HAL UAT accepted on 2026-04-26 with M53-M61 markers present, DB quick check OK, facility seed present, global-agent backfill verified, and no blocking core-flow regressions observed.
+- [x] operator-node UAT accepted on 2026-04-26 with M53-M61 markers present, DB quick check OK, facility seed present, global-agent backfill verified, and no blocking core-flow regressions observed.
 - [x] Branch is pushed for review.
 
 ---

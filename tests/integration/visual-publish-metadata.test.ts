@@ -11,6 +11,32 @@ function extractReviewData(html: string) {
   return JSON.parse(match[1])
 }
 
+const GITHUB_ENV_KEYS = [
+  'GITHUB_API_URL',
+  'GITHUB_BASE_REF',
+  'GITHUB_EVENT_PATH',
+  'GITHUB_HEAD_REF',
+  'GITHUB_REF_NAME',
+  'GITHUB_REPOSITORY',
+  'GITHUB_RUN_ATTEMPT',
+  'GITHUB_RUN_ID',
+  'GITHUB_SERVER_URL',
+  'GITHUB_SHA',
+  'GITHUB_TOKEN',
+  'GITHUB_WORKFLOW',
+  'MC_VISUAL_PAGES_BASE_URL',
+  'MC_VISUAL_PAGES_BRANCH',
+  'NODE_OPTIONS',
+]
+
+function isolatedGithubEnv(overrides: Record<string, string>): NodeJS.ProcessEnv {
+  const env = { ...process.env }
+  for (const key of GITHUB_ENV_KEYS) {
+    delete env[key]
+  }
+  return { ...env, ...overrides }
+}
+
 describe('visual PR Pages publisher metadata', () => {
   it('enriches reg-viz payloads from sibling visual manifests outside the report tree', () => {
     const repoRoot = process.cwd()
@@ -172,12 +198,11 @@ describe('visual PR Pages publisher metadata', () => {
       ], {
         cwd: tempDir,
         encoding: 'utf8',
-        env: {
-          ...process.env,
+        env: isolatedGithubEnv({
           GITHUB_REF_NAME: 'main',
           GITHUB_SHA: 'abcdef1234567890',
           GITHUB_EVENT_PATH: eventFile,
-        },
+        }),
       })
 
       expect(`${result.stdout}\n${result.stderr}`).toContain('published storybook report')
@@ -327,13 +352,12 @@ globalThis.fetch = async (url) => {
       ], {
         cwd: tempDir,
         encoding: 'utf8',
-        env: {
-          ...process.env,
+        env: isolatedGithubEnv({
           GITHUB_REF_NAME: 'main',
           GITHUB_SHA: mergedSha,
           GITHUB_TOKEN: 'ghs_test',
           NODE_OPTIONS: `--import=${pathToFileURL(fetchStub).href}`,
-        },
+        }),
       })
 
       expect(`${result.stdout}\n${result.stderr}`).toContain('published storybook report')
@@ -498,13 +522,12 @@ globalThis.fetch = async (url) => {
       ], {
         cwd: tempDir,
         encoding: 'utf8',
-        env: {
-          ...process.env,
+        env: isolatedGithubEnv({
           GITHUB_REF_NAME: 'main',
           GITHUB_SHA: currentSha,
           GITHUB_TOKEN: 'ghs_test',
           NODE_OPTIONS: `--import=${pathToFileURL(fetchStub).href}`,
-        },
+        }),
       })
 
       expect(`${result.stdout}\n${result.stderr}`).toContain('published storybook report')

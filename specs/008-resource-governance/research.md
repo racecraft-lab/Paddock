@@ -107,7 +107,7 @@ Quarterly refresh + alert if installed > 180 days.
 **Alternatives considered**:
 
 - *Distro package (`apt install otelcol-contrib`)*: Rejected — distro lag + no upstream signature chain.
-- *Container image*: Rejected — operator runs systemd, not container daemon, on HAL.
+- *Container image*: Rejected — operator runs systemd, not container daemon, on the operator node.
 
 ## R-009: Provider Account Model + Entitlement Detection [Q15, Q15.5, Q42, Q64, Q70, Q71]
 

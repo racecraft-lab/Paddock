@@ -127,7 +127,7 @@ M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops eve
 
 - **FR-001**: Add migration-only Phase 0 schema tail covering M53-M61 after the current migration `052`.
 - **FR-002**: Every M53-M61 change must be additive and idempotent (PRAGMA guards, IF NOT EXISTS, null-only backfills).
-- **FR-003**: Add `agents.scope` and backfill `scope='global'` for Aegis, Security Guardian, HAL via case-insensitive matching.
+- **FR-003**: Add `agents.scope` and backfill `scope='global'` for Aegis, Security Guardian, <operator-agent> via case-insensitive matching.
 - **FR-004**: Preserve `agents.workspace_path`; do not add `sandbox_path` or rename the column.
 - **FR-005**: Extend `workflow_templates` with routing/artifact-policy metadata and a partial unique index on `(workspace_id, slug)` WHERE slug IS NOT NULL.
 - **FR-006**: Add workflow-template binding and lineage fields on `tasks` for downstream chaining.
@@ -341,7 +341,7 @@ M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops eve
 - Generated screenshots are CI-only artifacts by default; Argos/CI provenance links are the durable evidence.
 - Archive Sweep on a dirty worktree or unsafe branch: dry-run only or stop with clear guard message.
 - Current target spec is never archived in the same autopilot run; eligible only after its PR merges.
-- M53-M61 backfill targets only agents named exactly Aegis, Security Guardian, HAL (case-insensitive).
+- M53-M61 backfill targets only agents named exactly Aegis, Security Guardian, <operator-agent> (case-insensitive).
 - Aegis resolver: when both global and workspace-scoped Aegis rows exist under flag ON, return global and write at most one shadow-audit row per `(workspace_id, global_agent_id, local_agent_id)` tuple — repeated scheduler ticks never duplicate the row.
 - Aegis resolver: when multiple rows match the same candidate scope (rare via M53 backfill or manual migration), choose the lowest database id deterministically; agent `status` is not a resolver filter.
 - Aegis resolver: malformed workspace `feature_flags` JSON is treated as no override / default OFF — the resolver does not throw.

@@ -45,7 +45,7 @@ Mission Control's `resource_policies` and `resource_policy_events` tables landed
 | Ollama Cloud | ❌ no OTel (issue #9254 PoC) | `~/.ollama/logs/server.log` (no token counts in logs) | Token counts in HTTP response body (`prompt_eval_count`, `eval_count`) | n/a |
 | LM Studio (local GPU) | ❌ no OTel | Logs at `~/.lmstudio/` (Linux post-0.3.6) or `~/.cache/lm-studio/server-logs/` (pre-0.3.6) | OpenAI-compat `/v1/chat/completions` returns `usage:{prompt_tokens, completion_tokens, total_tokens}`; v0 REST adds tokens/sec + TTFT; `lms log stream --json --stats` is NDJSON firehose | Local energy cost only (via OpenClaw health adapter) |
 
-The operator runs all five surfaces on HAL (Ryzen 5900XT, 64GB RAM, Ubuntu 24.04). v1 operator preference is subscription CLIs (Claude Max 20x, ChatGPT Pro, Ollama Pro, Copilot Pro+, LM Studio local), but telemetry **may include metered API usage** from OpenClaw — SPEC-008 must classify billing mode per event/account, not assume all provider usage is subscription-covered.
+The operator runs all five surfaces on the operator node (Ryzen 5900XT, 64GB RAM, Ubuntu 24.04). v1 operator preference is subscription CLIs (Claude Max 20x, ChatGPT Pro, Ollama Pro, Copilot Pro+, LM Studio local), but telemetry **may include metered API usage** from OpenClaw — SPEC-008 must classify billing mode per event/account, not assume all provider usage is subscription-covered.
 
 The feature is gated by `FEATURE_RESOURCE_GOVERNANCE` (workspace-scoped, default OFF). With the flag OFF, behavior is byte-identical to today including the legacy hard-coded `LIMIT 3`. `FEATURE_OPENCLAW_HEALTH_COSTS` is a fork-only optional second flag for the electricity adapter (no v1 schema migration; absent-safe). `FEATURE_MULTI_SOURCE_INGESTION` is a third flag gating the new ingestion adapters so they ship dark behind the governance flag.
 
@@ -96,7 +96,7 @@ This design concept underwent **multiple adversarial peer review rounds** by Rep
 ## Goals
 
 1. **Enforce, don't just observe.** Replace hard-coded `LIMIT 3` and "3+ in_progress" with policy-evaluated decisions returning `allow | defer | block | override_required`. Four scheduler gate sites: `autoRouteInboxTasks`, `dispatchAssignedTasks`, `advanceTaskChain`, `runAegisReviews`. **Synchronous admission control reads the budget ledger only**, not eventually-consistent telemetry.
-2. **Sub-25ms p95 evaluator on HAL** under realistic load (1k+ policies, concurrent gates, SQLite WAL writes, cold/idle resume). Layered cache + single indexed-SQL hot path; vitest benchmark gates p50<5ms, p95<15ms, p99<25ms regressions in CI.
+2. **Sub-25ms p95 evaluator on the operator node** under realistic load (1k+ policies, concurrent gates, SQLite WAL writes, cold/idle resume). Layered cache + single indexed-SQL hot path; vitest benchmark gates p50<5ms, p95<15ms, p99<25ms regressions in CI.
 3. **Two-layer telemetry model**: append-only `raw_usage_events` per source + normalized `canonical_usage_events` with stable identity. Reconciler is best-effort and never blocks admission control.
 4. **Defense-in-depth ingestion across 6 source kinds** without source elimination — each fills blind spots the others have. Tier-1 RT push (native CLI OTel + Codex stdout `--json`), Tier-2 advisory (gateway OTel + transcript replay), Tier-3 audit (manual + provider quota pre-flight).
 5. **Fail-safe by construction.** Evaluator errors return `defer` (not `block`); circuit breaker persists state in DB; deterministic mode during migration/lock errors.
@@ -264,7 +264,7 @@ Release writes a ledger entry (NOT a row mutation) so the ledger remains append-
 
 **Decision:** **Lazy on-read + 30s in-memory cache + tail-read JSONL.** Adapter invoked on demand. `stat()` each file; if absent, return empty. Read `current-rate.json` + `cost.json` fully. Tail-read last N=100 lines of `readings.jsonl` with bounded-byte readback.
 
-**Ground-truthed sample on HAL**: `current-rate.json = {"rate": 0.1029, "timestamp": "2026-05-02T03:00:58.273240", "source": "NBU Rate Breakdown Page"}`; `cost.json` has nested `monthly.<YYYY-MM>.{total_hours, total_kwh, total_variable_cost, total_fixed_cost, total_cost, days.<YYYY-MM-DD>...}`; `readings.jsonl` is 30-min hardware telemetry (CPU temps, fan RPM, per-core MHz, util_by_core, PSU input/output W/V/A, log sink sizes).
+**Ground-truthed sample on the operator node**: `current-rate.json = {"rate": 0.1029, "timestamp": "2026-05-02T03:00:58.273240", "source": "NBU Rate Breakdown Page"}`; `cost.json` has nested `monthly.<YYYY-MM>.{total_hours, total_kwh, total_variable_cost, total_fixed_cost, total_cost, days.<YYYY-MM-DD>...}`; `readings.jsonl` is 30-min hardware telemetry (CPU temps, fan RPM, per-core MHz, util_by_core, PSU input/output W/V/A, log sink sizes).
 
 ### Q9 — REST API CRUD level
 
@@ -373,7 +373,7 @@ See Q17 (ledger), Q18 (raw + canonical), Q19 (snapshots + collector health) for 
 
 **v1 inbound channels** (all six normalize via the per-source adapter into `raw_usage_events` rows, then the reconciler promotes to `canonical_usage_events` and emits ledger corrections):
 
-1. **`otelcol-contrib`** as a `--user` systemd unit on HAL. Receives OTLP/HTTP (protobuf) on `127.0.0.1:4318`. `filestorage` extension provides on-disk WAL. `batch` + `attributes` processors. Forwards to MC's OTLP receiver.
+1. **`otelcol-contrib`** as a `--user` systemd unit on the operator node. Receives OTLP/HTTP (protobuf) on `127.0.0.1:4318`. `filestorage` extension provides on-disk WAL. `batch` + `attributes` processors. Forwards to MC's OTLP receiver.
 2. **MC OTLP receiver** at `src/app/api/otlp/v1/{traces,metrics}/route.ts`. Decodes `application/x-protobuf` via `@opentelemetry/otlp-transformer`. Auth via API_KEY header. Writes `raw_usage_events` rows with `source='gateway_otel'` or `source='native_otel'` based on resource attrs.
 3. **Codex stdout `--json` parser** (`src/lib/observability/codex-stdout-tail.ts`) when MC spawns `codex exec --json`. Captures `turn.completed.usage` events. Sub-second RT. Source: `cli_stdout_json`.
 4. **Codex rollout JSONL tail** — `inotify` on `~/.codex/sessions/YYYY/MM/DD/`. Parses `event_msg.payload.type='token_count'` events. **`cached_input_tokens` is a SUBSET of `input_tokens` (don't add); `reasoning_output_tokens` is a SUBSET of `output_tokens` (don't add); `total_token_usage` is CUMULATIVE → see Q19 snapshot model**. Source: `transcript_replay`.
@@ -767,7 +767,7 @@ All files added to `tsconfig.spec-strict.json` and the ESLint strict config:
 - `src/app/api/events/route.ts` — emit `resource_policy_event` + `governance_window_state` + `telemetry_freshness_changed` + `governance_breaker_state` + `governance_drift_observed`
 - `src/lib/sessions.ts` — documentation update
 
-**New systemd unit on HAL** (operator-managed, not in repo):
+**New systemd unit on the operator node** (operator-managed, not in repo):
 - `~/.config/systemd/user/otelcol-contrib.service` — documented in `docs/observability/otel-collector-setup.md`
 
 **Documentation deliverables:**
@@ -1894,7 +1894,7 @@ UI features:
 
 ### Q55 — Soak test infrastructure (REVISED — round-4 oracle finding #9)
 
-**Decision:** **Soak test runs on a self-hosted GitHub runner that mirrors HAL's CPU class; correctness soak runs in CI; performance certification only on HAL-class.**
+**Decision:** **Soak test runs on a self-hosted GitHub runner that mirrors the operator node's CPU class; correctness soak runs in CI; performance certification only on operator-node-class.**
 
 Two-tier test split:
 
@@ -1904,7 +1904,7 @@ Two-tier test split:
 | Performance certification | Self-hosted runner with Ryzen-class CPU + NVMe | Nightly cron + on release | p50<5ms, p95<15ms, p99<25ms admission; all KPIs from Q11 benchmark |
 
 Self-hosted runner spec (operator-provisioned):
-- CPU: Ryzen 5/7 5xxx/7xxx series (8C+ recommended; mirrors HAL)
+- CPU: Ryzen 5/7 5xxx/7xxx series (8C+ recommended; mirrors the operator node)
 - RAM: 32GB minimum
 - Disk: NVMe SSD with ≥100GB free
 - OS: Ubuntu 24.04
@@ -2047,7 +2047,7 @@ gzip "$DEST"
 - AC-DR-1: simulate disk failure (`rm mission-control.db`); verify restore procedure produces functional MC within RTO.
 - AC-DR-2: simulate backup corruption; verify weekly verification detects it; verify operator notified.
 - AC-DR-3: post-restore: verify counters reconciled correctly via Q49 rebuild; verify in-flight reservations handled correctly.
-- AC-DR-4: SQLite file >5GB: verify backup completes in <5min on HAL-class hardware.
+- AC-DR-4: SQLite file >5GB: verify backup completes in <5min on operator-node-class hardware.
 
 ### Q61 — Per-failure-mode runbook deliverables (NEW — peer #2 P0 #2)
 
@@ -2633,7 +2633,7 @@ Critical items moved to **resolve-now** (resolved in this doc, not deferred):
 Items still requiring **`/speckit.clarify`** resolution:
 
 1. **`token_pricing` table promotion vs JSON catalog**: code-only is current state; Plan must decide whether to promote to DB table (M65) or ship hot-reloadable JSON. Tradeoff: DB enables per-workspace overrides; JSON simpler.
-2. **Ollama proxy port**: 11435 currently free on HAL (ground-truthed). Plan must check at install.
+2. **Ollama proxy port**: 11435 currently free on the operator node (ground-truthed). Plan must check at install.
 3. **OpenClaw gateway HTTP API for the quota bridge**: Plan reads `racecraft-lab/openclaw:src/gateway/server-methods/usage.ts` to determine the HTTP method/path/auth.
 4. **otelcol-contrib version pinning**: `v0.108.x` minimum for `filestorage` extension. Mirror `.specify/extensions/archive/RACECRAFT-PIN.md`.
 5. **MC API key provisioning for collector → MC OTLP receiver**: per CLAUDE.md, secrets resolved from 1Password at startup. Plan documents rotation.
@@ -2649,7 +2649,7 @@ Items still requiring **`/speckit.clarify`** resolution:
 
 ## References (Research Provenance)
 
-This design concept was enriched by 9 background research agents on 2026-05-02 (5 stack/provider + 4 deep CLI telemetry: Claude Code, Codex CLI, Copilot CLI, cross-source gap analysis) plus 2 advisor consultations + 1 adversarial RepoPrompt oracle review (14 corrections applied) + direct ground-truth reading of `racecraft-lab/openclaw` and `racecraft-lab/mission-control` source on GitHub plus HAL filesystem (OpenClaw health files, ports, services).
+This design concept was enriched by 9 background research agents on 2026-05-02 (5 stack/provider + 4 deep CLI telemetry: Claude Code, Codex CLI, Copilot CLI, cross-source gap analysis) plus 2 advisor consultations + 1 adversarial RepoPrompt oracle review (14 corrections applied) + direct ground-truth reading of `racecraft-lab/openclaw` and `racecraft-lab/mission-control` source on GitHub plus operator node filesystem (OpenClaw health files, ports, services).
 
 **Anthropic / Claude Code:** [Monitoring (OTel)](https://code.claude.com/docs/en/monitoring-usage) · [Cost docs](https://code.claude.com/docs/en/costs) · [Hooks](https://code.claude.com/docs/en/hooks) · [Claude directory](https://code.claude.com/docs/en/claude-directory) · [Claude Code Analytics API](https://platform.claude.com/docs/en/api/claude-code-analytics-api) · [Pro/Max plan](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-pro-or-max-plan) · [Rate limits](https://platform.claude.com/docs/en/api/rate-limits) · [ColeMurray/claude-code-otel](https://github.com/ColeMurray/claude-code-otel) · [Anthropic claude-code-monitoring-guide](https://github.com/anthropics/claude-code-monitoring-guide)
 
