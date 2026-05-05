@@ -23,6 +23,7 @@ export const DEFAULT_VISUAL_REVIEW_PATHS = [
   'scripts/verify-visual-manifest.mjs',
   'scripts/visual-review-app.css',
   'scripts/visual-review-app.js',
+  'scripts/visual-review-producer.mjs',
   'scripts/visual-review-state.mjs',
   'scripts/write-storybook-visual-manifests.mjs',
   'src/**/*.stories.tsx',
