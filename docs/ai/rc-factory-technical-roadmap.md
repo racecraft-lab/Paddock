@@ -1,4 +1,4 @@
-# Mission Control Departmental Architecture — Technical Roadmap
+# Mission Control AI Software Factory — Technical Roadmap
 
 > For SpecKit-Pro ingestion. Companion to the PRD at `docs/rc-factory-v1-prd.md`. Every phase is ship-safe on its own (additive migrations + feature flags), but ship-safe does **not** necessarily mean upstream-safe. Each phase below is explicitly labeled for upstream impact so fork pressure is visible before implementation.
 
@@ -11,6 +11,8 @@
 5. **Upstream compat gate** on every PR: cherry-pick candidates from `builderz-labs/main` should still apply cleanly.
 6. **Prefer upstream-safe extensions over schema divergence.** If the same goal can be achieved with an additive adapter, config path, or feature-flagged runtime hook, choose that before adding schema.
 7. **OpenClaw-specific features are fork-only adapters.** They must be disabled by default and no-op cleanly when absent.
+8. **Adopt Symphony as a contract, not a stack.** Mission Control may borrow Symphony's language-agnostic control-plane pattern — tracker-driven dispatch, per-task workspaces, repo-owned workflow policy, bounded concurrency, retries, reconciliation, and observability — while keeping Next.js/React/TypeScript/SQLite, GitHub-first sync, and existing SpecKit task-chain governance.
+9. **Treat harness engineering as repository design.** Agent throughput depends on versioned repo knowledge, executable tests, UI/log/metric legibility, structural guardrails, and continuous cleanup. Do not grow one monolithic instruction file when a short map plus indexed sources of truth is possible.
 
 ## Upstream Impact Rubric
 
@@ -34,8 +36,11 @@
 | 6 | Disposition logging + artifact store + audit/admin panels | Yes | `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS` | `upstream-divergent` | Phase 8 |
 | 7 | Resource governance + Cost Tracker enforcement | Yes | `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS` | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` | Phase 8 |
 | 7.5 | CrabTrap honeypot — HAL security adapter | Yes | `FEATURE_CRABTRAP_HONEYPOT` | `fork-only optional` | — |
-| 8 | Product Line A pilot — end-to-end smoke | Pilot gate | `PILOT_PRODUCT_LINE_A_E2E` | Fork rollout only | Phase 9 |
+| 8 | Mission Control Product Line pilot — end-to-end smoke | Pilot gate | `PILOT_MISSION_CONTROL_E2E` | Fork rollout only | Phase 9 |
 | 9 | Product Line B onboarding | Post-pilot | — | Fork rollout only | — |
+| 10 | Agent-legible repository knowledge + harness guardrails | Yes | None — process/tooling | `upstream-safe` | Phase 11 |
+| 11 | GitHub-backed task control plane + run-state reconciliation | Yes | `FEATURE_TASK_CONTROL_PLANE` | `upstream-safe` core; persisted run-state schema = `upstream-divergent` | Phase 12 |
+| 12 | Per-task sandbox runner + Codex App Server adapter | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | `upstream-divergent`; OpenClaw adapter pieces = `fork-only optional` | — |
 
 ## SpecKit-Pro Autopilot Usage
 
@@ -63,7 +68,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **SPEC-001 is migration-only.** Treat `clarify`, `checklist`, and `analyze` phases as minimal: zero `[NEEDS CLARIFICATION]` markers are expected; checklist gaps should resolve to "N/A — pure-schema spec"; analyze findings are limited to migration safety, idempotency, rollback-file presence, and the no-SQL safety gates. `/speckit.implement` performs the migration writes and the per-migration smoke checks listed in P0-AC1..AC14.
 - **SPEC-009 has a human gate.** The pilot's "operator merges PR on GitHub" step is recorded as `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes (or marks complete) when `pullFromGitHub` records the linked PR merge. AC items P8-AC1, P8-AC6, P8-AC7 are explicitly MANUAL and live in the Pilot Smoke Checklist (`docs/qa/pilot-smoke-checklist.md`); they are NOT validated by `gate-validator`. P8-AC5 (PR merge → `done` transition) IS code-checkable via a webhook fixture and remains in the gate set.
 - **Real-system smoke (Phase 8/9) wall-clock ACs are MANUAL:** P8-AC6 ("<4h wall-clock") and P9-AC1 ("<1 operator-hour") cannot be tested by `implement-executor` TDD. Each is recorded only in the Pilot Smoke Checklist and is asserted by the operator after the pilot run.
-- **Issue #110 reproducibility:** if Product Line A GitHub issue #110 has been closed, deleted, or substantively mutated by the time SPEC-009 runs, the seed script falls back to creating a synthetic test issue with title `[mc-pilot] synthetic e2e issue` and labels `mc:inbox priority:medium area:dev`. The pilot smoke checklist documents both modes.
+- **Pilot issue reproducibility:** SPEC-009 first tries an eligible open `racecraft-lab/mission-control` issue labeled `mc:inbox` and `priority:*`. If no safe live candidate exists, the seed script creates a synthetic test issue with title `[mc-pilot] synthetic e2e issue` and labels `mc:inbox priority:medium area:dev`. The pilot smoke checklist documents both modes.
 
 ## SpecKit-Pro Status Policy
 
@@ -86,10 +91,13 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-005 | 4 | ready_for_owner State and Two-Step Terminal Event | ready-for-owner | Complete | P1 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 4 |
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009 | Phase 5 |
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Complete | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 6 |
-| SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | In Progress | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
-| SPEC-009 | 8 | Product Line A Pilot End-to-End Smoke | product-line-a-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
-| SPEC-010 | 9 | Product Line B Product-Line Onboarding | product-line-b-onboarding | Pending | P3 | SPEC-002A, SPEC-009 | — | Phase 9 |
+| SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Complete | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009 | Phase 7 |
+| SPEC-009 | 8 | Mission Control Product Line Pilot End-to-End Smoke | mission-control-pilot | Pending | P0 | SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008 | SPEC-010 | Phase 8 |
+| SPEC-010 | 9 | Product Line B Product-Line Onboarding | product-line-b-onboarding | Pending | P3 | SPEC-002A, SPEC-009 | SPEC-012 | Phase 9 |
 | SPEC-011 | 7.5 | CrabTrap Honeypot — HAL Security Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
+| SPEC-012 | 10 | Agent-Legible Repository Knowledge and Harness Guardrails | agent-legible-harness | Pending | P2 | SPEC-002A, SPEC-010 | SPEC-013 | Phase 10 |
+| SPEC-013 | 11 | GitHub-Backed Task Control Plane and Run-State Reconciliation | task-control-plane | Pending | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-012 | SPEC-014 | Phase 11 |
+| SPEC-014 | 12 | Per-Task Sandbox Runner and Codex App Server Adapter | task-sandbox-runner | Pending | P1 | SPEC-004, SPEC-007, SPEC-008, SPEC-013 | — | Phase 12 |
 
 ### SPEC-011: CrabTrap Honeypot — HAL Security Adapter
 
@@ -107,7 +115,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Autopilot notes:** This is a runtime adapter only. Do not add schema. Verify `FEATURE_CRABTRAP_HONEYPOT=false` leaves no code path reachable. CrabTrap webhook payload shape must be validated before writing any `activities` row. Adapter must catch all errors internally and never propagate exceptions to the scheduler or task-dispatch call stack.
 - **Definition of done:** `FEATURE_CRABTRAP_HONEYPOT=false` leaves no reachable code paths; flag ON + simulated CrabTrap webhook creates a correctly-formed `activities` row of kind `security_intrusion_detected`; CrabTrap binary absent or misconfigured produces no error in Mission Control logs; unit tests cover flag-off no-op, valid webhook → activity row, malformed webhook → silent error + log, and CrabTrap-absent → no-op.
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, and SPEC-006 are complete on `main` (SPEC-004 merged via PR #22 as `20643d8`; SPEC-005 merged via PR #23 as `851571f`; SPEC-006 merged via PR #21 as `dbb6c75`). SPEC-007 implementation is in progress on branch `007-disposition-artifacts` with PR #25 open. SPEC-006 does not unblock SPEC-005, SPEC-007, or SPEC-008 -- those remain gated on prior dependency-chain specs.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, and SPEC-008 are complete on `main`. Recent merge evidence: SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, and SPEC-008 PR #26 as `bd9a693`. SPEC-009 is now the next unblocked pilot spec and must consume the completed disposition/artifact and governance surfaces instead of reimplementing them.
 
 ## Feature Flag Resolution Policy
 
@@ -116,11 +124,11 @@ Every `FEATURE_*` flag named in this roadmap is resolved by a single helper, `re
 1. **Hard-default OFF** — every flag's baseline value is `false`.
 2. **Per-workspace JSON override (M56 storage):** `workspaces.feature_flags JSON` may contain `{ "FEATURE_X": true }` for a specific workspace; that value wins for that workspace.
 3. **Process env override (emergency disable / kill-switch):** `process.env.FEATURE_X === '0'` ALWAYS forces the flag OFF regardless of JSON state. `process.env.FEATURE_X === '1'` does NOT force ON; only JSON can opt a workspace in.
-4. **Global flag without workspace context:** when called with no workspace (e.g., from `auto-route` cron loops), resolution uses `workspace_id = null` → returns OFF unless an env var explicitly forces a value (rare, used only for `PILOT_PRODUCT_LINE_A_E2E`).
+4. **Global flag without workspace context:** when called with no workspace (e.g., from `auto-route` cron loops), resolution uses `workspace_id = null` → returns OFF unless an env var explicitly forces a value (rare, used only for `PILOT_MISSION_CONTROL_E2E`).
 
-Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATURE_GLOBAL_AEGIS`, `FEATURE_TASK_PIPELINES`, `FEATURE_TWO_STEP_TERMINAL`, `FEATURE_AREA_LABEL_ROUTING`, `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS`, `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS`, `PILOT_PRODUCT_LINE_A_E2E`) MUST resolve through this helper. Inline `process.env.FEATURE_X` checks are forbidden; CI greps for them and fails on match.
+Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATURE_GLOBAL_AEGIS`, `FEATURE_TASK_PIPELINES`, `FEATURE_TWO_STEP_TERMINAL`, `FEATURE_AREA_LABEL_ROUTING`, `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS`, `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS`, `FEATURE_TASK_CONTROL_PLANE`, `FEATURE_AGENT_RUNNER_SANDBOXES`, `PILOT_MISSION_CONTROL_E2E`) MUST resolve through this helper. Inline `process.env.FEATURE_X` checks are forbidden; CI greps for them and fails on match.
 
-`PILOT_PRODUCT_LINE_A_E2E` is the one exception that may also be flipped via env (it is operator-temporary). All other flags route through `workspaces.feature_flags`.
+`PILOT_MISSION_CONTROL_E2E` is the one exception that may also be flipped via env (it is operator-temporary). All other flags route through `workspaces.feature_flags`.
 
 ## Spec Details for Autopilot Setup
 
@@ -242,7 +250,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-007: Disposition Logging and Task Artifact Store
 
-- **Status:** In Progress (worktree `.worktrees/007-disposition-artifacts`, branch `007-disposition-artifacts`)
+- **Status:** Complete
+- **Branch status:** PR #25 (https://github.com/racecraft-lab/mission-control/pull/25) merged to `main` on 2026-05-02 as `953f29b`.
 - **Priority:** P2
 - **Branch short name:** `disposition-artifacts`
 - **Dependencies:** SPEC-002, SPEC-002A, SPEC-004
@@ -254,10 +263,12 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `src/lib/task-artifacts.ts`, `src/app/api/task-artifacts/route.ts`, `src/app/api/task-artifacts/[id]/route.ts`, `src/components/panels/artifact-admin-panel.tsx`, `src/app/api/dispositions/route.ts`
 - **Autopilot notes:** Insert one disposition row per triage template completion when enabled, but never block task advancement on insert failure. Successor dispatch should consume MC artifact references/previews rather than another agent’s private sandbox.
 - **Definition of done:** Phase 6 deliverables are implemented, P6 acceptance criteria pass for disposition logging, failure isolation, filters, rollups, artifact publish/consume, secret handling, storage health metrics, and admin maintenance actions.
+- **Implementation evidence:** Complete on PR #25 after merge to `main` as `953f29b`. Evidence includes `task_dispositions` rollups and API routes, Mission Control-owned `task_artifacts` publish/read/admin/health surfaces, secret detection and redaction fixtures, dashboard/audit/admin UI surfaces, dispatch input artifact integration, openapi updates, Storybook/Argos metadata support, SPEC-007 e2e seed support, and retrospective evidence noting implementation complete with remaining operator-led verification/polish caveats.
 
 ### SPEC-008: Resource Governance and Cost Tracker Enforcement
 
-- **Status:** Pending
+- **Status:** Complete
+- **Branch status:** PR #26 (https://github.com/racecraft-lab/mission-control/pull/26) merged to `main` on 2026-05-04 as `bd9a693`.
 - **Priority:** P2
 - **Branch short name:** `resource-governance`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A, SPEC-004
@@ -269,21 +280,22 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `src/lib/resource-governance.ts`, `src/app/api/resource-policies/route.ts`, `src/app/api/resource-policy-events/route.ts`, `src/lib/openclaw-health-costs.ts`
 - **Autopilot notes:** Do not duplicate token/cost telemetry. `FEATURE_RESOURCE_GOVERNANCE=false` preserves legacy scheduler behavior. `FEATURE_OPENCLAW_HEALTH_COSTS` is fork-only optional, runtime-only, absent-safe, and must require no v1 schema migration.
 - **Definition of done:** Phase 7 deliverables are implemented, P7 acceptance criteria pass for legacy behavior, empty-policy allow, WIP limits, blackout/degraded windows, soft/hard budgets, subscription raw-usage enforcement, OpenClaw absence safety, valid telemetry display, and fail-safe policy evaluation.
+- **Implementation evidence:** Complete on PR #26 after merge to `main` as `bd9a693`. Evidence includes the feature-flagged synchronous resource policy evaluator, observability ingestion/reconciliation pipeline, M65a..m + M66 additive migrations and rollback files, Cost Tracker Governance tab with Policies/Budgets/Windows/Overrides/Diagnostics/System Health subviews, feature-flag matrix harness, axe coverage guard, feature-flag env-leak guard, strict-scope guard, runbooks, observability docs, and SPEC-008 summary/retrospective evidence. Operator-led soak/chaos and selected running-instance e2e checks remain documented as non-merge-blocking follow-up evidence, not blockers for SPEC-009 planning.
 
-### SPEC-009: Product Line A Pilot End-to-End Smoke
+### SPEC-009: Mission Control Product Line Pilot End-to-End Smoke
 
 - **Status:** Pending
 - **Priority:** P0
-- **Branch short name:** `product-line-a-pilot`
+- **Branch short name:** `mission-control-pilot`
 - **Dependencies:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008
 - **Enables:** SPEC-010
-- **Scope source:** Phase 8 — Product Line A Pilot (End-to-End Smoke)
+- **Scope source:** Phase 8 — Mission Control Product Line Pilot (End-to-End Smoke)
 - **Acceptance criteria source:** Phase 8 Acceptance Criteria
-- **Scope summary:** Activate Phase 1–7 feature flags for Product Line A, seed the workspace, departments, agent assignments, workflow templates, GitHub repo routing, existing issue intake, conservative governance policies, and run issue #110 then #111 through the full workflow.
+- **Scope summary:** Activate Phase 1–7 feature flags for Mission Control as Product Line A, seed the workspace, departments, agent assignments, workflow templates, GitHub repo routing, existing issue intake, conservative governance policies, and run two live or synthetic pilot issues through the full workflow.
 - **Tool count / tool names:** N/A — not a tool-surface spec
-- **Strict Scope:** `scripts/seed-product-line-a-workspace.ts` if authored in TypeScript; otherwise N/A for docs/config/SQL-only seed assets
-- **Autopilot notes:** This is an integration smoke spec, not new architecture design. Preserve existing GitHub linkage and sync metadata for previously synced Product Line A issues. Operator intervention is allowed only for final PR merge in the primary pilot path.
-- **Definition of done:** Phase 8 deliverables are implemented, P8 acceptance criteria pass for issue #110 end-to-end, disposition record, stage assignments, Aegis approval, `ready_for_owner → done` transition, audit trail, wall-clock target, and governance compliance.
+- **Strict Scope:** `scripts/seed-mission-control-product-line.ts` if authored in TypeScript; otherwise N/A for docs/config/SQL-only seed assets
+- **Autopilot notes:** This is an integration smoke spec, not new architecture design. Preserve existing GitHub linkage and sync metadata for previously synced Mission Control issues. Operator intervention is allowed only for final PR merge in the primary pilot path.
+- **Definition of done:** Phase 8 deliverables are implemented, P8 acceptance criteria pass for at least one pilot issue end-to-end, disposition record, stage assignments, Aegis approval, `ready_for_owner → done` transition, audit trail, wall-clock target, and governance compliance.
 
 ### SPEC-010: Product Line B Product-Line Onboarding
 
@@ -291,14 +303,59 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Priority:** P3
 - **Branch short name:** `product-line-b-onboarding`
 - **Dependencies:** SPEC-002A, SPEC-009
-- **Enables:** —
+- **Enables:** SPEC-012
 - **Scope source:** Phase 9 — Product Line B Onboarding (Scale Validation)
 - **Acceptance criteria source:** Phase 9 Acceptance Criteria
 - **Scope summary:** Generalize product-line seeding, onboard Product Line B as the second product line, provision isolated agents, adapt workflow templates, configure the canonical repo, and run a first real issue smoke.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `scripts/seed-product-line.ts` if authored in TypeScript; otherwise N/A for docs/config/SQL-only seed assets
-- **Autopilot notes:** Validate scale and repeatability rather than redesigning the architecture. Product Line A must remain unaffected. Facility agents serve both product lines while product-line agents remain strictly isolated.
+- **Autopilot notes:** Validate scale and repeatability rather than redesigning the architecture. The Mission Control Product Line must remain unaffected. Facility agents serve both product lines while product-line agents remain strictly isolated.
 - **Definition of done:** Phase 9 deliverables are implemented, P9 acceptance criteria pass for sub-1-hour onboarding, strict agent isolation, shared facility agents, and per-workspace dashboard disposition metrics.
+
+### SPEC-012: Agent-Legible Repository Knowledge and Harness Guardrails
+
+- **Status:** Pending
+- **Priority:** P2
+- **Branch short name:** `agent-legible-harness`
+- **Dependencies:** SPEC-002A, SPEC-010
+- **Enables:** SPEC-013
+- **Scope source:** Phase 10 — Agent-Legible Repository Knowledge and Harness Guardrails
+- **Acceptance criteria source:** Phase 10 Acceptance Criteria
+- **Scope summary:** Convert Mission Control's repository knowledge into an agent-legible harness: short `AGENTS.md` map, indexed product/architecture/workflow/quality docs, freshness/ownership checks, drift-detection guardrails, and operator-visible cleanup tasks. Inspired by OpenAI Harness Engineering's repository-knowledge-as-system-of-record pattern.
+- **Tool count / tool names:** N/A — process/tooling spec
+- **Strict Scope:** repo documentation indexes, doc freshness scripts, quality/architecture guardrails, and CI checks. No runtime product behavior or schema migrations.
+- **Autopilot notes:** Do not expand `AGENTS.md` into a monolithic manual. Preserve SpecKit workflow files as execution ledgers and this roadmap/PRD as durable intent. Prefer linkable, mechanically checkable sources of truth over copied summaries.
+- **Definition of done:** Phase 10 deliverables are implemented, Phase 10 acceptance criteria pass for doc index coverage, stale-link detection, ownership/freshness metadata, quality guardrails, and recurring cleanup task creation.
+
+### SPEC-013: GitHub-Backed Task Control Plane and Run-State Reconciliation
+
+- **Status:** Pending
+- **Priority:** P1
+- **Branch short name:** `task-control-plane`
+- **Dependencies:** SPEC-004, SPEC-006, SPEC-008, SPEC-012
+- **Enables:** SPEC-014
+- **Scope source:** Phase 11 — GitHub-Backed Task Control Plane and Run-State Reconciliation
+- **Acceptance criteria source:** Phase 11 Acceptance Criteria
+- **Scope summary:** Make Mission Control tasks and synced GitHub issues the durable control plane for autonomous work: claim state, run attempts, retry/backoff, reconciliation against task/GitHub state, bounded concurrency, and operator-visible state snapshots. Inspired by Symphony's tracker-driven scheduler while retaining Mission Control's existing task-chain and resource-governance authority.
+- **Tool count / tool names:** N/A — not a tool-surface spec
+- **Strict Scope:** `src/lib/task-run-state.ts`, `src/lib/task-control-plane.ts`, control-plane API routes if needed, and scheduler integration points. Schema changes are allowed only if explicitly additive and compatibility-labeled.
+- **Autopilot notes:** Do not introduce Linear as a required dependency. Do not duplicate `advanceTaskChain`; this spec claims and reconciles runnable task-stage work, while SPEC-004 remains the chain advancement authority.
+- **Definition of done:** Phase 11 deliverables are implemented, acceptance criteria pass for claim idempotency, duplicate-dispatch prevention, terminal-state reconciliation, retry/backoff, resource-governance integration, and JSON state/debug surfaces.
+
+### SPEC-014: Per-Task Sandbox Runner and Codex App Server Adapter
+
+- **Status:** Pending
+- **Priority:** P1
+- **Branch short name:** `task-sandbox-runner`
+- **Dependencies:** SPEC-004, SPEC-007, SPEC-008, SPEC-013
+- **Enables:** —
+- **Scope source:** Phase 12 — Per-Task Sandbox Runner and Codex App Server Adapter
+- **Acceptance criteria source:** Phase 12 Acceptance Criteria
+- **Scope summary:** Execute claimed task-stage work in deterministic per-task sandboxes, launch Codex App Server or configured runner adapters, stream run events into Mission Control, persist session/token/runtime/error summaries, and publish handoff artifacts. Inspired by Symphony's workspace + app-server execution layer.
+- **Tool count / tool names:** N/A — not a tool-surface spec
+- **Strict Scope:** `src/lib/task-sandbox-runner.ts`, runner adapter modules, sandbox lifecycle hooks, run-event ingestion, and artifact handoff integration. OpenClaw-specific adapter paths must remain fork-only optional.
+- **Autopilot notes:** The runner executes claimed work only; it does not choose successor templates, bypass policy, or auto-merge. Approval and sandbox posture must be documented explicitly for every adapter. The Symphony Elixir prototype is not a dependency.
+- **Definition of done:** Phase 12 deliverables are implemented, acceptance criteria pass for sandbox path determinism, lifecycle hooks, app-server startup/timeout/stall handling, unsupported tool-call failure handling, token/runtime accounting, artifact publication, and operator-visible run debug endpoints.
 
 ---
 
@@ -446,7 +503,7 @@ Requests and cache keys use `scopeKey = tenantId + ":" + ("facility" | productLi
 - [P1-AC2] With flag ON and Facility scope selected, the same `pnpm test:all` suite passes unchanged for existing tests while new tests may assert explicit Facility aggregate semantics.
 - [P1-AC3] The switcher renders exactly one synthetic "Facility" option. Selecting it stores Facility scope (`activeWorkspace = null` compatibility state) and never selects the real `workspaces.slug='facility'` row.
 - [P1-AC4] With flag ON and a selected Product Line workspace, mode-sensitive panels show only that Product Line's authorized data plus allowed global agents; Facility/global surfaces remain Facility aggregate.
-- [P1-AC5] Agent squad panel renders hierarchical tree: Facility (globals) -> Product Line A -> {QA, Dev, ...} -> {agents}; duplicate global/local names do not merge stats and mutations use ids where ambiguity exists.
+- [P1-AC5] Agent squad panel renders hierarchical tree: Facility (globals) -> Mission Control -> {QA, Dev, ...} -> {agents}; duplicate global/local names do not merge stats and mutations use ids where ambiguity exists.
 - [P1-AC6] Cross-tab state sync: a Playwright test that opens two browser contexts, sets Product Line scope in context A, and observes the change reflected in context B within 1s passes. Messages include tenant/session guards and stale-version protection. When `BroadcastChannel` is unavailable, the persisted value still propagates after a context-B reload.
 - [P1-AC7] `activeTenant` remains independent from Product Line scope; switching Product Lines does not mutate tenant/facility context.
 - [P1-AC8] Header no longer labels tenant context as "Workspace." Specifically, ripgrep over `src/components/layout/header-bar.tsx` finds zero string matches for `'workspace'` used as a tenant-context label; tenant context is labeled "Tenant", "Facility", or shown without a label.
@@ -858,7 +915,7 @@ Mixed:
 - [P7-AC1] With `FEATURE_RESOURCE_GOVERNANCE=false`, existing scheduler behavior is unchanged.
 - [P7-AC2] With the flag ON and no policies enabled, evaluator returns `allow` and logs no blocking events.
 - [P7-AC3] Agent WIP policy `agent_id=a, limit_kind='in_progress_tasks', limit_value=1` prevents a second task from dispatching to that agent and writes a `defer` or `block` event.
-- [P7-AC4] Project/status WIP policy prevents more than the configured number of Product Line A Development tasks from entering `in_progress`.
+- [P7-AC4] Project/status WIP policy prevents more than the configured number of Mission Control Development tasks from entering `in_progress`.
 - [P7-AC5] Blackout window policy blocks new autonomous dispatch/chain advancement during the window while allowing already-running work to checkpoint or complete.
 - [P7-AC6] Degraded window policy allows only configured critical/local/approved-provider work.
 - [P7-AC7] Soft budget threshold emits alert/activity and allows work to continue.
@@ -878,33 +935,33 @@ Flip `FEATURE_RESOURCE_GOVERNANCE` OFF. Scheduler returns to legacy behavior. Ta
 
 ---
 
-## Phase 8 — Product Line A Pilot (End-to-End Smoke)
+## Phase 8 — Mission Control Product Line Pilot (End-to-End Smoke)
 
 ### Scope
 
-Activate every Phase 1–7 feature flag, seed Product Line A workspace + templates + project-agent assignments, set conservative governance policies, and run the pilot on Product Line A issue #110 (the canonical pilot trigger — the historical smoke plan lives in the operator's Obsidian vault and is not required to be present in this repo for autopilot execution; the synthetic-fallback path documented above ensures Phase 8 is reproducible without it).
+Activate every Phase 1–7 feature flag, seed Mission Control as Product Line A with templates + project-agent assignments, set conservative governance policies, and run the pilot on an eligible `racecraft-lab/mission-control` issue or a synthetic `[mc-pilot]` issue. The historical smoke plan lives in the operator's Obsidian vault and is not required to be present in this repo for autopilot execution; the synthetic-fallback path documented above ensures Phase 8 is reproducible without a pre-existing issue number.
 
 ### Deliverables
 
-- **Seed script**: `scripts/seed-product-line-a-workspace.ts`:
+- **Seed script**: `scripts/seed-mission-control-product-line.ts`:
   - Ensure `facility` workspace exists (idempotent, using `workspaces.name`).
-  - Create Product Line A workspace (`slug='product-line-a'`, `name='Product Line A'`).
+  - Create Mission Control Product Line workspace (`slug='mission-control'`, `name='Mission Control'`).
   - Create per-department projects (QA, Development, DevSecOps, Marketing, Customer Service, Finance).
   - Seed product-surface/component metadata or labels (macOS App, Website, Documentation, UI, integrations, licensing/billing, onboarding) without creating separate department projects for them.
-  - Populate `project_agent_assignments` mapping roles to the six `product-line-a-platform-*` agents.
-  - Insert the Product Line A workflow-family records into `workflow_templates`, including slugs and task-chain routing fields.
-  - Set the Product Line A department projects' GitHub repo to `<org>/product-line-a-repo` (or canonical repo) while preserving repo-level sync ownership/dedupe.
-  - Migrate existing synced Product Line A GitHub issue tasks as unprocessed intake into Product Line A triage/intake while preserving GitHub linkage and sync metadata.
+  - Populate `project_agent_assignments` mapping roles to the six `mission-control-platform-*` agents.
+  - Insert the Mission Control workflow-family records into `workflow_templates`, including slugs and task-chain routing fields.
+  - Set the Mission Control department projects' GitHub repo to `racecraft-lab/mission-control` while preserving repo-level sync ownership/dedupe.
+  - Migrate existing synced Mission Control GitHub issue tasks as unprocessed intake into Mission Control triage/intake while preserving GitHub linkage and sync metadata.
 - **Flag activation**: enable all Phase 1–7 flags in the product-line scope.
-- **Governance seed**: enable conservative Product Line A defaults (for example one active dev task per dev agent, WIP cap per department column, no autonomous work during configured blackout windows, and token/request/session budgets even for subscribed providers).
-- **Pilot trigger**: label Product Line A issue #110 with `mc:inbox` + `priority:*` + `area:dev` (or appropriate area). If issue #110 is unavailable (closed, deleted, mutated beyond recognition), the seed script falls back to creating a synthetic issue titled `[mc-pilot] synthetic e2e issue` with the same labels in the Product Line A repo. Verify:
+- **Governance seed**: enable conservative Mission Control defaults (for example one active dev task per dev agent, WIP cap per department column, no autonomous work during configured blackout windows, and token/request/session budgets even for subscribed providers).
+- **Pilot trigger**: label an eligible open `racecraft-lab/mission-control` issue with `mc:inbox` + `priority:*` + `area:dev` (or appropriate area). If no safe live candidate exists, the seed script creates a synthetic issue titled `[mc-pilot] synthetic e2e issue` with the same labels in the Mission Control repo. Verify:
   - MC ingests it via `pullFromGitHub`.
-  - Routes to Product Line A › Dev project.
+  - Routes to Mission Control › Dev project.
   - Triage template runs → researcher agent produces structured output.
   - Scheduler advances chain → plan → dev → review → Aegis → ready_for_owner.
   - Pilot HUMAN GATE `G_PILOT_MERGE`: operator merges PR on GitHub → task → `done` via `pullFromGitHub`. Autopilot stops at `ready_for_owner` and awaits operator action; this is the only intentional human-in-the-loop checkpoint in the otherwise-autonomous workflow.
 - **Pilot smoke checklist**: `docs/qa/pilot-smoke-checklist.md` enumerates the manual verification steps an operator performs after autopilot completes the autonomous portion: confirm wall-clock target met, confirm audit trail present, confirm governance compliance, record any anomalies. Manual ACs are validated only via this checklist.
-- **Second smoke**: repeat with issue #111 (or a second synthetic) as stronger integration.
+- **Second smoke**: repeat with a second eligible live issue or a second synthetic as stronger integration.
 
 ### Acceptance Criteria
 
@@ -918,13 +975,13 @@ Code-checkable (validated by `gate-validator` and `implement-executor` TDD):
 
 Manual (recorded in `docs/qa/pilot-smoke-checklist.md`; NOT validated by `gate-validator`):
 
-- [P8-AC1 — MANUAL] Issue #110 (or synthetic fallback) completes end-to-end with operator intervention only at `G_PILOT_MERGE`.
+- [P8-AC1 — MANUAL] One eligible live issue or synthetic fallback completes end-to-end with operator intervention only at `G_PILOT_MERGE`.
 - [P8-AC6 — MANUAL] Total wall-clock time from issue label to PR-merge-notification is < 4 hours for a simple issue.
 - [P8-AC7 — MANUAL] Audit trail shows every stage transition (visual inspection of `audit-trail-panel.tsx` after pilot run; an automated check covers row count but not human-readable correctness).
 
 ### Rollback
 
-Per-flag rollback. Worst case: flip `PILOT_PRODUCT_LINE_A_E2E` and `FEATURE_RESOURCE_GOVERNANCE` OFF and revert to explicit operator assignment (Pattern 1 from the Mission Control orchestration patterns reference; see `docs/orchestration.md`).
+Per-flag rollback. Worst case: flip `PILOT_MISSION_CONTROL_E2E` and `FEATURE_RESOURCE_GOVERNANCE` OFF and revert to explicit operator assignment (Pattern 1 from the Mission Control orchestration patterns reference; see `docs/orchestration.md`).
 
 ### Estimated Work
 
@@ -940,9 +997,9 @@ Onboard Product Line B platform as the second product line. Validate that the ar
 
 ### Deliverables
 
-- **Seed script parameterization**: `scripts/seed-product-line.ts product_line_slug agent_prefix github_repo`. Generalize the Product Line A seed.
+- **Seed script parameterization**: `scripts/seed-product-line.ts product_line_slug agent_prefix github_repo`. Generalize the Mission Control seed.
 - **Agent roster**: spin up `product-line-b-platform-*-dev`, `-ui`, `-qa`, `-devsecops`, `-planner`, `-research` sandboxes (six new docker containers).
-- **Template family**: adapt Product Line A templates to Product Line B (likely near-identical; only `agent_role` mappings and repo URL change).
+- **Template family**: adapt Mission Control templates to Product Line B (likely near-identical; only `agent_role` mappings and repo URL change).
 - **GitHub repo**: set `ProductLineB workspace.github_repo = '<org>/product-line-b-repo'` (or canonical repo).
 - **First smoke**: a real Product Line B issue flows through the pipeline.
 
@@ -950,8 +1007,8 @@ Onboard Product Line B platform as the second product line. Validate that the ar
 
 Code-checkable:
 
-- [P9-AC2] Product Line B's agents are strictly isolated from Product Line A's. Validated by SQL: zero rows in `project_agent_assignments` join across the two workspace_ids share an `agent_name` unless that agent has `agents.scope='global'`.
-- [P9-AC3] Facility agents (Aegis, Security Guardian) serve both product lines without code change. Validated by running the Product Line A pilot's automated subset (P8 code-checkable ACs) against a Product Line B synthetic issue and asserting Aegis approval succeeds with the same `agents.id`.
+- [P9-AC2] Product Line B's agents are strictly isolated from Mission Control's. Validated by SQL: zero rows in `project_agent_assignments` join across the two workspace_ids share an `agent_name` unless that agent has `agents.scope='global'`.
+- [P9-AC3] Facility agents (Aegis, Security Guardian) serve both product lines without code change. Validated by running the Mission Control pilot's automated subset (P8 code-checkable ACs) against a Product Line B synthetic issue and asserting Aegis approval succeeds with the same `agents.id`.
 - [P9-AC4] Dashboard disposition widget shows metrics per-workspace. Validated by HTTP assertion against `/api/dispositions?workspace_id=<id>` returning workspace-scoped rows.
 
 Manual (recorded in `docs/qa/pilot-smoke-checklist.md`):
@@ -960,11 +1017,123 @@ Manual (recorded in `docs/qa/pilot-smoke-checklist.md`):
 
 ### Rollback
 
-Disable Product Line B workspace (set `disabled_at`). Product Line A unaffected.
+Disable Product Line B workspace (set `disabled_at`). Mission Control unaffected.
 
 ### Estimated Work
 
 2–3 engineering days.
+
+---
+
+## Phase 10 — Agent-Legible Repository Knowledge and Harness Guardrails
+
+### Scope
+
+Make repository-local knowledge the system of record for agents and operators. Keep `AGENTS.md` as a short map, then index deeper product, architecture, workflow, quality, security, recovery, and execution-plan sources with ownership/freshness metadata and CI drift checks.
+
+### Upstream Impact
+
+`upstream-safe`. Process/tooling/docs only; no schema or runtime behavior.
+
+### Deliverables
+
+- **Knowledge map:** `AGENTS.md` points to the current PRD, roadmap, spec index, workflow records, architecture boundaries, quality gates, security guidance, and recovery runbooks without duplicating them.
+- **Repo doc index:** add or update a machine-readable docs index that records owner, freshness date, source-of-truth status, related specs, and verification commands for each durable doc family.
+- **Freshness guardrails:** CI/local scripts detect missing links, stale spec status, orphaned workflow files, and PRD/roadmap phase mismatches.
+- **Quality surface:** introduce an agent-readable quality/architecture scorecard for current weak spots, known debt, and accepted exceptions.
+- **Doc-gardening workflow:** create a recurring operator/agent task template that opens small cleanup tasks when docs drift from code or roadmap status.
+
+### Acceptance Criteria
+
+- [P10-AC1] `AGENTS.md` remains a concise table of contents and does not embed long-lived duplicated PRD/roadmap content.
+- [P10-AC2] Every spec in the roadmap index has a current workflow/status pointer or an explicit Pending marker.
+- [P10-AC3] A local guard command fails on broken doc links, stale phase status, or missing ownership/freshness metadata for durable docs.
+- [P10-AC4] The quality/architecture scorecard is linkable from `AGENTS.md` and cites concrete files or specs for each listed gap.
+- [P10-AC5] No runtime source files or database migrations are changed in this phase.
+
+### Rollback
+
+Revert process/doc changes. No runtime effect.
+
+### Estimated Work
+
+1.5–2.5 engineering days.
+
+---
+
+## Phase 11 — GitHub-Backed Task Control Plane and Run-State Reconciliation
+
+### Scope
+
+Make Mission Control tasks and synced GitHub issues behave as the durable control plane for autonomous work. This is the Mission Control-native equivalent of Symphony's tracker-driven scheduler: bounded dispatch, explicit claim state, retries/backoff, reconciliation, and operator-visible state snapshots.
+
+### Upstream Impact
+
+`upstream-safe` core if additive and flag-gated. Any persisted run-state schema is `upstream-divergent` unless upstream accepts it.
+
+### Deliverables
+
+- **Run-state model:** task-stage run attempt records or equivalent append-only state for claimed/running/retrying/released work, tied to `task_id`, `chain_id`, `chain_stage`, `workspace_id`, and `workflow_template_id`.
+- **Claim and dispatch authority:** a single coordination path prevents duplicate dispatch, applies resource governance before launch, and respects task/GitHub terminal state.
+- **Retry/backoff:** continuation retry and failure retry policies with bounded attempts, reason codes, and operator-visible last error.
+- **Reconciliation:** each tick reconciles running work against current task status, GitHub issue/PR linkage where available, feature flags, and resource-governance state before dispatching new work.
+- **State/debug API:** JSON endpoints expose running, retrying, released, token/runtime totals where available, last event/error, and a refresh trigger.
+- **GitHub-first adapter:** GitHub issue sync remains the first tracker integration. Linear-style adapters are optional future work.
+
+### Acceptance Criteria
+
+- [P11-AC1] With `FEATURE_TASK_CONTROL_PLANE=false`, existing scheduler/task behavior is unchanged.
+- [P11-AC2] With the flag ON, two concurrent ticks cannot claim or dispatch the same runnable task-stage twice.
+- [P11-AC3] Reconciliation runs before dispatch and releases/stops work whose task or linked issue is terminal/non-active.
+- [P11-AC4] Resource-governance `block`/`defer` decisions prevent new runner launches and are visible in the run-state/debug API.
+- [P11-AC5] Retry/backoff records distinct normal-continuation, failure, timeout, and stale-state reasons.
+- [P11-AC6] The control-plane code calls the existing task-chain helper for chain advancement and never reimplements successor selection.
+
+### Rollback
+
+Flip `FEATURE_TASK_CONTROL_PLANE` OFF. Persisted run-state rows, if any, remain for audit/debug and are ignored by legacy dispatch.
+
+### Estimated Work
+
+4–6 engineering days.
+
+---
+
+## Phase 12 — Per-Task Sandbox Runner and Codex App Server Adapter
+
+### Scope
+
+Execute claimed task-stage work in deterministic per-task sandboxes and stream the run back into Mission Control. This is the Mission Control-native execution layer inspired by Symphony's per-issue workspace + Codex App Server pattern.
+
+### Upstream Impact
+
+`upstream-divergent` where runner state is persisted. OpenClaw-specific runner/gateway behavior is `fork-only optional` and must be absent-safe. The Codex App Server adapter itself should remain optional and disabled by default.
+
+### Deliverables
+
+- **Sandbox lifecycle:** deterministic sandbox key/path from task id, chain id/stage, and product-line scope; hooks for create, before-run, after-run, and cleanup.
+- **Runner adapter contract:** typed adapter interface for Codex App Server and future runner providers; every adapter declares approval, sandbox, timeout, and user-input policy.
+- **Codex App Server adapter:** launch configured command, initialize session, start thread/turn, stream protocol events, handle timeouts/stalls, and stop on reconciliation cancellation.
+- **Run event ingestion:** persist summarized session id, last event, last message, token/runtime totals, rate-limit snapshots, and failure reason.
+- **Artifact handoff:** publish runner outputs through the SPEC-007 artifact store rather than requiring downstream agents to inspect another sandbox directly.
+- **Operator debug view:** expose sandbox path, lifecycle state, last error, and artifact links from the run-state API.
+
+### Acceptance Criteria
+
+- [P12-AC1] With `FEATURE_AGENT_RUNNER_SANDBOXES=false`, no sandbox runner launches and legacy behavior is unchanged.
+- [P12-AC2] Sandbox paths are deterministic, sanitized, product-line scoped, and never escape the configured sandbox root.
+- [P12-AC3] Unsupported tool calls or user-input-required events fail the current run attempt according to the documented adapter policy instead of stalling indefinitely.
+- [P12-AC4] Token/runtime accounting uses absolute totals when available and avoids double-counting deltas.
+- [P12-AC5] A successful run may hand off to `ready_for_owner` or another workflow-defined review state; it is not forced to `done`.
+- [P12-AC6] Downstream stages consume artifact references/previews from Mission Control, not another agent's private sandbox.
+
+### Rollback
+
+Flip `FEATURE_AGENT_RUNNER_SANDBOXES` OFF. Sandboxes remain on disk until operator cleanup; run-state rows and artifacts remain for audit/debug.
+
+### Estimated Work
+
+5–8 engineering days.
 
 ---
 
@@ -980,11 +1149,14 @@ Phase 0 (migrations)
                 │           ├─→ Phase 6 (disposition logging + artifact store) ── depends on Phase 3 for advanceTaskChain hook
                 │           └─→ Phase 7 (resource governance) ── depends on Phase 3 for scheduler chain hook
                 ├─→ Phase 5 (area labels) ── depends on Phase 1 for workspace scoping
-                └─→ Phase 8 (Product Line A pilot) ── depends on Phase 1A and ALL of Phase 1–7
+                └─→ Phase 8 (Mission Control pilot) ── depends on Phase 1A and ALL of Phase 1–7
                    └─→ Phase 9 (Product Line B onboarding)
+                         └─→ Phase 10 (agent-legible repository knowledge)
+                               └─→ Phase 11 (task control plane)
+                                     └─→ Phase 12 (per-task sandbox runner)
 ```
 
-Phase 0 MUST land first. Phase 1 MUST land before any later feature-flagged spec because it owns `resolveFlag()`. Phase 1A MUST land before Phase 2 or Phase 5 begins so later specs inherit the archive/evidence policy. After Phase 1A, Phase 2 and Phase 5 may proceed independently; Phase 3 waits for Phase 2 and gates 4, 6, and 7. Phase 8 gates 9.
+Phase 0 MUST land first. Phase 1 MUST land before any later feature-flagged spec because it owns `resolveFlag()`. Phase 1A MUST land before Phase 2 or Phase 5 begins so later specs inherit the archive/evidence policy. After Phase 1A, Phase 2 and Phase 5 may proceed independently; Phase 3 waits for Phase 2 and gates 4, 6, and 7. Phase 8 gates 9. Phase 10 starts after the two-product-line scale check so the harness docs encode real operating behavior rather than expected behavior. Phase 11 depends on Phase 10 because the control-plane scheduler should consume current repo-owned workflow policy and guardrails. Phase 12 depends on Phase 11 because runner adapters execute already-claimed work; they do not own claim/retry/reconciliation authority.
 
 Phase 3 also gates the repository documentation refresh for `docs/orchestration.md`; Phase 3 is not shipped until that documentation describes declarative task chains and current lifecycle/status terminology.
 
@@ -1003,8 +1175,11 @@ Phase 3 also gates the repository documentation refresh for `docs/orchestration.
 | 7 | 5 | 37 |
 | 8 | 4.5 | 41.5 |
 | 9 | 2.5 | 44 |
+| 10 | 2 | 46 |
+| 11 | 5 | 51 |
+| 12 | 6.5 | 57.5 |
 
-~8.5–9.5 engineering weeks end-to-end for a single engineer working full-time. Multi-engineer parallelism after Phase 1A (Phase 2 + Phase 5, with Phase 3+ queued behind Phase 2) compresses to ~6.5–7.5 weeks.
+~8.5–9.5 engineering weeks end-to-end for the original v1 departmental architecture through Phase 9 for a single engineer working full-time. The Symphony-aligned v2 extension adds ~2.5–3.5 engineering weeks. Multi-engineer parallelism after Phase 1A (Phase 2 + Phase 5, with Phase 3+ queued behind Phase 2) compresses v1 to ~6.5–7.5 weeks; Phases 10–12 should remain mostly sequential because each phase establishes the operating contract for the next.
 
 ## V2 Readiness Backlog
 
@@ -1036,6 +1211,9 @@ Phase 3 also gates the repository documentation refresh for `docs/orchestration.
 | R10 Additive schema changes mistaken for upstream-safe changes | All schema phases | D13 compatibility labeling; roadmap marks schema/state divergence before implementation |
 | R11 OpenClaw health electricity integration leaks OpenClaw-node assumptions upstream | Phase 7 | Fork-only optional adapter, absent-safe runtime checks, and no v1 schema migration for health costs |
 | R12 Global gateway coupling blocks clean multi-facility v2 | V2-001 | Preserve `openclaw_home`/`gateway_port` provisioning data and `owner_gateway` metadata in v1; avoid new process-global gateway assumptions; V2-001 owns tenant-aware gateway registry/resolution before multi-facility operation |
+| R13 Monolithic agent instructions rot and crowd out task context | Phase 10 | Keep `AGENTS.md` short; maintain indexed, owned, freshness-checked repo docs |
+| R14 Control-plane scheduler and task-chain engine diverge | Phase 11 | SPEC-013 owns claim/retry/reconciliation only; SPEC-004 `advanceTaskChain` remains successor-selection authority |
+| R15 Runner adapter bypasses governance or leaks sandbox state | Phase 12 | Runner starts only after control-plane claim + resource-governance allow; artifacts are published through SPEC-007; sandbox roots are deterministic and bounded |
 
 ## Rollback Strategy Summary
 
@@ -1043,8 +1221,11 @@ Each phase is independently rollback-safe:
 
 - **Schema migrations** (Phase 0) — manual reverse SQL files at `docs/migrations/rollback-M53.sql` through `docs/migrations/rollback-M61.sql` plus an operator runbook at `docs/migrations/rollback-procedure.md`. The live migration runner (`src/lib/migrations.ts:5-9`) has no `down()` function; rollback is operator-initiated manual SQL, NOT automatic.
 - **Feature flags** (Phases 1–7) — flip OFF (via `workspaces.feature_flags` JSON or the env-var kill-switch documented in the Feature Flag Resolution Policy) → behavior reverts to pre-phase.
-- **Pilot** (Phase 8) — flip `PILOT_PRODUCT_LINE_A_E2E` OFF; workspace remains, templates remain, but the auto-chain stops; operator can fall back to explicit task assignment (Pattern 1).
+- **Pilot** (Phase 8) — flip `PILOT_MISSION_CONTROL_E2E` OFF; workspace remains, templates remain, but the auto-chain stops; operator can fall back to explicit task assignment (Pattern 1).
 - **Product-line onboarding** (Phase 9) — `workspace.disabled_at = NOW()`; sync pauses; agents still run but no new work dispatched.
+- **Harness docs** (Phase 10) — revert docs/process guardrails; no runtime effect.
+- **Task control plane** (Phase 11) — flip `FEATURE_TASK_CONTROL_PLANE` OFF; run-state rows remain for audit and are ignored.
+- **Sandbox runner** (Phase 12) — flip `FEATURE_AGENT_RUNNER_SANDBOXES` OFF; existing sandboxes/artifacts remain until operator cleanup.
 
 No destructive rollback required at any phase.
 
@@ -1059,5 +1240,6 @@ No destructive rollback required at any phase.
 - [ ] Does this PR change public API shapes (existing endpoints)? If yes, version the endpoint or preserve the old shape.
 - [ ] Does this PR add or touch gateway-facing code (`OPENCLAW_GATEWAY_*`, `config.gatewayHost`, `config.gatewayPort`, `gateways.is_primary`, or gateway health/connect/control routes)? If yes, STOP unless the diff either preserves existing behavior without adding new global gateway assumptions or routes new resolution through a named compatibility helper/adapter with a V2-001 reference.
 - [ ] Feature flag present?
+- [ ] If this PR is Symphony-inspired, does it preserve the Mission Control stack and SpecKit task-chain authority rather than importing the Elixir prototype, Linear-only assumptions, or a general distributed scheduler?
 
 Every phase PR passes through this checklist before merge.
