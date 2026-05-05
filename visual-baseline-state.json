@@ -5,7 +5,7 @@
     "storybook": {
       "baseRef": "main",
       "headRef": "main",
-      "headSha": "efe8b6f0e4e6ed50ef592ea9e1aa4b592f5f5055",
+      "headSha": "31e02e6e3a5c4aafd5880bf1899dd21bc211f83e",
       "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/",
       "repository": "racecraft-lab/mission-control",
       "snapshots": {
@@ -2860,7 +2860,7 @@
         "product-line-visual-states--header-desktop-facility.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "bb7ec2ab4b84e6627f40e7a3e74d29bd58d8f179531e101bc386c9d783005492",
+          "imageSha256": "212284613041cd7e2f39ec0342b941bf7cdae6c8bf4741173ed589815b09d84e",
           "itemId": "new-product-line-visual-states--header-desktop-facility.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-visual-states--header-desktop-facility.png",
@@ -2881,7 +2881,7 @@
         "product-line-visual-states--header-mobile-scope-menu.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "9d981567c9fe8966950939d988958ab95a91d15ab802c212065433b1f05febc9",
+          "imageSha256": "6a241f52ef4772b33c61f1a1ec3a312e7c155e5f435b4aa77ed072f5c390024e",
           "itemId": "new-product-line-visual-states--header-mobile-scope-menu.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-visual-states--header-mobile-scope-menu.png",
@@ -8647,7 +8647,7 @@
             "product-line-visual-states--header-desktop-facility.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "bb7ec2ab4b84e6627f40e7a3e74d29bd58d8f179531e101bc386c9d783005492",
+              "imageSha256": "212284613041cd7e2f39ec0342b941bf7cdae6c8bf4741173ed589815b09d84e",
               "itemId": "new-product-line-visual-states--header-desktop-facility.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-visual-states--header-desktop-facility.png",
@@ -8687,7 +8687,7 @@
             "product-line-visual-states--header-mobile-scope-menu.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "9d981567c9fe8966950939d988958ab95a91d15ab802c212065433b1f05febc9",
+              "imageSha256": "6a241f52ef4772b33c61f1a1ec3a312e7c155e5f435b4aa77ed072f5c390024e",
               "itemId": "new-product-line-visual-states--header-mobile-scope-menu.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-visual-states--header-mobile-scope-menu.png",
@@ -9277,7 +9277,7 @@
           "testKey": "7998d5fc42ed51fc029ad59aaa9c6d36ee1d2e7490bc9ff6e87646faa7ddff61"
         }
       },
-      "updatedAt": "2026-05-05T16:23:12.773Z"
+      "updatedAt": "2026-05-05T16:53:32.512Z"
     },
     "playwright": {
       "baseRef": "main",
@@ -19057,6 +19057,6 @@
       "updatedAt": "2026-05-05T16:28:20.366Z"
     }
   },
-  "updatedAt": "2026-05-05T16:28:20.366Z",
+  "updatedAt": "2026-05-05T16:53:32.512Z",
   "version": 1
 }
