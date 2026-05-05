@@ -2860,7 +2860,7 @@
         "product-line-visual-states--header-desktop-facility.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "212284613041cd7e2f39ec0342b941bf7cdae6c8bf4741173ed589815b09d84e",
+          "imageSha256": "6391f781c2cb502509e42e715885b1463f90b1f519a3a76d8056ddde51d2a291",
           "itemId": "new-product-line-visual-states--header-desktop-facility.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-visual-states--header-desktop-facility.png",
@@ -2881,7 +2881,7 @@
         "product-line-visual-states--header-mobile-scope-menu.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "6a241f52ef4772b33c61f1a1ec3a312e7c155e5f435b4aa77ed072f5c390024e",
+          "imageSha256": "5c8305cfe775f46e4d2f96f552def42f48007cbd2e7632ebf4580fee7ab1a0fc",
           "itemId": "new-product-line-visual-states--header-mobile-scope-menu.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-visual-states--header-mobile-scope-menu.png",
@@ -3154,7 +3154,7 @@
         "task-pipeline-workflow-ui--workflow-chain-edit-fields.png": {
           "decision": "approved",
           "group": "task-pipeline-workflows",
-          "imageSha256": "f43d8feb7ce0476fdc62473d95123116b238ab04a6611190bdf25d865fc622d7",
+          "imageSha256": "c1265402a3479dae40097b02df27fd100bc76f9e3fce860d702bcc0806a7363f",
           "itemId": "new-task-pipeline-workflow-ui--workflow-chain-edit-fields.png",
           "reviewer": "visual-reviewer",
           "snapshot": "task-pipeline-workflow-ui--workflow-chain-edit-fields.png",
@@ -8647,7 +8647,7 @@
             "product-line-visual-states--header-desktop-facility.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "212284613041cd7e2f39ec0342b941bf7cdae6c8bf4741173ed589815b09d84e",
+              "imageSha256": "6391f781c2cb502509e42e715885b1463f90b1f519a3a76d8056ddde51d2a291",
               "itemId": "new-product-line-visual-states--header-desktop-facility.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-visual-states--header-desktop-facility.png",
@@ -8687,7 +8687,7 @@
             "product-line-visual-states--header-mobile-scope-menu.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "6a241f52ef4772b33c61f1a1ec3a312e7c155e5f435b4aa77ed072f5c390024e",
+              "imageSha256": "5c8305cfe775f46e4d2f96f552def42f48007cbd2e7632ebf4580fee7ab1a0fc",
               "itemId": "new-product-line-visual-states--header-mobile-scope-menu.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-visual-states--header-mobile-scope-menu.png",
@@ -9207,7 +9207,7 @@
             "task-pipeline-workflow-ui--workflow-chain-edit-fields.png": {
               "decision": "approved",
               "group": "task-pipeline-workflows",
-              "imageSha256": "f43d8feb7ce0476fdc62473d95123116b238ab04a6611190bdf25d865fc622d7",
+              "imageSha256": "c1265402a3479dae40097b02df27fd100bc76f9e3fce860d702bcc0806a7363f",
               "itemId": "new-task-pipeline-workflow-ui--workflow-chain-edit-fields.png",
               "reviewer": "visual-reviewer",
               "snapshot": "task-pipeline-workflow-ui--workflow-chain-edit-fields.png",
@@ -9277,7 +9277,7 @@
           "testKey": "7998d5fc42ed51fc029ad59aaa9c6d36ee1d2e7490bc9ff6e87646faa7ddff61"
         }
       },
-      "updatedAt": "2026-05-05T16:53:32.512Z"
+      "updatedAt": "2026-05-05T18:58:15.802Z"
     },
     "playwright": {
       "baseRef": "main",
@@ -19057,6 +19057,6 @@
       "updatedAt": "2026-05-05T16:58:04.491Z"
     }
   },
-  "updatedAt": "2026-05-05T16:58:04.491Z",
+  "updatedAt": "2026-05-05T18:58:15.802Z",
   "version": 1
 }

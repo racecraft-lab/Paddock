@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "25389918814",
+      "runAttempt": "2",
+      "runKey": "25389918814-attempt-2",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25389918814",
+      "reportKey": "31e02e6e3a5c4aafd5880bf1899dd21bc211f83e",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/31e02e6e3a5c4aafd5880bf1899dd21bc211f83e/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/",
+      "headSha": "31e02e6e3a5c4aafd5880bf1899dd21bc211f83e",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "008-resource-governance",
+        "headSha": "645f75c230577f97f35ea5629abef97ea37ab7f9",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/26/",
+        "mergeCommitSha": "",
+        "number": "26",
+        "title": "feat(SPEC-008): Resource Governance + Cost Tracker Enforcement (RC Factory Phase 7)",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/26"
+      },
+      "createdAt": "2026-05-05T18:58:15.802Z"
+    },
+    {
       "surface": "playwright",
       "runId": "25389918810",
       "runAttempt": "1",
@@ -27,33 +54,6 @@
         "url": "https://github.com/racecraft-lab/mission-control/pull/26"
       },
       "createdAt": "2026-05-05T16:58:04.491Z"
-    },
-    {
-      "surface": "storybook",
-      "runId": "25389918814",
-      "runAttempt": "1",
-      "runKey": "25389918814-attempt-1",
-      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25389918814",
-      "reportKey": "31e02e6e3a5c4aafd5880bf1899dd21bc211f83e",
-      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/31e02e6e3a5c4aafd5880bf1899dd21bc211f83e/",
-      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/",
-      "headSha": "31e02e6e3a5c4aafd5880bf1899dd21bc211f83e",
-      "headRef": "main",
-      "baseRef": "main",
-      "workflowName": "Visual Storybook Snapshots",
-      "workflowFile": "visual-storybook.yml",
-      "surfaceLabel": "Storybook Components",
-      "sourcePullRequest": {
-        "baseRef": "main",
-        "headRef": "008-resource-governance",
-        "headSha": "645f75c230577f97f35ea5629abef97ea37ab7f9",
-        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/26/",
-        "mergeCommitSha": "",
-        "number": "26",
-        "title": "feat(SPEC-008): Resource Governance + Cost Tracker Enforcement (RC Factory Phase 7)",
-        "url": "https://github.com/racecraft-lab/mission-control/pull/26"
-      },
-      "createdAt": "2026-05-05T16:53:32.512Z"
     },
     {
       "surface": "playwright",
@@ -228,5 +228,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-05T16:58:04.491Z"
+  "updatedAt": "2026-05-05T18:58:15.802Z"
 }
