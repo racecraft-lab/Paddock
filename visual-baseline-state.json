@@ -9313,7 +9313,7 @@
         "feature-flag-admin/feature-flag-admin-toggle-on.png": {
           "decision": "approved",
           "group": "feature-flag-admin",
-          "imageSha256": "084f7c733dd6b93eb68d252d748edb2f375e0db229b0c5c512264ce7c7621b0e",
+          "imageSha256": "c253f9d22d2be082349abd03093c8a4d68c8ff5169495f552d78ec86dbe4c124",
           "itemId": "new-feature-flag-admin/feature-flag-admin-toggle-on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "feature-flag-admin/feature-flag-admin-toggle-on.png",
@@ -9337,7 +9337,7 @@
         "product-line-switcher/alpha-scope-task-board.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "4974e89de1fed320fdebf291e505be2d1b3d4fe729e69a5551642c6b213f6567",
+          "imageSha256": "94fa2bca7d6cb34d5db68762c5d0a905c9e6d69f78a0a1119e6a3303c125c4d1",
           "itemId": "new-product-line-switcher/alpha-scope-task-board.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/alpha-scope-task-board.png",
@@ -9361,7 +9361,7 @@
         "product-line-switcher/cross-tab-alpha-scope.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "8dc50da5708889e14d7c3721bb04f232dbbe0ccf3e1db5654ed42afd949b68f8",
+          "imageSha256": "76dc7c072b1ee562a47201af9f6abe0a4456b178b0ead88ebd6d9c404613045f",
           "itemId": "new-product-line-switcher/cross-tab-alpha-scope.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/cross-tab-alpha-scope.png",
@@ -9385,7 +9385,7 @@
         "product-line-switcher/facility-aggregate-task-board-after-switch.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "59ee14b9ef6d1b01d98a2cd75cf6dcf2526d60f2b6a67347ebdef0b0c63e9a24",
+          "imageSha256": "c8424065e8c4db7d796c3e5fd0a1d283e6ec165c72619c8bb8c1b5917327a37a",
           "itemId": "new-product-line-switcher/facility-aggregate-task-board-after-switch.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/facility-aggregate-task-board-after-switch.png",
@@ -9409,7 +9409,7 @@
         "product-line-switcher/facility-task-board-before-switch.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "6367c5c6a9534f4410dfc823f98a543071c650c4208c699fbb53c8a08f5bd75f",
+          "imageSha256": "35bed6afd4db183e36aa4e4778b3abe3605ad7e0258e03ec33861c7f92bf2694",
           "itemId": "new-product-line-switcher/facility-task-board-before-switch.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/facility-task-board-before-switch.png",
@@ -9433,7 +9433,7 @@
         "product-line-switcher/keyboard-listbox-focus.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "806dede172d2252378fe04d4d3d19e2a9fe38ca229110e6deb9f3da971150edc",
+          "imageSha256": "562607032097d62d977719b893719a36a45370a361ab43950810d902be6422a7",
           "itemId": "new-product-line-switcher/keyboard-listbox-focus.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/keyboard-listbox-focus.png",
@@ -9457,7 +9457,7 @@
         "product-line-switcher/mobile-320-scope-menu.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "b24e9195db0aa5af20dc14feeac9f3737f69a96abd931c8817407665e29c8e9b",
+          "imageSha256": "081750f30d696ccf79c4a309fd3a246282ff4a2af56af714205e127833cc1e1c",
           "itemId": "new-product-line-switcher/mobile-320-scope-menu.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/mobile-320-scope-menu.png",
@@ -9505,7 +9505,7 @@
         "product-line-switcher/mobile-390-scope-menu.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "7368f5a30826c0e519b2c15b05d102404e240954087955f661e409e1052aa555",
+          "imageSha256": "63bbd268891bdf526ffaac37da812b29b10ad34f7e98948bbc9b2c1e34366a8c",
           "itemId": "new-product-line-switcher/mobile-390-scope-menu.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/mobile-390-scope-menu.png",
@@ -9529,7 +9529,7 @@
         "product-line-switcher/scope-menu-options.png": {
           "decision": "approved",
           "group": "product-line-switcher",
-          "imageSha256": "3c8d5357b8cf862d5308956413e136df6a6ba62a72a063b771c95ae40af4f762",
+          "imageSha256": "15c1c204c8a8488e84e03257226aff941c43dc42c0bbf878931d5642d055b064",
           "itemId": "new-product-line-switcher/scope-menu-options.png",
           "reviewer": "visual-reviewer",
           "snapshot": "product-line-switcher/scope-menu-options.png",
@@ -9553,7 +9553,7 @@
         "ready-for-owner/focused-ready-for-owner-card.png": {
           "decision": "approved",
           "group": "ready-for-owner",
-          "imageSha256": "1576082a0786c5225173657906e9b5044f9f1d61b79c78e57c978658422ee235",
+          "imageSha256": "a34a8107899125f1519aeaa0c35df934b4f619e3cadf99f24784675219c9c2f8",
           "itemId": "new-ready-for-owner/focused-ready-for-owner-card.png",
           "reviewer": "visual-reviewer",
           "snapshot": "ready-for-owner/focused-ready-for-owner-card.png",
@@ -9577,7 +9577,7 @@
         "ready-for-owner/kanban-lane-order.png": {
           "decision": "approved",
           "group": "ready-for-owner",
-          "imageSha256": "4201439aa7c2191257e93d9b0b80291437c3439a7abda22e8215936ef184573b",
+          "imageSha256": "f70218a23b79ef1ce268840ff84dc48c91e9a01e43a2fa6574131a1ef278289b",
           "itemId": "new-ready-for-owner/kanban-lane-order.png",
           "reviewer": "visual-reviewer",
           "snapshot": "ready-for-owner/kanban-lane-order.png",
@@ -9601,7 +9601,7 @@
         "ready-for-owner/notification-action-required.png": {
           "decision": "approved",
           "group": "ready-for-owner",
-          "imageSha256": "651a8a7c64c9e5428be1e3697cee77e653127e8fa2baa0b212a0b305e8bc4ade",
+          "imageSha256": "9a89dce414d51507472dc0a822df5c528a36735514a076acce716ef2319c77f1",
           "itemId": "new-ready-for-owner/notification-action-required.png",
           "reviewer": "visual-reviewer",
           "snapshot": "ready-for-owner/notification-action-required.png",
@@ -9625,7 +9625,7 @@
         "spec-007/artifact-admin-mixed-state.png": {
           "decision": "approved",
           "group": "spec-007",
-          "imageSha256": "585ecf4894c3adf1c5608738b655490af518091c5e7dd7d8811be69cc1824fb0",
+          "imageSha256": "30627510bc6c53fd895261a90d985883f441701afbefa2fc832675b9f0b82047",
           "itemId": "new-spec-007/artifact-admin-mixed-state.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-007/artifact-admin-mixed-state.png",
@@ -9649,7 +9649,7 @@
         "spec-007/artifact-admin-preview.png": {
           "decision": "approved",
           "group": "spec-007",
-          "imageSha256": "e005d535ac2fcbd6fdae9e26a97e44049320baca9e67b19d237cb7fa1847b6e5",
+          "imageSha256": "0fa53cf73a6c322ccc6f72491809519b0da7e06c3f40f688a0f90ab1bbb4b0cc",
           "itemId": "new-spec-007/artifact-admin-preview.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-007/artifact-admin-preview.png",
@@ -9697,7 +9697,7 @@
         "spec-007/audit-dispositions-loaded.png": {
           "decision": "approved",
           "group": "spec-007",
-          "imageSha256": "7f65dfe304043cd8728a9aa1b74820615c047b5757519128e052b263c1a2aed3",
+          "imageSha256": "1cc8ea42404ddb91f1936f1c5691c98fc9265dc693174c304846ec872a019ddc",
           "itemId": "new-spec-007/audit-dispositions-loaded.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-007/audit-dispositions-loaded.png",
@@ -9721,7 +9721,7 @@
         "spec-007/audit-dispositions-validation-filter.png": {
           "decision": "approved",
           "group": "spec-007",
-          "imageSha256": "d636ca913fc0b5818fac4b795bc3acd0ed1ff748f94e0fe1127cd509d31a8943",
+          "imageSha256": "49b6628edf1b04ed34472908651a0d669b569f98abc11adbcfe583673ff0a9b9",
           "itemId": "new-spec-007/audit-dispositions-validation-filter.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-007/audit-dispositions-validation-filter.png",
@@ -9745,7 +9745,7 @@
         "spec-007/dashboard-rollup-widget.png": {
           "decision": "approved",
           "group": "spec-007",
-          "imageSha256": "f7df8b036aea061b46a05a6a29bd783723dc756369b4d7fc3150c6f15c8be7c1",
+          "imageSha256": "595b35e3cb4c9d640bb40002fa939fe9422b7bd4fd90b5224a6df5211300995d",
           "itemId": "new-spec-007/dashboard-rollup-widget.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-007/dashboard-rollup-widget.png",
@@ -9769,7 +9769,7 @@
         "spec-008/aegis-starvation.ac-aegis-1.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f45ff30ec98454be141d1d0406cc1b09ba53f7a464abc99c4ecb51cf74ee49b7",
+          "imageSha256": "67e8b33c28f702f3b117741f2a0924e5713a26671417fbce427a789c0110144b",
           "itemId": "new-spec-008/aegis-starvation.ac-aegis-1.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/aegis-starvation.ac-aegis-1.png",
@@ -9793,7 +9793,7 @@
         "spec-008/aegis-starvation.ac-aegis-2.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f45ff30ec98454be141d1d0406cc1b09ba53f7a464abc99c4ecb51cf74ee49b7",
+          "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
           "itemId": "new-spec-008/aegis-starvation.ac-aegis-2.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/aegis-starvation.ac-aegis-2.png",
@@ -9817,7 +9817,7 @@
         "spec-008/aegis-starvation.ac-aegis-3.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f693401a6a544dc5689e8cb5123d8018a3d258b4b1f7251f60d71af0f1177fe4",
+          "imageSha256": "e5f1f8048ead0c4d93b1ffe5a7432092795078533024740396052bdf1dff2b41",
           "itemId": "new-spec-008/aegis-starvation.ac-aegis-3.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/aegis-starvation.ac-aegis-3.png",
@@ -9841,7 +9841,7 @@
         "spec-008/aegis-starvation.ac-aegis-4.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+          "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
           "itemId": "new-spec-008/aegis-starvation.ac-aegis-4.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/aegis-starvation.ac-aegis-4.png",
@@ -9865,7 +9865,7 @@
         "spec-008/aegis-starvation.ac-aegis-5.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+          "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
           "itemId": "new-spec-008/aegis-starvation.ac-aegis-5.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/aegis-starvation.ac-aegis-5.png",
@@ -9889,7 +9889,7 @@
         "spec-008/aegis-starvation.ac-aegis-6.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f693401a6a544dc5689e8cb5123d8018a3d258b4b1f7251f60d71af0f1177fe4",
+          "imageSha256": "be553280340b79554539bf49e39ca45c77b348cbc472b7770adcf2e4fe4dbdd9",
           "itemId": "new-spec-008/aegis-starvation.ac-aegis-6.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/aegis-starvation.ac-aegis-6.png",
@@ -9913,7 +9913,7 @@
         "spec-008/budget.0pct.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "e245e397403a8894f4e45a9491d57d177aa52c938921c20b05ef6b07e79975fd",
+          "imageSha256": "51d9e549a02936fa0806f780f2d8ae1e24d1abfbcdeffee755b61dc735bb17e2",
           "itemId": "new-spec-008/budget.0pct.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/budget.0pct.png",
@@ -9937,7 +9937,7 @@
         "spec-008/budget.100pct.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "db3c6d7261ccba651b607eb3b0338c726ef1b76b3188edffa0b440d1491cd7a4",
+          "imageSha256": "fef11c932cfc91cafadffce879b36f32e38dd4686aa8d9a385428ece94f44275",
           "itemId": "new-spec-008/budget.100pct.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/budget.100pct.png",
@@ -9961,7 +9961,7 @@
         "spec-008/budget.50pct.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "e245e397403a8894f4e45a9491d57d177aa52c938921c20b05ef6b07e79975fd",
+          "imageSha256": "c7c7cdef20f183e49869d89fc12f5d22dc1b03f2480aace46816df1771034e5e",
           "itemId": "new-spec-008/budget.50pct.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/budget.50pct.png",
@@ -9985,7 +9985,7 @@
         "spec-008/budget.80pct.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "e245e397403a8894f4e45a9491d57d177aa52c938921c20b05ef6b07e79975fd",
+          "imageSha256": "51d9e549a02936fa0806f780f2d8ae1e24d1abfbcdeffee755b61dc735bb17e2",
           "itemId": "new-spec-008/budget.80pct.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/budget.80pct.png",
@@ -10009,7 +10009,7 @@
         "spec-008/budget.95pct.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "92302f9651dcb017801d68580c88918d33dfadcdef8866657281c1631783be9c",
+          "imageSha256": "21b2d866cce319758da41125de00fdcbc6b3bcad1c5fd950ff2ba51c3e79e1bb",
           "itemId": "new-spec-008/budget.95pct.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/budget.95pct.png",
@@ -10033,7 +10033,7 @@
         "spec-008/budget.flag-off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "214d4a4105af491148b90ab51134435dfccdd3e04d3c8b15ad5da7a5048eac0d",
+          "imageSha256": "8ac50ba9616fd1697be9e69adb5f8b26a9c6af1e12dc7ed8a7ace0b42a53f797",
           "itemId": "new-spec-008/budget.flag-off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/budget.flag-off.png",
@@ -10057,7 +10057,7 @@
         "spec-008/bulk-promote.cross-workspace-422.modal.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8d589c6547690517ff162c823fe4082be21cf4a91334756f7bd7afa8592957ff",
+          "imageSha256": "f985219f48cb5540e41cd9d3f629c5f7be1d7e671109c460635a4ca2d44ebf97",
           "itemId": "new-spec-008/bulk-promote.cross-workspace-422.modal.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.cross-workspace-422.modal.png",
@@ -10081,7 +10081,7 @@
         "spec-008/bulk-promote.cross-workspace-422.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "fed3308334963c9b23988f5200b4930f958731d758a5224e4949220ce4703f74",
+          "imageSha256": "c1d07a26225c43220bcf0b35265c9f9fe5427f50765fbf76dd02d1db0ae3e25c",
           "itemId": "new-spec-008/bulk-promote.cross-workspace-422.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.cross-workspace-422.result.png",
@@ -10105,7 +10105,7 @@
         "spec-008/bulk-promote.happy.modal.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8d589c6547690517ff162c823fe4082be21cf4a91334756f7bd7afa8592957ff",
+          "imageSha256": "986d148b93a00987876fe83ee3fcf17b5b7a7524448b8b8b8a8a2ff3c2914b20",
           "itemId": "new-spec-008/bulk-promote.happy.modal.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.happy.modal.png",
@@ -10129,7 +10129,7 @@
         "spec-008/bulk-promote.happy.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "ba7775b5838604a35872a234ac53bd37d319272bfde70c43500aaee10305935a",
+          "imageSha256": "dc4576f5f8fba56b921b07f17f9e5782a237f87fd4e87e14cd68136c35864f77",
           "itemId": "new-spec-008/bulk-promote.happy.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.happy.result.png",
@@ -10153,7 +10153,7 @@
         "spec-008/bulk-promote.idempotency-replay.modal.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "bfb4a5a829d93c998166e8dc02dfb118c1d236d38c403ae89bf8831bc543b77e",
+          "imageSha256": "986d148b93a00987876fe83ee3fcf17b5b7a7524448b8b8b8a8a2ff3c2914b20",
           "itemId": "new-spec-008/bulk-promote.idempotency-replay.modal.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.idempotency-replay.modal.png",
@@ -10177,7 +10177,7 @@
         "spec-008/bulk-promote.idempotency-replay.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "fed3308334963c9b23988f5200b4930f958731d758a5224e4949220ce4703f74",
+          "imageSha256": "c1d07a26225c43220bcf0b35265c9f9fe5427f50765fbf76dd02d1db0ae3e25c",
           "itemId": "new-spec-008/bulk-promote.idempotency-replay.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.idempotency-replay.result.png",
@@ -10201,7 +10201,7 @@
         "spec-008/bulk-promote.wrong-phrase.modal.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "d60c5f9b3345b29c0fdcb488560adf0c1d5b67cfb291022369ff4fbd9bc18066",
+          "imageSha256": "1a8348d10f222cbf5e9b444e7e706c0d85fb9c4e763ab8de644a2de7ed2694d4",
           "itemId": "new-spec-008/bulk-promote.wrong-phrase.modal.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.wrong-phrase.modal.png",
@@ -10225,7 +10225,7 @@
         "spec-008/bulk-promote.wrong-phrase.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "d60c5f9b3345b29c0fdcb488560adf0c1d5b67cfb291022369ff4fbd9bc18066",
+          "imageSha256": "1a8348d10f222cbf5e9b444e7e706c0d85fb9c4e763ab8de644a2de7ed2694d4",
           "itemId": "new-spec-008/bulk-promote.wrong-phrase.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/bulk-promote.wrong-phrase.result.png",
@@ -10249,7 +10249,7 @@
         "spec-008/calibration.auto-repair.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f693401a6a544dc5689e8cb5123d8018a3d258b4b1f7251f60d71af0f1177fe4",
+          "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
           "itemId": "new-spec-008/calibration.auto-repair.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/calibration.auto-repair.png",
@@ -10273,7 +10273,7 @@
         "spec-008/calibration.hard-block.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+          "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
           "itemId": "new-spec-008/calibration.hard-block.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/calibration.hard-block.png",
@@ -10297,7 +10297,7 @@
         "spec-008/calibration.operator-confirmed.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "6bc2cba870fdba828a82c0e0b657797ac6972cf0bde5ef055275bb57b038ce2b",
+          "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
           "itemId": "new-spec-008/calibration.operator-confirmed.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/calibration.operator-confirmed.png",
@@ -10321,7 +10321,7 @@
         "spec-008/calibration.post-rebuild-verify.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+          "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
           "itemId": "new-spec-008/calibration.post-rebuild-verify.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/calibration.post-rebuild-verify.png",
@@ -10345,7 +10345,7 @@
         "spec-008/diagnostic-feed.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "fa40859ab5e331bcce468c4806dd8d8580c322523d4d3bd138b225755177d9e1",
+          "imageSha256": "a5c2a6bf54c9855d3a3b96eb95b55ed12b8bd0bf82b558147313f2e49da76d2c",
           "itemId": "new-spec-008/diagnostic-feed.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/diagnostic-feed.empty.png",
@@ -10369,7 +10369,7 @@
         "spec-008/diagnostic-feed.initial.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f04d9097c18cfd14678dc5ebd099371fe535f53048fc4185a0720f9cd20d6fbc",
+          "imageSha256": "347309d580187e72d4cc579209dce58ac65c11694f2a220ad178819f1d9a8240",
           "itemId": "new-spec-008/diagnostic-feed.initial.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/diagnostic-feed.initial.png",
@@ -10393,7 +10393,7 @@
         "spec-008/diagnostic-feed.live-append.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "2d4733cfcde990e29d9f7f41b77dcb905bb2c6649d231cf19400d4e263e9ef72",
+          "imageSha256": "51ee0f212ffefbba56879cedf9ba8b5b1b8c27acc8f3760de296f7b0ae77de6a",
           "itemId": "new-spec-008/diagnostic-feed.live-append.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/diagnostic-feed.live-append.png",
@@ -10417,7 +10417,7 @@
         "spec-008/diagnostic-feed.next-page.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "78773b76f465e1a93c051b7c01e657daa53069887e387f1b3e74f8d88b14c3c1",
+          "imageSha256": "e9a15bc4dc3ad966fa158db9fa63290e70b874e75c3f9fcc1a30e59ddf23f9d6",
           "itemId": "new-spec-008/diagnostic-feed.next-page.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/diagnostic-feed.next-page.png",
@@ -10441,7 +10441,7 @@
         "spec-008/dispatch-feed.initial.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "dab64751fc8d3c7d0f5923c4c418f301d4a7741b6554cda262f4e406c9a62e12",
+          "imageSha256": "cc591363119f7ff2eb07409dbdab5ed05f56947ba6cba38a3f8cfd34d8502f1b",
           "itemId": "new-spec-008/dispatch-feed.initial.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/dispatch-feed.initial.png",
@@ -10465,7 +10465,7 @@
         "spec-008/dispatch-feed.next-page.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "4ce6d8bbe10400867000ba04d856181edba5cd9c4951ca199fc0cb342ac6e2ce",
+          "imageSha256": "401263f7dfbca0cb42c3a9bfadd01605403bead01df44f483d5745874ab3afc3",
           "itemId": "new-spec-008/dispatch-feed.next-page.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/dispatch-feed.next-page.png",
@@ -10489,7 +10489,7 @@
         "spec-008/dispatch-feed.sse.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "bce3dd2ed04eabfad9c49261c7c61f829818d7b62be0087ea39b6890c1fbc035",
+          "imageSha256": "07349acfc51782c5277da267071fa0bb52f057ac024af1306daf0f550fd1525c",
           "itemId": "new-spec-008/dispatch-feed.sse.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/dispatch-feed.sse.png",
@@ -10513,7 +10513,7 @@
         "spec-008/etag-conflict-toast.live.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9e6d52e7c8ecce5e26ff131ac845cfcfafb5fc405be7f4dffe3245b77fb704bf",
+          "imageSha256": "ccff21ff71578e906dd81ce0a175b0ad33b520eb54a5c38e84545d77486a688b",
           "itemId": "new-spec-008/etag-conflict-toast.live.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/etag-conflict-toast.live.png",
@@ -10537,7 +10537,7 @@
         "spec-008/flag-matrix.all-current-on.governance.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "05d60e3a46b6e64ad2e1d89911257aa6a0584eded108f38b8abbc074e3518259",
+          "imageSha256": "67e8b33c28f702f3b117741f2a0924e5713a26671417fbce427a789c0110144b",
           "itemId": "new-spec-008/flag-matrix.all-current-on.governance.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.all-current-on.governance.png",
@@ -10561,7 +10561,7 @@
         "spec-008/flag-matrix.all-current-on.settings.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
           "itemId": "new-spec-008/flag-matrix.all-current-on.settings.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.all-current-on.settings.png",
@@ -10585,7 +10585,7 @@
         "spec-008/flag-matrix.all-off.legacy-parity.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "215d9b016e08024f38b9750dd7f4d1e03c093eb6bc681cd03d13204d4f382e7d",
+          "imageSha256": "a3ec9e2dd19c434d27e3f7d0b68ba7b4464a4c4e90591367fe07708a86d075f3",
           "itemId": "new-spec-008/flag-matrix.all-off.legacy-parity.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.all-off.legacy-parity.png",
@@ -10609,7 +10609,7 @@
         "spec-008/flag-matrix.feature-area-label-routing.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "edbf46489a2054be78a8bee9a6377c411cb2da74525cfaad01e8534bf1afe647",
+          "imageSha256": "9d5d9f1d89696765d0ea68e0381f9f78a2805f679e27f7e801eae8238983bc50",
           "itemId": "new-spec-008/flag-matrix.feature-area-label-routing.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-area-label-routing.off.png",
@@ -10633,7 +10633,7 @@
         "spec-008/flag-matrix.feature-area-label-routing.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
           "itemId": "new-spec-008/flag-matrix.feature-area-label-routing.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-area-label-routing.on.png",
@@ -10657,7 +10657,7 @@
         "spec-008/flag-matrix.feature-disposition-logging.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+          "imageSha256": "16f71111eb122c128a0e52f470d51d91cdfd762027b6157609d6fa93fa2ca1d0",
           "itemId": "new-spec-008/flag-matrix.feature-disposition-logging.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-disposition-logging.off.png",
@@ -10681,7 +10681,7 @@
         "spec-008/flag-matrix.feature-disposition-logging.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "96d8fb6235ee2ad598e2191ca2c7ce2fbac011b0dfdadac26c3b74ac39deab20",
+          "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
           "itemId": "new-spec-008/flag-matrix.feature-disposition-logging.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-disposition-logging.on.png",
@@ -10705,7 +10705,7 @@
         "spec-008/flag-matrix.feature-global-aegis.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "bb00b9dd9b0b6b64b145a4a3e4c9385b029106db6687a76daaa84e470e398964",
+          "imageSha256": "9d5d9f1d89696765d0ea68e0381f9f78a2805f679e27f7e801eae8238983bc50",
           "itemId": "new-spec-008/flag-matrix.feature-global-aegis.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-global-aegis.off.png",
@@ -10729,7 +10729,7 @@
         "spec-008/flag-matrix.feature-global-aegis.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
           "itemId": "new-spec-008/flag-matrix.feature-global-aegis.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-global-aegis.on.png",
@@ -10753,7 +10753,7 @@
         "spec-008/flag-matrix.feature-openclaw-health-costs.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "36d59c9f1f18ecb4f40225bc8efadddd7e4b4e0992c6fd8800750c5f83503498",
+          "imageSha256": "0ba602036b0c8bf66f3393f1d1c71d17afd10e695e0af450d23ea6a4e32fa73a",
           "itemId": "new-spec-008/flag-matrix.feature-openclaw-health-costs.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-openclaw-health-costs.off.png",
@@ -10777,7 +10777,7 @@
         "spec-008/flag-matrix.feature-openclaw-health-costs.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
           "itemId": "new-spec-008/flag-matrix.feature-openclaw-health-costs.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-openclaw-health-costs.on.png",
@@ -10801,7 +10801,7 @@
         "spec-008/flag-matrix.feature-resource-governance.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+          "imageSha256": "0ba602036b0c8bf66f3393f1d1c71d17afd10e695e0af450d23ea6a4e32fa73a",
           "itemId": "new-spec-008/flag-matrix.feature-resource-governance.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-resource-governance.off.png",
@@ -10825,7 +10825,7 @@
         "spec-008/flag-matrix.feature-resource-governance.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
           "itemId": "new-spec-008/flag-matrix.feature-resource-governance.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-resource-governance.on.png",
@@ -10849,7 +10849,7 @@
         "spec-008/flag-matrix.feature-task-artifacts.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "bb00b9dd9b0b6b64b145a4a3e4c9385b029106db6687a76daaa84e470e398964",
+          "imageSha256": "d32af00d6da6075ed3e22a4656f9b1697249b6c8f5b591a0b7e2efd8d7a7561f",
           "itemId": "new-spec-008/flag-matrix.feature-task-artifacts.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-task-artifacts.off.png",
@@ -10873,7 +10873,7 @@
         "spec-008/flag-matrix.feature-task-artifacts.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
           "itemId": "new-spec-008/flag-matrix.feature-task-artifacts.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-task-artifacts.on.png",
@@ -10897,7 +10897,7 @@
         "spec-008/flag-matrix.feature-task-pipelines.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+          "imageSha256": "bc0cbe76071826ddf9974b9c87f6b283f0362a66bf79ac8279e1f8efe1ab1423",
           "itemId": "new-spec-008/flag-matrix.feature-task-pipelines.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-task-pipelines.off.png",
@@ -10921,7 +10921,7 @@
         "spec-008/flag-matrix.feature-task-pipelines.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
           "itemId": "new-spec-008/flag-matrix.feature-task-pipelines.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-task-pipelines.on.png",
@@ -10945,7 +10945,7 @@
         "spec-008/flag-matrix.feature-two-step-terminal.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+          "imageSha256": "9d5d9f1d89696765d0ea68e0381f9f78a2805f679e27f7e801eae8238983bc50",
           "itemId": "new-spec-008/flag-matrix.feature-two-step-terminal.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-two-step-terminal.off.png",
@@ -10969,7 +10969,7 @@
         "spec-008/flag-matrix.feature-two-step-terminal.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
           "itemId": "new-spec-008/flag-matrix.feature-two-step-terminal.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-two-step-terminal.on.png",
@@ -10993,7 +10993,7 @@
         "spec-008/flag-matrix.feature-workspace-switcher.off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "bb00b9dd9b0b6b64b145a4a3e4c9385b029106db6687a76daaa84e470e398964",
+          "imageSha256": "e306cacc18543bf342af35804da13d0659ff7a379883c1347bb19b66d88777ed",
           "itemId": "new-spec-008/flag-matrix.feature-workspace-switcher.off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-workspace-switcher.off.png",
@@ -11017,7 +11017,7 @@
         "spec-008/flag-matrix.feature-workspace-switcher.on.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+          "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
           "itemId": "new-spec-008/flag-matrix.feature-workspace-switcher.on.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-matrix.feature-workspace-switcher.on.png",
@@ -11041,7 +11041,7 @@
         "spec-008/flag-off-byte-compat.live.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "214d4a4105af491148b90ab51134435dfccdd3e04d3c8b15ad5da7a5048eac0d",
+          "imageSha256": "8fad4a68bbff48420e2a9bc51710decb7151b36f19b79aedccac09b7350a7315",
           "itemId": "new-spec-008/flag-off-byte-compat.live.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-off-byte-compat.live.png",
@@ -11065,7 +11065,7 @@
         "spec-008/flag-on-tab-landing.live.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8c296c450ebadff716673d5f39ac36ba9cfc0fb37b96f087e64596a1f1ea5efa",
+          "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
           "itemId": "new-spec-008/flag-on-tab-landing.live.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/flag-on-tab-landing.live.png",
@@ -11089,7 +11089,7 @@
         "spec-008/modal-error-summary.live.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "97798d75b155ae506235fd449aee7df1872d47793e1c2edf5dc861ae88d679ee",
+          "imageSha256": "87434c26408689cddfe3f9848988f097b27c27055dc162eeaecec1e6b3793336",
           "itemId": "new-spec-008/modal-error-summary.live.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/modal-error-summary.live.png",
@@ -11113,7 +11113,7 @@
         "spec-008/override-grant.concurrent-edit-412.form.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "fb9736b6c75833c5cf695665a2c37f1ff8ee474280e1d8b37e8663aa95109e6c",
+          "imageSha256": "9140283f69d2199a56e2760771495f5895f3c0e529390b9268fa5c45796d5969",
           "itemId": "new-spec-008/override-grant.concurrent-edit-412.form.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.concurrent-edit-412.form.png",
@@ -11137,7 +11137,7 @@
         "spec-008/override-grant.concurrent-edit-412.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "882419f9631ac4bac10970a50477a9a8caafff3d0e12af7c30b69d576f68b530",
+          "imageSha256": "f1381094d814d8bad35deb4a74e34398ec23b7fca9fa55a9dbf114af66951b17",
           "itemId": "new-spec-008/override-grant.concurrent-edit-412.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.concurrent-edit-412.result.png",
@@ -11161,7 +11161,7 @@
         "spec-008/override-grant.duplicate-409.form.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "d5b585d5c540f87f17029358ddd0d5b277b122ae29bf43688482868d00eedc2c",
+          "imageSha256": "1ffb4ccc05c07afeeed836038084ccb1dc245f60cedbe07f90cd3dfa20a7c9c8",
           "itemId": "new-spec-008/override-grant.duplicate-409.form.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.duplicate-409.form.png",
@@ -11185,7 +11185,7 @@
         "spec-008/override-grant.duplicate-409.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "81f2d489e5ae8220314df66fdf069c00374e34fbc2a81b733a69b65d762ab8e0",
+          "imageSha256": "3d3fa4ebe9ecc6144006931911591db3d92e7ea5cc55f8ed469541f6952957d9",
           "itemId": "new-spec-008/override-grant.duplicate-409.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.duplicate-409.result.png",
@@ -11209,7 +11209,7 @@
         "spec-008/override-grant.happy.form.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e27a87850e0571522c4b80a2aa99360e318b95ff848d740ca7b1a03681effd1",
+          "imageSha256": "989c19ecdca070614ea2b6c29ed1eb0ae813d647c7ede84e02302de709102d34",
           "itemId": "new-spec-008/override-grant.happy.form.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.happy.form.png",
@@ -11233,7 +11233,7 @@
         "spec-008/override-grant.happy.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "c366f0d09208d019253ea26199f5ced4bb68554d93cb5c1301462aecd6c6f9d2",
+          "imageSha256": "f412b14ae0dcc990df90eed945fea17b033edaec82e98d20b7a5714d3a38ba35",
           "itemId": "new-spec-008/override-grant.happy.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.happy.result.png",
@@ -11257,7 +11257,7 @@
         "spec-008/override-grant.invalid-ttl-422.form.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "1732035fa701714d86f7f43873070e334a5e54e115a2c97f27aef03458275970",
+          "imageSha256": "0148cae6ab41ab2329d4e5d8693ce6a45904853c7bf9a207a185ccff3e8dd609",
           "itemId": "new-spec-008/override-grant.invalid-ttl-422.form.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.invalid-ttl-422.form.png",
@@ -11281,7 +11281,7 @@
         "spec-008/override-grant.invalid-ttl-422.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "03d494721042ead6e0bf8e35946a68151219e7543f2ed677438b7efc8f7b0514",
+          "imageSha256": "608801c462f49e81412e2f3a90e543b58a7766338530a4b21323f92f80e49250",
           "itemId": "new-spec-008/override-grant.invalid-ttl-422.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.invalid-ttl-422.result.png",
@@ -11305,7 +11305,7 @@
         "spec-008/override-grant.locked-423.form.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8e55aecaf1a548d28e8d1e95c1577d2de03dcb104faf9adc1cd9ab384d4ec380",
+          "imageSha256": "6d1c62e6714c31287bdd8b113fb9a135f3ecc80294f7355abefc04c63ac2a031",
           "itemId": "new-spec-008/override-grant.locked-423.form.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.locked-423.form.png",
@@ -11329,7 +11329,7 @@
         "spec-008/override-grant.locked-423.result.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "d0f5c69a145a369e906eca2ffec31b2fa94c5fd9f7198270736443c67afb3d97",
+          "imageSha256": "fe70dd1514100a5fbb2f01f1922055ea80cbca17ff114d8dd85a61e8f7ea7548",
           "itemId": "new-spec-008/override-grant.locked-423.result.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/override-grant.locked-423.result.png",
@@ -11353,7 +11353,7 @@
         "spec-008/recovery.audit-chain-verify.disabled-noop.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "3e145f10c53c676c5a8c45c87dfee3e0d538ece8fdd9bf4bab35e080f36254f0",
+          "imageSha256": "cec795f185b0ced769e92fedb47b1a392120217d456588e427d5bc536c4985ce",
           "itemId": "new-spec-008/recovery.audit-chain-verify.disabled-noop.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.audit-chain-verify.disabled-noop.png",
@@ -11377,7 +11377,7 @@
         "spec-008/recovery.audit-chain-verify.modal-open.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "3e145f10c53c676c5a8c45c87dfee3e0d538ece8fdd9bf4bab35e080f36254f0",
+          "imageSha256": "cec795f185b0ced769e92fedb47b1a392120217d456588e427d5bc536c4985ce",
           "itemId": "new-spec-008/recovery.audit-chain-verify.modal-open.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.audit-chain-verify.modal-open.png",
@@ -11401,7 +11401,7 @@
         "spec-008/recovery.breaker-reset.disabled-noop.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "03a54735a715c58741beeb3af48925ff109fb6989472b34611f814a1522ada0f",
+          "imageSha256": "186208eaa24931401276dc47ff4ff3b0aea6464b7dc35efceba5f9b84e489f18",
           "itemId": "new-spec-008/recovery.breaker-reset.disabled-noop.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.breaker-reset.disabled-noop.png",
@@ -11425,7 +11425,7 @@
         "spec-008/recovery.breaker-reset.modal-open.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "03a54735a715c58741beeb3af48925ff109fb6989472b34611f814a1522ada0f",
+          "imageSha256": "186208eaa24931401276dc47ff4ff3b0aea6464b7dc35efceba5f9b84e489f18",
           "itemId": "new-spec-008/recovery.breaker-reset.modal-open.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.breaker-reset.modal-open.png",
@@ -11449,7 +11449,7 @@
         "spec-008/recovery.collector-rotate-key.disabled-noop.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "aeb2c5e6e445ed79164c8e0fe0698b0e211a15bb0031233cb5f287772d6840bb",
+          "imageSha256": "e4d6a65486b0f45fb5fb295c893bb56d3c2481ed62f8dcd6a88cb67c9747f111",
           "itemId": "new-spec-008/recovery.collector-rotate-key.disabled-noop.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.collector-rotate-key.disabled-noop.png",
@@ -11473,7 +11473,7 @@
         "spec-008/recovery.collector-rotate-key.modal-open.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "aeb2c5e6e445ed79164c8e0fe0698b0e211a15bb0031233cb5f287772d6840bb",
+          "imageSha256": "e4d6a65486b0f45fb5fb295c893bb56d3c2481ed62f8dcd6a88cb67c9747f111",
           "itemId": "new-spec-008/recovery.collector-rotate-key.modal-open.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.collector-rotate-key.modal-open.png",
@@ -11497,7 +11497,7 @@
         "spec-008/recovery.counter-rebuild-restart.disabled-noop.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "1baa18c1ec1cb6670ed33ef202a807d0e7e890badc37f68a36724fba216a8b84",
+          "imageSha256": "48ef4285607b48b9a0fdc77812c828ca33bfb5534d7b4c766c8edd514be6eb13",
           "itemId": "new-spec-008/recovery.counter-rebuild-restart.disabled-noop.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.counter-rebuild-restart.disabled-noop.png",
@@ -11521,7 +11521,7 @@
         "spec-008/recovery.counter-rebuild-restart.modal-open.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "1baa18c1ec1cb6670ed33ef202a807d0e7e890badc37f68a36724fba216a8b84",
+          "imageSha256": "48ef4285607b48b9a0fdc77812c828ca33bfb5534d7b4c766c8edd514be6eb13",
           "itemId": "new-spec-008/recovery.counter-rebuild-restart.modal-open.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.counter-rebuild-restart.modal-open.png",
@@ -11545,7 +11545,7 @@
         "spec-008/recovery.reconciler-retry.disabled-noop.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "e5e8806bf37a9bd75cb02a0354c3644962c6e1da48485d999e34b410e30cbb64",
+          "imageSha256": "14207cfa6a2ab19dbfb73682761b9aab32af2c357962458129520a68b3019f24",
           "itemId": "new-spec-008/recovery.reconciler-retry.disabled-noop.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.reconciler-retry.disabled-noop.png",
@@ -11569,7 +11569,7 @@
         "spec-008/recovery.reconciler-retry.modal-open.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "e5e8806bf37a9bd75cb02a0354c3644962c6e1da48485d999e34b410e30cbb64",
+          "imageSha256": "14207cfa6a2ab19dbfb73682761b9aab32af2c357962458129520a68b3019f24",
           "itemId": "new-spec-008/recovery.reconciler-retry.modal-open.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.reconciler-retry.modal-open.png",
@@ -11593,7 +11593,7 @@
         "spec-008/recovery.reservation-reaper-force-run.disabled-noop.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8c81aa6a8ec9c3cd0456d98f4b9974a13196d573e13c3495d8268009e1676cbf",
+          "imageSha256": "3b8d453ebff09b238ae62be624b0cc5b8b27085ad9911f96c40575d787df7e41",
           "itemId": "new-spec-008/recovery.reservation-reaper-force-run.disabled-noop.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.reservation-reaper-force-run.disabled-noop.png",
@@ -11617,7 +11617,7 @@
         "spec-008/recovery.reservation-reaper-force-run.modal-open.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8c81aa6a8ec9c3cd0456d98f4b9974a13196d573e13c3495d8268009e1676cbf",
+          "imageSha256": "3b8d453ebff09b238ae62be624b0cc5b8b27085ad9911f96c40575d787df7e41",
           "itemId": "new-spec-008/recovery.reservation-reaper-force-run.modal-open.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/recovery.reservation-reaper-force-run.modal-open.png",
@@ -11641,7 +11641,7 @@
         "spec-008/system-health.audit.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+          "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
           "itemId": "new-spec-008/system-health.audit.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/system-health.audit.png",
@@ -11665,7 +11665,7 @@
         "spec-008/system-health.breaker.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+          "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
           "itemId": "new-spec-008/system-health.breaker.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/system-health.breaker.png",
@@ -11689,7 +11689,7 @@
         "spec-008/system-health.collector.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+          "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
           "itemId": "new-spec-008/system-health.collector.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/system-health.collector.png",
@@ -11713,7 +11713,7 @@
         "spec-008/system-health.reaper.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7e12a1e1c5d4b1a5a16195c2f447e1e43468e31f018f33958aab81defe8f4d83",
+          "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
           "itemId": "new-spec-008/system-health.reaper.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/system-health.reaper.png",
@@ -11737,7 +11737,7 @@
         "spec-008/system-health.rebuild.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+          "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
           "itemId": "new-spec-008/system-health.rebuild.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/system-health.rebuild.png",
@@ -11761,7 +11761,7 @@
         "spec-008/system-health.reconciler.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+          "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
           "itemId": "new-spec-008/system-health.reconciler.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/system-health.reconciler.png",
@@ -11785,7 +11785,7 @@
         "spec-008/tab-landing.budgets.default.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+          "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
           "itemId": "new-spec-008/tab-landing.budgets.default.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.budgets.default.png",
@@ -11809,7 +11809,7 @@
         "spec-008/tab-landing.budgets.dense.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "4a81584870c03609902184ae9e18a8081592083003a4941cd2e6fe7f60fcf0a4",
+          "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
           "itemId": "new-spec-008/tab-landing.budgets.dense.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.budgets.dense.png",
@@ -11833,7 +11833,7 @@
         "spec-008/tab-landing.budgets.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+          "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
           "itemId": "new-spec-008/tab-landing.budgets.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.budgets.empty.png",
@@ -11857,7 +11857,7 @@
         "spec-008/tab-landing.budgets.error.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+          "imageSha256": "6aae36a99d26b0b1f0c5ee9aab916b58cf5423ba8eacaf7cdac94518e84325c9",
           "itemId": "new-spec-008/tab-landing.budgets.error.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.budgets.error.png",
@@ -11881,7 +11881,7 @@
         "spec-008/tab-landing.budgets.loading.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+          "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
           "itemId": "new-spec-008/tab-landing.budgets.loading.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.budgets.loading.png",
@@ -11905,7 +11905,7 @@
         "spec-008/tab-landing.diagnostics.default.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+          "imageSha256": "05ba4519ccf571f270a8e126168509dc594877d6f19b41b71aaf27492d55e253",
           "itemId": "new-spec-008/tab-landing.diagnostics.default.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.diagnostics.default.png",
@@ -11929,7 +11929,7 @@
         "spec-008/tab-landing.diagnostics.dense.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8774c54cb2528a12024801ceaadbff7a0f4c5019c08632d90f4f83f7f49d95b2",
+          "imageSha256": "4283f1fd3e554e6b73d8f7d73b45d61f5c06cd1d296344fc5b7cb45372aabd89",
           "itemId": "new-spec-008/tab-landing.diagnostics.dense.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.diagnostics.dense.png",
@@ -11953,7 +11953,7 @@
         "spec-008/tab-landing.diagnostics.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+          "imageSha256": "4283f1fd3e554e6b73d8f7d73b45d61f5c06cd1d296344fc5b7cb45372aabd89",
           "itemId": "new-spec-008/tab-landing.diagnostics.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.diagnostics.empty.png",
@@ -11977,7 +11977,7 @@
         "spec-008/tab-landing.diagnostics.error.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+          "imageSha256": "05ba4519ccf571f270a8e126168509dc594877d6f19b41b71aaf27492d55e253",
           "itemId": "new-spec-008/tab-landing.diagnostics.error.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.diagnostics.error.png",
@@ -12001,7 +12001,7 @@
         "spec-008/tab-landing.diagnostics.loading.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+          "imageSha256": "7f153bcf5ac0245bf9a44242307e1c390fb4182b0179ef7480811cd62cf3ccab",
           "itemId": "new-spec-008/tab-landing.diagnostics.loading.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.diagnostics.loading.png",
@@ -12025,7 +12025,7 @@
         "spec-008/tab-landing.kbd.right2.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "ab441d56e47568782c3ff12e07ea720da9baefcf56d7e6f0fdd835233e13c93d",
+          "imageSha256": "63c933495594d5e284f5947984f6744d336788db952fef881b7a71eb66efac2a",
           "itemId": "new-spec-008/tab-landing.kbd.right2.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.kbd.right2.png",
@@ -12049,7 +12049,7 @@
         "spec-008/tab-landing.overrides.default.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+          "imageSha256": "53d5c2cea110ea6c04360c284de65a8d1be965fa4092d135b1861ff4ad10fe61",
           "itemId": "new-spec-008/tab-landing.overrides.default.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.overrides.default.png",
@@ -12073,7 +12073,7 @@
         "spec-008/tab-landing.overrides.dense.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "0d9429092595e7ca831fda879d27ad25ed30415b43b92c0fa3eb054fcf1cee6e",
+          "imageSha256": "ddd1b32c76a5c8baccce07a0f3766f6fc420e385b2e37328765ba71a599d8154",
           "itemId": "new-spec-008/tab-landing.overrides.dense.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.overrides.dense.png",
@@ -12097,7 +12097,7 @@
         "spec-008/tab-landing.overrides.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+          "imageSha256": "ddd1b32c76a5c8baccce07a0f3766f6fc420e385b2e37328765ba71a599d8154",
           "itemId": "new-spec-008/tab-landing.overrides.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.overrides.empty.png",
@@ -12121,7 +12121,7 @@
         "spec-008/tab-landing.overrides.error.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+          "imageSha256": "53d5c2cea110ea6c04360c284de65a8d1be965fa4092d135b1861ff4ad10fe61",
           "itemId": "new-spec-008/tab-landing.overrides.error.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.overrides.error.png",
@@ -12145,7 +12145,7 @@
         "spec-008/tab-landing.overrides.loading.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+          "imageSha256": "53d5c2cea110ea6c04360c284de65a8d1be965fa4092d135b1861ff4ad10fe61",
           "itemId": "new-spec-008/tab-landing.overrides.loading.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.overrides.loading.png",
@@ -12169,7 +12169,7 @@
         "spec-008/tab-landing.policies.default.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "14c448635da8855dfffb02da67168bc531e97d4f1582f40c1ad12829cc187b8b",
+          "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
           "itemId": "new-spec-008/tab-landing.policies.default.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.policies.default.png",
@@ -12193,7 +12193,7 @@
         "spec-008/tab-landing.policies.dense.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8f0fde36b01f33a12e3c6c43d77521fbb3136ab276054eb757d316b755d817c8",
+          "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
           "itemId": "new-spec-008/tab-landing.policies.dense.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.policies.dense.png",
@@ -12217,7 +12217,7 @@
         "spec-008/tab-landing.policies.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8f0fde36b01f33a12e3c6c43d77521fbb3136ab276054eb757d316b755d817c8",
+          "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
           "itemId": "new-spec-008/tab-landing.policies.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.policies.empty.png",
@@ -12241,7 +12241,7 @@
         "spec-008/tab-landing.policies.error.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "40948109a91bc8fa26743cb91b40003344479d05ca54b779e8dc994c6c53cf4d",
+          "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
           "itemId": "new-spec-008/tab-landing.policies.error.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.policies.error.png",
@@ -12265,7 +12265,7 @@
         "spec-008/tab-landing.policies.loading.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "14c448635da8855dfffb02da67168bc531e97d4f1582f40c1ad12829cc187b8b",
+          "imageSha256": "d5fa8ca91d1862a4c1db43bc10b00318a5e83e28de0bb843063b4f796ca65173",
           "itemId": "new-spec-008/tab-landing.policies.loading.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.policies.loading.png",
@@ -12289,7 +12289,7 @@
         "spec-008/tab-landing.system-health.default.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f655cb95ed8670c04094017cf8b293f3e8386f17c8e846753dc9d51fe26717f9",
+          "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
           "itemId": "new-spec-008/tab-landing.system-health.default.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.system-health.default.png",
@@ -12313,7 +12313,7 @@
         "spec-008/tab-landing.system-health.dense.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f655cb95ed8670c04094017cf8b293f3e8386f17c8e846753dc9d51fe26717f9",
+          "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
           "itemId": "new-spec-008/tab-landing.system-health.dense.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.system-health.dense.png",
@@ -12337,7 +12337,7 @@
         "spec-008/tab-landing.system-health.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7d665d4a6a7d7266060ae857533ee953b9adaf32bdf338cd7ac21e99817f5648",
+          "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
           "itemId": "new-spec-008/tab-landing.system-health.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.system-health.empty.png",
@@ -12361,7 +12361,7 @@
         "spec-008/tab-landing.system-health.error.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7d665d4a6a7d7266060ae857533ee953b9adaf32bdf338cd7ac21e99817f5648",
+          "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
           "itemId": "new-spec-008/tab-landing.system-health.error.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.system-health.error.png",
@@ -12385,7 +12385,7 @@
         "spec-008/tab-landing.system-health.loading.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7d665d4a6a7d7266060ae857533ee953b9adaf32bdf338cd7ac21e99817f5648",
+          "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
           "itemId": "new-spec-008/tab-landing.system-health.loading.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.system-health.loading.png",
@@ -12409,7 +12409,7 @@
         "spec-008/tab-landing.windows.default.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7b1472410e6953241c50cefcfbeddf44a4c32188d79112e838876d39106d51da",
+          "imageSha256": "a25470666a70fc7ace940a7f76e1090a54a321d52764d5819417e48396fbdb86",
           "itemId": "new-spec-008/tab-landing.windows.default.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.windows.default.png",
@@ -12433,7 +12433,7 @@
         "spec-008/tab-landing.windows.dense.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7b1472410e6953241c50cefcfbeddf44a4c32188d79112e838876d39106d51da",
+          "imageSha256": "b1df6b92c4852d99ca14e50221a93db95eb90a9acdda701c0bad33ba0dcd8a58",
           "itemId": "new-spec-008/tab-landing.windows.dense.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.windows.dense.png",
@@ -12457,7 +12457,7 @@
         "spec-008/tab-landing.windows.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "93df1e40eb299764bc5773f321d43b32a12f18fdf5ff39fc27bd19224974e127",
+          "imageSha256": "cc04480c6f7c98b98b87e7d78acc73a25e9e0b67dfa7c54b3a7ce99a56e5e74e",
           "itemId": "new-spec-008/tab-landing.windows.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.windows.empty.png",
@@ -12481,7 +12481,7 @@
         "spec-008/tab-landing.windows.error.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7b1472410e6953241c50cefcfbeddf44a4c32188d79112e838876d39106d51da",
+          "imageSha256": "4ab7fcd836032d4033b62946a8d0243ea9683573b0d5eb6731c66bacc731d2e9",
           "itemId": "new-spec-008/tab-landing.windows.error.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.windows.error.png",
@@ -12505,7 +12505,7 @@
         "spec-008/tab-landing.windows.loading.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "93df1e40eb299764bc5773f321d43b32a12f18fdf5ff39fc27bd19224974e127",
+          "imageSha256": "a25470666a70fc7ace940a7f76e1090a54a321d52764d5819417e48396fbdb86",
           "itemId": "new-spec-008/tab-landing.windows.loading.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/tab-landing.windows.loading.png",
@@ -12529,7 +12529,7 @@
         "spec-008/telemetry-health.breaker-open.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "e182e6a41f0b68936b8ef1be65f2e074a937af6f4ef98a3a2041d449b2086e7e",
+          "imageSha256": "1e945bcad6ed9b5a5e9cb1c53a4003f1eb73851abdbb8585433782207975e11d",
           "itemId": "new-spec-008/telemetry-health.breaker-open.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/telemetry-health.breaker-open.png",
@@ -12553,7 +12553,7 @@
         "spec-008/telemetry-health.drilldown.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "04bafea31c6881dc2b726b559e172cc50823fd749fa63b4875cf79b3f64bf43e",
+          "imageSha256": "8f84faa7f54d03a7c978788abc523ae2d6c825e80ca7d9323d3ad5233b587272",
           "itemId": "new-spec-008/telemetry-health.drilldown.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/telemetry-health.drilldown.png",
@@ -12577,7 +12577,7 @@
         "spec-008/telemetry-health.healthy.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "5b1668724becab6012cc8f18160b39861a0ca115311385eeb28475cb9196abd0",
+          "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
           "itemId": "new-spec-008/telemetry-health.healthy.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/telemetry-health.healthy.png",
@@ -12601,7 +12601,7 @@
         "spec-008/windows.in.blackout.23h00m.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "f2a82af1b89e4a9a4e525a04e91aa360fdb15ffcea2f158daf16a6809fba3406",
+          "imageSha256": "d71c1ec236166689e7043c8d21e040197b79ee0660efae2afed4c3a538807e16",
           "itemId": "new-spec-008/windows.in.blackout.23h00m.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/windows.in.blackout.23h00m.png",
@@ -12649,7 +12649,7 @@
         "spec-008/windows.post.blackout.06h01m.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "b25ed0d634c12d37fb87aafc36d3a97672b25c2ea135c0d27ecbda303983f08e",
+          "imageSha256": "482ab268631dbd30f86e973a14803f029d4741a783eafcb425266aa48d3ed996",
           "itemId": "new-spec-008/windows.post.blackout.06h01m.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/windows.post.blackout.06h01m.png",
@@ -12697,7 +12697,7 @@
         "spec-008/wip-policy.default.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7f41fe29b9a55802daa190deaf6dd3c4d267dcb8378db3507fb56f3e0531cb2b",
+          "imageSha256": "89a6e1e12465a5bba73b8919261bcb11f832f130c1f472fb162c2f04c1b75651",
           "itemId": "new-spec-008/wip-policy.default.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/wip-policy.default.png",
@@ -12721,7 +12721,7 @@
         "spec-008/wip-policy.dense.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "c0a612f8d0cf5708ad662e12a678eb30d16d47aff3a216c574a2bfc91d92eee0",
+          "imageSha256": "d557df872f0169b3b8c78cd60fb268b7624358c05b9a3e68bc06f1563c4642e6",
           "itemId": "new-spec-008/wip-policy.dense.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/wip-policy.dense.png",
@@ -12745,7 +12745,7 @@
         "spec-008/wip-policy.diagnostics.loading.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "d4f356e5288b8addc512f07591ea88a42425d70335f2b66698496186208bb082",
+          "imageSha256": "322c02755691902b8e7c3f92c23086269d74ca23e35025a08a535d0a2dd9686f",
           "itemId": "new-spec-008/wip-policy.diagnostics.loading.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/wip-policy.diagnostics.loading.png",
@@ -12769,7 +12769,7 @@
         "spec-008/wip-policy.editor.filled.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "a917b53305e83193bb03c25d386b34b6fe04f34ed6974529cd1131a9e961878b",
+          "imageSha256": "4e7ec4b7a6c840b36f90fdf5ec24cc0ffa4d13f57e298344c675c9f78d083629",
           "itemId": "new-spec-008/wip-policy.editor.filled.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/wip-policy.editor.filled.png",
@@ -12793,7 +12793,7 @@
         "spec-008/wip-policy.empty.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "7f41fe29b9a55802daa190deaf6dd3c4d267dcb8378db3507fb56f3e0531cb2b",
+          "imageSha256": "89a6e1e12465a5bba73b8919261bcb11f832f130c1f472fb162c2f04c1b75651",
           "itemId": "new-spec-008/wip-policy.empty.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/wip-policy.empty.png",
@@ -12817,7 +12817,7 @@
         "spec-008/wip-policy.error.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "2c474df8093a5aff3834f1adf625ef845be16431a0491fa9e2d305f45ebed4db",
+          "imageSha256": "46ea2082925c121d5f25127bcb9e6d4d34b80aaaf342aba2199796226a37b4e5",
           "itemId": "new-spec-008/wip-policy.error.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/wip-policy.error.png",
@@ -12841,7 +12841,7 @@
         "spec-008/wip-policy.flag-off.png": {
           "decision": "approved",
           "group": "spec-008",
-          "imageSha256": "8d0f8b82969ac5c01b3eefcaa968f384c4707d782bd0a44b2d270dc3a0094f4b",
+          "imageSha256": "b2ce404aca0ca4a32681d4fe3a8bb862bf3174a76898208a2da1f60113cf88a4",
           "itemId": "new-spec-008/wip-policy.flag-off.png",
           "reviewer": "visual-reviewer",
           "snapshot": "spec-008/wip-policy.flag-off.png",
@@ -12916,7 +12916,7 @@
             "feature-flag-admin/feature-flag-admin-toggle-on.png": {
               "decision": "approved",
               "group": "feature-flag-admin",
-              "imageSha256": "084f7c733dd6b93eb68d252d748edb2f375e0db229b0c5c512264ce7c7621b0e",
+              "imageSha256": "c253f9d22d2be082349abd03093c8a4d68c8ff5169495f552d78ec86dbe4c124",
               "itemId": "new-feature-flag-admin/feature-flag-admin-toggle-on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "feature-flag-admin/feature-flag-admin-toggle-on.png",
@@ -12962,7 +12962,7 @@
             "product-line-switcher/alpha-scope-task-board.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "4974e89de1fed320fdebf291e505be2d1b3d4fe729e69a5551642c6b213f6567",
+              "imageSha256": "94fa2bca7d6cb34d5db68762c5d0a905c9e6d69f78a0a1119e6a3303c125c4d1",
               "itemId": "new-product-line-switcher/alpha-scope-task-board.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/alpha-scope-task-board.png",
@@ -12986,7 +12986,7 @@
             "product-line-switcher/facility-aggregate-task-board-after-switch.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "59ee14b9ef6d1b01d98a2cd75cf6dcf2526d60f2b6a67347ebdef0b0c63e9a24",
+              "imageSha256": "c8424065e8c4db7d796c3e5fd0a1d283e6ec165c72619c8bb8c1b5917327a37a",
               "itemId": "new-product-line-switcher/facility-aggregate-task-board-after-switch.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/facility-aggregate-task-board-after-switch.png",
@@ -13010,7 +13010,7 @@
             "product-line-switcher/facility-task-board-before-switch.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "6367c5c6a9534f4410dfc823f98a543071c650c4208c699fbb53c8a08f5bd75f",
+              "imageSha256": "35bed6afd4db183e36aa4e4778b3abe3605ad7e0258e03ec33861c7f92bf2694",
               "itemId": "new-product-line-switcher/facility-task-board-before-switch.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/facility-task-board-before-switch.png",
@@ -13034,7 +13034,7 @@
             "product-line-switcher/scope-menu-options.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "3c8d5357b8cf862d5308956413e136df6a6ba62a72a063b771c95ae40af4f762",
+              "imageSha256": "15c1c204c8a8488e84e03257226aff941c43dc42c0bbf878931d5642d055b064",
               "itemId": "new-product-line-switcher/scope-menu-options.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/scope-menu-options.png",
@@ -13080,7 +13080,7 @@
             "product-line-switcher/cross-tab-alpha-scope.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "8dc50da5708889e14d7c3721bb04f232dbbe0ccf3e1db5654ed42afd949b68f8",
+              "imageSha256": "76dc7c072b1ee562a47201af9f6abe0a4456b178b0ead88ebd6d9c404613045f",
               "itemId": "new-product-line-switcher/cross-tab-alpha-scope.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/cross-tab-alpha-scope.png",
@@ -13126,7 +13126,7 @@
             "product-line-switcher/keyboard-listbox-focus.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "806dede172d2252378fe04d4d3d19e2a9fe38ca229110e6deb9f3da971150edc",
+              "imageSha256": "562607032097d62d977719b893719a36a45370a361ab43950810d902be6422a7",
               "itemId": "new-product-line-switcher/keyboard-listbox-focus.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/keyboard-listbox-focus.png",
@@ -13172,7 +13172,7 @@
             "product-line-switcher/mobile-320-scope-menu.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "b24e9195db0aa5af20dc14feeac9f3737f69a96abd931c8817407665e29c8e9b",
+              "imageSha256": "081750f30d696ccf79c4a309fd3a246282ff4a2af56af714205e127833cc1e1c",
               "itemId": "new-product-line-switcher/mobile-320-scope-menu.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/mobile-320-scope-menu.png",
@@ -13220,7 +13220,7 @@
             "product-line-switcher/mobile-390-scope-menu.png": {
               "decision": "approved",
               "group": "product-line-switcher",
-              "imageSha256": "7368f5a30826c0e519b2c15b05d102404e240954087955f661e409e1052aa555",
+              "imageSha256": "63bbd268891bdf526ffaac37da812b29b10ad34f7e98948bbc9b2c1e34366a8c",
               "itemId": "new-product-line-switcher/mobile-390-scope-menu.png",
               "reviewer": "visual-reviewer",
               "snapshot": "product-line-switcher/mobile-390-scope-menu.png",
@@ -13266,7 +13266,7 @@
             "ready-for-owner/focused-ready-for-owner-card.png": {
               "decision": "approved",
               "group": "ready-for-owner",
-              "imageSha256": "1576082a0786c5225173657906e9b5044f9f1d61b79c78e57c978658422ee235",
+              "imageSha256": "a34a8107899125f1519aeaa0c35df934b4f619e3cadf99f24784675219c9c2f8",
               "itemId": "new-ready-for-owner/focused-ready-for-owner-card.png",
               "reviewer": "visual-reviewer",
               "snapshot": "ready-for-owner/focused-ready-for-owner-card.png",
@@ -13312,7 +13312,7 @@
             "ready-for-owner/kanban-lane-order.png": {
               "decision": "approved",
               "group": "ready-for-owner",
-              "imageSha256": "4201439aa7c2191257e93d9b0b80291437c3439a7abda22e8215936ef184573b",
+              "imageSha256": "f70218a23b79ef1ce268840ff84dc48c91e9a01e43a2fa6574131a1ef278289b",
               "itemId": "new-ready-for-owner/kanban-lane-order.png",
               "reviewer": "visual-reviewer",
               "snapshot": "ready-for-owner/kanban-lane-order.png",
@@ -13358,7 +13358,7 @@
             "ready-for-owner/notification-action-required.png": {
               "decision": "approved",
               "group": "ready-for-owner",
-              "imageSha256": "651a8a7c64c9e5428be1e3697cee77e653127e8fa2baa0b212a0b305e8bc4ade",
+              "imageSha256": "9a89dce414d51507472dc0a822df5c528a36735514a076acce716ef2319c77f1",
               "itemId": "new-ready-for-owner/notification-action-required.png",
               "reviewer": "visual-reviewer",
               "snapshot": "ready-for-owner/notification-action-required.png",
@@ -13404,7 +13404,7 @@
             "spec-007/artifact-admin-mixed-state.png": {
               "decision": "approved",
               "group": "spec-007",
-              "imageSha256": "585ecf4894c3adf1c5608738b655490af518091c5e7dd7d8811be69cc1824fb0",
+              "imageSha256": "30627510bc6c53fd895261a90d985883f441701afbefa2fc832675b9f0b82047",
               "itemId": "new-spec-007/artifact-admin-mixed-state.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-007/artifact-admin-mixed-state.png",
@@ -13428,7 +13428,7 @@
             "spec-007/artifact-admin-preview.png": {
               "decision": "approved",
               "group": "spec-007",
-              "imageSha256": "e005d535ac2fcbd6fdae9e26a97e44049320baca9e67b19d237cb7fa1847b6e5",
+              "imageSha256": "0fa53cf73a6c322ccc6f72491809519b0da7e06c3f40f688a0f90ab1bbb4b0cc",
               "itemId": "new-spec-007/artifact-admin-preview.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-007/artifact-admin-preview.png",
@@ -13498,7 +13498,7 @@
             "spec-007/audit-dispositions-loaded.png": {
               "decision": "approved",
               "group": "spec-007",
-              "imageSha256": "7f65dfe304043cd8728a9aa1b74820615c047b5757519128e052b263c1a2aed3",
+              "imageSha256": "1cc8ea42404ddb91f1936f1c5691c98fc9265dc693174c304846ec872a019ddc",
               "itemId": "new-spec-007/audit-dispositions-loaded.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-007/audit-dispositions-loaded.png",
@@ -13522,7 +13522,7 @@
             "spec-007/audit-dispositions-validation-filter.png": {
               "decision": "approved",
               "group": "spec-007",
-              "imageSha256": "d636ca913fc0b5818fac4b795bc3acd0ed1ff748f94e0fe1127cd509d31a8943",
+              "imageSha256": "49b6628edf1b04ed34472908651a0d669b569f98abc11adbcfe583673ff0a9b9",
               "itemId": "new-spec-007/audit-dispositions-validation-filter.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-007/audit-dispositions-validation-filter.png",
@@ -13568,7 +13568,7 @@
             "spec-007/dashboard-rollup-widget.png": {
               "decision": "approved",
               "group": "spec-007",
-              "imageSha256": "f7df8b036aea061b46a05a6a29bd783723dc756369b4d7fc3150c6f15c8be7c1",
+              "imageSha256": "595b35e3cb4c9d640bb40002fa939fe9422b7bd4fd90b5224a6df5211300995d",
               "itemId": "new-spec-007/dashboard-rollup-widget.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-007/dashboard-rollup-widget.png",
@@ -13614,7 +13614,7 @@
             "spec-008/aegis-starvation.ac-aegis-1.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f45ff30ec98454be141d1d0406cc1b09ba53f7a464abc99c4ecb51cf74ee49b7",
+              "imageSha256": "67e8b33c28f702f3b117741f2a0924e5713a26671417fbce427a789c0110144b",
               "itemId": "new-spec-008/aegis-starvation.ac-aegis-1.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/aegis-starvation.ac-aegis-1.png",
@@ -13660,7 +13660,7 @@
             "spec-008/aegis-starvation.ac-aegis-2.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f45ff30ec98454be141d1d0406cc1b09ba53f7a464abc99c4ecb51cf74ee49b7",
+              "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
               "itemId": "new-spec-008/aegis-starvation.ac-aegis-2.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/aegis-starvation.ac-aegis-2.png",
@@ -13706,7 +13706,7 @@
             "spec-008/aegis-starvation.ac-aegis-3.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f693401a6a544dc5689e8cb5123d8018a3d258b4b1f7251f60d71af0f1177fe4",
+              "imageSha256": "e5f1f8048ead0c4d93b1ffe5a7432092795078533024740396052bdf1dff2b41",
               "itemId": "new-spec-008/aegis-starvation.ac-aegis-3.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/aegis-starvation.ac-aegis-3.png",
@@ -13752,7 +13752,7 @@
             "spec-008/aegis-starvation.ac-aegis-4.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+              "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
               "itemId": "new-spec-008/aegis-starvation.ac-aegis-4.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/aegis-starvation.ac-aegis-4.png",
@@ -13798,7 +13798,7 @@
             "spec-008/aegis-starvation.ac-aegis-5.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+              "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
               "itemId": "new-spec-008/aegis-starvation.ac-aegis-5.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/aegis-starvation.ac-aegis-5.png",
@@ -13844,7 +13844,7 @@
             "spec-008/aegis-starvation.ac-aegis-6.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f693401a6a544dc5689e8cb5123d8018a3d258b4b1f7251f60d71af0f1177fe4",
+              "imageSha256": "be553280340b79554539bf49e39ca45c77b348cbc472b7770adcf2e4fe4dbdd9",
               "itemId": "new-spec-008/aegis-starvation.ac-aegis-6.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/aegis-starvation.ac-aegis-6.png",
@@ -13890,7 +13890,7 @@
             "spec-008/budget.0pct.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "e245e397403a8894f4e45a9491d57d177aa52c938921c20b05ef6b07e79975fd",
+              "imageSha256": "51d9e549a02936fa0806f780f2d8ae1e24d1abfbcdeffee755b61dc735bb17e2",
               "itemId": "new-spec-008/budget.0pct.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/budget.0pct.png",
@@ -13936,7 +13936,7 @@
             "spec-008/budget.100pct.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "db3c6d7261ccba651b607eb3b0338c726ef1b76b3188edffa0b440d1491cd7a4",
+              "imageSha256": "fef11c932cfc91cafadffce879b36f32e38dd4686aa8d9a385428ece94f44275",
               "itemId": "new-spec-008/budget.100pct.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/budget.100pct.png",
@@ -13982,7 +13982,7 @@
             "spec-008/budget.50pct.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "e245e397403a8894f4e45a9491d57d177aa52c938921c20b05ef6b07e79975fd",
+              "imageSha256": "c7c7cdef20f183e49869d89fc12f5d22dc1b03f2480aace46816df1771034e5e",
               "itemId": "new-spec-008/budget.50pct.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/budget.50pct.png",
@@ -14028,7 +14028,7 @@
             "spec-008/budget.80pct.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "e245e397403a8894f4e45a9491d57d177aa52c938921c20b05ef6b07e79975fd",
+              "imageSha256": "51d9e549a02936fa0806f780f2d8ae1e24d1abfbcdeffee755b61dc735bb17e2",
               "itemId": "new-spec-008/budget.80pct.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/budget.80pct.png",
@@ -14074,7 +14074,7 @@
             "spec-008/budget.95pct.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "92302f9651dcb017801d68580c88918d33dfadcdef8866657281c1631783be9c",
+              "imageSha256": "21b2d866cce319758da41125de00fdcbc6b3bcad1c5fd950ff2ba51c3e79e1bb",
               "itemId": "new-spec-008/budget.95pct.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/budget.95pct.png",
@@ -14120,7 +14120,7 @@
             "spec-008/budget.flag-off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "214d4a4105af491148b90ab51134435dfccdd3e04d3c8b15ad5da7a5048eac0d",
+              "imageSha256": "8ac50ba9616fd1697be9e69adb5f8b26a9c6af1e12dc7ed8a7ace0b42a53f797",
               "itemId": "new-spec-008/budget.flag-off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/budget.flag-off.png",
@@ -14166,7 +14166,7 @@
             "spec-008/bulk-promote.cross-workspace-422.modal.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8d589c6547690517ff162c823fe4082be21cf4a91334756f7bd7afa8592957ff",
+              "imageSha256": "f985219f48cb5540e41cd9d3f629c5f7be1d7e671109c460635a4ca2d44ebf97",
               "itemId": "new-spec-008/bulk-promote.cross-workspace-422.modal.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.cross-workspace-422.modal.png",
@@ -14190,7 +14190,7 @@
             "spec-008/bulk-promote.cross-workspace-422.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "fed3308334963c9b23988f5200b4930f958731d758a5224e4949220ce4703f74",
+              "imageSha256": "c1d07a26225c43220bcf0b35265c9f9fe5427f50765fbf76dd02d1db0ae3e25c",
               "itemId": "new-spec-008/bulk-promote.cross-workspace-422.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.cross-workspace-422.result.png",
@@ -14236,7 +14236,7 @@
             "spec-008/bulk-promote.happy.modal.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8d589c6547690517ff162c823fe4082be21cf4a91334756f7bd7afa8592957ff",
+              "imageSha256": "986d148b93a00987876fe83ee3fcf17b5b7a7524448b8b8b8a8a2ff3c2914b20",
               "itemId": "new-spec-008/bulk-promote.happy.modal.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.happy.modal.png",
@@ -14260,7 +14260,7 @@
             "spec-008/bulk-promote.happy.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "ba7775b5838604a35872a234ac53bd37d319272bfde70c43500aaee10305935a",
+              "imageSha256": "dc4576f5f8fba56b921b07f17f9e5782a237f87fd4e87e14cd68136c35864f77",
               "itemId": "new-spec-008/bulk-promote.happy.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.happy.result.png",
@@ -14306,7 +14306,7 @@
             "spec-008/bulk-promote.idempotency-replay.modal.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "bfb4a5a829d93c998166e8dc02dfb118c1d236d38c403ae89bf8831bc543b77e",
+              "imageSha256": "986d148b93a00987876fe83ee3fcf17b5b7a7524448b8b8b8a8a2ff3c2914b20",
               "itemId": "new-spec-008/bulk-promote.idempotency-replay.modal.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.idempotency-replay.modal.png",
@@ -14330,7 +14330,7 @@
             "spec-008/bulk-promote.idempotency-replay.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "fed3308334963c9b23988f5200b4930f958731d758a5224e4949220ce4703f74",
+              "imageSha256": "c1d07a26225c43220bcf0b35265c9f9fe5427f50765fbf76dd02d1db0ae3e25c",
               "itemId": "new-spec-008/bulk-promote.idempotency-replay.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.idempotency-replay.result.png",
@@ -14376,7 +14376,7 @@
             "spec-008/bulk-promote.wrong-phrase.modal.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "d60c5f9b3345b29c0fdcb488560adf0c1d5b67cfb291022369ff4fbd9bc18066",
+              "imageSha256": "1a8348d10f222cbf5e9b444e7e706c0d85fb9c4e763ab8de644a2de7ed2694d4",
               "itemId": "new-spec-008/bulk-promote.wrong-phrase.modal.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.wrong-phrase.modal.png",
@@ -14400,7 +14400,7 @@
             "spec-008/bulk-promote.wrong-phrase.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "d60c5f9b3345b29c0fdcb488560adf0c1d5b67cfb291022369ff4fbd9bc18066",
+              "imageSha256": "1a8348d10f222cbf5e9b444e7e706c0d85fb9c4e763ab8de644a2de7ed2694d4",
               "itemId": "new-spec-008/bulk-promote.wrong-phrase.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/bulk-promote.wrong-phrase.result.png",
@@ -14446,7 +14446,7 @@
             "spec-008/calibration.auto-repair.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f693401a6a544dc5689e8cb5123d8018a3d258b4b1f7251f60d71af0f1177fe4",
+              "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
               "itemId": "new-spec-008/calibration.auto-repair.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/calibration.auto-repair.png",
@@ -14492,7 +14492,7 @@
             "spec-008/calibration.hard-block.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+              "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
               "itemId": "new-spec-008/calibration.hard-block.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/calibration.hard-block.png",
@@ -14538,7 +14538,7 @@
             "spec-008/calibration.operator-confirmed.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "6bc2cba870fdba828a82c0e0b657797ac6972cf0bde5ef055275bb57b038ce2b",
+              "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
               "itemId": "new-spec-008/calibration.operator-confirmed.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/calibration.operator-confirmed.png",
@@ -14584,7 +14584,7 @@
             "spec-008/calibration.post-rebuild-verify.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b4b358d8be1dc8084275d87889b3642a3e511922f541587fa5d8b317e5451bff",
+              "imageSha256": "2b0c47ae2814af3444f329425c724aeb3feef16f4e363c5f1ce4e8da5dbd88b5",
               "itemId": "new-spec-008/calibration.post-rebuild-verify.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/calibration.post-rebuild-verify.png",
@@ -14630,7 +14630,7 @@
             "spec-008/diagnostic-feed.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "fa40859ab5e331bcce468c4806dd8d8580c322523d4d3bd138b225755177d9e1",
+              "imageSha256": "a5c2a6bf54c9855d3a3b96eb95b55ed12b8bd0bf82b558147313f2e49da76d2c",
               "itemId": "new-spec-008/diagnostic-feed.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/diagnostic-feed.empty.png",
@@ -14676,7 +14676,7 @@
             "spec-008/diagnostic-feed.initial.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f04d9097c18cfd14678dc5ebd099371fe535f53048fc4185a0720f9cd20d6fbc",
+              "imageSha256": "347309d580187e72d4cc579209dce58ac65c11694f2a220ad178819f1d9a8240",
               "itemId": "new-spec-008/diagnostic-feed.initial.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/diagnostic-feed.initial.png",
@@ -14722,7 +14722,7 @@
             "spec-008/diagnostic-feed.live-append.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "2d4733cfcde990e29d9f7f41b77dcb905bb2c6649d231cf19400d4e263e9ef72",
+              "imageSha256": "51ee0f212ffefbba56879cedf9ba8b5b1b8c27acc8f3760de296f7b0ae77de6a",
               "itemId": "new-spec-008/diagnostic-feed.live-append.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/diagnostic-feed.live-append.png",
@@ -14768,7 +14768,7 @@
             "spec-008/diagnostic-feed.next-page.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "78773b76f465e1a93c051b7c01e657daa53069887e387f1b3e74f8d88b14c3c1",
+              "imageSha256": "e9a15bc4dc3ad966fa158db9fa63290e70b874e75c3f9fcc1a30e59ddf23f9d6",
               "itemId": "new-spec-008/diagnostic-feed.next-page.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/diagnostic-feed.next-page.png",
@@ -14814,7 +14814,7 @@
             "spec-008/dispatch-feed.initial.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "dab64751fc8d3c7d0f5923c4c418f301d4a7741b6554cda262f4e406c9a62e12",
+              "imageSha256": "cc591363119f7ff2eb07409dbdab5ed05f56947ba6cba38a3f8cfd34d8502f1b",
               "itemId": "new-spec-008/dispatch-feed.initial.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/dispatch-feed.initial.png",
@@ -14838,7 +14838,7 @@
             "spec-008/dispatch-feed.next-page.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "4ce6d8bbe10400867000ba04d856181edba5cd9c4951ca199fc0cb342ac6e2ce",
+              "imageSha256": "401263f7dfbca0cb42c3a9bfadd01605403bead01df44f483d5745874ab3afc3",
               "itemId": "new-spec-008/dispatch-feed.next-page.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/dispatch-feed.next-page.png",
@@ -14884,7 +14884,7 @@
             "spec-008/dispatch-feed.sse.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "bce3dd2ed04eabfad9c49261c7c61f829818d7b62be0087ea39b6890c1fbc035",
+              "imageSha256": "07349acfc51782c5277da267071fa0bb52f057ac024af1306daf0f550fd1525c",
               "itemId": "new-spec-008/dispatch-feed.sse.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/dispatch-feed.sse.png",
@@ -14930,7 +14930,7 @@
             "spec-008/etag-conflict-toast.live.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9e6d52e7c8ecce5e26ff131ac845cfcfafb5fc405be7f4dffe3245b77fb704bf",
+              "imageSha256": "ccff21ff71578e906dd81ce0a175b0ad33b520eb54a5c38e84545d77486a688b",
               "itemId": "new-spec-008/etag-conflict-toast.live.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/etag-conflict-toast.live.png",
@@ -14976,7 +14976,7 @@
             "spec-008/flag-matrix.all-current-on.governance.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "05d60e3a46b6e64ad2e1d89911257aa6a0584eded108f38b8abbc074e3518259",
+              "imageSha256": "67e8b33c28f702f3b117741f2a0924e5713a26671417fbce427a789c0110144b",
               "itemId": "new-spec-008/flag-matrix.all-current-on.governance.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.all-current-on.governance.png",
@@ -15000,7 +15000,7 @@
             "spec-008/flag-matrix.all-current-on.settings.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
               "itemId": "new-spec-008/flag-matrix.all-current-on.settings.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.all-current-on.settings.png",
@@ -15046,7 +15046,7 @@
             "spec-008/flag-matrix.all-off.legacy-parity.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "215d9b016e08024f38b9750dd7f4d1e03c093eb6bc681cd03d13204d4f382e7d",
+              "imageSha256": "a3ec9e2dd19c434d27e3f7d0b68ba7b4464a4c4e90591367fe07708a86d075f3",
               "itemId": "new-spec-008/flag-matrix.all-off.legacy-parity.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.all-off.legacy-parity.png",
@@ -15092,7 +15092,7 @@
             "spec-008/flag-matrix.feature-area-label-routing.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "edbf46489a2054be78a8bee9a6377c411cb2da74525cfaad01e8534bf1afe647",
+              "imageSha256": "9d5d9f1d89696765d0ea68e0381f9f78a2805f679e27f7e801eae8238983bc50",
               "itemId": "new-spec-008/flag-matrix.feature-area-label-routing.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-area-label-routing.off.png",
@@ -15138,7 +15138,7 @@
             "spec-008/flag-matrix.feature-area-label-routing.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
               "itemId": "new-spec-008/flag-matrix.feature-area-label-routing.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-area-label-routing.on.png",
@@ -15184,7 +15184,7 @@
             "spec-008/flag-matrix.feature-disposition-logging.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+              "imageSha256": "16f71111eb122c128a0e52f470d51d91cdfd762027b6157609d6fa93fa2ca1d0",
               "itemId": "new-spec-008/flag-matrix.feature-disposition-logging.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-disposition-logging.off.png",
@@ -15230,7 +15230,7 @@
             "spec-008/flag-matrix.feature-disposition-logging.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "96d8fb6235ee2ad598e2191ca2c7ce2fbac011b0dfdadac26c3b74ac39deab20",
+              "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
               "itemId": "new-spec-008/flag-matrix.feature-disposition-logging.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-disposition-logging.on.png",
@@ -15276,7 +15276,7 @@
             "spec-008/flag-matrix.feature-global-aegis.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "bb00b9dd9b0b6b64b145a4a3e4c9385b029106db6687a76daaa84e470e398964",
+              "imageSha256": "9d5d9f1d89696765d0ea68e0381f9f78a2805f679e27f7e801eae8238983bc50",
               "itemId": "new-spec-008/flag-matrix.feature-global-aegis.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-global-aegis.off.png",
@@ -15322,7 +15322,7 @@
             "spec-008/flag-matrix.feature-global-aegis.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
               "itemId": "new-spec-008/flag-matrix.feature-global-aegis.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-global-aegis.on.png",
@@ -15368,7 +15368,7 @@
             "spec-008/flag-matrix.feature-openclaw-health-costs.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "36d59c9f1f18ecb4f40225bc8efadddd7e4b4e0992c6fd8800750c5f83503498",
+              "imageSha256": "0ba602036b0c8bf66f3393f1d1c71d17afd10e695e0af450d23ea6a4e32fa73a",
               "itemId": "new-spec-008/flag-matrix.feature-openclaw-health-costs.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-openclaw-health-costs.off.png",
@@ -15414,7 +15414,7 @@
             "spec-008/flag-matrix.feature-openclaw-health-costs.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
               "itemId": "new-spec-008/flag-matrix.feature-openclaw-health-costs.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-openclaw-health-costs.on.png",
@@ -15460,7 +15460,7 @@
             "spec-008/flag-matrix.feature-resource-governance.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+              "imageSha256": "0ba602036b0c8bf66f3393f1d1c71d17afd10e695e0af450d23ea6a4e32fa73a",
               "itemId": "new-spec-008/flag-matrix.feature-resource-governance.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-resource-governance.off.png",
@@ -15506,7 +15506,7 @@
             "spec-008/flag-matrix.feature-resource-governance.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
               "itemId": "new-spec-008/flag-matrix.feature-resource-governance.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-resource-governance.on.png",
@@ -15552,7 +15552,7 @@
             "spec-008/flag-matrix.feature-task-artifacts.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "bb00b9dd9b0b6b64b145a4a3e4c9385b029106db6687a76daaa84e470e398964",
+              "imageSha256": "d32af00d6da6075ed3e22a4656f9b1697249b6c8f5b591a0b7e2efd8d7a7561f",
               "itemId": "new-spec-008/flag-matrix.feature-task-artifacts.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-task-artifacts.off.png",
@@ -15598,7 +15598,7 @@
             "spec-008/flag-matrix.feature-task-artifacts.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "845935ed2195ce42249f2c2e763156617d64ca21ae722c0de2178bb7f253219b",
               "itemId": "new-spec-008/flag-matrix.feature-task-artifacts.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-task-artifacts.on.png",
@@ -15644,7 +15644,7 @@
             "spec-008/flag-matrix.feature-task-pipelines.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+              "imageSha256": "bc0cbe76071826ddf9974b9c87f6b283f0362a66bf79ac8279e1f8efe1ab1423",
               "itemId": "new-spec-008/flag-matrix.feature-task-pipelines.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-task-pipelines.off.png",
@@ -15690,7 +15690,7 @@
             "spec-008/flag-matrix.feature-task-pipelines.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
               "itemId": "new-spec-008/flag-matrix.feature-task-pipelines.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-task-pipelines.on.png",
@@ -15736,7 +15736,7 @@
             "spec-008/flag-matrix.feature-two-step-terminal.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "c4ef91862a5a5040d408c0350292e7c98ec269abd23baf76293a41e1480180c7",
+              "imageSha256": "9d5d9f1d89696765d0ea68e0381f9f78a2805f679e27f7e801eae8238983bc50",
               "itemId": "new-spec-008/flag-matrix.feature-two-step-terminal.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-two-step-terminal.off.png",
@@ -15782,7 +15782,7 @@
             "spec-008/flag-matrix.feature-two-step-terminal.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
               "itemId": "new-spec-008/flag-matrix.feature-two-step-terminal.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-two-step-terminal.on.png",
@@ -15828,7 +15828,7 @@
             "spec-008/flag-matrix.feature-workspace-switcher.off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "bb00b9dd9b0b6b64b145a4a3e4c9385b029106db6687a76daaa84e470e398964",
+              "imageSha256": "e306cacc18543bf342af35804da13d0659ff7a379883c1347bb19b66d88777ed",
               "itemId": "new-spec-008/flag-matrix.feature-workspace-switcher.off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-workspace-switcher.off.png",
@@ -15874,7 +15874,7 @@
             "spec-008/flag-matrix.feature-workspace-switcher.on.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e4b4918bfb65d54f8f48f2e33c705306152d8b8419d36697d77981c12b25003",
+              "imageSha256": "3851f7f6db9dd081a102b831981c0a6009ae1f52c2cb49f268cdfed134f50aaa",
               "itemId": "new-spec-008/flag-matrix.feature-workspace-switcher.on.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-matrix.feature-workspace-switcher.on.png",
@@ -15920,7 +15920,7 @@
             "spec-008/flag-off-byte-compat.live.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "214d4a4105af491148b90ab51134435dfccdd3e04d3c8b15ad5da7a5048eac0d",
+              "imageSha256": "8fad4a68bbff48420e2a9bc51710decb7151b36f19b79aedccac09b7350a7315",
               "itemId": "new-spec-008/flag-off-byte-compat.live.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-off-byte-compat.live.png",
@@ -15966,7 +15966,7 @@
             "spec-008/flag-on-tab-landing.live.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8c296c450ebadff716673d5f39ac36ba9cfc0fb37b96f087e64596a1f1ea5efa",
+              "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
               "itemId": "new-spec-008/flag-on-tab-landing.live.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/flag-on-tab-landing.live.png",
@@ -16012,7 +16012,7 @@
             "spec-008/modal-error-summary.live.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "97798d75b155ae506235fd449aee7df1872d47793e1c2edf5dc861ae88d679ee",
+              "imageSha256": "87434c26408689cddfe3f9848988f097b27c27055dc162eeaecec1e6b3793336",
               "itemId": "new-spec-008/modal-error-summary.live.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/modal-error-summary.live.png",
@@ -16058,7 +16058,7 @@
             "spec-008/override-grant.concurrent-edit-412.form.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "fb9736b6c75833c5cf695665a2c37f1ff8ee474280e1d8b37e8663aa95109e6c",
+              "imageSha256": "9140283f69d2199a56e2760771495f5895f3c0e529390b9268fa5c45796d5969",
               "itemId": "new-spec-008/override-grant.concurrent-edit-412.form.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.concurrent-edit-412.form.png",
@@ -16082,7 +16082,7 @@
             "spec-008/override-grant.concurrent-edit-412.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "882419f9631ac4bac10970a50477a9a8caafff3d0e12af7c30b69d576f68b530",
+              "imageSha256": "f1381094d814d8bad35deb4a74e34398ec23b7fca9fa55a9dbf114af66951b17",
               "itemId": "new-spec-008/override-grant.concurrent-edit-412.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.concurrent-edit-412.result.png",
@@ -16128,7 +16128,7 @@
             "spec-008/override-grant.duplicate-409.form.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "d5b585d5c540f87f17029358ddd0d5b277b122ae29bf43688482868d00eedc2c",
+              "imageSha256": "1ffb4ccc05c07afeeed836038084ccb1dc245f60cedbe07f90cd3dfa20a7c9c8",
               "itemId": "new-spec-008/override-grant.duplicate-409.form.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.duplicate-409.form.png",
@@ -16152,7 +16152,7 @@
             "spec-008/override-grant.duplicate-409.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "81f2d489e5ae8220314df66fdf069c00374e34fbc2a81b733a69b65d762ab8e0",
+              "imageSha256": "3d3fa4ebe9ecc6144006931911591db3d92e7ea5cc55f8ed469541f6952957d9",
               "itemId": "new-spec-008/override-grant.duplicate-409.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.duplicate-409.result.png",
@@ -16198,7 +16198,7 @@
             "spec-008/override-grant.happy.form.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e27a87850e0571522c4b80a2aa99360e318b95ff848d740ca7b1a03681effd1",
+              "imageSha256": "989c19ecdca070614ea2b6c29ed1eb0ae813d647c7ede84e02302de709102d34",
               "itemId": "new-spec-008/override-grant.happy.form.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.happy.form.png",
@@ -16222,7 +16222,7 @@
             "spec-008/override-grant.happy.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "c366f0d09208d019253ea26199f5ced4bb68554d93cb5c1301462aecd6c6f9d2",
+              "imageSha256": "f412b14ae0dcc990df90eed945fea17b033edaec82e98d20b7a5714d3a38ba35",
               "itemId": "new-spec-008/override-grant.happy.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.happy.result.png",
@@ -16268,7 +16268,7 @@
             "spec-008/override-grant.invalid-ttl-422.form.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "1732035fa701714d86f7f43873070e334a5e54e115a2c97f27aef03458275970",
+              "imageSha256": "0148cae6ab41ab2329d4e5d8693ce6a45904853c7bf9a207a185ccff3e8dd609",
               "itemId": "new-spec-008/override-grant.invalid-ttl-422.form.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.invalid-ttl-422.form.png",
@@ -16292,7 +16292,7 @@
             "spec-008/override-grant.invalid-ttl-422.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "03d494721042ead6e0bf8e35946a68151219e7543f2ed677438b7efc8f7b0514",
+              "imageSha256": "608801c462f49e81412e2f3a90e543b58a7766338530a4b21323f92f80e49250",
               "itemId": "new-spec-008/override-grant.invalid-ttl-422.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.invalid-ttl-422.result.png",
@@ -16338,7 +16338,7 @@
             "spec-008/override-grant.locked-423.form.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8e55aecaf1a548d28e8d1e95c1577d2de03dcb104faf9adc1cd9ab384d4ec380",
+              "imageSha256": "6d1c62e6714c31287bdd8b113fb9a135f3ecc80294f7355abefc04c63ac2a031",
               "itemId": "new-spec-008/override-grant.locked-423.form.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.locked-423.form.png",
@@ -16362,7 +16362,7 @@
             "spec-008/override-grant.locked-423.result.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "d0f5c69a145a369e906eca2ffec31b2fa94c5fd9f7198270736443c67afb3d97",
+              "imageSha256": "fe70dd1514100a5fbb2f01f1922055ea80cbca17ff114d8dd85a61e8f7ea7548",
               "itemId": "new-spec-008/override-grant.locked-423.result.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/override-grant.locked-423.result.png",
@@ -16408,7 +16408,7 @@
             "spec-008/recovery.audit-chain-verify.disabled-noop.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "3e145f10c53c676c5a8c45c87dfee3e0d538ece8fdd9bf4bab35e080f36254f0",
+              "imageSha256": "cec795f185b0ced769e92fedb47b1a392120217d456588e427d5bc536c4985ce",
               "itemId": "new-spec-008/recovery.audit-chain-verify.disabled-noop.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.audit-chain-verify.disabled-noop.png",
@@ -16432,7 +16432,7 @@
             "spec-008/recovery.audit-chain-verify.modal-open.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "3e145f10c53c676c5a8c45c87dfee3e0d538ece8fdd9bf4bab35e080f36254f0",
+              "imageSha256": "cec795f185b0ced769e92fedb47b1a392120217d456588e427d5bc536c4985ce",
               "itemId": "new-spec-008/recovery.audit-chain-verify.modal-open.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.audit-chain-verify.modal-open.png",
@@ -16478,7 +16478,7 @@
             "spec-008/recovery.breaker-reset.disabled-noop.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "03a54735a715c58741beeb3af48925ff109fb6989472b34611f814a1522ada0f",
+              "imageSha256": "186208eaa24931401276dc47ff4ff3b0aea6464b7dc35efceba5f9b84e489f18",
               "itemId": "new-spec-008/recovery.breaker-reset.disabled-noop.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.breaker-reset.disabled-noop.png",
@@ -16502,7 +16502,7 @@
             "spec-008/recovery.breaker-reset.modal-open.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "03a54735a715c58741beeb3af48925ff109fb6989472b34611f814a1522ada0f",
+              "imageSha256": "186208eaa24931401276dc47ff4ff3b0aea6464b7dc35efceba5f9b84e489f18",
               "itemId": "new-spec-008/recovery.breaker-reset.modal-open.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.breaker-reset.modal-open.png",
@@ -16548,7 +16548,7 @@
             "spec-008/recovery.collector-rotate-key.disabled-noop.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "aeb2c5e6e445ed79164c8e0fe0698b0e211a15bb0031233cb5f287772d6840bb",
+              "imageSha256": "e4d6a65486b0f45fb5fb295c893bb56d3c2481ed62f8dcd6a88cb67c9747f111",
               "itemId": "new-spec-008/recovery.collector-rotate-key.disabled-noop.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.collector-rotate-key.disabled-noop.png",
@@ -16572,7 +16572,7 @@
             "spec-008/recovery.collector-rotate-key.modal-open.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "aeb2c5e6e445ed79164c8e0fe0698b0e211a15bb0031233cb5f287772d6840bb",
+              "imageSha256": "e4d6a65486b0f45fb5fb295c893bb56d3c2481ed62f8dcd6a88cb67c9747f111",
               "itemId": "new-spec-008/recovery.collector-rotate-key.modal-open.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.collector-rotate-key.modal-open.png",
@@ -16618,7 +16618,7 @@
             "spec-008/recovery.counter-rebuild-restart.disabled-noop.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "1baa18c1ec1cb6670ed33ef202a807d0e7e890badc37f68a36724fba216a8b84",
+              "imageSha256": "48ef4285607b48b9a0fdc77812c828ca33bfb5534d7b4c766c8edd514be6eb13",
               "itemId": "new-spec-008/recovery.counter-rebuild-restart.disabled-noop.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.counter-rebuild-restart.disabled-noop.png",
@@ -16642,7 +16642,7 @@
             "spec-008/recovery.counter-rebuild-restart.modal-open.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "1baa18c1ec1cb6670ed33ef202a807d0e7e890badc37f68a36724fba216a8b84",
+              "imageSha256": "48ef4285607b48b9a0fdc77812c828ca33bfb5534d7b4c766c8edd514be6eb13",
               "itemId": "new-spec-008/recovery.counter-rebuild-restart.modal-open.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.counter-rebuild-restart.modal-open.png",
@@ -16688,7 +16688,7 @@
             "spec-008/recovery.reconciler-retry.disabled-noop.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "e5e8806bf37a9bd75cb02a0354c3644962c6e1da48485d999e34b410e30cbb64",
+              "imageSha256": "14207cfa6a2ab19dbfb73682761b9aab32af2c357962458129520a68b3019f24",
               "itemId": "new-spec-008/recovery.reconciler-retry.disabled-noop.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.reconciler-retry.disabled-noop.png",
@@ -16712,7 +16712,7 @@
             "spec-008/recovery.reconciler-retry.modal-open.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "e5e8806bf37a9bd75cb02a0354c3644962c6e1da48485d999e34b410e30cbb64",
+              "imageSha256": "14207cfa6a2ab19dbfb73682761b9aab32af2c357962458129520a68b3019f24",
               "itemId": "new-spec-008/recovery.reconciler-retry.modal-open.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.reconciler-retry.modal-open.png",
@@ -16758,7 +16758,7 @@
             "spec-008/recovery.reservation-reaper-force-run.disabled-noop.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8c81aa6a8ec9c3cd0456d98f4b9974a13196d573e13c3495d8268009e1676cbf",
+              "imageSha256": "3b8d453ebff09b238ae62be624b0cc5b8b27085ad9911f96c40575d787df7e41",
               "itemId": "new-spec-008/recovery.reservation-reaper-force-run.disabled-noop.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.reservation-reaper-force-run.disabled-noop.png",
@@ -16782,7 +16782,7 @@
             "spec-008/recovery.reservation-reaper-force-run.modal-open.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8c81aa6a8ec9c3cd0456d98f4b9974a13196d573e13c3495d8268009e1676cbf",
+              "imageSha256": "3b8d453ebff09b238ae62be624b0cc5b8b27085ad9911f96c40575d787df7e41",
               "itemId": "new-spec-008/recovery.reservation-reaper-force-run.modal-open.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/recovery.reservation-reaper-force-run.modal-open.png",
@@ -16828,7 +16828,7 @@
             "spec-008/system-health.audit.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+              "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
               "itemId": "new-spec-008/system-health.audit.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/system-health.audit.png",
@@ -16874,7 +16874,7 @@
             "spec-008/system-health.breaker.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+              "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
               "itemId": "new-spec-008/system-health.breaker.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/system-health.breaker.png",
@@ -16920,7 +16920,7 @@
             "spec-008/system-health.collector.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+              "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
               "itemId": "new-spec-008/system-health.collector.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/system-health.collector.png",
@@ -16966,7 +16966,7 @@
             "spec-008/system-health.reaper.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7e12a1e1c5d4b1a5a16195c2f447e1e43468e31f018f33958aab81defe8f4d83",
+              "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
               "itemId": "new-spec-008/system-health.reaper.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/system-health.reaper.png",
@@ -17012,7 +17012,7 @@
             "spec-008/system-health.rebuild.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+              "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
               "itemId": "new-spec-008/system-health.rebuild.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/system-health.rebuild.png",
@@ -17058,7 +17058,7 @@
             "spec-008/system-health.reconciler.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b025c6569cecbdf025b2eb6ddc61262c0546e2e2878e227dacad58f2b7d803a7",
+              "imageSha256": "f0036b5a9e3960f9824670c6001859167b03140b0b5c09fa37d1d9448cc1266b",
               "itemId": "new-spec-008/system-health.reconciler.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/system-health.reconciler.png",
@@ -17104,7 +17104,7 @@
             "spec-008/tab-landing.budgets.default.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+              "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
               "itemId": "new-spec-008/tab-landing.budgets.default.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.budgets.default.png",
@@ -17150,7 +17150,7 @@
             "spec-008/tab-landing.budgets.dense.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "4a81584870c03609902184ae9e18a8081592083003a4941cd2e6fe7f60fcf0a4",
+              "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
               "itemId": "new-spec-008/tab-landing.budgets.dense.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.budgets.dense.png",
@@ -17196,7 +17196,7 @@
             "spec-008/tab-landing.budgets.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+              "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
               "itemId": "new-spec-008/tab-landing.budgets.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.budgets.empty.png",
@@ -17242,7 +17242,7 @@
             "spec-008/tab-landing.budgets.error.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+              "imageSha256": "6aae36a99d26b0b1f0c5ee9aab916b58cf5423ba8eacaf7cdac94518e84325c9",
               "itemId": "new-spec-008/tab-landing.budgets.error.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.budgets.error.png",
@@ -17288,7 +17288,7 @@
             "spec-008/tab-landing.budgets.loading.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "5c86f3baea785aead5a3e30031e9796635b90a43fc53fb9aa08889b81ccbf34e",
+              "imageSha256": "6253bee3391966b43b269b0cb4263d00c82ae8290108b8e13c41e38b29b9b176",
               "itemId": "new-spec-008/tab-landing.budgets.loading.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.budgets.loading.png",
@@ -17334,7 +17334,7 @@
             "spec-008/tab-landing.diagnostics.default.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+              "imageSha256": "05ba4519ccf571f270a8e126168509dc594877d6f19b41b71aaf27492d55e253",
               "itemId": "new-spec-008/tab-landing.diagnostics.default.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.diagnostics.default.png",
@@ -17380,7 +17380,7 @@
             "spec-008/tab-landing.diagnostics.dense.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8774c54cb2528a12024801ceaadbff7a0f4c5019c08632d90f4f83f7f49d95b2",
+              "imageSha256": "4283f1fd3e554e6b73d8f7d73b45d61f5c06cd1d296344fc5b7cb45372aabd89",
               "itemId": "new-spec-008/tab-landing.diagnostics.dense.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.diagnostics.dense.png",
@@ -17426,7 +17426,7 @@
             "spec-008/tab-landing.diagnostics.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+              "imageSha256": "4283f1fd3e554e6b73d8f7d73b45d61f5c06cd1d296344fc5b7cb45372aabd89",
               "itemId": "new-spec-008/tab-landing.diagnostics.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.diagnostics.empty.png",
@@ -17472,7 +17472,7 @@
             "spec-008/tab-landing.diagnostics.error.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+              "imageSha256": "05ba4519ccf571f270a8e126168509dc594877d6f19b41b71aaf27492d55e253",
               "itemId": "new-spec-008/tab-landing.diagnostics.error.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.diagnostics.error.png",
@@ -17518,7 +17518,7 @@
             "spec-008/tab-landing.diagnostics.loading.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c13012c5e9764026387459dcae40c48996a34aac80920f9435eb75ffb0a9e91",
+              "imageSha256": "7f153bcf5ac0245bf9a44242307e1c390fb4182b0179ef7480811cd62cf3ccab",
               "itemId": "new-spec-008/tab-landing.diagnostics.loading.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.diagnostics.loading.png",
@@ -17564,7 +17564,7 @@
             "spec-008/tab-landing.kbd.right2.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "ab441d56e47568782c3ff12e07ea720da9baefcf56d7e6f0fdd835233e13c93d",
+              "imageSha256": "63c933495594d5e284f5947984f6744d336788db952fef881b7a71eb66efac2a",
               "itemId": "new-spec-008/tab-landing.kbd.right2.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.kbd.right2.png",
@@ -17610,7 +17610,7 @@
             "spec-008/tab-landing.overrides.default.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+              "imageSha256": "53d5c2cea110ea6c04360c284de65a8d1be965fa4092d135b1861ff4ad10fe61",
               "itemId": "new-spec-008/tab-landing.overrides.default.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.overrides.default.png",
@@ -17656,7 +17656,7 @@
             "spec-008/tab-landing.overrides.dense.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "0d9429092595e7ca831fda879d27ad25ed30415b43b92c0fa3eb054fcf1cee6e",
+              "imageSha256": "ddd1b32c76a5c8baccce07a0f3766f6fc420e385b2e37328765ba71a599d8154",
               "itemId": "new-spec-008/tab-landing.overrides.dense.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.overrides.dense.png",
@@ -17702,7 +17702,7 @@
             "spec-008/tab-landing.overrides.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+              "imageSha256": "ddd1b32c76a5c8baccce07a0f3766f6fc420e385b2e37328765ba71a599d8154",
               "itemId": "new-spec-008/tab-landing.overrides.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.overrides.empty.png",
@@ -17748,7 +17748,7 @@
             "spec-008/tab-landing.overrides.error.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+              "imageSha256": "53d5c2cea110ea6c04360c284de65a8d1be965fa4092d135b1861ff4ad10fe61",
               "itemId": "new-spec-008/tab-landing.overrides.error.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.overrides.error.png",
@@ -17794,7 +17794,7 @@
             "spec-008/tab-landing.overrides.loading.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "9c64ea5907c866497554f0cad81c2e234b9612a2d0b1021503d2d5cfd5f9448a",
+              "imageSha256": "53d5c2cea110ea6c04360c284de65a8d1be965fa4092d135b1861ff4ad10fe61",
               "itemId": "new-spec-008/tab-landing.overrides.loading.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.overrides.loading.png",
@@ -17840,7 +17840,7 @@
             "spec-008/tab-landing.policies.default.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "14c448635da8855dfffb02da67168bc531e97d4f1582f40c1ad12829cc187b8b",
+              "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
               "itemId": "new-spec-008/tab-landing.policies.default.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.policies.default.png",
@@ -17886,7 +17886,7 @@
             "spec-008/tab-landing.policies.dense.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8f0fde36b01f33a12e3c6c43d77521fbb3136ab276054eb757d316b755d817c8",
+              "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
               "itemId": "new-spec-008/tab-landing.policies.dense.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.policies.dense.png",
@@ -17932,7 +17932,7 @@
             "spec-008/tab-landing.policies.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8f0fde36b01f33a12e3c6c43d77521fbb3136ab276054eb757d316b755d817c8",
+              "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
               "itemId": "new-spec-008/tab-landing.policies.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.policies.empty.png",
@@ -17978,7 +17978,7 @@
             "spec-008/tab-landing.policies.error.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "40948109a91bc8fa26743cb91b40003344479d05ca54b779e8dc994c6c53cf4d",
+              "imageSha256": "974bac3ddedcc6990ba30dca19d22dd3d01855d344017cb77b064db0792c0b0c",
               "itemId": "new-spec-008/tab-landing.policies.error.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.policies.error.png",
@@ -18024,7 +18024,7 @@
             "spec-008/tab-landing.policies.loading.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "14c448635da8855dfffb02da67168bc531e97d4f1582f40c1ad12829cc187b8b",
+              "imageSha256": "d5fa8ca91d1862a4c1db43bc10b00318a5e83e28de0bb843063b4f796ca65173",
               "itemId": "new-spec-008/tab-landing.policies.loading.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.policies.loading.png",
@@ -18070,7 +18070,7 @@
             "spec-008/tab-landing.system-health.default.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f655cb95ed8670c04094017cf8b293f3e8386f17c8e846753dc9d51fe26717f9",
+              "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
               "itemId": "new-spec-008/tab-landing.system-health.default.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.system-health.default.png",
@@ -18116,7 +18116,7 @@
             "spec-008/tab-landing.system-health.dense.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f655cb95ed8670c04094017cf8b293f3e8386f17c8e846753dc9d51fe26717f9",
+              "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
               "itemId": "new-spec-008/tab-landing.system-health.dense.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.system-health.dense.png",
@@ -18162,7 +18162,7 @@
             "spec-008/tab-landing.system-health.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7d665d4a6a7d7266060ae857533ee953b9adaf32bdf338cd7ac21e99817f5648",
+              "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
               "itemId": "new-spec-008/tab-landing.system-health.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.system-health.empty.png",
@@ -18208,7 +18208,7 @@
             "spec-008/tab-landing.system-health.error.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7d665d4a6a7d7266060ae857533ee953b9adaf32bdf338cd7ac21e99817f5648",
+              "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
               "itemId": "new-spec-008/tab-landing.system-health.error.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.system-health.error.png",
@@ -18254,7 +18254,7 @@
             "spec-008/tab-landing.system-health.loading.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7d665d4a6a7d7266060ae857533ee953b9adaf32bdf338cd7ac21e99817f5648",
+              "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
               "itemId": "new-spec-008/tab-landing.system-health.loading.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.system-health.loading.png",
@@ -18300,7 +18300,7 @@
             "spec-008/tab-landing.windows.default.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7b1472410e6953241c50cefcfbeddf44a4c32188d79112e838876d39106d51da",
+              "imageSha256": "a25470666a70fc7ace940a7f76e1090a54a321d52764d5819417e48396fbdb86",
               "itemId": "new-spec-008/tab-landing.windows.default.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.windows.default.png",
@@ -18346,7 +18346,7 @@
             "spec-008/tab-landing.windows.dense.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7b1472410e6953241c50cefcfbeddf44a4c32188d79112e838876d39106d51da",
+              "imageSha256": "b1df6b92c4852d99ca14e50221a93db95eb90a9acdda701c0bad33ba0dcd8a58",
               "itemId": "new-spec-008/tab-landing.windows.dense.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.windows.dense.png",
@@ -18392,7 +18392,7 @@
             "spec-008/tab-landing.windows.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "93df1e40eb299764bc5773f321d43b32a12f18fdf5ff39fc27bd19224974e127",
+              "imageSha256": "cc04480c6f7c98b98b87e7d78acc73a25e9e0b67dfa7c54b3a7ce99a56e5e74e",
               "itemId": "new-spec-008/tab-landing.windows.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.windows.empty.png",
@@ -18438,7 +18438,7 @@
             "spec-008/tab-landing.windows.error.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7b1472410e6953241c50cefcfbeddf44a4c32188d79112e838876d39106d51da",
+              "imageSha256": "4ab7fcd836032d4033b62946a8d0243ea9683573b0d5eb6731c66bacc731d2e9",
               "itemId": "new-spec-008/tab-landing.windows.error.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.windows.error.png",
@@ -18484,7 +18484,7 @@
             "spec-008/tab-landing.windows.loading.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "93df1e40eb299764bc5773f321d43b32a12f18fdf5ff39fc27bd19224974e127",
+              "imageSha256": "a25470666a70fc7ace940a7f76e1090a54a321d52764d5819417e48396fbdb86",
               "itemId": "new-spec-008/tab-landing.windows.loading.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/tab-landing.windows.loading.png",
@@ -18530,7 +18530,7 @@
             "spec-008/telemetry-health.breaker-open.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "e182e6a41f0b68936b8ef1be65f2e074a937af6f4ef98a3a2041d449b2086e7e",
+              "imageSha256": "1e945bcad6ed9b5a5e9cb1c53a4003f1eb73851abdbb8585433782207975e11d",
               "itemId": "new-spec-008/telemetry-health.breaker-open.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/telemetry-health.breaker-open.png",
@@ -18554,7 +18554,7 @@
             "spec-008/telemetry-health.drilldown.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "04bafea31c6881dc2b726b559e172cc50823fd749fa63b4875cf79b3f64bf43e",
+              "imageSha256": "8f84faa7f54d03a7c978788abc523ae2d6c825e80ca7d9323d3ad5233b587272",
               "itemId": "new-spec-008/telemetry-health.drilldown.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/telemetry-health.drilldown.png",
@@ -18600,7 +18600,7 @@
             "spec-008/telemetry-health.healthy.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "5b1668724becab6012cc8f18160b39861a0ca115311385eeb28475cb9196abd0",
+              "imageSha256": "591957ae438e402704333f339556b09c994aa770a3d0c557b288ae4581baab66",
               "itemId": "new-spec-008/telemetry-health.healthy.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/telemetry-health.healthy.png",
@@ -18646,7 +18646,7 @@
             "spec-008/windows.in.blackout.23h00m.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "f2a82af1b89e4a9a4e525a04e91aa360fdb15ffcea2f158daf16a6809fba3406",
+              "imageSha256": "d71c1ec236166689e7043c8d21e040197b79ee0660efae2afed4c3a538807e16",
               "itemId": "new-spec-008/windows.in.blackout.23h00m.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/windows.in.blackout.23h00m.png",
@@ -18738,7 +18738,7 @@
             "spec-008/windows.post.blackout.06h01m.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "b25ed0d634c12d37fb87aafc36d3a97672b25c2ea135c0d27ecbda303983f08e",
+              "imageSha256": "482ab268631dbd30f86e973a14803f029d4741a783eafcb425266aa48d3ed996",
               "itemId": "new-spec-008/windows.post.blackout.06h01m.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/windows.post.blackout.06h01m.png",
@@ -18830,7 +18830,7 @@
             "spec-008/wip-policy.default.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7f41fe29b9a55802daa190deaf6dd3c4d267dcb8378db3507fb56f3e0531cb2b",
+              "imageSha256": "89a6e1e12465a5bba73b8919261bcb11f832f130c1f472fb162c2f04c1b75651",
               "itemId": "new-spec-008/wip-policy.default.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/wip-policy.default.png",
@@ -18854,7 +18854,7 @@
             "spec-008/wip-policy.dense.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "c0a612f8d0cf5708ad662e12a678eb30d16d47aff3a216c574a2bfc91d92eee0",
+              "imageSha256": "d557df872f0169b3b8c78cd60fb268b7624358c05b9a3e68bc06f1563c4642e6",
               "itemId": "new-spec-008/wip-policy.dense.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/wip-policy.dense.png",
@@ -18878,7 +18878,7 @@
             "spec-008/wip-policy.diagnostics.loading.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "d4f356e5288b8addc512f07591ea88a42425d70335f2b66698496186208bb082",
+              "imageSha256": "322c02755691902b8e7c3f92c23086269d74ca23e35025a08a535d0a2dd9686f",
               "itemId": "new-spec-008/wip-policy.diagnostics.loading.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/wip-policy.diagnostics.loading.png",
@@ -18902,7 +18902,7 @@
             "spec-008/wip-policy.editor.filled.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "a917b53305e83193bb03c25d386b34b6fe04f34ed6974529cd1131a9e961878b",
+              "imageSha256": "4e7ec4b7a6c840b36f90fdf5ec24cc0ffa4d13f57e298344c675c9f78d083629",
               "itemId": "new-spec-008/wip-policy.editor.filled.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/wip-policy.editor.filled.png",
@@ -18926,7 +18926,7 @@
             "spec-008/wip-policy.empty.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "7f41fe29b9a55802daa190deaf6dd3c4d267dcb8378db3507fb56f3e0531cb2b",
+              "imageSha256": "89a6e1e12465a5bba73b8919261bcb11f832f130c1f472fb162c2f04c1b75651",
               "itemId": "new-spec-008/wip-policy.empty.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/wip-policy.empty.png",
@@ -18972,7 +18972,7 @@
             "spec-008/wip-policy.error.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "2c474df8093a5aff3834f1adf625ef845be16431a0491fa9e2d305f45ebed4db",
+              "imageSha256": "46ea2082925c121d5f25127bcb9e6d4d34b80aaaf342aba2199796226a37b4e5",
               "itemId": "new-spec-008/wip-policy.error.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/wip-policy.error.png",
@@ -19018,7 +19018,7 @@
             "spec-008/wip-policy.flag-off.png": {
               "decision": "approved",
               "group": "spec-008",
-              "imageSha256": "8d0f8b82969ac5c01b3eefcaa968f384c4707d782bd0a44b2d270dc3a0094f4b",
+              "imageSha256": "b2ce404aca0ca4a32681d4fe3a8bb862bf3174a76898208a2da1f60113cf88a4",
               "itemId": "new-spec-008/wip-policy.flag-off.png",
               "reviewer": "visual-reviewer",
               "snapshot": "spec-008/wip-policy.flag-off.png",
@@ -19054,9 +19054,9 @@
           "testKey": "9c347ab67900f0d4ab6d0d9a042ddf3f6ec723ad94df61fa9db3130709f6b1bb"
         }
       },
-      "updatedAt": "2026-05-05T16:58:04.491Z"
+      "updatedAt": "2026-05-05T19:06:12.176Z"
     }
   },
-  "updatedAt": "2026-05-05T18:58:15.802Z",
+  "updatedAt": "2026-05-05T19:06:12.176Z",
   "version": 1
 }
