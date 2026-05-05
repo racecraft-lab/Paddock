@@ -203,6 +203,9 @@ describe('visual review state', () => {
       'scripts/deploy-standalone.sh',
     ])).toBe(false)
     expect(visualReviewRequiredForFiles([
+      '.specify/memory/constitution.md',
+    ])).toBe(false)
+    expect(visualReviewRequiredForFiles([
       'src/components/panels/task-board-panel.tsx',
     ])).toBe(true)
     expect(visualReviewRequiredForFiles([

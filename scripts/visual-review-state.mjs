@@ -4,7 +4,6 @@ export const VISUAL_REVIEW_STATUS_CONTEXT = 'visual-review-approval'
 export const DEFAULT_REQUIRED_VISUAL_SURFACES = ['playwright', 'storybook']
 export const DEFAULT_VISUAL_REVIEW_PATHS = [
   '.storybook/**',
-  '.specify/memory/constitution.md',
   'Dockerfile',
   'docker-entrypoint.sh',
   'messages/en.json',
