@@ -1,6 +1,7 @@
 name: Mission Control UI E2E
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - '.github/workflows/mission-control-ui-e2e.yml'
