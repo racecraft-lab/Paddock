@@ -13,9 +13,6 @@ on:
         description: Pull request number to recheck
         required: true
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
 permissions:
   contents: read
   issues: read
@@ -24,25 +21,53 @@ permissions:
 
 jobs:
   visual-approval-status:
-    if: github.event_name != 'issue_comment' || github.event.issue.pull_request
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Publish visual approval status
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            node scripts/check-visual-review-approval.mjs --pr-number "${{ inputs.pr_number }}" --repository "${{ github.repository }}" --set-status --skip-if-no-visual-changes --soft-fail
-          else
-            node scripts/check-visual-review-approval.mjs --set-status --skip-if-no-visual-changes --soft-fail
-          fi
+    uses: racecraft-lab/visual-review-pages/.github/workflows/visual-review-approval.yml@main
+    with:
+      pr_number: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || '' }}
+      required_surfaces: playwright,storybook
+      visual_review_paths: >-
+        .storybook/**,
+        .specify/memory/constitution.md,
+        Dockerfile,
+        docker-entrypoint.sh,
+        messages/en.json,
+        package.json,
+        playwright*.config.ts,
+        pnpm-lock.yaml,
+        regconfig*.json,
+        scripts/clean-visual-output.mjs,
+        scripts/e2e-docker.sh,
+        scripts/seed-e2e-spec-007.cjs,
+        scripts/seed-e2e-spec-008.cjs,
+        scripts/seed-e2e-workspace-switcher.cjs,
+        scripts/seed-spec-007.ts,
+        scripts/verify-visual-manifest.mjs,
+        scripts/write-storybook-visual-manifests.mjs,
+        src/**/*.stories.tsx,
+        src/app/api/**,
+        src/app/globals.css,
+        src/components/layout/**,
+        src/components/panels/notifications-panel.tsx,
+        src/components/panels/orchestration-bar.tsx,
+        src/components/panels/task-board-panel.tsx,
+        src/components/settings/**,
+        src/components/ui/**,
+        src/lib/feature-flags.ts,
+        src/lib/workspaces.ts,
+        src/store/**,
+        src/types/product-line.ts,
+        src/types/workflow-template.ts,
+        tailwind.config.js,
+        tests/e2e/feature-flag-matrix.e2e.ts,
+        tests/e2e/governance-*.e2e.ts,
+        tests/e2e/governance-*.spec.ts,
+        tests/e2e/ready-for-owner-kanban.spec.ts,
+        tests/e2e/spec-007-ui-visual.spec.ts,
+        tests/e2e/spec-008/**,
+        tests/feature-flags-*.spec.ts,
+        tests/helpers.ts,
+        tests/product-line-*.spec.ts,
+        tests/visual/**,
+        tests/workspace-switcher-*.spec.ts,
+        vitest.storybook.config.ts
+      node_version: '22'

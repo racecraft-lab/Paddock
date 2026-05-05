@@ -50,9 +50,10 @@
 
 3. Re-run the latest `main` visual workflows so `reg-suit` republishes
    Playwright and Storybook baselines.
-4. Re-run the affected PR visual workflows so
-   `scripts/publish-visual-pr-pages.mjs` republishes the Playwright and
-   Storybook PR report pages.
+4. Re-run the affected PR visual workflows. Mission Control delegates Pages
+   publishing to the reusable
+   `racecraft-lab/visual-review-pages/.github/workflows/visual-review-report.yml`
+   workflow, which republishes the Playwright and Storybook PR report pages.
 
 ## 6. Validate
 
