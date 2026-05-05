@@ -32,15 +32,25 @@ The adopted harness-engineering principles are:
 
 The adopted Symphony ideas are:
 
-1. **Issues/tasks are the control plane.** Mission Control's task board and GitHub sync become the durable state machine for autonomous work. Individual Codex sessions and PRs are implementation details, not the primary unit of management.
+1. **GitHub issues are the v1 work-item control plane.** For Symphony-aligned autonomous work, GitHub Issues are the tracker of record and Mission Control task rows are synchronized projections enriched with workflow, assignment, governance, artifact, and run metadata. Individual Codex sessions, PRs, branches, and worktrees are implementation artifacts, not the primary unit of management.
 2. **Every active work item has an isolated execution workspace.** Mission Control uses its existing Agent Sandbox terminology plus git worktrees or OpenClaw-managed sandboxes to keep per-task commands, logs, artifacts, and credentials isolated.
 3. **Workflow policy is repo-owned.** Mission Control keeps SQLite `workflow_templates` as the runtime store, but the source-of-truth workflow family for a product line must be exportable/importable as a versioned Markdown contract with YAML front matter and prompt body, analogous to Symphony's `WORKFLOW.md`.
-4. **The orchestrator owns dispatch, retries, reconciliation, and cancellation.** Mission Control already has task-chain and governance primitives; the next pilot must add Symphony-style run lifecycle visibility around workspace preparation, Codex app-server launch, stalled/failed/continued attempts, terminal-state cleanup, and restart recovery.
+4. **The orchestrator owns dispatch, retries, reconciliation, and cancellation.** Mission Control already has task-chain and governance primitives; the next pilot must add Symphony-style run lifecycle visibility around workspace preparation, harness-adapter launch, stalled/failed/continued attempts, terminal-state cleanup, and restart recovery.
 5. **Observability is operator-facing and agent-facing.** Mission Control's Status, Cost Tracker, Audit, Dispositions, Artifacts, Governance, and Session surfaces should make long-running agent fleets debuggable without terminal hopping.
 
 Mission Control does **not** adopt Symphony wholesale. Symphony's current spec is intentionally a language-agnostic scheduler/runner without a rich web UI or multi-tenant control plane; Mission Control's product is the richer control plane. Symphony's Elixir prototype is reference material only; Mission Control stays on the existing TypeScript/Next.js/SQLite stack.
 
 Source references for this integration: OpenAI's [Harness Engineering](https://openai.com/index/harness-engineering/) article, OpenAI's [Symphony announcement](https://openai.com/index/open-source-codex-orchestration-symphony/), Symphony's [`SPEC.md`](https://github.com/openai/symphony/blob/main/SPEC.md), and Symphony's [Elixir prototype README](https://github.com/openai/symphony/blob/main/elixir/README.md).
+
+## Control-Plane Boundary
+
+Existing Mission Control manual, recurring, REST, CLI, and MCP task flows remain supported for non-Symphony use cases. The Symphony-aligned pilot and runner phases use a stricter boundary:
+
+1. **GitHub Issues are the source work item.** Status, priority, area, issue closure, and linked PR merge evidence flow through the existing `mc:*`, `priority:*`, and `area:*` label protocol plus GitHub issue/PR state.
+2. **Mission Control tasks are the local projection and enrichment layer.** Task rows store GitHub linkage, workflow-template binding, chain lineage, assignee/stage state, disposition records, artifact references, governance decisions, and run/retry metadata.
+3. **The web UX is config, admin, control, and observability.** Operators use the app to configure product lines, departments, sync ownership, workflow templates, feature flags, policies, gates, review packets, artifacts, and audit/run views. The task board and task APIs remain available for legacy/manual work, but the SPEC-009+ pilot must not depend on creating local-only tasks through the web UI.
+4. **OpenClaw is the runtime and operations substrate.** OpenClaw provides gateway/session messaging, sandbox/workspace preparation, process control, and optional health/cost telemetry. It does not own product task truth or replace the GitHub issue tracker.
+5. **Agent sessions are run artifacts.** Codex, Claude Code, Hermes, OpenCode, gateway sessions, branches, PRs, and worktrees are attached to GitHub-linked Mission Control tasks as evidence and execution state.
 
 ## Goal
 
@@ -48,11 +58,13 @@ Extend the `racecraft-lab/mission-control` fork (upstream `builderz-labs/mission
 
 ## Architecture
 
-Mission Control remains the source of truth. The existing `tenant → workspace → project → task` hierarchy is retained without SQL rename — `workspace` formally represents a **product line** at the UI/domain layer, `project` represents a **department**, and `project_agent_assignments.role` represents the **stage role** an agent plays in a task-chain template.
+Mission Control remains the source of truth for product-line hierarchy, workflow policy, stage assignments, governance, artifacts, local task projections, and run metadata. For Symphony-aligned autonomous work, GitHub Issues are the tracker of record for product work intake and external terminal state. The existing `tenant → workspace → project → task` hierarchy is retained without SQL rename — `workspace` formally represents a **product line** at the UI/domain layer, `project` represents a **department**, and `project_agent_assignments.role` represents the **stage role** an agent plays in a task-chain template.
 
 A new **task pipeline engine** auto-chains tasks based on declarative routing rules evaluated against structured agent output. **Aegis is refactored** from per-workspace resolution to facility-wide via a new `scope='global'` flag on agents. **GitHub sync routes issues** via a new `area:*` label family to the correct department project within a product line's monorepo. **Resource governance** extends the existing Cost Tracker into enforceable WIP limits, blackout/degraded windows, and budget gates before autonomous work is started. Facility electricity / infrastructure usage and cost from the OpenClaw health cron are part of the same governance surface, but only through a fork-only optional adapter.
 
-The Symphony-inspired runtime layer sits above those merged primitives. It treats GitHub issues and Mission Control tasks as the work queue, maps each active work item to an isolated sandbox/worktree, renders a repo-owned workflow contract into a Codex app-server prompt, records each run attempt and live session, and reconciles external issue status with Mission Control task-chain status. Mission Control's database remains the durable product/control-plane state; per-run workspace state is isolated, resumable, and safe to clean up when the issue reaches a terminal state.
+The Symphony-inspired runtime layer sits above those merged primitives. It ingests GitHub issues into Mission Control tasks, claims eligible GitHub-linked task stages, maps each active work item to an isolated sandbox/worktree, renders a repo-owned workflow contract into a harness-specific run request, records each run attempt and live session, and reconciles GitHub issue/PR state with Mission Control task-chain status. Mission Control's database remains the durable local projection and control metadata store; per-run workspace state is isolated, resumable, and safe to clean up when the GitHub issue reaches a terminal state.
+
+The runner is **harness-agnostic by design**. Current Mission Control already observes and controls local Claude Code, Codex CLI, Hermes, OpenCode, and OpenClaw gateway sessions through normalized session, transcript, command, and task-dispatch surfaces. Future runner specs must formalize that shape as a harness adapter contract instead of privileging one execution loop. An adapter declares launch/resume/continue/stop support, session id shape, transcript/event reader, token/runtime accounting, artifact publication, sandbox policy, tool/user-input behavior, MCP exposure, skill/plugin/memory roots, and provider/account constraints. OpenClaw remains an optional gateway/sandbox/runtime adapter; Codex/ChatGPT and Claude Code can be native local harnesses; Hermes/OpenCode can be observation or execution adapters according to the capabilities they can safely expose.
 
 As of 2026-05-04, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, and SPEC-008 is merged on PR #26 as `bd9a693`. SPEC-009 is the next pilot phase and now owns the Symphony-compatible Mission Control workflow contract, runner lifecycle hardening, and end-to-end smoke.
 
@@ -112,16 +124,16 @@ Result: the fork supports running one product (Mission Control itself as Product
 8. **Task disposition logging** per D9.
 9. **Shared task artifact store** per D11.
 10. **Resource governance** per D12, reusing Cost Tracker data to enforce WIP limits, blackout/degraded windows, and budgets.
-11. **Symphony-compatible issue runner** — issue/task tracker as the control plane, one isolated sandbox/worktree per active work item, bounded concurrency, retries, stall detection, and reconciliation.
+11. **Symphony-compatible issue runner** — GitHub issue/task tracker as the control plane, one isolated sandbox/worktree per active GitHub-linked work item, bounded concurrency, retries, stall detection, and reconciliation.
 12. **Repo-owned workflow contracts** — versioned Markdown workflow files with YAML front matter and prompt bodies that can seed/sync `workflow_templates` without making the database the only source of policy truth.
-13. **Codex app-server execution path** — launch and observe Codex app-server sessions from Mission Control/OpenClaw-controlled sandboxes, with turn/session metadata captured into Mission Control.
+13. **Harness-adapter execution path** — launch and observe Codex/ChatGPT, Claude Code, OpenClaw gateway, Hermes, OpenCode, or future adapter sessions from Mission Control-controlled sandboxes, with turn/session metadata captured into Mission Control.
 14. **Agent-legible operations surface** — logs, metrics, run state, artifact previews, governance decisions, and review packets accessible to both operators and downstream agents.
 15. **Mission Control GitHub issue remediation workflow family** operational end-to-end as Product Line A (pilot).
 
 ### Success criteria
 
 - **[SC-1] Zero-regression** — every existing single-workspace deployment runs unchanged after applying all migrations. `workspace_id=1` fallback preserved. All new behavior feature-flag-guarded or null-default.
-- **[SC-2] Pilot end-to-end** — one eligible `racecraft-lab/mission-control` issue, or a synthetic `[mc-pilot]` issue when no safe live candidate exists, flows **triage → plan → dev → review → Aegis → ready_for_owner → linked PR merged (done)** without operator intervention beyond the final PR merge click.
+- **[SC-2] Pilot end-to-end** — one eligible `racecraft-lab/mission-control` GitHub issue, or a synthetic `[mc-pilot]` GitHub issue when no safe live candidate exists, is ingested into Mission Control and flows **triage → plan → dev → review → Aegis → ready_for_owner → linked PR merged (done)** without operator intervention beyond the final PR merge click.
 - **[SC-3] Switcher fidelity** — product-line switcher exposes exactly two operating modes: **Facility** aggregate mode and selected **Product Line** mode. Mode-sensitive panels filter to the selected Product Line, while Facility mode renders authorized aggregate data across the authenticated tenant/facility boundary.
 - **[SC-4] Global Aegis** — Aegis resolves via `scope='global'` lookup; `aegisAgentByWorkspace` map is either removed or retained only as a backward-compat shim for legacy workspace-scoped Aegis records.
 - **[SC-5] Disposition telemetry** — morning-briefing metric "Last 7d: N triaged, X ACTIONABLE, Y OBE, Z DUPLICATE, W NEEDS_SPECIALIST" queryable from `task_dispositions`.
@@ -151,6 +163,7 @@ Result: the fork supports running one product (Mission Control itself as Product
 - Rename of SQL `workspaces` table (D2 — upstream compat constraint).
 - Replacing the web UI with a CLI (out of scope; covered by the separate 2026-03-20 PRD).
 - Staged workflows for non-GitHub workflow families (Release Readiness, etc.) — deferred to phase 2+.
+- Using the web task form as the source for Symphony pilot work. Manual/API task creation remains supported for legacy and non-GitHub work, but SPEC-009+ autonomous pilot dispatch starts from GitHub-linked tasks.
 - Silently normalizing OpenClaw-only assumptions into upstream Mission Control core behavior.
 - Multi-facility tenant modeling. v1 treats the authenticated tenant as the Facility aggregate boundary; it does not introduce a tenant containing multiple independent facilities.
 - Product-line skill ownership, assignment, permissioning, CRUD, or visibility filters. Skills remain Facility/global in SPEC-002.
@@ -356,33 +369,38 @@ Agent filesystem "Sandbox" terminology is UI/config-level in v1. The live schema
   - `devsecops` → `mission-control-platform-devsecops`
   - `qa` → `mission-control-platform-qa`
 - **FR-K4:** Point the Mission Control Product Line workspace's GitHub repo at `racecraft-lab/mission-control`.
-- **FR-K5:** Trigger pilot with an eligible open `racecraft-lab/mission-control` issue labeled `mc:inbox` and `priority:*`. The historical smoke plan lives in the operator's Obsidian vault (informational reference; not required for autopilot ingestion). If no safe live issue exists, the seed script creates a synthetic issue titled `[mc-pilot] synthetic e2e issue`; the second smoke uses a second eligible live issue or a second synthetic.
+- **FR-K5:** Trigger pilot with an eligible open `racecraft-lab/mission-control` GitHub issue labeled `mc:inbox` and `priority:*`. The historical smoke plan lives in the operator's Obsidian vault (informational reference; not required for autopilot ingestion). If no safe live issue exists, the seed script creates a synthetic GitHub issue titled `[mc-pilot] synthetic e2e issue`; the second smoke uses a second eligible live issue or a second synthetic. The pilot root task must be created by GitHub ingest/sync, not by direct local task creation.
 - **FR-K6:** Treat existing synced `racecraft-lab/mission-control` issue tasks as unprocessed intake. Preserve GitHub linkage and sync metadata, move them into Mission Control triage/intake, and start the new departmental workflow from triage.
 
 ### L. Symphony-compatible issue runner (new pilot scope)
 
-- **FR-L1:** Mission Control treats GitHub issues and Mission Control tasks as the control plane for autonomous work. A coding session, PR, branch, or worktree is a run artifact attached to a task, not the durable work item.
+- **FR-L1:** Mission Control treats GitHub issues as the tracker of record and Mission Control tasks as synchronized control-plane projections for autonomous work. A coding session, PR, branch, or worktree is a run artifact attached to a GitHub-linked task, not the durable work item.
 - **FR-L2:** The runner creates or reuses one isolated execution workspace per active task-chain work item. The workspace key is derived from a stable tracker/task identifier, sanitized to `[A-Za-z0-9._-]`, and scoped under an operator-configured workspace root.
 - **FR-L3:** Workspace preparation supports lifecycle hooks equivalent to `after_create`, `before_run`, `after_run`, and `before_remove`. Hooks run with the isolated workspace as `cwd`, have bounded timeouts, and record failure reason codes rather than silently falling back.
 - **FR-L4:** Run attempts have explicit lifecycle states: `preparing_workspace`, `building_prompt`, `launching_agent`, `running_turn`, `continuing`, `succeeded`, `failed`, `timed_out`, `stalled`, `canceled_by_reconciliation`, and `released`.
 - **FR-L5:** The orchestrator owns claim state. A task cannot have two active runner claims. Claim, retry, release, and cancellation mutations must be serialized through one Mission Control authority and exposed in audit/run-state views.
 - **FR-L6:** Dispatch eligibility combines existing task-chain status, GitHub sync state, blockers, feature flags, and resource governance. A blocked, terminal, unauthorized, or no-longer-active item is released without starting a new run.
 - **FR-L7:** Retry behavior is bounded and visible. Normal continuation may retry quickly when a task remains active; failure retries use exponential backoff up to a configured cap; every retry has attempt number, due time, and last error.
-- **FR-L8:** Stall detection uses the latest Codex/app-server event timestamp when available, otherwise run start time. Stalled runs are terminated, recorded, and retried or released according to eligibility.
+- **FR-L8:** Stall detection uses the latest harness event or transcript timestamp when available, otherwise run start time. Stalled runs are terminated, recorded, and retried or released according to eligibility.
 - **FR-L9:** Reconciliation runs before dispatch on every scheduler tick. If GitHub/Mission Control state moves to done/closed/canceled/duplicate or otherwise exits active status, Mission Control terminates the active run and optionally removes the corresponding workspace after `before_remove`.
-- **FR-L10:** Codex app-server launch is the first-class execution path for Mission Control pilot runs. Mission Control captures thread id, turn id, turn count, token counts, latest agent event, and summarized last message without storing secrets.
+- **FR-L10:** Harness adapters are the first-class execution path for Mission Control pilot runs. The initial adapter registry must cover Codex/ChatGPT through Codex app-server or Codex CLI where available, Claude Code through local CLI/API or OpenClaw CLI backend where configured, OpenClaw gateway as a fork-only optional runtime/sandbox substrate, and Hermes/OpenCode as observation or execution adapters only for capabilities they can prove. Mission Control captures adapter id, external session/thread id, turn id/count when available, token/runtime totals, latest event, transcript pointer, and summarized last message without storing secrets.
 - **FR-L11:** Mission Control review packets aggregate task-chain lineage, PR/branch links, artifacts, validation commands, screenshots or visual evidence references, governance decisions, token/cost totals, and unresolved human gates.
 - **FR-L12:** The runner is feature-flagged and pilot-scoped in v1. Existing manual assignment, task-chain advancement, and GitHub sync flows remain usable when the runner flag is OFF.
+- **FR-L13:** Runner dispatch eligibility in the pilot requires GitHub linkage (`github_repo` and `github_issue_number`) before work can be claimed. Local-only tasks remain visible and manually manageable, but they are not autonomous runner work items unless a later non-GitHub tracker adapter explicitly owns them.
+- **FR-L14:** The web UI, REST API, CLI, and MCP server expose configuration, manual override, cancel/retry, owner-gate, review-packet, artifact, and observability surfaces for runner work. They must not become a parallel source of autonomous pilot work that bypasses GitHub issue ingest.
+- **FR-L15:** OpenClaw-backed gateway/session/sandbox behavior is an execution substrate. OpenClaw failures may fail, stall, or release a run attempt, but they must not mutate the underlying GitHub issue state or task terminal state except through the documented Mission Control reconciliation path.
+- **FR-L16:** Every harness adapter manifest declares its launch, resume/continue, transcript/event, token/runtime, artifact, sandbox, tool/MCP, memory, skill, plugin, provider-account, and user-input policies. Unsupported or unsafe capabilities fail closed at launch or during the current run attempt instead of silently falling back to a different harness.
 
 ### M. Repo-owned workflow contracts and harness gardening (new pilot scope)
 
 - **FR-M1:** The Mission Control Product Line workflow family is represented by a versioned repo-owned Markdown contract under `docs/ai/workflows/`. The file uses YAML front matter for runtime configuration and a Markdown body for the task prompt template.
 - **FR-M2:** The contract can round-trip with `workflow_templates`: export current database templates to Markdown, import Markdown into seed/update operations, and verify parity by slug, agent role, prompt version, output schema hash, routing rules hash, terminal event, and feature flag dependencies.
-- **FR-M3:** Workflow contract validation fails closed on missing file, invalid YAML, non-object front matter, unknown template variables, unknown template filters, missing tracker credentials, missing product-line/project identity, missing Codex command, or invalid concurrency/retry/sandbox fields.
+- **FR-M3:** Workflow contract validation fails closed on missing file, invalid YAML, non-object front matter, unknown template variables, unknown template filters, missing tracker credentials, missing product-line/project identity, missing harness adapter id/config, missing declared capability, or invalid concurrency/retry/sandbox fields.
 - **FR-M4:** Dynamic reload is required for future dispatches. When a workflow contract changes, Mission Control validates it, keeps the last-known-good version if validation fails, and emits an operator-visible error without crashing active runs.
 - **FR-M5:** Agents may propose workflow-contract changes by opening a PR or task artifact, but production workflow contract writes require operator-reviewed repository changes or an explicit operator API call.
 - **FR-M6:** Harness-gardening automation scans for stale PRD/roadmap/workflow claims, broken doc links, missing evidence files, missing runbook verification steps, stale feature-flag statuses, low-value tests, and strict-scope drift. Findings become targeted Mission Control tasks instead of broad rewrites.
 - **FR-M7:** `AGENTS.md` remains a concise map. Long-lived instructions belong in PRD/roadmap/spec/runbook/workflow docs with ownership, freshness checks, and mechanical validation where possible.
+- **FR-M8:** Workflow contracts can request capabilities such as GitHub issue sync, MCP tools, skill roots, memory scopes, artifact store access, browser/UI evidence, or native transcript access, but adapter resolution must prove those capabilities before dispatch. The Mission Control MCP server and CLI remain control interfaces for downstream agents, not hidden out-of-band policy sources.
 
 ## 6) Data Model Changes (Additive Migrations)
 
@@ -567,7 +585,7 @@ CREATE INDEX idx_resource_policy_events_task
 5. Preserve `builderz/main` upstream compatibility (D2 enforces this).
 6. OpenClaw-only integrations must remain optional, disabled by default, and absent-safe.
 7. Workflow contracts and runner state must stay inspectable from the repo and Mission Control UI/API; hidden local terminal state is not a durable source of truth.
-8. The Mission Control Product Line pilot may use Codex app-server and GitHub first; other tracker adapters are future extensions through a normalized tracker interface.
+8. The Mission Control Product Line pilot uses GitHub first as the tracker and may select Codex/ChatGPT, Claude Code, OpenClaw, Hermes, OpenCode, or later harnesses through an explicit adapter registry. Non-GitHub tracker adapters are future extensions through a normalized tracker interface.
 
 ## 9) Risks & Mitigations
 
@@ -618,7 +636,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 9 | Second product line onboarding (Product Line B) | Pending | Post-pilot | Fork rollout only |
 | 10 | Agent-legible repository knowledge and harness guardrails | Pending | Process/tooling only | `upstream-safe` |
 | 11 | GitHub-backed task control plane and run-state reconciliation | Pending | Yes — flag-off default | `upstream-safe` core; optional persisted run-state = `upstream-divergent` |
-| 12 | Per-task sandbox runner and Codex App Server adapter | Pending | Yes — flag-off default | `upstream-divergent`; OpenClaw adapters remain `fork-only optional` |
+| 12 | Per-task sandbox runner and harness adapter registry | Pending | Yes — flag-off default | `upstream-divergent`; OpenClaw adapters remain `fork-only optional` |
 
 **V2 readiness item:** Tenant-aware gateway isolation is deliberately deferred from v1 implementation. Before hosting multiple live tenant/facility accounts in one Mission Control instance, add a dedicated v2 spec to give gateway registry, runtime resolution, health checks, and OpenClaw config paths an explicit tenant context, with compatibility fallbacks for the current process-global primary gateway behavior.
 

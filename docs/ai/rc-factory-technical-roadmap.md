@@ -12,7 +12,10 @@
 6. **Prefer upstream-safe extensions over schema divergence.** If the same goal can be achieved with an additive adapter, config path, or feature-flagged runtime hook, choose that before adding schema.
 7. **OpenClaw-specific features are fork-only adapters.** They must be disabled by default and no-op cleanly when absent.
 8. **Adopt Symphony as a contract, not a stack.** Mission Control may borrow Symphony's language-agnostic control-plane pattern — tracker-driven dispatch, per-task workspaces, repo-owned workflow policy, bounded concurrency, retries, reconciliation, and observability — while keeping Next.js/React/TypeScript/SQLite, GitHub-first sync, and existing SpecKit task-chain governance.
-9. **Treat harness engineering as repository design.** Agent throughput depends on versioned repo knowledge, executable tests, UI/log/metric legibility, structural guardrails, and continuous cleanup. Do not grow one monolithic instruction file when a short map plus indexed sources of truth is possible.
+9. **Keep harnesses pluggable and explicit.** Mission Control owns tracker truth, claims, governance, artifacts, review packets, and run-state reconciliation. Codex/ChatGPT, Claude Code, OpenClaw, Hermes, OpenCode, or later systems execute through declared harness adapters that publish launch/resume/transcript/token/tool/MCP/memory/skill/plugin/sandbox capabilities and fail closed when a capability is absent.
+10. **Separate tracker truth from local projections.** For SPEC-009 and later Symphony-aligned work, GitHub Issues are the v1 source work item and tracker of record. Mission Control tasks store synchronized projections, chain state, assignments, artifacts, governance, run metadata, and views. Manual/local tasks remain supported for non-Symphony work, but they are not pilot runner work items without explicit GitHub linkage.
+11. **Keep the web UX operational.** The app configures product lines, GitHub sync, workflow templates, feature flags, policies, manual gates, review packets, artifacts, and run/audit views. It must not become a second autonomous-work intake path that bypasses GitHub issue ingest.
+12. **Treat harness engineering as repository design.** Agent throughput depends on versioned repo knowledge, executable tests, UI/log/metric legibility, structural guardrails, and continuous cleanup. Do not grow one monolithic instruction file when a short map plus indexed sources of truth is possible.
 
 ## Upstream Impact Rubric
 
@@ -40,7 +43,7 @@
 | 9 | Product Line B onboarding | Post-pilot | — | Fork rollout only | — |
 | 10 | Agent-legible repository knowledge + harness guardrails | Yes | None — process/tooling | `upstream-safe` | Phase 11 |
 | 11 | GitHub-backed task control plane + run-state reconciliation | Yes | `FEATURE_TASK_CONTROL_PLANE` | `upstream-safe` core; persisted run-state schema = `upstream-divergent` | Phase 12 |
-| 12 | Per-task sandbox runner + Codex App Server adapter | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | `upstream-divergent`; OpenClaw adapter pieces = `fork-only optional` | — |
+| 12 | Per-task sandbox runner + harness adapter registry | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | `upstream-divergent`; OpenClaw adapter pieces = `fork-only optional` | — |
 
 ## SpecKit-Pro Autopilot Usage
 
@@ -68,7 +71,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **SPEC-001 is migration-only.** Treat `clarify`, `checklist`, and `analyze` phases as minimal: zero `[NEEDS CLARIFICATION]` markers are expected; checklist gaps should resolve to "N/A — pure-schema spec"; analyze findings are limited to migration safety, idempotency, rollback-file presence, and the no-SQL safety gates. `/speckit.implement` performs the migration writes and the per-migration smoke checks listed in P0-AC1..AC14.
 - **SPEC-009 has a human gate.** The pilot's "operator merges PR on GitHub" step is recorded as `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes (or marks complete) when `pullFromGitHub` records the linked PR merge. AC items P8-AC1, P8-AC6, P8-AC7 are explicitly MANUAL and live in the Pilot Smoke Checklist (`docs/qa/pilot-smoke-checklist.md`); they are NOT validated by `gate-validator`. P8-AC5 (PR merge → `done` transition) IS code-checkable via a webhook fixture and remains in the gate set.
 - **Real-system smoke (Phase 8/9) wall-clock ACs are MANUAL:** P8-AC6 ("<4h wall-clock") and P9-AC1 ("<1 operator-hour") cannot be tested by `implement-executor` TDD. Each is recorded only in the Pilot Smoke Checklist and is asserted by the operator after the pilot run.
-- **Pilot issue reproducibility:** SPEC-009 first tries an eligible open `racecraft-lab/mission-control` issue labeled `mc:inbox` and `priority:*`. If no safe live candidate exists, the seed script creates a synthetic test issue with title `[mc-pilot] synthetic e2e issue` and labels `mc:inbox priority:medium area:dev`. The pilot smoke checklist documents both modes.
+- **Pilot issue reproducibility:** SPEC-009 first tries an eligible open `racecraft-lab/mission-control` GitHub issue labeled `mc:inbox` and `priority:*`. If no safe live candidate exists, the seed script creates a synthetic GitHub issue with title `[mc-pilot] synthetic e2e issue` and labels `mc:inbox priority:medium area:dev`. The pilot root task must be created by GitHub ingest/sync; local-only tasks created directly through `/api/tasks` or the task board do not satisfy the pilot source-of-truth gate.
 
 ## SpecKit-Pro Status Policy
 
@@ -97,7 +100,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-011 | 7.5 | CrabTrap Honeypot — HAL Security Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
 | SPEC-012 | 10 | Agent-Legible Repository Knowledge and Harness Guardrails | agent-legible-harness | Pending | P2 | SPEC-002A, SPEC-010 | SPEC-013 | Phase 10 |
 | SPEC-013 | 11 | GitHub-Backed Task Control Plane and Run-State Reconciliation | task-control-plane | Pending | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-012 | SPEC-014 | Phase 11 |
-| SPEC-014 | 12 | Per-Task Sandbox Runner and Codex App Server Adapter | task-sandbox-runner | Pending | P1 | SPEC-004, SPEC-007, SPEC-008, SPEC-013 | — | Phase 12 |
+| SPEC-014 | 12 | Per-Task Sandbox Runner and Harness Adapter Registry | task-sandbox-runner | Pending | P1 | SPEC-004, SPEC-007, SPEC-008, SPEC-013 | — | Phase 12 |
 
 ### SPEC-011: CrabTrap Honeypot — HAL Security Adapter
 
@@ -291,10 +294,10 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** SPEC-010
 - **Scope source:** Phase 8 — Mission Control Product Line Pilot (End-to-End Smoke)
 - **Acceptance criteria source:** Phase 8 Acceptance Criteria
-- **Scope summary:** Activate Phase 1–7 feature flags for Mission Control as Product Line A, seed the workspace, departments, agent assignments, workflow templates, GitHub repo routing, existing issue intake, conservative governance policies, and run two live or synthetic pilot issues through the full workflow.
+- **Scope summary:** Activate Phase 1–7 feature flags for Mission Control as Product Line A, seed the workspace, departments, agent assignments, workflow templates, GitHub repo routing, existing issue intake, conservative governance policies, and run two live or synthetic GitHub issues through the full workflow. The web app is used for configuration, gates, audit, artifacts, governance, and observability, not as the source of the pilot work item.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `scripts/seed-mission-control-product-line.ts` if authored in TypeScript; otherwise N/A for docs/config/SQL-only seed assets
-- **Autopilot notes:** This is an integration smoke spec, not new architecture design. Preserve existing GitHub linkage and sync metadata for previously synced Mission Control issues. Operator intervention is allowed only for final PR merge in the primary pilot path.
+- **Autopilot notes:** This is an integration smoke spec, not new architecture design. Preserve existing GitHub linkage and sync metadata for previously synced Mission Control issues. Start pilot work from GitHub issue ingest/sync, not direct local task creation. Operator intervention is allowed only for final PR merge in the primary pilot path.
 - **Definition of done:** Phase 8 deliverables are implemented, P8 acceptance criteria pass for at least one pilot issue end-to-end, disposition record, stage assignments, Aegis approval, `ready_for_owner → done` transition, audit trail, wall-clock target, and governance compliance.
 
 ### SPEC-010: Product Line B Product-Line Onboarding
@@ -336,26 +339,26 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** SPEC-014
 - **Scope source:** Phase 11 — GitHub-Backed Task Control Plane and Run-State Reconciliation
 - **Acceptance criteria source:** Phase 11 Acceptance Criteria
-- **Scope summary:** Make Mission Control tasks and synced GitHub issues the durable control plane for autonomous work: claim state, run attempts, retry/backoff, reconciliation against task/GitHub state, bounded concurrency, and operator-visible state snapshots. Inspired by Symphony's tracker-driven scheduler while retaining Mission Control's existing task-chain and resource-governance authority.
+- **Scope summary:** Make synced GitHub issues the durable tracker record and Mission Control tasks the enriched local control-plane projection for autonomous work: claim state, run attempts, retry/backoff, reconciliation against task/GitHub state, bounded concurrency, and operator-visible state snapshots. Inspired by Symphony's tracker-driven scheduler while retaining Mission Control's existing task-chain and resource-governance authority.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `src/lib/task-run-state.ts`, `src/lib/task-control-plane.ts`, control-plane API routes if needed, and scheduler integration points. Schema changes are allowed only if explicitly additive and compatibility-labeled.
-- **Autopilot notes:** Do not introduce Linear as a required dependency. Do not duplicate `advanceTaskChain`; this spec claims and reconciles runnable task-stage work, while SPEC-004 remains the chain advancement authority.
+- **Autopilot notes:** Do not introduce Linear as a required dependency. Do not duplicate `advanceTaskChain`; this spec claims and reconciles runnable task-stage work, while SPEC-004 remains the chain advancement authority. The pilot claim path requires GitHub-linked tasks and must not treat web-created local-only tasks as autonomous runner intake.
 - **Definition of done:** Phase 11 deliverables are implemented, acceptance criteria pass for claim idempotency, duplicate-dispatch prevention, terminal-state reconciliation, retry/backoff, resource-governance integration, and JSON state/debug surfaces.
 
-### SPEC-014: Per-Task Sandbox Runner and Codex App Server Adapter
+### SPEC-014: Per-Task Sandbox Runner and Harness Adapter Registry
 
 - **Status:** Pending
 - **Priority:** P1
 - **Branch short name:** `task-sandbox-runner`
 - **Dependencies:** SPEC-004, SPEC-007, SPEC-008, SPEC-013
 - **Enables:** —
-- **Scope source:** Phase 12 — Per-Task Sandbox Runner and Codex App Server Adapter
+- **Scope source:** Phase 12 — Per-Task Sandbox Runner and Harness Adapter Registry
 - **Acceptance criteria source:** Phase 12 Acceptance Criteria
-- **Scope summary:** Execute claimed task-stage work in deterministic per-task sandboxes, launch Codex App Server or configured runner adapters, stream run events into Mission Control, persist session/token/runtime/error summaries, and publish handoff artifacts. Inspired by Symphony's workspace + app-server execution layer.
+- **Scope summary:** Execute claimed GitHub-linked task-stage work in deterministic per-task sandboxes, resolve a declared harness adapter, launch or continue the selected Codex/ChatGPT, Claude Code, OpenClaw gateway, Hermes, OpenCode, or future runner where its capabilities are proven, stream run events into Mission Control, persist session/token/runtime/error summaries, and publish handoff artifacts. Inspired by Symphony's workspace + app-server execution layer without making one harness mandatory.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `src/lib/task-sandbox-runner.ts`, runner adapter modules, sandbox lifecycle hooks, run-event ingestion, and artifact handoff integration. OpenClaw-specific adapter paths must remain fork-only optional.
-- **Autopilot notes:** The runner executes claimed work only; it does not choose successor templates, bypass policy, or auto-merge. Approval and sandbox posture must be documented explicitly for every adapter. The Symphony Elixir prototype is not a dependency.
-- **Definition of done:** Phase 12 deliverables are implemented, acceptance criteria pass for sandbox path determinism, lifecycle hooks, app-server startup/timeout/stall handling, unsupported tool-call failure handling, token/runtime accounting, artifact publication, and operator-visible run debug endpoints.
+- **Autopilot notes:** The runner executes claimed GitHub-linked work only; it does not choose successor templates, bypass policy, create local-only pilot tasks, or auto-merge. Approval and sandbox posture must be documented explicitly for every adapter. The Symphony Elixir prototype is not a dependency.
+- **Definition of done:** Phase 12 deliverables are implemented, acceptance criteria pass for sandbox path determinism, lifecycle hooks, adapter selection, harness startup/continue/timeout/stall handling, unsupported tool-call failure handling, token/runtime accounting, artifact publication, and operator-visible run debug endpoints.
 
 ---
 
@@ -939,7 +942,7 @@ Flip `FEATURE_RESOURCE_GOVERNANCE` OFF. Scheduler returns to legacy behavior. Ta
 
 ### Scope
 
-Activate every Phase 1–7 feature flag, seed Mission Control as Product Line A with templates + project-agent assignments, set conservative governance policies, and run the pilot on an eligible `racecraft-lab/mission-control` issue or a synthetic `[mc-pilot]` issue. The historical smoke plan lives in the operator's Obsidian vault and is not required to be present in this repo for autopilot execution; the synthetic-fallback path documented above ensures Phase 8 is reproducible without a pre-existing issue number.
+Activate every Phase 1–7 feature flag, seed Mission Control as Product Line A with templates + project-agent assignments, set conservative governance policies, and run the pilot on an eligible `racecraft-lab/mission-control` GitHub issue or a synthetic `[mc-pilot]` GitHub issue. The historical smoke plan lives in the operator's Obsidian vault and is not required to be present in this repo for autopilot execution; the synthetic-fallback path documented above ensures Phase 8 is reproducible without a pre-existing issue number. The pilot starts from GitHub ingest/sync and uses Mission Control web/API/MCP surfaces for configuration, owner gates, review packets, artifacts, governance, audit, and observability.
 
 ### Deliverables
 
@@ -960,6 +963,7 @@ Activate every Phase 1–7 feature flag, seed Mission Control as Product Line A 
   - Triage template runs → researcher agent produces structured output.
   - Scheduler advances chain → plan → dev → review → Aegis → ready_for_owner.
   - Pilot HUMAN GATE `G_PILOT_MERGE`: operator merges PR on GitHub → task → `done` via `pullFromGitHub`. Autopilot stops at `ready_for_owner` and awaits operator action; this is the only intentional human-in-the-loop checkpoint in the otherwise-autonomous workflow.
+- **Web UX boundary**: use the app to configure sync/templates/flags/governance and to observe audit, artifacts, review packets, and owner gates. Do not use task-board/manual-create flows as the pilot source of work.
 - **Pilot smoke checklist**: `docs/qa/pilot-smoke-checklist.md` enumerates the manual verification steps an operator performs after autopilot completes the autonomous portion: confirm wall-clock target met, confirm audit trail present, confirm governance compliance, record any anomalies. Manual ACs are validated only via this checklist.
 - **Second smoke**: repeat with a second eligible live issue or a second synthetic as stronger integration.
 
@@ -972,12 +976,14 @@ Code-checkable (validated by `gate-validator` and `implement-executor` TDD):
 - [P8-AC4] Aegis approves the dev task and transitions it to `ready_for_owner`. Validated by `SELECT status FROM tasks WHERE id = :dev_task_id` returning `ready_for_owner` and `quality_reviews.status = 'approved'`.
 - [P8-AC5] PR merge triggers `ready_for_owner → done` via `pullFromGitHub`. Validated by injecting a webhook fixture (closed PR + merged=true) into `pullFromGitHub` and asserting the task transitions to `done`.
 - [P8-AC8] Resource governance events show no policy violations during the pilot. Validated by `SELECT COUNT(*) FROM resource_policy_events WHERE decision IN ('block', 'override_required') AND task_id IN (chain task IDs)` = 0.
+- [P8-AC9] The pilot root task is GitHub-linked before workflow start. Validated by `tasks.github_repo IS NOT NULL`, `tasks.github_issue_number IS NOT NULL`, and a GitHub ingest/sync activity for the root task; local-only tasks do not satisfy `PILOT_MISSION_CONTROL_E2E` dispatch eligibility.
 
 Manual (recorded in `docs/qa/pilot-smoke-checklist.md`; NOT validated by `gate-validator`):
 
 - [P8-AC1 — MANUAL] One eligible live issue or synthetic fallback completes end-to-end with operator intervention only at `G_PILOT_MERGE`.
 - [P8-AC6 — MANUAL] Total wall-clock time from issue label to PR-merge-notification is < 4 hours for a simple issue.
 - [P8-AC7 — MANUAL] Audit trail shows every stage transition (visual inspection of `audit-trail-panel.tsx` after pilot run; an automated check covers row count but not human-readable correctness).
+- [P8-AC10 — MANUAL] Operator confirms the web UI was used only for setup, observation, review/gate, or recovery actions, not for creating the pilot work item.
 
 ### Rollback
 
@@ -1065,7 +1071,7 @@ Revert process/doc changes. No runtime effect.
 
 ### Scope
 
-Make Mission Control tasks and synced GitHub issues behave as the durable control plane for autonomous work. This is the Mission Control-native equivalent of Symphony's tracker-driven scheduler: bounded dispatch, explicit claim state, retries/backoff, reconciliation, and operator-visible state snapshots.
+Make synced GitHub issues behave as the durable tracker record and Mission Control tasks behave as the enriched local projection/control records for autonomous work. This is the Mission Control-native equivalent of Symphony's tracker-driven scheduler: bounded dispatch, explicit claim state, retries/backoff, reconciliation, and operator-visible state snapshots.
 
 ### Upstream Impact
 
@@ -1074,10 +1080,12 @@ Make Mission Control tasks and synced GitHub issues behave as the durable contro
 ### Deliverables
 
 - **Run-state model:** task-stage run attempt records or equivalent append-only state for claimed/running/retrying/released work, tied to `task_id`, `chain_id`, `chain_stage`, `workspace_id`, and `workflow_template_id`.
+- **Tracker identity gate:** claimable pilot work must have durable GitHub identity (`github_repo`, `github_issue_number`, and linked PR evidence when required by the template). Local-only tasks remain outside the autonomous runner unless a later tracker adapter explicitly owns them.
 - **Claim and dispatch authority:** a single coordination path prevents duplicate dispatch, applies resource governance before launch, and respects task/GitHub terminal state.
 - **Retry/backoff:** continuation retry and failure retry policies with bounded attempts, reason codes, and operator-visible last error.
 - **Reconciliation:** each tick reconciles running work against current task status, GitHub issue/PR linkage where available, feature flags, and resource-governance state before dispatching new work.
 - **State/debug API:** JSON endpoints expose running, retrying, released, token/runtime totals where available, last event/error, and a refresh trigger.
+- **Operational UI/API boundary:** web, REST, CLI, and MCP surfaces may expose claim state, cancel/retry, manual release, owner gate, review packet, and diagnostics controls; they must not create a second source of autonomous work outside tracker ingest.
 - **GitHub-first adapter:** GitHub issue sync remains the first tracker integration. Linear-style adapters are optional future work.
 
 ### Acceptance Criteria
@@ -1088,6 +1096,8 @@ Make Mission Control tasks and synced GitHub issues behave as the durable contro
 - [P11-AC4] Resource-governance `block`/`defer` decisions prevent new runner launches and are visible in the run-state/debug API.
 - [P11-AC5] Retry/backoff records distinct normal-continuation, failure, timeout, and stale-state reasons.
 - [P11-AC6] The control-plane code calls the existing task-chain helper for chain advancement and never reimplements successor selection.
+- [P11-AC7] With the flag ON, a local-only task without `github_repo` and `github_issue_number` is visible in Mission Control but is not claimed by the autonomous control-plane runner.
+- [P11-AC8] Operator cancel/retry/release controls mutate run-state records and audit rows without directly editing GitHub issue truth except through the documented sync/reconciliation path.
 
 ### Rollback
 
@@ -1099,21 +1109,23 @@ Flip `FEATURE_TASK_CONTROL_PLANE` OFF. Persisted run-state rows, if any, remain 
 
 ---
 
-## Phase 12 — Per-Task Sandbox Runner and Codex App Server Adapter
+## Phase 12 — Per-Task Sandbox Runner and Harness Adapter Registry
 
 ### Scope
 
-Execute claimed task-stage work in deterministic per-task sandboxes and stream the run back into Mission Control. This is the Mission Control-native execution layer inspired by Symphony's per-issue workspace + Codex App Server pattern.
+Execute claimed GitHub-linked task-stage work in deterministic per-task sandboxes and stream the run back into Mission Control. This is the Mission Control-native execution layer inspired by Symphony's per-issue workspace + app-server pattern, but it is harness-agnostic: Codex/ChatGPT, Claude Code, OpenClaw, Hermes, OpenCode, and future systems are selected through explicit adapters.
 
 ### Upstream Impact
 
-`upstream-divergent` where runner state is persisted. OpenClaw-specific runner/gateway behavior is `fork-only optional` and must be absent-safe. The Codex App Server adapter itself should remain optional and disabled by default.
+`upstream-divergent` where runner state is persisted. OpenClaw-specific runner/gateway behavior is `fork-only optional` and must be absent-safe. Individual harness adapters, including Codex App Server, Claude Code, Hermes, and OpenCode paths, remain optional and disabled unless explicitly selected by workflow/product-line policy.
 
 ### Deliverables
 
 - **Sandbox lifecycle:** deterministic sandbox key/path from task id, chain id/stage, and product-line scope; hooks for create, before-run, after-run, and cleanup.
-- **Runner adapter contract:** typed adapter interface for Codex App Server and future runner providers; every adapter declares approval, sandbox, timeout, and user-input policy.
-- **Codex App Server adapter:** launch configured command, initialize session, start thread/turn, stream protocol events, handle timeouts/stalls, and stop on reconciliation cancellation.
+- **Harness adapter contract:** typed adapter interface for launch, resume/continue, stop/cancel, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, tool/MCP exposure, memory scopes, skill/plugin roots, provider-account constraints, approval, timeout, and user-input policy.
+- **Initial adapter registry:** Codex/ChatGPT through Codex app-server or Codex CLI where available; Claude Code through local CLI/API or OpenClaw CLI backend where configured; OpenClaw gateway as a fork-only optional runtime/sandbox/session substrate; Hermes and OpenCode as observation or execution adapters only for capabilities they can prove from local session stores and continue APIs.
+- **Capability resolution packet:** before dispatch, Mission Control materializes the workflow contract, GitHub issue/task state, artifact refs, SOUL/comment context, memory scopes, skill/plugin/MCP availability, sandbox policy, provider/account policy, and adapter manifest into a run-context record agents and reviewers can inspect.
+- **OpenClaw substrate boundary:** OpenClaw may provide gateway/session messaging, sandbox preparation, process control, plugin harness selection, MCP/skills exposure, memory injection, and optional health/cost telemetry. It does not own tracker state, choose successor templates, or bypass Mission Control claim/governance/reconciliation.
 - **Run event ingestion:** persist summarized session id, last event, last message, token/runtime totals, rate-limit snapshots, and failure reason.
 - **Artifact handoff:** publish runner outputs through the SPEC-007 artifact store rather than requiring downstream agents to inspect another sandbox directly.
 - **Operator debug view:** expose sandbox path, lifecycle state, last error, and artifact links from the run-state API.
@@ -1122,10 +1134,12 @@ Execute claimed task-stage work in deterministic per-task sandboxes and stream t
 
 - [P12-AC1] With `FEATURE_AGENT_RUNNER_SANDBOXES=false`, no sandbox runner launches and legacy behavior is unchanged.
 - [P12-AC2] Sandbox paths are deterministic, sanitized, product-line scoped, and never escape the configured sandbox root.
-- [P12-AC3] Unsupported tool calls or user-input-required events fail the current run attempt according to the documented adapter policy instead of stalling indefinitely.
+- [P12-AC3] Unsupported tool calls, missing MCP/skill/memory/plugin capabilities, missing transcript/event support, or user-input-required events fail the current run attempt according to the documented adapter policy instead of stalling indefinitely or silently switching harnesses.
 - [P12-AC4] Token/runtime accounting uses absolute totals when available and avoids double-counting deltas.
 - [P12-AC5] A successful run may hand off to `ready_for_owner` or another workflow-defined review state; it is not forced to `done`.
 - [P12-AC6] Downstream stages consume artifact references/previews from Mission Control, not another agent's private sandbox.
+- [P12-AC7] OpenClaw or runner-adapter failure records the run attempt as failed/stalled/released without changing GitHub issue state or task terminal state outside the documented reconciliation path.
+- [P12-AC8] At least two non-identical adapter implementations or fakes exercise the same contract in tests, proving Mission Control runner state is not Codex-specific.
 
 ### Rollback
 
