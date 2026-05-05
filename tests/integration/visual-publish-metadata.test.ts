@@ -115,4 +115,77 @@ describe('visual PR Pages publisher metadata', () => {
       rmSync(tempDir, { recursive: true, force: true })
     }
   })
+
+  it('publishes main push reports without a pull request payload', () => {
+    const repoRoot = process.cwd()
+    const tempDir = mkdtempSync(path.join(os.tmpdir(), 'visual-main-pages-'))
+    const reportDir = path.join(tempDir, 'visual-report')
+    const actualDir = path.join(reportDir, '__reg__', '1_actual')
+    const pagesDir = path.join(tempDir, 'pages')
+    const snapshot = 'governance-main--default.png'
+
+    try {
+      mkdirSync(actualDir, { recursive: true })
+      writeFileSync(path.join(actualDir, snapshot), 'png')
+
+      const payload = {
+        actualDir: '__reg__/1_actual',
+        deletedItems: [],
+        diffDir: '__reg__/0_diff',
+        expectedDir: '__reg__/2_expected',
+        failedItems: [],
+        newItems: [{ raw: snapshot, encoded: snapshot }],
+        passedItems: [],
+      }
+      const reportFile = path.join(reportDir, 'storybook.html')
+      mkdirSync(reportDir, { recursive: true })
+      writeFileSync(reportFile, `<script>window['__reg__'] = ${JSON.stringify(payload)};</script>`)
+
+      const result = spawnSync(process.execPath, [
+        path.join(repoRoot, 'scripts', 'publish-visual-pr-pages.mjs'),
+        '--surface',
+        'storybook',
+        '--report-file',
+        reportFile,
+        '--pages-dir',
+        pagesDir,
+        '--repository',
+        'racecraft-lab/mission-control',
+        '--mode',
+        'main',
+        '--run-id',
+        '456',
+        '--run-attempt',
+        '1',
+        '--base-url',
+        'https://racecraft-lab.github.io/mission-control',
+      ], {
+        cwd: tempDir,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          GITHUB_REF_NAME: 'main',
+          GITHUB_SHA: 'abcdef1234567890',
+        },
+      })
+
+      expect(`${result.stdout}\n${result.stderr}`).toContain('published storybook report')
+      expect(result.status).toBe(0)
+
+      const latestHtml = readFileSync(path.join(pagesDir, 'storybook', 'latest', 'index.html'), 'utf8')
+      const latestData = extractReviewData(latestHtml)
+      expect(latestData.context).toMatchObject({
+        baseRef: 'main',
+        headRef: 'main',
+        headSha: 'abcdef1234567890',
+        reportScope: 'latest',
+        surface: 'storybook',
+      })
+
+      expect(readFileSync(path.join(pagesDir, 'storybook', 'abcdef1234567890', 'index.html'), 'utf8')).toContain('visual-review-data')
+      expect(readFileSync(path.join(pagesDir, 'index.html'), 'utf8')).toContain('Main Branch Visual Reports')
+    } finally {
+      rmSync(tempDir, { recursive: true, force: true })
+    }
+  })
 })
