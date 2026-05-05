@@ -44,6 +44,17 @@ This policy applies to every pending spec after SPEC-008.
 5. **No hidden follow-on work.** A spec that discovers a larger requirement opens a follow-up spec/issue instead of expanding the PR. The PR body must call out anything deferred.
 6. **Self-hosting bias.** Once SPEC-009D lands, every later spec should be represented as a GitHub issue ingested into Mission Control, assigned through the Mission Control Product Line workflow, and closed from Mission Control evidence where possible.
 
+## Post-Merge HITL UAT Deployment Policy
+
+Every spec PR must produce a capability a human can review on the target Mission Control deployment after merge. "Merged" means code/docs are on `main`; it does not mean the spec is operationally accepted.
+
+1. **Deploy after merge.** Promote merged `main` to the target Mission Control deployment, rebuild, restart the relevant service, and record the deployed commit before marking a spec operationally accepted. Process-only specs still require a fresh agent/operator to exercise the new repo workflow from the deployed or post-merge checkout.
+2. **Enable the narrowest flag set.** If the spec ships runtime behavior, enable only the feature flag(s) named by the spec for one product line, one facility path, or one operator-owned process path. Record flag values, workspace/product-line scope, and rollback steps in the spec workflow or review packet.
+3. **Run the named human validation.** The operator must perform the manual check named in this roadmap's Human Validation column or the spec workflow's UAT checklist. The check must inspect the UI/API/CLI/log/review-packet surface that proves the capability, not just test output.
+4. **Open remediation as GitHub issues.** Any UAT defect becomes a GitHub issue with the affected spec id, expected behavior, observed behavior, reproduction steps, evidence links, and rollback state. Before SPEC-009C/009D, this can be created manually. After the self-hosting pilot lands, Mission Control should ingest and route these issues itself.
+5. **Resolve through the factory loop.** UAT remediation issues are worked through Mission Control when the required self-hosting capability exists: assign, claim, implement, review, merge by a human, redeploy, re-enable the same flags, and rerun UAT. The spec stays `UAT Remediation` or `Blocked` until the capability fully passes HITL UAT or a documented operator defer decision moves the issue to a later spec.
+6. **No proxy completion.** Green CI, a merged PR, or a complete task checklist is not enough. A spec is `Complete` only when local/CI evidence, deployed-commit evidence, flag-scope evidence, and HITL UAT evidence all exist.
+
 ## Current Codebase Baseline for Harness Work
 
 SPEC-013A-C and SPEC-014A-D must extend the existing Mission Control control-plane seams instead of designing a parallel runner:
@@ -119,8 +130,10 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 |---|---|
 | Pending | Not yet set up by `/speckit-pro:setup`. |
 | In Progress | Setup/worktree/workflow created. |
-| Complete | Implementation PR merged and roadmap updated. |
-| Blocked | Gate failure or human decision required. |
+| UAT Pending | Implementation PR merged, deployed-commit/flag evidence not yet recorded, or named HITL UAT not yet run. |
+| UAT Remediation | HITL UAT found a defect; a GitHub issue exists and must be resolved, reviewed, merged, redeployed, and retested before completion. |
+| Complete | Implementation PR merged, roadmap updated, target deployment promoted, required flags enabled in the named scope, and HITL UAT evidence recorded. |
+| Blocked | Gate failure, deployment failure, unresolved UAT defect without a remediation issue, or human decision required. |
 
 ## SpecKit-Pro Spec Index
 
@@ -161,6 +174,39 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while SPEC-009C is being smoked; SPEC-010B waits for SPEC-009C and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Control-plane path:** SPEC-013A -> SPEC-013B -> SPEC-013C starts after the pilot review packet and repo knowledge index exist. These specs own claim/reconciliation/retry state; they do not launch harnesses.
 - **Runner path:** SPEC-014A -> SPEC-014B establishes sandbox ownership and fake adapter proof first. SPEC-014C and SPEC-014D then run in parallel if they do not touch the same adapter files.
+
+### Spec-by-Spec HITL UAT Matrix
+
+This matrix is the second-pass review gate for every roadmap spec. Each row must remain true when the individual spec workflow is generated. If UAT fails, open a GitHub issue with the spec id and rerun the deploy/test loop from the Post-Merge HITL UAT Deployment Policy.
+
+| Spec | Human-reviewable capability after merge | Flag or activation scope | Required HITL UAT gate |
+|---|---|---|---|
+| SPEC-001 | Foundation schema and seed substrate exists without changing core behavior | No runtime flag; target deployment migration smoke | Deploy/restart, verify migration markers, `PRAGMA quick_check`, seeded facility workspace, global-agent backfill, and unchanged core flows |
+| SPEC-002 | Operator can switch Facility/Product Line scope without data leakage | `FEATURE_WORKSPACE_SWITCHER` for one workspace/product line | Inspect flag OFF legacy UI, Facility aggregate view, selected Product Line view, REST/SSE scope, and cross-tab behavior |
+| SPEC-002A | Spec archive/evidence workflow is usable by later agents | Process-only post-merge checkout | Run Archive Sweep/dry-run from the merged checkout and verify durable-vs-ephemeral evidence policy is discoverable |
+| SPEC-003 | Aegis can resolve as a facility singleton while preserving legacy fallback | `FEATURE_GLOBAL_AEGIS` scoped to one facility path | Dispatch/review one safe task in global-Aegis mode, then verify flag OFF legacy/workspace behavior still works |
+| SPEC-004 | A workflow-template task chain can advance or fail deterministically | `FEATURE_TASK_PIPELINES` for one product-line workflow | Run one happy-path chain and one invalid-output chain; inspect successor, activity reason codes, retry behavior, and rollback path |
+| SPEC-005 | PR-producing work can stop at `ready_for_owner` until human merge | `FEATURE_TWO_STEP_TERMINAL` for one PR-producing workflow | Drive a linked PR task to `ready_for_owner`, merge manually, sync, and verify transition to `done` plus label/notification evidence |
+| SPEC-006 | A shared monorepo issue routes to the correct department once | `FEATURE_AREA_LABEL_ROUTING` for one GitHub repo/product line | Ingest/update one `area:*` issue, verify no duplicate project ingestion, correct fallback/ambiguity handling, and outbound labels |
+| SPEC-007 | Dispositions and artifacts become durable handoff/review evidence | `FEATURE_DISPOSITION_LOGGING` and `FEATURE_TASK_ARTIFACTS` | Publish/consume a safe artifact, reject or redact a seeded secret fixture, inspect disposition rollup and artifact admin/storage health |
+| SPEC-008 | Governance can allow/defer/block autonomous work before dispatch | `FEATURE_RESOURCE_GOVERNANCE`; optional `FEATURE_OPENCLAW_HEALTH_COSTS` | Enable policies for one product line, verify WIP/blackout/budget decisions in UI/API/activity, and verify OpenClaw absence-safe OFF path |
+| SPEC-009A | Mission Control workflow policy is repo-owned and roundtrippable | Process-only contract import/export | Export/import the Mission Control workflow family, inspect no-op parity hashes, and verify invalid contracts fail closed visibly |
+| SPEC-009B | Mission Control is seeded as Product Line A without launching work | `PILOT_MISSION_CONTROL_E2E` seed scope only | Run seed twice on target deployment, inspect workspace/departments/agents/repo/templates/flags/governance, and confirm no issue claim/dispatch |
+| SPEC-009C | Mission Control can work one GitHub issue through the self-hosting pilot | `PILOT_MISSION_CONTROL_E2E` for one real or synthetic issue | Observe triage -> plan -> dev -> review -> Aegis -> `ready_for_owner`, merge at `G_PILOT_MERGE`, and verify sync to `done` |
+| SPEC-009D | Pilot work leaves a reviewable lifecycle packet | `PILOT_MISSION_CONTROL_E2E` review-packet scope | Inspect packet contents for issue/PR/artifacts/governance/Aegis/owner gate/current stage and explicitly deferred run/sandbox fields |
+| SPEC-010A | Product-line seeding is reusable beyond Mission Control | Process-only seeder config | Recreate the Mission Control seed from generic config in a safe target scope and verify incomplete/unsafe configs reject without mutation |
+| SPEC-010B | Product Line B can be onboarded, smoked, and disabled independently | Disabled workspace until operator enablement | Onboard Product Line B in under one operator-hour, run one issue smoke, inspect isolation/shared globals, then disable cleanly |
+| SPEC-011 | CrabTrap can surface honeypot evidence without being required | `FEATURE_CRABTRAP_HONEYPOT` and valid/missing adapter config | Verify flag OFF and absent binary no-op, then send one valid and one malformed webhook and inspect activities/alerts |
+| SPEC-012A | A fresh agent can discover current repo truth from indexed docs | Process-only repo index/AGENTS map | Start a fresh agent from repo-local docs and verify it finds PRD, roadmap, workflow, runbook, ownership, and current status evidence |
+| SPEC-012B | Drift guards can create narrow remediation work instead of broad rewrites | Process-only guard/manual scheduler path | Trigger each drift fixture and confirm one specific cleanup task or GitHub issue recommendation with evidence and owner metadata |
+| SPEC-013A | Durable run-attempt state exists without changing legacy dispatch | `FEATURE_TASK_CONTROL_PLANE` flag OFF/ON inspection | Create/inspect/archive one attempt record and verify flag OFF ignores it while UI/API expose bounded state when enabled |
+| SPEC-013B | Only one claim can own a GitHub-linked stage at a time | `FEATURE_TASK_CONTROL_PLANE` for one product-line workflow | Run concurrent scheduler ticks, verify one claim, governance/reconciliation gates, terminal release, and no duplicate launch |
+| SPEC-013C | Operators can retry, release, or cancel a claimed stage safely | `FEATURE_TASK_CONTROL_PLANE` debug surface | Retry/release/cancel one claimed stage and inspect state transition, audit evidence, backoff, and operator-visible error summary |
+| SPEC-014A | Sandbox lifecycle is explicit, bounded, and flag-gated | `FEATURE_AGENT_RUNNER_SANDBOXES` with fake lifecycle | Create fake Mission Control/OpenClaw/external lifecycles, verify bounded paths/handles/events/cleanup, and confirm flag OFF blocks create/run |
+| SPEC-014B | Harness adapters declare capabilities before execution | `FEATURE_AGENT_RUNNER_SANDBOXES` fake adapter registry | Run two fake adapters through the manifest and verify unsupported capabilities fail the attempt instead of stalling or switching harness |
+| SPEC-014C | One real harness adapter can execute an already-claimed stage | `FEATURE_AGENT_RUNNER_SANDBOXES` plus one real adapter manifest | Launch/continue one claimed stage, inspect artifacts/usage/failure summaries, and verify unsupported tool/user-input failure behavior |
+| SPEC-014D | OpenClaw/external harnesses use the same adapter contract | `FEATURE_AGENT_RUNNER_SANDBOXES` plus OpenClaw/external config | Verify missing OpenClaw/external config is absent-safe, then enable adapter on target deployment and inspect lifecycle/failure evidence |
+| V2-001 | Tenant-aware gateway resolution can support multi-facility deployments | Future v2 flag/scope; not in v1 spec index | In a future v2 target, prove two tenant/facility contexts resolve separate gateway settings without leaking or regressing single-tenant fallback |
 
 ## Feature Flag Resolution Policy
 

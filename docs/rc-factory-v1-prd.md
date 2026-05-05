@@ -155,6 +155,7 @@ Result: the fork supports running one product (Mission Control itself as Product
 - **[SC-19] Reconciliation and retry safety** — if an issue/task becomes terminal, blocked, or no longer eligible, Mission Control stops or releases the active run and does not launch duplicate work. Transient failures retry with bounded backoff and visible reason codes.
 - **[SC-20] Agent-readable review packet** — the pilot produces a Mission Control review packet with task chain, PR link, artifact references, validation evidence, cost/governance summary, and unresolved human gates before the operator merges.
 - **[SC-21] Harness-gardening loop** — stale PRD/roadmap/workflow/runbook claims and low-value or missing verification surfaces are discoverable by an automated docs/quality audit that can open a targeted follow-up task.
+- **[SC-22] Post-merge HITL UAT loop** — every spec PR is deployed from merged `main` to the target Mission Control deployment before operational acceptance. Required feature flags are enabled only for the named product line/facility/operator path, the named human UAT check is run, UAT defects become GitHub issues, and the issue is resolved, reviewed, merged, redeployed, and retested until the spec capability passes or an operator records an explicit defer decision.
 
 ### Non-goals (v1)
 
@@ -591,6 +592,7 @@ CREATE INDEX idx_resource_policy_events_task
 6. OpenClaw-only integrations must remain optional, disabled by default, and absent-safe.
 7. Workflow contracts and runner state must stay inspectable from the repo and Mission Control UI/API; hidden local terminal state is not a durable source of truth.
 8. The Mission Control Product Line pilot uses GitHub first as the tracker and may select Codex/ChatGPT, Claude Code, OpenClaw, Hermes, OpenCode, or later harnesses through an explicit adapter registry. Non-GitHub tracker adapters are future extensions through a normalized tracker interface.
+9. A spec is not operationally complete at PR merge. Merge creates the deployable candidate; the acceptance loop is deploy -> enable narrow flags -> run HITL UAT -> open/remediate GitHub issues through Mission Control where available -> human review/merge -> redeploy -> retest until the capability passes.
 
 ## 9) Risks & Mitigations
 
@@ -689,3 +691,4 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 - Second product line onboarding completes in < 1 operator-hour: **SCALE gate** (manual measurement).
 - A GitHub-backed Mission Control task can be claimed, run in a deterministic sandbox, observed, retried, and handed off without operator session supervision: **CONTROL-PLANE gate**.
 - Repository-local product/workflow/quality knowledge is indexed and drift-checked enough that new agent runs can discover current constraints without out-of-band context: **AGENT-LEGIBILITY gate**.
+- Every post-merge spec candidate has deployed-commit evidence, narrow feature-flag activation evidence, human UAT evidence, and either a clean pass or linked remediation issues that have been resolved/redeployed/retested: **HITL-UAT gate**.
