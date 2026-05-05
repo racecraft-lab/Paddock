@@ -93,3 +93,5 @@ jobs:
       node_version: '22'
       visual_review_ref: main
       timeout_minutes: 20
+    secrets:
+      visual_review_pages_deploy_key: ${{ secrets.VISUAL_REGRESSION_PAGES_DEPLOY_KEY }}
