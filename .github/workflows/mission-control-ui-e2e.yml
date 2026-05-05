@@ -120,3 +120,5 @@ jobs:
       pnpm_version: '10'
       node_version: '22'
       visual_review_ref: main
+    secrets:
+      visual_review_pages_deploy_key: ${{ secrets.VISUAL_REGRESSION_PAGES_DEPLOY_KEY }}
