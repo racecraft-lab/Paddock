@@ -68,7 +68,7 @@ The runner is **harness-agnostic by design**. Current Mission Control already ob
 
 Sandbox ownership is a first-class run decision. A workflow can select `sandbox_owner = openclaw` when OpenClaw should provision and supervise the workspace, `sandbox_owner = mission_control` when Mission Control should create the git worktree and invoke a local harness directly, or `sandbox_owner = external_harness` when a future adapter returns a bounded workspace/session handle. In all cases, Mission Control remains the authority for claim state, governance, review gates, artifact handoff, and GitHub/task reconciliation.
 
-As of 2026-05-04, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, and SPEC-008 is merged on PR #26 as `bd9a693`. SPEC-009 is the next pilot phase and now owns the Symphony-compatible Mission Control workflow contract, runner lifecycle hardening, and end-to-end smoke.
+As of 2026-05-04, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, and SPEC-008 is merged on PR #26 as `bd9a693`. The next pilot work is split into SPEC-009A through SPEC-009D: workflow-contract roundtrip, Mission Control product-line seed/flag/governance activation, GitHub-linked self-hosting smoke, and a review-packet/lifecycle snapshot. This split makes Mission Control itself the first product line and proves the system by having agents work Mission Control GitHub issues toward completion and deployment before the formal runner/adapters are added.
 
 ## Tech Stack
 
@@ -139,7 +139,7 @@ Result: the fork supports running one product (Mission Control itself as Product
 - **[SC-3] Switcher fidelity** — product-line switcher exposes exactly two operating modes: **Facility** aggregate mode and selected **Product Line** mode. Mode-sensitive panels filter to the selected Product Line, while Facility mode renders authorized aggregate data across the authenticated tenant/facility boundary.
 - **[SC-4] Global Aegis** — Aegis resolves via `scope='global'` lookup; `aegisAgentByWorkspace` map is either removed or retained only as a backward-compat shim for legacy workspace-scoped Aegis records.
 - **[SC-5] Disposition telemetry** — morning-briefing metric "Last 7d: N triaged, X ACTIONABLE, Y OBE, Z DUPLICATE, W NEEDS_SPECIALIST" queryable from `task_dispositions`.
-- **[SC-6] Second product line onboarding** — Product Line B platform onboarded in < 1 operator-hour given seed templates (Phase 9 validation).
+- **[SC-6] Second product line onboarding** — Product Line B platform onboarded in < 1 operator-hour given seed templates (Phase 9B validation).
 - **[SC-7] Upstream compat preserved** — cherry-picking from `builderz-labs/mission-control` `main` remains viable (no rename of `workspaces` table or `workspace_id` columns).
 - **[SC-8] Artifact handoff durability** — researcher/planner/dev/reviewer/Aegis handoffs are persisted in `task_artifacts`; downstream agents consume MC artifact references rather than reading another agent's sandbox.
 - **[SC-9] Resource governance safety** — WIP, blackout/degraded window, and budget policies block or defer new autonomous work before scheduler dispatch, while Cost Tracker continues to show spend/usage and policy decisions.
@@ -608,7 +608,7 @@ CREATE INDEX idx_resource_policy_events_task
 | R10 | "Additive" schema changes are mistaken for upstream-safe changes | D13 forces explicit compatibility labeling; roadmap must mark schema/state divergence as fork pressure before implementation. |
 | R11 | OpenClaw health electricity integration leaks OpenClaw-node-specific assumptions into upstream installs | Keep it fork-only optional, runtime-adapter-based, absent-safe, and behind its own flag with no schema migration in v1. |
 | R12 | Global gateway coupling blocks clean multi-facility v2 | Treat `openclaw_home` and `gateway_port` as tenant provisioning data, and `owner_gateway` as persisted future ownership metadata rather than a runtime endpoint/FK. v1 must avoid new assumptions that one `gateways.is_primary` row or process-global `OPENCLAW_GATEWAY_*` config is the only runtime source. A future v2 spec owns tenant-aware gateway registry, resolution, health checks, and config path routing before multiple facilities run concurrently. |
-| R13 | Workflow contract drift between Markdown and `workflow_templates` makes agents run stale prompts | SPEC-009 owns export/import parity checks, prompt/schema/routing hashes, and last-known-good behavior for invalid reloads. |
+| R13 | Workflow contract drift between Markdown and `workflow_templates` makes agents run stale prompts | SPEC-009A owns export/import parity checks, prompt/schema/routing hashes, and last-known-good behavior for invalid reloads; SPEC-012B adds later drift guards. |
 | R14 | Long-running runner sessions duplicate work after crash/restart | Claim state is serialized in Mission Control, dispatch reconciles before launch, and restart recovery is driven from task/GitHub state plus workspace inspection. |
 | R15 | App-server/session logs leak secrets into review packets | Reuse SPEC-007 secret detection/redaction and SPEC-008 observability redaction before persisting summaries or artifact previews. |
 | R16 | Agents learn bad local patterns and amplify documentation/test debt | Harness-gardening scans become recurring tasks with narrow PRs instead of relying on periodic manual cleanup. |
@@ -636,12 +636,22 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 5 | Area labels + GitHub sync updates | Complete | Yes — fallback to `area:triage` | `upstream-safe` |
 | 6 | Disposition logging + artifact store + audit/admin panels | Complete | Yes — purely additive | `upstream-divergent` |
 | 7 | Resource governance + Cost Tracker enforcement | Complete | Yes — flag-off default | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` |
-| 7.5 | CrabTrap honeypot — operator-node security adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
-| 8 | Mission Control Symphony-style pilot (two live or synthetic issues) | Pending | Gated behind pilot feature flag | Fork rollout only |
-| 9 | Second product line onboarding (Product Line B) | Pending | Post-pilot | Fork rollout only |
-| 10 | Agent-legible repository knowledge and harness guardrails | Pending | Process/tooling only | `upstream-safe` |
-| 11 | GitHub-backed task control plane and run-state reconciliation | Pending | Yes — flag-off default | `upstream-safe` core; optional persisted run-state = `upstream-divergent` |
-| 12 | Per-task sandbox runner and harness adapter registry | Pending | Yes — flag-off default | `upstream-divergent`; OpenClaw adapters remain `fork-only optional` |
+| 7.5 | CrabTrap honeypot adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
+| 8A | Workflow contract roundtrip | Pending | Process/tooling only | `upstream-safe` |
+| 8B | Mission Control product-line seed + flag/governance activation | Pending | Gated behind pilot feature flag | Fork rollout only |
+| 8C | GitHub-linked Mission Control self-hosting smoke | Pending | Gated behind pilot feature flag | Fork rollout only |
+| 8D | Pilot review packet + lifecycle snapshot | Pending | Gated behind pilot feature flag | Fork rollout only |
+| 9A | Generic product-line seeder | Pending | Process/tooling only | Fork rollout only |
+| 9B | Second product line onboarding smoke (Product Line B) | Pending | Disabled workspace until operator enablement | Fork rollout only |
+| 10A | Repo knowledge index and AGENTS map | Pending | Process/tooling only | `upstream-safe` |
+| 10B | Harness-gardening drift guards | Pending | Process/tooling only | `upstream-safe` |
+| 11A | Run-state persistence spine | Pending | Yes — `FEATURE_TASK_CONTROL_PLANE` flag-off default | `upstream-safe` core; optional persisted state = `upstream-divergent` |
+| 11B | Claim and reconciliation authority | Pending | Yes — `FEATURE_TASK_CONTROL_PLANE` flag-off default | `upstream-safe` core; optional persisted state = `upstream-divergent` |
+| 11C | Retry/backoff and debug surfaces | Pending | Yes — `FEATURE_TASK_CONTROL_PLANE` flag-off default | `upstream-safe` core |
+| 12A | Sandbox ownership and lifecycle contract | Pending | Yes — `FEATURE_AGENT_RUNNER_SANDBOXES` flag-off default | `upstream-divergent` |
+| 12B | Harness adapter manifest and fake registry | Pending | Yes — `FEATURE_AGENT_RUNNER_SANDBOXES` flag-off default | `upstream-divergent` |
+| 12C | First real harness adapter pilot | Pending | Yes — `FEATURE_AGENT_RUNNER_SANDBOXES` flag-off default | `upstream-divergent` |
+| 12D | OpenClaw/external harness adapter | Pending | Yes — `FEATURE_AGENT_RUNNER_SANDBOXES` flag-off default | `fork-only optional` |
 
 **V2 readiness item:** Tenant-aware gateway isolation is deliberately deferred from v1 implementation. Before hosting multiple live tenant/facility accounts in one Mission Control instance, add a dedicated v2 spec to give gateway registry, runtime resolution, health checks, and OpenClaw config paths an explicit tenant context, with compatibility fallbacks for the current process-global primary gateway behavior.
 
@@ -661,20 +671,20 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 
 **Phase 6 completion note:** SPEC-007 is complete on PR #25 after merge to `main` as `953f29b` on 2026-05-02. Evidence includes task disposition API/rollup behavior, Mission Control artifact publish/read/admin/health surfaces, secret detection/redaction fixtures, dashboard/audit/admin UI surfaces, dispatch input-artifact integration, OpenAPI updates, e2e seed support, and retrospective evidence noting implementation complete with remaining operator-led verification/polish caveats.
 
-**Phase 7 completion note:** SPEC-008 is complete on PR #26 after merge to `main` as `bd9a693` on 2026-05-04. Evidence includes the feature-flagged synchronous resource policy evaluator, observability ingestion/reconciliation pipeline, M65a..m + M66 additive migrations and rollback files, Cost Tracker Governance tab with Policies/Budgets/Windows/Overrides/Diagnostics/System Health subviews, feature-flag matrix harness, axe coverage guard, feature-flag env-leak guard, strict-scope guard, runbooks, observability docs, and SPEC-008 summary/retrospective evidence. Operator-led soak/chaos and selected running-instance e2e checks remain documented as follow-up evidence and do not block SPEC-009 planning.
+**Phase 7 completion note:** SPEC-008 is complete on PR #26 after merge to `main` as `bd9a693` on 2026-05-04. Evidence includes the feature-flagged synchronous resource policy evaluator, observability ingestion/reconciliation pipeline, M65a..m + M66 additive migrations and rollback files, Cost Tracker Governance tab with Policies/Budgets/Windows/Overrides/Diagnostics/System Health subviews, feature-flag matrix harness, axe coverage guard, feature-flag env-leak guard, strict-scope guard, runbooks, observability docs, and SPEC-008 summary/retrospective evidence. Operator-led soak/chaos and selected running-instance e2e checks remain documented as follow-up evidence and do not block SPEC-009A planning.
 
 ### Autopilot Caveats (per spec)
 
 - **SPEC-001 (Phase 0)** is migration-only and intentionally degenerate for the SDD funnel. `clarify`, `checklist`, and `analyze` should produce minimal output (no markers, "N/A — pure-schema spec" gaps, migration-safety findings only). The implement phase consists of the migration writes and the per-migration smoke checks listed in P0-AC1..AC14. Rollback for SPEC-001 is documented manual reverse SQL (the live migration runner has no `down()` function).
-- **SPEC-009 (Phase 8)** has one intentional human-in-the-loop checkpoint: `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes when `pullFromGitHub` records the linked PR merge. ACs P8-AC1, P8-AC6, P8-AC7 are MANUAL and live in `docs/qa/pilot-smoke-checklist.md`; they are NOT validated by `gate-validator`.
-- **SPEC-010 (Phase 9)** AC P9-AC1 (1-operator-hour onboarding) is MANUAL; the operator records timestamps in the pilot smoke checklist. Code-checkable ACs P9-AC2..AC4 are validated by `gate-validator` and `implement-executor` TDD as usual.
-- **SPEC-012 through SPEC-014 (Phases 10–12)** are Symphony-aligned v2 work. They must not rewrite the v1 departmental architecture or replace SpecKit task-chain governance. Each spec starts by proving which v1 primitives it reuses and which new state, if any, it adds.
+- **SPEC-009A through SPEC-009D (Phases 8A-8D)** replace the old monolithic pilot. SPEC-009C has one intentional human-in-the-loop checkpoint: `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes when `pullFromGitHub` records the linked PR merge. Manual wall-clock and UI-observation checks live in `docs/qa/pilot-smoke-checklist.md`; they are NOT validated by `gate-validator`.
+- **SPEC-010A and SPEC-010B (Phases 9A-9B)** split reusable product-line seeding from Product Line B's real smoke. SPEC-010B's 1-operator-hour onboarding check is MANUAL; code-checkable isolation/dashboard checks remain validator/TDD work.
+- **SPEC-012A/B, SPEC-013A/B/C, and SPEC-014A/B/C/D (Phases 10A-12D)** are Symphony-aligned v2 work. They must not rewrite the v1 departmental architecture or replace SpecKit task-chain governance. Each spec starts by proving which v1 primitives it reuses and which new state, if any, it adds.
 - **Tool count = N/A:** every spec in this PRD is non-tool-surface. `/speckit-pro:setup` should accept `N/A` and skip MCP-tool artifacts.
 
 ## 12) Success Measurement
 
 - Every single-workspace deployment passes the existing test suite post-migration: **PASS gate**.
-- One Mission Control pilot issue completes end-to-end through the pipeline with no operator intervention beyond PR merge (the `G_PILOT_MERGE` human gate): **PILOT gate**.
+- Mission Control is onboarded as the first product line with configured agents, workflow contract, GitHub sync, feature flags, and governance policies; one Mission Control GitHub issue completes end-to-end with no operator intervention beyond PR merge (the `G_PILOT_MERGE` human gate): **PILOT gate**.
 - Disposition dashboard and artifact admin health panels show 7-day rollups / storage health for at least one product line: **TELEMETRY gate**.
 - Second product line onboarding completes in < 1 operator-hour: **SCALE gate** (manual measurement).
 - A GitHub-backed Mission Control task can be claimed, run in a deterministic sandbox, observed, retried, and handed off without operator session supervision: **CONTROL-PLANE gate**.
