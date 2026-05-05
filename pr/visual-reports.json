@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-05T18:51:58.394Z",
+  "updatedAt": "2026-05-05T19:27:08.142Z",
   "prs": [
     {
       "prNumber": "27",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/27/",
       "headRef": "symphony-prd-roadmap",
       "baseRef": "main",
-      "updatedAt": "2026-05-05T18:51:58.394Z",
+      "updatedAt": "2026-05-05T19:27:08.142Z",
       "latest": {
         "playwright": {
-          "runId": "25395422626",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25395422626",
+          "runId": "25397220273",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25397220273",
           "latestHref": "https://racecraft-lab.github.io/mission-control/pr/27/playwright/latest/",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/27/runs/25395422626-attempt-1/playwright/",
-          "updatedAt": "2026-05-05T18:51:58.394Z"
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/27/runs/25397220273-attempt-1/playwright/",
+          "updatedAt": "2026-05-05T19:27:08.142Z"
         }
       }
     },
