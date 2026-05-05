@@ -11,6 +11,10 @@ import {
 } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import {
+  findReviewComment,
+  parseReviewCommentBody,
+} from './visual-review-state.mjs'
 
 const SURFACES = {
   playwright: {
@@ -73,6 +77,28 @@ function pageBaseUrl(repository, explicitBaseUrl) {
   return `https://${owner}.github.io/${repo}`
 }
 
+function githubServerUrl() {
+  return process.env.GITHUB_SERVER_URL || 'https://github.com'
+}
+
+function githubApiUrl() {
+  return process.env.GITHUB_API_URL || 'https://api.github.com'
+}
+
+function githubApiHeaders(token) {
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'X-GitHub-Api-Version': '2026-03-10',
+  }
+  if (token) headers.Authorization = `Bearer ${token}`
+  return headers
+}
+
+function responseHasNextPage(response) {
+  const link = response.headers?.get?.('link') || ''
+  return /\brel="next"/.test(link)
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -99,6 +125,143 @@ function run(command, args, options = {}) {
 
 function safeBranchName(branch) {
   return String(branch || 'unknown').replace(/[^\w./-]+/g, '-')
+}
+
+function pullRequestNumberFromText(text) {
+  const value = String(text || '')
+  const patterns = [
+    /Merge pull request #(\d+)\b/,
+    /\(#(\d+)\)\s*$/,
+    /\(#(\d+)\)/,
+    /\/pull\/(\d+)\b/,
+  ]
+
+  for (const pattern of patterns) {
+    const match = value.match(pattern)
+    if (match) return match[1]
+  }
+  return ''
+}
+
+function titleFromCommitMessage(message, prNumber) {
+  const lines = String(message || '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+  if (lines[0]?.startsWith(`Merge pull request #${prNumber}`) && lines[1]) {
+    return lines[1]
+  }
+
+  const firstLine = lines[0] || ''
+  return firstLine.replace(new RegExp(`\\s*\\(#${prNumber}\\)\\s*$`), '').trim()
+}
+
+function normalizeSourcePullRequest(pullRequest, { repository, baseUrl }) {
+  const number = String(pullRequest?.number || '')
+  if (!number) return null
+
+  return {
+    baseRef: String(pullRequest?.base?.ref || pullRequest?.baseRef || ''),
+    headRef: String(pullRequest?.head?.ref || pullRequest?.headRef || ''),
+    headSha: String(pullRequest?.head?.sha || pullRequest?.headSha || ''),
+    indexHref: `${baseUrl}/pr/${number}/`,
+    mergeCommitSha: String(pullRequest?.merge_commit_sha || pullRequest?.mergeCommitSha || ''),
+    number,
+    title: String(pullRequest?.title || `PR #${number}`),
+    url: String(pullRequest?.html_url || `${githubServerUrl()}/${repository}/pull/${number}`),
+  }
+}
+
+function sourcePullRequestFromEvent(event, { repository, baseUrl }) {
+  const eventPullRequest = normalizeSourcePullRequest(event.pull_request, { repository, baseUrl })
+  if (eventPullRequest) return eventPullRequest
+
+  const messages = [
+    event.head_commit?.message,
+    ...(Array.isArray(event.commits) ? event.commits.map((commit) => commit?.message) : []),
+  ].filter(Boolean)
+
+  for (const message of messages) {
+    const number = pullRequestNumberFromText(message)
+    if (!number) continue
+    return normalizeSourcePullRequest({
+      html_url: `${githubServerUrl()}/${repository}/pull/${number}`,
+      number,
+      title: titleFromCommitMessage(message, number) || `PR #${number}`,
+    }, { repository, baseUrl })
+  }
+
+  return null
+}
+
+async function sourcePullRequestFromCommit({ repository, baseUrl, headSha }) {
+  const token = process.env.GITHUB_TOKEN
+  if (!token || !headSha || headSha === 'unknown' || typeof fetch !== 'function') return null
+
+  const { owner, repo } = repoParts(repository)
+  const endpoint = `${githubApiUrl()}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits/${encodeURIComponent(headSha)}/pulls?per_page=10`
+  const response = await fetch(endpoint, {
+    headers: githubApiHeaders(token),
+  })
+
+  if (!response.ok) {
+    console.warn(`[visual-pr-pages] unable to resolve source PR for ${headSha}: GitHub API ${response.status}`)
+    return null
+  }
+
+  const pullRequests = await response.json()
+  if (!Array.isArray(pullRequests) || pullRequests.length === 0) return null
+  return normalizeSourcePullRequest(
+    pullRequests.find((pullRequest) => pullRequest?.merged_at) || pullRequests[0],
+    { repository, baseUrl }
+  )
+}
+
+async function resolveSourcePullRequest({ options, event, repository, baseUrl, headSha }) {
+  const explicit = normalizeSourcePullRequest({
+    html_url: options['source-pr-url'],
+    number: options['source-pr-number'],
+    title: options['source-pr-title'],
+  }, { repository, baseUrl })
+  if (explicit) return explicit
+
+  return await sourcePullRequestFromCommit({ repository, baseUrl, headSha }) ||
+    sourcePullRequestFromEvent(event, { repository, baseUrl })
+}
+
+async function initialReviewStateFromPullRequest({ repository, sourcePullRequest }) {
+  const token = process.env.GITHUB_TOKEN
+  if (!token || !sourcePullRequest?.number || typeof fetch !== 'function') return null
+
+  const { owner, repo } = repoParts(repository)
+  const comments = []
+  for (let page = 1; page <= 10; page += 1) {
+    const endpoint = `${githubApiUrl()}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues/${encodeURIComponent(sourcePullRequest.number)}/comments?per_page=100&page=${page}`
+    const response = await fetch(endpoint, {
+      headers: githubApiHeaders(token),
+    })
+
+    if (!response.ok) {
+      console.warn(
+        `[visual-pr-pages] unable to load source PR #${sourcePullRequest.number} review state: GitHub API ${response.status}`
+      )
+      return null
+    }
+
+    const pageComments = await response.json()
+    if (Array.isArray(pageComments)) comments.push(...pageComments)
+    if (!responseHasNextPage(response)) break
+  }
+
+  const comment = findReviewComment(comments)
+  const state = parseReviewCommentBody(comment?.body)
+  if (!comment || !state) return null
+
+  return {
+    author: String(comment.user?.login || ''),
+    commentId: comment.id || null,
+    state,
+  }
 }
 
 function scriptAssetUrl(fileName) {
@@ -981,8 +1144,8 @@ async function publishReport(options) {
   const baseRef = safeBranchName(options['base-ref'] || process.env.GITHUB_BASE_REF || (mode === 'main' ? process.env.GITHUB_REF_NAME : prPayload.base?.ref))
   const headSha = String(options.sha || prPayload.head?.sha || process.env.GITHUB_SHA || 'unknown')
   const workflowName = options.workflow || process.env.GITHUB_WORKFLOW || SURFACES[surface].label
-  const runUrl = options['run-url'] || `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${repository}/actions/runs/${runId}`
-  const prUrl = options['pr-url'] || prPayload.html_url || `${process.env.GITHUB_SERVER_URL || 'https://github.com'}/${repository}/pull/${prNumber}`
+  const runUrl = options['run-url'] || `${githubServerUrl()}/${repository}/actions/runs/${runId}`
+  const prUrl = options['pr-url'] || prPayload.html_url || `${githubServerUrl()}/${repository}/pull/${prNumber}`
   const createdAt = new Date().toISOString()
 
   let pagesDir = options['pages-dir']
@@ -997,6 +1160,8 @@ async function publishReport(options) {
   if (mode === 'main') {
     const reportHtml = await readFile(reportFile, 'utf8')
     const extractedReport = extractReportPayload(reportHtml)
+    const sourcePullRequest = await resolveSourcePullRequest({ options, event, repository, baseUrl, headSha })
+    const initialReviewState = await initialReviewStateFromPullRequest({ repository, sourcePullRequest })
     const reportKey = safeBranchName(options['report-key'] || headSha || runKey)
     const runReportDir = path.join(pagesDir, surface, reportKey)
     const latestReportDir = path.join(pagesDir, surface, 'latest')
@@ -1005,11 +1170,15 @@ async function publishReport(options) {
     const reviewContext = {
       repository,
       baseUrl,
-      prNumber: '',
-      prTitle: 'Main branch visual report',
-      prUrl: '',
-      prIndexHref: `${baseUrl}/`,
+      prNumber: sourcePullRequest?.number || '',
+      prTitle: sourcePullRequest?.title || 'Main branch visual report',
+      prUrl: sourcePullRequest?.url || '',
+      prIndexHref: sourcePullRequest?.indexHref || `${baseUrl}/`,
+      initialReviewState: initialReviewState?.state || null,
+      initialReviewStateAuthor: initialReviewState?.author || '',
+      initialReviewStateCommentId: initialReviewState?.commentId || null,
       reportMode: 'main',
+      sourcePullRequest,
       surface,
       surfaceLabel: SURFACES[surface].label,
       workflowName,
@@ -1073,6 +1242,7 @@ async function publishReport(options) {
       baseRef,
       workflowName,
       workflowFile: SURFACES[surface].workflowFile,
+      sourcePullRequest,
       createdAt,
     }
 
