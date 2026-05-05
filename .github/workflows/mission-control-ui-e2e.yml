@@ -30,12 +30,7 @@ on:
       - 'scripts/seed-e2e-spec-008.cjs'
       - 'scripts/seed-spec-007.ts'
       - 'scripts/clean-visual-output.mjs'
-      - 'scripts/check-visual-review-approval.mjs'
-      - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/verify-visual-manifest.mjs'
-      - 'scripts/visual-review-app.css'
-      - 'scripts/visual-review-app.js'
-      - 'scripts/visual-review-state.mjs'
       - 'tests/visual/**'
       - 'regconfig*.json'
       - 'playwright*.config.ts'
@@ -75,12 +70,7 @@ on:
       - 'scripts/seed-e2e-spec-008.cjs'
       - 'scripts/seed-spec-007.ts'
       - 'scripts/clean-visual-output.mjs'
-      - 'scripts/check-visual-review-approval.mjs'
-      - 'scripts/publish-visual-pr-pages.mjs'
       - 'scripts/verify-visual-manifest.mjs'
-      - 'scripts/visual-review-app.css'
-      - 'scripts/visual-review-app.js'
-      - 'scripts/visual-review-state.mjs'
       - 'tests/visual/**'
       - 'regconfig*.json'
       - 'playwright*.config.ts'
@@ -90,9 +80,6 @@ on:
       - 'pnpm-lock.yaml'
       - '.specify/memory/constitution.md'
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
-
 permissions:
   contents: write
   actions: read
@@ -101,130 +88,30 @@ permissions:
 
 jobs:
   docker-ui-e2e:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    concurrency:
-      group: visual-pages-${{ github.event_name }}-${{ github.ref }}
-      cancel-in-progress: false
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run Docker-backed Mission Control UI journey
-        id: e2e
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          MC_VISUAL_SNAPSHOTS: '1'
-          MC_VISUAL_OUTPUT_DIR: test-results/visual-current
-          SPEC_008_AXE_ENABLED: '1'
-        run: pnpm test:e2e:docker
-
-      - name: Verify Playwright visual manifests
-        id: visual-manifest
-        if: always()
-        continue-on-error: true
-        env:
-          MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS: '140'
-          MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS: '100'
-          MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS: '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008'
-          MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS: 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008'
-          MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS: 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120'
-        run: pnpm test:e2e:visual-manifest
-
-      - name: Prepare Playwright visual report directory
-        if: steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
-        run: mkdir -p test-results/visual-report
-
-      - name: Compare Playwright visual snapshots
-        id: visual-regression
-        if: steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
-        continue-on-error: true
-        uses: reg-viz/reg-actions@v3
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          image-directory-path: test-results/visual-current/playwright
-          artifact-name: mission-control-playwright-visual
-          branch: visual-regression-artifacts
-          report-file-path: test-results/visual-report/playwright.html
-          custom-report-page: ${{ github.event_name == 'pull_request' && format('https://racecraft-lab.github.io/mission-control/pr/{0}/playwright/latest/', github.event.pull_request.number) || '' }}
-          comment-report-format: summarized
-          outdated-comment-action: minimize
-          retention-days: 30
-
-      - name: Publish Playwright PR visual report to GitHub Pages
-        if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/publish-visual-pr-pages.mjs --surface playwright --report-file test-results/visual-report/playwright.html
-
-      - name: Publish Playwright visual report to GitHub Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.e2e.outcome == 'success' && steps.visual-manifest.outcome == 'success'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/publish-visual-pr-pages.mjs --surface playwright --report-file test-results/visual-report/playwright.html --mode main
-
-      - name: Upload Playwright artifacts
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: mission-control-ui-e2e-artifacts
-          path: |
-            test-results/
-            playwright-report/docker/
-          if-no-files-found: ignore
-          retention-days: 14
-
-      - name: Comment with screenshot review artifact
-        if: always() && github.event_name == 'pull_request'
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const marker = '<!-- mission-control-ui-e2e -->';
-            const outcome = '${{ steps.e2e.outcome }}';
-            const metadataOutcome = '${{ steps.visual-manifest.outcome }}';
-            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const body = [
-              marker,
-              `Mission Control Docker-backed UI journey: **${outcome}**`,
-              `Playwright visual manifest gate: **${metadataOutcome}**`,
-              '',
-              `Review screenshots and traces in the \`mission-control-ui-e2e-artifacts\` artifact: ${runUrl}`,
-              '',
-              'Visual manifest gate: CI must find at least 140 Playwright visual snapshots across 100 tests, including at least 120 SPEC-008 governance screenshots, before this check can pass.',
-              '',
-              'Covered states: Facility task board, scope menu options, selected Product Line task board, Facility aggregate return, keyboard listbox focus, 320/375/390 px mobile scope menus, cross-tab Product Line sync, Feature Flags admin default/toggle states, Ready for Owner states, SPEC-007 visual states, and SPEC-008 governance journeys for WIP policy, budgets, windows, overrides, diagnostics, dispatch feed, system health, recovery modals, calibration, Aegis reserve, feature-flag matrix, and all-flags-on baseline.'
-            ].join('\n');
-            const { owner, repo } = context.repo;
-            const issue_number = context.payload.pull_request.number;
-            const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
-            const existing = comments.data.find((comment) => comment.body?.includes(marker));
-            if (existing) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body });
-            }
-
-      - name: Fail on E2E, visual manifest, or visual regression defects
-        if: steps.e2e.outcome != 'success' || steps.visual-manifest.outcome != 'success' || steps.visual-regression.outcome == 'failure'
-        run: exit 1
+    uses: racecraft-lab/visual-review-pages/.github/workflows/visual-review-report.yml@main
+    with:
+      surface: playwright
+      surface_label: Playwright UI E2E
+      project_name: Mission Control
+      visual_test_command: >-
+        MC_VISUAL_SNAPSHOTS=1
+        MC_VISUAL_OUTPUT_DIR=test-results/visual-current
+        SPEC_008_AXE_ENABLED=1
+        pnpm test:e2e:docker
+      manifest_command: >-
+        MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS=140
+        MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS=100
+        MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS=@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008
+        MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS=product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008
+        MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS=product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120
+        pnpm test:e2e:visual-manifest
+      image_directory_path: test-results/visual-current/playwright
+      manifest_dir: test-results/visual-current/playwright
+      report_file_path: test-results/visual-report/playwright.html
+      artifact_name: mission-control-ui-e2e-artifacts
+      workflow_file: mission-control-ui-e2e.yml
+      pages_branch: visual-regression-pages
+      base_url: https://racecraft-lab.github.io/mission-control
+      package_manager: pnpm
+      pnpm_version: '10'
+      node_version: '22'
