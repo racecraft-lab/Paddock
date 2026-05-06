@@ -42,7 +42,7 @@ spec.
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Prerequisites + Status Sync | `$speckit-autopilot` startup | Complete | Archive Sweep cleanup disabled safely; GitNexus rebuilt with skills + embeddings; dependencies installed; `pnpm typecheck` and `pnpm lint` passed |
-| Specify | `$speckit-specify` | Pending | Generate `specs/009a-workflow-contract-roundtrip/spec.md` |
+| Specify | `$speckit-specify` | Complete | Generated spec with 32 FRs, 6 user stories, 12 acceptance scenarios, 8 SCs; G1 PASS with 0 markers |
 | Clarify | `$speckit-clarify` | Pending | Resolve validation package, canonical hash envelope, diagnostics persistence, export path |
 | Plan | `$speckit-plan` | Pending | Produce technical plan, research, data model, contracts, quickstart |
 | Checklist | `$speckit-checklist` | Pending | Run 4 focused domains: data-integrity, error-handling, security, regression-safety |
@@ -363,13 +363,17 @@ self-hosting pilot.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 32 |
+| User Stories | 6 |
+| Acceptance Criteria | 12 |
+| Success Criteria | 8 |
+| Quality Markers | 0 `[NEEDS CLARIFICATION]`, 0 `[Gap]` |
+| Gate G1 | PASS - `validate-gate.sh G1 specs/009a-workflow-contract-roundtrip` reported `spec.md exists with 0 markers` |
 
 ### Files Generated
 
-- [ ] `specs/009a-workflow-contract-roundtrip/spec.md`
+- [x] `specs/009a-workflow-contract-roundtrip/spec.md`
+- [x] `specs/009a-workflow-contract-roundtrip/checklists/requirements.md`
 
 ---
 
