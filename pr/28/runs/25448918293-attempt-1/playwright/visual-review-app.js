@@ -1141,6 +1141,7 @@ import {
     root.querySelector('[data-action="load-pr-state"]')?.addEventListener('click', () => loadRemoteReviewState())
     root.querySelector('[data-action="publish-pr-state"]')?.addEventListener('click', publishRemoteReviewState)
     root.querySelector('[data-action="forget-token"]')?.addEventListener('click', forgetGithubToken)
+    bindStageWheelZoom()
     bindStagePan()
   }
 
@@ -1248,6 +1249,77 @@ import {
 
     stage.addEventListener('pointerup', stopPan)
     stage.addEventListener('pointercancel', stopPan)
+    updateStagePanState()
+  }
+
+  function bindStageWheelZoom() {
+    const stage = root.querySelector('.stage')
+    if (!stage) return
+    stage.addEventListener('wheel', handleStageWheelZoom, { passive: false })
+  }
+
+  function handleStageWheelZoom(event) {
+    if (!hasWheelZoomModifier(event)) return
+    const stage = event.currentTarget
+    const stageInner = root.querySelector('[data-stage-inner]')
+    if (!stage || !stageInner) return
+
+    const delta = normalizedWheelDelta(event)
+    if (!delta) return
+    const nextZoom = clamp(
+      state.zoom + (delta < 0 ? wheelZoomStep(delta) : -wheelZoomStep(delta)),
+      zoomMin,
+      zoomMax
+    )
+    if (nextZoom === state.zoom) {
+      event.preventDefault()
+      return
+    }
+
+    event.preventDefault()
+    const focus = stageScrollFocus(stage, event)
+    state.zoomMode = 'manual'
+    state.zoom = nextZoom
+    persistViewState()
+    applyZoomState()
+    restoreStageFocus(stage, focus)
+  }
+
+  function hasWheelZoomModifier(event) {
+    return Boolean(
+      event.metaKey ||
+      event.getModifierState?.('Meta') ||
+      event.getModifierState?.('OS')
+    )
+  }
+
+  function normalizedWheelDelta(event) {
+    const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX
+    if (!delta) return 0
+    if (event.deltaMode === 1) return delta * 16
+    if (event.deltaMode === 2) return delta * Math.max(event.currentTarget?.clientHeight || 0, 1)
+    return delta
+  }
+
+  function wheelZoomStep(delta) {
+    return Math.min(25, Math.max(5, Math.ceil(Math.abs(delta) / 120) * 5))
+  }
+
+  function stageScrollFocus(stage, event) {
+    const rect = stage.getBoundingClientRect()
+    const pointerX = clamp(event.clientX - rect.left, 0, Math.max(rect.width, 0))
+    const pointerY = clamp(event.clientY - rect.top, 0, Math.max(rect.height, 0))
+    return {
+      pointerX,
+      pointerY,
+      ratioX: (stage.scrollLeft + pointerX) / Math.max(stage.scrollWidth, 1),
+      ratioY: (stage.scrollTop + pointerY) / Math.max(stage.scrollHeight, 1),
+    }
+  }
+
+  function restoreStageFocus(stage, focus) {
+    stage.scrollLeft = Math.max(0, (focus.ratioX * stage.scrollWidth) - focus.pointerX)
+    stage.scrollTop = Math.max(0, (focus.ratioY * stage.scrollHeight) - focus.pointerY)
     updateStagePanState()
   }
 
