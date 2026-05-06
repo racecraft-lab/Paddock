@@ -59,6 +59,9 @@ pnpm lint             # eslint
 pnpm test:all         # lint + typecheck + test + build + e2e
 ```
 
+Codex sandbox note: run `pnpm test` outside the sandbox. The suite uses local
+runtime resources that can fail under sandboxed execution.
+
 ## Key Directories
 
 ```
