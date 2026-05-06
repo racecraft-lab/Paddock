@@ -49,7 +49,7 @@ export function recoverLastKnownGood(
   const canonicalSlugs = parseCanonicalTemplateSlugs(snapshot.canonical_json)
   const rows = (JSON.parse(snapshot.runtime_templates_json) as RuntimeWorkflowTemplate[])
     .filter(row => row.slug && (canonicalSlugs.has(row.slug) || row.created_by === 'workflow-contract'))
-  const tx = db.transaction(() => {
+  const applyRecovery = db.transaction(() => {
     for (const row of rows) {
       if (!row.slug) continue
       upsertTemplate(db, options.workspaceId, runtimeToTemplate(row))
@@ -65,7 +65,7 @@ export function recoverLastKnownGood(
       recoveryCommand: snapshot.recovery_command,
     })
   })
-  return { ok: true, run_id: tx(), mutation_status: 'applied' }
+  return { ok: true, run_id: applyRecovery(), mutation_status: 'applied' }
 }
 
 function parseCanonicalTemplateSlugs(canonicalJson: string): Set<string> {
