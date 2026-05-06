@@ -37,7 +37,7 @@
 ## Diagnostics Persistence And Migration
 
 - [ ] CHK017 Are diagnostics persistence requirements complete for run summaries, filterable errors, and last-known-good canonical snapshots? [Completeness, Spec FR-046, Spec FR-047, Spec FR-048]
-- [ ] CHK018 Is the diagnostics migration requirement clear that schema additions use additive migration `070_workflow_contract_diagnostics` with matching rollback SQL or a documented migration-id rebase? [Clarity, Spec FR-049, Plan Constitution Check]
+- [ ] CHK018 Is the diagnostics migration requirement clear that schema additions use additive migration `071_workflow_contract_diagnostics` with matching rollback SQL or a documented migration-id rebase? [Clarity, Spec FR-049, Plan Constitution Check]
 - [ ] CHK019 Are diagnostics re-run requirements represented by durable run records for import, export, recovery, success, validation failure, storage failure, and no-last-known-good states? [Coverage, Data Model Workflow Contract Run, Contracts Diagnostics API And UI]
 - [ ] CHK020 Are redaction and truncation requirements present for diagnostics details that may contain prompt bodies or secret-like values? [Non-Functional, Spec FR-052, Data Model Workflow Contract Run Error]
 
@@ -47,4 +47,3 @@
 - [ ] CHK022 Do the artifacts consistently keep Markdown export non-canonical and excluded from canonical hash input? [Consistency, Spec FR-002, Spec FR-041, Contracts Canonical YAML Location]
 - [ ] CHK023 Are acceptance criteria sufficient to cover changed, invalid, successful, repeated no-op, absent-snapshot, and unrelated-template states? [Scenario Coverage, Spec Acceptance Scenarios, Spec Success Criteria]
 - [ ] CHK024 Are data-integrity requirements bounded to SPEC-009A contract roundtrip behavior without introducing product-line seed, dispatch, runner, sandbox, or harness execution scope? [Scope, Spec FR-030, Plan Post-Design Constitution Check]
-

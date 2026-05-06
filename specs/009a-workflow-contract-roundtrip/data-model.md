@@ -131,7 +131,7 @@
 
 **Purpose**: Generic diagnostics summary for import, export, or recovery attempts.
 
-**Storage**: `workflow_contract_runs` in migration `070_workflow_contract_diagnostics`.
+**Storage**: `workflow_contract_runs` in migration `071_workflow_contract_diagnostics`.
 
 **Fields**:
 - `id`

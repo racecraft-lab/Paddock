@@ -13,14 +13,14 @@ SPEC-009A makes Mission Control workflow policy repo-owned and roundtrippable wi
 
 **Language/Version**: TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application  
 **Primary Dependencies**: Next.js, React, Zustand, Tailwind CSS 3, `better-sqlite3`, existing direct `ajv@8.18.0`, exact direct `yaml@2.8.2` for SPEC-009A contract loading  
-**Storage**: SQLite via `better-sqlite3`; existing `workflow_templates` runtime projection plus additive generic diagnostics tables in migration `070_workflow_contract_diagnostics`  
+**Storage**: SQLite via `better-sqlite3`; existing `workflow_templates` runtime projection plus additive generic diagnostics tables in migration `071_workflow_contract_diagnostics`
 **Testing**: Vitest for parser/model/schema/import/export/hash/transaction tests; Playwright for the read-only Workflow Contracts diagnostics surface  
 **Target Platform**: Self-hosted Mission Control Node.js runtime and local operator CLI/scripts  
 **Project Type**: Web application with local SQLite storage and operator-run import/export tooling  
 **Performance Goals**: Contract operations stay bounded and deterministic for the small Mission Control workflow family; schema validation and hashing must avoid unbounded prompt or schema processing and reuse the existing constrained validator posture  
 **Constraints**: Dry-run is default; apply requires explicit `--apply`; no runtime feature flag; no product-line seed, dispatch, retry execution, runner launch, sandbox lifecycle, harness adapter, GitHub ingest/sync, or resource-governance evaluator invocation; Markdown export is non-canonical; invalid input fails before mutation; apply uses one SQLite transaction for owned-template mutations, diagnostics writes, and last-known-good snapshot writes  
 **Scale/Scope**: One canonical Mission Control workflow family with intake, planning, implementation, review, owner gate, and lifecycle metadata; reusable contract loader/import/export/diagnostics design for later workflow families  
-**Strict Scope**: Add new SPEC-009A-owned production modules to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `src/lib/workflow-contracts/types.ts`, `src/lib/workflow-contracts/yaml-loader.ts`, `src/lib/workflow-contracts/schema.ts`, `src/lib/workflow-contracts/validator.ts`, `src/lib/workflow-contracts/hash.ts`, `src/lib/workflow-contracts/diff.ts`, `src/lib/workflow-contracts/importer.ts`, `src/lib/workflow-contracts/exporter.ts`, `src/lib/workflow-contracts/diagnostics.ts`, `src/lib/workflow-contracts/recovery.ts`, `src/app/api/workflow-contracts/diagnostics/route.ts`, and diagnostics UI files added under the existing Orchestration/Workflows surface. Contract data files under `docs/ai/workflows/mission-control/`, CLI entrypoints under `scripts/`, migration M70, rollback SQL, fixtures, and tests are also spec-owned.
+**Strict Scope**: Add new SPEC-009A-owned production modules to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `src/lib/workflow-contracts/types.ts`, `src/lib/workflow-contracts/yaml-loader.ts`, `src/lib/workflow-contracts/schema.ts`, `src/lib/workflow-contracts/validator.ts`, `src/lib/workflow-contracts/hash.ts`, `src/lib/workflow-contracts/diff.ts`, `src/lib/workflow-contracts/importer.ts`, `src/lib/workflow-contracts/exporter.ts`, `src/lib/workflow-contracts/diagnostics.ts`, `src/lib/workflow-contracts/recovery.ts`, `src/app/api/workflow-contracts/diagnostics/route.ts`, and diagnostics UI files added under the existing Orchestration/Workflows surface. Contract data files under `docs/ai/workflows/mission-control/`, CLI entrypoints under `scripts/`, migration M71, rollback SQL, fixtures, and tests are also spec-owned.
 
 ## Constitution Check
 
@@ -33,7 +33,7 @@ SPEC-009A makes Mission Control workflow policy repo-owned and roundtrippable wi
 | IV. Test-First Development | PASS | Tasks must start with failing Vitest coverage for parser/model/import/export/diagnostics and Playwright coverage for diagnostics UI before production code. |
 | V. Feature-Flag Resolution Discipline | PASS | SPEC-009A introduces no new runtime flag. Future feature flags are validated and roundtripped as inert data only. |
 | VI. Dependency Supply-Chain Hygiene | PASS | `yaml@2.8.2` is an exact direct production dependency. AJV remains the existing direct pinned validator. No transitive YAML import, `ajv-formats`, or second schema validator is allowed. |
-| VII. Additive Migration Policy | PASS | Diagnostics storage uses additive migration `070_workflow_contract_diagnostics` plus `docs/migrations/rollback-M70.sql`; no destructive changes or renames. |
+| VII. Additive Migration Policy | PASS | Diagnostics storage uses additive migration `071_workflow_contract_diagnostics` plus `docs/migrations/rollback-M71.sql`; no destructive changes or renames. |
 | IX. Safe Evaluation Discipline | PASS | Output schema validation reuses the strict AJV profile and routing rules are validated as data without executing dispatch or routing behavior. |
 | X. Observability and Auditability | PASS | Every import/export/recovery attempt records generic run diagnostics and validation errors; successful apply records a last-known-good snapshot and deterministic recovery command. |
 | XII. Avoid Speculative Generality | PASS | Governance, concurrency, retry, sandbox, and adapter declarations are validated and stored as data only; enforcement remains owned by later specs. |
@@ -65,7 +65,7 @@ docs/
 ├── ai/workflows/mission-control/
 │   ├── workflow-contract.yaml
 │   └── exports/workflow-contract.md
-└── migrations/rollback-M70.sql
+└── migrations/rollback-M71.sql
 
 scripts/
 └── workflow-contracts/
@@ -102,7 +102,7 @@ tests/e2e/
 └── workflow-contract-diagnostics.spec.ts
 ```
 
-**Structure Decision**: Use one cohesive `src/lib/workflow-contracts/` boundary for parser/model/schema/hash/diff/import/export/recovery logic, one operator CLI wrapper under `scripts/`, additive M70 diagnostics storage, and a read-only diagnostics API/UI extension inside the existing Workflows admin surface. This keeps runtime dispatch, governance enforcement, scheduler, harness, and GitHub sync paths out of SPEC-009A.
+**Structure Decision**: Use one cohesive `src/lib/workflow-contracts/` boundary for parser/model/schema/hash/diff/import/export/recovery logic, one operator CLI wrapper under `scripts/` executed through Node's built-in TypeScript type stripping, additive M71 diagnostics storage, and a read-only diagnostics API/UI extension inside the existing Workflows admin surface. This keeps runtime dispatch, governance enforcement, scheduler, harness, and GitHub sync paths out of SPEC-009A.
 
 ## Phase 0: Research
 
@@ -120,7 +120,7 @@ Design artifacts:
 
 ### Post-Design Constitution Check
 
-PASS. The design keeps YAML as exact direct `yaml@2.8.2`, reuses AJV 8 strict validation, adds only additive generic diagnostics schema, requires explicit operator apply before runtime mutation, preserves last-known-good snapshots, and keeps governance/concurrency/retry/sandbox declarations as inert metadata. No downstream SPEC-009B/C/D, SPEC-013A-C, or SPEC-014A-D execution scope is introduced.
+PASS. The design keeps YAML as exact direct `yaml@2.8.2`, reuses AJV 8 strict validation, adds only additive generic diagnostics schema at the next available M71 slot, requires explicit operator apply before runtime mutation, preserves last-known-good snapshots, and keeps governance/concurrency/retry/sandbox declarations as inert metadata. No downstream SPEC-009B/C/D, SPEC-013A-C, or SPEC-014A-D execution scope is introduced.
 
 ## Complexity Tracking
 

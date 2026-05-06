@@ -24,10 +24,10 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 - Unit tests: `src/lib/__tests__/workflow-contracts/`
 - Diagnostics API: `src/app/api/workflow-contracts/diagnostics/route.ts`
 - Diagnostics UI: `src/components/panels/orchestration-bar.tsx` plus extracted workflow-contract component files if needed.
-- CLI entrypoint: `scripts/workflow-contracts/workflow-contract-cli.ts`
+- CLI entrypoint: `scripts/workflow-contracts/workflow-contract-cli.ts` executed by `node --experimental-strip-types` from the package script; do not add `tsx` or `ts-node`.
 - Canonical contract: `docs/ai/workflows/mission-control/workflow-contract.yaml`
 - Generated review export: `docs/ai/workflows/mission-control/exports/workflow-contract.md`
-- Migrations and rollback: `src/lib/migrations.ts`, `docs/migrations/rollback-M70.sql`
+- Migrations and rollback: `src/lib/migrations.ts`, `docs/migrations/rollback-M71.sql`
 
 ---
 
@@ -36,11 +36,11 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 **Purpose**: Add direct dependency, script wiring, canonical fixture locations, migration shell, and strict-scope entries before feature code.
 
 - [ ] T001 Add exact direct production dependency `yaml@2.8.2` to `package.json` and `pnpm-lock.yaml`.
-- [ ] T002 Add `workflow-contract` script to `package.json` that runs `scripts/workflow-contracts/workflow-contract-cli.ts`.
+- [ ] T002 Add `workflow-contract` script to `package.json` that runs `node --experimental-strip-types scripts/workflow-contracts/workflow-contract-cli.ts` without adding `tsx` or `ts-node`.
 - [ ] T003 [P] Create canonical Mission Control workflow contract fixture at `docs/ai/workflows/mission-control/workflow-contract.yaml`.
 - [ ] T004 [P] Create invalid contract fixture directory `src/lib/__tests__/workflow-contracts/fixtures/`.
-- [ ] T005 Add additive migration `070_workflow_contract_diagnostics` to `src/lib/migrations.ts`.
-- [ ] T006 [P] Add rollback SQL for M70 in `docs/migrations/rollback-M70.sql`.
+- [ ] T005 Add additive migration `071_workflow_contract_diagnostics` to `src/lib/migrations.ts`.
+- [ ] T006 [P] Add rollback SQL for M71 in `docs/migrations/rollback-M71.sql`.
 - [ ] T007 Add SPEC-009A-owned TypeScript paths to `tsconfig.spec-strict.json` and matching lint scope in `eslint.config.mjs`.
 
 ---
@@ -50,7 +50,7 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 **Purpose**: Typed model, parser wrapper, schema profile, hash envelope, diff engine, and shared diagnostics primitives. No user story can be implemented before this phase is complete.
 
 - [ ] T008 [P] [T-RED] Author YAML loader red tests in `src/lib/__tests__/workflow-contracts/yaml-loader.test.ts` covering valid YAML, invalid YAML, multi-doc, non-mapping root, duplicate keys, custom tags, anchors, aliases, merge keys, and literal block scalar enforcement.
-- [ ] T009 [P] [T-RED] Author validator red tests in `src/lib/__tests__/workflow-contracts/validator.test.ts` covering unknown fields, unknown variables, tracker identity, capabilities, adapter requirements, governance, concurrency, retry, sandbox, prompt version, routing hash, and output schema hash.
+- [ ] T009 [P] [T-RED] Author validator red tests in `src/lib/__tests__/workflow-contracts/validator.test.ts` covering unknown fields, unknown variables, tracker identity, capabilities, adapter requirements, feature-flag dependencies, governance, concurrency, retry, sandbox, prompt version, routing hash, and output schema hash.
 - [ ] T010 [P] [T-RED] Author hash red tests in `src/lib/__tests__/workflow-contracts/hash.test.ts` covering `workflow-contract-hash-v1`, stable sorted JSON, LF prompt normalization, excluded timestamps/row ids/diagnostic ids/local paths/Markdown bytes, routing-rule hashes, and output-schema hashes.
 - [ ] T011 [P] [T-RED] Author diff red tests in `src/lib/__tests__/workflow-contracts/diff.test.ts` covering create, update, disable, unchanged, and unrelated template preservation.
 - [ ] T012 Create canonical workflow contract model types in `src/lib/workflow-contracts/types.ts`.
@@ -73,8 +73,8 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 
 ### Tests for User Story 1
 
-- [ ] T019 [P] [US1] [T-RED] Author dry-run importer tests in `src/lib/__tests__/workflow-contracts/importer.test.ts` proving default import computes diff and mutates no `workflow_templates`, diagnostics, or snapshots.
-- [ ] T020 [P] [US1] [T-RED] Author CLI dry-run tests in `src/lib/__tests__/workflow-contracts/cli.test.ts` proving default mode, `--dry-run`, deterministic success output, and deterministic validation exit code.
+- [ ] T019 [P] [US1] [T-RED] Author dry-run importer tests in `src/lib/__tests__/workflow-contracts/importer.test.ts` proving default import computes diff, mutates no `workflow_templates` or snapshots, and persists a reusable diagnostics run summary and diff record for operator visibility.
+- [ ] T020 [P] [US1] [T-RED] Author CLI dry-run tests in `src/lib/__tests__/workflow-contracts/cli.test.ts` proving default mode, `--dry-run`, deterministic success output, deterministic validation exit code, and redacted/truncated CLI validation details.
 
 ### Implementation for User Story 1
 
@@ -102,9 +102,9 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 
 - [ ] T027 [US2] Implement apply-mode transaction in `src/lib/workflow-contracts/importer.ts`.
 - [ ] T028 [US2] Implement last-known-good snapshot writes and deterministic recovery command storage in `src/lib/workflow-contracts/recovery.ts`.
-- [ ] T029 [US2] Implement diagnostics writes for apply success, validation failure, storage failure, and rollback status in `src/lib/workflow-contracts/diagnostics.ts`.
+- [ ] T029 [US2] Implement diagnostics writes for import dry-run success, apply success, validation failure, storage failure, transaction rollback status, export success/failure, and recovery dry-run/apply outcomes in `src/lib/workflow-contracts/diagnostics.ts`.
 - [ ] T030 [US2] Add `--apply` and mutually exclusive mode validation to `scripts/workflow-contracts/workflow-contract-cli.ts`.
-- [ ] T031 [US2] Add M70 migration test coverage in `src/lib/__tests__/migrations-009a.test.ts`.
+- [ ] T031 [US2] Add M71 migration test coverage in `src/lib/__tests__/migrations-009a.test.ts`.
 
 **Checkpoint**: US2 applies valid contracts transactionally and leaves pre-existing workflow behavior untouched unless explicit apply is used.
 
@@ -118,7 +118,7 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 
 ### Tests for User Story 3
 
-- [ ] T032 [P] [US3] [T-RED] Author exporter tests in `src/lib/__tests__/workflow-contracts/exporter.test.ts` covering deterministic ordering, default output path, and Markdown-as-review-output behavior.
+- [ ] T032 [P] [US3] [T-RED] Author exporter tests in `src/lib/__tests__/workflow-contracts/exporter.test.ts` covering deterministic ordering, default output path, Markdown-as-review-output behavior, and redaction/truncation in generated Markdown.
 - [ ] T033 [P] [US3] [T-RED] Author no-op parity tests in `src/lib/__tests__/workflow-contracts/hash.test.ts` covering three consecutive unchanged import/export cycles.
 
 ### Implementation for User Story 3
@@ -141,7 +141,7 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 ### Tests for User Story 4
 
 - [ ] T038 [P] [US4] [T-RED] Add invalid YAML and invalid model fixtures under `src/lib/__tests__/workflow-contracts/fixtures/`.
-- [ ] T039 [P] [US4] [T-RED] Extend `src/lib/__tests__/workflow-contracts/validator.test.ts` for unknown variable, invalid tracker identity, invalid capability/adapter requirement, invalid governance/concurrency/retry/sandbox, and hash mismatch fixtures.
+- [ ] T039 [P] [US4] [T-RED] Extend `src/lib/__tests__/workflow-contracts/validator.test.ts` for unknown variable, invalid tracker identity, invalid capability/adapter requirement, invalid feature-flag dependency, invalid governance/concurrency/retry/sandbox, and hash mismatch fixtures.
 - [ ] T040 [P] [US4] [T-RED] Extend `src/lib/__tests__/workflow-contracts/recovery.test.ts` for no snapshot, dry-run recovery, explicit apply recovery, and LKG preservation after failed reload/import.
 
 ### Implementation for User Story 4
@@ -163,13 +163,13 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 
 ### Tests for User Story 5
 
-- [ ] T045 [P] [US5] [T-RED] Author diagnostics API tests in `src/app/api/workflow-contracts/diagnostics/route.test.ts`.
-- [ ] T046 [P] [US5] [T-RED] Author diagnostics UI tests in `src/components/panels/orchestration-bar.test.tsx`.
-- [ ] T047 [P] [US5] [T-RED] Author Playwright diagnostics journey in `tests/e2e/workflow-contract-diagnostics.spec.ts`.
+- [ ] T045 [P] [US5] [T-RED] Author diagnostics API tests in `src/app/api/workflow-contracts/diagnostics/route.test.ts` covering filterable read-only data, persisted run errors, and redacted/truncated details.
+- [ ] T046 [P] [US5] [T-RED] Author diagnostics UI tests in `src/components/panels/orchestration-bar.test.tsx` covering successful, changed, invalid, no-last-known-good, and redacted/truncated error states.
+- [ ] T047 [P] [US5] [T-RED] Author Playwright diagnostics journey in `tests/e2e/workflow-contract-diagnostics.spec.ts` proving no edit/apply/dispatch/governance controls and no raw prompt body, credential, token, or secret-like value appears.
 
 ### Implementation for User Story 5
 
-- [ ] T048 [US5] Implement read-only diagnostics API route in `src/app/api/workflow-contracts/diagnostics/route.ts`.
+- [ ] T048 [US5] Implement read-only diagnostics API route in `src/app/api/workflow-contracts/diagnostics/route.ts` and update `openapi.json` plus `src/app/api/index/route.ts` for API parity.
 - [ ] T049 [US5] Implement read-only diagnostics surface in `src/components/panels/orchestration-bar.tsx`.
 - [ ] T050 [US5] Add deterministic diagnostics seed helpers for tests in `tests/e2e/fixtures/workflow-contract-diagnostics.ts`.
 - [ ] T051 [US5] Verify UI exposes no import apply, manifest edit, workflow launch, dispatch, or governance override controls in `tests/e2e/workflow-contract-diagnostics.spec.ts`.
@@ -208,7 +208,7 @@ description: "Task list for SPEC-009A Workflow Contract Format and Roundtrip"
 - [ ] T059 [P] Update `AGENTS.md` active technologies/recent changes if implementation scope changes from the plan.
 - [ ] T060 Run focused workflow-contract unit tests with `direnv exec . pnpm exec vitest run src/lib/__tests__/workflow-contracts src/app/api/workflow-contracts/diagnostics/route.test.ts src/components/panels/orchestration-bar.test.tsx`.
 - [ ] T061 Run diagnostics Playwright test with `direnv exec . pnpm test:e2e -- tests/e2e/workflow-contract-diagnostics.spec.ts`.
-- [ ] T062 Run `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `direnv exec . pnpm build`.
+- [ ] T062 Run `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, `direnv exec . pnpm api:parity`, and `direnv exec . pnpm build`.
 - [ ] T063 Run guardrail grep/tests confirming no pilot, seed, claim, dispatch, runner, sandbox lifecycle, harness adapter, GitHub sync, or governance evaluator execution path was introduced by SPEC-009A.
 - [ ] T064 Refresh GitNexus index with embeddings using `direnv exec . gitnexus analyze --skills --embeddings --skip-agents-md` and copy `.gitnexus/` to the primary repo root.
 - [ ] T065 Mark all completed tasks in `specs/009a-workflow-contract-roundtrip/tasks.md` and record verification evidence in `docs/ai/specs/SPEC-009A-workflow.md`.

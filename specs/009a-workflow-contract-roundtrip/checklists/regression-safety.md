@@ -28,7 +28,7 @@
 
 - [ ] CHK013 Does every artifact explicitly exclude product-line seed, `PILOT_MISSION_CONTROL_E2E`, dispatch loops, runner launch, sandbox lifecycle, and harness adapter work? [Scope, Spec Out Of Scope, Plan Scope]
 - [ ] CHK014 Do tasks and quickstart expectations require guardrail tests or assertions for no pilot, no runner, no claim loop, and no harness execution paths? [Coverage, Workflow Phase 5 Required Coverage]
-- [ ] CHK015 Are migration requirements additive and limited to generic workflow-contract diagnostics tables and rollback SQL? [Regression Safety, Spec FR-049, Plan Constitution Check]
+- [ ] CHK015 Are migration requirements additive, rebased to the current next available migration slot, and limited to generic workflow-contract diagnostics tables and rollback SQL? [Regression Safety, Spec FR-049, Plan Constitution Check]
 - [ ] CHK016 Are runtime data changes transactional so failed apply cannot leave partial template, diagnostics, or snapshot state? [Regression Safety, Spec FR-019, Spec FR-039]
 - [ ] CHK017 Are last-known-good recovery flows operator-triggered and dry-run-first rather than automatic mutation on validation failure? [Regression Safety, Spec FR-022, Spec FR-045]
 - [ ] CHK018 Are Workflows/Orchestration UI requirements limited to diagnostics visibility rather than a visual workflow editor or runtime override surface? [Scope, Spec FR-047, Spec Out Of Scope]

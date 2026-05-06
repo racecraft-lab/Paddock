@@ -32,7 +32,7 @@
 
 ## Decision: Generic Workflow-Contract Diagnostics Schema
 
-**Rationale**: Diagnostics persistence uses generic names durable beyond SPEC-009A: `workflow_contract_runs`, `workflow_contract_run_errors`, and `workflow_contract_snapshots`. If schema is added, it must use additive migration `070_workflow_contract_diagnostics` plus `docs/migrations/rollback-M70.sql`, unless a concurrent merge takes M70 first and the migration is rebased. The schema records import/export/recovery mode, status, mutation status, source paths, hashes, diff counts, validation error counts, export artifact path, last-known-good snapshot references, and recovery commands.
+**Rationale**: Diagnostics persistence uses generic names durable beyond SPEC-009A: `workflow_contract_runs`, `workflow_contract_run_errors`, and `workflow_contract_snapshots`. Current repository state already uses M70, so schema additions must use additive migration `071_workflow_contract_diagnostics` plus `docs/migrations/rollback-M71.sql`, unless a later concurrent merge takes M71 first and the migration is rebased. The schema records import/export/recovery mode, status, mutation status, source paths, hashes, diff counts, validation error counts, export artifact path, last-known-good snapshot references, and recovery commands.
 
 **Alternatives considered**: SPEC-named tables were rejected because the diagnostics surface must be reusable. JSON-only diagnostics were rejected for validation errors because operators need filterable error lists by manifest, template, and stable code.
 

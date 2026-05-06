@@ -47,7 +47,7 @@ spec.
 | Plan | `$speckit-plan` | Complete | Created plan, research, data model, CLI/schema/diagnostics contracts, quickstart, and Codex agent-context update; G3 PASS with 0 markers |
 | Checklist | `$speckit-checklist` | Complete | Generated 4 focused domain checklists with 24 items each; 0 gaps; G4 PASS |
 | Tasks | `$speckit-tasks` | Complete | Generated 65 dependency-ordered tasks across 9 phases with 25 parallel opportunities; G5 PASS |
-| Analyze | `$speckit-analyze` | Pending | Resolve cross-artifact gaps before implementation |
+| Analyze | `$speckit-analyze` | Complete | Resolved 6 task/design findings; G6 PASS with 0 critical/high markers |
 | Implement | `$speckit-implement` | Pending | Ship tooling, diagnostics, docs, tests, and status updates |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -429,7 +429,7 @@ Focus on diagnostics and governance boundaries for SPEC-009A:
 |---------|------------|-----------|--------------|
 | 1 | Contract format and validation stack | 5 answered | Exact direct `yaml@2.8.2`; single-document YAML 1.2 mapping manifests; literal prompt block scalars only; reused AJV 8 strict profile; typed canonical model boundary with governance as inert data |
 | 2 | Import/export/hashes/recovery | 6 answered | Dry-run default and explicit apply; one SQLite transaction for apply + diagnostics + LKG; workspace plus slug upsert identity; versioned SHA-256 hash envelope; default Markdown export path; operator-triggered LKG recovery |
-| 3 | Diagnostics and governance boundary | 6 answered | Generic run/error/snapshot diagnostics tables; M70 + rollback-M70 if schema is added; read-only Workflow Contracts diagnostics; validation-only governance declarations; stable redacted failure messages |
+| 3 | Diagnostics and governance boundary | 6 answered | Generic run/error/snapshot diagnostics tables; M71 + rollback-M71 after current-code M70 collision; read-only Workflow Contracts diagnostics; validation-only governance declarations; stable redacted failure messages |
 
 Gate G2 evidence: `validate-gate.sh G2 specs/009a-workflow-contract-roundtrip`
 reported PASS with 0 `[NEEDS CLARIFICATION]` markers. Marker scan found no
@@ -635,7 +635,12 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A-001 | High | Current code already uses M70, while SPEC-009A artifacts still reserved M70 | Rebased diagnostics schema, rollback, plan, research, checklists, and tasks to M71/rollback-M71 |
+| A-002 | High | Planned TypeScript CLI script lacked an executable runner in current package wiring | Made `workflow-contract` script use Node built-in TypeScript type stripping and forbade adding `tsx`/`ts-node` |
+| A-003 | Medium | Diagnostics API route tasks omitted OpenAPI/API-index parity coverage | Added `openapi.json`, `src/app/api/index/route.ts`, and `pnpm api:parity` coverage |
+| A-004 | High | Dry-run task contradicted required reusable diagnostics persistence | Clarified dry-run mutates no templates/snapshots but persists diagnostics summary/diff records |
+| A-005 | High | Invalid feature-flag dependency fixture coverage was implicit rather than explicit | Added feature-flag dependency validation fixture coverage to foundation and US4 tests |
+| A-006 | High | Redaction/truncation was required but not test-covered at every operator-visible boundary | Added redaction/truncation coverage for CLI, Markdown export, diagnostics API, UI, and Playwright journey |
 
 ---
 
