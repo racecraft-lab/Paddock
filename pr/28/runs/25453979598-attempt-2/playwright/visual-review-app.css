@@ -705,14 +705,15 @@ a {
 
 .stage-shell {
   position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   min-width: 0;
 }
 
 .stage {
-  height: calc(100vh - 188px);
-  min-height: 620px;
+  height: calc(100vh - 286px);
+  min-height: 520px;
   box-sizing: border-box;
-  padding-top: 72px;
   background:
     linear-gradient(45deg, var(--stage-check-a) 25%, var(--stage-check-b) 25%),
     linear-gradient(-45deg, var(--stage-check-a) 25%, var(--stage-check-b) 25%),
@@ -725,25 +726,23 @@ a {
 }
 
 .stage-control-bar {
-  position: absolute;
-  top: 12px;
-  right: 0;
-  left: 0;
+  position: relative;
   z-index: 8;
+  padding: 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel-soft);
   display: flex;
   justify-content: center;
-  pointer-events: none;
 }
 
 .stage-control-bar .toolbar-controls {
   width: max-content;
-  max-width: calc(100% - 24px);
+  max-width: 100%;
   padding: 6px;
   border: 1px solid var(--line-strong);
   border-radius: 10px;
   background: var(--panel);
   box-shadow: var(--shadow);
-  pointer-events: auto;
 }
 
 .stage-inner {
