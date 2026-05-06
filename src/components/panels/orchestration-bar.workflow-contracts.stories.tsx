@@ -160,7 +160,7 @@ type Story = StoryObj<typeof meta>
 export const ReadOnlyRedactedDiagnostics: Story = {
   play: async (ctx) => {
     const canvas = within(ctx.canvasElement)
-    await userEvent.click(await canvas.findByRole('button', { name: /^Contracts$/ }))
+    await userEvent.click(await canvas.findByRole('button', { name: /^Workflow Contracts$/ }))
 
     const diagnostics = await canvas.findByTestId('workflow-contract-diagnostics')
     await expect(diagnostics).toBeVisible()
