@@ -140,6 +140,7 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 ## GitNexus
 
 - User-level Codex and Claude MCP configs register GitNexus with an absolute user-local Node binary path; do not add project-local MCP, skill, or hook installs.
-- To create or refresh this repo index, run `direnv exec . gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
+- Keep the repo-root `.envrc` tracked and committed. Keep `.envrc.local` ignored and untracked; it must exist locally in the main checkout before being copied into linked worktrees.
+- To create or refresh this repo index, run `direnv exec . gitnexus analyze --embeddings --skip-agents-md` from this repo root, outside the Codex sandbox, after the LM Studio embedding server is running.
 - In linked worktrees, copy the ignored root `.envrc.local` into the worktree, run `direnv allow`, and use `direnv exec .` for GitNexus commands. GitNexus embeddings depend on `.envrc.local` values such as `GITNEXUS_EMBEDDING_URL`, `GITNEXUS_EMBEDDING_MODEL`, `GITNEXUS_EMBEDDING_DIMS`, and HTTP batching/concurrency settings; running `gitnexus analyze` outside direnv can silently use the wrong embedding configuration.
 - GitNexus stores the generated local index under `.gitnexus/`, which is ignored.
