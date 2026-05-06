@@ -40,7 +40,7 @@ Re-read these before each phase. They are the source of truth for any decision c
 | Checklist | `/speckit.checklist` | ✅ Complete | 6 domains × 461 items, 102/133 gaps fixed by executors + 31 consensus-resolved (FR-361..395); spec.md grew to 942 lines, 467 FRs total; G4 ✅ |
 | Tasks | `/speckit.tasks` | ✅ Complete | tasks.md 689L / 373 tasks / 16 phases / 228 parallel / 81 TDD-red / 5 verification spikes / G5 ✅ |
 | Analyze | `/speckit.analyze` | ✅ Complete | 14 findings (1 CRITICAL pre-impl process / 3 HIGH coverage / 5 MEDIUM consistency / 5 LOW); remediation as Phase 14 tasks T374-T385 + AC-Drift-1..4 standardization; G6 ✅ |
-| Implement | `/speckit.implement` | 🔄 In Progress | **Phase 0 ✅** (T001-T005 spike scripts + CI gate). **Phase 1 Foundation ✅ COMPLETE**: T046+T047 (governance.json + strict-scope), T048 (types), T049 (db pool), T374 (strict-scope guard), T015-T044 (**all 15 migrations M64+M65a-m+M66 + rollbacks + 100+ tests**). 40/385 tasks done. Phases 2-13 (345 remaining tasks: budget ledger code, telemetry adapters, UI, FF-matrix, runbooks) — multi-day work; resume via `--from-phase implement`. |
+| Implement | `/speckit.implement` | ✅ Complete | Implementation PR #26 merged to `main` as `bd9a693`. Resource evaluator, telemetry/observability pipeline, governance UI, feature-flag matrix, migrations, guardrails, docs, and verification evidence are recorded in `SPEC-008-summary.md` and `SPEC-008-verification-evidence.md`; operator-led soak/chaos/running-instance evidence remains non-blocking follow-up, not active implementation. |
 
 **Status Legend:** ⏳ Pending | 🔄 In Progress | ✅ Complete | ⚠️ Blocked
 
