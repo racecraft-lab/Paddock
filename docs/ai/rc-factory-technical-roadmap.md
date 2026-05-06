@@ -148,7 +148,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009B, SPEC-009C | Phase 5 |
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Complete | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009D, SPEC-014C | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Complete | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009A, SPEC-011, SPEC-013B | Phase 7 |
-| SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | In Progress | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
+| SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | Complete | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
 | SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Pending | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C, SPEC-010A | Phase 8B |
 | SPEC-009C | 8C | GitHub-Linked Mission Control Pilot Smoke | mission-control-pilot-smoke | Pending | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009D, SPEC-010B | Phase 8C |
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C | SPEC-013A | Phase 8D |
@@ -169,7 +169,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 **Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, and SPEC-008 are complete on `main`. Recent merge evidence: SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, and SPEC-008 PR #26 as `bd9a693`.
 
-- **Ready now after SPEC-008:** SPEC-009A, SPEC-011, and SPEC-012A can be assigned to different agents because they touch contract tooling, an optional security adapter, and docs/process indexing respectively.
+- **Ready now after SPEC-009A:** SPEC-009B, SPEC-011, and SPEC-012A can be assigned to different agents because they touch the product-line seed, an optional security adapter, and docs/process indexing respectively.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, apply workflow/governance policy, run the issue to `ready_for_owner`, record the merge gate, and emit a reviewable lifecycle packet.
 - **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while SPEC-009C is being smoked; SPEC-010B waits for SPEC-009C and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Control-plane path:** SPEC-013A -> SPEC-013B -> SPEC-013C starts after the pilot review packet and repo knowledge index exist. These specs own claim/reconciliation/retry state; they do not launch harnesses.
@@ -375,7 +375,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009A: Workflow Contract Format and Roundtrip
 
-- **Status:** In Progress
+- **Status:** Complete
 - **Priority:** P0
 - **Branch short name:** `workflow-contract-roundtrip`
 - **Dependencies:** SPEC-002A, SPEC-004, SPEC-008
@@ -387,7 +387,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** workflow contract files under `docs/ai/workflows/`, import/export tooling, focused parity tests, and any small validation helper needed by setup. No autonomous dispatch, no runner launch, no new harness adapter.
 - **Autopilot notes:** Treat GitHub Issues as the tracker identity in v1. Preserve last-known-good workflow templates when contract reload fails. Do not bake OpenClaw, Codex, Claude, Hermes, or OpenCode as mandatory; declare capabilities and adapter requirements as data.
 - **Definition of done:** Contract import/export parity passes for the Mission Control workflow family; invalid contract fixtures fail closed with operator-visible errors; existing `workflow_templates` behavior is unchanged unless the spec command explicitly imports the contract.
-- **Implementation evidence:** Local Phase 7 implementation completed on branch `009a-workflow-contract-roundtrip` on 2026-05-06. Evidence includes exact direct `yaml@2.8.2`, canonical contract at `docs/ai/workflows/mission-control/workflow-contract.yaml`, `pnpm workflow-contract` import/apply/export/recover tooling, generated Markdown review export with stable hash `workflow-contract-hash-v1:sha256:2f0e9ef6e21ca80039c49bc6398bf8f7bd1493be454ff5d7e381391b4b8884da`, additive M71 diagnostics/snapshot storage plus rollback SQL, read-only diagnostics API/UI, OpenAPI/API-index parity, fail-closed validation fixtures, and guardrail verification confirming no pilot seed, dispatch, scheduler, runner, harness, GitHub sync, sandbox lifecycle, or governance evaluator path.
+- **Implementation evidence:** Local implementation and post-implementation verification completed on branch `009a-workflow-contract-roundtrip` on 2026-05-06. Evidence includes exact direct `yaml@2.8.2`, canonical contract at `docs/ai/workflows/mission-control/workflow-contract.yaml`, `pnpm workflow-contract` import/apply/export/recover tooling, generated Markdown review export with stable hash `workflow-contract-hash-v1:sha256:2f0e9ef6e21ca80039c49bc6398bf8f7bd1493be454ff5d7e381391b4b8884da`, additive M71 diagnostics/snapshot storage plus rollback SQL, read-only diagnostics API/UI, OpenAPI/API-index parity, fail-closed validation fixtures, full Vitest/build/typecheck/lint/focused Playwright evidence, final GitNexus embeddings rebuild copied to the primary checkout root, and guardrail verification confirming no pilot seed, dispatch, scheduler, runner, harness, GitHub sync, sandbox lifecycle, or governance evaluator path.
 
 ### SPEC-009B: Mission Control Product-Line Seed and Flag Activation
 
@@ -1253,11 +1253,11 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 7 are complete and remain the substrate for all later work. After SPEC-008, the next unblocked specs are SPEC-009A, SPEC-011, and SPEC-012A. SPEC-009B gates the reusable seeder. SPEC-009C is the first practical self-hosting gate. SPEC-009D is the bridge from pilot smoke to formal run-state. SPEC-013A-C own claim/reconciliation/retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8A are complete and remain the substrate for all later work. After SPEC-009A, the next unblocked specs are SPEC-009B, SPEC-011, and SPEC-012A. SPEC-009B gates the reusable seeder. SPEC-009C is the first practical self-hosting gate. SPEC-009D is the bridge from pilot smoke to formal run-state. SPEC-013A-C own claim/reconciliation/retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
-- SPEC-009A, SPEC-011, and SPEC-012A may start in parallel after SPEC-008.
+- SPEC-009B, SPEC-011, and SPEC-012A may start in parallel after SPEC-009A.
 - SPEC-010A may run after SPEC-009B while SPEC-009C is being smoked.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
 - SPEC-014C and SPEC-014D may run in parallel only after SPEC-014B and only if adapter modules, fixtures, and deployment docs are isolated.

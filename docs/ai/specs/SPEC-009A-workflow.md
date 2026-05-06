@@ -48,7 +48,7 @@ spec.
 | Checklist | `$speckit-checklist` | Complete | Generated 4 focused domain checklists with 24 items each; 0 gaps; G4 PASS |
 | Tasks | `$speckit-tasks` | Complete | Generated 65 dependency-ordered tasks across 9 phases with 25 parallel opportunities; G5 PASS |
 | Analyze | `$speckit-analyze` | Complete | Resolved 6 task/design findings; G6 PASS with 0 critical/high markers |
-| Implement | `$speckit-implement` | Pending | Ship tooling, diagnostics, docs, tests, and status updates |
+| Implement | `$speckit-implement` | Complete | Shipped contract tooling, diagnostics, docs, tests, review remediation, final GitNexus rebuild, and status updates |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -173,8 +173,8 @@ Executed during SPEC-009A autopilot startup on 2026-05-05.
 | Command detection | PASS: package manager `pnpm`; build/typecheck/lint/test/e2e commands detected |
 | Presets | None detected; enabled extensions read from `.specify/extensions/.registry` |
 | Dependency install | `direnv exec . pnpm install --frozen-lockfile` PASS after sandboxed attempt failed on registry DNS; no lockfile/package edits |
-| GitNexus index | `direnv exec . gitnexus analyze --force --skills --embeddings --skip-agents-md` PASS in 2475.6s; generated 20 repo-specific skills; index copied to primary checkout root so it is not stranded in this worktree |
-| GitNexus stats | 24,588 nodes; 38,829 edges; 646 clusters; 300 flows; 21,783 embeddings |
+| GitNexus index | Initial rebuild completed during startup; final Phase 9 rebuild superseded it and copied `.gitnexus/` to the primary checkout root so it is not stranded in this worktree |
+| GitNexus stats | Final Phase 9 rebuild: 24,964 nodes; 39,377 edges; 647 clusters; 300 flows; 19,657 embeddings generated from a clean index |
 | GitNexus ignore state | `.gitnexus/` is ignored by `.gitignore:71`; `.envrc.local` is ignored by `.gitignore:16`; neither is staged |
 | Environment loader | `.envrc` copied from the prior governance worktree and primary checkout; loads `.envrc.local` via direnv for embedding config and adds `node_modules/.bin` |
 | Typecheck | PASS: `direnv exec . pnpm typecheck` |
@@ -697,15 +697,15 @@ For each task:
 | `direnv exec . pnpm workflow-contract import --file docs/ai/workflows/mission-control/workflow-contract.yaml --apply` | PASS; LKG snapshot and deterministic recovery command recorded |
 | `direnv exec . pnpm workflow-contract export --workspace-id 1` | PASS; generated `docs/ai/workflows/mission-control/exports/workflow-contract.md` with stable parity hash |
 | `direnv exec . pnpm workflow-contract recover --workspace-id 1 --dry-run` | PASS; LKG recovery dry-run reports `mutation_status: dry_run` |
-| `direnv exec . pnpm exec vitest run src/lib/__tests__/workflow-contracts src/lib/__tests__/migrations-009a.test.ts src/app/api/workflow-contracts/diagnostics/route.test.ts src/components/panels/orchestration-bar.test.tsx` | PASS; 13 files, 43 tests |
+| `direnv exec . pnpm exec vitest run src/lib/__tests__/workflow-contracts src/lib/__tests__/migrations-009a.test.ts src/app/api/workflow-contracts/diagnostics/route.test.ts src/components/panels/orchestration-bar.test.tsx` | PASS; 13 files, 47 tests |
 | `direnv exec . pnpm test:e2e -- tests/e2e/workflow-contract-diagnostics.spec.ts` | PASS; 1 Chromium test |
 | `direnv exec . pnpm api:parity` | PASS |
 | `direnv exec . pnpm typecheck` | PASS |
 | `direnv exec . pnpm lint` | PASS |
 | `direnv exec . pnpm build` | PASS with network access for Next Google Fonts |
-| `direnv exec . pnpm test` | PASS with sandbox escalation for daemon socket test; 268 files, 2767 tests |
+| `direnv exec . pnpm test` | PASS with sandbox escalation for daemon socket test; 268 files, 2771 tests |
 | Guardrail grep over SPEC-009A implementation paths | PASS; no pilot seed, dispatch, runner, harness, scheduler, sandbox lifecycle, GitHub sync, or governance evaluator reference |
-| `direnv exec . gitnexus analyze --force --skills --embeddings --skip-agents-md` | PASS with network access for embedding endpoint; 24,960 nodes, 39,361 edges, 650 clusters, 300 flows; `.gitnexus/` copied to primary repo root |
+| `direnv exec . gitnexus analyze --force --skills --embeddings --skip-agents-md` | PASS with network access for embedding endpoint; clean rebuild completed in 4005.8s with 24,964 nodes, 39,377 edges, 647 clusters, 300 flows, and 20 generated skills; `.gitnexus/` copied to primary repo root |
 
 ---
 
