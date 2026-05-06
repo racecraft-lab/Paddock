@@ -29,6 +29,8 @@ import {
   const heatMapIntensityMin = 25
   const heatMapIntensityMax = 100
   const heatMapIntensityDefault = 100
+  const zoomMin = 10
+  const zoomMax = 200
   const embeddedReviewState = initialReviewStateContext()
 
   const state = {
@@ -56,11 +58,13 @@ import {
     theme: initialVisualReviewTheme(),
     tokenHelpOpen: false,
     zoom: 100,
+    zoomMode: 'fit',
   }
 
   const items = buildItems()
   const groups = Array.from(new Set(items.map((item) => item.group))).sort((a, b) => a.localeCompare(b))
   const initialId = new URLSearchParams(window.location.search).get('id')
+  let fitZoomTimer = null
   let pendingStageScroll = null
   state.activeId = items.some((item) => item.id === initialId)
     ? initialId
@@ -68,6 +72,7 @@ import {
 
   applyVisualReviewTheme(state.theme)
   render()
+  window.addEventListener('resize', scheduleFitZoom)
   window.addEventListener('keydown', handleKeys)
   if (embeddedReviewState) {
     applyRemoteReviewState(
@@ -457,6 +462,7 @@ import {
     applyOverlayState()
     applyHeatMapControlState(current)
     renderHeatMaps()
+    scheduleFitZoom()
   }
 
   function renderReviewBrief(item, currentCounts) {
@@ -843,22 +849,26 @@ import {
             <h2>${escapeHtml(itemTitle(item))}</h2>
             <p>${escapeHtml(statusLabel(item.variant))} · ${escapeHtml(itemSubtitle(item))}</p>
           </div>
-          <div class="toolbar-controls">
-            ${canCompare ? `
-              <div class="segmented" role="group" aria-label="Diff mode">
-                ${modeButton('side-by-side', 'Side by side')}
-                ${modeButton('diff', 'Highlighter')}
-                ${modeButton('overlay', 'Overlay')}
-                ${modeButton('blink', 'Blink')}
-              </div>
-            ` : ''}
-            ${heatMapControls(item)}
-            <label class="range-row">Zoom <input type="range" min="50" max="200" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
-          </div>
         </div>
-        <div class="stage">
-          <div class="stage-inner" data-stage-inner>
-            ${renderImageMode(item)}
+        <div class="stage-shell">
+          <div class="stage-control-bar" data-stage-controls>
+            <div class="toolbar-controls">
+              ${canCompare ? `
+                <div class="segmented" role="group" aria-label="Diff mode">
+                  ${modeButton('side-by-side', 'Side by side')}
+                  ${modeButton('diff', 'Highlighter')}
+                  ${modeButton('overlay', 'Overlay')}
+                  ${modeButton('blink', 'Blink')}
+                </div>
+              ` : ''}
+              ${heatMapControls(item)}
+              <label class="range-row">Zoom <input type="range" min="${zoomMin}" max="${zoomMax}" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-inner" data-stage-inner>
+              ${renderImageMode(item)}
+            </div>
           </div>
         </div>
       </article>
@@ -1072,7 +1082,8 @@ import {
       render()
     })
     root.querySelector('[data-action="zoom"]')?.addEventListener('input', (event) => {
-      state.zoom = clamp(Number(event.target.value), 50, 200)
+      state.zoomMode = 'manual'
+      state.zoom = clamp(Number(event.target.value), zoomMin, zoomMax)
       event.target.value = String(state.zoom)
       persistViewState()
       applyZoomState()
@@ -1107,9 +1118,45 @@ import {
 
   function applyZoomState() {
     const stageInner = root.querySelector('[data-stage-inner]')
+    const zoomInput = root.querySelector('[data-action="zoom"]')
     const zoomValue = root.querySelector('[data-zoom-value]')
     if (stageInner) stageInner.style.zoom = String(state.zoom / 100)
+    if (zoomInput) zoomInput.value = String(state.zoom)
     if (zoomValue) zoomValue.textContent = `${state.zoom}%`
+  }
+
+  function scheduleFitZoom() {
+    if (state.zoomMode !== 'fit') return
+    window.clearTimeout(fitZoomTimer)
+    fitZoomTimer = window.setTimeout(applyFitZoom, 0)
+  }
+
+  function applyFitZoom() {
+    if (state.zoomMode !== 'fit') return
+    const stage = root.querySelector('.stage')
+    const stageInner = root.querySelector('[data-stage-inner]')
+    if (!stage || !stageInner) return
+    const images = Array.from(stageInner.querySelectorAll('img'))
+    if (images.some((image) => !image.complete || image.naturalWidth <= 0)) {
+      for (const image of images) {
+        image.addEventListener('load', scheduleFitZoom, { once: true })
+      }
+      return
+    }
+
+    const currentZoom = stageInner.style.zoom
+    stageInner.style.zoom = '1'
+    const baseWidth = Math.max(stageInner.scrollWidth, stageInner.getBoundingClientRect().width)
+    stageInner.style.zoom = currentZoom
+    if (!baseWidth || !stage.clientWidth) return
+
+    const nextZoom = clamp(Math.floor((stage.clientWidth / baseWidth) * 100), zoomMin, 100)
+    if (nextZoom === state.zoom) {
+      applyZoomState()
+      return
+    }
+    state.zoom = nextZoom
+    applyZoomState()
   }
 
   function applyOverlayState() {

@@ -496,17 +496,11 @@ a {
 }
 
 .viewer-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: flex-start;
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
 }
 
 .snapshot-heading {
-  flex: 1 1 280px;
   min-width: 0;
 }
 
@@ -533,8 +527,7 @@ a {
 }
 
 .toolbar-controls {
-  flex: 1 1 460px;
-  min-width: min(100%, 360px);
+  align-items: center;
   justify-content: center;
 }
 
@@ -710,6 +703,11 @@ a {
   width: 92px;
 }
 
+.stage-shell {
+  position: relative;
+  min-width: 0;
+}
+
 .stage {
   height: calc(100vh - 188px);
   min-height: 620px;
@@ -724,10 +722,32 @@ a {
   overflow: auto;
 }
 
+.stage-control-bar {
+  position: absolute;
+  top: 12px;
+  right: 0;
+  left: 0;
+  z-index: 8;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.stage-control-bar .toolbar-controls {
+  width: max-content;
+  max-width: calc(100% - 24px);
+  padding: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  pointer-events: auto;
+}
+
 .stage-inner {
   width: max-content;
   min-width: max-content;
-  padding: 18px;
+  padding: 72px 18px 18px;
   display: grid;
   place-items: start center;
   transform-origin: top left;
