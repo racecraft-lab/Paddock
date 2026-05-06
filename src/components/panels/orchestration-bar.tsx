@@ -116,7 +116,7 @@ export function OrchestrationBar() {
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([])
   const [contractRuns, setContractRuns] = useState<WorkflowContractRun[]>([])
   const [contractDiagnostics, setContractDiagnostics] = useState<WorkflowContractDiagnostics | null>(null)
-  const [activeTab, setActiveTab] = useState<'command' | 'templates' | 'contracts' | 'pipelines' | 'fleet'>('command')
+  const [activeTab, setActiveTab] = useState<'command' | 'templates' | 'contracts' | 'pipelines' | 'fleet'>('contracts')
 
   // Command state
   const [selectedAgent, setSelectedAgent] = useState('')
@@ -335,7 +335,7 @@ export function OrchestrationBar() {
     <div className="border-b border-border bg-card/50">
       {/* Tab bar */}
       <div className="flex items-center gap-1 px-4 pt-2">
-        {(['command', 'templates', 'contracts', 'pipelines', 'fleet'] as const).map(tab => (
+        {(['contracts', 'templates', 'pipelines', 'command', 'fleet'] as const).map(tab => (
           <Button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -348,7 +348,7 @@ export function OrchestrationBar() {
                 : ''
             }`}
           >
-            {tab === 'command' ? t('tabCommand') : tab === 'templates' ? t('tabWorkflows') : tab === 'contracts' ? 'Contracts' : tab === 'pipelines' ? t('tabPipelines') : t('tabFleet')}
+            {tab === 'command' ? t('tabCommand') : tab === 'templates' ? t('tabWorkflows') : tab === 'contracts' ? 'Workflow Contracts' : tab === 'pipelines' ? t('tabPipelines') : t('tabFleet')}
             {tab === 'fleet' && (
               <span className={`ml-1.5 text-2xs ${errorCount > 0 ? 'text-red-400' : 'text-green-400'}`}>
                 {onlineCount}/{agents.length}

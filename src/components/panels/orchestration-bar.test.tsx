@@ -109,6 +109,28 @@ describe('OrchestrationBar workflow-template chain fields', () => {
     vi.restoreAllMocks()
   })
 
+  it('orders workflow contract policy before runtime workflow and pipeline controls', async () => {
+    mockFetch()
+
+    render(<OrchestrationBar />)
+
+    expect(await screen.findByTestId('workflow-contract-diagnostics')).toBeInTheDocument()
+
+    const tabButtons = [
+      screen.getByRole('button', { name: 'Workflow Contracts' }),
+      screen.getByRole('button', { name: 'tabWorkflows' }),
+      screen.getByRole('button', { name: 'tabPipelines' }),
+      screen.getByRole('button', { name: 'tabCommand' }),
+      screen.getByRole('button', { name: /tabFleet/ }),
+    ]
+    const tabLabels = tabButtons.map(button => button.textContent)
+
+    expect(tabLabels).toEqual(['Workflow Contracts', 'tabWorkflows', 'tabPipelines', 'tabCommand', 'tabFleet0/0'])
+    for (let index = 0; index < tabButtons.length - 1; index += 1) {
+      expect(tabButtons[index].compareDocumentPosition(tabButtons[index + 1]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    }
+  })
+
   it('loads workflow templates through Product Line scope and reads chain fields back into the edit form', async () => {
     const { calls } = mockFetch()
 
@@ -181,7 +203,7 @@ describe('OrchestrationBar workflow-template chain fields', () => {
     mockFetch()
 
     render(<OrchestrationBar />)
-    fireEvent.click(screen.getByText('Contracts'))
+    fireEvent.click(screen.getByText('Workflow Contracts'))
 
     expect(await screen.findByTestId('workflow-contract-diagnostics')).toBeInTheDocument()
     expect(screen.getByText('import_dry_run')).toBeInTheDocument()
