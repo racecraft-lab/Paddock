@@ -711,6 +711,8 @@ a {
 .stage {
   height: calc(100vh - 188px);
   min-height: 620px;
+  box-sizing: border-box;
+  padding-top: 72px;
   background:
     linear-gradient(45deg, var(--stage-check-a) 25%, var(--stage-check-b) 25%),
     linear-gradient(-45deg, var(--stage-check-a) 25%, var(--stage-check-b) 25%),
@@ -747,7 +749,7 @@ a {
 .stage-inner {
   width: max-content;
   min-width: max-content;
-  padding: 72px 18px 18px;
+  padding: 18px;
   display: grid;
   place-items: start center;
   transform-origin: top left;
