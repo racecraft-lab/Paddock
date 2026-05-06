@@ -26,6 +26,9 @@ import {
   const reviewableVariants = new Set(['changed', 'new', 'deleted'])
   const githubTokenDocsUrl = 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token'
   const themeStorageKey = 'visual-review:theme'
+  const heatMapIntensityMin = 25
+  const heatMapIntensityMax = 100
+  const heatMapIntensityDefault = 100
   const embeddedReviewState = initialReviewStateContext()
 
   const state = {
@@ -34,6 +37,7 @@ import {
     githubToken: sessionStorage.getItem(githubTokenKey()) || '',
     githubUser: '',
     group: 'all',
+    heatMapIntensity: clamp(Number(localStorage.getItem(storageKey('heat-map-intensity')) || heatMapIntensityDefault), heatMapIntensityMin, heatMapIntensityMax),
     heatMaps: readHeatMaps(),
     inlineCommentMessage: '',
     inlineCommentState: 'idle',
@@ -57,6 +61,7 @@ import {
   const items = buildItems()
   const groups = Array.from(new Set(items.map((item) => item.group))).sort((a, b) => a.localeCompare(b))
   const initialId = new URLSearchParams(window.location.search).get('id')
+  let pendingStageScroll = null
   state.activeId = items.some((item) => item.id === initialId)
     ? initialId
     : (items.find((item) => reviewableVariants.has(item.variant)) || items[0])?.id
@@ -162,6 +167,7 @@ import {
   }
 
   function persistViewState() {
+    localStorage.setItem(storageKey('heat-map-intensity'), String(state.heatMapIntensity))
     localStorage.setItem(storageKey('mode'), state.mode)
     localStorage.setItem(storageKey('overlay'), String(state.overlay))
     localStorage.setItem(storageKey('zoom'), String(state.zoom))
@@ -450,6 +456,7 @@ import {
     bindEvents()
     applyZoomState()
     applyOverlayState()
+    applyHeatMapControlState(current)
     renderHeatMaps()
   }
 
@@ -846,7 +853,7 @@ import {
                 ${modeButton('blink', 'Blink')}
               </div>
             ` : ''}
-            ${heatMapToggle(item)}
+            ${heatMapControls(item)}
             <label class="range-row">Zoom <input type="range" min="50" max="200" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
           </div>
         </div>
@@ -863,18 +870,39 @@ import {
     return `<button type="button" class="${state.mode === mode ? 'active' : ''}" data-mode="${escapeAttribute(mode)}">${escapeHtml(label)}</button>`
   }
 
-  function heatMapToggle(item) {
+  function heatMapControls(item) {
     const enabled = canHeatMap(item)
     const active = enabled && heatMapEnabled(item)
+    const status = heatMapStatusLabel(item)
     return `
-      <button
-        class="btn heatmap-toggle ${active ? 'active' : ''}"
-        type="button"
-        data-action="toggle-heat-map"
-        aria-pressed="${active ? 'true' : 'false'}"
-        ${enabled ? '' : 'disabled'}
-        title="${escapeAttribute(enabled ? 'Overlay changed pixels on the current screenshot' : 'Heat map needs baseline and current screenshots')}"
-      >Heat map</button>
+      <div class="heatmap-controls ${active ? 'active' : ''}" data-heat-map-controls>
+        <button
+          class="btn heatmap-toggle ${active ? 'active' : ''}"
+          type="button"
+          data-action="toggle-heat-map"
+          aria-label="Heat map"
+          aria-pressed="${active ? 'true' : 'false'}"
+          ${enabled ? '' : 'disabled'}
+          title="${escapeAttribute(enabled ? 'Overlay changed pixels on the current screenshot' : 'Heat map needs baseline and current screenshots')}"
+        >
+          <span>Heat map</span>
+          <span class="heatmap-status" data-heat-map-status aria-hidden="true">${escapeHtml(status)}</span>
+        </button>
+        <label class="range-row heatmap-intensity ${enabled ? '' : 'disabled'}" data-heat-map-intensity-row>
+          Intensity
+          <input
+            type="range"
+            min="${heatMapIntensityMin}"
+            max="${heatMapIntensityMax}"
+            step="5"
+            value="${state.heatMapIntensity}"
+            data-action="heat-map-intensity"
+            aria-label="Heat map intensity"
+            ${enabled ? '' : 'disabled'}
+          />
+          <span data-heat-map-intensity-value>${state.heatMapIntensity}%</span>
+        </label>
+      </div>
     `
   }
 
@@ -927,12 +955,18 @@ import {
   }
 
   function renderCurrentImage(item, alt, className = '') {
-    const heatMapActive = heatMapEnabled(item)
     const image = `<img class="${escapeAttribute(className)}" src="${escapeAttribute(item.actual)}" alt="${escapeAttribute(alt)}" />`
-    if (!heatMapActive) return image
+    if (!canHeatMap(item)) return image
 
+    const heatMapActive = heatMapEnabled(item)
     return `
-      <div class="heatmap-frame ${className ? escapeAttribute(className) : ''}" data-heat-map-frame>
+      <div
+        class="heatmap-frame ${className ? escapeAttribute(className) : ''}"
+        data-heat-map-frame
+        data-heat-map-active="${heatMapActive ? 'true' : 'false'}"
+        data-heat-map-state="${heatMapActive ? 'idle' : 'off'}"
+        style="--heat-map-opacity: ${escapeAttribute(heatMapOpacity())}"
+      >
         <img src="${escapeAttribute(item.actual)}" alt="${escapeAttribute(alt)}" />
         <canvas
           class="heatmap-canvas"
@@ -941,6 +975,7 @@ import {
           data-current-src="${escapeAttribute(item.actual)}"
           data-threshold="${DEFAULT_HEAT_MAP_THRESHOLD}"
           aria-hidden="true"
+          ${heatMapActive ? '' : 'hidden'}
         ></canvas>
       </div>
     `
@@ -984,6 +1019,15 @@ import {
 
   function heatMapEnabled(item) {
     return canHeatMap(item) && state.heatMaps[item.id] === true
+  }
+
+  function heatMapStatusLabel(item) {
+    if (!canHeatMap(item)) return 'N/A'
+    return heatMapEnabled(item) ? 'On' : 'Off'
+  }
+
+  function heatMapOpacity() {
+    return String(clamp(Number(state.heatMapIntensity), heatMapIntensityMin, heatMapIntensityMax) / 100)
   }
 
   function renderContext(item) {
@@ -1034,13 +1078,9 @@ import {
       persistViewState()
       applyZoomState()
     })
-    root.querySelector('[data-action="overlay"]')?.addEventListener('input', (event) => {
-      state.overlay = clamp(Number(event.target.value), 0, 100)
-      event.target.value = String(state.overlay)
-      persistViewState()
-      applyOverlayState()
-    })
+    bindOverlayControl()
     root.querySelector('[data-action="toggle-heat-map"]')?.addEventListener('click', toggleHeatMap)
+    root.querySelector('[data-action="heat-map-intensity"]')?.addEventListener('input', updateHeatMapIntensity)
     root.querySelector('[data-action="review-comment"]')?.addEventListener('input', updateReviewComment)
     root.querySelector('[data-action="post-inline-comment"]')?.addEventListener('click', postInlineReviewComment)
     root.querySelector('[data-action="toggle-theme"]')?.addEventListener('click', toggleVisualReviewTheme)
@@ -1057,6 +1097,15 @@ import {
     root.querySelector('[data-action="forget-token"]')?.addEventListener('click', forgetGithubToken)
   }
 
+  function bindOverlayControl() {
+    root.querySelector('[data-action="overlay"]')?.addEventListener('input', (event) => {
+      state.overlay = clamp(Number(event.target.value), 0, 100)
+      event.target.value = String(state.overlay)
+      persistViewState()
+      applyOverlayState()
+    })
+  }
+
   function applyZoomState() {
     const stageInner = root.querySelector('[data-stage-inner]')
     const zoomValue = root.querySelector('[data-zoom-value]')
@@ -1071,16 +1120,131 @@ import {
     if (overlayValue) overlayValue.textContent = `${state.overlay}%`
   }
 
+  function applyHeatMapControlState(item = activeItem()) {
+    const enabled = canHeatMap(item)
+    const active = heatMapEnabled(item)
+    const status = heatMapStatusLabel(item)
+    const controls = root.querySelector('[data-heat-map-controls]')
+    const toggle = root.querySelector('[data-action="toggle-heat-map"]')
+    const statusLabel = root.querySelector('[data-heat-map-status]')
+    const intensity = root.querySelector('[data-action="heat-map-intensity"]')
+    const intensityRow = root.querySelector('[data-heat-map-intensity-row]')
+    const intensityValue = root.querySelector('[data-heat-map-intensity-value]')
+
+    controls?.classList.toggle('active', active)
+    if (toggle) {
+      toggle.classList.toggle('active', active)
+      toggle.disabled = !enabled
+      toggle.setAttribute('aria-pressed', active ? 'true' : 'false')
+      toggle.title = enabled
+        ? 'Overlay changed pixels on the current screenshot'
+        : 'Heat map needs baseline and current screenshots'
+    }
+    if (statusLabel) statusLabel.textContent = status
+    if (intensity) {
+      intensity.disabled = !enabled
+      intensity.value = String(state.heatMapIntensity)
+    }
+    intensityRow?.classList.toggle('disabled', !enabled)
+    if (intensityValue) intensityValue.textContent = `${state.heatMapIntensity}%`
+    root.querySelectorAll('[data-heat-map-frame]').forEach((frame) => {
+      frame.style.setProperty('--heat-map-opacity', heatMapOpacity())
+    })
+  }
+
+  function updateHeatMapIntensity(event) {
+    state.heatMapIntensity = clamp(Number(event.target.value), heatMapIntensityMin, heatMapIntensityMax)
+    event.target.value = String(state.heatMapIntensity)
+    persistViewState()
+    applyHeatMapControlState(activeItem())
+  }
+
   function toggleHeatMap() {
     const current = activeItem()
     if (!canHeatMap(current)) return
+    const scroll = readStageScroll()
+    pendingStageScroll = scroll
     state.heatMaps[current.id] = !state.heatMaps[current.id]
     saveHeatMaps()
-    render()
+    if (state.mode === 'diff' || !syncHeatMapFrames(current)) {
+      renderStageContent(current, scroll)
+      clearPendingStageScrollAfter(scroll)
+      return
+    }
+    applyHeatMapControlState(current)
+    restoreStageScroll(scroll)
+    clearPendingStageScrollAfter(scroll)
+  }
+
+  function syncHeatMapFrames(item) {
+    const frames = Array.from(root.querySelectorAll('[data-heat-map-frame]'))
+    if (frames.length === 0) return false
+    const active = heatMapEnabled(item)
+    frames.forEach((frame) => {
+      const canvas = frame.querySelector('[data-heat-map-canvas]')
+      frame.dataset.heatMapActive = active ? 'true' : 'false'
+      frame.style.setProperty('--heat-map-opacity', heatMapOpacity())
+      if (!canvas) return
+      canvas.hidden = !active
+      frame.setAttribute('data-heat-map-state', active ? 'idle' : 'off')
+    })
+    if (active) renderHeatMaps()
+    return true
+  }
+
+  function renderStageContent(item, scroll = readStageScroll()) {
+    const stageInner = root.querySelector('[data-stage-inner]')
+    if (!stageInner) {
+      render()
+      restoreStageScroll(scroll)
+      return
+    }
+
+    stageInner.innerHTML = renderImageMode(item)
+    bindOverlayControl()
+    applyZoomState()
+    applyOverlayState()
+    applyHeatMapControlState(item)
+    renderHeatMaps()
+    restoreStageScroll(scroll)
+  }
+
+  function clearPendingStageScrollAfter(scroll) {
+    window.setTimeout?.(() => {
+      if (pendingStageScroll === scroll) pendingStageScroll = null
+    }, 1000)
+  }
+
+  function readStageScroll() {
+    const stage = root.querySelector('.stage')
+    return stage ? { left: stage.scrollLeft, top: stage.scrollTop } : null
+  }
+
+  function restoreStageScroll(scroll) {
+    if (!scroll) return
+    const restore = () => {
+      const stage = root.querySelector('.stage')
+      if (!stage) return
+      stage.scrollLeft = scroll.left
+      stage.scrollTop = scroll.top
+    }
+    restore()
+    root.querySelectorAll('[data-stage-inner] img').forEach((image) => {
+      if (image.complete) {
+        restore()
+      } else {
+        image.addEventListener('load', restore, { once: true })
+      }
+    })
+    window.requestAnimationFrame?.(restore)
+    window.setTimeout?.(restore, 0)
+    window.setTimeout?.(restore, 50)
+    window.setTimeout?.(restore, 150)
+    window.setTimeout?.(restore, 300)
   }
 
   function renderHeatMaps() {
-    root.querySelectorAll('[data-heat-map-canvas]').forEach((canvas) => {
+    root.querySelectorAll('[data-heat-map-canvas]:not([hidden])').forEach((canvas) => {
       drawHeatMapCanvas(canvas)
     })
   }
@@ -1128,6 +1292,7 @@ import {
       canvas.width = width
       canvas.height = height
       heatMapContext.putImageData(heatMapData, 0, 0)
+      restoreStageScroll(pendingStageScroll)
       frame?.setAttribute('data-heat-map-state', summary.changedPixels > 0 ? 'ready' : 'empty')
     } catch {
       frame?.setAttribute('data-heat-map-state', 'error')
