@@ -706,6 +706,9 @@ For each task:
 | `direnv exec . pnpm test` | PASS with sandbox escalation for daemon socket test; 268 files, 2771 tests |
 | Guardrail grep over SPEC-009A implementation paths | PASS; no pilot seed, dispatch, runner, harness, scheduler, sandbox lifecycle, GitHub sync, or governance evaluator reference |
 | `direnv exec . gitnexus analyze --force --skills --embeddings --skip-agents-md` | PASS with network access for embedding endpoint; clean rebuild completed in 4005.8s with 24,964 nodes, 39,377 edges, 647 clusters, 300 flows, and 20 generated skills; `.gitnexus/` copied to primary repo root |
+| Draft PR | Created [PR #28](https://github.com/racecraft-lab/mission-control/pull/28); CodeQL, quality-gate, docker UI e2e visual report, Storybook visual report, and visual-approval-status checks passed; manual `visual-review-approval` remains pending approval |
+| Review remediation | No inline review comments; two visual bot comments are baseline artifact notices, not code-change requests |
+| Retrospective | Saved `specs/009a-workflow-contract-roundtrip/retrospective.md`; completion 100%, spec adherence 100%, no critical/significant findings, no proposed spec edits |
 
 ---
 
