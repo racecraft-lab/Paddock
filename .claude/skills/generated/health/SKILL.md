@@ -1,47 +1,43 @@
 ---
-name: memory
-description: "Skill for the Memory area of mission-control. 29 symbols across 9 files."
+name: health
+description: "Skill for the Health area of mission-control. 28 symbols across 6 files."
 ---
 
-# Memory
+# Health
 
-29 symbols | 9 files | Cohesion: 78%
+28 symbols | 6 files | Cohesion: 88%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how extractWikiLinks, extractSchema, validateSchema work
-- Modifying memory-related functionality
+- Understanding how extractSchema, validateSchema, scanMemoryFiles work
+- Modifying health-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/lib/memory-utils.ts` | extractWikiLinks, extractSchema, validateSchema, scanMemoryFiles, walk (+8) |
-| `src/lib/hermes-memory.ts` | MEMORY_DIR, countSectionEntries, readMemoryFile, getHermesMemory |
-| `src/app/api/memory/route.ts` | buildFileTree, GET, POST |
-| `src/lib/memory-path.ts` | normalizeRelativePath, isPathAllowed |
+| `src/lib/memory-utils.ts` | extractSchema, validateSchema, scanMemoryFiles, walk, buildLinkGraph (+7) |
+| `src/app/api/gateways/health/route.ts` | ensureGatewaysTable, parseGatewayVersion, hasOpenClaw32ToolsProfileRisk, ipv4InCidr, ipv4ToNum (+3) |
+| `src/app/api/gateways/health/health-utils.test.ts` | ipv4ToNum, ipv4InCidr, isBlockedUrl |
 | `src/app/api/memory/health/route.ts` | mergeReports, GET |
 | `src/app/api/memory/context/route.ts` | mergeContextPayloads, GET |
 | `src/app/api/memory/process/route.ts` | POST |
-| `src/app/api/memory/links/route.ts` | GET |
-| `src/app/api/hermes/memory/route.ts` | GET |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`extractWikiLinks`** (Function) — `src/lib/memory-utils.ts:20`
 - **`extractSchema`** (Function) — `src/lib/memory-utils.ts:64`
 - **`validateSchema`** (Function) — `src/lib/memory-utils.ts:94`
 - **`scanMemoryFiles`** (Function) — `src/lib/memory-utils.ts:136`
 - **`walk`** (Function) — `src/lib/memory-utils.ts:144`
+- **`buildLinkGraph`** (Function) — `src/lib/memory-utils.ts:200`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `extractWikiLinks` | Function | `src/lib/memory-utils.ts` | 20 |
 | `extractSchema` | Function | `src/lib/memory-utils.ts` | 64 |
 | `validateSchema` | Function | `src/lib/memory-utils.ts` | 94 |
 | `scanMemoryFiles` | Function | `src/lib/memory-utils.ts` | 136 |
@@ -54,36 +50,23 @@ Start here when exploring this area:
 | `reweavePass` | Function | `src/lib/memory-utils.ts` | 653 |
 | `gapDetectPass` | Function | `src/lib/memory-utils.ts` | 709 |
 | `consolidatePass` | Function | `src/lib/memory-utils.ts` | 829 |
-| `normalizeRelativePath` | Function | `src/lib/memory-path.ts` | 88 |
-| `isPathAllowed` | Function | `src/lib/memory-path.ts` | 92 |
-| `GET` | Function | `src/app/api/memory/route.ts` | 84 |
-| `POST` | Function | `src/app/api/memory/route.ts` | 194 |
 | `POST` | Function | `src/app/api/memory/process/route.ts` | 18 |
 | `GET` | Function | `src/app/api/memory/health/route.ts` | 40 |
-| `GET` | Function | `src/app/api/memory/links/route.ts` | 8 |
-
-## Execution Flows
-
-| Flow | Type | Steps |
-|------|------|-------|
-| `GET → NormalizeSecurityEventType` | cross_community | 6 |
-| `GET → Run` | cross_community | 6 |
-| `GET → Broadcast` | cross_community | 6 |
-| `GET → EnsureDirExists` | cross_community | 6 |
-| `GET → Has` | cross_community | 5 |
-| `GET → MemoryPathError` | cross_community | 5 |
+| `GET` | Function | `src/app/api/memory/context/route.ts` | 34 |
+| `POST` | Function | `src/app/api/gateways/health/route.ts` | 161 |
+| `mergeReports` | Function | `src/app/api/memory/health/route.ts` | 12 |
+| `mergeContextPayloads` | Function | `src/app/api/memory/context/route.ts` | 9 |
+| `ensureGatewaysTable` | Function | `src/app/api/gateways/health/route.ts` | 4 |
+| `parseGatewayVersion` | Function | `src/app/api/gateways/health/route.ts` | 46 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| [id] | 8 calls |
-| Onboarding | 7 calls |
-| Cluster_176 | 3 calls |
-| Search | 2 calls |
+| [id] | 6 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "extractWikiLinks"})` — see callers and callees
-2. `gitnexus_query({query: "memory"})` — find related execution flows
+1. `gitnexus_context({name: "extractSchema"})` — see callers and callees
+2. `gitnexus_query({query: "health"})` — find related execution flows
 3. Read key files listed above for implementation details

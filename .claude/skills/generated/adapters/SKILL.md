@@ -1,42 +1,42 @@
 ---
 name: adapters
-description: "Skill for the Adapters area of mission-control. 67 symbols across 22 files."
+description: "Skill for the Adapters area of mission-control. 108 symbols across 22 files."
 ---
 
 # Adapters
 
-67 symbols | 22 files | Cohesion: 64%
+108 symbols | 22 files | Cohesion: 85%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how processWebhookRetries, requeueStaleTasks, autoRouteInboxTasks work
+- Understanding how getAdapter, POST, tx work
 - Modifying adapters-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/lib/scheduler.ts` | getSettingNumber, runBackup, runCleanup, runHeartbeatCheck, tick (+1) |
+| `src/lib/adapters/index.ts` | getAdapter, openclaw, generic, crewai, langgraph (+3) |
+| `src/lib/adapters/adapter.ts` | register, heartbeat, reportTask, getAssignments, disconnect (+2) |
+| `src/lib/observability/adapters/openclaw-gateway.ts` | tx, defaultHealthDir, registerOpenclawGatewaySource, readCostBasis, readCurrentRate (+2) |
+| `src/lib/observability/adapters/copilot-events-jsonl.ts` | tierToEligibility, tierToConfidence, tx, defaultEventsPath, registerCopilotEventsSource (+2) |
 | `src/lib/adapters/openclaw.ts` | register, heartbeat, reportTask, disconnect, OpenClawAdapter (+1) |
 | `src/lib/adapters/langgraph.ts` | register, heartbeat, reportTask, disconnect, LangGraphAdapter (+1) |
 | `src/lib/adapters/generic.ts` | register, heartbeat, reportTask, disconnect, GenericAdapter (+1) |
 | `src/lib/adapters/crewai.ts` | register, heartbeat, reportTask, disconnect, CrewAIAdapter (+1) |
 | `src/lib/adapters/claude-sdk.ts` | register, heartbeat, reportTask, disconnect, ClaudeSdkAdapter (+1) |
 | `src/lib/adapters/autogen.ts` | register, heartbeat, reportTask, disconnect, AutoGenAdapter (+1) |
-| `src/lib/claude-sessions.ts` | clampTimestamp, parseSessionFile, scanClaudeSessions, syncClaudeSessions |
-| `src/lib/task-dispatch.ts` | syncAndEscalateIfFailed, requeueStaleTasks, autoRouteInboxTasks |
-| `src/lib/schedule-parser.ts` | isCronDue, matchesCronField |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`processWebhookRetries`** (Function) — `src/lib/webhooks.ts:301`
-- **`requeueStaleTasks`** (Function) — `src/lib/task-dispatch.ts:1337`
-- **`autoRouteInboxTasks`** (Function) — `src/lib/task-dispatch.ts:1728`
-- **`syncSkillsFromDisk`** (Function) — `src/lib/skill-sync.ts:133`
-- **`triggerTask`** (Function) — `src/lib/scheduler.ts:512`
+- **`getAdapter`** (Function) — `src/lib/adapters/index.ts:17`
+- **`POST`** (Function) — `src/app/api/adapters/route.ts:28`
+- **`tx`** (Function) — `src/lib/observability/adapters/openclaw-gateway.ts:213`
+- **`tx`** (Function) — `src/lib/observability/adapters/ollama-log.ts:186`
+- **`adaptManualPost`** (Function) — `src/lib/observability/adapters/manual-post.ts:80`
 
 ## Key Symbols
 
@@ -48,51 +48,31 @@ Start here when exploring this area:
 | `CrewAIAdapter` | Class | `src/lib/adapters/crewai.ts` | 4 |
 | `ClaudeSdkAdapter` | Class | `src/lib/adapters/claude-sdk.ts` | 4 |
 | `AutoGenAdapter` | Class | `src/lib/adapters/autogen.ts` | 4 |
-| `processWebhookRetries` | Function | `src/lib/webhooks.ts` | 301 |
-| `requeueStaleTasks` | Function | `src/lib/task-dispatch.ts` | 1337 |
-| `autoRouteInboxTasks` | Function | `src/lib/task-dispatch.ts` | 1728 |
-| `syncSkillsFromDisk` | Function | `src/lib/skill-sync.ts` | 133 |
-| `triggerTask` | Function | `src/lib/scheduler.ts` | 512 |
-| `isCronDue` | Function | `src/lib/schedule-parser.ts` | 165 |
-| `spawnRecurringTasks` | Function | `src/lib/recurring-tasks.ts` | 29 |
-| `syncLocalAgents` | Function | `src/lib/local-agent-sync.ts` | 224 |
-| `logAuditEvent` | Function | `src/lib/db.ts` | 582 |
-| `scanClaudeSessions` | Function | `src/lib/claude-sessions.ts` | 219 |
-| `syncClaudeSessions` | Function | `src/lib/claude-sessions.ts` | 273 |
-| `syncAgentsFromConfig` | Function | `src/lib/agent-sync.ts` | 288 |
-| `DELETE` | Function | `src/app/api/backup/route.ts` | 134 |
-| `POST` | Function | `src/app/api/claude/sessions/route.ts` | 90 |
-
-## Execution Flows
-
-| Flow | Type | Steps |
-|------|------|-------|
-| `PATCH → Broadcast` | cross_community | 6 |
-| `GET → Broadcast` | cross_community | 6 |
-| `GET → Broadcast` | cross_community | 6 |
-| `POST → Broadcast` | cross_community | 6 |
-| `POST → Broadcast` | cross_community | 6 |
-| `POST → Broadcast` | cross_community | 6 |
-| `GET → Broadcast` | cross_community | 6 |
-| `GET → Broadcast` | cross_community | 6 |
-| `GET → ClampTimestamp` | cross_community | 5 |
-| `GET → Generate` | cross_community | 5 |
+| `getAdapter` | Function | `src/lib/adapters/index.ts` | 17 |
+| `POST` | Function | `src/app/api/adapters/route.ts` | 28 |
+| `tx` | Function | `src/lib/observability/adapters/openclaw-gateway.ts` | 213 |
+| `tx` | Function | `src/lib/observability/adapters/ollama-log.ts` | 186 |
+| `adaptManualPost` | Function | `src/lib/observability/adapters/manual-post.ts` | 80 |
+| `tx` | Function | `src/lib/observability/adapters/lm-studio-log.ts` | 215 |
+| `tx` | Function | `src/lib/observability/adapters/copilot-events-jsonl.ts` | 252 |
+| `tx` | Function | `src/lib/observability/adapters/codex-rollout.ts` | 216 |
+| `tx` | Function | `src/lib/observability/adapters/claude-code-transcript.ts` | 189 |
+| `partitionMonthFromMs` | Function | `src/lib/observability/adapters/_adapter-helpers.ts` | 61 |
+| `insertRawUsageEvent` | Function | `src/lib/observability/adapters/_adapter-helpers.ts` | 87 |
+| `queryPendingAssignments` | Function | `src/lib/adapters/adapter.ts` | 2 |
+| `registerManualPostSource` | Function | `src/lib/observability/adapters/manual-post.ts` | 66 |
+| `registerClaudeTranscriptSource` | Function | `src/lib/observability/adapters/claude-code-transcript.ts` | 108 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| [id] | 30 calls |
-| Onboarding | 2 calls |
-| Cluster_96 | 2 calls |
-| Cluster_97 | 2 calls |
-| Cluster_110 | 1 calls |
-| Tokens | 1 calls |
-| Cleanup | 1 calls |
-| Scheduler | 1 calls |
+| [id] | 4 calls |
+| Observability | 2 calls |
+| Tasks | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "processWebhookRetries"})` — see callers and callees
+1. `gitnexus_context({name: "getAdapter"})` — see callers and callees
 2. `gitnexus_query({query: "adapters"})` — find related execution flows
 3. Read key files listed above for implementation details

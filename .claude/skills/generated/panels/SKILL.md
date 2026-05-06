@@ -1,90 +1,87 @@
 ---
 name: panels
-description: "Skill for the Panels area of mission-control. 392 symbols across 56 files."
+description: "Skill for the Panels area of mission-control. 715 symbols across 70 files."
 ---
 
 # Panels
 
-392 symbols | 56 files | Cohesion: 90%
+715 symbols | 70 files | Cohesion: 75%
 
 ## When to Use
 
 - Working with code in `src/`
-- Understanding how appendScopeToPath, handleDrop, OrchestrationBar work
+- Understanding how appendScopeToPath, fetchProjects, exportClientCsv work
 - Modifying panels-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `src/components/panels/agent-detail-tabs.tsx` | handleSendMessage, handleSave, TasksTab, fetchTasks, ActivityTab (+30) |
-| `src/components/panels/office-panel.tsx` | getInitials, hashColor, hashNumber, formatLastSeen, easeInOut (+22) |
-| `src/components/panels/channels-panel.tsx` | relativeTime, formatDuration, truncatePubkey, yesNo, WhatsAppCard (+18) |
-| `src/components/panels/task-board-panel.tsx` | handleClick, handleDrop, handleAddComment, handleBroadcast, handleSubmitReview (+16) |
-| `src/components/panels/cron-management-panel.tsx` | getAgentColorClass, startOfDay, addDays, isSameDay, getWeekStart (+15) |
-| `src/components/panels/memory-browser-panel.tsx` | mergeDirectoryChildren, formatFileSize, countFiles, totalSize, fileIcon (+13) |
-| `src/components/panels/agent-squad-panel-phase3.tsx` | AgentSquadPanelPhase3, syncFromConfig, updateAgentStatus, wakeAgent, toggleAgentHidden (+10) |
-| `src/components/panels/nodes-panel.tsx` | stringArray, numberOrZero, normalizeNode, normalizePairedDevice, normalizePendingDevice (+10) |
-| `src/components/panels/gateway-config-panel.tsx` | humanize, defaultValueFor, deepSet, matchesSearch, SectionCard (+8) |
-| `src/components/panels/orchestration-bar.tsx` | parseJsonField, OrchestrationBar, sendCommand, executeTemplate, saveTemplate (+6) |
+| `src/components/panels/office-panel.tsx` | formatLastSeen, easeInOut, getStatusEmote, inferLocalRole, getPropSprite (+41) |
+| `src/components/panels/agent-detail-tabs.tsx` | handleSendMessage, handleSave, fetchTasks, fetchActivities, loadWorkspaceDocs (+37) |
+| `src/components/panels/task-board-panel.tsx` | handleClick, handleSpawn, fetchReviews, fetchComments, handleAddComment (+32) |
+| `src/components/panels/channels-panel.tsx` | relativeTime, formatDuration, truncatePubkey, yesNo, channelIsActive (+27) |
+| `src/components/panels/cron-management-panel.tsx` | getAgentColorClass, isSameDay, formatDateLabel, CronManagementPanel, formatRelativeTime (+27) |
+| `src/components/panels/memory-browser-panel.tsx` | mergeDirectoryChildren, fetchTree, loadFileTree, loadFileContent, toggleFolder (+26) |
+| `src/components/panels/cost-tracker-panel.tsx` | buildGovernancePath, formatNumber, formatCost, getModelDisplayName, CostTrackerPanel (+18) |
+| `src/components/panels/gateway-config-panel.tsx` | defaultValueFor, matchesSearch, filteredSections, SectionCard, ArrayField (+18) |
+| `src/components/panels/token-dashboard-panel.tsx` | exportClientCsv, TokenDashboardPanel, loadUsageStats, loadTrendData, loadSessionCosts (+16) |
+| `src/components/panels/agent-squad-panel-phase3.tsx` | syncFromConfig, fetchAgents, updateAgentStatus, wakeAgent, toggleAgentHidden (+15) |
 
 ## Entry Points
 
 Start here when exploring this area:
 
 - **`appendScopeToPath`** (Function) — `src/types/product-line.ts:120`
-- **`handleDrop`** (Function) — `src/components/panels/task-board-panel.tsx:611`
-- **`OrchestrationBar`** (Function) — `src/components/panels/orchestration-bar.tsx:78`
-- **`sendCommand`** (Function) — `src/components/panels/orchestration-bar.tsx:121`
-- **`executeTemplate`** (Function) — `src/components/panels/orchestration-bar.tsx:147`
+- **`fetchProjects`** (Function) — `src/store/index.ts:1006`
+- **`exportClientCsv`** (Function) — `src/components/panels/token-dashboard-panel.tsx:204`
+- **`handleSpawn`** (Function) — `src/components/panels/task-board-panel.tsx:681`
+- **`fetchTree`** (Function) — `src/components/panels/memory-browser-panel.tsx:145`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
 | `appendScopeToPath` | Function | `src/types/product-line.ts` | 120 |
-| `handleDrop` | Function | `src/components/panels/task-board-panel.tsx` | 611 |
-| `OrchestrationBar` | Function | `src/components/panels/orchestration-bar.tsx` | 78 |
-| `sendCommand` | Function | `src/components/panels/orchestration-bar.tsx` | 121 |
-| `executeTemplate` | Function | `src/components/panels/orchestration-bar.tsx` | 147 |
-| `saveTemplate` | Function | `src/components/panels/orchestration-bar.tsx` | 181 |
-| `closeForm` | Function | `src/components/panels/orchestration-bar.tsx` | 262 |
-| `deleteTemplate` | Function | `src/components/panels/orchestration-bar.tsx` | 271 |
-| `addTag` | Function | `src/components/panels/orchestration-bar.tsx` | 278 |
-| `NotificationsPanel` | Function | `src/components/panels/notifications-panel.tsx` | 23 |
-| `markAllRead` | Function | `src/components/panels/notifications-panel.tsx` | 62 |
-| `markRead` | Function | `src/components/panels/notifications-panel.tsx` | 77 |
-| `GitHubSyncPanel` | Function | `src/components/panels/github-sync-panel.tsx` | 50 |
-| `AgentSquadPanel` | Function | `src/components/panels/agent-squad-panel.tsx` | 47 |
+| `fetchProjects` | Function | `src/store/index.ts` | 1006 |
+| `exportClientCsv` | Function | `src/components/panels/token-dashboard-panel.tsx` | 204 |
+| `handleSpawn` | Function | `src/components/panels/task-board-panel.tsx` | 681 |
+| `fetchTree` | Function | `src/components/panels/memory-browser-panel.tsx` | 145 |
+| `loadFileTree` | Function | `src/components/panels/memory-browser-panel.tsx` | 153 |
+| `loadFileContent` | Function | `src/components/panels/memory-browser-panel.tsx` | 192 |
+| `toggleFolder` | Function | `src/components/panels/memory-browser-panel.tsx` | 246 |
+| `saveFile` | Function | `src/components/panels/memory-browser-panel.tsx` | 261 |
+| `createNewFile` | Function | `src/components/panels/memory-browser-panel.tsx` | 285 |
+| `deleteFile` | Function | `src/components/panels/memory-browser-panel.tsx` | 302 |
+| `runPipelineAction` | Function | `src/components/panels/memory-browser-panel.tsx` | 362 |
+| `buildGovernancePath` | Function | `src/components/panels/cost-tracker-panel.tsx` | 182 |
 | `updateAgentStatus` | Function | `src/components/panels/agent-squad-panel.tsx` | 89 |
-| `AgentSquadPanelPhase3` | Function | `src/components/panels/agent-squad-panel-phase3.tsx` | 89 |
 | `syncFromConfig` | Function | `src/components/panels/agent-squad-panel-phase3.tsx` | 103 |
+| `fetchAgents` | Function | `src/components/panels/agent-squad-panel-phase3.tsx` | 134 |
 | `updateAgentStatus` | Function | `src/components/panels/agent-squad-panel-phase3.tsx` | 166 |
 | `wakeAgent` | Function | `src/components/panels/agent-squad-panel-phase3.tsx` | 200 |
 | `toggleAgentHidden` | Function | `src/components/panels/agent-squad-panel-phase3.tsx` | 228 |
+| `deleteAgent` | Function | `src/components/panels/agent-squad-panel-phase3.tsx` | 241 |
 
 ## Execution Flows
 
 | Flow | Type | Steps |
 |------|------|-------|
-| `Home → Sha256Hex` | cross_community | 5 |
-| `Home → ToBase64Url` | cross_community | 5 |
-| `Home → AddAgent` | cross_community | 5 |
-| `Home → ImportPrivateKey` | cross_community | 4 |
-| `Home → FromBase64Url` | cross_community | 4 |
+| `Home → Error` | cross_community | 4 |
+| `ContentRouter → Cn` | cross_community | 4 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Onboarding | 13 calls |
-| Cluster_206 | 2 calls |
-| Cluster_194 | 2 calls |
-| Cluster_209 | 1 calls |
-| [id] | 1 calls |
-| Layout | 1 calls |
-| Cluster_210 | 1 calls |
-| Cluster_167 | 1 calls |
+| Ui | 6 calls |
+| Dashboard | 3 calls |
+| Settings | 2 calls |
+| Cluster_250 | 1 calls |
+| Modals | 1 calls |
+| Cluster_252 | 1 calls |
+| Onboarding | 1 calls |
+| Tasks | 1 calls |
 
 ## How to Explore
 

@@ -5,7 +5,7 @@ description: "Skill for the Github area of mission-control. 23 symbols across 5 
 
 # Github
 
-23 symbols | 5 files | Cohesion: 61%
+23 symbols | 5 files | Cohesion: 66%
 
 ## When to Use
 
@@ -63,23 +63,22 @@ Start here when exploring this area:
 | Flow | Type | Steps |
 |------|------|-------|
 | `POST → NormalizeSecurityEventType` | cross_community | 6 |
-| `POST → Run` | cross_community | 6 |
-| `POST → Broadcast` | cross_community | 6 |
 | `POST → EnsureDirExists` | cross_community | 6 |
 | `POST → HashPassword` | cross_community | 6 |
-| `POST → Has` | cross_community | 5 |
+| `POST → ParseEnvLine` | cross_community | 6 |
+| `POST → GitHubUrlValidationError` | cross_community | 6 |
+| `POST → GetGeneratedFilePath` | cross_community | 6 |
 | `POST → Generate` | cross_community | 5 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| [id] | 14 calls |
-| Cluster_186 | 5 calls |
-| Onboarding | 1 calls |
-| Cluster_95 | 1 calls |
-| Adapters | 1 calls |
-| Cluster_193 | 1 calls |
+| [id] | 9 calls |
+| Cluster_226 | 5 calls |
+| Tasks | 1 calls |
+| Cluster_100 | 1 calls |
+| Cluster_234 | 1 calls |
 
 ## How to Explore
 

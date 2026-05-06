@@ -1,11 +1,11 @@
 ---
 name: setup
-description: "Skill for the Setup area of mission-control. 33 symbols across 15 files."
+description: "Skill for the Setup area of mission-control. 36 symbols across 15 files."
 ---
 
 # Setup
 
-33 symbols | 15 files | Cohesion: 76%
+36 symbols | 15 files | Cohesion: 76%
 
 ## When to Use
 
@@ -17,16 +17,16 @@ description: "Skill for the Setup area of mission-control. 33 symbols across 15 
 
 | File | Symbols |
 |------|---------|
-| `src/lib/pty-manager.ts` | PtySession, start, buildAttachArgs, isTmuxAvailable, tmuxSessionExists (+3) |
+| `src/lib/pty-manager.ts` | PtySession, isTmuxAvailable, tmuxSessionExists, listTmuxSessions, createPtySession (+1) |
+| `src/app/setup/page.tsx` | getInitialProgress, ProgressIndicator, SetupPage, checkSetupStatus, updateProgress (+1) |
 | `src/lib/session-cookie.ts` | getMcSessionCookieName, isRequestSecure, parseMcSessionCookieHeader, envFlag, getMcSessionCookieOptions |
 | `src/lib/auth.ts` | resolveTenantForWorkspace, createSession, authenticateUser |
 | `src/lib/password.ts` | verifyPasswordWithRehashCheck, verifyPassword |
 | `src/app/api/setup/route.ts` | GET, POST |
+| `src/app/api/auth/google/route.ts` | upsertAccessRequest, POST |
 | `src/app/api/pty/setup/route.ts` | GET, POST |
 | `src/app/api/pty/attach/route.ts` | POST, GET |
-| `src/app/setup/page.tsx` | getInitialProgress, SetupPage |
 | `src/lib/google-auth.ts` | verifyGoogleIdToken |
-| `src/lib/db.ts` | needsFirstTimeSetup |
 
 ## Entry Points
 
@@ -67,29 +67,28 @@ Start here when exploring this area:
 
 | Flow | Type | Steps |
 |------|------|-------|
+| `POST → TableExists` | cross_community | 6 |
 | `PATCH → NormalizeSecurityEventType` | cross_community | 5 |
-| `PATCH → Run` | cross_community | 5 |
-| `PATCH → Broadcast` | cross_community | 5 |
+| `PATCH → EnsureDirExists` | cross_community | 5 |
+| `PATCH → HashPassword` | cross_community | 5 |
+| `PATCH → Generate` | cross_community | 5 |
 | `POST → GetGeneratedFilePath` | cross_community | 5 |
 | `POST → EnsureDirExists` | cross_community | 5 |
-| `POST → Has` | cross_community | 5 |
-| `POST → Has` | cross_community | 5 |
+| `POST → ResolveSeedAuthPassword` | cross_community | 5 |
+| `POST → HashPassword` | cross_community | 5 |
 | `POST → Generate` | cross_community | 5 |
-| `POST → EnsureDirExists` | cross_community | 5 |
-| `PATCH → Has` | cross_community | 4 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
 | [id] | 15 calls |
-| Access-requests | 6 calls |
-| Adapters | 5 calls |
-| Cluster_223 | 2 calls |
-| Cluster_138 | 1 calls |
-| Cluster_55 | 1 calls |
-| Onboarding | 1 calls |
-| Users | 1 calls |
+| Users | 9 calls |
+| Cluster_267 | 2 calls |
+| Cluster_169 | 1 calls |
+| Cluster_129 | 1 calls |
+| Panels | 1 calls |
+| Ui | 1 calls |
 
 ## How to Explore
 

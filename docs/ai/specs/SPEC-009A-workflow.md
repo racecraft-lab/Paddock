@@ -41,7 +41,7 @@ spec.
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Status Sync | `$speckit-autopilot` startup | Pending | Verify setup cleanup, Archive Sweep state, branch guard, and baseline docs |
+| Prerequisites + Status Sync | `$speckit-autopilot` startup | Complete | Archive Sweep cleanup disabled safely; GitNexus rebuilt with skills + embeddings; dependencies installed; `pnpm typecheck` and `pnpm lint` passed |
 | Specify | `$speckit-specify` | Pending | Generate `specs/009a-workflow-contract-roundtrip/spec.md` |
 | Clarify | `$speckit-clarify` | Pending | Resolve validation package, canonical hash envelope, diagnostics persistence, export path |
 | Plan | `$speckit-plan` | Pending | Produce technical plan, research, data model, contracts, quickstart |
@@ -119,6 +119,29 @@ workflow:
 - Do not delete source spec folders silently during setup or during this
   workflow.
 
+### Archive Sweep Results
+
+Executed during SPEC-009A autopilot startup on 2026-05-05.
+
+| Field | Result |
+|-------|--------|
+| Archive extension | Installed and enabled: `archive` v1.1.0 from `.specify/extensions/archive/extension.yml`; registry source commit `08ee0e919a72ccb254758a2b6f51d58196490ea7` |
+| Branch | `009a-workflow-contract-roundtrip` |
+| Worktree | Feature/spec worktree |
+| Worktree clean before cleanup? | No. Dirty state exists from requested GitNexus `--skills --embeddings` rebuild and `.envrc` propagation. |
+| Current target | `specs/009a-workflow-contract-roundtrip` |
+| Current target exclusion | Excluded. The directory has not been generated yet because Specify has not run. |
+| Active completed spec dirs found | `specs/005-ready-for-owner`, `specs/007-disposition-artifacts`, `specs/008-resource-governance` |
+| Archive memory evidence | `.specify/memory/changelog.md`, `.specify/memory/spec.md`, and `.specify/memory/plan.md` already record archive/status evidence for completed prior specs, including SPEC-005, SPEC-007, and SPEC-008. |
+| Cleanup applied | No |
+| `safeToApplyCleanup` | `false` |
+
+**Cleanup decision:** No active `specs/**` directory was deleted, moved, or
+otherwise cleaned up in this startup pass. Cleanup is disabled because the
+worktree is not clean and this is a feature branch, so the safe cleanup gates
+from the archive extension are not satisfied. Archive Sweep evidence is recorded
+for traceability only.
+
 ### Constitution Validation
 
 Before starting each phase, verify alignment with `.specify/memory/constitution.md`,
@@ -135,7 +158,28 @@ Before starting each phase, verify alignment with `.specify/memory/constitution.
 | Provider neutrality | Capabilities and adapter requirements are data; no provider is mandatory | Contract schema tests |
 | Existing behavior preservation | Existing `workflow_templates` behavior is unchanged unless import command explicitly applies a contract | Regression tests |
 
-**Constitution Check:** Pending. Verify at Phase 1 start.
+**Constitution Check:** Complete for Phase 0 startup. Re-check after Specify,
+Plan, Analyze, and Implement as artifacts become concrete.
+
+### Phase 0 Results
+
+Executed during SPEC-009A autopilot startup on 2026-05-05.
+
+| Check | Result |
+|-------|--------|
+| SpecKit prerequisite script | PASS: `all_pass=true`; branch `009a-workflow-contract-roundtrip`; worktree detected; workflow file exists |
+| Settings | No `.claude/speckit-pro.local.md`; using autopilot defaults |
+| MCP availability | Non-blocking missing MCPs reported by script: `tavily-mcp`, `context7`, `RepoPrompt`; GitNexus MCP is available and was used separately |
+| Command detection | PASS: package manager `pnpm`; build/typecheck/lint/test/e2e commands detected |
+| Presets | None detected; enabled extensions read from `.specify/extensions/.registry` |
+| Dependency install | `direnv exec . pnpm install --frozen-lockfile` PASS after sandboxed attempt failed on registry DNS; no lockfile/package edits |
+| GitNexus index | `direnv exec . gitnexus analyze --force --skills --embeddings --skip-agents-md` PASS in 2475.6s; generated 20 repo-specific skills; index copied to primary checkout root so it is not stranded in this worktree |
+| GitNexus stats | 24,588 nodes; 38,829 edges; 646 clusters; 300 flows; 21,783 embeddings |
+| GitNexus ignore state | `.gitnexus/` is ignored by `.gitignore:71`; `.envrc.local` is ignored by `.gitignore:16`; neither is staged |
+| Environment loader | `.envrc` copied from the prior governance worktree and primary checkout; loads `.envrc.local` via direnv for embedding config and adds `node_modules/.bin` |
+| Typecheck | PASS: `direnv exec . pnpm typecheck` |
+| Lint | PASS: `direnv exec . pnpm lint` |
+| Impact check | GitNexus `detect_changes(scope=all)` reported low risk and no affected execution flows for current docs/skill changes |
 
 ---
 
@@ -653,4 +697,3 @@ src/lib/                                  # Import/export/model helpers if Plan 
 src/app/                                  # Diagnostics UI/API if Plan chooses runtime surface changes
 docs/                                    # Operator docs and generated Markdown review artifacts
 ```
-
