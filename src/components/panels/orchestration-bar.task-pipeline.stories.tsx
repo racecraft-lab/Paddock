@@ -162,6 +162,17 @@ function TaskPipelineOrchestrationSurface() {
   )
 }
 
+async function settleVisualCapture(canvasElement: HTMLElement) {
+  const activeElement = canvasElement.ownerDocument.activeElement
+  if (activeElement instanceof HTMLElement) {
+    activeElement.blur()
+  }
+
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 250)
+  })
+}
+
 const meta = {
   title: 'Task Pipeline/Workflow UI',
   component: TaskPipelineOrchestrationSurface,
@@ -197,6 +208,7 @@ export const WorkflowChainEditFields: Story = {
     await expect(canvas.getByLabelText('Allow redacted artifacts')).toBeChecked()
     await expect(canvas.getByDisplayValue(/"outcome"/)).toBeVisible()
     await expect(canvas.getByDisplayValue(/"next_template_slug": "implementation-review"/)).toBeVisible()
+    await settleVisualCapture(ctx.canvasElement)
   },
 }
 
@@ -215,5 +227,6 @@ export const WorkflowRoutingValidationError: Story = {
     await userEvent.click(canvas.getByRole('button', { name: /^save$/i }))
 
     await expect(await canvas.findByRole('alert')).toHaveTextContent(/routing_rules require output_schema/i)
+    await settleVisualCapture(ctx.canvasElement)
   },
 }
