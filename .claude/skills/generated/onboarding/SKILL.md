@@ -64,9 +64,8 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Panels | 10 calls |
+| Panels | 11 calls |
 | [id] | 4 calls |
-| Dashboard | 1 calls |
 
 ## How to Explore
 

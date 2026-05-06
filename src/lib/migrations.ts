@@ -3184,6 +3184,65 @@ const migrations: Migration[] = [
       )
     },
   },
+  {
+    // SPEC-009A — generic workflow contract diagnostics and LKG snapshots.
+    id: '071_workflow_contract_diagnostics',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS workflow_contract_runs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          family TEXT NOT NULL,
+          workspace_id INTEGER NOT NULL,
+          mode TEXT NOT NULL,
+          status TEXT NOT NULL,
+          mutation_status TEXT NOT NULL,
+          source_path TEXT,
+          export_path TEXT,
+          contract_hash TEXT,
+          routing_hashes_json TEXT,
+          output_schema_hashes_json TEXT,
+          diff_json TEXT NOT NULL DEFAULT '{}',
+          template_counts_json TEXT NOT NULL DEFAULT '{}',
+          error_count INTEGER NOT NULL DEFAULT 0,
+          lkg_snapshot_id INTEGER,
+          recovery_command TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          completed_at TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS workflow_contract_run_errors (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          run_id INTEGER NOT NULL REFERENCES workflow_contract_runs(id) ON DELETE CASCADE,
+          code TEXT NOT NULL,
+          manifest_path TEXT,
+          canonical_model_path TEXT,
+          template_slug TEXT,
+          message TEXT NOT NULL,
+          remediation_hint TEXT NOT NULL,
+          details TEXT,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS workflow_contract_snapshots (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          family TEXT NOT NULL,
+          workspace_id INTEGER NOT NULL,
+          contract_hash TEXT NOT NULL,
+          canonical_json TEXT NOT NULL,
+          runtime_templates_json TEXT NOT NULL,
+          recovery_command TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_workflow_contract_runs_family_workspace_created
+          ON workflow_contract_runs(family, workspace_id, created_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_workflow_contract_run_errors_run_id
+          ON workflow_contract_run_errors(run_id);
+        CREATE INDEX IF NOT EXISTS idx_workflow_contract_snapshots_family_workspace_created
+          ON workflow_contract_snapshots(family, workspace_id, created_at DESC);
+      `)
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {

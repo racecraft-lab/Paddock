@@ -148,7 +148,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-006 | 5 | Area-Label GitHub Sync | area-label-github-sync | Complete | P1 | SPEC-001, SPEC-002, SPEC-002A | SPEC-009B, SPEC-009C | Phase 5 |
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Complete | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009D, SPEC-014C | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Complete | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009A, SPEC-011, SPEC-013B | Phase 7 |
-| SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | Pending | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
+| SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | In Progress | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
 | SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Pending | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C, SPEC-010A | Phase 8B |
 | SPEC-009C | 8C | GitHub-Linked Mission Control Pilot Smoke | mission-control-pilot-smoke | Pending | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009D, SPEC-010B | Phase 8C |
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C | SPEC-013A | Phase 8D |
@@ -387,6 +387,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** workflow contract files under `docs/ai/workflows/`, import/export tooling, focused parity tests, and any small validation helper needed by setup. No autonomous dispatch, no runner launch, no new harness adapter.
 - **Autopilot notes:** Treat GitHub Issues as the tracker identity in v1. Preserve last-known-good workflow templates when contract reload fails. Do not bake OpenClaw, Codex, Claude, Hermes, or OpenCode as mandatory; declare capabilities and adapter requirements as data.
 - **Definition of done:** Contract import/export parity passes for the Mission Control workflow family; invalid contract fixtures fail closed with operator-visible errors; existing `workflow_templates` behavior is unchanged unless the spec command explicitly imports the contract.
+- **Implementation evidence:** Local Phase 7 implementation completed on branch `009a-workflow-contract-roundtrip` on 2026-05-06. Evidence includes exact direct `yaml@2.8.2`, canonical contract at `docs/ai/workflows/mission-control/workflow-contract.yaml`, `pnpm workflow-contract` import/apply/export/recover tooling, generated Markdown review export with stable hash `workflow-contract-hash-v1:sha256:2f0e9ef6e21ca80039c49bc6398bf8f7bd1493be454ff5d7e381391b4b8884da`, additive M71 diagnostics/snapshot storage plus rollback SQL, read-only diagnostics API/UI, OpenAPI/API-index parity, fail-closed validation fixtures, and guardrail verification confirming no pilot seed, dispatch, scheduler, runner, harness, GitHub sync, sandbox lifecycle, or governance evaluator path.
 
 ### SPEC-009B: Mission Control Product-Line Seed and Flag Activation
 

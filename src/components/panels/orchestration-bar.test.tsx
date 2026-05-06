@@ -55,6 +55,30 @@ function mockFetch(saveResponse?: { ok: boolean; body: unknown }) {
         }],
       })
     }
+    if (url.startsWith('/api/workflow-contracts/diagnostics')) {
+      return Response.json({
+        runs: [{
+          id: 1,
+          mode: 'import_dry_run',
+          status: 'validation_failed',
+          mutation_status: 'not_mutated',
+          source_path: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+          export_path: null,
+          contract_hash: 'workflow-contract-hash-v1:sha256:abc',
+          template_counts: { create: 1, update: 0, disable: 0, unchanged: 0 },
+          recovery_command: 'pnpm workflow-contract recover --workspace-id 4 --apply',
+          created_at: '2026-05-06T00:00:00Z',
+          errors: [{
+            id: 10,
+            code: 'UNKNOWN_TEMPLATE_VARIABLE',
+            message: 'Template variable namespace is not allowed',
+            remediation_hint: 'Use an allowed namespace.',
+            details: '[REDACTED]',
+            template_slug: 'intake',
+          }],
+        }],
+      })
+    }
     if (url.startsWith('/api/workflows')) {
       if (saveResponse) {
         return Response.json(saveResponse.body, { status: saveResponse.ok ? 200 : 400 })
@@ -144,5 +168,19 @@ describe('OrchestrationBar workflow-template chain fields', () => {
 
     const workflowsPanel = screen.getByText('newTemplate').closest('div')?.parentElement
     expect(await within(workflowsPanel as HTMLElement).findByText(/routing_rules require output_schema/)).toBeInTheDocument()
+  })
+
+  it('renders read-only workflow contract diagnostics without leaking raw secrets or controls', async () => {
+    mockFetch()
+
+    render(<OrchestrationBar />)
+    fireEvent.click(screen.getByText('Contracts'))
+
+    expect(await screen.findByTestId('workflow-contract-diagnostics')).toBeInTheDocument()
+    expect(screen.getByText('import_dry_run')).toBeInTheDocument()
+    expect(screen.getByText('UNKNOWN_TEMPLATE_VARIABLE')).toBeInTheDocument()
+    expect(screen.getByText('[REDACTED]')).toBeInTheDocument()
+    expect(screen.queryByText(/sk-test|hunter2|secret-value/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Apply Import|Dispatch|Governance Override/)).not.toBeInTheDocument()
   })
 })

@@ -78,9 +78,9 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | [id] | 14 calls |
-| Cluster_129 | 3 calls |
+| Cluster_154 | 3 calls |
 | Setup | 2 calls |
-| Cluster_267 | 2 calls |
+| Cluster_292 | 2 calls |
 
 ## How to Explore
 

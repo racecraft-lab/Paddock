@@ -48,15 +48,15 @@ Start here when exploring this area:
 | `completeNavigationTiming` | Function | `src/lib/navigation-metrics.ts` | 37 |
 | `isLocalDashboardHost` | Function | `src/lib/browser-security.ts` | 4 |
 | `shouldRedirectDashboardToHttps` | Function | `src/lib/browser-security.ts` | 14 |
-| `Home` | Function | `src/app/[[...panel]]/page.tsx` | 87 |
-| `markStep` | Function | `src/app/[[...panel]]/page.tsx` | 134 |
-| `connectWithEnvFallback` | Function | `src/app/[[...panel]]/page.tsx` | 180 |
-| `connectWithPrimaryGateway` | Function | `src/app/[[...panel]]/page.tsx` | 196 |
 | `UpdateBanner` | Function | `src/components/layout/update-banner.tsx` | 9 |
 | `OpenClawUpdateBanner` | Function | `src/components/layout/openclaw-update-banner.tsx` | 9 |
 | `OpenClawDoctorBanner` | Function | `src/components/layout/openclaw-doctor-banner.tsx` | 24 |
 | `loadDoctorStatus` | Function | `src/components/layout/openclaw-doctor-banner.tsx` | 36 |
 | `LiveFeed` | Function | `src/components/layout/live-feed.tsx` | 7 |
+| `Home` | Function | `src/app/[[...panel]]/page.tsx` | 87 |
+| `markStep` | Function | `src/app/[[...panel]]/page.tsx` | 134 |
+| `connectWithEnvFallback` | Function | `src/app/[[...panel]]/page.tsx` | 180 |
+| `connectWithPrimaryGateway` | Function | `src/app/[[...panel]]/page.tsx` | 196 |
 | `getNavigationMetrics` | Function | `src/lib/navigation-metrics.ts` | 57 |
 | `navigationMetricEventName` | Function | `src/lib/navigation-metrics.ts` | 83 |
 | `extractWsHost` | Function | `src/lib/agent-card-helpers.ts` | 40 |
@@ -75,13 +75,12 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Panels | 19 calls |
-| Dashboard | 7 calls |
+| Panels | 26 calls |
 | Modals | 2 calls |
-| Cluster_87 | 1 calls |
+| Setup | 1 calls |
+| Cluster_112 | 1 calls |
 | Chat | 1 calls |
 | Onboarding | 1 calls |
-| Ui | 1 calls |
 
 ## How to Explore
 

@@ -683,25 +683,43 @@ For each task:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Foundation | Pending | Pending | Pending |
-| Import/apply | Pending | Pending | Pending |
-| Export/parity | Pending | Pending | Pending |
-| Diagnostics | Pending | Pending | Pending |
-| Polish/docs/status | Pending | Pending | Pending |
+| Foundation | T001-T018 | Complete | Exact `yaml@2.8.2`, canonical fixture, M71/rollback-M71, strict workflow-contract library scope, parser/validator/hash/diff/diagnostics primitives |
+| Import/apply | T019-T031 | Complete | Dry-run persists diagnostics without runtime mutation; explicit apply transactionally upserts owned templates, preserves unrelated rows, and writes LKG snapshot/recovery command |
+| Export/parity | T032-T037 | Complete | Markdown review export generated at `docs/ai/workflows/mission-control/exports/workflow-contract.md`; import/export hash parity is `workflow-contract-hash-v1:sha256:2f0e9ef6e21ca80039c49bc6398bf8f7bd1493be454ff5d7e381391b4b8884da` |
+| Diagnostics | T045-T051 | Complete | Read-only diagnostics API and Workflows `Contracts` tab show run status, diffs, hashes, source, recovery, and redacted errors without apply/edit/dispatch/governance controls |
+| Polish/docs/status | T052-T065 | Complete | Future governance/concurrency/retry/sandbox declarations are inert data; roadmap/AGENTS/workflow updated; guardrail search clean |
+
+### Implementation Evidence
+
+| Check | Result |
+|-------|--------|
+| `direnv exec . pnpm workflow-contract import --file docs/ai/workflows/mission-control/workflow-contract.yaml --dry-run` | PASS; no template mutation, diagnostics run persisted |
+| `direnv exec . pnpm workflow-contract import --file docs/ai/workflows/mission-control/workflow-contract.yaml --apply` | PASS; LKG snapshot and deterministic recovery command recorded |
+| `direnv exec . pnpm workflow-contract export --workspace-id 1` | PASS; generated `docs/ai/workflows/mission-control/exports/workflow-contract.md` with stable parity hash |
+| `direnv exec . pnpm workflow-contract recover --workspace-id 1 --dry-run` | PASS; LKG recovery dry-run reports `mutation_status: dry_run` |
+| `direnv exec . pnpm exec vitest run src/lib/__tests__/workflow-contracts src/lib/__tests__/migrations-009a.test.ts src/app/api/workflow-contracts/diagnostics/route.test.ts src/components/panels/orchestration-bar.test.tsx` | PASS; 13 files, 43 tests |
+| `direnv exec . pnpm test:e2e -- tests/e2e/workflow-contract-diagnostics.spec.ts` | PASS; 1 Chromium test |
+| `direnv exec . pnpm api:parity` | PASS |
+| `direnv exec . pnpm typecheck` | PASS |
+| `direnv exec . pnpm lint` | PASS |
+| `direnv exec . pnpm build` | PASS with network access for Next Google Fonts |
+| `direnv exec . pnpm test` | PASS with sandbox escalation for daemon socket test; 268 files, 2767 tests |
+| Guardrail grep over SPEC-009A implementation paths | PASS; no pilot seed, dispatch, runner, harness, scheduler, sandbox lifecycle, GitHub sync, or governance evaluator reference |
+| `direnv exec . gitnexus analyze --force --skills --embeddings --skip-agents-md` | PASS with network access for embedding endpoint; 24,960 nodes, 39,361 edges, 650 clusters, 300 flows; `.gitnexus/` copied to primary repo root |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `tasks.md`.
-- [ ] Focused Vitest suite passes.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] `pnpm build` passes or a documented scoped substitute is approved.
-- [ ] Invalid fixture suite proves fail-closed behavior.
-- [ ] Dry-run/apply/export quickstart is verified.
-- [ ] Roadmap status updated.
-- [ ] Workflow status updated.
+- [x] All tasks marked complete in `tasks.md`.
+- [x] Focused Vitest suite passes.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] `pnpm build` passes or a documented scoped substitute is approved.
+- [x] Invalid fixture suite proves fail-closed behavior.
+- [x] Dry-run/apply/export quickstart is verified.
+- [x] Roadmap status updated.
+- [x] Workflow status updated.
 - [ ] Branch pushed.
 
 ---

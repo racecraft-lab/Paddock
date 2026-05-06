@@ -60,8 +60,8 @@ Start here when exploring this area:
 | `handleOtlpRequest` | Function | `src/lib/observability/otlp-receiver.ts` | 140 |
 | `decodeOtlpTraces` | Function | `src/lib/observability/otlp-decoder.ts` | 59 |
 | `decodeOtlpMetrics` | Function | `src/lib/observability/otlp-decoder.ts` | 78 |
-| `POST` | Function | `src/app/api/otlp/v1/metrics/route.ts` | 17 |
 | `POST` | Function | `src/app/api/otlp/v1/traces/route.ts` | 18 |
+| `POST` | Function | `src/app/api/otlp/v1/metrics/route.ts` | 17 |
 
 ## Execution Flows
 
@@ -76,9 +76,9 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| Cluster_150 | 2 calls |
-| Cluster_172 | 2 calls |
-| Cluster_157 | 1 calls |
+| Cluster_176 | 2 calls |
+| Cluster_198 | 2 calls |
+| Cluster_183 | 1 calls |
 | [id] | 1 calls |
 
 ## How to Explore

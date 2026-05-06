@@ -1,11 +1,11 @@
 ---
 name: panels
-description: "Skill for the Panels area of mission-control. 715 symbols across 70 files."
+description: "Skill for the Panels area of mission-control. 727 symbols across 76 files."
 ---
 
 # Panels
 
-715 symbols | 70 files | Cohesion: 75%
+727 symbols | 76 files | Cohesion: 75%
 
 ## When to Use
 
@@ -20,11 +20,11 @@ description: "Skill for the Panels area of mission-control. 715 symbols across 7
 | `src/components/panels/office-panel.tsx` | formatLastSeen, easeInOut, getStatusEmote, inferLocalRole, getPropSprite (+41) |
 | `src/components/panels/agent-detail-tabs.tsx` | handleSendMessage, handleSave, fetchTasks, fetchActivities, loadWorkspaceDocs (+37) |
 | `src/components/panels/task-board-panel.tsx` | handleClick, handleSpawn, fetchReviews, fetchComments, handleAddComment (+32) |
-| `src/components/panels/channels-panel.tsx` | relativeTime, formatDuration, truncatePubkey, yesNo, channelIsActive (+27) |
+| `src/components/panels/channels-panel.tsx` | ChannelsPanel, fetchChannels, handleProbe, handleAction, onProbe (+27) |
 | `src/components/panels/cron-management-panel.tsx` | getAgentColorClass, isSameDay, formatDateLabel, CronManagementPanel, formatRelativeTime (+27) |
 | `src/components/panels/memory-browser-panel.tsx` | mergeDirectoryChildren, fetchTree, loadFileTree, loadFileContent, toggleFolder (+26) |
 | `src/components/panels/cost-tracker-panel.tsx` | buildGovernancePath, formatNumber, formatCost, getModelDisplayName, CostTrackerPanel (+18) |
-| `src/components/panels/gateway-config-panel.tsx` | defaultValueFor, matchesSearch, filteredSections, SectionCard, ArrayField (+18) |
+| `src/components/panels/gateway-config-panel.tsx` | defaultValueFor, deepSet, matchesSearch, GatewayConfigPanel, fetchSchema (+18) |
 | `src/components/panels/token-dashboard-panel.tsx` | exportClientCsv, TokenDashboardPanel, loadUsageStats, loadTrendData, loadSessionCosts (+16) |
 | `src/components/panels/agent-squad-panel-phase3.tsx` | syncFromConfig, fetchAgents, updateAgentStatus, wakeAgent, toggleAgentHidden (+15) |
 
@@ -68,20 +68,23 @@ Start here when exploring this area:
 | Flow | Type | Steps |
 |------|------|-------|
 | `Home → Error` | cross_community | 4 |
+| `ContentRouter → PanelHref` | cross_community | 4 |
+| `ContentRouter → SafePrefetch` | cross_community | 4 |
+| `ContentRouter → StartNavigationTiming` | cross_community | 4 |
 | `ContentRouter → Cn` | cross_community | 4 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Ui | 6 calls |
+| Ui | 5 calls |
 | Dashboard | 3 calls |
 | Settings | 2 calls |
-| Cluster_250 | 1 calls |
+| Cluster_275 | 1 calls |
 | Modals | 1 calls |
-| Cluster_252 | 1 calls |
+| Cluster_277 | 1 calls |
 | Onboarding | 1 calls |
-| Tasks | 1 calls |
+| Setup | 1 calls |
 
 ## How to Explore
 

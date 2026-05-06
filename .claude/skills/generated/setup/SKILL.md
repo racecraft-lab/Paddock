@@ -1,11 +1,11 @@
 ---
 name: setup
-description: "Skill for the Setup area of mission-control. 36 symbols across 15 files."
+description: "Skill for the Setup area of mission-control. 31 symbols across 14 files."
 ---
 
 # Setup
 
-36 symbols | 15 files | Cohesion: 76%
+31 symbols | 14 files | Cohesion: 76%
 
 ## When to Use
 
@@ -17,16 +17,16 @@ description: "Skill for the Setup area of mission-control. 36 symbols across 15 
 
 | File | Symbols |
 |------|---------|
-| `src/lib/pty-manager.ts` | PtySession, isTmuxAvailable, tmuxSessionExists, listTmuxSessions, createPtySession (+1) |
 | `src/app/setup/page.tsx` | getInitialProgress, ProgressIndicator, SetupPage, checkSetupStatus, updateProgress (+1) |
 | `src/lib/session-cookie.ts` | getMcSessionCookieName, isRequestSecure, parseMcSessionCookieHeader, envFlag, getMcSessionCookieOptions |
+| `src/components/ui/language-switcher.tsx` | setLocaleCookie, LanguageSwitcher, LanguageSwitcherSelect, GlobeIcon |
 | `src/lib/auth.ts` | resolveTenantForWorkspace, createSession, authenticateUser |
 | `src/lib/password.ts` | verifyPasswordWithRehashCheck, verifyPassword |
 | `src/app/api/setup/route.ts` | GET, POST |
 | `src/app/api/auth/google/route.ts` | upsertAccessRequest, POST |
-| `src/app/api/pty/setup/route.ts` | GET, POST |
-| `src/app/api/pty/attach/route.ts` | POST, GET |
 | `src/lib/google-auth.ts` | verifyGoogleIdToken |
+| `src/lib/db.ts` | needsFirstTimeSetup |
+| `src/app/api/auth/me/route.ts` | PATCH |
 
 ## Entry Points
 
@@ -58,10 +58,10 @@ Start here when exploring this area:
 | `POST` | Function | `src/app/api/auth/logout/route.ts` | 5 |
 | `POST` | Function | `src/app/api/auth/login/route.ts` | 7 |
 | `POST` | Function | `src/app/api/auth/google/route.ts` | 27 |
-| `isTmuxAvailable` | Function | `src/lib/pty-manager.ts` | 204 |
-| `tmuxSessionExists` | Function | `src/lib/pty-manager.ts` | 214 |
-| `listTmuxSessions` | Function | `src/lib/pty-manager.ts` | 224 |
-| `createPtySession` | Function | `src/lib/pty-manager.ts` | 244 |
+| `fetchSetupStatusWithRetry` | Function | `src/lib/setup-status.ts` | 12 |
+| `LanguageSwitcher` | Function | `src/components/ui/language-switcher.tsx` | 13 |
+| `LanguageSwitcherSelect` | Function | `src/components/ui/language-switcher.tsx` | 71 |
+| `SetupPage` | Function | `src/app/setup/page.tsx` | 66 |
 
 ## Execution Flows
 
@@ -82,13 +82,11 @@ Start here when exploring this area:
 
 | Area | Connections |
 |------|-------------|
-| [id] | 15 calls |
+| [id] | 11 calls |
 | Users | 9 calls |
-| Cluster_267 | 2 calls |
-| Cluster_169 | 1 calls |
-| Cluster_129 | 1 calls |
-| Panels | 1 calls |
-| Ui | 1 calls |
+| Cluster_292 | 2 calls |
+| Panels | 2 calls |
+| Cluster_154 | 1 calls |
 
 ## How to Explore
 

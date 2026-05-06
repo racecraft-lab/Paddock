@@ -1,11 +1,11 @@
 ---
 name: id
-description: "Skill for the [id] area of mission-control. 494 symbols across 163 files."
+description: "Skill for the [id] area of mission-control. 504 symbols across 167 files."
 ---
 
 # [id]
 
-494 symbols | 163 files | Cohesion: 88%
+504 symbols | 167 files | Cohesion: 88%
 
 ## When to Use
 
@@ -87,9 +87,9 @@ Start here when exploring this area:
 | Status | 6 calls |
 | Sessions | 6 calls |
 | Aggregate | 4 calls |
-| Cluster_214 | 4 calls |
-| Cluster_211 | 4 calls |
+| Cluster_240 | 4 calls |
 | Integrations | 4 calls |
+| Cluster_237 | 4 calls |
 
 ## How to Explore
 

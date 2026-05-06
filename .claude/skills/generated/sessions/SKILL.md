@@ -81,12 +81,12 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | [id] | 25 calls |
-| Cluster_187 | 3 calls |
+| Cluster_213 | 3 calls |
 | Aggregate | 2 calls |
-| Cluster_101 | 2 calls |
-| Cluster_102 | 2 calls |
-| Cluster_77 | 1 calls |
-| Cluster_117 | 1 calls |
+| Cluster_126 | 2 calls |
+| Cluster_127 | 2 calls |
+| Cluster_102 | 1 calls |
+| Cluster_142 | 1 calls |
 | Scheduler | 1 calls |
 
 ## How to Explore

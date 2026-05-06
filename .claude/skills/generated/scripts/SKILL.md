@@ -1,11 +1,11 @@
 ---
 name: scripts
-description: "Skill for the Scripts area of mission-control. 488 symbols across 35 files."
+description: "Skill for the Scripts area of mission-control. 486 symbols across 34 files."
 ---
 
 # Scripts
 
-488 symbols | 35 files | Cohesion: 80%
+486 symbols | 34 files | Cohesion: 80%
 
 ## When to Use
 
@@ -26,7 +26,7 @@ description: "Skill for the Scripts area of mission-control. 488 symbols across 
 | `scripts/visual-review-producer.mjs` | githubApiHeaders, normalizeSourcePullRequest, pullRequestNumberFromText, titleFromCommitMessage, sourcePullRequestFromEvent (+14) |
 | `scripts/seed-e2e-spec-008.cjs` | entries, columnsFor, insertRow, mergeFeatureFlags, createWorkspace (+14) |
 | `scripts/verify-visual-manifest.mjs` | pathExists, collectManifestFiles, readManifest, resolveScreenshotPath, verifyScreenshotHash (+12) |
-| `scripts/visual-review-state.mjs` | renderReviewComment, validateVisualApproval, normalizeRequiredSurfaces, normalizeReviewState, shortSha (+10) |
+| `scripts/visual-review-state.mjs` | parseReviewCommentBody, findReviewComment, renderReviewComment, validateVisualApproval, normalizeRequiredSurfaces (+10) |
 
 ## Entry Points
 
@@ -57,19 +57,17 @@ Start here when exploring this area:
 | `resolveInitialReviewStateSource` | Function | `scripts/visual-review-producer.mjs` | 248 |
 | `resetSpec007Fixtures` | Function | `scripts/seed-spec-007.ts` | 242 |
 | `seedSpec007E2E` | Function | `scripts/seed-spec-007.ts` | 891 |
+| `parseReviewCommentBody` | Function | `scripts/visual-review-state.mjs` | 188 |
+| `findReviewComment` | Function | `scripts/visual-review-state.mjs` | 201 |
 | `renderReviewComment` | Function | `scripts/visual-review-state.mjs` | 155 |
 | `validateVisualApproval` | Function | `scripts/visual-review-state.mjs` | 208 |
 | `normalizeRequiredSurfaces` | Function | `scripts/visual-review-state.mjs` | 260 |
-| `normalizeReviewState` | Function | `scripts/visual-review-state.mjs` | 279 |
-| `shortSha` | Function | `scripts/visual-review-state.mjs` | 307 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
 | Tasks | 1 calls |
-| Aggregate | 1 calls |
-| [id] | 1 calls |
 
 ## How to Explore
 

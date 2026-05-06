@@ -1,0 +1,92 @@
+family: mission-control
+version: workflow-contract-v1
+workspace_id: 1
+allowed_variable_namespaces:
+  - workspace
+  - task
+  - operator
+  - github
+templates:
+  - slug: intake
+    name: Mission Control Intake
+    description: Create the first implementation task from reviewed intake.
+    model: sonnet
+    task_prompt: |
+      Review {{task.title}} for {{workspace.name}} and produce a bounded implementation brief.
+    timeout_seconds: 300
+    agent_role: planner
+    tags:
+      - mission-control
+      - intake
+    tracker:
+      type: github
+      identity_version: v1
+      repo: builderz-labs/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - codebase-read
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_RC_FACTORY_WORKFLOWS
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: workspace-write
+    prompt_version: v1
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - summary
+      properties:
+        summary:
+          type: string
+  - slug: implementation
+    name: Mission Control Implementation
+    description: Implement the approved Mission Control task.
+    model: sonnet
+    task_prompt: |
+      Implement {{task.title}} in {{workspace.name}} using the approved plan and verification commands.
+    timeout_seconds: 900
+    agent_role: implementer
+    tags:
+      - mission-control
+      - implementation
+    tracker:
+      type: github
+      identity_version: v1
+      repo: builderz-labs/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - code-edit
+      - test-run
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_RC_FACTORY_WORKFLOWS
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 2
+    retry:
+      max_attempts: 1
+    sandbox:
+      mode: workspace-write
+    prompt_version: v1
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - result
+      properties:
+        result:
+          type: string
