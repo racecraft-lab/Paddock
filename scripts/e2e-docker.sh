@@ -181,6 +181,7 @@ if [ "$#" -eq 0 ]; then
     tests/feature-flags-admin-ui.spec.ts \
     tests/e2e/ready-for-owner-kanban.spec.ts \
     tests/e2e/spec-007-ui-visual.spec.ts \
+    tests/e2e/workflow-contract-diagnostics.spec.ts \
     tests/product-line-scope-api.spec.ts \
     tests/product-line-scope-matrix.spec.ts \
     tests/product-line-events.spec.ts \

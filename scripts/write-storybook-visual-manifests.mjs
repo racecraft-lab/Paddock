@@ -8,6 +8,7 @@ const KNOWN_DOMAINS = new Set([
   'product-line-switcher',
   'feature-flag-admin',
   'task-pipeline-workflows',
+  'workflow-contracts',
   'ready-for-owner',
   'spec-007',
   'spec-008',

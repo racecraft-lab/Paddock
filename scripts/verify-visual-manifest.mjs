@@ -87,11 +87,11 @@ function getPlaywrightConfig(rootOverride) {
   return {
     label: 'visual-playwright-manifest',
     root: defaultRoot(rootOverride),
-    expectedSnapshots: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS || '140', 10),
-    expectedTests: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS || '100', 10),
-    allowedTestTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008'),
-    allowedSnapshotTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS || 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008'),
-    requiredDomainCounts: parseCounts(process.env.MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120'),
+    expectedSnapshots: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS || '141', 10),
+    expectedTests: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS || '101', 10),
+    allowedTestTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008,@workflow-contracts'),
+    allowedSnapshotTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS || 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008,workflow-contracts'),
+    requiredDomainCounts: parseCounts(process.env.MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120,workflow-contracts:1'),
   }
 }
 
@@ -99,10 +99,10 @@ function getStorybookConfig(rootOverride) {
   return {
     label: 'visual-storybook-manifest',
     root: defaultRoot(rootOverride),
-    expectedSnapshots: Number.parseInt(process.env.MC_VISUAL_STORYBOOK_EXPECTED_SNAPSHOTS || '152', 10),
-    expectedStories: Number.parseInt(process.env.MC_VISUAL_STORYBOOK_EXPECTED_STORIES || '152', 10),
+    expectedSnapshots: Number.parseInt(process.env.MC_VISUAL_STORYBOOK_EXPECTED_SNAPSHOTS || '153', 10),
+    expectedStories: Number.parseInt(process.env.MC_VISUAL_STORYBOOK_EXPECTED_STORIES || '153', 10),
     requiredStoryTags: parseList(process.env.MC_VISUAL_STORYBOOK_REQUIRED_TAGS || 'visual'),
-    requiredDomainStoryCounts: parseCounts(process.env.MC_VISUAL_STORYBOOK_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,ready-for-owner:3,spec-007:3,spec-008:120'),
+    requiredDomainStoryCounts: parseCounts(process.env.MC_VISUAL_STORYBOOK_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:8,feature-flag-admin:2,task-pipeline-workflows:2,workflow-contracts:1,ready-for-owner:3,spec-007:3,spec-008:120'),
   }
 }
 
