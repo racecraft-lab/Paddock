@@ -45,6 +45,7 @@ import {
     inlineCommentState: 'idle',
     mode: localStorage.getItem(storageKey('mode')) || 'side-by-side',
     overlay: clamp(Number(localStorage.getItem(storageKey('overlay')) || 50), 0, 100),
+    queueCollapsed: localStorage.getItem(storageKey('queue-collapsed')) === 'true',
     query: '',
     remoteAuthor: embeddedReviewState ? String(context.initialReviewStateAuthor || '') : '',
     remoteCommentId: embeddedReviewState ? context.initialReviewStateCommentId || null : null,
@@ -175,6 +176,7 @@ import {
     localStorage.setItem(storageKey('heat-map-intensity'), String(state.heatMapIntensity))
     localStorage.setItem(storageKey('mode'), state.mode)
     localStorage.setItem(storageKey('overlay'), String(state.overlay))
+    localStorage.setItem(storageKey('queue-collapsed'), state.queueCollapsed ? 'true' : 'false')
   }
 
   function reportItems(key) {
@@ -419,28 +421,45 @@ import {
             </div>
           </div>
         </header>
-        <main class="review-workspace">
-          <aside class="sidebar" aria-label="Snapshot queue">
-            <div class="sidebar-header">
-              <div class="progress-line">
-                <strong>Queue</strong>
-                <span>${progress}% complete</span>
-              </div>
-              <div class="progress-track" aria-hidden="true"><div class="progress-bar" style="width: ${progress}%"></div></div>
-              <div class="filters" role="group" aria-label="Filters">
-                ${filterButton('unreviewed', `Open ${currentCounts.reviewable - currentCounts.reviewed}`)}
-                ${filterButton('reviewable', `Review ${currentCounts.reviewable}`)}
-                ${filterButton('changed', `Changed ${currentCounts.changed}`)}
-                ${filterButton('all', `All ${items.length}`)}
-              </div>
-              <input class="search" type="search" value="${escapeAttribute(state.query)}" placeholder="Find by story, test, source, or tag" aria-label="Search snapshots" data-action="search" />
-              <select class="group-select" aria-label="Filter by group" data-action="group">
-                <option value="all">All groups</option>
-                ${groups.map((group) => `<option value="${escapeAttribute(group)}"${group === state.group ? ' selected' : ''}>${escapeHtml(group)}</option>`).join('')}
-              </select>
+        <main class="review-workspace ${state.queueCollapsed ? 'queue-collapsed' : ''}">
+          <aside class="sidebar ${state.queueCollapsed ? 'collapsed' : ''}" aria-label="Snapshot queue">
+            <button
+              class="queue-toggle"
+              type="button"
+              data-action="toggle-queue"
+              aria-expanded="${state.queueCollapsed ? 'false' : 'true'}"
+              aria-label="${state.queueCollapsed ? 'Expand snapshot queue' : 'Collapse snapshot queue'}"
+              title="${state.queueCollapsed ? 'Expand queue' : 'Collapse queue'}"
+            >
+              <span aria-hidden="true">${state.queueCollapsed ? '>' : '<'}</span>
+              <span>${state.queueCollapsed ? 'Queue' : 'Hide'}</span>
+            </button>
+            <div class="queue-collapsed-label" aria-hidden="true">
+              <strong>${escapeHtml(String(currentCounts.reviewable - currentCounts.reviewed))}</strong>
+              <span>open</span>
             </div>
-            <div class="snapshot-list">
-              ${renderSnapshotList()}
+            <div class="sidebar-content">
+              <div class="sidebar-header">
+                <div class="progress-line">
+                  <strong>Queue</strong>
+                  <span>${progress}% complete</span>
+                </div>
+                <div class="progress-track" aria-hidden="true"><div class="progress-bar" style="width: ${progress}%"></div></div>
+                <div class="filters" role="group" aria-label="Filters">
+                  ${filterButton('unreviewed', `Open ${currentCounts.reviewable - currentCounts.reviewed}`)}
+                  ${filterButton('reviewable', `Review ${currentCounts.reviewable}`)}
+                  ${filterButton('changed', `Changed ${currentCounts.changed}`)}
+                  ${filterButton('all', `All ${items.length}`)}
+                </div>
+                <input class="search" type="search" value="${escapeAttribute(state.query)}" placeholder="Find by story, test, source, or tag" aria-label="Search snapshots" data-action="search" />
+                <select class="group-select" aria-label="Filter by group" data-action="group">
+                  <option value="all">All groups</option>
+                  ${groups.map((group) => `<option value="${escapeAttribute(group)}"${group === state.group ? ' selected' : ''}>${escapeHtml(group)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="snapshot-list">
+                ${renderSnapshotList()}
+              </div>
             </div>
           </aside>
           <section class="canvas-column">
@@ -839,7 +858,8 @@ import {
   }
 
   function renderViewer(item) {
-    const canCompare = item.variant === 'changed'
+    const canCompare = canUseComparisonModes(item)
+    const showComparisonControls = item.variant !== 'passed'
     const allowedModes = canCompare ? ['side-by-side', 'diff', 'overlay', 'blink'] : ['single']
     if (!allowedModes.includes(state.mode)) state.mode = allowedModes[0]
     return `
@@ -853,12 +873,17 @@ import {
         <div class="stage-shell">
           <div class="stage-control-bar" data-stage-controls>
             <div class="toolbar-controls">
-              ${canCompare ? `
-                <div class="segmented" role="group" aria-label="Diff mode">
-                  ${modeButton('side-by-side', 'Side by side')}
-                  ${modeButton('diff', 'Highlighter')}
-                  ${modeButton('overlay', 'Overlay')}
-                  ${modeButton('blink', 'Blink')}
+              ${showComparisonControls ? `
+                <div
+                  class="segmented ${canCompare ? '' : 'disabled'}"
+                  role="group"
+                  aria-label="Diff mode"
+                  title="${escapeAttribute(canCompare ? 'Choose how to compare baseline and current screenshots' : 'Comparison modes need baseline and current screenshots')}"
+                >
+                  ${modeButton('side-by-side', 'Side by side', !canCompare)}
+                  ${modeButton('diff', 'Highlighter', !canCompare)}
+                  ${modeButton('overlay', 'Overlay', !canCompare)}
+                  ${modeButton('blink', 'Blink', !canCompare)}
                 </div>
               ` : ''}
               ${heatMapControls(item)}
@@ -875,8 +900,18 @@ import {
     `
   }
 
-  function modeButton(mode, label) {
-    return `<button type="button" class="${state.mode === mode ? 'active' : ''}" data-mode="${escapeAttribute(mode)}">${escapeHtml(label)}</button>`
+  function canUseComparisonModes(item) {
+    return Boolean(item?.actual && baselineImageHref(item))
+  }
+
+  function modeButton(mode, label, disabled = false) {
+    return `
+      <button
+        type="button"
+        class="${!disabled && state.mode === mode ? 'active' : ''}"
+        ${disabled ? 'disabled aria-disabled="true"' : `data-mode="${escapeAttribute(mode)}"`}
+      >${escapeHtml(label)}</button>
+    `
   }
 
   function heatMapControls(item) {
@@ -1094,6 +1129,7 @@ import {
     root.querySelector('[data-action="review-comment"]')?.addEventListener('input', updateReviewComment)
     root.querySelector('[data-action="post-inline-comment"]')?.addEventListener('click', postInlineReviewComment)
     root.querySelector('[data-action="toggle-theme"]')?.addEventListener('click', toggleVisualReviewTheme)
+    root.querySelector('[data-action="toggle-queue"]')?.addEventListener('click', toggleQueue)
     root.querySelector('[data-action="open-token-help"]')?.addEventListener('click', openTokenHelp)
     root.querySelectorAll('[data-action="close-token-help"]').forEach((button) => {
       button.addEventListener('click', closeTokenHelp)
@@ -1105,6 +1141,13 @@ import {
     root.querySelector('[data-action="load-pr-state"]')?.addEventListener('click', () => loadRemoteReviewState())
     root.querySelector('[data-action="publish-pr-state"]')?.addEventListener('click', publishRemoteReviewState)
     root.querySelector('[data-action="forget-token"]')?.addEventListener('click', forgetGithubToken)
+    bindStagePan()
+  }
+
+  function toggleQueue() {
+    state.queueCollapsed = !state.queueCollapsed
+    persistViewState()
+    render()
   }
 
   function bindOverlayControl() {
@@ -1123,6 +1166,7 @@ import {
     if (stageInner) stageInner.style.zoom = String(state.zoom / 100)
     if (zoomInput) zoomInput.value = String(state.zoom)
     if (zoomValue) zoomValue.textContent = `${state.zoom}%`
+    updateStagePanState()
   }
 
   function scheduleFitZoom() {
@@ -1157,6 +1201,69 @@ import {
     }
     state.zoom = nextZoom
     applyZoomState()
+  }
+
+  function bindStagePan() {
+    const stage = root.querySelector('.stage')
+    if (!stage) return
+    let drag = null
+
+    stage.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || !stageIsPannable(stage)) return
+      drag = {
+        id: event.pointerId,
+        left: stage.scrollLeft,
+        top: stage.scrollTop,
+        x: event.clientX,
+        y: event.clientY,
+      }
+      stage.dataset.panning = 'true'
+      try {
+        stage.setPointerCapture?.(event.pointerId)
+      } catch {
+        // Pointer capture can be unavailable for synthetic pointer events.
+      }
+      event.preventDefault()
+    })
+
+    stage.addEventListener('pointermove', (event) => {
+      if (!drag || drag.id !== event.pointerId) return
+      stage.scrollLeft = drag.left - (event.clientX - drag.x)
+      stage.scrollTop = drag.top - (event.clientY - drag.y)
+      event.preventDefault()
+    })
+
+    const stopPan = (event) => {
+      if (!drag || drag.id !== event.pointerId) return
+      try {
+        stage.releasePointerCapture?.(event.pointerId)
+      } catch {
+        // Continue cleanup even if capture was not active.
+      } finally {
+        drag = null
+        delete stage.dataset.panning
+        updateStagePanState()
+      }
+    }
+
+    stage.addEventListener('pointerup', stopPan)
+    stage.addEventListener('pointercancel', stopPan)
+    updateStagePanState()
+  }
+
+  function stageIsPannable(stage) {
+    return stage.scrollWidth > stage.clientWidth + 1 || stage.scrollHeight > stage.clientHeight + 1
+  }
+
+  function updateStagePanState() {
+    const stage = root.querySelector('.stage')
+    if (!stage) return
+    const update = () => {
+      stage.dataset.pannable = stageIsPannable(stage) ? 'true' : 'false'
+    }
+    update()
+    window.requestAnimationFrame?.(update)
+    window.setTimeout?.(update, 50)
   }
 
   function applyOverlayState() {
@@ -1279,7 +1386,10 @@ import {
       if (image.complete) {
         restore()
       } else {
-        image.addEventListener('load', restore, { once: true })
+        image.addEventListener('load', () => {
+          restore()
+          updateStagePanState()
+        }, { once: true })
       }
     })
     window.requestAnimationFrame?.(restore)
@@ -1287,6 +1397,7 @@ import {
     window.setTimeout?.(restore, 50)
     window.setTimeout?.(restore, 150)
     window.setTimeout?.(restore, 300)
+    updateStagePanState()
   }
 
   function renderHeatMaps() {

@@ -722,6 +722,23 @@ a {
     transform 140ms ease;
 }
 
+.segmented.disabled {
+  opacity: 0.58;
+}
+
+.segmented button:disabled {
+  cursor: not-allowed;
+}
+
+.segmented button:disabled:hover {
+  background: transparent;
+  color: var(--muted);
+}
+
+.segmented button:disabled:active {
+  transform: none;
+}
+
 .segmented button:last-child {
   border-right: 0;
 }

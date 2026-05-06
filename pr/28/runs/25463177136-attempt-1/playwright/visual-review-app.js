@@ -858,7 +858,8 @@ import {
   }
 
   function renderViewer(item) {
-    const canCompare = item.variant === 'changed'
+    const canCompare = canUseComparisonModes(item)
+    const showComparisonControls = item.variant !== 'passed'
     const allowedModes = canCompare ? ['side-by-side', 'diff', 'overlay', 'blink'] : ['single']
     if (!allowedModes.includes(state.mode)) state.mode = allowedModes[0]
     return `
@@ -872,12 +873,17 @@ import {
         <div class="stage-shell">
           <div class="stage-control-bar" data-stage-controls>
             <div class="toolbar-controls">
-              ${canCompare ? `
-                <div class="segmented" role="group" aria-label="Diff mode">
-                  ${modeButton('side-by-side', 'Side by side')}
-                  ${modeButton('diff', 'Highlighter')}
-                  ${modeButton('overlay', 'Overlay')}
-                  ${modeButton('blink', 'Blink')}
+              ${showComparisonControls ? `
+                <div
+                  class="segmented ${canCompare ? '' : 'disabled'}"
+                  role="group"
+                  aria-label="Diff mode"
+                  title="${escapeAttribute(canCompare ? 'Choose how to compare baseline and current screenshots' : 'Comparison modes need baseline and current screenshots')}"
+                >
+                  ${modeButton('side-by-side', 'Side by side', !canCompare)}
+                  ${modeButton('diff', 'Highlighter', !canCompare)}
+                  ${modeButton('overlay', 'Overlay', !canCompare)}
+                  ${modeButton('blink', 'Blink', !canCompare)}
                 </div>
               ` : ''}
               ${heatMapControls(item)}
@@ -894,8 +900,18 @@ import {
     `
   }
 
-  function modeButton(mode, label) {
-    return `<button type="button" class="${state.mode === mode ? 'active' : ''}" data-mode="${escapeAttribute(mode)}">${escapeHtml(label)}</button>`
+  function canUseComparisonModes(item) {
+    return Boolean(item?.actual && baselineImageHref(item))
+  }
+
+  function modeButton(mode, label, disabled = false) {
+    return `
+      <button
+        type="button"
+        class="${!disabled && state.mode === mode ? 'active' : ''}"
+        ${disabled ? 'disabled aria-disabled="true"' : `data-mode="${escapeAttribute(mode)}"`}
+      >${escapeHtml(label)}</button>
+    `
   }
 
   function heatMapControls(item) {

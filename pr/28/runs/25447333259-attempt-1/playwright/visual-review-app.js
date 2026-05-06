@@ -9,8 +9,12 @@ import {
   VISUAL_REVIEW_STATUS_CONTEXT,
 } from './visual-review-state.mjs'
 import { annotationPageHref } from './visual-review-annotations.mjs'
+import {
+  DEFAULT_HEAT_MAP_THRESHOLD,
+  writeHeatMapPixels,
+} from './visual-review-heatmap.mjs'
 
-/* global document, window, localStorage, history, sessionStorage, URLSearchParams */
+/* global document, window, localStorage, history, sessionStorage, URL, URLSearchParams */
 (() => {
   const dataElement = document.getElementById('visual-review-data')
   const root = document.getElementById('visual-review-root')
@@ -22,6 +26,11 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
   const reviewableVariants = new Set(['changed', 'new', 'deleted'])
   const githubTokenDocsUrl = 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token'
   const themeStorageKey = 'visual-review:theme'
+  const heatMapIntensityMin = 25
+  const heatMapIntensityMax = 100
+  const heatMapIntensityDefault = 100
+  const zoomMin = 10
+  const zoomMax = 200
   const embeddedReviewState = initialReviewStateContext()
 
   const state = {
@@ -30,10 +39,13 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     githubToken: sessionStorage.getItem(githubTokenKey()) || '',
     githubUser: '',
     group: 'all',
+    heatMapIntensity: clamp(Number(localStorage.getItem(storageKey('heat-map-intensity')) || heatMapIntensityDefault), heatMapIntensityMin, heatMapIntensityMax),
+    heatMaps: readHeatMaps(),
     inlineCommentMessage: '',
     inlineCommentState: 'idle',
     mode: localStorage.getItem(storageKey('mode')) || 'side-by-side',
     overlay: clamp(Number(localStorage.getItem(storageKey('overlay')) || 50), 0, 100),
+    queueCollapsed: localStorage.getItem(storageKey('queue-collapsed')) === 'true',
     query: '',
     remoteAuthor: embeddedReviewState ? String(context.initialReviewStateAuthor || '') : '',
     remoteCommentId: embeddedReviewState ? context.initialReviewStateCommentId || null : null,
@@ -46,18 +58,22 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     syncState: embeddedReviewState || !hasReviewStateTarget() ? 'ready' : 'loading',
     theme: initialVisualReviewTheme(),
     tokenHelpOpen: false,
-    zoom: clamp(Number(localStorage.getItem(storageKey('zoom')) || 100), 50, 200),
+    zoom: 100,
+    zoomMode: 'fit',
   }
 
   const items = buildItems()
   const groups = Array.from(new Set(items.map((item) => item.group))).sort((a, b) => a.localeCompare(b))
   const initialId = new URLSearchParams(window.location.search).get('id')
+  let fitZoomTimer = null
+  let pendingStageScroll = null
   state.activeId = items.some((item) => item.id === initialId)
     ? initialId
     : (items.find((item) => reviewableVariants.has(item.variant)) || items[0])?.id
 
   applyVisualReviewTheme(state.theme)
   render()
+  window.addEventListener('resize', scheduleFitZoom)
   window.addEventListener('keydown', handleKeys)
   if (embeddedReviewState) {
     applyRemoteReviewState(
@@ -140,14 +156,27 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     }
   }
 
+  function readHeatMaps() {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey('heat-maps')) || '{}')
+    } catch {
+      return {}
+    }
+  }
+
+  function saveHeatMaps() {
+    localStorage.setItem(storageKey('heat-maps'), JSON.stringify(state.heatMaps))
+  }
+
   function saveReviewComments() {
     localStorage.setItem(storageKey('review-comments'), JSON.stringify(state.reviewComments))
   }
 
   function persistViewState() {
+    localStorage.setItem(storageKey('heat-map-intensity'), String(state.heatMapIntensity))
     localStorage.setItem(storageKey('mode'), state.mode)
     localStorage.setItem(storageKey('overlay'), String(state.overlay))
-    localStorage.setItem(storageKey('zoom'), String(state.zoom))
+    localStorage.setItem(storageKey('queue-collapsed'), state.queueCollapsed ? 'true' : 'false')
   }
 
   function reportItems(key) {
@@ -178,8 +207,23 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
       actual: joinUrl(payload.actualDir, fileName),
       expected: joinUrl(payload.expectedDir, fileName),
       diff: joinUrl(payload.diffDir, diffFileName(fileName)),
+      baselineReference: normalizeBaselineReference(item.baselineReference),
       review,
       searchText: itemSearchText({ raw, variant, group, review }),
+    }
+  }
+
+  function normalizeBaselineReference(value) {
+    if (!value || typeof value !== 'object') return null
+    return {
+      baselineHeadSha: stringOr(value.baselineHeadSha),
+      baselineReportHref: stringOr(value.baselineReportHref),
+      imageHref: stringOr(value.imageHref),
+      imageSha256: stringOr(value.imageSha256),
+      sourcePrNumber: stringOr(value.sourcePrNumber),
+      sourcePrUrl: stringOr(value.sourcePrUrl),
+      sourceTestKey: stringOr(value.sourceTestKey),
+      sourceVariant: stringOr(value.sourceVariant),
     }
   }
 
@@ -377,28 +421,45 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
             </div>
           </div>
         </header>
-        <main class="review-workspace">
-          <aside class="sidebar" aria-label="Snapshot queue">
-            <div class="sidebar-header">
-              <div class="progress-line">
-                <strong>Queue</strong>
-                <span>${progress}% complete</span>
-              </div>
-              <div class="progress-track" aria-hidden="true"><div class="progress-bar" style="width: ${progress}%"></div></div>
-              <div class="filters" role="group" aria-label="Filters">
-                ${filterButton('unreviewed', `Open ${currentCounts.reviewable - currentCounts.reviewed}`)}
-                ${filterButton('reviewable', `Review ${currentCounts.reviewable}`)}
-                ${filterButton('changed', `Changed ${currentCounts.changed}`)}
-                ${filterButton('all', `All ${items.length}`)}
-              </div>
-              <input class="search" type="search" value="${escapeAttribute(state.query)}" placeholder="Find by story, test, source, or tag" aria-label="Search snapshots" data-action="search" />
-              <select class="group-select" aria-label="Filter by group" data-action="group">
-                <option value="all">All groups</option>
-                ${groups.map((group) => `<option value="${escapeAttribute(group)}"${group === state.group ? ' selected' : ''}>${escapeHtml(group)}</option>`).join('')}
-              </select>
+        <main class="review-workspace ${state.queueCollapsed ? 'queue-collapsed' : ''}">
+          <aside class="sidebar ${state.queueCollapsed ? 'collapsed' : ''}" aria-label="Snapshot queue">
+            <button
+              class="queue-toggle"
+              type="button"
+              data-action="toggle-queue"
+              aria-expanded="${state.queueCollapsed ? 'false' : 'true'}"
+              aria-label="${state.queueCollapsed ? 'Expand snapshot queue' : 'Collapse snapshot queue'}"
+              title="${state.queueCollapsed ? 'Expand queue' : 'Collapse queue'}"
+            >
+              <span aria-hidden="true">${state.queueCollapsed ? '>' : '<'}</span>
+              <span>${state.queueCollapsed ? 'Queue' : 'Hide'}</span>
+            </button>
+            <div class="queue-collapsed-label" aria-hidden="true">
+              <strong>${escapeHtml(String(currentCounts.reviewable - currentCounts.reviewed))}</strong>
+              <span>open</span>
             </div>
-            <div class="snapshot-list">
-              ${renderSnapshotList()}
+            <div class="sidebar-content">
+              <div class="sidebar-header">
+                <div class="progress-line">
+                  <strong>Queue</strong>
+                  <span>${progress}% complete</span>
+                </div>
+                <div class="progress-track" aria-hidden="true"><div class="progress-bar" style="width: ${progress}%"></div></div>
+                <div class="filters" role="group" aria-label="Filters">
+                  ${filterButton('unreviewed', `Open ${currentCounts.reviewable - currentCounts.reviewed}`)}
+                  ${filterButton('reviewable', `Review ${currentCounts.reviewable}`)}
+                  ${filterButton('changed', `Changed ${currentCounts.changed}`)}
+                  ${filterButton('all', `All ${items.length}`)}
+                </div>
+                <input class="search" type="search" value="${escapeAttribute(state.query)}" placeholder="Find by story, test, source, or tag" aria-label="Search snapshots" data-action="search" />
+                <select class="group-select" aria-label="Filter by group" data-action="group">
+                  <option value="all">All groups</option>
+                  ${groups.map((group) => `<option value="${escapeAttribute(group)}"${group === state.group ? ' selected' : ''}>${escapeHtml(group)}</option>`).join('')}
+                </select>
+              </div>
+              <div class="snapshot-list">
+                ${renderSnapshotList()}
+              </div>
             </div>
           </aside>
           <section class="canvas-column">
@@ -418,6 +479,9 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     bindEvents()
     applyZoomState()
     applyOverlayState()
+    applyHeatMapControlState(current)
+    renderHeatMaps()
+    scheduleFitZoom()
   }
 
   function renderReviewBrief(item, currentCounts) {
@@ -523,14 +587,15 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
 
   function renderReviewLinks(item, target) {
     const links = []
+    const baselineHref = baselineImageHref(item)
     if (target) {
       links.push(`<a class="btn" href="${escapeAttribute(sourceFileHref(target))}" target="_blank" rel="noopener noreferrer" data-source-link>Open source file</a>`)
     }
     if (item.actual && item.variant !== 'deleted') {
       links.push(`<a class="btn" href="${escapeAttribute(annotationPageHref({ asset: 'current', basePath: window.location.href, itemId: item.id }))}" target="_blank" rel="noopener noreferrer" data-annotation-link>Open current image</a>`)
     }
-    if (item.expected && item.variant !== 'new') {
-      links.push(`<a class="btn" href="${escapeAttribute(item.expected)}" target="_blank" rel="noopener noreferrer">Open baseline image</a>`)
+    if (baselineHref) {
+      links.push(`<a class="btn" href="${escapeAttribute(baselineHref)}" target="_blank" rel="noopener noreferrer">Open baseline image</a>`)
     }
     if (item.diff && item.variant === 'changed') {
       links.push(`<a class="btn" href="${escapeAttribute(item.diff)}" target="_blank" rel="noopener noreferrer">Open diff image</a>`)
@@ -793,7 +858,8 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
   }
 
   function renderViewer(item) {
-    const canCompare = item.variant === 'changed'
+    const canCompare = canUseComparisonModes(item)
+    const showComparisonControls = item.variant !== 'passed'
     const allowedModes = canCompare ? ['side-by-side', 'diff', 'overlay', 'blink'] : ['single']
     if (!allowedModes.includes(state.mode)) state.mode = allowedModes[0]
     return `
@@ -803,39 +869,98 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
             <h2>${escapeHtml(itemTitle(item))}</h2>
             <p>${escapeHtml(statusLabel(item.variant))} · ${escapeHtml(itemSubtitle(item))}</p>
           </div>
-          <div class="toolbar-controls">
-            ${canCompare ? `
-              <div class="segmented" role="group" aria-label="Diff mode">
-                ${modeButton('side-by-side', 'Side by side')}
-                ${modeButton('diff', 'Highlighter')}
-                ${modeButton('overlay', 'Overlay')}
-                ${modeButton('blink', 'Blink')}
-              </div>
-            ` : ''}
-            <label class="range-row">Zoom <input type="range" min="50" max="200" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
-          </div>
         </div>
-        <div class="stage">
-          <div class="stage-inner" data-stage-inner>
-            ${renderImageMode(item)}
+        <div class="stage-shell">
+          <div class="stage-control-bar" data-stage-controls>
+            <div class="toolbar-controls">
+              ${showComparisonControls ? `
+                <div
+                  class="segmented ${canCompare ? '' : 'disabled'}"
+                  role="group"
+                  aria-label="Diff mode"
+                  title="${escapeAttribute(canCompare ? 'Choose how to compare baseline and current screenshots' : 'Comparison modes need baseline and current screenshots')}"
+                >
+                  ${modeButton('side-by-side', 'Side by side', !canCompare)}
+                  ${modeButton('diff', 'Highlighter', !canCompare)}
+                  ${modeButton('overlay', 'Overlay', !canCompare)}
+                  ${modeButton('blink', 'Blink', !canCompare)}
+                </div>
+              ` : ''}
+              ${heatMapControls(item)}
+              <label class="range-row">Zoom <input type="range" min="${zoomMin}" max="${zoomMax}" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
+            </div>
+          </div>
+          <div class="stage">
+            <div class="stage-inner" data-stage-inner>
+              ${renderImageMode(item)}
+            </div>
           </div>
         </div>
       </article>
     `
   }
 
-  function modeButton(mode, label) {
-    return `<button type="button" class="${state.mode === mode ? 'active' : ''}" data-mode="${escapeAttribute(mode)}">${escapeHtml(label)}</button>`
+  function canUseComparisonModes(item) {
+    return Boolean(item?.actual && baselineImageHref(item))
+  }
+
+  function modeButton(mode, label, disabled = false) {
+    return `
+      <button
+        type="button"
+        class="${!disabled && state.mode === mode ? 'active' : ''}"
+        ${disabled ? 'disabled aria-disabled="true"' : `data-mode="${escapeAttribute(mode)}"`}
+      >${escapeHtml(label)}</button>
+    `
+  }
+
+  function heatMapControls(item) {
+    const enabled = canHeatMap(item)
+    const active = enabled && heatMapEnabled(item)
+    const status = heatMapStatusLabel(item)
+    return `
+      <div class="heatmap-controls ${active ? 'active' : ''}" data-heat-map-controls>
+        <button
+          class="btn heatmap-toggle ${active ? 'active' : ''}"
+          type="button"
+          data-action="toggle-heat-map"
+          aria-label="Heat map"
+          aria-pressed="${active ? 'true' : 'false'}"
+          ${enabled ? '' : 'disabled'}
+          title="${escapeAttribute(enabled ? 'Overlay changed pixels on the current screenshot' : 'Heat map needs baseline and current screenshots')}"
+        >
+          <span>Heat map</span>
+          <span class="heatmap-status" data-heat-map-status aria-hidden="true">${escapeHtml(status)}</span>
+        </button>
+        <label class="range-row heatmap-intensity ${enabled ? '' : 'disabled'}" data-heat-map-intensity-row>
+          Intensity
+          <input
+            type="range"
+            min="${heatMapIntensityMin}"
+            max="${heatMapIntensityMax}"
+            step="5"
+            value="${state.heatMapIntensity}"
+            data-action="heat-map-intensity"
+            aria-label="Heat map intensity"
+            ${enabled ? '' : 'disabled'}
+          />
+          <span data-heat-map-intensity-value>${state.heatMapIntensity}%</span>
+        </label>
+      </div>
+    `
   }
 
   function renderImageMode(item) {
     if (item.variant === 'new' || item.variant === 'passed') {
-      return `<img class="solo-image" src="${escapeAttribute(item.actual)}" alt="Current screenshot for ${escapeAttribute(item.raw)}" />`
+      return renderCurrentImage(item, `Current screenshot for ${item.raw}`, 'solo-image')
     }
     if (item.variant === 'deleted') {
-      return `<img class="solo-image" src="${escapeAttribute(item.expected)}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />`
+      return `<img class="solo-image" src="${escapeAttribute(baselineImageHref(item) || item.expected)}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />`
     }
     if (state.mode === 'diff') {
+      if (heatMapEnabled(item)) {
+        return renderCurrentImage(item, `Current screenshot with heat map for ${item.raw}`, 'solo-image')
+      }
       return `<img class="solo-image" src="${escapeAttribute(item.diff)}" alt="Diff highlighter for ${escapeAttribute(item.raw)}" />`
     }
     if (state.mode === 'overlay') {
@@ -843,9 +968,9 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
         <div class="image-grid">
           <label class="range-row">Reveal current <input type="range" min="0" max="100" value="${state.overlay}" data-action="overlay" /> <span data-overlay-value>${state.overlay}%</span></label>
           <div class="overlay-frame">
-            <img src="${escapeAttribute(item.expected)}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
+            <img src="${escapeAttribute(baselineImageHref(item))}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
             <div class="overlay-top" data-overlay-top style="width: ${state.overlay}%">
-              <img src="${escapeAttribute(item.actual)}" alt="Current screenshot for ${escapeAttribute(item.raw)}" />
+              ${renderCurrentImage(item, `Current screenshot for ${item.raw}`)}
             </div>
           </div>
         </div>
@@ -854,8 +979,8 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     if (state.mode === 'blink') {
       return `
         <div class="overlay-frame blink-frame">
-          <img src="${escapeAttribute(item.expected)}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
-          <img src="${escapeAttribute(item.actual)}" alt="Current screenshot for ${escapeAttribute(item.raw)}" />
+          <img src="${escapeAttribute(baselineImageHref(item))}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
+          ${renderCurrentImage(item, `Current screenshot for ${item.raw}`)}
         </div>
       `
     }
@@ -863,14 +988,90 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
       <div class="image-grid two-up">
         <div class="image-panel">
           <h3>Baseline · ${escapeHtml(context.baseRef)}</h3>
-          <img src="${escapeAttribute(item.expected)}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
+          <img src="${escapeAttribute(baselineImageHref(item))}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
         </div>
         <div class="image-panel">
           <h3>Current · ${escapeHtml(context.headRef)}</h3>
-          <img src="${escapeAttribute(item.actual)}" alt="Current screenshot for ${escapeAttribute(item.raw)}" />
+          ${renderCurrentImage(item, `Current screenshot for ${item.raw}`)}
         </div>
       </div>
     `
+  }
+
+  function renderCurrentImage(item, alt, className = '') {
+    const image = `<img class="${escapeAttribute(className)}" src="${escapeAttribute(item.actual)}" alt="${escapeAttribute(alt)}" />`
+    if (!canHeatMap(item)) return image
+
+    const heatMapActive = heatMapEnabled(item)
+    return `
+      <div
+        class="heatmap-frame ${className ? escapeAttribute(className) : ''}"
+        data-heat-map-frame
+        data-heat-map-active="${heatMapActive ? 'true' : 'false'}"
+        data-heat-map-state="${heatMapActive ? 'idle' : 'off'}"
+        style="--heat-map-opacity: ${escapeAttribute(heatMapOpacity())}"
+      >
+        <img src="${escapeAttribute(item.actual)}" alt="${escapeAttribute(alt)}" />
+        <canvas
+          class="heatmap-canvas"
+          data-heat-map-canvas
+          data-baseline-src="${escapeAttribute(baselineImageHref(item))}"
+          data-current-src="${escapeAttribute(item.actual)}"
+          data-threshold="${DEFAULT_HEAT_MAP_THRESHOLD}"
+          aria-hidden="true"
+          ${heatMapActive ? '' : 'hidden'}
+        ></canvas>
+      </div>
+    `
+  }
+
+  function baselineImageHref(item) {
+    const href = item?.baselineReference?.imageHref || (item?.variant === 'changed' || item?.variant === 'deleted' ? item.expected : '')
+    return localReportAssetHref(href)
+  }
+
+  function localReportAssetHref(href) {
+    const value = stringOr(href)
+    if (!value) return ''
+    try {
+      const target = new URL(value, window.location.href)
+      if (target.origin === window.location.origin || !context.baseUrl) return target.href
+      const base = new URL(context.baseUrl, window.location.href)
+      if (target.origin !== base.origin) return target.href
+      const basePath = base.pathname.replace(/\/+$/, '')
+      const localPath = basePath
+        ? (target.pathname.startsWith(`${basePath}/`) ? target.pathname.slice(basePath.length) : '')
+        : target.pathname
+      if (!localPath.startsWith('/')) return target.href
+
+      // Local Playwright runs often mirror the GitHub Pages tree at localhost.
+      return `${window.location.origin}${localPath}${target.search}${target.hash}`
+    } catch {
+      return value
+    }
+  }
+
+  function canHeatMap(item) {
+    return Boolean(
+      item &&
+      item.variant !== 'deleted' &&
+      item.variant !== 'passed' &&
+      item.actual &&
+      baselineImageHref(item)
+    )
+  }
+
+  function heatMapEnabled(item) {
+    return canHeatMap(item) && state.heatMaps[item.id] === true
+  }
+
+  function heatMapStatusLabel(item) {
+    if (!canHeatMap(item)) return 'N/A'
+    return heatMapEnabled(item) ? 'On' : 'Off'
+  }
+
+  function heatMapOpacity() {
+    return String(clamp(Number(state.heatMapIntensity), heatMapIntensityMin, heatMapIntensityMax) / 100)
   }
 
   function renderContext(item) {
@@ -916,20 +1117,19 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
       render()
     })
     root.querySelector('[data-action="zoom"]')?.addEventListener('input', (event) => {
-      state.zoom = clamp(Number(event.target.value), 50, 200)
+      state.zoomMode = 'manual'
+      state.zoom = clamp(Number(event.target.value), zoomMin, zoomMax)
       event.target.value = String(state.zoom)
       persistViewState()
       applyZoomState()
     })
-    root.querySelector('[data-action="overlay"]')?.addEventListener('input', (event) => {
-      state.overlay = clamp(Number(event.target.value), 0, 100)
-      event.target.value = String(state.overlay)
-      persistViewState()
-      applyOverlayState()
-    })
+    bindOverlayControl()
+    root.querySelector('[data-action="toggle-heat-map"]')?.addEventListener('click', toggleHeatMap)
+    root.querySelector('[data-action="heat-map-intensity"]')?.addEventListener('input', updateHeatMapIntensity)
     root.querySelector('[data-action="review-comment"]')?.addEventListener('input', updateReviewComment)
     root.querySelector('[data-action="post-inline-comment"]')?.addEventListener('click', postInlineReviewComment)
     root.querySelector('[data-action="toggle-theme"]')?.addEventListener('click', toggleVisualReviewTheme)
+    root.querySelector('[data-action="toggle-queue"]')?.addEventListener('click', toggleQueue)
     root.querySelector('[data-action="open-token-help"]')?.addEventListener('click', openTokenHelp)
     root.querySelectorAll('[data-action="close-token-help"]').forEach((button) => {
       button.addEventListener('click', closeTokenHelp)
@@ -941,13 +1141,129 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     root.querySelector('[data-action="load-pr-state"]')?.addEventListener('click', () => loadRemoteReviewState())
     root.querySelector('[data-action="publish-pr-state"]')?.addEventListener('click', publishRemoteReviewState)
     root.querySelector('[data-action="forget-token"]')?.addEventListener('click', forgetGithubToken)
+    bindStagePan()
+  }
+
+  function toggleQueue() {
+    state.queueCollapsed = !state.queueCollapsed
+    persistViewState()
+    render()
+  }
+
+  function bindOverlayControl() {
+    root.querySelector('[data-action="overlay"]')?.addEventListener('input', (event) => {
+      state.overlay = clamp(Number(event.target.value), 0, 100)
+      event.target.value = String(state.overlay)
+      persistViewState()
+      applyOverlayState()
+    })
   }
 
   function applyZoomState() {
     const stageInner = root.querySelector('[data-stage-inner]')
+    const zoomInput = root.querySelector('[data-action="zoom"]')
     const zoomValue = root.querySelector('[data-zoom-value]')
     if (stageInner) stageInner.style.zoom = String(state.zoom / 100)
+    if (zoomInput) zoomInput.value = String(state.zoom)
     if (zoomValue) zoomValue.textContent = `${state.zoom}%`
+    updateStagePanState()
+  }
+
+  function scheduleFitZoom() {
+    if (state.zoomMode !== 'fit') return
+    window.clearTimeout(fitZoomTimer)
+    fitZoomTimer = window.setTimeout(applyFitZoom, 0)
+  }
+
+  function applyFitZoom() {
+    if (state.zoomMode !== 'fit') return
+    const stage = root.querySelector('.stage')
+    const stageInner = root.querySelector('[data-stage-inner]')
+    if (!stage || !stageInner) return
+    const images = Array.from(stageInner.querySelectorAll('img'))
+    if (images.some((image) => !image.complete || image.naturalWidth <= 0)) {
+      for (const image of images) {
+        image.addEventListener('load', scheduleFitZoom, { once: true })
+      }
+      return
+    }
+
+    const currentZoom = stageInner.style.zoom
+    stageInner.style.zoom = '1'
+    const baseWidth = Math.max(stageInner.scrollWidth, stageInner.getBoundingClientRect().width)
+    stageInner.style.zoom = currentZoom
+    if (!baseWidth || !stage.clientWidth) return
+
+    const nextZoom = clamp(Math.floor((stage.clientWidth / baseWidth) * 100), zoomMin, 100)
+    if (nextZoom === state.zoom) {
+      applyZoomState()
+      return
+    }
+    state.zoom = nextZoom
+    applyZoomState()
+  }
+
+  function bindStagePan() {
+    const stage = root.querySelector('.stage')
+    if (!stage) return
+    let drag = null
+
+    stage.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || !stageIsPannable(stage)) return
+      drag = {
+        id: event.pointerId,
+        left: stage.scrollLeft,
+        top: stage.scrollTop,
+        x: event.clientX,
+        y: event.clientY,
+      }
+      stage.dataset.panning = 'true'
+      try {
+        stage.setPointerCapture?.(event.pointerId)
+      } catch {
+        // Pointer capture can be unavailable for synthetic pointer events.
+      }
+      event.preventDefault()
+    })
+
+    stage.addEventListener('pointermove', (event) => {
+      if (!drag || drag.id !== event.pointerId) return
+      stage.scrollLeft = drag.left - (event.clientX - drag.x)
+      stage.scrollTop = drag.top - (event.clientY - drag.y)
+      event.preventDefault()
+    })
+
+    const stopPan = (event) => {
+      if (!drag || drag.id !== event.pointerId) return
+      try {
+        stage.releasePointerCapture?.(event.pointerId)
+      } catch {
+        // Continue cleanup even if capture was not active.
+      } finally {
+        drag = null
+        delete stage.dataset.panning
+        updateStagePanState()
+      }
+    }
+
+    stage.addEventListener('pointerup', stopPan)
+    stage.addEventListener('pointercancel', stopPan)
+    updateStagePanState()
+  }
+
+  function stageIsPannable(stage) {
+    return stage.scrollWidth > stage.clientWidth + 1 || stage.scrollHeight > stage.clientHeight + 1
+  }
+
+  function updateStagePanState() {
+    const stage = root.querySelector('.stage')
+    if (!stage) return
+    const update = () => {
+      stage.dataset.pannable = stageIsPannable(stage) ? 'true' : 'false'
+    }
+    update()
+    window.requestAnimationFrame?.(update)
+    window.setTimeout?.(update, 50)
   }
 
   function applyOverlayState() {
@@ -955,6 +1271,214 @@ import { annotationPageHref } from './visual-review-annotations.mjs'
     const overlayValue = root.querySelector('[data-overlay-value]')
     if (overlayTop) overlayTop.style.width = `${state.overlay}%`
     if (overlayValue) overlayValue.textContent = `${state.overlay}%`
+  }
+
+  function applyHeatMapControlState(item = activeItem()) {
+    const enabled = canHeatMap(item)
+    const active = heatMapEnabled(item)
+    const status = heatMapStatusLabel(item)
+    const controls = root.querySelector('[data-heat-map-controls]')
+    const toggle = root.querySelector('[data-action="toggle-heat-map"]')
+    const statusLabel = root.querySelector('[data-heat-map-status]')
+    const intensity = root.querySelector('[data-action="heat-map-intensity"]')
+    const intensityRow = root.querySelector('[data-heat-map-intensity-row]')
+    const intensityValue = root.querySelector('[data-heat-map-intensity-value]')
+
+    controls?.classList.toggle('active', active)
+    if (toggle) {
+      toggle.classList.toggle('active', active)
+      toggle.disabled = !enabled
+      toggle.setAttribute('aria-pressed', active ? 'true' : 'false')
+      toggle.title = enabled
+        ? 'Overlay changed pixels on the current screenshot'
+        : 'Heat map needs baseline and current screenshots'
+    }
+    if (statusLabel) statusLabel.textContent = status
+    if (intensity) {
+      intensity.disabled = !enabled
+      intensity.value = String(state.heatMapIntensity)
+    }
+    intensityRow?.classList.toggle('disabled', !enabled)
+    if (intensityValue) intensityValue.textContent = `${state.heatMapIntensity}%`
+    root.querySelectorAll('[data-heat-map-frame]').forEach((frame) => {
+      frame.style.setProperty('--heat-map-opacity', heatMapOpacity())
+    })
+  }
+
+  function updateHeatMapIntensity(event) {
+    state.heatMapIntensity = clamp(Number(event.target.value), heatMapIntensityMin, heatMapIntensityMax)
+    event.target.value = String(state.heatMapIntensity)
+    persistViewState()
+    applyHeatMapControlState(activeItem())
+  }
+
+  function toggleHeatMap() {
+    const current = activeItem()
+    if (!canHeatMap(current)) return
+    const scroll = readStageScroll()
+    pendingStageScroll = scroll
+    state.heatMaps[current.id] = !state.heatMaps[current.id]
+    saveHeatMaps()
+    if (state.mode === 'diff' || !syncHeatMapFrames(current)) {
+      renderStageContent(current, scroll)
+      clearPendingStageScrollAfter(scroll)
+      return
+    }
+    applyHeatMapControlState(current)
+    restoreStageScroll(scroll)
+    clearPendingStageScrollAfter(scroll)
+  }
+
+  function syncHeatMapFrames(item) {
+    const frames = Array.from(root.querySelectorAll('[data-heat-map-frame]'))
+    if (frames.length === 0) return false
+    const active = heatMapEnabled(item)
+    frames.forEach((frame) => {
+      const canvas = frame.querySelector('[data-heat-map-canvas]')
+      frame.dataset.heatMapActive = active ? 'true' : 'false'
+      frame.style.setProperty('--heat-map-opacity', heatMapOpacity())
+      if (!canvas) return
+      canvas.hidden = !active
+      frame.setAttribute('data-heat-map-state', active ? 'idle' : 'off')
+    })
+    if (active) renderHeatMaps()
+    return true
+  }
+
+  function renderStageContent(item, scroll = readStageScroll()) {
+    const stageInner = root.querySelector('[data-stage-inner]')
+    if (!stageInner) {
+      render()
+      restoreStageScroll(scroll)
+      return
+    }
+
+    stageInner.innerHTML = renderImageMode(item)
+    bindOverlayControl()
+    applyZoomState()
+    applyOverlayState()
+    applyHeatMapControlState(item)
+    renderHeatMaps()
+    restoreStageScroll(scroll)
+  }
+
+  function clearPendingStageScrollAfter(scroll) {
+    window.setTimeout?.(() => {
+      if (pendingStageScroll === scroll) pendingStageScroll = null
+    }, 1000)
+  }
+
+  function readStageScroll() {
+    const stage = root.querySelector('.stage')
+    return stage ? { left: stage.scrollLeft, top: stage.scrollTop } : null
+  }
+
+  function restoreStageScroll(scroll) {
+    if (!scroll) return
+    const restore = () => {
+      const stage = root.querySelector('.stage')
+      if (!stage) return
+      stage.scrollLeft = scroll.left
+      stage.scrollTop = scroll.top
+    }
+    restore()
+    root.querySelectorAll('[data-stage-inner] img').forEach((image) => {
+      if (image.complete) {
+        restore()
+      } else {
+        image.addEventListener('load', () => {
+          restore()
+          updateStagePanState()
+        }, { once: true })
+      }
+    })
+    window.requestAnimationFrame?.(restore)
+    window.setTimeout?.(restore, 0)
+    window.setTimeout?.(restore, 50)
+    window.setTimeout?.(restore, 150)
+    window.setTimeout?.(restore, 300)
+    updateStagePanState()
+  }
+
+  function renderHeatMaps() {
+    root.querySelectorAll('[data-heat-map-canvas]:not([hidden])').forEach((canvas) => {
+      drawHeatMapCanvas(canvas)
+    })
+  }
+
+  async function drawHeatMapCanvas(canvas) {
+    const frame = canvas.closest('[data-heat-map-frame]')
+    frame?.setAttribute('data-heat-map-state', 'loading')
+    try {
+      const [baseline, current] = await Promise.all([
+        loadImage(canvas.dataset.baselineSrc),
+        loadImage(canvas.dataset.currentSrc),
+      ])
+      if (!canvas.isConnected) return
+      if (
+        !baseline.naturalWidth ||
+        !current.naturalWidth ||
+        baseline.naturalWidth !== current.naturalWidth ||
+        baseline.naturalHeight !== current.naturalHeight
+      ) {
+        frame?.setAttribute('data-heat-map-state', 'mismatch')
+        return
+      }
+
+      const width = current.naturalWidth
+      const height = current.naturalHeight
+      const baselineCanvas = workCanvas(width, height)
+      const currentCanvas = workCanvas(width, height)
+      const heatMapContext = canvas.getContext('2d')
+      const baselineContext = baselineCanvas.getContext('2d')
+      const currentContext = currentCanvas.getContext('2d')
+      if (!heatMapContext || !baselineContext || !currentContext) return
+
+      baselineContext.drawImage(baseline, 0, 0, width, height)
+      currentContext.drawImage(current, 0, 0, width, height)
+      const baselineData = baselineContext.getImageData(0, 0, width, height)
+      const currentData = currentContext.getImageData(0, 0, width, height)
+      const heatMapData = heatMapContext.createImageData(width, height)
+      const summary = writeHeatMapPixels({
+        baseline: baselineData.data,
+        current: currentData.data,
+        output: heatMapData.data,
+        threshold: Number(canvas.dataset.threshold || DEFAULT_HEAT_MAP_THRESHOLD),
+      })
+
+      canvas.width = width
+      canvas.height = height
+      heatMapContext.putImageData(heatMapData, 0, 0)
+      restoreStageScroll(pendingStageScroll)
+      frame?.setAttribute('data-heat-map-state', summary.changedPixels > 0 ? 'ready' : 'empty')
+    } catch {
+      frame?.setAttribute('data-heat-map-state', 'error')
+    }
+  }
+
+  function workCanvas(width, height) {
+    if (typeof window.OffscreenCanvas === 'function') {
+      return new window.OffscreenCanvas(width, height)
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    return canvas
+  }
+
+  function loadImage(src) {
+    return new Promise((resolve, reject) => {
+      const image = new Image()
+      try {
+        const url = new URL(src, window.location.href)
+        if (url.origin !== window.location.origin) image.crossOrigin = 'anonymous'
+      } catch {
+        // Keep browser-default loading for relative paths that URL cannot parse.
+      }
+      image.onload = () => resolve(image)
+      image.onerror = () => reject(new Error(`Unable to load heat map image: ${src}`))
+      image.src = src
+    })
   }
 
   function updateReviewComment(event) {
