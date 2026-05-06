@@ -1,8 +1,9 @@
 import { createWorkflowContractRun, recordWorkflowContractErrors } from './diagnostics.ts'
-import { diffWorkflowTemplates, isWorkflowContractOwned } from './diff.ts'
+import { diffWorkflowTemplates, isRuntimeTemplateEnabled, isWorkflowContractOwned } from './diff.ts'
+import { workflowContractError } from './errors.ts'
 import { computeContractHash } from './hash.ts'
 import { validateWorkflowContract } from './validator.ts'
-import type { RuntimeWorkflowTemplate, WorkflowContract, WorkflowContractImportOptions, WorkflowContractImportResult, WorkflowContractTemplate } from './types.ts'
+import type { RuntimeWorkflowTemplate, WorkflowContract, WorkflowContractError, WorkflowContractImportOptions, WorkflowContractImportResult, WorkflowContractTemplate } from './types.ts'
 import type Database from 'better-sqlite3'
 
 export function importWorkflowContract(
@@ -36,6 +37,29 @@ export function importWorkflowContract(
   }
 
   const runtimeTemplates = selectRuntimeTemplates(db, contract.workspace_id)
+  const ownershipErrors = findOwnershipConflicts(contract, runtimeTemplates)
+  if (ownershipErrors.length > 0) {
+    const runId = createWorkflowContractRun(db, {
+      family: contract.family,
+      workspaceId: contract.workspace_id,
+      mode: options.mode === 'apply' ? 'import_apply' : 'import_dry_run',
+      status: 'validation_failed',
+      mutationStatus: 'not_mutated',
+      ...(options.sourcePath === undefined ? {} : { sourcePath: options.sourcePath }),
+      contractHash,
+      errorCount: ownershipErrors.length,
+    })
+    recordWorkflowContractErrors(db, runId, ownershipErrors)
+    return {
+      ok: false,
+      mode: options.mode === 'apply' ? 'import_apply' : 'import_dry_run',
+      status: 'validation_failed',
+      mutation_status: 'not_mutated',
+      run_id: runId,
+      contract_hash: contractHash,
+      errors: ownershipErrors,
+    }
+  }
   const diff = diffWorkflowTemplates(contract, runtimeTemplates)
   if (options.mode === 'dry-run') {
     const runId = createWorkflowContractRun(db, {
@@ -91,11 +115,15 @@ export function selectRuntimeTemplates(db: Database.Database, workspaceId: numbe
 
 export function selectOwnedRuntimeTemplates(db: Database.Database, workspaceId: number, slugs: string[] = []): RuntimeWorkflowTemplate[] {
   const currentSlugs = new Set(slugs)
-  return selectRuntimeTemplates(db, workspaceId).filter(row => Boolean(row.slug && (currentSlugs.has(row.slug) || isWorkflowContractOwned(row))))
+  return selectRuntimeTemplates(db, workspaceId).filter(row => {
+    if (!row.slug) return false
+    if (!isWorkflowContractOwned(row) || !isRuntimeTemplateEnabled(row)) return false
+    return slugs.length > 0 ? currentSlugs.has(row.slug) : true
+  })
 }
 
 export function upsertTemplate(db: Database.Database, workspaceId: number, template: WorkflowContractTemplate): void {
-  const existing = db.prepare('SELECT id FROM workflow_templates WHERE workspace_id = ? AND slug = ?').get(workspaceId, template.slug) as { id: number } | undefined
+  const existing = db.prepare('SELECT id, created_by FROM workflow_templates WHERE workspace_id = ? AND slug = ?').get(workspaceId, template.slug) as { id: number; created_by?: string | null } | undefined
   const params = [
     template.name,
     template.description ?? null,
@@ -112,6 +140,9 @@ export function upsertTemplate(db: Database.Database, workspaceId: number, templ
     template.allow_redacted_artifacts ? 1 : 0,
   ]
   if (existing) {
+    if (existing.created_by !== 'workflow-contract') {
+      throw new Error(`Refusing to overwrite non-workflow-contract template slug ${template.slug}`)
+    }
     db.prepare(`
       UPDATE workflow_templates SET
         name = ?, description = ?, model = ?, task_prompt = ?, timeout_seconds = ?, agent_role = ?,
@@ -128,4 +159,24 @@ export function upsertTemplate(db: Database.Database, workspaceId: number, templ
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(...params, workspaceId, template.slug, 'workflow-contract')
   }
+}
+
+function findOwnershipConflicts(contract: WorkflowContract, runtimeTemplates: RuntimeWorkflowTemplate[]): WorkflowContractError[] {
+  const bySlug = new Map<string, RuntimeWorkflowTemplate>()
+  for (const row of runtimeTemplates) {
+    if (row.workspace_id === contract.workspace_id && row.slug) bySlug.set(row.slug, row)
+  }
+  const errors: WorkflowContractError[] = []
+  for (const [index, template] of contract.templates.entries()) {
+    const existing = bySlug.get(template.slug)
+    if (existing && !isWorkflowContractOwned(existing)) {
+      errors.push(workflowContractError('WORKFLOW_TEMPLATE_OWNERSHIP_CONFLICT', 'Workflow contract slug collides with a manual template', {
+        canonical_model_path: `templates[${String(index)}].slug`,
+        template_slug: template.slug,
+        details: `Existing runtime template ${template.slug} is owned by ${existing.created_by ?? 'unknown'}.`,
+        remediation_hint: 'Rename the contract template slug or manually migrate the runtime template ownership before applying.',
+      }))
+    }
+  }
+  return errors
 }

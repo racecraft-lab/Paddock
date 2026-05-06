@@ -45,4 +45,14 @@ describe('workflow contract validator', () => {
     expect(result.ok).toBe(false)
     expect(result.errors[0]?.code).toBe('OUTPUT_SCHEMA_HASH_MISMATCH')
   })
+
+  it('reports malformed template array items as structured validation errors', () => {
+    const result = validateWorkflowContract(makeContract({
+      templates: [null as unknown as WorkflowContractTemplate],
+    }))
+
+    expect(result.ok).toBe(false)
+    expect(result.errors[0]?.code).toBe('INVALID_TEMPLATE')
+    expect(result.errors[0]?.canonical_model_path).toBe('templates[0]')
+  })
 })

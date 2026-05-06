@@ -53,12 +53,16 @@ function normalizePromptLineEndings(contract: WorkflowContract): WorkflowContrac
   return {
     ...contract,
     templates: Array.isArray(contract.templates)
-      ? contract.templates.map(template => ({
-        ...template,
-        task_prompt: typeof template.task_prompt === 'string'
-          ? template.task_prompt.replace(/\r\n?/g, '\n')
-          : template.task_prompt,
-      }))
+      ? (contract.templates as unknown[]).map(template => {
+        if (!template || typeof template !== 'object' || Array.isArray(template)) return template
+        const record = template as Record<string, unknown>
+        return {
+          ...record,
+          task_prompt: typeof record['task_prompt'] === 'string'
+            ? record['task_prompt'].replace(/\r\n?/g, '\n')
+            : record['task_prompt'],
+        }
+      }) as WorkflowContract['templates']
       : contract.templates,
   }
 }

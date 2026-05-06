@@ -59,6 +59,16 @@ interface WorkflowContractRun {
   errors: WorkflowContractRunError[]
 }
 
+interface WorkflowContractDiagnostics {
+  runs: WorkflowContractRun[]
+  last_known_good_available?: boolean
+  last_successful_apply?: {
+    run_id: number
+    snapshot_id: number | null
+    canonical_object_hash: string | null
+  } | null
+}
+
 type TemplateFormData = {
   name: string
   description: string
@@ -105,6 +115,7 @@ export function OrchestrationBar() {
   const [agents, setAgents] = useState<Agent[]>([])
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([])
   const [contractRuns, setContractRuns] = useState<WorkflowContractRun[]>([])
+  const [contractDiagnostics, setContractDiagnostics] = useState<WorkflowContractDiagnostics | null>(null)
   const [activeTab, setActiveTab] = useState<'command' | 'templates' | 'contracts' | 'pipelines' | 'fleet'>('command')
 
   // Command state
@@ -132,6 +143,7 @@ export function OrchestrationBar() {
     setAgents(agentRes.agents || [])
     setTemplates(templateRes.templates || [])
     setContractRuns(diagnosticsRes.runs || [])
+    setContractDiagnostics(diagnosticsRes && typeof diagnosticsRes === 'object' ? diagnosticsRes as WorkflowContractDiagnostics : null)
   }, [activeProductLineScope])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -396,6 +408,12 @@ export function OrchestrationBar() {
               {contractRuns.length} contract runs
             </span>
             <Button onClick={fetchData} variant="secondary" size="xs">Refresh</Button>
+          </div>
+          <div className="mb-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <span>Last known good: {contractDiagnostics?.last_known_good_available ? 'available' : 'unavailable'}</span>
+            {contractDiagnostics?.last_successful_apply && (
+              <span>Last successful apply: run {contractDiagnostics.last_successful_apply.run_id}</span>
+            )}
           </div>
           {contractRuns.length === 0 ? (
             <p className="text-sm text-muted-foreground py-3">No contract diagnostics</p>

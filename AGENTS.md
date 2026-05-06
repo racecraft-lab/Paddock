@@ -52,12 +52,14 @@ Production hardening: `docker compose -f docker-compose.yml -f docker-compose.ha
 ## Tests
 
 ```bash
-pnpm test             # unit tests (vitest)
+pnpm test             # unit tests (vitest; run outside the sandbox)
 pnpm test:e2e         # end-to-end (playwright)
 pnpm typecheck        # tsc --noEmit
 pnpm lint             # eslint
 pnpm test:all         # lint + typecheck + test + build + e2e
 ```
+
+`pnpm test` must be run outside the Codex sandbox to pass in this worktree; sandboxed runs can fail on local socket/GPG-sensitive tests before exercising the product code.
 
 ## Key Directories
 

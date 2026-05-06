@@ -34,4 +34,19 @@ describe('workflow contract YAML loader', () => {
   ])('rejects %s before canonical model construction', (_label, source) => {
     expect(() => loadWorkflowContractFromString(source, 'bad.yaml')).toThrow(/YAML|contract|prompt|anchor|duplicate|mapping|document/i)
   })
+
+  it('passes malformed template items through for structured validation', () => {
+    const contract = loadWorkflowContractFromString(`
+family: mission-control
+version: workflow-contract-v1
+workspace_id: 1
+allowed_variable_namespaces:
+  - workspace
+  - task
+templates:
+  - null
+`, 'bad-template.yaml')
+
+    expect(contract.templates[0]).toBeNull()
+  })
 })

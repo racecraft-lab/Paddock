@@ -57,4 +57,37 @@ describe('workflow contract exporter', () => {
     expect(exportResult.contract.templates.map(template => template.slug)).not.toContain('manual')
     expect(exportResult.markdown).not.toContain('Manual Template')
   })
+
+  it('excludes disabled workflow-contract templates from snapshot-backed review output', () => {
+    const db = makeWorkflowDb()
+    db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('old-contract', 'Old Contract', 'old prompt', 'sonnet', 'workflow-contract')
+    importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
+
+    const exportResult = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
+
+    expect(exportResult.contract.templates.map(template => template.slug)).toEqual(['intake'])
+    expect(exportResult.markdown).not.toContain('Old Contract')
+  })
+
+  it('persists export diagnostics with the artifact path and contract hash', () => {
+    const db = makeWorkflowDb()
+    importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
+    const exportResult = exportWorkflowContractMarkdown(db, {
+      family: 'mission-control',
+      workspaceId: 1,
+      exportPath: 'docs/ai/workflows/mission-control/exports/workflow-contract.md',
+    })
+
+    expect(db.prepare(`
+      SELECT mode, status, mutation_status, export_path, contract_hash
+      FROM workflow_contract_runs
+      WHERE mode = 'export'
+    `).get()).toEqual({
+      mode: 'export',
+      status: 'success',
+      mutation_status: 'not_mutated',
+      export_path: 'docs/ai/workflows/mission-control/exports/workflow-contract.md',
+      contract_hash: exportResult.contract_hash,
+    })
+  })
 })

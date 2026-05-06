@@ -2,31 +2,50 @@ import Database from 'better-sqlite3'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { DEFAULT_WORKFLOW_CONTRACT_EXPORT_PATH, DEFAULT_WORKFLOW_CONTRACT_FAMILY } from '../../src/lib/workflow-contracts/types.ts'
 
 export type WorkflowContractCliCommand =
-  | { command: 'import'; mode: 'dry-run' | 'apply'; file: string; workspaceId: number }
-  | { command: 'export'; output: string; workspaceId: number }
-  | { command: 'recover'; mode: 'dry-run' | 'apply'; workspaceId: number }
+  | { command: 'import'; mode: 'dry-run' | 'apply'; file: string; workspaceId?: number }
+  | { command: 'export'; output: string; workspaceId: number; family: string }
+  | { command: 'recover'; mode: 'dry-run' | 'apply'; workspaceId: number; family: string }
 
 export function parseWorkflowContractCliArgs(args: string[]): WorkflowContractCliCommand {
   const [command, ...rest] = args
   const flags = parseFlags(rest)
-  const workspaceId = Number(flags['workspace-id'] ?? 1)
-  if (!Number.isInteger(workspaceId) || workspaceId <= 0) throw new Error('workspace-id must be a positive integer')
   if (command === 'import') {
+    rejectUnknownFlags(flags, ['file', 'source', 'workspace-id', 'workspace', 'apply', 'dry-run', 'json'])
     const apply = flags.apply === true
     const dryRun = flags['dry-run'] === true
     if (apply && dryRun) throw new Error('--apply and --dry-run are mutually exclusive')
-    return { command, mode: apply ? 'apply' : 'dry-run', file: String(flags.file ?? 'docs/ai/workflows/mission-control/workflow-contract.yaml'), workspaceId }
+    const workspaceId = parseOptionalWorkspaceId(flags)
+    return {
+      command,
+      mode: apply ? 'apply' : 'dry-run',
+      file: resolveImportFileFlag(flags),
+      ...(workspaceId === undefined ? {} : { workspaceId }),
+    }
   }
   if (command === 'export') {
-    return { command, output: String(flags.output ?? 'docs/ai/workflows/mission-control/exports/workflow-contract.md'), workspaceId }
+    rejectUnknownFlags(flags, ['output', 'workspace-id', 'workspace', 'family', 'json'])
+    return {
+      command,
+      output: String(flags.output ?? DEFAULT_WORKFLOW_CONTRACT_EXPORT_PATH),
+      workspaceId: parseWorkspaceId(flags),
+      family: parseFamily(flags.family),
+    }
   }
   if (command === 'recover') {
+    rejectUnknownFlags(flags, ['workspace-id', 'workspace', 'family', 'snapshot', 'apply', 'dry-run', 'json'])
+    if (flags.snapshot !== undefined && flags.snapshot !== 'latest') throw new Error('snapshot must be latest')
     const apply = flags.apply === true
     const dryRun = flags['dry-run'] === true
     if (apply && dryRun) throw new Error('--apply and --dry-run are mutually exclusive')
-    return { command, mode: apply ? 'apply' : 'dry-run', workspaceId }
+    return {
+      command,
+      mode: apply ? 'apply' : 'dry-run',
+      workspaceId: parseWorkspaceId(flags),
+      family: parseFamily(flags.family),
+    }
   }
   throw new Error('Usage: pnpm workflow-contract <import|export|recover> [--file path] [--dry-run|--apply]')
 }
@@ -48,6 +67,43 @@ function parseFlags(args: string[]): Record<string, string | boolean> {
   return flags
 }
 
+function rejectUnknownFlags(flags: Record<string, string | boolean>, allowed: string[]): void {
+  const allowedSet = new Set(allowed)
+  for (const key of Object.keys(flags)) {
+    if (!allowedSet.has(key)) throw new Error(`Unknown flag --${key}`)
+  }
+}
+
+function parseWorkspaceId(flags: Record<string, string | boolean>): number {
+  return parseOptionalWorkspaceId(flags) ?? 1
+}
+
+function parseOptionalWorkspaceId(flags: Record<string, string | boolean>): number | undefined {
+  const value = flags['workspace-id'] ?? flags.workspace
+  if (value == null) return undefined
+  if (value === true) throw new Error('workspace-id must be a positive integer')
+  const workspaceId = Number(value)
+  if (!Number.isInteger(workspaceId) || workspaceId <= 0) throw new Error('workspace-id must be a positive integer')
+  return workspaceId
+}
+
+function parseFamily(value: string | boolean | undefined): string {
+  if (value === undefined) return DEFAULT_WORKFLOW_CONTRACT_FAMILY
+  if (value === true || value !== DEFAULT_WORKFLOW_CONTRACT_FAMILY) throw new Error(`family must be ${DEFAULT_WORKFLOW_CONTRACT_FAMILY}`)
+  return value
+}
+
+function resolveImportFileFlag(flags: Record<string, string | boolean>): string {
+  const explicitFile = flags.file
+  if (explicitFile != null && explicitFile !== true) return String(explicitFile)
+  const source = flags.source
+  if (source != null && source !== true) {
+    const sourcePath = String(source)
+    return /\.ya?ml$/i.test(sourcePath) ? sourcePath : join(sourcePath, 'workflow-contract.yaml')
+  }
+  return 'docs/ai/workflows/mission-control/workflow-contract.yaml'
+}
+
 async function main(): Promise<number> {
   try {
     const parsed = parseWorkflowContractCliArgs(process.argv.slice(2))
@@ -60,18 +116,18 @@ async function main(): Promise<number> {
     const db = openWorkflowContractDatabase()
     if (parsed.command === 'import') {
       const contract = loadWorkflowContractFromFile(parsed.file)
-      const result = importWorkflowContract(db, { ...contract, workspace_id: parsed.workspaceId }, { mode: parsed.mode, sourcePath: parsed.file })
+      const result = importWorkflowContract(db, { ...contract, workspace_id: parsed.workspaceId ?? contract.workspace_id }, { mode: parsed.mode, sourcePath: parsed.file })
       console.log(JSON.stringify(result, null, 2))
       return result.ok ? 0 : 3
     }
     if (parsed.command === 'export') {
-      const result = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: parsed.workspaceId })
+      const result = exportWorkflowContractMarkdown(db, { family: parsed.family, workspaceId: parsed.workspaceId, exportPath: parsed.output })
       mkdirSync(dirname(parsed.output), { recursive: true })
       writeFileSync(parsed.output, result.markdown)
-      console.log(JSON.stringify({ ok: true, output: parsed.output, contract_hash: result.contract_hash }, null, 2))
+      console.log(JSON.stringify({ ok: true, output: parsed.output, contract_hash: result.contract_hash, diagnostics_run_id: result.diagnostics_run_id }, null, 2))
       return 0
     }
-    const result = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: parsed.workspaceId, mode: parsed.mode })
+    const result = recoverLastKnownGood(db, { family: parsed.family, workspaceId: parsed.workspaceId, mode: parsed.mode })
     console.log(JSON.stringify(result, null, 2))
     return result.ok ? 0 : 3
   } catch (error) {

@@ -57,6 +57,13 @@ function mockFetch(saveResponse?: { ok: boolean; body: unknown }) {
     }
     if (url.startsWith('/api/workflow-contracts/diagnostics')) {
       return Response.json({
+        last_known_good_available: true,
+        last_successful_apply: {
+          run_id: 2,
+          snapshot_id: 7,
+          canonical_object_hash: 'workflow-contract-hash-v1:sha256:lkg',
+          created_at: '2026-05-05T00:00:00Z',
+        },
         runs: [{
           id: 1,
           mode: 'import_dry_run',
@@ -180,6 +187,8 @@ describe('OrchestrationBar workflow-template chain fields', () => {
     expect(screen.getByText('import_dry_run')).toBeInTheDocument()
     expect(screen.getByText('UNKNOWN_TEMPLATE_VARIABLE')).toBeInTheDocument()
     expect(screen.getByText('[REDACTED]')).toBeInTheDocument()
+    expect(screen.getByText('Last known good: available')).toBeInTheDocument()
+    expect(screen.getByText('Last successful apply: run 2')).toBeInTheDocument()
     expect(screen.queryByText(/sk-test|hunter2|secret-value/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Apply Import|Dispatch|Governance Override/)).not.toBeInTheDocument()
   })

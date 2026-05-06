@@ -25,7 +25,7 @@ describe('/api/workflow-contracts/diagnostics', () => {
 
   it('returns read-only workflow contract diagnostics for a workspace', async () => {
     const db = makeWorkflowDb()
-    importWorkflowContract(db, makeContract(), { mode: 'dry-run', sourcePath: 'contract.yaml' })
+    importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
     mocks.getDatabase.mockReturnValue(db)
 
     const { GET } = await import('./route')
@@ -37,8 +37,13 @@ describe('/api/workflow-contracts/diagnostics', () => {
     expect(body.runs[0]).toMatchObject({
       family: 'mission-control',
       workspace_id: 1,
-      mode: 'import_dry_run',
-      mutation_status: 'dry_run',
+      mode: 'import_apply',
+      mutation_status: 'applied',
+    })
+    expect(body.last_known_good_available).toBe(true)
+    expect(body.last_successful_apply).toMatchObject({
+      snapshot_id: 1,
+      canonical_object_hash: expect.stringMatching(/^workflow-contract-hash-v1:sha256:/),
     })
     expect(JSON.stringify(body)).not.toMatch(/apply_import|dispatch|governance_override/)
     db.close()
@@ -49,5 +54,15 @@ describe('/api/workflow-contracts/diagnostics', () => {
     const { GET } = await import('./route')
     const response = await GET(request())
     expect(response.status).toBe(401)
+  })
+
+  it('rejects malformed workspace ids instead of silently falling back', async () => {
+    mocks.getDatabase.mockReturnValue(makeWorkflowDb())
+    const { GET } = await import('./route')
+    const response = await GET(request('/api/workflow-contracts/diagnostics?workspace_id=abc'))
+    const body = await response.json()
+
+    expect(response.status).toBe(400)
+    expect(body.error).toMatch(/workspace_id/i)
   })
 })

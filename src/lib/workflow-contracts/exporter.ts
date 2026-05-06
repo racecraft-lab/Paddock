@@ -1,3 +1,5 @@
+import { createWorkflowContractRun } from './diagnostics.ts'
+import { isRuntimeTemplateEnabled, isWorkflowContractOwned } from './diff.ts'
 import { redactDetails } from './errors.ts'
 import { computeContractHash, computeTemplateHashes } from './hash.ts'
 import { selectOwnedRuntimeTemplates, selectRuntimeTemplates } from './importer.ts'
@@ -6,8 +8,8 @@ import type Database from 'better-sqlite3'
 
 export function exportWorkflowContractMarkdown(
   db: Database.Database,
-  options: { family: string; workspaceId: number }
-): { markdown: string; contract: WorkflowContract; contract_hash: string } {
+  options: { family: string; workspaceId: number; exportPath?: string }
+): { markdown: string; contract: WorkflowContract; contract_hash: string; diagnostics_run_id: number } {
   const runtimeTemplates = selectRuntimeTemplates(db, options.workspaceId)
   const contract = buildExportContract(db, runtimeTemplates, options)
   const contractHash = computeContractHash(contract)
@@ -37,7 +39,16 @@ export function exportWorkflowContractMarkdown(
     lines.push('```')
     lines.push('')
   }
-  return { markdown: lines.join('\n'), contract, contract_hash: contractHash }
+  const runId = createWorkflowContractRun(db, {
+    family: options.family,
+    workspaceId: options.workspaceId,
+    mode: 'export',
+    status: 'success',
+    mutationStatus: 'not_mutated',
+    ...(options.exportPath === undefined ? {} : { exportPath: options.exportPath }),
+    contractHash,
+  })
+  return { markdown: lines.join('\n'), contract, contract_hash: contractHash, diagnostics_run_id: runId }
 }
 
 function buildExportContract(
@@ -58,7 +69,7 @@ function buildExportContract(
 
   const bySlug = new Map<string, RuntimeWorkflowTemplate>()
   for (const row of runtimeTemplates) {
-    if (row.workspace_id === options.workspaceId && row.slug) bySlug.set(row.slug, row)
+    if (row.workspace_id === options.workspaceId && row.slug && isWorkflowContractOwned(row) && isRuntimeTemplateEnabled(row)) bySlug.set(row.slug, row)
   }
   const seen = new Set<string>()
   const fromSnapshot: WorkflowContractTemplate[] = []
@@ -69,7 +80,7 @@ function buildExportContract(
     fromSnapshot.push(overlayRuntimeFields(template, row))
   }
   const runtimeOnly = runtimeTemplates
-    .filter(row => row.slug && row.created_by === 'workflow-contract' && !seen.has(row.slug))
+    .filter(row => row.slug && isWorkflowContractOwned(row) && isRuntimeTemplateEnabled(row) && !seen.has(row.slug))
     .map(runtimeToTemplate)
   return {
     ...snapshot,

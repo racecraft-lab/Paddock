@@ -1,4 +1,5 @@
 import { createWorkflowContractRun } from './diagnostics.ts'
+import { isRuntimeTemplateEnabled } from './diff.ts'
 import { upsertTemplate } from './importer.ts'
 import type { RuntimeWorkflowTemplate, WorkflowContractTemplate } from './types.ts'
 import type Database from 'better-sqlite3'
@@ -48,7 +49,7 @@ export function recoverLastKnownGood(
 
   const canonicalSlugs = parseCanonicalTemplateSlugs(snapshot.canonical_json)
   const rows = (JSON.parse(snapshot.runtime_templates_json) as RuntimeWorkflowTemplate[])
-    .filter(row => row.slug && (canonicalSlugs.has(row.slug) || row.created_by === 'workflow-contract'))
+    .filter(row => row.slug && canonicalSlugs.has(row.slug) && isRuntimeTemplateEnabled(row))
   const applyRecovery = db.transaction(() => {
     for (const row of rows) {
       if (!row.slug) continue

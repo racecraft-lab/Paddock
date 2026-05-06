@@ -75,12 +75,12 @@ export interface RuntimeWorkflowTemplate {
 
 export interface WorkflowContractError {
   code: string
-  manifest_path?: string
-  canonical_model_path?: string
-  template_slug?: string
+  manifest_path?: string | undefined
+  canonical_model_path?: string | undefined
+  template_slug?: string | undefined
   message: string
   remediation_hint: string
-  details?: string
+  details?: string | undefined
 }
 
 export interface WorkflowContractDiff {
@@ -89,6 +89,7 @@ export interface WorkflowContractDiff {
   disable: RuntimeWorkflowTemplate[]
   unchanged: WorkflowContractTemplate[]
   unrelated: RuntimeWorkflowTemplate[]
+  conflicts: RuntimeWorkflowTemplate[]
 }
 
 export interface WorkflowContractImportOptions {

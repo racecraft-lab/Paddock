@@ -1,5 +1,13 @@
 import type { WorkflowContractError } from './types.ts'
 
+interface WorkflowContractErrorOptions {
+  manifest_path?: string | undefined
+  canonical_model_path?: string | undefined
+  template_slug?: string | undefined
+  remediation_hint?: string | undefined
+  details?: unknown
+}
+
 const SECRET_PATTERNS: RegExp[] = [
   /\bsk-[A-Za-z0-9_-]{8,}\b/g,
   /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g,
@@ -24,7 +32,7 @@ export function redactDetails(value: unknown, maxLength = 512): string {
 export function workflowContractError(
   code: string,
   message: string,
-  options: Partial<WorkflowContractError> = {}
+  options: WorkflowContractErrorOptions = {}
 ): WorkflowContractError {
   const error: WorkflowContractError = {
     code,
