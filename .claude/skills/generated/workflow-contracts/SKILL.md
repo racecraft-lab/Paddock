@@ -1,11 +1,11 @@
 ---
 name: workflow-contracts
-description: "Skill for the Workflow-contracts area of mission-control. 48 symbols across 11 files."
+description: "Skill for the Workflow-contracts area of mission-control. 51 symbols across 11 files."
 ---
 
 # Workflow-contracts
 
-48 symbols | 11 files | Cohesion: 84%
+51 symbols | 11 files | Cohesion: 84%
 
 ## When to Use
 
@@ -21,11 +21,11 @@ description: "Skill for the Workflow-contracts area of mission-control. 48 symbo
 | `src/lib/workflow-contracts/validator.ts` | validateWorkflowContract, validateTemplate, validateVariables, validateTracker, validateStringArray (+2) |
 | `src/lib/workflow-contracts/hash.ts` | sha256, stableStringify, computeContractHash, computeTemplateHashes, stabilize (+2) |
 | `src/lib/workflow-contracts/exporter.ts` | exportWorkflowContractMarkdown, buildExportContract, readLatestSnapshot, overlayRuntimeFields, runtimeToTemplate (+1) |
-| `src/lib/workflow-contracts/recovery.ts` | recoverLastKnownGood, tx, runtimeToTemplate, parseJson |
+| `src/lib/workflow-contracts/recovery.ts` | recoverLastKnownGood, applyRecovery, parseCanonicalTemplateSlugs, runtimeToTemplate, parseJson |
+| `src/lib/workflow-contracts/importer.ts` | upsertTemplate, importWorkflowContract, selectRuntimeTemplates, selectOwnedRuntimeTemplates |
+| `src/lib/workflow-contracts/diff.ts` | diffWorkflowTemplates, isWorkflowContractOwned, templateMatchesRuntime, parseJson |
 | `src/lib/workflow-contracts/yaml-loader.ts` | loadWorkflowContractFromFile, loadWorkflowContractFromString, rejectUnsafeYamlSyntax, normalizePromptLineEndings |
-| `src/lib/workflow-contracts/importer.ts` | upsertTemplate, importWorkflowContract, selectRuntimeTemplates |
 | `src/lib/workflow-contracts/diagnostics.ts` | createWorkflowContractRun, countDiff, recordWorkflowContractErrors |
-| `src/lib/workflow-contracts/diff.ts` | diffWorkflowTemplates, templateMatchesRuntime, parseJson |
 | `src/lib/workflow-contracts/errors.ts` | workflowContractError, redactDetails |
 
 ## Entry Points
@@ -52,16 +52,16 @@ Start here when exploring this area:
 | `exportWorkflowContractMarkdown` | Function | `src/lib/workflow-contracts/exporter.ts` | 6 |
 | `redactDetails` | Function | `src/lib/workflow-contracts/errors.ts` | 9 |
 | `recoverLastKnownGood` | Function | `src/lib/workflow-contracts/recovery.ts` | 5 |
-| `tx` | Function | `src/lib/workflow-contracts/recovery.ts` | 43 |
-| `upsertTemplate` | Function | `src/lib/workflow-contracts/importer.ts` | 91 |
+| `applyRecovery` | Function | `src/lib/workflow-contracts/recovery.ts` | 51 |
+| `upsertTemplate` | Function | `src/lib/workflow-contracts/importer.ts` | 96 |
 | `createWorkflowContractRun` | Function | `src/lib/workflow-contracts/diagnostics.ts` | 18 |
 | `importWorkflowContract` | Function | `src/lib/workflow-contracts/importer.ts` | 7 |
 | `selectRuntimeTemplates` | Function | `src/lib/workflow-contracts/importer.ts` | 87 |
+| `selectOwnedRuntimeTemplates` | Function | `src/lib/workflow-contracts/importer.ts` | 91 |
 | `diffWorkflowTemplates` | Function | `src/lib/workflow-contracts/diff.ts` | 3 |
+| `isWorkflowContractOwned` | Function | `src/lib/workflow-contracts/diff.ts` | 41 |
 | `recordWorkflowContractErrors` | Function | `src/lib/workflow-contracts/diagnostics.ts` | 43 |
 | `parseWorkflowContractCliArgs` | Function | `scripts/workflow-contracts/workflow-contract-cli.ts` | 10 |
-| `loadWorkflowContractFromFile` | Function | `src/lib/workflow-contracts/yaml-loader.ts` | 4 |
-| `loadWorkflowContractFromString` | Function | `src/lib/workflow-contracts/yaml-loader.ts` | 8 |
 
 ## How to Explore
 

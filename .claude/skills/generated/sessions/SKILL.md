@@ -1,11 +1,11 @@
 ---
 name: sessions
-description: "Skill for the Sessions area of mission-control. 41 symbols across 13 files."
+description: "Skill for the Sessions area of mission-control. 50 symbols across 13 files."
 ---
 
 # Sessions
 
-41 symbols | 13 files | Cohesion: 67%
+50 symbols | 13 files | Cohesion: 67%
 
 ## When to Use
 
@@ -17,14 +17,14 @@ description: "Skill for the Sessions area of mission-control. 41 symbols across 
 
 | File | Symbols |
 |------|---------|
-| `src/app/api/sessions/route.ts` | GET, mapGatewaySessions, getLocalClaudeSessions, getLocalCodexSessions, getLocalHermesSessions (+7) |
+| `src/app/api/sessions/route.ts` | POST, DELETE, GET, mapGatewaySessions, getLocalClaudeSessions (+7) |
+| `src/lib/openclaw-gateway.ts` | parseGatewayJsonOutput, formatGatewayError, formatGatewayFrameError, buildGatewayWebSocketUrl, unwrapGatewayResponsePayload (+6) |
 | `src/lib/scheduler.ts` | getSettingNumber, runBackup, runCleanup, runHeartbeatCheck, initScheduler (+3) |
 | `src/lib/task-dispatch.ts` | syncAndEscalateIfFailed, requeueStaleTasks, scoreAgentForTask, autoRouteInboxTasks |
 | `src/lib/claude-sessions.ts` | clampTimestamp, parseSessionFile, scanClaudeSessions, syncClaudeSessions |
 | `src/lib/schedule-parser.ts` | isCronDue, matchesCronField |
 | `src/lib/recurring-tasks.ts` | formatDateSuffix, spawnRecurringTasks |
 | `src/lib/codex-sessions.ts` | listRecentCodexSessionFiles, scanCodexSessions |
-| `src/lib/openclaw-gateway.ts` | parseGatewayJsonOutput, callOpenClawGateway |
 | `src/lib/webhooks.ts` | processWebhookRetries |
 | `src/lib/skill-sync.ts` | syncSkillsFromDisk |
 
@@ -54,14 +54,14 @@ Start here when exploring this area:
 | `syncClaudeSessions` | Function | `src/lib/claude-sessions.ts` | 273 |
 | `syncAgentsFromConfig` | Function | `src/lib/agent-sync.ts` | 288 |
 | `POST` | Function | `src/app/api/claude/sessions/route.ts` | 90 |
-| `scanCodexSessions` | Function | `src/lib/codex-sessions.ts` | 210 |
-| `GET` | Function | `src/app/api/sessions/route.ts` | 14 |
 | `parseGatewayJsonOutput` | Function | `src/lib/openclaw-gateway.ts` | 39 |
+| `unwrapGatewayResponsePayload` | Function | `src/lib/openclaw-gateway.ts` | 97 |
+| `callOpenClawGatewayViaWebSocket` | Function | `src/lib/openclaw-gateway.ts` | 137 |
+| `finishReject` | Function | `src/lib/openclaw-gateway.ts` | 154 |
+| `finishResolve` | Function | `src/lib/openclaw-gateway.ts` | 165 |
+| `timer` | Function | `src/lib/openclaw-gateway.ts` | 176 |
 | `callOpenClawGateway` | Function | `src/lib/openclaw-gateway.ts` | 304 |
 | `POST` | Function | `src/app/api/sessions/route.ts` | 47 |
-| `DELETE` | Function | `src/app/api/sessions/route.ts` | 131 |
-| `POST` | Function | `src/app/api/sessions/[id]/control/route.ts` | 10 |
-| `syncAndEscalateIfFailed` | Function | `src/lib/task-dispatch.ts` | 165 |
 
 ## Execution Flows
 
@@ -81,13 +81,13 @@ Start here when exploring this area:
 | Area | Connections |
 |------|-------------|
 | [id] | 25 calls |
-| Cluster_213 | 3 calls |
-| Aggregate | 2 calls |
+| Cluster_218 | 4 calls |
+| Aggregate | 3 calls |
 | Cluster_126 | 2 calls |
 | Cluster_127 | 2 calls |
+| Cluster_219 | 2 calls |
 | Cluster_102 | 1 calls |
 | Cluster_142 | 1 calls |
-| Scheduler | 1 calls |
 
 ## How to Explore
 
