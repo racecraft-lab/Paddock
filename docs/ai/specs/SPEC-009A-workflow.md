@@ -46,7 +46,7 @@ spec.
 | Clarify | `$speckit-clarify` | Complete | Resolved validation package, YAML subset, hash envelope, export path, LKG recovery, diagnostics persistence, UI boundary, and cross-spec governance guardrails |
 | Plan | `$speckit-plan` | Complete | Created plan, research, data model, CLI/schema/diagnostics contracts, quickstart, and Codex agent-context update; G3 PASS with 0 markers |
 | Checklist | `$speckit-checklist` | Complete | Generated 4 focused domain checklists with 24 items each; 0 gaps; G4 PASS |
-| Tasks | `$speckit-tasks` | Pending | Generate ordered tasks with test-first coverage |
+| Tasks | `$speckit-tasks` | Complete | Generated 65 dependency-ordered tasks across 9 phases with 25 parallel opportunities; G5 PASS |
 | Analyze | `$speckit-analyze` | Pending | Resolve cross-artifact gaps before implementation |
 | Implement | `$speckit-implement` | Pending | Ship tooling, diagnostics, docs, tests, and status updates |
 
@@ -604,10 +604,10 @@ $speckit-tasks
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 65 |
+| Phases | 9 |
+| Parallel Opportunities | 25 |
+| User Stories Covered | US1, US2, US3, US4, US5, US6 |
 
 ---
 
