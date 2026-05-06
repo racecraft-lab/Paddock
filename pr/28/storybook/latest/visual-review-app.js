@@ -1202,7 +1202,11 @@ import {
         y: event.clientY,
       }
       stage.dataset.panning = 'true'
-      stage.setPointerCapture?.(event.pointerId)
+      try {
+        stage.setPointerCapture?.(event.pointerId)
+      } catch {
+        // Pointer capture can be unavailable for synthetic pointer events.
+      }
       event.preventDefault()
     })
 
@@ -1215,10 +1219,15 @@ import {
 
     const stopPan = (event) => {
       if (!drag || drag.id !== event.pointerId) return
-      stage.releasePointerCapture?.(event.pointerId)
-      drag = null
-      delete stage.dataset.panning
-      updateStagePanState()
+      try {
+        stage.releasePointerCapture?.(event.pointerId)
+      } catch {
+        // Continue cleanup even if capture was not active.
+      } finally {
+        drag = null
+        delete stage.dataset.panning
+        updateStagePanState()
+      }
     }
 
     stage.addEventListener('pointerup', stopPan)
