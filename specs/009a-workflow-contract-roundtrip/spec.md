@@ -5,6 +5,34 @@
 **Status**: Draft  
 **Input**: User description: "Create a specification for RC Factory Phase 8A in Mission Control: a process-only workflow contract roundtrip slice that defines repo-owned workflow contract files, import/export commands, validation rules, parity hashes, last-known-good behavior, and diagnostics without running the Mission Control self-hosting pilot."
 
+## Clarifications
+
+### Session 2026-05-06 - Contract Format And Validation Stack
+
+- Q: Which YAML parser and pin policy are authoritative? A: SPEC-009A uses the existing lockfile-proven `yaml@2.8.2` package as an exact direct production dependency, not a transitive import and not a caret range.
+- Q: What YAML source shape is accepted? A: Each manifest is one YAML 1.2 document rooted at a mapping with `contract_version`, `schema_version`, `family`, optional tracker metadata, and a `templates` list; multi-document streams, non-mapping roots, duplicate keys, custom tags, anchors, aliases, and merge keys fail before canonical model construction.
+- Q: How are prompt bodies represented for stable roundtrip behavior? A: Prompt bodies must be authored as literal YAML block scalars (`|` or `|-`); folded block scalars (`>`) and plain/quoted multi-line prompt bodies fail validation, and canonical prompt hashing uses the parsed prompt text after CRLF-to-LF normalization.
+- Q: Which schema-validation profile applies? A: Contract model validation reuses the existing AJV 8 strict profile: `strict: true`, `validateSchema: true`, `$data: false`, `validateFormats: false`, `allErrors: false`, `useDefaults: false`, `coerceTypes: false`, `removeAdditional: false`, and `addUsedSchema: false`; unsupported schema keywords, custom formats, default insertion, coercion, and data mutation fail closed.
+- Q: Where is the TypeScript object-model boundary? A: YAML parser output remains untrusted until copied into a typed canonical workflow-contract model; only that canonical model may drive validation, diffing, import, export, and hashing, and governance/concurrency/retry/sandbox declarations remain inert data for later specs to enforce.
+
+### Session 2026-05-06 - Import, Export, Hashes, And Recovery
+
+- Q: How do dry-run and apply behave? A: Import dry-run is the default and never mutates runtime templates; apply requires an explicit `--apply` mode, is mutually exclusive with `--dry-run`, and returns deterministic exit codes for success, usage/config errors, validation failures, and unexpected storage or I/O failures.
+- Q: What is the mutation boundary? A: Apply validates and computes the full diff before mutation, then performs all owned-template upserts, disables, diagnostics writes, and last-known-good snapshot writes in one SQLite transaction; if any statement fails, no partial apply is visible.
+- Q: What identifies an owned runtime template? A: The contract projects each template to the existing `workflow_templates` identity of workspace plus template slug; only templates within the declared contract family and ownership scope are created, updated, disabled, or left unchanged, and unrelated templates are preserved.
+- Q: What is the canonical hash shape? A: Parity hashes use a versioned `workflow-contract-hash-v1` envelope and SHA-256 over stable sorted JSON of the typed canonical model, with separate per-template routing-rule and output-schema hashes; timestamps, database row ids, diagnostics run ids, absolute local paths, and Markdown bytes are excluded.
+- Q: Where does Markdown export go? A: The default generated review artifact is `docs/ai/workflows/mission-control/exports/workflow-contract.md`; operators may override the output path, but Markdown remains non-canonical and cannot be imported.
+- Q: How does last-known-good recovery work? A: Every successful apply records the canonical snapshot reference, parity hashes, source paths, and a deterministic recovery command; recovery is operator-triggered and can dry-run or explicitly apply the last-known-good snapshot, but failed reloads never replace it.
+
+### Session 2026-05-06 - Diagnostics, UI Boundary, And Cross-Spec Governance
+
+- Q: What diagnostics persistence shape is reusable beyond SPEC-009A? A: Persistence uses generic workflow-contract tables: `workflow_contract_runs` for run summaries, `workflow_contract_run_errors` for filterable validation errors, and `workflow_contract_snapshots` for last-known-good canonical snapshots; names must not include `spec_009a`.
+- Q: What migration slot is reserved for diagnostics? A: If diagnostics persistence requires schema, use additive migration `070_workflow_contract_diagnostics` with `docs/migrations/rollback-M70.sql`, unless a concurrent merge takes M70 first and the migration is rebased per the repository migration reservation policy.
+- Q: What does the existing Orchestration/Workflows surface show? A: A diagnostics-only Workflow Contracts view shows source paths, family, mode, status, template counts, diff counts, validation errors grouped by manifest/template/code, parity hashes, last successful apply, last-known-good availability, recovery command, and export artifact path.
+- Q: What can the UI mutate? A: SPEC-009A UI is read-only diagnostics plus copy/open affordances for commands and artifacts; it does not edit manifests, apply imports, launch workflows, dispatch tasks, or acknowledge governance overrides.
+- Q: How are governance, concurrency, retry, sandbox, and adapter declarations handled? A: SPEC-009A validates their shape and roundtrips them as policy data only; it never invokes the resource-governance evaluator, scheduler, GitHub ingest/sync, task dispatch, retry engine, runner launch, sandbox lifecycle, or harness adapter APIs.
+- Q: What must operator-visible failures contain? A: Every failure carries a stable code, manifest path, canonical model path, template slug when available, concise remediation hint, mutation status, and redacted/truncated details so prompt bodies or secrets are not exposed in diagnostics.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Preview Contract Changes (Priority: P1)
@@ -144,8 +172,28 @@ As a future runtime implementer, I can rely on provider-neutral capabilities, ad
 - **FR-028**: System MUST show validation errors, contract diffs, source paths, template counts, parity hashes, last-known-good status, and last successful apply state in diagnostics.
 - **FR-029**: System MUST leave existing workflow template behavior unchanged unless an operator explicitly runs import apply mode.
 - **FR-030**: System MUST NOT run product-line seed, GitHub issue ingestion, claim or reconciliation work, dispatch, retry execution, auto-merge, runner launch, sandbox lifecycle, harness adapter work, visual editor work, or the Mission Control self-hosting pilot as part of SPEC-009A.
-- **FR-031**: Planning MUST confirm a direct pinned YAML parser choice for syntax and loading before implementation proceeds.
+- **FR-031**: System MUST declare `yaml@2.8.2` as an exact direct production dependency for YAML syntax and loading before implementation proceeds.
 - **FR-032**: System MUST NOT introduce a second schema-validation stack for the canonical workflow-contract model.
+- **FR-033**: System MUST reject multi-document YAML streams, non-mapping document roots, duplicate mapping keys, custom tags, anchors, aliases, and merge keys before constructing the canonical workflow-contract model.
+- **FR-034**: System MUST require prompt bodies to be literal YAML block scalars and reject folded, plain, or quoted multi-line prompt bodies for contract-owned workflow templates.
+- **FR-035**: System MUST normalize prompt text line endings to LF before canonical hashing while preserving all other parsed prompt text.
+- **FR-036**: System MUST reuse the existing AJV 8 strict validation profile without enabling data references, format plugins, default insertion, type coercion, additional-property removal, or schema-data mutation.
+- **FR-037**: System MUST make import dry-run the default mode and require an explicit, mutually exclusive apply mode for runtime template mutation.
+- **FR-038**: System MUST use deterministic exit codes for successful import/export/recovery, usage or configuration errors, validation failures, and unexpected storage or I/O failures.
+- **FR-039**: System MUST compute the full import diff before mutation and perform all apply changes, diagnostics writes, and last-known-good snapshot writes inside one SQLite transaction.
+- **FR-040**: System MUST treat workspace plus template slug as the runtime upsert identity for contract-owned templates.
+- **FR-041**: System MUST compute canonical parity hashes from a versioned SHA-256 envelope over stable sorted JSON of the typed canonical model, excluding timestamps, database row ids, diagnostics run ids, absolute local paths, and Markdown bytes.
+- **FR-042**: System MUST compute separate stable per-template hashes for routing rules and output schemas.
+- **FR-043**: System MUST export the default Markdown review artifact to `docs/ai/workflows/mission-control/exports/workflow-contract.md` unless the operator provides an explicit output path.
+- **FR-044**: System MUST record a deterministic operator recovery command with every successful last-known-good snapshot.
+- **FR-045**: System MUST allow last-known-good recovery to run in dry-run mode before explicit apply mode.
+- **FR-046**: System MUST persist reusable workflow-contract run summaries in a generic diagnostics table that is not named for SPEC-009A.
+- **FR-047**: System MUST persist workflow-contract validation errors in a filterable generic diagnostics table linked to the run summary.
+- **FR-048**: System MUST persist last-known-good canonical snapshots in a generic workflow-contract snapshot table linked to successful apply runs.
+- **FR-049**: Diagnostics schema, if added, MUST use additive migration `070_workflow_contract_diagnostics` and ship a matching `docs/migrations/rollback-M70.sql`, unless migration-id collision requires a documented rebase.
+- **FR-050**: Workflow-contract diagnostics UI MUST be read-only for SPEC-009A and MUST NOT apply imports, edit manifests, launch workflows, dispatch tasks, or grant governance overrides.
+- **FR-051**: System MUST NOT invoke the resource-governance evaluator, scheduler, GitHub ingest or sync, task dispatch, retry engine, runner launch, sandbox lifecycle, or harness adapter APIs during validation, import, export, diagnostics, or recovery.
+- **FR-052**: Operator-visible failures MUST include stable error code, manifest path, canonical model path, template slug when available, remediation hint, mutation status, and redacted or truncated details.
 
 ### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
 

@@ -42,8 +42,8 @@ spec.
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Prerequisites + Status Sync | `$speckit-autopilot` startup | Complete | Archive Sweep cleanup disabled safely; GitNexus rebuilt with skills + embeddings; dependencies installed; `pnpm typecheck` and `pnpm lint` passed |
-| Specify | `$speckit-specify` | Complete | Generated spec with 32 FRs, 6 user stories, 12 acceptance scenarios, 8 SCs; G1 PASS with 0 markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve validation package, canonical hash envelope, diagnostics persistence, export path |
+| Specify | `$speckit-specify` | Complete | Generated base spec with 32 FRs, 6 user stories, 12 acceptance scenarios, 8 SCs; G1 PASS with 0 markers |
+| Clarify | `$speckit-clarify` | Complete | Resolved validation package, YAML subset, hash envelope, export path, LKG recovery, diagnostics persistence, UI boundary, and cross-spec governance guardrails |
 | Plan | `$speckit-plan` | Pending | Produce technical plan, research, data model, contracts, quickstart |
 | Checklist | `$speckit-checklist` | Pending | Run 4 focused domains: data-integrity, error-handling, security, regression-safety |
 | Tasks | `$speckit-tasks` | Pending | Generate ordered tasks with test-first coverage |
@@ -364,6 +364,7 @@ self-hosting pilot.
 | Metric | Value |
 |--------|-------|
 | Functional Requirements | 32 |
+| Clarified Functional Requirements | 52 after Phase 2 |
 | User Stories | 6 |
 | Acceptance Criteria | 12 |
 | Success Criteria | 8 |
@@ -426,9 +427,13 @@ Focus on diagnostics and governance boundaries for SPEC-009A:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Contract format and validation stack | Pending | Pending |
-| 2 | Import/export/hashes/recovery | Pending | Pending |
-| 3 | Diagnostics and governance boundary | Pending | Pending |
+| 1 | Contract format and validation stack | 5 answered | Exact direct `yaml@2.8.2`; single-document YAML 1.2 mapping manifests; literal prompt block scalars only; reused AJV 8 strict profile; typed canonical model boundary with governance as inert data |
+| 2 | Import/export/hashes/recovery | 6 answered | Dry-run default and explicit apply; one SQLite transaction for apply + diagnostics + LKG; workspace plus slug upsert identity; versioned SHA-256 hash envelope; default Markdown export path; operator-triggered LKG recovery |
+| 3 | Diagnostics and governance boundary | 6 answered | Generic run/error/snapshot diagnostics tables; M70 + rollback-M70 if schema is added; read-only Workflow Contracts diagnostics; validation-only governance declarations; stable redacted failure messages |
+
+Gate G2 evidence: `validate-gate.sh G2 specs/009a-workflow-contract-roundtrip`
+reported PASS with 0 `[NEEDS CLARIFICATION]` markers. Marker scan found no
+open spec markers; workflow `Pending` rows belong to future autopilot phases.
 
 ---
 
@@ -446,7 +451,7 @@ $speckit-plan
 - App: Next.js 16 App Router, React 19, TypeScript strict mode.
 - Database: SQLite via `better-sqlite3`, synchronous transactions.
 - Validation: existing direct pinned `ajv@8.18.0` constrained strict profile;
-  direct pinned YAML parser only if needed for SPEC-009A contract loading.
+  exact direct `yaml@2.8.2` for SPEC-009A contract loading.
 - Styling: Tailwind CSS 3.
 - Package manager: pnpm only.
 - Tests: Vitest for tooling/model/import/export; Playwright only if diagnostics
