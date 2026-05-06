@@ -375,7 +375,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009A: Workflow Contract Format and Roundtrip
 
-- **Status:** Pending
+- **Status:** In Progress
 - **Priority:** P0
 - **Branch short name:** `workflow-contract-roundtrip`
 - **Dependencies:** SPEC-002A, SPEC-004, SPEC-008
