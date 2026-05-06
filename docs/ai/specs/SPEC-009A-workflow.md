@@ -720,7 +720,7 @@ For each task:
 - [x] Dry-run/apply/export quickstart is verified.
 - [x] Roadmap status updated.
 - [x] Workflow status updated.
-- [ ] Branch pushed.
+- [x] Branch pushed.
 
 ---
 
