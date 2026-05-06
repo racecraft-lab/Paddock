@@ -8,6 +8,22 @@
   "reports": [
     {
       "surface": "playwright",
+      "runId": "25448918293",
+      "runAttempt": "1",
+      "runKey": "25448918293-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25448918293",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25448918293-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/playwright/latest/",
+      "headSha": "e0a64dda00986bd3e1578d0f36f3046382efbd35",
+      "headRef": "009a-workflow-contract-roundtrip",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-06T16:59:10.376Z"
+    },
+    {
+      "surface": "playwright",
       "runId": "25447333259",
       "runAttempt": "2",
       "runKey": "25447333259-attempt-2",
@@ -199,5 +215,5 @@
       "createdAt": "2026-05-06T04:40:32.726Z"
     }
   ],
-  "updatedAt": "2026-05-06T16:47:38.899Z"
+  "updatedAt": "2026-05-06T16:59:10.376Z"
 }
