@@ -1,6 +1,6 @@
 import { redactDetails } from './errors.ts'
 import { computeContractHash, computeTemplateHashes } from './hash.ts'
-import { selectRuntimeTemplates } from './importer.ts'
+import { selectOwnedRuntimeTemplates, selectRuntimeTemplates } from './importer.ts'
 import type { RuntimeWorkflowTemplate, WorkflowContract, WorkflowContractTemplate } from './types.ts'
 import type Database from 'better-sqlite3'
 
@@ -52,7 +52,7 @@ function buildExportContract(
       version: 'workflow-contract-v1',
       workspace_id: options.workspaceId,
       allowed_variable_namespaces: ['workspace', 'task', 'operator', 'github'],
-      templates: runtimeTemplates.map(runtimeToTemplate).sort(compareTemplates),
+      templates: selectOwnedRuntimeTemplates(db, options.workspaceId).map(runtimeToTemplate).sort(compareTemplates),
     }
   }
 
@@ -69,7 +69,7 @@ function buildExportContract(
     fromSnapshot.push(overlayRuntimeFields(template, row))
   }
   const runtimeOnly = runtimeTemplates
-    .filter(row => row.slug && !seen.has(row.slug))
+    .filter(row => row.slug && row.created_by === 'workflow-contract' && !seen.has(row.slug))
     .map(runtimeToTemplate)
   return {
     ...snapshot,

@@ -48,4 +48,13 @@ describe('workflow contract exporter', () => {
     expect(exportResult.contract.templates[0]?.governance).toEqual({ budget_policy: 'advisory' })
     expect(exportResult.contract_hash).toBe(computeContractHash(contract))
   })
+
+  it('excludes unrelated same-workspace templates from generated review output', () => {
+    const db = makeWorkflowDb()
+    db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('manual', 'Manual Template', 'manual prompt', 'sonnet', 'system')
+    importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
+    const exportResult = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
+    expect(exportResult.contract.templates.map(template => template.slug)).not.toContain('manual')
+    expect(exportResult.markdown).not.toContain('Manual Template')
+  })
 })

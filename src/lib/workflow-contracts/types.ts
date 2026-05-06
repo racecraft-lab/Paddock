@@ -69,6 +69,7 @@ export interface RuntimeWorkflowTemplate {
   produces_pr?: number | boolean
   external_terminal_event?: string | null
   allow_redacted_artifacts?: number | boolean
+  created_by?: string | null
   enabled?: number | boolean
 }
 

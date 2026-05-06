@@ -1,5 +1,5 @@
 import { createWorkflowContractRun, recordWorkflowContractErrors } from './diagnostics.ts'
-import { diffWorkflowTemplates } from './diff.ts'
+import { diffWorkflowTemplates, isWorkflowContractOwned } from './diff.ts'
 import { computeContractHash } from './hash.ts'
 import { validateWorkflowContract } from './validator.ts'
 import type { RuntimeWorkflowTemplate, WorkflowContract, WorkflowContractImportOptions, WorkflowContractImportResult, WorkflowContractTemplate } from './types.ts'
@@ -61,7 +61,7 @@ export function importWorkflowContract(
           .run(contract.workspace_id, template.slug)
       }
     }
-    const runtimeJson = JSON.stringify(selectRuntimeTemplates(db, contract.workspace_id))
+    const runtimeJson = JSON.stringify(selectOwnedRuntimeTemplates(db, contract.workspace_id, contract.templates.map(template => template.slug)))
     const recoveryCommand = `pnpm workflow-contract recover --workspace-id ${String(contract.workspace_id)} --apply`
     const snapshotResult = db.prepare(`
       INSERT INTO workflow_contract_snapshots (family, workspace_id, contract_hash, canonical_json, runtime_templates_json, recovery_command)
@@ -89,6 +89,11 @@ export function selectRuntimeTemplates(db: Database.Database, workspaceId: numbe
   return db.prepare('SELECT * FROM workflow_templates WHERE workspace_id = ? ORDER BY slug ASC, id ASC').all(workspaceId) as RuntimeWorkflowTemplate[]
 }
 
+export function selectOwnedRuntimeTemplates(db: Database.Database, workspaceId: number, slugs: string[] = []): RuntimeWorkflowTemplate[] {
+  const currentSlugs = new Set(slugs)
+  return selectRuntimeTemplates(db, workspaceId).filter(row => Boolean(row.slug && (currentSlugs.has(row.slug) || isWorkflowContractOwned(row))))
+}
+
 export function upsertTemplate(db: Database.Database, workspaceId: number, template: WorkflowContractTemplate): void {
   const existing = db.prepare('SELECT id FROM workflow_templates WHERE workspace_id = ? AND slug = ?').get(workspaceId, template.slug) as { id: number } | undefined
   const params = [
@@ -111,7 +116,7 @@ export function upsertTemplate(db: Database.Database, workspaceId: number, templ
       UPDATE workflow_templates SET
         name = ?, description = ?, model = ?, task_prompt = ?, timeout_seconds = ?, agent_role = ?,
         tags = ?, output_schema = ?, routing_rules = ?, next_template_slug = ?, produces_pr = ?,
-        external_terminal_event = ?, allow_redacted_artifacts = ?, enabled = 1, updated_at = unixepoch()
+        external_terminal_event = ?, allow_redacted_artifacts = ?, enabled = 1, created_by = 'workflow-contract', updated_at = unixepoch()
       WHERE id = ?
     `).run(...params, existing.id)
   } else {

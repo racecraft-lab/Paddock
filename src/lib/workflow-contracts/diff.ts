@@ -30,10 +30,17 @@ export function diffWorkflowTemplates(contract: WorkflowContract, runtimeTemplat
   }
 
   const disable = [...bySlug.entries()]
-    .filter(([slug]) => !seen.has(slug))
+    .filter(([slug, row]) => !seen.has(slug) && isWorkflowContractOwned(row))
     .map(([, row]) => row)
+  for (const [slug, row] of bySlug.entries()) {
+    if (!seen.has(slug) && !isWorkflowContractOwned(row)) unrelated.push(row)
+  }
 
   return { create, update, disable, unchanged, unrelated }
+}
+
+export function isWorkflowContractOwned(row: RuntimeWorkflowTemplate): boolean {
+  return row.created_by === 'workflow-contract'
 }
 
 function templateMatchesRuntime(template: WorkflowContractTemplate, row: RuntimeWorkflowTemplate): boolean {

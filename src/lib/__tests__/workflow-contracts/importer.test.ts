@@ -16,12 +16,24 @@ describe('workflow contract importer', () => {
   it('apply transactionally upserts owned templates and preserves unrelated templates', () => {
     const db = makeWorkflowDb()
     db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model) VALUES (2, ?, ?, ?, ?)').run('intake', 'Unrelated', 'Keep me', 'sonnet')
+    db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('manual', 'Manual', 'Keep manual', 'sonnet', 'system')
     const result = importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
     expect(result.ok).toBe(true)
     expect(result.mutation_status).toBe('applied')
-    expect(db.prepare('SELECT COUNT(*) as count FROM workflow_templates WHERE workspace_id = 1').get()).toEqual({ count: 1 })
+    expect(db.prepare('SELECT COUNT(*) as count FROM workflow_templates WHERE workspace_id = 1').get()).toEqual({ count: 2 })
+    expect(db.prepare('SELECT enabled FROM workflow_templates WHERE workspace_id = 1 AND slug = ?').get('manual')).toEqual({ enabled: 1 })
     expect(db.prepare('SELECT name FROM workflow_templates WHERE workspace_id = 2 AND slug = ?').get('intake')).toEqual({ name: 'Unrelated' })
     expect(db.prepare('SELECT COUNT(*) as count FROM workflow_contract_snapshots').get()).toEqual({ count: 1 })
+  })
+
+  it('disables only previously imported workflow-contract templates missing from the new contract', () => {
+    const db = makeWorkflowDb()
+    db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('old-contract', 'Old Contract', 'Disable me', 'sonnet', 'workflow-contract')
+    db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('manual', 'Manual', 'Keep manual', 'sonnet', 'system')
+    const result = importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
+    expect(result.ok).toBe(true)
+    expect(db.prepare('SELECT enabled FROM workflow_templates WHERE slug = ?').get('old-contract')).toEqual({ enabled: 0 })
+    expect(db.prepare('SELECT enabled FROM workflow_templates WHERE slug = ?').get('manual')).toEqual({ enabled: 1 })
   })
 
   it('fails closed before mutation when validation fails', () => {

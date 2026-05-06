@@ -23,4 +23,52 @@ describe('workflow contract recovery', () => {
     expect(apply.ok).toBe(true)
     expect(db.prepare('SELECT COUNT(*) as count FROM workflow_templates').get()).toEqual({ count: 1 })
   })
+
+  it('does not restore unrelated same-workspace templates from workflow-contract snapshots', () => {
+    const db = makeWorkflowDb()
+    db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('manual', 'Manual Template', 'manual prompt', 'sonnet', 'system')
+    importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
+    db.prepare('DELETE FROM workflow_templates WHERE workspace_id = 1').run()
+    const apply = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'apply' })
+    expect(apply.ok).toBe(true)
+    expect(db.prepare('SELECT slug FROM workflow_templates ORDER BY slug ASC').all()).toEqual([{ slug: 'intake' }])
+  })
+
+  it('filters unrelated rows from legacy snapshots that captured all workspace templates', () => {
+    const db = makeWorkflowDb()
+    const contract = makeContract()
+    db.prepare(`
+      INSERT INTO workflow_contract_snapshots (family, workspace_id, contract_hash, canonical_json, runtime_templates_json, recovery_command)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(
+      'mission-control',
+      1,
+      'workflow-contract-hash-v1:sha256:legacy',
+      JSON.stringify(contract),
+      JSON.stringify([
+        {
+          workspace_id: 1,
+          slug: 'intake',
+          name: 'Mission Control Intake',
+          task_prompt: 'Review {{task.title}} for {{workspace.name}}.',
+          model: 'sonnet',
+          created_by: 'workflow-contract',
+        },
+        {
+          workspace_id: 1,
+          slug: 'manual',
+          name: 'Manual Template',
+          task_prompt: 'manual prompt',
+          model: 'sonnet',
+          created_by: 'system',
+        },
+      ]),
+      'pnpm workflow-contract recover --workspace-id 1 --apply'
+    )
+
+    const apply = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'apply' })
+
+    expect(apply.ok).toBe(true)
+    expect(db.prepare('SELECT slug FROM workflow_templates ORDER BY slug ASC').all()).toEqual([{ slug: 'intake' }])
+  })
 })

@@ -12,7 +12,13 @@ export function recoverLastKnownGood(
     WHERE family = ? AND workspace_id = ?
     ORDER BY created_at DESC, id DESC
     LIMIT 1
-  `).get(options.family, options.workspaceId) as { id: number; contract_hash: string; runtime_templates_json: string; recovery_command: string } | undefined
+  `).get(options.family, options.workspaceId) as {
+    id: number
+    contract_hash: string
+    canonical_json: string
+    runtime_templates_json: string
+    recovery_command: string
+  } | undefined
 
   if (!snapshot) {
     const runId = createWorkflowContractRun(db, {
@@ -40,7 +46,9 @@ export function recoverLastKnownGood(
     return { ok: true, run_id: runId, mutation_status: 'dry_run' }
   }
 
-  const rows = JSON.parse(snapshot.runtime_templates_json) as RuntimeWorkflowTemplate[]
+  const canonicalSlugs = parseCanonicalTemplateSlugs(snapshot.canonical_json)
+  const rows = (JSON.parse(snapshot.runtime_templates_json) as RuntimeWorkflowTemplate[])
+    .filter(row => row.slug && (canonicalSlugs.has(row.slug) || row.created_by === 'workflow-contract'))
   const tx = db.transaction(() => {
     for (const row of rows) {
       if (!row.slug) continue
@@ -58,6 +66,15 @@ export function recoverLastKnownGood(
     })
   })
   return { ok: true, run_id: tx(), mutation_status: 'applied' }
+}
+
+function parseCanonicalTemplateSlugs(canonicalJson: string): Set<string> {
+  try {
+    const parsed = JSON.parse(canonicalJson) as { templates?: { slug?: unknown }[] }
+    return new Set((parsed.templates ?? []).map(template => template.slug).filter((slug): slug is string => typeof slug === 'string'))
+  } catch {
+    return new Set()
+  }
 }
 
 function runtimeToTemplate(row: RuntimeWorkflowTemplate): WorkflowContractTemplate {
