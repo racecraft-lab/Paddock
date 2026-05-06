@@ -1255,7 +1255,7 @@ import {
   function bindStageWheelZoom() {
     const stage = root.querySelector('.stage')
     if (!stage) return
-    stage.addEventListener('wheel', handleStageWheelZoom, { passive: false })
+    stage.addEventListener('wheel', handleStageWheelZoom, { capture: true, passive: false })
   }
 
   function handleStageWheelZoom(event) {
@@ -1287,7 +1287,9 @@ import {
 
   function hasWheelZoomModifier(event) {
     return Boolean(
+      event.ctrlKey ||
       event.metaKey ||
+      event.getModifierState?.('Control') ||
       event.getModifierState?.('Meta') ||
       event.getModifierState?.('OS')
     )
