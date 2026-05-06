@@ -7,20 +7,20 @@
   "baseRef": "main",
   "reports": [
     {
-      "surface": "storybook",
-      "runId": "25448923152",
+      "surface": "playwright",
+      "runId": "25453979598",
       "runAttempt": "1",
-      "runKey": "25448923152-attempt-1",
-      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25448923152",
-      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25448923152-attempt-1/storybook/",
-      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/storybook/latest/",
-      "headSha": "e0a64dda00986bd3e1578d0f36f3046382efbd35",
+      "runKey": "25453979598-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25453979598",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25453979598-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/playwright/latest/",
+      "headSha": "bccd548928f4097f3f427646393938db2ba0cc88",
       "headRef": "009a-workflow-contract-roundtrip",
       "baseRef": "main",
-      "workflowName": "Visual Storybook Snapshots",
-      "workflowFile": "visual-storybook.yml",
-      "surfaceLabel": "Storybook Components",
-      "createdAt": "2026-05-06T19:02:55.727Z"
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-06T18:48:44.257Z"
     },
     {
       "surface": "storybook",
@@ -53,6 +53,22 @@
       "workflowFile": "mission-control-ui-e2e.yml",
       "surfaceLabel": "Playwright UI E2E",
       "createdAt": "2026-05-06T18:34:06.817Z"
+    },
+    {
+      "surface": "storybook",
+      "runId": "25448923152",
+      "runAttempt": "1",
+      "runKey": "25448923152-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25448923152",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25448923152-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/storybook/latest/",
+      "headSha": "e0a64dda00986bd3e1578d0f36f3046382efbd35",
+      "headRef": "009a-workflow-contract-roundtrip",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-05-06T18:21:28.694Z"
     },
     {
       "surface": "playwright",
@@ -327,5 +343,5 @@
       "createdAt": "2026-05-06T04:40:32.726Z"
     }
   ],
-  "updatedAt": "2026-05-06T19:02:55.727Z"
+  "updatedAt": "2026-05-06T18:48:44.257Z"
 }
