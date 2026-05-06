@@ -20,7 +20,7 @@
       "workflowName": "Visual Storybook Snapshots",
       "workflowFile": "visual-storybook.yml",
       "surfaceLabel": "Storybook Components",
-      "createdAt": "2026-05-06T18:57:03.089Z"
+      "createdAt": "2026-05-06T19:02:55.727Z"
     },
     {
       "surface": "storybook",
@@ -327,5 +327,5 @@
       "createdAt": "2026-05-06T04:40:32.726Z"
     }
   ],
-  "updatedAt": "2026-05-06T18:57:03.089Z"
+  "updatedAt": "2026-05-06T19:02:55.727Z"
 }
