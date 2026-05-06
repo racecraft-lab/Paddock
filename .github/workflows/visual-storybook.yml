@@ -55,6 +55,10 @@ on:
       - 'scripts/verify-visual-manifest.mjs'
       - 'regconfig*.json'
 
+concurrency:
+  group: visual-regression-pages-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   actions: read
