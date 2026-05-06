@@ -496,15 +496,17 @@ a {
 }
 
 .viewer-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
 }
 
 .snapshot-heading {
+  flex: 1 1 280px;
   min-width: 0;
 }
 
@@ -531,6 +533,8 @@ a {
 }
 
 .toolbar-controls {
+  flex: 1 1 460px;
+  min-width: min(100%, 360px);
   justify-content: flex-end;
 }
 
@@ -638,6 +642,74 @@ a {
   width: 116px;
 }
 
+.heatmap-controls {
+  min-height: 38px;
+  padding: 3px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--control);
+}
+
+.heatmap-controls.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.heatmap-toggle {
+  min-width: 116px;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.heatmap-toggle.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+.heatmap-toggle.active:hover:not(:disabled) {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+  color: var(--accent-contrast);
+}
+
+.heatmap-status {
+  min-width: 28px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel-soft);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.heatmap-toggle.active .heatmap-status {
+  border-color: rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.22);
+  color: currentColor;
+}
+
+.heatmap-intensity {
+  padding: 0 5px 0 2px;
+}
+
+.heatmap-intensity.disabled {
+  opacity: 0.5;
+}
+
+.heatmap-intensity input {
+  width: 92px;
+}
+
 .stage {
   height: calc(100vh - 188px);
   min-height: 620px;
@@ -709,12 +781,6 @@ a {
   overflow: hidden;
 }
 
-.heatmap-toggle.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
 .heatmap-frame {
   position: relative;
   display: block;
@@ -747,6 +813,7 @@ a {
   height: 100%;
   pointer-events: none;
   mix-blend-mode: normal;
+  opacity: var(--heat-map-opacity, 1);
 }
 
 .overlay-frame {

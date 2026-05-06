@@ -496,15 +496,17 @@ a {
 }
 
 .viewer-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   gap: 12px;
-  align-items: center;
+  align-items: flex-start;
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
 }
 
 .snapshot-heading {
+  flex: 1 1 280px;
   min-width: 0;
 }
 
@@ -531,6 +533,8 @@ a {
 }
 
 .toolbar-controls {
+  flex: 1 1 460px;
+  min-width: min(100%, 360px);
   justify-content: flex-end;
 }
 
