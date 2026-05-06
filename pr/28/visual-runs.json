@@ -8,6 +8,22 @@
   "reports": [
     {
       "surface": "storybook",
+      "runId": "25445185819",
+      "runAttempt": "1",
+      "runKey": "25445185819-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25445185819",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25445185819-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/storybook/latest/",
+      "headSha": "f1a8401922913a05ac4bb26a9322816b05cbe1ab",
+      "headRef": "009a-workflow-contract-roundtrip",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-05-06T15:39:21.634Z"
+    },
+    {
+      "surface": "storybook",
       "runId": "25445055281",
       "runAttempt": "1",
       "runKey": "25445055281-attempt-1",
@@ -87,5 +103,5 @@
       "createdAt": "2026-05-06T04:40:32.726Z"
     }
   ],
-  "updatedAt": "2026-05-06T15:36:12.110Z"
+  "updatedAt": "2026-05-06T15:39:21.634Z"
 }
