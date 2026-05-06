@@ -132,6 +132,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite via `better-sqlite3`. Single-process synchronous transactions through `db.transaction(() => { ... })()`. No new migrations -- relies on pre-existing M054, M057, M058. WAL mode preserves snapshot-isolated reads during the supersede transaction. (007-disposition-artifacts)
 - TypeScript 5.7 strict (existing `tsconfig.json`) + new entries in `tsconfig.spec-strict.json` for every SPEC-008-owned module (Constitution Convention J). (008-resource-governance)
 - SQLite via `better-sqlite3`, single-process, append-only ledger semantics; monthly partition tables; archive partitions written to `<MISSION_CONTROL_DATA_DIR>/archives/`. (008-resource-governance)
+- TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application + Next.js, React, Zustand, Tailwind CSS 3, `better-sqlite3`, existing direct `ajv@8.18.0`, exact direct `yaml@2.8.2` for SPEC-009A contract loading (009a-workflow-contract-roundtrip)
+- SQLite via `better-sqlite3`; existing `workflow_templates` runtime projection plus additive generic diagnostics tables in migration `070_workflow_contract_diagnostics` (009a-workflow-contract-roundtrip)
 
 ## Recent Changes
 - 008-resource-governance: Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator and observability pipeline. Migrations M65a..m + M66 (additive). Cost Tracker Governance tab with Policies/Budgets/Windows/Overrides/Diagnostics/System Health subviews. Constitution V matrix harness at `src/lib/feature-flag-matrix.ts`. axe-core baked into Playwright fixture. CI guards `scripts/spec-008/check-axe-coverage.mjs` + `scripts/spec-008/check-feature-flag-env-leak.mjs`. Flag-OFF preserves cost-tracker byte-compat (FR-305 / FR-238).

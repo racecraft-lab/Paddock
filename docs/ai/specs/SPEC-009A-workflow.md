@@ -44,7 +44,7 @@ spec.
 | Prerequisites + Status Sync | `$speckit-autopilot` startup | Complete | Archive Sweep cleanup disabled safely; GitNexus rebuilt with skills + embeddings; dependencies installed; `pnpm typecheck` and `pnpm lint` passed |
 | Specify | `$speckit-specify` | Complete | Generated base spec with 32 FRs, 6 user stories, 12 acceptance scenarios, 8 SCs; G1 PASS with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved validation package, YAML subset, hash envelope, export path, LKG recovery, diagnostics persistence, UI boundary, and cross-spec governance guardrails |
-| Plan | `$speckit-plan` | Pending | Produce technical plan, research, data model, contracts, quickstart |
+| Plan | `$speckit-plan` | Complete | Created plan, research, data model, CLI/schema/diagnostics contracts, quickstart, and Codex agent-context update; G3 PASS with 0 markers |
 | Checklist | `$speckit-checklist` | Pending | Run 4 focused domains: data-integrity, error-handling, security, regression-safety |
 | Tasks | `$speckit-tasks` | Pending | Generate ordered tasks with test-first coverage |
 | Analyze | `$speckit-analyze` | Pending | Resolve cross-artifact gaps before implementation |
@@ -483,11 +483,17 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context and execution flow |
-| `research.md` | Pending | YAML parser and canonical hash decisions |
-| `data-model.md` | Pending | Contract model and diagnostics entities |
-| `contracts/` | Pending | CLI/API/UI contracts as applicable |
-| `quickstart.md` | Pending | Operator import/export roundtrip guide |
+| `plan.md` | Complete | Technical context, strict scope, constitution gates, and post-design check |
+| `research.md` | Complete | Exact `yaml@2.8.2`, AJV strict profile, canonical hash, transaction, diagnostics, UI boundary decisions |
+| `data-model.md` | Complete | Contract model, runtime projection, diff, hash, diagnostics run/error/snapshot entities |
+| `contracts/` | Complete | CLI, YAML/canonical schema, and diagnostics API/UI contracts |
+| `quickstart.md` | Complete | Operator import/export/recovery and fail-closed fixture workflow |
+
+Gate G3 evidence: `validate-gate.sh G3 specs/009a-workflow-contract-roundtrip`
+reported PASS with 0 unresolved markers. Scope checks in `plan.md` exclude
+product-line seed, pilot dispatch, GitHub ingest/sync, scheduler dispatch,
+retry execution, runner launch, sandbox lifecycle, harness adapters, and
+governance enforcement.
 
 ---
 
