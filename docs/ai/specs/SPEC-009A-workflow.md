@@ -45,7 +45,7 @@ spec.
 | Specify | `$speckit-specify` | Complete | Generated base spec with 32 FRs, 6 user stories, 12 acceptance scenarios, 8 SCs; G1 PASS with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved validation package, YAML subset, hash envelope, export path, LKG recovery, diagnostics persistence, UI boundary, and cross-spec governance guardrails |
 | Plan | `$speckit-plan` | Complete | Created plan, research, data model, CLI/schema/diagnostics contracts, quickstart, and Codex agent-context update; G3 PASS with 0 markers |
-| Checklist | `$speckit-checklist` | Pending | Run 4 focused domains: data-integrity, error-handling, security, regression-safety |
+| Checklist | `$speckit-checklist` | Complete | Generated 4 focused domain checklists with 24 items each; 0 gaps; G4 PASS |
 | Tasks | `$speckit-tasks` | Pending | Generate ordered tasks with test-first coverage |
 | Analyze | `$speckit-analyze` | Pending | Resolve cross-artifact gaps before implementation |
 | Implement | `$speckit-implement` | Pending | Ship tooling, diagnostics, docs, tests, and status updates |
@@ -561,10 +561,10 @@ Focus on SPEC-009A requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
-| regression-safety | Pending | Pending | Pending |
+| data-integrity | 24 | 0 | FR-016..FR-026, FR-039..FR-049 |
+| error-handling | 24 | 0 | FR-010..FR-016, FR-021..FR-027, FR-038..FR-052 |
+| security | 24 | 0 | FR-003..FR-015, FR-030..FR-035, FR-041..FR-052 |
+| regression-safety | 24 | 0 | FR-016..FR-018, FR-030..FR-040, FR-045..FR-049 |
 
 ---
 
