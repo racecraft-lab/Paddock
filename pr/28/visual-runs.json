@@ -7,6 +7,22 @@
   "baseRef": "main",
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "25448923152",
+      "runAttempt": "1",
+      "runKey": "25448923152-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25448923152",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25448923152-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/storybook/latest/",
+      "headSha": "e0a64dda00986bd3e1578d0f36f3046382efbd35",
+      "headRef": "009a-workflow-contract-roundtrip",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-05-06T18:10:10.701Z"
+    },
+    {
       "surface": "playwright",
       "runId": "25452180020",
       "runAttempt": "1",
@@ -53,22 +69,6 @@
       "workflowFile": "mission-control-ui-e2e.yml",
       "surfaceLabel": "Playwright UI E2E",
       "createdAt": "2026-05-06T17:06:29.783Z"
-    },
-    {
-      "surface": "storybook",
-      "runId": "25448923152",
-      "runAttempt": "1",
-      "runKey": "25448923152-attempt-1",
-      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25448923152",
-      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25448923152-attempt-1/storybook/",
-      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/storybook/latest/",
-      "headSha": "e0a64dda00986bd3e1578d0f36f3046382efbd35",
-      "headRef": "009a-workflow-contract-roundtrip",
-      "baseRef": "main",
-      "workflowName": "Visual Storybook Snapshots",
-      "workflowFile": "visual-storybook.yml",
-      "surfaceLabel": "Storybook Components",
-      "createdAt": "2026-05-06T17:00:00.467Z"
     },
     {
       "surface": "playwright",
@@ -263,5 +263,5 @@
       "createdAt": "2026-05-06T04:40:32.726Z"
     }
   ],
-  "updatedAt": "2026-05-06T18:07:35.724Z"
+  "updatedAt": "2026-05-06T18:10:10.701Z"
 }
