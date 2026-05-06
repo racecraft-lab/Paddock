@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-06T15:40:44.840Z",
+  "updatedAt": "2026-05-06T15:49:26.348Z",
   "prs": [
     {
       "prNumber": "28",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/28/",
       "headRef": "009a-workflow-contract-roundtrip",
       "baseRef": "main",
-      "updatedAt": "2026-05-06T15:40:44.840Z",
+      "updatedAt": "2026-05-06T15:49:26.348Z",
       "latest": {
         "playwright": {
-          "runId": "25445054533",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25445054533",
+          "runId": "25445185109",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25445185109",
           "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/playwright/latest/",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25445054533-attempt-1/playwright/",
-          "updatedAt": "2026-05-06T15:40:44.840Z"
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25445185109-attempt-1/playwright/",
+          "updatedAt": "2026-05-06T15:49:26.348Z"
         },
         "storybook": {
           "runId": "25445185819",
