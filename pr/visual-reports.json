@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-05T20:09:49.660Z",
+  "updatedAt": "2026-05-06T04:40:32.726Z",
   "prs": [
+    {
+      "prNumber": "28",
+      "prTitle": "feat: implement SPEC-009A workflow contract roundtrip",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/28",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/28/",
+      "headRef": "009a-workflow-contract-roundtrip",
+      "baseRef": "main",
+      "updatedAt": "2026-05-06T04:40:32.726Z",
+      "latest": {
+        "storybook": {
+          "runId": "25416740677",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25416740677",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/28/storybook/latest/",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/28/runs/25416740677-attempt-1/storybook/",
+          "updatedAt": "2026-05-06T04:40:32.726Z"
+        }
+      }
+    },
     {
       "prNumber": "27",
       "prTitle": "docs: align factory roadmap with Symphony",
