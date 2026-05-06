@@ -55,7 +55,7 @@ import {
     syncState: embeddedReviewState || !hasReviewStateTarget() ? 'ready' : 'loading',
     theme: initialVisualReviewTheme(),
     tokenHelpOpen: false,
-    zoom: clamp(Number(localStorage.getItem(storageKey('zoom')) || 100), 50, 200),
+    zoom: 100,
   }
 
   const items = buildItems()
@@ -170,7 +170,6 @@ import {
     localStorage.setItem(storageKey('heat-map-intensity'), String(state.heatMapIntensity))
     localStorage.setItem(storageKey('mode'), state.mode)
     localStorage.setItem(storageKey('overlay'), String(state.overlay))
-    localStorage.setItem(storageKey('zoom'), String(state.zoom))
   }
 
   function reportItems(key) {

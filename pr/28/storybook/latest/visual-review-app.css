@@ -535,7 +535,7 @@ a {
 .toolbar-controls {
   flex: 1 1 460px;
   min-width: min(100%, 360px);
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .btn {
