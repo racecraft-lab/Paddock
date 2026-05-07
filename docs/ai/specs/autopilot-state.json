@@ -1,55 +1,189 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-009A-workflow.md",
-  "updated_at": "2026-05-05T23:56:07Z",
-  "active_step": "SPEC-009A setup complete",
-  "status": "Ready for autopilot",
-  "notes": [
-    "Merged-state cleanup on branch 009a-workflow-contract-roundtrip: SPEC-005, SPEC-007, and SPEC-008 are complete on main per docs/ai/rc-factory-technical-roadmap.md.",
-    "SPEC-005 workflow status was synced from stale Implement Pending to Complete after PR #23 merged as 851571f.",
-    "SPEC-008 workflow status was synced from stale Implement In Progress to Complete after PR #26 merged as bd9a693.",
-    "SPEC-008 operator-led soak, chaos, and running-instance evidence remain documented as non-blocking follow-up evidence, not active implementation.",
-    "SPEC-009A design concept and workflow are ready for autopilot on branch 009a-workflow-contract-roundtrip.",
-    "Run $speckit-autopilot docs/ai/specs/SPEC-009A-workflow.md from the dedicated worktree when ready."
-  ],
+  "workflow_file": "docs/ai/specs/SPEC-009B-workflow.md",
+  "updated_at": "2026-05-07T03:43:12Z",
+  "active_step": "Phase 2: Clarify - Preflight and Cleanup Boundary",
+  "status": "Running",
+  "active_workflow": {
+    "spec_id": "SPEC-009B",
+    "workflow_file": "docs/ai/specs/SPEC-009B-workflow.md",
+    "design_concept_file": "docs/ai/specs/SPEC-009B-design-concept.md",
+    "branch": "009b-mission-control-seed",
+    "feature_dir": "specs/009b-mission-control-seed"
+  },
   "archive_sweep": {
-    "installed_extension": "archive",
+    "archive_extension_installed": true,
+    "extension": "archive",
     "extension_release": "v1.1.0",
     "extension_source_commit": "08ee0e919a72ccb254758a2b6f51d58196490ea7",
-    "last_recorded_run_at": "2026-05-02T00:53:40Z",
-    "last_recorded_mode": "dry-run-no-cleanup",
+    "current_target": "specs/009b-mission-control-seed",
+    "completed_spec_dirs_found": [
+      "specs/005-ready-for-owner",
+      "specs/007-disposition-artifacts",
+      "specs/008-resource-governance",
+      "specs/009a-workflow-contract-roundtrip"
+    ],
+    "excluded_current_spec": "specs/009b-mission-control-seed",
+    "cleanup_mode": "provenance-only",
     "cleanup_applied": false,
     "safeToApplyCleanup": false,
-    "cleanup_policy": "Run Archive Sweep again from the active SPEC-009A workflow before applying cleanup; only apply cleanup after a clean safe base branch records archive success, merge/tree references, recovery commands, and safeToApplyCleanup=true."
+    "status": "completed",
+    "reason": "Worktree is dirty with autopilot-state.json; cleanup requires clean worktree and explicit safe cleanup gates."
   },
-  "active_workflow": {
-    "spec_id": "SPEC-009A",
-    "workflow_file": "docs/ai/specs/SPEC-009A-workflow.md",
-    "design_concept_file": "docs/ai/specs/SPEC-009A-design-concept.md",
-    "branch": "009a-workflow-contract-roundtrip"
+  "phase_0": {
+    "status": "completed",
+    "completed_at": "2026-05-07T03:37:03Z",
+    "prerequisites": {
+      "all_pass": true,
+      "branch": "009b-mission-control-seed",
+      "is_worktree": true,
+      "on_feature_branch": false,
+      "workflow_file": "docs/ai/specs/SPEC-009B-workflow.md",
+      "feature_dir": "specs/009b-mission-control-seed",
+      "mcp_unavailable": [
+        "tavily-mcp",
+        "context7",
+        "RepoPrompt"
+      ]
+    },
+    "project_commands": {
+      "stack": "nodejs",
+      "package_manager": "pnpm",
+      "build": "pnpm build",
+      "typecheck": "pnpm typecheck",
+      "lint": "pnpm lint",
+      "lint_fix": "N/A",
+      "unit_test": "pnpm test",
+      "integration_test": "pnpm test:e2e",
+      "single_file_test": "pnpm test",
+      "single_file_integration": "N/A",
+      "full_verify": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
+    },
+    "presets": {
+      "active": [],
+      "extension_registry_visible": true,
+      "hook_events_configured": 18
+    },
+    "constitution_startup_review": "Reviewed principles I-VII before Specify: zero-regression, upstream compatibility, OpenClaw adapter isolation, test-first behavior, feature-flag discipline, dependency hygiene, and additive migrations."
+  },
+  "phase_1": {
+    "status": "completed",
+    "completed_at": "2026-05-07T03:43:12Z",
+    "executor": "phase-executor:/root/spec_009b_specify",
+    "files_changed": [
+      "specs/009b-mission-control-seed/spec.md",
+      "specs/009b-mission-control-seed/checklists/requirements.md",
+      ".specify/feature.json"
+    ],
+    "metrics": {
+      "functional_requirements": 26,
+      "user_stories": 4,
+      "acceptance_scenarios": 15,
+      "success_criteria": 10,
+      "quality_checklist_complete": "16/16"
+    },
+    "gate": {
+      "id": "G1",
+      "pass": true,
+      "reason": "spec.md exists with 0 markers",
+      "markers": 0
+    },
+    "scope_notes": [
+      "No [NEEDS CLARIFICATION], [Gap], [CRITICAL], or [HIGH] markers found.",
+      "SPEC-009B remains seed-only: no synthetic issue, dispatch, runner, sandbox, generic Product Line B seeder, SPEC-013, or SPEC-014 scope added.",
+      ".specify/feature.json points at specs/009b-mission-control-seed."
+    ]
   },
   "plan": [
     {
-      "step": "Status-sync stale SPEC-005 workflow state",
+      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
       "status": "completed"
     },
     {
-      "step": "Status-sync stale SPEC-008 workflow state",
+      "step": "Phase 0: Prerequisites",
       "status": "completed"
     },
     {
-      "step": "Run SPEC-009A grill-me interview",
+      "step": "Phase 1: Specify",
       "status": "completed"
     },
     {
-      "step": "Create SPEC-009A design concept",
-      "status": "completed"
+      "step": "Phase 2: Clarify - Preflight and Cleanup Boundary",
+      "status": "in_progress"
     },
     {
-      "step": "Create SPEC-009A workflow",
-      "status": "completed"
+      "step": "Phase 2: Clarify - Preflight and Cleanup Boundary Consensus",
+      "status": "pending"
     },
     {
-      "step": "Run SPEC-009A autopilot",
+      "step": "Phase 2: Clarify - Seed Data and Idempotency",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Seed Data and Idempotency Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Governance and Workflow Contract",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Governance and Workflow Contract Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 3: Plan",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - security",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - security Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 5: Tasks",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 6: Analyze",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 6: Analyze - Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement - Pending task decomposition",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verification and Status Sync",
       "status": "pending"
     }
   ]

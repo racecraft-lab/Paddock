@@ -59,8 +59,8 @@ Source-of-truth scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate seed-only spec with preflight, idempotency, and non-dispatch requirements |
-| Clarify | `$speckit-clarify` | Pending | Resolve cleanup preflight, governance thresholds, and contract-slug details |
+| Specify | `$speckit-specify` | Complete | Generated seed-only spec with preflight, idempotency, and non-dispatch requirements |
+| Clarify | `$speckit-clarify` | In Progress | Resolve cleanup preflight, governance thresholds, and contract-slug details |
 | Plan | `$speckit-plan` | Pending | Plan seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, and security checklists |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered implementation tasks |
@@ -121,6 +121,26 @@ workflow:
   recovery commands.
 - Do not delete source spec folders silently during setup or this workflow.
 
+### Archive Sweep Results
+
+Executed during SPEC-009B autopilot startup on 2026-05-07.
+
+| Field | Result |
+|-------|--------|
+| Archive extension | Installed and enabled: `archive` v1.1.0 from `.specify/extensions/archive/extension.yml`; registry source commit `08ee0e919a72ccb254758a2b6f51d58196490ea7` |
+| Branch | `009b-mission-control-seed` |
+| Current target | `specs/009b-mission-control-seed` |
+| Current target exclusion | Excluded. The directory has not been generated yet because Specify has not run. |
+| Active completed spec dirs found | `specs/005-ready-for-owner`, `specs/007-disposition-artifacts`, `specs/008-resource-governance`, `specs/009a-workflow-contract-roundtrip` |
+| Cleanup applied | No |
+| `safeToApplyCleanup` | `false` |
+
+**Cleanup decision:** No active `specs/**` directory was deleted, moved, or
+otherwise cleaned up in this startup pass. Cleanup is disabled because the
+worktree is dirty with `docs/ai/specs/autopilot-state.json`; safe cleanup gates
+from the archive extension are not satisfied. Archive Sweep evidence is recorded
+for traceability only.
+
 ### Constitution and PRD Validation
 
 Before starting each phase, verify alignment with `.specify/memory/constitution.md`,
@@ -138,7 +158,23 @@ Before starting each phase, verify alignment with `.specify/memory/constitution.
 | Non-dispatch boundary | Seed may configure and move intake only; no claim, launch, scheduler dispatch, synthetic issue, runner, or sandbox | Guardrail greps and database assertions |
 | Operator evidence | Pre-deploy cleanup checklist and seed verification are durable docs/artifacts | Docs review and workflow status |
 
-**Constitution Check:** Pending. Re-check after Specify, Plan, Analyze, and Implement as artifacts become concrete.
+**Constitution Check:** Complete for Phase 0 startup. Re-check after Specify,
+Plan, Analyze, and Implement as artifacts become concrete.
+
+### Phase 0 Results
+
+Executed during SPEC-009B autopilot startup on 2026-05-07.
+
+| Check | Result |
+|-------|--------|
+| Branch guard | Current branch is `009b-mission-control-seed`; feature worktree is active. |
+| Worktree scope | Primary checkout is out of scope; startup edits are limited to this feature worktree. |
+| Prerequisites script | `all_pass:true`; `is_worktree:true`; branch and feature directory resolved from `docs/ai/specs/SPEC-009B-workflow.md`. |
+| MCP availability | Optional MCP checks for `tavily-mcp`, `context7`, and `RepoPrompt` were unavailable; no phase gate depends on them. |
+| Package manager | `pnpm`, detected from lockfile. |
+| Project commands | Build `pnpm build`; typecheck `pnpm typecheck`; lint `pnpm lint`; unit `pnpm test`; e2e `pnpm test:e2e`; full verify `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e`. |
+| Presets/extensions | No presets active; extension registry visible; 18 hook events configured. |
+| Constitution startup review | Principles I-VII and related constraints were reviewed before Specify, including zero-regression, upstream compatibility, OpenClaw adapter isolation, test-first behavior, flag discipline, dependency hygiene, and additive migrations. |
 
 ---
 
@@ -257,13 +293,25 @@ Out of scope:
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 26 |
+| User Stories | 4 |
+| Acceptance Criteria | 15 |
+| Success Criteria | 10 |
+| Quality Checklist | 16/16 complete |
+| G1 Gate | Pass: `spec.md` exists with 0 `[NEEDS CLARIFICATION]` markers |
 
 ### Files Generated
 
-- [ ] `specs/009b-mission-control-seed/spec.md`
+- [x] `specs/009b-mission-control-seed/spec.md`
+- [x] `specs/009b-mission-control-seed/checklists/requirements.md`
+
+### Specify Scope Notes
+
+- SPEC-009B remains seed-only: no synthetic issue creation, live pilot smoke,
+  claim/dispatch/scheduler state, runner state, sandbox lifecycle, auto-merge,
+  generic Product Line B seeder, SPEC-013, or SPEC-014 behavior was introduced.
+- `.specify/feature.json` points at `specs/009b-mission-control-seed` for
+  downstream phases.
 
 ---
 
