@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "presets": {
+    "mission-control-reviewability": {
+      "version": "1.0.0",
+      "source": "project-local",
+      "manifest_hash": "project-local",
+      "enabled": true,
+      "priority": 5,
+      "installed_at": "2026-05-07T00:00:00Z"
+    }
+  }
+}

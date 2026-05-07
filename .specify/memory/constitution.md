@@ -6,9 +6,10 @@ Added principles: XVI. Reviewability And Verification Debt Control
 Added sections: None
 Removed sections: None
 Templates requiring updates:
-- .specify/templates/plan-template.md: updated
-- .specify/templates/spec-template.md: updated
-- .specify/templates/tasks-template.md: updated
+- .specify/templates/plan-template.md: restored to core default
+- .specify/templates/spec-template.md: restored to core default
+- .specify/templates/tasks-template.md: restored to core default
+- .specify/presets/mission-control-reviewability/: added durable template overrides
 Other artifacts requiring updates:
 - .github/pull_request_template.md: updated
 - docs/rc-factory-v1-prd.md: updated
@@ -410,6 +411,10 @@ Operationalized as:
 - Every PR description is a review packet. It includes what changed, why,
   non-goals, review order, scope budget, traceability, verification evidence,
   known gaps, and rollback or feature-flag notes.
+- SpecKit template customization MUST live in installed presets or explicit
+  project overrides resolved by `specify preset resolve`; do not edit core
+  `.specify/templates/*.md` directly because SpecKit init/upgrade flows own
+  that surface.
 - A large transition PR may proceed only when named as a one-time transition
   exception and when future roadmap entries split the affected follow-on work.
 
