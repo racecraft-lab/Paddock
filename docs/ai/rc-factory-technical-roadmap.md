@@ -149,7 +149,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Complete | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009D, SPEC-014C | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Complete | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009A, SPEC-011, SPEC-013B | Phase 7 |
 | SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | Complete | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
-| SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Pending | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C, SPEC-010A | Phase 8B |
+| SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | In Progress | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C, SPEC-010A | Phase 8B |
 | SPEC-009C | 8C | GitHub-Linked Mission Control Pilot Smoke | mission-control-pilot-smoke | Pending | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009D, SPEC-010B | Phase 8C |
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C | SPEC-013A | Phase 8D |
 | SPEC-010A | 9A | Generic Product-Line Seeder | generic-product-line-seeder | Pending | P2 | SPEC-002A, SPEC-009B | SPEC-010B | Phase 9A |
@@ -391,7 +391,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009B: Mission Control Product-Line Seed and Flag Activation
 
-- **Status:** Pending
+- **Status:** In Progress
 - **Priority:** P0
 - **Branch short name:** `mission-control-seed`
 - **Dependencies:** SPEC-009A, SPEC-006, SPEC-008
