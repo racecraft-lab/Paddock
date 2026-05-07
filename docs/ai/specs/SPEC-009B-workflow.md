@@ -60,8 +60,8 @@ Source-of-truth scoping decisions:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated seed-only spec with preflight, idempotency, and non-dispatch requirements |
-| Clarify | `$speckit-clarify` | In Progress | Resolve cleanup preflight, governance thresholds, and contract-slug details |
-| Plan | `$speckit-plan` | Pending | Plan seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
+| Clarify | `$speckit-clarify` | Complete | Resolved cleanup preflight, seed idempotency, governance thresholds, and contract-slug details |
+| Plan | `$speckit-plan` | In Progress | Plan seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, and security checklists |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered implementation tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify no scope drift into SPEC-009C/010A/013/014 |
@@ -356,9 +356,15 @@ $speckit-clarify Focus on SPEC-009B governance and workflow-contract import:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Preflight and cleanup boundary | Pending | Pending |
-| 2 | Seed data and idempotency | Pending | Pending |
-| 3 | Governance and workflow contract | Pending | Pending |
+| 1 | Preflight and cleanup boundary | 5 recommended answers; 2 consensus items resolved | Detect the full non-Mission-Control residue set; fail closed before mutation with structured blocked-preflight output and `mutation_status: "not_mutated"`; require backup/export-first cleanup evidence; prove zero deletion with snapshots and guardrails; treat FocusEngine as external cleanup residue inferred from existing Mission Control/OpenClaw/GitHub/operator evidence, not a new table; redact raw tokens, credentials, secrets, and credential-like payloads from all preflight/checklist/log evidence. |
+| 2 | Seed data and idempotency | 5 recommended answers; 3 consensus items resolved | Seed six department projects by stable slugs/prefixes; use QA as the only triage/inbox and repo sync-owner department; upsert six PRD role assignments through the existing project-scoped assignment contract and require runtime lookup to derive workspace through `projects`; re-home existing Mission Control issue tasks by GitHub identity without creating pilot tasks; use SPEC-009A importer only; canonicalize `PILOT_MISSION_CONTROL_E2E` and treat `PILOT_PRODUCT_LINE_A_E2E` as compatibility drift; seed governance rows with stable spec-owned markers. |
+| 3 | Governance and workflow contract | 5 recommended answers; 2 consensus items resolved | Seed two enabled, non-blocking advisory budget rows and a visible evaluator-inactive WIP template/visibility row; do not seed blackout or degraded-window rows; treat the current workflow contract as incomplete for FR-K2 and require a narrow contract correction with the required Mission Control slugs; reuse SPEC-009A importer library functions directly and override `workspace_id` to the actual seeded `mission-control` workspace id; include canonical `PILOT_MISSION_CONTROL_E2E` registry/runbook/runtime normalization in SPEC-009B tasks. |
+
+**G2 Gate:** Pass. `spec.md` has 0 `[NEEDS CLARIFICATION]`
+markers after Clarify and consensus edits.
+
+**Current Spec Metrics After Clarify:** 35 functional requirements and 14
+success criteria.
 
 ---
 
@@ -382,21 +388,61 @@ $speckit-plan
 
 ## Constraints
 - Do not add a new product-line table or rename `workspaces` / `workspace_id`.
+- Do not add or require `project_agent_assignments.workspace_id`; assignment
+  lookup and verification must derive workspace scope through the owning
+  `projects` row.
 - Do not delete FocusEngine or other non-Mission-Control data.
 - Do not create or ingest synthetic issues.
+- Do not create a separate Triage project; QA is the seeded triage/inbox and
+  repository sync-owner department for Mission Control.
 - Do not call scheduler dispatch, claim work, launch harnesses, or add runner/sandbox state.
+- Do not seed evaluator-active WIP, blackout, or degraded-window policies unless
+  implementation tests prove they cannot block or defer normal pilot intake.
 - Keep product-line seed specific to Mission Control; SPEC-010A owns generic seeder extraction.
 - Use existing transaction patterns from `better-sqlite3`.
 - Preserve GitHub linkage/sync metadata for existing `racecraft-lab/mission-control` tasks.
 - Add explicit cleanup preflight failure messages for non-Mission-Control sync/gateway residue.
+- Correct `docs/ai/workflows/mission-control/workflow-contract.yaml` narrowly so
+  it contains the FR-K2 Mission Control Issue Triage and Issue Remediation
+  slugs before seed readiness; do not accept stale `intake`/`implementation`
+  aliases or manually invent runtime template rows in the seed.
+- Align the feature-flag registry, resolver exception, runbooks, tests, and seed
+  evidence on canonical `PILOT_MISSION_CONTROL_E2E`; treat
+  `PILOT_PRODUCT_LINE_A_E2E` as legacy compatibility drift, not a second
+  persisted workspace flag.
+- Treat FocusEngine live project state as external cleanup residue inferred
+  from existing Mission Control project/task/GitHub sync rows, OpenClaw cron
+  issue-sync jobs, gateway/OpenClaw agent configuration, and operator-supplied
+  `ssh hall` pre-deploy evidence; do not add a FocusEngine table or cleanup path.
+- Redact raw secrets, tokens, passwords, Authorization headers, API keys, and
+  credential-like values from seed, preflight, checklist, and log evidence while
+  preserving cleanup-safe identifiers, counts, paths, timestamps, booleans, and
+  hashes.
 
 ## Architecture Notes
 - Prefer a reviewable fixture/config plus `scripts/seed-mission-control-product-line.ts`.
 - Keep seed operations transactional where possible and idempotent by slug/repo/role identity.
 - Reuse SPEC-009A workflow-contract importer/apply code instead of duplicating YAML parsing.
+- Use `loadWorkflowContractFromFile()` and `importWorkflowContract()` directly
+  in seed tooling, overriding the contract `workspace_id` to the actual seeded
+  `mission-control` workspace id before apply and asserting the required slugs.
 - Add tests that run seed twice against a temp database and assert stable row counts.
+- Assert stable identity counts for one `mission-control` Product Line, one
+  preserved `facility` workspace, six department projects, six PRD role
+  assignments, required workflow slugs, canonical flags, governance policies,
+  and preserved Mission Control issue-intake records.
+- Add tests that prove SPEC-009B creates zero new pilot tasks, zero workflow-chain
+  successor records, and zero per-agent task fan-out.
 - Add tests that inject FocusEngine/non-Mission-Control residue and assert blocked preflight with zero deletes.
 - Add guardrail tests or greps for forbidden dispatch/synthetic issue/runner/sandbox scope.
+- Add snapshot assertions that blocked preflight leaves non-Mission-Control
+  project/task/sync/cron/gateway evidence unchanged and reports
+  `mutation_status: "not_mutated"`.
+- Add redaction tests for GitHub/OpenClaw/gateway/cron evidence, including
+  free-text error payloads from external state.
+- Add governance tests proving enabled advisory token/USD budget rows allow
+  normal pilot intake and any WIP visibility row is evaluator-inactive unless
+  non-blocking WIP behavior is proven.
 - Add a pre-deploy runbook/checklist section for `ssh hall` FocusEngine cleanup and post-cleanup verification.
 ```
 

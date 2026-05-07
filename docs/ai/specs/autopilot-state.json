@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009B-workflow.md",
-  "updated_at": "2026-05-07T03:45:16Z",
-  "active_step": "Phase 2: Clarify - Preflight and Cleanup Boundary",
+  "updated_at": "2026-05-07T04:14:47Z",
+  "active_step": "Phase 3: Plan",
   "status": "Running",
   "active_workflow": {
     "spec_id": "SPEC-009B",
@@ -101,6 +101,130 @@
       ".specify/feature.json points at specs/009b-mission-control-seed."
     ]
   },
+  "phase_2": {
+    "sessions": {
+      "preflight_and_cleanup_boundary": {
+        "status": "completed",
+        "completed_at": "2026-05-07T03:50:22Z",
+        "executor": "clarify-executor:/root/spec_009b_clarify_preflight",
+        "recommended_answers": [
+          "Detect the full six-class non-Mission-Control residue set: synced projects/repo config, linked non-Mission-Control tasks, github sync rows, issue-sync cron state, OpenClaw/gateway agent config, and FocusEngine live project residue represented through observable non-Mission-Control surfaces.",
+          "Fail closed before mutation with structured blocked_preflight output and mutation_status:not_mutated; use exit code 3 for detected preflight validation failure.",
+          "Cleanup checklist must require a restorable backup or export path, readable export verification, and post-cleanup proof that only racecraft-lab/mission-control issue sync remains.",
+          "Prove zero deletion with fixtures, before/after snapshots, and forbidden destructive-mutation guardrails.",
+          "Redact raw token, credential, and secret values from preflight/checklist/log output."
+        ],
+        "unresolved_for_consensus": [
+          "Exact backing source for FocusEngine live project state.",
+          "Redaction policy for preflight/checklist/log output."
+        ]
+      },
+      "preflight_and_cleanup_boundary_consensus": {
+        "status": "completed",
+        "started_at": "2026-05-07T03:50:22Z",
+        "completed_at": "2026-05-07T03:53:46Z",
+        "agents": [
+          "codebase-analyst:/root/spec_009b_preflight_codebase_consensus",
+          "spec-context-analyst:/root/spec_009b_preflight_spec_consensus",
+          "domain-researcher:/root/spec_009b_preflight_domain_consensus"
+        ],
+        "resolved_answers": [
+          "FocusEngine live project state is external cleanup residue inferred from existing Mission Control project/task/GitHub sync rows, OpenClaw cron issue-sync jobs, gateway/OpenClaw agent configuration, and operator-supplied ssh hall pre-deploy evidence. SPEC-009B must not add a FocusEngine table or mutate FocusEngine state.",
+          "Seed, preflight, checklist, and log evidence must redact raw secrets, tokens, passwords, Authorization headers, API keys, and credential-like values while allowing cleanup-safe identifiers, paths, counts, timestamps, booleans, and hashes."
+        ],
+        "applied_to": [
+          "specs/009b-mission-control-seed/spec.md",
+          "docs/ai/specs/SPEC-009B-workflow.md"
+        ]
+      },
+      "seed_data_and_idempotency": {
+        "status": "completed",
+        "started_at": "2026-05-07T03:53:46Z",
+        "completed_at": "2026-05-07T04:01:57Z",
+        "executor": "clarify-executor:/root/spec_009b_clarify_idempotency",
+        "recommended_answers": [
+          "Seed six department projects by stable workspace slug and department slug: qa, development, devsecops, marketing, customer-service, finance; QA is recommended as triage/sync owner.",
+          "Seed project-agent assignments idempotently through existing assignment identities while preserving unrelated/manual assignments, but resolve the live schema/runtime mismatch before Plan.",
+          "Rehome existing racecraft-lab/mission-control tasks by workspace, github_repo, and github_issue_number; preserve GitHub linkage and sync metadata; reset only dispatch-implying fields.",
+          "Use the SPEC-009A workflow-contract importer only; current mission-control workflow contract appears stale and needs narrow correction before import.",
+          "Canonicalize the pilot flag as PILOT_MISSION_CONTROL_E2E and add registry/runbook alignment; seed governance rows using spec-owned markers because resource_policies lacks a unique natural seed key."
+        ],
+        "unresolved_for_consensus": [
+          "Whether QA should be the triage/sync-owner department.",
+          "Whether SPEC-009B should fix project_agent_assignments.workspace_id by additive migration or runtime lookup.",
+          "Whether to canonicalize/align the pilot flag to PILOT_MISSION_CONTROL_E2E."
+        ]
+      },
+      "seed_data_and_idempotency_consensus": {
+        "status": "completed",
+        "started_at": "2026-05-07T04:01:57Z",
+        "completed_at": "2026-05-07T04:06:06Z",
+        "agents": [
+          "codebase-analyst:/root/spec_009b_idempotency_codebase_consensus",
+          "spec-context-analyst:/root/spec_009b_idempotency_spec_consensus",
+          "domain-researcher:/root/spec_009b_idempotency_domain_consensus"
+        ],
+        "resolved_answers": [
+          "QA is the Mission Control triage/inbox and repository sync-owner department; no separate Triage department/project is seeded.",
+          "Do not add project_agent_assignments.workspace_id in SPEC-009B; align assignment lookup and verification by deriving workspace through projects.",
+          "Canonicalize the pilot flag as PILOT_MISSION_CONTROL_E2E and treat PILOT_PRODUCT_LINE_A_E2E as legacy compatibility drift."
+        ],
+        "applied_to": [
+          "specs/009b-mission-control-seed/spec.md",
+          "docs/ai/specs/SPEC-009B-workflow.md"
+        ]
+      },
+      "governance_and_workflow_contract": {
+        "status": "completed",
+        "started_at": "2026-05-07T04:06:06Z",
+        "completed_at": "2026-05-07T04:10:42Z",
+        "executor": "clarify-executor:/root/spec_009b_clarify_governance_contract",
+        "recommended_answers": [
+          "Seed visible non-blocking governance defaults: WIP threshold 2, daily token budget 1000000, daily USD budget 10, with alert/shadow semantics and no blackout/degraded window by default.",
+          "Treat the current mission-control workflow contract as incomplete for FR-K2 and require a narrow contract correction with the required Mission Control issue-triage and issue-remediation slugs before seed readiness.",
+          "Reuse SPEC-009A workflow contract library functions directly: loadWorkflowContractFromFile() and importWorkflowContract(db, contractWithMissionControlWorkspaceId, { mode: 'apply', sourcePath }).",
+          "Override contract workspace_id to the actual seeded mission-control workspace id at import/apply time.",
+          "Normalize feature-flag registry/runbook/runtime support to canonical PILOT_MISSION_CONTROL_E2E."
+        ],
+        "unresolved_for_consensus": [
+          "Exact conservative governance rows that prove shape without blocking normal pilot intake.",
+          "Whether feature-flag registry normalization to PILOT_MISSION_CONTROL_E2E belongs in SPEC-009B implementation tasks."
+        ]
+      },
+      "governance_and_workflow_contract_consensus": {
+        "status": "completed",
+        "started_at": "2026-05-07T04:10:42Z",
+        "completed_at": "2026-05-07T04:14:47Z",
+        "agents": [
+          "codebase-analyst:/root/spec_009b_governance_codebase_consensus",
+          "spec-context-analyst:/root/spec_009b_governance_spec_consensus",
+          "domain-researcher:/root/spec_009b_governance_domain_consensus"
+        ],
+        "resolved_answers": [
+          "Seed enabled non-blocking advisory token/USD budget rows and a visible evaluator-inactive WIP template row; do not seed blackout or degraded-window policies.",
+          "Feature-flag registry, resolver exception, runbooks, tests, and seed evidence normalization to PILOT_MISSION_CONTROL_E2E belongs in SPEC-009B implementation tasks."
+        ],
+        "applied_to": [
+          "specs/009b-mission-control-seed/spec.md",
+          "docs/ai/specs/SPEC-009B-workflow.md"
+        ]
+      }
+    },
+    "gate": {
+      "id": "G2",
+      "pass": true,
+      "reason": "0 [NEEDS CLARIFICATION] markers",
+      "markers": 0
+    },
+    "current_metrics_after_clarify": {
+      "functional_requirements": 35,
+      "success_criteria": 14
+    }
+  },
+  "phase_3": {
+    "status": "in_progress",
+    "started_at": "2026-05-07T04:14:47Z"
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -116,31 +240,31 @@
     },
     {
       "step": "Phase 2: Clarify - Preflight and Cleanup Boundary",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Preflight and Cleanup Boundary Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Seed Data and Idempotency",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Seed Data and Idempotency Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Governance and Workflow Contract",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Governance and Workflow Contract Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 3: Plan",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
