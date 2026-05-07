@@ -51,6 +51,7 @@
     "src/app/api/resource-*/**/*.ts",
     "src/app/api/otlp/v1/**/*.ts",
     "src/app/api/admin/spec-008/**/*.ts",
-    "src/app/api/admin/workspaces/**/*.ts"
+    "src/app/api/admin/workspaces/**/*.ts",
+    "src/lib/workflow-contracts/**/*.ts"
   ]
 }

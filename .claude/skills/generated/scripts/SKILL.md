@@ -1,83 +1,76 @@
 ---
 name: scripts
-description: "Skill for the Scripts area of mission-control. 116 symbols across 19 files."
+description: "Skill for the Scripts area of mission-control. 486 symbols across 34 files."
 ---
 
 # Scripts
 
-116 symbols | 19 files | Cohesion: 87%
+486 symbols | 34 files | Cohesion: 80%
 
 ## When to Use
 
 - Working with code in `scripts/`
-- Understanding how isFeatureFlagKey, assertFeatureFlagKey, disposePtySession work
+- Understanding how githubApiHeaders, normalizeSourcePullRequest, pullRequestNumberFromText work
 - Modifying scripts-related functionality
 
 ## Key Files
 
 | File | Symbols |
 |------|---------|
-| `scripts/mc-tui.cjs` | getTermSize, truncate, pad, statusColor, timeSince (+26) |
-| `scripts/mc-cli.cjs` | parseArgs, usage, mapStatusToExit, required, bodyFromFlags (+11) |
-| `scripts/verify-argos-metadata.mjs` | pathExists, collectMetadataFiles, validatePlaywrightMetadata, validateStorybookMetadata, readMetadata (+9) |
-| `scripts/verify-spec-evidence-screenshots.mjs` | parseArgs, pathExists, collectFiles, sha256, normalizeManifestPath (+5) |
-| `scripts/check-api-contract-parity.mjs` | toPosix, routeFileToApiPath, extractHttpMethods, walkRouteFiles, normalizeOperation (+3) |
-| `scripts/seed-e2e-ready-for-owner.cjs` | tableExists, columnsFor, sqlPlaceholders, insertRow, updateRow (+2) |
-| `scripts/mc-mcp-server.cjs` | makeResponse, handleMessage, send, main, loadConfig (+1) |
-| `src/lib/pty-manager.ts` | write, dispose, disposePtySession, disposeAllPtySessions |
-| `scripts/check-guardrails.mjs` | read, walk, runTaskPipelineGuardrails, fail |
-| `tests/mcp-server.spec.ts` | mcpCall, mcpRequest, mcpTool |
+| `scripts/visual-review-app.js` | githubTokenCreationUrl, itemSearchText, itemTitle, itemSubtitle, humanizeSnapshotName (+83) |
+| `scripts/mc-tui.cjs` | clear, moveTo, bold, cyan, inverse (+47) |
+| `scripts/mc-cli.cjs` | required, get, delete, wake, diagnostics (+41) |
+| `scripts/publish-visual-pr-pages.mjs` | readJsonIfPresent, readGitHubEvent, repoParts, pageBaseUrl, githubServerUrl (+40) |
+| `scripts/seed-spec-007.ts` | getE2EDbPath, placeholders, deleteWhereIn, selectIdsWhereIn, mergeFeatureFlags (+26) |
+| `scripts/seed-e2e-spec-007.cjs` | entries, insertRow, slugify, createWorkspace, createProject (+16) |
+| `scripts/visual-review-producer.mjs` | githubApiHeaders, normalizeSourcePullRequest, pullRequestNumberFromText, titleFromCommitMessage, sourcePullRequestFromEvent (+14) |
+| `scripts/seed-e2e-spec-008.cjs` | entries, columnsFor, insertRow, mergeFeatureFlags, createWorkspace (+14) |
+| `scripts/verify-visual-manifest.mjs` | pathExists, collectManifestFiles, readManifest, resolveScreenshotPath, verifyScreenshotHash (+12) |
+| `scripts/visual-review-state.mjs` | parseReviewCommentBody, findReviewComment, renderReviewComment, validateVisualApproval, normalizeRequiredSurfaces (+10) |
 
 ## Entry Points
 
 Start here when exploring this area:
 
-- **`isFeatureFlagKey`** (Function) — `src/lib/feature-flags.ts:357`
-- **`assertFeatureFlagKey`** (Function) — `src/lib/feature-flag-service.ts:352`
-- **`disposePtySession`** (Function) — `src/lib/pty-manager.ts:278`
-- **`disposeAllPtySessions`** (Function) — `src/lib/pty-manager.ts:283`
-- **`TerminalView`** (Function) — `src/components/terminal/terminal-view.tsx:15`
+- **`githubApiHeaders`** (Function) — `scripts/visual-review-producer.mjs:8`
+- **`normalizeSourcePullRequest`** (Function) — `scripts/visual-review-producer.mjs:17`
+- **`pullRequestNumberFromText`** (Function) — `scripts/visual-review-producer.mjs:37`
+- **`titleFromCommitMessage`** (Function) — `scripts/visual-review-producer.mjs:53`
+- **`sourcePullRequestFromEvent`** (Function) — `scripts/visual-review-producer.mjs:66`
 
 ## Key Symbols
 
 | Symbol | Type | File | Line |
 |--------|------|------|------|
-| `isFeatureFlagKey` | Function | `src/lib/feature-flags.ts` | 357 |
-| `assertFeatureFlagKey` | Function | `src/lib/feature-flag-service.ts` | 352 |
-| `disposePtySession` | Function | `src/lib/pty-manager.ts` | 278 |
-| `disposeAllPtySessions` | Function | `src/lib/pty-manager.ts` | 283 |
-| `TerminalView` | Function | `src/components/terminal/terminal-view.tsx` | 15 |
-| `mcpCall` | Function | `tests/mcp-server.spec.ts` | 10 |
-| `mcpRequest` | Function | `tests/mcp-server.spec.ts` | 48 |
-| `mcpTool` | Function | `tests/mcp-server.spec.ts` | 59 |
-| `getTermSize` | Function | `scripts/mc-tui.cjs` | 102 |
-| `truncate` | Function | `scripts/mc-tui.cjs` | 106 |
-| `pad` | Function | `scripts/mc-tui.cjs` | 111 |
-| `statusColor` | Function | `scripts/mc-tui.cjs` | 116 |
-| `timeSince` | Function | `scripts/mc-tui.cjs` | 124 |
-| `formatNumber` | Function | `scripts/mc-tui.cjs` | 134 |
-| `stripAnsi` | Function | `scripts/mc-tui.cjs` | 141 |
-| `renderDashboard` | Function | `scripts/mc-tui.cjs` | 261 |
-| `renderAgentsList` | Function | `scripts/mc-tui.cjs` | 333 |
-| `renderTasksList` | Function | `scripts/mc-tui.cjs` | 369 |
-| `priorityColor` | Function | `scripts/mc-tui.cjs` | 425 |
-| `activityIcon` | Function | `scripts/mc-tui.cjs` | 435 |
-
-## Execution Flows
-
-| Flow | Type | Steps |
-|------|------|-------|
-| `GET → Write` | cross_community | 5 |
-| `PATCH → Call` | cross_community | 4 |
+| `githubApiHeaders` | Function | `scripts/visual-review-producer.mjs` | 8 |
+| `normalizeSourcePullRequest` | Function | `scripts/visual-review-producer.mjs` | 17 |
+| `pullRequestNumberFromText` | Function | `scripts/visual-review-producer.mjs` | 37 |
+| `titleFromCommitMessage` | Function | `scripts/visual-review-producer.mjs` | 53 |
+| `sourcePullRequestFromEvent` | Function | `scripts/visual-review-producer.mjs` | 66 |
+| `sourcePullRequestFromCommit` | Function | `scripts/visual-review-producer.mjs` | 96 |
+| `commitHistoryShasFromGitHub` | Function | `scripts/visual-review-producer.mjs` | 127 |
+| `initialReviewStateFromPullRequest` | Function | `scripts/visual-review-producer.mjs` | 155 |
+| `reviewItemId` | Function | `scripts/visual-review-producer.mjs` | 196 |
+| `reviewableReportItemIds` | Function | `scripts/visual-review-producer.mjs` | 201 |
+| `reviewStateCoversReport` | Function | `scripts/visual-review-producer.mjs` | 209 |
+| `coveredInitialReviewState` | Function | `scripts/visual-review-producer.mjs` | 225 |
+| `resolveInitialReviewStateSource` | Function | `scripts/visual-review-producer.mjs` | 248 |
+| `resetSpec007Fixtures` | Function | `scripts/seed-spec-007.ts` | 242 |
+| `seedSpec007E2E` | Function | `scripts/seed-spec-007.ts` | 891 |
+| `parseReviewCommentBody` | Function | `scripts/visual-review-state.mjs` | 188 |
+| `findReviewComment` | Function | `scripts/visual-review-state.mjs` | 201 |
+| `renderReviewComment` | Function | `scripts/visual-review-state.mjs` | 155 |
+| `validateVisualApproval` | Function | `scripts/visual-review-state.mjs` | 208 |
+| `normalizeRequiredSurfaces` | Function | `scripts/visual-review-state.mjs` | 260 |
 
 ## Connected Areas
 
 | Area | Connections |
 |------|-------------|
-| Onboarding | 5 calls |
+| Tasks | 1 calls |
 
 ## How to Explore
 
-1. `gitnexus_context({name: "isFeatureFlagKey"})` — see callers and callees
+1. `gitnexus_context({name: "githubApiHeaders"})` — see callers and callees
 2. `gitnexus_query({query: "scripts"})` — find related execution flows
 3. Read key files listed above for implementation details

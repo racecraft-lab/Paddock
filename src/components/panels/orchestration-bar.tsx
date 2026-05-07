@@ -36,6 +36,39 @@ interface WorkflowTemplate {
   allow_redacted_artifacts: boolean
 }
 
+interface WorkflowContractRunError {
+  id: number
+  code: string
+  message: string
+  remediation_hint: string
+  details: string | null
+  template_slug: string | null
+}
+
+interface WorkflowContractRun {
+  id: number
+  mode: string
+  status: string
+  mutation_status: string
+  source_path: string | null
+  export_path: string | null
+  contract_hash: string | null
+  template_counts: Record<string, number>
+  recovery_command: string | null
+  created_at: string
+  errors: WorkflowContractRunError[]
+}
+
+interface WorkflowContractDiagnostics {
+  runs: WorkflowContractRun[]
+  last_known_good_available?: boolean
+  last_successful_apply?: {
+    run_id: number
+    snapshot_id: number | null
+    canonical_object_hash: string | null
+  } | null
+}
+
 type TemplateFormData = {
   name: string
   description: string
@@ -81,7 +114,9 @@ export function OrchestrationBar() {
   const { activeProductLineScope } = useMissionControl()
   const [agents, setAgents] = useState<Agent[]>([])
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([])
-  const [activeTab, setActiveTab] = useState<'command' | 'templates' | 'pipelines' | 'fleet'>('command')
+  const [contractRuns, setContractRuns] = useState<WorkflowContractRun[]>([])
+  const [contractDiagnostics, setContractDiagnostics] = useState<WorkflowContractDiagnostics | null>(null)
+  const [activeTab, setActiveTab] = useState<'command' | 'templates' | 'contracts' | 'pipelines' | 'fleet'>('contracts')
 
   // Command state
   const [selectedAgent, setSelectedAgent] = useState('')
@@ -100,12 +135,15 @@ export function OrchestrationBar() {
   const [templateError, setTemplateError] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
-    const [agentRes, templateRes] = await Promise.all([
+    const [agentRes, templateRes, diagnosticsRes] = await Promise.all([
       fetch(appendScopeToPath('/api/agents', activeProductLineScope)).then(r => r.json()).catch(() => ({ agents: [] })),
       fetch(appendScopeToPath('/api/workflows', activeProductLineScope)).then(r => r.json()).catch(() => ({ templates: [] })),
+      fetch(appendScopeToPath('/api/workflow-contracts/diagnostics?family=mission-control', activeProductLineScope)).then(r => r.json()).catch(() => ({ runs: [] })),
     ])
     setAgents(agentRes.agents || [])
     setTemplates(templateRes.templates || [])
+    setContractRuns(diagnosticsRes.runs || [])
+    setContractDiagnostics(diagnosticsRes && typeof diagnosticsRes === 'object' ? diagnosticsRes as WorkflowContractDiagnostics : null)
   }, [activeProductLineScope])
 
   useEffect(() => { fetchData() }, [fetchData])
@@ -297,7 +335,7 @@ export function OrchestrationBar() {
     <div className="border-b border-border bg-card/50">
       {/* Tab bar */}
       <div className="flex items-center gap-1 px-4 pt-2">
-        {(['command', 'templates', 'pipelines', 'fleet'] as const).map(tab => (
+        {(['contracts', 'templates', 'pipelines', 'command', 'fleet'] as const).map(tab => (
           <Button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -310,7 +348,7 @@ export function OrchestrationBar() {
                 : ''
             }`}
           >
-            {tab === 'command' ? t('tabCommand') : tab === 'templates' ? t('tabWorkflows') : tab === 'pipelines' ? t('tabPipelines') : t('tabFleet')}
+            {tab === 'command' ? t('tabCommand') : tab === 'templates' ? t('tabWorkflows') : tab === 'contracts' ? 'Workflow Contracts' : tab === 'pipelines' ? t('tabPipelines') : t('tabFleet')}
             {tab === 'fleet' && (
               <span className={`ml-1.5 text-2xs ${errorCount > 0 ? 'text-red-400' : 'text-green-400'}`}>
                 {onlineCount}/{agents.length}
@@ -360,6 +398,56 @@ export function OrchestrationBar() {
               {sending ? '...' : t('send')}
             </Button>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'contracts' && (
+        <div className="p-4 pt-3" data-testid="workflow-contract-diagnostics">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs text-muted-foreground">
+              {contractRuns.length} contract runs
+            </span>
+            <Button onClick={fetchData} variant="secondary" size="xs">Refresh</Button>
+          </div>
+          <div className="mb-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <span>Last known good: {contractDiagnostics?.last_known_good_available ? 'available' : 'unavailable'}</span>
+            {contractDiagnostics?.last_successful_apply && (
+              <span>Last successful apply: run {contractDiagnostics.last_successful_apply.run_id}</span>
+            )}
+          </div>
+          {contractRuns.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-3">No contract diagnostics</p>
+          ) : (
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {contractRuns.map(run => (
+                <div key={run.id} className="rounded-md bg-secondary/30 border border-border p-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-foreground">{run.mode}</span>
+                    <span className="text-2xs px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{run.status}</span>
+                    <span className="text-2xs px-1.5 py-0.5 rounded bg-secondary text-muted-foreground">{run.mutation_status}</span>
+                  </div>
+                  <div className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
+                    <span>Templates: {run.template_counts?.create ?? 0} create, {run.template_counts?.update ?? 0} update, {run.template_counts?.disable ?? 0} disable</span>
+                    <span className="truncate">Hash: {run.contract_hash ?? 'unavailable'}</span>
+                    {run.source_path && <span className="truncate">Source: {run.source_path}</span>}
+                    {run.recovery_command && <span className="truncate">Recovery: {run.recovery_command}</span>}
+                  </div>
+                  {run.errors.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {run.errors.map(error => (
+                        <div key={error.id} className="rounded bg-background/50 p-2 text-xs">
+                          <div className="font-mono text-red-400">{error.code}</div>
+                          <div className="text-foreground">{error.message}</div>
+                          <div className="text-muted-foreground">{error.remediation_hint}</div>
+                          {error.details && <div className="mt-1 text-muted-foreground truncate">{error.details}</div>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

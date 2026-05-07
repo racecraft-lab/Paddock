@@ -1,153 +1,56 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-005-workflow.md",
-  "updated_at": "2026-05-02T15:53:00Z",
-  "active_step": "Post: Review Remediation",
-  "status": "PR Open - Awaiting Review",
+  "workflow_file": "docs/ai/specs/SPEC-009A-workflow.md",
+  "updated_at": "2026-05-05T23:56:07Z",
+  "active_step": "SPEC-009A setup complete",
+  "status": "Ready for autopilot",
   "notes": [
-    "SPEC-005 setup completed on branch 005-ready-for-owner from main at dbb6c75.",
-    "Workflow file docs/ai/specs/SPEC-005-workflow.md was generated for ready_for_owner State and Two-Step Terminal Event from the Grill Me design concept.",
-    "Branch 005-ready-for-owner exists in .worktrees/005-ready-for-owner and tracks origin/005-ready-for-owner.",
-    "Phase 0 owns branch-local status hygiene before Specify: SPEC-004 and SPEC-006 are merged on main, while roadmap/workflow tracking artifacts still contain some pre-merge wording.",
-    "SPEC-004 live evidence: PR #22 merged at 2026-05-01T22:54:53Z with merge commit 20643d81.",
-    "SPEC-006 live evidence: PR #21 merged at 2026-05-01T23:34:50Z with merge commit dbb6c75.",
-    "Archive Sweep startup is required before normal prerequisites. SPEC-005/specs/005-ready-for-owner must be excluded from cleanup.",
-    "Step -1 Archive Sweep startup recorded on 2026-05-02T00:53:40Z as dry-run/no-cleanup: archive extension v1.1.0 is installed, current target specs/005-ready-for-owner is excluded, active specs/004-task-pipeline-engine and specs/006-area-label-github-sync remain in place, and safeToApplyCleanup=false because this is a feature worktree with Phase 0 state edits.",
-    "Step 0 prerequisite scripts passed: check-prerequisites all_pass=true on branch 005-ready-for-owner, is_worktree=true, on_feature_branch=true; command detection found pnpm with build/typecheck/lint/test/e2e commands; presets absent; missing MCP servers are non-blocking fallbacks.",
-    "Phase 0 project baseline passed: pnpm typecheck passed; pnpm lint passed with 0 errors and 12 warnings; pnpm test passed with 163 files / 1323 tests after host-permission rerun for GPG/socket tests; pnpm build passed after network-enabled rerun for Google Fonts.",
-    "Phase 0 status hygiene completed: roadmap, PRD, SPEC-004 workflow, SPEC-006 workflow, and autopilot-state.json now reflect SPEC-004 PR #22 merged as 20643d8 and SPEC-006 PR #21 merged as dbb6c75.",
-    "G0 passed on 2026-05-02: archive/prerequisite/status-hygiene evidence is recorded, SPEC-005 cleanup did not occur, and stale merged-state wording was repaired in this branch only.",
-    "Plan coverage repaired on 2026-05-02 to match the autopilot skill: Archive Sweep prefix, Phase 0 prefix, all seven SDD phases, mandatory Consensus items after every Clarify session, every Checklist domain, and Analyze, plus post-implementation items.",
-    "Phase 1 Specify completed on 2026-05-02: generated specs/005-ready-for-owner/spec.md and specs/005-ready-for-owner/checklists/requirements.md; metrics 25 FRs, 5 user stories, 19 acceptance scenarios, 6 success criteria, 10 edge cases after Clarify session 3; G1 validate-gate passed; count-markers all returned 0.",
-    "Clarify session 1 completed on 2026-05-02: accepted shared task-status/transition guard boundary, static read vocabulary plus workspace-aware write guards, uniform 409 transition_conflict body, broad all-non-merge done-write guard for PR-producing tasks while flag ON, and GitHub PR merge chain-advance trigger. Q2 required Round 2 consensus; Q4 resolved in Round 1.",
-    "Clarify session 2 completed on 2026-05-02: accepted explicit PR identity as github_repo + github_pr_number, live-or-fixture merge evidence matching linked repo/PR with merged=true or merged_at or merge_commit_sha, closed-issue-without-merged-PR reconciliation that leaves task ready_for_owner, github_terminal_reconciliation_required activity, task_ready_for_owner notification with assignee-then-creator routing, unchanged task/issue/reason dedupe, and production pullFromGitHub callsites without fixtures/options. Q4 consensus resolved in Round 1.",
-    "Clarify session 3 completed on 2026-05-02: accepted ready_for_owner across static status vocabulary surfaces with write guards enforcing flag behavior, Ready for Owner teal Kanban lane between quality_review and done, mc:ready-for-owner label color 14b8a6 description Mission Control: ready for owner, task_ready_for_owner panel/delivery contract, and no-migration external_terminal_event='github_pr_merged'. No unresolved consensus items.",
-    "G2 passed on 2026-05-02: validate-gate G2 returned pass=true with 0 clarification markers; count-markers all returned 0 gaps, clarifications, and severity markers.",
-    "Phase 3 Plan completed on 2026-05-02: generated plan.md, research.md, data-model.md, three contract files, quickstart.md, workflow Plan Results, and Codex agent-context updates while preserving no-migration/no-DB-CHECK/no-terminal-table constraints.",
-    "G3 passed on 2026-05-02: validate-gate G3 returned pass=true for plan.md with 0 unresolved markers; count-markers all returned 0 gaps, clarifications, and severity markers.",
-    "Checklist State Machine and Feature Flags completed on 2026-05-02: generated 18 checklist items with 0 gaps; parent count-markers all returned 0; consensus item completed as no-op because Unresolved for consensus was None.",
-    "Checklist GitHub Sync and Terminal Event Evidence completed on 2026-05-02: generated 22 checklist items with 0 gaps; parent count-markers all returned 0; consensus item completed as no-op because Unresolved for consensus was None.",
-    "Checklist Notifications and Operator UX completed on 2026-05-02: generated 24 checklist items, remediated one accessibility gap by adding FR-019a and tightening SC-006/operator-surface plan guidance, parent count-markers all returned 0, and consensus item completed as no-op because Unresolved for consensus was None.",
-    "Checklist Regression Safety and Cross-Spec Boundaries completed on 2026-05-02: generated 24 checklist items with 0 gaps; parent count-markers all returned 0; consensus item completed as no-op because Unresolved for consensus was None.",
-    "G4 passed on 2026-05-02: validate-gate G4 returned pass=true with 0 [Gap] markers across checklist artifacts.",
-    "Phase 5 Tasks completed on 2026-05-02: generated 79 dependency-ordered TDD-first tasks, 41 test/verification tasks, 37 parallel markers, 8 task phases, all 5 user stories, 19 acceptance scenarios, and 8/8 P4 acceptance criteria.",
-    "G5 passed on 2026-05-02: validate-gate G5 returned pass=true with 79 tasks and 0 markers; count-markers all returned 0 gaps, clarifications, and severity markers.",
-    "Phase 7 placeholder decomposed on 2026-05-02 into concrete task groups T001-T079 before Analyze, as required by the autopilot skill.",
-    "Phase 6 Analyze completed on 2026-05-02: deterministic finding marker count was 0 before remediation, semantic analyze found 3 cross-artifact findings (0 critical, 1 high, 1 medium, 1 low), and all were remediated in the SPEC-005 worktree.",
-    "G6 passed on 2026-05-02: roadmap flag-off/runtime-enum drift, roadmap notification-module drift, and US1 independent-test wording gap were fixed; final finding marker count returned 0 critical, 0 high, 0 medium, and 0 low.",
-    "Phase 6 Analyze consensus item completed as a no-op on 2026-05-02 because Unresolved for consensus was None.",
-    "Phase 7 T001-T005 completed on 2026-05-02: verified Phase 0 status hygiene and Archive Sweep evidence, confirmed no SPEC-005 migration/status CHECK/terminal-event table scope, added src/lib/task-status.ts to strict type/lint scope, confirmed pnpm lockfile, and passed focused config-scope validation.",
-    "Phase 7 T006-T014 completed on 2026-05-02: implemented shared ready_for_owner vocabulary, transition conflict contract, feature-flag-aware terminal transition guard, validation/status exports, and focused tests; parent verification passed 47 focused tests, focused ESLint, typecheck, and diff check.",
-    "Phase 7 T015-T023 completed on 2026-05-02: implemented flag-off rollback guard coverage across task-status, Aegis dispatch, quality-review, bulk task updates, and detail task updates; parent verification passed 13 focused tests, focused ESLint, typecheck, and diff check.",
-    "Phase 7 T024-T033 completed on 2026-05-02: implemented flag-on owner merge gate routing for Aegis and quality-review approvals, including non-PR direct completion, PR-producing ready_for_owner entry, missing-linkage activity/notification, outbound sync ordering, and no chain advancement at ready_for_owner; parent verification passed 33 focused tests, focused ESLint, typecheck, and diff check.",
-    "Phase 7 T034-T049 completed on 2026-05-02: implemented side-effect-free blocked completion conflicts, optional pullFromGitHub webhookFixture test seam, explicit linked PR merge evidence handling, github_pr_merged chain advancement, and closed-issue reconciliation activity/notification dedupe; parent verification passed 43 focused tests, focused ESLint with 0 errors and 1 existing warning, typecheck, diff check, and production callsite fixture-free grep.",
-    "Phase 7 T050-T059 completed on 2026-05-02: implemented mc:ready-for-owner label mapping/replacement/application, Ready for Owner Kanban lane between quality_review and done, distinct awaiting_owner placement, localized lane/action-required copy, and accessible region/card text; parent verification passed 25 focused unit tests, focused Playwright e2e with 2 tests, focused ESLint, typecheck, JSON parse, and diff check.",
-    "Phase 7 T060-T070 completed on 2026-05-02: implemented task_ready_for_owner helper routing with assignee-first/creator fallback, normal and reconciliation notification copy, panel rendering, delivery formatting, notification action accessibility, and reconciliation dedupe keyed on task, GitHub issue, and reason; parent verification passed 46 focused Vitest tests, focused Playwright e2e with 3 tests, focused ESLint with 0 errors and 1 existing warning, typecheck, JSON parse, and diff check.",
-    "Phase 7 T071-T079 completed on 2026-05-02: recorded no-migration/no-status-CHECK/no-terminal-event-table/no-issue-timeline/no-operator-override guardrails, verified production pullFromGitHub callsites pass no webhookFixture option, recorded P4-AC1 through P4-AC6 plus FR-019a/SC-006 evidence, and updated SPEC-005 workflow, quickstart, roadmap, and PRD status without marking downstream specs complete.",
-    "Gate G7 passed on 2026-05-02: pnpm typecheck passed; pnpm lint passed with 0 errors and 12 existing warnings; pnpm test passed with 169 files / 1369 tests after host-permission rerun for GPG/socket tests; pnpm build passed after network-enabled rerun for Next.js Google Fonts with non-fatal existing Turbopack NFT trace warnings; pnpm test:e2e passed with 535 Playwright tests.",
-    "Post verification/status sync completed on 2026-05-02: tasks.md has all 79 tasks checked, workflow checklist and G7 evidence are updated, roadmap records implementation evidence while keeping SPEC-005 In Progress until PR merge, and PRD Phase 4 truthfully reads Implemented on branch; PR pending.",
-    "Post PR Creation completed on 2026-05-02: PR #23 opened at https://github.com/racecraft-lab/mission-control/pull/23 from branch 005-ready-for-owner to main. Review remediation remains pending reviewer feedback."
+    "Merged-state cleanup on branch 009a-workflow-contract-roundtrip: SPEC-005, SPEC-007, and SPEC-008 are complete on main per docs/ai/rc-factory-technical-roadmap.md.",
+    "SPEC-005 workflow status was synced from stale Implement Pending to Complete after PR #23 merged as 851571f.",
+    "SPEC-008 workflow status was synced from stale Implement In Progress to Complete after PR #26 merged as bd9a693.",
+    "SPEC-008 operator-led soak, chaos, and running-instance evidence remain documented as non-blocking follow-up evidence, not active implementation.",
+    "SPEC-009A design concept and workflow are ready for autopilot on branch 009a-workflow-contract-roundtrip.",
+    "Run $speckit-autopilot docs/ai/specs/SPEC-009A-workflow.md from the dedicated worktree when ready."
   ],
   "archive_sweep": {
     "installed_extension": "archive",
     "extension_release": "v1.1.0",
     "extension_source_commit": "08ee0e919a72ccb254758a2b6f51d58196490ea7",
-    "run_at": "2026-05-02T00:53:40Z",
-    "mode": "dry-run-no-cleanup",
-    "branch": "005-ready-for-owner",
-    "worktree_clean_before_sweep": false,
-    "current_target_excluded": "SPEC-005",
-    "current_target_path": "specs/005-ready-for-owner",
-    "previous_merged_candidates": [
-      "SPEC-001",
-      "SPEC-002",
-      "SPEC-002A",
-      "SPEC-003",
-      "SPEC-004",
-      "SPEC-006"
-    ],
-    "active_spec_dirs_found": [
-      "specs/004-task-pipeline-engine",
-      "specs/006-area-label-github-sync"
-    ],
-    "excludedCurrentSpec": [
-      "specs/005-ready-for-owner"
-    ],
+    "last_recorded_run_at": "2026-05-02T00:53:40Z",
+    "last_recorded_mode": "dry-run-no-cleanup",
     "cleanup_applied": false,
-    "cleanup_policy": "Dry-run-only unless a clean safe base branch records archive success, merge/tree references, recovery commands, and safeToApplyCleanup=true.",
-    "safeToApplyCleanup": false
+    "safeToApplyCleanup": false,
+    "cleanup_policy": "Run Archive Sweep again from the active SPEC-009A workflow before applying cleanup; only apply cleanup after a clean safe base branch records archive success, merge/tree references, recovery commands, and safeToApplyCleanup=true."
   },
-  "prerequisites": {
-    "run_at": "2026-05-02T01:05:06Z",
-    "all_pass": true,
-    "branch": "005-ready-for-owner",
-    "is_worktree": true,
-    "on_feature_branch": true,
-    "package_manager": "pnpm",
-    "commands": {
-      "BUILD": "pnpm build",
-      "TYPECHECK": "pnpm typecheck",
-      "LINT": "pnpm lint",
-      "UNIT_TEST": "pnpm test",
-      "INTEGRATION_TEST": "pnpm test:e2e",
-      "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
-    },
-    "mcp_servers": {
-      "status": "fallbacks",
-      "missing": ["tavily-mcp", "context7", "RepoPrompt"]
-    },
-    "baseline_verification": {
-      "typecheck": "passed",
-      "lint": "passed with 0 errors and 12 warnings",
-      "unit_test": "passed with 163 files / 1323 tests after host-permission rerun",
-      "build": "passed after network-enabled rerun for Google Fonts"
-    }
+  "active_workflow": {
+    "spec_id": "SPEC-009A",
+    "workflow_file": "docs/ai/specs/SPEC-009A-workflow.md",
+    "design_concept_file": "docs/ai/specs/SPEC-009A-design-concept.md",
+    "branch": "009a-workflow-contract-roundtrip"
   },
   "plan": [
-    {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
-    {"step": "Phase 0: Prerequisites", "status": "completed"},
-    {"step": "Phase 0: Branch-local SPEC-004/SPEC-006/autopilot-state status hygiene", "status": "completed"},
-    {"step": "Gate G0: archive/prerequisites/status hygiene evidence recorded", "status": "completed"},
-    {"step": "Phase 1: Specify", "status": "completed"},
-    {"step": "Gate G1: spec has no unresolved clarification markers and required stories/ACs are covered", "status": "completed"},
-    {"step": "Phase 2: Clarify - Transition Guards and API Contract", "status": "completed"},
-    {"step": "Phase 2: Clarify - Transition Guards and API Contract Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - GitHub Terminal Event and Reconciliation", "status": "completed"},
-    {"step": "Phase 2: Clarify - GitHub Terminal Event and Reconciliation Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - UI, Labels, Notifications, and Status Vocabulary", "status": "completed"},
-    {"step": "Phase 2: Clarify - UI, Labels, Notifications, and Status Vocabulary Consensus", "status": "completed"},
-    {"step": "Gate G2: clarification outcomes recorded and markers resolved", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "completed"},
-    {"step": "Gate G3: plan artifacts, constitution gates, architecture constraints verified", "status": "completed"},
-    {"step": "Phase 4: Checklist - State Machine and Feature Flags", "status": "completed"},
-    {"step": "Phase 4: Checklist - State Machine and Feature Flags Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - GitHub Sync and Terminal Event Evidence", "status": "completed"},
-    {"step": "Phase 4: Checklist - GitHub Sync and Terminal Event Evidence Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - Notifications and Operator UX", "status": "completed"},
-    {"step": "Phase 4: Checklist - Notifications and Operator UX Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - Regression Safety and Cross-Spec Boundaries", "status": "completed"},
-    {"step": "Phase 4: Checklist - Regression Safety and Cross-Spec Boundaries Consensus", "status": "completed"},
-    {"step": "Gate G4: checklist gaps remediated without scope drift", "status": "completed"},
-    {"step": "Phase 5: Tasks", "status": "completed"},
-    {"step": "Gate G5: dependency-ordered tasks cover every P4 acceptance criterion and transition path", "status": "completed"},
-    {"step": "Phase 6: Analyze", "status": "completed"},
-    {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
-    {"step": "Gate G6: no CRITICAL/HIGH findings remain", "status": "completed"},
-    {"step": "Phase 7: Setup and status hygiene verification (T001-T005)", "status": "completed"},
-    {"step": "Phase 7: Foundational status vocabulary and transition boundary (T006-T014)", "status": "completed"},
-    {"step": "Phase 7: US1 flag-off rollback behavior (T015-T023)", "status": "completed"},
-    {"step": "Phase 7: US2 owner merge gate routing (T024-T033)", "status": "completed"},
-    {"step": "Phase 7: US3 verified merge completion and blocked paths (T034-T049)", "status": "completed"},
-    {"step": "Phase 7: US4 Kanban lane and GitHub label (T050-T059)", "status": "completed"},
-    {"step": "Phase 7: US5 owner notifications (T060-T070)", "status": "completed"},
-    {"step": "Phase 7: Polish, guardrails, and final verification (T071-T079)", "status": "completed"},
-    {"step": "Gate G7: focused tests, typecheck, lint, build/e2e or justified subset, guardrails, docs status, branch push", "status": "completed"},
-    {"step": "Post: Verification and Status Sync", "status": "completed"},
-    {"step": "Post: Verify Implementation", "status": "completed"},
-    {"step": "Post: Code Review", "status": "completed"},
-    {"step": "Post: Integration Suite", "status": "completed"},
-    {"step": "Post: Cleanup", "status": "completed"},
-    {"step": "Post: PR Creation", "status": "completed"},
-    {"step": "Post: Review Remediation", "status": "pending"},
-    {"step": "Post: Retrospective", "status": "completed"}
+    {
+      "step": "Status-sync stale SPEC-005 workflow state",
+      "status": "completed"
+    },
+    {
+      "step": "Status-sync stale SPEC-008 workflow state",
+      "status": "completed"
+    },
+    {
+      "step": "Run SPEC-009A grill-me interview",
+      "status": "completed"
+    },
+    {
+      "step": "Create SPEC-009A design concept",
+      "status": "completed"
+    },
+    {
+      "step": "Create SPEC-009A workflow",
+      "status": "completed"
+    },
+    {
+      "step": "Run SPEC-009A autopilot",
+      "status": "pending"
+    }
   ]
 }

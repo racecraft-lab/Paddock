@@ -66,6 +66,7 @@ const endpoints: Endpoint[] = [
 
   // ── Workflows & Pipelines ─────────────────────────
   { path: '/api/workflows', methods: ['GET', 'POST', 'PUT', 'DELETE'], description: 'Workflow templates CRUD', tag: 'Workflows', auth: 'viewer/operator' },
+  { path: '/api/workflow-contracts/diagnostics', methods: ['GET'], description: 'Read-only workflow contract diagnostics', tag: 'Workflows', auth: 'viewer' },
   { path: '/api/pipelines', methods: ['GET', 'POST', 'DELETE'], description: 'Pipeline CRUD', tag: 'Pipelines', auth: 'viewer/operator' },
   { path: '/api/pipelines/run', methods: ['POST'], description: 'Execute pipeline', tag: 'Pipelines', auth: 'operator' },
 

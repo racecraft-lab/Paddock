@@ -47,6 +47,8 @@ const specStrictFiles = [
   // Test-mode + admin-gated; not reachable in production.
   'src/app/api/admin/spec-008/**/*.ts',
   'src/app/api/admin/workspaces/**/*.ts',
+  // SPEC-009A workflow contract roundtrip.
+  'src/lib/workflow-contracts/**/*.ts',
 ]
 
 const config = tseslint.config(

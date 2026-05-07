@@ -16094,6 +16094,56 @@
         }
       }
     },
+    "/api/workflow-contracts/diagnostics": {
+      "get": {
+        "tags": [
+          "Workflows"
+        ],
+        "summary": "List workflow contract diagnostics",
+        "operationId": "listWorkflowContractDiagnostics",
+        "parameters": [
+          {
+            "name": "family",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "mission-control"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workflow contract diagnostics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "runs": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
     "/api/workload": {
       "get": {
         "tags": [

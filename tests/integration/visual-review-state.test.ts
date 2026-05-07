@@ -215,6 +215,9 @@ describe('visual review state', () => {
       'tests/e2e/spec-008/governance-budget.spec.ts',
     ])).toBe(true)
     expect(visualReviewRequiredForFiles([
+      'tests/e2e/workflow-contract-diagnostics.spec.ts',
+    ])).toBe(true)
+    expect(visualReviewRequiredForFiles([
       'regconfig.storybook.json',
     ])).toBe(true)
   })

@@ -39,7 +39,7 @@ Re-read it before each phase if a prompt needs disambiguation. The design concep
 | Checklist | `$speckit-checklist` | Complete | All 4 domains complete with marker counter returning zero `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | 2026-05-02 generated `specs/005-ready-for-owner/tasks.md`; 79 tasks with P4-AC1..P4-AC6, all `done` transition paths, and FR-019a/SC-006 accessibility coverage |
 | Analyze | `$speckit-analyze` | Complete | 2026-05-02 remediated 3 findings: one HIGH roadmap flag-off/runtime-enum drift, one MEDIUM roadmap notification-module drift, and one LOW US1 independent-test wording gap; marker scans clean |
-| Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor; stop before downstream SPEC-007/008/009 behavior |
+| Implement | `$speckit-implement` | Complete | T001-T079 shipped; PR #23 merged to `main` as `851571f`; downstream SPEC-007/008/009 behavior remained out of scope |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -566,7 +566,7 @@ Final command evidence:
 - [x] Required Playwright/UI evidence passes or is explicitly justified.
 - [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-005 implementation evidence after verification.
 - [x] `docs/rc-factory-v1-prd.md` reflects SPEC-005 completion after verification.
-- [x] Branch is pushed for review.
+- [x] Branch was pushed for review and merged to `main` as PR #23 (`851571f`).
 
 ---
 
