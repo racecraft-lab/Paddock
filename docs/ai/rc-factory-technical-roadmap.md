@@ -42,7 +42,7 @@ This policy applies to every pending spec after SPEC-008.
 3. **Human validation path.** Every spec must name the exact manual check an operator can run in the target deployment after merge. "Tests pass" is insufficient; the spec must explain what to flip, what screen/API/CLI to inspect, and how to roll back.
 4. **Parallel-agent ownership.** Specs may run in parallel only when their strict scopes do not edit the same primary files or mutate the same runtime state. The roadmap must name "can run with" and "blocked by" relationships so Mission Control can assign multiple agents safely.
 5. **No hidden follow-on work.** A spec that discovers a larger requirement opens a follow-up spec/issue instead of expanding the PR. The PR body must call out anything deferred.
-6. **Self-hosting bias.** Once SPEC-009D lands, every later spec should be represented as a GitHub issue ingested into Mission Control, assigned through the Mission Control Product Line workflow, and closed from Mission Control evidence where possible.
+6. **Self-hosting bias.** Once SPEC-009D lands, every later spec should be represented as a GitHub issue ingested into Mission Control, routed first through the Mission Control Issue Triage workflow family, then assigned to Issue Remediation, SpecKit/SDD, specialist review, or closure from Mission Control evidence where possible.
 
 ## Post-Merge HITL UAT Deployment Policy
 
@@ -167,10 +167,10 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 ### Pending Mini-Spec Parallelization Snapshot
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, and SPEC-008 are complete on `main`. Recent merge evidence: SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, and SPEC-008 PR #26 as `bd9a693`.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, and SPEC-009A are complete on `main`. Recent merge evidence: SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, and SPEC-009A PR #28 as `2b78970e`.
 
 - **Ready now after SPEC-009A:** SPEC-009B, SPEC-011, and SPEC-012A can be assigned to different agents because they touch the product-line seed, an optional security adapter, and docs/process indexing respectively.
-- **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, apply workflow/governance policy, run the issue to `ready_for_owner`, record the merge gate, and emit a reviewable lifecycle packet.
+- **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
 - **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while SPEC-009C is being smoked; SPEC-010B waits for SPEC-009C and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Control-plane path:** SPEC-013A -> SPEC-013B -> SPEC-013C starts after the pilot review packet and repo knowledge index exist. These specs own claim/reconciliation/retry state; they do not launch harnesses.
 - **Runner path:** SPEC-014A -> SPEC-014B establishes sandbox ownership and fake adapter proof first. SPEC-014C and SPEC-014D then run in parallel if they do not touch the same adapter files.
@@ -191,8 +191,8 @@ This matrix is the second-pass review gate for every roadmap spec. Each row must
 | SPEC-007 | Dispositions and artifacts become durable handoff/review evidence | `FEATURE_DISPOSITION_LOGGING` and `FEATURE_TASK_ARTIFACTS` | Publish/consume a safe artifact, reject or redact a seeded secret fixture, inspect disposition rollup and artifact admin/storage health |
 | SPEC-008 | Governance can allow/defer/block autonomous work before dispatch | `FEATURE_RESOURCE_GOVERNANCE`; optional `FEATURE_OPENCLAW_HEALTH_COSTS` | Enable policies for one product line, verify WIP/blackout/budget decisions in UI/API/activity, and verify OpenClaw absence-safe OFF path |
 | SPEC-009A | Mission Control workflow policy is repo-owned and roundtrippable | Process-only contract import/export | Export/import the Mission Control workflow family, inspect no-op parity hashes, and verify invalid contracts fail closed visibly |
-| SPEC-009B | Mission Control is seeded as Product Line A without launching work | `PILOT_MISSION_CONTROL_E2E` seed scope only | Run seed twice on target deployment, inspect workspace/departments/agents/repo/templates/flags/governance, and confirm no issue claim/dispatch |
-| SPEC-009C | Mission Control can work one GitHub issue through the self-hosting pilot | `PILOT_MISSION_CONTROL_E2E` for one real or synthetic issue | Observe triage -> plan -> dev -> review -> Aegis -> `ready_for_owner`, merge at `G_PILOT_MERGE`, and verify sync to `done` |
+| SPEC-009B | Mission Control is seeded as Product Line A without launching work | `PILOT_MISSION_CONTROL_E2E` seed scope only | Run seed twice on target deployment, inspect workspace/departments/agents/repo/templates/flags/governance plus separate Issue Triage and Issue Remediation workflow families, and confirm no issue claim/dispatch |
+| SPEC-009C | Mission Control can work one GitHub issue through the self-hosting pilot | `PILOT_MISSION_CONTROL_E2E` for one real or synthetic issue | Observe Issue Triage -> Issue Remediation plan -> dev -> review -> Aegis -> `ready_for_owner`, merge at `G_PILOT_MERGE`, and verify sync to `done`; confirm SpecKit/SDD is only selected when triage outputs `NEEDS_SPEC` |
 | SPEC-009D | Pilot work leaves a reviewable lifecycle packet | `PILOT_MISSION_CONTROL_E2E` review-packet scope | Inspect packet contents for issue/PR/artifacts/governance/Aegis/owner gate/current stage and explicitly deferred run/sandbox fields |
 | SPEC-010A | Product-line seeding is reusable beyond Mission Control | Process-only seeder config | Recreate the Mission Control seed from generic config in a safe target scope and verify incomplete/unsafe configs reject without mutation |
 | SPEC-010B | Product Line B can be onboarded, smoked, and disabled independently | Disabled workspace until operator enablement | Onboard Product Line B in under one operator-hour, run one issue smoke, inspect isolation/shared globals, then disable cleanly |
@@ -398,11 +398,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** SPEC-009C, SPEC-010A
 - **Scope source:** Phase 8B - Mission Control product-line seed and flag activation
 - **Acceptance criteria source:** Phase 8B Acceptance Criteria
-- **Scope summary:** Seed Mission Control as Product Line A with workspace, departments, agent assignments, GitHub repo routing, the SPEC-009A workflow family, Phase 1-7 feature flags, and conservative governance policies. This proves configuration and policy shape without dispatching a live autonomous issue.
+- **Scope summary:** Seed Mission Control as Product Line A with workspace, departments, agent assignments, GitHub repo routing, separate Issue Triage and Issue Remediation workflow families from the SPEC-009A contract mechanism, Phase 1-7 feature flags, and conservative governance policies. This proves configuration and policy shape without dispatching a live autonomous issue.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** `scripts/seed-mission-control-product-line.ts` if authored in TypeScript; seed fixtures/config docs; focused tests for idempotent seed output, GitHub repo preservation, assignments, feature flags, and governance rows.
 - **Autopilot notes:** Preserve GitHub linkage and sync metadata for previously synced Mission Control issues. The app remains the setup/observability/control surface; it is not the pilot intake path.
-- **Definition of done:** Running the seed twice leaves one Mission Control product-line workspace with expected departments, assignments, repo config, imported templates, feature flags, and governance policies; no autonomous issue is claimed or dispatched by this spec.
+- **Definition of done:** Running the seed twice leaves one Mission Control product-line workspace with expected departments, assignments, repo config, imported Issue Triage and Issue Remediation templates, feature flags, and governance policies; no autonomous issue is claimed or dispatched by this spec.
 
 ### SPEC-009C: GitHub-Linked Mission Control Pilot Smoke
 
@@ -413,11 +413,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** SPEC-009D, SPEC-010B
 - **Scope source:** Phase 8C - GitHub-linked Mission Control pilot smoke
 - **Acceptance criteria source:** Phase 8C Acceptance Criteria
-- **Scope summary:** Run one eligible live `racecraft-lab/mission-control` issue or one synthetic `[mc-pilot]` GitHub issue through GitHub ingest, triage, plan, development, review, Aegis, `ready_for_owner`, manual `G_PILOT_MERGE`, and `done` reconciliation. This is the first self-hosting proof that Mission Control can work its own GitHub issue toward completion.
+- **Scope summary:** Run one eligible live `racecraft-lab/mission-control` issue or one synthetic `[mc-pilot]` GitHub issue through GitHub ingest, Issue Triage, Issue Remediation planning, development, review, Aegis, `ready_for_owner`, manual `G_PILOT_MERGE`, and `done` reconciliation. This is the first self-hosting proof that Mission Control can work its own GitHub issue toward completion. Triage remains the router: duplicates, OBE, invalid, needs-human, needs-specialist, and `NEEDS_SPEC` outcomes must not enter the remediation lane.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** pilot eligibility checks, synthetic issue fallback, smoke checklist, focused fixtures around GitHub ingest and merge reconciliation, and any minimal bug fixes needed for the pilot path. No formal claim-state table, no sandbox runner, no adapter registry.
+- **Strict Scope:** pilot eligibility checks for one `ACTIONABLE_REMEDIATION` issue, synthetic issue fallback, smoke checklist, focused fixtures around GitHub ingest and merge reconciliation, and any minimal bug fixes needed for the Issue Triage -> Issue Remediation pilot path. No formal claim-state table, no sandbox runner, no adapter registry, and no full SpecKit/SDD execution lane.
 - **Autopilot notes:** Start from GitHub ingest/sync. Local-only tasks created through `/api/tasks` or the task board are not eligible. Operator intervention is allowed only at `G_PILOT_MERGE`.
-- **Definition of done:** A pilot issue reaches `ready_for_owner` with disposition, artifacts, governance evidence, Aegis approval, and no resource-policy violations; the operator records the merge gate in `docs/qa/pilot-smoke-checklist.md`; the merge fixture proves `ready_for_owner -> done` reconciliation.
+- **Definition of done:** A pilot issue is triaged as `ACTIONABLE_REMEDIATION`, reaches `ready_for_owner` through the remediation family with disposition, artifacts, governance evidence, Aegis approval, and no resource-policy violations; the operator records the merge gate in `docs/qa/pilot-smoke-checklist.md`; the merge fixture proves `ready_for_owner -> done` reconciliation.
 
 ### SPEC-009D: Pilot Review Packet and Lifecycle Snapshot
 
@@ -1201,8 +1201,8 @@ This is the critical path for using Mission Control to finish its own roadmap. I
 | Spec | Slice | Blocked By | Can Run With | Human Validation |
 |---|---|---|---|---|
 | SPEC-009A | Workflow contract roundtrip | SPEC-008 | SPEC-011, SPEC-012A | Import/export the contract, inspect fail-closed errors, confirm no pilot dispatch |
-| SPEC-009B | Product-line seed + flag activation | SPEC-009A | SPEC-010A prep after merge | Run seed on target deployment, inspect product-line config, flags, assignments, governance |
-| SPEC-009C | GitHub-linked pilot smoke | SPEC-009B | SPEC-010A | Label a real/synthetic issue, observe triage -> plan -> dev -> review -> Aegis -> `ready_for_owner`, merge PR at `G_PILOT_MERGE` |
+| SPEC-009B | Product-line seed + flag activation | SPEC-009A | SPEC-010A prep after merge | Run seed on target deployment, inspect product-line config, flags, assignments, governance, Issue Triage family, and Issue Remediation family |
+| SPEC-009C | GitHub-linked pilot smoke | SPEC-009B | SPEC-010A | Label a real/synthetic issue, observe Issue Triage -> Issue Remediation plan -> dev -> review -> Aegis -> `ready_for_owner`, merge PR at `G_PILOT_MERGE` |
 | SPEC-009D | Review packet + lifecycle snapshot | SPEC-009C | SPEC-012A/010A follow-on | Inspect one packet with issue/PR/artifact/governance/Aegis/owner-gate state and explicit deferred fields |
 
 ### Lane B - Optional Security Sidecar
