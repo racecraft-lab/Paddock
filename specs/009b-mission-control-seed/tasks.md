@@ -17,11 +17,11 @@
 
 **Purpose**: Establish SPEC-009B-owned files, strict-mode coverage, and fixtures before story work.
 
-- [ ] T001 [P] Add SPEC-009B owned module and script entries to `tsconfig.spec-strict.json`
-- [ ] T002 [P] Add SPEC-009B lint coverage for `src/lib/mission-control-seed/**` and `scripts/seed-mission-control-product-line.ts` in `eslint.config.mjs`
-- [ ] T003 [P] Add an optional `seed:mission-control` package script that wraps the canonical Node type-stripping command in `package.json`
-- [ ] T004 [P] Create the focused SQLite seed fixture helper in `src/lib/__tests__/mission-control-seed/test-db.ts`
-- [ ] T005 [P] Create sanitized operator evidence fixtures for cron, OpenClaw/gateway, and `ssh hall` cleanup surfaces in `src/lib/__tests__/mission-control-seed/fixtures/operator-evidence.json`
+- [x] T001 [P] Add SPEC-009B owned module and script entries to `tsconfig.spec-strict.json`
+- [x] T002 [P] Add SPEC-009B lint coverage for `src/lib/mission-control-seed/**` and `scripts/seed-mission-control-product-line.ts` in `eslint.config.mjs`
+- [x] T003 [P] Add an optional `seed:mission-control` package script that wraps the canonical Node type-stripping command in `package.json`
+- [x] T004 [P] Create the focused SQLite seed fixture helper in `src/lib/__tests__/mission-control-seed/test-db.ts`
+- [x] T005 [P] Create sanitized operator evidence fixtures for cron, OpenClaw/gateway, and `ssh hall` cleanup surfaces in `src/lib/__tests__/mission-control-seed/fixtures/operator-evidence.json`
 
 ---
 
@@ -31,10 +31,10 @@
 
 **Critical**: No user story work can begin until this phase is complete.
 
-- [ ] T006 [P] Define seed constants, result shapes, residue summaries, evidence schema, and governance identities in `src/lib/mission-control-seed/types.ts`
-- [ ] T007 [P] Write failing redaction tests for secrets, tokens, Authorization headers, API keys, credential substrings, and allowed identifiers in `src/lib/__tests__/mission-control-seed/redaction.test.ts`
-- [ ] T008 Implement reusable evidence redaction helpers in `src/lib/mission-control-seed/redaction.ts`
-- [ ] T009 Add redaction helper exports and type imports used by seed, preflight, and evidence modules in `src/lib/mission-control-seed/types.ts`
+- [x] T006 [P] Define seed constants, result shapes, residue summaries, evidence schema, and governance identities in `src/lib/mission-control-seed/types.ts`
+- [x] T007 [P] Write failing redaction tests for secrets, tokens, Authorization headers, API keys, credential substrings, and allowed identifiers in `src/lib/__tests__/mission-control-seed/redaction.test.ts`
+- [x] T008 Implement reusable evidence redaction helpers in `src/lib/mission-control-seed/redaction.ts`
+- [x] T009 Add redaction helper exports and type imports used by seed, preflight, and evidence modules in `src/lib/mission-control-seed/types.ts`
 
 **Checkpoint**: Foundation ready - story tests and implementation can proceed.
 
@@ -50,18 +50,18 @@
 
 Write these tests first and confirm they fail before implementation.
 
-- [ ] T010 [P] [US1] Write failing clean Product Line and Facility preservation tests in `src/lib/__tests__/mission-control-seed/seed.test.ts`
-- [ ] T011 [P] [US1] Write failing department shape tests for QA, Development, DevSecOps, Marketing, Customer Service, Finance, and no macOS/UI/website/docs departments in `src/lib/__tests__/mission-control-seed/seed.test.ts`
-- [ ] T012 [P] [US1] Write failing QA triage/inbox and `racecraft-lab/mission-control` repo sync-owner tests in `src/lib/__tests__/mission-control-seed/seed.test.ts`
-- [ ] T013 [P] [US1] Write failing project-scoped role assignment tests that reject any `project_agent_assignments.workspace_id` dependency in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T010 [P] [US1] Write failing clean Product Line and Facility preservation tests in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T011 [P] [US1] Write failing department shape tests for QA, Development, DevSecOps, Marketing, Customer Service, Finance, and no macOS/UI/website/docs departments in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T012 [P] [US1] Write failing QA triage/inbox and `racecraft-lab/mission-control` repo sync-owner tests in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T013 [P] [US1] Write failing project-scoped role assignment tests that reject any `project_agent_assignments.workspace_id` dependency in `src/lib/__tests__/mission-control-seed/seed.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T014 [US1] Implement idempotent `facility` preservation and `mission-control` workspace upserts in `src/lib/mission-control-seed/seed.ts`
-- [ ] T015 [US1] Implement six department project upserts with stable slugs, ticket prefixes, area slugs, and product-surface exclusions in `src/lib/mission-control-seed/seed.ts`
-- [ ] T016 [US1] Implement QA-only triage/inbox and repository sync-owner assignment for `racecraft-lab/mission-control` in `src/lib/mission-control-seed/seed.ts`
-- [ ] T017 [US1] Implement required role-to-platform-agent assignment upserts through `project_id`, `agent_name`, and `role` in `src/lib/mission-control-seed/seed.ts`
-- [ ] T018 [US1] Emit workspace, department, QA sync-owner, and role assignment counts in `src/lib/mission-control-seed/evidence.ts`
+- [x] T014 [US1] Implement idempotent `facility` preservation and `mission-control` workspace upserts in `src/lib/mission-control-seed/seed.ts`
+- [x] T015 [US1] Implement six department project upserts with stable slugs, ticket prefixes, area slugs, and product-surface exclusions in `src/lib/mission-control-seed/seed.ts`
+- [x] T016 [US1] Implement QA-only triage/inbox and repository sync-owner assignment for `racecraft-lab/mission-control` in `src/lib/mission-control-seed/seed.ts`
+- [x] T017 [US1] Implement required role-to-platform-agent assignment upserts through `project_id`, `agent_name`, and `role` in `src/lib/mission-control-seed/seed.ts`
+- [x] T018 [US1] Emit workspace, department, QA sync-owner, and role assignment counts in `src/lib/mission-control-seed/evidence.ts`
 
 **Checkpoint**: User Story 1 is fully functional and independently testable.
 
@@ -77,21 +77,21 @@ Write these tests first and confirm they fail before implementation.
 
 Write these tests first and confirm they fail before implementation.
 
-- [ ] T019 [P] [US2] Write failing Mission Control issue linkage and sync metadata preservation tests in `src/lib/__tests__/mission-control-seed/seed.test.ts`
-- [ ] T020 [P] [US2] Write failing preflight tests for non-Mission-Control project, task, repo config, cron, OpenClaw/gateway, and FocusEngine residue in `src/lib/__tests__/mission-control-seed/preflight.test.ts`
-- [ ] T021 [P] [US2] Write failing blocked-preflight snapshot tests that assert `mutation_status: "not_mutated"` and unchanged residue rows/files in `src/lib/__tests__/mission-control-seed/preflight.test.ts`
-- [ ] T022 [P] [US2] Write failing blocked-output redaction and cleanup-checklist-reference tests in `src/lib/__tests__/mission-control-seed/preflight.test.ts`
-- [ ] T023 [P] [US2] Write failing runbook checklist tests for backup/export-first, explicit operator confirmation, destructive cleanup warnings, and post-cleanup verification in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
+- [x] T019 [P] [US2] Write failing Mission Control issue linkage and sync metadata preservation tests in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T020 [P] [US2] Write failing preflight tests for non-Mission-Control project, task, repo config, cron, OpenClaw/gateway, and FocusEngine residue in `src/lib/__tests__/mission-control-seed/preflight.test.ts`
+- [x] T021 [P] [US2] Write failing blocked-preflight snapshot tests that assert `mutation_status: "not_mutated"` and unchanged residue rows/files in `src/lib/__tests__/mission-control-seed/preflight.test.ts`
+- [x] T022 [P] [US2] Write failing blocked-output redaction and cleanup-checklist-reference tests in `src/lib/__tests__/mission-control-seed/preflight.test.ts`
+- [x] T023 [P] [US2] Write failing runbook checklist tests for backup/export-first, explicit operator confirmation, destructive cleanup warnings, and post-cleanup verification in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement non-mutating residue scans for project/task GitHub sync state in `src/lib/mission-control-seed/preflight.ts`
-- [ ] T025 [US2] Implement sanitized operator evidence loading for issue-sync cron, OpenClaw/gateway agents, and `ssh hall` FocusEngine residue in `src/lib/mission-control-seed/preflight.ts`
-- [ ] T026 [US2] Integrate preflight-before-mutation blocking into apply mode in `src/lib/mission-control-seed/seed.ts`
-- [ ] T027 [US2] Re-home existing `racecraft-lab/mission-control` issue tasks to QA triage/intake while preserving GitHub linkage and sync metadata in `src/lib/mission-control-seed/seed.ts`
-- [ ] T028 [US2] Emit blocked-preflight residue summaries, unchanged snapshot hashes, redaction proof, and cleanup checklist path in `src/lib/mission-control-seed/evidence.ts`
-- [ ] T029 [US2] Create the backup/export-first operator cleanup checklist and `ssh hall` FocusEngine cleanup verification flow in `docs/runbooks/mission-control-seed-predeploy.md`
-- [ ] T030 [US2] Implement `preflight` mode and blocked-preflight exit code `2` in `scripts/seed-mission-control-product-line.ts`
+- [x] T024 [US2] Implement non-mutating residue scans for project/task GitHub sync state in `src/lib/mission-control-seed/preflight.ts`
+- [x] T025 [US2] Implement sanitized operator evidence loading for issue-sync cron, OpenClaw/gateway agents, and `ssh hall` FocusEngine residue in `src/lib/mission-control-seed/preflight.ts`
+- [x] T026 [US2] Integrate preflight-before-mutation blocking into apply mode in `src/lib/mission-control-seed/seed.ts`
+- [x] T027 [US2] Re-home existing `racecraft-lab/mission-control` issue tasks to QA triage/intake while preserving GitHub linkage and sync metadata in `src/lib/mission-control-seed/seed.ts`
+- [x] T028 [US2] Emit blocked-preflight residue summaries, unchanged snapshot hashes, redaction proof, and cleanup checklist path in `src/lib/mission-control-seed/evidence.ts`
+- [x] T029 [US2] Create the backup/export-first operator cleanup checklist and `ssh hall` FocusEngine cleanup verification flow in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T030 [US2] Implement `preflight` mode and blocked-preflight exit code `2` in `scripts/seed-mission-control-product-line.ts`
 
 **Checkpoint**: User Stories 1 and 2 are independently functional and preserve tracker truth without destructive cleanup.
 
@@ -107,22 +107,22 @@ Write these tests first and confirm they fail before implementation.
 
 Write these tests first and confirm they fail before implementation.
 
-- [ ] T031 [P] [US3] Write failing workflow-contract readiness tests for missing/stale Mission Control slugs and stale tracker identity in `src/lib/__tests__/mission-control-seed/seed.test.ts`
-- [ ] T032 [P] [US3] Write failing workflow import tests for the nine required Issue Triage and Issue Remediation slugs in `src/lib/__tests__/mission-control-seed/seed.test.ts`
-- [ ] T033 [P] [US3] Write failing canonical pilot flag tests that enable `PILOT_MISSION_CONTROL_E2E` and reject persisted `PILOT_PRODUCT_LINE_A_E2E` in `src/lib/__tests__/mission-control-seed/seed.test.ts`
-- [ ] T034 [P] [US3] Write failing future-flag guard tests for task-control-plane, runner, sandbox, harness, and auto-merge flags in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
-- [ ] T035 [P] [US3] Write failing governance policy tests for advisory token/USD budgets, evaluator-inactive WIP visibility, no blackout/degraded-window rows, and no normal-intake defer/block decision in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
+- [x] T031 [P] [US3] Write failing workflow-contract readiness tests for missing/stale Mission Control slugs and stale tracker identity in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T032 [P] [US3] Write failing workflow import tests for the nine required Issue Triage and Issue Remediation slugs in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T033 [P] [US3] Write failing canonical pilot flag tests that enable `PILOT_MISSION_CONTROL_E2E` and reject persisted `PILOT_PRODUCT_LINE_A_E2E` in `src/lib/__tests__/mission-control-seed/seed.test.ts`
+- [x] T034 [P] [US3] Write failing future-flag guard tests for task-control-plane, runner, sandbox, harness, and auto-merge flags in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
+- [x] T035 [P] [US3] Write failing governance policy tests for advisory token/USD budgets, evaluator-inactive WIP visibility, no blackout/degraded-window rows, and no normal-intake defer/block decision in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T036 [US3] Correct the Mission Control workflow contract slugs and tracker repo identity narrowly in `docs/ai/workflows/mission-control/workflow-contract.yaml`
-- [ ] T037 [US3] Regenerate the workflow contract Markdown review export after the narrow contract correction in `docs/ai/workflows/mission-control/exports/workflow-contract.md`
-- [ ] T038 [US3] Reuse `loadWorkflowContractFromFile()` and `importWorkflowContract()` with the seeded Product Line workspace id in `src/lib/mission-control-seed/seed.ts`
-- [ ] T039 [US3] Add the canonical `PILOT_MISSION_CONTROL_E2E` registry/runtime support and legacy drift handling in `src/lib/feature-flags.ts`
-- [ ] T040 [US3] Update canonical pilot flag operator wording in `docs/feature-flags-runbook.md`
-- [ ] T041 [US3] Implement Product Line A feature-flag upsert logic with Phase 1-7 prerequisites enabled and future flags disabled or absent in `src/lib/mission-control-seed/seed.ts`
-- [ ] T042 [US3] Implement idempotent governance policy upserts for the three stable `resource_policies.notes` identities in `src/lib/mission-control-seed/seed.ts`
-- [ ] T043 [US3] Emit workflow slugs, contract run/hash, canonical flag state, governance identities, and normal-intake governance allow evidence in `src/lib/mission-control-seed/evidence.ts`
+- [x] T036 [US3] Correct the Mission Control workflow contract slugs and tracker repo identity narrowly in `docs/ai/workflows/mission-control/workflow-contract.yaml`
+- [x] T037 [US3] Regenerate the workflow contract Markdown review export after the narrow contract correction in `docs/ai/workflows/mission-control/exports/workflow-contract.md`
+- [x] T038 [US3] Reuse `loadWorkflowContractFromFile()` and `importWorkflowContract()` with the seeded Product Line workspace id in `src/lib/mission-control-seed/seed.ts`
+- [x] T039 [US3] Add the canonical `PILOT_MISSION_CONTROL_E2E` registry/runtime support and legacy drift handling in `src/lib/feature-flags.ts`
+- [x] T040 [US3] Update canonical pilot flag operator wording in `docs/feature-flags-runbook.md`
+- [x] T041 [US3] Implement Product Line A feature-flag upsert logic with Phase 1-7 prerequisites enabled and future flags disabled or absent in `src/lib/mission-control-seed/seed.ts`
+- [x] T042 [US3] Implement idempotent governance policy upserts for the three stable `resource_policies.notes` identities in `src/lib/mission-control-seed/seed.ts`
+- [x] T043 [US3] Emit workflow slugs, contract run/hash, canonical flag state, governance identities, and normal-intake governance allow evidence in `src/lib/mission-control-seed/evidence.ts`
 
 **Checkpoint**: User Stories 1, 2, and 3 work independently without creating pilot execution state.
 
@@ -138,18 +138,18 @@ Write these tests first and confirm they fail before implementation.
 
 Write these tests first and confirm they fail before implementation.
 
-- [ ] T044 [P] [US4] Write failing two-run idempotency tests for stable workspace, Facility, department, assignment, workflow, flag, governance, and issue-intake counts in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
-- [ ] T045 [P] [US4] Write failing non-dispatch tests for zero new pilot tasks, zero successor records, zero per-agent seed tasks, no claims, and no dispatched state in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
-- [ ] T046 [P] [US4] Write failing static guardrail tests for no synthetic GitHub issue, scheduler launch, runner state, sandbox lifecycle, auto-merge, post-merge reconciliation, or generic Product Line B seeder scope in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
-- [ ] T047 [P] [US4] Write failing CLI verify-mode contract tests for exit code `4` on invariant failure and redacted error output in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
+- [x] T044 [P] [US4] Write failing two-run idempotency tests for stable workspace, Facility, department, assignment, workflow, flag, governance, and issue-intake counts in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
+- [x] T045 [P] [US4] Write failing non-dispatch tests for zero new pilot tasks, zero successor records, zero per-agent seed tasks, no claims, and no dispatched state in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
+- [x] T046 [P] [US4] Write failing static guardrail tests for no synthetic GitHub issue, scheduler launch, runner state, sandbox lifecycle, auto-merge, post-merge reconciliation, or generic Product Line B seeder scope in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
+- [x] T047 [P] [US4] Write failing CLI verify-mode contract tests for exit code `4` on invariant failure and redacted error output in `src/lib/__tests__/mission-control-seed/evidence.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T048 [US4] Implement stable row snapshot and identity-count hashing for idempotency evidence in `src/lib/mission-control-seed/evidence.ts`
-- [ ] T049 [US4] Implement `apply` and `verify` modes, exit codes `0`, `2`, `3`, `4`, and `5`, and JSON output in `scripts/seed-mission-control-product-line.ts`
-- [ ] T050 [US4] Add non-dispatch database assertions for tasks, workflow-chain successor records, claims, dispatches, runner rows, sandbox rows, and auto-merge markers in `src/lib/mission-control-seed/evidence.ts`
-- [ ] T051 [US4] Add SPEC-009B-owned static forbidden-scope checks for scheduler, runner, sandbox, harness adapter, synthetic issue, generic Product Line B, and auto-merge code paths in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
-- [ ] T052 [US4] Record verify-mode usage, idempotent rerun evidence expectations, and zero pilot task/chain record assertions in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T048 [US4] Implement stable row snapshot and identity-count hashing for idempotency evidence in `src/lib/mission-control-seed/evidence.ts`
+- [x] T049 [US4] Implement `apply` and `verify` modes, exit codes `0`, `2`, `3`, `4`, and `5`, and JSON output in `scripts/seed-mission-control-product-line.ts`
+- [x] T050 [US4] Add non-dispatch database assertions for tasks, workflow-chain successor records, claims, dispatches, runner rows, sandbox rows, and auto-merge markers in `src/lib/mission-control-seed/evidence.ts`
+- [x] T051 [US4] Add SPEC-009B-owned static forbidden-scope checks for scheduler, runner, sandbox, harness adapter, synthetic issue, generic Product Line B, and auto-merge code paths in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
+- [x] T052 [US4] Record verify-mode usage, idempotent rerun evidence expectations, and zero pilot task/chain record assertions in `docs/runbooks/mission-control-seed-predeploy.md`
 
 **Checkpoint**: All user stories are independently functional and SPEC-009B remains seed-only.
 
@@ -159,15 +159,15 @@ Write these tests first and confirm they fail before implementation.
 
 **Purpose**: Documentation, status updates, and verification evidence that span all stories.
 
-- [ ] T053 [P] Update operator quickstart commands and expected verification outputs in `specs/009b-mission-control-seed/quickstart.md`
-- [ ] T054 [P] Update SPEC-009B status and validation evidence in `docs/ai/rc-factory-technical-roadmap.md`
-- [ ] T055 Update Phase 5 metrics, implementation-readiness notes, and later phase status in `docs/ai/specs/SPEC-009B-workflow.md`
-- [ ] T056 [P] Record `pnpm exec vitest run src/lib/__tests__/mission-control-seed` results in `docs/runbooks/mission-control-seed-predeploy.md`
-- [ ] T057 [P] Record `pnpm typecheck` results in `docs/runbooks/mission-control-seed-predeploy.md`
-- [ ] T058 [P] Record `pnpm lint` results in `docs/runbooks/mission-control-seed-predeploy.md`
-- [ ] T059 Record `pnpm test` and `pnpm build` results or justified focused alternatives in `docs/runbooks/mission-control-seed-predeploy.md`
-- [ ] T060 Record full seed twice plus verify-mode evidence for a clean eligible target in `docs/runbooks/mission-control-seed-predeploy.md`
-- [ ] T061 Confirm no unresolved clarification, gap, critical, or forbidden-scope markers remain in `specs/009b-mission-control-seed/tasks.md`
+- [x] T053 [P] Update operator quickstart commands and expected verification outputs in `specs/009b-mission-control-seed/quickstart.md`
+- [x] T054 [P] Update SPEC-009B status and validation evidence in `docs/ai/rc-factory-technical-roadmap.md`
+- [x] T055 Update Phase 5 metrics, implementation-readiness notes, and later phase status in `docs/ai/specs/SPEC-009B-workflow.md`
+- [x] T056 [P] Record `pnpm exec vitest run src/lib/__tests__/mission-control-seed` results in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T057 [P] Record `pnpm typecheck` results in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T058 [P] Record `pnpm lint` results in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T059 Record `pnpm test` and `pnpm build` results or justified focused alternatives in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T060 Record full seed twice plus verify-mode evidence for a clean eligible target in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T061 Confirm no unresolved clarification, gap, critical, or forbidden-scope markers remain in `specs/009b-mission-control-seed/tasks.md`
 
 ---
 

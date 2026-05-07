@@ -23,10 +23,25 @@ pnpm typecheck
 pnpm lint
 ```
 
+Expected SPEC-009B focused result: the Mission Control seed suites pass with
+redaction, seed, preflight, evidence, and guardrail coverage. Related
+feature-flag regression suites should also pass when run with the focused seed
+suites.
+
 ## 3. Preflight a Target Database
 
 ```bash
 node --experimental-strip-types scripts/seed-mission-control-product-line.ts \
+  --db .data/mission-control.db \
+  --contract docs/ai/workflows/mission-control/workflow-contract.yaml \
+  --mode preflight \
+  --json
+```
+
+Equivalent package script form:
+
+```bash
+pnpm seed:mission-control -- \
   --db .data/mission-control.db \
   --contract docs/ai/workflows/mission-control/workflow-contract.yaml \
   --mode preflight \
@@ -110,3 +125,9 @@ Expected verification:
 ```bash
 pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e
 ```
+
+SPEC-009B completion evidence is recorded in
+`docs/runbooks/mission-control-seed-predeploy.md`. If the local full unit suite
+hits an environment-owned daemon/socket timeout, keep the failure recorded and
+use the focused seed plus feature-flag regression suites as the spec-specific
+evidence until the daemon environment is fixed.

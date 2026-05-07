@@ -99,7 +99,7 @@ describe('resolveFlag', () => {
     expect(workspaceFlags.FEATURE_WORKSPACE_SWITCHER).toBe(false)
     expect(workspaceFlags.FEATURE_GLOBAL_AEGIS).toBe(false)
     expect(workspaceFlags.FEATURE_RESOURCE_GOVERNANCE).toBe(false)
-    expect(workspaceFlags.PILOT_PRODUCT_LINE_A_E2E).toBe(false)
+    expect(workspaceFlags.PILOT_MISSION_CONTROL_E2E).toBe(false)
   })
 
   it('lets env 0 kill-switch FEATURE_GLOBAL_AEGIS even when workspace flags enable it', () => {
@@ -121,8 +121,8 @@ describe('resolveFlag', () => {
   })
 
   it('preserves the pilot env-force-on exception', () => {
-    expect(resolveFlag('PILOT_PRODUCT_LINE_A_E2E', {
-      env: { PILOT_PRODUCT_LINE_A_E2E: '1' },
+    expect(resolveFlag('PILOT_MISSION_CONTROL_E2E', {
+      env: { PILOT_MISSION_CONTROL_E2E: '1' },
       workspaceFlags: null,
     })).toBe(true)
   })
@@ -151,7 +151,7 @@ describe('feature flag registry', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
-      'PILOT_PRODUCT_LINE_A_E2E',
+      'PILOT_MISSION_CONTROL_E2E',
     ])
     expect(Object.keys(FEATURE_FLAG_REGISTRY).sort()).toEqual([...FEATURE_FLAG_KEYS].sort())
   })
@@ -161,8 +161,8 @@ describe('feature flag registry', () => {
     expect(FEATURE_FLAG_REGISTRY.FEATURE_TASK_PIPELINES.enableRequires).toEqual(['FEATURE_GLOBAL_AEGIS'])
     expect(FEATURE_FLAG_REGISTRY.FEATURE_TWO_STEP_TERMINAL.enableRequires).toEqual(['FEATURE_TASK_PIPELINES'])
     expect(FEATURE_FLAG_REGISTRY.FEATURE_AREA_LABEL_ROUTING.enableRequires).toEqual(['FEATURE_WORKSPACE_SWITCHER'])
-    expect(FEATURE_FLAG_REGISTRY.PILOT_PRODUCT_LINE_A_E2E.enableRequires).toContain('FEATURE_OPENCLAW_HEALTH_COSTS')
-    expect(FEATURE_FLAG_REGISTRY.PILOT_PRODUCT_LINE_A_E2E.enableRequires).toHaveLength(9)
+    expect(FEATURE_FLAG_REGISTRY.PILOT_MISSION_CONTROL_E2E.enableRequires).toContain('FEATURE_OPENCLAW_HEALTH_COSTS')
+    expect(FEATURE_FLAG_REGISTRY.PILOT_MISSION_CONTROL_E2E.enableRequires).toHaveLength(9)
   })
 
   it('derives additive cascade prerequisites from roadmap phase order', () => {
@@ -193,11 +193,11 @@ describe('feature flag registry', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
-      'PILOT_PRODUCT_LINE_A_E2E',
+      'PILOT_MISSION_CONTROL_E2E',
     ])
     expect(getFeatureFlagCascadeDependents('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
       'FEATURE_OPENCLAW_HEALTH_COSTS',
-      'PILOT_PRODUCT_LINE_A_E2E',
+      'PILOT_MISSION_CONTROL_E2E',
     ])
   })
 

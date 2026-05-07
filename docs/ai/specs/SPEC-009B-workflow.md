@@ -65,7 +65,7 @@ Source-of-truth scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, state-management, error-handling, and security checklists |
 | Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered implementation tasks |
 | Analyze | `$speckit-analyze` | Complete | G6 pass after exit-code task drift correction; no CRITICAL/HIGH markers |
-| Implement | `$speckit-implement` | Pending | Implement seed tooling, tests, docs, and status updates |
+| Implement | `$speckit-implement` | Complete | Implemented seed tooling, tests, docs, status updates, and post-verification evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -223,27 +223,27 @@ or generalize the seeder for Product Line B.
 
 ### Success Criteria Summary
 
-- [ ] Running the seed twice leaves exactly one non-facility `mission-control`
+- [x] Running the seed twice leaves exactly one non-facility `mission-control`
   Product Line workspace and preserves the `facility` workspace for global scope.
-- [ ] QA, Development, DevSecOps, Marketing, Customer Service, and Finance
+- [x] QA, Development, DevSecOps, Marketing, Customer Service, and Finance
   department projects exist under Product Line A; product surfaces remain labels
   or metadata.
-- [ ] Agent role assignments exist for researcher, planner, dev, ui,
+- [x] Agent role assignments exist for researcher, planner, dev, ui,
   devsecops, and qa using Mission Control platform agent names.
-- [ ] The Mission Control workspace repo config points to
+- [x] The Mission Control workspace repo config points to
   `racecraft-lab/mission-control` and only Mission Control issue sync state is
   preserved or re-homed.
-- [ ] Issue Triage and Issue Remediation workflow families are imported/applied
+- [x] Issue Triage and Issue Remediation workflow families are imported/applied
   through the SPEC-009A workflow contract mechanism and expected slugs exist.
-- [ ] Workspace feature flags include Phase 1-7 pilot prerequisites and
+- [x] Workspace feature flags include Phase 1-7 pilot prerequisites and
   `PILOT_MISSION_CONTROL_E2E`; future runner/sandbox flags remain off.
-- [ ] Conservative enabled governance rows exist and are visible without
+- [x] Conservative enabled governance rows exist and are visible without
   blocking normal pilot intake.
-- [ ] Preflight detects non-Mission-Control sync/project/cron/gateway residue
+- [x] Preflight detects non-Mission-Control sync/project/cron/gateway residue
   and exits with an actionable cleanup message without deleting it.
-- [ ] Pre-deploy runbook/checklist documents FocusEngine cleanup targets and
+- [x] Pre-deploy runbook/checklist documents FocusEngine cleanup targets and
   backup/export-first verification.
-- [ ] Guardrails prove no synthetic issue, issue claim, dispatch, scheduler
+- [x] Guardrails prove no synthetic issue, issue claim, dispatch, scheduler
   launch, runner state, sandbox lifecycle, or auto-merge path is introduced.
 
 ---
@@ -641,26 +641,54 @@ For each task, follow RED -> GREEN -> REFACTOR -> VERIFY.
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Foundation | Pending | Pending | Seed/preflight helpers and fixtures |
-| Product Line Seed | Pending | Pending | Workspace, departments, assignments, repo config |
-| Workflow/Flags/Governance | Pending | Pending | Contract import, flags, policies |
-| Docs/Verification | Pending | Pending | Pre-deploy cleanup checklist, tests, guardrails |
+| Foundation | T001-T009 | Complete | Strict/lint/package entries, fixtures, typed seed/preflight contracts, and redaction helpers |
+| Product Line Seed | T010-T030 | Complete | Mission Control Product Line A, Facility preservation, departments, assignments, QA sync ownership, preserved issue intake, blocked preflight, and CLI modes |
+| Workflow/Flags/Governance | T031-T043 | Complete | Required Mission Control workflow slugs, SPEC-009A import/apply reuse, canonical `PILOT_MISSION_CONTROL_E2E`, future-flag guardrails, and advisory governance rows |
+| Docs/Verification | T044-T061 | Complete | Idempotency/verify evidence, non-dispatch guardrails, runbook, quickstart, roadmap/PRD status, and validation results |
+
+### Implementation Results
+
+| Area | Evidence |
+|------|----------|
+| Seed CLI | `scripts/seed-mission-control-product-line.ts` supports `preflight`, `apply`, and `verify` with exit codes `0`, `2`, `3`, `4`, and `5`. |
+| Seed library | `src/lib/mission-control-seed/*` implements typed seed constants, redaction, preflight scans, transactional seed apply, and verification/evidence helpers. |
+| Workflow contract | Mission Control contract contains nine required slugs and exports with hash `workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd9439ea49f60ea54a2f14414a7a287c92`. |
+| Feature flags | Runtime registry/runbooks/tests use canonical `PILOT_MISSION_CONTROL_E2E`; legacy `PILOT_PRODUCT_LINE_A_E2E` is rejected as persisted workspace drift. |
+| Cleanup docs | `docs/runbooks/mission-control-seed-predeploy.md` documents backup/export-first FocusEngine, OpenClaw/gateway, cron, repo-sync, and ticket cleanup before deploy. |
+| Non-dispatch | Guardrails assert no synthetic issue, claim, dispatch, scheduler launch, runner state, sandbox lifecycle, generic Product Line B seeder, auto-merge, or reconciliation path. |
+
+### Verification Results
+
+| Command | Result |
+|---------|--------|
+| `pnpm exec vitest run src/lib/__tests__/mission-control-seed/redaction.test.ts src/lib/__tests__/mission-control-seed/seed.test.ts src/lib/__tests__/mission-control-seed/preflight.test.ts src/lib/__tests__/mission-control-seed/evidence.test.ts src/lib/__tests__/mission-control-seed/guardrails.test.ts` | Pass: 5 files, 19 tests |
+| `pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/feature-flag-service.test.ts tests/integration/feature-flag-matrix.test.ts src/lib/__tests__/mission-control-seed/redaction.test.ts src/lib/__tests__/mission-control-seed/seed.test.ts src/lib/__tests__/mission-control-seed/preflight.test.ts src/lib/__tests__/mission-control-seed/evidence.test.ts src/lib/__tests__/mission-control-seed/guardrails.test.ts` | Pass: 8 files, 74 tests |
+| `pnpm typecheck` | Pass |
+| `pnpm lint` | Pass |
+| `pnpm build` | Pass after network-enabled rerun for configured Next.js font fetch |
+| `pnpm test:e2e` | Pass after non-sandbox rerun for local server bind: 646 tests |
+| `pnpm test` | Existing local daemon socket timeout in `src/lib/__tests__/mc-provisioner-daemon.test.ts`; single-test rerun failed the same way. SPEC-009B focused and related regression suites passed. |
+
+**G7 Gate:** Pass with documented focused-unit, typecheck, lint, build, e2e,
+workflow-contract, idempotency, non-dispatch, runbook, status-sync, commit, and
+push evidence. Full `pnpm test` retains the unrelated local daemon socket
+timeout documented above.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `specs/009b-mission-control-seed/tasks.md`
-- [ ] Seed runs twice idempotently against focused test database
-- [ ] Preflight blocks non-Mission-Control residue without deleting rows
-- [ ] Workflow-family slugs exist after contract import/apply
-- [ ] Feature flags and governance rows verified for Product Line A
-- [ ] Guardrails prove no synthetic issue, claim, dispatch, runner, sandbox, or auto-merge scope
-- [ ] Pre-deploy FocusEngine cleanup checklist exists and is linked from workflow evidence
-- [ ] `pnpm typecheck` and `pnpm lint` pass, or deviations are documented with focused alternatives
-- [ ] Focused Vitest suite passes
-- [ ] Roadmap/workflow/spec status updated
-- [ ] Branch committed and pushed
+- [x] All tasks marked complete in `specs/009b-mission-control-seed/tasks.md`
+- [x] Seed runs twice idempotently against focused test database
+- [x] Preflight blocks non-Mission-Control residue without deleting rows
+- [x] Workflow-family slugs exist after contract import/apply
+- [x] Feature flags and governance rows verified for Product Line A
+- [x] Guardrails prove no synthetic issue, claim, dispatch, runner, sandbox, or auto-merge scope
+- [x] Pre-deploy FocusEngine cleanup checklist exists and is linked from workflow evidence
+- [x] `pnpm typecheck` and `pnpm lint` pass, with full-unit deviation documented against focused alternatives
+- [x] Focused Vitest suite passes
+- [x] Roadmap/workflow/spec status updated
+- [x] Branch committed and pushed
 
 ---
 
@@ -685,15 +713,21 @@ specs/009b-mission-control-seed/
 
 ### What Worked Well
 
-- Pending.
+- Keeping SPEC-009B Mission-Control-specific prevented premature Product Line B abstraction while still leaving SPEC-010A a clean extraction step.
+- Reusing the SPEC-009A workflow-contract importer made workflow-family seeding reviewable and hashable instead of creating ad hoc runtime template rows.
+- Focused preflight and evidence tests captured the risky operator boundary: Mission Control issue sync is preserved, while FocusEngine/OpenClaw/cron cleanup remains explicit and backup/export-first.
 
 ### Challenges Encountered
 
-- Pending.
+- The initial Next.js build could not fetch configured fonts in the sandbox; the same build passed with network access.
+- `pnpm test` still hits the existing `mc-provisioner-daemon.test.ts` local socket timeout. SPEC-009B evidence therefore records focused suites, related feature-flag regressions, typecheck/lint/build, and full e2e separately.
+- `node_modules` in the feature worktree lacked installed dependencies for the workflow-contract tooling until `pnpm install --frozen-lockfile` was run in the worktree.
 
 ### Patterns to Reuse
 
-- Pending.
+- Keep cleanup detection non-mutating and return `blocked_preflight` with `mutation_status: "not_mutated"` before any seed transaction.
+- Store spec-owned governance identities in stable notes markers when the policy table has no natural seed key.
+- Treat pilot flags as workspace-scoped by default and document the narrow env exception only for operator-temporary `PILOT_MISSION_CONTROL_E2E` activation.
 
 ---
 

@@ -18,7 +18,7 @@
  *   - `process.env.FEATURE_X='0'` forces OFF (irrespective of
  *     workspace_flags).
  *   - `process.env.FEATURE_X='1'` does NOT force ON for any flag
- *     in the SPEC-008 set; only the `PILOT_PRODUCT_LINE_A_E2E`
+ *     in the SPEC-008 set; only the `PILOT_MISSION_CONTROL_E2E`
  *     escape hatch lets `'1'` opt in.
  *   - Only `workspaces.feature_flags` JSON can opt a workspace ON.
  *

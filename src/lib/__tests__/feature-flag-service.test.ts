@@ -179,7 +179,7 @@ describe('updateWorkspaceFeatureFlag cascade persistence', () => {
   })
 
   it('disabling an earlier phase stores every dependent later phase as disabled', () => {
-    updateWorkspaceFeatureFlag(db, 1, 'PILOT_PRODUCT_LINE_A_E2E', true)
+    updateWorkspaceFeatureFlag(db, 1, 'PILOT_MISSION_CONTROL_E2E', true)
 
     const result = updateWorkspaceFeatureFlag(db, 1, 'FEATURE_WORKSPACE_SWITCHER', false)
     const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = 1').get() as {
@@ -196,11 +196,11 @@ describe('updateWorkspaceFeatureFlag cascade persistence', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
-      'PILOT_PRODUCT_LINE_A_E2E',
+      'PILOT_MISSION_CONTROL_E2E',
     ])
     expect(flags.FEATURE_WORKSPACE_SWITCHER).toBe(false)
     expect(flags.FEATURE_GLOBAL_AEGIS).toBe(false)
     expect(flags.FEATURE_RESOURCE_GOVERNANCE).toBe(false)
-    expect(flags.PILOT_PRODUCT_LINE_A_E2E).toBe(false)
+    expect(flags.PILOT_MISSION_CONTROL_E2E).toBe(false)
   })
 })

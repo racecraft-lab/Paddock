@@ -149,7 +149,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-007 | 6 | Disposition Logging and Task Artifact Store | disposition-artifacts | Complete | P2 | SPEC-002, SPEC-002A, SPEC-004 | SPEC-009D, SPEC-014C | Phase 6 |
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Complete | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009A, SPEC-011, SPEC-013B | Phase 7 |
 | SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | Complete | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
-| SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | In Progress | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C, SPEC-010A | Phase 8B |
+| SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Complete | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C, SPEC-010A | Phase 8B |
 | SPEC-009C | 8C | GitHub-Linked Mission Control Pilot Smoke | mission-control-pilot-smoke | Pending | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009D, SPEC-010B | Phase 8C |
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C | SPEC-013A | Phase 8D |
 | SPEC-010A | 9A | Generic Product-Line Seeder | generic-product-line-seeder | Pending | P2 | SPEC-002A, SPEC-009B | SPEC-010B | Phase 9A |
@@ -169,7 +169,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 **Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, and SPEC-009A are complete on `main`. Recent merge evidence: SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, and SPEC-009A PR #28 as `2b78970e`.
 
-- **Ready now after SPEC-009A:** SPEC-009B, SPEC-011, and SPEC-012A can be assigned to different agents because they touch the product-line seed, an optional security adapter, and docs/process indexing respectively.
+- **Ready now after SPEC-009B:** SPEC-009C and SPEC-010A are unblocked; SPEC-011 and SPEC-012A remain parallel options because they touch an optional security adapter and docs/process indexing respectively.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
 - **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while SPEC-009C is being smoked; SPEC-010B waits for SPEC-009C and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Control-plane path:** SPEC-013A -> SPEC-013B -> SPEC-013C starts after the pilot review packet and repo knowledge index exist. These specs own claim/reconciliation/retry state; they do not launch harnesses.
@@ -391,7 +391,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009B: Mission Control Product-Line Seed and Flag Activation
 
-- **Status:** In Progress
+- **Status:** Complete
 - **Priority:** P0
 - **Branch short name:** `mission-control-seed`
 - **Dependencies:** SPEC-009A, SPEC-006, SPEC-008
@@ -403,6 +403,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** `scripts/seed-mission-control-product-line.ts` if authored in TypeScript; seed fixtures/config docs; focused tests for idempotent seed output, GitHub repo preservation, assignments, feature flags, and governance rows.
 - **Autopilot notes:** Preserve GitHub linkage and sync metadata for previously synced Mission Control issues. The app remains the setup/observability/control surface; it is not the pilot intake path.
 - **Definition of done:** Running the seed twice leaves one Mission Control product-line workspace with expected departments, assignments, repo config, imported Issue Triage and Issue Remediation templates, feature flags, and governance policies; no autonomous issue is claimed or dispatched by this spec.
+- **Implementation evidence:** Local implementation and post-implementation verification completed on branch `009b-mission-control-seed` on 2026-05-07. Evidence includes the Mission-Control-specific seed/preflight/verify CLI, idempotent clean-target seed evidence, non-destructive blocked-preflight evidence for non-Mission-Control residue, backup/export-first FocusEngine/OpenClaw cleanup runbook, canonical `PILOT_MISSION_CONTROL_E2E` registry and runbook alignment, corrected Mission Control workflow-contract slugs plus regenerated Markdown export hash `workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd9439ea49f60ea54a2f14414a7a287c92`, conservative advisory governance rows, focused Vitest coverage, typecheck/lint/build/e2e evidence, and guardrails confirming no synthetic issue, claim, dispatch, scheduler launch, runner state, sandbox lifecycle, generic Product Line B seeder, or auto-merge path.
 
 ### SPEC-009C: GitHub-Linked Mission Control Pilot Smoke
 
@@ -1253,12 +1254,12 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8A are complete and remain the substrate for all later work. After SPEC-009A, the next unblocked specs are SPEC-009B, SPEC-011, and SPEC-012A. SPEC-009B gates the reusable seeder. SPEC-009C is the first practical self-hosting gate. SPEC-009D is the bridge from pilot smoke to formal run-state. SPEC-013A-C own claim/reconciliation/retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8B are complete and remain the substrate for all later work. After SPEC-009B, the next unblocked specs are SPEC-009C, SPEC-010A, SPEC-011, and SPEC-012A. SPEC-009C is the first practical self-hosting gate. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-009D is the bridge from pilot smoke to formal run-state. SPEC-013A-C own claim/reconciliation/retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
-- SPEC-009B, SPEC-011, and SPEC-012A may start in parallel after SPEC-009A.
-- SPEC-010A may run after SPEC-009B while SPEC-009C is being smoked.
+- SPEC-009C, SPEC-010A, SPEC-011, and SPEC-012A may start after SPEC-009B.
+- SPEC-010A may run while SPEC-009C is being smoked.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
 - SPEC-014C and SPEC-014D may run in parallel only after SPEC-014B and only if adapter modules, fixtures, and deployment docs are isolated.
 

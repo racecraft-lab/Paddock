@@ -68,7 +68,7 @@ The runner is **harness-agnostic by design**. Current Mission Control already ob
 
 Sandbox ownership is a first-class run decision. A workflow can select `sandbox_owner = openclaw` when OpenClaw should provision and supervise the workspace, `sandbox_owner = mission_control` when Mission Control should create the git worktree and invoke a local harness directly, or `sandbox_owner = external_harness` when a future adapter returns a bounded workspace/session handle. In all cases, Mission Control remains the authority for claim state, governance, review gates, artifact handoff, and GitHub/task reconciliation.
 
-As of 2026-05-06, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, SPEC-008 is merged on PR #26 as `bd9a693`, and SPEC-009A is merged on PR #28 as `2b78970e`. The remaining pilot work continues through SPEC-009B through SPEC-009D: Mission Control product-line seed/flag/governance activation, GitHub-linked self-hosting smoke, and a review-packet/lifecycle snapshot. This split makes Mission Control itself the first product line and proves the system by having agents work Mission Control GitHub issues toward completion and deployment before the formal runner/adapters are added.
+As of 2026-05-07, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, SPEC-008 is merged on PR #26 as `bd9a693`, and SPEC-009A is merged on PR #28 as `2b78970e`. SPEC-009B is implemented on branch `009b-mission-control-seed` as the seed-only step: Mission Control becomes Product Line A, with flags/governance/workflow-family configuration prepared but no issue claim or dispatch. The remaining pilot work continues through SPEC-009C and SPEC-009D: GitHub-linked self-hosting smoke and a review-packet/lifecycle snapshot. This split makes Mission Control itself the first product line and proves the system by having agents work Mission Control GitHub issues toward completion and deployment before the formal runner/adapters are added.
 
 ## Tech Stack
 
@@ -642,8 +642,8 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 6 | Disposition logging + artifact store + audit/admin panels | Complete | Yes — purely additive | `upstream-divergent` |
 | 7 | Resource governance + Cost Tracker enforcement | Complete | Yes — flag-off default | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` |
 | 7.5 | CrabTrap honeypot adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
-| 8A | Workflow contract roundtrip | Pending | Process/tooling only | `upstream-safe` |
-| 8B | Mission Control product-line seed + flag/governance activation | Pending | Gated behind pilot feature flag | Fork rollout only |
+| 8A | Workflow contract roundtrip | Complete | Process/tooling only | `upstream-safe` |
+| 8B | Mission Control product-line seed + flag/governance activation | Complete | Gated behind pilot feature flag | Fork rollout only |
 | 8C | GitHub-linked Mission Control self-hosting smoke | Pending | Gated behind pilot feature flag | Fork rollout only |
 | 8D | Pilot review packet + lifecycle snapshot | Pending | Gated behind pilot feature flag | Fork rollout only |
 | 9A | Generic product-line seeder | Pending | Process/tooling only | Fork rollout only |

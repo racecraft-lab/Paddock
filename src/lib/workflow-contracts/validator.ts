@@ -63,7 +63,7 @@ function validateTemplate(
       errors.push(workflowContractError('UNKNOWN_FIELD', `Unknown template field ${key}`, { canonical_model_path: `${basePath}.${key}`, template_slug: templateSlug }))
     }
   }
-  if (!templateSlug || !/^[a-z0-9][a-z0-9-]*$/.test(templateSlug)) errors.push(workflowContractError('INVALID_TEMPLATE_SLUG', 'Template slug is invalid', { canonical_model_path: `${basePath}.slug`, template_slug: templateSlug }))
+  if (!templateSlug || !/^[a-z0-9][a-z0-9_-]*$/.test(templateSlug)) errors.push(workflowContractError('INVALID_TEMPLATE_SLUG', 'Template slug is invalid', { canonical_model_path: `${basePath}.slug`, template_slug: templateSlug }))
   if (templateSlug && slugs.has(templateSlug)) errors.push(workflowContractError('DUPLICATE_TEMPLATE_SLUG', 'Template slug is duplicated', { canonical_model_path: `${basePath}.slug`, template_slug: templateSlug }))
   if (templateSlug) slugs.add(templateSlug)
   if (!template.name) errors.push(workflowContractError('INVALID_TEMPLATE_NAME', 'Template name is required', { canonical_model_path: `${basePath}.name`, template_slug: templateSlug }))
