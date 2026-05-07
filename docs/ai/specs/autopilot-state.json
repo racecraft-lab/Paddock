@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009B-workflow.md",
-  "updated_at": "2026-05-07T05:45:59Z",
-  "active_step": "Post: Verification and Status Sync",
-  "status": "Running",
+  "updated_at": "2026-05-07T05:59:18Z",
+  "active_step": "Complete",
+  "status": "Complete",
   "active_workflow": {
     "spec_id": "SPEC-009B",
     "workflow_file": "docs/ai/specs/SPEC-009B-workflow.md",
@@ -417,16 +417,24 @@
     }
   },
   "post_implementation": {
-    "status": "in_progress",
+    "status": "completed",
     "started_at": "2026-05-07T05:45:59Z",
+    "completed_at": "2026-05-07T05:59:18Z",
     "tasks": {
-      "verify_implementation": "extension unavailable in Codex skill list; fulfilled by focused seed verification, typecheck, lint, build, e2e, marker checks, and workflow/state updates",
-      "code_review": "not run as extension task; no review extension available in current Codex skill list",
+      "verify_implementation": "completed by focused seed verification, typecheck, lint, build, e2e, marker checks, and workflow/state updates; optional verify command not installed in .claude/commands",
+      "code_review": "not run as extension task; optional review command not installed in .claude/commands",
       "integration_suite": "completed with documented full-unit exception and full e2e pass",
       "cleanup": "no archive/source cleanup applied in feature worktree; non-destructive operator cleanup runbook added",
-      "pr_creation": "pending commit/push/PR handling",
-      "review_remediation": "pending PR availability",
+      "pr_creation": "draft PR opened: https://github.com/racecraft-lab/mission-control/pull/30",
+      "review_remediation": "pending review comments after PR availability",
       "retrospective": "workflow lessons learned populated"
+    },
+    "publish": {
+      "remote": "origin",
+      "branch": "009b-mission-control-seed",
+      "implementation_commit": "ca53cfa1",
+      "pr_url": "https://github.com/racecraft-lab/mission-control/pull/30",
+      "push_note": "SSH push failed because the 1Password-backed key agent could not sign; branch was pushed successfully over GitHub CLI HTTPS credentials."
     }
   },
   "plan": [
@@ -520,7 +528,7 @@
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "in_progress"
+      "status": "completed"
     }
   ]
 }

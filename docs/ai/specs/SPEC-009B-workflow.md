@@ -656,6 +656,7 @@ For each task, follow RED -> GREEN -> REFACTOR -> VERIFY.
 | Feature flags | Runtime registry/runbooks/tests use canonical `PILOT_MISSION_CONTROL_E2E`; legacy `PILOT_PRODUCT_LINE_A_E2E` is rejected as persisted workspace drift. |
 | Cleanup docs | `docs/runbooks/mission-control-seed-predeploy.md` documents backup/export-first FocusEngine, OpenClaw/gateway, cron, repo-sync, and ticket cleanup before deploy. |
 | Non-dispatch | Guardrails assert no synthetic issue, claim, dispatch, scheduler launch, runner state, sandbox lifecycle, generic Product Line B seeder, auto-merge, or reconciliation path. |
+| PR | Draft PR opened at `https://github.com/racecraft-lab/mission-control/pull/30` after branch push. |
 
 ### Verification Results
 
