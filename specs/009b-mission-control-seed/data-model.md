@@ -213,13 +213,14 @@ Non-Mission-Control state that blocks seed readiness.
 - Non-Mission-Control `projects.github_repo` / `github_sync_enabled`
 - Non-Mission-Control `tasks.github_repo` / linked issue metadata
 - Issue-sync cron configuration
-- OpenClaw/gateway agent configuration
-- Operator-supplied `ssh hall` FocusEngine project/ticket/sync evidence
+- OpenClaw/gateway GitHub automation or product-line binding configuration
+- Operator-supplied `ssh hal` FocusEngine project/ticket/sync evidence
 
 **Rules**:
 - Residue is summarized with cleanup-safe identifiers, counts, timestamps, booleans, config paths, and hashes.
 - Raw tokens, secrets, passwords, Authorization headers, API keys, and credential-like substrings are redacted.
 - If any blocking residue exists, no seed mutation occurs.
+- OpenClaw runtime agent inventory alone is not blocking residue.
 
 ## State Transitions
 

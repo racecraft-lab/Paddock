@@ -8,9 +8,9 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Are non-Mission-Control residue classes fully enumerated for projects, linked tasks, GitHub repo config, issue-sync cron state, OpenClaw/gateway agents, and FocusEngine live project evidence? [Completeness, Spec §FR-010, Spec §FR-027, Data Model §Cleanup Residue]
+- [ ] CHK001 Are non-Mission-Control residue classes fully enumerated for projects, linked tasks, GitHub repo config, issue-sync cron state, OpenClaw/gateway GitHub automation or product-line binding evidence, and FocusEngine live project evidence, while allowing runtime agent inventory by itself? [Completeness, Spec §FR-010, Spec §FR-027, Data Model §Cleanup Residue]
 - [ ] CHK002 Is the blocked-preflight error contract complete, including `code`, `mutation_status: "not_mutated"`, redacted residue summaries, cleanup checklist reference, and no automatic deletion? [Completeness, Spec §FR-011, Contract §Blocked Preflight Result]
-- [ ] CHK003 Are FocusEngine cleanup requirements complete enough to keep cleanup operator-owned and backup/export-first across project state, tickets, GitHub sync, OpenClaw/gateway agents, and issue-sync cron targets? [Completeness, Spec §FR-012, Spec §FR-013, Spec §SC-010]
+- [ ] CHK003 Are FocusEngine cleanup requirements complete enough to keep cleanup operator-owned and backup/export-first across project state, tickets, GitHub sync, OpenClaw/gateway GitHub automation or product-line binding targets, and issue-sync cron targets while retaining runtime agents unless separately decommissioned? [Completeness, Spec §FR-012, Spec §FR-013, Spec §SC-010]
 - [ ] CHK004 Is workflow-contract failure behavior defined for incomplete, stale, missing-slug, or invalid contract readiness before runtime workflow policy is applied? [Completeness, Spec §FR-017, Contract §Contract Readiness Failure]
 - [ ] CHK005 Are seed retry and rerun failure scenarios covered for stable Product Line, department, assignment, workflow, flag, governance, and issue-intake identities after repeated attempts? [Completeness, Spec §FR-022, Spec §FR-033, Data Model §State Transitions]
 

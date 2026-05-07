@@ -1,4 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import { runMissionControlPreflight } from '@/lib/mission-control-seed/preflight'
 import { applyMissionControlSeed } from '@/lib/mission-control-seed/seed'
@@ -41,7 +44,7 @@ describe('mission-control seed preflight', () => {
         'project_github_sync',
         'task_github_sync',
         'operator_cron',
-        'openclaw_gateway_agent',
+        'openclaw_github_automation',
         'focusengine_operator_residue',
       ]),
     )
@@ -69,5 +72,30 @@ describe('mission-control seed preflight', () => {
     expect(output).not.toContain('sk-focusengine-secret')
     expect(output).toContain('ssh hall')
     expect(output).toContain('racecraft-lab/focusengine')
+  })
+
+  it('allows FocusEngine OpenClaw runtime inventory when no GitHub sync or project residue is present', () => {
+    const db = makeMissionControlSeedDb()
+    const dir = mkdtempSync(join(tmpdir(), 'mc-seed-preflight-'))
+    const runtimeInventoryPath = join(dir, 'operator-evidence.json')
+    writeFileSync(runtimeInventoryPath, JSON.stringify({
+      openclaw: {
+        host: 'ssh hall',
+        agents: [
+          { name: 'focusengine-macos-dev', role: 'dev', managed_by: 'openclaw' },
+          { name: 'focusengine-macos-review', role: 'review', managed_by: 'openclaw' },
+        ],
+      },
+    }))
+
+    const result = runMissionControlPreflight(db, {
+      contractPath: missionControlContractPath(),
+      operatorEvidencePath: runtimeInventoryPath,
+    })
+
+    expect(result.ok).toBe(true)
+    if (!result.ok) throw new Error('expected ready preflight')
+    expect(result.status).toBe('ready')
+    expect(result.residue).toEqual([])
   })
 })

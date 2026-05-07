@@ -12,7 +12,7 @@
 - [ ] CHK002 Are seed, preflight, checklist, and log evidence requirements complete enough to prevent GitHub and OpenClaw credentials from appearing in JSON output, Markdown evidence, errors, or operator-facing summaries? [Completeness, Spec §FR-028, Contract §Seed Evidence]
 - [ ] CHK003 Are non-Mission-Control cleanup boundaries complete enough to prohibit automatic deletion, unlinking, or mutation of live project, ticket, GitHub sync, cron, OpenClaw/gateway, or FocusEngine residue? [Completeness, Spec §FR-011, Spec §FR-027, Data Model §Cleanup Residue]
 - [ ] CHK004 Does the spec require explicit operator confirmation before live cleanup actions and post-cleanup verification before deployment proceeds? [Completeness, Spec §FR-013, Spec §SC-010]
-- [ ] CHK005 Are backup/export-first requirements defined for every operator cleanup target named by the feature, including FocusEngine project state, tickets, GitHub sync configuration, OpenClaw/gateway agents, and issue-sync cron? [Completeness, Spec §FR-012, Spec §FR-013, Spec §SC-010]
+- [ ] CHK005 Are backup/export-first requirements defined for every operator cleanup target named by the feature, including FocusEngine project state, tickets, GitHub sync configuration, OpenClaw/gateway GitHub automation or product-line binding targets, and issue-sync cron, while excluding runtime agent inventory alone? [Completeness, Spec §FR-012, Spec §FR-013, Spec §SC-010]
 
 ## Requirement Clarity
 

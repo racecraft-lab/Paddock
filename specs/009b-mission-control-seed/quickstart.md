@@ -67,7 +67,7 @@ Use the generated runbook before deployment:
 docs/runbooks/mission-control-seed-predeploy.md
 ```
 
-The checklist must require backup/export first and cover `ssh hall` FocusEngine project state, tickets, GitHub sync configuration, OpenClaw/gateway agents, and issue-sync cron cleanup targets. Post-cleanup evidence must verify that only `racecraft-lab/mission-control` issue sync remains.
+The checklist must require backup/export first and cover `ssh hal` FocusEngine project state, tickets, GitHub sync configuration, OpenClaw/gateway GitHub automation or product-line binding cleanup targets, and issue-sync cron cleanup targets. Post-cleanup evidence must verify that only `racecraft-lab/mission-control` issue sync remains; OpenClaw runtime agent inventory alone may remain.
 
 ## 5. Apply the Seed
 

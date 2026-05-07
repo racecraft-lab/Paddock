@@ -528,7 +528,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Onboard Product Line B as the second product line, provision or register isolated agents through the configured harness substrate, configure its canonical repo, and run one live or synthetic issue through the already-proven pilot subset. Mission Control Product Line A must remain unaffected.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** Product Line B seed config, isolation assertions, one smoke checklist path, dashboard/API assertions for per-workspace metrics, and no new workflow language.
-- **Autopilot notes:** Manual "<1 operator-hour" timing is checklist-only. FocusEngine/OpenClaw unlink, stale issue cleanup, cron cleanup, and gateway sync cleanup are a Product Line B preflight prerequisite, not part of this spec. Docker, OpenClaw-owned, Mission-Control-owned worktree, or external-harness sandboxes remain valid choices according to the product-line config.
+- **Autopilot notes:** Manual "<1 operator-hour" timing is checklist-only. FocusEngine Mission Control project/repo sync unlink, stale issue cleanup, and GitHub sync/triage cron cleanup are a Product Line B preflight prerequisite, not part of this spec. Existing OpenClaw runtime agents may remain as reusable runtime identities unless separately decommissioned. Docker, OpenClaw-owned, Mission-Control-owned worktree, or external-harness sandboxes remain valid choices according to the product-line config.
 - **Definition of done:** Product Line B can be seeded, enabled, smoked, disabled, and inspected independently; SQL/API checks prove product-line agent isolation and shared facility-agent reuse.
 
 ### SPEC-011: CrabTrap Honeypot Adapter
@@ -660,7 +660,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** Later adapter specs
 - **Scope source:** Phase 12C - First real harness adapter pilot
 - **Acceptance criteria source:** Phase 12C Acceptance Criteria
-- **Scope summary:** Implement one real harness adapter path behind the registry. Prefer Codex app-server if available because structured threads, tool/file requests, approvals, and usage events map cleanly to Mission Control; otherwise choose the smallest locally provable adapter and document the limitation.
+- **Scope summary:** Implement one real harness adapter path behind the registry. Prefer Codex app-server if available because structured threads, tool/file requests, approvals, and usage events map cleanly to Mission Control; otherwise choose the smallest locally provable adapter and document the limitation. HAL verification on 2026-05-07 found Codex CLI `0.124.0` installed with the `codex app-server` subcommand available, but not deployed as a Mission Control service.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** one adapter module, one smoke path, token/runtime summaries where available, artifact publication, redaction, and operator-visible run debug. No second real adapter, no OpenClaw-specific behavior unless this spec explicitly selects OpenClaw as the first real pilot.
 - **Autopilot notes:** The adapter executes already-claimed GitHub-linked work only. It does not choose successor templates, create local-only tasks, auto-merge, or bypass Aegis/owner gates.

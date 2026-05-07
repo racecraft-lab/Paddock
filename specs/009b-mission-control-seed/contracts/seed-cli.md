@@ -28,7 +28,7 @@ An optional package script may wrap this command, but the script remains the can
 | `--contract <path>` | Yes | Repo-owned workflow contract YAML. |
 | `--mode <mode>` | Yes | `preflight`, `apply`, or `verify`. |
 | `--json` | Recommended | Emit machine-readable result. Human text may be added only outside JSON mode. |
-| `--operator-evidence <path>` | Optional | Redacted operator-supplied cleanup evidence for `ssh hall` / OpenClaw / gateway surfaces. |
+| `--operator-evidence <path>` | Optional | Redacted operator-supplied cleanup evidence for `ssh hal` / OpenClaw / gateway surfaces. Legacy `ssh hall` alias evidence is also accepted. |
 
 ## Exit Codes
 
@@ -119,5 +119,5 @@ An optional package script may wrap this command, but the script remains the can
 ## Security Requirements
 
 - JSON output must not include raw secrets, tokens, Authorization headers, API keys, passwords, or matched secret substrings.
-- Cleanup-safe values may include repo slugs, issue numbers, project ids, task ids, agent names, cron ids, service names, config paths, host alias `ssh hall`, counts, timestamps, booleans, and content hashes.
+- Cleanup-safe values may include repo slugs, issue numbers, project ids, task ids, agent names, cron ids, service names, config paths, host alias `ssh hal` or legacy alias `ssh hall`, counts, timestamps, booleans, and content hashes.
 - Blocked preflight must complete before seed mutation.

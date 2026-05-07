@@ -138,16 +138,47 @@ function scanOperatorEvidenceResidue(path: string | undefined): ResidueSummary[]
   const redacted = redactEvidenceValue(parsed)
   const text = JSON.stringify(redacted).toLowerCase()
   const residue: ResidueSummary[] = []
-  if (text.includes('cron') && text.includes('focusengine')) {
+  if (!text.includes('focusengine')) return residue
+
+  const hasCronEvidence = hasAnyEvidenceToken(text, ['cron', 'schedule'])
+  const hasGithubAutomation = hasAnyEvidenceToken(text, [
+    'github sync',
+    'issue triage',
+    'issue-sync',
+    'repo sync',
+    'repo-sync',
+    'api/github/sync',
+    '/api/github/sync',
+    'gh issue',
+    'github_repo',
+    'github repo',
+    'racecraft-lab/focusengine',
+  ])
+  const hasProjectOrTicketResidue = hasAnyEvidenceToken(text, [
+    '"project"',
+    '"projects"',
+    '"project_id"',
+    '"projectid"',
+    '"ticket"',
+    '"tickets"',
+    '"task"',
+    '"tasks"',
+  ])
+
+  if (hasCronEvidence && hasGithubAutomation) {
     residue.push({ kind: 'operator_cron', repo: 'racecraft-lab/focusengine', count: 1, identifiers: redacted })
   }
-  if (text.includes('openclaw') && text.includes('focusengine')) {
-    residue.push({ kind: 'openclaw_gateway_agent', repo: 'racecraft-lab/focusengine', count: 1, identifiers: redacted })
+  if (text.includes('openclaw') && hasGithubAutomation) {
+    residue.push({ kind: 'openclaw_github_automation', repo: 'racecraft-lab/focusengine', count: 1, identifiers: redacted })
   }
-  if (text.includes('focusengine')) {
+  if (hasGithubAutomation || hasProjectOrTicketResidue) {
     residue.push({ kind: 'focusengine_operator_residue', repo: 'racecraft-lab/focusengine', count: 1, identifiers: redacted })
   }
   return residue
+}
+
+function hasAnyEvidenceToken(text: string, tokens: string[]): boolean {
+  return tokens.some((token) => text.includes(token))
 }
 
 function redactionProof(path: string | undefined): RedactionProof {

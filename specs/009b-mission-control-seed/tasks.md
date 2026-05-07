@@ -21,7 +21,7 @@
 - [x] T002 [P] Add SPEC-009B lint coverage for `src/lib/mission-control-seed/**` and `scripts/seed-mission-control-product-line.ts` in `eslint.config.mjs`
 - [x] T003 [P] Add an optional `seed:mission-control` package script that wraps the canonical Node type-stripping command in `package.json`
 - [x] T004 [P] Create the focused SQLite seed fixture helper in `src/lib/__tests__/mission-control-seed/test-db.ts`
-- [x] T005 [P] Create sanitized operator evidence fixtures for cron, OpenClaw/gateway, and `ssh hall` cleanup surfaces in `src/lib/__tests__/mission-control-seed/fixtures/operator-evidence.json`
+- [x] T005 [P] Create sanitized operator evidence fixtures for cron, OpenClaw/gateway GitHub automation, product-line binding, runtime inventory, and `ssh hal` cleanup surfaces in `src/lib/__tests__/mission-control-seed/fixtures/operator-evidence.json`
 
 ---
 
@@ -86,11 +86,11 @@ Write these tests first and confirm they fail before implementation.
 ### Implementation for User Story 2
 
 - [x] T024 [US2] Implement non-mutating residue scans for project/task GitHub sync state in `src/lib/mission-control-seed/preflight.ts`
-- [x] T025 [US2] Implement sanitized operator evidence loading for issue-sync cron, OpenClaw/gateway agents, and `ssh hall` FocusEngine residue in `src/lib/mission-control-seed/preflight.ts`
+- [x] T025 [US2] Implement sanitized operator evidence loading for issue-sync cron, OpenClaw/gateway GitHub automation or product-line binding evidence, runtime inventory allowance, and `ssh hal` FocusEngine residue in `src/lib/mission-control-seed/preflight.ts`
 - [x] T026 [US2] Integrate preflight-before-mutation blocking into apply mode in `src/lib/mission-control-seed/seed.ts`
 - [x] T027 [US2] Re-home existing `racecraft-lab/mission-control` issue tasks to QA triage/intake while preserving GitHub linkage and sync metadata in `src/lib/mission-control-seed/seed.ts`
 - [x] T028 [US2] Emit blocked-preflight residue summaries, unchanged snapshot hashes, redaction proof, and cleanup checklist path in `src/lib/mission-control-seed/evidence.ts`
-- [x] T029 [US2] Create the backup/export-first operator cleanup checklist and `ssh hall` FocusEngine cleanup verification flow in `docs/runbooks/mission-control-seed-predeploy.md`
+- [x] T029 [US2] Create the backup/export-first operator cleanup checklist and `ssh hal` FocusEngine cleanup verification flow in `docs/runbooks/mission-control-seed-predeploy.md`
 - [x] T030 [US2] Implement `preflight` mode and blocked-preflight exit code `2` in `scripts/seed-mission-control-product-line.ts`
 
 **Checkpoint**: User Stories 1 and 2 are independently functional and preserve tracker truth without destructive cleanup.

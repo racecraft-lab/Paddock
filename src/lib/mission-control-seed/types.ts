@@ -102,7 +102,7 @@ export type ResidueKind =
   | 'project_github_sync'
   | 'task_github_sync'
   | 'operator_cron'
-  | 'openclaw_gateway_agent'
+  | 'openclaw_github_automation'
   | 'focusengine_operator_residue'
 
 export interface MissionControlSeedOptions {

@@ -41,7 +41,7 @@
 ## Scenario and Edge Case Coverage
 
 - [ ] CHK021 Are partial existing seed-state scenarios covered, including convergence without duplicate workspaces, departments, assignments, workflow templates, flags, governance policies, or issue-intake records? [Coverage, Spec §Edge Cases, Spec §FR-022]
-- [ ] CHK022 Are non-Mission-Control residue classes covered across projects, linked tasks, GitHub repo config, issue-sync cron state, OpenClaw/gateway agents, and operator-supplied FocusEngine evidence? [Coverage, Spec §FR-010, Data Model §Cleanup Residue]
+- [ ] CHK022 Are non-Mission-Control residue classes covered across projects, linked tasks, GitHub repo config, issue-sync cron state, OpenClaw/gateway GitHub automation or product-line binding evidence, and operator-supplied FocusEngine evidence, with runtime agent inventory allowed by itself? [Coverage, Spec §FR-010, Data Model §Cleanup Residue]
 - [ ] CHK023 Are workflow-contract ownership conflicts or missing-slug cases addressed as fail-closed readiness outcomes rather than manual runtime-template invention? [Coverage, Spec §FR-014, Spec §FR-017, Data Model §Workflow Family Templates]
 - [ ] CHK024 Are retry and rerun scenarios covered so failed or repeated seed attempts converge safely without partial destructive mutation? [Coverage, Spec §FR-011, Spec §FR-022, Contract §Modes, Data Model §State Transitions]
 

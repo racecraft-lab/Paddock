@@ -2,7 +2,7 @@
 
 ## Scope
 
-SPEC-009B seeds Mission Control as Product Line A and verifies readiness. It does not unlink GitHub repos, delete tickets, stop OpenClaw agents, mutate cron jobs, create pilot tasks, claim work, dispatch agents, launch runners, create sandboxes, or merge pull requests.
+SPEC-009B seeds Mission Control as Product Line A and verifies readiness. It does not unlink GitHub repos, delete tickets, stop OpenClaw runtime agents, mutate cron jobs, create pilot tasks, claim work, dispatch agents, launch runners, create sandboxes, or merge pull requests.
 
 ## Preflight
 
@@ -24,11 +24,12 @@ Expected dirty-target result: exit code `2`, `status: "blocked_preflight"`, `mut
 ## Cleanup Checklist
 
 1. Take a backup/export first of the Mission Control SQLite database, current GitHub-linked task rows, OpenClaw gateway config, and issue-sync cron state.
-2. Confirm the target cleanup explicitly. The operator must record explicit operator confirmation before destructive cleanup of any FocusEngine project, repo sync, cron, OpenClaw gateway agent, or `ssh hall` state.
+2. Confirm the target cleanup explicitly. The operator must record explicit operator confirmation before destructive cleanup of any FocusEngine Mission Control project, ticket, repo sync, GitHub sync/triage cron job, OpenClaw product-line binding, or `ssh hal` state. Use legacy alias `ssh hall` only if that is still configured locally.
 3. Remove only non-Mission-Control residue. Keep `racecraft-lab/mission-control` issue sync metadata intact because SPEC-009B re-homes it to QA triage/intake.
-4. Treat FocusEngine cleanup as destructive cleanup. Unlink the FocusEngine GitHub repo, undo issue sync, remove FocusEngine tickets/projects from Mission Control, and remove OpenClaw/gateway agents or cron entries only after the backup/export and confirmation are complete.
-5. Verify `ssh hall` and OpenClaw after cleanup. Check the Mission Control service, `openclaw-gateway.service`, issue-sync cron definitions, and gateway agent lists for leftover FocusEngine references.
-6. Run post-cleanup verification with preflight again. The preflight output must be clean before `apply` mode is allowed.
+4. Treat FocusEngine cleanup as destructive cleanup. Unlink the FocusEngine GitHub repo from Mission Control, undo issue sync, remove FocusEngine tickets/projects from Mission Control, and disable/remove FocusEngine GitHub sync or issue-triage cron jobs only after the backup/export and confirmation are complete.
+5. Do not delete OpenClaw runtime agents merely because their names reference FocusEngine. Live verification on `ssh hal` found FocusEngine runtime identities such as `focusengine-macos-dev`, `focusengine-macos-research`, `focusengine-macos-planner`, `focusengine-macos-review`, `focusengine-macos-ui`, and `focusengine-macos-devsecops`; these may remain as OpenClaw-managed runtime inventory unless a separate operator decommission is explicitly approved.
+6. Verify `ssh hal` and OpenClaw after cleanup. Check the Mission Control service, `openclaw-gateway.service`, issue-sync cron definitions, and gateway cron/agent configuration. The known FocusEngine GitHub automation to remove or disable is the FocusEngine GitHub Sync cron job (`mc-mnwak9jn`) and FocusEngine Issue Triage cron job (`mc-mnwakq8y`) if those ids still exist on the target.
+7. Run post-cleanup verification with preflight again. The preflight output must be clean before `apply` mode is allowed. Clean evidence means only `racecraft-lab/mission-control` issue sync remains active; retained OpenClaw runtime agent inventory alone is not a SPEC-009B cleanup blocker.
 
 ## Apply
 
@@ -60,8 +61,8 @@ Expected result: `ok: true`, `status: "verified"`, stable identity evidence, all
 
 ## Validation Evidence
 
-- `pnpm exec vitest run src/lib/__tests__/mission-control-seed/redaction.test.ts src/lib/__tests__/mission-control-seed/seed.test.ts src/lib/__tests__/mission-control-seed/preflight.test.ts src/lib/__tests__/mission-control-seed/evidence.test.ts src/lib/__tests__/mission-control-seed/guardrails.test.ts`: passed on 2026-05-07 with 5 files and 21 tests.
-- `pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/feature-flag-service.test.ts tests/integration/feature-flag-matrix.test.ts src/lib/__tests__/mission-control-seed/redaction.test.ts src/lib/__tests__/mission-control-seed/seed.test.ts src/lib/__tests__/mission-control-seed/preflight.test.ts src/lib/__tests__/mission-control-seed/evidence.test.ts src/lib/__tests__/mission-control-seed/guardrails.test.ts`: passed on 2026-05-07 with 8 files and 74 tests.
+- `pnpm exec vitest run src/lib/__tests__/mission-control-seed/redaction.test.ts src/lib/__tests__/mission-control-seed/seed.test.ts src/lib/__tests__/mission-control-seed/preflight.test.ts src/lib/__tests__/mission-control-seed/evidence.test.ts src/lib/__tests__/mission-control-seed/guardrails.test.ts`: passed on 2026-05-07 with 5 files and 22 tests.
+- `pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/feature-flag-service.test.ts tests/integration/feature-flag-matrix.test.ts src/lib/__tests__/mission-control-seed/redaction.test.ts src/lib/__tests__/mission-control-seed/seed.test.ts src/lib/__tests__/mission-control-seed/preflight.test.ts src/lib/__tests__/mission-control-seed/evidence.test.ts src/lib/__tests__/mission-control-seed/guardrails.test.ts`: passed on 2026-05-07 with 8 files and 77 tests.
 - `pnpm typecheck`: passed on 2026-05-07.
 - `pnpm lint`: passed on 2026-05-07.
 - `pnpm build`: passed on 2026-05-07 after rerunning outside the sandbox so Next.js could fetch configured fonts.
