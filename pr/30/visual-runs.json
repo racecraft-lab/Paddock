@@ -7,6 +7,22 @@
   "baseRef": "main",
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "25508789516",
+      "runAttempt": "1",
+      "runKey": "25508789516-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25508789516",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/30/runs/25508789516-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/30/playwright/latest/",
+      "headSha": "94e7128d7d346cd566dea646079de3ab70f4c31d",
+      "headRef": "009b-mission-control-seed",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-07T16:44:58.717Z"
+    },
+    {
       "surface": "storybook",
       "runId": "25508789549",
       "runAttempt": "1",
@@ -103,5 +119,5 @@
       "createdAt": "2026-05-07T06:01:47.078Z"
     }
   ],
-  "updatedAt": "2026-05-07T16:36:13.001Z"
+  "updatedAt": "2026-05-07T16:44:58.717Z"
 }
