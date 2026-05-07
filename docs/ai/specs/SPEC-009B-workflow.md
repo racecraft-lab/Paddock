@@ -63,8 +63,8 @@ Source-of-truth scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved cleanup preflight, seed idempotency, governance thresholds, and contract-slug details |
 | Plan | `$speckit-plan` | Complete | Planned seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
 | Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, state-management, error-handling, and security checklists |
-| Tasks | `$speckit-tasks` | In Progress | Generate dependency-ordered implementation tasks |
-| Analyze | `$speckit-analyze` | Pending | Verify no scope drift into SPEC-009C/010A/013/014 |
+| Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered implementation tasks |
+| Analyze | `$speckit-analyze` | In Progress | Verify no scope drift into SPEC-009C/010A/013/014 |
 | Implement | `$speckit-implement` | Pending | Implement seed tooling, tests, docs, and status updates |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -567,10 +567,11 @@ $speckit-tasks
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 61 |
+| Phases | 7 |
+| Parallel Opportunities | 30 tasks marked `[P]` |
+| User Stories Covered | 4 |
+| G5 Gate | Pass: 61 task entries found |
 
 ---
 
