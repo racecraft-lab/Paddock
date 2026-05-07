@@ -104,6 +104,31 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Reviewability Budget *(mandatory)*
+
+<!--
+  ACTION REQUIRED: Declare the expected review surface before planning.
+  A spec that exceeds the block threshold must be split before implementation
+  unless a ratified transition exception is recorded in the workflow and PR.
+-->
+
+- **Primary surface**: [schema/migration | API | UI | scheduler/runtime | harness/adapter | seed/config | docs/process]
+- **Secondary surfaces, if any**: [List or N/A]
+- **Projected reviewable LOC**: [Estimate excluding declared generated/lock/vendor artifacts]
+- **Projected production files**: [Estimate]
+- **Projected total files**: [Estimate]
+- **Budget result**: [within budget | warning accepted | split required | transition exception]
+- **Split decision**: [Why this remains one spec, or the exact follow-up specs]
+
+### PR Review Packet Requirements *(mandatory)*
+
+- PR description MUST include: what changed, why, non-goals, review order,
+  scope budget, traceability, verification evidence, known gaps, and rollback
+  or feature-flag notes.
+- Traceability MUST map each major requirement or success criterion to changed
+  files and verification evidence.
+- Deferred work MUST name the follow-up spec or issue.
+
 ### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
 
 - Archive Sweep runs before Phase 0 for the requested spec and considers only previously merged specs.

@@ -18,6 +18,14 @@ evidence policy MUST include Archive Sweep startup/dry-run evidence,
 current-target exclusion, cleanup safety, recovery-command evidence, and
 screenshot/evidence guard tasks.
 
+**Reviewability**: Generated tasks MUST preserve the spec's reviewability
+budget. If task generation expands beyond 400 reviewable LOC, 6 production
+files, 15 total files, or more than one primary surface, add an explicit
+reviewability checkpoint task before implementation. If it expands beyond
+800 reviewable LOC, 8 production files, 25 total files, or more than one
+primary surface without a ratified exception, stop and split the spec instead
+of adding more implementation tasks.
+
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
@@ -76,6 +84,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] T007 Create base models/entities that all stories depend on
 - [ ] T008 Configure error handling and logging infrastructure
 - [ ] T009 Setup environment configuration management
+- [ ] T009A Verify reviewability budget against planned task/file scope and record split decision or exception before implementation
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -168,6 +177,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Security hardening
 - [ ] TXXX Archive Sweep dry-run/apply safety evidence and recovery commands for previously merged specs, excluding the current target spec
 - [ ] TXXX Screenshot/evidence guard verification, including negative fixture or manifest-backed exception coverage when generated screenshots could be committed
+- [ ] TXXX Generate or update the PR review packet with review order, scope budget, traceability, verification evidence, known gaps, and rollback/flag notes
 - [ ] TXXX Run quickstart.md validation
 
 ---
@@ -262,3 +272,4 @@ With multiple developers:
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - Avoid: vague tasks, same file conflicts, cross-story dependencies that break independence
+- Avoid: expanding a task list past the reviewability budget instead of splitting the spec

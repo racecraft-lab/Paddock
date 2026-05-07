@@ -27,6 +27,7 @@
 **Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
 **Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
 **Strict Scope**: [List every new spec-owned TS/TSX file to add to `tsconfig.spec-strict.json` and `eslint.config.mjs`, or N/A for docs-only/migration-only/no-new-module specs]
+**Reviewability Budget**: [Primary surface; projected reviewable LOC; production files; total files; budget result]
 
 ## Constitution Check
 
@@ -62,6 +63,19 @@ policy, the generated plan MUST also define:
   safe-to-apply state, and `git show` recovery commands.
 - The screenshot/evidence guard commands and whether committed generated
   screenshots are absent or covered by a manifest-backed exception.
+
+For all specs, the generated plan MUST also define:
+
+- The primary review surface and any secondary surfaces.
+- Whether the spec stays within the reviewability budget from the
+  constitution: warn above 400 reviewable LOC, 6 production files, 15 total
+  files, or more than one primary surface; block above 800 reviewable LOC,
+  8 production files, 25 total files, or more than one primary surface unless a
+  ratified split exception exists.
+- The exact split decision when the budget is exceeded, including follow-up
+  spec IDs or issue IDs for deferred work.
+- The PR review packet source: what changed, why, non-goals, review order,
+  scope budget, traceability, verification, known gaps, and rollback/flags.
 
 ## Project Structure
 

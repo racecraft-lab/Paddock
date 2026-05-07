@@ -18,6 +18,19 @@ generated screenshots by default.
 
 This PRD should preserve the durable **why**, **what**, **success criteria**, and **constraints** for the architecture. It should not become the per-spec execution ledger or duplicate the detailed workflow records.
 
+PR descriptions are part of the product evidence surface. Each spec PR must
+produce a human-readable review packet that summarizes the work without
+requiring reviewers to reconstruct intent from generated artifacts, terminal
+history, or branch archaeology. The review packet must name what changed, why,
+non-goals, review order, scope budget, traceability, verification evidence,
+known gaps, and rollback or flag behavior.
+
+Verification debt is any generated or agent-authored change volume that is too
+large, too cross-cutting, or too poorly traced for a human-in-the-loop reviewer
+to verify efficiently. Mission Control treats verification debt as a product
+risk because the factory depends on humans trusting agent output at PR review,
+deployment, and post-merge UAT gates.
+
 ## Harness Engineering + Symphony Integration
 
 This PRD adopts the useful parts of OpenAI's harness-engineering practice and Symphony service design while staying on Mission Control's existing stack: Next.js 16, React 19, TypeScript, SQLite, better-sqlite3, Zustand, Tailwind, pnpm, GitHub sync, OpenClaw integration, and SpecKit-Pro workflow artifacts.
@@ -68,7 +81,7 @@ The runner is **harness-agnostic by design**. Current Mission Control already ob
 
 Sandbox ownership is a first-class run decision. A workflow can select `sandbox_owner = openclaw` when OpenClaw should provision and supervise the workspace, `sandbox_owner = mission_control` when Mission Control should create the git worktree and invoke a local harness directly, or `sandbox_owner = external_harness` when a future adapter returns a bounded workspace/session handle. In all cases, Mission Control remains the authority for claim state, governance, review gates, artifact handoff, and GitHub/task reconciliation.
 
-As of 2026-05-07, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, SPEC-008 is merged on PR #26 as `bd9a693`, and SPEC-009A is merged on PR #28 as `2b78970e`. SPEC-009B is implemented on branch `009b-mission-control-seed` as the seed-only step: Mission Control becomes Product Line A, with flags/governance/workflow-family configuration prepared but no issue claim or dispatch. The remaining pilot work continues through SPEC-009C and SPEC-009D: GitHub-linked self-hosting smoke and a review-packet/lifecycle snapshot. This split makes Mission Control itself the first product line and proves the system by having agents work Mission Control GitHub issues toward completion and deployment before the formal runner/adapters are added.
+As of 2026-05-07, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, SPEC-008 is merged on PR #26 as `bd9a693`, and SPEC-009A is merged on PR #28 as `2b78970e`. SPEC-009B is implemented on branch `009b-mission-control-seed` as the seed-only step: Mission Control becomes Product Line A, with flags/governance/workflow-family configuration prepared but no issue claim or dispatch. The remaining pilot work continues through SPEC-009C1 through SPEC-009C4 plus SPEC-009D: GitHub issue ingest/eligibility, triage-to-remediation handoff, remediation to `ready_for_owner`, owner merge reconciliation, and a review-packet/lifecycle snapshot. This split makes Mission Control itself the first product line and proves the system by having agents work Mission Control GitHub issues toward completion and deployment before the formal runner/adapters are added.
 
 ## Tech Stack
 
@@ -156,6 +169,7 @@ Result: the fork supports running one product (Mission Control itself as Product
 - **[SC-20] Agent-readable review packet** — the pilot produces a Mission Control review packet with task chain, PR link, artifact references, validation evidence, cost/governance summary, and unresolved human gates before the operator merges.
 - **[SC-21] Harness-gardening loop** — stale PRD/roadmap/workflow/runbook claims and low-value or missing verification surfaces are discoverable by an automated docs/quality audit that can open a targeted follow-up task.
 - **[SC-22] Post-merge HITL UAT loop** — every spec PR is deployed from merged `main` to the target Mission Control deployment before operational acceptance. Required feature flags are enabled only for the named product line/facility/operator path, the named human UAT check is run, UAT defects become GitHub issues, and the issue is resolved, reviewed, merged, redeployed, and retested until the spec capability passes or an operator records an explicit defer decision.
+- **[SC-23] Reviewability budget** — every future spec records its primary review surface, projected scope budget, split decision, and PR review packet before implementation starts. Oversized specs are split before autopilot writes production code unless the roadmap records an explicit transition exception.
 
 ### Non-goals (v1)
 
@@ -584,6 +598,7 @@ CREATE INDEX idx_resource_policy_events_task
 - **NFR-18 Runner isolation:** runner workspaces must be rooted under configured allowlisted paths, never outside the task sandbox/worktree root, and must not depend on destructive reset for normal reuse.
 - **NFR-19 Restart recovery:** after process restart, Mission Control must reconcile from durable task/GitHub state plus filesystem workspace state and must not assume in-memory scheduler state survived.
 - **NFR-20 Agent-reviewability:** every autonomous pilot run must leave enough machine-readable and human-readable evidence for a second agent to review, reproduce, and continue the work without private terminal history.
+- **NFR-21 HITL reviewability:** every PR must be small enough, or explicitly excepted, for a human reviewer to evaluate intent, changed files, verification evidence, deferred work, and rollback behavior from the PR review packet and linked spec artifacts.
 
 ## 8) Constraints (from Hub)
 
@@ -683,7 +698,7 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 ### Autopilot Caveats (per spec)
 
 - **SPEC-001 (Phase 0)** is migration-only and intentionally degenerate for the SDD funnel. `clarify`, `checklist`, and `analyze` should produce minimal output (no markers, "N/A — pure-schema spec" gaps, migration-safety findings only). The implement phase consists of the migration writes and the per-migration smoke checks listed in P0-AC1..AC14. Rollback for SPEC-001 is documented manual reverse SQL (the live migration runner has no `down()` function).
-- **SPEC-009A through SPEC-009D (Phases 8A-8D)** replace the old monolithic pilot. SPEC-009C has one intentional human-in-the-loop checkpoint: `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes when `pullFromGitHub` records the linked PR merge. Manual wall-clock and UI-observation checks live in `docs/qa/pilot-smoke-checklist.md`; they are NOT validated by `gate-validator`.
+- **SPEC-009A through SPEC-009D (Phases 8A-8D)** replace the old monolithic pilot. The SPEC-009C family is split into four reviewable specs. SPEC-009C4 has one intentional human-in-the-loop checkpoint: `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes when `pullFromGitHub` records the linked PR merge. Manual wall-clock and UI-observation checks live in `docs/qa/pilot-smoke-checklist.md`; they are NOT validated by `gate-validator`.
 - **SPEC-010A and SPEC-010B (Phases 9A-9B)** split reusable product-line seeding from Product Line B's real smoke. SPEC-010B's 1-operator-hour onboarding check is MANUAL; code-checkable isolation/dashboard checks remain validator/TDD work.
 - **SPEC-012A/B, SPEC-013A/B/C, and SPEC-014A/B/C/D (Phases 10A-12D)** are Symphony-aligned v2 work. They must not rewrite the v1 departmental architecture or replace SpecKit task-chain governance. Each spec starts by proving which v1 primitives it reuses and which new state, if any, it adds.
 - **Tool count = N/A:** every spec in this PRD is non-tool-surface. `/speckit-pro:setup` should accept `N/A` and skip MCP-tool artifacts.
