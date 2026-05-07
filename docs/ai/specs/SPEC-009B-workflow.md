@@ -61,8 +61,8 @@ Source-of-truth scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated seed-only spec with preflight, idempotency, and non-dispatch requirements |
 | Clarify | `$speckit-clarify` | Complete | Resolved cleanup preflight, seed idempotency, governance thresholds, and contract-slug details |
-| Plan | `$speckit-plan` | In Progress | Plan seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
-| Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, and security checklists |
+| Plan | `$speckit-plan` | Complete | Planned seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
+| Checklist | `$speckit-checklist` | In Progress | Run focused data-integrity, state-management, error-handling, and security checklists |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered implementation tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify no scope drift into SPEC-009C/010A/013/014 |
 | Implement | `$speckit-implement` | Pending | Implement seed tooling, tests, docs, and status updates |
@@ -450,11 +450,16 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, execution flow |
-| `research.md` | Pending | Seed/preflight/contract decisions if needed |
-| `data-model.md` | Pending | Seeded rows and idempotency keys |
-| `contracts/` | Pending | CLI/runbook/API contracts if needed |
-| `quickstart.md` | Pending | Seed and verification commands |
+| `plan.md` | Complete | Technical context, execution flow, validation plan |
+| `research.md` | Complete | Seed/preflight/contract/governance/flag decisions |
+| `data-model.md` | Complete | Seeded rows and idempotency keys |
+| `contracts/` | Complete | `seed-cli.md` and `seed-evidence.md` contracts |
+| `quickstart.md` | Complete | Seed and verification commands |
+
+**G3 Gate:** Pass. `plan.md` exists with 0 unresolved markers.
+
+**Plan Notes:** `AGENTS.md` was updated by the SpecKit agent-context script to
+record SPEC-009B active technologies and storage surfaces.
 
 ---
 
