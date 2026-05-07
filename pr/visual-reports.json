@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-07T00:11:42.720Z",
+  "updatedAt": "2026-05-07T06:01:47.078Z",
   "prs": [
+    {
+      "prNumber": "30",
+      "prTitle": "feat(SPEC-009B): implement mission-control seed",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/30",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/30/",
+      "headRef": "009b-mission-control-seed",
+      "baseRef": "main",
+      "updatedAt": "2026-05-07T06:01:47.078Z",
+      "latest": {
+        "storybook": {
+          "runId": "25478612549",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25478612549",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/30/storybook/latest/",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/30/runs/25478612549-attempt-1/storybook/",
+          "updatedAt": "2026-05-07T06:01:47.078Z"
+        }
+      }
+    },
     {
       "prNumber": "28",
       "prTitle": "feat: implement SPEC-009A workflow contract roundtrip",
