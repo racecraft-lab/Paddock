@@ -7,6 +7,22 @@
   "baseRef": "main",
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "25525697896",
+      "runAttempt": "1",
+      "runKey": "25525697896-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25525697896",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/30/runs/25525697896-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/30/storybook/latest/",
+      "headSha": "f5c732c4ce036ff16bfc6133a60695e208ee2786",
+      "headRef": "009b-mission-control-seed",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-05-07T22:35:00.405Z"
+    },
+    {
       "surface": "playwright",
       "runId": "25521444034",
       "runAttempt": "1",
@@ -215,5 +231,5 @@
       "createdAt": "2026-05-07T06:01:47.078Z"
     }
   ],
-  "updatedAt": "2026-05-07T21:04:19.720Z"
+  "updatedAt": "2026-05-07T22:35:00.405Z"
 }
