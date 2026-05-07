@@ -62,8 +62,8 @@ Source-of-truth scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated seed-only spec with preflight, idempotency, and non-dispatch requirements |
 | Clarify | `$speckit-clarify` | Complete | Resolved cleanup preflight, seed idempotency, governance thresholds, and contract-slug details |
 | Plan | `$speckit-plan` | Complete | Planned seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
-| Checklist | `$speckit-checklist` | In Progress | Run focused data-integrity, state-management, error-handling, and security checklists |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered implementation tasks |
+| Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, state-management, error-handling, and security checklists |
+| Tasks | `$speckit-tasks` | In Progress | Generate dependency-ordered implementation tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify no scope drift into SPEC-009C/010A/013/014 |
 | Implement | `$speckit-implement` | Pending | Implement seed tooling, tests, docs, and status updates |
 
@@ -525,10 +525,13 @@ Focus on SPEC-009B requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
+| data-integrity | 26 | 0 | `specs/009b-mission-control-seed/checklists/data-integrity.md`; idempotency, row identity, GitHub sync preservation, workflow-contract import, governance uniqueness, blocked-preflight non-mutation |
+| state-management | 21 | 0 | `specs/009b-mission-control-seed/checklists/state-management.md`; Facility/Product Line separation, Product Line A flag scope, future flags off, Mission-Control-only sync state, no claim/dispatch/scheduler/runner state |
+| error-handling | 20 | 0 | `specs/009b-mission-control-seed/checklists/error-handling.md`; actionable residue errors, operator-owned backup/export-first cleanup, workflow import failure safety, retry-safe seed reruns |
+| security | 28 | 1 found, 1 resolved | `specs/009b-mission-control-seed/checklists/security.md`; strengthened operator confirmation before destructive cleanup, backup/export-first evidence, post-cleanup verification, and secret redaction in spec/plan |
+
+**G4 Gate:** Pass. Spec and plan have 0 `[Gap]` markers after all checklist
+domains and remediation.
 
 ---
 
