@@ -69,6 +69,7 @@ SPEC-013A-C and SPEC-014A-D must extend the existing Mission Control control-pla
 - `src/lib/runs.ts` already stores `AgentRun` records with runtime, task id, steps, cost, provenance, git, workspace, tags, metadata, and eval fields. Symphony-style attempts/processes should reuse or extend this run spine before adding a new concept.
 - `src/lib/task-dispatch.ts` and `src/lib/scheduler.ts` are the current dispatch path, including resource-governance gates, OpenClaw gateway invocation, direct Claude fallback, Aegis review, stale-task requeue, and task-chain advancement. SPEC-013B owns claim/reconciliation authority; SPEC-014A-D own execution inside an already-claimed run. No later spec should duplicate successor selection or bypass governance.
 - The operator node deployment proves the desired separation: Mission Control is the product/task/governance control plane, while OpenClaw gateway/node services provide an optional harness/runtime substrate. The same adapter contract must also support Mission Control-owned worktrees/sandboxes when Codex, Claude Code, Hermes, OpenCode, or another harness is selected directly.
+- The current Agents page already exposes the practical runtime-inventory inspection surface for imported OpenClaw agents: overview, workspace files, tools, models, channels, cron, SOUL, memory, tasks, config, and activity. SPEC-014B/SPEC-014D should formalize that as first-class runtime inventory state rather than inventing a separate concept that duplicates the existing operator surface.
 
 ## Phase Map (At a Glance)
 
@@ -224,9 +225,9 @@ This matrix is the second-pass review gate for every roadmap spec. Each row must
 | SPEC-013B | Only one claim can own a GitHub-linked stage at a time | `FEATURE_TASK_CONTROL_PLANE` for one product-line workflow | Run concurrent scheduler ticks, verify one claim, governance/reconciliation gates, terminal release, and no duplicate launch |
 | SPEC-013C | Operators can retry, release, or cancel a claimed stage safely | `FEATURE_TASK_CONTROL_PLANE` debug surface | Retry/release/cancel one claimed stage and inspect state transition, audit evidence, backoff, and operator-visible error summary |
 | SPEC-014A | Sandbox lifecycle is explicit, bounded, and flag-gated | `FEATURE_AGENT_RUNNER_SANDBOXES` with fake lifecycle | Create fake Mission Control/OpenClaw/external lifecycles, verify bounded paths/handles/events/cleanup, and confirm flag OFF blocks create/run |
-| SPEC-014B | Harness adapters declare capabilities before execution | `FEATURE_AGENT_RUNNER_SANDBOXES` fake adapter registry | Run two fake adapters through the manifest and verify unsupported capabilities fail the attempt instead of stalling or switching harness |
+| SPEC-014B | Harness adapters declare capabilities before execution | `FEATURE_AGENT_RUNNER_SANDBOXES` fake adapter registry | Run two fake adapters through the manifest, inspect visible/unassigned/assigned/eligible/blocked runtime-inventory states, and verify unsupported capabilities fail the attempt instead of stalling or switching harness |
 | SPEC-014C | One real harness adapter can execute an already-claimed stage | `FEATURE_AGENT_RUNNER_SANDBOXES` plus one real adapter manifest | Launch/continue one claimed stage, inspect artifacts/usage/failure summaries, and verify unsupported tool/user-input failure behavior |
-| SPEC-014D | OpenClaw/external harnesses use the same adapter contract | `FEATURE_AGENT_RUNNER_SANDBOXES` plus OpenClaw/external config | Verify missing OpenClaw/external config is absent-safe, then enable adapter on target deployment and inspect lifecycle/failure evidence |
+| SPEC-014D | OpenClaw/external harnesses use the same adapter contract | `FEATURE_AGENT_RUNNER_SANDBOXES` plus OpenClaw/external config | Verify missing OpenClaw/external config is absent-safe, then import/refresh OpenClaw runtime agents as unassigned inventory, assign one explicitly, and inspect lifecycle/failure evidence |
 | V2-001 | Tenant-aware gateway resolution can support multi-facility deployments | Future v2 flag/scope; not in v1 spec index | In a future v2 target, prove two tenant/facility contexts resolve separate gateway settings without leaking or regressing single-tenant fallback |
 
 ## Feature Flag Resolution Policy
@@ -528,7 +529,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Onboard Product Line B as the second product line, provision or register isolated agents through the configured harness substrate, configure its canonical repo, and run one live or synthetic issue through the already-proven pilot subset. Mission Control Product Line A must remain unaffected.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** Product Line B seed config, isolation assertions, one smoke checklist path, dashboard/API assertions for per-workspace metrics, and no new workflow language.
-- **Autopilot notes:** Manual "<1 operator-hour" timing is checklist-only. FocusEngine Mission Control project/repo sync unlink, stale issue cleanup, and GitHub sync/triage cron cleanup are a Product Line B preflight prerequisite, not part of this spec. Existing OpenClaw runtime agents may remain as reusable runtime identities unless separately decommissioned. Docker, OpenClaw-owned, Mission-Control-owned worktree, or external-harness sandboxes remain valid choices according to the product-line config.
+- **Autopilot notes:** Manual "<1 operator-hour" timing is checklist-only. FocusEngine Mission Control project/repo sync unlink, stale issue cleanup, and GitHub sync/triage cron cleanup are a Product Line B preflight prerequisite, not part of this spec. Existing OpenClaw runtime agents may remain as reusable runtime identities unless separately decommissioned, but Product Line B can use them only through explicit product/project role assignment after the runtime profile has been generalized and adapter eligibility passes. Docker, OpenClaw-owned, Mission-Control-owned worktree, or external-harness sandboxes remain valid choices according to the product-line config.
 - **Definition of done:** Product Line B can be seeded, enabled, smoked, disabled, and inspected independently; SQL/API checks prove product-line agent isolation and shared facility-agent reuse.
 
 ### SPEC-011: CrabTrap Honeypot Adapter
@@ -645,11 +646,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** SPEC-014C, SPEC-014D
 - **Scope source:** Phase 12B - Harness adapter manifest and fake registry
 - **Acceptance criteria source:** Phase 12B Acceptance Criteria
-- **Scope summary:** Define the typed harness adapter manifest and registry: launch/resume/stop, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, MCP/skills/plugins/memory exposure, provider/account constraints, approval policy, timeout policy, and user-input policy. Prove the contract with at least two fake adapters.
+- **Scope summary:** Define the typed harness adapter manifest and registry: launch/resume/stop, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, MCP/skills/plugins/memory exposure, provider/account constraints, approval policy, timeout policy, user-input policy, and runtime-inventory state (`visible`, `unassigned`, `assigned`, `eligible`, `blocked`). Prove the contract with at least two fake adapters.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** adapter types, manifest validation, fake registry, capability-resolution packet, unsupported-capability fail-closed behavior, and tests. No real Codex/Claude/OpenClaw/Hermes execution.
-- **Autopilot notes:** A real adapter cannot land before the fake registry proves Mission Control state is not Codex-specific.
-- **Definition of done:** Two fake adapters exercise the same contract, unsupported capabilities fail the run attempt instead of stalling or silently switching harnesses, and review packets can cite the selected adapter manifest.
+- **Strict Scope:** adapter types, manifest validation, fake registry, capability-resolution packet, runtime-inventory state model, unsupported-capability fail-closed behavior, and tests. No real Codex/Claude/OpenClaw/Hermes execution.
+- **Autopilot notes:** A real adapter cannot land before the fake registry proves Mission Control state is not Codex-specific. Visibility in runtime inventory is not eligibility for work; eligibility requires explicit project-role assignment, selected adapter capability support, product-line runner flag enablement, governance allow, and tracker-linked task eligibility.
+- **Definition of done:** Two fake adapters exercise the same contract, runtime inventory can show visible/unassigned entries without making them dispatchable, unsupported capabilities fail the run attempt instead of stalling or silently switching harnesses, and review packets can cite the selected adapter manifest and eligibility evidence.
 
 ### SPEC-014C: First Real Harness Adapter Pilot
 
@@ -675,11 +676,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** Later adapter specs
 - **Scope source:** Phase 12D - OpenClaw and external harness adapter
 - **Acceptance criteria source:** Phase 12D Acceptance Criteria
-- **Scope summary:** Add the fork-only optional adapter boundary for OpenClaw-owned sandboxes and external harness handles. OpenClaw may provide gateway/session messaging, sandbox preparation, process control, plugin harness selection, MCP/skills exposure, memory injection, and optional health/cost telemetry; Mission Control still owns tracker state, claims, governance, reconciliation, review packets, and handoff artifacts.
+- **Scope summary:** Add the fork-only optional adapter boundary for OpenClaw-owned sandboxes and external harness handles. OpenClaw may provide gateway/session messaging, sandbox preparation, process control, plugin harness selection, MCP/skills exposure, memory injection, optional health/cost telemetry, and imported runtime-agent inventory; Mission Control still owns tracker state, project-role assignment, claims, governance, reconciliation, review packets, and handoff artifacts.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** adapter module(s), absent-safe config checks, fake/OpenClaw gateway fixtures, external-handle lifecycle tests, and deployment docs. No Mission Control-owned sandbox changes unless required by the shared contract.
-- **Autopilot notes:** OpenClaw is the current application harness choice, not a product requirement. If OpenClaw is absent or disabled, Mission Control must still support Mission-Control-owned or other external-harness paths through the same registry.
-- **Definition of done:** `FEATURE_AGENT_RUNNER_SANDBOXES=false` or missing OpenClaw config leaves no OpenClaw path reachable; enabled adapter runs through the same manifest/lifecycle contract and records failures without mutating GitHub or task terminal state outside reconciliation.
+- **Strict Scope:** adapter module(s), absent-safe config checks, fake/OpenClaw gateway fixtures, external-handle lifecycle tests, runtime-inventory import/refresh labels, and deployment docs. No Mission Control-owned sandbox changes unless required by the shared contract.
+- **Autopilot notes:** OpenClaw is the current application harness choice, not a product requirement. If OpenClaw is absent or disabled, Mission Control must still support Mission-Control-owned or other external-harness paths through the same registry. Imported OpenClaw agents start as visible unassigned inventory; role/domain workspace files should stay generic, and product/task context belongs in Mission Control assignment/run packets.
+- **Definition of done:** `FEATURE_AGENT_RUNNER_SANDBOXES=false` or missing OpenClaw config leaves no OpenClaw path reachable; enabled adapter imports/refreshes OpenClaw runtime agents as non-dispatchable inventory until explicitly assigned and eligible, runs through the same manifest/lifecycle contract, and records failures without mutating GitHub or task terminal state outside reconciliation.
 
 ---
 
@@ -1306,9 +1307,9 @@ SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-ho
 | Spec | Slice | Blocked By | Can Run With | Human Validation |
 |---|---|---|---|---|
 | SPEC-014A | Sandbox ownership + lifecycle contract | SPEC-013B | SPEC-013C | Create fake Mission-Control/OpenClaw/external sandbox lifecycles and confirm paths/handles/cleanup are bounded |
-| SPEC-014B | Adapter manifest + fake registry | SPEC-014A | SPEC-013C | Run two fake adapters through the same manifest and inspect unsupported-capability failure behavior |
+| SPEC-014B | Adapter manifest + fake registry | SPEC-014A | SPEC-013C | Run two fake adapters through the same manifest, inspect runtime-inventory state transitions, and confirm unsupported capabilities fail closed |
 | SPEC-014C | First real harness adapter pilot | SPEC-013C, SPEC-014B | SPEC-014D if adapter files are disjoint | Run one real adapter on an already-claimed GitHub-linked stage and inspect artifacts/usage/failure summaries |
-| SPEC-014D | OpenClaw/external harness adapter | SPEC-014B | SPEC-014C if adapter files are disjoint | Enable OpenClaw/external adapter on target deployment, verify absent-safe OFF path and same lifecycle contract |
+| SPEC-014D | OpenClaw/external harness adapter | SPEC-014B | SPEC-014C if adapter files are disjoint | Enable OpenClaw/external adapter on target deployment, verify absent-safe OFF path, import unassigned inventory, and prove explicit assignment before eligibility |
 
 ## Dependency Graph
 
