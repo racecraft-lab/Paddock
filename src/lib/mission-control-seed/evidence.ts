@@ -125,7 +125,12 @@ export function verifyMissionControlSeed(
   if (evidence.counts.required_role_assignments !== ROLE_ASSIGNMENTS.length) errors.push('required role assignment count mismatch')
   if (evidence.counts.workflow_templates !== REQUIRED_WORKFLOW_SLUGS.length) errors.push('workflow template count mismatch')
   if (evidence.counts.governance_policies !== GOVERNANCE_POLICIES.length) errors.push('governance policy count mismatch')
-  if (!evidence.flags.enabled.includes('PILOT_MISSION_CONTROL_E2E')) errors.push('canonical pilot flag is not enabled')
+  for (const flag of ENABLED_MISSION_CONTROL_FLAGS) {
+    if (!evidence.flags.enabled.includes(flag)) errors.push(`required feature flag is not enabled: ${flag}`)
+  }
+  for (const flag of DISABLED_OR_ABSENT_FLAGS) {
+    if (!evidence.flags.disabled_or_absent.includes(flag)) errors.push(`disallowed feature flag is enabled: ${flag}`)
+  }
   for (const [key, value] of Object.entries(evidence.non_dispatch)) {
     if (value !== 0) errors.push(`non-dispatch invariant failed: ${key}=${String(value)}`)
   }

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 
 import { buildMissionControlSeedEvidence, verifyMissionControlSeed } from '@/lib/mission-control-seed/evidence'
 import { applyMissionControlSeed } from '@/lib/mission-control-seed/seed'
+import { DISABLED_OR_ABSENT_FLAGS, ENABLED_MISSION_CONTROL_FLAGS } from '@/lib/mission-control-seed/types'
 import { runSeedMissionControlCli } from '../../../../scripts/seed-mission-control-product-line'
 import { makeMissionControlSeedDb, missionControlContractPath } from './test-db'
 
@@ -24,14 +25,8 @@ describe('mission-control seed evidence', () => {
       new_successor_records: 0,
       new_per_agent_seed_tasks: 0,
     })
-    expect(evidence.flags.enabled).toContain('PILOT_MISSION_CONTROL_E2E')
-    expect(evidence.flags.disabled_or_absent).toEqual(
-      expect.arrayContaining([
-        'PILOT_PRODUCT_LINE_A_E2E',
-        'FEATURE_TASK_CONTROL_PLANE',
-        'FEATURE_AGENT_RUNNER_SANDBOXES',
-      ]),
-    )
+    expect(evidence.flags.enabled.sort()).toEqual([...ENABLED_MISSION_CONTROL_FLAGS].sort())
+    expect(evidence.flags.disabled_or_absent.sort()).toEqual([...DISABLED_OR_ABSENT_FLAGS].sort())
     expect(evidence.governance.identities.sort()).toEqual([
       'SPEC-009B:mission-control:daily-token-budget',
       'SPEC-009B:mission-control:daily-usd-budget',
@@ -61,6 +56,44 @@ describe('mission-control seed evidence', () => {
     expect(firstEvidence.identity_hash).toBe(secondEvidence.identity_hash)
     expect(verified.ok).toBe(true)
     expect(verified.status).toBe('verified')
+  })
+
+  it('fails verify mode when any required feature flag is missing', () => {
+    const db = makeMissionControlSeedDb()
+    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const row = db.prepare("SELECT id, feature_flags FROM workspaces WHERE slug = 'mission-control'").get() as {
+      id: number
+      feature_flags: string
+    }
+    const flags = JSON.parse(row.feature_flags) as Record<string, boolean>
+    delete flags.FEATURE_GLOBAL_AEGIS
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?').run(JSON.stringify(flags), row.id)
+
+    const result = verifyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.errors).toContain('required feature flag is not enabled: FEATURE_GLOBAL_AEGIS')
+    }
+  })
+
+  it('fails verify mode when any disallowed feature flag is enabled', () => {
+    const db = makeMissionControlSeedDb()
+    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const row = db.prepare("SELECT id, feature_flags FROM workspaces WHERE slug = 'mission-control'").get() as {
+      id: number
+      feature_flags: string
+    }
+    const flags = JSON.parse(row.feature_flags) as Record<string, boolean>
+    flags.FEATURE_AUTO_MERGE = true
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?').run(JSON.stringify(flags), row.id)
+
+    const result = verifyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.errors).toContain('disallowed feature flag is enabled: FEATURE_AUTO_MERGE')
+    }
   })
 
   it('fails verify mode with exit code 4 on invariant failure and redacts output', () => {
