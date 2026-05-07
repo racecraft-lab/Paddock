@@ -3,6 +3,33 @@
   "reports": [
     {
       "surface": "playwright",
+      "runId": "25470739206",
+      "runAttempt": "1",
+      "runKey": "25470739206-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25470739206",
+      "reportKey": "2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/playwright/2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/playwright/latest/",
+      "headSha": "2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "009a-workflow-contract-roundtrip",
+        "headSha": "de72a5156cca93ca936ba8169ed42dfb0296d0ca",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/28/",
+        "mergeCommitSha": "",
+        "number": "28",
+        "title": "feat: implement SPEC-009A workflow contract roundtrip",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/28"
+      },
+      "createdAt": "2026-05-07T01:35:24.480Z"
+    },
+    {
+      "surface": "playwright",
       "runId": "25389918810",
       "runAttempt": "2",
       "runKey": "25389918810-attempt-2",
@@ -228,5 +255,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-05T19:06:12.176Z"
+  "updatedAt": "2026-05-07T01:35:24.480Z"
 }
