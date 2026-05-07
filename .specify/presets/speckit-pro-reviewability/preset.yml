@@ -1,12 +1,12 @@
 schema_version: "1.0"
 
 preset:
-  id: "mission-control-reviewability"
-  name: "Mission Control Reviewability"
+  id: "speckit-pro-reviewability"
+  name: "SpecKit Pro Reviewability"
   version: "1.0.0"
-  description: "Adds Mission Control reviewability budgets and PR review packets to SpecKit templates."
-  author: "Racecraft Lab"
-  repository: "https://github.com/racecraft-lab/mission-control"
+  description: "Adds reviewability budgets and PR review packet requirements while preserving host project template policy."
+  author: "speckit-pro"
+  repository: "https://github.com/racecraft-lab/racecraft-plugins-public"
   license: "MIT"
 
 requires:
@@ -33,4 +33,4 @@ provides:
 tags:
   - "reviewability"
   - "verification-debt"
-  - "mission-control"
+  - "speckit-pro"

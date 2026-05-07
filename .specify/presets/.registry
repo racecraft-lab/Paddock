@@ -1,13 +1,13 @@
 {
-  "schema_version": "1.0",
   "presets": {
-    "mission-control-reviewability": {
-      "version": "1.0.0",
-      "source": "project-local",
-      "manifest_hash": "project-local",
+    "speckit-pro-reviewability": {
       "enabled": true,
+      "installed_at": "generated-by-speckit-pro-setup",
+      "manifest_hash": "project-local-generated",
       "priority": 5,
-      "installed_at": "2026-05-07T00:00:00Z"
+      "source": "project-local-generated",
+      "version": "1.0.0"
     }
-  }
+  },
+  "schema_version": "1.0"
 }

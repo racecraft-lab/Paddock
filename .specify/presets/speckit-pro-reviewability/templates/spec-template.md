@@ -104,6 +104,14 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
+
+- Archive Sweep runs before Phase 0 for the requested spec and considers only previously merged specs.
+- The current target spec is excluded from same-run archival.
+- Unsafe branches or dirty worktrees use dry-run or stop behavior, not cleanup.
+- Cleanup of completed spec folders requires archive success, merge/tree references, and recovery commands.
+- Generated UI screenshots are Argos/CI artifacts by default; committed binaries require a manifest-backed exception.
+
 ### Reviewability Budget *(mandatory)*
 
 <!--
@@ -128,14 +136,6 @@
 - Traceability MUST map each major requirement or success criterion to changed
   files and verification evidence.
 - Deferred work MUST name the follow-up spec or issue.
-
-### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
-
-- Archive Sweep runs before Phase 0 for the requested spec and considers only previously merged specs.
-- The current target spec is excluded from same-run archival.
-- Unsafe branches or dirty worktrees use dry-run or stop behavior, not cleanup.
-- Cleanup of completed spec folders requires archive success, merge/tree references, and recovery commands.
-- Generated UI screenshots are Argos/CI artifacts by default; committed binaries require a manifest-backed exception.
 
 ### Key Entities *(include if feature involves data)*
 

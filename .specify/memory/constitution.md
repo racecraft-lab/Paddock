@@ -9,7 +9,7 @@ Templates requiring updates:
 - .specify/templates/plan-template.md: restored to core default
 - .specify/templates/spec-template.md: restored to core default
 - .specify/templates/tasks-template.md: restored to core default
-- .specify/presets/mission-control-reviewability/: added durable template overrides
+- .specify/presets/speckit-pro-reviewability/: added durable setup-managed template overrides
 Other artifacts requiring updates:
 - .github/pull_request_template.md: updated
 - docs/rc-factory-v1-prd.md: updated
@@ -414,7 +414,9 @@ Operationalized as:
 - SpecKit template customization MUST live in installed presets or explicit
   project overrides resolved by `specify preset resolve`; do not edit core
   `.specify/templates/*.md` directly because SpecKit init/upgrade flows own
-  that surface.
+  that surface. The setup-managed `speckit-pro-reviewability` preset is
+  generated from the project's current core templates so project-specific
+  template policy remains intact.
 - A large transition PR may proceed only when named as a one-time transition
   exception and when future roadmap entries split the affected follow-on work.
 

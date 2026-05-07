@@ -46,7 +46,7 @@ not advisory guidance.
 5. **No hidden follow-on work.** A spec that discovers a larger requirement opens a follow-up spec/issue instead of expanding the PR. The PR body must call out anything deferred.
 6. **Self-hosting bias.** Once SPEC-009D lands, every later spec should be represented as a GitHub issue ingested into Mission Control, routed first through the Mission Control Issue Triage workflow family, then assigned to Issue Remediation, SpecKit/SDD, specialist review, or closure from Mission Control evidence where possible.
 7. **PR review packet.** Every PR body must include what changed, why, non-goals, review order, scope budget, traceability, verification evidence, known gaps, and rollback/flag notes. If the host repository has a PR template, generated PR bodies fill that template instead of replacing it.
-8. **Upgrade-safe template enforcement.** Reviewability template changes must be delivered through `.specify/presets/mission-control-reviewability/` or another installed preset/explicit override that `specify preset resolve <template>` can prove. Do not edit core `.specify/templates/*.md` directly; those files are treated as Spec Kit-managed defaults.
+8. **Upgrade-safe template enforcement.** Reviewability template changes must be delivered through `.specify/presets/speckit-pro-reviewability/` or another installed preset/explicit override that `specify preset resolve <template>` can prove. Do not edit core `.specify/templates/*.md` directly; those files are treated as Spec Kit-managed defaults.
 9. **Transition exception.** PR #30 / SPEC-009B is a one-time transition exception while the reviewability gates are being added. Its follow-on work is split below and future PRs must not cite PR #30 as precedent.
 
 ## Post-Merge HITL UAT Deployment Policy
@@ -114,13 +114,15 @@ records cleanup mode and recovery commands, and applies cleanup only from a
 safe reviewed context. Dirty worktrees or unrelated feature branches use
 dry-run or stop behavior.
 
-Mission Control installs the project-local
-`.specify/presets/mission-control-reviewability/` preset for reviewability
-budget and PR review packet template enforcement. After Spec Kit upgrades,
-verify the preset still wins with `specify preset resolve spec-template`,
-`specify preset resolve plan-template`, and `specify preset resolve
-tasks-template`; restore the preset or registry rather than editing core
-`.specify/templates/*.md`.
+Mission Control installs the setup-managed
+`.specify/presets/speckit-pro-reviewability/` preset for reviewability budget
+and PR review packet template enforcement. The preset is generated from the
+project's current core templates so Mission Control's existing UI and archive
+evidence policy remains intact. After Spec Kit upgrades, verify the preset
+still wins with `specify preset resolve spec-template`, `specify preset
+resolve plan-template`, and `specify preset resolve tasks-template`; rerun
+`speckit-pro` setup/fixup or restore the preset registry rather than editing
+core `.specify/templates/*.md`.
 
 Each spec should be executed from its generated worktree/branch. The mini-spec sections below are the canonical detailed source for scope, deliverables, acceptance criteria, rollback, upstream-impact notes, and dependency/parallelization rules.
 
