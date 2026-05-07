@@ -64,7 +64,7 @@ Source-of-truth scoping decisions:
 | Plan | `$speckit-plan` | Complete | Planned seed script/config/tests/runbook over existing Next.js/SQLite/pnpm stack |
 | Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, state-management, error-handling, and security checklists |
 | Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered implementation tasks |
-| Analyze | `$speckit-analyze` | In Progress | Verify no scope drift into SPEC-009C/010A/013/014 |
+| Analyze | `$speckit-analyze` | Complete | G6 pass after exit-code task drift correction; no CRITICAL/HIGH markers |
 | Implement | `$speckit-implement` | Pending | Implement seed tooling, tests, docs, and status updates |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -596,7 +596,8 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A1 | MEDIUM | `tasks.md` assigned blocked preflight to exit code `3`, conflicting with `contracts/seed-cli.md`, where `2` is blocked preflight and `3` is workflow-contract readiness failure. | Fixed T030 to use exit code `2`; fixed T049 to implement `0`, `2`, `3`, `4`, and `5`. |
+| G6 | Pass | No CRITICAL/HIGH findings remain after remediation; targeted checks found no task drift into SPEC-009C pilot issue creation, SPEC-010A generic seeding, SPEC-013 control-plane state, or SPEC-014 sandbox/harness work. | Marker counter reports `critical=0`, `high=0`, `medium=0`, `low=0`. |
 
 ---
 

@@ -91,7 +91,7 @@ Write these tests first and confirm they fail before implementation.
 - [ ] T027 [US2] Re-home existing `racecraft-lab/mission-control` issue tasks to QA triage/intake while preserving GitHub linkage and sync metadata in `src/lib/mission-control-seed/seed.ts`
 - [ ] T028 [US2] Emit blocked-preflight residue summaries, unchanged snapshot hashes, redaction proof, and cleanup checklist path in `src/lib/mission-control-seed/evidence.ts`
 - [ ] T029 [US2] Create the backup/export-first operator cleanup checklist and `ssh hall` FocusEngine cleanup verification flow in `docs/runbooks/mission-control-seed-predeploy.md`
-- [ ] T030 [US2] Implement `preflight` mode and blocked-preflight exit code `3` in `scripts/seed-mission-control-product-line.ts`
+- [ ] T030 [US2] Implement `preflight` mode and blocked-preflight exit code `2` in `scripts/seed-mission-control-product-line.ts`
 
 **Checkpoint**: User Stories 1 and 2 are independently functional and preserve tracker truth without destructive cleanup.
 
@@ -146,7 +146,7 @@ Write these tests first and confirm they fail before implementation.
 ### Implementation for User Story 4
 
 - [ ] T048 [US4] Implement stable row snapshot and identity-count hashing for idempotency evidence in `src/lib/mission-control-seed/evidence.ts`
-- [ ] T049 [US4] Implement `apply` and `verify` modes, exit codes `0`, `3`, `4`, and `5`, and JSON output in `scripts/seed-mission-control-product-line.ts`
+- [ ] T049 [US4] Implement `apply` and `verify` modes, exit codes `0`, `2`, `3`, `4`, and `5`, and JSON output in `scripts/seed-mission-control-product-line.ts`
 - [ ] T050 [US4] Add non-dispatch database assertions for tasks, workflow-chain successor records, claims, dispatches, runner rows, sandbox rows, and auto-merge markers in `src/lib/mission-control-seed/evidence.ts`
 - [ ] T051 [US4] Add SPEC-009B-owned static forbidden-scope checks for scheduler, runner, sandbox, harness adapter, synthetic issue, generic Product Line B, and auto-merge code paths in `src/lib/__tests__/mission-control-seed/guardrails.test.ts`
 - [ ] T052 [US4] Record verify-mode usage, idempotent rerun evidence expectations, and zero pilot task/chain record assertions in `docs/runbooks/mission-control-seed-predeploy.md`
