@@ -42,7 +42,7 @@ export function runMissionControlPreflight(
   try {
     assertWorkflowContractReady(options.contractPath)
   } catch (error) {
-    return contractNotReady(options.contractPath, error)
+    return contractNotReady(options.contractPath, mode, error)
   }
 
   const residue = [
@@ -74,13 +74,17 @@ export function runMissionControlPreflight(
   }
 }
 
-function contractNotReady(contractPath: string, error: unknown): ContractNotReadyResult {
+function contractNotReady(
+  contractPath: string,
+  mode: 'preflight' | 'apply',
+  error: unknown,
+): ContractNotReadyResult {
   const missing = error && typeof error === 'object' && 'missingSlugs' in error
     ? (error as { missingSlugs?: unknown }).missingSlugs
     : []
   return {
     ok: false,
-    mode: 'preflight',
+    mode,
     status: 'contract_not_ready',
     code: 'WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING',
     mutation_status: 'not_mutated',

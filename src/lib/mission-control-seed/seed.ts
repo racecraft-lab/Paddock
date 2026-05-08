@@ -29,8 +29,9 @@ export function applyMissionControlSeed(
   if (!preflight.ok) return preflight
 
   const workspaceId = db.transaction(() => {
-    ensureFacilityWorkspace(db)
-    const missionControlWorkspaceId = upsertMissionControlWorkspace(db)
+    const tenantId = resolveSeedTenantId(db)
+    ensureFacilityWorkspace(db, tenantId)
+    const missionControlWorkspaceId = upsertMissionControlWorkspace(db, tenantId)
     const projectIds = upsertDepartments(db, missionControlWorkspaceId)
     upsertRoleAssignments(db, projectIds)
     const qaProjectId = projectIds['qa']
@@ -52,27 +53,55 @@ export function applyMissionControlSeed(
   } satisfies ApplySeedResult
 }
 
-function ensureFacilityWorkspace(db: Database.Database): void {
+function ensureFacilityWorkspace(db: Database.Database, tenantId: number): void {
   db.prepare(`
     INSERT OR IGNORE INTO workspaces (slug, name, tenant_id, created_at, updated_at)
-    VALUES (?, 'Facility', 1, unixepoch(), unixepoch())
-  `).run(FACILITY_WORKSPACE_SLUG)
+    VALUES (?, 'Facility', ?, unixepoch(), unixepoch())
+  `).run(FACILITY_WORKSPACE_SLUG, tenantId)
 }
 
-function upsertMissionControlWorkspace(db: Database.Database): number {
+function upsertMissionControlWorkspace(db: Database.Database, tenantId: number): number {
   const existing = db.prepare('SELECT id FROM workspaces WHERE slug = ?').get(MISSION_CONTROL_WORKSPACE_SLUG) as
     | { id: number }
     | undefined
   if (existing) {
-    db.prepare('UPDATE workspaces SET name = ?, updated_at = unixepoch() WHERE id = ?')
-      .run(MISSION_CONTROL_WORKSPACE_NAME, existing.id)
+    db.prepare('UPDATE workspaces SET name = ?, tenant_id = ?, updated_at = unixepoch() WHERE id = ?')
+      .run(MISSION_CONTROL_WORKSPACE_NAME, tenantId, existing.id)
     return existing.id
   }
   const result = db.prepare(`
     INSERT INTO workspaces (slug, name, tenant_id, created_at, updated_at)
-    VALUES (?, ?, 1, unixepoch(), unixepoch())
-  `).run(MISSION_CONTROL_WORKSPACE_SLUG, MISSION_CONTROL_WORKSPACE_NAME)
+    VALUES (?, ?, ?, unixepoch(), unixepoch())
+  `).run(MISSION_CONTROL_WORKSPACE_SLUG, MISSION_CONTROL_WORKSPACE_NAME, tenantId)
   return Number(result.lastInsertRowid)
+}
+
+function resolveSeedTenantId(db: Database.Database): number {
+  const facility = db.prepare('SELECT tenant_id FROM workspaces WHERE slug = ?').get(FACILITY_WORKSPACE_SLUG) as
+    | { tenant_id: number | null }
+    | undefined
+  if (typeof facility?.tenant_id === 'number') return facility.tenant_id
+
+  if (tableExists(db, 'tenants')) {
+    const tenant = db.prepare(`
+      SELECT id
+      FROM tenants
+      ORDER BY CASE WHEN status = 'active' THEN 0 ELSE 1 END, id ASC
+      LIMIT 1
+    `).get() as { id: number } | undefined
+    if (typeof tenant?.id === 'number') return tenant.id
+  }
+
+  const workspace = db.prepare(`
+    SELECT tenant_id
+    FROM workspaces
+    WHERE tenant_id IS NOT NULL
+    ORDER BY CASE WHEN slug = 'default' THEN 0 ELSE 1 END, id ASC
+    LIMIT 1
+  `).get() as { tenant_id: number | null } | undefined
+  if (typeof workspace?.tenant_id === 'number') return workspace.tenant_id
+
+  return 1
 }
 
 function upsertDepartments(db: Database.Database, workspaceId: number): Record<string, number> {
@@ -217,6 +246,13 @@ function upsertGovernancePolicies(db: Database.Database, workspaceId: number): v
       `).run(...params)
     }
   }
+}
+
+function tableExists(db: Database.Database, table: string): boolean {
+  const row = db.prepare("SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = ?").get(table) as
+    | { ok: number }
+    | undefined
+  return Boolean(row?.ok)
 }
 
 function parseFlags(featureFlags: string | null): Record<string, boolean> {

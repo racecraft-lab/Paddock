@@ -1,4 +1,6 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { buildMissionControlSeedEvidence, verifyMissionControlSeed } from '@/lib/mission-control-seed/evidence'
@@ -138,5 +140,37 @@ describe('mission-control seed evidence', () => {
     expect(verify.exitCode).toBe(0)
     expect(unexpected.exitCode).toBe(5)
     expect(JSON.parse(verify.stdout).mode).toBe('verify')
+  })
+
+  it('fails fast for missing or unmigrated operator database paths', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'mc-seed-cli-'))
+    const missingDbPath = join(dir, 'missing.db')
+    const emptyDbPath = join(dir, 'empty.db')
+    writeFileSync(emptyDbPath, '')
+
+    const missing = await runSeedMissionControlCli([
+      '--mode',
+      'preflight',
+      '--db',
+      missingDbPath,
+      '--contract',
+      missionControlContractPath(),
+      '--json',
+    ])
+    const empty = await runSeedMissionControlCli([
+      '--mode',
+      'preflight',
+      '--db',
+      emptyDbPath,
+      '--contract',
+      missionControlContractPath(),
+      '--json',
+    ])
+
+    expect(missing.exitCode).toBe(5)
+    expect(existsSync(missingDbPath)).toBe(false)
+    expect(JSON.parse(missing.stderr).error).toContain('Database file does not exist')
+    expect(empty.exitCode).toBe(5)
+    expect(JSON.parse(empty.stderr).error).toContain('Database missing required tables')
   })
 })

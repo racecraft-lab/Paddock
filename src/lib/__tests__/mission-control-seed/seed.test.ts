@@ -25,6 +25,34 @@ describe('mission-control product-line seed', () => {
     expect(db.prepare("SELECT COUNT(*) as count FROM workspaces WHERE slug = 'mission-control'").get()).toEqual({ count: 1 })
   })
 
+  it('uses the existing Facility tenant for the Mission Control workspace', () => {
+    const db = makeMissionControlSeedDb()
+    db.prepare("UPDATE workspaces SET tenant_id = 42 WHERE slug = 'facility'").run()
+
+    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+
+    expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'mission-control'").get()).toEqual({ tenant_id: 42 })
+  })
+
+  it('creates a missing Facility workspace under the first active tenant', () => {
+    const db = makeMissionControlSeedDb()
+    db.prepare("DELETE FROM workspaces WHERE slug = 'facility'").run()
+    db.prepare('DELETE FROM tenants').run()
+    db.prepare(`
+      INSERT INTO tenants (id, slug, display_name, linux_user, status, openclaw_home, workspace_root)
+      VALUES (2, 'pending', 'Pending', 'pending', 'pending', '/tmp/openclaw-pending', '/tmp/workspaces-pending')
+    `).run()
+    db.prepare(`
+      INSERT INTO tenants (id, slug, display_name, linux_user, status, openclaw_home, workspace_root)
+      VALUES (7, 'active', 'Active', 'active', 'active', '/tmp/openclaw-active', '/tmp/workspaces-active')
+    `).run()
+
+    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+
+    expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'facility'").get()).toEqual({ tenant_id: 7 })
+    expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'mission-control'").get()).toEqual({ tenant_id: 7 })
+  })
+
   it('creates the six required departments and excludes product surfaces as departments', () => {
     const db = makeMissionControlSeedDb()
 

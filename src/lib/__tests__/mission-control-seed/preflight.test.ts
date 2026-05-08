@@ -98,4 +98,16 @@ describe('mission-control seed preflight', () => {
     expect(result.status).toBe('ready')
     expect(result.residue).toEqual([])
   })
+
+  it('reports contract readiness failures with the requested preflight mode', () => {
+    const db = makeMissionControlSeedDb()
+    const dir = mkdtempSync(join(tmpdir(), 'mc-seed-contract-'))
+    const missingContractPath = join(dir, 'missing-workflow-contract.yaml')
+
+    const result = runMissionControlPreflight(db, { contractPath: missingContractPath }, 'apply')
+
+    expect(result.ok).toBe(false)
+    expect(result.status).toBe('contract_not_ready')
+    expect(result.mode).toBe('apply')
+  })
 })

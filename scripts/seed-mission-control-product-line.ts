@@ -1,5 +1,5 @@
-import { mkdirSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import Database from 'better-sqlite3'
 import { verifyMissionControlSeed } from '../src/lib/mission-control-seed/evidence.ts'
@@ -119,13 +119,35 @@ function stringFlag(value: string | boolean | undefined): string | undefined {
 function openDatabase(dbPath: string | undefined): Db {
   if (!dbPath) throw new Error('--db is required')
   const resolved = resolve(dbPath)
-  mkdirSync(dirname(resolved), { recursive: true })
-  const db = new Database(resolved)
+  if (!existsSync(resolved)) throw new Error(`Database file does not exist: ${resolved}`)
+  const db = new Database(resolved, { fileMustExist: true })
+  assertRequiredTables(db)
   db.pragma('journal_mode = WAL')
   db.pragma('synchronous = NORMAL')
   db.pragma('foreign_keys = ON')
   db.pragma('busy_timeout = 5000')
   return db
+}
+
+function assertRequiredTables(db: Db): void {
+  const requiredTables = [
+    'workspaces',
+    'projects',
+    'project_agent_assignments',
+    'tasks',
+    'workflow_templates',
+    'workflow_contract_runs',
+    'workflow_contract_run_errors',
+    'workflow_contract_snapshots',
+    'resource_policies',
+  ]
+  const missing = requiredTables.filter((table) => {
+    const row = db.prepare("SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = ?").get(table) as
+      | { ok: number }
+      | undefined
+    return !row?.ok
+  })
+  if (missing.length > 0) throw new Error(`Database missing required tables: ${missing.join(', ')}`)
 }
 
 function formatOutput(result: unknown, json: boolean): string {

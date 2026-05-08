@@ -14,6 +14,16 @@ export function makeMissionControlSeedDb(): Database.Database {
       updated_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
 
+    CREATE TABLE tenants (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug TEXT NOT NULL UNIQUE,
+      display_name TEXT NOT NULL,
+      linux_user TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'pending',
+      openclaw_home TEXT NOT NULL,
+      workspace_root TEXT NOT NULL
+    );
+
     CREATE TABLE projects (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       workspace_id INTEGER NOT NULL,
@@ -185,6 +195,10 @@ export function makeMissionControlSeedDb(): Database.Database {
       updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
   `)
+  db.prepare(`
+    INSERT INTO tenants (id, slug, display_name, linux_user, status, openclaw_home, workspace_root)
+    VALUES (1, 'default', 'Default', 'default', 'active', '/tmp/openclaw', '/tmp/workspaces')
+  `).run()
   db.prepare("INSERT INTO workspaces (slug, name, tenant_id) VALUES ('facility', 'Facility', 1)").run()
   return db
 }
