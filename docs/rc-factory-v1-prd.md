@@ -18,6 +18,19 @@ generated screenshots by default.
 
 This PRD should preserve the durable **why**, **what**, **success criteria**, and **constraints** for the architecture. It should not become the per-spec execution ledger or duplicate the detailed workflow records.
 
+PR descriptions are part of the product evidence surface. Each spec PR must
+produce a human-readable review packet that summarizes the work without
+requiring reviewers to reconstruct intent from generated artifacts, terminal
+history, or branch archaeology. The review packet must name what changed, why,
+non-goals, review order, scope budget, traceability, verification evidence,
+known gaps, and rollback or flag behavior.
+
+Verification debt is any generated or agent-authored change volume that is too
+large, too cross-cutting, or too poorly traced for a human-in-the-loop reviewer
+to verify efficiently. Mission Control treats verification debt as a product
+risk because the factory depends on humans trusting agent output at PR review,
+deployment, and post-merge UAT gates.
+
 ## Harness Engineering + Symphony Integration
 
 This PRD adopts the useful parts of OpenAI's harness-engineering practice and Symphony service design while staying on Mission Control's existing stack: Next.js 16, React 19, TypeScript, SQLite, better-sqlite3, Zustand, Tailwind, pnpm, GitHub sync, OpenClaw integration, and SpecKit-Pro workflow artifacts.
@@ -66,9 +79,13 @@ The Symphony-inspired runtime layer sits above those merged primitives. It inges
 
 The runner is **harness-agnostic by design**. Current Mission Control already observes and controls local Claude Code, Codex CLI, Hermes, OpenCode, and OpenClaw gateway sessions through normalized session, transcript, command, and task-dispatch surfaces. Future runner specs must formalize that shape as a harness adapter contract instead of privileging one execution loop. An adapter declares launch/resume/continue/stop support, session id shape, transcript/event reader, token/runtime accounting, artifact publication, sandbox policy, tool/user-input behavior, MCP exposure, skill/plugin/memory roots, and provider/account constraints. OpenClaw remains an optional gateway/sandbox/runtime adapter; Codex/ChatGPT and Claude Code can be native local harnesses; Hermes/OpenCode can be observation or execution adapters according to the capabilities they can safely expose.
 
+Agent identity is split between runtime inventory and Mission Control product-line assignment. OpenClaw-registered agents are reusable runtime identities, not proof that a product line is configured for GitHub issue sync. A product line may reference an existing OpenClaw agent, copy a runtime profile into product-line/project assignment metadata, or use Mission Control-native Codex/Claude/Hermes/OpenCode adapters. Mission Control owns product-line membership, task routing, GitHub sync ownership, and cleanup readiness; OpenClaw remains the optional runtime manager for the agents it owns.
+
+Runtime inventory needs first-class state before autonomous runner work can depend on it. An imported OpenClaw or external-harness agent may be **visible** in Mission Control and **unassigned** to any product line, which makes its role, model, session key, workspace files, tools, channels, cron, memory, tasks, config, and activity inspectable. Visibility is not eligibility. A runtime identity becomes **assigned** only through an explicit Mission Control project-role binding, becomes **eligible** only when the selected harness adapter proves required capabilities and product-line flags/governance/tracker gates pass, and becomes **blocked** when any required gate is missing. Runtime profile files should stay role/domain-specific; product-line, project, issue, and task context is injected by Mission Control at assignment or run time.
+
 Sandbox ownership is a first-class run decision. A workflow can select `sandbox_owner = openclaw` when OpenClaw should provision and supervise the workspace, `sandbox_owner = mission_control` when Mission Control should create the git worktree and invoke a local harness directly, or `sandbox_owner = external_harness` when a future adapter returns a bounded workspace/session handle. In all cases, Mission Control remains the authority for claim state, governance, review gates, artifact handoff, and GitHub/task reconciliation.
 
-As of 2026-05-06, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, SPEC-008 is merged on PR #26 as `bd9a693`, and SPEC-009A is implemented and verified on branch `009a-workflow-contract-roundtrip`. The remaining pilot work continues through SPEC-009B through SPEC-009D: Mission Control product-line seed/flag/governance activation, GitHub-linked self-hosting smoke, and a review-packet/lifecycle snapshot. This split makes Mission Control itself the first product line and proves the system by having agents work Mission Control GitHub issues toward completion and deployment before the formal runner/adapters are added.
+As of 2026-05-07, SPEC-004 is merged on PR #22 as `20643d8`, SPEC-005 is merged on PR #23 as `851571f`, SPEC-006 is merged on PR #21 as `dbb6c75`, SPEC-007 is merged on PR #25 as `953f29b`, SPEC-008 is merged on PR #26 as `bd9a693`, and SPEC-009A is merged on PR #28 as `2b78970e`. SPEC-009B is implemented on branch `009b-mission-control-seed` as the seed-only step: Mission Control becomes Product Line A, with flags/governance/workflow-family configuration prepared but no issue claim or dispatch. The remaining pilot work continues through SPEC-009C1 through SPEC-009C4 plus SPEC-009D: GitHub issue ingest/eligibility, triage-to-remediation handoff, remediation to `ready_for_owner`, owner merge reconciliation, and a review-packet/lifecycle snapshot. This split makes Mission Control itself the first product line and proves the system by having agents work Mission Control GitHub issues toward completion and deployment before the formal runner/adapters are added.
 
 ## Tech Stack
 
@@ -130,12 +147,12 @@ Result: the fork supports running one product (Mission Control itself as Product
 12. **Repo-owned workflow contracts** — versioned Markdown workflow files with YAML front matter and prompt bodies that can seed/sync `workflow_templates` without making the database the only source of policy truth.
 13. **Harness-adapter execution path** — launch and observe Codex/ChatGPT, Claude Code, OpenClaw gateway, Hermes, OpenCode, or future adapter sessions from Mission Control-controlled sandboxes, with turn/session metadata captured into Mission Control.
 14. **Agent-legible operations surface** — logs, metrics, run state, artifact previews, governance decisions, and review packets accessible to both operators and downstream agents.
-15. **Mission Control GitHub issue remediation workflow family** operational end-to-end as Product Line A (pilot).
+15. **Mission Control GitHub issue workflow families** operational end-to-end as Product Line A (pilot), starting with a dedicated Issue Triage family and a separate bounded Issue Remediation family. SpecKit/SDD is a later destination for issues triaged as `NEEDS_SPEC`, not the default pilot lane.
 
 ### Success criteria
 
 - **[SC-1] Zero-regression** — every existing single-workspace deployment runs unchanged after applying all migrations. `workspace_id=1` fallback preserved. All new behavior feature-flag-guarded or null-default.
-- **[SC-2] Pilot end-to-end** — one eligible `racecraft-lab/mission-control` GitHub issue, or a synthetic `[mc-pilot]` GitHub issue when no safe live candidate exists, is ingested into Mission Control and flows **triage → plan → dev → review → Aegis → ready_for_owner → linked PR merged (done)** without operator intervention beyond the final PR merge click.
+- **[SC-2] Pilot end-to-end** — one eligible `racecraft-lab/mission-control` GitHub issue, or a synthetic `[mc-pilot]` GitHub issue when no safe live candidate exists, is ingested into Mission Control and flows **Issue Triage → Issue Remediation plan → dev → review → Aegis → ready_for_owner → linked PR merged (done)** without operator intervention beyond the final PR merge click. The triage family may route duplicates, OBE, invalid, needs-human, needs-specialist, or `NEEDS_SPEC` issues away from remediation.
 - **[SC-3] Switcher fidelity** — product-line switcher exposes exactly two operating modes: **Facility** aggregate mode and selected **Product Line** mode. Mode-sensitive panels filter to the selected Product Line, while Facility mode renders authorized aggregate data across the authenticated tenant/facility boundary.
 - **[SC-4] Global Aegis** — Aegis resolves via `scope='global'` lookup; `aegisAgentByWorkspace` map is either removed or retained only as a backward-compat shim for legacy workspace-scoped Aegis records.
 - **[SC-5] Disposition telemetry** — morning-briefing metric "Last 7d: N triaged, X ACTIONABLE, Y OBE, Z DUPLICATE, W NEEDS_SPECIALIST" queryable from `task_dispositions`.
@@ -156,6 +173,8 @@ Result: the fork supports running one product (Mission Control itself as Product
 - **[SC-20] Agent-readable review packet** — the pilot produces a Mission Control review packet with task chain, PR link, artifact references, validation evidence, cost/governance summary, and unresolved human gates before the operator merges.
 - **[SC-21] Harness-gardening loop** — stale PRD/roadmap/workflow/runbook claims and low-value or missing verification surfaces are discoverable by an automated docs/quality audit that can open a targeted follow-up task.
 - **[SC-22] Post-merge HITL UAT loop** — every spec PR is deployed from merged `main` to the target Mission Control deployment before operational acceptance. Required feature flags are enabled only for the named product line/facility/operator path, the named human UAT check is run, UAT defects become GitHub issues, and the issue is resolved, reviewed, merged, redeployed, and retested until the spec capability passes or an operator records an explicit defer decision.
+- **[SC-23] Reviewability budget** — every future spec records its primary review surface, projected scope budget, split decision, and PR review packet before implementation starts. Oversized specs are split before autopilot writes production code unless the roadmap records an explicit transition exception. SpecKit template enforcement is upgrade-safe through an installed preset or explicit override, not direct edits to core `.specify/templates/*.md`.
+- **[SC-24] Runtime inventory clarity** — imported OpenClaw or external-harness agents can be inspected as visible unassigned runtime inventory, but autonomous work eligibility requires explicit project-role assignment, adapter capability proof, product-line runner flags, resource-governance allow, and tracker-linked task eligibility. UI/API/review evidence distinguishes visible, unassigned, assigned, eligible, and blocked states.
 
 ### Non-goals (v1)
 
@@ -363,7 +382,10 @@ Agent filesystem "Sandbox" terminology is UI/config-level in v1. The live schema
 ### K. Mission Control Product Line pilot (pilot)
 
 - **FR-K1:** Seed the `facility` workspace + Mission Control Product Line workspace (`slug='mission-control'`, `name='Mission Control'`) + per-department projects (QA, Development, DevSecOps, Marketing, Customer Service, Finance). Do not create `macos`, `ui`, `website`, or `docs` projects; represent those as task labels/metadata under the appropriate department.
-- **FR-K2:** Seed the Mission Control workflow family: `mission-control_issue_triage`, `mission-control_remediation_plan`, `mission-control_specialist_route`, `mission-control_owner_review`, `mission-control_close_issue`, `mission-control_dev_implementation`, `mission-control_review`, `mission-control_aegis` (Aegis is invoked by scheduler, not a template, but the flow is documented).
+- **FR-K2:** Seed two first-class Mission Control workflow families before any SpecKit/SDD family:
+  - **Issue Triage family**: `mission-control_issue_triage`, `mission-control_specialist_route`, `mission-control_close_issue`, and `mission-control_needs_spec_route`. This family classifies GitHub issues as `ACTIONABLE_REMEDIATION`, `DUPLICATE`, `OBE`, `INVALID`, `NEEDS_HUMAN_CLARIFICATION`, `NEEDS_SPECIALIST`, or `NEEDS_SPEC`; updates labels/comments/disposition where authorized; and only promotes `ACTIONABLE_REMEDIATION` work to the remediation family.
+  - **Issue Remediation family**: `mission-control_remediation_plan`, `mission-control_dev_implementation`, `mission-control_review`, `mission-control_owner_review`, and documented `mission-control_aegis` scheduler participation. This family owns bounded fixes that do not require a new spec: reproduce/plan, implement, verify, review, Aegis, `ready_for_owner`, and owner merge reconciliation.
+  SpecKit/SDD remains a separate later workflow family for `NEEDS_SPEC` outputs and must not be conflated with issue triage or direct remediation.
 - **FR-K3:** Map agent roles to `project_agent_assignments`:
   - `researcher` → `mission-control-platform-research`
   - `planner` → `mission-control-platform-planner`
@@ -372,8 +394,8 @@ Agent filesystem "Sandbox" terminology is UI/config-level in v1. The live schema
   - `devsecops` → `mission-control-platform-devsecops`
   - `qa` → `mission-control-platform-qa`
 - **FR-K4:** Point the Mission Control Product Line workspace's GitHub repo at `racecraft-lab/mission-control`.
-- **FR-K5:** Trigger pilot with an eligible open `racecraft-lab/mission-control` GitHub issue labeled `mc:inbox` and `priority:*`. The historical smoke plan lives in the operator's Obsidian vault (informational reference; not required for autopilot ingestion). If no safe live issue exists, the seed script creates a synthetic GitHub issue titled `[mc-pilot] synthetic e2e issue`; the second smoke uses a second eligible live issue or a second synthetic. The pilot root task must be created by GitHub ingest/sync, not by direct local task creation.
-- **FR-K6:** Treat existing synced `racecraft-lab/mission-control` issue tasks as unprocessed intake. Preserve GitHub linkage and sync metadata, move them into Mission Control triage/intake, and start the new departmental workflow from triage.
+- **FR-K5:** Trigger pilot with an eligible open `racecraft-lab/mission-control` GitHub issue labeled `mc:inbox` and `priority:*` that is small enough for `ACTIONABLE_REMEDIATION`. The historical smoke plan lives in the operator's Obsidian vault (informational reference; not required for autopilot ingestion). If no safe live issue exists, the seed script creates a synthetic GitHub issue titled `[mc-pilot] synthetic e2e issue`; the second smoke uses a second eligible live issue or a second synthetic. The pilot root task must be created by GitHub ingest/sync, not by direct local task creation.
+- **FR-K6:** Treat existing synced `racecraft-lab/mission-control` issue tasks as unprocessed intake. Preserve GitHub linkage and sync metadata, move them into Mission Control triage/intake, start the new departmental workflow from Issue Triage, and advance only `ACTIONABLE_REMEDIATION` outputs into Issue Remediation.
 
 ### L. Symphony-compatible issue runner (new pilot scope)
 
@@ -396,6 +418,9 @@ Agent filesystem "Sandbox" terminology is UI/config-level in v1. The live schema
 - **FR-L17:** Every autonomous run records `harness_adapter_id`, `sandbox_owner`, `sandbox_root`, external session/thread ids where available, and whether Mission Control, OpenClaw, or another adapter owns create/cleanup. Operator UI and run/debug APIs must make this ownership clear before launch and after failure.
 - **FR-L18:** Mission Control-owned sandboxes use deterministic git worktree paths under an allowlisted root and launch the selected harness with the workflow-rendered prompt and capability packet. OpenClaw-owned sandboxes delegate create/run/cleanup to the gateway adapter but still publish the resulting session, artifact, token/runtime, and error summaries back to Mission Control.
 - **FR-L19:** Codex app-server is the preferred Codex-native adapter path when available because it exposes thread/turn/item events, command/file/tool requests, dynamic tools, and approvals through a structured protocol. Codex CLI remains a compatible fallback only when the adapter can still provide bounded launch/continue, transcript, and accounting behavior.
+- **FR-L20:** Runtime inventory state is first-class in the harness adapter roadmap. Mission Control must represent at least these states for imported OpenClaw/external-harness identities: `visible`, `unassigned`, `assigned`, `eligible`, and `blocked`.
+- **FR-L21:** A runtime inventory entry MUST NOT be autonomous-work eligible unless all gates pass: explicit Mission Control `project_agent_assignments` role binding, selected harness adapter capability support, product-line runner flag enablement, resource-governance allow, and GitHub-linked or tracker-adapter-linked task eligibility. Missing any gate fails closed with operator-visible evidence.
+- **FR-L22:** Runtime identity/profile content should be role/domain-specific rather than product-line-specific. Product, project, issue, workflow, and task context is supplied by Mission Control assignment and run packets; OpenClaw workspace files or external harness profiles should not permanently encode a product-line binding unless that binding is itself a reviewed Mission Control configuration artifact.
 
 ### M. Repo-owned workflow contracts and harness gardening (new pilot scope)
 
@@ -581,6 +606,7 @@ CREATE INDEX idx_resource_policy_events_task
 - **NFR-18 Runner isolation:** runner workspaces must be rooted under configured allowlisted paths, never outside the task sandbox/worktree root, and must not depend on destructive reset for normal reuse.
 - **NFR-19 Restart recovery:** after process restart, Mission Control must reconcile from durable task/GitHub state plus filesystem workspace state and must not assume in-memory scheduler state survived.
 - **NFR-20 Agent-reviewability:** every autonomous pilot run must leave enough machine-readable and human-readable evidence for a second agent to review, reproduce, and continue the work without private terminal history.
+- **NFR-21 HITL reviewability:** every PR must be small enough, or explicitly excepted, for a human reviewer to evaluate intent, changed files, verification evidence, deferred work, and rollback behavior from the PR review packet and linked spec artifacts.
 
 ## 8) Constraints (from Hub)
 
@@ -639,8 +665,8 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 | 6 | Disposition logging + artifact store + audit/admin panels | Complete | Yes — purely additive | `upstream-divergent` |
 | 7 | Resource governance + Cost Tracker enforcement | Complete | Yes — flag-off default | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` |
 | 7.5 | CrabTrap honeypot adapter | Pending | Yes — `FEATURE_CRABTRAP_HONEYPOT` flag-off default | `fork-only optional` |
-| 8A | Workflow contract roundtrip | Pending | Process/tooling only | `upstream-safe` |
-| 8B | Mission Control product-line seed + flag/governance activation | Pending | Gated behind pilot feature flag | Fork rollout only |
+| 8A | Workflow contract roundtrip | Complete | Process/tooling only | `upstream-safe` |
+| 8B | Mission Control product-line seed + flag/governance activation | Complete | Gated behind pilot feature flag | Fork rollout only |
 | 8C | GitHub-linked Mission Control self-hosting smoke | Pending | Gated behind pilot feature flag | Fork rollout only |
 | 8D | Pilot review packet + lifecycle snapshot | Pending | Gated behind pilot feature flag | Fork rollout only |
 | 9A | Generic product-line seeder | Pending | Process/tooling only | Fork rollout only |
@@ -675,12 +701,12 @@ Detailed phasing in `docs/ai/rc-factory-technical-roadmap.md`. Summary:
 
 **Phase 7 completion note:** SPEC-008 is complete on PR #26 after merge to `main` as `bd9a693` on 2026-05-04. Evidence includes the feature-flagged synchronous resource policy evaluator, observability ingestion/reconciliation pipeline, M65a..m + M66 additive migrations and rollback files, Cost Tracker Governance tab with Policies/Budgets/Windows/Overrides/Diagnostics/System Health subviews, feature-flag matrix harness, axe coverage guard, feature-flag env-leak guard, strict-scope guard, runbooks, observability docs, and SPEC-008 summary/retrospective evidence. Operator-led soak/chaos and selected running-instance e2e checks remain documented as follow-up evidence and do not block later spec planning.
 
-**Phase 8A completion note:** SPEC-009A is implemented and locally verified on branch `009a-workflow-contract-roundtrip` on 2026-05-06. Evidence includes the repo-owned Mission Control workflow contract, `pnpm workflow-contract` import/apply/export/recover tooling, stable import/export hash parity, M71 workflow-contract diagnostics and last-known-good snapshots, read-only diagnostics API/UI, fail-closed validation fixtures, OpenAPI/API-index parity, full local validation, and a final GitNexus embeddings rebuild copied to the primary checkout root. SPEC-009A remains process-only and does not add pilot seed, dispatch, scheduler, runner, harness, GitHub sync, sandbox lifecycle, or governance evaluator behavior.
+**Phase 8A completion note:** SPEC-009A is merged on PR #28 as `2b78970e` after local verification on branch `009a-workflow-contract-roundtrip` on 2026-05-06. Evidence includes the repo-owned Mission Control workflow contract, `pnpm workflow-contract` import/apply/export/recover tooling, stable import/export hash parity, M71 workflow-contract diagnostics and last-known-good snapshots, read-only diagnostics API/UI, fail-closed validation fixtures, OpenAPI/API-index parity, full local validation, and a final GitNexus embeddings rebuild copied to the primary checkout root. SPEC-009A remains process-only and does not add pilot seed, dispatch, scheduler, runner, harness, GitHub sync, sandbox lifecycle, or governance evaluator behavior.
 
 ### Autopilot Caveats (per spec)
 
 - **SPEC-001 (Phase 0)** is migration-only and intentionally degenerate for the SDD funnel. `clarify`, `checklist`, and `analyze` should produce minimal output (no markers, "N/A — pure-schema spec" gaps, migration-safety findings only). The implement phase consists of the migration writes and the per-migration smoke checks listed in P0-AC1..AC14. Rollback for SPEC-001 is documented manual reverse SQL (the live migration runner has no `down()` function).
-- **SPEC-009A through SPEC-009D (Phases 8A-8D)** replace the old monolithic pilot. SPEC-009C has one intentional human-in-the-loop checkpoint: `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes when `pullFromGitHub` records the linked PR merge. Manual wall-clock and UI-observation checks live in `docs/qa/pilot-smoke-checklist.md`; they are NOT validated by `gate-validator`.
+- **SPEC-009A through SPEC-009D (Phases 8A-8D)** replace the old monolithic pilot. The SPEC-009C family is split into four reviewable specs. SPEC-009C4 has one intentional human-in-the-loop checkpoint: `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes when `pullFromGitHub` records the linked PR merge. Manual wall-clock and UI-observation checks live in `docs/qa/pilot-smoke-checklist.md`; they are NOT validated by `gate-validator`.
 - **SPEC-010A and SPEC-010B (Phases 9A-9B)** split reusable product-line seeding from Product Line B's real smoke. SPEC-010B's 1-operator-hour onboarding check is MANUAL; code-checkable isolation/dashboard checks remain validator/TDD work.
 - **SPEC-012A/B, SPEC-013A/B/C, and SPEC-014A/B/C/D (Phases 10A-12D)** are Symphony-aligned v2 work. They must not rewrite the v1 departmental architecture or replace SpecKit task-chain governance. Each spec starts by proving which v1 primitives it reuses and which new state, if any, it adds.
 - **Tool count = N/A:** every spec in this PRD is non-tool-surface. `/speckit-pro:setup` should accept `N/A` and skip MCP-tool artifacts.

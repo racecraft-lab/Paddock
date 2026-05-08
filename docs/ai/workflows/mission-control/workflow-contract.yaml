@@ -7,29 +7,31 @@ allowed_variable_namespaces:
   - operator
   - github
 templates:
-  - slug: intake
-    name: Mission Control Intake
-    description: Create the first implementation task from reviewed intake.
+  - slug: mission-control_issue_triage
+    name: Mission Control Issue Triage
+    description: Classify a synced Mission Control GitHub issue and choose the next route.
     model: sonnet
     task_prompt: |
-      Review {{task.title}} for {{workspace.name}} and produce a bounded implementation brief.
+      Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return one route: close, needs_spec, or remediation.
     timeout_seconds: 300
-    agent_role: planner
+    agent_role: qa
     tags:
       - mission-control
-      - intake
+      - issue-triage
     tracker:
       type: github
       identity_version: v1
-      repo: builderz-labs/mission-control
+      repo: racecraft-lab/mission-control
       labels:
         - mission-control
     capabilities:
       - codebase-read
+      - issue-triage
     adapter_requirements:
       - codex-cli
     feature_flags:
-      - FEATURE_RC_FACTORY_WORKFLOWS
+      - FEATURE_TASK_PIPELINES
+      - FEATURE_AREA_LABEL_ROUTING
     governance:
       budget_policy: advisory
     concurrency:
@@ -37,32 +39,207 @@ templates:
     retry:
       max_attempts: 0
     sandbox:
-      mode: workspace-write
+      mode: read-only
+    prompt_version: v1
+    next_template_slug: mission-control_specialist_route
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - route
+        - rationale
+      properties:
+        route:
+          type: string
+          enum:
+            - close
+            - needs_spec
+            - remediation
+        rationale:
+          type: string
+  - slug: mission-control_specialist_route
+    name: Mission Control Specialist Route
+    description: Route triaged work to the appropriate Mission Control specialist stage.
+    model: sonnet
+    task_prompt: |
+      Route {{task.title}} for {{workspace.name}} using the triage result and repository area labels from {{github.labels}}.
+    timeout_seconds: 300
+    agent_role: planner
+    tags:
+      - mission-control
+      - specialist-route
+    tracker:
+      type: github
+      identity_version: v1
+      repo: racecraft-lab/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - codebase-read
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_TASK_PIPELINES
+      - FEATURE_AREA_LABEL_ROUTING
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: read-only
     prompt_version: v1
     routing_rules: []
     output_schema:
       type: object
       additionalProperties: false
       required:
-        - summary
+        - specialist
       properties:
-        summary:
+        specialist:
           type: string
-  - slug: implementation
-    name: Mission Control Implementation
-    description: Implement the approved Mission Control task.
+  - slug: mission-control_close_issue
+    name: Mission Control Close Issue
+    description: Prepare a close recommendation for issues that require no code path.
     model: sonnet
     task_prompt: |
-      Implement {{task.title}} in {{workspace.name}} using the approved plan and verification commands.
-    timeout_seconds: 900
-    agent_role: implementer
+      Prepare a close recommendation for {{task.title}} in {{workspace.name}} without dispatching implementation work.
+    timeout_seconds: 300
+    agent_role: qa
+    tags:
+      - mission-control
+      - close-issue
+    tracker:
+      type: github
+      identity_version: v1
+      repo: racecraft-lab/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - issue-comment
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_TWO_STEP_TERMINAL
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: read-only
+    prompt_version: v1
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - recommendation
+      properties:
+        recommendation:
+          type: string
+  - slug: mission-control_needs_spec_route
+    name: Mission Control Needs Spec Route
+    description: Prepare the handoff when triage determines SpecKit work is required.
+    model: sonnet
+    task_prompt: |
+      Prepare a SpecKit handoff for {{task.title}} in {{workspace.name}}. Do not create the spec or launch autonomous work.
+    timeout_seconds: 300
+    agent_role: planner
+    tags:
+      - mission-control
+      - needs-spec
+    tracker:
+      type: github
+      identity_version: v1
+      repo: racecraft-lab/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - codebase-read
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_TASK_PIPELINES
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: read-only
+    prompt_version: v1
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - handoff
+      properties:
+        handoff:
+          type: string
+  - slug: mission-control_remediation_plan
+    name: Mission Control Remediation Plan
+    description: Produce a bounded remediation plan for an issue approved for implementation.
+    model: sonnet
+    task_prompt: |
+      Plan remediation for {{task.title}} in {{workspace.name}} using the linked GitHub issue and repository evidence.
+    timeout_seconds: 600
+    agent_role: planner
+    tags:
+      - mission-control
+      - remediation
+    tracker:
+      type: github
+      identity_version: v1
+      repo: racecraft-lab/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - codebase-read
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_TASK_PIPELINES
+      - FEATURE_TASK_ARTIFACTS
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: read-only
+    prompt_version: v1
+    next_template_slug: mission-control_dev_implementation
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - plan
+      properties:
+        plan:
+          type: string
+  - slug: mission-control_dev_implementation
+    name: Mission Control Dev Implementation
+    description: Implement an approved Mission Control remediation plan.
+    model: sonnet
+    task_prompt: |
+      Implement {{task.title}} in {{workspace.name}} using the approved remediation plan. Return verification evidence.
+    timeout_seconds: 1200
+    agent_role: dev
     tags:
       - mission-control
       - implementation
     tracker:
       type: github
       identity_version: v1
-      repo: builderz-labs/mission-control
+      repo: racecraft-lab/mission-control
       labels:
         - mission-control
     capabilities:
@@ -71,7 +248,8 @@ templates:
     adapter_requirements:
       - codex-cli
     feature_flags:
-      - FEATURE_RC_FACTORY_WORKFLOWS
+      - FEATURE_TASK_PIPELINES
+      - FEATURE_TASK_ARTIFACTS
     governance:
       budget_policy: advisory
     concurrency:
@@ -81,6 +259,8 @@ templates:
     sandbox:
       mode: workspace-write
     prompt_version: v1
+    next_template_slug: mission-control_review
+    produces_pr: true
     routing_rules: []
     output_schema:
       type: object
@@ -90,3 +270,138 @@ templates:
       properties:
         result:
           type: string
+  - slug: mission-control_review
+    name: Mission Control Review
+    description: Review implementation evidence before owner approval.
+    model: sonnet
+    task_prompt: |
+      Review implementation evidence for {{task.title}} in {{workspace.name}} and return pass or required fixes.
+    timeout_seconds: 600
+    agent_role: qa
+    tags:
+      - mission-control
+      - review
+    tracker:
+      type: github
+      identity_version: v1
+      repo: racecraft-lab/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - codebase-read
+      - test-run
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_TWO_STEP_TERMINAL
+      - FEATURE_TASK_ARTIFACTS
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: read-only
+    prompt_version: v1
+    next_template_slug: mission-control_owner_review
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - verdict
+      properties:
+        verdict:
+          type: string
+          enum:
+            - pass
+            - fix
+  - slug: mission-control_owner_review
+    name: Mission Control Owner Review
+    description: Hold work at ready_for_owner until the operator approves.
+    model: sonnet
+    task_prompt: |
+      Summarize {{task.title}} for operator owner review in {{workspace.name}}. Do not merge or close the issue.
+    timeout_seconds: 300
+    agent_role: qa
+    tags:
+      - mission-control
+      - owner-review
+    tracker:
+      type: github
+      identity_version: v1
+      repo: racecraft-lab/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - codebase-read
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_TWO_STEP_TERMINAL
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: read-only
+    prompt_version: v1
+    next_template_slug: mission-control_aegis
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - owner_packet
+      properties:
+        owner_packet:
+          type: string
+  - slug: mission-control_aegis
+    name: Mission Control Aegis
+    description: Apply final Aegis quality review after owner review.
+    model: sonnet
+    task_prompt: |
+      Perform Aegis review for {{task.title}} in {{workspace.name}} using the owner packet and verification evidence.
+    timeout_seconds: 600
+    agent_role: qa
+    tags:
+      - mission-control
+      - aegis
+    tracker:
+      type: github
+      identity_version: v1
+      repo: racecraft-lab/mission-control
+      labels:
+        - mission-control
+    capabilities:
+      - codebase-read
+      - quality-review
+    adapter_requirements:
+      - codex-cli
+    feature_flags:
+      - FEATURE_GLOBAL_AEGIS
+      - FEATURE_TWO_STEP_TERMINAL
+    governance:
+      budget_policy: advisory
+    concurrency:
+      max_parallel: 1
+    retry:
+      max_attempts: 0
+    sandbox:
+      mode: read-only
+    prompt_version: v1
+    routing_rules: []
+    output_schema:
+      type: object
+      additionalProperties: false
+      required:
+        - verdict
+      properties:
+        verdict:
+          type: string
+          enum:
+            - approved
+            - rejected

@@ -1,14 +1,19 @@
 <!--
 Sync Impact Report
-Version change: 1.4.0 -> 1.4.1
-Modified principles: VIII. Successor Side-Effect Parity, IX. Safe Evaluation Discipline
-Added principles: None
+Version change: 1.4.1 -> 1.5.0
+Modified principles: None
+Added principles: XVI. Reviewability And Verification Debt Control
 Added sections: None
 Removed sections: None
 Templates requiring updates:
-- .specify/templates/plan-template.md: updated
-- .specify/templates/spec-template.md: updated
-- .specify/templates/tasks-template.md: updated
+- .specify/templates/plan-template.md: restored to core default
+- .specify/templates/spec-template.md: restored to core default
+- .specify/templates/tasks-template.md: restored to core default
+- .specify/presets/speckit-pro-reviewability/: added durable setup-managed template overrides
+Other artifacts requiring updates:
+- .github/pull_request_template.md: updated
+- docs/rc-factory-v1-prd.md: updated
+- docs/ai/rc-factory-technical-roadmap.md: updated
 Follow-up TODOs: None
 -->
 
@@ -111,7 +116,7 @@ All new runtime behavior routes through the single helper
 - **Env kill-switch.** `process.env.FEATURE_X === '0'` forces OFF
   regardless of JSON state. `process.env.FEATURE_X === '1'` does NOT
   force ON — only JSON can opt a workspace in.
-- **Exception:** `PILOT_PRODUCT_LINE_A_E2E` may be flipped via env (operator-
+- **Exception:** `PILOT_MISSION_CONTROL_E2E` may be flipped via env (operator-
   temporary pilot switch).
 - **Forbidden.** Inline `process.env.FEATURE_*` checks anywhere in
   runtime code. CI greps and fails on match.
@@ -381,6 +386,40 @@ Compliance evidence names the Archive Sweep report or dry-run report, the
 archive extension pin, the recovery-command format, the branch/worktree safety
 decision, and the screenshot/evidence guard result.
 
+### XVI. Reviewability And Verification Debt Control (NON-NEGOTIABLE)
+
+Spec-driven development must produce changes that a human reviewer can
+understand, verify, and safely merge. Oversized or poorly traced generated
+diffs are verification debt: they push review cost into the human gate and
+make autonomous work harder to trust.
+
+Operationalized as:
+
+- Every spec declares its primary review surface before setup: schema or
+  migration, API, UI, scheduler/runtime, harness/adapter, seed/config, or
+  docs/process. More than one primary surface requires a split decision.
+- Setup warns when projected scope exceeds 400 reviewable LOC, 6 production
+  files, 15 total files, or one primary surface. Setup blocks when projected
+  scope exceeds 800 reviewable LOC, 8 production files, 25 total files, or one
+  primary surface unless the workflow records a ratified split exception.
+- After tasks are generated, autopilot rechecks the reviewability budget before
+  implementation. A task list that expands beyond the accepted budget blocks
+  implementation and must be split or explicitly excepted.
+- Before opening or updating a PR, autopilot rechecks the final diff. Generated
+  lockfiles, generated snapshots, vendored archives, and generated exports may
+  be excluded only when declared in the workflow or PR body.
+- Every PR description is a review packet. It includes what changed, why,
+  non-goals, review order, scope budget, traceability, verification evidence,
+  known gaps, and rollback or feature-flag notes.
+- SpecKit template customization MUST live in installed presets or explicit
+  project overrides resolved by `specify preset resolve`; do not edit core
+  `.specify/templates/*.md` directly because SpecKit init/upgrade flows own
+  that surface. The setup-managed `speckit-pro-reviewability` preset is
+  generated from the project's current core templates so project-specific
+  template policy remains intact.
+- A large transition PR may proceed only when named as a one-time transition
+  exception and when future roadmap entries split the affected follow-on work.
+
 ## Tech Stack Constraints
 
 - Next.js 16, React 19, TypeScript 5.7.
@@ -600,10 +639,11 @@ Compliance checkpoints:
   artifacts, and an explicit note that known UI journey defects were reviewed
   and remediated before PR update. Spec/process PRs also include archive
   provenance, cleanup safety state, and screenshot/evidence guard results
-  when they touch `specs/**`, `.specify/**`, or UI evidence policy.
+  when they touch `specs/**`, `.specify/**`, or UI evidence policy. Every PR
+  also includes the review packet fields required by Principle XVI.
 - Every spec: `/speckit.analyze` produces no CRITICAL findings against
   this constitution.
 - Every migration: rollback file present; upstream-compat checklist
   satisfied.
 
-**Version**: 1.4.1 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-04-30
+**Version**: 1.5.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-05-07

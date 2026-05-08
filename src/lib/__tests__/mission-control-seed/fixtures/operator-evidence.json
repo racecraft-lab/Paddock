@@ -1,0 +1,32 @@
+{
+  "cron": [
+    {
+      "id": "issue-sync-focusengine",
+      "schedule": "*/5 * * * *",
+      "repo": "racecraft-lab/focusengine",
+      "command": "sync --repo racecraft-lab/focusengine --token ghp_focusengine_secret_value",
+      "env": {
+        "GITHUB_TOKEN": "ghp_focusengine_secret_value",
+        "AUTHORIZATION": "Bearer openclaw-operator-secret"
+      }
+    }
+  ],
+  "openclaw": {
+    "gateway": "openclaw",
+    "host": "ssh hall",
+    "agents": [
+      {
+        "name": "focusengine-sync-agent",
+        "repo": "racecraft-lab/focusengine",
+        "api_key": "sk-focusengine-secret"
+      }
+    ]
+  },
+  "focusEngine": {
+    "project": "FocusEngine",
+    "repo": "racecraft-lab/focusengine",
+    "tickets": 12,
+    "configPath": "~/.config/openclaw/focusengine-sync.json",
+    "accessToken": "focusengine-access-token"
+  }
+}

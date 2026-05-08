@@ -102,7 +102,9 @@ See `docs/github-sync.md` for the full sync behavior and rollback path.
 
 Environment `FEATURE_* = 0` values force matching flags off. Environment
 `FEATURE_* = 1` values do not generally force flags on; the only current
-exception is `PILOT_PRODUCT_LINE_A_E2E`.
+exception is `PILOT_MISSION_CONTROL_E2E`. Legacy `PILOT_PRODUCT_LINE_A_E2E`
+references are compatibility drift and must not be persisted as a second
+workspace pilot flag.
 
 ## API Usage
 

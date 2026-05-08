@@ -10,7 +10,7 @@ export type FeatureFlagKey =
   | 'FEATURE_TASK_ARTIFACTS'
   | 'FEATURE_RESOURCE_GOVERNANCE'
   | 'FEATURE_OPENCLAW_HEALTH_COSTS'
-  | 'PILOT_PRODUCT_LINE_A_E2E'
+  | 'PILOT_MISSION_CONTROL_E2E'
 
 export type FeatureFlagActivationScope =
   | 'authWorkspace'
@@ -82,10 +82,10 @@ export const FEATURE_FLAG_KEYS = [
   'FEATURE_TASK_ARTIFACTS',
   'FEATURE_RESOURCE_GOVERNANCE',
   'FEATURE_OPENCLAW_HEALTH_COSTS',
-  'PILOT_PRODUCT_LINE_A_E2E',
+  'PILOT_MISSION_CONTROL_E2E',
 ] as const satisfies readonly FeatureFlagKey[]
 
-const ENV_FORCE_ON_EXCEPTIONS = new Set(['PILOT_PRODUCT_LINE_A_E2E'])
+const ENV_FORCE_ON_EXCEPTIONS = new Set(['PILOT_MISSION_CONTROL_E2E'])
 
 export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition> = {
   FEATURE_WORKSPACE_SWITCHER: {
@@ -290,11 +290,11 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     rollbackBehavior: 'Disable to remove OpenClaw infra/electricity data from Cost Tracker without affecting governance core.',
     evidence: {},
   },
-  PILOT_PRODUCT_LINE_A_E2E: {
-    key: 'PILOT_PRODUCT_LINE_A_E2E',
-    label: 'Product Line A pilot',
-    description: 'End-to-end Product Line A smoke through triage, plan, dev, review, Aegis, ready_for_owner, and merge.',
-    spec: 'Product Line A pilot',
+  PILOT_MISSION_CONTROL_E2E: {
+    key: 'PILOT_MISSION_CONTROL_E2E',
+    label: 'Mission Control pilot',
+    description: 'End-to-end Mission Control smoke through triage, plan, dev, review, Aegis, ready_for_owner, and merge.',
+    spec: 'Mission Control pilot',
     phase: 8,
     upstreamImpact: 'fork rollout only',
     activationScope: 'pilotWorkspace',
@@ -316,8 +316,8 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
     ],
-    implementedAfter: ['Product Line A pilot'],
-    preflightRequires: ['Product Line A seed data, workflow templates, GitHub issue trigger, and pilot smoke checklist are ready.'],
+    implementedAfter: ['Mission Control pilot'],
+    preflightRequires: ['Mission Control seed data, workflow templates, GitHub issue trigger, and pilot smoke checklist are ready.'],
     rollbackBehavior: 'Disable pilot automation and fall back to explicit operator task assignment.',
     evidence: {},
   },
