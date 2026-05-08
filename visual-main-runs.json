@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "25531675387",
+      "runAttempt": "1",
+      "runKey": "25531675387-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25531675387",
+      "reportKey": "1d5c994c1e6e41e44cf16f39c0829d3e46bce004",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/playwright/1d5c994c1e6e41e44cf16f39c0829d3e46bce004/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/playwright/latest/",
+      "headSha": "1d5c994c1e6e41e44cf16f39c0829d3e46bce004",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "009b-mission-control-seed",
+        "headSha": "8673e1648f96df675f97c434b611b96666330192",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/30/",
+        "mergeCommitSha": "",
+        "number": "30",
+        "title": "feat(SPEC-009B): implement mission-control seed",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/30"
+      },
+      "createdAt": "2026-05-08T01:45:18.644Z"
+    },
+    {
       "surface": "storybook",
       "runId": "25531675389",
       "runAttempt": "1",
@@ -309,5 +336,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-08T01:38:02.745Z"
+  "updatedAt": "2026-05-08T01:45:18.644Z"
 }
