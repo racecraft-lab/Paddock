@@ -58,6 +58,7 @@ import {
     syncState: embeddedReviewState || !hasReviewStateTarget() ? 'ready' : 'loading',
     theme: initialVisualReviewTheme(),
     tokenHelpOpen: false,
+    toolsVisible: localStorage.getItem(storageKey('tools-visible')) !== 'false',
     zoom: 100,
     zoomMode: 'fit',
   }
@@ -177,6 +178,7 @@ import {
     localStorage.setItem(storageKey('mode'), state.mode)
     localStorage.setItem(storageKey('overlay'), String(state.overlay))
     localStorage.setItem(storageKey('queue-collapsed'), state.queueCollapsed ? 'true' : 'false')
+    localStorage.setItem(storageKey('tools-visible'), state.toolsVisible ? 'true' : 'false')
   }
 
   function reportItems(key) {
@@ -871,24 +873,41 @@ import {
           </div>
         </div>
         <div class="stage-shell">
-          <div class="stage-control-bar" data-stage-controls>
-            <div class="toolbar-controls">
-              ${showComparisonControls ? `
-                <div
-                  class="segmented ${canCompare ? '' : 'disabled'}"
-                  role="group"
-                  aria-label="Diff mode"
-                  title="${escapeAttribute(canCompare ? 'Choose how to compare baseline and current screenshots' : 'Comparison modes need baseline and current screenshots')}"
-                >
-                  ${modeButton('side-by-side', 'Side by side', !canCompare)}
-                  ${modeButton('diff', 'Highlighter', !canCompare)}
-                  ${modeButton('overlay', 'Overlay', !canCompare)}
-                  ${modeButton('blink', 'Blink', !canCompare)}
-                </div>
-              ` : ''}
-              ${heatMapControls(item)}
-              <label class="range-row">Zoom <input type="range" min="${zoomMin}" max="${zoomMax}" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
+          <div class="stage-control-bar ${state.toolsVisible ? '' : 'tools-hidden'}" data-stage-controls>
+            <div class="stage-control-toggle-row">
+              <button
+                class="btn tools-toggle ${state.toolsVisible ? 'active' : ''}"
+                type="button"
+                data-action="toggle-tools"
+                aria-label="${state.toolsVisible ? 'Hide comparison tools' : 'Show comparison tools'}"
+                aria-expanded="${state.toolsVisible ? 'true' : 'false'}"
+                aria-pressed="${state.toolsVisible ? 'true' : 'false'}"
+                title="${state.toolsVisible ? 'Hide comparison tools' : 'Show comparison tools'}"
+              >
+                <span>Tools</span>
+                <span class="tools-status" aria-hidden="true">${state.toolsVisible ? 'On' : 'Off'}</span>
+              </button>
             </div>
+            ${state.toolsVisible ? `
+              <div class="toolbar-controls">
+                ${showComparisonControls ? `
+                  <div
+                    class="segmented ${canCompare ? '' : 'disabled'}"
+                    role="group"
+                    aria-label="Diff mode"
+                    title="${escapeAttribute(canCompare ? 'Choose how to compare baseline and current screenshots' : 'Comparison modes need baseline and current screenshots')}"
+                  >
+                    ${modeButton('side-by-side', 'Side by side', !canCompare)}
+                    ${modeButton('diff', 'Highlighter', !canCompare)}
+                    ${modeButton('overlay', 'Overlay', !canCompare)}
+                    ${modeButton('blink', 'Blink', !canCompare)}
+                  </div>
+                ` : ''}
+                ${state.mode === 'overlay' && canCompare ? overlayControls() : ''}
+                ${heatMapControls(item)}
+                <label class="range-row">Zoom <input type="range" min="${zoomMin}" max="${zoomMax}" step="1" value="${state.zoom}" data-action="zoom" /> <span data-zoom-value>${state.zoom}%</span></label>
+              </div>
+            ` : ''}
           </div>
           <div class="stage">
             <div class="stage-inner" data-stage-inner>
@@ -897,6 +916,16 @@ import {
           </div>
         </div>
       </article>
+    `
+  }
+
+  function overlayControls() {
+    return `
+      <label class="range-row overlay-reveal">
+        Reveal current
+        <input type="range" min="0" max="100" value="${state.overlay}" data-action="overlay" aria-label="Reveal current image" />
+        <span data-overlay-value>${state.overlay}%</span>
+      </label>
     `
   }
 
@@ -965,14 +994,12 @@ import {
     }
     if (state.mode === 'overlay') {
       return `
-        <div class="image-grid">
-          <label class="range-row">Reveal current <input type="range" min="0" max="100" value="${state.overlay}" data-action="overlay" /> <span data-overlay-value>${state.overlay}%</span></label>
-          <div class="overlay-frame">
-            <img src="${escapeAttribute(baselineImageHref(item))}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
-            <div class="overlay-top" data-overlay-top style="width: ${state.overlay}%">
-              ${renderCurrentImage(item, `Current screenshot for ${item.raw}`)}
-            </div>
+        <div class="overlay-frame" data-overlay-frame style="--overlay-reveal: ${state.overlay}%">
+          <img src="${escapeAttribute(baselineImageHref(item))}" alt="Baseline screenshot for ${escapeAttribute(item.raw)}" />
+          <div class="overlay-top" data-overlay-top style="--overlay-reveal: ${state.overlay}%">
+            ${renderCurrentImage(item, `Current screenshot for ${item.raw}`)}
           </div>
+          <span class="overlay-divider" data-overlay-divider style="left: ${state.overlay}%" aria-hidden="true"></span>
         </div>
       `
     }
@@ -1130,6 +1157,7 @@ import {
     root.querySelector('[data-action="post-inline-comment"]')?.addEventListener('click', postInlineReviewComment)
     root.querySelector('[data-action="toggle-theme"]')?.addEventListener('click', toggleVisualReviewTheme)
     root.querySelector('[data-action="toggle-queue"]')?.addEventListener('click', toggleQueue)
+    root.querySelector('[data-action="toggle-tools"]')?.addEventListener('click', toggleTools)
     root.querySelector('[data-action="open-token-help"]')?.addEventListener('click', openTokenHelp)
     root.querySelectorAll('[data-action="close-token-help"]').forEach((button) => {
       button.addEventListener('click', closeTokenHelp)
@@ -1147,6 +1175,12 @@ import {
 
   function toggleQueue() {
     state.queueCollapsed = !state.queueCollapsed
+    persistViewState()
+    render()
+  }
+
+  function toggleTools() {
+    state.toolsVisible = !state.toolsVisible
     persistViewState()
     render()
   }
@@ -1342,8 +1376,13 @@ import {
 
   function applyOverlayState() {
     const overlayTop = root.querySelector('[data-overlay-top]')
+    const overlayFrame = root.querySelector('[data-overlay-frame]')
+    const overlayDivider = root.querySelector('[data-overlay-divider]')
     const overlayValue = root.querySelector('[data-overlay-value]')
-    if (overlayTop) overlayTop.style.width = `${state.overlay}%`
+    const reveal = `${state.overlay}%`
+    if (overlayFrame) overlayFrame.style.setProperty('--overlay-reveal', reveal)
+    if (overlayTop) overlayTop.style.setProperty('--overlay-reveal', reveal)
+    if (overlayDivider) overlayDivider.style.left = reveal
     if (overlayValue) overlayValue.textContent = `${state.overlay}%`
   }
 

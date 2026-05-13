@@ -845,6 +845,16 @@ a {
   min-width: 72px;
 }
 
+.overlay-reveal {
+  flex: 1 1 300px;
+  min-width: min(100%, 260px);
+}
+
+.overlay-reveal input {
+  flex: 1 1 150px;
+  min-width: 120px;
+}
+
 .stage-shell {
   position: relative;
   display: grid;
@@ -886,11 +896,51 @@ a {
 .stage-control-bar {
   position: relative;
   z-index: 8;
-  padding: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px;
   border-bottom: 1px solid var(--line);
   background: var(--panel-soft);
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.stage-control-bar.tools-hidden {
+  padding-block: 10px;
+}
+
+.stage-control-toggle-row {
   display: flex;
   justify-content: center;
+  width: 100%;
+}
+
+.tools-toggle {
+  min-height: 34px;
+  min-width: 104px;
+  gap: 8px;
+  border-radius: 999px;
+}
+
+.tools-toggle.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tools-status {
+  min-width: 28px;
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1.2;
+  text-align: center;
+  text-transform: uppercase;
 }
 
 .stage-control-bar .toolbar-controls {
@@ -907,7 +957,7 @@ a {
 .stage-inner {
   width: max-content;
   min-width: max-content;
-  padding: 18px;
+  padding: 26px 18px 18px;
   display: grid;
   place-items: start center;
   transform-origin: top left;
@@ -1012,8 +1062,21 @@ a {
 .overlay-top {
   position: absolute;
   inset: 0;
+  width: 100%;
   overflow: hidden;
-  border-right: 2px solid var(--accent);
+  clip-path: inset(0 calc(100% - var(--overlay-reveal, 50%)) 0 0);
+  will-change: clip-path;
+}
+
+.overlay-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.24);
+  pointer-events: none;
+  transform: translateX(-1px);
 }
 
 .blink-frame img + img,
@@ -2157,6 +2220,10 @@ kbd {
 
   .toolbar-controls,
   .decision-actions {
+    justify-content: flex-start;
+  }
+
+  .stage-control-toggle-row {
     justify-content: flex-start;
   }
 
