@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "25814898864",
+      "runAttempt": "1",
+      "runKey": "25814898864-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25814898864",
+      "reportKey": "75dfb752ede150ba04c3dea8ac18d25814935c9a",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/playwright/75dfb752ede150ba04c3dea8ac18d25814935c9a/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/playwright/latest/",
+      "headSha": "75dfb752ede150ba04c3dea8ac18d25814935c9a",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "chore/quality-gate-deps-2026-05-12",
+        "headSha": "e21e9b3dbab067d3ee8c8a5b4d5052aec4c2cdc4",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/31/",
+        "mergeCommitSha": "",
+        "number": "31",
+        "title": "chore(deps): bump next and fast-uri to resolve Quality Gate high-severity audits",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/31"
+      },
+      "createdAt": "2026-05-13T17:30:52.609Z"
+    },
+    {
       "surface": "storybook",
       "runId": "25814898660",
       "runAttempt": "1",
@@ -363,5 +390,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-13T17:23:11.890Z"
+  "updatedAt": "2026-05-13T17:30:52.609Z"
 }
