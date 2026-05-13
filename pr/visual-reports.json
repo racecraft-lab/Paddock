@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-08T00:49:13.047Z",
+  "updatedAt": "2026-05-13T02:47:27.512Z",
   "prs": [
+    {
+      "prNumber": "31",
+      "prTitle": "chore(deps): bump next and fast-uri to resolve Quality Gate high-severity audits",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/31",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/31/",
+      "headRef": "chore/quality-gate-deps-2026-05-12",
+      "baseRef": "main",
+      "updatedAt": "2026-05-13T02:47:27.512Z",
+      "latest": {
+        "storybook": {
+          "runId": "25775023389",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25775023389",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/31/storybook/latest/",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/31/runs/25775023389-attempt-1/storybook/",
+          "updatedAt": "2026-05-13T02:47:27.512Z"
+        }
+      }
+    },
     {
       "prNumber": "30",
       "prTitle": "feat(SPEC-009B): implement mission-control seed",
