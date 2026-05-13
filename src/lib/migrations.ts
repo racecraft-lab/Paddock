@@ -3243,6 +3243,17 @@ const migrations: Migration[] = [
       `)
     },
   },
+  {
+    // SPEC-009B follow-up — the seed/importer code references workflow_templates.enabled
+    // (see src/lib/mission-control-seed/evidence.ts and src/lib/workflow-contracts/importer.ts),
+    // but no prior migration added it. Test fixtures (src/lib/__tests__/mission-control-seed/test-db.ts)
+    // include the column directly, so unit tests pass while live DBs upgrading from pre-PR-30
+    // fail seed apply with "no such column: enabled". Surfaced 2026-05-12 during HAL deploy.
+    id: '072_workflow_templates_enabled',
+    up(db: Database.Database) {
+      addColumnIfMissing(db, 'workflow_templates', 'enabled', 'enabled INTEGER NOT NULL DEFAULT 1')
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {
