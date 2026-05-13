@@ -2,459 +2,259 @@
 
 # Mission Control
 
-**Open-source dashboard for AI agent orchestration.**
+**Open-source AI software factory control plane.**
 
-Manage AI agent fleets, dispatch tasks, track costs, and coordinate multi-agent workflows — self-hosted, zero external dependencies, powered by SQLite.
+Mission Control turns GitHub issues, workflow contracts, agent sandboxes, governance
+policies, artifacts, and human review gates into one self-hosted operating system
+for autonomous software work.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-577%20(282%20unit%20%2B%20295%20E2E)-brightgreen)](https://github.com/builderz-labs/mission-control)
-[![GitHub stars](https://img.shields.io/github/stars/builderz-labs/mission-control?style=social)](https://github.com/builderz-labs/mission-control/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/builderz-labs/mission-control?style=social)](https://github.com/builderz-labs/mission-control/network/members)
-[![Last commit](https://img.shields.io/github/last-commit/builderz-labs/mission-control)](https://github.com/builderz-labs/mission-control/commits/main)
-[![Open issues](https://img.shields.io/github/issues/builderz-labs/mission-control)](https://github.com/builderz-labs/mission-control/issues)
+[![Last commit](https://img.shields.io/github/last-commit/racecraft-lab/mission-control)](https://github.com/racecraft-lab/mission-control/commits/main)
+[![Open issues](https://img.shields.io/github/issues/racecraft-lab/mission-control)](https://github.com/racecraft-lab/mission-control/issues)
 
 </div>
 
 ---
 
-> **Alpha Software** — Mission Control is under active development. APIs, database schemas, and configuration formats may change between releases. Review the [security considerations](#security) before deploying to production.
+> **Alpha software** - Mission Control is under active development. APIs, database
+> schemas, workflow contracts, and configuration formats may change between
+> releases. Review [SECURITY.md](SECURITY.md) before deploying to any
+> network-accessible environment.
 
-## Contents
+## Vision
 
-- [Quick Start](#quick-start)
-- [Why teams adopt Mission Control](#why-teams-adopt-mission-control)
-- [Use-case recipes](#use-case-recipes)
-- [Getting Started with Agents](#getting-started-with-agents)
-- [Documentation](#documentation)
-- [Features](#features)
-- [Architecture](#architecture)
-- [API Reference](#api-reference)
-- [Development](#development)
-- [Troubleshooting](#troubleshooting)
-- [Security](#security)
-- [Built with Mission Control](#built-with-mission-control)
-- [Roadmap](#roadmap)
-- [Contributing](#contributing)
-- [Support](#support)
-- [License](#license)
+Mission Control is evolving from an agent dashboard into an AI software factory
+for a **facility -> product line -> department** operating model.
 
-<table>
-<tr><td><b>32 panels</b></td><td>Tasks, agents, skills, logs, tokens, memory, security, cron, alerts, webhooks, pipelines, and more — all from a single SPA shell.</td></tr>
-<tr><td><b>Real-time everything</b></td><td>WebSocket + SSE push updates with smart polling that pauses when you're away. Zero stale data.</td></tr>
-<tr><td><b>Zero external deps</b></td><td>SQLite database, single <code>pnpm start</code> to run. No Redis, no Postgres, no Docker required.</td></tr>
-<tr><td><b>Role-based access</b></td><td>Viewer, operator, and admin roles with session + API key auth. Google Sign-In with admin approval workflow.</td></tr>
-<tr><td><b>Quality gates</b></td><td>Built-in Aegis review system that blocks task completion without sign-off.</td></tr>
-<tr><td><b>Skills Hub</b></td><td>Browse, install, and security-scan agent skills from ClawdHub and skills.sh registries. Bidirectional disk ↔ DB sync.</td></tr>
-<tr><td><b>Multi-gateway</b></td><td>Connect to multiple agent gateways simultaneously. Framework adapters for OpenClaw, CrewAI, LangGraph, AutoGen, Claude SDK.</td></tr>
-<tr><td><b>Recurring tasks</b></td><td>Natural language scheduling ("every morning at 9am") with cron-based template spawning.</td></tr>
-<tr><td><b>Claude Code bridge</b></td><td>Read-only integration surfaces Claude Code team tasks, sessions, and configs on the dashboard.</td></tr>
-<tr><td><b>Agent eval & security</b></td><td>Four-layer eval framework, trust scoring, secret detection, MCP call auditing, and hook profiles (minimal/standard/strict).</td></tr>
-</table>
+The v1 product vision is defined in [docs/rc-factory-v1-prd.md](docs/rc-factory-v1-prd.md):
 
----
+- GitHub issues are the source work items for autonomous software work.
+- Mission Control tasks are synchronized projections enriched with assignment,
+  workflow, governance, artifacts, run state, and review metadata.
+- Repo-owned workflow contracts define policy and prompts in versioned Markdown,
+  then round-trip into runtime `workflow_templates`.
+- Each active work item runs in an isolated sandbox or git worktree owned by
+  Mission Control, OpenClaw, or another explicit harness adapter.
+- Aegis, reviewer, governance, and owner gates make autonomous work legible and
+  reviewable before merge.
+- Existing single-workspace deployments remain supported through feature flags,
+  null-default schema changes, and compatibility paths.
+
+Mission Control itself is Product Line A for the pilot: its own issues, specs,
+workflow contracts, validation evidence, and PRs are the proving ground.
+
+## What It Does Today
+
+- Operates a self-hosted Next.js dashboard for agents, tasks, sessions, skills,
+  costs, logs, security posture, workflow contracts, and system health.
+- Stores runtime state locally in SQLite with no required Redis or Postgres.
+- Syncs with GitHub issues and pull requests for product work intake and
+  completion evidence.
+- Runs Aegis quality review gates, task pipelines, disposition logging, artifact
+  handoffs, and resource governance.
+- Exposes REST, CLI, and MCP control interfaces for agents and operators.
+- Observes local and gateway-backed harnesses including Codex, Claude Code,
+  OpenClaw, Hermes, OpenCode, and compatible adapters.
+
+## Factory Model
+
+| Concept | Mission Control meaning |
+| --- | --- |
+| Facility | Authenticated operating boundary and aggregate view. |
+| Product Line | A product workspace, such as Mission Control itself. |
+| Department | A project area inside a product line, such as QA or Development. |
+| Work Item | A GitHub issue synchronized into a Mission Control task chain. |
+| Workflow Contract | Repo-owned Markdown/YAML policy that seeds runtime templates. |
+| Run | One isolated harness attempt attached to a tracked work item. |
+| Review Packet | Agent-readable bundle of PR, artifacts, validation, governance, cost, and unresolved human gates. |
 
 ## Quick Start
 
-### One-Command Install
+### One-command install
 
 ```bash
-git clone https://github.com/builderz-labs/mission-control.git
+git clone https://github.com/racecraft-lab/mission-control.git
 cd mission-control
 bash install.sh --local     # or: bash install.sh --docker
 ```
 
-After installation:
+Then open the setup flow:
 
 ```bash
-open http://localhost:3000/setup    # create your admin account
+open http://localhost:3000/setup
 ```
 
-The installer handles Node.js 22+, pnpm, dependencies, and auto-generates secure credentials. For Windows, use `.\install.ps1 -Mode local` in PowerShell.
+The installer handles Node.js 22+, pnpm, dependencies, and credential generation.
+For Windows, use `.\install.ps1 -Mode local` in PowerShell.
 
-### Manual Setup
+### Manual setup
 
 ```bash
-git clone https://github.com/builderz-labs/mission-control.git
+git clone https://github.com/racecraft-lab/mission-control.git
 cd mission-control
-nvm use 22 && pnpm install
-pnpm dev                    # http://localhost:3000/setup
+nvm use 22
+pnpm install
+pnpm dev
 ```
 
-### Docker Zero-Config
+Open `http://localhost:3000/setup` and create the first admin account.
+
+### Docker
 
 ```bash
-docker compose up           # auto-generates credentials, persists across restarts
+docker compose up
 ```
 
-### Prebuilt Images
-
-The project publishes multi-arch images to GHCR on main and version tags.
-
-```bash
-docker pull ghcr.io/builderz-labs/mission-control:latest
-docker run --rm -p 3000:3000 ghcr.io/builderz-labs/mission-control:latest
-```
-
-Docker Hub publishing is optional and may depend on org package visibility/secrets. If `docker.io/builderz-labs/mission-control` is unavailable, use GHCR.
-
-For production hardening (read-only filesystem, capability dropping, HSTS, network isolation):
+For hardened deployment:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.hardened.yml up -d
 ```
 
----
+## Agent Control
 
-## Why teams adopt Mission Control
-
-- Predictable orchestration: one dashboard for task flow, dispatch, quality gates, and audit trails.
-- Faster operator response: real-time agent/task/security telemetry without stitching tools together.
-- Local-first deployment: SQLite-backed stack with no mandatory Redis/Postgres dependency.
-- Security by default: RBAC, trust scoring, secret detection, and hardened deployment profile.
-
-## Use-case recipes
-
-1) Stand up a local control center in 5 minutes
-- Run `bash install.sh --local`
-- Open `/setup`
-- Create your first agent and task from the UI
-
-2) Run multi-agent workflows with quality gates
-- Register specialist agents (research, coding, reviewer)
-- Enable orchestration rules and quality review
-- Track handoffs end-to-end in the Kanban board
-
-3) Operate production safely
-- Deploy with `docker-compose.hardened.yml`
-- Configure `MC_ALLOWED_HOSTS` and TLS reverse proxy
-- Monitor trust score + security audit panels continuously
-
-4) Integrate existing CLI agents without re-platforming
-- Connect Claude Code/Codex via CLI integration
-- Keep your current workflows while adding centralized observability and controls
-
----
-
-## Getting Started with Agents
-
-Register your first agent in under 5 minutes — no gateway required:
+Mission Control can be driven from the web UI, REST API, CLI, or MCP server.
 
 ```bash
 export MC_URL=http://localhost:3000
-export MC_API_KEY=your-api-key   # shown in Settings after first login
+export MC_API_KEY=your-api-key
 
-# Register an agent
 curl -X POST "$MC_URL/api/agents/register" \
   -H "Authorization: Bearer <MC_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"name": "scout", "role": "researcher"}'
 
-# Create a task
 curl -X POST "$MC_URL/api/tasks" \
   -H "Authorization: Bearer <MC_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{"title": "Research competitors", "assigned_to": "scout", "priority": "medium"}'
 
-# Poll the queue as the agent
 curl "$MC_URL/api/tasks/queue?agent=scout" \
   -H "Authorization: Bearer <MC_API_KEY>"
 ```
 
-For the full walkthrough, see the **[Quickstart Guide](docs/quickstart.md)**.
-
----
+For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 
 ## Documentation
 
-| Guide | What You'll Learn |
-|-------|-------------------|
-| [Quickstart](docs/quickstart.md) | Register an agent, create a task, complete it — 5 minutes |
-| [Agent Setup](docs/agent-setup.md) | SOUL personalities, config, heartbeats, agent sources |
-| [Orchestration](docs/orchestration.md) | Multi-agent workflows, auto-dispatch, quality review gates |
-| [CLI Reference](docs/cli-agent-control.md) | Full CLI command list for headless/scripted usage |
-| [CLI Integration](docs/cli-integration.md) | Connect Claude Code, Codex, or any CLI tool directly |
-| [Deployment](docs/deployment.md) | Production deployment, reverse proxy, VPS setup |
-| [Security Hardening](docs/SECURITY-HARDENING.md) | Docker hardening, CSP, network isolation |
-| [Release Process](RELEASE.md) | SemVer policy, branch strategy, tag/release checklist |
-| [API Reference](openapi.json) | OpenAPI 3.1 spec — 101 REST endpoints with Scalar UI at `/api-docs` |
-| [Resource Governance](docs/feature-flags-runbook.md) | `FEATURE_RESOURCE_GOVERNANCE` admission policies, budgets, windows, overrides; matrix-test convention (SPEC-008) |
-| [Observability Setup](docs/observability/setup.md) | OTLP receiver, source adapter activation (Claude Code, Codex, Copilot, Ollama, LM Studio, OpenClaw); SPEC-008 |
-
-### Gateway Optional Mode
-
-Mission Control can run standalone without a gateway connection — useful for VPS deployments with firewall restrictions or when running primarily for project/task operations:
-
-```bash
-NEXT_PUBLIC_GATEWAY_OPTIONAL=true pnpm start
-```
-
-Task board, projects, agents, sessions, scheduler, webhooks, alerts, and cost tracking all work without a gateway. Real-time session updates and agent messaging require an active gateway connection.
-
-### Project health files
-
-- [CONTRIBUTING.md](CONTRIBUTING.md) — contribution workflow and development standards
-- [SECURITY.md](SECURITY.md) — vulnerability disclosure and security policy
-- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — community conduct expectations
-- [CHANGELOG.md](CHANGELOG.md) — release history
-- [RELEASE.md](RELEASE.md) — release process and checklist
-- [LICENSE](LICENSE) — MIT license
-
----
-
-## Features
-
-### Agent Management
-
-Monitor agent status, configure models, view heartbeats, and manage the full agent lifecycle from registration to retirement. Local agent discovery from `~/.agents/`, `~/.codex/agents/`, and `~/.claude/agents/`. Agent SOUL system with bidirectional workspace sync.
-
-### Task Board
-
-Kanban board with six columns (inbox → assigned → in progress → review → quality review → done), drag-and-drop, priority levels, assignments, threaded comments, and inline sub-agent spawning. Multi-project support with per-project ticket prefixes.
-
-### Memory Knowledge Graph
-
-Explore agent knowledge through the Memory Browser, filesystem-backed memory tree, and interactive relationship graph for sessions, memory chunks, and linked knowledge files.
-
-### Skills Hub
-
-Browse, install, and manage agent skills from local directories and external registries (ClawdHub, skills.sh). Built-in security scanner checks for prompt injection, credential leaks, data exfiltration, obfuscated content, and dangerous shell commands before installation. Supports 5 skill roots across `~/.agents/skills`, `~/.codex/skills`, project-local directories, and `~/.openclaw/skills`.
-
-### Cost Tracking
-
-Token usage dashboard with per-model breakdowns, trend charts, and cost analysis. Session-level granularity powered by Recharts.
-
-### Security Audit & Agent Trust
-
-Real-time posture scoring (0-100), secret detection across agent messages, MCP tool call auditing, injection attempt tracking, and per-agent trust scores. Hook profiles (minimal/standard/strict) let operators tune security strictness per deployment.
-
-### Agent Eval Framework
-
-Four-layer evaluation: output evals (task completion scoring against golden datasets), trace evals (convergence/loop detection), component evals (tool reliability with p50/p95/p99 latency), and drift detection (10% threshold vs 4-week rolling baseline).
-
-### Natural Language Recurring Tasks
-
-Create recurring tasks with natural language like "every morning at 9am" or "every 2 hours". The built-in schedule parser converts expressions to cron and stores them in task metadata. A template-clone pattern keeps the original as a template and spawns dated child tasks on schedule.
-
-### Claude Code Integration
-
-- **Session Tracking** — Auto-discovers local Claude Code sessions from `~/.claude/projects/`, extracts token usage, model info, cost estimates, and active status.
-- **Task Bridge** — Read-only scanner surfaces team tasks and configs from `~/.claude/tasks/` and `~/.claude/teams/` on the dashboard.
-- **Direct CLI** — Connect Claude Code, Codex, or any CLI tool directly without requiring a gateway.
-
-### Activity Feed
-
-Real-time activity stream across all agents, tasks, and system events. Filter by event type, agent, or time range.
-
-### Integrations
-
-Outbound webhooks with delivery history, retry with exponential backoff, circuit breaker, and HMAC-SHA256 signature verification. GitHub Issues sync with label/assignee mapping. Agent inter-agent messaging via the comms API.
-
-### Framework Adapters
-
-Built-in adapter layer for multi-agent registration: OpenClaw, CrewAI, LangGraph, AutoGen, Claude SDK, and generic fallback. Each adapter normalizes registration, heartbeats, and task reporting to a common interface.
-
-### Workspace Management
-
-Multi-tenant workspace isolation via `/api/super/*` endpoints. Create client instances, monitor provisioning jobs, and decommission tenants with optional cleanup. Each workspace gets its own isolated environment with dedicated gateway and state directory.
-
----
+| Guide | Purpose |
+| --- | --- |
+| [Factory PRD](docs/rc-factory-v1-prd.md) | Product vision, operating model, requirements, success criteria, and rollout plan. |
+| [Factory technical roadmap](docs/ai/rc-factory-technical-roadmap.md) | Spec sequencing and implementation units for the factory architecture. |
+| [Quickstart](docs/quickstart.md) | First local setup, agent registration, and task flow. |
+| [Agent setup](docs/agent-setup.md) | Agent identities, SOUL personalities, config, and heartbeats. |
+| [Orchestration](docs/orchestration.md) | Multi-agent workflows, auto-dispatch, and quality review gates. |
+| [Workflow contract](docs/ai/workflows/mission-control/workflow-contract.yaml) | Repo-owned workflow policy for Mission Control product-line work. |
+| [CLI reference](docs/cli-agent-control.md) | Headless and scripted control commands. |
+| [CLI integration](docs/cli-integration.md) | Connect Codex, Claude Code, or another CLI harness. |
+| [Deployment](docs/deployment.md) | Production deployment, reverse proxy, and VPS guidance. |
+| [Security hardening](docs/SECURITY-HARDENING.md) | Docker hardening, CSP, and network isolation. |
+| [Resource governance](docs/feature-flags-runbook.md) | WIP, budget, blackout/degraded windows, and matrix-test conventions. |
+| [OpenAPI](openapi.json) | REST API contract. Scalar UI is available at `/api-docs` when running. |
 
 ## Architecture
+
+Mission Control remains a TypeScript/Next.js/SQLite application.
 
 ```
 mission-control/
 ├── src/
-│   ├── proxy.ts               # Auth gate + CSRF + network access control
-│   ├── app/
-│   │   ├── page.tsx           # SPA shell — routes all panels
-│   │   ├── login/page.tsx     # Login page
-│   │   └── api/               # 101 REST API routes
-│   ├── components/
-│   │   ├── layout/            # NavRail, HeaderBar, LiveFeed
-│   │   ├── dashboard/         # Overview dashboard
-│   │   ├── panels/            # 32 feature panels
-│   │   └── chat/              # Agent chat UI
-│   ├── lib/
-│   │   ├── db.ts              # SQLite (better-sqlite3, WAL mode)
-│   │   ├── auth.ts            # Session + API key auth, RBAC
-│   │   ├── migrations.ts      # 39 schema migrations
-│   │   ├── scheduler.ts       # Background task scheduler
-│   │   ├── skill-sync.ts      # Bidirectional disk ↔ DB skill sync
-│   │   ├── skill-registry.ts  # Registry client & security scanner
-│   │   ├── agent-evals.ts     # Four-layer agent eval framework
-│   │   ├── security-events.ts # Security event logger + trust scoring
-│   │   └── adapters/          # Framework adapters
-│   └── store/index.ts         # Zustand state management
-└── .data/                     # Runtime data (SQLite DB, token logs)
+│   ├── app/                  # App Router pages and API routes
+│   ├── components/           # SPA shell, panels, chat, layout, dashboards
+│   ├── lib/                  # DB, auth, migrations, scheduler, workflow logic
+│   └── store/                # Zustand state
+├── docs/
+│   ├── ai/                   # Specs, workflow contracts, roadmap, evidence
+│   └── rc-factory-v1-prd.md  # Product source of truth
+├── scripts/                  # Install, deploy, diagnostics, workflow tooling
+└── .data/                    # Runtime SQLite/state directory, gitignored
 ```
 
-## Tech Stack
+## Stack
 
 | Layer | Technology |
-|-------|------------|
-| Framework | Next.js 16 (App Router) |
-| UI | React 19, Tailwind CSS 3.4 |
-| Language | TypeScript 5.7 |
-| Database | SQLite via better-sqlite3 (WAL mode) |
-| State | Zustand 5 |
-| Charts | Recharts 3 |
-| Real-time | WebSocket + Server-Sent Events |
-| Auth | scrypt hashing, session tokens, RBAC |
-| Validation | Zod 4 |
-| Testing | Vitest (282 unit) + Playwright (295 E2E) |
-
-## Authentication
-
-| Method | Details |
-|--------|---------|
-| Session cookie | `POST /api/auth/login` — 7-day expiry |
-| API key | `x-api-key` header |
-| Google Sign-In | OAuth with admin approval workflow |
-
-| Role | Access |
-|------|--------|
-| `viewer` | Read-only |
-| `operator` | Read + write (tasks, agents, chat) |
-| `admin` | Full access (users, settings, system ops) |
-
-## API Reference
-
-Mission Control exposes 101 REST endpoints documented via OpenAPI 3.1. Browse the interactive API docs at `/api-docs` (Scalar UI) when running locally, or see [`openapi.json`](openapi.json).
-
-<details>
-<summary><strong>Core endpoints at a glance</strong></summary>
-
-| Area | Key Endpoints |
-|------|---------------|
-| **Agents** | `GET/POST /api/agents`, `POST /api/agents/register`, `POST /api/agents/sync` |
-| **Tasks** | `GET/POST /api/tasks`, `GET /api/tasks/queue`, `PUT /api/tasks/[id]` |
-| **Skills** | `GET/POST /api/skills`, `GET/POST /api/skills/registry` |
-| **Security** | `GET /api/security-audit`, `GET /api/security-scan` |
-| **Evals** | `GET/POST /api/agents/evals`, `GET /api/agents/optimize` |
-| **Monitoring** | `GET /api/status`, `GET /api/tokens`, `GET /api/activities` |
-| **Webhooks** | `GET/POST/PUT/DELETE /api/webhooks`, `POST /api/webhooks/test` |
-| **Claude Code** | `GET /api/claude/sessions`, `GET /api/claude-tasks` |
-| **Pipelines** | `GET /api/pipelines`, `POST /api/pipelines/run` |
-| **Workspaces** | `GET/POST /api/super/tenants`, `GET/POST /api/super/provision-jobs` |
-
-</details>
-
-## Environment Variables
-
-See [`.env.example`](.env.example) for the complete list. Key variables:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `AUTH_USER` | No | Initial admin username (default: `admin`) |
-| `AUTH_PASS` | No | Initial admin password (auto-generated if unset) |
-| `API_KEY` | No | API key for headless access (auto-generated if unset) |
-| `OPENCLAW_CONFIG_PATH` | No* | Absolute path to `openclaw.json` |
-| `OPENCLAW_STATE_DIR` | No* | Exact path to the OpenClaw state directory (default: `~/.openclaw`). Preferred over `OPENCLAW_HOME` — avoids double-nesting |
-| `OPENCLAW_HOME` | No* | Legacy alias — treated as *parent* home dir (`.openclaw` is appended). Use `OPENCLAW_STATE_DIR` when it already points to the state dir |
-| `MISSION_CONTROL_DATA_DIR` | No | Directory for all MC data files (DB, tokens, etc.). Use an absolute path with the standalone server to survive rebuilds. |
-| `MC_CLAUDE_HOME` | No | Path to `~/.claude` directory |
-| `MC_ALLOWED_HOSTS` | No | Host allowlist for production |
-| `NEXT_PUBLIC_GATEWAY_OPTIONAL` | No | Run without gateway connection |
-
-*Required for memory browser, log viewer, and gateway features.
-
----
+| --- | --- |
+| Framework | Next.js 16 App Router |
+| UI | React 19, Tailwind CSS 3 |
+| Language | TypeScript 5 |
+| Database | SQLite via better-sqlite3 |
+| State | Zustand |
+| Charts | Recharts |
+| Tests | Vitest and Playwright |
+| Package manager | pnpm |
 
 ## Development
 
 ```bash
-pnpm dev              # Dev server
-pnpm build            # Production build
+pnpm dev              # development server
+pnpm build            # production build
 pnpm typecheck        # TypeScript check
 pnpm lint             # ESLint
-pnpm test             # Vitest unit tests (282)
-pnpm test:e2e         # Playwright E2E (295)
-pnpm quality:gate     # All checks
+pnpm test             # Vitest unit tests
+pnpm test:e2e         # Playwright E2E tests
+pnpm quality:gate     # repository quality gate
 ```
 
-### Diagnostics
+Diagnostics:
 
 ```bash
-bash scripts/station-doctor.sh     # Installation health check
-bash scripts/security-audit.sh     # Security configuration audit
+bash scripts/station-doctor.sh
+bash scripts/security-audit.sh
 ```
 
-## Troubleshooting
+## Configuration
 
-| Problem | Fix |
-|---------|-----|
-| "Internal server error" on login | `pnpm rebuild better-sqlite3` (Node version mismatch) |
-| Docker: gateway not connecting | Set `OPENCLAW_GATEWAY_HOST=host.docker.internal` in `.env` |
-| Docker: browser WebSocket fails | Leave `NEXT_PUBLIC_GATEWAY_HOST` empty (auto-detected) or set to a browser-reachable hostname |
-| 404 on all pages | Clear Next.js cache: `rm -rf .next && pnpm dev` |
-| `AUTH_PASS` with `#` ignored | Quote it: `AUTH_PASS="my#pass"` or use `AUTH_PASS_B64` |
+See [.env.example](.env.example) for the full environment reference.
 
-See [docs/deployment.md](docs/deployment.md) for detailed troubleshooting.
+| Variable | Purpose |
+| --- | --- |
+| `AUTH_USER` / `AUTH_PASS` | Optional initial admin credentials. |
+| `API_KEY` | Optional headless API key. |
+| `MISSION_CONTROL_DATA_DIR` | Runtime database and state directory. |
+| `MC_ALLOWED_HOSTS` | Production host allowlist. |
+| `NEXT_PUBLIC_GATEWAY_OPTIONAL` | Run without a gateway connection. |
+| `OPENCLAW_CONFIG_PATH` | Optional OpenClaw gateway configuration path. |
+| `OPENCLAW_STATE_DIR` | Optional OpenClaw state directory. |
+| `MC_CLAUDE_HOME` | Optional Claude Code data directory. |
 
 ## Security
 
-- **Change all default credentials** before deploying
-- **Deploy behind a reverse proxy with TLS** for any network-accessible deployment
-- **Do not expose to the public internet** without configuring `MC_ALLOWED_HOSTS` and TLS
-- See [SECURITY.md](SECURITY.md) for vulnerability reporting
-
-
----
-
-## Built with Mission Control
-
-Teams and projects using Mission Control in production. [Add yours!](https://github.com/builderz-labs/mission-control/issues/new?title=Showcase:%20[Your%20Project]&labels=showcase)
-
-| Project | Description |
-|---------|-------------|
-| [MUTX](https://x.com/mutxdev) | Agent infrastructure platform — ported and extended Mission Control for multi-agent orchestration |
-| [Builderz](https://builderz.dev) | AI agent fleet management across 32+ shipped products |
-
-> **Using Mission Control?** We'd love to feature you. Open an issue with the `showcase` label or tweet [@nyk_builderz](https://x.com/nyk_builderz).
+- Change all default credentials before deployment.
+- Put any network-accessible deployment behind TLS and an authenticated reverse
+  proxy.
+- Configure `MC_ALLOWED_HOSTS` before exposing the service outside localhost.
+- Treat agent sandboxes, transcripts, artifacts, and workflow contracts as
+  sensitive operational state.
+- Report vulnerabilities through [SECURITY.md](SECURITY.md).
 
 ## Roadmap
 
-See [open issues](https://github.com/builderz-labs/mission-control/issues) for planned work.
+The factory roadmap is driven by the PRD and spec archive:
 
-- [ ] Agent-agnostic gateway support — connect any orchestration framework
-- [ ] **[Flight Deck](https://github.com/splitlabs/flight-deck)** — native desktop companion app (Tauri v2) with PTY terminal grid and system tray HUD
-- [ ] First-class per-agent cost breakdowns
-- [ ] OAuth approval UI improvements
-- [ ] API token rotation UI
+- Product-line and Facility scoping.
+- Facility-wide Aegis and security guardians.
+- Task pipeline engine and `ready_for_owner` terminal flow.
+- Area-label GitHub routing and issue disposition telemetry.
+- Shared artifact store and review packets.
+- Resource governance for WIP, budget, and blackout/degraded windows.
+- GitHub issue runner with isolated sandboxes and harness adapters.
+- Post-merge human UAT loop before operational acceptance.
+
+See [docs/rc-factory-v1-prd.md](docs/rc-factory-v1-prd.md) and
+[docs/ai/rc-factory-technical-roadmap.md](docs/ai/rc-factory-technical-roadmap.md)
+for the canonical sequence.
 
 ## Contributing
 
-Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup instructions and guidelines.
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md),
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md).
 
-## Support
-
-If you find this project useful, consider supporting the open-source work:
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-orange?logo=buymeacoffee)](https://buymeacoffee.com/nyk_builderz)
-
-**Solana:** `BYLu8XD8hGDUtdRBWpGWu5HKoiPrWqCxYFSh4oxXuvPg`
-
-
----
-
-<div align="center">
-
-**Need agent infrastructure built for your team?**
-
-[Builderz](https://builderz.dev) builds production AI agent systems, trading infrastructure, and Solana applications — 32+ products shipped across 15 countries.
-
-[Get in touch](https://builderz.dev) | [@nyk_builderz](https://x.com/nyk_builderz)
-
-</div>
-
-<p align="center">
-  <a href="https://star-history.com/#builderz-labs/mission-control&Date">
-    <img src="https://api.star-history.com/svg?repos=builderz-labs/mission-control&type=Date" alt="Star History" width="400">
-  </a>
-</p>
+For architecture work, align proposals with the factory PRD, technical roadmap,
+and existing SpecKit workflow records under `docs/ai/specs/`.
 
 ## License
 
-[MIT](LICENSE) © 2026 [Builderz Labs](https://github.com/builderz-labs/mission-control)
+Mission Control is released under the [MIT License](LICENSE). See the license
+file for the full text and historical copyright notice.
