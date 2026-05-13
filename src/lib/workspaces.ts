@@ -116,7 +116,8 @@ export function listWorkspacesForTenant(
     SELECT id, slug, name, tenant_id, feature_flags, created_at, updated_at
     FROM workspaces
     WHERE tenant_id = ?
-    ORDER BY CASE WHEN slug = 'default' THEN 0 ELSE 1 END, name COLLATE NOCASE ASC
+      AND disabled_at IS NULL
+    ORDER BY name COLLATE NOCASE ASC
   `).all(tenantId) as WorkspaceRecord[]
 }
 
