@@ -478,6 +478,35 @@ describe('SPEC-001 foundation migrations', () => {
     })
   })
 
+  it('keeps the default workspace selectable until a replacement Product Line exists', () => {
+    const db = createMigration052Database()
+    runMigrations(db)
+
+    expect(
+      db.prepare(`SELECT disabled_at FROM workspaces WHERE slug = 'default'`).get()
+    ).toEqual({ disabled_at: null })
+    expect(
+      db.prepare(`SELECT id FROM schema_migrations WHERE id = '075_restore_default_when_no_product_line'`).get()
+    ).toEqual({ id: '075_restore_default_when_no_product_line' })
+  })
+
+  it('soft-disables the default workspace when another Product Line exists', () => {
+    const db = createMigration052Database()
+    db.prepare(
+      `
+        INSERT INTO workspaces (slug, name, tenant_id)
+        VALUES ('mission-control', 'Mission Control', 2)
+      `
+    ).run()
+
+    runMigrations(db)
+
+    const row = db.prepare(`SELECT disabled_at FROM workspaces WHERE slug = 'default'`).get() as {
+      disabled_at: string | null
+    }
+    expect(row.disabled_at).toEqual(expect.any(String))
+  })
+
   it('ships executable manual rollback artifacts for M53-M61', () => {
     const db = createMigration052Database()
     runMigrations(db)

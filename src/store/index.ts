@@ -1081,7 +1081,10 @@ export const useMissionControl = create<MissionControlStore>()(
         const tenantId = typeof data?.tenant_id === 'number'
           ? data.tenant_id
           : deriveTenantId(get())
-        const flagWorkspace = workspaceList.find((workspace) => workspace.id === data?.active_workspace_id)
+        const activeWorkspace = data?.active_workspace && typeof data.active_workspace === 'object'
+          ? data.active_workspace as ProductLine
+          : null
+        const flagWorkspace = workspaceList.find((workspace) => workspace.id === data?.active_workspace_id) ?? activeWorkspace
         const switcherEnabled = resolveFlag('FEATURE_WORKSPACE_SWITCHER', {
           workspaceFlags: flagWorkspace?.feature_flags ?? null,
         })

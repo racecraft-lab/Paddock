@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireRole } from '@/lib/auth'
 import { getDatabase, logAuditEvent } from '@/lib/db'
-import { listWorkspacesForTenant, resolveWorkspaceScopeFromRequest, workspaceScopeError } from '@/lib/workspaces'
+import {
+  getWorkspaceForTenant,
+  listWorkspacesForTenant,
+  resolveWorkspaceScopeFromRequest,
+  workspaceScopeError,
+} from '@/lib/workspaces'
 import { logger } from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
@@ -15,9 +20,11 @@ export async function GET(request: NextRequest) {
       requireExplicitWhenEnabled: false,
     })
     const workspaces = listWorkspacesForTenant(db, tenantId)
+    const activeWorkspace = getWorkspaceForTenant(db, auth.user.workspace_id ?? 1, tenantId)
     return NextResponse.json({
       workspaces,
       active_workspace_id: auth.user.workspace_id,
+      active_workspace: activeWorkspace,
       active_scope: acceptedScope.kind === 'productLine'
         ? { kind: acceptedScope.kind, workspace_id: acceptedScope.workspaceId }
         : { kind: acceptedScope.kind },

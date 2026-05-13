@@ -21,6 +21,8 @@ describe('Product Line mode-sensitive panel wiring', () => {
     const agentSquad = source('src/components/panels/agent-squad-panel-phase3.tsx')
 
     expect(agentSquad).toContain('activeProductLineScope')
+    expect(agentSquad).toContain('workspaceScopeReady')
+    expect(agentSquad).toContain('enabled: autoRefresh && workspaceScopeReady')
     expect(agentSquad).toContain("appendScopeToPath('/api/agents', activeProductLineScope)")
     expect(agentSquad).toContain('appendScopeToPath(`/api/agents/${agentId}/hide`, activeProductLineScope)')
     expect(agentSquad).toContain('appendScopeToPath(`/api/agents/${agentId}`, activeProductLineScope)')

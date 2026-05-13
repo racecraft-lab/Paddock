@@ -117,4 +117,31 @@ describe('workspace bootstrap flag resolution', () => {
     expect(state.activeProductLineScope).toBeNull()
     expect(localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY)).toBeNull()
   })
+
+  it('resolves switcher flags from active_workspace when the active row is not selectable', async () => {
+    vi.stubEnv('FEATURE_WORKSPACE_SWITCHER', '1')
+    mockWorkspacesResponse({
+      tenant_id: 7,
+      active_workspace_id: 1,
+      active_workspace: {
+        id: 1,
+        slug: 'default',
+        name: 'Default Workspace',
+        tenant_id: 7,
+        feature_flags: '{"FEATURE_WORKSPACE_SWITCHER":true}',
+      },
+      workspaces: [assemblyWorkspace],
+    })
+
+    await useMissionControl.getState().fetchWorkspaces()
+
+    const state = useMissionControl.getState()
+    expect(state.workspaceSwitcherEnabled).toBe(true)
+    expect(state.workspaces).toEqual([assemblyWorkspace])
+    expect(state.activeProductLineScope).toMatchObject({
+      kind: 'facility',
+      tenantId: 7,
+      scopeKey: 'tenant:7:facility',
+    })
+  })
 })
