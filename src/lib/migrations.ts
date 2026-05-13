@@ -3297,6 +3297,28 @@ const migrations: Migration[] = [
       `).run(facility.id)
     },
   },
+  {
+    // SPEC-009B follow-up — add workspaces.disabled_at column for soft-disabling
+    // workspaces, per the Rollout doc Phase 9 rollback pattern. Used immediately
+    // to retire the legacy `default` workspace from upstream MC pre-Product-Line
+    // model. The row remains in the DB for upstream-compat invariants (auth.ts
+    // hardcoded fallback to workspace_id=1, rate-limit.ts default workspace),
+    // but it is excluded from the Product Line switcher via the
+    // `disabled_at IS NULL` filter in listWorkspacesForTenant.
+    //
+    // Surfaced 2026-05-12 during HAL deploy when admin (now attached to
+    // `facility` per M73) reported the `default` workspace still appeared in
+    // the switcher and was visually cluttering the Product Line picker.
+    //
+    // Idempotent via addColumnIfMissing + WHERE disabled_at IS NULL.
+    id: '074_workspaces_disabled_at',
+    up(db: Database.Database) {
+      addColumnIfMissing(db, 'workspaces', 'disabled_at', 'disabled_at TEXT')
+      db.prepare(
+        `UPDATE workspaces SET disabled_at = datetime('now') WHERE slug = 'default' AND disabled_at IS NULL`
+      ).run()
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {
