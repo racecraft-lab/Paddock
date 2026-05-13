@@ -3254,6 +3254,49 @@ const migrations: Migration[] = [
       addColumnIfMissing(db, 'workflow_templates', 'enabled', 'enabled INTEGER NOT NULL DEFAULT 1')
     },
   },
+  {
+    // SPEC-009B follow-up — align facility workspace with D3 architectural intent:
+    //   - Global-scope agents (Aegis, Security Guardian, HAL) live in `facility`
+    //   - Admin-role users live in `facility` (they administer the whole tenant,
+    //     not a single Product Line; the switcher lets them set activeWorkspace
+    //     per session)
+    //   - FEATURE_WORKSPACE_SWITCHER enabled on `facility` so admins can switch
+    //
+    // Pre-this-migration drift: M53 added agents.scope but rows stayed on
+    // workspace_id=1; M59 created facility but never populated it; admin users
+    // attached to default since initial setup. Surfaced 2026-05-12 during HAL
+    // SPEC-009B deploy — the workspace switcher was invisible to the admin
+    // because their auth workspace (default) had the flag explicitly false.
+    //
+    // Idempotent via WHERE workspace_id != facility_id and json_set merge.
+    // No data loss — only workspace_id reassignment + feature_flag merge.
+    id: '073_facility_workspace_global_alignment',
+    up(db: Database.Database) {
+      const facility = db.prepare(
+        `SELECT id FROM workspaces WHERE slug = 'facility' LIMIT 1`
+      ).get() as { id: number } | undefined
+
+      if (!facility) return
+
+      db.prepare(
+        `UPDATE agents SET workspace_id = ? WHERE scope = 'global' AND workspace_id != ?`
+      ).run(facility.id, facility.id)
+
+      db.prepare(
+        `UPDATE users SET workspace_id = ? WHERE role = 'admin' AND workspace_id != ?`
+      ).run(facility.id, facility.id)
+
+      db.prepare(`
+        UPDATE workspaces
+        SET feature_flags = json_set(
+          COALESCE(feature_flags, '{}'),
+          '$.FEATURE_WORKSPACE_SWITCHER',
+          json('true')
+        )
+        WHERE id = ?
+      `).run(facility.id)
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {
