@@ -8,6 +8,22 @@
   "reports": [
     {
       "surface": "playwright",
+      "runId": "25812101252",
+      "runAttempt": "1",
+      "runKey": "25812101252-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25812101252",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/31/runs/25812101252-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/31/playwright/latest/",
+      "headSha": "e21e9b3dbab067d3ee8c8a5b4d5052aec4c2cdc4",
+      "headRef": "chore/quality-gate-deps-2026-05-12",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-13T16:41:36.259Z"
+    },
+    {
+      "surface": "playwright",
       "runId": "25775023365",
       "runAttempt": "1",
       "runKey": "25775023365-attempt-1",
@@ -39,5 +55,5 @@
       "createdAt": "2026-05-13T02:47:27.512Z"
     }
   ],
-  "updatedAt": "2026-05-13T02:55:29.821Z"
+  "updatedAt": "2026-05-13T16:41:36.259Z"
 }
