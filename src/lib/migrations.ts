@@ -3272,29 +3272,45 @@ const migrations: Migration[] = [
     // No data loss — only workspace_id reassignment + feature_flag merge.
     id: '073_facility_workspace_global_alignment',
     up(db: Database.Database) {
+      if (!tableExists(db, 'workspaces')) return
+
       const facility = db.prepare(
         `SELECT id FROM workspaces WHERE slug = 'facility' LIMIT 1`
       ).get() as { id: number } | undefined
 
       if (!facility) return
 
-      db.prepare(
-        `UPDATE agents SET workspace_id = ? WHERE scope = 'global' AND workspace_id != ?`
-      ).run(facility.id, facility.id)
+      if (
+        tableExists(db, 'agents') &&
+        columnExists(db, 'agents', 'scope') &&
+        columnExists(db, 'agents', 'workspace_id')
+      ) {
+        db.prepare(
+          `UPDATE agents SET workspace_id = ? WHERE scope = 'global' AND workspace_id != ?`
+        ).run(facility.id, facility.id)
+      }
 
-      db.prepare(
-        `UPDATE users SET workspace_id = ? WHERE role = 'admin' AND workspace_id != ?`
-      ).run(facility.id, facility.id)
+      if (
+        tableExists(db, 'users') &&
+        columnExists(db, 'users', 'role') &&
+        columnExists(db, 'users', 'workspace_id')
+      ) {
+        db.prepare(
+          `UPDATE users SET workspace_id = ? WHERE role = 'admin' AND workspace_id != ?`
+        ).run(facility.id, facility.id)
+      }
 
-      db.prepare(`
-        UPDATE workspaces
-        SET feature_flags = json_set(
-          COALESCE(feature_flags, '{}'),
-          '$.FEATURE_WORKSPACE_SWITCHER',
-          json('true')
-        )
-        WHERE id = ?
-      `).run(facility.id)
+      if (columnExists(db, 'workspaces', 'feature_flags')) {
+        db.prepare(`
+          UPDATE workspaces
+          SET feature_flags = json_set(
+            COALESCE(feature_flags, '{}'),
+            '$.FEATURE_WORKSPACE_SWITCHER',
+            json('true')
+          )
+          WHERE id = ?
+        `).run(facility.id)
+      }
     },
   },
   {
@@ -3313,9 +3329,57 @@ const migrations: Migration[] = [
     // Idempotent via addColumnIfMissing + WHERE disabled_at IS NULL.
     id: '074_workspaces_disabled_at',
     up(db: Database.Database) {
+      if (!tableExists(db, 'workspaces')) return
       addColumnIfMissing(db, 'workspaces', 'disabled_at', 'disabled_at TEXT')
+      if (
+        columnExists(db, 'workspaces', 'slug') &&
+        columnExists(db, 'workspaces', 'tenant_id') &&
+        columnExists(db, 'workspaces', 'disabled_at')
+      ) {
+        db.prepare(
+          `
+            UPDATE workspaces
+            SET disabled_at = datetime('now')
+            WHERE slug = 'default'
+              AND disabled_at IS NULL
+              AND EXISTS (
+                SELECT 1
+                FROM workspaces sibling
+                WHERE sibling.tenant_id = workspaces.tenant_id
+                  AND lower(sibling.slug) NOT IN ('default', 'facility')
+                  AND sibling.disabled_at IS NULL
+              )
+          `
+        ).run()
+      }
+    },
+  },
+  {
+    id: '075_restore_default_when_no_product_line',
+    up(db: Database.Database) {
+      if (!tableExists(db, 'workspaces')) return
+      if (
+        !columnExists(db, 'workspaces', 'slug') ||
+        !columnExists(db, 'workspaces', 'tenant_id') ||
+        !columnExists(db, 'workspaces', 'disabled_at')
+      ) {
+        return
+      }
+
       db.prepare(
-        `UPDATE workspaces SET disabled_at = datetime('now') WHERE slug = 'default' AND disabled_at IS NULL`
+        `
+          UPDATE workspaces
+          SET disabled_at = NULL
+          WHERE slug = 'default'
+            AND disabled_at IS NOT NULL
+            AND NOT EXISTS (
+              SELECT 1
+              FROM workspaces sibling
+              WHERE sibling.tenant_id = workspaces.tenant_id
+                AND lower(sibling.slug) NOT IN ('default', 'facility')
+                AND sibling.disabled_at IS NULL
+            )
+        `
       ).run()
     },
   },

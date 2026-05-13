@@ -6,6 +6,22 @@
 
 PRAGMA foreign_keys = ON;
 
+UPDATE agents
+SET workspace_id = (SELECT id FROM workspaces WHERE slug = 'default' LIMIT 1)
+WHERE lower(replace(name, ' ', '-')) IN ('aegis', 'security-guardian', 'hal')
+  AND workspace_id = (
+    SELECT id
+    FROM workspaces
+    WHERE slug = 'facility'
+      AND name = 'Facility'
+    LIMIT 1
+  )
+  AND EXISTS (
+    SELECT 1
+    FROM workspaces
+    WHERE slug = 'default'
+  );
+
 DELETE FROM workspaces
 WHERE slug = 'facility'
   AND name = 'Facility'

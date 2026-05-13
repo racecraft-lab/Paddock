@@ -89,7 +89,13 @@ const statusCardStyles: Record<string, { edge: string; glow: string; dot: string
 
 export function AgentSquadPanelPhase3() {
   const t = useTranslations('agentSquadPhase3')
-  const { agents, setAgents, activeProductLineScope } = useMissionControl()
+  const {
+    agents,
+    setAgents,
+    activeProductLineScope,
+    workspaceListStatus,
+    workspaceSwitcherEnabled,
+  } = useMissionControl()
   const [loading, setLoading] = useState(agents.length === 0)
   const [error, setError] = useState<string | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
@@ -99,6 +105,8 @@ export function AgentSquadPanelPhase3() {
   const [syncing, setSyncing] = useState(false)
   const [syncToast, setSyncToast] = useState<string | null>(null)
   const [showHidden, setShowHidden] = useState(false)
+  const workspaceScopeReady = workspaceListStatus === 'ready' &&
+    (!workspaceSwitcherEnabled || activeProductLineScope !== null)
 
   // Sync agents from gateway config or local disk
   const syncFromConfig = async (source?: 'local') => {
@@ -133,6 +141,11 @@ export function AgentSquadPanelPhase3() {
 
   // Fetch agents
   const fetchAgents = useCallback(async () => {
+    if (!workspaceScopeReady) {
+      if (agents.length === 0) setLoading(true)
+      return
+    }
+
     try {
       setError(null)
       if (agents.length === 0) setLoading(true)
@@ -158,10 +171,10 @@ export function AgentSquadPanelPhase3() {
     } finally {
       setLoading(false)
     }
-  }, [activeProductLineScope, agents.length, setAgents, showHidden])
+  }, [activeProductLineScope, agents.length, setAgents, showHidden, workspaceScopeReady])
 
   // Smart polling with visibility pause
-  useSmartPoll(fetchAgents, 30000, { enabled: autoRefresh, pauseWhenSseConnected: true })
+  useSmartPoll(fetchAgents, 30000, { enabled: autoRefresh && workspaceScopeReady, pauseWhenSseConnected: true })
 
   // Update agent status
   const updateAgentStatus = async (agentId: number, agentName: string, status: Agent['status'], activity?: string) => {

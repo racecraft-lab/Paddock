@@ -108,15 +108,27 @@ export function getWorkspaceForTenant(
   return row || null
 }
 
+function workspaceColumnExists(db: Database.Database, columnName: string): boolean {
+  try {
+    return (db.prepare('PRAGMA table_info(workspaces)').all() as Array<{ name: string }>)
+      .some((column) => column.name === columnName)
+  } catch {
+    return false
+  }
+}
+
 export function listWorkspacesForTenant(
   db: Database.Database,
   tenantId: number
 ): WorkspaceRecord[] {
+  const disabledFilter = workspaceColumnExists(db, 'disabled_at')
+    ? 'AND disabled_at IS NULL'
+    : ''
   return db.prepare(`
     SELECT id, slug, name, tenant_id, feature_flags, created_at, updated_at
     FROM workspaces
     WHERE tenant_id = ?
-      AND disabled_at IS NULL
+      ${disabledFilter}
     ORDER BY name COLLATE NOCASE ASC
   `).all(tenantId) as WorkspaceRecord[]
 }

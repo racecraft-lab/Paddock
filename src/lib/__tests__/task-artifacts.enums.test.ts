@@ -197,9 +197,28 @@ const ALLOWED_PREFIXES = [
   'CLAUDE.md',
 ]
 
+const SPEC_007_ENFORCEMENT_TRIGGERS = [
+  ...STRICT_SCOPE_FILES,
+  'src/lib/task-dispatch.ts',
+  'src/components/panels/audit-trail-panel.tsx',
+  'src/components/panels/artifact-admin-panel.tsx',
+  'src/components/dashboard/dashboard.tsx',
+  'src/app/api/dispositions/',
+  'src/app/api/task-artifacts/',
+  'src/lib/__tests__/spec-007-',
+  'src/lib/__tests__/task-artifacts',
+  'tests/e2e/disposition-',
+  'tests/e2e/artifact-admin-panel.spec.ts',
+  'tests/e2e/spec-007-ui-visual.spec.ts',
+] as const
+
 function isAllowedPath(path: string): boolean {
   if (SPEC_007_ALLOWLIST.includes(path as (typeof SPEC_007_ALLOWLIST)[number])) return true
   return ALLOWED_PREFIXES.some((prefix) => path.startsWith(prefix))
+}
+
+function isSpec007EnforcementTrigger(path: string): boolean {
+  return SPEC_007_ENFORCEMENT_TRIGGERS.some((trigger) => path.startsWith(trigger))
 }
 
 describe('T011: strict-scope diff gate (FR-100)', () => {
@@ -220,6 +239,11 @@ describe('T011: strict-scope diff gate (FR-100)', () => {
       .split('\n')
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
+    if (!changed.some(isSpec007EnforcementTrigger)) {
+      // This branch-local guard only applies to SPEC-007-owned changes. Later
+      // specs and dependency branches have their own scope gates.
+      return
+    }
     if (changed.some((path) => path.startsWith('docs/ai/specs/SPEC-008-'))) {
       // This SPEC-007 branch-local guard is intentionally scoped to its own
       // implementation branch. Later spec branches have their own scope gates;
