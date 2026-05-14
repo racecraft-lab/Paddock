@@ -60,8 +60,8 @@ Source-of-truth scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated pilot ingest and eligibility spec from roadmap and design concept; G1 passed with zero unresolved markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved eligibility query, synthetic script shape, current-schema absence assertions, and future-spec boundaries |
 | Plan | `$speckit-plan` | Complete | Planned fixture-driven GitHub sync tests, operator script, smoke checklist, and current-schema absence evidence; G3 passed |
-| Checklist | `$speckit-checklist` | In Progress | Run focused data-integrity, error-handling, security, state-management, and regression-safety checks |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks |
+| Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, error-handling, security, state-management, and regression-safety checks; G4 passed |
+| Tasks | `$speckit-tasks` | In Progress | Generate dependency-ordered TDD tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify generated artifacts stay inside SPEC-009C1 boundaries |
 | Implement | `$speckit-implement` | Pending | Implement the selected tasks and verification evidence |
 
@@ -451,12 +451,12 @@ Focus on SPEC-009C1 requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | | | |
-| error-handling | | | |
-| security | | | |
-| state-management | | | |
-| regression-safety | | | |
-| **Total** | | | |
+| data-integrity | 24 | 1 found, 1 resolved; consensus not required | FR-002..FR-006, FR-008..FR-010, FR-015, SC-001..SC-005 |
+| error-handling | 24 | 7 found, 7 resolved; consensus not required | FR-011, FR-012, FR-019..FR-022, SC-006, SC-007 |
+| security | 18 | 1 found, 1 resolved; consensus completed | FR-012, FR-020, FR-023, SC-007 |
+| state-management | 23 | 0 found; consensus not required | FR-001, FR-008, FR-014..FR-018, FR-021..FR-023 |
+| regression-safety | 22 | 0 found; consensus not required | FR-007, FR-010, FR-013, FR-016, FR-017 |
+| **Total** | 111 | 9 found, 9 resolved; all consensus checkpoints complete | G4 passed with zero gap markers |
 
 ---
 

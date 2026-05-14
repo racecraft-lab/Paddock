@@ -20,7 +20,7 @@
 
 ## Decision: Preserve Duplicate Prevention At GitHub Issue Identity
 
-**Rationale**: The success proof is exactly one root `tasks` row in the Mission Control workspace where `github_repo='racecraft-lab/mission-control'`, `github_issue_number` matches the pilot issue, `github_synced_at IS NOT NULL`, and `parent_task_id IS NULL`. Duplicate checks should use this GitHub repository/issue identity before admitting a candidate and verify idempotency after repeated sync.
+**Rationale**: The success proof is exactly one root `tasks` row in the Mission Control workspace where `workspace_id` matches that workspace, `github_repo='racecraft-lab/mission-control'`, `github_issue_number` matches the pilot issue, `github_synced_at IS NOT NULL`, and `parent_task_id IS NULL`. Duplicate checks should use this workspace/repository/issue identity before admitting a candidate and verify idempotency after repeated sync.
 
 **Alternatives considered**:
 - Dedupe by title: rejected because titles are mutable and synthetic fallback uses a known title only for finding/reusing the fallback issue.
@@ -35,6 +35,15 @@
 - Creating the synthetic issue automatically in app runtime: rejected because normal runtime must not mutate live GitHub for this spec.
 - Auto-closing or deleting the synthetic issue after smoke: rejected because cleanup ownership belongs to the manual smoke checklist.
 - Running live fallback in CI: rejected because CI must remain deterministic and credential-free.
+
+## Decision: Fail Closed On Operator And GitHub Error Paths
+
+**Rationale**: Missing credentials, insufficient permissions, GitHub API failures, malformed issue payloads, sync failures, and synthetic fallback label mismatches are operational failures, not eligibility rejections or successful no-ops. They must produce redacted evidence that identifies the failed operation while leaving pilot task, dispatch, successor, run, artifact, and remediation side effects at zero.
+
+**Alternatives considered**:
+- Auto-repair synthetic fallback labels: rejected because it hides a live GitHub mutation behind the fallback path.
+- Treat sync failure as no eligible candidate: rejected because it conflates external failure with deterministic eligibility.
+- Emit raw API errors: rejected because errors may contain token-adjacent headers or secret-like material.
 
 ## Decision: Prove No Autonomous Side Effects With Current-Schema Snapshots
 
