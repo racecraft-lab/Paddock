@@ -221,6 +221,11 @@ function isSpec007EnforcementTrigger(path: string): boolean {
   return SPEC_007_ENFORCEMENT_TRIGGERS.some((trigger) => path.startsWith(trigger))
 }
 
+function isLaterSpecWorkflowMarker(path: string): boolean {
+  return /^specs\/(?!007(?:-|\/))/.test(path)
+    || /^docs\/ai\/specs\/SPEC-(?!007\b)/.test(path)
+}
+
 function resolveScopeDiffBase(): string {
   for (const candidate of ['origin/main', 'main']) {
     try {
@@ -257,6 +262,11 @@ describe('T011: strict-scope diff gate (FR-100)', () => {
     if (!changed.some(isSpec007EnforcementTrigger)) {
       // This branch-local guard only applies to SPEC-007-owned changes. Later
       // specs and dependency branches have their own scope gates.
+      return
+    }
+    if (changed.some(isLaterSpecWorkflowMarker)) {
+      // This historical SPEC-007 branch-local guard must not fail later spec
+      // branches that include their own workflow/spec artifacts and scope gates.
       return
     }
     if (changed.some((path) => path.startsWith('docs/ai/specs/SPEC-008-'))) {

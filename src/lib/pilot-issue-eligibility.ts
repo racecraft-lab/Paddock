@@ -3,6 +3,7 @@ import type Database from 'better-sqlite3'
 export const PILOT_MISSION_CONTROL_REPO = 'racecraft-lab/mission-control'
 
 const PILOT_PRIORITY_LABELS = ['priority:low', 'priority:medium', 'priority:high', 'priority:critical']
+const GITHUB_TOKEN_PATTERN = /\b(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)\b/g
 
 export type PilotOperatorError =
   | 'missing_credentials'
@@ -426,6 +427,6 @@ function countRows(db: Database.Database, sql: string, params: unknown[]): numbe
 
 function redactPilotEvidence(value: string): string {
   return value
-    .replace(/gh[pousr]_[A-Za-z0-9_]+/g, '[redacted]')
+    .replace(GITHUB_TOKEN_PATTERN, '[redacted]')
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]')
 }

@@ -4,6 +4,8 @@ export const PILOT_REPO = 'racecraft-lab/mission-control'
 export const SYNTHETIC_TITLE = '[mc-pilot] synthetic e2e issue'
 export const SYNTHETIC_LABELS = ['mc:inbox', 'priority:medium', 'area:dev']
 
+const GITHUB_TOKEN_PATTERN = /\b(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)\b/g
+
 export async function findOrCreateSyntheticPilotIssue(options) {
   const client = options.client
   const repository = options.repository ?? PILOT_REPO
@@ -111,9 +113,23 @@ export async function runOperatorPilotSync(options) {
 export function createGitHubPilotSmokeClient(token, fetchImpl = fetch) {
   return {
     async findOpenIssueByTitle(repository, title) {
-      const response = await githubFetch(token, `/repos/${repository}/issues?state=open&per_page=100`, {}, fetchImpl)
-      const issues = await response.json()
-      return issues.find((issue) => issue.title === title && !issue.pull_request) ?? null
+      let page = 1
+      while (true) {
+        const response = await githubFetch(
+          token,
+          `/repos/${repository}/issues?state=open&per_page=100&page=${page}`,
+          {},
+          fetchImpl,
+        )
+        const issues = await response.json()
+        const match = Array.isArray(issues)
+          ? issues.find((issue) => issue.title === title && !issue.pull_request)
+          : null
+        if (match) return match
+        const nextPage = readNextPage(response, page)
+        if (nextPage === null) return null
+        page = nextPage
+      }
     },
     async createIssue(payload) {
       const response = await githubFetch(token, `/repos/${payload.repository}/issues`, {
@@ -165,9 +181,23 @@ function isPermissionError(error) {
   return status === 401 || status === 403
 }
 
+function readNextPage(response, currentPage) {
+  const link = typeof response.headers?.get === 'function' ? response.headers.get('link') : null
+  if (typeof link !== 'string') return null
+  const nextLink = link.split(',').find((entry) => /;\s*rel="next"/.test(entry))
+  const url = nextLink?.match(/<([^>]+)>/)?.[1]
+  if (!url) return null
+  try {
+    const nextPage = Number(new URL(url).searchParams.get('page'))
+    return Number.isInteger(nextPage) && nextPage > currentPage ? nextPage : null
+  } catch {
+    return null
+  }
+}
+
 function redactString(value) {
   return value
-    .replace(/gh[pousr]_[A-Za-z0-9_]+/g, '[redacted]')
+    .replace(GITHUB_TOKEN_PATTERN, '[redacted]')
     .replace(/Authorization:\s*Bearer\s+[A-Za-z0-9._-]+/gi, 'Authorization: Bearer [redacted]')
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]')
 }

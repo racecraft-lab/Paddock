@@ -230,4 +230,19 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
       evidence: { repository: PILOT_REPO, issueNumber: 505 },
     })
   })
+
+  it('redacts fine-grained GitHub PATs from operator sync failures', () => {
+    const result = summarizeOperatorSyncResult(
+      PILOT_REPO,
+      506,
+      new Error('sync failed with github_pat_11AAAAAA_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'),
+    )
+
+    expect(JSON.stringify(result)).not.toContain('github_pat_')
+    expect(result).toMatchObject({
+      eligible: false,
+      error: 'sync_failed',
+      evidence: { message: 'sync failed with [redacted]' },
+    })
+  })
 })

@@ -59,6 +59,7 @@ describe('SPEC-009C1 pilot issue smoke script contract', () => {
   it('searches open issues by title before validating fallback labels', async () => {
     const fetchImpl = vi.fn(async () => ({
       ok: true,
+      headers: { get: () => null },
       json: async () => [
         syntheticIssue({
           labels: SYNTHETIC_LABELS.map((name) => ({ name })),
@@ -72,13 +73,38 @@ describe('SPEC-009C1 pilot issue smoke script contract', () => {
       title: SYNTHETIC_TITLE,
     })
     expect(fetchImpl).toHaveBeenCalledWith(
-      `https://api.github.com/repos/${PILOT_REPO}/issues?state=open&per_page=100`,
+      `https://api.github.com/repos/${PILOT_REPO}/issues?state=open&per_page=100&page=1`,
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: 'Bearer set',
         }),
       }),
     )
+  })
+
+  it('paginates open issue lookup before deciding a synthetic issue is absent', async () => {
+    const fetchImpl = vi.fn(async (url: string) => ({
+      ok: true,
+      headers: {
+        get: (name: string) => (
+          name.toLowerCase() === 'link' && new URL(url).searchParams.get('page') === '1'
+            ? '<https://api.github.com/repos/racecraft-lab/mission-control/issues?state=open&per_page=100&page=2>; rel="next"'
+            : null
+        ),
+      },
+      json: async () => (
+        new URL(url).searchParams.get('page') === '1'
+          ? [syntheticIssue({ number: 699, title: 'other open issue' })]
+          : [syntheticIssue({ number: 701 })]
+      ),
+    }))
+    const client = createGitHubPilotSmokeClient('set', fetchImpl as unknown as typeof fetch)
+
+    await expect(client.findOpenIssueByTitle(PILOT_REPO, SYNTHETIC_TITLE)).resolves.toMatchObject({
+      number: 701,
+      title: SYNTHETIC_TITLE,
+    })
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
   })
 
   it('fails closed when default no-live-mutation mode would need to create a synthetic issue', async () => {
@@ -180,10 +206,12 @@ describe('SPEC-009C1 pilot issue smoke script contract', () => {
     expect(redactPilotSmokeValue({
       token: 'ghp_secret_value',
       header: 'Authorization: Bearer ghp_secret_value',
+      message: 'request failed for github_pat_11AAAAAA_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       safe: `${PILOT_REPO}#704`,
     })).toEqual({
       token: '[redacted]',
       header: '[redacted]',
+      message: 'request failed for [redacted]',
       safe: `${PILOT_REPO}#704`,
     })
   })
