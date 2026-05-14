@@ -14,6 +14,19 @@ import {
   updateIssueState,
 } from '@/lib/github'
 import { initializeLabels, pullFromGitHub } from '@/lib/github-sync-engine'
+import {
+  resolveWorkspaceScopeFromRequest,
+  workspaceScopeError,
+  workspaceScopePredicate,
+  type AcceptedWorkspaceScope,
+} from '@/lib/workspaces'
+
+function requireSingleGitHubWorkspace(scope: AcceptedWorkspaceScope): number | NextResponse {
+  if (scope.workspaceId == null) {
+    return NextResponse.json({ error: 'Product Line workspace_id is required for GitHub sync actions' }, { status: 400 })
+  }
+  return scope.workspaceId
+}
 
 /**
  * GET /api/github?action=issues&repo=owner/repo&state=open&labels=bug
@@ -67,30 +80,52 @@ export async function POST(request: NextRequest) {
   const rateCheck = mutationLimiter(request)
   if (rateCheck) return rateCheck
 
-  const validated = await validateBody(request, githubSyncSchema)
+  const validated = await validateBody(request.clone(), githubSyncSchema)
   if ('error' in validated) return validated.error
 
   const body = validated.data
   const { action } = body
 
   try {
+    const db = getDatabase()
+    const scope = await resolveWorkspaceScopeFromRequest(db, request, auth.user, {
+      requireExplicitWhenEnabled: false,
+    })
+
     switch (action) {
-      case 'sync':
-        return await handleSync(body, auth.user.username, auth.user.workspace_id ?? 1)
-      case 'comment':
-        return await handleComment(body, auth.user.username, auth.user.workspace_id ?? 1)
-      case 'close':
-        return await handleClose(body, auth.user.username, auth.user.workspace_id ?? 1)
+      case 'sync': {
+        const workspaceId = requireSingleGitHubWorkspace(scope)
+        if (workspaceId instanceof NextResponse) return workspaceId
+        return await handleSync(body, auth.user.username, workspaceId)
+      }
+      case 'comment': {
+        const workspaceId = requireSingleGitHubWorkspace(scope)
+        if (workspaceId instanceof NextResponse) return workspaceId
+        return await handleComment(body, auth.user.username, workspaceId)
+      }
+      case 'close': {
+        const workspaceId = requireSingleGitHubWorkspace(scope)
+        if (workspaceId instanceof NextResponse) return workspaceId
+        return await handleClose(body, auth.user.username, workspaceId)
+      }
       case 'status':
-        return handleStatus(auth.user.workspace_id ?? 1)
-      case 'init-labels':
-        return await handleInitLabels(body, auth.user.workspace_id ?? 1)
-      case 'sync-project':
-        return await handleSyncProject(body, auth.user.username, auth.user.workspace_id ?? 1)
+        return handleStatus(scope)
+      case 'init-labels': {
+        const workspaceId = requireSingleGitHubWorkspace(scope)
+        if (workspaceId instanceof NextResponse) return workspaceId
+        return await handleInitLabels(body, workspaceId)
+      }
+      case 'sync-project': {
+        const workspaceId = requireSingleGitHubWorkspace(scope)
+        if (workspaceId instanceof NextResponse) return workspaceId
+        return await handleSyncProject(body, auth.user.username, workspaceId)
+      }
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
     }
   } catch (error: any) {
+    const scopeError = workspaceScopeError(error)
+    if (scopeError) return NextResponse.json({ error: scopeError.error }, { status: scopeError.status })
     logger.error({ err: error }, `POST /api/github action=${action} error`)
     return NextResponse.json({ error: error.message || 'GitHub action failed' }, { status: 500 })
   }
@@ -302,17 +337,18 @@ async function handleClose(
 
 // ── Status: return recent sync history ──────────────────────────
 
-function handleStatus(workspaceId: number) {
+function handleStatus(scope: AcceptedWorkspaceScope) {
   const db = getDatabase()
   const tableHasWorkspace = db
     .prepare("SELECT 1 as ok FROM pragma_table_info('github_syncs') WHERE name = 'workspace_id'")
     .get() as { ok?: number } | undefined
+  const workspaceFilter = workspaceScopePredicate(scope)
   const syncs = db.prepare(`
     SELECT * FROM github_syncs
-    ${tableHasWorkspace?.ok ? 'WHERE workspace_id = ?' : ''}
+    ${tableHasWorkspace?.ok ? `WHERE ${workspaceFilter.sql}` : ''}
     ORDER BY created_at DESC
     LIMIT 20
-  `).all(...(tableHasWorkspace?.ok ? [workspaceId] : []))
+  `).all(...(tableHasWorkspace?.ok ? workspaceFilter.params : []))
 
   return NextResponse.json({ syncs })
 }
