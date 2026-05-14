@@ -434,7 +434,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009C1: GitHub Pilot Issue Ingest and Eligibility
 
-- **Status:** Implemented on branch; full unit-suite verification blocked by existing non-SPEC-009C1 failures
+- **Status:** Implemented on branch; G7 verification passed
 - **Priority:** P0
 - **Branch short name:** `pilot-issue-ingest`
 - **Dependencies:** SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B
@@ -445,7 +445,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** pilot issue selection, synthetic fallback, GitHub ingest/sync fixtures, eligibility guards, smoke-checklist setup, and no Issue Remediation execution.
 - **Autopilot notes:** Start from GitHub ingest/sync. Local-only tasks created through `/api/tasks` or the task board are not eligible. Setup decision: SPEC-009C1 uses operator-triggered or fixture-driven sync only; automatic GitHub sync cron/poller lifecycle is deferred to SPEC-013A1, and production eligibility/evidence surfaces are deferred to SPEC-009E.
-- **Definition of done:** Exactly one pilot issue is represented as a GitHub-linked Mission Control task with expected labels, repo linkage, eligibility evidence, and no claim/dispatch/runner state. Branch evidence includes focused SPEC-009C1 Vitest coverage, typecheck, lint, and production build; `pnpm test` remains blocked by existing provisioner-daemon and SPEC-007 strict-diff failures.
+- **Definition of done:** Exactly one pilot issue is represented as a GitHub-linked Mission Control task with expected labels, repo linkage, eligibility evidence, and no claim/dispatch/runner state. Branch evidence includes focused SPEC-009C1 Vitest coverage, typecheck, lint, production build, full `pnpm test`, and a passing G7 gate.
 
 ### SPEC-009C2: Triage-to-Remediation Plan Handoff
 

@@ -63,7 +63,7 @@ Source-of-truth scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, error-handling, security, state-management, and regression-safety checks; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered TDD tasks; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Verified generated artifacts stay inside SPEC-009C1 boundaries; G6 passed |
-| Implement | `$speckit-implement` | Complete Except Full Unit Gate | Implemented pilot eligibility, deterministic tests, operator smoke script, smoke checklist, and verification evidence; full unit suite is blocked by existing non-SPEC-009C1 failures |
+| Implement | `$speckit-implement` | Complete | Implemented pilot eligibility, deterministic tests, operator smoke script, smoke checklist, and verification evidence; G7 passed after resolving the local diff-base test harness issue and rerunning full unit tests outside the sandbox |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -576,7 +576,7 @@ Implementation guardrails:
 | Pilot eligibility | T010-T023 | Complete | Covered eligible ingest, identity proof, duplicate rejection, unsafe/malformed rejection, local-only exclusion, and current-schema side-effect absence |
 | Synthetic fallback | T024-T028 | Complete | Added mocked smoke-script coverage and explicit find-before-create behavior with live-mutation opt-in |
 | Smoke evidence | T029-T031 | Complete | Added manual smoke checklist and updated roadmap/workflow status |
-| Guardrails and verification | T032-T036 | Partial | Focused tests, typecheck, lint, and build passed; T035 remains open because full `pnpm test` has unrelated existing failures |
+| Guardrails and verification | T032-T036 | Complete | Focused tests, typecheck, lint, build, full unit suite, and G7 gate passed |
 
 ### Verification Evidence
 
@@ -586,14 +586,14 @@ Implementation guardrails:
 | TypeScript | Passed | `pnpm typecheck` passed |
 | Lint | Passed | `pnpm lint` passed |
 | Production build | Passed | `pnpm build` passed after the network-enabled rerun required for Next.js Google Fonts |
-| Full unit suite | Blocked | `pnpm test` is blocked by existing non-SPEC-009C1 failures: SPEC-007 strict-diff allowlist failure on the broad branch diff and provisioner daemon socket timeout in `src/lib/__tests__/mc-provisioner-daemon.test.ts` |
-| G7 gate script | Blocked | `validate-gate.sh G7 specs/009c1-pilot-issue-ingest` returned `1 of 36 tasks incomplete`; T035 is intentionally open |
+| Full unit suite | Passed | `pnpm test` passed outside the sandbox: 275 files passed / 2840 tests passed / 1 skipped / 84 todo |
+| G7 gate script | Passed | `validate-gate.sh G7 specs/009c1-pilot-issue-ingest` passed after all 36 tasks were marked complete |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `specs/009c1-pilot-issue-ingest/tasks.md` (T035 remains open for existing full-suite blockers)
+- [x] All tasks marked complete in `specs/009c1-pilot-issue-ingest/tasks.md`
 - [x] `docs/qa/pilot-smoke-checklist.md` exists and covers live issue selection, synthetic fallback, operator-triggered sync, evidence queries, and cleanup notes
 - [x] Focused Vitest suites pass
 - [x] `pnpm typecheck` passes

@@ -134,7 +134,7 @@
 - [x] T032 Run focused pilot tests with `pnpm exec vitest run src/lib/__tests__/pilot-issue-eligibility.test.ts src/lib/__tests__/pilot-issue-smoke.test.ts`
 - [x] T033 Run strict type checking with `pnpm typecheck` for `src/lib/pilot-issue-eligibility.ts` and `scripts/pilot-issue-smoke.mjs`
 - [x] T034 Run lint with `pnpm lint` for `src/lib/pilot-issue-eligibility.ts`, `scripts/pilot-issue-smoke.mjs`, and SPEC-009C1 test files
-- [ ] T035 Run full unit suite with `pnpm test` for the repository test surface
+- [x] T035 Run full unit suite with `pnpm test` for the repository test surface
 - [x] T036 Run production build with `pnpm build` for the Next.js application
 
 ---

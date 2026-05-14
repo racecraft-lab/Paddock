@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-  "updated_at": "2026-05-14T03:39:33Z",
+  "updated_at": "2026-05-14T14:19:36Z",
   "active_step": "Post: Verification and Status Sync",
-  "status": "Completed With G7 Blocker",
+  "status": "Completed",
   "active_workflow": {
     "spec_id": "SPEC-009C1",
     "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
@@ -368,24 +368,22 @@
     }
   },
   "phase_7": {
-    "status": "completed_except_full_unit_gate",
+    "status": "completed",
     "gate": {
       "id": "G7",
-      "pass": false,
-      "reason": "1 of 36 tasks incomplete; T035 remains open because full pnpm test is blocked by existing non-SPEC-009C1 failures.",
-      "markers": 1,
+      "pass": true,
+      "reason": "All 36 tasks complete; full pnpm test passed outside the sandbox after resolving the local SPEC-007 diff-base harness issue.",
+      "markers": 0,
       "total_tasks": 36,
-      "done_tasks": 35,
+      "done_tasks": 36,
       "command": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.11.0/skills/speckit-autopilot/scripts/validate-gate.sh G7 specs/009c1-pilot-issue-ingest"
     },
     "implementation": {
       "completed_tasks": [
-        "T001-T034",
+        "T001-T035",
         "T036"
       ],
-      "open_tasks": [
-        "T035"
-      ],
+      "open_tasks": [],
       "files": [
         "src/lib/pilot-issue-eligibility.ts",
         "src/lib/__tests__/pilot-issue-eligibility.test.ts",
@@ -421,12 +419,13 @@
         "note": "Passed after network-enabled rerun for Next.js Google Fonts."
       },
       "full_unit_suite": {
-        "status": "blocked",
+        "status": "passed",
         "command": "pnpm test",
-        "blockers": [
-          "SPEC-007 strict-diff allowlist failure on the broad branch diff",
-          "provisioner daemon socket timeout in src/lib/__tests__/mc-provisioner-daemon.test.ts"
-        ]
+        "files": 275,
+        "tests": 2840,
+        "skipped": 1,
+        "todo": 84,
+        "note": "Passed outside the sandbox so mc-provisioner-daemon could bind its local Unix socket."
       }
     },
     "scope_guardrails": {
@@ -447,12 +446,7 @@
       "remote": "https://github.com/racecraft-lab/mission-control.git",
       "note": "Initial SSH push to origin failed because the local SSH authentication agent could not sign with the configured 1Password-backed key. The branch was pushed over HTTPS using the active gh credential without changing the repository remote."
     },
-    "open_blockers": [
-      {
-        "task": "T035",
-        "summary": "Full unit suite remains blocked by existing non-SPEC-009C1 failures: SPEC-007 strict-diff allowlist and provisioner daemon socket timeout."
-      }
-    ]
+    "open_blockers": []
   },
   "plan": [
     {
@@ -549,7 +543,7 @@
     },
     {
       "step": "Phase 7: Implement - T001-T036 execution and verification",
-      "status": "completed_except_t035"
+      "status": "completed"
     },
     {
       "step": "Post: Verification and Status Sync",
