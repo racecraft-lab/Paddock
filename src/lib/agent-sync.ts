@@ -319,14 +319,14 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
   let updated = 0
   const results: SyncResult['agents'] = []
 
-  const findByName = db.prepare('SELECT id, name, role, session_key, config, soul_content FROM agents WHERE name = ? AND workspace_id = ?')
-  const findBySessionKey = db.prepare('SELECT id, name, role, session_key, config, soul_content FROM agents WHERE session_key = ? AND workspace_id = ?')
+  const findByName = db.prepare('SELECT id, name, role, session_key, config, soul_content, workspace_id FROM agents WHERE name = ? AND workspace_id = ?')
+  const findBySessionKey = db.prepare('SELECT id, name, role, session_key, config, soul_content, workspace_id FROM agents WHERE session_key = ?')
   const insertAgent = db.prepare(`
     INSERT INTO agents (name, role, session_key, soul_content, status, created_at, updated_at, config, workspace_id)
     VALUES (?, ?, ?, ?, 'offline', ?, ?, ?, ?)
   `)
   const updateAgent = db.prepare(`
-    UPDATE agents SET name = ?, role = ?, session_key = ?, config = ?, soul_content = ?, updated_at = ? WHERE id = ? AND workspace_id = ?
+    UPDATE agents SET name = ?, role = ?, session_key = ?, config = ?, soul_content = ?, updated_at = ? WHERE id = ?
   `)
 
   db.transaction(() => {
@@ -334,7 +334,7 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
       const mapped = mapAgentToMC(agent)
       const configJson = JSON.stringify(mapped.config)
       const existing =
-        (mapped.session_key ? (findBySessionKey.get(mapped.session_key, syncWorkspaceId) as any) : undefined) ||
+        (mapped.session_key ? (findBySessionKey.get(mapped.session_key) as any) : undefined) ||
         (findByName.get(mapped.name, syncWorkspaceId) as any)
 
       if (existing) {
@@ -351,7 +351,7 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
         if (nameChanged || configChanged || soulChanged) {
           // Only overwrite soul_content if we read a new value from workspace
           const soulToWrite = mapped.soul_content ?? existingSoul
-          updateAgent.run(mapped.name, mapped.role, mapped.session_key, configJson, soulToWrite, now, existing.id, syncWorkspaceId)
+          updateAgent.run(mapped.name, mapped.role, mapped.session_key, configJson, soulToWrite, now, existing.id)
           results.push({ id: agent.id, name: mapped.name, action: 'updated' })
           updated++
         } else {
@@ -394,11 +394,19 @@ export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
 
   const db = getDatabase()
   const syncWorkspaceId = resolveConfigSyncWorkspaceId(db, workspaceId)
-  const allMCAgents = db.prepare('SELECT name, role, session_key, config FROM agents WHERE workspace_id = ?').all(syncWorkspaceId) as Array<{
+  const scopedMCAgents = db.prepare('SELECT name, role, session_key, config, workspace_id FROM agents WHERE workspace_id = ?').all(syncWorkspaceId) as Array<{
     name: string
     role: string
     session_key: string | null
     config: string
+    workspace_id: number
+  }>
+  const sessionKeyMCAgents = db.prepare('SELECT name, role, session_key, config, workspace_id FROM agents WHERE session_key IS NOT NULL').all() as Array<{
+    name: string
+    role: string
+    session_key: string | null
+    config: string
+    workspace_id: number
   }>
 
   const newAgents: string[] = []
@@ -407,13 +415,17 @@ export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
 
   for (const agent of agents) {
     const mapped = mapAgentToMC(agent)
-    const existing = allMCAgents.find((a) =>
-      a.name === mapped.name ||
-      (mapped.session_key && a.session_key === mapped.session_key))
+    const existingBySessionKey = mapped.session_key
+      ? sessionKeyMCAgents.find((a) => a.session_key === mapped.session_key)
+      : undefined
+    const existingByName = scopedMCAgents.find((a) => a.name === mapped.name)
+    const existing = existingBySessionKey || existingByName
     if (!existing) {
       newAgents.push(mapped.name)
     } else {
-      matchedNames.add(existing.name)
+      if (existing.workspace_id === syncWorkspaceId) {
+        matchedNames.add(existing.name)
+      }
       const configJson = JSON.stringify(mapped.config)
       if (existing.name !== mapped.name || existing.config !== configJson || existing.role !== mapped.role) {
         updatedAgents.push(mapped.name)
@@ -421,13 +433,13 @@ export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
     }
   }
 
-  const onlyInMC = allMCAgents
+  const onlyInMC = scopedMCAgents
     .map(a => a.name)
     .filter(name => !matchedNames.has(name))
 
   return {
     inConfig: agents.length,
-    inMC: allMCAgents.length,
+    inMC: scopedMCAgents.length,
     newAgents,
     updatedAgents,
     onlyInMC,
