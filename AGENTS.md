@@ -139,6 +139,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite via `better-sqlite3`; existing `workflow_templates` runtime projection plus additive generic diagnostics tables in migration `071_workflow_contract_diagnostics` (009a-workflow-contract-roundtrip)
 - TypeScript 5.7 strict on Node >=22 with Next.js 16 App Router and React 19 + Existing Next.js/React/Zustand stack, `better-sqlite3`, SPEC-009A `src/lib/workflow-contracts/*`, existing feature-flag and governance modules; no new runtime dependency (009b-mission-control-seed)
 - SQLite through `better-sqlite3`; existing `workspaces`, `projects`, `project_agent_assignments`, `tasks`, `workflow_templates`, `resource_policies`, `resource_policy_events`, and workflow-contract diagnostics tables (009b-mission-control-seed)
+- TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Zustand where existing panels need it, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright only if an existing UI/smoke checklist path changes; no new runtime dependency planned (009c1-pilot-issue-ingest)
+- SQLite through `better-sqlite3`; no schema migration planned (009c1-pilot-issue-ingest)
 
 ## Recent Changes
 - 009a-workflow-contract-roundtrip: Added repo-owned workflow contract YAML, operator `pnpm workflow-contract` import/apply/export/recover tooling through Node built-in TypeScript stripping, stable canonical/parity hashes, generic M71 workflow-contract diagnostics and LKG snapshots, read-only Workflows diagnostics UI/API, OpenAPI/API-index parity, fail-closed validation fixtures, and generated Markdown review export. SPEC-009A remains process-only: no seed, dispatch, scheduler, runner, harness, GitHub sync, or governance evaluator path is introduced.

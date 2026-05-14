@@ -59,8 +59,8 @@ Source-of-truth scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated pilot ingest and eligibility spec from roadmap and design concept; G1 passed with zero unresolved markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved eligibility query, synthetic script shape, current-schema absence assertions, and future-spec boundaries |
-| Plan | `$speckit-plan` | In Progress | Plan fixture-driven GitHub sync tests, operator script, and smoke checklist |
-| Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, error-handling, security, state-management, and regression-safety checks |
+| Plan | `$speckit-plan` | Complete | Planned fixture-driven GitHub sync tests, operator script, smoke checklist, and current-schema absence evidence; G3 passed |
+| Checklist | `$speckit-checklist` | In Progress | Run focused data-integrity, error-handling, security, state-management, and regression-safety checks |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify generated artifacts stay inside SPEC-009C1 boundaries |
 | Implement | `$speckit-implement` | Pending | Implement the selected tasks and verification evidence |
@@ -374,11 +374,11 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, execution flow |
-| `research.md` | Pending | GitHub sync/script/evidence decisions if needed |
-| `data-model.md` | Pending | Pilot candidate, pilot root task projection, smoke evidence shape |
-| `contracts/` | Pending | Script contract and smoke checklist assertions if needed |
-| `quickstart.md` | Pending | Operator-triggered pilot ingest smoke path |
+| `plan.md` | Complete | Technical context, implementation surfaces, constitution checks, and no-migration decision |
+| `research.md` | Complete | GitHub sync reuse, eligibility, synthetic fallback, evidence, and deferral decisions |
+| `data-model.md` | Complete | Pilot issue, root task projection, eligibility decision, synthetic fallback, and smoke evidence shape |
+| `contracts/` | Complete | `pilot-ingest-contract.md` defines fixture/operator contract and no-live-mutation boundary |
+| `quickstart.md` | Complete | Operator-triggered pilot ingest smoke path and cleanup/evidence steps |
 
 ---
 
