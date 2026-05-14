@@ -6,7 +6,7 @@
  *   - T010: REDACTION_STATUSES / SECURITY_SCAN_STATUSES tuples + EXPLAIN
  *           confirming no DB CHECK on the two columns and the
  *           content_json/content_markdown split persists.
- *   - T011: Strict-scope grep gate against `git diff main...HEAD` covering
+ *   - T011: Strict-scope grep gate against the current branch diff covering
  *           the 6 declared strict-scope files PLUS the SPEC-007-touched
  *           allowlist (task-dispatch.ts, audit-trail-panel.tsx, etc.).
  *   - T012: safe-regex CI smoke — every rule in `secret-detector.rules`
@@ -109,7 +109,7 @@ describe('T010: status enum tuples + schema snapshot (FR-029)', () => {
 
 // ---------------------------------------------------------------------------
 // T011 — Strict-scope grep gate (FR-100, SC-010).
-// Self-test of `git diff main...HEAD`: only the declared strict-scope files
+// Self-test of the current branch diff: only the declared strict-scope files
 // PLUS the SPEC-007-touched allowlist (task-dispatch.ts, audit-trail-panel.tsx,
 // artifact-admin-panel.tsx, dashboard.tsx, dispositions/route.ts,
 // task-artifacts/route.ts, task-artifacts/[id]/route.ts) plus
@@ -221,11 +221,31 @@ function isSpec007EnforcementTrigger(path: string): boolean {
   return SPEC_007_ENFORCEMENT_TRIGGERS.some((trigger) => path.startsWith(trigger))
 }
 
+function isLaterSpecWorkflowMarker(path: string): boolean {
+  return /^specs\/(?!007(?:-|\/))/.test(path)
+    || /^docs\/ai\/specs\/SPEC-(?!007\b)/.test(path)
+}
+
+function resolveScopeDiffBase(): string {
+  for (const candidate of ['origin/main', 'main']) {
+    try {
+      execFileSync('git', ['rev-parse', '--verify', candidate], {
+        cwd: process.cwd(),
+        stdio: ['ignore', 'ignore', 'ignore'],
+      })
+      return candidate
+    } catch {
+      // Try the next configured base ref.
+    }
+  }
+  return 'main'
+}
+
 describe('T011: strict-scope diff gate (FR-100)', () => {
-  it('no file outside the SPEC-007 allowlist appears in `git diff main...HEAD`', () => {
+  it('no file outside the SPEC-007 allowlist appears in the current branch diff', () => {
     let diff: string
     try {
-      diff = execFileSync('git', ['diff', '--name-only', 'main...HEAD'], {
+      diff = execFileSync('git', ['diff', '--name-only', `${resolveScopeDiffBase()}...HEAD`], {
         cwd: process.cwd(),
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
@@ -242,6 +262,11 @@ describe('T011: strict-scope diff gate (FR-100)', () => {
     if (!changed.some(isSpec007EnforcementTrigger)) {
       // This branch-local guard only applies to SPEC-007-owned changes. Later
       // specs and dependency branches have their own scope gates.
+      return
+    }
+    if (changed.some(isLaterSpecWorkflowMarker)) {
+      // This historical SPEC-007 branch-local guard must not fail later spec
+      // branches that include their own workflow/spec artifacts and scope gates.
       return
     }
     if (changed.some((path) => path.startsWith('docs/ai/specs/SPEC-008-'))) {
