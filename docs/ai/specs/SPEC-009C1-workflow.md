@@ -601,7 +601,7 @@ Implementation guardrails:
 - [x] `pnpm build` passes if production code changed
 - [x] Manual smoke checklist is ready for operator execution
 - [x] Roadmap/workflow/spec status updated on the spec branch
-- [ ] Branch committed and pushed
+- [x] Branch committed and pushed
 
 ---
 

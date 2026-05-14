@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-  "updated_at": "2026-05-14T03:36:50Z",
-  "active_step": "Phase 7: Implement - T035 full unit suite blocked",
-  "status": "In Progress - G7 Blocked",
+  "updated_at": "2026-05-14T03:39:33Z",
+  "active_step": "Post: Verification and Status Sync",
+  "status": "Completed With G7 Blocker",
   "active_workflow": {
     "spec_id": "SPEC-009C1",
     "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
@@ -438,6 +438,22 @@
       "schema_migration": false
     }
   },
+  "post": {
+    "status": "completed",
+    "implementation_commit": "3750f136",
+    "branch": "009c1-pilot-issue-ingest",
+    "push": {
+      "status": "completed",
+      "remote": "https://github.com/racecraft-lab/mission-control.git",
+      "note": "Initial SSH push to origin failed because the local SSH authentication agent could not sign with the configured 1Password-backed key. The branch was pushed over HTTPS using the active gh credential without changing the repository remote."
+    },
+    "open_blockers": [
+      {
+        "task": "T035",
+        "summary": "Full unit suite remains blocked by existing non-SPEC-009C1 failures: SPEC-007 strict-diff allowlist and provisioner daemon socket timeout."
+      }
+    ]
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -533,11 +549,11 @@
     },
     {
       "step": "Phase 7: Implement - T001-T036 execution and verification",
-      "status": "in_progress"
+      "status": "completed_except_t035"
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }
