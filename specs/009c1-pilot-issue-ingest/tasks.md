@@ -18,11 +18,11 @@
 
 **Purpose**: Establish the required failing test coverage before any production behavior changes.
 
-- [ ] T001 Add failing Vitest coverage for eligible live issue fixture ingest in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
-- [ ] T002 Add failing Vitest coverage for duplicate synced task prevention in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
-- [ ] T003 Add failing Vitest coverage for local-only task rejection from pilot evidence in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
-- [ ] T004 [P] Add failing Vitest coverage for synthetic fallback find/create idempotency and no-live-mutation defaults in `src/lib/__tests__/pilot-issue-smoke.test.ts`
-- [ ] T005 Add failing Vitest coverage for no-dispatch/no-successor/no-run side-effect absence in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T001 Add failing Vitest coverage for eligible live issue fixture ingest in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T002 Add failing Vitest coverage for duplicate synced task prevention in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T003 Add failing Vitest coverage for local-only task rejection from pilot evidence in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T004 [P] Add failing Vitest coverage for synthetic fallback find/create idempotency and no-live-mutation defaults in `src/lib/__tests__/pilot-issue-smoke.test.ts`
+- [x] T005 Add failing Vitest coverage for no-dispatch/no-successor/no-run side-effect absence in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
 
 ---
 
@@ -32,10 +32,10 @@
 
 **Critical**: No story implementation begins until the red baseline tests exist.
 
-- [ ] T006 Add shared pilot issue fixtures and project/area routing builders in `src/lib/__tests__/fixtures/pilot-issue-fixtures.ts`
-- [ ] T007 Create typed pilot candidate, decision, identity proof, and side-effect snapshot skeletons in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T008 Register SPEC-009C1-owned TypeScript files in `tsconfig.spec-strict.json`
-- [ ] T009 Register SPEC-009C1-owned TypeScript files in `eslint.config.mjs`
+- [x] T006 Add shared pilot issue fixtures and project/area routing builders in `src/lib/__tests__/fixtures/pilot-issue-fixtures.ts`
+- [x] T007 Create typed pilot candidate, decision, identity proof, and side-effect snapshot skeletons in `src/lib/pilot-issue-eligibility.ts`
+- [x] T008 Register SPEC-009C1-owned TypeScript files in `tsconfig.spec-strict.json`
+- [x] T009 Register SPEC-009C1-owned TypeScript files in `eslint.config.mjs`
 
 **Checkpoint**: The test suite has failing red coverage and the new strict-owned files are visible to TypeScript and ESLint.
 
@@ -49,15 +49,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 [US1] Expand eligible ingest assertions for repository identity, open issue-not-PR identity, `mc:inbox`, `priority:*`, exactly one routable `area:*`, no linked PR, and no terminal state in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
-- [ ] T011 [US1] Add failing identity proof assertions for exactly one GitHub-linked root task before and after existing sync in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T010 [US1] Expand eligible ingest assertions for repository identity, open issue-not-PR identity, `mc:inbox`, `priority:*`, exactly one routable `area:*`, no linked PR, and no terminal state in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T011 [US1] Add failing identity proof assertions for exactly one GitHub-linked root task before and after existing sync in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T012 [US1] Implement candidate payload validation and normalized label extraction in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T013 [US1] Implement eligible admission using existing area routing and label semantics from `src/lib/github-label-map.ts` in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T014 [US1] Verify pilot ingest reuses the existing `pullFromGitHub`/`createTask({ source: 'github_sync' })` seam without changing production sync semantics, adding polling, or adding cron behavior in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
-- [ ] T015 [US1] Implement the exact one-root-task identity proof helper and current-schema side-effect snapshot helper in `src/lib/pilot-issue-eligibility.ts`
+- [x] T012 [US1] Implement candidate payload validation and normalized label extraction in `src/lib/pilot-issue-eligibility.ts`
+- [x] T013 [US1] Implement eligible admission using existing area routing and label semantics from `src/lib/github-label-map.ts` in `src/lib/pilot-issue-eligibility.ts`
+- [x] T014 [US1] Verify pilot ingest reuses the existing `pullFromGitHub`/`createTask({ source: 'github_sync' })` seam without changing production sync semantics, adding polling, or adding cron behavior in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T015 [US1] Implement the exact one-root-task identity proof helper and current-schema side-effect snapshot helper in `src/lib/pilot-issue-eligibility.ts`
 
 **Checkpoint**: User Story 1 is independently testable with fixture sync and no local-only creation path.
 
@@ -71,14 +71,14 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [US2] Add failing rejection matrix coverage for missing `mc:inbox`, missing `priority:*`, zero/multiple routable `area:*`, linked PR, terminal state, and wrong repository in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
-- [ ] T017 [US2] Add failing coverage that malformed or partial issue payloads produce `malformed_issue_payload` errors rather than ineligible, duplicate, or successful no-op results in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T016 [US2] Add failing rejection matrix coverage for missing `mc:inbox`, missing `priority:*`, zero/multiple routable `area:*`, linked PR, terminal state, and wrong repository in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T017 [US2] Add failing coverage that malformed or partial issue payloads produce `malformed_issue_payload` errors rather than ineligible, duplicate, or successful no-op results in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Implement stable rejection reason codes for unsafe candidates in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T019 [US2] Implement workspace-scoped duplicate synced task detection by GitHub repository and issue number in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T020 [US2] Implement distinct malformed payload and operator sync failure result handling in `src/lib/pilot-issue-eligibility.ts`
+- [x] T018 [US2] Implement stable rejection reason codes for unsafe candidates in `src/lib/pilot-issue-eligibility.ts`
+- [x] T019 [US2] Implement workspace-scoped duplicate synced task detection by GitHub repository and issue number in `src/lib/pilot-issue-eligibility.ts`
+- [x] T020 [US2] Implement distinct malformed payload and operator sync failure result handling in `src/lib/pilot-issue-eligibility.ts`
 
 **Checkpoint**: User Story 2 can reject each unsafe case independently and preserves one-task idempotency on repeated sync.
 
@@ -92,12 +92,12 @@
 
 ### Tests for User Story 3
 
-- [ ] T021 [US3] Expand local-only rejection coverage for title/label lookalikes without GitHub linkage in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T021 [US3] Expand local-only rejection coverage for title/label lookalikes without GitHub linkage in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T022 [US3] Implement local-only exclusion in the pilot identity and evidence helpers in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T023 [US3] Add regression coverage proving existing local task creation remains valid for non-pilot work while local-only rows cannot satisfy pilot identity evidence in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [x] T022 [US3] Implement local-only exclusion in the pilot identity and evidence helpers in `src/lib/pilot-issue-eligibility.ts`
+- [x] T023 [US3] Add regression coverage proving existing local task creation remains valid for non-pilot work while local-only rows cannot satisfy pilot identity evidence in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
 
 **Checkpoint**: User Story 3 proves local-only tasks remain valid outside the pilot lane and never become pilot source-of-truth evidence.
 
@@ -111,15 +111,15 @@
 
 ### Tests for User Story 4
 
-- [ ] T024 [US4] Add failing mocked-client coverage for existing synthetic issue reuse, explicit create opt-in, missing opt-in, missing credentials, insufficient permission, GitHub create failure, and label mismatch in `src/lib/__tests__/pilot-issue-smoke.test.ts`
-- [ ] T025 [US4] Add failing mocked coverage for operator-triggered sync failure being distinct from ineligible, duplicate, and successful no-op outcomes in `src/lib/__tests__/pilot-issue-smoke.test.ts`
+- [x] T024 [US4] Add failing mocked-client coverage for existing synthetic issue reuse, explicit create opt-in, missing opt-in, missing credentials, insufficient permission, GitHub create failure, and label mismatch in `src/lib/__tests__/pilot-issue-smoke.test.ts`
+- [x] T025 [US4] Add failing mocked coverage for operator-triggered sync failure being distinct from ineligible, duplicate, and successful no-op outcomes in `src/lib/__tests__/pilot-issue-smoke.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T026 [US4] Implement explicit synthetic fallback find-before-create behavior with live-mutation opt-in in `scripts/pilot-issue-smoke.mjs`
-- [ ] T027 [US4] Implement redacted operator error output for credentials, permissions, GitHub API, label mismatch, and create failures in `scripts/pilot-issue-smoke.mjs`
-- [ ] T028 [US4] Implement operator-triggered sync invocation through the existing sync path without adding production UI/API, poller, or cron behavior in `scripts/pilot-issue-smoke.mjs`
-- [ ] T029 [US4] Write manual live smoke evidence checklist covering candidate selection, synthetic fallback, ingest/sync proof, duplicate prevention, local-only exclusion, side-effect checks, cleanup, and evidence redaction in `docs/qa/pilot-smoke-checklist.md`
+- [x] T026 [US4] Implement explicit synthetic fallback find-before-create behavior with live-mutation opt-in in `scripts/pilot-issue-smoke.mjs`
+- [x] T027 [US4] Implement redacted operator error output for credentials, permissions, GitHub API, label mismatch, and create failures in `scripts/pilot-issue-smoke.mjs`
+- [x] T028 [US4] Implement operator-triggered sync invocation through the existing sync path without adding production UI/API, poller, or cron behavior in `scripts/pilot-issue-smoke.mjs`
+- [x] T029 [US4] Write manual live smoke evidence checklist covering candidate selection, synthetic fallback, ingest/sync proof, duplicate prevention, local-only exclusion, side-effect checks, cleanup, and evidence redaction in `docs/qa/pilot-smoke-checklist.md`
 
 **Checkpoint**: User Story 4 is fully reviewable through deterministic tests and the manual smoke checklist.
 
@@ -129,13 +129,13 @@
 
 **Purpose**: Finish documentation, roadmap/status traceability, and verification.
 
-- [ ] T030 [P] Update SPEC-009C1 status and approved future SPEC-013A1/SPEC-009E references in `docs/ai/rc-factory-technical-roadmap.md`
-- [ ] T031 [P] Update SPEC-009C1 workflow/status references for generated task coverage in `docs/ai/specs/SPEC-009C1-workflow.md`
-- [ ] T032 Run focused pilot tests with `pnpm test -- pilot-issue` for `src/lib/__tests__/pilot-issue-eligibility.test.ts` and `src/lib/__tests__/pilot-issue-smoke.test.ts`
-- [ ] T033 Run strict type checking with `pnpm typecheck` for `src/lib/pilot-issue-eligibility.ts` and `scripts/pilot-issue-smoke.mjs`
-- [ ] T034 Run lint with `pnpm lint` for `src/lib/pilot-issue-eligibility.ts`, `scripts/pilot-issue-smoke.mjs`, and SPEC-009C1 test files
+- [x] T030 [P] Update SPEC-009C1 status and approved future SPEC-013A1/SPEC-009E references in `docs/ai/rc-factory-technical-roadmap.md`
+- [x] T031 [P] Update SPEC-009C1 workflow/status references for generated task coverage in `docs/ai/specs/SPEC-009C1-workflow.md`
+- [x] T032 Run focused pilot tests with `pnpm exec vitest run src/lib/__tests__/pilot-issue-eligibility.test.ts src/lib/__tests__/pilot-issue-smoke.test.ts`
+- [x] T033 Run strict type checking with `pnpm typecheck` for `src/lib/pilot-issue-eligibility.ts` and `scripts/pilot-issue-smoke.mjs`
+- [x] T034 Run lint with `pnpm lint` for `src/lib/pilot-issue-eligibility.ts`, `scripts/pilot-issue-smoke.mjs`, and SPEC-009C1 test files
 - [ ] T035 Run full unit suite with `pnpm test` for the repository test surface
-- [ ] T036 Run production build with `pnpm build` for the Next.js application
+- [x] T036 Run production build with `pnpm build` for the Next.js application
 
 ---
 

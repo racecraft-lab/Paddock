@@ -63,7 +63,7 @@ Source-of-truth scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, error-handling, security, state-management, and regression-safety checks; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered TDD tasks; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Verified generated artifacts stay inside SPEC-009C1 boundaries; G6 passed |
-| Implement | `$speckit-implement` | In Progress | Implement the selected tasks and verification evidence |
+| Implement | `$speckit-implement` | Complete Except Full Unit Gate | Implemented pilot eligibility, deterministic tests, operator smoke script, smoke checklist, and verification evidence; full unit suite is blocked by existing non-SPEC-009C1 failures |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -533,6 +533,7 @@ Focus on:
 | A-003 | Medium | Success criteria traceability was implicit across FRs and tasks but not explicit in `tasks.md`. | Added a Success Criteria Traceability table mapping SC-001..SC-007 to FRs and tasks. |
 | A-004 | Medium | Schema migration wording in quickstart/workflow left migration as an implementation fallback despite the no-migration plan. | Tightened wording: no migration in SPEC-009C1; if a current-schema blocker is proven, stop and re-plan or open follow-up work. |
 | A-005 | High | Workflow Plan guardrail still allowed production UI/evidence endpoint scope if Clarify later proved a hard blocker, conflicting with completed clarification that defers these surfaces to SPEC-009E. | Reworded the guardrail to prohibit production pilot eligibility UI and production evidence API in SPEC-009C1 and defer durable surfaces to SPEC-009E. |
+| A-006 | Medium | SC-005 needed an implementation task for the side-effect snapshot helper. | Added task coverage for current-schema side-effect snapshots in `tasks.md` and implementation evidence. |
 
 ---
 
@@ -571,24 +572,35 @@ Implementation guardrails:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Foundation | | | |
-| Pilot eligibility | | | |
-| Synthetic fallback | | | |
-| Smoke evidence | | | |
-| Guardrails and verification | | | |
+| Foundation | T001-T009 | Complete | Added fixture builders, typed eligibility helper, and strict/lint registration |
+| Pilot eligibility | T010-T023 | Complete | Covered eligible ingest, identity proof, duplicate rejection, unsafe/malformed rejection, local-only exclusion, and current-schema side-effect absence |
+| Synthetic fallback | T024-T028 | Complete | Added mocked smoke-script coverage and explicit find-before-create behavior with live-mutation opt-in |
+| Smoke evidence | T029-T031 | Complete | Added manual smoke checklist and updated roadmap/workflow status |
+| Guardrails and verification | T032-T036 | Partial | Focused tests, typecheck, lint, and build passed; T035 remains open because full `pnpm test` has unrelated existing failures |
+
+### Verification Evidence
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Focused Vitest | Passed | `pnpm exec vitest run src/lib/__tests__/pilot-issue-eligibility.test.ts src/lib/__tests__/pilot-issue-smoke.test.ts` passed 2 files / 25 tests |
+| TypeScript | Passed | `pnpm typecheck` passed |
+| Lint | Passed | `pnpm lint` passed |
+| Production build | Passed | `pnpm build` passed after the network-enabled rerun required for Next.js Google Fonts |
+| Full unit suite | Blocked | `pnpm test` is blocked by existing non-SPEC-009C1 failures: SPEC-007 strict-diff allowlist failure on the broad branch diff and provisioner daemon socket timeout in `src/lib/__tests__/mc-provisioner-daemon.test.ts` |
+| G7 gate script | Blocked | `validate-gate.sh G7 specs/009c1-pilot-issue-ingest` returned `1 of 36 tasks incomplete`; T035 is intentionally open |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `specs/009c1-pilot-issue-ingest/tasks.md`
-- [ ] `docs/qa/pilot-smoke-checklist.md` exists and covers live issue selection, synthetic fallback, operator-triggered sync, evidence queries, and cleanup notes
-- [ ] Focused Vitest suites pass
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm lint` passes or any existing warnings are documented
-- [ ] `pnpm build` passes if production code changed
-- [ ] Manual smoke checklist is ready for operator execution
-- [ ] Roadmap/workflow/spec status updated on the spec branch
+- [ ] All tasks marked complete in `specs/009c1-pilot-issue-ingest/tasks.md` (T035 remains open for existing full-suite blockers)
+- [x] `docs/qa/pilot-smoke-checklist.md` exists and covers live issue selection, synthetic fallback, operator-triggered sync, evidence queries, and cleanup notes
+- [x] Focused Vitest suites pass
+- [x] `pnpm typecheck` passes
+- [x] `pnpm lint` passes or any existing warnings are documented
+- [x] `pnpm build` passes if production code changed
+- [x] Manual smoke checklist is ready for operator execution
+- [x] Roadmap/workflow/spec status updated on the spec branch
 - [ ] Branch committed and pushed
 
 ---

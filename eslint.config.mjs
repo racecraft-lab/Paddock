@@ -51,6 +51,8 @@ const specStrictFiles = [
   'src/lib/workflow-contracts/**/*.ts',
   // SPEC-009B Mission Control product-line seed.
   'src/lib/mission-control-seed/**/*.ts',
+  // SPEC-009C1 pilot issue ingest and eligibility.
+  'src/lib/pilot-issue-eligibility.ts',
   'scripts/seed-mission-control-product-line.ts',
 ]
 
@@ -64,6 +66,7 @@ const config = tseslint.config(
       'playwright-report/**',
       '.tmp/**',
       '.playwright-mcp/**',
+      '.tsbuild/**',
     ],
   },
   {

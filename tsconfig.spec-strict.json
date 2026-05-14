@@ -54,6 +54,7 @@
     "src/app/api/admin/workspaces/**/*.ts",
     "src/lib/workflow-contracts/**/*.ts",
     "src/lib/mission-control-seed/**/*.ts",
+    "src/lib/pilot-issue-eligibility.ts",
     "scripts/seed-mission-control-product-line.ts"
   ]
 }

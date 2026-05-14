@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-  "updated_at": "2026-05-14T03:01:03Z",
-  "active_step": "Phase 7: Implement - Pending task decomposition",
-  "status": "In Progress",
+  "updated_at": "2026-05-14T03:36:50Z",
+  "active_step": "Phase 7: Implement - T035 full unit suite blocked",
+  "status": "In Progress - G7 Blocked",
   "active_workflow": {
     "spec_id": "SPEC-009C1",
     "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
@@ -367,6 +367,77 @@
       "outcome": "No consensus routing required."
     }
   },
+  "phase_7": {
+    "status": "completed_except_full_unit_gate",
+    "gate": {
+      "id": "G7",
+      "pass": false,
+      "reason": "1 of 36 tasks incomplete; T035 remains open because full pnpm test is blocked by existing non-SPEC-009C1 failures.",
+      "markers": 1,
+      "total_tasks": 36,
+      "done_tasks": 35,
+      "command": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.11.0/skills/speckit-autopilot/scripts/validate-gate.sh G7 specs/009c1-pilot-issue-ingest"
+    },
+    "implementation": {
+      "completed_tasks": [
+        "T001-T034",
+        "T036"
+      ],
+      "open_tasks": [
+        "T035"
+      ],
+      "files": [
+        "src/lib/pilot-issue-eligibility.ts",
+        "src/lib/__tests__/pilot-issue-eligibility.test.ts",
+        "src/lib/__tests__/pilot-issue-smoke.test.ts",
+        "src/lib/__tests__/fixtures/pilot-issue-fixtures.ts",
+        "scripts/pilot-issue-smoke.mjs",
+        "docs/qa/pilot-smoke-checklist.md",
+        "docs/ai/rc-factory-technical-roadmap.md",
+        "docs/ai/specs/SPEC-009C1-workflow.md",
+        "specs/009c1-pilot-issue-ingest/tasks.md",
+        "tsconfig.spec-strict.json",
+        "eslint.config.mjs"
+      ]
+    },
+    "verification": {
+      "focused_vitest": {
+        "status": "passed",
+        "command": "pnpm exec vitest run src/lib/__tests__/pilot-issue-eligibility.test.ts src/lib/__tests__/pilot-issue-smoke.test.ts",
+        "files": 2,
+        "tests": 25
+      },
+      "typecheck": {
+        "status": "passed",
+        "command": "pnpm typecheck"
+      },
+      "lint": {
+        "status": "passed",
+        "command": "pnpm lint"
+      },
+      "build": {
+        "status": "passed",
+        "command": "pnpm build",
+        "note": "Passed after network-enabled rerun for Next.js Google Fonts."
+      },
+      "full_unit_suite": {
+        "status": "blocked",
+        "command": "pnpm test",
+        "blockers": [
+          "SPEC-007 strict-diff allowlist failure on the broad branch diff",
+          "provisioner daemon socket timeout in src/lib/__tests__/mc-provisioner-daemon.test.ts"
+        ]
+      }
+    },
+    "scope_guardrails": {
+      "production_ui_or_api": false,
+      "github_sync_poller_or_cron": false,
+      "issue_triage_or_remediation": false,
+      "claim_dispatch_runner_sandbox_or_harness": false,
+      "workflow_contract_tracker_label_semantics": false,
+      "schema_migration": false
+    }
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -461,7 +532,7 @@
       "status": "completed"
     },
     {
-      "step": "Phase 7: Implement - Pending task decomposition",
+      "step": "Phase 7: Implement - T001-T036 execution and verification",
       "status": "in_progress"
     },
     {
