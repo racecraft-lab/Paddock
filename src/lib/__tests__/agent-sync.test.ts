@@ -415,4 +415,108 @@ describe('syncAgentsFromConfig', () => {
     expect(db.prepare('SELECT COUNT(*) AS count FROM agents').get()).toEqual({ count: 1 })
     expect(db.prepare('SELECT workspace_id FROM agents WHERE session_key = ?').get('agent:aegis:main')).toEqual({ workspace_id: 2 })
   })
+
+  it('reconciles stable session keys that already exist outside the startup sync workspace', async () => {
+    tempDir = mkdtempSync(path.join(os.tmpdir(), 'mc-agent-sync-'))
+    const configPath = path.join(tempDir, 'openclaw.json')
+    const workspace = path.join(tempDir, 'workspace')
+    mkdirSync(workspace, { recursive: true })
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        agents: {
+          list: [
+            {
+              id: 'focusengine-macos-dev',
+              name: 'FocusEngine macOS Dev',
+              workspace,
+              identity: {
+                name: 'FocusEngine macOS Dev',
+                theme: 'coder',
+              },
+            },
+          ],
+        },
+      }, null, 2) + '\n',
+      'utf-8',
+    )
+
+    process.env.OPENCLAW_CONFIG_PATH = configPath
+    process.env.OPENCLAW_STATE_DIR = tempDir
+
+    const Database = (await import('better-sqlite3')).default
+    const db = new Database(':memory:')
+    db.exec(`
+      CREATE TABLE workspaces (
+        id INTEGER PRIMARY KEY,
+        slug TEXT NOT NULL,
+        name TEXT NOT NULL
+      );
+      CREATE TABLE agents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        role TEXT,
+        session_key TEXT UNIQUE,
+        soul_content TEXT,
+        status TEXT,
+        created_at INTEGER,
+        updated_at INTEGER,
+        config TEXT,
+        workspace_id INTEGER DEFAULT 1
+      );
+      INSERT INTO workspaces (id, slug, name) VALUES (1, 'default', 'Default Workspace');
+      INSERT INTO workspaces (id, slug, name) VALUES (2, 'facility', 'Facility');
+    `)
+    db.prepare(`
+      INSERT INTO agents (name, role, session_key, soul_content, status, created_at, updated_at, config, workspace_id)
+      VALUES (?, ?, ?, ?, 'offline', ?, ?, ?, ?)
+    `).run(
+      'FocusEngine macOS Dev',
+      'agent',
+      'agent:focusengine-macos-dev:main',
+      null,
+      1,
+      1,
+      '{}',
+      1,
+    )
+
+    const logAuditEvent = vi.fn()
+    const broadcast = vi.fn()
+    vi.doMock('@/lib/db', () => ({
+      getDatabase: () => db,
+      db_helpers: {},
+      logAuditEvent,
+    }))
+    vi.doMock('@/lib/event-bus', () => ({
+      eventBus: { broadcast },
+    }))
+    vi.doMock('@/lib/logger', () => ({
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    }))
+
+    const { previewSyncDiff, syncAgentsFromConfig } = await import('@/lib/agent-sync')
+
+    const preview = await previewSyncDiff()
+    expect(preview.newAgents).toEqual([])
+    expect(preview.updatedAgents).toEqual(['FocusEngine macOS Dev'])
+    expect(preview.onlyInMC).toEqual([])
+
+    const result = await syncAgentsFromConfig('startup')
+
+    expect(result.created).toBe(0)
+    expect(result.updated).toBe(1)
+    expect(result.agents).toEqual([
+      {
+        id: 'focusengine-macos-dev',
+        name: 'FocusEngine macOS Dev',
+        action: 'updated',
+      },
+    ])
+    expect(db.prepare('SELECT COUNT(*) AS count FROM agents').get()).toEqual({ count: 1 })
+    expect(db.prepare('SELECT workspace_id, role FROM agents WHERE session_key = ?').get('agent:focusengine-macos-dev:main')).toEqual({
+      workspace_id: 1,
+      role: 'coder',
+    })
+  })
 })
