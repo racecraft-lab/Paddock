@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-13T16:46:28.140Z",
+  "updatedAt": "2026-05-14T21:16:52.829Z",
   "prs": [
+    {
+      "prNumber": "38",
+      "prTitle": "fix(github): honor product line scope for facility sync",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/38",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/38/",
+      "headRef": "fix/facility-github-workspace-scope",
+      "baseRef": "main",
+      "updatedAt": "2026-05-14T21:16:52.829Z",
+      "latest": {
+        "playwright": {
+          "runId": "25885815465",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25885815465",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/38/playwright/latest/",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/38/runs/25885815465-attempt-1/playwright/",
+          "updatedAt": "2026-05-14T21:16:52.829Z"
+        }
+      }
+    },
     {
       "prNumber": "31",
       "prTitle": "chore(deps): bump next and fast-uri to resolve Quality Gate high-severity audits",
