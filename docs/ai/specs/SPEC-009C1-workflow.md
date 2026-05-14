@@ -58,8 +58,8 @@ Source-of-truth scoping decisions:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated pilot ingest and eligibility spec from roadmap and design concept; G1 passed with zero unresolved markers |
-| Clarify | `$speckit-clarify` | In Progress | Resolve exact eligibility query, synthetic script shape, and absence assertions |
-| Plan | `$speckit-plan` | Pending | Plan fixture-driven GitHub sync tests, operator script, and smoke checklist |
+| Clarify | `$speckit-clarify` | Complete | Resolved eligibility query, synthetic script shape, current-schema absence assertions, and future-spec boundaries |
+| Plan | `$speckit-plan` | In Progress | Plan fixture-driven GitHub sync tests, operator script, and smoke checklist |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, error-handling, security, state-management, and regression-safety checks |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify generated artifacts stay inside SPEC-009C1 boundaries |
@@ -321,9 +321,9 @@ Focus on roadmap alignment and scope boundaries:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Eligibility and fallback | Record after Clarify | |
-| 2 | State and absence proof | Record after Clarify | |
-| 3 | Scope and roadmap alignment | Record after Clarify | |
+| 1 | Eligibility and fallback | 4 | Live prefilter set to `repo:racecraft-lab/mission-control is:issue is:open label:"mc:inbox" -linked:pr`; routable `area:*` requires existing area routing to resolve `single_match`; synthetic fallback is explicit operator script find-first/create-with-opt-in behavior with smoke-checklist cleanup; tests use mocked/fixture GitHub seams and CI never requires live credentials or live mutation. Q4 security consensus completed. |
+| 2 | State and absence proof | 4 | Current identity proof is exactly one GitHub-linked root `tasks` row by workspace/repo/issue/sync timestamp/`parent_task_id IS NULL`; absence proof uses current `tasks`, `runs`, `task_dispositions`, `task_artifacts`, and `activities` surfaces plus table-if-exists guards for future claim/runner/sandbox tables; `mc:inbox` remains existing inbox status semantics; formal run-state lifecycle checks are deferred to SPEC-013A+ and SPEC-014A+ without placeholder schema. Consensus not required. |
+| 3 | Scope and roadmap alignment | 3 | Automatic GitHub sync polling/cron remains deferred to SPEC-013A1; durable operator-visible eligibility/evidence UI/API remains deferred to SPEC-009E; workflow-contract tracker labels remain metadata unless a future contract spec makes them executable. Consensus not required. |
 
 ---
 

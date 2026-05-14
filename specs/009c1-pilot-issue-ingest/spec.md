@@ -5,6 +5,39 @@
 **Status**: Draft  
 **Input**: User description: "Create SPEC-009C1 for the first Mission Control self-hosting pilot ingest slice. One eligible `racecraft-lab/mission-control` GitHub issue must enter Mission Control as exactly one GitHub-linked pilot root task through GitHub ingest/sync, with deterministic eligibility, duplicate prevention, local-only exclusion, no autonomous execution side effects, and a manual smoke checklist."
 
+## Clarifications
+
+### Session 1
+
+- Q: What exact live issue query should define the first candidate pool before local eligibility filtering?  
+  A: The operator/live prefilter is `repo:racecraft-lab/mission-control is:issue is:open label:"mc:inbox" -linked:pr`; implementation must still apply fixture-compatible local filters for repository identity, open state, issue-not-PR identity, required labels, duplicate synced task absence, and terminal/status exclusions.
+- Q: How is exactly one routable `area:*` label determined?  
+  A: Parse lowercased/deduped `area:*` labels with existing label semantics and admit only candidates whose existing area routing resolves to `single_match` against exactly one current `projects.area_slug` in the Mission Control workspace; `no_label`, `multi_label`, `no_match`, and triage fallback outcomes are not pilot-eligible.
+- Q: What owns idempotent synthetic fallback behavior and cleanup?  
+  A: The operator/smoke script path must first find an existing open issue titled `[mc-pilot] synthetic e2e issue`; issue creation requires an explicit live-mutation opt-in, uses `mc:inbox`, `priority:medium`, and `area:dev`, never auto-closes or auto-deletes the issue, and leaves cleanup ownership to `docs/qa/pilot-smoke-checklist.md`.
+- Q: How should automated tests avoid live GitHub mutation while still testing synthetic fallback and operator-triggered sync?  
+  A: Automated tests must use fixture or mocked GitHub clients for pilot candidate selection, synthetic fallback, and operator-triggered sync coverage. Tests may assert that synthetic fallback would call a mocked issue-create operation and that operator-triggered sync would call the existing sync seam, but CI must not require `GITHUB_TOKEN`, call live GitHub fetch/create/edit/close paths, or invoke the operator smoke/script path in live mutation mode. Live GitHub candidate selection, synthetic issue creation, and live operator-triggered sync are manual smoke actions only, performed with explicit operator credentials.
+
+### Session 2
+
+- Q: Which existing fields prove the admitted GitHub issue is exactly one GitHub-linked pilot root task?  
+  A: The identity proof counts exactly one `tasks` row in the Mission Control workspace where `github_repo='racecraft-lab/mission-control'`, `github_issue_number` matches the pilot issue, `github_synced_at IS NOT NULL`, and `parent_task_id IS NULL`. Task-chain lineage fields such as `root_task_id`, `chain_id`, and `chain_stage` are not required for a GitHub-ingested root task.
+- Q: Which existing fields or surfaces prove no remediation successor, claim, dispatch, runner, sandbox, or pipeline side effects?  
+  A: SPEC-009C1 proves absence with a current-schema post-sync snapshot: no child `tasks` for the pilot task, no task-chain lineage on the pilot row, `dispatch_attempts = 0`, `assigned_to IS NULL`, no linked `runs`, `task_dispositions`, or `task_artifacts`, and no dispatch/pipeline/remediation `activities`. Future claim, runner, or sandbox tables may be checked only with table-if-exists guards.
+- Q: How should `mc:inbox` status be handled without accidentally implementing dispatch safety?  
+  A: Preserve existing label semantics where `mc:inbox` maps to task status `inbox`; SPEC-009C1 records a controlled no-dispatch snapshot and does not add queue, auto-route, scheduler, or production eligibility guards.
+- Q: How should deferred formal run-state checks be phrased?  
+  A: SPEC-009C1 records current-schema negative evidence only. Formal stage attempt, claim, release, retry, run-state, and sandbox lifecycle assertions are deferred to SPEC-013A+ and SPEC-014A+, and this spec must not add placeholder schema for those future checks.
+
+### Session 3
+
+- Q: Should SPEC-009C1 wire automatic GitHub sync polling, cron, or poller lifecycle behavior?  
+  A: No. SPEC-009C1 uses operator-triggered or fixture-driven sync only; automatic GitHub sync polling and poller lifecycle are deferred to SPEC-013A1.
+- Q: Should SPEC-009C1 add production operator-visible pilot eligibility or evidence UI/API surfaces?  
+  A: No. SPEC-009C1 records evidence through tests, operator script/checklist output, and `docs/qa/pilot-smoke-checklist.md`; durable read-only operator evidence surfaces are deferred to SPEC-009E.
+- Q: Should SPEC-009C1 change workflow-contract tracker-label semantics to make those labels executable eligibility filters?  
+  A: No. Workflow-contract tracker labels remain template metadata; executable pilot eligibility labels remain separate unless a future contract spec defines filter semantics.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ingest One Eligible Pilot Issue (Priority: P1)
@@ -73,6 +106,7 @@ As the Mission Control operator, I need a concise manual smoke checklist so a li
 - A candidate has multiple `priority:*` labels; it remains eligible because the pilot only requires at least one priority label.
 - A candidate has zero or multiple routable `area:*` labels; it is rejected because routing must be deterministic.
 - A candidate has labels that look similar to required labels but do not match the required families; it is rejected.
+- A candidate has `mc:inbox` plus a conflicting terminal/status label such as `mc:done` or `mc:failed`; it is rejected because terminal state conflicts with pilot intake.
 - A previously synced issue is reopened or resynced; duplicate prevention still preserves one pilot root task for the GitHub issue.
 - Current-schema side-effect checks must stay grounded in existing task, activity, run, artifact, assignment, and successor surfaces when present; they must not invent future run-state tables.
 
@@ -81,20 +115,20 @@ As the Mission Control operator, I need a concise manual smoke checklist so a li
 ### Functional Requirements
 
 - **FR-001**: The system MUST treat GitHub Issues as the v1 tracker of record for this pilot and Mission Control tasks as synchronized local projections of GitHub work.
-- **FR-002**: The system MUST admit a live pilot candidate only when it is an open `racecraft-lab/mission-control` issue labeled `mc:inbox`.
+- **FR-002**: The system MUST define the live/operator candidate prefilter as `repo:racecraft-lab/mission-control is:issue is:open label:"mc:inbox" -linked:pr` and then admit a live pilot candidate only when fixture-compatible local filters confirm repository identity, open state, issue-not-PR identity, and `mc:inbox`.
 - **FR-003**: The system MUST require at least one `priority:*` label on a live pilot candidate.
-- **FR-004**: The system MUST require exactly one routable `area:*` label on a live pilot candidate.
+- **FR-004**: The system MUST require exactly one routable `area:*` label on a live pilot candidate, where routable means the existing area-routing behavior resolves one parsed area slug to `single_match` against exactly one current `projects.area_slug` in the Mission Control workspace.
 - **FR-005**: The system MUST reject a candidate that has an existing synced Mission Control task for the same GitHub repository and issue number.
-- **FR-006**: The system MUST reject a candidate that has a linked PR or terminal issue state before pilot intake.
+- **FR-006**: The system MUST reject a candidate that has a linked PR, terminal issue state, or conflicting terminal/status label such as `mc:done` or `mc:failed` before pilot intake.
 - **FR-007**: The system MUST create or identify the pilot root task only through GitHub ingest/sync, not through local-only task creation.
-- **FR-008**: The system MUST represent the admitted pilot issue as exactly one GitHub-linked Mission Control root task with repository identity, issue number, issue labels, and pilot eligibility evidence.
+- **FR-008**: The system MUST represent the admitted pilot issue as exactly one GitHub-linked Mission Control root task proven by one `tasks` row in the Mission Control workspace where `github_repo='racecraft-lab/mission-control'`, `github_issue_number` matches the pilot issue, `github_synced_at IS NOT NULL`, and `parent_task_id IS NULL`; task-chain lineage fields are not required for this root ingest proof.
 - **FR-009**: The system MUST make repeated ingest/sync of the same GitHub issue idempotent so duplicate pilot root tasks are not created.
 - **FR-010**: The system MUST keep local-only tasks supported for non-pilot work while excluding them from pilot runner intake and pilot source-of-truth evidence.
-- **FR-011**: The system MUST provide an explicit operator/smoke fallback path that finds an existing open `[mc-pilot] synthetic e2e issue` first, otherwise creates one with `mc:inbox`, `priority:medium`, and `area:dev`.
-- **FR-012**: Automated tests and normal app runtime MUST NOT mutate live GitHub issues; live GitHub selection or synthetic issue creation is allowed only through explicit operator smoke/script action.
+- **FR-011**: The system MUST provide an explicit operator/smoke fallback script path that finds an existing open `[mc-pilot] synthetic e2e issue` first, otherwise creates one with `mc:inbox`, `priority:medium`, and `area:dev` only when an explicit live-mutation opt-in is supplied; the script must not auto-close or auto-delete the issue, and cleanup belongs to the smoke checklist.
+- **FR-012**: Automated tests MUST use fixture or mocked GitHub clients for pilot candidate selection, synthetic fallback, and operator-triggered sync coverage; CI MUST NOT require `GITHUB_TOKEN`, call live GitHub fetch/create/edit/close paths, or run the operator smoke/script path in live mutation mode.
 - **FR-013**: The feature MUST NOT wire automatic GitHub sync cron, polling lifecycle, or ownerless runtime discovery; GitHub sync automation is deferred to SPEC-013A1.
 - **FR-014**: The feature MUST NOT execute Issue Triage, Issue Remediation, successor creation, scheduler claim authority, dispatch, runner launch, sandbox lifecycle, harness adapter behavior, or auto-merge behavior.
-- **FR-015**: The feature MUST prove, using current schema surfaces only, that admitted pilot ingest creates no claim, dispatch, remediation, runner, sandbox, pipeline successor, or autonomous execution side effects.
+- **FR-015**: The feature MUST prove, using current schema surfaces only, that admitted pilot ingest creates no claim, dispatch, remediation, runner, sandbox, pipeline successor, or autonomous execution side effects by asserting no child `tasks`, no task-chain lineage on the pilot row, `dispatch_attempts = 0`, `assigned_to IS NULL`, zero linked `runs`, zero linked `task_dispositions`, zero linked `task_artifacts`, no dispatch/pipeline/remediation `activities`, and table-if-exists checks only for future claim/runner/sandbox tables.
 - **FR-016**: The feature MUST NOT add production pilot eligibility UI or a new production evidence API; durable operator-visible eligibility and evidence surfaces are deferred to SPEC-009E.
 - **FR-017**: The feature MUST NOT change workflow-contract tracker-label semantics; executable pilot eligibility labels remain separate from workflow-template metadata unless a later contract spec changes that contract.
 - **FR-018**: The feature MUST produce `docs/qa/pilot-smoke-checklist.md` for manual live smoke evidence, including candidate selection, synthetic fallback, duplicate prevention, local-only exclusion, side-effect checks, and cleanup instructions.
@@ -140,9 +174,9 @@ As the Mission Control operator, I need a concise manual smoke checklist so a li
 
 - **SC-001**: Given one eligible live or synthetic `racecraft-lab/mission-control` issue, GitHub ingest/sync results in exactly one GitHub-linked Mission Control pilot root task for that issue.
 - **SC-002**: Re-running ingest/sync for the same eligible issue leaves the count of pilot root tasks for that GitHub issue at one.
-- **SC-003**: 100% of fixture-covered ineligible candidates are rejected with inspectable reasons, including missing `mc:inbox`, missing `priority:*`, zero or multiple routable `area:*`, linked PR, terminal state, duplicate synced task, and wrong repository.
+- **SC-003**: 100% of fixture-covered ineligible candidates are rejected with inspectable reasons, including missing `mc:inbox`, missing `priority:*`, zero or multiple routable `area:*`, linked PR, terminal state or conflicting terminal/status label, duplicate synced task, and wrong repository.
 - **SC-004**: 100% of local-only tasks created during validation remain outside the pilot lane and do not satisfy pilot source-of-truth evidence.
-- **SC-005**: Pilot ingest validation records zero current-schema claim, dispatch, remediation, runner, sandbox, or successor side effects for the admitted pilot root task.
+- **SC-005**: Pilot ingest validation records zero current-schema claim, dispatch, remediation, runner, sandbox, successor, run, disposition, artifact, and pipeline side effects for the admitted pilot root task.
 - **SC-006**: A fresh operator can complete the manual live smoke checklist in 30 minutes or less after credentials and a target deployment are available.
 
 ## Assumptions
@@ -152,4 +186,4 @@ As the Mission Control operator, I need a concise manual smoke checklist so a li
 - Existing GitHub ingest/sync behavior and test seams can be exercised deterministically with fixtures.
 - The first pilot issue must be in `racecraft-lab/mission-control`; other repositories are out of scope for SPEC-009C1.
 - Local-only Mission Control tasks remain valid for manual and non-pilot work.
-- Formal run-state, claim, dispatch, and harness lifecycle assertions belong to later SPEC-013 and SPEC-014 work; SPEC-009C1 proves absence only across current schema surfaces.
+- Formal stage attempt, claim, release, retry, run-state, dispatch, sandbox, and harness lifecycle assertions belong to later SPEC-013A+ and SPEC-014A+ work; SPEC-009C1 proves absence only across current schema surfaces and must not add placeholder schema for those future checks.

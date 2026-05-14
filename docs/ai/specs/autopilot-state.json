@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-  "updated_at": "2026-05-14T01:40:33Z",
-  "active_step": "Phase 2: Clarify - Eligibility and Fallback",
+  "updated_at": "2026-05-14T02:00:30Z",
+  "active_step": "Phase 3: Plan",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009C1",
@@ -98,6 +98,73 @@
       "workflow_contract_tracker_label_semantics": false
     }
   },
+  "phase_2": {
+    "status": "completed",
+    "gate": {
+      "id": "G2",
+      "pass": true,
+      "markers": 0,
+      "reason": "0 [NEEDS CLARIFICATION] markers"
+    },
+    "sessions": {
+      "eligibility_and_fallback": {
+        "status": "completed",
+        "questions": 4,
+        "edits_applied": [
+          "Exact live/operator GitHub prefilter and local eligibility filters",
+          "Routable area label definition using existing single_match area routing",
+          "Synthetic fallback find-first/create-with-explicit-opt-in script behavior",
+          "Fixture/mocked GitHub client boundary for tests and CI"
+        ],
+        "unresolved_markers": 0
+      },
+      "state_and_absence_proof": {
+        "status": "completed",
+        "questions": 4,
+        "edits_applied": [
+          "GitHub-linked root task identity proof using current tasks columns",
+          "No-side-effect proof across tasks, runs, task_dispositions, task_artifacts, and activities",
+          "Existing mc:inbox status semantics preserved without new dispatch guards",
+          "Formal run-state lifecycle checks deferred to SPEC-013A+ and SPEC-014A+ without placeholder schema"
+        ],
+        "unresolved_markers": 0
+      },
+      "scope_and_roadmap_alignment": {
+        "status": "completed",
+        "questions": 3,
+        "edits_applied": [
+          "Automatic GitHub sync polling and cron lifecycle deferred to SPEC-013A1",
+          "Operator-visible eligibility and evidence UI/API surfaces deferred to SPEC-009E",
+          "Workflow-contract tracker labels remain metadata for SPEC-009C1"
+        ],
+        "unresolved_markers": 0
+      }
+    },
+    "consensus": {
+      "eligibility_and_fallback": {
+        "status": "completed",
+        "reason": "Security-sensitive live GitHub credential and mutation boundary required consensus.",
+        "analysts": [
+          "codebase-analyst",
+          "spec-context-analyst",
+          "domain-researcher"
+        ],
+        "outcome": "Accepted with wording tightening: tests may cover operator-triggered sync through mocked seams, CI must not require credentials or live GitHub mutation, and live selection/create/sync remains manual smoke with explicit operator credentials."
+      },
+      "state_and_absence_proof": {
+        "status": "completed",
+        "reason": "Clarify executor found no unresolved conflict requiring analyst routing; checkpoint recorded as not needed.",
+        "analysts": [],
+        "outcome": "No consensus routing required."
+      },
+      "scope_and_roadmap_alignment": {
+        "status": "completed",
+        "reason": "Clarify executor found consistent design concept, workflow, spec, PRD, and roadmap boundaries; checkpoint recorded as not needed.",
+        "analysts": [],
+        "outcome": "No consensus routing required."
+      }
+    }
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -113,31 +180,31 @@
     },
     {
       "step": "Phase 2: Clarify - Eligibility and Fallback",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Eligibility and Fallback Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - State and Absence Proof",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - State and Absence Proof Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Scope and Roadmap Alignment",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Scope and Roadmap Alignment Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 3: Plan",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - Data Integrity",
