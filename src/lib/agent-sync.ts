@@ -6,6 +6,7 @@
  */
 
 import { config } from './config'
+import type Database from 'better-sqlite3'
 import { getDatabase, logAuditEvent } from './db'
 import { eventBus } from './event-bus'
 import { isAbsolute, resolve } from 'path'
@@ -254,6 +255,19 @@ async function readOpenClawAgents(): Promise<OpenClawAgent[]> {
   return parsed?.agents?.list || []
 }
 
+function resolveConfigSyncWorkspaceId(db: Database.Database, workspaceId?: number): number {
+  if (workspaceId !== undefined) return workspaceId
+
+  try {
+    const facility = db.prepare(`SELECT id FROM workspaces WHERE slug = 'facility' LIMIT 1`).get() as { id: number } | undefined
+    if (facility?.id) return facility.id
+  } catch {
+    // Older installs and focused tests may not have workspaces available yet.
+  }
+
+  return 1
+}
+
 /** Extract MC-friendly fields from an OpenClaw agent config */
 function mapAgentToMC(agent: OpenClawAgent): {
   name: string
@@ -286,7 +300,7 @@ function mapAgentToMC(agent: OpenClawAgent): {
 }
 
 /** Sync agents from openclaw.json into the MC database */
-export async function syncAgentsFromConfig(actor: string = 'system', workspaceId = 1): Promise<SyncResult> {
+export async function syncAgentsFromConfig(actor: string = 'system', workspaceId?: number): Promise<SyncResult> {
   let agents: OpenClawAgent[]
   try {
     agents = await readOpenClawAgents()
@@ -299,6 +313,7 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
   }
 
   const db = getDatabase()
+  const syncWorkspaceId = resolveConfigSyncWorkspaceId(db, workspaceId)
   const now = Math.floor(Date.now() / 1000)
   let created = 0
   let updated = 0
@@ -319,8 +334,8 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
       const mapped = mapAgentToMC(agent)
       const configJson = JSON.stringify(mapped.config)
       const existing =
-        (mapped.session_key ? (findBySessionKey.get(mapped.session_key, workspaceId) as any) : undefined) ||
-        (findByName.get(mapped.name, workspaceId) as any)
+        (mapped.session_key ? (findBySessionKey.get(mapped.session_key, syncWorkspaceId) as any) : undefined) ||
+        (findByName.get(mapped.name, syncWorkspaceId) as any)
 
       if (existing) {
         // Check if config or soul_content actually changed
@@ -336,14 +351,14 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
         if (nameChanged || configChanged || soulChanged) {
           // Only overwrite soul_content if we read a new value from workspace
           const soulToWrite = mapped.soul_content ?? existingSoul
-          updateAgent.run(mapped.name, mapped.role, mapped.session_key, configJson, soulToWrite, now, existing.id, workspaceId)
+          updateAgent.run(mapped.name, mapped.role, mapped.session_key, configJson, soulToWrite, now, existing.id, syncWorkspaceId)
           results.push({ id: agent.id, name: mapped.name, action: 'updated' })
           updated++
         } else {
           results.push({ id: agent.id, name: mapped.name, action: 'unchanged' })
         }
       } else {
-        insertAgent.run(mapped.name, mapped.role, mapped.session_key, mapped.soul_content, now, now, configJson, workspaceId)
+        insertAgent.run(mapped.name, mapped.role, mapped.session_key, mapped.soul_content, now, now, configJson, syncWorkspaceId)
         results.push({ id: agent.id, name: mapped.name, action: 'created' })
         created++
       }
@@ -369,7 +384,7 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
 }
 
 /** Preview the diff between openclaw.json and MC database without writing */
-export async function previewSyncDiff(workspaceId = 1): Promise<SyncDiff> {
+export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
   let agents: OpenClawAgent[]
   try {
     agents = await readOpenClawAgents()
@@ -378,7 +393,8 @@ export async function previewSyncDiff(workspaceId = 1): Promise<SyncDiff> {
   }
 
   const db = getDatabase()
-  const allMCAgents = db.prepare('SELECT name, role, session_key, config FROM agents WHERE workspace_id = ?').all(workspaceId) as Array<{
+  const syncWorkspaceId = resolveConfigSyncWorkspaceId(db, workspaceId)
+  const allMCAgents = db.prepare('SELECT name, role, session_key, config FROM agents WHERE workspace_id = ?').all(syncWorkspaceId) as Array<{
     name: string
     role: string
     session_key: string | null

@@ -326,4 +326,93 @@ describe('syncAgentsFromConfig', () => {
     expect(logAuditEvent).toHaveBeenCalled()
     expect(broadcast).toHaveBeenCalledWith('agent.created', expect.objectContaining({ updated: 1 }))
   })
+
+  it('defaults startup sync to the facility workspace when a stable session key already exists there', async () => {
+    tempDir = mkdtempSync(path.join(os.tmpdir(), 'mc-agent-sync-'))
+    const configPath = path.join(tempDir, 'openclaw.json')
+    const workspace = path.join(tempDir, 'workspace')
+    mkdirSync(workspace, { recursive: true })
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        agents: {
+          list: [
+            {
+              id: 'aegis',
+              name: 'Aegis',
+              workspace,
+              identity: {
+                name: 'Aegis',
+                theme: 'reviewer',
+              },
+            },
+          ],
+        },
+      }, null, 2) + '\n',
+      'utf-8',
+    )
+
+    process.env.OPENCLAW_CONFIG_PATH = configPath
+    process.env.OPENCLAW_STATE_DIR = tempDir
+
+    const Database = (await import('better-sqlite3')).default
+    const db = new Database(':memory:')
+    db.exec(`
+      CREATE TABLE workspaces (
+        id INTEGER PRIMARY KEY,
+        slug TEXT NOT NULL,
+        name TEXT NOT NULL
+      );
+      CREATE TABLE agents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        role TEXT,
+        session_key TEXT UNIQUE,
+        soul_content TEXT,
+        status TEXT,
+        created_at INTEGER,
+        updated_at INTEGER,
+        config TEXT,
+        workspace_id INTEGER DEFAULT 1
+      );
+      INSERT INTO workspaces (id, slug, name) VALUES (1, 'default', 'Default Workspace');
+      INSERT INTO workspaces (id, slug, name) VALUES (2, 'facility', 'Facility');
+    `)
+    db.prepare(`
+      INSERT INTO agents (name, role, session_key, soul_content, status, created_at, updated_at, config, workspace_id)
+      VALUES (?, ?, ?, ?, 'offline', ?, ?, ?, ?)
+    `).run(
+      'aegis',
+      'reviewer',
+      'agent:aegis:main',
+      null,
+      1,
+      1,
+      '{}',
+      2,
+    )
+
+    const logAuditEvent = vi.fn()
+    const broadcast = vi.fn()
+    vi.doMock('@/lib/db', () => ({
+      getDatabase: () => db,
+      db_helpers: {},
+      logAuditEvent,
+    }))
+    vi.doMock('@/lib/event-bus', () => ({
+      eventBus: { broadcast },
+    }))
+    vi.doMock('@/lib/logger', () => ({
+      logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+    }))
+
+    const { syncAgentsFromConfig } = await import('@/lib/agent-sync')
+
+    const result = await syncAgentsFromConfig('startup')
+
+    expect(result.created).toBe(0)
+    expect(result.updated).toBe(1)
+    expect(db.prepare('SELECT COUNT(*) AS count FROM agents').get()).toEqual({ count: 1 })
+    expect(db.prepare('SELECT workspace_id FROM agents WHERE session_key = ?').get('agent:aegis:main')).toEqual({ workspace_id: 2 })
+  })
 })
