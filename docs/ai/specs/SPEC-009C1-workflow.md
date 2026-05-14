@@ -61,8 +61,8 @@ Source-of-truth scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved eligibility query, synthetic script shape, current-schema absence assertions, and future-spec boundaries |
 | Plan | `$speckit-plan` | Complete | Planned fixture-driven GitHub sync tests, operator script, smoke checklist, and current-schema absence evidence; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, error-handling, security, state-management, and regression-safety checks; G4 passed |
-| Tasks | `$speckit-tasks` | In Progress | Generate dependency-ordered TDD tasks |
-| Analyze | `$speckit-analyze` | Pending | Verify generated artifacts stay inside SPEC-009C1 boundaries |
+| Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered TDD tasks; G5 passed |
+| Analyze | `$speckit-analyze` | In Progress | Verify generated artifacts stay inside SPEC-009C1 boundaries |
 | Implement | `$speckit-implement` | Pending | Implement the selected tasks and verification evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -494,10 +494,10 @@ Do not generate tasks for:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Record after Tasks |
-| Phases | Record after Tasks |
-| Parallel Opportunities | Record after Tasks |
-| User Stories Covered | Record after Tasks |
+| Total Tasks | 36 |
+| Phases | 7 |
+| Parallel Opportunities | 3 |
+| User Stories Covered | 4 |
 
 ---
 
