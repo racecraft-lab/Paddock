@@ -62,8 +62,8 @@ Source-of-truth scoping decisions:
 | Plan | `$speckit-plan` | Complete | Planned fixture-driven GitHub sync tests, operator script, smoke checklist, and current-schema absence evidence; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Ran focused data-integrity, error-handling, security, state-management, and regression-safety checks; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered TDD tasks; G5 passed |
-| Analyze | `$speckit-analyze` | In Progress | Verify generated artifacts stay inside SPEC-009C1 boundaries |
-| Implement | `$speckit-implement` | Pending | Implement the selected tasks and verification evidence |
+| Analyze | `$speckit-analyze` | Complete | Verified generated artifacts stay inside SPEC-009C1 boundaries; G6 passed |
+| Implement | `$speckit-implement` | In Progress | Implement the selected tasks and verification evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -355,9 +355,9 @@ $speckit-plan
 - `scripts/seed-mission-control-product-line.ts` and adjacent SPEC-009B tests for operator-script style.
 
 ## Constraints
-- No schema migration unless the live schema proves an unavoidable gap; default expectation is no migration.
+- No schema migration in SPEC-009C1. If implementation proves an unavoidable current-schema blocker, stop and update the SpecKit artifacts or open follow-up work instead of adding a migration in this slice.
 - No automatic GitHub sync poller startup, cron job, OpenClaw cron, or scheduler-runtime integration.
-- No production UI or new production evidence endpoint unless Clarify proves a hard blocker.
+- No production pilot eligibility UI or new production evidence API in SPEC-009C1; durable operator-visible eligibility and evidence surfaces are deferred to SPEC-009E.
 - No Issue Triage, Issue Remediation, claim authority, runner state, sandbox lifecycle, or harness adapter implementation.
 - Tests must be fixture-driven and deterministic; live GitHub access belongs only in manual smoke/checklist/script instructions.
 - Current-schema absence assertions must not cite nonexistent SPEC-013/014 tables.
@@ -528,7 +528,11 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| | | | |
+| A-001 | Medium | Roadmap mini-spec status for SPEC-009C1 still said `Pending` while the index/workflow state said `In Progress`. | Updated the SPEC-009C1 roadmap mini-spec status to `In Progress`. |
+| A-002 | High | Tasks T014 and T023 could be read as production semantic changes to GitHub sync or local task creation. | Reworded them as verification/regression tasks over existing seams; no production sync/task-create semantic change belongs to Analyze remediation. |
+| A-003 | Medium | Success criteria traceability was implicit across FRs and tasks but not explicit in `tasks.md`. | Added a Success Criteria Traceability table mapping SC-001..SC-007 to FRs and tasks. |
+| A-004 | Medium | Schema migration wording in quickstart/workflow left migration as an implementation fallback despite the no-migration plan. | Tightened wording: no migration in SPEC-009C1; if a current-schema blocker is proven, stop and re-plan or open follow-up work. |
+| A-005 | High | Workflow Plan guardrail still allowed production UI/evidence endpoint scope if Clarify later proved a hard blocker, conflicting with completed clarification that defers these surfaces to SPEC-009E. | Reworded the guardrail to prohibit production pilot eligibility UI and production evidence API in SPEC-009C1 and defer durable surfaces to SPEC-009E. |
 
 ---
 
@@ -555,7 +559,7 @@ Approach:
 Implementation guardrails:
 - Stay on branch `009c1-pilot-issue-ingest`.
 - Do not modify main checkout.
-- Do not create schema unless Plan proves there is no current-schema path.
+- Do not create schema in SPEC-009C1; if a real current-schema blocker is proven, stop and update SpecKit artifacts or open follow-up work instead of adding a migration in this slice.
 - Do not wire `startSyncPoller()` into runtime startup or scheduler in this spec.
 - Do not add production pilot eligibility UI or new evidence API.
 - Do not launch or claim work.

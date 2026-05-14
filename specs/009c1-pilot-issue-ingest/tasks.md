@@ -56,8 +56,8 @@
 
 - [ ] T012 [US1] Implement candidate payload validation and normalized label extraction in `src/lib/pilot-issue-eligibility.ts`
 - [ ] T013 [US1] Implement eligible admission using existing area routing and label semantics from `src/lib/github-label-map.ts` in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T014 [US1] Reuse the existing GitHub sync seam for pilot ingest without adding polling or cron behavior in `src/lib/github-sync-engine.ts`
-- [ ] T015 [US1] Implement the exact one-root-task identity proof helper in `src/lib/pilot-issue-eligibility.ts`
+- [ ] T014 [US1] Verify pilot ingest reuses the existing `pullFromGitHub`/`createTask({ source: 'github_sync' })` seam without changing production sync semantics, adding polling, or adding cron behavior in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
+- [ ] T015 [US1] Implement the exact one-root-task identity proof helper and current-schema side-effect snapshot helper in `src/lib/pilot-issue-eligibility.ts`
 
 **Checkpoint**: User Story 1 is independently testable with fixture sync and no local-only creation path.
 
@@ -97,7 +97,7 @@
 ### Implementation for User Story 3
 
 - [ ] T022 [US3] Implement local-only exclusion in the pilot identity and evidence helpers in `src/lib/pilot-issue-eligibility.ts`
-- [ ] T023 [US3] Preserve existing local task creation behavior while keeping pilot intake limited to GitHub sync in `src/lib/task-create.ts`
+- [ ] T023 [US3] Add regression coverage proving existing local task creation remains valid for non-pilot work while local-only rows cannot satisfy pilot identity evidence in `src/lib/__tests__/pilot-issue-eligibility.test.ts`
 
 **Checkpoint**: User Story 3 proves local-only tasks remain valid outside the pilot lane and never become pilot source-of-truth evidence.
 
@@ -136,6 +136,20 @@
 - [ ] T034 Run lint with `pnpm lint` for `src/lib/pilot-issue-eligibility.ts`, `scripts/pilot-issue-smoke.mjs`, and SPEC-009C1 test files
 - [ ] T035 Run full unit suite with `pnpm test` for the repository test surface
 - [ ] T036 Run production build with `pnpm build` for the Next.js application
+
+---
+
+## Success Criteria Traceability
+
+| Success Criterion | Functional Requirements | Tasks |
+|---|---|---|
+| SC-001 | FR-001, FR-007, FR-008 | T001, T010, T011, T014, T015 |
+| SC-002 | FR-005, FR-008, FR-009 | T002, T011, T015, T019 |
+| SC-003 | FR-002, FR-003, FR-004, FR-005, FR-006 | T016, T018, T019 |
+| SC-004 | FR-007, FR-010 | T003, T021, T022, T023 |
+| SC-005 | FR-014, FR-015 | T005, T015 |
+| SC-006 | FR-011, FR-018, FR-023 | T026, T027, T028, T029 |
+| SC-007 | FR-012, FR-019, FR-020, FR-021, FR-022, FR-023 | T004, T017, T020, T024, T025, T027 |
 
 ---
 

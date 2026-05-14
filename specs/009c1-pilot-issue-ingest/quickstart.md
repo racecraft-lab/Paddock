@@ -112,4 +112,4 @@ error codes, counts, and content hashes.
 - No new production pilot eligibility UI.
 - No new production evidence API.
 - No workflow-contract tracker-label semantic change.
-- No schema migration unless implementation proves an unavoidable live-schema gap.
+- No schema migration in SPEC-009C1. If implementation proves an unavoidable current-schema blocker, stop and update the SpecKit artifacts or open follow-up work instead of adding a migration in this slice.
