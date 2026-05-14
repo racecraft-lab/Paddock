@@ -57,8 +57,8 @@ Source-of-truth scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate pilot ingest and eligibility spec from roadmap and design concept |
-| Clarify | `$speckit-clarify` | Pending | Resolve exact eligibility query, synthetic script shape, and absence assertions |
+| Specify | `$speckit-specify` | Complete | Generated pilot ingest and eligibility spec from roadmap and design concept; G1 passed with zero unresolved markers |
+| Clarify | `$speckit-clarify` | In Progress | Resolve exact eligibility query, synthetic script shape, and absence assertions |
 | Plan | `$speckit-plan` | Pending | Plan fixture-driven GitHub sync tests, operator script, and smoke checklist |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, error-handling, security, state-management, and regression-safety checks |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks |
@@ -266,13 +266,14 @@ tasks remain supported but are not autonomous runner intake.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Record after Specify |
-| User Stories | Record after Specify |
-| Acceptance Criteria | Record after Specify |
+| Functional Requirements | 18 |
+| User Stories | 4 |
+| Acceptance Criteria | 10 acceptance scenarios; 6 success criteria |
 
 ### Files Generated
 
-- [ ] `specs/009c1-pilot-issue-ingest/spec.md`
+- [x] `specs/009c1-pilot-issue-ingest/spec.md`
+- [x] `specs/009c1-pilot-issue-ingest/checklists/requirements.md`
 
 ---
 
