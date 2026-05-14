@@ -434,7 +434,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009C1: GitHub Pilot Issue Ingest and Eligibility
 
-- **Status:** Implemented on branch; G7 verification passed
+- **Status:** Draft PR #34 open; G7 verification passed
 - **Priority:** P0
 - **Branch short name:** `pilot-issue-ingest`
 - **Dependencies:** SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B

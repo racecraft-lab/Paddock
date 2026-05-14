@@ -587,7 +587,9 @@ Implementation guardrails:
 | Lint | Passed | `pnpm lint` passed |
 | Production build | Passed | `pnpm build` passed after the network-enabled rerun required for Next.js Google Fonts |
 | Full unit suite | Passed | `pnpm test` passed outside the sandbox: 275 files passed / 2840 tests passed / 1 skipped / 84 todo |
+| Full e2e suite | Passed | `pnpm test:e2e` passed outside the sandbox: 646 Playwright tests |
 | G7 gate script | Passed | `validate-gate.sh G7 specs/009c1-pilot-issue-ingest` passed after all 36 tasks were marked complete |
+| Reviewability diff gate | Passed with transition exception | `reviewability-gate.sh diff origin/main...HEAD` passed with the existing transition exception; reviewable LOC 4203, production files 7, total files 29 |
 
 ---
 
@@ -602,6 +604,7 @@ Implementation guardrails:
 - [x] Manual smoke checklist is ready for operator execution
 - [x] Roadmap/workflow/spec status updated on the spec branch
 - [x] Branch committed and pushed
+- [x] Draft PR opened: https://github.com/racecraft-lab/mission-control/pull/34
 
 ---
 

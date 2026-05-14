@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-  "updated_at": "2026-05-14T14:19:36Z",
+  "updated_at": "2026-05-14T16:11:46Z",
   "active_step": "Post: Verification and Status Sync",
   "status": "Completed",
   "active_workflow": {
@@ -426,6 +426,12 @@
         "skipped": 1,
         "todo": 84,
         "note": "Passed outside the sandbox so mc-provisioner-daemon could bind its local Unix socket."
+      },
+      "e2e_suite": {
+        "status": "passed",
+        "command": "pnpm test:e2e",
+        "tests": 646,
+        "note": "Passed outside the sandbox for local Playwright/server resources."
       }
     },
     "scope_guardrails": {
@@ -440,6 +446,21 @@
   "post": {
     "status": "completed",
     "implementation_commit": "3750f136",
+    "pull_request": {
+      "status": "draft_open",
+      "number": 34,
+      "url": "https://github.com/racecraft-lab/mission-control/pull/34",
+      "title": "feat(SPEC-009C1): GitHub pilot issue ingest and eligibility"
+    },
+    "reviewability_gate": {
+      "status": "exception",
+      "pass": true,
+      "command": "reviewability-gate.sh diff origin/main...HEAD",
+      "reviewable_loc": 4203,
+      "production_files": 7,
+      "total_files": 29,
+      "transition_exception": true
+    },
     "branch": "009c1-pilot-issue-ingest",
     "push": {
       "status": "completed",
