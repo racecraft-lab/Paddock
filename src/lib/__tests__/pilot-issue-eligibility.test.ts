@@ -146,6 +146,37 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
     })
   })
 
+  it('rejects an issue already synced to a non-root task as duplicate evidence', () => {
+    const db = freshDb()
+    seedPilotRouting(db)
+    const parentInfo = db.prepare(`
+      INSERT INTO tasks (
+        title, description, status, priority, workspace_id,
+        created_by, created_at, updated_at, tags, metadata
+      ) VALUES (?, '', 'done', 'high', 1, 'pipeline', 1, 1, '[]', '{}')
+    `).run('Existing parent')
+    const childInfo = db.prepare(`
+      INSERT INTO tasks (
+        title, description, status, priority, workspace_id,
+        created_by, created_at, updated_at, tags, metadata,
+        parent_task_id, github_repo, github_issue_number, github_synced_at
+      ) VALUES (?, '', 'inbox', 'high', 1, 'github-sync', 1, 1, ?, '{}', ?, ?, ?, 1)
+    `).run(
+      'Synced child',
+      JSON.stringify(['mc:inbox', 'priority:high', 'area:dev']),
+      Number(parentInfo.lastInsertRowid),
+      PILOT_REPO,
+      507,
+    )
+
+    const decision = evaluatePilotIssueEligibility(db, 1, makePilotCandidate({ issueNumber: 507 }))
+    expect(decision).toMatchObject({
+      eligible: false,
+      reason: 'duplicate_synced_task',
+      duplicateTaskId: Number(childInfo.lastInsertRowid),
+    })
+  })
+
   it('rejects local-only lookalike tasks from pilot evidence while preserving local task rows', () => {
     const db = freshDb()
     seedPilotRouting(db)
@@ -190,6 +221,26 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
       dispatchPipelineRemediationActivityCount: 0,
     })
     expect(snapshot.optionalFutureTableChecks.every((check) => check.matchingRows === 0)).toBe(true)
+  })
+
+  it('ignores unrelated non-task activity ids when reading pilot side-effect evidence', async () => {
+    const db = freshDb()
+    const { ownerProjectId } = seedPilotRouting(db)
+    getDatabaseMock.mockReturnValue(db)
+    fetchIssuesMock.mockResolvedValue([
+      makeGitHubIssue({ number: 508, labels: ['mc:inbox', 'priority:medium', 'area:dev'] }),
+    ])
+
+    await pullFromGitHub({ id: ownerProjectId, github_repo: PILOT_REPO, github_sync_enabled: 1 }, 1)
+    const proof = getPilotRootTaskProof(db, 1, PILOT_REPO, 508)
+    expect(proof.task?.id).toEqual(expect.any(Number))
+    db.prepare(`
+      INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id)
+      VALUES ('pipeline_unrelated', 'pipeline', ?, 'test', 'Unrelated pipeline row', '{}', 1)
+    `).run(proof.task!.id)
+
+    const snapshot = readPilotSideEffectSnapshot(db, 1, proof.task!.id)
+    expect(snapshot.dispatchPipelineRemediationActivityCount).toBe(0)
   })
 
   it.each([

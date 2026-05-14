@@ -242,6 +242,7 @@ export function readPilotSideEffectSnapshot(
           SELECT COUNT(*) as count
           FROM activities
           WHERE workspace_id = ?
+            AND entity_type = 'task'
             AND entity_id = ?
             AND (
               type LIKE 'dispatch%'
@@ -375,7 +376,6 @@ function findDuplicateSyncedTask(
       AND github_repo = ?
       AND github_issue_number = ?
       AND github_synced_at IS NOT NULL
-      AND parent_task_id IS NULL
     ORDER BY id ASC
     LIMIT 1
   `).get(workspaceId, repository, issueNumber) as DuplicateTaskRow | undefined
