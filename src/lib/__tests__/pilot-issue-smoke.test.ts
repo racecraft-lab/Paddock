@@ -1,3 +1,5 @@
+import { spawnSync } from 'child_process'
+import { join } from 'path'
 import { describe, expect, it, vi } from 'vitest'
 import { PILOT_REPO, SYNTHETIC_LABELS, SYNTHETIC_TITLE } from './fixtures/pilot-issue-fixtures'
 
@@ -213,6 +215,28 @@ describe('SPEC-009C1 pilot issue smoke script contract', () => {
       header: '[redacted]',
       message: 'request failed for [redacted]',
       safe: `${PILOT_REPO}#704`,
+    })
+  })
+
+  it('reports missing CLI credentials before attempting GitHub lookup', () => {
+    const result = spawnSync(process.execPath, [
+      join(process.cwd(), 'scripts/pilot-issue-smoke.mjs'),
+    ], {
+      encoding: 'utf8',
+      env: { ...process.env, GITHUB_TOKEN: '' },
+    })
+
+    expect(result.status).toBe(1)
+    expect(result.stderr).toBe('')
+    expect(JSON.parse(result.stdout)).toMatchObject({
+      ok: false,
+      error: 'missing_credentials',
+      mutation_status: 'not_mutated',
+      operation: 'synthetic_fallback',
+      evidence: {
+        repository: PILOT_REPO,
+        token_set: false,
+      },
     })
   })
 })

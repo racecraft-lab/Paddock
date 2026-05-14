@@ -11,16 +11,16 @@ SPEC-009C1 proves the first self-hosting pilot intake gate: one eligible `racecr
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.7 strict on Node >=22  
-**Primary Dependencies**: Next.js 16 App Router, React 19, Zustand where existing panels need it, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright only if an existing UI/smoke checklist path changes; no new runtime dependency planned  
-**Storage**: SQLite through `better-sqlite3`; no schema migration planned  
-**Testing**: Vitest unit/integration tests with fixture or mocked GitHub clients; Playwright only if existing UI behavior changes; manual smoke checklist for live GitHub validation  
-**Target Platform**: Mission Control web service/operator worktree on Node >=22  
-**Project Type**: Next.js web application with backend sync logic and operator scripts  
-**Performance Goals**: Pilot candidate selection and idempotency checks remain bounded to the operator-triggered candidate set; no background scheduler or poller load is introduced  
-**Constraints**: Deterministic fixtures; CI must not require `GITHUB_TOKEN` or mutate live GitHub; live synthetic issue creation requires explicit mutation opt-in; exactly one GitHub-linked root task is the success proof  
-**Scale/Scope**: One pilot repository (`racecraft-lab/mission-control`), one admitted pilot issue, fixture matrix for rejection reasons and idempotent resync  
-**Reviewability Budget**: Primary surface `seed/config`; secondary surfaces `docs/process` and fixture-driven tests; 300-400 reviewable LOC excluding generated/lock artifacts; 3 or fewer production files; 10 or fewer total files; within budget  
+**Language/Version**: TypeScript 5.7 strict on Node >=22
+**Primary Dependencies**: Next.js 16 App Router, React 19, Zustand where existing panels need it, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright only if an existing UI/smoke checklist path changes; no new runtime dependency planned
+**Storage**: SQLite through `better-sqlite3`; no schema migration planned
+**Testing**: Vitest unit/integration tests with fixture or mocked GitHub clients; Playwright only if existing UI behavior changes; manual smoke checklist for live GitHub validation
+**Target Platform**: Mission Control web service/operator worktree on Node >=22
+**Project Type**: Next.js web application with backend sync logic and operator scripts
+**Performance Goals**: Pilot candidate selection and idempotency checks remain bounded to the operator-triggered candidate set; no background scheduler or poller load is introduced
+**Constraints**: Deterministic fixtures; CI must not require `GITHUB_TOKEN` or mutate live GitHub; live synthetic issue creation requires explicit mutation opt-in; exactly one GitHub-linked root task is the success proof
+**Scale/Scope**: One pilot repository (`racecraft-lab/mission-control`), one admitted pilot issue, fixture matrix for rejection reasons and idempotent resync
+**Reviewability Budget**: Primary surface `seed/config`; secondary surfaces `docs/process` and fixture-driven tests; 300-400 reviewable LOC excluding generated/lock artifacts; 3 or fewer production files; 10 or fewer total files; within budget
 **Strict Scope**: Add every new SPEC-009C1-owned TypeScript file to `tsconfig.spec-strict.json` and `eslint.config.mjs`; expected candidates are a pilot eligibility helper under `src/lib/**` and an operator script under `scripts/**` if TypeScript-owned by the project
 
 ## Constitution Check

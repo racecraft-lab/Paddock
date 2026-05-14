@@ -205,6 +205,20 @@ function redactString(value) {
 async function main() {
   const allowLiveMutation = process.argv.includes('--allow-live-mutation')
   const token = process.env.GITHUB_TOKEN ?? ''
+  if (!String(token).trim()) {
+    console.log(JSON.stringify({
+      ok: false,
+      error: 'missing_credentials',
+      mutation_status: 'not_mutated',
+      operation: 'synthetic_fallback',
+      evidence: {
+        repository: PILOT_REPO,
+        token_set: false,
+      },
+    }, null, 2))
+    process.exitCode = 1
+    return
+  }
   const client = createGitHubPilotSmokeClient(token)
 
   const result = await findOrCreateSyntheticPilotIssue({ client, allowLiveMutation, token })
