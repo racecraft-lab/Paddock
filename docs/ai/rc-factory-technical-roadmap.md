@@ -138,7 +138,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 - **Suffixed spec IDs are first-class.** `SPEC-009A`, `SPEC-009B`, and similar split specs are independent setup/autopilot units. Do not regenerate the old monolithic SPEC-009/SPEC-010/SPEC-012/SPEC-013/SPEC-014 workflows.
 - **SPEC-009C4 has a human gate.** The pilot's "operator merges PR on GitHub" step is recorded as `G_PILOT_MERGE`. Autopilot stops after observing `ready_for_owner` and resumes (or marks complete) when `pullFromGitHub` records the linked PR merge. The manual pilot checks live in the Pilot Smoke Checklist (`docs/qa/pilot-smoke-checklist.md`) and are NOT validated by `gate-validator`; the PR-merge-to-`done` webhook fixture remains code-checkable.
 - **Real-system smoke wall-clock ACs are MANUAL:** the SPEC-009C family "<4h wall-clock" pilot check and SPEC-010B's "<1 operator-hour" onboarding check cannot be tested by `implement-executor` TDD. Each is recorded only in the Pilot Smoke Checklist and asserted by the operator after the run.
-- **Pilot issue reproducibility:** SPEC-009C1 first tries an eligible open `racecraft-lab/mission-control` GitHub issue labeled `mc:inbox` and `priority:*`. If no safe live candidate exists, the seed script creates a synthetic GitHub issue with title `[mc-pilot] synthetic e2e issue` and labels `mc:inbox priority:medium area:dev`. The pilot root task must be created by GitHub ingest/sync; local-only tasks created directly through `/api/tasks` or the task board do not satisfy the pilot source-of-truth gate.
+- **Pilot issue reproducibility:** SPEC-009C1 first tries an eligible open `racecraft-lab/mission-control` GitHub issue labeled `mc:inbox` and `priority:*`. If no safe live candidate exists, the operator smoke script creates a synthetic GitHub issue with title `[mc-pilot] synthetic e2e issue` and labels `mc:inbox priority:medium area:dev`. The pilot root task must be created by GitHub ingest/sync; local-only tasks created directly through `/api/tasks` or the task board do not satisfy the pilot source-of-truth gate.
 
 ## SpecKit-Pro Status Policy
 
@@ -166,7 +166,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-008 | 7 | Resource Governance and Cost Tracker Enforcement | resource-governance | Complete | P2 | SPEC-001, SPEC-002, SPEC-002A, SPEC-004 | SPEC-009A, SPEC-011, SPEC-013B | Phase 7 |
 | SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | Complete | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
 | SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Complete | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C1, SPEC-010A | Phase 8B |
-| SPEC-009C1 | 8C1 | GitHub Pilot Issue Ingest and Eligibility | pilot-issue-ingest | In Progress | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009C2 | Phase 8C1 |
+| SPEC-009C1 | 8C1 | GitHub Pilot Issue Ingest and Eligibility | pilot-issue-ingest | Complete | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009C2 | Phase 8C1 |
 | SPEC-009C2 | 8C2 | Triage-to-Remediation Plan Handoff | triage-remediation-handoff | Pending | P0 | SPEC-009C1 | SPEC-009C3 | Phase 8C2 |
 | SPEC-009C3 | 8C3 | Dev/Review/Aegis to Ready for Owner | remediation-ready-for-owner | Pending | P0 | SPEC-009C2 | SPEC-009C4 | Phase 8C3 |
 | SPEC-009C4 | 8C4 | Owner Merge Gate and Done Reconciliation | owner-merge-reconciliation | Pending | P0 | SPEC-009C3 | SPEC-009D, SPEC-010B | Phase 8C4 |
@@ -188,11 +188,11 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 ### Pending Mini-Spec Parallelization Snapshot
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, and SPEC-009B are complete per the implementation evidence recorded below. SPEC-009C1 is in setup/in-progress on branch `009c1-pilot-issue-ingest`. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, and SPEC-009A PR #28 as `2b78970e`.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, and SPEC-009C1 are complete per the implementation evidence recorded below. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, SPEC-009A PR #28 as `2b78970e`, SPEC-009B PR #30 as `1d5c994c`, SPEC-009C1 PR #34 as `7d544f39`, and the SPEC-009C1 post-merge routing fix PR #40 as `e6ee19ee`.
 
-- **Ready now after SPEC-009B:** SPEC-009C1 is in progress; SPEC-010A is unblocked; SPEC-011 and SPEC-012A remain parallel options because they touch an optional security adapter and docs/process indexing respectively.
+- **Ready now after SPEC-009C1:** SPEC-009C2 is unblocked; SPEC-010A remains unblocked; SPEC-011 and SPEC-012A remain parallel options because they touch an optional security adapter and docs/process indexing respectively.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C1 -> SPEC-009C2 -> SPEC-009C3 -> SPEC-009C4 -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
-- **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while the SPEC-009C family is being smoked; SPEC-010B waits for SPEC-009C4 and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
+- **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while the remaining SPEC-009C handoff slices are being smoked; SPEC-010B waits for SPEC-009C4 and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Evidence and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
 - **Control-plane path:** SPEC-013A -> SPEC-013A1 -> SPEC-013B -> SPEC-013C starts after the pilot review packet and repo knowledge index exist. These specs own run-state, GitHub sync automation, claim/reconciliation, and retry state; they do not launch harnesses.
 - **Runner path:** SPEC-014A -> SPEC-014B establishes sandbox ownership and fake adapter proof first. SPEC-014C and SPEC-014D then run in parallel if they do not touch the same adapter files.
@@ -434,7 +434,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009C1: GitHub Pilot Issue Ingest and Eligibility
 
-- **Status:** Draft PR #34 open; G7 verification passed
+- **Status:** Complete; PR #34 merged, PR #40 post-merge routing fix merged, HAL live smoke passed
 - **Priority:** P0
 - **Branch short name:** `pilot-issue-ingest`
 - **Dependencies:** SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B
@@ -445,7 +445,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** pilot issue selection, synthetic fallback, GitHub ingest/sync fixtures, eligibility guards, smoke-checklist setup, and no Issue Remediation execution.
 - **Autopilot notes:** Start from GitHub ingest/sync. Local-only tasks created through `/api/tasks` or the task board are not eligible. Setup decision: SPEC-009C1 uses operator-triggered or fixture-driven sync only; automatic GitHub sync cron/poller lifecycle is deferred to SPEC-013A1, and production eligibility/evidence surfaces are deferred to SPEC-009E.
-- **Definition of done:** Exactly one pilot issue is represented as a GitHub-linked Mission Control task with expected labels, repo linkage, eligibility evidence, and no claim/dispatch/runner state. Branch evidence includes focused SPEC-009C1 Vitest coverage, typecheck, lint, production build, full `pnpm test`, and a passing G7 gate.
+- **Definition of done:** Exactly one pilot issue is represented as a GitHub-linked Mission Control task with expected labels, repo linkage, eligibility evidence, and no claim/dispatch/runner state. Branch evidence includes focused SPEC-009C1 Vitest coverage, typecheck, lint, production build, full `pnpm test`, and a passing G7 gate. Post-merge evidence on 2026-05-15 includes HAL deploy at `e6ee19ee`, synthetic issue #42 clean-run smoke, duplicate/no-side-effect/local-only proofs, closure of synthetic issues #37/#39/#41/#42, and cleanup of disposable `[mc-pilot]` Mission Control smoke rows after database backup.
 
 ### SPEC-009C2: Triage-to-Remediation Plan Handoff
 
@@ -534,7 +534,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Parameterize the Mission Control seed path into a reusable product-line seeder that accepts product-line slug, display name, agent prefix, GitHub repo, workflow family, feature flags, and governance defaults. It does not onboard Product Line B or run a second smoke.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** seed script parameterization, config schema/fixture docs, idempotency tests, validation errors, and no runtime scheduler behavior.
-- **Autopilot notes:** Keep facility agents global, product-line agents isolated, and GitHub repo identity explicit. This can run while SPEC-009C1/C2 are being smoked because it does not touch pilot execution.
+- **Autopilot notes:** Keep facility agents global, product-line agents isolated, and GitHub repo identity explicit. This can run while the remaining SPEC-009C handoff slices are being smoked because it does not touch pilot execution.
 - **Definition of done:** The generic seeder can reproduce the Mission Control seed from config and rejects incomplete or unsafe product-line configs without mutating existing workspaces.
 
 ### SPEC-010B: Product Line B Onboarding Smoke
@@ -1362,12 +1362,12 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8B are complete and remain the substrate for all later work. After SPEC-009B, SPEC-009C1 is in progress; SPEC-010A, SPEC-011, and SPEC-012A remain available parallel starts. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-009D is the bridge from pilot smoke to formal run-state, while SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8C1 are complete and remain the substrate for all later work. After SPEC-009C1, SPEC-009C2 is the next self-hosting handoff spec; SPEC-010A, SPEC-011, and SPEC-012A remain available parallel starts. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-009D is the bridge from pilot smoke to formal run-state, while SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
-- SPEC-010A, SPEC-011, and SPEC-012A may start after SPEC-009B; SPEC-009C1 is already in progress.
-- SPEC-010A may run while SPEC-009C1/C2 are being smoked when file ownership stays disjoint.
+- SPEC-009C2 may start after SPEC-009C1; SPEC-010A, SPEC-011, and SPEC-012A may also start because their primary files are disjoint from the next self-hosting handoff slice.
+- SPEC-010A may run while SPEC-009C2 is being smoked when file ownership stays disjoint.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
 - SPEC-009E may run after SPEC-009D and does not block SPEC-013A if file ownership stays disjoint.
 - SPEC-013A1 runs after SPEC-013A and before SPEC-013B so automatic GitHub sync is explicit before claim/reconciliation relies on scheduler ticks.

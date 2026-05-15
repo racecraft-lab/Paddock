@@ -114,7 +114,9 @@ The operator smoke path must:
 2. Return that issue when found.
 3. Create a new issue only when explicit live-mutation opt-in is supplied.
 4. Use labels `mc:inbox`, `priority:medium`, and `area:dev` for created fallback issues.
-5. Never auto-close or auto-delete the issue.
+5. Never auto-close or auto-delete the issue from the script, app runtime, CI,
+   or sync path; manual after-evidence cleanup belongs to
+   `docs/qa/pilot-smoke-checklist.md`.
 6. Fail closed when an existing fallback issue lacks any required label; do not admit or auto-repair it.
 7. Return a redacted non-mutating error when credentials are missing, permissions are insufficient, or GitHub issue creation fails.
 

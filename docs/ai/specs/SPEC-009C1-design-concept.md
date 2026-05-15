@@ -88,7 +88,7 @@ stop_reason: "natural"
 
 **Branch:** Synthetic issue fallback
 
-**Recommended answer:** Add an idempotent operator script or command path for setup/smoke use: find an existing open `[mc-pilot] synthetic e2e issue` first, otherwise create it with `mc:inbox`, `priority:medium`, and `area:dev`; do not auto-close it in SPEC-009C1, but record cleanup instructions in the pilot smoke checklist.
+**Recommended answer:** Add an idempotent operator script or command path for setup/smoke use: find an existing open `[mc-pilot] synthetic e2e issue` first, otherwise create it with `mc:inbox`, `priority:medium`, and `area:dev`; do not auto-close it from the script, app runtime, CI, or sync path, but require manual cleanup instructions in the pilot smoke checklist after evidence is captured.
 > This avoids hidden live GitHub mutation during normal app runtime while keeping the pilot reproducible when no safe live issue exists.
 
 **Alternatives offered:**

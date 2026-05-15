@@ -203,15 +203,15 @@ smoke action with credentials and must not run during normal app startup or CI.
 
 ### Success Criteria Summary
 
-- [ ] Exactly one pilot issue is represented as one Mission Control task linked to `racecraft-lab/mission-control` and a concrete GitHub issue number.
-- [ ] Eligible live issue selection requires open state, `mc:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced task, and no linked PR or terminal state.
-- [ ] Synthetic fallback is idempotent: reuse an existing open `[mc-pilot] synthetic e2e issue` before creating a new one with `mc:inbox`, `priority:medium`, and `area:dev`.
-- [ ] Ingest/sync writes expected repo linkage, issue number, sync timestamp, labels/tags, priority, status, workspace, and routed project evidence.
-- [ ] Re-running ingest/sync does not create a duplicate task.
-- [ ] Local-only tasks created through `/api/tasks` or the task board cannot satisfy pilot eligibility.
-- [ ] Current-schema assertions show no Issue Remediation successor, claim, dispatch, runner, sandbox, or future run-state side effects were created.
-- [ ] `docs/qa/pilot-smoke-checklist.md` documents operator-triggered sync, live GitHub selection/synthetic fallback, evidence queries, and cleanup notes.
-- [ ] Roadmap contains explicit future specs for GitHub sync automation and operator-visible eligibility/evidence surfaces.
+- [x] Exactly one pilot issue is represented as one Mission Control task linked to `racecraft-lab/mission-control` and a concrete GitHub issue number.
+- [x] Eligible live issue selection requires open state, `mc:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced task, and no linked PR or terminal state.
+- [x] Synthetic fallback is idempotent: reuse an existing open `[mc-pilot] synthetic e2e issue` before creating a new one with `mc:inbox`, `priority:medium`, and `area:dev`.
+- [x] Ingest/sync writes expected repo linkage, issue number, sync timestamp, labels/tags, priority, status, workspace, and routed project evidence.
+- [x] Re-running ingest/sync does not create a duplicate task.
+- [x] Local-only tasks created through `/api/tasks` or the task board cannot satisfy pilot eligibility.
+- [x] Current-schema assertions show no Issue Remediation successor, claim, dispatch, runner, sandbox, or future run-state side effects were created.
+- [x] `docs/qa/pilot-smoke-checklist.md` documents operator-triggered sync, live GitHub selection/synthetic fallback, evidence queries, and cleanup notes.
+- [x] Roadmap contains explicit future specs for GitHub sync automation and operator-visible eligibility/evidence surfaces.
 
 ---
 
@@ -528,7 +528,7 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| A-001 | Medium | Roadmap mini-spec status for SPEC-009C1 still said `Pending` while the index/workflow state said `In Progress`. | Updated the SPEC-009C1 roadmap mini-spec status to `In Progress`. |
+| A-001 | Medium | Roadmap mini-spec status for SPEC-009C1 still said `Pending` while the index/workflow state said `In Progress`. | Updated the SPEC-009C1 roadmap mini-spec status during Analyze; post-merge hygiene later marked it `Complete` after PR merge and live smoke. |
 | A-002 | High | Tasks T014 and T023 could be read as production semantic changes to GitHub sync or local task creation. | Reworded them as verification/regression tasks over existing seams; no production sync/task-create semantic change belongs to Analyze remediation. |
 | A-003 | Medium | Success criteria traceability was implicit across FRs and tasks but not explicit in `tasks.md`. | Added a Success Criteria Traceability table mapping SC-001..SC-007 to FRs and tasks. |
 | A-004 | Medium | Schema migration wording in quickstart/workflow left migration as an implementation fallback despite the no-migration plan. | Tightened wording: no migration in SPEC-009C1; if a current-schema blocker is proven, stop and re-plan or open follow-up work. |
@@ -591,6 +591,16 @@ Implementation guardrails:
 | G7 gate script | Passed | `validate-gate.sh G7 specs/009c1-pilot-issue-ingest` passed after all 36 tasks were marked complete |
 | Reviewability diff gate | Passed with transition exception | `reviewability-gate.sh diff origin/main...HEAD` passed with the existing transition exception; reviewable LOC 4203, production files 7, total files 29 |
 
+### Post-Merge Live Smoke Closeout
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Implementation PR | Merged | PR #34 merged on 2026-05-14 as `7d544f3975d5d7e7241f83ecee629509760c064c` |
+| Post-merge routing fix | Merged | PR #40 merged on 2026-05-15 as `e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1` to keep synced pilot issues from auto-routing after ingest |
+| HAL deploy | Passed | `mission-control.service` was redeployed from `main` at `e6ee19ee` and verified active on HAL |
+| Clean synthetic smoke | Passed | Final clean run used synthetic GitHub issue #42, produced exactly one GitHub-linked Inbox root task, preserved the one-task count after resync, rejected the local-only lookalike, and showed no claim, dispatch, remediation, runner, or artifact side effects |
+| Cleanup | Passed | Synthetic GitHub issues #37, #39, #41, and #42 were closed; disposable `[mc-pilot]` Mission Control smoke rows were removed after database backup, and follow-up verification returned zero `[mc-pilot]` task rows |
+
 ---
 
 ## Post-Implementation Checklist
@@ -604,7 +614,11 @@ Implementation guardrails:
 - [x] Manual smoke checklist is ready for operator execution
 - [x] Roadmap/workflow/spec status updated on the spec branch
 - [x] Branch committed and pushed
-- [x] Draft PR opened: https://github.com/racecraft-lab/mission-control/pull/34
+- [x] PR #34 opened and merged: https://github.com/racecraft-lab/mission-control/pull/34
+- [x] PR #40 post-merge pilot routing fix opened and merged: https://github.com/racecraft-lab/mission-control/pull/40
+- [x] HAL deployed and verified on merged `main` at `e6ee19ee`
+- [x] Manual clean-run smoke completed with synthetic issue #42
+- [x] Synthetic smoke issues closed and disposable Mission Control smoke task rows cleaned after backup
 
 ---
 

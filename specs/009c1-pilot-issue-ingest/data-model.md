@@ -93,10 +93,11 @@ Operator-controlled GitHub issue used only when no safe live candidate exists.
 **Validation Rules**
 - Search/reuse an existing open synthetic issue before creation.
 - Creation requires explicit live-mutation opt-in.
-- The script must not auto-close or auto-delete the issue.
+- The script, app runtime, CI, and sync path must not auto-close or auto-delete
+  the issue.
 - Existing fallback issues missing required labels fail closed with remediation instructions and are not auto-repaired.
 - Missing credentials, insufficient permissions, or GitHub creation failure return redacted non-mutating errors and create no local pilot task.
-- Cleanup instructions live in `docs/qa/pilot-smoke-checklist.md`.
+- After-evidence cleanup instructions live in `docs/qa/pilot-smoke-checklist.md`.
 
 ## Entity: Pilot Smoke Evidence
 

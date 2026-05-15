@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-  "updated_at": "2026-05-14T16:11:46Z",
-  "active_step": "Post: Verification and Status Sync",
+  "updated_at": "2026-05-15T17:14:16Z",
+  "active_step": "Closed: Post-Merge Hygiene and Live Smoke Evidence",
   "status": "Completed",
   "active_workflow": {
     "spec_id": "SPEC-009C1",
@@ -446,11 +446,23 @@
   "post": {
     "status": "completed",
     "implementation_commit": "3750f136",
+    "merged_main_commit": "7d544f3975d5d7e7241f83ecee629509760c064c",
+    "deployed_main_commit": "e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1",
     "pull_request": {
-      "status": "draft_open",
+      "status": "merged",
       "number": 34,
       "url": "https://github.com/racecraft-lab/mission-control/pull/34",
-      "title": "feat(SPEC-009C1): GitHub pilot issue ingest and eligibility"
+      "title": "feat(SPEC-009C1): GitHub pilot issue ingest and eligibility",
+      "merged_at": "2026-05-14T19:02:39Z",
+      "merge_commit": "7d544f3975d5d7e7241f83ecee629509760c064c"
+    },
+    "post_merge_fix": {
+      "status": "merged",
+      "number": 40,
+      "url": "https://github.com/racecraft-lab/mission-control/pull/40",
+      "title": "fix(pilot): hold synced issues from auto routing",
+      "merged_at": "2026-05-15T12:44:30Z",
+      "merge_commit": "e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1"
     },
     "reviewability_gate": {
       "status": "exception",
@@ -466,6 +478,37 @@
       "status": "completed",
       "remote": "https://github.com/racecraft-lab/mission-control.git",
       "note": "Initial SSH push to origin failed because the local SSH authentication agent could not sign with the configured 1Password-backed key. The branch was pushed over HTTPS using the active gh credential without changing the repository remote."
+    },
+    "live_smoke": {
+      "status": "passed",
+      "date": "2026-05-15",
+      "deployment": {
+        "host": "hal",
+        "service": "mission-control.service",
+        "commit": "e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1"
+      },
+      "final_synthetic_issue": {
+        "number": 42,
+        "repo": "racecraft-lab/mission-control",
+        "closed_after_evidence": true
+      },
+      "proofs": {
+        "exactly_one_github_linked_root_task": true,
+        "duplicate_sync_preserved_one_task": true,
+        "local_only_lookalike_ineligible": true,
+        "no_claim_dispatch_remediation_runner_or_artifact_side_effects": true
+      },
+      "cleanup": {
+        "status": "completed",
+        "closed_synthetic_issues": [
+          37,
+          39,
+          41,
+          42
+        ],
+        "mission_control_smoke_rows_removed_after_backup": true,
+        "post_cleanup_mc_pilot_task_rows": 0
+      }
     },
     "open_blockers": []
   },
@@ -568,6 +611,10 @@
     },
     {
       "step": "Post: Verification and Status Sync",
+      "status": "completed"
+    },
+    {
+      "step": "Post: Live Smoke Evidence and Cleanup Hygiene",
       "status": "completed"
     }
   ]

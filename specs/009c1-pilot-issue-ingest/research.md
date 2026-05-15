@@ -33,7 +33,7 @@
 
 **Alternatives considered**:
 - Creating the synthetic issue automatically in app runtime: rejected because normal runtime must not mutate live GitHub for this spec.
-- Auto-closing or deleting the synthetic issue after smoke: rejected because cleanup ownership belongs to the manual smoke checklist.
+- Auto-closing or deleting the synthetic issue from the script, app runtime, CI, or sync path: rejected because cleanup ownership belongs to the manual smoke checklist after evidence is captured.
 - Running live fallback in CI: rejected because CI must remain deterministic and credential-free.
 
 ## Decision: Fail Closed On Operator And GitHub Error Paths

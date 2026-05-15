@@ -80,4 +80,24 @@ edit, close, or sync live GitHub issues outside mocked fixtures.
 ## Cleanup
 
 - If a synthetic issue was created, record its issue URL and intended cleanup
-  owner. Cleanup is manual; SPEC-009C1 does not auto-close synthetic issues.
+  owner before any cleanup action. Cleanup is manual; SPEC-009C1 does not
+  auto-close synthetic issues from the script, app runtime, CI, or sync path.
+- After evidence is captured, close synthetic GitHub issues manually rather
+  than deleting them. Closed issues remain the external audit trail.
+- Do not leave disposable `[mc-pilot]` smoke tasks active in Mission Control.
+  After recording the issue URL, task id, workspace id, sync timestamp,
+  duplicate-sync result, and side-effect snapshot, close or remove only the
+  synthetic smoke rows that were created solely for this checklist run.
+- Before deleting disposable smoke task rows, take an operator-owned backup or
+  export of the target database. Then verify cleanup leaves no synthetic pilot
+  dirt behind:
+
+  ```sql
+  SELECT id, title, status, github_repo, github_issue_number
+  FROM tasks
+  WHERE title LIKE '[mc-pilot]%'
+     OR (
+       github_repo = 'racecraft-lab/mission-control'
+       AND github_issue_number IN (:synthetic_issue_numbers)
+     );
+  ```

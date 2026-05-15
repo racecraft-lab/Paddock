@@ -102,7 +102,10 @@ error codes, counts, and content hashes.
    future claim/runner/sandbox tables checked only if they exist
    ```
 
-7. If the synthetic issue was created, leave cleanup to the checklist. The script must not auto-close or auto-delete it.
+7. If the synthetic issue was created, complete the manual cleanup section in
+   `docs/qa/pilot-smoke-checklist.md` after evidence is captured. The script
+   must not auto-close or auto-delete it, and disposable `[mc-pilot]` task rows
+   created solely for the smoke must not remain active after cleanup.
 
 ## Non-Goals To Preserve
 
