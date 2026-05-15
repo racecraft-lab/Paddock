@@ -2036,6 +2036,16 @@ function scoreAgentForTask(
  */
 export async function autoRouteInboxTasks(): Promise<{ ok: boolean; message: string }> {
   const db = getDatabase()
+  const taskColumns = columnsFor(db, 'tasks')
+  const hasPilotHoldColumns = ['github_repo', 'github_issue_number', 'github_synced_at', 'parent_task_id']
+    .every((column) => taskColumns.has(column))
+  const pilotHoldSelect = hasPilotHoldColumns
+    ? `,
+      github_repo,
+      github_issue_number,
+      github_synced_at,
+      parent_task_id`
+    : ''
 
   const candidateInboxTasks = db.prepare(`
     SELECT
@@ -2044,11 +2054,7 @@ export async function autoRouteInboxTasks(): Promise<{ ok: boolean; message: str
       description,
       priority,
       tags,
-      workspace_id,
-      github_repo,
-      github_issue_number,
-      github_synced_at,
-      parent_task_id
+      workspace_id${pilotHoldSelect}
     FROM tasks
     WHERE status = 'inbox' AND assigned_to IS NULL
     ORDER BY
@@ -2062,14 +2068,14 @@ export async function autoRouteInboxTasks(): Promise<{ ok: boolean; message: str
     priority: string
     tags: string | null
     workspace_id: number
-    github_repo: string | null
-    github_issue_number: number | null
-    github_synced_at: number | null
-    parent_task_id: number | null
+    github_repo?: string | null
+    github_issue_number?: number | null
+    github_synced_at?: number | null
+    parent_task_id?: number | null
   }>
 
   const inboxTasks = candidateInboxTasks
-    .filter((task) => !shouldHoldPilotGitHubTaskFromAutoRouting(db, task))
+    .filter((task) => !hasPilotHoldColumns || !shouldHoldPilotGitHubTaskFromAutoRouting(db, task))
     .slice(0, 5)
 
   if (inboxTasks.length === 0) {
@@ -2162,10 +2168,10 @@ function shouldHoldPilotGitHubTaskFromAutoRouting(
   db: ReturnType<typeof getDatabase>,
   task: {
     workspace_id: number
-    github_repo: string | null
-    github_issue_number: number | null
-    github_synced_at: number | null
-    parent_task_id: number | null
+    github_repo?: string | null
+    github_issue_number?: number | null
+    github_synced_at?: number | null
+    parent_task_id?: number | null
   },
 ): boolean {
   if (
