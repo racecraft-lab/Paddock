@@ -68,7 +68,7 @@ Source-of-truth scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Five clarify sessions resolved in `spec.md`; G2 passed with 0 markers and no consensus escapes |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contract, quickstart, and agent context; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Five focused requirement-quality checklists generated; 40/40 checks resolved; G4 passed |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered red-green-refactor tasks |
+| Tasks | `$speckit-tasks` | Complete | Generated 20 dependency-ordered TDD tasks; G5 and tasks reviewability gate passed with transition exception |
 | Analyze | `$speckit-analyze` | Pending | Verify cross-artifact scope, taxonomy, routing, and no-side-effect consistency |
 | Implement | `$speckit-implement` | Pending | Implement and verify the approved tasks, then update status and push |
 
@@ -622,10 +622,10 @@ Do not generate tasks for:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 20 |
+| Phases | RED tests; implementation; docs/smoke; verification |
+| Parallel Opportunities | T001/T012 and T006 parallel-safe; routing fixture tasks serial |
+| User Stories Covered | US1-US4 plus scope guardrails |
 
 ---
 
