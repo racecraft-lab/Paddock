@@ -5,6 +5,38 @@
 **Status**: Draft  
 **Input**: User description: "Create the SPEC-009C2 specification for the Mission Control self-hosting pilot handoff from Issue Triage to Issue Remediation planning. The spec must require the eligible SPEC-009C1 GitHub-linked pilot issue to be driven through the Issue Triage workflow family. If triage returns `ACTIONABLE_REMEDIATION`, the system must create exactly one Issue Remediation planning successor through the existing task-chain helper. If triage returns a non-remediation outcome, the system must persist evidence and must not create a remediation successor. Goals include typed Issue Triage output, workflow-contract routing correction, existing task-chain reuse, durable evidence, duplicate prevention, fresh SPEC-009C2 synthetic manual UAT, cleanup, and SPEC-009F roadmap coverage. Non-goals exclude remediation execution, owner reconciliation, review packets, evidence UI, GitHub sync cron/poller automation, production non-remediation routing lanes, claim authority, runner state, sandbox lifecycle, harness adapters, and live GitHub mutation from automated tests or normal app runtime."
 
+## Clarifications
+
+### Session 2026-05-15
+
+- Q: What exact disposition values must Issue Triage emit for the pilot?
+  A: The pilot taxonomy is uppercase and closed:
+  `ACTIONABLE_REMEDIATION`, `DUPLICATE`, `OBSOLETE`, `INVALID`,
+  `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`. SPEC-009C2 may extend
+  disposition validation to accept this pilot taxonomy while preserving the
+  existing SPEC-007 lowercase disposition values for non-pilot templates.
+- Q: How does `ACTIONABLE_REMEDIATION` create the next task?
+  A: The repo-owned Mission Control workflow contract must route only
+  `ACTIONABLE_REMEDIATION` to `mission-control_remediation_plan` through the
+  existing task-chain routing and successor creation path. The Issue Triage
+  template must not use a static fallback successor for negative outcomes.
+- Q: Which records prove the handoff or clean exit?
+  A: The accepted triage task is the evidence anchor. It must have
+  task-scoped disposition evidence, task-scoped artifact evidence, and
+  task-scoped activity evidence. Successor proof uses child `tasks` rows for the
+  triage task, and side-effect checks must scope `activities` to
+  `entity_type='task'` so unrelated pipeline or remediation entities cannot
+  create false positives.
+- Q: What synthetic issue should manual UAT use?
+  A: Manual UAT must create or explicitly select a fresh SPEC-009C2 synthetic
+  issue, distinct from closed SPEC-009C1 issues. The preferred title pattern is
+  `[mc-pilot] SPEC-009C2 synthetic e2e issue YYYY-MM-DD clean run`, with
+  `mc:inbox`, one `priority:*` label, and exactly one routable `area:*` label.
+- Q: What remains outside this spec?
+  A: SPEC-009F owns production routing and evidence for non-remediation triage
+  outcomes. SPEC-013A1 owns automatic GitHub sync cron/poller lifecycle. This
+  spec records evidence for future lanes but must not start those lanes.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Route Actionable Triage to Planning (Priority: P1)

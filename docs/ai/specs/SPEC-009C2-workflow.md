@@ -65,7 +65,7 @@ Source-of-truth scoping decisions:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve disposition taxonomy, workflow-contract routing, evidence shape, smoke cleanup, and future routing boundary |
+| Clarify | `$speckit-clarify` | Complete | Five clarify sessions resolved in `spec.md`; G2 passed with 0 markers and no consensus escapes |
 | Plan | `$speckit-plan` | Pending | Plan typed triage output, routing tests, artifact evidence, and successor creation through existing helpers |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered red-green-refactor tasks |
@@ -412,11 +412,11 @@ Focus on roadmap alignment:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Disposition taxonomy | Pending | Pending |
-| 2 | Workflow contract and routing | Pending | Pending |
-| 3 | Evidence and no-side-effect proof | Pending | Pending |
-| 4 | Live UAT and cleanup | Pending | Pending |
-| 5 | Future production routing boundary | Pending | Pending |
+| 1 | Disposition taxonomy | 1 | Uppercase pilot taxonomy accepted; SPEC-007 lowercase dispositions remain compatible for non-pilot templates |
+| 2 | Workflow contract and routing | 1 | Only `ACTIONABLE_REMEDIATION` routes to `mission-control_remediation_plan`; no static fallback for negatives |
+| 3 | Evidence and no-side-effect proof | 1 | Evidence anchors to the triage task; activity checks must include `entity_type='task'` |
+| 4 | Live UAT and cleanup | 1 | Fresh SPEC-009C2 synthetic issue title pattern and cleanup expectations recorded |
+| 5 | Future production routing boundary | 1 | SPEC-009F and SPEC-013A1 remain future owners; C2 only records evidence |
 
 ---
 
