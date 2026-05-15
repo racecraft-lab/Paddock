@@ -167,11 +167,12 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-009A | 8A | Workflow Contract Format and Roundtrip | workflow-contract-roundtrip | Complete | P0 | SPEC-002A, SPEC-004, SPEC-008 | SPEC-009B, SPEC-012A | Phase 8A |
 | SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Complete | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C1, SPEC-010A | Phase 8B |
 | SPEC-009C1 | 8C1 | GitHub Pilot Issue Ingest and Eligibility | pilot-issue-ingest | Complete | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009C2 | Phase 8C1 |
-| SPEC-009C2 | 8C2 | Triage-to-Remediation Plan Handoff | triage-remediation-handoff | Pending | P0 | SPEC-009C1 | SPEC-009C3 | Phase 8C2 |
+| SPEC-009C2 | 8C2 | Triage-to-Remediation Plan Handoff | triage-remediation-handoff | In Progress | P0 | SPEC-009C1 | SPEC-009C3 | Phase 8C2 |
 | SPEC-009C3 | 8C3 | Dev/Review/Aegis to Ready for Owner | remediation-ready-for-owner | Pending | P0 | SPEC-009C2 | SPEC-009C4 | Phase 8C3 |
 | SPEC-009C4 | 8C4 | Owner Merge Gate and Done Reconciliation | owner-merge-reconciliation | Pending | P0 | SPEC-009C3 | SPEC-009D, SPEC-010B | Phase 8C4 |
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C4 | SPEC-009E, SPEC-013A | Phase 8D |
-| SPEC-009E | 8E | Pilot Eligibility and Evidence Surfaces | pilot-evidence-surfaces | Pending | P2 | SPEC-009D | SPEC-013A | Phase 8E |
+| SPEC-009E | 8E | Pilot Eligibility and Evidence Surfaces | pilot-evidence-surfaces | Pending | P2 | SPEC-009D | SPEC-009F, SPEC-013A | Phase 8E |
+| SPEC-009F | 8F | Production Triage Outcome Routing | production-triage-routing | Pending | P1 | SPEC-009E, SPEC-012A | Later production triage lanes | Phase 8F |
 | SPEC-010A | 9A | Generic Product-Line Seeder | generic-product-line-seeder | Pending | P2 | SPEC-002A, SPEC-009B | SPEC-010B | Phase 9A |
 | SPEC-010B | 9B | Product Line B Onboarding Smoke | product-line-b-smoke | Pending | P2 | SPEC-009C4, SPEC-010A | SPEC-012B | Phase 9B |
 | SPEC-011 | 7.5 | CrabTrap Honeypot Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
@@ -190,10 +191,10 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 **Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, and SPEC-009C1 are complete per the implementation evidence recorded below. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, SPEC-009A PR #28 as `2b78970e`, SPEC-009B PR #30 as `1d5c994c`, SPEC-009C1 PR #34 as `7d544f39`, and the SPEC-009C1 post-merge routing fix PR #40 as `e6ee19ee`.
 
-- **Ready now after SPEC-009C1:** SPEC-009C2 is unblocked; SPEC-010A remains unblocked; SPEC-011 and SPEC-012A remain parallel options because they touch an optional security adapter and docs/process indexing respectively.
+- **Ready now after SPEC-009C1:** SPEC-009C2 setup is in progress; SPEC-010A remains unblocked; SPEC-011 and SPEC-012A remain parallel options because they touch an optional security adapter and docs/process indexing respectively.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C1 -> SPEC-009C2 -> SPEC-009C3 -> SPEC-009C4 -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
 - **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while the remaining SPEC-009C handoff slices are being smoked; SPEC-010B waits for SPEC-009C4 and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
-- **Evidence and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
+- **Evidence, routing, and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-009F owns production routing/evidence for non-remediation triage outcomes after the pilot evidence surfaces exist. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
 - **Control-plane path:** SPEC-013A -> SPEC-013A1 -> SPEC-013B -> SPEC-013C starts after the pilot review packet and repo knowledge index exist. These specs own run-state, GitHub sync automation, claim/reconciliation, and retry state; they do not launch harnesses.
 - **Runner path:** SPEC-014A -> SPEC-014B establishes sandbox ownership and fake adapter proof first. SPEC-014C and SPEC-014D then run in parallel if they do not touch the same adapter files.
 
@@ -220,6 +221,7 @@ This matrix is the second-pass review gate for every roadmap spec. Each row must
 | SPEC-009C4 | Human merge and GitHub sync reconcile the pilot to `done` | `PILOT_MISSION_CONTROL_E2E` for the pilot issue | Merge at `G_PILOT_MERGE`, sync GitHub state, and verify `ready_for_owner -> done` reconciliation without duplicate launch or local-only completion |
 | SPEC-009D | Pilot work leaves a reviewable lifecycle packet | `PILOT_MISSION_CONTROL_E2E` review-packet scope | Inspect packet contents for issue/PR/artifacts/governance/Aegis/owner gate/current stage and explicitly deferred run/sandbox fields |
 | SPEC-009E | Operators can inspect pilot eligibility and evidence without terminal archaeology | Read-only pilot evidence surface after SPEC-009D | Inspect a pilot issue's eligibility inputs, GitHub-linked task evidence, manual smoke state, and deferred automation/run-state fields |
+| SPEC-009F | Production triage outcomes route to the right non-remediation lanes | Pilot/product-line flag scope to be defined during SPEC-009F setup after SPEC-009E | Drive `NEEDS_SPEC`, needs-human, needs-specialist, duplicate, obsolete, and invalid fixtures and inspect correct lane/evidence without a remediation successor |
 | SPEC-010A | Product-line seeding is reusable beyond Mission Control | Process-only seeder config | Recreate the Mission Control seed from generic config in a safe target scope and verify incomplete/unsafe configs reject without mutation |
 | SPEC-010B | Product Line B can be onboarded, smoked, and disabled independently | Disabled workspace until operator enablement | Onboard Product Line B in under one operator-hour, run one issue smoke, inspect isolation/shared globals, then disable cleanly |
 | SPEC-011 | CrabTrap can surface honeypot evidence without being required | `FEATURE_CRABTRAP_HONEYPOT` and valid/missing adapter config | Verify flag OFF and absent binary no-op, then send one valid and one malformed webhook and inspect activities/alerts |
@@ -449,7 +451,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009C2: Triage-to-Remediation Plan Handoff
 
-- **Status:** Pending
+- **Status:** In Progress; setup branch `009c2-triage-remediation-handoff` created
 - **Priority:** P0
 - **Branch short name:** `triage-remediation-handoff`
 - **Dependencies:** SPEC-009C1
@@ -458,8 +460,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Acceptance criteria source:** Phase 8C2 Acceptance Criteria
 - **Scope summary:** Drive the eligible pilot issue through the Issue Triage workflow family and create the bounded Issue Remediation planning successor only when the disposition is `ACTIONABLE_REMEDIATION`.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** triage routing fixtures, disposition/artifact evidence, successor creation through existing task-chain helpers, and negative cases for duplicate, OBE, invalid, needs-human, needs-specialist, and `NEEDS_SPEC`.
-- **Autopilot notes:** SpecKit/SDD remains a later destination for `NEEDS_SPEC`; it is not the default pilot lane.
+- **Strict Scope:** Mission Control workflow-contract correction for triage disposition schema/routing, triage routing fixtures, disposition/artifact evidence, successor creation through existing task-chain helpers, and negative cases for duplicate, OBE, invalid, needs-human, needs-specialist, and `NEEDS_SPEC`.
+- **Autopilot notes:** SpecKit/SDD remains a later destination for `NEEDS_SPEC`; it is not the default pilot lane. Production routing/evidence for non-remediation outcomes is deferred to SPEC-009F.
 - **Definition of done:** The pilot issue either enters remediation planning with traceable disposition/artifact evidence or exits through a non-remediation disposition without creating remediation work.
 
 ### SPEC-009C3: Dev/Review/Aegis to Ready for Owner
@@ -498,7 +500,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Priority:** P1
 - **Branch short name:** `pilot-review-lifecycle`
 - **Dependencies:** SPEC-007, SPEC-008, SPEC-009C4
-- **Enables:** SPEC-013A
+- **Enables:** SPEC-009E, SPEC-013A
 - **Scope source:** Phase 8D - Pilot review packet and lifecycle snapshot
 - **Acceptance criteria source:** Phase 8D Acceptance Criteria
 - **Scope summary:** Materialize a compact pilot review packet and lifecycle snapshot from existing task, activity, artifact, governance, scheduler, and `AgentRun` surfaces. Unsupported fields are explicitly labeled as SPEC-013A-C/SPEC-014A-D follow-up gaps, not silently inferred.
@@ -513,7 +515,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Priority:** P2
 - **Branch short name:** `pilot-evidence-surfaces`
 - **Dependencies:** SPEC-009D
-- **Enables:** SPEC-013A
+- **Enables:** SPEC-009F, SPEC-013A
 - **Scope source:** Phase 8E - pilot eligibility and evidence surfaces
 - **Acceptance criteria source:** Phase 8E Acceptance Criteria
 - **Scope summary:** Convert the SPEC-009C/009D manual smoke and review-packet evidence into durable read-only operator surfaces that show pilot eligibility inputs, GitHub-linked task evidence, current smoke status, and explicitly deferred automation/run-state fields without requiring terminal history.
@@ -521,6 +523,21 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** read-only API/UI or diagnostics surfaces, evidence derivation from existing task/activity/artifact/governance/review-packet state, smoke checklist linkage, and tests. No GitHub sync automation, no claim authority, no runner/sandbox model, and no new workflow language.
 - **Autopilot notes:** This spec exists because SPEC-009C1 intentionally does not add production UI. Use the SPEC-009D packet as the evidence model before deciding exact UI/API shape.
 - **Definition of done:** Operators can open one read-only surface for the pilot issue and see eligibility labels, repo/issue linkage, synced task identity, smoke evidence links, current stage, and unsupported fields clearly labeled as future SPEC-013/014 work.
+
+### SPEC-009F: Production Triage Outcome Routing
+
+- **Status:** Pending
+- **Priority:** P1
+- **Branch short name:** `production-triage-routing`
+- **Dependencies:** SPEC-009E, SPEC-012A
+- **Enables:** Later production triage lanes
+- **Scope source:** Phase 8F - production triage outcome routing
+- **Acceptance criteria source:** Phase 8F Acceptance Criteria
+- **Scope summary:** Turn clean-exit Issue Triage outcomes into production routes and evidence after the pilot evidence surface exists: `NEEDS_SPEC` routes toward a SpecKit/SDD handoff, needs-human routes to a clarification loop, needs-specialist routes to specialist assignment, and duplicate/obsolete/invalid outcomes route to close/reject recommendations without entering Issue Remediation.
+- **Tool count / tool names:** N/A - not a tool-surface spec
+- **Strict Scope:** production routing/evidence for non-remediation triage outcomes, operator-visible controls where needed, and tests proving no remediation successor is created for these outcomes. No Issue Remediation execution, no automatic GitHub polling, no formal claim/reconciliation, no runner state, no sandbox lifecycle, no harness adapter work, and no auto-merge policy.
+- **Autopilot notes:** Builds on the SPEC-009C2 taxonomy and the SPEC-009E evidence surfaces. It is not required for the SPEC-009C3/C4 pilot remediation path and should not be pulled into SPEC-009C2.
+- **Definition of done:** Operators can drive each non-remediation triage fixture and inspect the correct production lane/evidence while verifying that no Issue Remediation successor, claim, runner, sandbox, or auto-close side effect is created unless that side effect is explicitly owned by this spec.
 
 ### SPEC-010A: Generic Product-Line Seeder
 
@@ -1311,6 +1328,7 @@ This is the critical path for using Mission Control to finish its own roadmap. I
 | SPEC-009C4 | Owner merge gate + done reconciliation | SPEC-009C3 | — | Merge PR at `G_PILOT_MERGE`, sync, and verify `ready_for_owner -> done` |
 | SPEC-009D | Review packet + lifecycle snapshot | SPEC-009C4 | SPEC-012A/010A follow-on | Inspect one packet with issue/PR/artifact/governance/Aegis/owner-gate state and explicit deferred fields |
 | SPEC-009E | Pilot eligibility + evidence surfaces | SPEC-009D | SPEC-012A if file scopes are disjoint | Inspect read-only pilot eligibility, GitHub-linked task evidence, smoke status, and deferred run-state fields |
+| SPEC-009F | Production triage outcome routing | SPEC-009E, SPEC-012A | SPEC-013A1 if file scopes are disjoint | Drive non-remediation triage fixtures and inspect correct lane/evidence without remediation successors |
 
 ### Lane B - Optional Security Sidecar
 
@@ -1353,7 +1371,7 @@ SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-ho
 ```
 Completed through SPEC-008
     ├─→ SPEC-009A ─→ SPEC-009B ─→ SPEC-009C1 ─→ SPEC-009C2 ─→ SPEC-009C3 ─→ SPEC-009C4 ─→ SPEC-009D
-    │                    │                                                                       │              ├─→ SPEC-009E
+    │                    │                                                                       │              ├─→ SPEC-009E ─→ SPEC-009F
     │                    │                                                                       │              └─→ SPEC-013A ─→ SPEC-013A1 ─→ SPEC-013B ─→ SPEC-013C
     │                    │                                                                       │                                             └─→ SPEC-014A ─→ SPEC-014B ─┬─→ SPEC-014C
     │                    │                                                                       │                                                                      └─→ SPEC-014D
@@ -1362,7 +1380,7 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8C1 are complete and remain the substrate for all later work. After SPEC-009C1, SPEC-009C2 is the next self-hosting handoff spec; SPEC-010A, SPEC-011, and SPEC-012A remain available parallel starts. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-009D is the bridge from pilot smoke to formal run-state, while SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8C1 are complete and remain the substrate for all later work. After SPEC-009C1, SPEC-009C2 is the next self-hosting handoff spec; SPEC-010A, SPEC-011, and SPEC-012A remain available parallel starts. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-009D is the bridge from pilot smoke to formal run-state, SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces, and SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
@@ -1370,6 +1388,7 @@ Parallel agents may work simultaneously only when they own disjoint primary file
 - SPEC-010A may run while SPEC-009C2 is being smoked when file ownership stays disjoint.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
 - SPEC-009E may run after SPEC-009D and does not block SPEC-013A if file ownership stays disjoint.
+- SPEC-009F waits for SPEC-009E and SPEC-012A because production non-remediation lanes need both pilot evidence surfaces and current repo/process index truth.
 - SPEC-013A1 runs after SPEC-013A and before SPEC-013B so automatic GitHub sync is explicit before claim/reconciliation relies on scheduler ticks.
 - SPEC-014C and SPEC-014D may run in parallel only after SPEC-014B and only if adapter modules, fixtures, and deployment docs are isolated.
 
@@ -1385,6 +1404,7 @@ Parallel agents may work simultaneously only when they own disjoint primary file
 | SPEC-009C4 | 0.75-1 | Yes |
 | SPEC-009D | 1-1.5 | Yes |
 | SPEC-009E | 1-1.5 | Follow-on evidence surface after SPEC-009D |
+| SPEC-009F | 1.5-2 | Future production triage routing after SPEC-009E |
 | SPEC-010A | 1-1.5 | Parallel after SPEC-009B |
 | SPEC-010B | 1.5-2.5 | Parallel branch; feeds SPEC-012B |
 | SPEC-011 | 1-2 | Optional parallel |
