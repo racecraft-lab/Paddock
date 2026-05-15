@@ -64,7 +64,7 @@ Source-of-truth scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate the triage handoff spec from roadmap, PRD, and design concept |
+| Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
 | Clarify | `$speckit-clarify` | Pending | Resolve disposition taxonomy, workflow-contract routing, evidence shape, smoke cleanup, and future routing boundary |
 | Plan | `$speckit-plan` | Pending | Plan typed triage output, routing tests, artifact evidence, and successor creation through existing helpers |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
@@ -141,6 +141,32 @@ Autopilot must still keep SPEC-009C2 to one primary implementation surface:
 Issue Triage disposition routing into Issue Remediation planning for the pilot
 path. The new SPEC-009F roadmap entry is planning-only and must not be
 implemented in this branch.
+
+### Autopilot Startup Evidence
+
+Prerequisite discovery on 2026-05-15:
+
+- Branch/worktree: `009c2-triage-remediation-handoff`, isolated worktree,
+  clean before phase execution.
+- SpecKit CLI, project initialization, constitution, workflow file, and
+  package-manager discovery passed.
+- Project commands detected: `pnpm build`, `pnpm typecheck`, `pnpm lint`,
+  `pnpm test`, and `pnpm test:e2e`.
+- Reviewability preset detected:
+  `speckit-pro-reviewability` for spec, plan, and tasks templates.
+- Archive extension: installed and enabled at version `1.1.0`.
+- Archive sweep current target:
+  `specs/009c2-triage-remediation-handoff` excluded from archive/cleanup.
+- Previously completed active spec folders detected:
+  `specs/005-ready-for-owner`, `specs/007-disposition-artifacts`,
+  `specs/008-resource-governance`,
+  `specs/009a-workflow-contract-roundtrip`,
+  `specs/009b-mission-control-seed`, and
+  `specs/009c1-pilot-issue-ingest`.
+- Cleanup mode: provenance-only startup sweep. No spec folders were deleted or
+  moved because this run did not complete a fresh archive operation for those
+  folders before cleanup.
+- `safeToApplyCleanup=false` for startup cleanup in this autopilot run.
 
 ### Constitution and PRD Validation
 
@@ -296,14 +322,14 @@ is only for actionable remediation; `NEEDS_SPEC` is a separate future SDD lane.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 19 |
+| User Stories | 4 |
+| Acceptance Criteria | 10 success criteria; 10 acceptance scenarios |
 
 ### Files Expected
 
-- [ ] `specs/009c2-triage-remediation-handoff/spec.md`
-- [ ] `specs/009c2-triage-remediation-handoff/checklists/requirements.md`
+- [x] `specs/009c2-triage-remediation-handoff/spec.md`
+- [x] `specs/009c2-triage-remediation-handoff/checklists/requirements.md`
 
 ---
 
