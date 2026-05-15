@@ -3,6 +3,33 @@
   "reports": [
     {
       "surface": "playwright",
+      "runId": "25897119652",
+      "runAttempt": "1",
+      "runKey": "25897119652-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25897119652",
+      "reportKey": "7caafe44e86d6ecda17b24c4fd2a320c31c3c8aa",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/playwright/7caafe44e86d6ecda17b24c4fd2a320c31c3c8aa/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/playwright/latest/?v=25897119652-attempt-1",
+      "headSha": "7caafe44e86d6ecda17b24c4fd2a320c31c3c8aa",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "fix/facility-github-workspace-scope",
+        "headSha": "bc9af918e5f014b5e65a5889b9d9a5a84a2b139d",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/38/",
+        "mergeCommitSha": "",
+        "number": "38",
+        "title": "fix(github): honor product line scope for facility sync",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/38"
+      },
+      "createdAt": "2026-05-15T02:40:42.423Z"
+    },
+    {
+      "surface": "playwright",
       "runId": "25814898864",
       "runAttempt": "1",
       "runKey": "25814898864-attempt-1",
@@ -390,5 +417,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-13T17:30:52.609Z"
+  "updatedAt": "2026-05-15T02:40:42.423Z"
 }
