@@ -12,7 +12,7 @@ templates:
     description: Classify a synced Mission Control GitHub issue and choose the next route.
     model: sonnet
     task_prompt: |
-      Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return one route: close, needs_spec, or remediation.
+      Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return JSON with disposition and rationale. Use ACTIONABLE_REMEDIATION only when the issue is reproducible and has a bounded Mission Control remediation path; otherwise use DUPLICATE, OBSOLETE, INVALID, NEEDS_HUMAN, NEEDS_SPECIALIST, or NEEDS_SPEC.
     timeout_seconds: 300
     agent_role: qa
     tags:
@@ -41,21 +41,26 @@ templates:
     sandbox:
       mode: read-only
     prompt_version: v1
-    next_template_slug: mission-control_specialist_route
-    routing_rules: []
+    routing_rules:
+      - when: $.disposition == "ACTIONABLE_REMEDIATION"
+        next_template_slug: mission-control_remediation_plan
     output_schema:
       type: object
       additionalProperties: false
       required:
-        - route
+        - disposition
         - rationale
       properties:
-        route:
+        disposition:
           type: string
           enum:
-            - close
-            - needs_spec
-            - remediation
+            - ACTIONABLE_REMEDIATION
+            - DUPLICATE
+            - OBSOLETE
+            - INVALID
+            - NEEDS_HUMAN
+            - NEEDS_SPECIALIST
+            - NEEDS_SPEC
         rationale:
           type: string
   - slug: mission-control_specialist_route

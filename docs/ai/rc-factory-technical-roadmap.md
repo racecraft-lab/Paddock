@@ -451,7 +451,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009C2: Triage-to-Remediation Plan Handoff
 
-- **Status:** In Progress; setup branch `009c2-triage-remediation-handoff` created
+- **Status:** In Progress; implementation branch `009c2-triage-remediation-handoff` has focused Vitest, typecheck, lint, and production build passing locally
 - **Priority:** P0
 - **Branch short name:** `triage-remediation-handoff`
 - **Dependencies:** SPEC-009C1
@@ -462,7 +462,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** Mission Control workflow-contract correction for triage disposition schema/routing, triage routing fixtures, disposition/artifact evidence, successor creation through existing task-chain helpers, and negative cases for duplicate, OBE, invalid, needs-human, needs-specialist, and `NEEDS_SPEC`.
 - **Autopilot notes:** SpecKit/SDD remains a later destination for `NEEDS_SPEC`; it is not the default pilot lane. Production routing/evidence for non-remediation outcomes is deferred to SPEC-009F.
-- **Definition of done:** The pilot issue either enters remediation planning with traceable disposition/artifact evidence or exits through a non-remediation disposition without creating remediation work.
+- **Definition of done:** The pilot issue either enters remediation planning with traceable disposition/artifact evidence or exits through a non-remediation disposition without creating remediation work. Branch evidence covers the workflow-contract routing correction, uppercase pilot disposition taxonomy, duplicate actionable idempotency, negative outcome evidence, invalid-output fail-closed behavior, and SPEC-007 lowercase disposition compatibility. Live SPEC-009C2 synthetic smoke remains operator-owned and must use a fresh issue plus cleanup steps from `docs/qa/pilot-smoke-checklist.md`.
 
 ### SPEC-009C3: Dev/Review/Aegis to Ready for Owner
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { importWorkflowContract } from '@/lib/workflow-contracts/importer'
+import { loadWorkflowContractFromFile } from '@/lib/workflow-contracts/yaml-loader'
 import { makeContract, makeWorkflowDb } from './test-helpers'
 
 describe('workflow contract importer', () => {
@@ -110,5 +111,53 @@ describe('workflow contract importer', () => {
     expect(db.prepare('SELECT COUNT(*) as count FROM workflow_templates').get()).toEqual({ count: 0 })
     const error = db.prepare('SELECT details FROM workflow_contract_run_errors').get() as { details: string }
     expect(error.details).not.toContain('token')
+  })
+
+  it('imports the Mission Control pilot issue triage disposition taxonomy and actionable routing rule', () => {
+    const db = makeWorkflowDb()
+    const contract = loadWorkflowContractFromFile('docs/ai/workflows/mission-control/workflow-contract.yaml')
+    const triage = contract.templates.find(template => template.slug === 'mission-control_issue_triage')
+
+    expect(triage).toBeDefined()
+    expect(triage!.next_template_slug ?? null).toBeNull()
+    expect(triage!.routing_rules).toEqual([
+      {
+        when: '$.disposition == "ACTIONABLE_REMEDIATION"',
+        next_template_slug: 'mission-control_remediation_plan',
+      },
+    ])
+    expect(triage!.output_schema).toMatchObject({
+      required: ['disposition', 'rationale'],
+      properties: {
+        disposition: {
+          type: 'string',
+          enum: [
+            'ACTIONABLE_REMEDIATION',
+            'DUPLICATE',
+            'OBSOLETE',
+            'INVALID',
+            'NEEDS_HUMAN',
+            'NEEDS_SPECIALIST',
+            'NEEDS_SPEC',
+          ],
+        },
+        rationale: { type: 'string' },
+      },
+    })
+
+    const result = importWorkflowContract(db, contract, {
+      mode: 'apply',
+      sourcePath: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+    })
+
+    expect(result.ok).toBe(true)
+    const runtime = db.prepare(`
+      SELECT output_schema, routing_rules, next_template_slug
+      FROM workflow_templates
+      WHERE workspace_id = 1 AND slug = 'mission-control_issue_triage'
+    `).get() as { output_schema: string; routing_rules: string; next_template_slug: string | null }
+    expect(JSON.parse(runtime.output_schema).properties.disposition.enum).toContain('ACTIONABLE_REMEDIATION')
+    expect(JSON.parse(runtime.routing_rules)).toEqual(triage!.routing_rules)
+    expect(runtime.next_template_slug).toBeNull()
   })
 })

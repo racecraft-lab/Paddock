@@ -12,7 +12,7 @@ import { resolveFlag } from './feature-flags'
 import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition, type TaskStatus } from './task-status'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
-import { sanitizeDispositionFailurePayload } from './task-artifacts'
+import { publishArtifact, sanitizeDispositionFailurePayload } from './task-artifacts'
 import { evaluateSpec007AegisSignals } from './aegis-review'
 import { createHash } from 'crypto'
 
@@ -21,26 +21,51 @@ const DISPOSITION_ENUM = [
   'merged', 'closed', 'rejected', 'rerouted', 'duplicate', 'spam', 'completed', 'abandoned',
 ] as const
 
-// SPEC-007 FR-010 / Q4: triage-template detection by output_schema shape.
-function isTriageTemplateSchema(schemaRaw: string | null | undefined): boolean {
-  if (!schemaRaw) return false
+const PILOT_TRIAGE_DISPOSITION_ENUM = [
+  'ACTIONABLE_REMEDIATION',
+  'DUPLICATE',
+  'OBSOLETE',
+  'INVALID',
+  'NEEDS_HUMAN',
+  'NEEDS_SPECIALIST',
+  'NEEDS_SPEC',
+] as const
+
+type TriageTemplateProfile = {
+  readonly dispositions: readonly string[]
+  readonly reasonField: 'reason' | 'rationale'
+  readonly pilot: boolean
+}
+
+function includesAll(values: readonly unknown[], expected: readonly string[]): boolean {
+  return expected.every(v => values.includes(v))
+}
+
+function triageTemplateProfile(schemaRaw: string | null | undefined): TriageTemplateProfile | null {
+  if (!schemaRaw) return null
   try {
     const schema = JSON.parse(schemaRaw) as unknown
-    if (!schema || typeof schema !== 'object') return false
+    if (!schema || typeof schema !== 'object') return null
     const obj = schema as Record<string, unknown>
     const required = Array.isArray(obj.required) ? (obj.required as unknown[]) : []
-    if (!required.includes('disposition')) return false
+    if (!required.includes('disposition')) return null
     const props = obj.properties
-    if (!props || typeof props !== 'object') return false
+    if (!props || typeof props !== 'object') return null
     const disp = (props as Record<string, unknown>).disposition
-    if (!disp || typeof disp !== 'object') return false
+    if (!disp || typeof disp !== 'object') return null
     const dispObj = disp as Record<string, unknown>
-    if (dispObj.type !== 'string') return false
-    if (!Array.isArray(dispObj.enum)) return false
+    if (dispObj.type !== 'string') return null
+    if (!Array.isArray(dispObj.enum)) return null
     const dispEnum = dispObj.enum as unknown[]
-    return DISPOSITION_ENUM.every(v => dispEnum.includes(v))
+    if (includesAll(dispEnum, DISPOSITION_ENUM)) {
+      return { dispositions: DISPOSITION_ENUM, reasonField: 'reason', pilot: false }
+    }
+    if (required.includes('rationale') && includesAll(dispEnum, PILOT_TRIAGE_DISPOSITION_ENUM)) {
+      return { dispositions: PILOT_TRIAGE_DISPOSITION_ENUM, reasonField: 'rationale', pilot: true }
+    }
+    return null
   } catch {
-    return false
+    return null
   }
 }
 
@@ -81,6 +106,151 @@ function writeThrottledInsertFailure(
   }
 }
 
+type PilotTriageEvidenceParent = {
+  readonly id: number
+  readonly workspace_id: number
+  readonly project_id: number | null
+  readonly workflow_template_slug: string | null
+}
+
+function existingDispositionRow(db: any, parentTaskId: number, workspaceId: number): boolean {
+  if (!tableExists(db, 'task_dispositions')) return false
+  return Boolean(
+    db.prepare('SELECT id FROM task_dispositions WHERE task_id = ? AND workspace_id = ? LIMIT 1')
+      .get(parentTaskId, workspaceId),
+  )
+}
+
+function isPilotIssueTriageProfile(parent: PilotTriageEvidenceParent, profile: TriageTemplateProfile): boolean {
+  return profile.pilot && parent.workflow_template_slug === 'mission-control_issue_triage'
+}
+
+function successorContextFor(
+  db: any,
+  result: AdvanceTaskChainResult | undefined,
+  workspaceId: number,
+): { successorTaskId: number | null; targetTemplateSlug: string | null } {
+  const successorTaskId = result?.successorTaskId ?? null
+  if (successorTaskId === null || !tableExists(db, 'tasks')) {
+    return { successorTaskId: null, targetTemplateSlug: null }
+  }
+  const row = db.prepare('SELECT workflow_template_slug FROM tasks WHERE id = ? AND workspace_id = ?')
+    .get(successorTaskId, workspaceId) as { workflow_template_slug: string | null } | undefined
+  return {
+    successorTaskId,
+    targetTemplateSlug: row?.workflow_template_slug ?? null,
+  }
+}
+
+function writePilotTriageArtifactFailureActivity(
+  db: any,
+  parent: PilotTriageEvidenceParent,
+  disposition: string,
+  rationale: string | null,
+  context: { successorTaskId: number | null; targetTemplateSlug: string | null },
+  err: unknown,
+): void {
+  if (!tableExists(db, 'activities')) return
+  try {
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('pilot_triage_artifact_publish_failed', 'task', ?, 'task-pipeline', 'Pilot triage artifact publish failed', ?, ?)",
+    ).run(
+      parent.id,
+      JSON.stringify({
+        disposition,
+        rationale,
+        artifact_type: 'triage_outcome',
+        successor_task_id: context.successorTaskId,
+        target_template_slug: context.targetTemplateSlug,
+        error: err instanceof Error ? err.message : String(err),
+      }),
+      parent.workspace_id,
+    )
+  } catch (innerErr) {
+    logger.warn({
+      event: 'pilot_triage_artifact_failure_activity_write_failed',
+      task_id: parent.id,
+      error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+    })
+  }
+}
+
+function writePilotTriageOutcomeRecordedActivity(
+  db: any,
+  parent: PilotTriageEvidenceParent,
+  artifactId: number,
+  disposition: string,
+  rationale: string | null,
+  context: { successorTaskId: number | null; targetTemplateSlug: string | null },
+): void {
+  if (!tableExists(db, 'activities')) return
+  try {
+    db.prepare(
+      "INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id) VALUES ('pilot_triage_outcome_recorded', 'task', ?, 'task-pipeline', 'Pilot triage outcome recorded', ?, ?)",
+    ).run(
+      parent.id,
+      JSON.stringify({
+        disposition,
+        rationale,
+        artifact_id: artifactId,
+        artifact_type: 'triage_outcome',
+        successor_task_id: context.successorTaskId,
+        target_template_slug: context.targetTemplateSlug,
+      }),
+      parent.workspace_id,
+    )
+  } catch (innerErr) {
+    logger.warn({
+      event: 'pilot_triage_outcome_activity_write_failed',
+      task_id: parent.id,
+      error: innerErr instanceof Error ? innerErr.message : String(innerErr),
+    })
+  }
+}
+
+function writePilotTriageEvidence(
+  db: any,
+  parent: PilotTriageEvidenceParent,
+  disposition: string,
+  rationale: string | null,
+  result: AdvanceTaskChainResult | undefined,
+  triagedByAgentId: number | null,
+): void {
+  if (!isTaskArtifactsEnabled(db, parent.workspace_id)) return
+  const context = successorContextFor(db, result, parent.workspace_id)
+  const content = {
+    schema_version: 'spec-009c2.triage_outcome.v1',
+    task_id: parent.id,
+    workspace_id: parent.workspace_id,
+    disposition,
+    rationale,
+    successor_task_id: context.successorTaskId,
+    target_template_slug: context.targetTemplateSlug,
+  }
+  let artifactId: number
+  try {
+    const artifact = publishArtifact({
+      task_id: parent.id,
+      artifact_type: 'triage_outcome',
+      storage_kind: 'inline_json',
+      content: JSON.stringify(content),
+      mime: 'application/json',
+      schema_version: 'spec-009c2.triage_outcome.v1',
+      active_workspace_id: parent.workspace_id,
+      is_facility_caller: false,
+      db,
+      producer_agent_id: triagedByAgentId ?? undefined,
+      workflow_template_slug: parent.workflow_template_slug ?? undefined,
+    })
+    artifactId = artifact.id
+  } catch (err) {
+    writePilotTriageArtifactFailureActivity(db, parent, disposition, rationale, context, err)
+    return
+  }
+
+  writePilotTriageOutcomeRecordedActivity(db, parent, artifactId, disposition, rationale, context)
+}
+
 // SPEC-007 FR-011/FR-012/FR-013/FR-015: Post-commit disposition logging hook.
 // Runs AFTER advanceTaskChain's IIFE returns, BEFORE runPostCommitSuccessorSync.
 // Gated by FEATURE_DISPOSITION_LOGGING. No-op if not a triage template.
@@ -89,16 +259,28 @@ function runPostCommitDispositionInsert(
   db: any,
   parentTaskId: number,
   workspaceId: number,
+  result?: AdvanceTaskChainResult,
 ): void {
   if (!isDispositionLoggingEnabled(db, workspaceId)) return
 
   const parent = db.prepare(
-    'SELECT t.id, t.assigned_to, t.resolution, t.workspace_id, t.workflow_template_id, wt.output_schema FROM tasks t JOIN workflow_templates wt ON wt.id = t.workflow_template_id WHERE t.id = ? AND t.workspace_id = ?',
+    'SELECT t.id, t.assigned_to, t.project_id, t.resolution, t.workspace_id, t.workflow_template_id, t.workflow_template_slug, wt.output_schema FROM tasks t JOIN workflow_templates wt ON wt.id = t.workflow_template_id WHERE t.id = ? AND t.workspace_id = ?',
   ).get(parentTaskId, workspaceId) as
-    | { id: number; assigned_to: string | null; resolution: string | null; workspace_id: number; workflow_template_id: number; output_schema: string | null }
+    | {
+        id: number
+        assigned_to: string | null
+        project_id: number | null
+        resolution: string | null
+        workspace_id: number
+        workflow_template_id: number
+        workflow_template_slug: string | null
+        output_schema: string | null
+      }
     | undefined
   if (!parent) return
-  if (!isTriageTemplateSchema(parent.output_schema)) return
+  const profile = triageTemplateProfile(parent.output_schema)
+  if (!profile) return
+  if (existingDispositionRow(db, parentTaskId, workspaceId)) return
 
   const rawOutput = parent.resolution ?? ''
   const parsed = rawOutput ? safeParseJson(rawOutput) : undefined
@@ -107,8 +289,9 @@ function runPostCommitDispositionInsert(
     : null
 
   const dispRaw = parsedObj && typeof parsedObj.disposition === 'string' ? parsedObj.disposition : null
-  const validationOk = dispRaw !== null && (DISPOSITION_ENUM as readonly string[]).includes(dispRaw)
-  const reason = parsedObj && typeof parsedObj.reason === 'string' ? parsedObj.reason : null
+  const validationOk = dispRaw !== null && profile.dispositions.includes(dispRaw)
+  const reasonRaw = parsedObj ? parsedObj[profile.reasonField] : null
+  const reason = typeof reasonRaw === 'string' ? reasonRaw : null
 
   const agentRow = parent.assigned_to
     ? (db.prepare('SELECT id FROM agents WHERE name = ? AND workspace_id = ?').get(parent.assigned_to, workspaceId) as { id: number } | undefined)
@@ -116,12 +299,17 @@ function runPostCommitDispositionInsert(
   const triagedByAgentId = agentRow ? agentRow.id : null
 
   if (validationOk) {
+    let inserted = false
     try {
       db.prepare(
         'INSERT INTO task_dispositions (task_id, disposition, reason, triaged_by_agent_id, triaged_at, workspace_id) VALUES (?, ?, ?, ?, unixepoch(), ?)',
       ).run(parentTaskId, dispRaw, reason, triagedByAgentId, workspaceId)
+      inserted = true
     } catch (err) {
       writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+    }
+    if (inserted && isPilotIssueTriageProfile(parent, profile)) {
+      writePilotTriageEvidence(db, parent, dispRaw, reason, result, triagedByAgentId)
     }
     return
   }
@@ -770,7 +958,7 @@ export function advanceTaskChain(input: AdvanceTaskChainInput): AdvanceTaskChain
   // SPEC-007 FR-011: Post-commit disposition logging runs AFTER the IIFE
   // and BEFORE runPostCommitSuccessorSync. Failure-isolated (try/catch).
   try {
-    runPostCommitDispositionInsert(db, input.taskId, input.workspaceId)
+    runPostCommitDispositionInsert(db, input.taskId, input.workspaceId, result)
   } catch (err) {
     // Defense-in-depth: SPEC-007 FR-012 says failures must never block advancement.
     logger.warn({

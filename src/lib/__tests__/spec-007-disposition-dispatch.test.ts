@@ -289,6 +289,25 @@ describe('T200 (US2): flag-ON happy path — exactly one task_dispositions row',
     expect(r.triaged_at).toBeGreaterThanOrEqual(before - 2)
     expect(r.triaged_at).toBeLessThanOrEqual(after + 2)
   })
+
+  it('continues accepting the existing lowercase SPEC-007 disposition taxonomy', async () => {
+    const db = createDb({ flagDispositionLogging: true })
+    addTriageTemplate(db, { id: 1 })
+    const parentId = addTriageParent(
+      db,
+      1,
+      { disposition: 'merged', reason: 'legacy schema remains valid' },
+      'triage-bot',
+    )
+
+    const { advanceTaskChain } = await importDispatch(db)
+    advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'review', trigger: 'aegis_review' })
+
+    expect(db.prepare('SELECT disposition, reason FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({
+      disposition: 'merged',
+      reason: 'legacy schema remains valid',
+    })
+  })
 })
 
 describe('T201 (US2): validation-failure cases write disposition=unknown + sanitized activity', () => {

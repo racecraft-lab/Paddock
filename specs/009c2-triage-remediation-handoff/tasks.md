@@ -11,64 +11,64 @@ Automated tests must not mutate live GitHub.
 
 ## Phase 1: RED Tests
 
-- [ ] T001 Add failing workflow-contract importer coverage for the
+- [x] T001 Add failing workflow-contract importer coverage for the
   `mission-control_issue_triage` pilot disposition enum and routing rule in
   `src/lib/__tests__/workflow-contracts/importer.test.ts`
-- [ ] T002 Add failing `advanceTaskChain` coverage that
+- [x] T002 Add failing `advanceTaskChain` coverage that
   `ACTIONABLE_REMEDIATION` creates exactly one
   `mission-control_remediation_plan` successor through existing routing in
   `src/lib/__tests__/task-chain-advancement.routing.test.ts`
-- [ ] T003 Add failing duplicate-actionable coverage proving a repeated handoff
+- [x] T003 Add failing duplicate-actionable coverage proving a repeated handoff
   returns `successor_exists` and leaves one child successor in
   `src/lib/__tests__/task-chain-advancement.routing.test.ts`
-- [ ] T004 Add failing negative-disposition matrix coverage for `DUPLICATE`,
+- [x] T004 Add failing negative-disposition matrix coverage for `DUPLICATE`,
   `OBSOLETE`, `INVALID`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`
   with zero remediation successors and evidence in
   `src/lib/__tests__/task-chain-advancement.routing.test.ts`
-- [ ] T005 Add failing invalid-output coverage proving missing/malformed/unknown
+- [x] T005 Add failing invalid-output coverage proving missing/malformed/unknown
   pilot dispositions fail closed without successor creation in
   `src/lib/__tests__/task-chain-output-validation.test.ts`
-- [ ] T006 Add failing artifact-evidence failure coverage proving a publish
+- [x] T006 Add failing artifact-evidence failure coverage proving a publish
   failure records task-scoped failure activity instead of silently reporting
   complete evidence in `src/lib/__tests__/task-chain-advancement.routing.test.ts`
-- [ ] T007 Add failing compatibility coverage that existing SPEC-007 lowercase
+- [x] T007 Add failing compatibility coverage that existing SPEC-007 lowercase
   disposition schemas still log valid dispositions in
   `src/lib/__tests__/spec-007-disposition-dispatch.test.ts`
 
 ## Phase 2: Workflow Contract And Runtime Implementation
 
-- [ ] T008 Update `docs/ai/workflows/mission-control/workflow-contract.yaml` so
+- [x] T008 Update `docs/ai/workflows/mission-control/workflow-contract.yaml` so
   `mission-control_issue_triage` emits the pilot `disposition` taxonomy and
   routes only `ACTIONABLE_REMEDIATION` to `mission-control_remediation_plan`
-- [ ] T009 Extend `src/lib/task-dispatch.ts` disposition schema detection and
+- [x] T009 Extend `src/lib/task-dispatch.ts` disposition schema detection and
   validation to accept the pilot taxonomy without breaking SPEC-007 values
-- [ ] T010 Implement task-scoped pilot triage artifact evidence using existing
+- [x] T010 Implement task-scoped pilot triage artifact evidence using existing
   `publishArtifact` behavior and `artifact_type='triage_outcome'`
-- [ ] T011 Implement task-scoped activity evidence for valid pilot triage
+- [x] T011 Implement task-scoped activity evidence for valid pilot triage
   outcomes without counting unrelated pipeline entities
-- [ ] T012 Ensure duplicate actionable handoff attempts preserve the existing
+- [x] T012 Ensure duplicate actionable handoff attempts preserve the existing
   remediation successor and do not create duplicate pilot evidence rows
 
 ## Phase 3: Documentation And Smoke Evidence
 
-- [ ] T013 Update `docs/qa/pilot-smoke-checklist.md` with SPEC-009C2 fresh
+- [x] T013 Update `docs/qa/pilot-smoke-checklist.md` with SPEC-009C2 fresh
   synthetic issue creation, actionable handoff, negative fixture checks, and
   cleanup steps
-- [ ] T014 Update `docs/ai/rc-factory-technical-roadmap.md` status/evidence
+- [x] T014 Update `docs/ai/rc-factory-technical-roadmap.md` status/evidence
   wording for SPEC-009C2 branch progress while preserving SPEC-009F and
   SPEC-013A1 future boundaries
-- [ ] T015 Update `docs/ai/specs/SPEC-009C2-workflow.md` implementation
+- [x] T015 Update `docs/ai/specs/SPEC-009C2-workflow.md` implementation
   progress and verification-evidence tables
 
 ## Phase 4: Verification
 
-- [ ] T016 Run focused Vitest coverage:
+- [x] T016 Run focused Vitest coverage:
   `pnpm test src/lib/__tests__/task-chain-advancement.routing.test.ts src/lib/__tests__/task-chain-output-validation.test.ts src/lib/__tests__/spec-007-disposition-dispatch.test.ts src/lib/__tests__/workflow-contracts/importer.test.ts`
-- [ ] T017 Run `pnpm typecheck`
-- [ ] T018 Run `pnpm lint`
-- [ ] T019 Run `pnpm build`
-- [ ] T020 Run the G7 gate script and reviewability diff gate
-- [ ] T021 Record manual synthetic smoke as operator-owned pending evidence if
+- [x] T017 Run `pnpm typecheck`
+- [x] T018 Run `pnpm lint`
+- [x] T019 Run `pnpm build`
+- [x] T020 Run the G7 gate script and reviewability diff gate
+- [x] T021 Record manual synthetic smoke as operator-owned pending evidence if
   live GitHub mutation is not run in this automated pass
 
 ## Dependencies
