@@ -1,101 +1,44 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-  "updated_at": "2026-05-15T17:14:16Z",
-  "active_step": "Closed: Post-Merge Hygiene and Live Smoke Evidence",
-  "status": "Completed",
+  "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
+  "updated_at": "2026-05-15T19:41:08Z",
+  "active_step": "Phase 7: Implement",
+  "status": "In Progress",
   "active_workflow": {
-    "spec_id": "SPEC-009C1",
-    "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-    "design_concept_file": "docs/ai/specs/SPEC-009C1-design-concept.md",
-    "branch": "009c1-pilot-issue-ingest",
-    "feature_dir": "specs/009c1-pilot-issue-ingest"
+    "spec_id": "SPEC-009C2",
+    "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
+    "design_concept_file": "docs/ai/specs/SPEC-009C2-design-concept.md",
+    "branch": "009c2-triage-remediation-handoff",
+    "feature_dir": "specs/009c2-triage-remediation-handoff"
+  },
+  "plugin_refresh": {
+    "speckit_pro_version": "1.11.1",
+    "refreshed_at": "2026-05-15T19:41:08Z",
+    "codex_agents_refreshed": true,
+    "note": "Current session was started before plugin refresh, so phase accounting continues from local artifacts and updated on-disk plugin guidance."
   },
   "archive_sweep": {
     "archive_extension_installed": true,
     "extension": "archive",
     "extension_release": "v1.1.0",
-    "extension_source_commit": "08ee0e919a72ccb254758a2b6f51d58196490ea7",
-    "current_target": "specs/009c1-pilot-issue-ingest",
-    "completed_spec_dirs_found": [
-      "specs/005-ready-for-owner",
-      "specs/007-disposition-artifacts",
-      "specs/008-resource-governance",
-      "specs/009a-workflow-contract-roundtrip",
-      "specs/009b-mission-control-seed"
-    ],
-    "excluded_current_spec": "specs/009c1-pilot-issue-ingest",
+    "current_target": "specs/009c2-triage-remediation-handoff",
+    "excluded_current_spec": "specs/009c2-triage-remediation-handoff",
     "cleanup_mode": "provenance-only",
     "cleanup_applied": false,
     "safeToApplyCleanup": false,
-    "status": "completed",
-    "reason": "Feature worktree is not the safe cleanup base and no --apply-cleanup gate was supplied; source spec folders are left untouched."
+    "status": "completed"
   },
   "phase_0": {
     "status": "completed",
-    "prerequisites": {
-      "all_pass": true,
-      "branch": "009c1-pilot-issue-ingest",
-      "is_worktree": true,
-      "on_feature_branch": false,
-      "workflow_file": "docs/ai/specs/SPEC-009C1-workflow.md",
-      "feature_dir": "specs/009c1-pilot-issue-ingest",
-      "mcp_unavailable": [
-        "tavily-mcp",
-        "context7",
-        "RepoPrompt"
-      ]
-    },
-    "project_commands": {
-      "stack": "nodejs",
-      "package_manager": "pnpm",
-      "build": "pnpm build",
-      "typecheck": "pnpm typecheck",
-      "lint": "pnpm lint",
-      "lint_fix": "N/A",
-      "unit_test": "pnpm test",
-      "integration_test": "pnpm test:e2e",
-      "single_file_test": "pnpm test",
-      "single_file_integration": "N/A",
-      "full_verify": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
-    },
-    "presets": {
-      "active": [
-        "speckit-pro-reviewability"
-      ],
-      "templates": {
-        "spec": ".specify/presets/speckit-pro-reviewability/templates/spec-template.md",
-        "plan": ".specify/presets/speckit-pro-reviewability/templates/plan-template.md",
-        "tasks": ".specify/presets/speckit-pro-reviewability/templates/tasks-template.md"
-      },
-      "extension_registry_visible": true,
-      "hook_events_configured": 18
-    }
+    "branch": "009c2-triage-remediation-handoff",
+    "package_manager": "pnpm",
+    "reviewability_preset": "speckit-pro-reviewability"
   },
   "phase_1": {
     "status": "completed",
     "gate": {
       "id": "G1",
       "pass": true,
-      "markers": 0,
-      "reason": "spec.md exists with 0 markers"
-    },
-    "files": [
-      "specs/009c1-pilot-issue-ingest/spec.md",
-      "specs/009c1-pilot-issue-ingest/checklists/requirements.md",
-      ".specify/feature.json"
-    ],
-    "metrics": {
-      "functional_requirements": 18,
-      "user_stories": 4,
-      "acceptance_scenarios": 10,
-      "success_criteria": 6
-    },
-    "scope_guardrails": {
-      "production_ui_or_api": false,
-      "github_sync_poller_or_cron": false,
-      "issue_triage_or_remediation": false,
-      "claim_dispatch_runner_sandbox_or_harness": false,
-      "workflow_contract_tracker_label_semantics": false
+      "markers": 0
     }
   },
   "phase_2": {
@@ -103,95 +46,16 @@
     "gate": {
       "id": "G2",
       "pass": true,
-      "markers": 0,
-      "reason": "0 [NEEDS CLARIFICATION] markers"
+      "markers": 0
     },
-    "sessions": {
-      "eligibility_and_fallback": {
-        "status": "completed",
-        "questions": 4,
-        "edits_applied": [
-          "Exact live/operator GitHub prefilter and local eligibility filters",
-          "Routable area label definition using existing single_match area routing",
-          "Synthetic fallback find-first/create-with-explicit-opt-in script behavior",
-          "Fixture/mocked GitHub client boundary for tests and CI"
-        ],
-        "unresolved_markers": 0
-      },
-      "state_and_absence_proof": {
-        "status": "completed",
-        "questions": 4,
-        "edits_applied": [
-          "GitHub-linked root task identity proof using current tasks columns",
-          "No-side-effect proof across tasks, runs, task_dispositions, task_artifacts, and activities",
-          "Existing mc:inbox status semantics preserved without new dispatch guards",
-          "Formal run-state lifecycle checks deferred to SPEC-013A+ and SPEC-014A+ without placeholder schema"
-        ],
-        "unresolved_markers": 0
-      },
-      "scope_and_roadmap_alignment": {
-        "status": "completed",
-        "questions": 3,
-        "edits_applied": [
-          "Automatic GitHub sync polling and cron lifecycle deferred to SPEC-013A1",
-          "Operator-visible eligibility and evidence UI/API surfaces deferred to SPEC-009E",
-          "Workflow-contract tracker labels remain metadata for SPEC-009C1"
-        ],
-        "unresolved_markers": 0
-      }
-    },
-    "consensus": {
-      "eligibility_and_fallback": {
-        "status": "completed",
-        "reason": "Security-sensitive live GitHub credential and mutation boundary required consensus.",
-        "analysts": [
-          "codebase-analyst",
-          "spec-context-analyst",
-          "domain-researcher"
-        ],
-        "outcome": "Accepted with wording tightening: tests may cover operator-triggered sync through mocked seams, CI must not require credentials or live GitHub mutation, and live selection/create/sync remains manual smoke with explicit operator credentials."
-      },
-      "state_and_absence_proof": {
-        "status": "completed",
-        "reason": "Clarify executor found no unresolved conflict requiring analyst routing; checkpoint recorded as not needed.",
-        "analysts": [],
-        "outcome": "No consensus routing required."
-      },
-      "scope_and_roadmap_alignment": {
-        "status": "completed",
-        "reason": "Clarify executor found consistent design concept, workflow, spec, PRD, and roadmap boundaries; checkpoint recorded as not needed.",
-        "analysts": [],
-        "outcome": "No consensus routing required."
-      }
-    }
+    "clarifications_recorded": 5
   },
   "phase_3": {
     "status": "completed",
     "gate": {
       "id": "G3",
       "pass": true,
-      "markers": 0,
-      "reason": "plan.md exists with 0 unresolved markers"
-    },
-    "files": [
-      "specs/009c1-pilot-issue-ingest/plan.md",
-      "specs/009c1-pilot-issue-ingest/research.md",
-      "specs/009c1-pilot-issue-ingest/data-model.md",
-      "specs/009c1-pilot-issue-ingest/quickstart.md",
-      "specs/009c1-pilot-issue-ingest/contracts/pilot-ingest-contract.md",
-      "AGENTS.md"
-    ],
-    "schema_migration_introduced": false,
-    "agent_context_update": {
-      "status": "completed",
-      "command": "SPECIFY_FEATURE=009c1-pilot-issue-ingest SPECIFY_FEATURE_DIRECTORY=specs/009c1-pilot-issue-ingest .specify/scripts/bash/update-agent-context.sh codex"
-    },
-    "scope_guardrails": {
-      "production_ui_or_api": false,
-      "github_sync_poller_or_cron": false,
-      "issue_triage_or_remediation": false,
-      "claim_dispatch_runner_sandbox_or_harness": false,
-      "workflow_contract_tracker_label_semantics": false
+      "markers": 0
     }
   },
   "phase_4": {
@@ -199,423 +63,45 @@
     "gate": {
       "id": "G4",
       "pass": true,
-      "markers": 0,
-      "reason": "0 [Gap] markers"
+      "markers": 0
     },
-    "checklists": {
-      "data_integrity": {
-        "status": "completed",
-        "file": "specs/009c1-pilot-issue-ingest/checklists/data-integrity.md",
-        "items": 24,
-        "gaps_found": 1,
-        "gaps_resolved": 1,
-        "unresolved_markers": 0,
-        "note": "Executor wrote artifacts but stalled before summary; parent audited the generated checklist and diffs. Workspace-scoped identity proof was added to spec, research, data model, quickstart, and contract."
-      },
-      "error_handling": {
-        "status": "completed",
-        "file": "specs/009c1-pilot-issue-ingest/checklists/error-handling.md",
-        "items": 24,
-        "gaps_found": 7,
-        "gaps_resolved": 7,
-        "unresolved_markers": 0,
-        "note": "Executor retry wrote the checklist but stalled before summary; parent audited the file and resolved fallback, credentials, sync failure, malformed payload, coverage, dependency, and redaction gaps."
-      },
-      "security": {
-        "status": "completed",
-        "file": "specs/009c1-pilot-issue-ingest/checklists/security.md",
-        "items": 18,
-        "gaps_found": 1,
-        "gaps_resolved": 1,
-        "unresolved_markers": 0,
-        "note": "Smoke evidence leakage boundary resolved with FR-023 and mirrored in data model, quickstart, contract, and checklist."
-      },
-      "state_management": {
-        "status": "completed",
-        "file": "specs/009c1-pilot-issue-ingest/checklists/state-management.md",
-        "items": 23,
-        "gaps_found": 0,
-        "gaps_resolved": 0,
-        "unresolved_markers": 0,
-        "note": "Existing artifacts already covered projection-derived eligibility, no execution state, and manual-vs-future evidence separation."
-      },
-      "regression_safety": {
-        "status": "completed",
-        "file": "specs/009c1-pilot-issue-ingest/checklists/regression-safety.md",
-        "items": 22,
-        "gaps_found": 0,
-        "gaps_resolved": 0,
-        "unresolved_markers": 0,
-        "note": "Existing artifacts already covered non-pilot sync preservation, local task support, workflow-contract semantics, and feature-flag scope."
-      }
-    },
-    "consensus": {
-      "data_integrity": {
-        "status": "completed",
-        "reason": "No unresolved gap or conflict remained after artifact audit; checkpoint recorded as not needed.",
-        "analysts": [],
-        "outcome": "No consensus routing required."
-      },
-      "error_handling": {
-        "status": "completed",
-        "reason": "No unresolved gap or conflict remained after remediation; credential/redaction details are also covered by the dedicated Security checklist.",
-        "analysts": [],
-        "outcome": "No consensus routing required."
-      },
-      "security": {
-        "status": "completed",
-        "reason": "Resolved gap contained token/secret/credential handling and required consensus routing.",
-        "analysts": [
-          "codebase-analyst",
-          "spec-context-analyst",
-          "domain-researcher"
-        ],
-        "outcome": "Accepted. FR-023 and supporting artifacts already include the required no raw terminal, environment, credential, and secret-dump boundary."
-      },
-      "state_management": {
-        "status": "completed",
-        "reason": "No gaps or conflicts found; checkpoint recorded as not needed.",
-        "analysts": [],
-        "outcome": "No consensus routing required."
-      },
-      "regression_safety": {
-        "status": "completed",
-        "reason": "No gaps or conflicts found; checkpoint recorded as not needed.",
-        "analysts": [],
-        "outcome": "No consensus routing required."
-      }
-    }
+    "checklist_items_resolved": 40
   },
   "phase_5": {
     "status": "completed",
     "gate": {
       "id": "G5",
       "pass": true,
-      "markers": 0,
-      "reason": "36 tasks found"
+      "reason": "21 tasks found",
+      "task_count": 21
     },
-    "files": [
-      "specs/009c1-pilot-issue-ingest/tasks.md"
-    ],
-    "metrics": {
-      "total_tasks": 36,
-      "phases": 7,
-      "parallel_tasks": 3,
-      "user_stories_covered": 4,
-      "functional_requirements_covered": 23,
-      "acceptance_scenarios_covered": 10
-    },
-    "scope_guardrails": {
-      "production_ui_or_api": false,
-      "github_sync_poller_or_cron": false,
-      "issue_triage_or_remediation": false,
-      "claim_dispatch_runner_sandbox_or_harness": false,
-      "workflow_contract_tracker_label_semantics": false,
-      "schema_migration": false
+    "reviewability_gate": {
+      "mode": "tasks",
+      "status": "exception",
+      "pass": true,
+      "reviewable_loc": 840,
+      "production_files": 7,
+      "total_files": 36,
+      "primary_surface_count": 4,
+      "transition_exception": true
     }
   },
   "phase_6": {
     "status": "completed",
+    "finding": "Analyze found missing artifact publish failure coverage.",
+    "remediation": "Added T006 artifact-evidence failure coverage and renumbered downstream tasks.",
     "gate": {
       "id": "G6",
       "pass": true,
-      "markers": 0,
-      "reason": "0 CRITICAL/HIGH findings"
-    },
-    "findings": [
-      {
-        "id": "A-001",
-        "severity": "Medium",
-        "status": "resolved",
-        "summary": "Roadmap SPEC-009C1 status was Pending while workflow state was In Progress."
-      },
-      {
-        "id": "A-002",
-        "severity": "High",
-        "status": "resolved",
-        "summary": "Tasks T014 and T023 could be read as production semantic changes rather than verification/regression tasks."
-      },
-      {
-        "id": "A-003",
-        "severity": "Medium",
-        "status": "resolved",
-        "summary": "Success criteria traceability was implicit in tasks.md."
-      },
-      {
-        "id": "A-004",
-        "severity": "Medium",
-        "status": "resolved",
-        "summary": "Schema migration wording left migration as an implementation fallback."
-      },
-      {
-        "id": "A-005",
-        "severity": "High",
-        "status": "resolved",
-        "summary": "Workflow Plan guardrail still allowed production UI/evidence endpoint scope."
-      },
-      {
-        "id": "A-006",
-        "severity": "Medium",
-        "status": "resolved",
-        "summary": "SC-005 needed an implementation task for the side-effect snapshot helper."
-      }
-    ],
-    "consensus": {
-      "status": "completed",
-      "reason": "Analyze executor reported no unresolved conflict after remediation; checkpoint recorded as not needed.",
-      "analysts": [],
-      "outcome": "No consensus routing required."
+      "reason": "0 CRITICAL/HIGH findings",
+      "markers": 0
     }
   },
   "phase_7": {
-    "status": "completed",
-    "gate": {
-      "id": "G7",
-      "pass": true,
-      "reason": "All 36 tasks complete; full pnpm test passed outside the sandbox after resolving the local SPEC-007 diff-base harness issue.",
-      "markers": 0,
-      "total_tasks": 36,
-      "done_tasks": 36,
-      "command": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.11.0/skills/speckit-autopilot/scripts/validate-gate.sh G7 specs/009c1-pilot-issue-ingest"
-    },
-    "implementation": {
-      "completed_tasks": [
-        "T001-T035",
-        "T036"
-      ],
-      "open_tasks": [],
-      "files": [
-        "src/lib/pilot-issue-eligibility.ts",
-        "src/lib/__tests__/pilot-issue-eligibility.test.ts",
-        "src/lib/__tests__/pilot-issue-smoke.test.ts",
-        "src/lib/__tests__/fixtures/pilot-issue-fixtures.ts",
-        "scripts/pilot-issue-smoke.mjs",
-        "docs/qa/pilot-smoke-checklist.md",
-        "docs/ai/rc-factory-technical-roadmap.md",
-        "docs/ai/specs/SPEC-009C1-workflow.md",
-        "specs/009c1-pilot-issue-ingest/tasks.md",
-        "tsconfig.spec-strict.json",
-        "eslint.config.mjs"
-      ]
-    },
-    "verification": {
-      "focused_vitest": {
-        "status": "passed",
-        "command": "pnpm exec vitest run src/lib/__tests__/pilot-issue-eligibility.test.ts src/lib/__tests__/pilot-issue-smoke.test.ts",
-        "files": 2,
-        "tests": 25
-      },
-      "typecheck": {
-        "status": "passed",
-        "command": "pnpm typecheck"
-      },
-      "lint": {
-        "status": "passed",
-        "command": "pnpm lint"
-      },
-      "build": {
-        "status": "passed",
-        "command": "pnpm build",
-        "note": "Passed after network-enabled rerun for Next.js Google Fonts."
-      },
-      "full_unit_suite": {
-        "status": "passed",
-        "command": "pnpm test",
-        "files": 275,
-        "tests": 2840,
-        "skipped": 1,
-        "todo": 84,
-        "note": "Passed outside the sandbox so mc-provisioner-daemon could bind its local Unix socket."
-      },
-      "e2e_suite": {
-        "status": "passed",
-        "command": "pnpm test:e2e",
-        "tests": 646,
-        "note": "Passed outside the sandbox for local Playwright/server resources."
-      }
-    },
-    "scope_guardrails": {
-      "production_ui_or_api": false,
-      "github_sync_poller_or_cron": false,
-      "issue_triage_or_remediation": false,
-      "claim_dispatch_runner_sandbox_or_harness": false,
-      "workflow_contract_tracker_label_semantics": false,
-      "schema_migration": false
-    }
+    "status": "in_progress",
+    "next_task": "T001"
   },
-  "post": {
-    "status": "completed",
-    "implementation_commit": "3750f136",
-    "merged_main_commit": "7d544f3975d5d7e7241f83ecee629509760c064c",
-    "deployed_main_commit": "e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1",
-    "pull_request": {
-      "status": "merged",
-      "number": 34,
-      "url": "https://github.com/racecraft-lab/mission-control/pull/34",
-      "title": "feat(SPEC-009C1): GitHub pilot issue ingest and eligibility",
-      "merged_at": "2026-05-14T19:02:39Z",
-      "merge_commit": "7d544f3975d5d7e7241f83ecee629509760c064c"
-    },
-    "post_merge_fix": {
-      "status": "merged",
-      "number": 40,
-      "url": "https://github.com/racecraft-lab/mission-control/pull/40",
-      "title": "fix(pilot): hold synced issues from auto routing",
-      "merged_at": "2026-05-15T12:44:30Z",
-      "merge_commit": "e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1"
-    },
-    "reviewability_gate": {
-      "status": "exception",
-      "pass": true,
-      "command": "reviewability-gate.sh diff origin/main...HEAD",
-      "reviewable_loc": 4203,
-      "production_files": 7,
-      "total_files": 29,
-      "transition_exception": true
-    },
-    "branch": "009c1-pilot-issue-ingest",
-    "push": {
-      "status": "completed",
-      "remote": "https://github.com/racecraft-lab/mission-control.git",
-      "note": "Initial SSH push to origin failed because the local SSH authentication agent could not sign with the configured 1Password-backed key. The branch was pushed over HTTPS using the active gh credential without changing the repository remote."
-    },
-    "live_smoke": {
-      "status": "passed",
-      "date": "2026-05-15",
-      "deployment": {
-        "host": "hal",
-        "service": "mission-control.service",
-        "commit": "e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1"
-      },
-      "final_synthetic_issue": {
-        "number": 42,
-        "repo": "racecraft-lab/mission-control",
-        "closed_after_evidence": true
-      },
-      "proofs": {
-        "exactly_one_github_linked_root_task": true,
-        "duplicate_sync_preserved_one_task": true,
-        "local_only_lookalike_ineligible": true,
-        "no_claim_dispatch_remediation_runner_or_artifact_side_effects": true
-      },
-      "cleanup": {
-        "status": "completed",
-        "closed_synthetic_issues": [
-          37,
-          39,
-          41,
-          42
-        ],
-        "mission_control_smoke_rows_removed_after_backup": true,
-        "post_cleanup_mc_pilot_task_rows": 0
-      }
-    },
-    "open_blockers": []
-  },
-  "plan": [
-    {
-      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 0: Prerequisites",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 1: Specify",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Eligibility and Fallback",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Eligibility and Fallback Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - State and Absence Proof",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - State and Absence Proof Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Scope and Roadmap Alignment",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Scope and Roadmap Alignment Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 3: Plan",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Data Integrity",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Data Integrity Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Error Handling",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Error Handling Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Security",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Security Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - State Management",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - State Management Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Regression Safety",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Regression Safety Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 5: Tasks",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6: Analyze",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6: Analyze - Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Implement - T001-T036 execution and verification",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Verification and Status Sync",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Live Smoke Evidence and Cleanup Hygiene",
-      "status": "completed"
-    }
-  ]
+  "post_implementation": {
+    "status": "pending"
+  }
 }

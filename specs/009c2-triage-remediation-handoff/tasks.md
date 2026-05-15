@@ -28,66 +28,70 @@ Automated tests must not mutate live GitHub.
 - [ ] T005 Add failing invalid-output coverage proving missing/malformed/unknown
   pilot dispositions fail closed without successor creation in
   `src/lib/__tests__/task-chain-output-validation.test.ts`
-- [ ] T006 Add failing compatibility coverage that existing SPEC-007 lowercase
+- [ ] T006 Add failing artifact-evidence failure coverage proving a publish
+  failure records task-scoped failure activity instead of silently reporting
+  complete evidence in `src/lib/__tests__/task-chain-advancement.routing.test.ts`
+- [ ] T007 Add failing compatibility coverage that existing SPEC-007 lowercase
   disposition schemas still log valid dispositions in
   `src/lib/__tests__/spec-007-disposition-dispatch.test.ts`
 
 ## Phase 2: Workflow Contract And Runtime Implementation
 
-- [ ] T007 Update `docs/ai/workflows/mission-control/workflow-contract.yaml` so
+- [ ] T008 Update `docs/ai/workflows/mission-control/workflow-contract.yaml` so
   `mission-control_issue_triage` emits the pilot `disposition` taxonomy and
   routes only `ACTIONABLE_REMEDIATION` to `mission-control_remediation_plan`
-- [ ] T008 Extend `src/lib/task-dispatch.ts` disposition schema detection and
+- [ ] T009 Extend `src/lib/task-dispatch.ts` disposition schema detection and
   validation to accept the pilot taxonomy without breaking SPEC-007 values
-- [ ] T009 Implement task-scoped pilot triage artifact evidence using existing
+- [ ] T010 Implement task-scoped pilot triage artifact evidence using existing
   `publishArtifact` behavior and `artifact_type='triage_outcome'`
-- [ ] T010 Implement task-scoped activity evidence for valid pilot triage
+- [ ] T011 Implement task-scoped activity evidence for valid pilot triage
   outcomes without counting unrelated pipeline entities
-- [ ] T011 Ensure duplicate actionable handoff attempts preserve the existing
+- [ ] T012 Ensure duplicate actionable handoff attempts preserve the existing
   remediation successor and do not create duplicate pilot evidence rows
 
 ## Phase 3: Documentation And Smoke Evidence
 
-- [ ] T012 Update `docs/qa/pilot-smoke-checklist.md` with SPEC-009C2 fresh
+- [ ] T013 Update `docs/qa/pilot-smoke-checklist.md` with SPEC-009C2 fresh
   synthetic issue creation, actionable handoff, negative fixture checks, and
   cleanup steps
-- [ ] T013 Update `docs/ai/rc-factory-technical-roadmap.md` status/evidence
+- [ ] T014 Update `docs/ai/rc-factory-technical-roadmap.md` status/evidence
   wording for SPEC-009C2 branch progress while preserving SPEC-009F and
   SPEC-013A1 future boundaries
-- [ ] T014 Update `docs/ai/specs/SPEC-009C2-workflow.md` implementation
+- [ ] T015 Update `docs/ai/specs/SPEC-009C2-workflow.md` implementation
   progress and verification-evidence tables
 
 ## Phase 4: Verification
 
-- [ ] T015 Run focused Vitest coverage:
+- [ ] T016 Run focused Vitest coverage:
   `pnpm test src/lib/__tests__/task-chain-advancement.routing.test.ts src/lib/__tests__/task-chain-output-validation.test.ts src/lib/__tests__/spec-007-disposition-dispatch.test.ts src/lib/__tests__/workflow-contracts/importer.test.ts`
-- [ ] T016 Run `pnpm typecheck`
-- [ ] T017 Run `pnpm lint`
-- [ ] T018 Run `pnpm build`
-- [ ] T019 Run the G7 gate script and reviewability diff gate
-- [ ] T020 Record manual synthetic smoke as operator-owned pending evidence if
+- [ ] T017 Run `pnpm typecheck`
+- [ ] T018 Run `pnpm lint`
+- [ ] T019 Run `pnpm build`
+- [ ] T020 Run the G7 gate script and reviewability diff gate
+- [ ] T021 Record manual synthetic smoke as operator-owned pending evidence if
   live GitHub mutation is not run in this automated pass
 
 ## Dependencies
 
-- T001-T006 must fail before T007-T011 production changes.
-- T007 must precede T001 green verification.
-- T008-T011 must precede T002-T006 green verification.
-- T012-T014 follow code changes.
-- T015-T020 run after implementation and documentation updates.
+- T001-T007 must fail before T008-T012 production changes.
+- T008 must precede T001 green verification.
+- T009-T012 must precede T002-T007 green verification.
+- T013-T015 follow code changes.
+- T016-T021 run after implementation and documentation updates.
 
 ## Parallel Opportunities
 
-- T001 and T012 may be prepared independently after Plan.
+- T001 and T013 may be prepared independently after Plan.
 - T002-T005 share routing fixtures and should be implemented serially.
-- T006 can run in parallel with pilot-specific routing tests because it guards
+- T006 and T007 can run in parallel with pilot-specific routing tests because
+  T006 covers artifact failure visibility and T007 guards
   legacy compatibility.
-- T013 and T014 can be updated after verification evidence is known.
+- T014 and T015 can be updated after verification evidence is known.
 
 ## Coverage Map
 
-- US1 / SC-001 / SC-002: T002, T003, T007, T008, T011, T015
-- US2 / SC-003 / SC-005: T004, T005, T008, T009, T010, T015
-- US3 / SC-006 / SC-007: T001, T007, T015
-- US4 / SC-008: T012, T020
-- Scope guardrails / SC-009 / SC-010: T013, T014, T016-T019
+- US1 / SC-001 / SC-002: T002, T003, T008, T009, T012, T016
+- US2 / SC-003 / SC-005: T004, T005, T006, T009, T010, T011, T016
+- US3 / SC-006 / SC-007: T001, T008, T016
+- US4 / SC-008: T013, T021
+- Scope guardrails / SC-009 / SC-010: T014, T015, T017-T020

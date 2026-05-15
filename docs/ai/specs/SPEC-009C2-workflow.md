@@ -69,7 +69,7 @@ Source-of-truth scoping decisions:
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contract, quickstart, and agent context; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Five focused requirement-quality checklists generated; 40/40 checks resolved; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated 20 dependency-ordered TDD tasks; G5 and tasks reviewability gate passed with transition exception |
-| Analyze | `$speckit-analyze` | Pending | Verify cross-artifact scope, taxonomy, routing, and no-side-effect consistency |
+| Analyze | `$speckit-analyze` | Complete | G6 rerun passed after adding T006 artifact-evidence failure coverage |
 | Implement | `$speckit-implement` | Pending | Implement and verify the approved tasks, then update status and push |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -86,6 +86,25 @@ Source-of-truth scoping decisions:
 | G5 | After Tasks | Tasks cover every acceptance criterion with RED tests before production changes and include explicit guardrails for no cron/poller, no claim/runner/sandbox, and no production non-remediation routing |
 | G6 | After Analyze | No CRITICAL/HIGH findings remain; generated artifacts do not implement SPEC-009C3/C4/D/E/F, automatic GitHub sync, claim/reconciliation, runner state, sandboxing, harness adapters, or production evidence UI |
 | G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, live synthetic smoke checklist, cleanup evidence, roadmap/workflow status updates, branch commit, and push are complete |
+
+### Autopilot Phase Accounting
+
+This run must account for every prescribed autopilot step. A phase is complete
+only when its artifact and gate evidence are recorded here.
+
+| Step | Required By Autopilot | Status | Evidence |
+|------|-----------------------|--------|----------|
+| Archive Sweep Startup | Step -1 | Complete | Archive extension detected; current target excluded; no cleanup applied |
+| Prerequisites | Step 0 | Complete | `check-prerequisites.sh`, command detection, preset detection, constitution context loaded |
+| Specify | Phase 1 / G1 | Complete | `spec.md`, requirements checklist, G1 pass |
+| Clarify | Phase 2 / G2 | Complete | Five clarification decisions recorded in `spec.md`, G2 pass |
+| Plan | Phase 3 / G3 | Complete | `plan.md`, `research.md`, `data-model.md`, contract, quickstart, agent context, G3 pass |
+| Checklist | Phase 4 / G4 | Complete | Five domain checklists, 40/40 resolved items, G4 pass |
+| Tasks | Phase 5 / G5 | Complete | `tasks.md`, 21 tasks after Analyze remediation, G5 pass |
+| Analyze | Phase 6 / G6 | Complete | Cross-artifact analysis found one task coverage gap; remediation added T006; G6 rerun passed with 0 CRITICAL/HIGH findings |
+| Implement | Phase 7 / G7 | Pending | Not started until Analyze gate passes |
+| Post-Implementation Verify | Post step 10/12 | Pending | Focused tests, typecheck, lint, build, and gate evidence pending |
+| Cleanup / Reviewability / PR | Post steps 13-18 | Pending | Cleanup/reviewability diff/PR hygiene pending after implementation |
 
 ---
 
