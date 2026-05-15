@@ -66,7 +66,7 @@ Source-of-truth scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
 | Clarify | `$speckit-clarify` | Complete | Five clarify sessions resolved in `spec.md`; G2 passed with 0 markers and no consensus escapes |
-| Plan | `$speckit-plan` | Pending | Plan typed triage output, routing tests, artifact evidence, and successor creation through existing helpers |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contract, quickstart, and agent context; G3 passed |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered red-green-refactor tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify cross-artifact scope, taxonomy, routing, and no-side-effect consistency |
@@ -486,11 +486,11 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Pending |
-| `research.md` | Pending | Pending |
-| `data-model.md` | Pending | Pending |
-| `contracts/` | Pending | Pending |
-| `quickstart.md` | Pending | Pending |
+| `plan.md` | Complete | Reuses workflow contract, task-chain, disposition, artifact, and activity surfaces |
+| `research.md` | Complete | Resolves taxonomy, routing, evidence, and live-mutation boundaries |
+| `data-model.md` | Complete | Models existing rows only; no migration planned |
+| `contracts/` | Complete | Documents Issue Triage schema, routing rule, runtime, and verification contract |
+| `quickstart.md` | Complete | Focused checks plus fresh SPEC-009C2 manual smoke and cleanup |
 
 ---
 
