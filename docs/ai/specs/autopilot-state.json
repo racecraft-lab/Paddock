@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
   "updated_at": "2026-05-15T20:13:32Z",
-  "active_step": "Post-Implementation: Commit and Push",
-  "status": "In Progress",
+  "active_step": "Operator-owned live smoke / PR review",
+  "status": "Implementation Complete; Operator Smoke Pending",
   "active_workflow": {
     "spec_id": "SPEC-009C2",
     "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
@@ -138,7 +138,7 @@
     }
   },
   "post_implementation": {
-    "status": "in_progress",
+    "status": "completed_with_operator_smoke_pending",
     "reviewability_tasks_gate": {
       "mode": "tasks",
       "status": "exception",
@@ -162,7 +162,7 @@
       "reason": "Automated pass did not mutate live GitHub or disposable Mission Control rows."
     },
     "branch_push": {
-      "status": "pending"
+      "status": "completed"
     }
   }
 }

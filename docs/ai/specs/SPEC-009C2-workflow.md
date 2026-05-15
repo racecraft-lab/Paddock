@@ -104,7 +104,7 @@ only when its artifact and gate evidence are recorded here.
 | Analyze | Phase 6 / G6 | Complete | Cross-artifact analysis found one task coverage gap; remediation added T006; G6 rerun passed with 0 CRITICAL/HIGH findings |
 | Implement | Phase 7 / G7 | Complete | T001-T021 completed; implementation uses existing workflow-contract, task-chain, disposition, artifact, and activity surfaces |
 | Post-Implementation Verify | Post step 10/12 | Complete | Focused Vitest, full unit suite, typecheck, lint, and production build passed under Node 22.22.2 |
-| Cleanup / Reviewability / PR | Post steps 13-18 | In Progress | G7 passed; tasks reviewability passed by transition exception; diff reviewability exposed a plugin predicate defect; branch push remains |
+| Cleanup / Reviewability / PR | Post steps 13-18 | Complete | G7 passed; tasks reviewability passed by transition exception; diff reviewability exposed a plugin predicate defect; branch pushed; live smoke remains operator-owned |
 
 ---
 
@@ -773,7 +773,7 @@ Implementation guardrails:
 - [X] Manual smoke checklist uses a fresh SPEC-009C2 synthetic issue
 - [X] No automated synthetic issue or disposable Mission Control rows were created; operator smoke cleanup steps are documented
 - [X] Roadmap/workflow/spec status updated on the spec branch
-- [ ] Branch committed and pushed
+- [X] Branch committed and pushed
 
 ---
 
