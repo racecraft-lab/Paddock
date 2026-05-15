@@ -21,6 +21,7 @@ const {
   requireRoleMock,
   mutationLimiterMock,
   initializeLabelsMock,
+  pullFromGitHubMock,
   getGitHubTokenMock,
   loggerErrorMock,
   loggerWarnMock,
@@ -30,6 +31,7 @@ const {
   requireRoleMock: vi.fn(),
   mutationLimiterMock: vi.fn(() => null),
   initializeLabelsMock: vi.fn(async () => {}),
+  pullFromGitHubMock: vi.fn(async () => ({ pulled: 1, pushed: 0 })),
   getGitHubTokenMock: vi.fn(async () => 'token'),
   loggerErrorMock: vi.fn(),
   loggerWarnMock: vi.fn(),
@@ -60,6 +62,7 @@ vi.mock('@/lib/github-sync-engine', async () => {
   return {
     ...actual,
     initializeLabels: initializeLabelsMock,
+    pullFromGitHub: pullFromGitHubMock,
   }
 })
 vi.mock('@/lib/github', async () => {
@@ -88,6 +91,8 @@ beforeEach(() => {
   mutationLimiterMock.mockReturnValue(null)
   initializeLabelsMock.mockReset()
   initializeLabelsMock.mockImplementation(async () => {})
+  pullFromGitHubMock.mockReset()
+  pullFromGitHubMock.mockImplementation(async () => ({ pulled: 1, pushed: 0 }))
   getGitHubTokenMock.mockReset()
   getGitHubTokenMock.mockImplementation(async () => 'token')
   loggerErrorMock.mockClear()
@@ -102,24 +107,52 @@ function freshMigratedDb(): Database.Database {
   return db
 }
 
-function setupAuthOk(workspaceId = 1): void {
+function setupAuthOk(workspaceId = 1, role: 'admin' | 'operator' | 'viewer' = 'operator'): void {
   requireRoleMock.mockReturnValue({
     user: {
       id: 7,
       username: 'op',
-      role: 'operator',
+      role,
       tenant_id: 1,
       workspace_id: workspaceId,
     },
   })
 }
 
-function buildPostRequest(body: Record<string, unknown>): NextRequest {
-  return new Request('http://localhost/api/github', {
+function buildPostRequest(body: Record<string, unknown>, path = '/api/github'): NextRequest {
+  return new Request(`http://localhost${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   }) as unknown as NextRequest
+}
+
+function seedFacilityAndProductLine(db: Database.Database): void {
+  seedWorkspace(db, 2, 'facility', 'Facility', '{"FEATURE_WORKSPACE_SWITCHER":true}')
+  seedWorkspace(db, 4, 'mission-control', 'Mission Control', '{"FEATURE_WORKSPACE_SWITCHER":true,"FEATURE_AREA_LABEL_ROUTING":true}')
+}
+
+function seedWorkspace(
+  db: Database.Database,
+  id: number,
+  slug: string,
+  name: string,
+  featureFlags = '{"FEATURE_WORKSPACE_SWITCHER":true}',
+): void {
+  db.prepare(`
+    INSERT OR REPLACE INTO workspaces (id, slug, name, tenant_id, feature_flags, created_at, updated_at)
+    VALUES (?, ?, ?, ?, ?, unixepoch(), unixepoch())
+  `).run(id, slug, name, 1, featureFlags)
+}
+
+function seedGithubProject(db: Database.Database, workspaceId = 4): void {
+  db.prepare(`
+    INSERT INTO projects (
+      id, workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled,
+      github_labels_initialized, status, created_at, updated_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', unixepoch(), unixepoch())
+  `).run(3, workspaceId, 'QA', 'qa', 'QA', 'org/repo', 1, 0)
 }
 
 describe('SPEC-006 / T064 — POST /api/github init-labels public-contract parity', () => {
@@ -153,6 +186,7 @@ describe('SPEC-006 / T064 — POST /api/github init-labels public-contract parit
   it('upgrades the internal call to initializeLabels(repo, workspaceId, { trigger: "connect" })', async () => {
     setupAuthOk(42)
     const db = freshMigratedDb()
+    seedWorkspace(db, 42, 'ops', 'Ops')
     getDatabaseMock.mockReturnValue(db)
 
     await POST(buildPostRequest({ action: 'init-labels', repo: 'org/repo' }))
@@ -182,5 +216,46 @@ describe('SPEC-006 / T064 — POST /api/github init-labels public-contract parit
     expect(res.status).toBe(200)
     const body = (await res.json()) as Record<string, unknown>
     expect(body).toEqual({ ok: true, repo: 'org/repo' })
+  })
+
+  it('uses explicit Product Line workspace scope when a Facility admin initializes labels', async () => {
+    setupAuthOk(2, 'admin')
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db, 4)
+    getDatabaseMock.mockReturnValue(db)
+
+    const res = await POST(buildPostRequest(
+      { action: 'init-labels', repo: 'org/repo' },
+      '/api/github?workspace_id=4',
+    ))
+
+    expect(res.status).toBe(200)
+    expect(initializeLabelsMock).toHaveBeenCalledWith('org/repo', 4, { trigger: 'connect' })
+    const row = db.prepare('SELECT github_labels_initialized FROM projects WHERE id = 3 AND workspace_id = 4').get() as {
+      github_labels_initialized: number
+    }
+    expect(row.github_labels_initialized).toBe(1)
+  })
+
+  it('uses explicit Product Line workspace scope when a Facility admin triggers project sync', async () => {
+    setupAuthOk(2, 'admin')
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db, 4)
+    getDatabaseMock.mockReturnValue(db)
+
+    const res = await POST(buildPostRequest(
+      { action: 'sync-project', project_id: 3 },
+      '/api/github?workspace_id=4',
+    ))
+
+    expect(res.status).toBe(200)
+    const body = (await res.json()) as Record<string, unknown>
+    expect(body).toEqual({ ok: true, pulled: 1, pushed: 0 })
+    expect(pullFromGitHubMock).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 3, github_repo: 'org/repo' }),
+      4,
+    )
   })
 })
