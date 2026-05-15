@@ -67,7 +67,7 @@ Source-of-truth scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with 0 clarification markers |
 | Clarify | `$speckit-clarify` | Complete | Five clarify sessions resolved in `spec.md`; G2 passed with 0 markers and no consensus escapes |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contract, quickstart, and agent context; G3 passed |
-| Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
+| Checklist | `$speckit-checklist` | Complete | Five focused requirement-quality checklists generated; 40/40 checks resolved; G4 passed |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered red-green-refactor tasks |
 | Analyze | `$speckit-analyze` | Pending | Verify cross-artifact scope, taxonomy, routing, and no-side-effect consistency |
 | Implement | `$speckit-implement` | Pending | Implement and verify the approved tasks, then update status and push |
@@ -571,12 +571,12 @@ Focus on SPEC-009C2 requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
-| regression-safety | Pending | Pending | Pending |
-| **Total** | Pending | Pending | Pending |
+| data-integrity | 8 | 0 | FR-003..FR-008, FR-014..FR-015, SC-001..SC-007 |
+| state-management | 8 | 0 | Clarifications, FR-012..FR-013, FR-017..FR-019 |
+| error-handling | 8 | 0 | FR-004, FR-009..FR-011, FR-016, SC-005 |
+| security | 8 | 0 | FR-016..FR-019, Quickstart, Constitution XIII |
+| regression-safety | 8 | 0 | SPEC-007, SPEC-009A, SPEC-009C1, SPEC-009F, SPEC-013A1 boundaries |
+| **Total** | 40 | 0 | No unresolved gaps |
 
 ---
 
