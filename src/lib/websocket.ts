@@ -22,7 +22,7 @@ import {
 const log = createClientLogger('WebSocket')
 
 // Gateway protocol version (v3 required by OpenClaw 2026.x)
-const PROTOCOL_VERSION = 3
+const PROTOCOL_VERSION = 4
 const DEFAULT_GATEWAY_CLIENT_ID = process.env.NEXT_PUBLIC_GATEWAY_CLIENT_ID || 'openclaw-control-ui'
 
 // Heartbeat configuration
