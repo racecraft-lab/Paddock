@@ -5,6 +5,7 @@ import { eventBus } from './event-bus'
 import { logger } from './logger'
 import { config } from './config'
 import { syncTaskOutbound } from './github-sync-engine'
+import { PILOT_MISSION_CONTROL_REPO } from './pilot-issue-eligibility'
 import { getAegis } from './aegis'
 import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
 import { resolveFlag } from './feature-flags'
@@ -2035,16 +2036,47 @@ function scoreAgentForTask(
  */
 export async function autoRouteInboxTasks(): Promise<{ ok: boolean; message: string }> {
   const db = getDatabase()
+  const taskColumns = columnsFor(db, 'tasks')
+  const hasPilotHoldColumns = ['github_repo', 'github_issue_number', 'github_synced_at', 'parent_task_id']
+    .every((column) => taskColumns.has(column))
+  const pilotHoldSelect = hasPilotHoldColumns
+    ? `,
+      github_repo,
+      github_issue_number,
+      github_synced_at,
+      parent_task_id`
+    : ''
 
-  const inboxTasks = db.prepare(`
-    SELECT id, title, description, priority, tags, workspace_id
+  const candidateInboxTasks = db.prepare(`
+    SELECT
+      id,
+      title,
+      description,
+      priority,
+      tags,
+      workspace_id${pilotHoldSelect}
     FROM tasks
     WHERE status = 'inbox' AND assigned_to IS NULL
     ORDER BY
       CASE priority WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END ASC,
       created_at ASC
-    LIMIT 5
-  `).all() as Array<{ id: number; title: string; description: string | null; priority: string; tags: string | null; workspace_id: number }>
+    LIMIT 25
+  `).all() as Array<{
+    id: number
+    title: string
+    description: string | null
+    priority: string
+    tags: string | null
+    workspace_id: number
+    github_repo?: string | null
+    github_issue_number?: number | null
+    github_synced_at?: number | null
+    parent_task_id?: number | null
+  }>
+
+  const inboxTasks = candidateInboxTasks
+    .filter((task) => !hasPilotHoldColumns || !shouldHoldPilotGitHubTaskFromAutoRouting(db, task))
+    .slice(0, 5)
 
   if (inboxTasks.length === 0) {
     return { ok: true, message: 'No inbox tasks to route' }
@@ -2130,4 +2162,30 @@ export async function autoRouteInboxTasks(): Promise<{ ok: boolean; message: str
       ? `Auto-routed ${routed}/${inboxTasks.length} inbox task(s)`
       : `${inboxTasks.length} inbox task(s), no suitable agents found`,
   }
+}
+
+function shouldHoldPilotGitHubTaskFromAutoRouting(
+  db: ReturnType<typeof getDatabase>,
+  task: {
+    workspace_id: number
+    github_repo?: string | null
+    github_issue_number?: number | null
+    github_synced_at?: number | null
+    parent_task_id?: number | null
+  },
+): boolean {
+  if (
+    task.github_repo !== PILOT_MISSION_CONTROL_REPO
+    || task.github_issue_number == null
+    || task.github_synced_at == null
+    || task.parent_task_id !== null
+  ) {
+    return false
+  }
+
+  const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?')
+    .get(task.workspace_id) as { feature_flags: string | null } | undefined
+  return resolveFlag('PILOT_MISSION_CONTROL_E2E', {
+    workspaceFlags: row?.feature_flags ?? null,
+  })
 }

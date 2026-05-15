@@ -89,7 +89,9 @@ function createDispatchDb(): Database.Database {
       name TEXT NOT NULL,
       workspace_id INTEGER,
       scope TEXT NOT NULL DEFAULT 'workspace',
+      role TEXT NOT NULL DEFAULT 'agent',
       status TEXT NOT NULL DEFAULT 'offline',
+      hidden INTEGER NOT NULL DEFAULT 0,
       config TEXT
     );
     CREATE TABLE tasks (
@@ -98,6 +100,7 @@ function createDispatchDb(): Database.Database {
       description TEXT,
       status TEXT NOT NULL,
       priority TEXT NOT NULL,
+      tags TEXT,
       resolution TEXT,
       assigned_to TEXT,
       created_by TEXT NOT NULL DEFAULT 'creator',
@@ -109,8 +112,11 @@ function createDispatchDb(): Database.Database {
       github_repo TEXT,
       github_issue_number INTEGER,
       github_pr_number INTEGER,
+      github_synced_at INTEGER,
+      parent_task_id INTEGER,
       dispatch_attempts INTEGER NOT NULL DEFAULT 0,
       error_message TEXT,
+      created_at INTEGER NOT NULL DEFAULT 1,
       updated_at INTEGER NOT NULL DEFAULT 1
     );
     CREATE TABLE workflow_templates (
@@ -230,6 +236,47 @@ async function importTaskDispatchWithDb(
 
   return import('@/lib/task-dispatch')
 }
+
+describe('autoRouteInboxTasks pilot hold', () => {
+  it('holds GitHub-linked Mission Control pilot tasks while routing ordinary inbox tasks', async () => {
+    dispatchDb = createDispatchDb()
+    dispatchDb.prepare(`
+      UPDATE workspaces
+      SET feature_flags = ?
+      WHERE id = 1
+    `).run(JSON.stringify({ PILOT_MISSION_CONTROL_E2E: true }))
+    dispatchDb.prepare(`
+      INSERT INTO agents (id, name, workspace_id, scope, role, status, config)
+      VALUES (10, 'HAL', 1, 'workspace', 'agent', 'idle', NULL)
+    `).run()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (
+        id, title, description, status, priority, assigned_to, workspace_id,
+        project_id, github_repo, github_issue_number, github_synced_at,
+        parent_task_id, created_at
+      )
+      VALUES
+        (100, 'Pilot issue', 'Hold for SPEC-009C1 evidence', 'inbox', 'medium', NULL, 1,
+          1, 'racecraft-lab/mission-control', 39, 12345, NULL, 1),
+        (101, 'Ordinary inbox task', 'Can be routed', 'inbox', 'medium', NULL, 1,
+          1, NULL, NULL, NULL, NULL, 2)
+    `).run()
+
+    const { autoRouteInboxTasks } = await importTaskDispatchWithDb(dispatchDb)
+
+    const result = await autoRouteInboxTasks()
+
+    expect(result.ok).toBe(true)
+    expect(dispatchDb.prepare('SELECT status, assigned_to FROM tasks WHERE id = 100').get())
+      .toEqual({ status: 'inbox', assigned_to: null })
+    expect(dispatchDb.prepare('SELECT status, assigned_to FROM tasks WHERE id = 101').get())
+      .toEqual({ status: 'assigned', assigned_to: 'HAL' })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE entity_id = 100 AND type = 'task_auto_routed'").get())
+      .toEqual({ count: 0 })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE entity_id = 101 AND type = 'task_auto_routed'").get())
+      .toEqual({ count: 1 })
+  })
+})
 
 describe('runAegisReviews resolver integration', () => {
   it('preserves review gate writes while sourcing Aegis through the shared resolver', async () => {
