@@ -68,7 +68,7 @@ Source-of-truth scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Five clarify sessions resolved in `spec.md`; G2 passed with 0 markers and no consensus escapes |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contract, quickstart, and agent context; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Five focused requirement-quality checklists generated; 40/40 checks resolved; G4 passed |
-| Tasks | `$speckit-tasks` | Complete | Generated 20 dependency-ordered TDD tasks; G5 and tasks reviewability gate passed with transition exception |
+| Tasks | `$speckit-tasks` | Complete | Generated 21 dependency-ordered TDD tasks after Analyze remediation; G5 and tasks reviewability gate passed with transition exception |
 | Analyze | `$speckit-analyze` | Complete | G6 rerun passed after adding T006 artifact-evidence failure coverage |
 | Implement | `$speckit-implement` | Complete | Implemented T001-T021 and recorded verification evidence |
 
@@ -104,7 +104,7 @@ only when its artifact and gate evidence are recorded here.
 | Analyze | Phase 6 / G6 | Complete | Cross-artifact analysis found one task coverage gap; remediation added T006; G6 rerun passed with 0 CRITICAL/HIGH findings |
 | Implement | Phase 7 / G7 | Complete | T001-T021 completed; implementation uses existing workflow-contract, task-chain, disposition, artifact, and activity surfaces |
 | Post-Implementation Verify | Post step 10/12 | Complete | Focused Vitest, full unit suite, typecheck, lint, and production build passed under Node 22.22.2 |
-| Cleanup / Reviewability / PR | Post steps 13-18 | Complete | G7 passed; tasks reviewability passed by transition exception; diff reviewability exposed a plugin predicate defect; branch pushed; live smoke remains operator-owned |
+| Cleanup / Reviewability / PR | Post steps 13-18 | Complete | G7 passed; tasks reviewability passed by transition exception; PR #43 and post-merge fix PR #46 merged; HAL live smoke and cleanup verified |
 
 ---
 
@@ -256,23 +256,23 @@ or SDD handoff, but it must not start that lane in this spec.
 
 ### Success Criteria Summary
 
-- [ ] Issue Triage schema exposes a canonical pilot disposition taxonomy:
+- [x] Issue Triage schema exposes a canonical pilot disposition taxonomy:
   `ACTIONABLE_REMEDIATION`, `DUPLICATE`, `OBSOLETE`, `INVALID`,
   `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`.
-- [ ] The repo-owned Mission Control workflow contract imports/exports with
+- [x] The repo-owned Mission Control workflow contract imports/exports with
   stable hashes and routes `ACTIONABLE_REMEDIATION` to
   `mission-control_remediation_plan`.
-- [ ] `ACTIONABLE_REMEDIATION` creates exactly one remediation-planning
+- [x] `ACTIONABLE_REMEDIATION` creates exactly one remediation-planning
   successor through `advanceTaskChain` or the existing task-chain helper path.
-- [ ] Duplicate execution or rerun does not create a second remediation
+- [x] Duplicate execution or rerun does not create a second remediation
   successor for the same pilot issue/stage.
-- [ ] Negative dispositions create zero remediation successors and persist
+- [x] Negative dispositions create zero remediation successors and persist
   durable disposition/artifact/activity evidence.
-- [ ] `NEEDS_SPEC` does not start SpecKit/SDD, create remediation work, or mark
+- [x] `NEEDS_SPEC` does not start SpecKit/SDD, create remediation work, or mark
   the pilot as done.
-- [ ] Manual UAT uses a fresh SPEC-009C2 synthetic issue and records cleanup so
+- [x] Manual UAT uses a fresh SPEC-009C2 synthetic issue and records cleanup so
   no test dirt remains behind.
-- [ ] Roadmap records SPEC-009F as the future production routing/evidence owner
+- [x] Roadmap records SPEC-009F as the future production routing/evidence owner
   for non-remediation triage outcomes.
 
 ---
@@ -738,7 +738,7 @@ Implementation guardrails:
 | Foundation | T001-T007 | 7/7 | RED tests added for contract taxonomy/routing, actionable handoff, duplicate prevention, negative dispositions, invalid output, artifact publish failure, and SPEC-007 compatibility |
 | Triage handoff | T008-T012 | 5/5 | Workflow contract now emits pilot disposition taxonomy; dispatcher accepts pilot taxonomy, records task-scoped disposition/artifact/activity evidence, and avoids duplicate evidence |
 | Negative outcomes | T004-T006, T011 | 4/4 | Negative dispositions terminate without remediation successors while preserving evidence; artifact publish failures record task-scoped failure activity |
-| Smoke evidence | T013, T021 | 2/2 | Smoke checklist requires a fresh SPEC-009C2 synthetic issue and cleanup; live mutation is recorded as operator-owned pending evidence |
+| Smoke evidence | T013, T021 | 2/2 | Fresh SPEC-009C2 synthetic issue #47 drove the post-PR46 live smoke; cleanup removed disposable Mission Control rows and UAT fixtures |
 | Guardrails and verification | T014-T020 | 7/7 | Roadmap/workflow updated; focused tests, full unit suite, typecheck, lint, build, G7 gate, and reviewability evidence recorded |
 
 ### Verification Evidence
@@ -753,9 +753,9 @@ Implementation guardrails:
 | Full e2e suite | Not run | No UI or browser workflow changed; SPEC-009C2 uses unit/integration coverage plus manual smoke checklist |
 | G7 gate script | Pass | `validate-gate.sh G7 specs/009c2-triage-remediation-handoff` -> pass true, 21/21 tasks complete, 0 markers |
 | Reviewability tasks gate | Exception pass | `reviewability-gate.sh tasks specs/009c2-triage-remediation-handoff` -> status exception, pass true, transition_exception true |
-| Reviewability diff gate | Blocked by plugin defect | `reviewability-gate.sh diff origin/main...HEAD` reported transition_exception false; corrected non-`grep -q` predicate over the same diff found transition_exception true, matching the workflow/roadmap exception text |
-| Manual synthetic smoke | Operator-owned pending | Automated pass did not mutate live GitHub; `docs/qa/pilot-smoke-checklist.md` now requires a fresh SPEC-009C2 synthetic issue and cleanup |
-| Cleanup | Operator-owned pending | Cleanup instructions updated for fresh synthetic issue, duplicate handoff evidence, and disposable Mission Control rows |
+| Reviewability diff gate | Historical plugin defect resolved outside SPEC-009C2 | `reviewability-gate.sh diff origin/main...HEAD` reported transition_exception false during the run; corrected non-`grep -q` predicate over the same diff found transition_exception true, and the speckit-pro plugin fix shipped separately |
+| Manual synthetic smoke | Pass | HAL live smoke used fresh synthetic issue #47 after PR #46; `ACTIONABLE_REMEDIATION` created exactly one remediation-planning successor and duplicate retry preserved one successor/disposition/artifact/activity set |
+| Cleanup | Pass | Synthetic issues #44/#45/#47 are closed; stale disposable task #35, SPEC-009C2 synthetic rows, and UAT fixture agents/assignments were removed after HAL database backups |
 
 ---
 
@@ -771,7 +771,7 @@ Implementation guardrails:
 - [X] `pnpm lint` passes or any existing warnings are documented
 - [X] `pnpm build` passes if production code changed
 - [X] Manual smoke checklist uses a fresh SPEC-009C2 synthetic issue
-- [X] No automated synthetic issue or disposable Mission Control rows were created; operator smoke cleanup steps are documented
+- [X] Post-merge live synthetic smoke and cleanup were completed; disposable Mission Control rows and UAT fixtures were removed
 - [X] Roadmap/workflow/spec status updated on the spec branch
 - [X] Branch committed and pushed
 

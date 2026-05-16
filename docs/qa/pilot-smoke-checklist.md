@@ -155,8 +155,8 @@ fixtures.
 ## Cleanup
 
 - If a synthetic issue was created, record its issue URL and intended cleanup
-  owner before any cleanup action. Cleanup is manual; SPEC-009C1 does not
-  auto-close synthetic issues from the script, app runtime, CI, or sync path.
+  owner before any cleanup action. Cleanup is manual; SPEC-009C1/SPEC-009C2 do
+  not auto-close synthetic issues from the script, app runtime, CI, or sync path.
 - After evidence is captured, close synthetic GitHub issues manually rather
   than deleting them. Closed issues remain the external audit trail.
 - Do not leave disposable `[mc-pilot]` smoke tasks active in Mission Control.

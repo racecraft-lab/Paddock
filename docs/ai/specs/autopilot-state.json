@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
-  "updated_at": "2026-05-15T20:13:32Z",
-  "active_step": "Operator-owned live smoke / PR review",
-  "status": "Implementation Complete; Operator Smoke Pending",
+  "updated_at": "2026-05-16T12:20:14Z",
+  "active_step": "SPEC-009C2 complete; ready for SPEC-009C3 setup",
+  "status": "Complete",
   "active_workflow": {
     "spec_id": "SPEC-009C2",
     "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
@@ -138,7 +138,7 @@
     }
   },
   "post_implementation": {
-    "status": "completed_with_operator_smoke_pending",
+    "status": "completed",
     "reviewability_tasks_gate": {
       "mode": "tasks",
       "status": "exception",
@@ -151,15 +151,34 @@
     },
     "reviewability_diff_gate": {
       "mode": "diff",
-      "status": "block",
-      "pass": false,
+      "status": "historical_plugin_defect_resolved_externally",
+      "pass": true,
       "reported_transition_exception": false,
       "corrected_transition_exception": true,
-      "plugin_defect": "reviewability-gate.sh diff uses grep -q under set -euo pipefail; a corrected non-q predicate over origin/main...HEAD confirms the documented transition exception text is present."
+      "plugin_defect": "reviewability-gate.sh diff used grep -q under set -euo pipefail during the run; a corrected non-q predicate over origin/main...HEAD confirmed the documented transition exception text was present.",
+      "resolution": "The speckit-pro plugin fix shipped outside SPEC-009C2; no active SPEC-009C2 blocker remains."
+    },
+    "merge_evidence": {
+      "implementation_pr": {
+        "pr": 43,
+        "merge_commit": "a63afdead9e4b58c6be7cfcda782a3f567538756",
+        "merged_at": "2026-05-16T01:08:40Z"
+      },
+      "post_merge_fix_pr": {
+        "pr": 46,
+        "merge_commit": "19b2db9891fd4c4ca1286f952f10e190424e9c5c",
+        "merged_at": "2026-05-16T02:27:44Z"
+      },
+      "hal_deployed_commit": "19b2db9891fd4c4ca1286f952f10e190424e9c5c"
     },
     "manual_synthetic_smoke": {
-      "status": "operator_owned_pending",
-      "reason": "Automated pass did not mutate live GitHub or disposable Mission Control rows."
+      "status": "pass",
+      "issue": 47,
+      "evidence": "Fresh synthetic issue #47 drove ACTIONABLE_REMEDIATION into exactly one remediation-planning successor on HAL; duplicate retry preserved one successor, one disposition, one triage artifact, and one pilot activity."
+    },
+    "cleanup": {
+      "status": "pass",
+      "evidence": "Synthetic issues #44, #45, and #47 are closed; stale disposable task #35, SPEC-009C2 synthetic Mission Control rows, and UAT fixture agents/assignments were removed after HAL database backups."
     },
     "branch_push": {
       "status": "completed"
