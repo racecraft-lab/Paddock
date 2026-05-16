@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "48",
+  "prTitle": "SPEC-009C3: Gate remediation readiness evidence",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/48",
+  "headRef": "009c3-remediation-ready-for-owner",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "25970448722",
+      "runAttempt": "1",
+      "runKey": "25970448722-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25970448722",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/48/runs/25970448722-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/48/playwright/latest/?v=25970448722-attempt-1",
+      "headSha": "767db383026afb291e10f1fd588b91739ad15d95",
+      "headRef": "009c3-remediation-ready-for-owner",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-16T19:18:15.457Z"
+    }
+  ],
+  "updatedAt": "2026-05-16T19:18:15.457Z"
+}

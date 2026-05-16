@@ -1,0 +1,58 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/mission-control",
+  "reportMode": "pr",
+  "reportScope": "run",
+  "surface": "playwright",
+  "surfaceLabel": "Playwright UI E2E",
+  "workflowName": "Mission Control UI E2E",
+  "workflowFile": "mission-control-ui-e2e.yml",
+  "prNumber": "48",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/48",
+  "runId": "25970448722",
+  "runAttempt": "1",
+  "runKey": "25970448722-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25970448722",
+  "headRef": "009c3-remediation-ready-for-owner",
+  "baseRef": "main",
+  "headSha": "767db383026afb291e10f1fd588b91739ad15d95",
+  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/48/runs/25970448722-attempt-1/playwright/",
+  "latestHref": "https://racecraft-lab.github.io/mission-control/pr/48/playwright/latest/?v=25970448722-attempt-1",
+  "createdAt": "2026-05-16T19:18:15.457Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 1,
+    "open": 1,
+    "passed": 0,
+    "total": 1
+  },
+  "reviewScope": {
+    "domains": [
+      "workflow-contracts"
+    ],
+    "filtered": 151
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/mission-control",
+    "prNumber": "48",
+    "surface": "playwright",
+    "surfaceLabel": "Playwright UI E2E",
+    "headSha": "767db383026afb291e10f1fd588b91739ad15d95",
+    "runKey": "25970448722-attempt-1",
+    "items": [
+      {
+        "group": "workflow-contracts",
+        "id": "new-workflow-contracts/contracts-diagnostics-redacted.png",
+        "itemId": "workflow-contracts/contracts-diagnostics-redacted.png",
+        "snapshot": "workflow-contracts/contracts-diagnostics-redacted.png",
+        "variant": "new"
+      }
+    ]
+  }
+}

@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-15T01:58:13.970Z",
+  "updatedAt": "2026-05-16T19:18:15.457Z",
   "prs": [
+    {
+      "prNumber": "48",
+      "prTitle": "SPEC-009C3: Gate remediation readiness evidence",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/48",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/48/",
+      "headRef": "009c3-remediation-ready-for-owner",
+      "baseRef": "main",
+      "updatedAt": "2026-05-16T19:18:15.457Z",
+      "latest": {
+        "playwright": {
+          "runId": "25970448722",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/25970448722",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/48/playwright/latest/?v=25970448722-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/48/runs/25970448722-attempt-1/playwright/",
+          "updatedAt": "2026-05-16T19:18:15.457Z"
+        }
+      }
+    },
     {
       "prNumber": "38",
       "prTitle": "fix(github): honor product line scope for facility sync",
