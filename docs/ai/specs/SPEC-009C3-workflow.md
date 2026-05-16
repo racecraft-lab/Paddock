@@ -72,7 +72,7 @@ Source-of-truth scoping decisions:
 | Plan | `$speckit-plan` | Complete | Generated plan, research decisions, data model, remediation-readiness contract, quickstart, and Codex agent context |
 | Checklist | `$speckit-checklist` | Complete | Generated five domain checklists; resolved 9 gaps across data integrity, state lifecycle, error handling, and regression safety; security had 0 gaps; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated 70 dependency-ordered TDD tasks with RED-first coverage, guardrails, fixture/live-smoke tasks, and reviewability checkpoint; G5 passed |
-| Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept consistency and boundary discipline |
+| Analyze | `$speckit-analyze` | Complete | Cross-artifact analysis found 0 findings; G6 passed with 0 CRITICAL/HIGH findings |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and record verification/smoke evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -104,7 +104,7 @@ only when its artifact and gate evidence are recorded here.
 | Plan | Phase 3 / G3 | Complete | `plan.md`, `research.md`, `data-model.md`, `contracts/remediation-readiness-contract.md`, `quickstart.md`, Codex agent context update; G3 pass with no clarification markers |
 | Checklist | Phase 4 / G4 | Complete | Five domain checklists created; 90 items checked; 9 gaps resolved; G4 passed with 0 `[Gap]` markers |
 | Tasks | Phase 5 / G5 | Complete | `tasks.md` generated with 70 tasks, 36 `[P]` opportunities, 4 user stories; G5 passed; reviewability task gate passed under transition exception with size warnings recorded |
-| Analyze | Phase 6 / G6 | Pending | Cross-artifact analysis, 0 CRITICAL/HIGH findings, G6 pass |
+| Analyze | Phase 6 / G6 | Complete | Cross-artifact analysis completed with 0 findings; G6 passed with 0 CRITICAL/HIGH findings and no consensus items |
 | Implement | Phase 7 / G7 | Pending | All generated tasks completed with verification and smoke evidence |
 | Post-Implementation Verify | Post step 10/12 | Pending | Focused Vitest, typecheck, lint, build, and e2e only if UI/browser workflow changes |
 | Cleanup / Reviewability / PR | Post steps 13-18 | Pending | G7 pass, PR review packet, branch push, post-merge HITL evidence plan |
@@ -656,7 +656,7 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| AN-001 | None | No cross-artifact findings across design concept, spec, plan, tasks, data model, and contract | No remediation required; G6 passed |
 
 ---
 
