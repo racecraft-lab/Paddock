@@ -71,7 +71,7 @@ Source-of-truth scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved loop mechanics, PR ownership, artifact schemas, governance evidence, fixture/live smoke boundary, cleanup, UI scope, and non-slug nomenclature cleanup |
 | Plan | `$speckit-plan` | Complete | Generated plan, research decisions, data model, remediation-readiness contract, quickstart, and Codex agent context |
 | Checklist | `$speckit-checklist` | Complete | Generated five domain checklists; resolved 9 gaps across data integrity, state lifecycle, error handling, and regression safety; security had 0 gaps; G4 passed |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with reviewability checkpoint |
+| Tasks | `$speckit-tasks` | Complete | Generated 70 dependency-ordered TDD tasks with RED-first coverage, guardrails, fixture/live-smoke tasks, and reviewability checkpoint; G5 passed |
 | Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept consistency and boundary discipline |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and record verification/smoke evidence |
 
@@ -103,7 +103,7 @@ only when its artifact and gate evidence are recorded here.
 | Clarify | Phase 2 / G2 | Complete | Four sessions completed; consensus log recorded 7 decisions; G2 pass with 0 clarification markers |
 | Plan | Phase 3 / G3 | Complete | `plan.md`, `research.md`, `data-model.md`, `contracts/remediation-readiness-contract.md`, `quickstart.md`, Codex agent context update; G3 pass with no clarification markers |
 | Checklist | Phase 4 / G4 | Complete | Five domain checklists created; 90 items checked; 9 gaps resolved; G4 passed with 0 `[Gap]` markers |
-| Tasks | Phase 5 / G5 | Pending | `tasks.md`, reviewability gate, G5 pass |
+| Tasks | Phase 5 / G5 | Complete | `tasks.md` generated with 70 tasks, 36 `[P]` opportunities, 4 user stories; G5 passed; reviewability task gate passed under transition exception with size warnings recorded |
 | Analyze | Phase 6 / G6 | Pending | Cross-artifact analysis, 0 CRITICAL/HIGH findings, G6 pass |
 | Implement | Phase 7 / G7 | Pending | All generated tasks completed with verification and smoke evidence |
 | Post-Implementation Verify | Post step 10/12 | Pending | Focused Vitest, typecheck, lint, build, and e2e only if UI/browser workflow changes |
@@ -620,10 +620,11 @@ Task constraints:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 70 |
+| Phases | 7 task phases: setup, foundational RED/reviewability, US1, US2, US3, US4, polish/verification |
+| Parallel Opportunities | 36 `[P]` tasks |
+| User Stories Covered | 4: happy path owner readiness, review `fix`, Aegis approval/rejection, deterministic evidence and scope guardrails |
+| Reviewability Gate | Passed under transition exception; warnings/blockers recorded for 2800 reviewable LOC estimate, 16 production files, 92 total files, and 5 primary surfaces |
 
 ---
 
