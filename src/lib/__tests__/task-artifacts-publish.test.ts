@@ -949,3 +949,106 @@ describe('getArtifactById', () => {
     expect(getArtifactById(db, 99_999_999)).toBeNull()
   })
 })
+
+describe('publishArtifact: SPEC-009C3 evidence envelope', () => {
+  function c3Envelope(overrides: Record<string, unknown> = {}): string {
+    return JSON.stringify({
+      schema_version: 'spec-009c3.v1',
+      artifact_type: 'review_verdict',
+      stage: 'review',
+      produced_at: '2026-05-16T00:00:00.000Z',
+      producer_task_id: PRODUCER_TASK_ID,
+      workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+      root_issue: {
+        task_id: 10,
+        github_repo: 'racecraft-lab/mission-control',
+        github_issue_number: 99,
+      },
+      pr_dev_task: {
+        task_id: PRODUCER_TASK_ID,
+        github_repo: 'racecraft-lab/mission-control',
+        github_pr_number: 42,
+        pr_identity_source: 'fixture',
+      },
+      summary: 'bounded summary',
+      verdict: 'pass',
+      reviewer: 'review-agent',
+      blocking_findings: [],
+      ...overrides,
+    })
+  }
+
+  it('rejects unsupported review verdict values before inserting an artifact row', () => {
+    const db = openSeededDb()
+
+    expect(() => publishArtifact({
+      db,
+      task_id: PRODUCER_TASK_ID,
+      artifact_type: 'review_verdict',
+      schema_version: 'spec-009c3.v1',
+      storage_kind: 'inline_json',
+      content: c3Envelope({ verdict: 'maybe' }),
+      mime: 'application/json',
+      active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+      is_facility_caller: false,
+    })).toThrow(/spec-009c3/)
+
+    expect(countArtifactRows(db, PRODUCER_TASK_ID)).toBe(0)
+  })
+
+  it('rejects dev verification evidence without PR identity on the readiness subject', () => {
+    const db = openSeededDb()
+
+    expect(() => publishArtifact({
+      db,
+      task_id: PRODUCER_TASK_ID,
+      artifact_type: 'dev_verification',
+      schema_version: 'spec-009c3.v1',
+      storage_kind: 'inline_json',
+      content: c3Envelope({
+        artifact_type: 'dev_verification',
+        stage: 'dev_implementation',
+        commit: 'abcdef123456',
+        branch: '009c3-remediation-ready-for-owner',
+        checks: [{ command: 'pnpm test', result: 'pass' }],
+        residual_risk: 'none',
+        pr_identity_source: 'fixture',
+        pr_dev_task: {
+          task_id: PRODUCER_TASK_ID,
+          github_repo: 'racecraft-lab/mission-control',
+          pr_identity_source: 'fixture',
+        },
+      }),
+      mime: 'application/json',
+      active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+      is_facility_caller: false,
+    })).toThrow(/spec-009c3/)
+
+    expect(countArtifactRows(db, PRODUCER_TASK_ID)).toBe(0)
+  })
+
+  it('requires aegis approval artifacts to reference a canonical aegis quality review row', () => {
+    const db = openSeededDb()
+
+    expect(() => publishArtifact({
+      db,
+      task_id: PRODUCER_TASK_ID,
+      artifact_type: 'aegis_approval',
+      schema_version: 'spec-009c3.v1',
+      storage_kind: 'inline_json',
+      content: c3Envelope({
+        artifact_type: 'aegis_approval',
+        stage: 'aegis',
+        quality_review_id: 7001,
+        reviewer: 'aegis',
+        status: 'approved',
+        reason: 'approved',
+      }),
+      mime: 'application/json',
+      active_workspace_id: PRODUCT_LINE_WORKSPACE_ID,
+      is_facility_caller: false,
+    })).toThrow(/spec-009c3/)
+
+    expect(countArtifactRows(db, PRODUCER_TASK_ID)).toBe(0)
+  })
+})

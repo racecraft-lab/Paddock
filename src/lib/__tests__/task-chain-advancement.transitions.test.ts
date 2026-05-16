@@ -110,7 +110,11 @@ function mockRouteDeps(db: Database.Database, advanceTaskChain = vi.fn(() => ({ 
   vi.doMock('@/lib/github-sync-engine', () => ({ syncTaskOutbound: vi.fn() }))
   vi.doMock('@/lib/mentions', () => ({ resolveMentionRecipients: vi.fn(() => ({ recipients: [], unresolved: [] })) }))
   vi.doMock('@/lib/logger', () => ({ logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } }))
-  vi.doMock('@/lib/task-dispatch', () => ({ advanceTaskChain }))
+  vi.doMock('@/lib/task-dispatch', () => ({
+    advanceTaskChain,
+    isSpec009C3DevImplementationTask: vi.fn(() => false),
+    evaluateSpec009C3ReadinessEvidence: vi.fn(() => ({ ok: true })),
+  }))
   return advanceTaskChain
 }
 

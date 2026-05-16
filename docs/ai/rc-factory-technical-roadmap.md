@@ -168,7 +168,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Complete | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C1, SPEC-010A | Phase 8B |
 | SPEC-009C1 | 8C1 | GitHub Pilot Issue Ingest and Eligibility | pilot-issue-ingest | Complete | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009C2 | Phase 8C1 |
 | SPEC-009C2 | 8C2 | Triage-to-Remediation Plan Handoff | triage-remediation-handoff | Complete | P0 | SPEC-009C1 | SPEC-009C3 | Phase 8C2 |
-| SPEC-009C3 | 8C3 | Dev/Review/Aegis to Ready for Owner | remediation-ready-for-owner | In Progress | P0 | SPEC-009C2 | SPEC-009C4 | Phase 8C3 |
+| SPEC-009C3 | 8C3 | Dev/Review/Aegis to Ready for Owner | remediation-ready-for-owner | Complete | P0 | SPEC-009C2 | SPEC-009C4 | Phase 8C3 |
 | SPEC-009C4 | 8C4 | Owner Merge Gate and Done Reconciliation | owner-merge-reconciliation | Pending | P0 | SPEC-009C3 | SPEC-009D, SPEC-010B | Phase 8C4 |
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C4 | SPEC-009E, SPEC-013A | Phase 8D |
 | SPEC-009E | 8E | Pilot Eligibility and Evidence Surfaces | pilot-evidence-surfaces | Pending | P2 | SPEC-009D | SPEC-009F, SPEC-013A | Phase 8E |
@@ -466,7 +466,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009C3: Dev/Review/Aegis to Ready for Owner
 
-- **Status:** In Progress
+- **Status:** Complete
 - **Priority:** P0
 - **Branch short name:** `remediation-ready-for-owner`
 - **Dependencies:** SPEC-009C2
@@ -479,6 +479,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Autopilot notes:** Operator intervention is still forbidden in this spec; the human merge gate belongs to SPEC-009C4.
 - **Governance boundary note:** SPEC-009C3 verifies advisory governance evidence only: no resource-policy violations, no blocked budget/window result, and enough activity/artifact evidence for later review. Remaining durable governance, run-state, claim authority, control-plane, polling, retry/debug, sandbox, and adapter work remains in SPEC-009D, SPEC-009E, SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, and SPEC-014A-D.
 - **Definition of done:** The pilot remediation task reaches `ready_for_owner` with a linked PR, disposition/artifact evidence, governance evidence, Aegis approval, and no resource-policy violations.
+- **Implementation evidence:** Local G7 passed on branch `009c3-remediation-ready-for-owner` with all 70 generated tasks checked. Evidence includes C3 artifact envelope validation and sanitized failure activity, review `pass`/`fix` readiness routing, canonical Aegis approval gating through `quality_reviews`, advisory governance readiness blocking, deterministic fixture PR identity, PR-producing dev-task-only `ready_for_owner`, and scope-guard coverage proving no merge/done reconciliation, claim/run tables, sandbox/adapter work, automatic poller, broad slug migration, or dedicated evidence UI entered the diff. Final verification passed: focused C3 Vitest, full `pnpm test` with 276 files / 2876 tests, `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `node scripts/spec-009c3/check-scope-guards.mjs`. Playwright/e2e was N/A because no UI/browser workflow changed; live draft PR smoke was not run because it is explicit operator-approved UAT only.
 
 ### SPEC-009C4: Owner Merge Gate and Done Reconciliation
 

@@ -31,7 +31,7 @@
  *   409 -> cannot_supersede_quarantined | supersede_target_already_superseded | supersedes_cross_task
  *   413 -> payload_too_large
  *   415 -> unsupported_media_type
- *   422 -> secret_detected
+ *   422 -> secret_detected | spec009c3_artifact_invalid
  *   500 -> internal_scan_error | internal_storage_error
  *   503 -> artifact_store_disabled (FEATURE_TASK_ARTIFACTS OFF)
  *
@@ -58,6 +58,7 @@ import {
   InternalStorageError,
   PayloadTooLarge,
   SecretDetectedError,
+  Spec009C3ArtifactValidationError,
   SupersedeTargetAlreadySuperseded,
   SupersedeTargetNotFound,
   SupersedesCrossTask,
@@ -287,7 +288,43 @@ export async function POST(request: NextRequest) {
     const result = publishArtifact(publishInput)
     return NextResponse.json(result, { status: 201 })
   } catch (err) {
+    recordPublishFailureIfNeeded(db, err, {
+      taskId,
+      workspaceId: taskRow?.workspace_id ?? flagWorkspaceId,
+      artifactType,
+      schemaVersion: typeof body.schema_version === 'string' ? body.schema_version : null,
+    })
     return mapPublishError(err)
+  }
+}
+
+function recordPublishFailureIfNeeded(
+  db: ReturnType<typeof getDatabase>,
+  err: unknown,
+  context: {
+    taskId: number
+    workspaceId: number
+    artifactType: string
+    schemaVersion: string | null
+  },
+): void {
+  if (!(err instanceof Spec009C3ArtifactValidationError)) return
+  try {
+    db.prepare(`
+      INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id)
+      VALUES ('artifact_publish_failed', 'task', ?, 'task-artifacts', 'SPEC-009C3 artifact publish failed', ?, ?)
+    `).run(
+      context.taskId,
+      JSON.stringify({
+        error_code: err.error_code,
+        artifact_type: context.artifactType,
+        schema_version: context.schemaVersion,
+        reason: err.message.slice(0, 500),
+      }),
+      context.workspaceId,
+    )
+  } catch (activityErr) {
+    logger.warn({ err: activityErr, taskId: context.taskId }, 'failed to record artifact publish failure activity')
   }
 }
 
@@ -345,6 +382,12 @@ function mapPublishError(err: unknown): NextResponse {
         findings: err.findings,
       },
       { status: 422 },
+    )
+  }
+  if (err instanceof Spec009C3ArtifactValidationError) {
+    return NextResponse.json(
+      { error: err.error_code, detail: err.message },
+      { status: err.status },
     )
   }
   if (err instanceof InternalScanError) {

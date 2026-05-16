@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { runMigrations } from '@/lib/migrations'
 import { resolveGatewayAgentIdForReviewAgent, resolveTaskDispatchModelOverride } from '@/lib/task-dispatch'
 import type { ResolveTaskTerminalTransitionInput, TaskTerminalTransitionResult } from '@/lib/task-status'
 
@@ -181,6 +182,142 @@ function createDispatchDb(): Database.Database {
   return db
 }
 
+function createSpec009C3PipelineDb(): Database.Database {
+  const db = new Database(':memory:')
+  runMigrations(db)
+  db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1').run(JSON.stringify({
+    FEATURE_TASK_PIPELINES: true,
+    FEATURE_TASK_ARTIFACTS: true,
+    FEATURE_TWO_STEP_TERMINAL: true,
+  }))
+  db.prepare(`
+    INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix)
+    VALUES (900, 'Mission Control', 'mission-control', 1, 'MC')
+  `).run()
+  db.prepare(`
+    INSERT OR IGNORE INTO agents (id, name, role, status, workspace_id)
+    VALUES (901, 'reviewer', 'qa', 'idle', 1),
+           (902, 'aegis', 'qa', 'idle', 1)
+  `).run()
+  db.prepare(`
+    INSERT INTO workflow_templates (
+      id, workspace_id, slug, name, task_prompt, model, agent_role,
+      output_schema, routing_rules, next_template_slug, produces_pr,
+      external_terminal_event, created_by
+    )
+    VALUES
+      (910, 1, 'mission-control_dev_implementation', 'Dev', 'Implement', 'sonnet', 'dev',
+        NULL, '[]', 'mission-control_review', 1, 'github_pr_merged', 'workflow-contract'),
+      (911, 1, 'mission-control_review', 'Review', 'Review', 'sonnet', 'qa',
+        '{"type":"object","required":["verdict"],"properties":{"verdict":{"type":"string","enum":["pass","fix"]}},"additionalProperties":false}',
+        '[]', 'mission-control_owner_review', 0, NULL, 'workflow-contract'),
+      (912, 1, 'mission-control_owner_review', 'Owner Review', 'Owner', 'sonnet', 'qa',
+        NULL, '[]', 'mission-control_aegis', 0, NULL, 'workflow-contract')
+  `).run()
+  return db
+}
+
+function seedSpec009C3Chain(db: Database.Database, reviewVerdict: 'pass' | 'fix'): void {
+  db.prepare(`
+    INSERT INTO tasks (
+      id, title, description, status, priority, resolution, assigned_to, created_by,
+      workspace_id, project_id, workflow_template_id, workflow_template_slug,
+      github_repo, github_issue_number, github_pr_number, parent_task_id,
+      root_task_id, chain_id, chain_stage
+    )
+    VALUES
+      (300, 'Root issue', 'GitHub issue', 'done', 'high', '{}', 'triage', 'system',
+        1, 900, NULL, NULL, 'racecraft-lab/mission-control', 99, NULL, NULL,
+        300, 'c3-chain', 0),
+      (302, 'Dev implementation', 'Dev task', 'done', 'high', '{"result":"done"}', 'builder', 'system',
+        1, 900, 910, 'mission-control_dev_implementation', 'racecraft-lab/mission-control', NULL, 42, 300,
+        300, 'c3-chain', 2),
+      (303, 'Implementation review', 'Review task', 'done', 'high', ?, 'reviewer', 'system',
+        1, 900, 911, 'mission-control_review', NULL, NULL, NULL, 302,
+        300, 'c3-chain', 3)
+  `).run(JSON.stringify({ verdict: reviewVerdict }))
+}
+
+function c3Payload(type: string, extras: Record<string, unknown> = {}): string {
+  return JSON.stringify({
+    schema_version: 'spec-009c3.v1',
+    artifact_type: type,
+    stage: type,
+    produced_at: '2026-05-16T00:00:00.000Z',
+    producer_task_id: 302,
+    workspace_id: 1,
+    root_issue: {
+      task_id: 300,
+      github_repo: 'racecraft-lab/mission-control',
+      github_issue_number: 99,
+    },
+    pr_dev_task: {
+      task_id: 302,
+      github_repo: 'racecraft-lab/mission-control',
+      github_pr_number: 42,
+      pr_identity_source: 'fixture',
+    },
+    summary: 'bounded',
+    ...extras,
+  })
+}
+
+function insertC3Artifact(db: Database.Database, artifactType: string, content: string): number {
+  const info = db.prepare(`
+    INSERT INTO task_artifacts (
+      task_id, workspace_id, artifact_type, schema_version, storage_kind,
+      content_json, mime_type, byte_size, sha256, redaction_status,
+      security_scan_status
+    )
+    VALUES (302, 1, ?, 'spec-009c3.v1', 'inline_json', ?, 'application/json',
+      length(?), '0', 'clean', 'clean')
+  `).run(artifactType, content, content)
+  return Number(info.lastInsertRowid)
+}
+
+function seedCompleteC3Evidence(db: Database.Database): void {
+  insertC3Artifact(db, 'remediation_plan', c3Payload('remediation_plan', {
+    problem_statement: 'problem',
+    planned_changes: ['change'],
+    verification_plan: ['pnpm test'],
+    risk_notes: ['none'],
+  }))
+  insertC3Artifact(db, 'dev_verification', c3Payload('dev_verification', {
+    stage: 'dev_implementation',
+    commit: 'abcdef123456',
+    branch: '009c3-remediation-ready-for-owner',
+    checks: [{ command: 'pnpm test', result: 'pass' }],
+    residual_risk: 'none',
+    pr_identity_source: 'fixture',
+  }))
+  insertC3Artifact(db, 'review_verdict', c3Payload('review_verdict', {
+    stage: 'review',
+    verdict: 'pass',
+    reviewer: 'reviewer',
+    blocking_findings: [],
+  }))
+  const review = db.prepare(`
+    INSERT INTO quality_reviews (task_id, reviewer, status, notes, workspace_id)
+    VALUES (302, 'aegis', 'approved', 'approved', 1)
+  `).run()
+  insertC3Artifact(db, 'aegis_approval', c3Payload('aegis_approval', {
+    stage: 'aegis',
+    quality_review_id: Number(review.lastInsertRowid),
+    reviewer: 'aegis',
+    status: 'approved',
+    reason: 'approved',
+  }))
+  insertC3Artifact(db, 'governance_evidence', c3Payload('governance_evidence', {
+    stage: 'readiness',
+    stage_decisions: [{ stage: 'dev_implementation', decision: 'allow' }],
+    policy_ids: ['policy-1'],
+    reason_codes: [],
+    event_ids: [],
+    evaluated_at: '2026-05-16T00:00:00.000Z',
+    readiness_blocked: false,
+  }))
+}
+
 async function importTaskDispatchWithDb(
   db: Database.Database,
   runOpenClaw = vi.fn(),
@@ -275,6 +412,87 @@ describe('autoRouteInboxTasks pilot hold', () => {
       .toEqual({ count: 0 })
     expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE entity_id = 101 AND type = 'task_auto_routed'").get())
       .toEqual({ count: 1 })
+  })
+})
+
+describe('advanceTaskChain SPEC-009C3 review gate', () => {
+  it('blocks review fix verdicts before owner-review, Aegis, or ready_for_owner side effects', async () => {
+    dispatchDb = createSpec009C3PipelineDb()
+    seedSpec009C3Chain(dispatchDb, 'fix')
+    const { advanceTaskChain } = await importTaskDispatchWithDb(dispatchDb)
+
+    const result = advanceTaskChain({
+      taskId: 303,
+      workspaceId: 1,
+      previousStatus: 'review',
+      trigger: 'detail_task_update',
+    })
+
+    expect(result).toEqual({
+      advanced: false,
+      reason: 'stalled',
+      reasonCode: 'spec009c3_review_fix_blocked',
+    })
+    expect(dispatchDb.prepare('SELECT COUNT(*) AS count FROM tasks WHERE parent_task_id = 303').get())
+      .toEqual({ count: 0 })
+    expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 302').get())
+      .toEqual({ status: 'done' })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
+    expect(dispatchDb.prepare("SELECT json_extract(data, '$.reason_code') AS reason FROM activities WHERE entity_id = 303").get())
+      .toEqual({ reason: 'spec009c3_review_fix_blocked' })
+  })
+
+  it('bypasses owner-review and marks only the PR-producing dev task ready_for_owner when C3 evidence and Aegis approval exist', async () => {
+    dispatchDb = createSpec009C3PipelineDb()
+    seedSpec009C3Chain(dispatchDb, 'pass')
+    seedCompleteC3Evidence(dispatchDb)
+    const { advanceTaskChain } = await importTaskDispatchWithDb(dispatchDb)
+
+    const result = advanceTaskChain({
+      taskId: 303,
+      workspaceId: 1,
+      previousStatus: 'review',
+      trigger: 'detail_task_update',
+    })
+
+    expect(result).toEqual({ advanced: false, reason: 'chain_terminated' })
+    expect(dispatchDb.prepare('SELECT id, status FROM tasks WHERE id IN (302, 303) ORDER BY id').all())
+      .toEqual([
+        { id: 302, status: 'ready_for_owner' },
+        { id: 303, status: 'done' },
+      ])
+    expect(dispatchDb.prepare('SELECT COUNT(*) AS count FROM tasks WHERE parent_task_id = 303').get())
+      .toEqual({ count: 0 })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
+    expect(dispatchDb.prepare('SELECT recipient, type, source_id FROM notifications').all())
+      .toEqual([{ recipient: 'builder', type: 'task_ready_for_owner', source_id: 302 }])
+  })
+
+  it('retains review pass evidence but blocks owner-ready side effects when Aegis approval is missing', async () => {
+    dispatchDb = createSpec009C3PipelineDb()
+    seedSpec009C3Chain(dispatchDb, 'pass')
+    const { advanceTaskChain } = await importTaskDispatchWithDb(dispatchDb)
+
+    const result = advanceTaskChain({
+      taskId: 303,
+      workspaceId: 1,
+      previousStatus: 'review',
+      trigger: 'detail_task_update',
+    })
+
+    expect(result).toEqual({
+      advanced: false,
+      reason: 'stalled',
+      reasonCode: 'spec009c3_readiness_evidence_missing',
+    })
+    expect(dispatchDb.prepare('SELECT COUNT(*) AS count FROM tasks WHERE parent_task_id = 303').get())
+      .toEqual({ count: 0 })
+    expect(dispatchDb.prepare('SELECT status FROM tasks WHERE id = 302').get())
+      .toEqual({ status: 'done' })
+    expect(dispatchDb.prepare("SELECT COUNT(*) AS count FROM notifications WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
   })
 })
 

@@ -584,6 +584,10 @@ type TaskPipelineReasonCode =
   | 'task_pipeline_target_disabled'
   | 'task_pipeline_successor_assignee_missing'
   | 'task_pipeline_retry_chain_advancement'
+  | 'spec009c3_review_fix_blocked'
+  | 'spec009c3_readiness_subject_missing'
+  | 'spec009c3_readiness_evidence_missing'
+  | 'spec009c3_ready_for_owner_conflict'
 
 type RetryEligibleReasonCode = TaskPipelineReasonCode
 
@@ -735,6 +739,218 @@ function isTaskArtifactsEnabled(db: any, workspaceId: number): boolean {
   return resolveFlag('FEATURE_TASK_ARTIFACTS', {
     workspaceFlags: row?.feature_flags ?? null,
   })
+}
+
+const SPEC_009C3_DEV_TEMPLATE_SLUG = 'mission-control_dev_implementation'
+const SPEC_009C3_REVIEW_TEMPLATE_SLUG = 'mission-control_review'
+
+type Spec009C3ReadinessTask = {
+  id: number
+  title?: string | null
+  description?: string | null
+  status?: string | null
+  priority?: string | null
+  assigned_to?: string | null
+  created_by?: string | null
+  project_id?: number | null
+  workspace_id: number
+  workflow_template_slug?: string | null
+  produces_pr?: number | null
+  external_terminal_event?: string | null
+  github_repo?: string | null
+  github_issue_number?: number | null
+  github_pr_number?: number | null
+  feature_flags?: string | null
+}
+
+type Spec009C3ReadinessResult =
+  | { ok: true }
+  | { ok: false; reason: string }
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+export function isSpec009C3DevImplementationTask(task: Spec009C3ReadinessTask): boolean {
+  return task.workflow_template_slug === SPEC_009C3_DEV_TEMPLATE_SLUG
+}
+
+function parseSpec009C3ArtifactPayload(value: unknown): Record<string, unknown> | null {
+  const parsed = parseJson(value)
+  return isRecord(parsed) ? parsed : null
+}
+
+function latestSpec009C3ArtifactPayload(
+  db: any,
+  taskId: number,
+  workspaceId: number,
+  artifactType: string,
+): Record<string, unknown> | null {
+  if (!tableExists(db, 'task_artifacts')) return null
+  const rows = db.prepare(`
+    SELECT content_json
+    FROM task_artifacts
+    WHERE task_id = ?
+      AND workspace_id = ?
+      AND artifact_type = ?
+      AND schema_version = 'spec-009c3.v1'
+      AND storage_kind = 'inline_json'
+      AND COALESCE(redaction_status, 'clean') NOT IN ('superseded', 'quarantined', 'rejected')
+    ORDER BY id DESC
+    LIMIT 5
+  `).all(taskId, workspaceId, artifactType) as Array<{ content_json: string | null }>
+  for (const row of rows) {
+    const payload = parseSpec009C3ArtifactPayload(row.content_json)
+    if (payload?.['artifact_type'] === artifactType) return payload
+  }
+  return null
+}
+
+function hasCanonicalAegisReview(
+  db: any,
+  taskId: number,
+  workspaceId: number,
+  qualityReviewId: unknown,
+  status: 'approved' | 'rejected' = 'approved',
+): boolean {
+  if (typeof qualityReviewId !== 'number' || !Number.isFinite(qualityReviewId)) return false
+  if (!tableExists(db, 'quality_reviews')) return false
+  const row = db.prepare(`
+    SELECT id FROM quality_reviews
+    WHERE id = ? AND task_id = ? AND workspace_id = ? AND reviewer = 'aegis' AND status = ?
+  `).get(qualityReviewId, taskId, workspaceId, status) as { id: number } | undefined
+  return Boolean(row)
+}
+
+export function evaluateSpec009C3ReadinessEvidence(
+  db: any,
+  task: Spec009C3ReadinessTask,
+): Spec009C3ReadinessResult {
+  if (!isSpec009C3DevImplementationTask(task)) return { ok: true }
+  if (task.produces_pr !== 1 || task.external_terminal_event !== READY_FOR_OWNER_TERMINAL_EVENT) {
+    return { ok: false, reason: 'dev_task_not_pr_merge_gated' }
+  }
+  if (!task.github_repo || !task.github_pr_number) return { ok: false, reason: 'missing_pr_linkage' }
+
+  const remediationPlan = latestSpec009C3ArtifactPayload(db, task.id, task.workspace_id, 'remediation_plan')
+  if (!remediationPlan) return { ok: false, reason: 'missing_remediation_plan' }
+  const devVerification = latestSpec009C3ArtifactPayload(db, task.id, task.workspace_id, 'dev_verification')
+  if (!devVerification || devVerification['pr_identity_source'] !== 'fixture' && devVerification['pr_identity_source'] !== 'live') {
+    return { ok: false, reason: 'missing_dev_verification' }
+  }
+  const reviewVerdict = latestSpec009C3ArtifactPayload(db, task.id, task.workspace_id, 'review_verdict')
+  if (!reviewVerdict || reviewVerdict['verdict'] !== 'pass') return { ok: false, reason: 'missing_review_pass' }
+  const aegisApproval = latestSpec009C3ArtifactPayload(db, task.id, task.workspace_id, 'aegis_approval')
+  if (
+    !aegisApproval
+    || aegisApproval['reviewer'] !== 'aegis'
+    || aegisApproval['status'] !== 'approved'
+    || !hasCanonicalAegisReview(db, task.id, task.workspace_id, aegisApproval['quality_review_id'], 'approved')
+  ) {
+    return { ok: false, reason: 'missing_aegis_approval' }
+  }
+  const governanceEvidence = latestSpec009C3ArtifactPayload(db, task.id, task.workspace_id, 'governance_evidence')
+  if (!governanceEvidence || governanceEvidence['readiness_blocked'] === true) {
+    return { ok: false, reason: 'governance_blocks_readiness' }
+  }
+  return { ok: true }
+}
+
+function fetchSpec009C3ReadinessSubject(
+  db: any,
+  reviewTask: TaskPipelineTask,
+): Spec009C3ReadinessTask | null {
+  if (reviewTask.parent_task_id === null) return null
+  const row = db.prepare(`
+    SELECT t.id, t.title, t.description, t.status, t.priority, t.assigned_to,
+           t.created_by, t.project_id, t.workspace_id, t.github_repo,
+           t.github_issue_number, t.github_pr_number,
+           wt.slug AS workflow_template_slug,
+           COALESCE(wt.produces_pr, 0) AS produces_pr,
+           wt.external_terminal_event,
+           w.feature_flags
+    FROM tasks t
+    LEFT JOIN workflow_templates wt ON wt.id = t.workflow_template_id AND wt.workspace_id = t.workspace_id
+    LEFT JOIN workspaces w ON w.id = t.workspace_id
+    WHERE t.id = ? AND t.workspace_id = ?
+  `).get(reviewTask.parent_task_id, reviewTask.workspace_id) as Spec009C3ReadinessTask | undefined
+  if (!row || !isSpec009C3DevImplementationTask(row)) return null
+  return row
+}
+
+function handleSpec009C3ReviewTransition(
+  db: any,
+  parent: TaskPipelineTask,
+  output: unknown,
+  trigger: TaskChainAdvanceTrigger,
+): AdvanceTaskChainResult | null {
+  if (parent.workflow_template_slug !== SPEC_009C3_REVIEW_TEMPLATE_SLUG) return null
+  if (!isRecord(output)) return null
+
+  if (output['verdict'] === 'fix') {
+    return stall(db, parent, 'spec009c3_review_fix_blocked', trigger, {
+      verdict: 'fix',
+    })
+  }
+  if (output['verdict'] !== 'pass') return null
+
+  const devTask = fetchSpec009C3ReadinessSubject(db, parent)
+  if (!devTask) {
+    return stall(db, parent, 'spec009c3_readiness_subject_missing', trigger, {
+      verdict: 'pass',
+    })
+  }
+  const readiness = evaluateSpec009C3ReadinessEvidence(db, devTask)
+  if (!readiness.ok) {
+    return stall(db, parent, 'spec009c3_readiness_evidence_missing', trigger, {
+      verdict: 'pass',
+      readiness_reason: readiness.reason,
+      readiness_subject_task_id: devTask.id,
+    })
+  }
+
+  const transition = resolveTaskTerminalTransition({
+    taskId: devTask.id,
+    currentStatus: (devTask.status ?? 'done') as TaskStatus,
+    requestedStatus: READY_FOR_OWNER_STATUS,
+    producesPr: devTask.produces_pr === 1 && devTask.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT,
+    twoStepTerminalEnabled: resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+      workspaceFlags: devTask.feature_flags ?? null,
+    }),
+    transitionIntent: 'approval',
+  })
+  if (!transition.ok) {
+    return stall(db, parent, 'spec009c3_ready_for_owner_conflict', trigger, {
+      verdict: 'pass',
+      readiness_subject_task_id: devTask.id,
+      transition_reason: transition.body.reason,
+    })
+  }
+
+  const timestampSet = columnsFor(db, 'tasks').has('updated_at') ? ', updated_at = unixepoch()' : ''
+  db.prepare(`UPDATE tasks SET status = ?${timestampSet} WHERE id = ? AND workspace_id = ?`)
+    .run(READY_FOR_OWNER_STATUS, devTask.id, devTask.workspace_id)
+  syncTaskOutbound({
+    id: devTask.id,
+    title: devTask.title ?? `Task ${String(devTask.id)}`,
+    description: devTask.description ?? null,
+    status: READY_FOR_OWNER_STATUS,
+    priority: devTask.priority ?? 'medium',
+    project_id: devTask.project_id ?? null,
+    workspace_id: devTask.workspace_id,
+    github_issue_number: devTask.github_issue_number ?? null,
+    github_repo: devTask.github_repo ?? null,
+  }, devTask.workspace_id)
+  recordReadyForOwnerEntrySideEffects({
+    id: devTask.id,
+    title: devTask.title ?? `Task ${String(devTask.id)}`,
+    workspace_id: devTask.workspace_id,
+    assigned_to: devTask.assigned_to ?? null,
+    created_by: devTask.created_by ?? null,
+    github_repo: devTask.github_repo ?? null,
+    github_pr_number: devTask.github_pr_number ?? null,
+  }, 'aegis')
+  return { advanced: false, reason: 'chain_terminated' }
 }
 
 interface SuccessorInputArtifact {
@@ -985,6 +1201,9 @@ export function advanceTaskChain(input: AdvanceTaskChainInput): AdvanceTaskChain
       output = parseJson(parent.resolution)
       if (output === undefined) output = {}
     }
+
+    const spec009C3ReviewResult = handleSpec009C3ReviewTransition(db, parent, output, input.trigger)
+    if (spec009C3ReviewResult !== null) return spec009C3ReviewResult
 
     const routing = evaluateRoutingRules({
       rules: parseRoutingRules(template.routing_rules),

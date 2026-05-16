@@ -73,7 +73,7 @@ Source-of-truth scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Generated five domain checklists; resolved 9 gaps across data integrity, state lifecycle, error handling, and regression safety; security had 0 gaps; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated 70 dependency-ordered TDD tasks with RED-first coverage, guardrails, fixture/live-smoke tasks, and reviewability checkpoint; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Cross-artifact analysis found 0 findings; G6 passed with 0 CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and record verification/smoke evidence |
+| Implement | `$speckit-implement` | Complete | Implemented C3 readiness evidence gates, review/Aegis blocking, artifact validation, deterministic fixture checks, and G7 evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -105,8 +105,8 @@ only when its artifact and gate evidence are recorded here.
 | Checklist | Phase 4 / G4 | Complete | Five domain checklists created; 90 items checked; 9 gaps resolved; G4 passed with 0 `[Gap]` markers |
 | Tasks | Phase 5 / G5 | Complete | `tasks.md` generated with 70 tasks, 36 `[P]` opportunities, 4 user stories; G5 passed; reviewability task gate passed under transition exception with size warnings recorded |
 | Analyze | Phase 6 / G6 | Complete | Cross-artifact analysis completed with 0 findings; G6 passed with 0 CRITICAL/HIGH findings and no consensus items |
-| Implement | Phase 7 / G7 | Pending | All generated tasks completed with verification and smoke evidence |
-| Post-Implementation Verify | Post step 10/12 | Pending | Focused Vitest, typecheck, lint, build, and e2e only if UI/browser workflow changes |
+| Implement | Phase 7 / G7 | Complete | All 70 generated tasks checked; G7 passed with 70/70 complete; focused C3 tests, full Vitest, typecheck, lint, build, and scope guard passed |
+| Post-Implementation Verify | Post step 10/12 | Complete | Focused C3 Vitest, full Vitest, typecheck, lint, build, and e2e N/A because no UI/browser workflow changed |
 | Cleanup / Reviewability / PR | Post steps 13-18 | Pending | G7 pass, PR review packet, branch push, post-merge HITL evidence plan |
 
 ---
@@ -261,28 +261,28 @@ readiness and must not create misleading owner-ready state. Manual merge and
 
 ### Success Criteria Summary
 
-- [ ] The remediation planning stage creates durable plan evidence tied to the
+- [x] The remediation planning stage creates durable plan evidence tied to the
   root GitHub issue and downstream PR-producing dev task.
-- [ ] The dev implementation stage records deterministic PR linkage and dev
+- [x] The dev implementation stage records deterministic PR linkage and dev
   verification evidence on the PR-producing task.
-- [ ] Review `pass` advances toward Aegis/owner readiness; review `fix` loops
+- [x] Review `pass` advances toward Aegis/owner readiness; review `fix` loops
   or blocks without owner/Aegis successors or `ready_for_owner`.
-- [ ] Aegis `approved` is recorded through existing `quality_reviews` with
+- [x] Aegis `approved` is recorded through existing `quality_reviews` with
   reviewer `aegis`, workspace scope preserved, and final readiness gated on
   that approval.
-- [ ] Aegis `rejected` loops or blocks with evidence and does not create
+- [x] Aegis `rejected` loops or blocks with evidence and does not create
   owner-ready state.
-- [ ] The PR-producing dev task reaches `ready_for_owner` with linked PR,
+- [x] The PR-producing dev task reaches `ready_for_owner` with linked PR,
   plan/dev/review/Aegis artifacts, governance evidence, Aegis approval, and no
   resource-policy violations.
-- [ ] Automated tests use deterministic fixture-linked PR identity; live draft
+- [x] Automated tests use deterministic fixture-linked PR identity; live draft
   PR smoke is opt-in only.
-- [ ] Existing slugs remain stable; nomenclature cleanup is limited to labels,
+- [x] Existing slugs remain stable; nomenclature cleanup is limited to labels,
   prompts, or copy that mislead stage ownership.
-- [ ] No manual merge reconciliation, formal claim-state table, sandbox runner,
+- [x] No manual merge reconciliation, formal claim-state table, sandbox runner,
   adapter registry, full SpecKit/SDD execution lane, or dedicated evidence UI
   is introduced.
-- [ ] The roadmap clearly reaffirms that remaining durable governance,
+- [x] The roadmap clearly reaffirms that remaining durable governance,
   run-state, claim, and control-plane work belongs to later specs.
 
 ---
@@ -693,25 +693,25 @@ Implementation constraints:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Foundation / RED tests | Pending | Pending | Review/Aegis loop, artifact, governance, PR fixture, ready-for-owner tests |
-| Chain and evidence implementation | Pending | Pending | Runtime changes if required |
-| Smoke/docs/status | Pending | Pending | Quickstart, smoke checklist, roadmap/workflow status |
-| Verification | Pending | Pending | Focused tests, typecheck, lint, build/e2e as needed |
+| Foundation / RED tests | Complete | Complete | Review/Aegis loop, artifact, governance, PR fixture, and ready-for-owner RED tests landed; initial focused run failed on the missing behavior |
+| Chain and evidence implementation | Complete | Complete | Runtime gates added in `task-dispatch`, `task-artifacts`, and `quality-review`; workflow contract keeps PR merge terminal semantics |
+| Smoke/docs/status | Complete | Complete | Pilot smoke checklist, roadmap deferral evidence, tasks evidence, and workflow status updated; live draft PR smoke remains operator opt-in |
+| Verification | Complete | Complete | Focused C3 suites, full Vitest, typecheck, lint, build, scope guard, and G7 passed; e2e N/A because no UI changed |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `tasks.md`
-- [ ] Focused Vitest suites pass
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm lint` passes
-- [ ] `pnpm build` passes if runtime/import/export surfaces changed
-- [ ] Focused Playwright/e2e passes if UI/browser workflow changes
-- [ ] Fixture PR smoke evidence recorded
-- [ ] Optional live draft PR smoke evidence recorded only if deliberately run
-- [ ] Synthetic issues/tasks/artifacts/fixture agents cleaned up or explicitly retained with evidence
-- [ ] Roadmap/workflow/autopilot-state status updated
+- [x] All tasks marked complete in `tasks.md`
+- [x] Focused Vitest suites pass
+- [x] `pnpm typecheck` passes
+- [x] `pnpm lint` passes
+- [x] `pnpm build` passes if runtime/import/export surfaces changed
+- [x] Focused Playwright/e2e passes if UI/browser workflow changes (N/A: no UI/browser workflow changed)
+- [x] Fixture PR smoke evidence recorded
+- [x] Optional live draft PR smoke evidence recorded only if deliberately run (not run: opt-in UAT only)
+- [x] Synthetic issues/tasks/artifacts/fixture agents cleaned up or explicitly retained with evidence (N/A: automated fixtures are test-local)
+- [x] Roadmap/workflow/autopilot-state status updated
 - [ ] PR review packet generated with scope budget, traceability, verification, known gaps, and rollback/flag notes
 
 ---
