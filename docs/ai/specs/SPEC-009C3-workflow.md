@@ -67,7 +67,7 @@ Source-of-truth scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate `specs/009c3-remediation-ready-for-owner/spec.md` from roadmap plus design concept |
+| Specify | `$speckit-specify` | Complete | Generated `specs/009c3-remediation-ready-for-owner/spec.md` from roadmap plus design concept; requirements checklist passed |
 | Clarify | `$speckit-clarify` | Pending | Resolve loop mechanics, artifact schemas, nomenclature cleanup, governance evidence, and live smoke shape |
 | Plan | `$speckit-plan` | Pending | Plan against existing workflow contracts, task-chain helpers, artifact/disposition/quality-review/governance surfaces |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
@@ -97,9 +97,9 @@ only when its artifact and gate evidence are recorded here.
 
 | Step | Required By Autopilot | Status | Evidence |
 |------|-----------------------|--------|----------|
-| Archive Sweep Startup | Step -1 | Pending | Archive extension must be detected; current target `specs/009c3-remediation-ready-for-owner` must be excluded |
-| Prerequisites | Step 0 | Pending | `check-prerequisites.sh`, command detection, preset detection, constitution context, package manager, and branch guard |
-| Specify | Phase 1 / G1 | Pending | `spec.md`, requirements checklist, G1 pass |
+| Archive Sweep Startup | Step -1 | Complete | Archive extension `archive` v1.1.0 detected and enabled; current target `specs/009c3-remediation-ready-for-owner` excluded; completed specs already archived in memory and retained in this branch until cleanup diff is intentionally merged |
+| Prerequisites | Step 0 | Complete | `check-prerequisites.sh`, command detection, preset detection, branch guard, Node 22 dependency install, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build` passed |
+| Specify | Phase 1 / G1 | Complete | `spec.md` and requirements checklist created; G1 pass with 19 FRs, 4 user stories, 12 acceptance scenarios, and 0 clarification markers |
 | Clarify | Phase 2 / G2 | Pending | Clarification decisions recorded in `spec.md`, G2 pass |
 | Plan | Phase 3 / G3 | Pending | `plan.md`, `research.md`, `data-model.md`, contracts if needed, quickstart, agent context, G3 pass |
 | Checklist | Phase 4 / G4 | Pending | Domain checklists, all gaps resolved, G4 pass |
@@ -347,14 +347,14 @@ rejection behavior, and UI scope.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 19 |
+| User Stories | 4 |
+| Acceptance Criteria | 12 |
 
 ### Files Generated
 
-- [ ] `specs/009c3-remediation-ready-for-owner/spec.md`
-- [ ] `specs/009c3-remediation-ready-for-owner/checklists/requirements.md`
+- [x] `specs/009c3-remediation-ready-for-owner/spec.md`
+- [x] `specs/009c3-remediation-ready-for-owner/checklists/requirements.md`
 
 ---
 
