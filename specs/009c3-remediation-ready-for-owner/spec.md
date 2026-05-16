@@ -73,12 +73,39 @@ As a maintainer, I need validation evidence that is deterministic by default, ex
 
 - Review `fix` must not create Aegis successors, owner-review successors, or owner-ready state even if the workflow has a static next-stage definition.
 - Aegis `rejected` must not create owner-ready state or an owner packet that implies approval.
-- Missing plan, dev verification, review verdict, Aegis approval, advisory governance evidence, or PR linkage must fail readiness closed.
+- Missing plan, dev verification, review verdict, Aegis approval, advisory governance evidence, or PR linkage must fail the SPEC-009C3 happy-path readiness proof closed.
 - Governance evidence showing a resource-policy violation, blocked budget, or blocked window must prevent readiness.
 - Repeated review/Aegis retries must remain bounded and must not duplicate stale successors or overwrite prior evidence needed for diagnosis.
 - Fixture PR identity must not be accepted as live GitHub proof outside automated validation.
 - The live draft PR smoke path must be explicit and operator-initiated; it must not run as part of ordinary automated tests.
 - Existing operator surfaces must remain accurate if they display the ready-for-owner state or stage evidence, but a dedicated pilot evidence UI is out of scope.
+
+## Clarifications
+
+### Session 2026-05-16 - Review and Aegis Loop Semantics
+
+- Review `pass` routes directly toward the Aegis approval gate for the PR-producing `mission-control_dev_implementation` task in SPEC-009C3. It MUST NOT create or require a `mission-control_owner_review` successor on the C3 happy path.
+- `mission-control_owner_review` remains a stable workflow slug for seeded-contract compatibility, but it is not the owner-ready task and does not own the linked PR in this slice.
+- Review `fix` records verdict evidence and loops or blocks before Aegis, owner-review, or `ready_for_owner` state. Corrected work may re-enter review without duplicating stale successors or losing prior verdict evidence.
+- Review-domain verdicts preserve `pass`/`fix` vocabulary in artifacts and workflow output; existing quality-review status vocabulary remains `approved`/`rejected` where the current API/schema requires it.
+- The PR-producing dev template must be eligible for the existing ready-for-owner transition guard by preserving PR-producing status and explicit external terminal semantics; Aegis approval evidence is tied to that dev task.
+- Aegis `rejected` reuses existing bounded Aegis review behavior: rejected review evidence, activity/comment evidence, reassignment for bounded retry, and failure after the existing retry ceiling. No claim-state, run-state, or new control-plane table is introduced.
+- Required evidence stays in existing `task_artifacts`, `quality_reviews`, `activities`, and resource-governance evidence surfaces. SPEC-009C3 may define artifact types/schema versions such as `remediation_plan`, `dev_verification`, `review_verdict`, `aegis_approval`, and `governance_evidence`.
+- Review-verdict and Aegis-approval evidence that gates `ready_for_owner` MUST target the PR-producing `mission-control_dev_implementation` task as the readiness subject. Downstream helper slugs may exist for compatibility or stage outputs, but they MUST NOT become the PR owner, owner-ready task, or authoritative Aegis approval target for SPEC-009C3.
+- SPEC-009C3 MUST NOT change the shared SPEC-005 `ready_for_owner` transition semantics. For the SPEC-009C3 remediation pilot only, missing `github_repo` or `github_pr_number` on the PR-producing dev task is a fail-closed C3 success condition: fixture validation, optional live smoke, and the C3 happy path MUST NOT count the chain as successfully owner-ready unless deterministic PR linkage is present before Aegis approval advances the task.
+- The repo-owned Mission Control workflow contract must make the dev implementation template explicit about merge-gated PR semantics by preserving `produces_pr` and declaring `external_terminal_event: github_pr_merged`.
+- Root issue traceability and PR ownership remain separate: the root task keeps GitHub issue identity, the dev task owns repository/PR identity, and artifacts record both root issue context and dev-task PR context without making helper tasks the PR owner.
+- Required SPEC-009C3 readiness artifacts are evaluated against the PR-producing `mission-control_dev_implementation` task as the readiness subject. `dev_verification`, `review_verdict`, `aegis_approval`, and the readiness-evaluated `remediation_plan` evidence MUST be attached to that dev task or linked/superseded onto it before readiness evaluation. Helper tasks may produce stage outputs, but duplicated artifact bodies are not separate canonical evidence.
+- Required stage artifact payloads use `storage_kind='inline_json'`, `mime='application/json'`, and a compact `schema_version='spec-009c3.v1'` envelope containing `artifact_type`, `stage`, `produced_at`, `producer_task_id`, `workspace_id`, `root_issue`, `pr_dev_task`, and a bounded `summary`.
+- Required artifact payloads add stage-specific minimums: `remediation_plan` includes problem statement, planned changes, verification plan, and risk notes; `dev_verification` includes commit/branch, checks or commands with pass/fail results, and residual risk; `review_verdict` includes `verdict='pass'|'fix'`, reviewer, and blocking findings; `aegis_approval` includes `quality_review_id`, `reviewer='aegis'`, `status='approved'|'rejected'`, `workspace_id`, and reason.
+- Required artifact payloads MUST contain only evidence metadata, bounded summaries, command names/results, links, and commit/PR identifiers. They MUST NOT include secrets, access tokens, credentials, connection strings, or raw sensitive source/log content.
+- The existing `quality_reviews` row for reviewer `aegis` remains the authoritative Aegis gate. An `aegis_approval` artifact is required durable evidence and must reference the quality-review row, but cannot approve readiness by itself.
+- Advisory governance evidence is published as a separate aggregate `governance_evidence` artifact on the PR-producing dev task with per-stage decision class, decision, reason codes, policy ids, evaluated timestamp, event ids where available, and a `readiness_blocked` boolean. Stage artifacts reference this governance evidence where available.
+- Manual owner merge, owner-gate observation, and `ready_for_owner -> done` reconciliation remain SPEC-009C4 scope.
+- Fixture-linked PR identity MUST be marked in C3 evidence artifacts with a source indicator such as `pr_identity_source='fixture'`. Automated tests MUST NOT treat fixture PR fields as live GitHub proof.
+- For SPEC-009C3 G7, fixture smoke evidence is required. A live GitHub PR smoke path is documentation/optional operator UAT only: autopilot and automated tests MUST NOT create, update, merge, or reconcile a real GitHub PR. If deliberately run by an operator, the live smoke may create at most one draft PR, MUST record the PR identity and cleanup expectations, and MUST stop at `ready_for_owner`.
+- Existing Ready for Owner operator surfaces must remain accurate for the dev task: Task Board lane/card state, PR link, Aegis badge or review status, and owner-action notification. SPEC-009C3 does not add a dedicated pilot evidence or governance UI.
+- Synthetic smoke cleanup preserves external audit trails while removing disposable local fixture residue after backup/export: synthetic GitHub issues or draft PRs are closed rather than deleted, and local synthetic tasks, artifacts, reviews, activities, and fixture agents are removed or explicitly retained with evidence.
 
 ## Requirements *(mandatory)*
 
@@ -86,14 +113,16 @@ As a maintainer, I need validation evidence that is deterministic by default, ex
 
 - **FR-001**: The system MUST keep the `mission-control_dev_implementation` task as the owner of the linked PR and as the only task that may reach `ready_for_owner` for this remediation chain (Q2).
 - **FR-002**: The system MUST require durable remediation-plan evidence before the PR-producing dev task can advance into implementation evidence or readiness evaluation (Q7).
-- **FR-003**: The system MUST require deterministic PR linkage and dev verification evidence on the PR-producing dev task before review can produce owner-readiness eligibility (Q2, Q6, Q7).
-- **FR-004**: The system MUST treat review `pass` as eligible to continue toward Aegis only when required plan, PR linkage, dev verification, and review-verdict evidence are present (Q1, Q7).
+- **FR-003**: The system MUST require deterministic PR linkage and dev verification evidence on the PR-producing dev task before SPEC-009C3 fixture validation, optional live smoke, or the C3 happy path can count the chain as owner-ready (Q2, Q6, Q7).
+- **FR-004**: The system MUST treat review `pass` as eligible to continue directly toward Aegis for the PR-producing dev task only when required plan, PR linkage, dev verification, and review-verdict evidence are present (Q1, Q7).
 - **FR-005**: The system MUST treat review `fix` as a loop or block that records verdict evidence and prevents Aegis advancement, owner-review advancement, and `ready_for_owner` state (Q1).
 - **FR-006**: The system MUST allow corrected work after review `fix` to proceed through review again without duplicating stale successors or losing prior review evidence (Q1).
-- **FR-007**: The system MUST prove Aegis approval through the existing quality-review record for reviewer `aegis`, scoped to the same workspace as the PR-producing dev task (Q5).
+- **FR-007**: The system MUST prove Aegis approval through the existing quality-review record for reviewer `aegis`, scoped to the same workspace as and tied to the PR-producing dev task (Q5).
 - **FR-008**: The system MUST require Aegis `approved` before the PR-producing dev task can reach `ready_for_owner` (Q5).
 - **FR-009**: The system MUST treat Aegis `rejected` as a bounded loop or block that records rejection evidence and prevents owner-ready state (Q9).
 - **FR-010**: The system MUST require stage-scoped artifacts for remediation plan, dev verification, review verdict, and Aegis approval, each traceable to the root GitHub issue and the PR-producing dev task (Q7).
+- **FR-010a**: Required stage artifacts MUST be attached to or linked/superseded onto the PR-producing dev task before readiness evaluation and MUST use inline JSON payloads with the `spec-009c3.v1` envelope and stage-specific required fields.
+- **FR-010b**: Required stage artifacts MUST reject missing root issue identity, missing dev-task PR identity when evaluating C3 success, wrong workspace, unsupported review verdict values, and Aegis artifacts that do not reference a canonical `quality_reviews` row.
 - **FR-011**: The system MUST record advisory governance evidence for remediation stages and verify no resource-policy violation, blocked budget result, or blocked window result exists before readiness (Q4).
 - **FR-012**: The system MUST keep advisory governance evidence within the current evidence model and MUST NOT introduce durable run-state, claim authority, runner state, or control-plane tables for this slice (Q4, Q8).
 - **FR-013**: Automated validation MUST use deterministic fixture-linked PR identity and MUST NOT create, update, or merge a real GitHub PR (Q6).

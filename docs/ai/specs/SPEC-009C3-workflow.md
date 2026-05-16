@@ -68,7 +68,7 @@ Source-of-truth scoping decisions:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/009c3-remediation-ready-for-owner/spec.md` from roadmap plus design concept; requirements checklist passed |
-| Clarify | `$speckit-clarify` | Pending | Resolve loop mechanics, artifact schemas, nomenclature cleanup, governance evidence, and live smoke shape |
+| Clarify | `$speckit-clarify` | Complete | Resolved loop mechanics, PR ownership, artifact schemas, governance evidence, fixture/live smoke boundary, cleanup, UI scope, and non-slug nomenclature cleanup |
 | Plan | `$speckit-plan` | Pending | Plan against existing workflow contracts, task-chain helpers, artifact/disposition/quality-review/governance surfaces |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with reviewability checkpoint |
@@ -88,7 +88,7 @@ Source-of-truth scoping decisions:
 | G4 | After Checklist | All gaps in data integrity, state lifecycle, error handling, security, and regression safety are resolved without widening scope |
 | G5 | After Tasks | Tasks include RED tests before production changes and explicit guardrails for no manual merge, no `done` reconciliation, no claim/run state, no sandbox/adapter work, and no dedicated evidence UI |
 | G6 | After Analyze | No CRITICAL/HIGH findings remain; generated artifacts do not implement SPEC-009C4/D/E, automatic GitHub sync, claim/reconciliation, runner state, sandboxing, harness adapters, or production evidence UI |
-| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, live/fixture smoke checklist, cleanup evidence, roadmap/workflow status updates, branch commit, and push are complete |
+| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, required fixture smoke evidence, optional operator-initiated live draft PR smoke documentation/cleanup evidence if deliberately run, roadmap/workflow status updates, branch commit, and push are complete |
 
 ### Autopilot Phase Accounting
 
@@ -100,7 +100,7 @@ only when its artifact and gate evidence are recorded here.
 | Archive Sweep Startup | Step -1 | Complete | Archive extension `archive` v1.1.0 detected and enabled; current target `specs/009c3-remediation-ready-for-owner` excluded; completed specs already archived in memory and retained in this branch until cleanup diff is intentionally merged |
 | Prerequisites | Step 0 | Complete | `check-prerequisites.sh`, command detection, preset detection, branch guard, Node 22 dependency install, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build` passed |
 | Specify | Phase 1 / G1 | Complete | `spec.md` and requirements checklist created; G1 pass with 19 FRs, 4 user stories, 12 acceptance scenarios, and 0 clarification markers |
-| Clarify | Phase 2 / G2 | Pending | Clarification decisions recorded in `spec.md`, G2 pass |
+| Clarify | Phase 2 / G2 | Complete | Four sessions completed; consensus log recorded 7 decisions; G2 pass with 0 clarification markers |
 | Plan | Phase 3 / G3 | Pending | `plan.md`, `research.md`, `data-model.md`, contracts if needed, quickstart, agent context, G3 pass |
 | Checklist | Phase 4 / G4 | Pending | Domain checklists, all gaps resolved, G4 pass |
 | Tasks | Phase 5 / G5 | Pending | `tasks.md`, reviewability gate, G5 pass |
@@ -420,10 +420,22 @@ Focus on validation and operator surfaces:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Review/Aegis loops | Pending | Pending |
-| 2 | PR ownership/nomenclature | Pending | Pending |
-| 3 | Artifact/governance evidence | Pending | Pending |
-| 4 | Smoke/UI boundary | Pending | Pending |
+| 1 | Review/Aegis loops | 5 | Accepted codebase-backed answers: review `pass` routes directly toward Aegis for the PR-producing dev task; `fix` loops/blocks without owner/Aegis readiness; Aegis `rejected` reuses bounded existing review retry/activity behavior; review artifacts keep `pass`/`fix` while existing quality-review status stays `approved`/`rejected`; evidence remains in existing artifact/review/activity/governance surfaces |
+| 2 | PR ownership/nomenclature | 5 | Accepted answers: the dev implementation task remains the PR owner/readiness subject; `external_terminal_event: github_pr_merged` must be added to the dev template during implementation; helper slugs may record stage outputs but do not own readiness; root issue identity and dev PR identity stay separate in artifacts; missing PR linkage fails the C3 pilot success gate without changing shared SPEC-005 transition semantics |
+| 3 | Artifact/governance evidence | 5 | Accepted answers: required readiness artifacts are evaluated against the PR-producing dev task; payloads carry root issue and dev PR cross-links; required artifacts use compact inline JSON `spec-009c3.v1` envelopes with bounded non-secret summaries; `quality_reviews` remains authoritative for Aegis and artifacts reference it; aggregate `governance_evidence` records per-stage allow/defer/block evidence without adding run/claim state |
+| 4 | Smoke/UI boundary | 5 | Accepted answers: fixture PR identity is marked in artifacts and never treated as live proof; fixture smoke is required while live draft PR smoke is optional operator UAT only; existing Task Board/Ready for Owner PR link/Aegis/notification surfaces must remain accurate; cleanup closes external synthetic artifacts and removes or documents local fixture residue; workflow-contract copy may be tightened without slug changes |
+
+### Consensus Resolution Log
+
+| Date | Phase | Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|------|-------|-------------------|---------|---------------|
+| 2026-05-16 | Clarify Session 1 | Should review `pass` route directly to Aegis and leave `mission-control_owner_review` out of the C3 happy path? | 1 | codebase, spec | High-confidence agreement: route `pass` directly toward Aegis for the PR-producing dev task; preserve `mission-control_owner_review` slug but keep it out of the C3 happy path | codebase-analyst, spec-context-analyst |
+| 2026-05-16 | Clarify Session 2 | Should missing PR linkage hard-block shared `ready_for_owner` or fail only the C3 pilot success gate? | 1 -> 2 | codebase, spec -> domain | Round 2 majority: do not change shared SPEC-005 transition semantics; missing dev-task PR linkage fails SPEC-009C3 happy-path/fixture/live-smoke success closed | codebase-analyst, spec-context-analyst, domain-researcher |
+| 2026-05-16 | Clarify Session 2 | Should `mission-control_dev_implementation` declare `external_terminal_event: github_pr_merged` now? | 1 | codebase, spec | High-confidence agreement: implementation must add the explicit terminal event beside `produces_pr: true` in the repo-owned workflow contract | codebase-analyst, spec-context-analyst |
+| 2026-05-16 | Clarify Session 2 | Should review/Aegis gating evidence target the PR-producing dev task despite downstream helper slugs? | 1 | codebase, spec | High-confidence agreement: all readiness-gating review/Aegis evidence targets the dev task; helper slugs may remain but must not own PR or readiness | codebase-analyst, spec-context-analyst |
+| 2026-05-16 | Clarify Session 3 | Where should required stage artifacts attach while remaining traceable to the root issue and dev task? | 1 | codebase, spec, security/domain | High-confidence agreement: canonical readiness evidence is attached to or linked/superseded onto the PR-producing dev task; payloads carry root issue and dev PR cross-links | codebase-analyst, spec-context-analyst, domain-researcher |
+| 2026-05-16 | Clarify Session 3 | What minimum JSON schema should C3 require for required artifacts? | 1 | codebase, spec, security/domain | Agreement: use compact inline JSON `spec-009c3.v1` envelopes with bounded stage-specific fields, no raw logs/secrets, and Aegis artifacts referencing canonical quality-review rows | codebase-analyst, spec-context-analyst, domain-researcher |
+| 2026-05-16 | Clarify Session 4 | Should C3 create a live draft PR or only document an opt-in operator smoke path? | 1 | spec, domain | High-confidence agreement: automated C3 validation never creates live PRs; fixture smoke is required; live draft PR smoke is optional operator UAT only and must stop at `ready_for_owner` | spec-context-analyst, domain-researcher |
 
 ---
 
