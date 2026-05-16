@@ -19,8 +19,8 @@ readiness proof.
 
 **Language/Version**: TypeScript 5.7 strict on Node >=22 with Next.js 16 App Router and React 19
 **Primary Dependencies**: Next.js, React, Zustand where existing panels need it, Tailwind CSS 3, `better-sqlite3`, existing workflow-contract tooling, existing AJV/routing dependencies; no new runtime dependency planned
-**Storage**: SQLite through `better-sqlite3`, synchronous transactions; existing `tasks`, `workflow_templates`, `task_artifacts`, `quality_reviews`, `activities`, and resource-governance tables/surfaces
-**Testing**: Vitest for task-chain/artifact/quality-review/governance readiness tests; Playwright only if an existing ready-for-owner/operator surface changes; `pnpm typecheck`, `pnpm lint`, `pnpm build`
+**Storage**: SQLite through `better-sqlite3`, synchronous transactions; existing `tasks`, `workflow_templates`, `task_artifacts`, `quality_reviews`, `activities`, and resource-governance tables/surfaces. SPEC-009C3 review, Aegis, governance, retry, artifact-publish failure, and readiness activities must preserve the PR-producing dev task's `workspace_id` and bounded root/dev task context.
+**Testing**: Vitest for task-chain/artifact/quality-review/governance readiness tests, including artifact publish/supersede failures and side-effect-free blocked readiness; Playwright only if an existing ready-for-owner/operator surface changes; `pnpm typecheck`, `pnpm lint`, `pnpm build`
 **Target Platform**: Mission Control web application and local operator runtime on Node >=22
 **Project Type**: Next.js web application with API routes, scheduler/runtime task-chain logic, SQLite persistence, and operator documentation
 **Performance Goals**: Readiness evaluation remains synchronous and bounded to the current task/workspace chain; no polling loop, runner, or long-running control-plane process is introduced
@@ -28,6 +28,36 @@ readiness proof.
 **Scale/Scope**: One pilot Issue Remediation chain path from SPEC-009C2 successor through PR-producing dev task `ready_for_owner`; existing non-pilot task-chain behavior remains compatible
 **Reviewability Budget**: Primary surface is scheduler/runtime task-chain execution. Secondary surfaces are workflow contract copy/fields, quality-review API, task-artifact evidence, governance evidence checks, and docs/smoke. The roadmap transition exception permits the slice, but implementation must split anything that introduces formal run-state, claim authority, harness/sandbox adapters, automatic pollers, merge reconciliation, or dedicated evidence UI.
 **Strict Scope**: Any new SPEC-009C3-owned TS/TSX modules must be added to `tsconfig.spec-strict.json` and `eslint.config.mjs`. If implementation modifies only existing modules plus docs/contracts, strict scope is N/A.
+
+### State-Management Decision
+
+SPEC-009C3 keeps the existing workflow slugs and stored
+`mission-control_review.next_template_slug` value for seeded-contract
+compatibility, but C3 review outcomes are guarded before that static fallback
+can create a successor. For C3 review outputs tied to the PR-producing
+`mission-control_dev_implementation` task:
+
+- review `fix` records the failed verdict and terminates or blocks that
+  advancement attempt before any `mission-control_owner_review`,
+  `mission-control_aegis`, or `ready_for_owner` side effect can be created;
+- review `pass` records the passing verdict on or linked/superseded onto the
+  PR-producing dev task and makes that dev task eligible for the existing
+  Aegis quality-review/readiness gate without creating or requiring a
+  `mission-control_owner_review` successor in SPEC-009C3;
+- missing dev-task identity, wrong workspace, missing required evidence, or an
+  unsupported verdict fails closed and must not fall through to the static
+  `next_template_slug`.
+- required artifact publish or supersede failure records bounded failure
+  activity on the PR-producing dev task's workspace and blocks readiness until
+  the required artifact is successfully present;
+- every readiness-blocking condition is evaluated before owner-ready side
+  effects, so blocked attempts create no `ready_for_owner` status write,
+  owner-ready notification, `task_ready_for_owner` activity, outbound
+  ready-for-owner sync, Aegis/owner-review successor, or owner packet.
+
+This is a scheduler/runtime task-chain guard over the C3 pilot path, not a
+slug migration and not a new control-plane, claim, run-state, owner-review,
+merge, or evidence-UI surface.
 
 ## Constitution Check
 
@@ -42,7 +72,7 @@ readiness proof.
 - **VI. Dependency Supply-Chain Hygiene**: Pass. No new runtime dependency is planned.
 - **VII. Additive Migration Policy**: Pass. No schema migration is planned.
 - **VIII. Successor Side-Effect Parity**: Pass. Successors must continue to use `createTask`; no direct production `INSERT INTO tasks` path is planned.
-- **X. Observability and Auditability**: Pass. Stage evidence uses `task_artifacts`, Aegis proof uses `quality_reviews`, and loop/block outcomes create durable activity/artifact evidence.
+- **X. Observability and Auditability**: Pass. Stage evidence uses `task_artifacts`, Aegis proof uses `quality_reviews`, and loop/block outcomes create durable activity/artifact evidence scoped to the PR-producing dev task's workspace.
 - **XIV. Real UI Journey Quality Gate**: Conditional. No dedicated UI is planned. If an existing Task Board, PR link, Aegis badge/status, or owner notification surface changes, focused real Playwright coverage and screenshots are required.
 - **XV. Spec Artifact Provenance And Archive Sweep**: Pass. Workflow startup records Archive Sweep discovery, current-target exclusion, and no cleanup mixed into this branch.
 - **XVI. Reviewability And Verification Debt Control**: Pass by transition exception. Primary surface remains scheduler/runtime task-chain execution; secondary surfaces are explicitly bounded.

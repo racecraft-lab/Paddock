@@ -72,6 +72,22 @@ Governance blocked:
 - Blocks readiness when a resource-policy violation, blocked budget, or blocked
   window result exists.
 
+Artifact publish or supersede failure:
+
+- Records bounded failure activity on the PR-producing dev task's workspace.
+- Leaves the required evidence class missing for readiness until publish or
+  supersede succeeds.
+- Produces no owner-ready side effects: no `ready_for_owner` status write,
+  owner-ready notification, `task_ready_for_owner` activity, outbound
+  ready-for-owner sync, Aegis/owner-review successor, or owner packet.
+
+Any blocked readiness attempt:
+
+- Leaves the PR-producing dev task non-owner-ready.
+- Records only the relevant bounded failure, verdict, governance, or retry
+  evidence.
+- Produces no owner-ready side effects.
+
 ## Optional Live Draft PR Smoke
 
 The live smoke path is operator-initiated UAT only. It is not part of ordinary
@@ -93,6 +109,11 @@ Evidence to record:
 - Cleanup status: draft PR closed or retained with rationale; synthetic local
   tasks/artifacts/reviews/activities/fixture agents removed or explicitly
   retained with evidence.
+
+Fail the live smoke proof closed if PR identity is missing, the PR is not
+draft, the identity belongs to a different dev task, the path mutates GitHub
+beyond at-most-one draft PR creation, the PR is merged or reconciled to `done`,
+or cleanup evidence/retention rationale is missing.
 
 ## Scope Guards
 

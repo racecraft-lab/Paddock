@@ -70,7 +70,7 @@ Source-of-truth scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated `specs/009c3-remediation-ready-for-owner/spec.md` from roadmap plus design concept; requirements checklist passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved loop mechanics, PR ownership, artifact schemas, governance evidence, fixture/live smoke boundary, cleanup, UI scope, and non-slug nomenclature cleanup |
 | Plan | `$speckit-plan` | Complete | Generated plan, research decisions, data model, remediation-readiness contract, quickstart, and Codex agent context |
-| Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
+| Checklist | `$speckit-checklist` | Complete | Generated five domain checklists; resolved 9 gaps across data integrity, state lifecycle, error handling, and regression safety; security had 0 gaps; G4 passed |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with reviewability checkpoint |
 | Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept consistency and boundary discipline |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and record verification/smoke evidence |
@@ -102,7 +102,7 @@ only when its artifact and gate evidence are recorded here.
 | Specify | Phase 1 / G1 | Complete | `spec.md` and requirements checklist created; G1 pass with 19 FRs, 4 user stories, 12 acceptance scenarios, and 0 clarification markers |
 | Clarify | Phase 2 / G2 | Complete | Four sessions completed; consensus log recorded 7 decisions; G2 pass with 0 clarification markers |
 | Plan | Phase 3 / G3 | Complete | `plan.md`, `research.md`, `data-model.md`, `contracts/remediation-readiness-contract.md`, `quickstart.md`, Codex agent context update; G3 pass with no clarification markers |
-| Checklist | Phase 4 / G4 | Pending | Domain checklists, all gaps resolved, G4 pass |
+| Checklist | Phase 4 / G4 | Complete | Five domain checklists created; 90 items checked; 9 gaps resolved; G4 passed with 0 `[Gap]` markers |
 | Tasks | Phase 5 / G5 | Pending | `tasks.md`, reviewability gate, G5 pass |
 | Analyze | Phase 6 / G6 | Pending | Cross-artifact analysis, 0 CRITICAL/HIGH findings, G6 pass |
 | Implement | Phase 7 / G7 | Pending | All generated tasks completed with verification and smoke evidence |
@@ -579,12 +579,12 @@ Focus on SPEC-009C3 requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
-| regression-safety | Pending | Pending | Pending |
-| **Total** | Pending | Pending | Pending |
+| data-integrity | 18 | 1 resolved, 0 remaining | Added `FR-010c`; workspace-scoped activity evidence for review/Aegis/governance/retry/readiness |
+| state-management | 14 | 2 resolved, 0 remaining | Guarded review `fix` static successor fallback; review `pass` bypasses owner-review for C3 while preserving slugs |
+| error-handling | 13 | 4 resolved, 0 remaining | Added artifact publish/supersede failure semantics, blocked-readiness side-effect exclusions, optional live draft PR fail-closed rules, and SC-010/SC-011 |
+| security | 19 | 0 found, 0 remaining | Confirmed PR identity, Aegis reviewer/workspace scope, sanitized artifacts, and fixture/live trust boundary coverage |
+| regression-safety | 26 | 2 resolved, 0 remaining | Added `FR-021`, `FR-022`, `SC-012`, `SC-013`; tightened downstream SPEC-009C4/D/E, SPEC-013A-C, and SPEC-014A-D boundaries |
+| **Total** | 90 | 9 resolved, 0 remaining | G4 passed via `validate-gate.sh G4 specs/009c3-remediation-ready-for-owner` |
 
 ---
 

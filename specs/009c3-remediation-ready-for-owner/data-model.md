@@ -69,6 +69,10 @@
   names/results, links, commit IDs, and PR identifiers only. They must not
   include secrets, tokens, credentials, connection strings, raw sensitive source,
   or raw sensitive logs.
+- **Publish failure rules**: Publish or supersede failure records bounded
+  activity on the PR-producing dev task's workspace and blocks readiness until
+  the required artifact is successfully present on or linked/superseded onto
+  that task.
 
 ### Remediation Plan Artifact
 
@@ -159,8 +163,8 @@
 Remediation plan evidence present
   -> PR-producing dev task records PR linkage and dev verification
   -> review verdict recorded
-      pass -> Aegis review gate
-      fix  -> loop/block before Aegis and readiness
+      pass -> C3 guard bypasses owner-review and evaluates Aegis review gate
+      fix  -> C3 guard suppresses static review successor and loops/blocks before Aegis and readiness
   -> Aegis quality review recorded
       approved -> readiness evaluation
       rejected -> bounded loop/block before readiness
@@ -181,6 +185,15 @@ Remediation plan evidence present
 - Aegis row scoped to the wrong workspace or wrong task.
 - Aegis status `rejected`.
 - Missing or blocked governance evidence.
+- Required stage artifact publish or supersede failure.
+- Optional live draft PR smoke missing draft identity, using non-draft or
+  wrong-task PR identity, mutating beyond draft creation, merging/reconciling
+  to `done`, or omitting cleanup evidence/retention rationale.
 - Any attempt to move helper/root/review tasks to `ready_for_owner`.
 - Any attempt to merge, observe merge, reconcile GitHub merge, or move
   `ready_for_owner` to `done`.
+
+Fail-closed readiness conditions do not write `ready_for_owner`, emit
+owner-ready notifications, write `task_ready_for_owner` activities, attempt
+outbound ready-for-owner sync, create Aegis/owner-review successors, or assemble
+an owner packet.
