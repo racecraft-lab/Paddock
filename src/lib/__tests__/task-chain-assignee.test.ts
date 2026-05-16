@@ -15,7 +15,7 @@ function createDb(withAssignment: boolean): Database.Database {
     CREATE TABLE workspaces (id INTEGER PRIMARY KEY, feature_flags TEXT);
     CREATE TABLE projects (id INTEGER PRIMARY KEY, workspace_id INTEGER, ticket_prefix TEXT, ticket_counter INTEGER NOT NULL DEFAULT 0, updated_at INTEGER, github_repo TEXT, github_sync_enabled INTEGER DEFAULT 0);
     CREATE TABLE agents (id INTEGER PRIMARY KEY, name TEXT, workspace_id INTEGER);
-    CREATE TABLE project_agent_assignments (project_id INTEGER, role TEXT, agent_name TEXT, workspace_id INTEGER);
+    CREATE TABLE project_agent_assignments (project_id INTEGER, role TEXT, agent_name TEXT);
     CREATE TABLE workflow_templates (id INTEGER PRIMARY KEY, name TEXT, task_prompt TEXT, workspace_id INTEGER, slug TEXT, agent_role TEXT, next_template_slug TEXT);
     CREATE TABLE tasks (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +42,7 @@ function createDb(withAssignment: boolean): Database.Database {
   db.prepare('INSERT INTO projects (id, workspace_id) VALUES (10, 1)').run()
   db.prepare('INSERT INTO agents (id, name, workspace_id) VALUES (99, ?, 1)').run('named-agent')
   if (withAssignment) {
-    db.prepare('INSERT INTO project_agent_assignments (project_id, role, agent_name, workspace_id) VALUES (10, ?, ?, 1)')
+    db.prepare('INSERT INTO project_agent_assignments (project_id, role, agent_name) VALUES (10, ?, ?)')
       .run('reviewer', 'named-agent')
   }
   db.prepare('INSERT INTO workflow_templates (id, name, task_prompt, workspace_id, slug, agent_role, next_template_slug) VALUES (1, ?, ?, 1, ?, ?, ?)').run('start', 'Start', 'start', 'builder', 'review')

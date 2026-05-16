@@ -898,16 +898,18 @@ function isTemplateDisabled(template: TaskPipelineTemplate): boolean {
 
 function resolveSuccessorAssignee(db: any, parent: TaskPipelineTask, target: TaskPipelineTemplate): string | null {
   if (!parent.project_id || !target.agent_role) return null
-  if (!tableExists(db, 'project_agent_assignments') || !tableExists(db, 'agents')) return null
+  if (!tableExists(db, 'project_agent_assignments') || !tableExists(db, 'projects') || !tableExists(db, 'agents')) return null
   const row = db.prepare(`
     SELECT paa.agent_name
     FROM project_agent_assignments paa
+    INNER JOIN projects p
+      ON p.id = paa.project_id
     INNER JOIN agents a
       ON a.name = paa.agent_name
-     AND a.workspace_id = paa.workspace_id
+     AND a.workspace_id = p.workspace_id
     WHERE paa.project_id = ?
       AND paa.role = ?
-      AND paa.workspace_id = ?
+      AND p.workspace_id = ?
     LIMIT 1
   `).get(parent.project_id, target.agent_role, parent.workspace_id) as { agent_name: string } | undefined
   return row?.agent_name ?? null
