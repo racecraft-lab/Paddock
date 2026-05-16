@@ -69,7 +69,7 @@ Source-of-truth scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/009c3-remediation-ready-for-owner/spec.md` from roadmap plus design concept; requirements checklist passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved loop mechanics, PR ownership, artifact schemas, governance evidence, fixture/live smoke boundary, cleanup, UI scope, and non-slug nomenclature cleanup |
-| Plan | `$speckit-plan` | Pending | Plan against existing workflow contracts, task-chain helpers, artifact/disposition/quality-review/governance surfaces |
+| Plan | `$speckit-plan` | Complete | Generated plan, research decisions, data model, remediation-readiness contract, quickstart, and Codex agent context |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and regression-safety checks |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with reviewability checkpoint |
 | Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept consistency and boundary discipline |
@@ -101,7 +101,7 @@ only when its artifact and gate evidence are recorded here.
 | Prerequisites | Step 0 | Complete | `check-prerequisites.sh`, command detection, preset detection, branch guard, Node 22 dependency install, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build` passed |
 | Specify | Phase 1 / G1 | Complete | `spec.md` and requirements checklist created; G1 pass with 19 FRs, 4 user stories, 12 acceptance scenarios, and 0 clarification markers |
 | Clarify | Phase 2 / G2 | Complete | Four sessions completed; consensus log recorded 7 decisions; G2 pass with 0 clarification markers |
-| Plan | Phase 3 / G3 | Pending | `plan.md`, `research.md`, `data-model.md`, contracts if needed, quickstart, agent context, G3 pass |
+| Plan | Phase 3 / G3 | Complete | `plan.md`, `research.md`, `data-model.md`, `contracts/remediation-readiness-contract.md`, `quickstart.md`, Codex agent context update; G3 pass with no clarification markers |
 | Checklist | Phase 4 / G4 | Pending | Domain checklists, all gaps resolved, G4 pass |
 | Tasks | Phase 5 / G5 | Pending | `tasks.md`, reviewability gate, G5 pass |
 | Analyze | Phase 6 / G6 | Pending | Cross-artifact analysis, 0 CRITICAL/HIGH findings, G6 pass |
@@ -486,11 +486,11 @@ or dedicated evidence UI.
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, execution flow |
-| `research.md` | Pending | Decision rationales if needed |
-| `data-model.md` | Pending | Existing entities plus any artifact schema definitions |
-| `contracts/` | Pending | Only if artifact/API contracts need explicit docs |
-| `quickstart.md` | Pending | Fixture smoke and optional live draft PR smoke |
+| `plan.md` | Complete | Technical context, constitution gates, primary/secondary surfaces, project structure, reviewability exception |
+| `research.md` | Complete | Decisions for task-chain reuse, PR ownership, review/Aegis loops, Aegis proof, artifacts, governance, fixture/live smoke, and UI boundary |
+| `data-model.md` | Complete | Existing entities, artifact envelopes, Aegis review, governance evidence, state transitions, fail-closed conditions |
+| `contracts/` | Complete | `contracts/remediation-readiness-contract.md` defines readiness subject, required evidence, transition contract, and out-of-scope assertions |
+| `quickstart.md` | Complete | Fixture validation path, blocked-path evidence, optional live draft PR smoke, and scope guards |
 
 ---
 
