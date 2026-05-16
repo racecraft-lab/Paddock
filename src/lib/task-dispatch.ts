@@ -113,12 +113,28 @@ type PilotTriageEvidenceParent = {
   readonly workflow_template_slug: string | null
 }
 
-function existingDispositionRow(db: any, parentTaskId: number, workspaceId: number): boolean {
-  if (!tableExists(db, 'task_dispositions')) return false
-  return Boolean(
-    db.prepare('SELECT id FROM task_dispositions WHERE task_id = ? AND workspace_id = ? LIMIT 1')
-      .get(parentTaskId, workspaceId),
-  )
+type ExistingDispositionRow = {
+  readonly id: number
+  readonly disposition: string
+  readonly reason: string | null
+  readonly triaged_by_agent_id: number | null
+}
+
+type PilotTriageArtifactRow = {
+  readonly id: number
+  readonly content_json: string | null
+}
+
+type PilotTriageEvidenceContext = {
+  readonly successorTaskId: number | null
+  readonly targetTemplateSlug: string | null
+}
+
+function selectDispositionRow(db: any, parentTaskId: number, workspaceId: number): ExistingDispositionRow | null {
+  if (!tableExists(db, 'task_dispositions')) return null
+  return (db.prepare(
+    'SELECT id, disposition, reason, triaged_by_agent_id FROM task_dispositions WHERE task_id = ? AND workspace_id = ? ORDER BY id ASC LIMIT 1',
+  ).get(parentTaskId, workspaceId) as ExistingDispositionRow | undefined) ?? null
 }
 
 function isPilotIssueTriageProfile(parent: PilotTriageEvidenceParent, profile: TriageTemplateProfile): boolean {
@@ -142,12 +158,88 @@ function successorContextFor(
   }
 }
 
+function expectedPilotTriageContent(
+  parent: PilotTriageEvidenceParent,
+  disposition: string,
+  rationale: string | null,
+  context: PilotTriageEvidenceContext,
+): Record<string, unknown> {
+  return {
+    schema_version: 'spec-009c2.triage_outcome.v1',
+    task_id: parent.id,
+    workspace_id: parent.workspace_id,
+    disposition,
+    rationale,
+    successor_task_id: context.successorTaskId,
+    target_template_slug: context.targetTemplateSlug,
+  }
+}
+
+function selectActivePilotTriageArtifact(
+  db: any,
+  parent: PilotTriageEvidenceParent,
+): PilotTriageArtifactRow | null {
+  if (!tableExists(db, 'task_artifacts')) return null
+  return (db.prepare(`
+    SELECT id, content_json
+    FROM task_artifacts
+    WHERE task_id = ?
+      AND workspace_id = ?
+      AND artifact_type = 'triage_outcome'
+      AND redaction_status NOT IN ('superseded', 'quarantined')
+    ORDER BY id DESC
+    LIMIT 1
+  `).get(parent.id, parent.workspace_id) as PilotTriageArtifactRow | undefined) ?? null
+}
+
+function pilotTriageArtifactMatches(
+  artifact: PilotTriageArtifactRow,
+  expected: Record<string, unknown>,
+): boolean {
+  if (artifact.content_json === null) return false
+  const parsed = safeParseJson(artifact.content_json)
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false
+  const obj = parsed as Record<string, unknown>
+  return obj.schema_version === expected.schema_version
+    && obj.task_id === expected.task_id
+    && obj.workspace_id === expected.workspace_id
+    && obj.disposition === expected.disposition
+    && obj.rationale === expected.rationale
+    && obj.successor_task_id === expected.successor_task_id
+    && obj.target_template_slug === expected.target_template_slug
+}
+
+function hasPilotTriageOutcomeRecordedActivity(
+  db: any,
+  parent: PilotTriageEvidenceParent,
+  artifactId: number,
+): boolean {
+  if (!tableExists(db, 'activities')) return false
+  const rows = db.prepare(`
+    SELECT data
+    FROM activities
+    WHERE type = 'pilot_triage_outcome_recorded'
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND workspace_id = ?
+    ORDER BY id DESC
+  `).all(parent.id, parent.workspace_id) as Array<{ data: string | null }>
+  return rows.some((row) => {
+    if (row.data === null) return false
+    const parsed = safeParseJson(row.data)
+    return !!parsed
+      && typeof parsed === 'object'
+      && !Array.isArray(parsed)
+      && (parsed as Record<string, unknown>).artifact_id === artifactId
+  })
+}
+
 function writePilotTriageArtifactFailureActivity(
   db: any,
   parent: PilotTriageEvidenceParent,
   disposition: string,
   rationale: string | null,
-  context: { successorTaskId: number | null; targetTemplateSlug: string | null },
+  context: PilotTriageEvidenceContext,
   err: unknown,
 ): void {
   if (!tableExists(db, 'activities')) return
@@ -181,7 +273,7 @@ function writePilotTriageOutcomeRecordedActivity(
   artifactId: number,
   disposition: string,
   rationale: string | null,
-  context: { successorTaskId: number | null; targetTemplateSlug: string | null },
+  context: PilotTriageEvidenceContext,
 ): void {
   if (!tableExists(db, 'activities')) return
   try {
@@ -218,37 +310,40 @@ function writePilotTriageEvidence(
 ): void {
   if (!isTaskArtifactsEnabled(db, parent.workspace_id)) return
   const context = successorContextFor(db, result, parent.workspace_id)
-  const content = {
-    schema_version: 'spec-009c2.triage_outcome.v1',
-    task_id: parent.id,
-    workspace_id: parent.workspace_id,
-    disposition,
-    rationale,
-    successor_task_id: context.successorTaskId,
-    target_template_slug: context.targetTemplateSlug,
-  }
+  if (disposition === 'ACTIONABLE_REMEDIATION' && context.successorTaskId === null) return
+
+  const content = expectedPilotTriageContent(parent, disposition, rationale, context)
+  const existingArtifact = selectActivePilotTriageArtifact(db, parent)
   let artifactId: number
-  try {
-    const artifact = publishArtifact({
-      task_id: parent.id,
-      artifact_type: 'triage_outcome',
-      storage_kind: 'inline_json',
-      content: JSON.stringify(content),
-      mime: 'application/json',
-      schema_version: 'spec-009c2.triage_outcome.v1',
-      active_workspace_id: parent.workspace_id,
-      is_facility_caller: false,
-      db,
-      producer_agent_id: triagedByAgentId ?? undefined,
-      workflow_template_slug: parent.workflow_template_slug ?? undefined,
-    })
-    artifactId = artifact.id
-  } catch (err) {
-    writePilotTriageArtifactFailureActivity(db, parent, disposition, rationale, context, err)
-    return
+
+  if (existingArtifact && pilotTriageArtifactMatches(existingArtifact, content)) {
+    artifactId = existingArtifact.id
+  } else {
+    try {
+      const artifact = publishArtifact({
+        task_id: parent.id,
+        artifact_type: 'triage_outcome',
+        storage_kind: 'inline_json',
+        content: JSON.stringify(content),
+        mime: 'application/json',
+        schema_version: 'spec-009c2.triage_outcome.v1',
+        supersedes: existingArtifact?.id,
+        active_workspace_id: parent.workspace_id,
+        is_facility_caller: false,
+        db,
+        producer_agent_id: triagedByAgentId ?? undefined,
+        workflow_template_slug: parent.workflow_template_slug ?? undefined,
+      })
+      artifactId = artifact.id
+    } catch (err) {
+      writePilotTriageArtifactFailureActivity(db, parent, disposition, rationale, context, err)
+      return
+    }
   }
 
-  writePilotTriageOutcomeRecordedActivity(db, parent, artifactId, disposition, rationale, context)
+  if (!hasPilotTriageOutcomeRecordedActivity(db, parent, artifactId)) {
+    writePilotTriageOutcomeRecordedActivity(db, parent, artifactId, disposition, rationale, context)
+  }
 }
 
 // SPEC-007 FR-011/FR-012/FR-013/FR-015: Post-commit disposition logging hook.
@@ -280,7 +375,7 @@ function runPostCommitDispositionInsert(
   if (!parent) return
   const profile = triageTemplateProfile(parent.output_schema)
   if (!profile) return
-  if (existingDispositionRow(db, parentTaskId, workspaceId)) return
+  const existingDisposition = selectDispositionRow(db, parentTaskId, workspaceId)
 
   const rawOutput = parent.resolution ?? ''
   const parsed = rawOutput ? safeParseJson(rawOutput) : undefined
@@ -299,20 +394,56 @@ function runPostCommitDispositionInsert(
   const triagedByAgentId = agentRow ? agentRow.id : null
 
   if (validationOk) {
-    let inserted = false
-    try {
-      db.prepare(
-        'INSERT INTO task_dispositions (task_id, disposition, reason, triaged_by_agent_id, triaged_at, workspace_id) VALUES (?, ?, ?, ?, unixepoch(), ?)',
-      ).run(parentTaskId, dispRaw, reason, triagedByAgentId, workspaceId)
-      inserted = true
-    } catch (err) {
-      writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+    let durableDisposition: ExistingDispositionRow | null = existingDisposition
+
+    if (existingDisposition === null) {
+      try {
+        const info = db.prepare(
+          'INSERT INTO task_dispositions (task_id, disposition, reason, triaged_by_agent_id, triaged_at, workspace_id) VALUES (?, ?, ?, ?, unixepoch(), ?)',
+        ).run(parentTaskId, dispRaw, reason, triagedByAgentId, workspaceId)
+        durableDisposition = {
+          id: Number(info.lastInsertRowid),
+          disposition: dispRaw,
+          reason,
+          triaged_by_agent_id: triagedByAgentId,
+        }
+      } catch (err) {
+        writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+        return
+      }
+    } else if (existingDisposition.disposition === 'unknown') {
+      try {
+        db.prepare(
+          'UPDATE task_dispositions SET disposition = ?, reason = ?, triaged_by_agent_id = ?, triaged_at = unixepoch() WHERE id = ? AND workspace_id = ?',
+        ).run(dispRaw, reason, triagedByAgentId, existingDisposition.id, workspaceId)
+        durableDisposition = {
+          id: existingDisposition.id,
+          disposition: dispRaw,
+          reason,
+          triaged_by_agent_id: triagedByAgentId,
+        }
+      } catch (err) {
+        writeThrottledInsertFailure(db, parentTaskId, workspaceId, err)
+        return
+      }
+    } else if (existingDisposition.disposition !== dispRaw) {
+      return
     }
-    if (inserted && isPilotIssueTriageProfile(parent, profile)) {
-      writePilotTriageEvidence(db, parent, dispRaw, reason, result, triagedByAgentId)
+
+    if (durableDisposition && isPilotIssueTriageProfile(parent, profile)) {
+      writePilotTriageEvidence(
+        db,
+        parent,
+        durableDisposition.disposition,
+        durableDisposition.reason,
+        result,
+        durableDisposition.triaged_by_agent_id ?? triagedByAgentId,
+      )
     }
     return
   }
+
+  if (existingDisposition !== null) return
 
   const violation = parsedObj === null
     ? 'invalid_json'

@@ -3,6 +3,32 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 const openDbs: Database.Database[] = []
 
+const TASK_ARTIFACTS_TABLE_SQL = `
+  CREATE TABLE task_artifacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER NOT NULL,
+    workspace_id INTEGER NOT NULL,
+    project_id INTEGER,
+    producer_agent_id INTEGER,
+    workflow_template_slug TEXT,
+    artifact_type TEXT NOT NULL,
+    schema_version TEXT,
+    storage_kind TEXT NOT NULL,
+    content_json TEXT,
+    content_markdown TEXT,
+    storage_uri TEXT,
+    original_filename TEXT,
+    mime_type TEXT,
+    byte_size INTEGER,
+    sha256 TEXT,
+    preview_text TEXT,
+    redaction_status TEXT NOT NULL DEFAULT 'pending',
+    security_scan_status TEXT NOT NULL DEFAULT 'pending',
+    supersedes_artifact_id INTEGER,
+    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+  );
+`
+
 afterEach(() => {
   while (openDbs.length > 0) openDbs.pop()?.close()
   vi.doUnmock('@/lib/db')
@@ -82,29 +108,7 @@ function createChainDb(opts: {
       triaged_at INTEGER,
       workspace_id INTEGER NOT NULL
     );
-    CREATE TABLE task_artifacts (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      task_id INTEGER NOT NULL,
-      workspace_id INTEGER NOT NULL,
-      project_id INTEGER,
-      producer_agent_id INTEGER,
-      workflow_template_slug TEXT,
-      artifact_type TEXT NOT NULL,
-      schema_version TEXT,
-      storage_kind TEXT NOT NULL,
-      content_json TEXT,
-      content_markdown TEXT,
-      storage_uri TEXT,
-      original_filename TEXT,
-      mime_type TEXT,
-      byte_size INTEGER,
-      sha256 TEXT,
-      preview_text TEXT,
-      redaction_status TEXT NOT NULL DEFAULT 'pending',
-      security_scan_status TEXT NOT NULL DEFAULT 'pending',
-      supersedes_artifact_id INTEGER,
-      created_at INTEGER NOT NULL DEFAULT (unixepoch())
-    );
+    ${TASK_ARTIFACTS_TABLE_SQL}
     CREATE TABLE notifications (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       recipient TEXT NOT NULL,
@@ -335,6 +339,139 @@ describe('advanceTaskChain routing', () => {
     expect(db.prepare('SELECT COUNT(*) AS count FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({ count: 1 })
     expect(db.prepare("SELECT COUNT(*) AS count FROM task_artifacts WHERE task_id = ? AND artifact_type = 'triage_outcome'").get(parentId)).toEqual({ count: 1 })
     expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE entity_type = 'task' AND entity_id = ? AND type = 'pilot_triage_outcome_recorded'").get(parentId)).toEqual({ count: 1 })
+  })
+
+  it('does not freeze actionable pilot evidence while handoff is stalled and records successor context after recovery', async () => {
+    const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
+    addTemplate(db, {
+      id: 1,
+      slug: 'mission-control_issue_triage',
+      outputSchema: PILOT_TRIAGE_SCHEMA,
+      routingRules: [
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+      ],
+    })
+    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+      disposition: 'ACTIONABLE_REMEDIATION',
+      rationale: 'Target template is temporarily missing.',
+    })
+    const { advanceTaskChain } = await importDispatch(db)
+
+    const stalled = advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'review', trigger: 'detail_task_update' })
+
+    expect(stalled).toMatchObject({ advanced: false, reason: 'stalled', reasonCode: 'task_pipeline_target_missing' })
+    expect(db.prepare('SELECT disposition, reason FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({
+      disposition: 'ACTIONABLE_REMEDIATION',
+      reason: 'Target template is temporarily missing.',
+    })
+    expect(db.prepare("SELECT COUNT(*) AS count FROM task_artifacts WHERE task_id = ? AND artifact_type = 'triage_outcome'").get(parentId)).toEqual({ count: 0 })
+    expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE entity_type = 'task' AND entity_id = ? AND type = 'pilot_triage_outcome_recorded'").get(parentId)).toEqual({ count: 0 })
+
+    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Mission Control Remediation Plan' })
+    const recovered = advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'review', trigger: 'retry_chain_advancement' })
+
+    expect(recovered).toMatchObject({ advanced: true, reason: 'successor_created', successorTaskId: expect.any(Number) })
+    expect(db.prepare('SELECT COUNT(*) AS count FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({ count: 1 })
+    const artifact = db.prepare(`
+      SELECT content_json
+      FROM task_artifacts
+      WHERE task_id = ? AND artifact_type = 'triage_outcome'
+    `).get(parentId) as { content_json: string }
+    expect(JSON.parse(artifact.content_json)).toMatchObject({
+      disposition: 'ACTIONABLE_REMEDIATION',
+      successor_task_id: recovered.successorTaskId,
+      target_template_slug: 'mission-control_remediation_plan',
+    })
+    const activity = db.prepare("SELECT data FROM activities WHERE type = 'pilot_triage_outcome_recorded' AND entity_type = 'task' AND entity_id = ?").get(parentId) as { data: string }
+    expect(JSON.parse(activity.data)).toMatchObject({
+      disposition: 'ACTIONABLE_REMEDIATION',
+      successor_task_id: recovered.successorTaskId,
+    })
+  })
+
+  it('promotes an existing unknown disposition to the corrected pilot disposition and records evidence on retry', async () => {
+    const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
+    addTemplate(db, {
+      id: 1,
+      slug: 'mission-control_issue_triage',
+      outputSchema: PILOT_TRIAGE_SCHEMA,
+      routingRules: [
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+      ],
+    })
+    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Mission Control Remediation Plan' })
+    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+      disposition: 'NOT_A_REAL_DISPOSITION',
+      rationale: 'The first output is invalid.',
+    })
+    const { advanceTaskChain } = await importDispatch(db)
+
+    const invalid = advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'review', trigger: 'detail_task_update' })
+
+    expect(invalid).toMatchObject({ advanced: false, reason: 'validation_failed' })
+    expect(db.prepare('SELECT disposition, reason FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({
+      disposition: 'unknown',
+      reason: 'The first output is invalid.',
+    })
+
+    const correctedResolution = JSON.stringify({
+      disposition: 'ACTIONABLE_REMEDIATION',
+      rationale: 'The corrected output is actionable.',
+    })
+    db.prepare('UPDATE tasks SET status = ?, resolution = ? WHERE id = ?').run('done', correctedResolution, parentId)
+    const recovered = advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'failed', trigger: 'retry_chain_advancement' })
+
+    expect(recovered).toMatchObject({ advanced: true, reason: 'successor_created', successorTaskId: expect.any(Number) })
+    expect(db.prepare('SELECT COUNT(*) AS count FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({ count: 1 })
+    expect(db.prepare('SELECT disposition, reason FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({
+      disposition: 'ACTIONABLE_REMEDIATION',
+      reason: 'The corrected output is actionable.',
+    })
+    const artifact = db.prepare(`
+      SELECT content_json
+      FROM task_artifacts
+      WHERE task_id = ? AND artifact_type = 'triage_outcome'
+    `).get(parentId) as { content_json: string }
+    expect(JSON.parse(artifact.content_json)).toMatchObject({
+      disposition: 'ACTIONABLE_REMEDIATION',
+      successor_task_id: recovered.successorTaskId,
+    })
+  })
+
+  it('backfills missing pilot evidence when disposition insert succeeded before artifact publish failed', async () => {
+    const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
+    addTemplate(db, {
+      id: 1,
+      slug: 'mission-control_issue_triage',
+      outputSchema: PILOT_TRIAGE_SCHEMA,
+      routingRules: [
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+      ],
+    })
+    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Mission Control Remediation Plan' })
+    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+      disposition: 'ACTIONABLE_REMEDIATION',
+      rationale: 'Artifact table is temporarily unavailable.',
+    })
+    db.exec('DROP TABLE task_artifacts')
+    const { advanceTaskChain } = await importDispatch(db)
+
+    const first = advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'review', trigger: 'detail_task_update' })
+
+    expect(first).toMatchObject({ advanced: true, reason: 'successor_created', successorTaskId: expect.any(Number) })
+    expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'pilot_triage_artifact_publish_failed' AND entity_id = ?").get(parentId)).toEqual({ count: 1 })
+
+    db.exec(TASK_ARTIFACTS_TABLE_SQL)
+    const second = advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'review', trigger: 'retry_chain_advancement' })
+
+    expect(second).toMatchObject({ advanced: false, reason: 'successor_exists', successorTaskId: first.successorTaskId })
+    expect(db.prepare('SELECT COUNT(*) AS count FROM task_dispositions WHERE task_id = ?').get(parentId)).toEqual({ count: 1 })
+    expect(db.prepare("SELECT COUNT(*) AS count FROM task_artifacts WHERE task_id = ? AND artifact_type = 'triage_outcome'").get(parentId)).toEqual({ count: 1 })
+    const activity = db.prepare("SELECT data FROM activities WHERE type = 'pilot_triage_outcome_recorded' AND entity_type = 'task' AND entity_id = ?").get(parentId) as { data: string }
+    expect(JSON.parse(activity.data)).toMatchObject({
+      disposition: 'ACTIONABLE_REMEDIATION',
+      successor_task_id: first.successorTaskId,
+    })
   })
 
   it.each([
