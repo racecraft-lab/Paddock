@@ -1,7 +1,8 @@
 # Pilot Smoke Checklist
 
-SPEC-009C1 live smoke is operator-controlled. Automated tests must not create,
-edit, close, or sync live GitHub issues outside mocked fixtures.
+SPEC-009C1 and SPEC-009C2 live smoke is operator-controlled. Automated tests
+must not create, edit, close, route, or sync live GitHub issues outside mocked
+fixtures.
 
 ## Candidate Selection
 
@@ -21,6 +22,16 @@ edit, close, or sync live GitHub issues outside mocked fixtures.
 
 ## Synthetic Fallback
 
+- For SPEC-009C2, create or select a fresh issue distinct from prior SPEC-009C1
+  synthetic issues. Preferred title:
+
+  ```text
+  [mc-pilot] SPEC-009C2 synthetic e2e issue YYYY-MM-DD clean run
+  ```
+
+- The SPEC-009C2 issue must have `mc:inbox`, exactly one `priority:*` label,
+  and exactly one routable `area:*` label. Do not reuse a closed SPEC-009C1
+  clean-run issue.
 - Command shape:
 
   ```bash
@@ -52,6 +63,70 @@ edit, close, or sync live GitHub issues outside mocked fixtures.
   ```
 
 - Re-run the same sync once and verify the count remains `1`.
+
+## SPEC-009C2 Triage Handoff Proof
+
+- Apply or verify the current Mission Control workflow contract before the
+  handoff. `mission-control_issue_triage` must expose disposition values
+  `ACTIONABLE_REMEDIATION`, `DUPLICATE`, `OBSOLETE`, `INVALID`,
+  `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`; only
+  `ACTIONABLE_REMEDIATION` may route to `mission-control_remediation_plan`.
+- For the fresh SPEC-009C2 synthetic issue, complete Issue Triage with:
+
+  ```json
+  {
+    "disposition": "ACTIONABLE_REMEDIATION",
+    "rationale": "Synthetic SPEC-009C2 handoff proof."
+  }
+  ```
+
+- Verify exactly one remediation-planning successor exists for the triage task:
+
+  ```sql
+  SELECT COUNT(*)
+  FROM tasks
+  WHERE workspace_id = :workspace_id
+    AND parent_task_id = :triage_task_id
+    AND workflow_template_slug = 'mission-control_remediation_plan';
+  ```
+
+- Verify durable task-scoped evidence exists:
+
+  ```sql
+  SELECT disposition, reason
+  FROM task_dispositions
+  WHERE workspace_id = :workspace_id
+    AND task_id = :triage_task_id;
+
+  SELECT artifact_type, storage_kind
+  FROM task_artifacts
+  WHERE workspace_id = :workspace_id
+    AND task_id = :triage_task_id
+    AND artifact_type = 'triage_outcome';
+
+  SELECT type, entity_type, entity_id
+  FROM activities
+  WHERE workspace_id = :workspace_id
+    AND entity_type = 'task'
+    AND entity_id = :triage_task_id
+    AND type = 'pilot_triage_outcome_recorded';
+  ```
+
+- Re-run the handoff once and verify there is still exactly one remediation
+  successor, one `task_dispositions` row, one `triage_outcome` artifact, and one
+  `pilot_triage_outcome_recorded` task activity for the triage task.
+
+## SPEC-009C2 Negative Fixture Checks
+
+- Fixture-drive each non-remediation disposition in a disposable local or test
+  database path: `DUPLICATE`, `OBSOLETE`, `INVALID`, `NEEDS_HUMAN`,
+  `NEEDS_SPECIALIST`, and `NEEDS_SPEC`.
+- For each negative disposition, verify no remediation-planning successor is
+  created and the triage task still has disposition, artifact, and task-scoped
+  activity evidence.
+- For `NEEDS_SPEC`, verify no SpecKit/SDD task, human clarification task,
+  specialist task, close automation task, claim row, runner state, sandbox
+  state, or harness adapter state is created by SPEC-009C2.
 
 ## Local-Only Exclusion
 
@@ -85,8 +160,9 @@ edit, close, or sync live GitHub issues outside mocked fixtures.
 - After evidence is captured, close synthetic GitHub issues manually rather
   than deleting them. Closed issues remain the external audit trail.
 - Do not leave disposable `[mc-pilot]` smoke tasks active in Mission Control.
-  After recording the issue URL, task id, workspace id, sync timestamp,
-  duplicate-sync result, and side-effect snapshot, close or remove only the
+  After recording the issue URL, root task id, triage task id, remediation
+  successor id if created, workspace id, sync timestamp, duplicate-sync result,
+  duplicate-handoff result, and side-effect snapshot, close or remove only the
   synthetic smoke rows that were created solely for this checklist run.
 - Before deleting disposable smoke task rows, take an operator-owned backup or
   export of the target database. Then verify cleanup leaves no synthetic pilot
