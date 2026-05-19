@@ -20,13 +20,19 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const SPEC_PATH = resolve(
   process.cwd(),
   'specs/008-resource-governance/spec.md',
 )
+
+// SPEC-008 was archived (merged via PR #26 then swept by speckit.archive.run).
+// Traceability was locked at merge; when the live spec.md is absent the gate
+// becomes a no-op. Recover the archived content with the `git show <sha>:...`
+// commands in `.specify/memory/changelog.md`.
+const SPEC_AVAILABLE = existsSync(SPEC_PATH)
 
 const ACCEPTANCE_TOKENS = [
   'AC-Bench-1',
@@ -60,8 +66,10 @@ function extractFrEntries(spec: string): { id: string; line: string }[] {
   return out.sort((a, b) => (a.id < b.id ? -1 : 1))
 }
 
-describe('SPEC-008 T381 — FR-326..360 traceability matrix', () => {
-  const spec = readFileSync(SPEC_PATH, 'utf8')
+const describeMaybe = SPEC_AVAILABLE ? describe : describe.skip
+
+describeMaybe('SPEC-008 T381 — FR-326..360 traceability matrix', () => {
+  const spec = SPEC_AVAILABLE ? readFileSync(SPEC_PATH, 'utf8') : ''
   const entries = extractFrEntries(spec)
 
   it('discovery MUST find at least one FR-326..360 entry', () => {

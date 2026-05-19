@@ -47,6 +47,20 @@ function createDb(): Database.Database {
       workspace_id INTEGER,
       created_at INTEGER DEFAULT 1
     );
+    CREATE TABLE task_artifacts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id INTEGER NOT NULL,
+      workspace_id INTEGER NOT NULL,
+      artifact_type TEXT NOT NULL,
+      schema_version TEXT,
+      storage_kind TEXT NOT NULL,
+      content_json TEXT,
+      mime_type TEXT,
+      redaction_status TEXT NOT NULL DEFAULT 'pending',
+      security_scan_status TEXT NOT NULL DEFAULT 'pending',
+      supersedes_artifact_id INTEGER,
+      created_at INTEGER DEFAULT 1
+    );
     CREATE TABLE activities (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       type TEXT NOT NULL,
@@ -75,7 +89,8 @@ function createDb(): Database.Database {
   db.prepare(`
     INSERT INTO workflow_templates (id, workspace_id, slug, produces_pr, external_terminal_event)
     VALUES (10, 1, 'pr-template', 1, 'github_pr_merged'),
-           (11, 1, 'non-pr-template', 0, NULL)
+           (11, 1, 'non-pr-template', 0, NULL),
+           (12, 1, 'mission-control_dev_implementation', 1, 'github_pr_merged')
   `).run()
   db.prepare(`
     INSERT INTO tasks (id, title, status, assigned_to, created_by, workspace_id, workflow_template_id)
@@ -84,11 +99,23 @@ function createDb(): Database.Database {
   return db
 }
 
+function insertC3DevTask(db: Database.Database, id = 102): void {
+  db.prepare(`
+    INSERT INTO tasks (
+      id, title, status, assigned_to, created_by, workspace_id, workflow_template_id,
+      github_repo, github_issue_number, github_pr_number
+    )
+    VALUES (?, 'C3 dev task', 'quality_review', 'builder', 'creator', 1, 12,
+      'racecraft-lab/mission-control', 99, 42)
+  `).run(id)
+}
+
 async function importRouteWithDb(
   db: Database.Database,
   resolveTransitionSpy: (input: ResolveTaskTerminalTransitionInput) => TaskTerminalTransitionResult
 ) {
   const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+  const actualTaskDispatch = await vi.importActual<typeof import('@/lib/task-dispatch')>('@/lib/task-dispatch')
   const advanceTaskChain = vi.fn()
 
   vi.doMock('@/lib/db', () => ({
@@ -138,7 +165,10 @@ async function importRouteWithDb(
   vi.doMock('@/lib/event-bus', () => ({ eventBus: { broadcast: vi.fn() } }))
   vi.doMock('@/lib/logger', () => ({ logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() } }))
   vi.doMock('@/lib/github-sync-engine', () => ({ syncTaskOutbound: vi.fn() }))
-  vi.doMock('@/lib/task-dispatch', () => ({ advanceTaskChain }))
+  vi.doMock('@/lib/task-dispatch', () => ({
+    ...actualTaskDispatch,
+    advanceTaskChain,
+  }))
   vi.doMock('@/lib/task-status', () => ({
     ...actualTaskStatus,
     resolveTaskTerminalTransition: resolveTransitionSpy,
@@ -325,6 +355,72 @@ describe('POST /api/quality-review ready_for_owner flag-off behavior', () => {
     expect(db.prepare('SELECT COUNT(*) AS count FROM quality_reviews').get()).toEqual({ count: 0 })
     expect(db.prepare('SELECT COUNT(*) AS count FROM activities').get()).toEqual({ count: 0 })
     expect(db.prepare('SELECT COUNT(*) AS count FROM notifications').get()).toEqual({ count: 0 })
+    expect(advanceTaskChain).not.toHaveBeenCalled()
+  })
+
+  it('records non-aegis C3 approvals without marking the dev implementation task ready_for_owner', async () => {
+    const db = createDb()
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
+      .run(JSON.stringify({ FEATURE_TASK_PIPELINES: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    insertC3DevTask(db)
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { route, advanceTaskChain } = await importRouteWithDb(db, resolveTransitionSpy)
+
+    const response = await route.POST(new NextRequest('http://localhost/api/quality-review', {
+      method: 'POST',
+      body: JSON.stringify({
+        taskId: 102,
+        reviewer: 'operator',
+        status: 'approved',
+        notes: 'Looks good but is not Aegis',
+      }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.success).toBe(true)
+    expect(db.prepare('SELECT status FROM tasks WHERE id = 102').get()).toEqual({ status: 'quality_review' })
+    expect(db.prepare('SELECT reviewer, status FROM quality_reviews WHERE task_id = 102').all())
+      .toEqual([{ reviewer: 'operator', status: 'approved' }])
+    expect(db.prepare("SELECT COUNT(*) AS count FROM notifications WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
+    expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
+    expect(advanceTaskChain).not.toHaveBeenCalled()
+  })
+
+  it('records aegis C3 approvals but blocks owner-ready side effects until required evidence exists', async () => {
+    const db = createDb()
+    db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
+      .run(JSON.stringify({ FEATURE_TASK_PIPELINES: true, FEATURE_TWO_STEP_TERMINAL: true }))
+    insertC3DevTask(db)
+    const actualTaskStatus = await vi.importActual<typeof import('@/lib/task-status')>('@/lib/task-status')
+    const resolveTransitionSpy = vi.fn(actualTaskStatus.resolveTaskTerminalTransition)
+    const { route, advanceTaskChain } = await importRouteWithDb(db, resolveTransitionSpy)
+
+    const response = await route.POST(new NextRequest('http://localhost/api/quality-review', {
+      method: 'POST',
+      body: JSON.stringify({
+        taskId: 102,
+        reviewer: 'aegis',
+        status: 'approved',
+        notes: 'Aegis approved but artifacts are absent',
+      }),
+      headers: { 'content-type': 'application/json' },
+    }))
+    const payload = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(payload.success).toBe(true)
+    expect(db.prepare('SELECT status FROM tasks WHERE id = 102').get()).toEqual({ status: 'quality_review' })
+    expect(db.prepare('SELECT reviewer, status FROM quality_reviews WHERE task_id = 102').all())
+      .toEqual([{ reviewer: 'aegis', status: 'approved' }])
+    expect(db.prepare("SELECT COUNT(*) AS count FROM notifications WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
+    expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE type = 'task_ready_for_owner'").get())
+      .toEqual({ count: 0 })
     expect(advanceTaskChain).not.toHaveBeenCalled()
   })
 })

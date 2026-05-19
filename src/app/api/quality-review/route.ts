@@ -6,7 +6,7 @@ import { mutationLimiter } from '@/lib/rate-limit'
 import { logger } from '@/lib/logger'
 import { eventBus } from '@/lib/event-bus'
 import { resolveWorkspaceScopeFromRequest, workspaceScopeError, workspaceScopePredicate } from '@/lib/workspaces'
-import { advanceTaskChain } from '@/lib/task-dispatch'
+import { advanceTaskChain, evaluateSpec009C3ReadinessEvidence, isSpec009C3DevImplementationTask } from '@/lib/task-dispatch'
 import { resolveFlag } from '@/lib/feature-flags'
 import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition } from '@/lib/task-status'
 import { syncTaskOutbound } from '@/lib/github-sync-engine'
@@ -132,6 +132,7 @@ export async function POST(request: NextRequest) {
       .prepare(`
         SELECT t.id, t.title, t.description, t.status, t.priority, t.project_id, t.workspace_id,
                t.assigned_to, t.created_by, t.github_repo, t.github_issue_number, t.github_pr_number,
+               wt.slug AS workflow_template_slug,
                COALESCE(wt.produces_pr, 0) AS produces_pr,
                wt.external_terminal_event,
                w.feature_flags
@@ -178,6 +179,19 @@ export async function POST(request: NextRequest) {
 
     // Auto-advance task based on review outcome
     if (status === 'approved') {
+      if (isSpec009C3DevImplementationTask(task)) {
+        const readiness = reviewer === 'aegis'
+          ? evaluateSpec009C3ReadinessEvidence(db, task)
+          : { ok: false as const, reason: 'aegis_reviewer_required' }
+        if (!readiness.ok) {
+          return NextResponse.json({
+            success: true,
+            id: result.lastInsertRowid,
+            readiness_blocked: true,
+            reason: readiness.reason,
+          })
+        }
+      }
       const nextStatus = approvedTransition?.ok ? approvedTransition.status : 'done'
       db.prepare('UPDATE tasks SET status = ?, updated_at = unixepoch() WHERE id = ? AND workspace_id = ?')
         .run(nextStatus, taskId, workspaceId)

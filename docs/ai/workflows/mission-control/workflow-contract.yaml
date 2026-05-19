@@ -266,6 +266,7 @@ templates:
     prompt_version: v1
     next_template_slug: mission-control_review
     produces_pr: true
+    external_terminal_event: github_pr_merged
     routing_rules: []
     output_schema:
       type: object

@@ -1,8 +1,8 @@
 # Pilot Smoke Checklist
 
-SPEC-009C1 and SPEC-009C2 live smoke is operator-controlled. Automated tests
-must not create, edit, close, route, or sync live GitHub issues outside mocked
-fixtures.
+SPEC-009C1, SPEC-009C2, and SPEC-009C3 live smoke is operator-controlled.
+Automated tests must not create, edit, close, route, or sync live GitHub issues
+outside mocked fixtures.
 
 ## Candidate Selection
 
@@ -127,6 +127,56 @@ fixtures.
 - For `NEEDS_SPEC`, verify no SpecKit/SDD task, human clarification task,
   specialist task, close automation task, claim row, runner state, sandbox
   state, or harness adapter state is created by SPEC-009C2.
+
+## SPEC-009C3 Ready For Owner Proof
+
+- Deterministic fixture validation is the required automated path. It must use
+  fixture PR identity on the PR-producing `mission-control_dev_implementation`
+  task and must not create, update, merge, or reconcile a real GitHub PR.
+- Verify the dev task owns `github_repo` and `github_pr_number`; root issue
+  identity remains on the GitHub issue/root task evidence and is not duplicated
+  as a second root issue row.
+- Verify required `spec-009c3.v1` artifacts exist on or are linked/superseded
+  onto the PR-producing dev task:
+
+  ```sql
+  SELECT artifact_type, schema_version, storage_kind, mime_type
+  FROM task_artifacts
+  WHERE workspace_id = :workspace_id
+    AND task_id = :dev_task_id
+    AND artifact_type IN (
+      'remediation_plan',
+      'dev_verification',
+      'review_verdict',
+      'aegis_approval',
+      'governance_evidence'
+    );
+  ```
+
+- Verify review `fix` creates no owner-review successor, Aegis successor,
+  `ready_for_owner` status write, owner packet, owner-ready notification, or
+  `task_ready_for_owner` activity.
+- Verify Aegis `rejected`, wrong reviewer, wrong workspace, missing
+  `aegis_approval` artifact, missing canonical `quality_reviews` row, missing
+  governance evidence, or `readiness_blocked=true` leaves the dev task out of
+  `ready_for_owner` and creates no owner-ready side effects.
+- Verify the approved happy path stops at `ready_for_owner` on only the
+  PR-producing dev task:
+
+  ```sql
+  SELECT id, status, github_repo, github_pr_number
+  FROM tasks
+  WHERE workspace_id = :workspace_id
+    AND id IN (:root_task_id, :remediation_plan_task_id, :dev_task_id, :review_task_id);
+  ```
+
+- The optional live draft PR smoke is explicit operator UAT only. If run, it
+  may create at most one draft PR, must record the draft PR URL/number,
+  readiness subject task id, artifacts, Aegis quality review id, cleanup owner,
+  and cleanup result or explicit retention rationale, and must still stop at
+  `ready_for_owner`. Missing draft identity, non-draft identity, wrong-task PR
+  identity, mutation beyond draft creation, merge, `done` reconciliation, or
+  missing cleanup evidence fails the smoke proof closed.
 
 ## Local-Only Exclusion
 

@@ -117,8 +117,14 @@ describe('workflow contract importer', () => {
     const db = makeWorkflowDb()
     const contract = loadWorkflowContractFromFile('docs/ai/workflows/mission-control/workflow-contract.yaml')
     const triage = contract.templates.find(template => template.slug === 'mission-control_issue_triage')
+    const devImplementation = contract.templates.find(template => template.slug === 'mission-control_dev_implementation')
 
     expect(triage).toBeDefined()
+    expect(devImplementation).toMatchObject({
+      produces_pr: true,
+      external_terminal_event: 'github_pr_merged',
+      next_template_slug: 'mission-control_review',
+    })
     expect(triage!.next_template_slug ?? null).toBeNull()
     expect(triage!.routing_rules).toEqual([
       {
@@ -159,5 +165,16 @@ describe('workflow contract importer', () => {
     expect(JSON.parse(runtime.output_schema).properties.disposition.enum).toContain('ACTIONABLE_REMEDIATION')
     expect(JSON.parse(runtime.routing_rules)).toEqual(triage!.routing_rules)
     expect(runtime.next_template_slug).toBeNull()
+
+    const devRuntime = db.prepare(`
+      SELECT produces_pr, external_terminal_event, next_template_slug
+      FROM workflow_templates
+      WHERE workspace_id = 1 AND slug = 'mission-control_dev_implementation'
+    `).get()
+    expect(devRuntime).toEqual({
+      produces_pr: 1,
+      external_terminal_event: 'github_pr_merged',
+      next_template_slug: 'mission-control_review',
+    })
   })
 })

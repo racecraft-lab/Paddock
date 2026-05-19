@@ -8,6 +8,8 @@ Revision 2026-05-01 (later): Archiving SPEC-004 (PR #22 merged 2026-05-01) and
 SPEC-006 (PR #21 merged 2026-05-01) under SPEC-007 autopilot Phase 0 sweep.
 Revision 2026-05-02: SPEC-008 autopilot Phase 0 sweep re-confirmed prior
 SPEC-004/006 archive after SPEC-007 cleanup landed on main.
+Revision 2026-05-16: Applied archive cleanup on clean `main` through SPEC-009C2;
+active `specs/**` is empty until the next spec setup creates SPEC-009C3.
 
 ---
 
@@ -80,7 +82,7 @@ docs/
 └── scripts/bash/                   # check-prerequisites.sh, validate-gate.sh, etc.
 
 specs/
-└── 008-resource-governance/        # SPEC-008: In progress (current target — excluded from this sweep)
+└── (empty after 2026-05-16 archive cleanup; next setup should create SPEC-009C3)
 
 # Archived (cleanup applied):
 # - 001-foundation-migrations    (SPEC-001, archived 2026-04-28)
@@ -91,6 +93,11 @@ specs/
 # - 005-ready-for-owner          (SPEC-005, archived after PR #23 merge — landed on main 2026-05-02)
 # - 006-area-label-github-sync   (SPEC-006, archived 2026-05-01 — PR #21 merge dbb6c75)
 # - 007-disposition-artifacts    (SPEC-007, archived after PR #25 merge — landed on main 2026-05-02)
+# - 008-resource-governance      (SPEC-008, archived after PR #26 merge — cleanup applied 2026-05-16)
+# - 009a-workflow-contract-roundtrip (SPEC-009A, archived after PR #28 merge — cleanup applied 2026-05-16)
+# - 009b-mission-control-seed    (SPEC-009B, archived after PR #30 merge — cleanup applied 2026-05-16)
+# - 009c1-pilot-issue-ingest     (SPEC-009C1, archived after PR #34/#40 merge — cleanup applied 2026-05-16)
+# - 009c2-triage-remediation-handoff (SPEC-009C2, archived after PR #43/#46 merge — cleanup applied 2026-05-16)
 ```
 
 ---
@@ -426,9 +433,75 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 ---
 
+## SPEC-005 Plan Summary [Source: specs/005-ready-for-owner]
+
+**Branch**: `005-ready-for-owner` | **Merged**: 2026-05-02 | **PR**: #23
+
+- Adds application-level `ready_for_owner` task status and shared terminal transition guard; no DB-level CHECK or migration.
+- PR-producing workflow templates stop at owner action required; non-merge `done` attempts are side-effect-free until GitHub merge evidence is synced.
+- `pullFromGitHub` reconciles linked merged PRs to `done`, applies `mc:ready-for-owner` labels, and emits notifications without duplicate side effects.
+- UI adds a Kanban lane between quality review and done; flag-OFF paths block new writes while preserving read compatibility.
+
+## SPEC-007 Plan Summary [Source: specs/007-disposition-artifacts]
+
+**Branch**: `007-disposition-artifacts` | **Merged**: 2026-05-02 | **PR**: #25
+
+- Reuses SPEC-001 tables `task_dispositions` and `task_artifacts`; no new migrations.
+- Adds task disposition rollups, artifact publish/read/admin/health surfaces, and artifact-driven dispatch handoff.
+- MC Secret Detector v1 centralizes redaction/rejection for AWS/GitHub/Google/Slack/Stripe/PEM/JWT/Bearer/OpenAI/Anthropic/generic secret patterns.
+- Adds dashboard, audit, admin, OpenAPI, Storybook/visual metadata, and e2e seed support; retained checkbox drift in `tasks.md` is historical bookkeeping, not the completion authority.
+
+## SPEC-008 Plan Summary [Source: specs/008-resource-governance]
+
+**Branch**: `008-resource-governance` | **Merged**: 2026-05-04 | **PR**: #26
+
+- Adds `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous policy evaluation before autonomous work admission.
+- Migrations M65a..m and M66 add partitioned resource/observability storage, rollback files, and archive partitions under `<MISSION_CONTROL_DATA_DIR>/archives/`.
+- Cost Tracker Governance tab exposes Policies, Budgets, Windows, Overrides, Diagnostics, and System Health.
+- `FEATURE_OPENCLAW_HEALTH_COSTS` is optional/fork-only and requires `FEATURE_RESOURCE_GOVERNANCE`; absent OpenClaw health files are safe when OFF.
+- Feature-flag matrix, axe coverage, env-leak, and strict-scope guards preserve flag discipline and accessibility coverage.
+
+## SPEC-009A Plan Summary [Source: specs/009a-workflow-contract-roundtrip]
+
+**Branch**: `009a-workflow-contract-roundtrip` | **Merged**: 2026-05-07 | **PR**: #28
+
+- Introduces repo-owned workflow contract YAML under `docs/ai/workflows/mission-control/`.
+- `pnpm workflow-contract` supports import dry-run/apply, export, and recover through Node built-in TypeScript stripping with exact `yaml@2.8.2`.
+- Migration M71 adds generic workflow-contract diagnostics and LKG snapshots; invalid reloads fail closed.
+- Workflows diagnostics UI/API are read-only; governance/concurrency/retry/sandbox fields remain inert declarations for later specs.
+
+## SPEC-009B Plan Summary [Source: specs/009b-mission-control-seed]
+
+**Branch**: `009b-mission-control-seed` | **Merged**: 2026-05-08 | **PR**: #30
+
+- Seeds Mission Control Product Line A, departments, project-agent assignments, GitHub repo routing, workflow families, feature flags, and advisory governance rows.
+- Reuses SPEC-009A workflow-contract import/apply; does not duplicate YAML parsing or create pilot work.
+- Preflight blocks unsafe FocusEngine/OpenClaw/GitHub automation residue before mutation and records redacted cleanup guidance.
+- Future task-control-plane and sandbox-runner flags stay OFF.
+
+## SPEC-009C1 Plan Summary [Source: specs/009c1-pilot-issue-ingest]
+
+**Branch**: `009c1-pilot-issue-ingest` | **Merged**: 2026-05-14 | **PRs**: #34, #40
+
+- Uses GitHub issue sync as tracker truth for one eligible pilot issue; local-only tasks are ineligible.
+- Provides synthetic fallback tooling with explicit live-mutation opt-in and cleanup checklist.
+- Current-schema absence assertions prove no claim, dispatch, remediation, runner, sandbox, or future run-state side effects.
+- Post-merge routing fix keeps synced pilot issues in the intended hold state after ingest.
+
+## SPEC-009C2 Plan Summary [Source: specs/009c2-triage-remediation-handoff]
+
+**Branch**: `009c2-triage-remediation-handoff` | **Merged**: 2026-05-16 | **PRs**: #43, #46
+
+- `ACTIONABLE_REMEDIATION` triage output creates exactly one remediation-planning successor with disposition, artifact, and activity evidence.
+- Duplicate actionable retry is idempotent; negative outcomes exit without remediation successors; invalid output fails closed.
+- Reuses workflow-contract, task-chain, disposition, artifact, and activity surfaces with no schema migration.
+- Post-merge fix resolves successor assignees through project workspace; HAL smoke with synthetic issue #47 passed and cleanup was verified.
+
+---
+
 ## Configuration and Routing
 
-### Feature Flags (as of SPEC-006)
+### Feature Flags (as of SPEC-009C2)
 
 | Flag | Default | Resolution |
 |------|---------|------------|
@@ -436,7 +509,9 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `FEATURE_GLOBAL_AEGIS` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF |
 | `FEATURE_TASK_PIPELINES` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-004) |
 | `FEATURE_AREA_LABEL_ROUTING` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-006) |
-| `PILOT_PRODUCT_LINE_A_E2E` | OFF | May be flipped via env (operator-temporary) |
+| `FEATURE_RESOURCE_GOVERNANCE` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-008) |
+| `FEATURE_OPENCLAW_HEALTH_COSTS` | OFF | Requires `FEATURE_RESOURCE_GOVERNANCE`; optional/fork-only, absent-safe (SPEC-008) |
+| `PILOT_MISSION_CONTROL_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
 
 ### Verification Commands
 
@@ -471,6 +546,14 @@ From SPEC-004:
 From SPEC-006:
 - (No new modules — strict scope is "no new TS/TSX modules under `src/`"; every implementation extended an existing file. Affected files: `src/lib/github-sync-engine.ts`, `src/lib/github-label-map.ts`, `src/lib/github-sync-poller.ts`, `src/lib/migrations.ts`, `src/app/api/projects/[id]/route.ts`, `src/app/api/github/route.ts`, `src/components/modals/project-manager-modal.tsx`.)
 
+From SPEC-009A:
+- `src/lib/workflow-contracts/`
+- `scripts/workflow-contracts/workflow-contract-cli.ts`
+
+From SPEC-009B:
+- `src/lib/mission-control-seed/`
+- `scripts/seed-mission-control-product-line.ts`
+
 ---
 
 ## Gotchas
@@ -480,9 +563,9 @@ From SPEC-006:
 - **Facility real row rejection**: The real `workspaces` row with `slug='facility'` must NOT be accepted as a Product Line workspace_id in REST, URL, or SSE setup.
 - **`activeWorkspace = null` pre-init**: This is compatibility storage for Facility, not a "no-workspace" flag context. Flag resolution still uses authenticated tenant context.
 - **resolveFlag env '1' does NOT force ON**: Only workspace JSON can opt a workspace in. `process.env.FEATURE_X='1'` is intentionally NOT an override (unlike `'0'` which forces OFF).
-- **Archive cleanup gate**: Cleanup (folder removal) requires `--apply-cleanup`, clean worktree, confirmed merge, and recovery commands. Per SPEC-002A's revised policy (`speckit-pro` 1.9.1), feature-branch worktrees CAN apply cleanup for previously merged specs (excluding the current target); `main` and protected branches stay dry-run only. Pre-1.9.1 docs that say "feature branches always have `safeToApplyCleanup=false`" are stale.
+- **Archive cleanup gate**: Cleanup (folder removal) requires explicit `--apply-cleanup`, clean worktree, confirmed merge or tree reference, archive success/provenance, recovery commands, a safe base branch such as `main`, and no history rewrite or CI mutation dependency. Current-target specs are always excluded from same-run cleanup.
 - **Archive command wiring**: `.specify/extensions/archive/commands/archive.md` is vendored but is NOT auto-published to `.claude/commands/`. The autopilot's Step -1 will silently no-op unless `.claude/commands/speckit.archive.run.md` exists. Wired during SPEC-006 backfill — same gap exists for `git/verify/doctor/cleanup/retrospective/review/verify-tasks` extension commands and may need wiring if/when their hooks are exercised.
-- **CLAUDE.md** is the agent knowledge file (GEMINI.md and AGENTS.md not present); update this file for agent conventions.
+- **AGENTS.md** is the agent knowledge file in this checkout. Update it for durable project conventions and recent changes.
 - **SPEC-004 task creation**: Production code MUST go through `createTask()` in `src/lib/task-create.ts`. Direct `INSERT INTO tasks` in production code paths is blocked by `pnpm guardrails` (SPEC-004 static guardrail). Test fixtures may insert directly.
 - **SPEC-004 retry latest-only**: The retry endpoint selects the LATEST eligible failure or stall activity for a parent task. Caller-supplied activity-id overrides are ignored; older activities cannot be replayed. This is intentional — replay of older activities would corrupt the per-parent retry-attempt counter and template-provenance hash check.
 - **SPEC-004 deferred outbound push**: Pipeline-successor `createTask()` runs DB writes inside the chain transaction; GitHub/GNAP outbound pushes execute only AFTER commit. Outbound failures use the existing sync/error activity path and never roll back the chain.

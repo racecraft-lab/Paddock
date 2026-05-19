@@ -168,7 +168,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-009B | 8B | Mission Control Product-Line Seed and Flag Activation | mission-control-seed | Complete | P0 | SPEC-009A, SPEC-006, SPEC-008 | SPEC-009C1, SPEC-010A | Phase 8B |
 | SPEC-009C1 | 8C1 | GitHub Pilot Issue Ingest and Eligibility | pilot-issue-ingest | Complete | P0 | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B | SPEC-009C2 | Phase 8C1 |
 | SPEC-009C2 | 8C2 | Triage-to-Remediation Plan Handoff | triage-remediation-handoff | Complete | P0 | SPEC-009C1 | SPEC-009C3 | Phase 8C2 |
-| SPEC-009C3 | 8C3 | Dev/Review/Aegis to Ready for Owner | remediation-ready-for-owner | Pending | P0 | SPEC-009C2 | SPEC-009C4 | Phase 8C3 |
+| SPEC-009C3 | 8C3 | Dev/Review/Aegis to Ready for Owner | remediation-ready-for-owner | Complete | P0 | SPEC-009C2 | SPEC-009C4 | Phase 8C3 |
 | SPEC-009C4 | 8C4 | Owner Merge Gate and Done Reconciliation | owner-merge-reconciliation | Pending | P0 | SPEC-009C3 | SPEC-009D, SPEC-010B | Phase 8C4 |
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C4 | SPEC-009E, SPEC-013A | Phase 8D |
 | SPEC-009E | 8E | Pilot Eligibility and Evidence Surfaces | pilot-evidence-surfaces | Pending | P2 | SPEC-009D | SPEC-009F, SPEC-013A | Phase 8E |
@@ -191,7 +191,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 **Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, SPEC-009C1, and SPEC-009C2 are complete per the implementation evidence recorded below. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, SPEC-009A PR #28 as `2b78970e`, SPEC-009B PR #30 as `1d5c994c`, SPEC-009C1 PR #34 as `7d544f39`, the SPEC-009C1 post-merge routing fix PR #40 as `e6ee19ee`, SPEC-009C2 PR #43 as `a63afdea`, and the SPEC-009C2 post-merge assignee fix PR #46 as `19b2db98`.
 
-- **Ready now after SPEC-009C2:** SPEC-009C3 is the next self-hosting critical-path setup; SPEC-010A remains unblocked; SPEC-011 and SPEC-012A remain parallel options because they touch an optional security adapter and docs/process indexing respectively.
+- **Active after SPEC-009C2:** SPEC-009C3 is the current self-hosting critical-path setup/execution slice; SPEC-010A remains unblocked; SPEC-011 and SPEC-012A remain parallel options because they touch an optional security adapter and docs/process indexing respectively.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C1 -> SPEC-009C2 -> SPEC-009C3 -> SPEC-009C4 -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
 - **Scale/doc parallel path:** SPEC-010A can start after SPEC-009B while the remaining SPEC-009C handoff slices are being smoked; SPEC-010B waits for SPEC-009C4 and SPEC-010A; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Evidence, routing, and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-009F owns production routing/evidence for non-remediation triage outcomes after the pilot evidence surfaces exist. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
@@ -466,7 +466,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009C3: Dev/Review/Aegis to Ready for Owner
 
-- **Status:** Pending
+- **Status:** Complete
 - **Priority:** P0
 - **Branch short name:** `remediation-ready-for-owner`
 - **Dependencies:** SPEC-009C2
@@ -477,7 +477,9 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** focused fixtures for the Issue Remediation family, artifact handoff, governance evidence, Aegis approval, and `ready_for_owner` state. No manual merge reconciliation and no formal claim-state table, sandbox runner, adapter registry, or full SpecKit/SDD execution lane.
 - **Autopilot notes:** Operator intervention is still forbidden in this spec; the human merge gate belongs to SPEC-009C4.
+- **Governance boundary note:** SPEC-009C3 verifies advisory governance evidence only: no resource-policy violations, no blocked budget/window result, and enough activity/artifact evidence for later review. Remaining durable governance, run-state, claim authority, control-plane, polling, retry/debug, sandbox, and adapter work remains in SPEC-009D, SPEC-009E, SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, and SPEC-014A-D.
 - **Definition of done:** The pilot remediation task reaches `ready_for_owner` with a linked PR, disposition/artifact evidence, governance evidence, Aegis approval, and no resource-policy violations.
+- **Implementation evidence:** Local G7 passed on branch `009c3-remediation-ready-for-owner` with all 70 generated tasks checked; PR #48 opened for review. Evidence includes C3 artifact envelope validation and sanitized failure activity, review `pass`/`fix` readiness routing, canonical Aegis approval gating through `quality_reviews`, advisory governance readiness blocking, deterministic fixture PR identity, PR-producing dev-task-only `ready_for_owner`, and scope-guard coverage proving no merge/done reconciliation, claim/run tables, sandbox/adapter work, automatic poller, broad slug migration, or dedicated evidence UI entered the diff. Final verification passed: focused C3 Vitest, full `pnpm test` with 276 files / 2876 tests, `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `node scripts/spec-009c3/check-scope-guards.mjs`. Playwright/e2e was N/A because no UI/browser workflow changed; live draft PR smoke was not run because it is explicit operator-approved UAT only.
 
 ### SPEC-009C4: Owner Merge Gate and Done Reconciliation
 
@@ -1380,12 +1382,12 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8C2 are complete and remain the substrate for all later work. After SPEC-009C2, SPEC-009C3 is the next self-hosting handoff spec; SPEC-010A, SPEC-011, and SPEC-012A remain available parallel starts. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-009D is the bridge from pilot smoke to formal run-state, SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces, and SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8C2 are complete and remain the substrate for all later work. SPEC-009C3 is now the active self-hosting handoff spec; SPEC-010A, SPEC-011, and SPEC-012A remain available parallel starts. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-009D is the bridge from pilot smoke to formal run-state, SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces, and SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
-- SPEC-009C3 may start after SPEC-009C2; SPEC-010A, SPEC-011, and SPEC-012A may also start because their primary files are disjoint from the next self-hosting handoff slice.
-- SPEC-010A may run while SPEC-009C3 is being set up or smoked when file ownership stays disjoint.
+- SPEC-009C3 is active after SPEC-009C2; SPEC-010A, SPEC-011, and SPEC-012A may also start because their primary files are disjoint from the current self-hosting handoff slice.
+- SPEC-010A may run while SPEC-009C3 is being executed or smoked when file ownership stays disjoint.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
 - SPEC-009E may run after SPEC-009D and does not block SPEC-013A if file ownership stays disjoint.
 - SPEC-009F waits for SPEC-009E and SPEC-012A because production non-remediation lanes need both pilot evidence surfaces and current repo/process index truth.

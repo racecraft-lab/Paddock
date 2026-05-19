@@ -491,6 +491,16 @@ export class InternalScanError extends Error {
   }
 }
 
+export class Spec009C3ArtifactValidationError extends Error {
+  readonly status = 422
+  readonly code = 'spec009c3_artifact_invalid'
+  readonly error_code = 'spec009c3_artifact_invalid'
+  constructor(message = 'spec-009c3 artifact validation failed') {
+    super(message)
+    this.name = 'Spec009C3ArtifactValidationError'
+  }
+}
+
 // ---- publishArtifact -------------------------------------------------------
 
 export type StorageKind = 'inline_json' | 'inline_markdown' | 'file' | 'external_uri'
@@ -846,6 +856,133 @@ function validateInputs(input: PublishArtifactInput): void {
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function hasString(value: Record<string, unknown>, key: string): boolean {
+  const candidate = value[key]
+  return typeof candidate === 'string' && candidate.trim().length > 0
+}
+
+function hasNumber(value: Record<string, unknown>, key: string): boolean {
+  return typeof value[key] === 'number' && Number.isFinite(value[key])
+}
+
+function failSpec009C3(reason: string): never {
+  throw new Spec009C3ArtifactValidationError(`spec-009c3 artifact validation failed: ${reason}`)
+}
+
+function validateNoSecretBearingKeys(value: unknown, path = ''): void {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      validateNoSecretBearingKeys(item, `${path}[${String(index)}]`)
+    })
+    return
+  }
+  if (!isRecord(value)) return
+  for (const [key, child] of Object.entries(value)) {
+    const lower = key.toLowerCase()
+    if (
+      lower.includes('secret')
+      || lower.includes('token')
+      || lower.includes('credential')
+      || lower.includes('connection_string')
+      || lower === 'password'
+      || lower === 'raw_log'
+      || lower === 'raw_logs'
+      || lower === 'raw_source'
+    ) {
+      failSpec009C3(`forbidden sensitive key ${path}${key}`)
+    }
+    validateNoSecretBearingKeys(child, `${path}${key}.`)
+  }
+}
+
+function validateSpec009C3ArtifactInput(
+  db: Database.Database,
+  input: PublishArtifactInput,
+  producerWorkspaceId: number,
+): void {
+  if (input.schema_version !== 'spec-009c3.v1') return
+  if (input.storage_kind !== 'inline_json') failSpec009C3('storage_kind must be inline_json')
+  if (input.mime !== 'application/json') failSpec009C3('mime must be application/json')
+  if (input.content === undefined || input.content.trim() === '') failSpec009C3('content is required')
+
+  let payload: unknown
+  try {
+    payload = JSON.parse(input.content)
+  } catch {
+    failSpec009C3('content must be valid JSON')
+  }
+  if (!isRecord(payload)) failSpec009C3('payload must be an object')
+  validateNoSecretBearingKeys(payload)
+
+  const artifactType = typeof payload['artifact_type'] === 'string' ? payload['artifact_type'] : ''
+  if (artifactType !== input.artifact_type) failSpec009C3('artifact_type mismatch')
+  if (payload['schema_version'] !== undefined && payload['schema_version'] !== 'spec-009c3.v1') {
+    failSpec009C3('payload schema_version mismatch')
+  }
+  for (const key of ['artifact_type', 'stage', 'produced_at', 'summary']) {
+    if (!hasString(payload, key)) failSpec009C3(`missing ${key}`)
+  }
+  for (const key of ['producer_task_id', 'workspace_id']) {
+    if (!hasNumber(payload, key)) failSpec009C3(`missing ${key}`)
+  }
+  if (payload['workspace_id'] !== producerWorkspaceId) failSpec009C3('workspace_id mismatch')
+  if (payload['producer_task_id'] !== input.task_id) failSpec009C3('producer_task_id mismatch')
+  const rootIssue = payload['root_issue']
+  if (!isRecord(rootIssue)) failSpec009C3('missing root_issue')
+  if (!hasNumber(rootIssue, 'task_id') || !hasString(rootIssue, 'github_repo') || !hasNumber(rootIssue, 'github_issue_number')) {
+    failSpec009C3('root_issue identity is incomplete')
+  }
+  const prDevTask = payload['pr_dev_task']
+  if (!isRecord(prDevTask)) failSpec009C3('missing pr_dev_task')
+  if (
+    prDevTask['task_id'] !== input.task_id
+    || !hasString(prDevTask, 'github_repo')
+    || !hasNumber(prDevTask, 'github_pr_number')
+  ) {
+    failSpec009C3('pr_dev_task identity is incomplete')
+  }
+
+  switch (artifactType) {
+    case 'remediation_plan':
+      for (const key of ['problem_statement', 'planned_changes', 'verification_plan', 'risk_notes']) {
+        if (payload[key] === undefined) failSpec009C3(`missing ${key}`)
+      }
+      break
+    case 'dev_verification':
+      for (const key of ['commit', 'branch', 'checks', 'residual_risk', 'pr_identity_source']) {
+        if (payload[key] === undefined) failSpec009C3(`missing ${key}`)
+      }
+      break
+    case 'review_verdict':
+      if (payload['verdict'] !== 'pass' && payload['verdict'] !== 'fix') failSpec009C3('unsupported review verdict')
+      if (!hasString(payload, 'reviewer')) failSpec009C3('missing reviewer')
+      if (!Array.isArray(payload['blocking_findings'])) failSpec009C3('missing blocking_findings')
+      break
+    case 'aegis_approval': {
+      if (!hasNumber(payload, 'quality_review_id')) failSpec009C3('missing quality_review_id')
+      if (payload['reviewer'] !== 'aegis') failSpec009C3('reviewer must be aegis')
+      if (payload['status'] !== 'approved' && payload['status'] !== 'rejected') failSpec009C3('unsupported aegis status')
+      if (!hasString(payload, 'reason')) failSpec009C3('missing reason')
+      const row = db.prepare(`
+        SELECT id FROM quality_reviews
+        WHERE id = ? AND task_id = ? AND workspace_id = ? AND reviewer = 'aegis' AND status = ?
+      `).get(payload['quality_review_id'], input.task_id, producerWorkspaceId, payload['status']) as { id: number } | undefined
+      if (!row) failSpec009C3('canonical aegis quality review row not found')
+      break
+    }
+    case 'governance_evidence':
+      if (!Array.isArray(payload['stage_decisions'])) failSpec009C3('missing stage_decisions')
+      if (typeof payload['readiness_blocked'] !== 'boolean') failSpec009C3('missing readiness_blocked')
+      break
+    default:
+      failSpec009C3('unsupported artifact_type')
+  }
+}
+
 /**
  * publishArtifact — US6 core (FR-020, FR-021, FR-022, FR-023, FR-024, FR-025,
  * FR-026, FR-027, FR-028).
@@ -880,6 +1017,8 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
   if (!input.is_facility_caller && input.active_workspace_id !== producerWorkspaceId) {
     throw new WorkspaceMismatch()
   }
+
+  validateSpec009C3ArtifactInput(db, input, producerWorkspaceId)
 
   // Materialize content into a Buffer (file) or string (inline) early for
   // size/MIME checks. Auto-promote inline > 64 KiB to file. external_uri /
