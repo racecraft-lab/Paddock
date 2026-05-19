@@ -107,7 +107,7 @@ only when its artifact and gate evidence are recorded here.
 | Analyze | Phase 6 / G6 | Complete | Cross-artifact analysis completed with 0 findings; G6 passed with 0 CRITICAL/HIGH findings and no consensus items |
 | Implement | Phase 7 / G7 | Complete | All 70 generated tasks checked; G7 passed with 70/70 complete; focused C3 tests, full Vitest, typecheck, lint, build, and scope guard passed |
 | Post-Implementation Verify | Post step 10/12 | Complete | Focused C3 Vitest, full Vitest, typecheck, lint, build, and e2e N/A because no UI/browser workflow changed |
-| Cleanup / Reviewability / PR | Post steps 13-18 | Complete | G7 pass, implementation diff reviewability gate passed under transition exception, PR review packet generated, branch pushed, PR #48 opened |
+| Cleanup / Reviewability / PR | Post steps 13-18 | Complete | G7 pass, implementation diff reviewability gate passed under transition exception, PR review packet generated, branch pushed, PR #48 merged, post-merge HAL UAT completed and cleaned up |
 
 ---
 
@@ -695,7 +695,7 @@ Implementation constraints:
 |-------|-------|-----------|-------|
 | Foundation / RED tests | Complete | Complete | Review/Aegis loop, artifact, governance, PR fixture, and ready-for-owner RED tests landed; initial focused run failed on the missing behavior |
 | Chain and evidence implementation | Complete | Complete | Runtime gates added in `task-dispatch`, `task-artifacts`, and `quality-review`; workflow contract keeps PR merge terminal semantics |
-| Smoke/docs/status | Complete | Complete | Pilot smoke checklist, roadmap deferral evidence, tasks evidence, and workflow status updated; live draft PR smoke remains operator opt-in |
+| Smoke/docs/status | Complete | Complete | Pilot smoke checklist, roadmap evidence, tasks evidence, and workflow status updated; operator-approved live draft PR smoke completed on HAL and cleaned up |
 | Verification | Complete | Complete | Focused C3 suites, full Vitest, typecheck, lint, build, scope guard, and G7 passed; e2e N/A because no UI changed |
 
 ---
@@ -709,8 +709,8 @@ Implementation constraints:
 - [x] `pnpm build` passes if runtime/import/export surfaces changed
 - [x] Focused Playwright/e2e passes if UI/browser workflow changes (N/A: no UI/browser workflow changed)
 - [x] Fixture PR smoke evidence recorded
-- [x] Optional live draft PR smoke evidence recorded only if deliberately run (not run: opt-in UAT only)
-- [x] Synthetic issues/tasks/artifacts/fixture agents cleaned up or explicitly retained with evidence (N/A: automated fixtures are test-local)
+- [x] Optional live draft PR smoke evidence recorded only if deliberately run (run on HAL 2026-05-19 with draft PR #49; no merge or `done` reconciliation)
+- [x] Synthetic issues/tasks/artifacts/fixture agents cleaned up or explicitly retained with evidence (synthetic tasks/artifacts/quality-reviews/notifications/activities cleaned up after evidence capture)
 - [x] Roadmap/workflow/autopilot-state status updated
 - [x] PR review packet generated with scope budget, traceability, verification, known gaps, and rollback/flag notes
 
@@ -718,7 +718,9 @@ Implementation constraints:
 
 - **G7:** Passed with all 70 generated tasks complete.
 - **Reviewability diff gate:** `reviewability-gate.sh diff HEAD~1..HEAD` passed under the recorded transition exception; raw `main...HEAD` measurement includes the full SpecKit artifact history and remains over budget, as expected for this transition slice.
-- **PR:** [#48](https://github.com/racecraft-lab/mission-control/pull/48) opened with the generated review packet.
+- **PR:** [#48](https://github.com/racecraft-lab/mission-control/pull/48) merged as `ac7760a222a33b4cefe886afae605238f479eaa5`.
+- **Post-merge HAL UAT:** HAL `mission-control.service` promoted to `ac7760a222a33b4cefe886afae605238f479eaa5`; workspace `4` workflow-contract apply run `8` aligned the PR-producing template; draft PR #49 was created, verified as `isDraft=true` and `mergedAt=null`, used to drive synthetic dev task `39` through the live quality-review API to `ready_for_owner`, then closed unmerged with the remote branch removed.
+- **UAT cleanup:** backup `mission-control-data/backups/mission-control.db.spec009c3-uat-20260519-195459.bak` retained; synthetic tasks/artifacts/quality-reviews/notifications/activities removed with counts `4/5/2/1/1 -> 0/0/0/0/0`; temp local smoke worktree and branch removed.
 - **Push:** Branch `009c3-remediation-ready-for-owner` pushed via HTTPS after the configured SSH signing agent failed.
 
 ---

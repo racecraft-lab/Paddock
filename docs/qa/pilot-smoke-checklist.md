@@ -178,6 +178,30 @@ outside mocked fixtures.
   identity, mutation beyond draft creation, merge, `done` reconciliation, or
   missing cleanup evidence fails the smoke proof closed.
 
+### 2026-05-19 SPEC-009C3 UAT Run Evidence
+
+- Target: HAL `mission-control.service`, workspace `4`, deployed commit
+  `ac7760a222a33b4cefe886afae605238f479eaa5`; service remained `active`.
+  Backup before smoke:
+  `mission-control-data/backups/mission-control.db.spec009c3-uat-20260519-195459.bak`.
+- Contract: workspace `4` workflow-contract import/apply run `8` set
+  `mission-control_dev_implementation` to `produces_pr=1` and
+  `external_terminal_event=github_pr_merged`.
+- Live draft PR: #49
+  (`https://github.com/racecraft-lab/mission-control/pull/49`) was created as
+  draft from branch `spec-009c3-draft-pr-smoke-20260519-195459` at
+  `b3b08a4326fa455d3b08a8da7118444fd3b1c413`; verification recorded
+  `isDraft=true`, `mergedAt=null`, then the PR was closed and the remote branch
+  deleted.
+- Readiness proof: synthetic root/remediation/dev/review tasks `37`/`38`/`39`/`40`
+  produced five `spec-009c3.v1` artifacts on dev task `39`, Aegis quality-review
+  row `4`, one `task_ready_for_owner` notification to `HAL`, and only task `39`
+  reached `ready_for_owner`; no merge or `done` reconciliation was run.
+- Cleanup: synthetic tasks/artifacts/quality-reviews/notifications/activities
+  were removed after evidence capture, with counts `4/5/2/1/1 -> 0/0/0/0/0`;
+  local temp worktree and branch were removed, and GitHub PR #49 remains closed
+  and unmerged.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control
