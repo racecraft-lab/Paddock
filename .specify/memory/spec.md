@@ -8,6 +8,9 @@ Revision 2026-05-01 (later): Archiving SPEC-004 (PR #22 merged 2026-05-01) and
 SPEC-006 (PR #21 merged 2026-05-01) under SPEC-007 autopilot Phase 0 sweep.
 Revision 2026-05-02: SPEC-008 autopilot Phase 0 sweep re-confirmed SPEC-004
 and SPEC-006 archive after SPEC-007 cleanup landed on main.
+Revision 2026-05-16: Applied archive cleanup on clean `main` for completed
+SPEC-005, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, SPEC-009C1, and SPEC-009C2;
+recovery commands are recorded in `.specify/memory/changelog.md`.
 
 ---
 
@@ -15,109 +18,176 @@ and SPEC-006 archive after SPEC-007 cleanup landed on main.
 
 ### SPEC-001: Foundation Migrations [Source: specs/001-foundation-migrations]
 
-**US1 — Apply Phase 0 Schema Safely (P1)**  
+**US1 — Apply Phase 0 Schema Safely (P1)**
 As a facility operator, I can apply M53-M61 to an existing production-shape Mission Control database so the install gains Phase 0 schema surfaces without changing current runtime behavior.
 
-**US2 — Re-run Migrations Without Side Effects (P1)**  
+**US2 — Re-run Migrations Without Side Effects (P1)**
 As an operator, I can re-run the Phase 0 migration set safely so repeat execution does not duplicate schema objects, seed data, or state changes.
 
-**US3 — Roll Back Manually with Checked-In Guidance (P2)**  
+**US3 — Roll Back Manually with Checked-In Guidance (P2)**
 As a maintainer or operator, I can manually reverse each SQL-changing M53-M61 step using checked-in reverse SQL and a rollback runbook.
 
-**US4 — Hand Off Stable Schema Surfaces to Later Specs (P3)**  
+**US4 — Hand Off Stable Schema Surfaces to Later Specs (P3)**
 As a downstream spec executor, I can depend on Phase 0 schema surfaces being present while all new runtime behavior remains OFF or unimplemented.
 
 ---
 
 ### SPEC-002: Product Line Switcher [Source: specs/002-product-line-switcher]
 
-**US1 — Preserve Existing Single-Workspace Behavior (P1)**  
+**US1 — Preserve Existing Single-Workspace Behavior (P1)**
 As an existing user, I can run Mission Control with the workspace switcher disabled and see the same behavior, baseline test coverage, and snapshots I see today.
 
-**US2 — Switch Between Facility and Product Line Views (P1)**  
+**US2 — Switch Between Facility and Product Line Views (P1)**
 As a facility operator or department lead, I can switch between the Facility aggregate view and authorized Product Line workspaces while staying in the same tenant.
 
-**US3 — Keep Scope Synchronized Across Tabs (P2)**  
+**US3 — Keep Scope Synchronized Across Tabs (P2)**
 As a multi-tab operator, I can change Product Line context in one tab and have other open tabs converge on the same selection.
 
-**US4 — Protect Tenant and Workspace Data Boundaries (P2)**  
+**US4 — Protect Tenant and Workspace Data Boundaries (P2)**
 As a tenant admin, I cannot use workspace-scoping requests to access another tenant's data or bypass authorized scope rules.
 
 ---
 
 ### SPEC-002A: Spec Archive and Evidence Retention [Source: specs/002a-spec-archive-evidence]
 
-**US1 — Archive Completed Spec Knowledge Safely (P1)**  
+**US1 — Archive Completed Spec Knowledge Safely (P1)**
 A maintainer can archive a completed feature spec after merge so the durable record preserves requirements, implementation evidence, PR links, CI links, and recovery commands without requiring generated screenshot content in source control.
 
-**US2 — Preserve Argos and CI Provenance Instead of Screenshot Retention (P1)**  
+**US2 — Preserve Argos and CI Provenance Instead of Screenshot Retention (P1)**
 A reviewer can trace UI evidence through Argos and CI artifacts while the repository keeps provenance metadata and manifest links instead of archiving generated screenshot content.
 
-**US3 — Prepare Archive Sweep Behavior for Future Autopilot Runs (P1)**  
+**US3 — Prepare Archive Sweep Behavior for Future Autopilot Runs (P1)**
 A SpecKit executor can start autopilot with an Archive Sweep that processes only previously merged specs, excludes the current target spec, and stops or runs dry-run only when the branch or worktree is unsafe for cleanup.
 
 ---
 
 ### SPEC-003: Aegis Facility Singleton Refactor [Source: specs/003-global-aegis]
 
-**US1 — Workspace-First Compatibility (P1)**  
+**US1 — Workspace-First Compatibility (P1)**
 As an existing operator, I can keep `FEATURE_GLOBAL_AEGIS` OFF and Aegis review behavior remains workspace-first.
 
-**US2 — Facility-Wide Aegis (P2)**  
+**US2 — Facility-Wide Aegis (P2)**
 As a facility operator, I can enable `FEATURE_GLOBAL_AEGIS` and have a single global Aegis row serve workspaces with no local Aegis.
 
-**US3 — Legacy Local Aegis Compatibility (P3)**  
+**US3 — Legacy Local Aegis Compatibility (P3)**
 As a maintainer, I can preserve legacy local Aegis fallback for compatibility during migration.
 
-**US4 — Shadow Audit Visibility (P3)**  
+**US4 — Shadow Audit Visibility (P3)**
 As an auditor, I can see an idempotent `aegis_local_shadowed` activity when a local Aegis row is shadowed by the global row under flag ON.
 
-**US5 — Stable Review Gate For Downstream Specs (P1)**  
+**US5 — Stable Review Gate For Downstream Specs (P1)**
 As a downstream spec executor, I can rely on Aegis completion gates using `quality_reviews.reviewer='aegis'`.
 
 ---
 
 ### SPEC-004: Task Pipeline Engine and Declarative Routing [Source: specs/004-task-pipeline-engine]
 
-**US1 — Preserve Current Task Behavior (P1)**  
+**US1 — Preserve Current Task Behavior (P1)**
 Existing operators leave task pipelines disabled and continue creating, syncing, completing, notifying, subscribing to, and auditing tasks with no behavior change.
 
-**US2 — Configure Declarative Workflow Routing (P1)**  
+**US2 — Configure Declarative Workflow Routing (P1)**
 Facility operators configure workflow templates so a completed task deterministically creates the correct successor task from validated structured output, ordered routing rules, or a static next template.
 
-**US3 — Validate Agent Output Safely (P1)**  
+**US3 — Validate Agent Output Safely (P1)**
 Agent and scheduler maintainers rely on structured output validation and routing evaluation that reject malformed, oversized, or unsafe input before it can influence task-chain routing — fail closed with no `eval`/`Function`/`vm`, bounded budgets, and stable activity reason codes.
 
-**US4 — Recover Failed or Stalled Chains Explicitly (P2)**  
+**US4 — Recover Failed or Stalled Chains Explicitly (P2)**
 Operators correct bad output, routing configuration, target templates, or assignee mappings and explicitly retry chain advancement without ordinary task edits accidentally rerunning the chain.
 
-**US5 — Trace Pipeline Lineage for Downstream Specs (P2)**  
+**US5 — Trace Pipeline Lineage for Downstream Specs (P2)**
 Downstream spec executors trace pipeline chains through parent, root, chain, stage, workflow-template, and PR-producing metadata while treating task resolution as the temporary structured-output bridge.
 
 ---
 
 ### SPEC-006: Area-Label GitHub Sync [Source: specs/006-area-label-github-sync]
 
-**US1 — Flag-OFF Parity Preserved (P1)**  
+**US1 — Flag-OFF Parity Preserved (P1)**
 With `FEATURE_AREA_LABEL_ROUTING` unset, every observable behavior of GitHub sync — inbound issue ingestion, outbound push, label initialization, polling cadence, and activity log shape — remains byte-identical to the prior release.
 
-**US2 — Single Owner Polls a Shared Monorepo (P1)**  
+**US2 — Single Owner Polls a Shared Monorepo (P1)**
 With the flag enabled, exactly one project per `(workspace_id, github_repo)` is elected as `is_repo_sync_owner=1` (lowest `projects.id` among `github_sync_enabled=1` projects); duplicate-ingest collisions disappear.
 
-**US3 — Triage Project Absorbs Ambiguous Issues (P1)**  
+**US3 — Triage Project Absorbs Ambiguous Issues (P1)**
 Issues with no/multiple/no-match `area:*` labels route to the workspace's `is_triage_project=1` project (or sync-owner fallback if absent) with `area_routing_unresolved` activities recording the reason code.
 
-**US4 — Department Issues Route on Initial Ingest Only (P1)**  
+**US4 — Department Issues Route on Initial Ingest Only (P1)**
 First-ingest area resolution writes one `area_routing_resolved` activity. Subsequent label changes on GitHub do NOT move existing tasks between projects — operators re-route manually via task UI (no-thrash guarantee, P5-AC5).
 
-**US5 — First-Time Enable Backfills Existing Tasks (P2)**  
+**US5 — First-Time Enable Backfills Existing Tasks (P2)**
 On first sync poll after flag-on, `backfillAreaRouting(workspaceId)` re-evaluates every existing GitHub-synced task using stored labels (per-task transactions, idempotent resume via `tasks.area_routing_backfilled_at`, completion marker `workspaces.feature_flags.area_label_routing_backfill_completed_at` set last).
 
-**US6 — Operators Configure Routing via Existing Surfaces (P2)**  
+**US6 — Operators Configure Routing via Existing Surfaces (P2)**
 Project settings panel exposes `area_slug`, `is_triage_project`, `is_repo_sync_owner` with inline validation, 409 conflict shapes for slug/triage/owner duplicates, and atomic clear-then-set transfer for sync-owner swaps.
 
-**US7 — Migration Is Additive, Reversible, Label-Init Failures Isolated (P2)**  
+**US7 — Migration Is Additive, Reversible, Label-Init Failures Isolated (P2)**
 M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops everything new; `initializeLabels` per-label failures (rate-limit, network, 4xx, 5xx, unknown) are caught, logged, and never abort the larger sync run.
+
+---
+
+### SPEC-005: ready_for_owner State and Two-Step Terminal Event [Source: specs/005-ready-for-owner]
+
+**US1 — Stop PR-Producing Work at Owner Gate (P1)**
+As an operator, I can let autonomous work reach `ready_for_owner` without allowing it to mark the task `done` before a human merges the linked PR.
+
+**US2 — Reconcile Human Merge Evidence (P1)**
+As a task owner, I can merge the PR on GitHub and have Mission Control sync that evidence into the task lifecycle.
+
+**US3 — Make Owner Action Visible (P2)**
+As a reviewer, I can see the ready-for-owner lane, labels, and notifications that identify human-owned merge work.
+
+### SPEC-007: Disposition Logging and Task Artifact Store [Source: specs/007-disposition-artifacts]
+
+**US1 — Record Explicit Dispositions (P1)**
+As an operator, I can see why a task advanced, exited, or handed off without reconstructing it from comments.
+
+**US2 — Publish Durable Task Artifacts (P1)**
+As an agent or reviewer, I can publish, read, and inspect task artifacts with bounded previews and metadata.
+
+**US3 — Redact or Reject Secret-Bearing Evidence (P1)**
+As a security reviewer, I can rely on Mission Control to prevent raw secret fixtures from becoming durable artifacts.
+
+### SPEC-008: Resource Governance and Cost Tracker Enforcement [Source: specs/008-resource-governance]
+
+**US1 — Gate Autonomous Work by Policy (P1)**
+As a facility operator, I can enable resource governance so dispatch admission records allow/defer/block decisions before work starts.
+
+**US2 — Inspect Governance and Telemetry State (P1)**
+As an operator, I can inspect policies, budgets, windows, overrides, diagnostics, and system health from the Cost Tracker governance surface.
+
+**US3 — Keep OpenClaw Cost Adapter Optional (P2)**
+As an upstream-compatible maintainer, I can leave OpenClaw health-cost integration disabled and absent-safe.
+
+### SPEC-009A: Workflow Contract Format and Roundtrip [Source: specs/009a-workflow-contract-roundtrip]
+
+**US1 — Store Workflow Policy in the Repo (P1)**
+As an operator, I can keep workflow templates in versioned YAML and import/export them with stable parity hashes.
+
+**US2 — Fail Closed on Invalid Contracts (P1)**
+As a maintainer, I can reject invalid contract reloads while preserving the last-known-good runtime templates and diagnostics.
+
+### SPEC-009B: Mission Control Product-Line Seed and Flag Activation [Source: specs/009b-mission-control-seed]
+
+**US1 — Seed Product Line A Without Dispatch (P1)**
+As an operator, I can seed Mission Control workspace, departments, assignments, workflow families, flags, and governance rows without launching pilot work.
+
+**US2 — Detect Unsafe Preflight Residue (P1)**
+As an operator, I get blocked-preflight evidence before seed mutation if old product-line, GitHub, or automation residue would corrupt the pilot.
+
+### SPEC-009C1: GitHub Pilot Issue Ingest and Eligibility [Source: specs/009c1-pilot-issue-ingest]
+
+**US1 — Ingest One GitHub-Linked Pilot Issue (P1)**
+As an operator, I can ingest an eligible GitHub issue into Mission Control as the single pilot root task while local-only tasks stay ineligible.
+
+**US2 — Prove No Dispatch or Runner Side Effects (P1)**
+As a reviewer, I can verify the pilot issue exists without claim, dispatch, remediation, runner, sandbox, or future run-state side effects.
+
+### SPEC-009C2: Triage-to-Remediation Plan Handoff [Source: specs/009c2-triage-remediation-handoff]
+
+**US1 — Route Actionable Triage to Remediation Planning (P1)**
+As an operator, I can complete Issue Triage with `ACTIONABLE_REMEDIATION` and get exactly one remediation-planning successor with disposition and artifact evidence.
+
+**US2 — Exit Non-Remediation Outcomes Cleanly (P1)**
+As a reviewer, I can verify duplicate, obsolete, invalid, needs-human, needs-specialist, and `NEEDS_SPEC` outcomes do not create remediation work.
 
 ---
 
@@ -249,6 +319,16 @@ M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops eve
 - **FR-030..FR-032**: Static `AREA_LABEL_MAP` covers 12 curated names (qa/dev/design/infra/security/docs/ops/frontend/backend/data/ml/triage) with WCAG AA-compliant colors; snapshot-tested. `areaLabelsForWorkspace(db, workspaceId)` returns static + dynamic union. `ALL_AREA_LABEL_NAMES` exports static defaults.
 - **FR-033..FR-039**: `PUT /api/projects/[id]` accepts `area_slug` / `is_triage_project` / `is_repo_sync_owner` / `transfer_owner`. `area_slug` matches `^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$` (RFC 1123 / K8s DNS-label style). 400 (format) wins over 409 (conflict). 409 conflict shapes: `area_slug_conflict`, `triage_conflict`, `owner_conflict` (with `hint` for transfer). Atomic sync-owner transfer is clear-first then set-first then activity-INSERT inside one `db.transaction(() => { ... })` — SQLite UNIQUE indexes are immediate (DEFERRABLE only on FK). `POST /api/github` connect handler passes `workspaceId` to `initializeLabels`.
 
+### SPEC-005/007/008/009 Summary FRs [Source: archived specs]
+
+- **SPEC-005 FRs**: Add application-level `ready_for_owner`; block unmerged PR-producing work from `done`; reconcile linked GitHub PR merge through sync; expose owner-action lane, label, and notifications; preserve flag-OFF compatibility.
+- **SPEC-007 FRs**: Persist task dispositions and task artifacts; provide publish/read/admin/health/API/UI surfaces; apply MC Secret Detector v1 redaction/rejection; integrate artifact evidence with dispatch/review handoff; preserve existing task behavior when feature flags are OFF.
+- **SPEC-008 FRs**: Gate scheduler/dispatch/admission paths through resource policy evaluation; persist policy decisions/events; expose governance tabs; support optional OpenClaw health-cost telemetry as absent-safe fork-only adapter; preserve cost tracker byte-compat when `FEATURE_RESOURCE_GOVERNANCE` is OFF.
+- **SPEC-009A FRs**: Load single-document YAML workflow contracts; validate/canonicalize contracts; dry-run by default and apply transactionally; preserve LKG snapshots; export Markdown/parity hashes; persist generic diagnostics without launching seed/pilot/runner work.
+- **SPEC-009B FRs**: Seed Mission Control Product Line A, departments, assignments, repo ownership, workflow families, pilot flags, and advisory governance rows; fail closed on unsafe residue; reuse SPEC-009A importer; create zero pilot tasks or dispatch side effects.
+- **SPEC-009C1 FRs**: Ingest exactly one eligible GitHub issue or explicit synthetic fallback; reject unsafe/local-only/duplicate candidates; preserve GitHub tracker truth; prove no remediation, claim, dispatch, runner, sandbox, or future run-state side effects.
+- **SPEC-009C2 FRs**: Convert `ACTIONABLE_REMEDIATION` triage output into exactly one remediation-planning successor; persist disposition/artifact/activity evidence; keep non-remediation outcomes terminal without remediation successors; handle duplicate retry idempotently; fail closed on invalid output.
+
 ---
 
 ## Key Entities
@@ -326,6 +406,19 @@ M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops eve
 | Label Provisioning Activity | `kind='label_provisioning_failed'`; throttled at most one per `(workspace_id, github_repo)` per 24h; sanitized `data` (no tokens/PII) |
 | Sync-Owner Transfer Activity | `kind='sync_owner_transferred'` written inside the atomic clear-then-set transaction with `previous_owner_project_id` / `new_owner_project_id` / `actor_user_id` |
 
+### SPEC-005/007/008/009 Entities [Source: archived specs]
+
+| Entity | Description |
+|--------|-------------|
+| Owner Gate State | Application-level `tasks.status='ready_for_owner'` plus owner-action lane/label/notifications for PR-producing workflow tasks |
+| Task Disposition | Durable task outcome record linking triage, handoff, remediation, and audit evidence |
+| Task Artifact | Durable artifact metadata/content preview with redaction status, MIME, producer, and task/workspace chronology |
+| Resource Policy Decision | Synchronous allow/defer/block decision with ledger/event evidence before autonomous work starts |
+| Workflow Contract | Repo-owned YAML contract projected into `workflow_templates` through import/apply/export/recover tooling |
+| Mission Control Product Line Seed | Product Line A workspace, departments, assignments, repo configuration, workflow families, flags, and advisory governance rows |
+| Pilot Issue Root Task | GitHub-linked task identity used for SPEC-009C1/C2 pilot smoke, never a local-only task |
+| Triage Handoff Evidence | `ACTIONABLE_REMEDIATION` disposition, artifact, activity, and one remediation-planning successor |
+
 ---
 
 ## Edge Cases (Consolidated)
@@ -359,6 +452,10 @@ M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops eve
 - SPEC-006 sync-owner lifecycle (deletion, archive, `github_sync_enabled=0`): out of scope; ownership lost is preflight-visible (`FEATURE_AREA_LABEL_ROUTING` preflight checklist FR-046), not auto-recovered; auto re-election deferred (Article XII).
 - SPEC-006 `area_slug='triage'` on non-triage project: allowed and treated as regular routing target for `area:triage`-labeled issues; triage authority is `is_triage_project=1` flag, not the slug string.
 - SPEC-006 migration ordering with SPEC-004: first-to-merge keeps M62; second rebases to M63 and renames its rollback SQL accordingly; reconciled at rebase time. (Both shipped in the same week; SPEC-004 merged first as PR #22 then SPEC-006 PR #21 reconciled at rebase.)
+- SPEC-009A contracts are process/tooling only; they must not seed Product Line A, launch pilot work, dispatch agents, create runner state, or enforce governance declarations.
+- SPEC-009B seeding is configuration-only; it must not create or ingest the synthetic pilot issue and must leave task-control-plane and sandbox-runner flags OFF.
+- SPEC-009C1 eligibility is GitHub-source-of-truth only; local-only tasks and duplicate/lookalike tasks do not satisfy the pilot.
+- SPEC-009C2 non-remediation outcomes must not create remediation successors; duplicate actionable retries preserve exactly one successor/disposition/artifact/activity set.
 
 ---
 
@@ -370,4 +467,10 @@ M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops eve
 - SPEC-003: P2-AC1 flag-off workspace-first preserved; P2-AC2 flag-on global-first served from `scope='global'`; P2-AC3 legacy fallback covered; P2-AC4 scheduler loop semantics unchanged (only resolver source); P2-AC5 unit coverage of global-only/workspace-only/legacy paths; P2-AC6 `quality_reviews.reviewer='aegis'` gate preserved; 21/21 tasks completed; 9 resolver-focused Vitest paths including M53-backfill regression; 533 Playwright tests pass; typecheck/lint/build green.
 - SPEC-004: Flag-OFF and null-default regression preserved; 100% of production task creation callsites use `createTask()`; deterministic accept/reject for validator and routing fixtures; one-successor-per-parent enforced via M62 partial unique index; retry side-effect-free conflicts; `chain_retry` summary excludes raw output and routing traces; high-severity audit baseline cleared; 88/88 tasks completed (per workflow file Implement phase Complete and tasks.md count).
 - SPEC-006: Flag-OFF byte-identical to pre-SPEC-006 baseline (poller selection SQL and outbound label set unchanged); single sync owner per `(workspace_id, github_repo)` enforced via partial unique index; first-ingest-only routing (no thrash on subsequent label change); backfill is idempotent and resumable via monotonic `tasks.area_routing_backfilled_at`; completion marker set only when zero pending tasks; per-label and per-task failures isolated and logged with stable structured-log shape (FR-027b); roadmap and `docs/ai/specs/SPEC-006-workflow.md` record Implement phase Complete; PR #21 merged 2026-05-01.
+- SPEC-005: `ready_for_owner` owner gate implemented; unmerged PR-producing work cannot self-complete; GitHub merge sync transitions to `done`; owner lane/label/notifications are visible; 79/79 tasks completed.
+- SPEC-007: Dispositions, artifacts, redaction, audit/admin/dashboard surfaces, and OpenAPI surfaces implemented; workflow records full verification and known stale checkbox bookkeeping.
 - SPEC-008: Flag-OFF preserves cost-tracker byte-compat (FR-305 / FR-238); flag-ON activates synchronous resource policy evaluator on dispatch admission with append-only ledger, dedupe + canonical telemetry pipeline, OTLP receiver, source-emission-capability registry, drift detector, persistent circuit breaker, reservation reaper, Cost Tracker Governance tab (Policies/Budgets/Windows/Overrides/Diagnostics/System Health). `FEATURE_OPENCLAW_HEALTH_COSTS` adds the OpenClaw health adapter as a source. Constitution V matrix harness (`src/lib/feature-flag-matrix.ts`) covers 9 flags × 4 scenarios. axe-core baked into Playwright fixture (`tests/e2e/spec-008/governance-axe-shim.ts`). CI guards `scripts/spec-008/check-axe-coverage.mjs` + `scripts/spec-008/check-feature-flag-env-leak.mjs`. Strict-scope guard at `tests/integration/strict-scope-guard.test.ts` (331/331 pass). Migrations M65a..m + M66 additive + rerun-safe; rollback files at `docs/migrations/rollback-M65{a..m}.sql` + `docs/migrations/rollback-M66.sql`. Implementation 100% complete; e2e/soak/chaos verification operator-gated per `docs/ai/specs/SPEC-008-verification-evidence.md`.
+- SPEC-009A: Workflow contract import/apply/export/recover tooling, diagnostics, LKG, parity hashes, and read-only UI/API surfaces complete; no pilot/seed/runner scope introduced; 65/65 tasks completed.
+- SPEC-009B: Mission Control Product Line A seed, workflow-family import, feature flags, governance rows, blocked preflight, and non-dispatch guardrails complete; 61/61 tasks completed.
+- SPEC-009C1: Eligible GitHub issue ingest, synthetic fallback, duplicate/local-only rejection, no-side-effect proof, HAL live smoke, and cleanup complete; 36/36 tasks completed.
+- SPEC-009C2: Triage-to-remediation handoff, duplicate idempotency, negative outcome exits, artifact/disposition evidence, PR #46 assignee fix, HAL live smoke, and cleanup complete; 21/21 tasks completed.

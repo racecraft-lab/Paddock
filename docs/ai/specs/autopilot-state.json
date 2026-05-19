@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
-  "updated_at": "2026-05-16T12:20:14Z",
-  "active_step": "SPEC-009C2 complete; ready for SPEC-009C3 setup",
+  "updated_at": "2026-05-16T17:00:00Z",
+  "active_step": "SPEC-009C2 complete; archive cleanup applied; ready for SPEC-009C3 setup",
   "status": "Complete",
   "active_workflow": {
     "spec_id": "SPEC-009C2",
@@ -20,11 +20,22 @@
     "archive_extension_installed": true,
     "extension": "archive",
     "extension_release": "v1.1.0",
-    "current_target": "specs/009c2-triage-remediation-handoff",
-    "excluded_current_spec": "specs/009c2-triage-remediation-handoff",
-    "cleanup_mode": "provenance-only",
-    "cleanup_applied": false,
-    "safeToApplyCleanup": false,
+    "current_target": null,
+    "excluded_current_spec": null,
+    "cleanup_mode": "apply-cleanup",
+    "cleanup_applied": true,
+    "safeToApplyCleanup": true,
+    "cleanup_command": "speckit.archive.run --sweep --apply-cleanup",
+    "cleaned_specs": [
+      "specs/005-ready-for-owner",
+      "specs/007-disposition-artifacts",
+      "specs/008-resource-governance",
+      "specs/009a-workflow-contract-roundtrip",
+      "specs/009b-mission-control-seed",
+      "specs/009c1-pilot-issue-ingest",
+      "specs/009c2-triage-remediation-handoff"
+    ],
+    "recovery_commands_recorded_in": ".specify/memory/changelog.md",
     "status": "completed"
   },
   "phase_0": {

@@ -167,3 +167,164 @@ git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sy
 <!-- Constitution V matrix coverage: src/lib/feature-flag-matrix.ts harness + tests/integration/feature-flag-matrix.test.ts (47 tests) + tests/e2e/feature-flag-matrix.e2e.ts (9 flag rows OFF/ON). -->
 <!-- CI guards added: scripts/spec-008/check-axe-coverage.mjs (FR-090n WCAG 2.1 AA), scripts/spec-008/check-feature-flag-env-leak.mjs (FR-019 / FR-325). -->
 <!-- Verification evidence archived at docs/ai/specs/SPEC-008-verification-evidence.md. -->
+
+---
+
+<!-- Archive Sweep metadata -->
+<!-- archiveMode: sweep | dryRun: false | applyCleanupRequested: true | safeToApplyCleanup: true -->
+<!-- Branch: main (safe base branch) | Sweep run: 2026-05-16 | archiveExtension: 1.1.0 | excludedCurrentSpec: None -->
+<!-- Cleanup command: speckit.archive.run --sweep --apply-cleanup -->
+
+## SPEC-005: ready_for_owner State and Two-Step Terminal Event
+
+- **Feature**: RC Factory Phase 4 — PR-producing work stops at `ready_for_owner` until human merge evidence arrives
+- **Branch**: `005-ready-for-owner`
+- **Spec Path**: `specs/005-ready-for-owner/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/23
+- **Merge Commit**: `851571fe6bac29563e6bef8cb124d0b108791c73`
+- **Tree Reference**: `git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/005-ready-for-owner/spec.md`
+- **CI URL**: N/A (local verification recorded in workflow)
+- **Argos URL**: N/A
+- **Task Completion**: 79/79
+- **Summary**: Added application-level `ready_for_owner` vocabulary, owner-gate routing for PR-producing workflows, `mc:ready-for-owner` labeling, notifications, Kanban lane support, flag-off write blocking/read visibility, and explicit GitHub-merge reconciliation through `pullFromGitHub`.
+
+**Recovery Commands**:
+```text
+git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/005-ready-for-owner/spec.md
+git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/005-ready-for-owner/plan.md
+git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/005-ready-for-owner/tasks.md
+```
+
+---
+
+## SPEC-007: Disposition Logging and Task Artifact Store
+
+- **Feature**: RC Factory Phase 6 — durable dispositions, artifacts, redaction, and review evidence
+- **Branch**: `007-disposition-artifacts`
+- **Spec Path**: `specs/007-disposition-artifacts/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/25
+- **Merge Commit**: `953f29bee7432450002dac00a4f88e7bb1fdd38a`
+- **Tree Reference**: `git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/007-disposition-artifacts/spec.md`
+- **CI URL**: N/A (local verification recorded in workflow)
+- **Argos URL**: N/A
+- **Task Completion**: workflow records 1502/1502 project tests passing; retained `tasks.md` checkbox state is known stale branch bookkeeping
+- **Summary**: Added disposition rollups, task artifact publish/read/admin/health surfaces, MC Secret Detector v1 redaction/rejection rules, dashboard/audit/admin UI surfaces, dispatch input artifact integration, OpenAPI updates, visual-review metadata support, and SPEC-007 e2e seed support.
+
+**Recovery Commands**:
+```text
+git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/007-disposition-artifacts/spec.md
+git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/007-disposition-artifacts/plan.md
+git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/007-disposition-artifacts/tasks.md
+```
+
+---
+
+## SPEC-008: Resource Governance and Cost Tracker Enforcement
+
+- **Feature**: RC Factory Phase 7 — feature-flagged resource policy evaluator and observability pipeline
+- **Branch**: `008-resource-governance`
+- **Spec Path**: `specs/008-resource-governance/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/26
+- **Merge Commit**: `bd9a693937f9572fd8532484c084646e4fe8ff73`
+- **Tree Reference**: `git show 6215d94677b35b5811d5de7205b3f5f7cd458ee9:specs/008-resource-governance/spec.md`
+- **CI URL**: N/A (local verification and follow-up evidence recorded in workflow)
+- **Argos URL**: N/A
+- **Task Completion**: 385/385
+- **Summary**: Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous policy evaluation, append-only ledger semantics, telemetry ingestion/reconciliation, OTLP receiver, source-emission-capability registry, persistent circuit breaker, reservation reaper, Cost Tracker Governance subviews, feature-flag matrix harness, axe coverage guard, and env-leak guard.
+
+**Recovery Commands**:
+```text
+git show 6215d94677b35b5811d5de7205b3f5f7cd458ee9:specs/008-resource-governance/spec.md
+git show 6215d94677b35b5811d5de7205b3f5f7cd458ee9:specs/008-resource-governance/plan.md
+git show 6215d94677b35b5811d5de7205b3f5f7cd458ee9:specs/008-resource-governance/tasks.md
+```
+
+---
+
+## SPEC-009A: Workflow Contract Format and Roundtrip
+
+- **Feature**: RC Factory Phase 8A — repo-owned workflow contracts with import/apply/export/recover tooling
+- **Branch**: `009a-workflow-contract-roundtrip`
+- **Spec Path**: `specs/009a-workflow-contract-roundtrip/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/28
+- **Merge Commit**: `2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f`
+- **Tree Reference**: `git show 2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f:specs/009a-workflow-contract-roundtrip/spec.md`
+- **CI URL**: N/A (workflow records local and PR checks)
+- **Argos URL**: N/A
+- **Task Completion**: 65/65
+- **Summary**: Added canonical YAML workflow contract files, `pnpm workflow-contract` import/apply/export/recover tooling, stable hash/parity checks, generic workflow-contract diagnostics tables and APIs, LKG snapshots, read-only Workflows diagnostics UI, OpenAPI/API-index parity, fail-closed validation fixtures, and Markdown review export.
+
+**Recovery Commands**:
+```text
+git show 2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f:specs/009a-workflow-contract-roundtrip/spec.md
+git show 2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f:specs/009a-workflow-contract-roundtrip/plan.md
+git show 2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f:specs/009a-workflow-contract-roundtrip/tasks.md
+```
+
+---
+
+## SPEC-009B: Mission Control Product-Line Seed and Flag Activation
+
+- **Feature**: RC Factory Phase 8B — seed Mission Control as Product Line A without dispatching work
+- **Branch**: `009b-mission-control-seed`
+- **Spec Path**: `specs/009b-mission-control-seed/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/30
+- **Merge Commit**: `1d5c994c1e6e41e44cf16f39c0829d3e46bce004`
+- **Tree Reference**: `git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/spec.md`
+- **CI URL**: N/A (workflow records focused suites, build, e2e, and daemon-socket caveat)
+- **Argos URL**: N/A
+- **Task Completion**: 61/61
+- **Summary**: Added Mission-Control-specific seed tooling and constants, Product Line A workspace/departments/assignments/repo routing, SPEC-009A workflow-contract import reuse, canonical `PILOT_MISSION_CONTROL_E2E` flag activation, advisory governance rows, blocked-preflight cleanup detection, redacted evidence, and zero-dispatch guardrails.
+
+**Recovery Commands**:
+```text
+git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/spec.md
+git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/plan.md
+git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/tasks.md
+```
+
+---
+
+## SPEC-009C1: GitHub Pilot Issue Ingest and Eligibility
+
+- **Feature**: RC Factory Phase 8C1 — one GitHub issue enters the pilot as an eligible Mission Control task
+- **Branch**: `009c1-pilot-issue-ingest`
+- **Spec Path**: `specs/009c1-pilot-issue-ingest/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/34
+- **Merge Commit**: `7d544f3975d5d7e7241f83ecee629509760c064c`
+- **Tree Reference**: `git show 7d544f3975d5d7e7241f83ecee629509760c064c:specs/009c1-pilot-issue-ingest/spec.md`
+- **CI URL**: N/A (workflow records local and HAL smoke evidence)
+- **Argos URL**: N/A
+- **Task Completion**: 36/36
+- **Summary**: Added pilot issue selection and synthetic fallback tooling, GitHub ingest/sync fixtures, eligibility guards, duplicate/local-only rejection proofs, current-schema side-effect absence assertions, smoke checklist setup, and a post-merge routing fix so synced pilot issues do not auto-route after ingest.
+
+**Recovery Commands**:
+```text
+git show 7d544f3975d5d7e7241f83ecee629509760c064c:specs/009c1-pilot-issue-ingest/spec.md
+git show 7d544f3975d5d7e7241f83ecee629509760c064c:specs/009c1-pilot-issue-ingest/plan.md
+git show 7d544f3975d5d7e7241f83ecee629509760c064c:specs/009c1-pilot-issue-ingest/tasks.md
+```
+
+---
+
+## SPEC-009C2: Triage-to-Remediation Plan Handoff
+
+- **Feature**: RC Factory Phase 8C2 — Issue Triage hands actionable work to Issue Remediation planning
+- **Branch**: `009c2-triage-remediation-handoff`
+- **Spec Path**: `specs/009c2-triage-remediation-handoff/`
+- **PR URLs**:
+  - https://github.com/racecraft-lab/mission-control/pull/43 (Merge: `a63afdead9e4b58c6be7cfcda782a3f567538756`)
+  - https://github.com/racecraft-lab/mission-control/pull/46 (post-merge fix, Merge: `19b2db9891fd4c4ca1286f952f10e190424e9c5c`)
+- **Merge Commit**: `a63afdead9e4b58c6be7cfcda782a3f567538756` (implementation), post-merge fix `19b2db9891fd4c4ca1286f952f10e190424e9c5c`
+- **Tree Reference**: `git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation-handoff/spec.md`
+- **CI URL**: N/A (workflow records focused/full unit, typecheck, lint, build, and HAL smoke)
+- **Argos URL**: N/A
+- **Task Completion**: 21/21
+- **Summary**: Added triage handoff logic from `ACTIONABLE_REMEDIATION` to exactly one remediation-planning successor, uppercase pilot disposition taxonomy, artifact evidence, duplicate-actionable idempotency, negative outcome exits, invalid-output fail-closed coverage, SPEC-007 lowercase compatibility, and HAL smoke cleanup evidence.
+
+**Recovery Commands**:
+```text
+git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation-handoff/spec.md
+git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation-handoff/plan.md
+git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation-handoff/tasks.md
+```
