@@ -1,198 +1,355 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
-  "updated_at": "2026-05-16T17:00:00Z",
-  "active_step": "SPEC-009C2 complete; archive cleanup applied; ready for SPEC-009C3 setup",
-  "status": "Complete",
+  "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
+  "updated_at": "2026-05-19T00:00:00Z",
+  "active_step": "Phase 4: Checklist - data-integrity",
+  "status": "In Progress",
   "active_workflow": {
-    "spec_id": "SPEC-009C2",
-    "workflow_file": "docs/ai/specs/SPEC-009C2-workflow.md",
-    "design_concept_file": "docs/ai/specs/SPEC-009C2-design-concept.md",
-    "branch": "009c2-triage-remediation-handoff",
-    "feature_dir": "specs/009c2-triage-remediation-handoff"
-  },
-  "plugin_refresh": {
-    "speckit_pro_version": "1.11.1",
-    "refreshed_at": "2026-05-15T19:41:08Z",
-    "codex_agents_refreshed": true,
-    "note": "Current session was started before plugin refresh, so phase accounting continues from local artifacts and updated on-disk plugin guidance."
+    "spec_id": "SPEC-009C4",
+    "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
+    "design_concept_file": "docs/ai/specs/SPEC-009C4-design-concept.md",
+    "branch": "009c4-owner-merge-reconciliation",
+    "feature_dir": "specs/009c4-owner-merge-reconciliation"
   },
   "archive_sweep": {
     "archive_extension_installed": true,
     "extension": "archive",
     "extension_release": "v1.1.0",
-    "current_target": null,
-    "excluded_current_spec": null,
-    "cleanup_mode": "apply-cleanup",
-    "cleanup_applied": true,
-    "safeToApplyCleanup": true,
-    "cleanup_command": "speckit.archive.run --sweep --apply-cleanup",
-    "cleaned_specs": [
-      "specs/005-ready-for-owner",
-      "specs/007-disposition-artifacts",
-      "specs/008-resource-governance",
-      "specs/009a-workflow-contract-roundtrip",
-      "specs/009b-mission-control-seed",
-      "specs/009c1-pilot-issue-ingest",
-      "specs/009c2-triage-remediation-handoff"
+    "current_target": "specs/009c4-owner-merge-reconciliation",
+    "excluded_current_spec": "specs/009c4-owner-merge-reconciliation",
+    "cleanup_mode": "sweep",
+    "cleanup_applied": false,
+    "safeToApplyCleanup": false,
+    "eligible_previous_specs": [
+      "specs/009c3-remediation-ready-for-owner"
     ],
-    "recovery_commands_recorded_in": ".specify/memory/changelog.md",
-    "status": "completed"
+    "eligible_evidence": {
+      "specs/009c3-remediation-ready-for-owner": {
+        "roadmap_status": "Complete",
+        "implementation_pr": 48,
+        "merge_commit": "ac7760a222a33b4cefe886afae605238f479eaa5",
+        "source": "docs/ai/rc-factory-technical-roadmap.md"
+      }
+    },
+    "notes": "Archive extension is installed and current target is excluded. Cleanup was not applied during startup because the worktree is a feature branch and no Codex-native archive command is registered; C4 proceeds with preservation of prior SPEC-009C3 active artifacts."
   },
   "phase_0": {
     "status": "completed",
-    "branch": "009c2-triage-remediation-handoff",
+    "branch": "009c4-owner-merge-reconciliation",
+    "is_worktree": true,
     "package_manager": "pnpm",
-    "reviewability_preset": "speckit-pro-reviewability"
+    "node": "v26.0.0",
+    "pnpm": "10.25.0",
+    "remote": "origin",
+    "reviewability_preset": "speckit-pro-reviewability",
+    "speckit_cli": "installed",
+    "mcp_servers": {
+      "status": "informational",
+      "missing": [
+        "tavily-mcp",
+        "context7",
+        "RepoPrompt"
+      ],
+      "fallbacks_available": true
+    }
   },
   "phase_1": {
     "status": "completed",
+    "files": [
+      "specs/009c4-owner-merge-reconciliation/spec.md",
+      "specs/009c4-owner-merge-reconciliation/checklists/requirements.md"
+    ],
+    "metrics": {
+      "functional_requirements": 18,
+      "user_stories": 4,
+      "acceptance_scenarios": 12,
+      "success_criteria": 8
+    },
     "gate": {
       "id": "G1",
       "pass": true,
+      "reason": "spec.md exists with 0 markers",
       "markers": 0
     }
   },
   "phase_2": {
     "status": "completed",
+    "sessions": {
+      "Merge Gate and Manual Sync Boundary": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": [
+          {
+            "item": "Canonical manual sync entrypoint after G_PILOT_MERGE",
+            "round": 1,
+            "routed_categories": [
+              "codebase"
+            ],
+            "outcome": "Accepted project-scoped POST /api/github/sync trigger backed by pullFromGitHub.",
+            "analysts_used": [
+              "codebase-analyst"
+            ]
+          },
+          {
+            "item": "Minimum live UAT proof for G_PILOT_MERGE",
+            "round": 1,
+            "routed_categories": [
+              "spec"
+            ],
+            "outcome": "Accepted checklist text evidence with fresh PR identity, task/workspace/project identity, pre/post state, sync result, evidence rows, cleanup status, and explicit non-use of PR #49.",
+            "analysts_used": [
+              "spec-context-analyst"
+            ]
+          }
+        ],
+        "markers": 0
+      },
+      "Exact PR Evidence and Trust Boundary": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": [
+          {
+            "item": "Authoritative merged PR proof",
+            "round": 2,
+            "routed_categories": [
+              "codebase",
+              "domain",
+              "spec"
+            ],
+            "outcome": "Accepted stricter C4 requirement: explicit merged truth for the exact linked PR is authoritative; merged_at and merge_commit_sha are supporting evidence only.",
+            "analysts_used": [
+              "codebase-analyst",
+              "domain-researcher",
+              "spec-context-analyst"
+            ]
+          }
+        ],
+        "markers": 0
+      },
+      "Idempotency and Duplicate-Launch Prevention": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": [
+          {
+            "item": "Bounded notification evidence",
+            "round": 1,
+            "routed_categories": [
+              "codebase",
+              "spec"
+            ],
+            "outcome": "Accepted reuse of existing owner-ready and reconciliation-required notification rows; no new terminal-done notification type.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst"
+            ]
+          },
+          {
+            "item": "Done label projection after inbound merge reconciliation",
+            "round": 1,
+            "routed_categories": [
+              "codebase",
+              "spec"
+            ],
+            "outcome": "Accepted required mc:done projection and stale mc:ready-for-owner removal through existing label mechanisms, with RED tests first.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst"
+            ]
+          }
+        ],
+        "markers": 0
+      },
+      "SPEC-009D Evidence Handoff": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": [],
+        "markers": 0
+      }
+    },
     "gate": {
       "id": "G2",
       "pass": true,
+      "reason": "0 [NEEDS CLARIFICATION] markers",
       "markers": 0
-    },
-    "clarifications_recorded": 5
+    }
   },
   "phase_3": {
     "status": "completed",
+    "files": [
+      "specs/009c4-owner-merge-reconciliation/plan.md",
+      "specs/009c4-owner-merge-reconciliation/research.md",
+      "specs/009c4-owner-merge-reconciliation/data-model.md",
+      "specs/009c4-owner-merge-reconciliation/quickstart.md",
+      "specs/009c4-owner-merge-reconciliation/contracts/manual-github-sync-reconciliation.md"
+    ],
+    "metrics": {
+      "plan_artifacts": 5,
+      "contracts": 1,
+      "research_decisions": 7,
+      "data_model_entities": 6
+    },
     "gate": {
       "id": "G3",
       "pass": true,
-      "markers": 0
-    }
-  },
-  "phase_4": {
-    "status": "completed",
-    "gate": {
-      "id": "G4",
-      "pass": true,
+      "reason": "plan.md exists with 0 unresolved markers",
       "markers": 0
     },
-    "checklist_items_resolved": 40
+    "tooling_note": "setup-plan.sh --json rejected the 009c4 branch regex, then succeeded with explicit SPECIFY_FEATURE_DIRECTORY while leaving the git branch unchanged."
   },
-  "phase_5": {
-    "status": "completed",
-    "gate": {
-      "id": "G5",
-      "pass": true,
-      "reason": "21 tasks found",
-      "task_count": 21
-    },
-    "reviewability_gate": {
-      "mode": "tasks",
-      "status": "exception",
-      "pass": true,
-      "reviewable_loc": 840,
-      "production_files": 7,
-      "total_files": 36,
-      "primary_surface_count": 4,
-      "transition_exception": true
-    }
+  "commands": {
+    "BUILD": "pnpm build",
+    "TYPECHECK": "pnpm typecheck",
+    "LINT": "pnpm lint",
+    "LINT_FIX": "N/A",
+    "UNIT_TEST": "pnpm test",
+    "INTEGRATION_TEST": "pnpm test:e2e",
+    "SINGLE_FILE_TEST": "pnpm test",
+    "SINGLE_FILE_INTEGRATION": "N/A",
+    "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
   },
-  "phase_6": {
-    "status": "completed",
-    "finding": "Analyze found missing artifact publish failure coverage.",
-    "remediation": "Added T006 artifact-evidence failure coverage and renumbered downstream tasks.",
-    "gate": {
-      "id": "G6",
-      "pass": true,
-      "reason": "0 CRITICAL/HIGH findings",
-      "markers": 0
-    }
-  },
-  "phase_7": {
-    "status": "completed",
-    "tasks_completed": 21,
-    "verification": {
-      "focused_vitest": {
-        "pass": true,
-        "files": 4,
-        "tests": 37
-      },
-      "typecheck": {
-        "pass": true
-      },
-      "lint": {
-        "pass": true
-      },
-      "build": {
-        "pass": true,
-        "static_pages": 143
-      },
-      "full_unit": {
-        "pass": true,
-        "files_passed": 276,
-        "tests_passed": 2865,
-        "files_skipped": 32,
-        "tests_todo": 84
-      },
-      "full_e2e": {
-        "run": false,
-        "reason": "No UI or browser workflow changed; SPEC-009C2 uses unit/integration coverage plus manual smoke checklist."
-      },
-      "gate": {
-        "id": "G7",
-        "pass": true,
-        "reason": "All 21 tasks complete",
-        "markers": 0,
-        "total": 21,
-        "done": 21
-      }
-    }
-  },
-  "post_implementation": {
-    "status": "completed",
-    "reviewability_tasks_gate": {
-      "mode": "tasks",
-      "status": "exception",
-      "pass": true,
-      "reviewable_loc": 840,
-      "production_files": 7,
-      "total_files": 36,
-      "primary_surface_count": 4,
-      "transition_exception": true
-    },
-    "reviewability_diff_gate": {
-      "mode": "diff",
-      "status": "historical_plugin_defect_resolved_externally",
-      "pass": true,
-      "reported_transition_exception": false,
-      "corrected_transition_exception": true,
-      "plugin_defect": "reviewability-gate.sh diff used grep -q under set -euo pipefail during the run; a corrected non-q predicate over origin/main...HEAD confirmed the documented transition exception text was present.",
-      "resolution": "The speckit-pro plugin fix shipped outside SPEC-009C2; no active SPEC-009C2 blocker remains."
-    },
-    "merge_evidence": {
-      "implementation_pr": {
-        "pr": 43,
-        "merge_commit": "a63afdead9e4b58c6be7cfcda782a3f567538756",
-        "merged_at": "2026-05-16T01:08:40Z"
-      },
-      "post_merge_fix_pr": {
-        "pr": 46,
-        "merge_commit": "19b2db9891fd4c4ca1286f952f10e190424e9c5c",
-        "merged_at": "2026-05-16T02:27:44Z"
-      },
-      "hal_deployed_commit": "19b2db9891fd4c4ca1286f952f10e190424e9c5c"
-    },
-    "manual_synthetic_smoke": {
-      "status": "pass",
-      "issue": 47,
-      "evidence": "Fresh synthetic issue #47 drove ACTIONABLE_REMEDIATION into exactly one remediation-planning successor on HAL; duplicate retry preserved one successor, one disposition, one triage artifact, and one pilot activity."
-    },
-    "cleanup": {
-      "status": "pass",
-      "evidence": "Synthetic issues #44, #45, and #47 are closed; stale disposable task #35, SPEC-009C2 synthetic Mission Control rows, and UAT fixture agents/assignments were removed after HAL database backups."
-    },
-    "branch_push": {
+  "plan": [
+    {
+      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
       "status": "completed"
+    },
+    {
+      "step": "Phase 0: Prerequisites",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 1: Specify",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Merge Gate and Manual Sync Boundary",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Merge Gate and Manual Sync Boundary Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Exact PR Evidence and Trust Boundary",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Exact PR Evidence and Trust Boundary Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Idempotency and Duplicate-Launch Prevention",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Idempotency and Duplicate-Launch Prevention Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - SPEC-009D Evidence Handoff",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - SPEC-009D Evidence Handoff Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 3: Plan",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity",
+      "status": "in_progress"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - security",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - security Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - regression-safety",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - regression-safety Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 5: Tasks",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 6: Analyze",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 6: Analyze - Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement - Pending task decomposition",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verification and Status Sync",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verify Implementation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Code Review",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Integration Suite",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Cleanup",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Reviewability Diff Gate",
+      "status": "pending"
+    },
+    {
+      "step": "Post: PR Body Generation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: PR Creation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Review Remediation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Retrospective",
+      "status": "pending"
     }
-  }
+  ]
 }

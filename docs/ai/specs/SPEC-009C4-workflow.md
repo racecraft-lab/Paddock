@@ -65,10 +65,10 @@ Source-of-truth scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate `specs/009c4-owner-merge-reconciliation/spec.md` from roadmap plus design concept |
-| Clarify | `$speckit-clarify` | Pending | Resolve merge-gate, exact PR evidence, idempotency, and evidence handoff details |
-| Plan | `$speckit-plan` | Pending | Define reuse of existing GitHub sync engine and checklist/UAT proof |
-| Checklist | `$speckit-checklist` | Pending | Run focused domains for data integrity, state lifecycle, error handling, security, and regression safety |
+| Specify | `$speckit-specify` | Complete | Generated `specs/009c4-owner-merge-reconciliation/spec.md` from roadmap plus design concept; G1 passed with 0 markers |
+| Clarify | `$speckit-clarify` | Complete | Resolved merge-gate, exact PR evidence, idempotency, and evidence handoff details; G2 passed with 0 markers |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and manual sync reconciliation contract; G3 passed with 0 markers |
+| Checklist | `$speckit-checklist` | In Progress | Run focused domains for data integrity, state lifecycle, error handling, security, and regression safety |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD tasks with RED-first reconciliation and negative coverage |
 | Analyze | `$speckit-analyze` | Pending | Verify no C4 artifact pulls in later control-plane specs |
 | Implement | `$speckit-implement` | Pending | Execute tasks, verification, live `G_PILOT_MERGE` UAT, cleanup, PR packet, and push |
@@ -98,10 +98,10 @@ only when its artifact and gate evidence are recorded here.
 |------|-----------------------|--------|----------|
 | Archive Sweep Startup | Step -1 | Pending | Detect archive extension, exclude current target `specs/009c4-owner-merge-reconciliation`, preserve completed prior-spec evidence, and stop or dry-run on unsafe dirty worktrees |
 | Prerequisites | Step 0 | Pending | Verify SpecKit CLI, package manager `pnpm`, remote `origin`, branch guard, reviewability preset, Node 22+, and clean worktree before phase execution |
-| Specify | Phase 1 / G1 | Pending | Record generated spec and requirements checklist evidence |
-| Clarify | Phase 2 / G2 | Pending | Record decisions for merge evidence, sync trigger, idempotency, live UAT PR, and evidence handoff |
-| Plan | Phase 3 / G3 | Pending | Record plan, research, data model, contracts, quickstart, and agent context evidence |
-| Checklist | Phase 4 / G4 | Pending | Record checklist domains, gaps, and resolutions |
+| Specify | Phase 1 / G1 | Complete | Generated `spec.md` with 18 FRs, 4 user stories, 12 acceptance scenarios, 8 success criteria; requirements checklist complete; G1 passed with 0 markers |
+| Clarify | Phase 2 / G2 | Complete | Four sessions completed; G2 passed with 0 `[NEEDS CLARIFICATION]` markers; consensus decisions logged below |
+| Plan | Phase 3 / G3 | Complete | Generated `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, and `contracts/manual-github-sync-reconciliation.md`; G3 passed with 0 markers |
+| Checklist | Phase 4 / G4 | In Progress | Record checklist domains, gaps, and resolutions |
 | Tasks | Phase 5 / G5 | Pending | Record task count, parallel opportunities, and reviewability task-gate result |
 | Analyze | Phase 6 / G6 | Pending | Record cross-artifact analysis findings and resolutions |
 | Implement | Phase 7 / G7 | Pending | Record task completion, tests, live UAT, cleanup, roadmap/workflow updates, and push evidence |
@@ -339,14 +339,14 @@ UAT target, evidence boundary, negative cases, and archive/status hygiene.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 18 |
+| User Stories | 4 |
+| Acceptance Criteria | 12 |
 
 ### Files Generated
 
-- [ ] `specs/009c4-owner-merge-reconciliation/spec.md`
-- [ ] `specs/009c4-owner-merge-reconciliation/checklists/requirements.md`
+- [x] `specs/009c4-owner-merge-reconciliation/spec.md`
+- [x] `specs/009c4-owner-merge-reconciliation/checklists/requirements.md`
 
 ---
 
@@ -419,10 +419,20 @@ Focus on evidence for the later review packet:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Merge gate/manual sync | Pending | Pending |
-| 2 | Exact PR evidence | Pending | Pending |
-| 3 | Idempotency/duplicate launch | Pending | Pending |
-| 4 | SPEC-009D handoff | Pending | Pending |
+| 1 | Merge gate/manual sync | 5 | `G_PILOT_MERGE` is workflow/checklist evidence only; canonical sync entrypoint is project-scoped `POST /api/github/sync` backed by `pullFromGitHub`; polling/webhook/scheduler remain deferred; `gate-validator` excludes the human merge action; live UAT proof is checklist text evidence with fresh PR identity, task/workspace/project identity, pre/post state, sync result, evidence rows, cleanup status, and explicit non-use of PR #49 |
+| 2 | Exact PR evidence | 5 | Authoritative live merge proof requires explicit merged truth for the exact linked repo/PR, such as `merged === true` or an equivalent merged-state check; `merge_commit_sha`, `merged_at`, issue-closed state, labels, or timeline data are supporting evidence only; accepted identity is scoped to workspace/project, repo, issue, and PR number; insufficient evidence gets typed reconciliation-required reasons; successful reconciliation updates `done` status/labels and evidence; fixtures remain test-only |
+| 3 | Idempotency/duplicate launch | 5 | Duplicate sync leaves task `done`, creates no duplicate launch, and does not advance the chain again; bounded notification evidence reuses existing `task_ready_for_owner` and reconciliation-required rows, with no new terminal-done notification; done label projection through existing label mechanisms is required; local-only status mutation is not evidence; live UAT cleanup preserves GitHub audit trail and removes or documents disposable Mission Control residue after evidence capture |
+| 4 | SPEC-009D handoff | 5 | SPEC-009D consumes existing source-map evidence from tasks, activities, notifications, task artifacts, quality reviews, labels, and smoke-checklist text; C4 smoke evidence remains checklist text, not YAML/JSON packet schema; C4 references existing C3 artifact/Aegis rows without copying them; runner/claim/poller/sandbox/adapter fields are explicit future-spec deferrals, not placeholder schema; Playwright is required only if UI or rendered evidence surfaces change |
+
+### Consensus Resolution Log
+
+| Phase | Item | Round | Routed Categories | Outcome | Analysts Used |
+|-------|------|-------|-------------------|---------|---------------|
+| Clarify Session 1 | Canonical manual sync entrypoint after `G_PILOT_MERGE` | 1 | codebase | Accepted project-scoped `POST /api/github/sync` `{ action: "trigger", project_id }` with `pullFromGitHub(project, workspaceId)` as shared underlying path; no Round 2 needed | codebase-analyst |
+| Clarify Session 1 | Minimum live UAT proof for `G_PILOT_MERGE` | 1 | spec | Accepted checklist text evidence with fresh PR, task, workspace/project, pre/post state, manual merge, sync result, evidence rows, cleanup status, and explicit non-use of PR #49; no new manifest, packet schema, API, dashboard, or UI | spec-context-analyst |
+| Clarify Session 2 | Authoritative merged PR proof | 2 | codebase, domain, spec | Accepted stricter C4 requirement: explicit merged truth for the exact linked PR is authoritative; current code accepts `merged_at`/`merge_commit_sha` alone, so implementation must use RED tests before tightening behavior | codebase-analyst, domain-researcher, spec-context-analyst |
+| Clarify Session 3 | Bounded notification evidence | 1 | codebase, spec | Accepted reuse of existing owner-ready/reconciliation notification rows; successful merge reconciliation is proven by exact PR merge evidence, task status, done label projection, terminal activity, sync result, and traceable existing notifications; no new terminal-done notification type | codebase-analyst, spec-context-analyst |
+| Clarify Session 3 | Done label projection after inbound merge reconciliation | 1 | codebase, spec | Accepted that `mc:done` projection and stale `mc:ready-for-owner` removal are required C4 behavior; current inbound path appears local-only, so RED tests must prove and drive any hardening | codebase-analyst, spec-context-analyst |
 
 ---
 
@@ -484,11 +494,11 @@ state, sandboxing, adapters, or packet UI.
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, constitution gates, primary/secondary surfaces, project structure, reviewability exception |
-| `research.md` | Pending | Decisions for manual sync reuse, exact PR evidence, idempotency, live UAT, and evidence handoff |
-| `data-model.md` | Pending | Existing entities, task/PR identity, activity/notification evidence, labels, and state transitions |
-| `contracts/` | Pending | Reconciliation contract, fixture/live evidence contract, and smoke checklist proof |
-| `quickstart.md` | Pending | Fixture validation path and fresh synthetic PR `G_PILOT_MERGE` UAT path |
+| `plan.md` | Complete | Technical context, constitution gates, primary/secondary surfaces, project structure, reviewability exception |
+| `research.md` | Complete | Seven decisions for manual sync reuse, exact PR evidence, idempotency, live UAT, and evidence handoff |
+| `data-model.md` | Complete | Existing entities, task/PR identity, activity/notification evidence, labels, and state transitions |
+| `contracts/` | Complete | `manual-github-sync-reconciliation.md` |
+| `quickstart.md` | Complete | Fixture validation path and fresh synthetic PR `G_PILOT_MERGE` UAT path |
 
 ---
 
