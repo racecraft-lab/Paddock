@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
-  "updated_at": "2026-05-20T22:31:45Z",
-  "active_step": "Post: PR Creation",
-  "status": "Ready for PR",
+  "updated_at": "2026-05-20T22:37:42Z",
+  "active_step": "Post: PR Checks",
+  "status": "PR Opened",
   "active_workflow": {
     "spec_id": "SPEC-009E",
     "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
@@ -383,6 +383,7 @@
   },
   "phase_7": {
     "status": "completed",
+    "pull_request": "https://github.com/racecraft-lab/mission-control/pull/55",
     "tasks_completed": 59,
     "task_file": "specs/009e-pilot-evidence-surfaces/tasks.md",
     "files": [
@@ -518,7 +519,7 @@
     {"step": "Post: Cleanup", "status": "completed"},
     {"step": "Post: Reviewability Diff Gate", "status": "completed"},
     {"step": "Post: PR Body Generation", "status": "completed"},
-    {"step": "Post: PR Creation", "status": "in_progress"},
+    {"step": "Post: PR Creation", "status": "completed"},
     {"step": "Post: Review Remediation", "status": "pending"},
     {"step": "Post: Retrospective", "status": "pending"}
   ]

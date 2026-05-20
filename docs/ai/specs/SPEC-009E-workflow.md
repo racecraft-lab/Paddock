@@ -636,7 +636,7 @@ Docker CLI was present, but Docker daemon access was unavailable during UAT, so 
 - [x] `pnpm test` or `pnpm test:all` passes when scope requires it
 - [x] `docs/qa/pilot-smoke-checklist.md` or SPEC-009E evidence checklist records UAT
 - [x] PR body includes what/why/how, validation, evidence, reviewer guide, known deferrals, and rollback/flag notes
-- [ ] Branch pushed and PR opened
+- [x] Branch pushed and PR opened: https://github.com/racecraft-lab/mission-control/pull/55
 
 ---
 
