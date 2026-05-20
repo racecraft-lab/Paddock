@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-20T22:45:09.134Z",
+  "updatedAt": "2026-05-20T22:48:47.675Z",
   "prs": [
     {
       "prNumber": "55",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/55/",
       "headRef": "009e-pilot-evidence-surfaces",
       "baseRef": "main",
-      "updatedAt": "2026-05-20T22:45:09.134Z",
+      "updatedAt": "2026-05-20T22:48:47.675Z",
       "latest": {
+        "storybook": {
+          "runId": "26194282535",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26194282535",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/55/storybook/latest/?v=26194282535-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/55/runs/26194282535-attempt-1/storybook/",
+          "updatedAt": "2026-05-20T22:48:47.675Z"
+        },
         "playwright": {
           "runId": "26194024377",
           "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26194024377",
