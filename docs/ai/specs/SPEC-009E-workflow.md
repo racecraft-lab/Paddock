@@ -46,8 +46,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Four sessions resolved API route/contract, task detail Evidence section, stored source/state semantics, UAT retained evidence, and cleanup handling; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, OpenAPI contract, and quickstart; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Six domains complete; 134 items, 8 gaps remediated, G4 passed with 0 unresolved gaps |
-| Tasks | `$speckit-tasks` | In Progress | Generate TDD-first tasks with strict read-only and route/UI scope |
-| Analyze | `$speckit-analyze` | Pending | Check drift against roadmap and design concept, especially no sync/generation/schema expansion |
+| Tasks | `$speckit-tasks` | Complete | Generated 59 TDD-first tasks with a ratified narrow route/UI reviewability exception |
+| Analyze | `$speckit-analyze` | In Progress | Check drift against roadmap and design concept, especially no sync/generation/schema expansion |
 | Implement | `$speckit-implement` | Pending | Implement only after G6 passes; verify locally and with UAT evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -501,10 +501,12 @@ $speckit-tasks
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 59 |
+| Phases | 7 |
+| Parallel Opportunities | 19 |
+| User Stories Covered | US1, US2, US3 plus security/accessibility/browser verification and UAT/PR evidence |
+
+Reviewability tasks gate passed with a ratified exception. The exception is limited to the smallest useful SPEC-009E deliverable: one task-scoped API/read model, one compact task-detail Evidence UI consumer, focused tests, and UAT ledger updates. It does not permit migration, dependency, global Evidence page, write action, GitHub sync trigger, packet generation action, dashboard, runner, claim, sandbox, adapter, or harness work.
 
 ---
 

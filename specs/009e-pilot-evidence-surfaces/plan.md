@@ -23,6 +23,10 @@ The durable route is task-scoped rather than pilot-specific. As required by the 
 **Reviewability Budget**: Primary surface is API/read model with secondary UI display. Projected reviewable LOC: warn range but below block threshold. Projected production files: 4-6. Projected total files: 10-14. Budget result: allowed, with PR review order API/helper -> UI -> tests -> UAT ledger.
 **Strict Scope**: Add every new TS/TSX module introduced by SPEC-009E to `tsconfig.spec-strict.json` and `eslint.config.mjs`; expected new modules are `src/lib/task-evidence.ts` and `src/app/api/tasks/[id]/evidence/route.ts` if implementation confirms those paths.
 
+### Ratified Reviewability Exception
+
+The tasks reviewability gate has a ratified exception for SPEC-009E because the smallest useful deliverable necessarily pairs one task-scoped API/read model with one compact task-detail UI consumer. The exception does not expand implementation scope. It is limited to the files named in the Source Code section, focused tests, and the UAT ledger update. No migration, dependency, global Evidence page, write action, GitHub sync trigger, packet generation action, dashboard, runner, claim, sandbox, adapter, or harness work is permitted.
+
 ## Read-Only State Management Constraints
 
 SPEC-009E is a read-only evidence presentation feature. The HTTP `GET` route, server helper, and UI must preserve HTTP safe-method expectations by retrieving stored evidence without requesting or causing origin-server state changes.

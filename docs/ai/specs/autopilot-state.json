@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
-  "updated_at": "2026-05-20T22:25:00Z",
-  "active_step": "Phase 5: Tasks",
+  "updated_at": "2026-05-20T21:24:18Z",
+  "active_step": "Phase 6: Analyze",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009E",
@@ -324,6 +324,44 @@
       "markers": 0
     }
   },
+  "phase_5": {
+    "status": "completed",
+    "files": [
+      "specs/009e-pilot-evidence-surfaces/tasks.md"
+    ],
+    "metrics": {
+      "total_tasks": 59,
+      "phases": 7,
+      "parallel_opportunities": 19,
+      "user_stories_covered": [
+        "US1",
+        "US2",
+        "US3"
+      ],
+      "verification_groups": [
+        "security_accessibility_browser",
+        "uat_pr_status_evidence"
+      ]
+    },
+    "gate": {
+      "id": "G5",
+      "pass": true,
+      "reason": "59 tasks found with 0 markers",
+      "markers": 0,
+      "task_count": 59
+    },
+    "reviewability_gate": {
+      "mode": "tasks",
+      "status": "exception",
+      "pass": true,
+      "reviewable_loc": 2360,
+      "production_files": 11,
+      "total_files": 78,
+      "primary_surface_count": 5,
+      "transition_exception": true,
+      "exception_scope": "One task-scoped API/read model, one compact task-detail Evidence UI consumer, focused tests, and UAT ledger updates only."
+    }
+  },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -349,10 +387,16 @@
     {"step": "Phase 4: Checklist - data-integrity Consensus", "status": "completed"},
     {"step": "Phase 4: Checklist - security", "status": "completed"},
     {"step": "Phase 4: Checklist - security Consensus", "status": "completed"},
-    {"step": "Phase 5: Tasks", "status": "in_progress"},
-    {"step": "Phase 6: Analyze", "status": "pending"},
+    {"step": "Phase 5: Tasks", "status": "completed"},
+    {"step": "Phase 6: Analyze", "status": "in_progress"},
     {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
-    {"step": "Phase 7: Implement - Pending task decomposition", "status": "pending"},
+    {"step": "Phase 7: Setup and RED fixtures (T001-T006)", "status": "pending"},
+    {"step": "Phase 7: Foundational stored evidence derivation (T007-T016)", "status": "pending"},
+    {"step": "Phase 7: US1 route and task detail evidence (T017-T027)", "status": "pending"},
+    {"step": "Phase 7: US2 incomplete/ineligible states (T028-T036)", "status": "pending"},
+    {"step": "Phase 7: US3 deferred boundaries (T037-T042)", "status": "pending"},
+    {"step": "Phase 7: Security accessibility browser verification (T043-T052)", "status": "pending"},
+    {"step": "Phase 7: UAT PR and status evidence (T053-T059)", "status": "pending"},
     {"step": "Post: Verification and Status Sync", "status": "pending"},
     {"step": "Post: Verify Implementation", "status": "pending"},
     {"step": "Post: Code Review", "status": "pending"},
