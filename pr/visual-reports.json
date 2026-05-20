@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-20T03:07:40.393Z",
+  "updatedAt": "2026-05-20T03:13:15.988Z",
   "prs": [
     {
       "prNumber": "53",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/53/",
       "headRef": "dependabot-security-remediation",
       "baseRef": "main",
-      "updatedAt": "2026-05-20T03:07:40.393Z",
+      "updatedAt": "2026-05-20T03:13:15.988Z",
       "latest": {
         "storybook": {
-          "runId": "26138628592",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26138628592",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/?v=26138628592-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/53/runs/26138628592-attempt-1/storybook/",
-          "updatedAt": "2026-05-20T03:07:40.393Z"
+          "runId": "26138840425",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26138840425",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/?v=26138840425-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/53/runs/26138840425-attempt-1/storybook/",
+          "updatedAt": "2026-05-20T03:13:15.988Z"
         }
       }
     },

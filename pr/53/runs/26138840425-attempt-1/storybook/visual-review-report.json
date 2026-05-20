@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/mission-control",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "storybook",
   "surfaceLabel": "Storybook Components",
   "workflowName": "Visual Storybook Snapshots",
@@ -17,7 +17,7 @@
   "headRef": "dependabot-security-remediation",
   "baseRef": "main",
   "headSha": "7fcd5adbecfa65068f0af41fa53845604b229ba3",
-  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/",
+  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/53/runs/26138840425-attempt-1/storybook/",
   "latestHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/?v=26138840425-attempt-1",
   "createdAt": "2026-05-20T03:13:15.988Z",
   "itemCounts": {
