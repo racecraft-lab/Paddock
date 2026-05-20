@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
-  "updated_at": "2026-05-20T01:52:46Z",
+  "updated_at": "2026-05-20T03:03:47Z",
   "active_step": "Complete",
   "status": "Complete",
   "active_workflow": {
@@ -345,10 +345,21 @@
     "pull_request": {
       "number": 52,
       "url": "https://github.com/racecraft-lab/mission-control/pull/52",
-      "state": "open",
-      "draft": false
+      "state": "merged",
+      "draft": false,
+      "merge_commit": "ddc709f2f200a4ee4df51398d39ef42d85bd6e54"
     },
-    "roadmap_status_note": "SPEC-009C4 remains In Progress in the roadmap until PR #52 is merged and target deployment promotion/UAT evidence is recorded."
+    "roadmap_status_note": "SPEC-009C4 is Complete after PR #52 merged and HAL target deployment/UAT evidence was recorded.",
+    "target_deployment": {
+      "host": "HAL",
+      "worktree": "/home/fredrick-gabelmann/mission-control",
+      "commit": "ddc709f2f200a4ee4df51398d39ef42d85bd6e54",
+      "build": "pnpm build passed",
+      "service": "mission-control.service restarted successfully",
+      "health": "/login returned 200; authenticated /api/status returned 200",
+      "uat": "Workspace 4/project 3 target replay linked disposable task 41 to issue #50 / PR #51; deployed POST /api/github/sync returned pulled=1/pushed=0, task moved to done, duplicate sync returned pulled=0/pushed=0, no successor child was created, and disposable task rows were cleaned.",
+      "backup": "/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec009c4-target-uat-20260520-025827.bak"
+    }
   },
   "commands": {
     "BUILD": "pnpm build",

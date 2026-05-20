@@ -318,6 +318,43 @@ alone.
   UI/component route was added or changed; the full Playwright suite still ran
   through `pnpm test:all` as the final gate.
 
+### 2026-05-20 SPEC-009C4 Target Deployment Closeout
+
+- Promotion: HAL `/home/fredrick-gabelmann/mission-control` fast-forwarded
+  `main` from SPEC-009C3 commit `ac7760a222a33b4cefe886afae605238f479eaa5`
+  to SPEC-009C4 merge commit
+  `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`.
+- Build/restart: `pnpm build` passed on HAL, `mission-control.service`
+  restarted successfully at `2026-05-20T02:54:14Z`, `/login` returned 200,
+  unauthenticated `/api/status` returned 401, and authenticated `/api/status`
+  returned 200 without printing or persisting the API key.
+- Backup before target replay:
+  `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec009c4-target-uat-20260520-025827.bak`.
+- Target replay scope: workspace `4` (`mission-control`), project `3` (`QA`),
+  workflow template `6` (`mission-control_dev_implementation`,
+  `produces_pr=1`, `external_terminal_event=github_pr_merged`). The replay
+  used retained external audit trail issue #50 / PR #51 instead of creating
+  another empty PR/merge commit; the fresh-PR `G_PILOT_MERGE` requirement was
+  already satisfied by PR #51 in the branch UAT above.
+- Linked target task before sync: disposable task `41`, repo
+  `racecraft-lab/mission-control`, issue #50, PR #51, status
+  `ready_for_owner`.
+- Target manual sync: deployed `POST /api/github/sync` with
+  `{ "action": "trigger", "project_id": 3, "workspace_id": 4 }` returned
+  `pulled=1`, `pushed=0`; task `41` moved to `done` with
+  `completed_at=1779246054` and `github_synced_at=1779246054`.
+- GitHub audit state after target replay: issue #50 remained closed with
+  labels `area:dev`, `priority:medium`, and `mc:done`; PR #51 remained merged
+  at `2026-05-20T01:21:58Z` with merge commit
+  `fc80b9f234e110e962f52b49595604474a9842b2`.
+- Duplicate sync: a repeated deployed sync returned `pulled=0`, `pushed=0`;
+  task `41` stayed `done`, no successor child task was observed, and no extra
+  GitHub mutation was required.
+- Cleanup result: disposable HAL rows for task/activities/notifications went
+  from `1/0/0` to `0/0/0`. GitHub sync log rows `160` and `161` were retained
+  as live deployment audit history and to keep the live sync watermark past
+  issue #50 so future syncs do not re-ingest the retained audit issue.
+
 ## SPEC-009D Handoff Evidence Sources
 
 - Use existing source records only. The handoff source trail comes from

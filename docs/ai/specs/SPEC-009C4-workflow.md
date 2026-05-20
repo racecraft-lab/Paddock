@@ -795,9 +795,10 @@ Before starting any task:
 - **Playwright decision:** no new targeted UI journey was required because C4 changed library reconciliation behavior, focused Vitest coverage, and Markdown evidence only; the full Playwright suite still ran through `pnpm test:all`.
 - **Live UAT:** temporary branch deployment at `http://127.0.0.1:3134` created issue #50 and PR #51, verified task `1` stayed `ready_for_owner` before `G_PILOT_MERGE`, squash-merged PR #51, then reconciled task `1` to `done` through existing `POST /api/github/sync`.
 - **UAT cleanup:** temporary Mission Control rows were removed after checklist export; related rows went from `1/1/2/0/0/3` to `0/0/0/0/0/0`; GitHub issue #50 and merged PR #51 remain as external audit trail.
+- **Target deployment closeout:** PR #52 merged to `main` as `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`; HAL `/home/fredrick-gabelmann/mission-control` was fast-forwarded to that commit, `pnpm build` passed, `mission-control.service` restarted, `/login` returned 200, and authenticated `/api/status` returned 200. Target replay UAT on workspace `4` / project `3` used disposable task `41` linked to retained issue #50 / PR #51; deployed `POST /api/github/sync` returned `pulled=1`, `pushed=0`, task `41` moved to `done`, duplicate sync returned `pulled=0`, `pushed=0`, no successor child was created, and the disposable task row was removed after evidence capture. Backup: `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec009c4-target-uat-20260520-025827.bak`.
 - **Reviewability:** final diff stayed in the planned C4 slice: existing GitHub sync reconciliation, focused tests, smoke checklist, workflow, roadmap, and autopilot status. No new poller, webhook, scheduler, claim/run schema, sandbox lifecycle, harness adapter, review packet table, evidence UI, migration, or runtime dependency entered the diff.
-- **Roadmap status:** C4 remains `In Progress` in the roadmap until the implementation PR is merged and the target deployment promotion/UAT policy is satisfied; this workflow run records implementation and live UAT evidence for that PR.
-- **PR:** [#52](https://github.com/racecraft-lab/mission-control/pull/52) opened from branch `009c4-owner-merge-reconciliation`.
+- **Roadmap status:** C4 is `Complete` after PR #52 merge and HAL target deployment/UAT closeout.
+- **PR:** [#52](https://github.com/racecraft-lab/mission-control/pull/52) merged from branch `009c4-owner-merge-reconciliation`.
 - **Push:** Branch `009c4-owner-merge-reconciliation` pushed to `origin`.
 
 ---
@@ -827,8 +828,8 @@ Before starting any task:
 - For future live UAT gates, record both external GitHub audit trail and local
   row-count cleanup evidence before deleting disposable Mission Control rows.
 - Keep roadmap status distinct from workflow/G7 status: branch implementation
-  can pass while the roadmap spec remains `In Progress` until PR merge and
-  target deployment promotion evidence exist.
+  can pass before roadmap completion, and completion waits for PR merge plus
+  target deployment promotion evidence.
 
 ---
 
