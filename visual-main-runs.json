@@ -3,6 +3,33 @@
   "reports": [
     {
       "surface": "playwright",
+      "runId": "26172911571",
+      "runAttempt": "1",
+      "runKey": "26172911571-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26172911571",
+      "reportKey": "765264be667bd31d6266f606602a219312f72f23",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/playwright/765264be667bd31d6266f606602a219312f72f23/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/playwright/latest/?v=26172911571-attempt-1",
+      "headSha": "765264be667bd31d6266f606602a219312f72f23",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "009d-pilot-review-lifecycle",
+        "headSha": "aa5f07569e4cff53f373f0146b86106f63aa75ab",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/54/",
+        "mergeCommitSha": "",
+        "number": "54",
+        "title": "feat(spec-009d): add pilot review packet artifacts",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/54"
+      },
+      "createdAt": "2026-05-20T15:41:33.483Z"
+    },
+    {
+      "surface": "playwright",
       "runId": "26139557133",
       "runAttempt": "1",
       "runKey": "26139557133-attempt-1",
@@ -498,5 +525,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-20T03:43:50.125Z"
+  "updatedAt": "2026-05-20T15:41:33.483Z"
 }
