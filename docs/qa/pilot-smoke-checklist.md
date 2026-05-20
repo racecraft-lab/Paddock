@@ -247,6 +247,77 @@ alone.
   before/after counts when available, sanitized failure reason, retained local
   rows or GitHub artifacts, and follow-up owner.
 
+### 2026-05-20 SPEC-009C4 UAT Run Evidence
+
+- Approval: live GitHub mutation was operator-approved in Codex before T045.
+- Target: temporary C4 branch deployment at `http://127.0.0.1:3134`, branch
+  `009c4-owner-merge-reconciliation`, commit
+  `363ca085d95a35e0fe6b413c20050bdb75ed9773`, data dir
+  `/private/tmp/mc-spec009c4-uat-20260520-011455`.
+- GitHub transport: the temporary deployment used a localhost `gh api` proxy
+  only to avoid printing or persisting a raw GitHub token; all issue and PR
+  evidence came from real `racecraft-lab/mission-control` GitHub state.
+- Fresh synthetic C4 issue: #50
+  (`https://github.com/racecraft-lab/mission-control/issues/50`) created
+  `2026-05-20T01:16:06Z` with labels `area:dev`,
+  `priority:medium`, and `mc:ready-for-owner`.
+- Fresh synthetic C4 PR: #51
+  (`https://github.com/racecraft-lab/mission-control/pull/51`) created as a
+  draft at `2026-05-20T01:16:28Z` from branch
+  `spec-009c4-live-uat-20260520-011455`, head
+  `6f92581f9f80f91ff5b280bdda8db999b8588e0c`, base `main`.
+- Linked task before `G_PILOT_MERGE`: workspace `1`, project `1`, task `1`,
+  workflow `mission-control_dev_implementation`, repo
+  `racecraft-lab/mission-control`, issue #50, PR #51, status
+  `ready_for_owner`, `completed_at=null`, and one bounded
+  `task_ready_for_owner` notification to `HAL`.
+- Pre-merge manual sync: `POST /api/github/sync` with
+  `{ "action": "trigger", "project_id": 1, "workspace_id": 1 }` returned
+  `pulled=11`, `pushed=0`; task `1` remained `ready_for_owner` with
+  `completed_at=null`. The `pulled=11` count came from the empty temporary DB
+  ingesting other repository issues into disposable local rows only.
+- `G_PILOT_MERGE`: PR #51 was marked ready and manually squash-merged by
+  `fgabelmannjr` at `2026-05-20T01:21:58Z`; merge commit
+  `fc80b9f234e110e962f52b49595604474a9842b2`. Issue #50 closed at
+  `2026-05-20T01:21:59Z`.
+- Explicit non-use evidence: closed/unmerged SPEC-009C3 PR #49 was not used as
+  SPEC-009C4 merge proof.
+- Post-merge manual sync: the same `POST /api/github/sync` request returned
+  `pulled=1`, `pushed=0`; task `1` moved to `done`, `completed_at=1779240143`,
+  `github_synced_at=1779240143`, and terminal activity `12` recorded
+  `github_pr_number=51` with `terminal_event=github_pr_merged`.
+- GitHub label projection: issue #50 ended closed with labels `area:dev`,
+  `priority:medium`, and `mc:done`; stale `mc:ready-for-owner` was absent.
+- Duplicate sync: a repeated manual sync returned `pulled=0`, `pushed=0`;
+  task `1` stayed `done`, notification count stayed `1`, terminal activity
+  count stayed bounded, and no successor child task was observed for task `1`.
+- Cleanup/export: pre-cleanup evidence was exported into this checklist before
+  deletion. A temp DB file copy was retained at
+  `/private/tmp/mc-spec009c4-uat-20260520-011455/backups/mission-control.db.spec009c4-uat-20260520-011455.bak`;
+  row-count evidence was taken from the live temp DB connection before cleanup.
+- Cleanup result: temporary workspace residue was removed after evidence
+  capture. Related rows went from tasks/notifications/activities/artifacts/
+  quality-reviews/github-syncs `1/1/2/0/0/3` to `0/0/0/0/0/0`;
+  whole temporary workspace rows went from `11/1/12/0/0/3` to
+  `0/0/0/0/0/0`.
+- Retained audit trail: GitHub issue #50 and merged PR #51 remain closed/merged
+  as the external audit trail. The temporary remote branch was deleted by PR
+  merge cleanup, and the local temp worktree was removed.
+- Cleanup failure evidence: not applicable; cleanup completed successfully.
+- Verification: final commands ran outside the Codex sandbox with Node
+  `v22.22.2`. `pnpm build`, `pnpm typecheck`, `pnpm lint`, and `pnpm test`
+  passed; `pnpm test` reported 275 passed test files, 33 skipped files, 2894
+  passed tests, 3 skipped tests, and 84 todo tests.
+- Final PR gate: the first `pnpm test:all` attempt failed before product
+  assertions because the Playwright Chromium headless-shell executable was
+  missing from the user cache. After `pnpm exec playwright install chromium`,
+  `pnpm test:all` passed end-to-end, including strict-scope, lint, typecheck,
+  Vitest, build, and 646 Playwright tests.
+- No-new-UI-journey rationale: SPEC-009C4 changed library reconciliation
+  behavior, focused Vitest coverage, and Markdown checklist evidence. No app
+  UI/component route was added or changed; the full Playwright suite still ran
+  through `pnpm test:all` as the final gate.
+
 ## SPEC-009D Handoff Evidence Sources
 
 - Use existing source records only. The handoff source trail comes from

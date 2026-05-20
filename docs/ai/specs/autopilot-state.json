@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
-  "updated_at": "2026-05-19T00:00:00Z",
-  "active_step": "Phase 7: Guardrails and Live UAT (T042-T049)",
+  "updated_at": "2026-05-20T01:48:56Z",
+  "active_step": "Post: Branch push and PR creation",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009C4",
@@ -300,33 +300,42 @@
     }
   },
   "phase_7": {
-    "status": "in_progress",
-    "active_group": "Guardrails and Live UAT (T042-T049)",
+    "status": "completed",
+    "active_group": "Verification and Status Hygiene (T050-T055)",
     "groups": {
       "Setup and RED Harness (T001-T009)": "completed",
       "US1 Owner Merge Gate (T010-T015)": "completed",
       "US2 Manual Sync Done Reconciliation (T016-T024)": "completed",
       "US3 Fail-Closed Negative Cases (T025-T034)": "completed",
       "US4 Idempotency and Evidence Handoff (T035-T041)": "completed",
-      "Guardrails and Live UAT (T042-T049)": "blocked",
-      "Verification and Status Hygiene (T050-T055)": "pending"
+      "Guardrails and Live UAT (T042-T049)": "completed",
+      "Verification and Status Hygiene (T050-T055)": "completed"
     },
     "manual_gate": {
       "id": "G_PILOT_MERGE",
-      "status": "blocked_pending_operator_approval",
+      "status": "completed",
       "completed_tasks": [
         "T042",
         "T043",
-        "T044"
-      ],
-      "pending_tasks": [
+        "T044",
         "T045",
         "T046",
         "T047",
         "T048",
         "T049"
       ],
-      "required_operator_action": "Approve creation of a fresh synthetic C4 draft PR, manually merge it at G_PILOT_MERGE, run manual GitHub sync, verify duplicate sync evidence, then clean or retain UAT residue with recorded rationale."
+      "pending_tasks": [],
+      "evidence": "Operator approved live mutation; fresh issue #50 and PR #51 were created; PR #51 was squash-merged at G_PILOT_MERGE; POST /api/github/sync reconciled task 1 from ready_for_owner to done; duplicate sync returned pulled=0 pushed=0; local UAT rows were cleaned with row counts recorded in docs/qa/pilot-smoke-checklist.md."
+    },
+    "verification": {
+      "node": "v22.22.2",
+      "focused_vitest": "pnpm test src/lib/__tests__/github-sync-ready-for-owner.test.ts passed 30 tests",
+      "build": "pnpm build passed",
+      "typecheck": "pnpm typecheck passed",
+      "lint": "pnpm lint passed",
+      "unit": "pnpm test passed: 275 files passed, 33 skipped; 2894 tests passed, 3 skipped, 84 todo",
+      "final_gate": "pnpm test:all passed after installing missing Playwright Chromium cache; e2e included 646 passing Playwright tests",
+      "ui_rationale": "No targeted UI journey was required because C4 changed library reconciliation behavior, focused tests, and Markdown evidence only."
     }
   },
   "commands": {
@@ -338,7 +347,7 @@
     "INTEGRATION_TEST": "pnpm test:e2e",
     "SINGLE_FILE_TEST": "pnpm test",
     "SINGLE_FILE_INTEGRATION": "N/A",
-    "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
+    "FULL_VERIFY": "pnpm test:all"
   },
   "plan": [
     {
@@ -463,35 +472,35 @@
     },
     {
       "step": "Phase 7: Guardrails and Live UAT (T042-T049)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Verification and Status Hygiene (T050-T055)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Implementation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Code Review",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Integration Suite",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Cleanup",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Reviewability Diff Gate",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Body Generation",
@@ -503,11 +512,11 @@
     },
     {
       "step": "Post: Review Remediation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Retrospective",
-      "status": "pending"
+      "status": "completed"
     }
   ]
 }

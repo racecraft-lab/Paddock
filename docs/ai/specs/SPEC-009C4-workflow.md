@@ -71,7 +71,7 @@ Source-of-truth scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Ran five domains; 114 items, 3 gaps resolved, G4 passed with 0 remaining gap markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks across 7 groups; G5 and tasks reviewability gate passed under transition exception |
 | Analyze | `$speckit-analyze` | Complete | Found 5 issues, remediated all; G6 passed with 0 CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | In Progress | Execute tasks, verification, live `G_PILOT_MERGE` UAT, cleanup, PR packet, and push |
+| Implement | `$speckit-implement` | Complete | All 55 tasks complete; focused reconciliation tests, live `G_PILOT_MERGE` UAT, cleanup, and final `pnpm test:all` gate passed |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -104,9 +104,9 @@ only when its artifact and gate evidence are recorded here.
 | Checklist | Phase 4 / G4 | Complete | 114 checklist items across five domains; 3 error-handling gaps resolved; G4 passed with 0 remaining `[Gap]` markers |
 | Tasks | Phase 5 / G5 | Complete | 55 tasks, 7 groups, 24 parallel opportunities, 4 user stories covered; tasks reviewability gate passed under transition exception |
 | Analyze | Phase 6 / G6 | Complete | 1 critical, 3 high, and 1 low issue remediated; G6 passed with 0 CRITICAL/HIGH findings |
-| Implement | Phase 7 / G7 | In Progress | Record task completion, tests, live UAT, cleanup, roadmap/workflow updates, and push evidence |
-| Post-Implementation Verify | Post step 10/12 | Pending | Record focused Vitest, broader checks, and any Playwright decision |
-| Cleanup / Reviewability / PR | Post steps 13-18 | Pending | Record reviewability gate, PR review packet, branch push, and post-merge UAT plan |
+| Implement | Phase 7 / G7 | Complete | All 55 generated tasks complete; focused Vitest passed 30 tests; live UAT used fresh issue #50 / PR #51; cleanup verified; final `pnpm test:all` passed after installing the missing Playwright Chromium cache |
+| Post-Implementation Verify | Post step 10/12 | Complete | `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and final `pnpm test:all` passed under Node 22 |
+| Cleanup / Reviewability / PR | Post steps 13-18 | In Progress | Reviewability and PR packet prepared; branch push/PR creation remain as final autopilot publication steps |
 
 ---
 
@@ -299,23 +299,23 @@ idempotency, activity/label sync, or duplicate-launch prevention.
 
 ### Success Criteria Summary
 
-- [ ] `G_PILOT_MERGE` is represented as the only allowed manual intervention
+- [x] `G_PILOT_MERGE` is represented as the only allowed manual intervention
   in the pilot flow.
-- [ ] Automated tests prove exact repo and PR-number match is required before
+- [x] Automated tests prove exact repo and PR-number match is required before
   a `ready_for_owner` task can become `done`.
-- [ ] A closed issue without matching merged PR evidence remains
+- [x] A closed issue without matching merged PR evidence remains
   `ready_for_owner` and records reconciliation-required evidence without
   advancing the task chain.
-- [ ] Duplicate GitHub syncs after a verified merge are idempotent: no
+- [x] Duplicate GitHub syncs after a verified merge are idempotent: no
   duplicate launch, no duplicate terminal activity flood, no duplicate
   notification flood, and no local-only completion.
-- [ ] Label/status sync proves the task reaches `done` with expected
+- [x] Label/status sync proves the task reaches `done` with expected
   `mc:done`/status behavior and does not keep stale ready-for-owner projection.
-- [ ] `docs/qa/pilot-smoke-checklist.md` records live UAT evidence for a fresh
+- [x] `docs/qa/pilot-smoke-checklist.md` records live UAT evidence for a fresh
   synthetic pilot PR merged at `G_PILOT_MERGE`.
-- [ ] SPEC-009D can trace issue/PR state, task status, labels, activities,
+- [x] SPEC-009D can trace issue/PR state, task status, labels, activities,
   notifications, and deferred runner fields from existing evidence.
-- [ ] No new poller, webhook listener, scheduler path, claim/run table,
+- [x] No new poller, webhook listener, scheduler path, claim/run table,
   sandbox lifecycle, harness adapter, review packet table, or evidence UI is
   introduced.
 
@@ -766,26 +766,37 @@ Before starting any task:
 |-------|-------|-----------|-------|
 | 1 - Setup and RED coverage | T001-T009 | Complete | Setup evidence recorded; RED harness helpers added; initial RED observed for supporting-only PR metadata |
 | 2 - Reconciliation behavior | T010-T041 | Complete | Exact merged-PR truth, done label projection, fail-closed local-only `done`, and duplicate-sync idempotency implemented; focused Vitest passes 30 tests under Node 22 |
-| 3 - Evidence and smoke checklist | T042-T049 | Blocked at `G_PILOT_MERGE` | T042-T044 guardrails complete and checklist scaffolding added; T045-T049 require explicit operator approval for fresh synthetic PR creation, manual merge, sync, duplicate-sync evidence, and cleanup/retention |
-| 4 - Guardrails, cleanup, and verification | T050-T055 | Pending | Final verification and roadmap/status hygiene wait on live UAT gate |
+| 3 - Evidence and smoke checklist | T042-T049 | Complete | Operator-approved live UAT created fresh issue #50 and PR #51, merged at `G_PILOT_MERGE`, reconciled via manual sync, proved duplicate sync idempotency, and cleaned disposable local residue |
+| 4 - Guardrails, cleanup, and verification | T050-T055 | Complete | Guardrails held; `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and final `pnpm test:all` passed; roadmap/workflow/status hygiene updated |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `tasks.md`.
-- [ ] Focused reconciliation tests pass:
+- [x] All tasks marked complete in `tasks.md`.
+- [x] Focused reconciliation tests pass:
   `pnpm test src/lib/__tests__/github-sync-ready-for-owner.test.ts`.
-- [ ] Broader checks pass according to changed surface:
+- [x] Broader checks pass according to changed surface:
   `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
-- [ ] Playwright decision recorded.
-- [ ] `G_PILOT_MERGE` live UAT recorded in `docs/qa/pilot-smoke-checklist.md`.
-- [ ] Synthetic GitHub and Mission Control residue cleaned up or explicitly
+- [x] Playwright decision recorded.
+- [x] `G_PILOT_MERGE` live UAT recorded in `docs/qa/pilot-smoke-checklist.md`.
+- [x] Synthetic GitHub and Mission Control residue cleaned up or explicitly
   documented.
-- [ ] Roadmap and workflow status updated.
-- [ ] Reviewability gate recorded.
-- [ ] PR review packet prepared.
+- [x] Roadmap and workflow status updated.
+- [x] Reviewability gate recorded.
+- [x] PR review packet prepared.
 - [ ] Branch pushed to `origin`.
+
+### Post-Implementation Results
+
+- **G7:** Passed with all 55 generated tasks complete.
+- **Focused reconciliation tests:** `pnpm test src/lib/__tests__/github-sync-ready-for-owner.test.ts` passed 30 tests under Node 22.
+- **Final verification:** `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and final `pnpm test:all` passed. `pnpm test` reported 275 passed test files, 33 skipped files, 2894 passed tests, 3 skipped tests, and 84 todo tests; `pnpm test:all` included 646 passing Playwright tests.
+- **Playwright decision:** no new targeted UI journey was required because C4 changed library reconciliation behavior, focused Vitest coverage, and Markdown evidence only; the full Playwright suite still ran through `pnpm test:all`.
+- **Live UAT:** temporary branch deployment at `http://127.0.0.1:3134` created issue #50 and PR #51, verified task `1` stayed `ready_for_owner` before `G_PILOT_MERGE`, squash-merged PR #51, then reconciled task `1` to `done` through existing `POST /api/github/sync`.
+- **UAT cleanup:** temporary Mission Control rows were removed after checklist export; related rows went from `1/1/2/0/0/3` to `0/0/0/0/0/0`; GitHub issue #50 and merged PR #51 remain as external audit trail.
+- **Reviewability:** final diff stayed in the planned C4 slice: existing GitHub sync reconciliation, focused tests, smoke checklist, workflow, roadmap, and autopilot status. No new poller, webhook, scheduler, claim/run schema, sandbox lifecycle, harness adapter, review packet table, evidence UI, migration, or runtime dependency entered the diff.
+- **Roadmap status:** C4 remains `In Progress` in the roadmap until the implementation PR is merged and the target deployment promotion/UAT policy is satisfied; this workflow run records implementation and live UAT evidence for that PR.
 
 ---
 
@@ -793,15 +804,29 @@ Before starting any task:
 
 ### What Worked Well
 
-- Pending
+- The RED-first fixture matrix made the exact-PR and fail-closed boundaries
+  reviewable before production sync hardening.
+- Keeping the live UAT on a disposable local deployment avoided HAL service
+  drift while still proving real GitHub issue/PR state through the existing
+  manual sync path.
 
 ### Challenges Encountered
 
-- Pending
+- The final `pnpm test:all` gate initially failed because the Playwright
+  Chromium headless-shell cache was missing, not because of product behavior.
+  Installing the expected browser cache and rerunning the same gate produced a
+  clean pass.
+- The SQLite backup copy taken while WAL was active was not treated as the
+  canonical evidence source; row-count evidence came from the live temp DB
+  connection before cleanup and was exported into the checklist.
 
 ### Patterns to Reuse
 
-- Pending
+- For future live UAT gates, record both external GitHub audit trail and local
+  row-count cleanup evidence before deleting disposable Mission Control rows.
+- Keep roadmap status distinct from workflow/G7 status: branch implementation
+  can pass while the roadmap spec remains `In Progress` until PR merge and
+  target deployment promotion evidence exist.
 
 ---
 

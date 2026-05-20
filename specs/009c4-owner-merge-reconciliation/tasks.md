@@ -136,17 +136,17 @@
 - [x] T042 [P] Verify no new webhook, poller, scheduler, or sync API path was introduced in `src/app/api/github/sync/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/task-dispatch.ts`
 - [x] T043 [P] Verify no claim/run schema, sandbox lifecycle, harness adapter, review packet table, lifecycle snapshot API, evidence dashboard, packet UI, new migration, or new runtime dependency was introduced in `src/`, `scripts/`, `package.json`, and `pnpm-lock.yaml`
 - [x] T044 [P] Verify no new SPEC-009C4-owned TypeScript module requires additions to `tsconfig.spec-strict.json` or `eslint.config.mjs`; if a new module was necessary, add exact entries in `tsconfig.spec-strict.json` and `eslint.config.mjs`
-- [ ] T045 Create a fresh synthetic draft PR for C4 live UAT and record its URL/number, target repo, workspace/project identity, linked task id, and pre-merge `ready_for_owner` state in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T046 Manually merge the fresh synthetic C4 PR at `G_PILOT_MERGE` and record timestamp, operator, target deployment, and explicit non-use of SPEC-009C3 PR #49 in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T047 Run manual GitHub sync via `POST /api/github/sync` or the GitHub Sync panel and record sync result, task status, done label projection, stale ready-label removal, terminal activity, notification evidence, and duplicate sync evidence in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T048 Clean disposable Mission Control UAT residue after evidence capture and record before/after counts, cleanup owner, timestamp, retained GitHub audit trail, and retention rationale in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T049 If live UAT cleanup fails, record failed cleanup step, owner, timestamp, before/after counts when available, sanitized failure reason, retained local rows or GitHub artifacts, and follow-up owner in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T050 Run `pnpm build` and record the result in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T051 Run `pnpm typecheck` and record the result in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T052 Run `pnpm lint` and record the result in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T053 Run `pnpm test` and record the result in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T054 Run `pnpm test:all` for the final PR gate, record the result in `docs/qa/pilot-smoke-checklist.md`, and separately record the no-new-UI-journey rationale if C4 changed only library tests and Markdown checklist evidence
-- [ ] T055 Update C4 roadmap/status hygiene after implementation and live UAT evidence are complete in `docs/ai/rc-factory-technical-roadmap.md` and `docs/ai/specs/SPEC-009C4-workflow.md`
+- [x] T045 Create a fresh synthetic draft PR for C4 live UAT and record its URL/number, target repo, workspace/project identity, linked task id, and pre-merge `ready_for_owner` state in `docs/qa/pilot-smoke-checklist.md`
+- [x] T046 Manually merge the fresh synthetic C4 PR at `G_PILOT_MERGE` and record timestamp, operator, target deployment, and explicit non-use of SPEC-009C3 PR #49 in `docs/qa/pilot-smoke-checklist.md`
+- [x] T047 Run manual GitHub sync via `POST /api/github/sync` or the GitHub Sync panel and record sync result, task status, done label projection, stale ready-label removal, terminal activity, notification evidence, and duplicate sync evidence in `docs/qa/pilot-smoke-checklist.md`
+- [x] T048 Clean disposable Mission Control UAT residue after evidence capture and record before/after counts, cleanup owner, timestamp, retained GitHub audit trail, and retention rationale in `docs/qa/pilot-smoke-checklist.md`
+- [x] T049 If live UAT cleanup fails, record failed cleanup step, owner, timestamp, before/after counts when available, sanitized failure reason, retained local rows or GitHub artifacts, and follow-up owner in `docs/qa/pilot-smoke-checklist.md`
+- [x] T050 Run `pnpm build` and record the result in `docs/qa/pilot-smoke-checklist.md`
+- [x] T051 Run `pnpm typecheck` and record the result in `docs/qa/pilot-smoke-checklist.md`
+- [x] T052 Run `pnpm lint` and record the result in `docs/qa/pilot-smoke-checklist.md`
+- [x] T053 Run `pnpm test` and record the result in `docs/qa/pilot-smoke-checklist.md`
+- [x] T054 Run `pnpm test:all` for the final PR gate, record the result in `docs/qa/pilot-smoke-checklist.md`, and separately record the no-new-UI-journey rationale if C4 changed only library tests and Markdown checklist evidence
+- [x] T055 Update C4 roadmap/status hygiene after implementation and live UAT evidence are complete in `docs/ai/rc-factory-technical-roadmap.md` and `docs/ai/specs/SPEC-009C4-workflow.md`
 
 ---
 

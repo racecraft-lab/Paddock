@@ -417,18 +417,7 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
     })
 
     expect(result).toEqual({ pulled: 1, pushed: 0 })
-    expect(db.prepare(`
-      SELECT status, completed_at, github_repo, github_issue_number, github_pr_number, github_synced_at
-      FROM tasks
-      WHERE id = 500
-    `).get()).toEqual({
-      status: 'done',
-      completed_at: expect.any(Number),
-      github_repo: 'owner/repo',
-      github_issue_number: 90,
-      github_pr_number: 12,
-      github_synced_at: expect.any(Number),
-    })
+    expectSuccessfulTerminalEvidence(db)
   })
 
   it('projects mc:done and removes stale mc:ready-for-owner after successful reconciliation', async () => {
@@ -783,12 +772,12 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
 
     expect(checklist).toMatch(/SPEC-009D handoff evidence sources/i)
     expect(checklist).toMatch(/tasks\.(?:status|completed_at|github_repo|github_issue_number|github_pr_number|github_synced_at)/i)
-    expect(checklist).toMatch(/activities.*task_updated.*github_pr_merged/is)
-    expect(checklist).toMatch(/notifications.*task_ready_for_owner/is)
-    expect(checklist).toMatch(/task_artifacts.*spec-009c3\.v1/is)
+    expect(checklist).toMatch(/activities[\s\S]*task_updated[\s\S]*github_pr_merged/i)
+    expect(checklist).toMatch(/notifications[\s\S]*task_ready_for_owner/i)
+    expect(checklist).toMatch(/task_artifacts[\s\S]*spec-009c3\.v1/i)
     expect(checklist).toMatch(/quality_reviews.*aegis/i)
-    expect(checklist).toMatch(/GitHub labels.*mc:done.*mc:ready-for-owner/is)
-    expect(checklist).toMatch(/smoke checklist text.*fresh synthetic C4 PR/is)
+    expect(checklist).toMatch(/GitHub labels[\s\S]*mc:done[\s\S]*mc:ready-for-owner/i)
+    expect(checklist).toMatch(/smoke checklist text[\s\S]*fresh synthetic C4 PR/i)
     expect(checklist).not.toMatch(/packet\.ya?ml|packet JSON|owner packet API|owner packet dashboard|owner packet UI/i)
   })
 
@@ -796,11 +785,11 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
     const checklist = readFileSync(join(process.cwd(), 'docs/qa/pilot-smoke-checklist.md'), 'utf8')
 
     expect(checklist).toMatch(/SPEC-009C4 Manual Operator Gate/i)
-    expect(checklist).toMatch(/T045.*fresh synthetic draft PR/is)
-    expect(checklist).toMatch(/T046.*G_PILOT_MERGE/is)
-    expect(checklist).toMatch(/T047.*manual GitHub sync/is)
-    expect(checklist).toMatch(/T048.*cleanup/is)
-    expect(checklist).toMatch(/T049.*cleanup fails/is)
+    expect(checklist).toMatch(/T045[\s\S]*fresh synthetic draft PR/i)
+    expect(checklist).toMatch(/T046[\s\S]*G_PILOT_MERGE/i)
+    expect(checklist).toMatch(/T047[\s\S]*manual GitHub sync/i)
+    expect(checklist).toMatch(/T048[\s\S]*cleanup/i)
+    expect(checklist).toMatch(/T049[\s\S]*cleanup fails/i)
     expect(checklist).toMatch(/blocked until an operator explicitly approves and\s+performs live GitHub mutation/i)
   })
 })
