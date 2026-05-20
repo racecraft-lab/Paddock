@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
-  "updated_at": "2026-05-20T01:48:56Z",
-  "active_step": "Post: Branch push and PR creation",
-  "status": "In Progress",
+  "updated_at": "2026-05-20T01:52:46Z",
+  "active_step": "Complete",
+  "status": "Complete",
   "active_workflow": {
     "spec_id": "SPEC-009C4",
     "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
@@ -338,6 +338,18 @@
       "ui_rationale": "No targeted UI journey was required because C4 changed library reconciliation behavior, focused tests, and Markdown evidence only."
     }
   },
+  "publication": {
+    "branch": "009c4-owner-merge-reconciliation",
+    "remote": "origin",
+    "pushed": true,
+    "pull_request": {
+      "number": 52,
+      "url": "https://github.com/racecraft-lab/mission-control/pull/52",
+      "state": "open",
+      "draft": false
+    },
+    "roadmap_status_note": "SPEC-009C4 remains In Progress in the roadmap until PR #52 is merged and target deployment promotion/UAT evidence is recorded."
+  },
   "commands": {
     "BUILD": "pnpm build",
     "TYPECHECK": "pnpm typecheck",
@@ -504,11 +516,11 @@
     },
     {
       "step": "Post: PR Body Generation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Creation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Review Remediation",

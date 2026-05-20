@@ -106,7 +106,7 @@ only when its artifact and gate evidence are recorded here.
 | Analyze | Phase 6 / G6 | Complete | 1 critical, 3 high, and 1 low issue remediated; G6 passed with 0 CRITICAL/HIGH findings |
 | Implement | Phase 7 / G7 | Complete | All 55 generated tasks complete; focused Vitest passed 30 tests; live UAT used fresh issue #50 / PR #51; cleanup verified; final `pnpm test:all` passed after installing the missing Playwright Chromium cache |
 | Post-Implementation Verify | Post step 10/12 | Complete | `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and final `pnpm test:all` passed under Node 22 |
-| Cleanup / Reviewability / PR | Post steps 13-18 | In Progress | Reviewability and PR packet prepared; branch push/PR creation remain as final autopilot publication steps |
+| Cleanup / Reviewability / PR | Post steps 13-18 | Complete | Reviewability and PR packet prepared; branch pushed to `origin`; PR #52 opened for review |
 
 ---
 
@@ -785,7 +785,7 @@ Before starting any task:
 - [x] Roadmap and workflow status updated.
 - [x] Reviewability gate recorded.
 - [x] PR review packet prepared.
-- [ ] Branch pushed to `origin`.
+- [x] Branch pushed to `origin`.
 
 ### Post-Implementation Results
 
@@ -797,6 +797,8 @@ Before starting any task:
 - **UAT cleanup:** temporary Mission Control rows were removed after checklist export; related rows went from `1/1/2/0/0/3` to `0/0/0/0/0/0`; GitHub issue #50 and merged PR #51 remain as external audit trail.
 - **Reviewability:** final diff stayed in the planned C4 slice: existing GitHub sync reconciliation, focused tests, smoke checklist, workflow, roadmap, and autopilot status. No new poller, webhook, scheduler, claim/run schema, sandbox lifecycle, harness adapter, review packet table, evidence UI, migration, or runtime dependency entered the diff.
 - **Roadmap status:** C4 remains `In Progress` in the roadmap until the implementation PR is merged and the target deployment promotion/UAT policy is satisfied; this workflow run records implementation and live UAT evidence for that PR.
+- **PR:** [#52](https://github.com/racecraft-lab/mission-control/pull/52) opened from branch `009c4-owner-merge-reconciliation`.
+- **Push:** Branch `009c4-owner-merge-reconciliation` pushed to `origin`.
 
 ---
 
