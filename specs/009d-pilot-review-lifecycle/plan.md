@@ -19,7 +19,8 @@ SPEC-009D creates a reviewable pilot lifecycle packet from existing Mission Cont
 **Constraints**: No migration, no new dependency, no fresh GitHub API requirement, no dashboard, no automatic polling, no claim authority, no retry UI, no sandbox lifecycle, no adapter registry, no real harness execution  
 **Scale/Scope**: One current self-hosting pilot lifecycle packet, including ineligible local-only candidate handling and explicit future-state deferrals  
 **Reviewability Budget**: Primary surface `src/lib` packet derivation; projected reviewable LOC approximately 350-500 including tests; projected production files 1-2; projected total files 8-10; budget result warns only if tasks expand beyond 400 LOC, blocks above 800 LOC or more than one primary surface without split exception  
-**Strict Scope**: Add new spec-owned TS file `src/lib/pilot-review-packet.ts` to `tsconfig.spec-strict.json` and `eslint.config.mjs`. Add any spec-owned tests under current test patterns without broad strict-scope globs.
+**Strict Scope**: Add every SPEC-009D-owned TypeScript module to `tsconfig.spec-strict.json` and `eslint.config.mjs` with explicit file entries, not broad `src/lib/__tests__` globs:
+`src/lib/pilot-review-packet.ts`, `src/lib/__tests__/pilot-review-packet.fixtures.ts`, `src/lib/__tests__/pilot-review-packet.test.ts`, and `src/lib/__tests__/pilot-review-packet-artifacts.test.ts`.
 
 ## Constitution Check
 
@@ -152,4 +153,4 @@ The PR body for implementation must include: what changed, why, non-goals, revie
 - G3 should block if tasks add a new API/dashboard, schema migration, runtime dependency, fresh GitHub call requirement, or SPEC-013/SPEC-014 control-plane capability.
 - G3 should verify `source_map` coverage for every evidence-backed claim and JSON/Markdown consistency from the same snapshot.
 - G3 should require local-only lookalike tests and stored GitHub linkage/sync proof tests.
-- G3 should require strict-scope updates for `src/lib/pilot-review-packet.ts`.
+- G3 should require strict-scope updates for `src/lib/pilot-review-packet.ts`, `src/lib/__tests__/pilot-review-packet.fixtures.ts`, `src/lib/__tests__/pilot-review-packet.test.ts`, and `src/lib/__tests__/pilot-review-packet-artifacts.test.ts`.

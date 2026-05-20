@@ -60,7 +60,7 @@ Source-of-truth scoping decisions:
 | Plan | `$speckit-plan` | Complete | Produced architecture, data model, packet contract, and quickstart bounded to pure `src/lib` derivation plus existing task artifact seams |
 | Checklist | `$speckit-checklist` | Pending | Run targeted domains for API, data integrity, security/redaction, state management, and error handling |
 | Tasks | `$speckit-tasks` | Complete | Generated 42 TDD-first tasks across setup, foundational tests, four user stories, and polish/verification |
-| Analyze | `$speckit-analyze` | Pending | Check drift across spec, plan, tasks, and design concept |
+| Analyze | `$speckit-analyze` | Complete | Resolved strict-scope drift so all SPEC-009D-owned TypeScript modules require explicit TypeScript and ESLint coverage |
 | Implement | `$speckit-implement` | Pending | Execute tasks after all gates pass |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -602,7 +602,7 @@ To fill after running analyze:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A001 | CRITICAL | Plan/tasks named only `src/lib/pilot-review-packet.ts` for strict-scope coverage while tasks introduce three additional SPEC-009D-owned TypeScript test/fixture modules | Resolved by updating `plan.md` and `tasks.md` to require explicit strict TypeScript and ESLint entries for all four SPEC-009D-owned TypeScript files |
 
 ---
 

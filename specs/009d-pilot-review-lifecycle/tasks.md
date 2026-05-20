@@ -128,8 +128,8 @@
 
 **Purpose**: Strict-scope integration, reviewer evidence, and full verification.
 
-- [ ] T036 [P] Add `src/lib/pilot-review-packet.ts` to strict TypeScript coverage in tsconfig.spec-strict.json
-- [ ] T037 [P] Add `src/lib/pilot-review-packet.ts` to spec-owned ESLint coverage in eslint.config.mjs
+- [ ] T036 [P] Add `src/lib/pilot-review-packet.ts`, `src/lib/__tests__/pilot-review-packet.fixtures.ts`, `src/lib/__tests__/pilot-review-packet.test.ts`, and `src/lib/__tests__/pilot-review-packet-artifacts.test.ts` to strict TypeScript coverage in tsconfig.spec-strict.json using explicit file entries
+- [ ] T037 [P] Add `src/lib/pilot-review-packet.ts`, `src/lib/__tests__/pilot-review-packet.fixtures.ts`, `src/lib/__tests__/pilot-review-packet.test.ts`, and `src/lib/__tests__/pilot-review-packet-artifacts.test.ts` to spec-owned ESLint coverage in eslint.config.mjs using explicit file entries
 - [ ] T038 Run `pnpm test -- src/lib/__tests__/pilot-review-packet.test.ts src/lib/__tests__/pilot-review-packet-artifacts.test.ts` and record focused verification in specs/009d-pilot-review-lifecycle/checklists/implementation-scope.md
 - [ ] T039 Run `pnpm typecheck` and `pnpm lint` and record verification in specs/009d-pilot-review-lifecycle/checklists/implementation-scope.md
 - [ ] T040 Run `pnpm build`, `pnpm test`, and `pnpm test:e2e` as full verification and record any environment blockers in specs/009d-pilot-review-lifecycle/checklists/implementation-scope.md
