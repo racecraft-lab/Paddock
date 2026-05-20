@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-19T17:30:56.862Z",
+  "updatedAt": "2026-05-20T03:07:40.393Z",
   "prs": [
+    {
+      "prNumber": "53",
+      "prTitle": "fix(security): remediate dependency advisories",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/53",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/53/",
+      "headRef": "dependabot-security-remediation",
+      "baseRef": "main",
+      "updatedAt": "2026-05-20T03:07:40.393Z",
+      "latest": {
+        "storybook": {
+          "runId": "26138628592",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26138628592",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/?v=26138628592-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/53/runs/26138628592-attempt-1/storybook/",
+          "updatedAt": "2026-05-20T03:07:40.393Z"
+        }
+      }
+    },
     {
       "prNumber": "48",
       "prTitle": "SPEC-009C3: Gate remediation readiness evidence",

@@ -1,0 +1,49 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/mission-control",
+  "reportMode": "pr",
+  "reportScope": "latest",
+  "surface": "storybook",
+  "surfaceLabel": "Storybook Components",
+  "workflowName": "Visual Storybook Snapshots",
+  "workflowFile": "visual-storybook.yml",
+  "prNumber": "53",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/53",
+  "runId": "26138628592",
+  "runAttempt": "1",
+  "runKey": "26138628592-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26138628592",
+  "headRef": "dependabot-security-remediation",
+  "baseRef": "main",
+  "headSha": "a6c91119f174470a89cc2df8927463f32b47082d",
+  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/",
+  "latestHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/?v=26138628592-attempt-1",
+  "createdAt": "2026-05-20T03:07:40.393Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 0,
+    "open": 0,
+    "passed": 0,
+    "total": 0
+  },
+  "reviewScope": {
+    "domains": [],
+    "filtered": 302,
+    "reason": "changed-files-no-review-domain"
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/mission-control",
+    "prNumber": "53",
+    "surface": "storybook",
+    "surfaceLabel": "Storybook Components",
+    "headSha": "a6c91119f174470a89cc2df8927463f32b47082d",
+    "runKey": "26138628592-attempt-1",
+    "items": []
+  }
+}

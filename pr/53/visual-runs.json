@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "53",
+  "prTitle": "fix(security): remediate dependency advisories",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/53",
+  "headRef": "dependabot-security-remediation",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "26138628592",
+      "runAttempt": "1",
+      "runKey": "26138628592-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26138628592",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/53/runs/26138628592-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/53/storybook/latest/?v=26138628592-attempt-1",
+      "headSha": "a6c91119f174470a89cc2df8927463f32b47082d",
+      "headRef": "dependabot-security-remediation",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-05-20T03:07:40.393Z"
+    }
+  ],
+  "updatedAt": "2026-05-20T03:07:40.393Z"
+}
