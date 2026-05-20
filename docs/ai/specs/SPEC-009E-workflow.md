@@ -44,8 +44,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/009e-pilot-evidence-surfaces/spec.md` and requirements checklist; G1 passed with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | Four sessions resolved API route/contract, task detail Evidence section, stored source/state semantics, UAT retained evidence, and cleanup handling; G2 passed with 0 markers |
-| Plan | `$speckit-plan` | In Progress | Plan read-only route, task detail Evidence UI, tests, and no-write guardrails |
-| Checklist | `$speckit-checklist` | Pending | Run focused API, UX/accessibility, state-management, data-integrity, security, and error-handling domains |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, OpenAPI contract, and quickstart; G3 passed |
+| Checklist | `$speckit-checklist` | In Progress | Run focused API, UX/accessibility, state-management, data-integrity, security, and error-handling domains |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict read-only and route/UI scope |
 | Analyze | `$speckit-analyze` | Pending | Check drift against roadmap and design concept, especially no sync/generation/schema expansion |
 | Implement | `$speckit-implement` | Pending | Implement only after G6 passes; verify locally and with UAT evidence |
@@ -358,11 +358,11 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, constitution gates, route/UI architecture |
-| `research.md` | Pending | Decisions for route naming, UI seam, state vocabulary, stored evidence, UAT |
-| `data-model.md` | Pending | Task evidence response model and state transitions |
-| `contracts/` | Pending | Task evidence route contract |
-| `quickstart.md` | Pending | API/UI/UAT verification path |
+| `plan.md` | Complete | Read-only task evidence route/helper, compact Details Evidence section, no-write guardrails, reviewability and UI journey gates |
+| `research.md` | Complete | Decisions for route naming, UI seam, state vocabulary, stored evidence, UAT, and branch-validator blocker |
+| `data-model.md` | Complete | Task evidence response model, evidence states, source mapping, deferrals, and cleanup/UAT states |
+| `contracts/` | Complete | `contracts/task-evidence.openapi.yaml` |
+| `quickstart.md` | Complete | API/UI/UAT verification path |
 
 ---
 

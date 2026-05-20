@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
-  "updated_at": "2026-05-20T20:45:00Z",
-  "active_step": "Phase 3: Plan",
+  "updated_at": "2026-05-20T21:00:00Z",
+  "active_step": "Phase 4: Checklist - api-contracts",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009E",
@@ -201,6 +201,36 @@
       "markers": 0
     }
   },
+  "phase_3": {
+    "status": "completed",
+    "files": [
+      "specs/009e-pilot-evidence-surfaces/plan.md",
+      "specs/009e-pilot-evidence-surfaces/research.md",
+      "specs/009e-pilot-evidence-surfaces/data-model.md",
+      "specs/009e-pilot-evidence-surfaces/quickstart.md",
+      "specs/009e-pilot-evidence-surfaces/contracts/task-evidence.openapi.yaml"
+    ],
+    "metrics": {
+      "plan_artifacts": 5,
+      "contracts": 1,
+      "primary_review_surface": "src/lib task evidence derivation plus task-scoped API route",
+      "secondary_review_surface": "compact task detail Details Evidence section",
+      "production_files_projected": "4-6",
+      "total_files_projected": "10-14",
+      "reviewable_loc_projected": "warn range below block threshold"
+    },
+    "tooling_fix": {
+      "file": ".specify/scripts/bash/common.sh",
+      "reason": "SpecKit branch validation rejected the repository's established alphanumeric SPEC branch prefix 009e-*.",
+      "validation": ".specify/scripts/bash/setup-plan.sh --json succeeded on branch 009e-pilot-evidence-surfaces"
+    },
+    "gate": {
+      "id": "G3",
+      "pass": true,
+      "reason": "plan.md exists with 0 unresolved markers",
+      "markers": 0
+    }
+  },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -213,8 +243,8 @@
     {"step": "Phase 2: Clarify - Evidence State And Stored Source Truth Consensus", "status": "completed"},
     {"step": "Phase 2: Clarify - UAT And Cleanup Evidence", "status": "completed"},
     {"step": "Phase 2: Clarify - UAT And Cleanup Evidence Consensus", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "in_progress"},
-    {"step": "Phase 4: Checklist - api-contracts", "status": "pending"},
+    {"step": "Phase 3: Plan", "status": "completed"},
+    {"step": "Phase 4: Checklist - api-contracts", "status": "in_progress"},
     {"step": "Phase 4: Checklist - api-contracts Consensus", "status": "pending"},
     {"step": "Phase 4: Checklist - ux", "status": "pending"},
     {"step": "Phase 4: Checklist - ux Consensus", "status": "pending"},

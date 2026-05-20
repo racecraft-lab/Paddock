@@ -149,6 +149,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through `better-sqlite3`; existing `tasks`, `activities`, `notifications`, `task_artifacts`, `quality_reviews`, workflow-template, label/status, and GitHub sync state only; no new schema (009c4-owner-merge-reconciliation)
 - TypeScript 5.7 strict on Node >=22 with Next.js 16 App Router and React 19 + Existing Next.js, React, Zustand where existing panels need it, Tailwind CSS 3, `better-sqlite3`, SPEC-007 `src/lib/task-artifacts.ts`, existing GitHub sync/task/quality-review/governance modules; no new runtime dependency (009d-pilot-review-lifecycle)
 - SQLite through existing `better-sqlite3` synchronous helpers; packet output persists through existing `task_artifacts` rows (009d-pilot-review-lifecycle)
+- TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Zustand where existing task detail panels need it, Tailwind CSS 3, `better-sqlite3`; no new runtime dependency (009e-pilot-evidence-surfaces)
+- SQLite through existing `better-sqlite3` helpers; no migration and no rollback SQL planned (009e-pilot-evidence-surfaces)
 
 ## Recent Changes
 - Archive cleanup (2026-05-16): `.specify/memory/{spec,plan,changelog}.md` now carries recovery/provenance summaries through SPEC-009C2. Active completed folders were removed from `specs/**`; recover raw artifacts with the `git show <tree-ref>:specs/<feature>/...` commands recorded in `.specify/memory/changelog.md`.
