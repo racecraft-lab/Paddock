@@ -62,7 +62,8 @@ vi.mock('@/lib/workspaces', async () => {
 })
 
 import { runMigrations } from '../../../../lib/migrations'
-import { GET, __resetRollupCacheForTests } from '../rollup/route'
+import { __resetRollupCacheForTests } from '@/lib/disposition-rollup-cache'
+import { GET } from '../rollup/route'
 
 const openDbs: Database.Database[] = []
 const ORIGINAL_MISSION_CONTROL_TEST_MODE = process.env.MISSION_CONTROL_TEST_MODE

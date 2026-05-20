@@ -170,7 +170,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-009C2 | 8C2 | Triage-to-Remediation Plan Handoff | triage-remediation-handoff | Complete | P0 | SPEC-009C1 | SPEC-009C3 | Phase 8C2 |
 | SPEC-009C3 | 8C3 | Dev/Review/Aegis to Ready for Owner | remediation-ready-for-owner | Complete | P0 | SPEC-009C2 | SPEC-009C4 | Phase 8C3 |
 | SPEC-009C4 | 8C4 | Owner Merge Gate and Done Reconciliation | owner-merge-reconciliation | Complete | P0 | SPEC-009C3 | SPEC-009D, SPEC-010B | Phase 8C4 |
-| SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Pending | P1 | SPEC-007, SPEC-008, SPEC-009C4 | SPEC-009E, SPEC-013A | Phase 8D |
+| SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | In Progress | P1 | SPEC-007, SPEC-008, SPEC-009C4 | SPEC-009E, SPEC-013A | Phase 8D |
 | SPEC-009E | 8E | Pilot Eligibility and Evidence Surfaces | pilot-evidence-surfaces | Pending | P2 | SPEC-009D | SPEC-009F, SPEC-013A | Phase 8E |
 | SPEC-009F | 8F | Production Triage Outcome Routing | production-triage-routing | Pending | P1 | SPEC-009E, SPEC-012A | Later production triage lanes | Phase 8F |
 | SPEC-010A | 9A | Generic Product-Line Seeder | generic-product-line-seeder | Pending | P2 | SPEC-002A, SPEC-009B | SPEC-010B | Phase 9A |
@@ -499,7 +499,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-009D: Pilot Review Packet and Lifecycle Snapshot
 
-- **Status:** Pending
+- **Status:** In Progress
 - **Priority:** P1
 - **Branch short name:** `pilot-review-lifecycle`
 - **Dependencies:** SPEC-007, SPEC-008, SPEC-009C4
@@ -508,9 +508,10 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Acceptance criteria source:** Phase 8D Acceptance Criteria
 - **Scope summary:** Materialize a compact pilot review packet and lifecycle snapshot from existing task, activity, artifact, governance, scheduler, and `AgentRun` surfaces. Unsupported fields are explicitly labeled as SPEC-013A-C/SPEC-014A-D follow-up gaps, not silently inferred.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** review packet assembly, lifecycle snapshot API/UI if needed, smoke checklist evidence capture, redaction/reuse of SPEC-007 artifact handling, and tests over current-state derivation.
+- **Strict Scope:** review packet assembly, lifecycle snapshot derivation, smoke checklist evidence capture, redaction/reuse of SPEC-007 artifact handling, and tests over current-state derivation.
 - **Autopilot notes:** Do not build the formal run-state model here. This spec gives humans enough evidence to trust the pilot and gives SPEC-013A a concrete baseline for what must become durable state.
 - **Definition of done:** Operators can inspect one packet that names current stage, latest artifact/error, governance decision, Aegis/owner gate state, linked issue/PR, known duplicate-active-stage check, and all unsupported run/sandbox fields deferred to later specs.
+- **Implementation evidence:** Branch `009d-pilot-review-lifecycle` completed all 42 generated tasks and opened implementation PR #54. Implementation adds a stored-evidence-only packet derivation module, JSON/Markdown artifact publication through existing task artifact behavior, packet-local evidence states, SPEC-013/SPEC-014 deferrals, local-only/partial-proof exclusion, and strict TypeScript/ESLint coverage for SPEC-009D-owned files. Verification passed under Node 22.22.2: focused packet/artifact/disposition tests passed 20 tests, existing task-artifact seam tests passed 38 tests, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm guardrails`, `pnpm audit:high`, `pnpm test` with 278 passed files / 2920 passed tests, and `pnpm test:e2e` with 646 passing Playwright tests. UAT on 2026-05-20 seeded a disposable Mission Control database from retained issue #50 / PR #51 evidence, generated a `proven` packet at stage `done`, published JSON artifact `2` and Markdown artifact `3` through the real artifact store, inspected both through existing `/api/task-artifacts` routes, and cleaned seeded rows after backup. No migration, new runtime dependency, packet-specific route, dashboard, fresh GitHub call, poller, claim authority, retry controls, sandbox lifecycle, adapter registry, or real harness execution was added.
 
 ### SPEC-009E: Pilot Eligibility and Evidence Surfaces
 

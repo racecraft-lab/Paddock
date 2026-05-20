@@ -8,6 +8,12 @@ import {
   workspaceScopeError,
   workspaceScopePredicate,
 } from '@/lib/workspaces'
+import {
+  type DispositionRollupBody as RollupBody,
+  type DispositionRollupDayBucket as DayBucket,
+  getDispositionRollupCacheEntry,
+  setDispositionRollupCacheEntry,
+} from '@/lib/disposition-rollup-cache'
 
 /**
  * SPEC-007 — GET /api/dispositions/rollup (US4, FR-070 / FR-071 / FR-072 / FR-139)
@@ -29,28 +35,6 @@ import {
  *   400 workspace_id_required
  */
 
-interface DayBucket {
-  date: string // YYYY-MM-DD (UTC)
-  total: number
-  by_disposition: Record<string, number>
-}
-
-interface RollupBody {
-  days: DayBucket[]
-  total: number
-}
-
-interface CacheEntry {
-  body: RollupBody
-  expiresAt: number // ms epoch
-}
-
-// Process-local. One entry per (workspace_id, day_bucket) tuple. Day-bucket is
-// the UTC YYYY-MM-DD of "today" at request time so the cache naturally falls
-// off the next calendar day.
-const rollupCache = new Map<string, CacheEntry>()
-const TTL_MS = 15_000
-
 function nowSeconds(): number {
   const fixedNow =
     process.env.MISSION_CONTROL_TEST_MODE === '1'
@@ -67,11 +51,6 @@ function nowSeconds(): number {
 
 function cacheKey(workspaceId: number, dayBucket: string): string {
   return `${String(workspaceId)}:${dayBucket}`
-}
-
-/** Test-only escape hatch — clears the in-memory cache. */
-export function __resetRollupCacheForTests(): void {
-  rollupCache.clear()
 }
 
 function readQueryWorkspaceFlags(
@@ -230,14 +209,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const key = cacheKey(0, `${cacheScopeKey}:${dayBucket}`)
 
     const nowMs = Date.now()
-    const cached = rollupCache.get(key)
-    if (cached && cached.expiresAt > nowMs) {
-      return NextResponse.json(cached.body)
+    const cached = getDispositionRollupCacheEntry(key, nowMs)
+    if (cached) {
+      return NextResponse.json(cached)
     }
 
     // ── 6. Compute and cache. ──────────────────────────────────────────
     const body = queryRollup(db, acceptedScope, currentNowSeconds)
-    rollupCache.set(key, { body, expiresAt: nowMs + TTL_MS })
+    setDispositionRollupCacheEntry(key, body, nowMs)
 
     return NextResponse.json(body)
   } catch (error) {

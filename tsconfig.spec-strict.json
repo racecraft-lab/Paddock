@@ -55,6 +55,10 @@
     "src/lib/workflow-contracts/**/*.ts",
     "src/lib/mission-control-seed/**/*.ts",
     "src/lib/pilot-issue-eligibility.ts",
+    "src/lib/pilot-review-packet.ts",
+    "src/lib/__tests__/pilot-review-packet.fixtures.ts",
+    "src/lib/__tests__/pilot-review-packet.test.ts",
+    "src/lib/__tests__/pilot-review-packet-artifacts.test.ts",
     "scripts/seed-mission-control-product-line.ts"
   ]
 }
