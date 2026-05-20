@@ -378,6 +378,26 @@ alone.
   identity, manual `G_PILOT_MERGE`, duplicate-sync result, cleanup or retention
   rationale, and explicit non-use of SPEC-009C3 PR #49.
 
+## 2026-05-20 SPEC-009D Packet Verification
+
+- Packet implementation scope: `src/lib/pilot-review-packet.ts` derives a
+  stored-evidence-only JSON packet plus deterministic Markdown from existing
+  task, activity, notification, artifact, quality-review, governance, GitHub
+  sync, and smoke-checklist evidence.
+- Packet artifact surface: publication stays on existing SPEC-007 task artifact
+  behavior with `artifact_type="pilot_review_packet_json"` and
+  `artifact_type="pilot_review_packet_markdown"`. No packet-specific route,
+  dashboard, schema migration, fresh GitHub call, poller, claim authority,
+  retry control, sandbox lifecycle, adapter registry, or real harness execution
+  was added.
+- Verification evidence: focused packet/artifact tests passed 20 tests, existing
+  task-artifact seam tests passed 38 tests, `pnpm build`, `pnpm typecheck`,
+  `pnpm lint`, `pnpm test`, and `pnpm test:e2e` passed under Node 22. Full
+  Playwright verification reported 646 passing tests.
+- Build-blocker resolution: final standalone verification used a clean
+  `.next/standalone` build after rebuilding `better-sqlite3`, so the native
+  binding is present in the standalone server used by Playwright.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control

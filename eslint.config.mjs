@@ -54,6 +54,11 @@ const specStrictFiles = [
   'scripts/seed-mission-control-product-line.ts',
   // SPEC-009C1 pilot issue ingest and eligibility.
   'src/lib/pilot-issue-eligibility.ts',
+  // SPEC-009D pilot review packet and focused contract tests.
+  'src/lib/pilot-review-packet.ts',
+  'src/lib/__tests__/pilot-review-packet.fixtures.ts',
+  'src/lib/__tests__/pilot-review-packet.test.ts',
+  'src/lib/__tests__/pilot-review-packet-artifacts.test.ts',
 ]
 
 const config = tseslint.config(

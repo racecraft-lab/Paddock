@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009D-workflow.md",
-  "updated_at": "2026-05-20T06:08:00Z",
-  "active_step": "Phase 7: Setup (T001-T004)",
+  "updated_at": "2026-05-20T06:14:16Z",
+  "active_step": "Post: PR Creation",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009D",
@@ -107,7 +107,7 @@
     }
   },
   "phase_2": {
-    "status": "in_progress",
+    "status": "completed",
     "sessions": {
       "Packet Contract and Source Map": {
         "status": "completed",
@@ -218,7 +218,7 @@
     }
   },
   "phase_4": {
-    "status": "in_progress",
+    "status": "completed",
     "checklists": {
       "api-contracts": {
         "status": "completed",
@@ -333,6 +333,89 @@
       "markers": 0
     }
   },
+  "phase_7": {
+    "status": "completed",
+    "tasks_completed": 42,
+    "files": [
+      "src/lib/pilot-review-packet.ts",
+      "src/lib/__tests__/pilot-review-packet.fixtures.ts",
+      "src/lib/__tests__/pilot-review-packet.test.ts",
+      "src/lib/__tests__/pilot-review-packet-artifacts.test.ts",
+      "src/lib/disposition-rollup-cache.ts",
+      "specs/009d-pilot-review-lifecycle/checklists/archive-sweep.md",
+      "specs/009d-pilot-review-lifecycle/checklists/implementation-scope.md",
+      "specs/009d-pilot-review-lifecycle/checklists/artifact-surface.md",
+      "specs/009d-pilot-review-lifecycle/checklists/pr-evidence.md"
+    ],
+    "implementation": {
+      "primary_surface": "stored-evidence-only pilot review packet derivation",
+      "artifact_publication": "existing SPEC-007 task artifact publish/list/read seams",
+      "new_route": false,
+      "schema_migration": false,
+      "new_runtime_dependency": false,
+      "fresh_github_call_required": false,
+      "dashboard": false,
+      "control_plane_or_runner_scope": false
+    },
+    "build_blockers_resolved": [
+      "Removed network-dependent next/font/google fetches from production build.",
+      "Pinned next and eslint-config-next to 16.1.6 after Next 16.2.6 hit a prerender workStore invariant.",
+      "Moved disposition rollup cache reset helpers out of a Next route module.",
+      "Rebuilt better-sqlite3 and regenerated standalone output so .next/standalone contains better_sqlite3.node.",
+      "Ran production build outside the sandbox because Turbopack local worker creation is denied in the sandbox."
+    ],
+    "verification": {
+      "node": "v22.22.2",
+      "focused_packet": {
+        "command": "pnpm exec vitest run src/lib/__tests__/pilot-review-packet.test.ts src/lib/__tests__/pilot-review-packet-artifacts.test.ts src/app/api/dispositions/__tests__/rollup.test.ts",
+        "pass": true,
+        "files": 3,
+        "tests": 20
+      },
+      "task_artifact_seams": {
+        "command": "pnpm exec vitest run src/lib/__tests__/task-artifacts-publish.test.ts src/app/api/task-artifacts/__tests__/admin-actions.test.ts",
+        "pass": true,
+        "files": 2,
+        "tests": 38
+      },
+      "typecheck": {
+        "command": "pnpm typecheck",
+        "pass": true
+      },
+      "lint": {
+        "command": "pnpm lint",
+        "pass": true
+      },
+      "build": {
+        "command": "pnpm build",
+        "pass": true
+      },
+      "unit": {
+        "command": "pnpm test",
+        "pass": true,
+        "files_passed": 277,
+        "files_skipped": 33,
+        "tests_passed": 2907,
+        "tests_skipped": 3,
+        "tests_todo": 84
+      },
+      "e2e": {
+        "command": "pnpm test:e2e",
+        "pass": true,
+        "tests_passed": 646
+      },
+      "lockfile": {
+        "command": "CI=true pnpm install --lockfile-only --frozen-lockfile --ignore-scripts",
+        "pass": true
+      }
+    },
+    "gate": {
+      "id": "G7",
+      "pass": true,
+      "reason": "42 tasks complete; focused, artifact seam, typecheck, lint, build, unit, e2e, and lockfile verification passed",
+      "markers": 0
+    }
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs apply eligibility",
@@ -428,51 +511,51 @@
     },
     {
       "step": "Phase 7: Setup (T001-T004)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Foundational Contract Tests (T005-T007)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: User Story 1 (T008-T016)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: User Story 2 (T017-T025)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: User Story 3 (T026-T030)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: User Story 4 (T031-T035)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Polish and Verification (T036-T042)",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Implementation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Code Review",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Integration Suite",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Cleanup",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Reviewability Diff Gate",

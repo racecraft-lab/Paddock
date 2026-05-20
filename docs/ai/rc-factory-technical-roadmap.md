@@ -508,9 +508,10 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Acceptance criteria source:** Phase 8D Acceptance Criteria
 - **Scope summary:** Materialize a compact pilot review packet and lifecycle snapshot from existing task, activity, artifact, governance, scheduler, and `AgentRun` surfaces. Unsupported fields are explicitly labeled as SPEC-013A-C/SPEC-014A-D follow-up gaps, not silently inferred.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** review packet assembly, lifecycle snapshot API/UI if needed, smoke checklist evidence capture, redaction/reuse of SPEC-007 artifact handling, and tests over current-state derivation.
+- **Strict Scope:** review packet assembly, lifecycle snapshot derivation, smoke checklist evidence capture, redaction/reuse of SPEC-007 artifact handling, and tests over current-state derivation.
 - **Autopilot notes:** Do not build the formal run-state model here. This spec gives humans enough evidence to trust the pilot and gives SPEC-013A a concrete baseline for what must become durable state.
 - **Definition of done:** Operators can inspect one packet that names current stage, latest artifact/error, governance decision, Aegis/owner gate state, linked issue/PR, known duplicate-active-stage check, and all unsupported run/sandbox fields deferred to later specs.
+- **Implementation evidence:** Branch `009d-pilot-review-lifecycle` completed all 42 generated tasks. Implementation adds a stored-evidence-only packet derivation module, JSON/Markdown artifact publication through existing task artifact behavior, packet-local evidence states, SPEC-013/SPEC-014 deferrals, local-only/partial-proof exclusion, and strict TypeScript/ESLint coverage for SPEC-009D-owned files. Verification passed under Node 22.22.2: focused packet/artifact/disposition tests passed 20 tests, existing task-artifact seam tests passed 38 tests, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test` with 277 passed files / 2907 passed tests, and `pnpm test:e2e` with 646 passing Playwright tests. No migration, new runtime dependency, packet-specific route, dashboard, fresh GitHub call, poller, claim authority, retry controls, sandbox lifecycle, adapter registry, or real harness execution was added.
 
 ### SPEC-009E: Pilot Eligibility and Evidence Surfaces
 

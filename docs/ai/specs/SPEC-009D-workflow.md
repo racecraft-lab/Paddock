@@ -58,10 +58,10 @@ Source-of-truth scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated `specs/009d-pilot-review-lifecycle/spec.md` with 14 FRs, 4 user stories, 10 acceptance scenarios, and no unresolved markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved artifact-only inspection seam, JSON/Markdown packet terms, source-map pointer shape, future-spec owner map, local-only exclusion, redaction, staleness, and cleaned C4 replay source rules |
 | Plan | `$speckit-plan` | Complete | Produced architecture, data model, packet contract, and quickstart bounded to pure `src/lib` derivation plus existing task artifact seams |
-| Checklist | `$speckit-checklist` | Pending | Run targeted domains for API, data integrity, security/redaction, state management, and error handling |
+| Checklist | `$speckit-checklist` | Complete | Ran targeted domains for API, data integrity, security/redaction, state management, and error handling; 2 gaps found and resolved |
 | Tasks | `$speckit-tasks` | Complete | Generated 42 TDD-first tasks across setup, foundational tests, four user stories, and polish/verification |
 | Analyze | `$speckit-analyze` | Complete | Resolved strict-scope drift so all SPEC-009D-owned TypeScript modules require explicit TypeScript and ESLint coverage |
-| Implement | `$speckit-implement` | Pending | Execute tasks after all gates pass |
+| Implement | `$speckit-implement` | Complete | Implemented packet derivation, artifact publication, deferrals, local-only exclusion, strict-scope coverage, and verification evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -647,28 +647,37 @@ To fill during implementation:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Foundation | Pending | Pending | Pending |
-| User Story 1 | Pending | Pending | Pending |
-| User Story 2 | Pending | Pending | Pending |
-| User Story 3 | Pending | Pending | Pending |
-| Polish and Verification | Pending | Pending | Pending |
+| Setup | T001-T004 | Complete | Archive Sweep, scope, fixture, and artifact-surface evidence recorded |
+| Foundation | T005-T007 | Complete | SPEC-009D constants, packet/source-map types, and contract tests added |
+| User Story 1 | T008-T016 | Complete | Stored pilot identity, source maps, lifecycle/gates, warnings, and focused verification complete |
+| User Story 2 | T017-T025 | Complete | Same-snapshot JSON/Markdown artifacts, SPEC-007 metadata compatibility, and safe Markdown rendering complete |
+| User Story 3 | T026-T030 | Complete | Future SPEC-013/SPEC-014 fields are explicit deferrals only; no active capability shipped |
+| User Story 4 | T031-T035 | Complete | Local-only lookalikes excluded and partial-proof packets marked incomplete |
+| Polish and Verification | T036-T042 | Complete | Strict-scope entries, full verification, artifact seam evidence, smoke checklist note, and PR evidence recorded |
+
+### Implementation Results
+
+- Packet derivation lives in `src/lib/pilot-review-packet.ts` and uses stored Mission Control evidence only.
+- JSON and Markdown packet artifacts publish through existing SPEC-007 task artifact behavior with `schema_version="spec-009d.packet.v1"`.
+- No packet-specific route, dashboard, runtime dependency, migration, fresh GitHub call, polling, claim authority, retry control, sandbox lifecycle, adapter registry, or real harness execution was added.
+- Build blockers resolved during verification: removed network-dependent Google font fetches, pinned Next/eslint-config-next to 16.1.6, moved route test reset helpers out of a Next route module, rebuilt `better-sqlite3`, and regenerated standalone output with the native binding present.
+- Verification passed under Node 22.22.2: focused packet/artifact/disposition tests (20 tests), existing task-artifact seam tests (38 tests), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test` (2907 passing tests), and `pnpm test:e2e` (646 passing tests).
 
 ---
 
 ## Post-Implementation Checklist
 
-- All tasks in `tasks.md` are complete.
-- Focused Vitest and route tests pass.
-- `pnpm typecheck` passes.
-- `pnpm lint` passes.
-- `pnpm build` passes.
-- `pnpm test` passes when runtime behavior changes.
-- `pnpm test:all` passes before PR-ready unless a documented environment
-  blocker is accepted by the operator.
-- Playwright coverage is added if a real UI journey changes.
-- `docs/qa/pilot-smoke-checklist.md` records packet inspection evidence.
-- Roadmap and this workflow reflect final status.
-- PR description includes review packet, scope budget, verification evidence,
+- [x] All tasks in `tasks.md` are complete.
+- [x] Focused Vitest and route-adjacent tests pass.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] `pnpm build` passes.
+- [x] `pnpm test` passes when runtime behavior changes.
+- [x] `pnpm test:e2e` passes; `pnpm test:all` was not rerun as a single wrapper after the blocker fix because its component commands were run directly and passed.
+- [x] Playwright coverage is unchanged because SPEC-009D adds no UI journey.
+- [x] `docs/qa/pilot-smoke-checklist.md` records packet verification evidence.
+- [x] Roadmap and this workflow reflect final implementation status.
+- [x] PR evidence includes review packet, scope budget, verification evidence,
   known gaps, and rollback or no-migration notes.
 
 ---
@@ -677,15 +686,21 @@ To fill during implementation:
 
 ### What Worked Well
 
-- Pending.
+- Keeping packet derivation in `src/lib` made the feature independently testable without a new route, dashboard, table, or live GitHub dependency.
+- Explicit deferrals kept SPEC-013/SPEC-014 future ownership visible without shipping control-plane behavior early.
 
 ### Challenges Encountered
 
-- Pending.
+- The default shell used Node 26 while the repo is pinned to Node 22; final verification used the pinned Node 22 runtime.
+- Next 16.2.6 hit a production-build prerender invariant; pinning to 16.1.6 restored stable builds.
+- Standalone e2e initially failed because `better-sqlite3` was rebuilt after the standalone bundle was generated; a clean rebuild after native rebuild fixed the traced output.
+- Sandboxed Turbopack builds can fail on local worker process creation, so production build verification was run outside the sandbox.
 
 ### Patterns To Reuse
 
-- Pending.
+- For native dependencies, rebuild native modules before generating standalone output and verify `require()` from `.next/standalone`.
+- Keep test-only helpers out of Next route modules; route files should export only valid route fields.
+- For packet/evidence features, publish through existing artifact seams first and add new API/UI only when a later spec proves the existing inspection path is insufficient.
 
 ---
 
