@@ -21,6 +21,8 @@ import {
   type AcceptedWorkspaceScope,
 } from '@/lib/workspaces'
 
+const GITHUB_REPO_SLUG_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/
+
 function requireSingleGitHubWorkspace(scope: AcceptedWorkspaceScope): number | NextResponse {
   if (scope.workspaceId == null) {
     return NextResponse.json({ error: 'Product Line workspace_id is required for GitHub sync actions' }, { status: 400 })
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest) {
     }
 
     const repo = searchParams.get('repo') || process.env.GITHUB_DEFAULT_REPO
-    if (!repo || !/^[^/]+\/[^/]+$/.test(repo)) {
+    if (!repo || !GITHUB_REPO_SLUG_PATTERN.test(repo)) {
       return NextResponse.json({ error: 'repo query parameter required (owner/repo format)' }, { status: 400 })
     }
 

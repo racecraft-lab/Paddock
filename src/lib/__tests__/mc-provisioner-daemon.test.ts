@@ -93,4 +93,30 @@ describe('mc-provisioner-daemon input limits', () => {
     expect(response.code).toBe('PROVISIONER_INPUT_TOO_LARGE')
     expect(response.error).toBe('Request payload too large')
   }, 15000)
+
+  it('rejects command timeouts outside the bounded execution window', async () => {
+    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mc-provisioner-test-'))
+    const socketPath = path.join(tmpDir, 'provisioner.sock')
+
+    child = spawn(process.execPath, [PROVISIONER_PATH], {
+      env: {
+        ...process.env,
+        MC_PROVISIONER_TOKEN: 'test-token',
+        MC_PROVISIONER_SOCKET: socketPath,
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+
+    await waitForSocket(socketPath)
+
+    const response = await sendJsonLine(socketPath, {
+      token: 'test-token',
+      command: 'true',
+      args: [],
+      timeoutMs: 24 * 60 * 60 * 1000,
+    })
+
+    expect(response.ok).toBe(false)
+    expect(response.error).toBe('timeoutMs out of range')
+  }, 15000)
 })

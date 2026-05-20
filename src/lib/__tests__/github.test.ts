@@ -10,7 +10,7 @@ vi.mock('@/lib/runtime-env', () => ({
   getEffectiveEnvValue: getEffectiveEnvValueMock,
 }))
 
-import { GitHubUrlValidationError, githubFetch } from '@/lib/github'
+import { GitHubUrlValidationError, fetchIssues, githubFetch } from '@/lib/github'
 
 describe('githubFetch URL validation', () => {
   beforeEach(() => {
@@ -53,5 +53,52 @@ describe('githubFetch URL validation', () => {
 
     await expect(githubFetch('https://evil.com/path')).rejects.toThrow(GitHubUrlValidationError)
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects absolute URLs even when they target the GitHub API host', async () => {
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(githubFetch('https://api.github.com/repos/foo/bar/issues')).rejects.toThrow(
+      GitHubUrlValidationError
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects protocol downgrade attempts to the GitHub API host', async () => {
+    const fetchMock = vi.fn(async () => new Response('{}', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(githubFetch('http://api.github.com/repos/foo/bar/issues')).rejects.toThrow(
+      GitHubUrlValidationError
+    )
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects repository slugs that would escape the expected API path', async () => {
+    const fetchMock = vi.fn(async () => new Response('[]', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(fetchIssues('owner/repo/../../user')).rejects.toThrow(GitHubUrlValidationError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('rejects repository slugs that inject query syntax into the API path', async () => {
+    const fetchMock = vi.fn(async () => new Response('[]', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(fetchIssues('owner/repo?per_page=100')).rejects.toThrow(GitHubUrlValidationError)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('URL-encodes validated repository slugs before fetching issues', async () => {
+    const fetchMock = vi.fn(async () => new Response('[]', { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(fetchIssues('owner-name/repo.name')).resolves.toEqual([])
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://api.github.com/repos/owner-name/repo.name/issues?per_page=30&page=1',
+      expect.any(Object)
+    )
   })
 })

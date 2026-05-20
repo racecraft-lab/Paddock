@@ -270,7 +270,10 @@ export const connectSchema = z.object({
 
 export const githubSyncSchema = z.object({
   action: z.enum(['sync', 'comment', 'close', 'status', 'init-labels', 'sync-project']),
-  repo: z.string().regex(/^[^/]+\/[^/]+$/, 'Repo must be owner/repo format').optional(),
+  repo: z.string().regex(
+    /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/,
+    'Repo must be owner/repo format'
+  ).optional(),
   labels: z.string().optional(),
   state: z.enum(['open', 'closed', 'all']).optional(),
   assignAgent: z.string().optional(),
