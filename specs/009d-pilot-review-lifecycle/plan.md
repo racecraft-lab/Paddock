@@ -126,9 +126,13 @@ See [data-model.md](./data-model.md) and [contracts/pilot-review-packet.md](./co
 
 Existing `POST /api/task-artifacts` is sufficient for publication if the implementation chooses route-mediated publishing. Existing `GET /api/task-artifacts?artifact_type=pilot_review_packet_json`, `GET /api/task-artifacts?artifact_type=pilot_review_packet_markdown`, and `GET /api/task-artifacts/[id]` are sufficient for inspection. The preferred implementation path is library-mediated publication from the packet assembler using `publishArtifact()` so the route surface remains unchanged.
 
+Packet-specific missing, local-only, incomplete, stale, redacted, and quarantined conditions are encoded in the packet artifact content and metadata while preserving the existing task-artifact route status behavior. The contract records that discovery returns `200 { rows }`, missing artifact ids remain `404 artifact_not_found`, quarantined packet artifacts remain `423 artifact_locked` metadata stubs, and disabled artifact storage remains `503 artifact_store_disabled`. SPEC-009D must not add a new endpoint or custom response envelope for those states.
+
 ### Redaction And Safety
 
 The packet never inlines quarantined raw content, secret-bearing values, unsafe previews, storage URIs for locked content, actor identity for quarantined evidence, or oversized bodies. It records existing artifact metadata, packet-local `evidence_state`, warnings, hashes, byte sizes, and source-map pointers.
+
+Markdown generation treats stored evidence fields as untrusted display data after SPEC-007 redaction and compaction. Evidence-derived strings are emitted only as escaped text or fenced/inline code, raw HTML is not emitted, and stored evidence text is not promoted into active Markdown links. Active links are limited to packet-generated source-map, artifact id/hash, checklist anchor, and known GitHub issue/PR references.
 
 ### Archive Sweep And Evidence Policy
 

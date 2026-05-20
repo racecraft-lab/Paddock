@@ -515,12 +515,12 @@ To fill after running checklists:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| api-contracts | Pending | Pending | Pending |
-| data-integrity | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| Total | Pending | Pending | Pending |
+| api-contracts | 20 | 1 found / 1 resolved | Artifact route response semantics for missing, local-only/incomplete, stale, redacted, quarantined, and disabled-storage states |
+| data-integrity | 20 | 0 | Source-map coverage, stable identity, lifecycle descendants, duplicate-active-stage evidence, and future-state deferrals validated |
+| security | 21 | 1 found / 1 resolved | Added Markdown-output safety requirements for untrusted stored evidence, escaping/fencing, no raw HTML, and no active links from evidence text |
+| state-management | 25 | 0 | Deterministic stage derivation, stored-evidence-only state, deferrals, cleaned-UAT evidence, and duplicate-active-stage boundaries validated |
+| error-handling | 28 | 0 | Missing evidence, local-only exclusion, malformed metadata, quarantined/redacted artifacts, structured warnings, and no-leak/no-crash behavior validated |
+| Total | 114 | 2 found / 2 resolved | api-contracts and security gaps remediated; no remaining `[Gap]` markers |
 
 ---
 

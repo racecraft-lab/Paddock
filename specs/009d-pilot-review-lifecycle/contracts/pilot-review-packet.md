@@ -137,6 +137,13 @@ Required sections:
 
 Markdown must summarize the JSON packet generated from the same source snapshot. It may omit raw machine detail, but it must not contradict JSON lifecycle, gate, evidence, deferral, or warning values.
 
+Markdown safety requirements:
+- Stored evidence-derived strings are untrusted display data even after redaction.
+- Evidence-derived strings included in Markdown must be Markdown-escaped or placed in fenced or inline code contexts.
+- Generated Markdown must not emit raw HTML from stored evidence.
+- Stored evidence text must not become active Markdown links. Active links are limited to packet-generated source-map pointers, artifact ids or hashes, checklist anchors, and known GitHub issue/PR references.
+- Raw secret-bearing, quarantined, unsafe-preview, binary non-redactable, and oversized evidence remain excluded under the evidence-state contract.
+
 ## Existing API Surface
 
 Publication uses existing artifact behavior through `publishArtifact()` and, where route-mediated publication is needed, `POST /api/task-artifacts`.
@@ -147,6 +154,16 @@ Inspection uses existing routes:
 - `GET /api/task-artifacts/[id]`
 
 No new packet-specific route is part of SPEC-009D unless implementation tasks prove the existing artifact surface cannot satisfy SC-001.
+
+Packet inspection response behavior through the existing route surface:
+- Artifact discovery returns the existing collection response, `200 { rows }`, scoped by caller workspace and filtered by `artifact_type`. An empty `rows` array means no matching packet artifact is currently inspectable through that route; it is not a packet-specific error envelope.
+- Artifact reads return the existing item response for non-quarantined artifacts, including metadata, content for inline JSON or Markdown, `redaction_status`, `security_scan_status`, `sha256`, `byte_size`, `schema_version`, `preview_text`, and `supersedes_artifact_id`.
+- Missing artifact ids and non-Facility cross-workspace reads use the existing `404 { error: "artifact_not_found" }` masking behavior. Packet assembly must express missing candidate evidence inside the packet as `candidate.state`, `evidence_state`, warnings, or publication failure; it must not require a new missing-packet HTTP code.
+- Quarantined packet artifacts use the existing `423 { error: "artifact_locked", artifact_id, redaction_status, quarantined_at, byte_size, sha256, mime }` metadata stub and must not expose packet content, preview text, storage URI, or actor identity. Normal reviewer inspection must not depend on the admin `include_quarantined` override.
+- Redacted packet artifacts are read as ordinary non-quarantined artifacts with existing redacted content and metadata. The packet contract must not require route consumers to reconstruct or reveal pre-redaction content.
+- Local-only or incomplete candidates are represented inside the packet JSON and Markdown as `candidate.state="local_only_excluded"` or `candidate.state="incomplete"` with reasons and source-map pointers where available. If such an incomplete packet is safely published, the artifact routes still return `200` for the artifact itself.
+- Stale or superseded packet evidence is represented inside `evidence`, `warnings`, and source-map entries. Superseded packet artifacts remain visible through existing artifact metadata; consumers should prefer the latest matching non-superseded packet artifact by existing list ordering unless a specific artifact id or hash is being reviewed.
+- If `FEATURE_TASK_ARTIFACTS` is disabled for the relevant workspace, existing artifact routes return `503 { error: "artifact_store_disabled" }`; SPEC-009D does not define a fallback packet API.
 
 ## Failure And Incomplete States
 
