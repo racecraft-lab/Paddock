@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-20T06:48:59.818Z",
+  "updatedAt": "2026-05-20T06:57:36.908Z",
   "prs": [
     {
       "prNumber": "54",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/54/",
       "headRef": "009d-pilot-review-lifecycle",
       "baseRef": "main",
-      "updatedAt": "2026-05-20T06:48:59.818Z",
+      "updatedAt": "2026-05-20T06:57:36.908Z",
       "latest": {
+        "playwright": {
+          "runId": "26146252300",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26146252300",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/54/playwright/latest/?v=26146252300-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/54/runs/26146252300-attempt-1/playwright/",
+          "updatedAt": "2026-05-20T06:57:36.908Z"
+        },
         "storybook": {
           "runId": "26146132267",
           "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26146132267",
