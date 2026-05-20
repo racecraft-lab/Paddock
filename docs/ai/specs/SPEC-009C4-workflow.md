@@ -69,8 +69,8 @@ Source-of-truth scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved merge-gate, exact PR evidence, idempotency, and evidence handoff details; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and manual sync reconciliation contract; G3 passed with 0 markers |
 | Checklist | `$speckit-checklist` | Complete | Ran five domains; 114 items, 3 gaps resolved, G4 passed with 0 remaining gap markers |
-| Tasks | `$speckit-tasks` | In Progress | Generate TDD tasks with RED-first reconciliation and negative coverage |
-| Analyze | `$speckit-analyze` | Pending | Verify no C4 artifact pulls in later control-plane specs |
+| Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks across 7 groups; G5 and tasks reviewability gate passed under transition exception |
+| Analyze | `$speckit-analyze` | In Progress | Verify no C4 artifact pulls in later control-plane specs |
 | Implement | `$speckit-implement` | Pending | Execute tasks, verification, live `G_PILOT_MERGE` UAT, cleanup, PR packet, and push |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -102,8 +102,8 @@ only when its artifact and gate evidence are recorded here.
 | Clarify | Phase 2 / G2 | Complete | Four sessions completed; G2 passed with 0 `[NEEDS CLARIFICATION]` markers; consensus decisions logged below |
 | Plan | Phase 3 / G3 | Complete | Generated `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, and `contracts/manual-github-sync-reconciliation.md`; G3 passed with 0 markers |
 | Checklist | Phase 4 / G4 | Complete | 114 checklist items across five domains; 3 error-handling gaps resolved; G4 passed with 0 remaining `[Gap]` markers |
-| Tasks | Phase 5 / G5 | In Progress | Record task count, parallel opportunities, and reviewability task-gate result |
-| Analyze | Phase 6 / G6 | Pending | Record cross-artifact analysis findings and resolutions |
+| Tasks | Phase 5 / G5 | Complete | 55 tasks, 7 groups, 24 parallel opportunities, 4 user stories covered; tasks reviewability gate passed under transition exception |
+| Analyze | Phase 6 / G6 | In Progress | Record cross-artifact analysis findings and resolutions |
 | Implement | Phase 7 / G7 | Pending | Record task completion, tests, live UAT, cleanup, roadmap/workflow updates, and push evidence |
 | Post-Implementation Verify | Post step 10/12 | Pending | Record focused Vitest, broader checks, and any Playwright decision |
 | Cleanup / Reviewability / PR | Post steps 13-18 | Pending | Record reviewability gate, PR review packet, branch push, and post-merge UAT plan |
@@ -635,10 +635,10 @@ Task constraints:
 
 | Metric | Value |
 |--------|-------|
-| **Total Tasks** | Pending |
-| **Phases** | Pending |
-| **Parallel Opportunities** | Pending |
-| **User Stories Covered** | Pending |
+| **Total Tasks** | 55 |
+| **Phases** | 7 |
+| **Parallel Opportunities** | 24 |
+| **User Stories Covered** | 4 |
 
 ---
 

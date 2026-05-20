@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
   "updated_at": "2026-05-19T00:00:00Z",
-  "active_step": "Phase 5: Tasks",
+  "active_step": "Phase 6: Analyze",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009C4",
@@ -251,6 +251,31 @@
       "markers": 0
     }
   },
+  "phase_5": {
+    "status": "completed",
+    "file": "specs/009c4-owner-merge-reconciliation/tasks.md",
+    "task_count": 55,
+    "phase_groups": 7,
+    "parallel_opportunities": 24,
+    "user_stories_covered": 4,
+    "gate": {
+      "id": "G5",
+      "pass": true,
+      "reason": "55 tasks found",
+      "markers": 0,
+      "task_count": 55
+    },
+    "reviewability_gate": {
+      "mode": "tasks",
+      "status": "exception",
+      "pass": true,
+      "reviewable_loc": 2200,
+      "production_files": 6,
+      "total_files": 61,
+      "primary_surface_count": 4,
+      "transition_exception": true
+    }
+  },
   "commands": {
     "BUILD": "pnpm build",
     "TYPECHECK": "pnpm typecheck",
@@ -353,18 +378,42 @@
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
       "status": "pending"
     },
     {
-      "step": "Phase 7: Implement - Pending task decomposition",
+      "step": "Phase 7: Setup and RED Harness (T001-T009)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US1 Owner Merge Gate (T010-T015)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US2 Manual Sync Done Reconciliation (T016-T024)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US3 Fail-Closed Negative Cases (T025-T034)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US4 Idempotency and Evidence Handoff (T035-T041)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Guardrails and Live UAT (T042-T049)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Verification and Status Hygiene (T050-T055)",
       "status": "pending"
     },
     {
