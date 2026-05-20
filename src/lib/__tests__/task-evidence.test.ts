@@ -203,7 +203,7 @@ describe('SPEC-009E task evidence helper', () => {
     const evidence = scopedBuild(database, taskId)
     const after = snapshotEvidenceCounts(database)
 
-    expect(unsafe).toBe('Before bold link javascript:alert(1) data:text/plain,hi')
+    expect(unsafe).toBe('Before bold link')
     expect(after).toEqual(before)
     expect(JSON.stringify(evidence)).not.toContain('storage_uri')
     expect(JSON.stringify(evidence)).not.toContain('javascript:alert')

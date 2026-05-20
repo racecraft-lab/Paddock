@@ -249,10 +249,32 @@ const STATIC_UAT_REFERENCE = 'docs/qa/pilot-smoke-checklist.md#spec-009e'
 
 const UNSAFE_SCHEME_PATTERN = /\b(?:javascript|data|vbscript|file):[^\s)]+/gi
 
+function stripHtmlLikeTags(input: string): string {
+  let output = ''
+  let insideTag = false
+
+  for (const character of input) {
+    if (character === '<') {
+      insideTag = true
+      output += ' '
+      continue
+    }
+    if (character === '>') {
+      insideTag = false
+      output += ' '
+      continue
+    }
+    if (!insideTag) output += character
+  }
+
+  return output
+}
+
 export function toInertEvidenceText(input: string): string {
-  return input
+  return stripHtmlLikeTags(input)
     .replace(/\[([^\]]*)\]\(([^)]*)\)/g, '$1 $2')
-    .replace(/<\/?[^>]+>/g, '')
+    .replace(UNSAFE_SCHEME_PATTERN, '')
+    .replace(/[<>\[\]()`]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }
