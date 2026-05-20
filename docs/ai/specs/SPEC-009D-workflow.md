@@ -57,7 +57,7 @@ Source-of-truth scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/009d-pilot-review-lifecycle/spec.md` with 14 FRs, 4 user stories, 10 acceptance scenarios, and no unresolved markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved artifact-only inspection seam, JSON/Markdown packet terms, source-map pointer shape, future-spec owner map, local-only exclusion, redaction, staleness, and cleaned C4 replay source rules |
-| Plan | `$speckit-plan` | Pending | Produce architecture, data model, contracts, and quickstart for packet derivation |
+| Plan | `$speckit-plan` | Complete | Produced architecture, data model, packet contract, and quickstart bounded to pure `src/lib` derivation plus existing task artifact seams |
 | Checklist | `$speckit-checklist` | Pending | Run targeted domains for API, data integrity, security/redaction, state management, and error handling |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first implementation tasks bounded by the packet scope |
 | Analyze | `$speckit-analyze` | Pending | Check drift across spec, plan, tasks, and design concept |
@@ -423,11 +423,11 @@ To fill after running plan:
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context and execution flow |
-| `research.md` | Pending | Packet, API, and redaction decisions |
-| `data-model.md` | Pending | Packet JSON and source-map entities |
-| `contracts/` | Pending | API or artifact contracts, if needed |
-| `quickstart.md` | Pending | Verification and smoke workflow |
+| `plan.md` | Complete | Primary surface is pure `src/lib/pilot-review-packet.ts` derivation plus existing task artifact publish/read/list seams |
+| `research.md` | Complete | Resolved stored-evidence-only assembly, JSON/Markdown artifacts, source maps, deferrals, local-only exclusion, redaction semantics, and no new packet route |
+| `data-model.md` | Complete | Defines packet, artifact, owner task, source-map, deferral, evidence-state, and candidate/artifact transitions |
+| `contracts/` | Complete | `contracts/pilot-review-packet.md` defines JSON/Markdown packet artifacts and existing task artifact inspection routes |
+| `quickstart.md` | Complete | Defines TDD flow, focused verification, full verification, manual review evidence, and artifact inspection |
 
 ---
 
