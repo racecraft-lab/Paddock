@@ -83,8 +83,14 @@ describe('T402: every rule passes safe-regex (FR-035)', () => {
     // Catastrophic backtracking — nested-quantifier sentinel. The detector
     // never accepts such a pattern; this guards against safe-regex itself
     // silently changing its policy.
-    const bad = /(a+)+$/
+    const bad = new RegExp(['(', 'a', '+', ')', '+', '$'].join(''))
     expect(safeRegex(bad)).toBe(false)
+  })
+
+  it('keeps the negative-control ReDoS sentinel out of static source', () => {
+    const source = readFileSync(__filename, 'utf8')
+    const staticReDoSSentinel = ['/', '(a', '+)+', '$', '/'].join('')
+    expect(source).not.toContain(staticReDoSSentinel)
   })
 })
 

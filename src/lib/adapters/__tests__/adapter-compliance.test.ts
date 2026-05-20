@@ -12,6 +12,8 @@
  *   5. Framework identity (each adapter tags events correctly)
  */
 
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { FrameworkAdapter, AgentRegistration, HeartbeatPayload, TaskReport } from '../adapter'
 import { getAdapter, listAdapters } from '../index'
@@ -76,6 +78,16 @@ describe('Adapter Registry', () => {
 
   it('throws for unknown framework', () => {
     expect(() => getAdapter('nonexistent')).toThrow('Unknown framework adapter')
+  })
+
+  it('rejects inherited object method names as framework names', () => {
+    expect(() => getAdapter('hasOwnProperty')).toThrow('Unknown framework adapter')
+    expect(() => getAdapter('__defineSetter__')).toThrow('Unknown framework adapter')
+  })
+
+  it('does not dispatch adapters through a user-controlled registry property', () => {
+    const source = readFileSync(path.join(process.cwd(), 'src/lib/adapters/index.ts'), 'utf8')
+    expect(source).not.toMatch(/adapters\s*\[\s*framework\s*\]/)
   })
 })
 

@@ -74,7 +74,7 @@ vi.mock('@/lib/github', async () => {
 })
 
 import { runMigrations } from '../../../../lib/migrations'
-import { POST } from '../route'
+import { GET, POST } from '../route'
 
 const openDbs: Database.Database[] = []
 
@@ -156,6 +156,19 @@ function seedGithubProject(db: Database.Database, workspaceId = 4): void {
 }
 
 describe('SPEC-006 / T064 — POST /api/github init-labels public-contract parity', () => {
+  it('rejects GET issue preview repos that would traverse the GitHub API path', async () => {
+    setupAuthOk(1)
+
+    const res = await GET(new Request(
+      'http://localhost/api/github?action=issues&repo=owner/repo/../../user',
+    ) as unknown as NextRequest)
+
+    expect(res.status).toBe(400)
+    const body = await res.json() as { error: string }
+    expect(body.error).toContain('owner/repo format')
+    expect(getGitHubTokenMock).not.toHaveBeenCalled()
+  })
+
   it('returns the byte-identical 200 shape { ok: true, repo } as the pre-SPEC-006 baseline', async () => {
     setupAuthOk(1)
     const db = freshMigratedDb()
