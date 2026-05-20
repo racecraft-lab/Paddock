@@ -489,6 +489,25 @@ alone.
   this run (`Cannot connect to the Docker daemon at
   unix:///Users/fredrickgabelmann/.docker/run/docker.sock`), so the optional
   Docker build journey was not run.
+- Full UAT rerun on the product-code head `fe8e4b53`: the focused browser
+  journey passed again with `direnv exec . pnpm test:e2e --
+  tests/e2e/task-detail-evidence.spec.ts` (`1` Chromium test, `6.6s`). The
+  fresh fixture export was generated `2026-05-20T23:49:37.908Z`, retained
+  GitHub proof repo `racecraft-lab/mission-control`, issue `50`, and PR `51`,
+  and wrote screenshot evidence at
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-eligible.png`
+  (`622x855`),
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-local-only.png`
+  (`622x892`), and
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-partial-proof.png`
+  (`622x1001`). The post-run cleanup query returned
+  `{"disposable_tasks_remaining":0,"matching_artifacts_remaining":0,"matching_activities_remaining":0,"matching_reviews_remaining":0,"matching_syncs_remaining":0}`.
+  Focused helper/API/component/read-only guard tests passed again (`4` files,
+  `14` tests). Full unit UAT confidence came from the sandbox-external
+  `direnv exec . pnpm test` pass (`281` passed files, `2933` passed tests,
+  `33` skipped files, `84` todo tests). Local Docker UAT remains blocked by the
+  unavailable daemon, while hosted PR Docker UI E2E and visual review checks
+  were green on the same product-code head.
 - Verification commands run outside the Codex sandbox with `direnv exec .`:
   `pnpm typecheck`, `pnpm lint`, focused SPEC-009E Vitest route/helper/component
   tests plus direct-insert guard (`4` files, `14` tests), full `pnpm test`
