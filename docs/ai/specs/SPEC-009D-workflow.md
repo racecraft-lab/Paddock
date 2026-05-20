@@ -662,6 +662,7 @@ To fill during implementation:
 - No packet-specific route, dashboard, runtime dependency, migration, fresh GitHub call, polling, claim authority, retry control, sandbox lifecycle, adapter registry, or real harness execution was added.
 - Build blockers resolved during verification: removed network-dependent Google font fetches, pinned Next/eslint-config-next to 16.1.6, moved route test reset helpers out of a Next route module, rebuilt `better-sqlite3`, and regenerated standalone output with the native binding present.
 - Verification passed under Node 22.22.2: focused packet/artifact/disposition tests (20 tests), existing task-artifact seam tests (38 tests), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test` (2907 passing tests), and `pnpm test:e2e` (646 passing tests).
+- Implementation PR opened: https://github.com/racecraft-lab/mission-control/pull/54
 
 ---
 
@@ -679,6 +680,7 @@ To fill during implementation:
 - [x] Roadmap and this workflow reflect final implementation status.
 - [x] PR evidence includes review packet, scope budget, verification evidence,
   known gaps, and rollback or no-migration notes.
+- [x] PR #54 opened against `main`.
 
 ---
 

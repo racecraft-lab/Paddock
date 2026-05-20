@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009D-workflow.md",
-  "updated_at": "2026-05-20T06:14:16Z",
-  "active_step": "Post: PR Creation",
-  "status": "In Progress",
+  "updated_at": "2026-05-20T06:21:52Z",
+  "active_step": "Post: Review Remediation",
+  "status": "PR Open",
   "active_workflow": {
     "spec_id": "SPEC-009D",
     "workflow_file": "docs/ai/specs/SPEC-009D-workflow.md",
@@ -416,6 +416,30 @@
       "markers": 0
     }
   },
+  "post": {
+    "status": "pr_open",
+    "reviewability_diff_gate": {
+      "command": "reviewability-gate.sh diff HEAD~2..HEAD",
+      "pass": true,
+      "status": "exception",
+      "reviewable_loc": 2295,
+      "production_files": 10,
+      "total_files": 22,
+      "primary_surface_count": 6,
+      "transition_exception": true,
+      "note": "Full branch range origin/main...HEAD reports the expected over-budget transition block; the implementation diff passes under the documented transition exception."
+    },
+    "pr": {
+      "number": 54,
+      "url": "https://github.com/racecraft-lab/mission-control/pull/54",
+      "base": "main",
+      "head": "009d-pilot-review-lifecycle",
+      "draft": false
+    },
+    "review_remediation": {
+      "status": "pending_review_feedback"
+    }
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs apply eligibility",
@@ -559,15 +583,15 @@
     },
     {
       "step": "Post: Reviewability Diff Gate",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Body Generation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Creation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Review Remediation",
