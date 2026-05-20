@@ -42,8 +42,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate `specs/009e-pilot-evidence-surfaces/spec.md` from the roadmap plus design concept |
-| Clarify | `$speckit-clarify` | Pending | Focus on API contract, task detail UI seam, state semantics, and UAT source data |
+| Specify | `$speckit-specify` | Complete | Generated `specs/009e-pilot-evidence-surfaces/spec.md` and requirements checklist; G1 passed with 0 markers |
+| Clarify | `$speckit-clarify` | In Progress | Focus on API contract, task detail UI seam, state semantics, and UAT source data |
 | Plan | `$speckit-plan` | Pending | Plan read-only route, task detail Evidence UI, tests, and no-write guardrails |
 | Checklist | `$speckit-checklist` | Pending | Run focused API, UX/accessibility, state-management, data-integrity, security, and error-handling domains |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict read-only and route/UI scope |
@@ -83,7 +83,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | XIV. Real UI Journey | Task detail Evidence surface requires browser-visible validation if UI changes | Playwright or existing visual/story coverage, as Plan determines |
 | XVI. Reviewability And Verification Debt Control | Keep one primary surface: read-only task evidence route plus compact task detail evidence UI | Reviewability gate and PR packet |
 
-**Constitution Check:** Pending until Specify and Plan confirm final route/UI shape.
+**Constitution Check:** Initial prerequisite and Specify gate passed. Final constitution validation remains pending until Plan confirms route/UI shape and Implement verifies runtime changes.
 
 ### Setup Evidence
 
@@ -214,14 +214,14 @@ Fill after running:
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 18 |
+| User Stories | 3 |
+| Acceptance Criteria | 9 |
 
 ### Files Generated
 
-- [ ] `specs/009e-pilot-evidence-surfaces/spec.md`
-- [ ] `specs/009e-pilot-evidence-surfaces/checklists/requirements.md`
+- [x] `specs/009e-pilot-evidence-surfaces/spec.md`
+- [x] `specs/009e-pilot-evidence-surfaces/checklists/requirements.md`
 
 ---
 
