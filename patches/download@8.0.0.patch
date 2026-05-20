@@ -1,0 +1,27 @@
+diff --git a/index.js b/index.js
+index e8dbda5aeba8b419075350961eb960f2de6f72e9..fa2fce2d56dd5fd046869893705fc3998b595e1c 100644
+--- a/index.js
++++ b/index.js
+@@ -68,7 +68,21 @@ module.exports = (uri, output, opts) => {
+ 		rejectUnauthorized: process.env.npm_config_strict_ssl !== 'false'
+ 	}, opts);
+ 
+-	const stream = got.stream(uri, opts);
++	const streamOpts = Object.assign({}, opts);
++
++	if (streamOpts.encoding === null) {
++		streamOpts.responseType = streamOpts.responseType || 'buffer';
++		delete streamOpts.encoding;
++	}
++
++	if (Object.prototype.hasOwnProperty.call(streamOpts, 'rejectUnauthorized')) {
++		streamOpts.https = Object.assign({}, streamOpts.https, {
++			rejectUnauthorized: streamOpts.rejectUnauthorized
++		});
++		delete streamOpts.rejectUnauthorized;
++	}
++
++	const stream = got.stream(uri, streamOpts);
+ 
+ 	const promise = pEvent(stream, 'response').then(res => {
+ 		const encoding = opts.encoding === null ? 'buffer' : opts.encoding;
