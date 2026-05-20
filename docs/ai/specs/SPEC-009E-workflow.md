@@ -47,8 +47,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, OpenAPI contract, and quickstart; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Six domains complete; 134 items, 8 gaps remediated, G4 passed with 0 unresolved gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 59 TDD-first tasks with a ratified narrow route/UI reviewability exception |
-| Analyze | `$speckit-analyze` | In Progress | Check drift against roadmap and design concept, especially no sync/generation/schema expansion |
-| Implement | `$speckit-implement` | Pending | Implement only after G6 passes; verify locally and with UAT evidence |
+| Analyze | `$speckit-analyze` | Complete | G6 passed with 0 findings and no unresolved consensus |
+| Implement | `$speckit-implement` | In Progress | Implement after G6; verify locally and with UAT evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -536,7 +536,7 @@ Flag drift in these areas:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| None | N/A | No drift found across spec, plan, tasks, design concept, and deferred future-spec boundaries | No remediation required; G6 passed with 0 CRITICAL/HIGH findings |
 
 ---
 
