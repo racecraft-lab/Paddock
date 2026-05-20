@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26139557154",
+      "runAttempt": "1",
+      "runKey": "26139557154-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26139557154",
+      "reportKey": "907dd557e6cf505d66ac132a0bbf0f364bb5b0d4",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/907dd557e6cf505d66ac132a0bbf0f364bb5b0d4/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/?v=26139557154-attempt-1",
+      "headSha": "907dd557e6cf505d66ac132a0bbf0f364bb5b0d4",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "dependabot-security-remediation",
+        "headSha": "3d59cada54c04e5974463302427ff68e4e8f612c",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/53/",
+        "mergeCommitSha": "",
+        "number": "53",
+        "title": "fix(security): remediate dependency and CodeQL alerts",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/53"
+      },
+      "createdAt": "2026-05-20T03:35:07.757Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26115169472",
       "runAttempt": "1",
@@ -444,5 +471,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-19T17:59:16.481Z"
+  "updatedAt": "2026-05-20T03:35:07.757Z"
 }
