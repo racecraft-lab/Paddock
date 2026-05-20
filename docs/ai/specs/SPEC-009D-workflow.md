@@ -59,7 +59,7 @@ Source-of-truth scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved artifact-only inspection seam, JSON/Markdown packet terms, source-map pointer shape, future-spec owner map, local-only exclusion, redaction, staleness, and cleaned C4 replay source rules |
 | Plan | `$speckit-plan` | Complete | Produced architecture, data model, packet contract, and quickstart bounded to pure `src/lib` derivation plus existing task artifact seams |
 | Checklist | `$speckit-checklist` | Pending | Run targeted domains for API, data integrity, security/redaction, state management, and error handling |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first implementation tasks bounded by the packet scope |
+| Tasks | `$speckit-tasks` | Complete | Generated 42 TDD-first tasks across setup, foundational tests, four user stories, and polish/verification |
 | Analyze | `$speckit-analyze` | Pending | Check drift across spec, plan, tasks, and design concept |
 | Implement | `$speckit-implement` | Pending | Execute tasks after all gates pass |
 
@@ -569,10 +569,10 @@ To fill after running tasks:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 42 |
+| Phases | 7 |
+| Parallel Opportunities | 7 |
+| User Stories Covered | 4 |
 
 ---
 

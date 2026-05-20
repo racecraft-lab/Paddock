@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009D-workflow.md",
-  "updated_at": "2026-05-20T05:37:00Z",
-  "active_step": "Phase 5: Tasks",
+  "updated_at": "2026-05-20T05:49:00Z",
+  "active_step": "Phase 6: Analyze",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009D",
@@ -276,6 +276,45 @@
       "markers": 0
     }
   },
+  "phase_5": {
+    "status": "completed",
+    "file": "specs/009d-pilot-review-lifecycle/tasks.md",
+    "metrics": {
+      "total_tasks": 42,
+      "phases": 7,
+      "user_stories_covered": 4,
+      "parallel_safe_tasks": 7,
+      "story_task_counts": {
+        "US1": 9,
+        "US2": 9,
+        "US3": 5,
+        "US4": 5
+      }
+    },
+    "gate": {
+      "id": "G5",
+      "pass": true,
+      "reason": "42 tasks found",
+      "markers": 0
+    },
+    "reviewability_gate": {
+      "mode": "tasks",
+      "status": "exception",
+      "pass": true,
+      "reviewable_loc": 1680,
+      "production_files": 8,
+      "total_files": 53,
+      "primary_surface_count": 4,
+      "primary_surfaces": [
+        "API",
+        "docs/process",
+        "other",
+        "schema/migration"
+      ],
+      "transition_exception": true,
+      "notes": "Tasks remain bounded to the planned src/lib packet derivation plus tests/config/checklist evidence even though the gate classifier flags broad terms from docs and existing artifact APIs."
+    }
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs apply eligibility",
@@ -359,18 +398,42 @@
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
       "status": "pending"
     },
     {
-      "step": "Phase 7: Implement - Pending task decomposition",
+      "step": "Phase 7: Setup (T001-T004)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Foundational Contract Tests (T005-T007)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: User Story 1 (T008-T016)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: User Story 2 (T017-T025)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: User Story 3 (T026-T030)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: User Story 4 (T031-T035)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Polish and Verification (T036-T042)",
       "status": "pending"
     },
     {
