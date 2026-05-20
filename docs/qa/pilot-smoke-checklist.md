@@ -471,7 +471,7 @@ alone.
   `1`, GitHub sync row `1`, retained repo `racecraft-lab/mission-control`,
   retained issue `50`, and retained PR `51`.
 - UI assertions: retained pilot carrier showed `eligible`,
-  `ready_for_owner`, issue #50, PR #51, packet JSON/Markdown references, the
+  `ready_for_owner`, issue #50, PR #51, review-packet artifact references, the
   static smoke checklist reference `docs/qa/pilot-smoke-checklist.md#spec-009e`,
   source-map evidence, and all seven deferred future-state categories. The
   local-only carrier showed `not_eligible` with missing GitHub repo/issue
