@@ -55,7 +55,7 @@ Source-of-truth scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate `specs/009d-pilot-review-lifecycle/spec.md` from roadmap plus design concept |
+| Specify | `$speckit-specify` | Complete | Generated `specs/009d-pilot-review-lifecycle/spec.md` with 14 FRs, 4 user stories, 10 acceptance scenarios, and no unresolved markers |
 | Clarify | `$speckit-clarify` | Pending | Resolve API seam, JSON contract names, future-field ownership, and artifact/source-map details |
 | Plan | `$speckit-plan` | Pending | Produce architecture, data model, contracts, and quickstart for packet derivation |
 | Checklist | `$speckit-checklist` | Pending | Run targeted domains for API, data integrity, security/redaction, state management, and error handling |
@@ -292,13 +292,14 @@ To fill after running the command:
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 14 |
+| User Stories | 4 |
+| Acceptance Criteria | 10 |
 
 ### Files Generated
 
-- `specs/009d-pilot-review-lifecycle/spec.md`
+- [x] `specs/009d-pilot-review-lifecycle/spec.md`
+- [x] `specs/009d-pilot-review-lifecycle/checklists/requirements.md`
 
 ---
 
