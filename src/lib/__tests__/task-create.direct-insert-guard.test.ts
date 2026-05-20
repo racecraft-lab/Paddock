@@ -10,6 +10,7 @@ function productionSources(dir: string): string[] {
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) return productionSources(fullPath)
     if (!entry.name.endsWith('.ts')) return []
+    if (fullPath.split(path.sep).includes('__tests__')) return []
     if (entry.name.endsWith('.test.ts')) return []
     if (fullPath.endsWith(path.join('src', 'lib', 'task-create.ts'))) return []
     if (fullPath.endsWith(path.join('src', 'lib', 'migrations.ts'))) return []

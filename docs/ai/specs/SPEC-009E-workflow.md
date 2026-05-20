@@ -48,7 +48,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Six domains complete; 134 items, 8 gaps remediated, G4 passed with 0 unresolved gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 59 TDD-first tasks with a ratified narrow route/UI reviewability exception |
 | Analyze | `$speckit-analyze` | Complete | G6 passed with 0 findings and no unresolved consensus |
-| Implement | `$speckit-implement` | In Progress | Implement after G6; verify locally and with UAT evidence |
+| Implement | `$speckit-implement` | Complete | Implemented the generic task evidence route/helper, compact task detail Evidence section, focused tests, and UAT evidence; G7 local gates passed |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -580,25 +580,62 @@ For each task:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Setup / RED coverage | Pending | Pending | Pending |
-| Evidence derivation and API | Pending | Pending | Pending |
-| Task detail UI | Pending | Pending | Pending |
-| Incomplete/deferred/security states | Pending | Pending | Pending |
-| Verification and UAT | Pending | Pending | Pending |
+| Setup / RED coverage | T001-T006 | Complete | Added strict-scope config entries and failing fixture, route, and component coverage before implementation |
+| Evidence derivation and API | T007-T027 | Complete | Added `src/lib/task-evidence.ts` and read-only `GET /api/tasks/[id]/evidence` with auth/scope masking, stored-evidence-only derivation, safe metadata, and OpenAPI/API-index parity |
+| Task detail UI | T024-T027 | Complete | Added a compact labelled Evidence section in the existing task detail Details tab with loading, empty, error, source-map, warning, and safe GitHub link states |
+| Incomplete/deferred/security states | T028-T045 | Complete | Covered local-only, partial-proof, unsafe/quarantined/oversized evidence, and all seven SPEC-013/SPEC-014 deferrals without action controls |
+| Verification and UAT | T046-T059 | Complete | Marked all 59 tasks complete; recorded retained issue #50 / PR #51 UAT with disposable carrier cleanup and PR review packet notes |
+
+### Implementation Results
+
+- Added `src/lib/task-evidence.ts` as the generic stored-evidence read model for `task_evidence.v1`.
+- Added authenticated read-only `GET /api/tasks/[id]/evidence`; no GitHub refresh, packet generation, smoke execution, activity write, artifact mutation, dispatch, runner, claim, sandbox, adapter, or harness behavior is introduced.
+- Added the compact task detail Evidence section inside the existing Details surface and kept it display-only.
+- Added focused helper, route, component, direct-insert guard, and Playwright UI journey coverage.
+- Added OpenAPI/API index parity for `/api/tasks/{id}/evidence`.
+- Kept the scope migration-free and dependency-free.
+
+### Verification Results
+
+Commands run outside the Codex sandbox with `direnv exec .`:
+
+| Command | Result |
+|---------|--------|
+| `pnpm exec vitest run src/lib/__tests__/task-evidence.test.ts 'src/app/api/tasks/[id]/evidence/__tests__/route.test.ts' src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/task-create.direct-insert-guard.test.ts` | Passed: 4 files, 14 tests |
+| `pnpm test:e2e -- tests/e2e/task-detail-evidence.spec.ts` | Passed: 1 focused Playwright journey |
+| `pnpm test` | Passed: 281 files, 2933 tests, 33 skipped files, 84 todo tests |
+| `pnpm typecheck` | Passed |
+| `pnpm lint` | Passed |
+| `pnpm build` | Passed |
+| `pnpm api:parity` | Passed: route ops 338, OpenAPI ops 317, ignored 24 |
+| `pnpm audit:high` | Passed: no known vulnerabilities |
+
+Docker CLI was present, but Docker daemon access was unavailable during UAT, so the optional Docker build journey was not run.
+
+### UAT Evidence
+
+- UAT ledger: `docs/qa/pilot-smoke-checklist.md`, section `2026-05-20 SPEC-009E Task Evidence Surface UAT`.
+- Canonical retained proof: Mission Control issue #50 and PR #51, plus SPEC-009D packet/source-map and smoke-checklist references.
+- Browser artifacts:
+  - `test-results/spec-009e-task-evidence/spec-009e-evidence-eligible.png`
+  - `test-results/spec-009e-task-evidence/spec-009e-evidence-local-only.png`
+  - `test-results/spec-009e-task-evidence/spec-009e-evidence-partial-proof.png`
+  - `test-results/spec-009e-task-evidence/spec-009e-evidence-fixture-export.json`
+- Final cleanup evidence: `{"disposable_tasks_remaining":0,"matching_evidence_rows_remaining":0}`.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `tasks.md`
-- [ ] Focused route/helper tests pass
-- [ ] Focused UI/component/browser tests pass
-- [ ] `pnpm typecheck` passes
-- [ ] `pnpm lint` passes
-- [ ] `pnpm build` passes
-- [ ] `pnpm test` or `pnpm test:all` passes when scope requires it
-- [ ] `docs/qa/pilot-smoke-checklist.md` or SPEC-009E evidence checklist records UAT
-- [ ] PR body includes what/why/how, validation, evidence, reviewer guide, known deferrals, and rollback/flag notes
+- [x] All tasks marked complete in `tasks.md`
+- [x] Focused route/helper tests pass
+- [x] Focused UI/component/browser tests pass
+- [x] `pnpm typecheck` passes
+- [x] `pnpm lint` passes
+- [x] `pnpm build` passes
+- [x] `pnpm test` or `pnpm test:all` passes when scope requires it
+- [x] `docs/qa/pilot-smoke-checklist.md` or SPEC-009E evidence checklist records UAT
+- [x] PR body includes what/why/how, validation, evidence, reviewer guide, known deferrals, and rollback/flag notes
 - [ ] Branch pushed and PR opened
 
 ---
@@ -620,4 +657,7 @@ specs/009e-pilot-evidence-surfaces/  Generated SPEC-009E artifacts
 
 ## Lessons Learned
 
-Fill after implementation.
+- The route must tolerate migration-era resource governance schemas. `resource_policy_events` may exist without `workspace_id`, so the evidence reader detects the column before applying workspace filtering.
+- `direnv exec .` is required in this linked worktree for Node 22. Direct shell Node 26 can break native `better-sqlite3` ABI expectations.
+- Disposable browser-journey carrier rows are useful for exercising the UI, but retained issue #50 / PR #51 and the smoke checklist remain the durable proof after cleanup.
+- Docker UAT should be rerun only when the local Docker daemon is available; the required browser journey passed through Playwright against the repository app.

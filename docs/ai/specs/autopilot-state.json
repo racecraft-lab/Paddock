@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
-  "updated_at": "2026-05-20T21:29:02Z",
-  "active_step": "Phase 7: Setup and RED fixtures (T001-T006)",
-  "status": "In Progress",
+  "updated_at": "2026-05-20T22:31:45Z",
+  "active_step": "Post: PR Creation",
+  "status": "Ready for PR",
   "active_workflow": {
     "spec_id": "SPEC-009E",
     "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
@@ -381,6 +381,101 @@
       "markers": 0
     }
   },
+  "phase_7": {
+    "status": "completed",
+    "tasks_completed": 59,
+    "task_file": "specs/009e-pilot-evidence-surfaces/tasks.md",
+    "files": [
+      "src/lib/task-evidence.ts",
+      "src/app/api/tasks/[id]/evidence/route.ts",
+      "src/components/panels/task-evidence-section.tsx",
+      "src/components/panels/task-board-panel.tsx",
+      "src/lib/__tests__/task-evidence.fixtures.ts",
+      "src/lib/__tests__/task-evidence.test.ts",
+      "src/app/api/tasks/[id]/evidence/__tests__/route.test.ts",
+      "src/components/panels/__tests__/task-evidence-section.test.tsx",
+      "tests/e2e/task-detail-evidence.spec.ts",
+      "openapi.json",
+      "src/app/api/index/route.ts",
+      "docs/qa/pilot-smoke-checklist.md"
+    ],
+    "implementation_summary": [
+      "Added stored-evidence-only task_evidence.v1 derivation.",
+      "Added authenticated read-only GET /api/tasks/[id]/evidence.",
+      "Added compact display-only task detail Evidence section.",
+      "Covered eligible, local-only, partial-proof, unsafe/quarantined/oversized, source-map, and deferred states.",
+      "Preserved no migration, no dependency, no write action, no GitHub sync trigger, no packet-generation action, no global dashboard, no runner, no claim, no sandbox, no adapter, and no harness boundaries."
+    ],
+    "verification": {
+      "environment": "direnv exec . with Node 22.22.2",
+      "commands": [
+        {
+          "command": "pnpm exec vitest run src/lib/__tests__/task-evidence.test.ts 'src/app/api/tasks/[id]/evidence/__tests__/route.test.ts' src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/task-create.direct-insert-guard.test.ts",
+          "result": "passed: 4 files, 14 tests"
+        },
+        {
+          "command": "pnpm test:e2e -- tests/e2e/task-detail-evidence.spec.ts",
+          "result": "passed: 1 focused Playwright journey"
+        },
+        {
+          "command": "pnpm test",
+          "result": "passed: 281 files, 2933 tests, 33 skipped files, 84 todo tests"
+        },
+        {
+          "command": "pnpm typecheck",
+          "result": "passed"
+        },
+        {
+          "command": "pnpm lint",
+          "result": "passed"
+        },
+        {
+          "command": "pnpm build",
+          "result": "passed"
+        },
+        {
+          "command": "pnpm api:parity",
+          "result": "passed: route ops 338, openapi ops 317, ignored 24"
+        },
+        {
+          "command": "pnpm audit:high",
+          "result": "passed: no known vulnerabilities"
+        },
+        {
+          "command": "git diff --check",
+          "result": "passed"
+        }
+      ]
+    },
+    "uat": {
+      "status": "completed",
+      "ledger": "docs/qa/pilot-smoke-checklist.md",
+      "retained_evidence": {
+        "issue": 50,
+        "pull_request": 51,
+        "repo": "racecraft-lab/mission-control"
+      },
+      "artifacts": [
+        "test-results/spec-009e-task-evidence/spec-009e-evidence-eligible.png",
+        "test-results/spec-009e-task-evidence/spec-009e-evidence-local-only.png",
+        "test-results/spec-009e-task-evidence/spec-009e-evidence-partial-proof.png",
+        "test-results/spec-009e-task-evidence/spec-009e-evidence-fixture-export.json"
+      ],
+      "cleanup": {
+        "disposable_tasks_remaining": 0,
+        "matching_evidence_rows_remaining": 0
+      },
+      "docker": {
+        "status": "not_run",
+        "reason": "Docker daemon unavailable: Cannot connect to the Docker daemon at unix:///Users/fredrickgabelmann/.docker/run/docker.sock"
+      }
+    },
+    "gate": {
+      "id": "G7",
+      "pass": true,
+      "reason": "All 59 implementation tasks complete; focused/full tests, typecheck, lint, build, API parity, audit, Playwright UAT, and cleanup evidence recorded."
+    }
+  },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -409,21 +504,21 @@
     {"step": "Phase 5: Tasks", "status": "completed"},
     {"step": "Phase 6: Analyze", "status": "completed"},
     {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
-    {"step": "Phase 7: Setup and RED fixtures (T001-T006)", "status": "in_progress"},
-    {"step": "Phase 7: Foundational stored evidence derivation (T007-T016)", "status": "pending"},
-    {"step": "Phase 7: US1 route and task detail evidence (T017-T027)", "status": "pending"},
-    {"step": "Phase 7: US2 incomplete/ineligible states (T028-T036)", "status": "pending"},
-    {"step": "Phase 7: US3 deferred boundaries (T037-T042)", "status": "pending"},
-    {"step": "Phase 7: Security accessibility browser verification (T043-T052)", "status": "pending"},
-    {"step": "Phase 7: UAT PR and status evidence (T053-T059)", "status": "pending"},
-    {"step": "Post: Verification and Status Sync", "status": "pending"},
-    {"step": "Post: Verify Implementation", "status": "pending"},
-    {"step": "Post: Code Review", "status": "pending"},
-    {"step": "Post: Integration Suite", "status": "pending"},
-    {"step": "Post: Cleanup", "status": "pending"},
-    {"step": "Post: Reviewability Diff Gate", "status": "pending"},
-    {"step": "Post: PR Body Generation", "status": "pending"},
-    {"step": "Post: PR Creation", "status": "pending"},
+    {"step": "Phase 7: Setup and RED fixtures (T001-T006)", "status": "completed"},
+    {"step": "Phase 7: Foundational stored evidence derivation (T007-T016)", "status": "completed"},
+    {"step": "Phase 7: US1 route and task detail evidence (T017-T027)", "status": "completed"},
+    {"step": "Phase 7: US2 incomplete/ineligible states (T028-T036)", "status": "completed"},
+    {"step": "Phase 7: US3 deferred boundaries (T037-T042)", "status": "completed"},
+    {"step": "Phase 7: Security accessibility browser verification (T043-T052)", "status": "completed"},
+    {"step": "Phase 7: UAT PR and status evidence (T053-T059)", "status": "completed"},
+    {"step": "Post: Verification and Status Sync", "status": "completed"},
+    {"step": "Post: Verify Implementation", "status": "completed"},
+    {"step": "Post: Code Review", "status": "completed"},
+    {"step": "Post: Integration Suite", "status": "completed"},
+    {"step": "Post: Cleanup", "status": "completed"},
+    {"step": "Post: Reviewability Diff Gate", "status": "completed"},
+    {"step": "Post: PR Body Generation", "status": "completed"},
+    {"step": "Post: PR Creation", "status": "in_progress"},
     {"step": "Post: Review Remediation", "status": "pending"},
     {"step": "Post: Retrospective", "status": "pending"}
   ]

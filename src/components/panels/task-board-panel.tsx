@@ -16,6 +16,8 @@ import { MarkdownRenderer } from '@/components/markdown-renderer'
 import { Button } from '@/components/ui/button'
 import { ProjectManagerModal } from '@/components/modals/project-manager-modal'
 import { SessionMessage, shouldShowTimestamp, type SessionTranscriptMessage } from '@/components/chat/session-message'
+import { TaskEvidenceSection } from '@/components/panels/task-evidence-section'
+import type { TaskEvidenceResponse } from '@/lib/task-evidence'
 
 const log = createClientLogger('TaskBoard')
 
@@ -1257,6 +1259,9 @@ function TaskDetailModal({
   const mentionTargets = useMentionTargets()
   const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'quality' | 'session'>('details')
   const [reviewer, setReviewer] = useState('aegis')
+  const [taskEvidence, setTaskEvidence] = useState<TaskEvidenceResponse | null>(null)
+  const [taskEvidenceLoading, setTaskEvidenceLoading] = useState(false)
+  const [taskEvidenceError, setTaskEvidenceError] = useState<string | null>(null)
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -1283,12 +1288,31 @@ function TaskDetailModal({
     }
   }, [activeProductLineScope, task.id])
 
+  const fetchTaskEvidence = useCallback(async () => {
+    try {
+      setTaskEvidenceLoading(true)
+      setTaskEvidenceError(null)
+      const response = await fetch(appendScopeToPath(`/api/tasks/${task.id}/evidence`, activeProductLineScope))
+      if (!response.ok) throw new Error('Failed to fetch evidence')
+      const data = await response.json()
+      setTaskEvidence(data as TaskEvidenceResponse)
+    } catch {
+      setTaskEvidence(null)
+      setTaskEvidenceError('Failed to load evidence')
+    } finally {
+      setTaskEvidenceLoading(false)
+    }
+  }, [activeProductLineScope, task.id])
+
   useEffect(() => {
     fetchComments()
   }, [fetchComments])
   useEffect(() => {
     fetchReviews()
   }, [fetchReviews])
+  useEffect(() => {
+    fetchTaskEvidence()
+  }, [fetchTaskEvidence])
   
   useSmartPoll(fetchComments, 15000)
 
@@ -1675,6 +1699,12 @@ function TaskDetailModal({
                   </div>
                 </div>
               )}
+
+              <TaskEvidenceSection
+                evidence={taskEvidence}
+                loading={taskEvidenceLoading}
+                error={taskEvidenceError}
+              />
 
               {/* Agent session */}
               {task.metadata?.dispatch_session_id && (
