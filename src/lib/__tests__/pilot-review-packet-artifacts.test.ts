@@ -153,7 +153,7 @@ describe('SPEC-009D packet artifact publication', () => {
       }),
       artifacts: [
         pilotArtifact({
-          preview_text: '<img src=x onerror=alert(1)> [stored](https://evil.test) javascript:alert(1)',
+          preview_text: '<img src=x onerror=alert(1)> [stored](https://evil.test) javascript:alert(1) data:text/html,alert(1) vbscript:msgbox(1)',
         }),
       ],
     }))
@@ -166,6 +166,8 @@ describe('SPEC-009D packet artifact publication', () => {
     expect(markdown).not.toContain('[evil](https://evil.test)')
     expect(markdown).not.toContain('[stored](https://evil.test)')
     expect(markdown).not.toContain('javascript:alert(1)')
+    expect(markdown).not.toContain('data:text/html')
+    expect(markdown).not.toContain('vbscript:msgbox')
     expect(markdown).toContain('https://github.com/racecraft-lab/mission-control/issues/52')
     expect(markdown).toContain('https://github.com/racecraft-lab/mission-control/pull/52')
   })

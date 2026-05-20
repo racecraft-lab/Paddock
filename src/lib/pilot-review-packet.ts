@@ -955,6 +955,8 @@ export function buildPilotReviewPacket(input: BuildPilotReviewPacketInput): Pilo
 function escapeMarkdownCodeText(value: string): string {
   return value
     .replace(/javascript:/gi, 'javascript&#58;')
+    .replace(/data:/gi, 'data&#58;')
+    .replace(/vbscript:/gi, 'vbscript&#58;')
     .replace(/`/g, '&#96;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
