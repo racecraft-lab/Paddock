@@ -19,6 +19,9 @@ const MAX_PROVISIONER_INPUT_BYTES = (() => {
   if (Number.isFinite(parsed) && parsed > 0) return parsed
   return 10 * 1024 * 1024
 })()
+const MIN_COMMAND_TIMEOUT_MS = 1000
+const DEFAULT_COMMAND_TIMEOUT_MS = 10000
+const MAX_COMMAND_TIMEOUT_MS = 120000
 
 const ALLOWLISTED_EXECUTABLES = Object.freeze({
   useradd: '/usr/sbin/useradd',
@@ -183,7 +186,7 @@ function run(command, args, timeoutMs) {
     const timer = setTimeout(() => {
       timedOut = true
       child.kill('SIGKILL')
-    }, Math.max(1000, Number(timeoutMs || 10000)))
+    }, timeoutMs)
 
     child.stdout.on('data', (d) => { stdout += d.toString('utf8') })
     child.stderr.on('data', (d) => { stderr += d.toString('utf8') })
@@ -203,6 +206,21 @@ function run(command, args, timeoutMs) {
       resolve({ ok: false, code: 1, stdout, stderr: `${stderr}\n${err.message}` })
     })
   })
+}
+
+function normalizeTimeoutMs(input) {
+  if (input === undefined || input === null || input === '') {
+    return { timeoutMs: DEFAULT_COMMAND_TIMEOUT_MS }
+  }
+  const parsed = Number(input)
+  if (
+    !Number.isSafeInteger(parsed) ||
+    parsed < MIN_COMMAND_TIMEOUT_MS ||
+    parsed > MAX_COMMAND_TIMEOUT_MS
+  ) {
+    return { error: 'timeoutMs out of range' }
+  }
+  return { timeoutMs: parsed }
 }
 
 function sleep(ms) {
@@ -290,7 +308,12 @@ const server = net.createServer((socket) => {
     const { cmd, executable } = resolvedCommand
     const args = Array.isArray(req.args) ? req.args.map((a) => String(a)) : []
     const dryRun = !!req.dryRun
-    const timeoutMs = Number(req.timeoutMs || 10000)
+    const timeoutConfig = normalizeTimeoutMs(req.timeoutMs)
+    if (timeoutConfig.error) {
+      writeResp(socket, { ok: false, error: timeoutConfig.error })
+      return
+    }
+    const { timeoutMs } = timeoutConfig
 
     const validationErr = validateCommand(cmd, args)
     if (validationErr) {

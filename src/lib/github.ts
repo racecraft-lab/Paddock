@@ -6,6 +6,8 @@
 import { getEffectiveEnvValue } from '@/lib/runtime-env'
 
 const DEFAULT_GITHUB_API_BASE_URL = 'https://api.github.com/'
+const GITHUB_OWNER_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/
+const GITHUB_REPO_PATTERN = /^(?!\.{1,2}$)[A-Za-z0-9._-]{1,100}$/
 
 export class GitHubUrlValidationError extends Error {
   constructor() {
@@ -35,19 +37,59 @@ function normalizeGitHubApiBase(baseUrl: string): URL {
   return parsed
 }
 
-function buildGitHubApiUrl(path: string, baseUrl: URL, allowedHosts: Set<string>): string {
-  // Keep absolute/protocol-relative paths intact so host validation can reject escapes.
-  const resolvedPath = /^https?:\/\//i.test(path) || path.startsWith('//')
-    ? path
-    : path.replace(/^\/+/, '')
+function normalizeGitHubApiPath(path: string): string {
+  const candidate = path.trim()
+  if (
+    !candidate.startsWith('/') ||
+    candidate.startsWith('//') ||
+    /^[a-z][a-z0-9+.-]*:/i.test(candidate)
+  ) {
+    throw new GitHubUrlValidationError()
+  }
 
-  const resolvedUrl = new URL(resolvedPath, baseUrl)
+  const pathOnly = candidate.split(/[?#]/, 1)[0]
+  for (const segment of pathOnly.split('/')) {
+    let decodedSegment: string
+    try {
+      decodedSegment = decodeURIComponent(segment)
+    } catch {
+      throw new GitHubUrlValidationError()
+    }
+    if (decodedSegment === '.' || decodedSegment === '..' || decodedSegment.includes('\\')) {
+      throw new GitHubUrlValidationError()
+    }
+  }
 
-  if (!allowedHosts.has(resolvedUrl.host)) {
+  return candidate.replace(/^\/+/, '')
+}
+
+function buildGitHubApiUrl(path: string, baseUrl: URL): string {
+  const resolvedUrl = new URL(normalizeGitHubApiPath(path), baseUrl)
+
+  if (resolvedUrl.protocol !== baseUrl.protocol || resolvedUrl.host !== baseUrl.host) {
     throw new GitHubUrlValidationError()
   }
 
   return resolvedUrl.toString()
+}
+
+function normalizeGitHubRepoSlug(repo: string): string {
+  const [owner, name, ...extra] = repo.trim().split('/')
+  if (
+    !owner ||
+    !name ||
+    extra.length > 0 ||
+    !GITHUB_OWNER_PATTERN.test(owner) ||
+    !GITHUB_REPO_PATTERN.test(name)
+  ) {
+    throw new GitHubUrlValidationError()
+  }
+
+  return `${encodeURIComponent(owner)}/${encodeURIComponent(name)}`
+}
+
+function repoApiPath(repo: string, suffix = ''): string {
+  return `/repos/${normalizeGitHubRepoSlug(repo)}${suffix}`
 }
 
 export interface GitHubLabel {
@@ -90,8 +132,7 @@ export async function githubFetch(
 
   const configuredBase = await getEffectiveEnvValue('GITHUB_API_BASE_URL')
   const baseUrl = normalizeGitHubApiBase(configuredBase)
-  const allowedHosts = new Set<string>(['api.github.com', baseUrl.host])
-  const url = buildGitHubApiUrl(path, baseUrl, allowedHosts)
+  const url = buildGitHubApiUrl(path, baseUrl)
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
@@ -140,7 +181,7 @@ export async function fetchIssues(
   searchParams.set('page', String(params?.page ?? 1))
 
   const qs = searchParams.toString()
-  const res = await githubFetch(`/repos/${repo}/issues?${qs}`)
+  const res = await githubFetch(repoApiPath(repo, `/issues?${qs}`))
 
   if (!res.ok) {
     const text = await res.text()
@@ -159,7 +200,7 @@ export async function fetchIssue(
   repo: string,
   issueNumber: number
 ): Promise<GitHubIssue> {
-  const res = await githubFetch(`/repos/${repo}/issues/${issueNumber}`)
+  const res = await githubFetch(repoApiPath(repo, `/issues/${issueNumber}`))
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`GitHub API error ${res.status}: ${text}`)
@@ -175,7 +216,7 @@ export async function createIssueComment(
   issueNumber: number,
   body: string
 ): Promise<void> {
-  const res = await githubFetch(`/repos/${repo}/issues/${issueNumber}/comments`, {
+  const res = await githubFetch(repoApiPath(repo, `/issues/${issueNumber}/comments`), {
     method: 'POST',
     body: JSON.stringify({ body }),
   })
@@ -193,7 +234,7 @@ export async function updateIssueState(
   issueNumber: number,
   state: 'open' | 'closed'
 ): Promise<void> {
-  const res = await githubFetch(`/repos/${repo}/issues/${issueNumber}`, {
+  const res = await githubFetch(repoApiPath(repo, `/issues/${issueNumber}`), {
     method: 'PATCH',
     body: JSON.stringify({ state }),
   })
@@ -217,7 +258,7 @@ export async function updateIssue(
     assignees?: string[]
   }
 ): Promise<GitHubIssue> {
-  const res = await githubFetch(`/repos/${repo}/issues/${issueNumber}`, {
+  const res = await githubFetch(repoApiPath(repo, `/issues/${issueNumber}`), {
     method: 'PATCH',
     body: JSON.stringify(updates),
   })
@@ -240,7 +281,7 @@ export async function createIssue(
     assignees?: string[]
   }
 ): Promise<GitHubIssue> {
-  const res = await githubFetch(`/repos/${repo}/issues`, {
+  const res = await githubFetch(repoApiPath(repo, '/issues'), {
     method: 'POST',
     body: JSON.stringify(issue),
   })
@@ -258,7 +299,7 @@ export async function createLabel(
   repo: string,
   label: { name: string; color: string; description?: string }
 ): Promise<void> {
-  const res = await githubFetch(`/repos/${repo}/labels`, {
+  const res = await githubFetch(repoApiPath(repo, '/labels'), {
     method: 'POST',
     body: JSON.stringify(label),
   })
@@ -289,7 +330,7 @@ export async function updateIssueLabels(
   issueNumber: number,
   labels: string[]
 ): Promise<void> {
-  const res = await githubFetch(`/repos/${repo}/issues/${issueNumber}/labels`, {
+  const res = await githubFetch(repoApiPath(repo, `/issues/${issueNumber}/labels`), {
     method: 'PUT',
     body: JSON.stringify({ labels }),
   })
@@ -307,7 +348,7 @@ export async function createRef(
   ref: string,
   sha: string
 ): Promise<void> {
-  const res = await githubFetch(`/repos/${repo}/git/refs`, {
+  const res = await githubFetch(repoApiPath(repo, '/git/refs'), {
     method: 'POST',
     body: JSON.stringify({ ref, sha }),
   })
@@ -324,7 +365,7 @@ export async function getRef(
   repo: string,
   ref: string
 ): Promise<{ sha: string }> {
-  const res = await githubFetch(`/repos/${repo}/git/refs/${ref}`)
+  const res = await githubFetch(repoApiPath(repo, `/git/refs/${ref}`))
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`GitHub API error ${res.status}: ${text}`)
@@ -353,7 +394,7 @@ export async function fetchPullRequest(
   repo: string,
   pullNumber: number
 ): Promise<GitHubPullRequest> {
-  const res = await githubFetch(`/repos/${repo}/pulls/${pullNumber}`)
+  const res = await githubFetch(repoApiPath(repo, `/pulls/${pullNumber}`))
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`GitHub API error ${res.status}: ${text}`)
@@ -378,7 +419,7 @@ export async function fetchPullRequests(
   searchParams.set('per_page', String(params?.per_page ?? 30))
 
   const qs = searchParams.toString()
-  const res = await githubFetch(`/repos/${repo}/pulls?${qs}`)
+  const res = await githubFetch(repoApiPath(repo, `/pulls?${qs}`))
   if (!res.ok) {
     const text = await res.text()
     throw new Error(`GitHub API error ${res.status}: ${text}`)
@@ -398,7 +439,7 @@ export async function createPullRequest(
     body?: string
   }
 ): Promise<GitHubPullRequest> {
-  const res = await githubFetch(`/repos/${repo}/pulls`, {
+  const res = await githubFetch(repoApiPath(repo, '/pulls'), {
     method: 'POST',
     body: JSON.stringify(pr),
   })

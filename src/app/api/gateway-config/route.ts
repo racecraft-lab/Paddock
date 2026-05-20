@@ -189,6 +189,9 @@ export async function PUT(request: NextRequest) {
       hash: computeHash(newRaw),
     })
   } catch (err: any) {
+    if (err instanceof InvalidConfigPathError) {
+      return NextResponse.json({ error: err.message }, { status: 400 })
+    }
     return NextResponse.json({ error: `Failed to update config: ${err.message}` }, { status: 500 })
   }
 }
@@ -270,24 +273,56 @@ async function updateSystem(request: NextRequest, auth: any): Promise<NextRespon
 }
 
 /** Reject keys that could mutate the prototype chain when a path comes from untrusted input. */
-const FORBIDDEN_NESTED_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+class InvalidConfigPathError extends Error {
+  constructor() {
+    super('Invalid configuration path')
+    this.name = 'InvalidConfigPathError'
+  }
+}
+
+function isForbiddenNestedKey(key: string): boolean {
+  return key === '__proto__' || key === 'constructor' || key === 'prototype'
+}
+
+function assertSafeNestedKey(key: string): void {
+  if (!key || isForbiddenNestedKey(key)) {
+    throw new InvalidConfigPathError()
+  }
+}
+
+function setOwnConfigProperty(target: Record<string, unknown>, key: string, value: unknown): void {
+  assertSafeNestedKey(key)
+  Object.defineProperty(target, key, {
+    value,
+    enumerable: true,
+    configurable: true,
+    writable: true,
+  })
+}
 
 /** Set a value in a nested object using dot-notation path */
 function setNestedValue(obj: any, path: string, value: any) {
   const keys = path.split('.')
   for (const key of keys) {
-    if (FORBIDDEN_NESTED_KEYS.has(key)) {
-      throw new Error('Invalid configuration path')
-    }
+    assertSafeNestedKey(key)
   }
-  let current = obj
+  let current: Record<string, unknown> = obj
   for (let i = 0; i < keys.length - 1; i++) {
-    if (!Object.prototype.hasOwnProperty.call(current, keys[i]) || current[keys[i]] === undefined) {
-      current[keys[i]] = {}
+    const key = keys[i]
+    assertSafeNestedKey(key)
+    const child = Object.prototype.hasOwnProperty.call(current, key) ? current[key] : undefined
+    if (child === undefined || child === null) {
+      const next = Object.create(null) as Record<string, unknown>
+      setOwnConfigProperty(current, key, next)
+      current = next
+      continue
     }
-    current = current[keys[i]]
+    if (typeof child !== 'object' || Array.isArray(child)) {
+      throw new InvalidConfigPathError()
+    }
+    current = child as Record<string, unknown>
   }
-  current[keys[keys.length - 1]] = value
+  setOwnConfigProperty(current, keys[keys.length - 1], value)
 }
 
 /** Redact sensitive values for display */
