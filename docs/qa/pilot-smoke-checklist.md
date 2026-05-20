@@ -202,6 +202,74 @@ outside mocked fixtures.
   local temp worktree and branch were removed, and GitHub PR #49 remains closed
   and unmerged.
 
+## SPEC-009C4 Owner Merge Gate Proof
+
+- SPEC-009C4 live UAT must use a fresh synthetic C4 PR. Record PR URL/number,
+  target repo, workspace id, project id, linked PR-producing task id, cleanup
+  owner, and creation timestamp before any merge action.
+- Before `G_PILOT_MERGE`, record the pre-merge `ready_for_owner` state for the
+  linked task and verify no `done` status, `mc:done` label projection, terminal
+  `github_pr_merged` activity, or task-chain advancement has occurred.
+- At `G_PILOT_MERGE`, the operator manually merges the fresh synthetic C4 PR.
+  Record merge timestamp, operator, target deployment URL/commit, PR number,
+  and exact linked task id.
+- After the manual merge, trigger existing manual GitHub sync through
+  `POST /api/github/sync` or the GitHub Sync panel. Record sync result,
+  resulting task status, `mc:done` label projection, stale `mc:ready-for-owner`
+  removal, terminal activity id/type, bounded notification evidence, duplicate
+  sync result, and cleanup or retention rationale.
+- SPEC-009C3 PR #49 must not be reused or treated as SPEC-009C4 merge proof.
+  It was closed unmerged after the C3 ready-for-owner smoke and is valid only
+  as explicit non-use evidence for C4.
+
+## SPEC-009C4 Manual Operator Gate
+
+SPEC-009C4 live UAT is blocked until an operator explicitly approves and
+performs live GitHub mutation against a fresh synthetic C4 PR. Do not mark
+T045-T049 complete from local fixtures, mocked PR evidence, or checklist text
+alone.
+
+- T045: Create a fresh synthetic draft PR only after live-mutation approval.
+  Record PR URL/number, target repo, workspace id, project id, linked
+  PR-producing task id, cleanup owner, creation timestamp, and pre-merge
+  `ready_for_owner` state.
+- T046: At `G_PILOT_MERGE`, manually merge that fresh synthetic C4 PR. Record
+  merge timestamp, operator, target deployment URL/commit, PR number, linked
+  task id, and explicit non-use of SPEC-009C3 PR #49.
+- T047: Run manual GitHub sync through `POST /api/github/sync` or the GitHub
+  Sync panel. Record sync result, resulting task status, `mc:done` label
+  projection, stale `mc:ready-for-owner` removal, terminal activity,
+  notification evidence, and duplicate sync evidence.
+- T048: Clean disposable Mission Control UAT residue after evidence capture.
+  Record before/after counts, cleanup owner, timestamp, retained GitHub audit
+  trail, and retention rationale.
+- T049: If cleanup fails, record failed cleanup step, owner, timestamp,
+  before/after counts when available, sanitized failure reason, retained local
+  rows or GitHub artifacts, and follow-up owner.
+
+## SPEC-009D Handoff Evidence Sources
+
+- Use existing source records only. The handoff source trail comes from
+  `tasks.status`, `tasks.completed_at`, `tasks.github_repo`,
+  `tasks.github_issue_number`, `tasks.github_pr_number`, and
+  `tasks.github_synced_at` on the linked PR-producing task.
+- Use `activities` rows for terminal proof: exactly one `task_updated` row
+  whose data records `github_pr_merged`, plus any bounded reconciliation or
+  failed-sync evidence generated before merge proof exists.
+- Use `notifications` rows for owner-action proof: the existing
+  `task_ready_for_owner` notification remains bounded, and duplicate sync must
+  not create extra owner-action or reconciliation-required notifications.
+- Use `task_artifacts` rows for upstream readiness proof: the
+  `spec-009c3.v1` artifacts remain the owner-readiness inputs and are not
+  repackaged for SPEC-009D.
+- Use `quality_reviews` rows for review proof: the canonical `aegis` approval
+  row remains the source for owner readiness.
+- Use GitHub labels for external sync proof: `mc:done` must be projected and
+  stale `mc:ready-for-owner` must be absent after successful reconciliation.
+- Use smoke checklist text for operator proof: record the fresh synthetic C4 PR
+  identity, manual `G_PILOT_MERGE`, duplicate-sync result, cleanup or retention
+  rationale, and explicit non-use of SPEC-009C3 PR #49.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control

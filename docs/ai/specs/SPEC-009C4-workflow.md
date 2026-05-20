@@ -96,8 +96,8 @@ only when its artifact and gate evidence are recorded here.
 
 | Step | Required By Autopilot | Status | Evidence |
 |------|-----------------------|--------|----------|
-| Archive Sweep Startup | Step -1 | Pending | Detect archive extension, exclude current target `specs/009c4-owner-merge-reconciliation`, preserve completed prior-spec evidence, and stop or dry-run on unsafe dirty worktrees |
-| Prerequisites | Step 0 | Pending | Verify SpecKit CLI, package manager `pnpm`, remote `origin`, branch guard, reviewability preset, Node 22+, and clean worktree before phase execution |
+| Archive Sweep Startup | Step -1 | Complete | 2026-05-19 setup/RED harness pass verified archive sweep startup evidence excludes current target `specs/009c4-owner-merge-reconciliation`; preserve completed prior-spec evidence and stop or dry-run on unsafe dirty worktrees |
+| Prerequisites | Step 0 | Complete | 2026-05-19 setup/RED harness pass verified branch `009c4-owner-merge-reconciliation`, SpecKit alias `SPECIFY_FEATURE=009-owner-merge-reconciliation`, explicit `SPECIFY_FEATURE_DIRECTORY=specs/009c4-owner-merge-reconciliation`, and package manager `pnpm` from `pnpm-lock.yaml` |
 | Specify | Phase 1 / G1 | Complete | Generated `spec.md` with 20 FRs, 4 user stories, 12 acceptance scenarios, 10 success criteria; requirements checklist complete; G1 passed with 0 markers |
 | Clarify | Phase 2 / G2 | Complete | Four sessions completed; G2 passed with 0 `[NEEDS CLARIFICATION]` markers; consensus decisions logged below |
 | Plan | Phase 3 / G3 | Complete | Generated `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, and `contracts/manual-github-sync-reconciliation.md`; G3 passed with 0 markers |
@@ -190,6 +190,40 @@ Prerequisite discovery on 2026-05-19:
 - Reviewability preset detected:
   `speckit-pro-reviewability` for spec, plan, and tasks templates.
 - Current source commit: `13a104f6` from `main` at setup time.
+
+Setup and RED harness verification on 2026-05-19:
+
+- Branch guard rerun from the active worktree: `git status --short --branch`
+  returned `009c4-owner-merge-reconciliation...origin/009c4-owner-merge-reconciliation`.
+- SpecKit env alias evidence remains:
+  `SPECIFY_FEATURE=009-owner-merge-reconciliation` plus
+  `SPECIFY_FEATURE_DIRECTORY=specs/009c4-owner-merge-reconciliation`.
+  The alias is for script validation only; the git branch remains
+  `009c4-owner-merge-reconciliation`.
+- Package manager evidence: `ls -1 *lock*` returned `pnpm-lock.yaml`; C4 uses
+  pnpm commands only.
+- Alignment evidence: `spec.md`, `plan.md`, and
+  `SPEC-009C4-design-concept.md` all agree that `G_PILOT_MERGE` is the only
+  human merge gate, production reconciliation reuses the existing manual
+  `pullFromGitHub` sync path, and automatic polling/webhooks/scheduler work
+  remain out of scope.
+- Archive-sweep evidence: startup accounting explicitly excludes the current
+  target `specs/009c4-owner-merge-reconciliation` from same-run archival while
+  preserving previously completed spec evidence.
+
+Existing seam inventory for setup/RED harness:
+
+- `src/lib/github-sync-engine.ts` owns `pullFromGitHub(project, workspaceId,
+  opts?)`, test-only `webhookFixture` injection, linked PR lookup through
+  `fetchPullRequest(task.github_repo, task.github_pr_number)`, reconciliation
+  activity/notification writes, and the post-terminal `advanceTaskChain` call.
+- `src/app/api/github/sync/route.ts` keeps the manual API trigger shape
+  `{ "action": "trigger", "project_id": <id> }`, resolves workspace scope,
+  loads the active GitHub-enabled project, and calls
+  `pullFromGitHub(project, workspaceId)` without a fixture argument.
+- `src/lib/task-dispatch.ts` owns `advanceTaskChain`, successor idempotency via
+  existing successor checks, and ready-for-owner side effects in the task-chain
+  surface. No production edits were made during this setup inventory.
 
 ### Constitution and PRD Validation
 
@@ -730,10 +764,10 @@ Before starting any task:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 1 - Setup and RED coverage | Pending | Pending | Pending |
-| 2 - Reconciliation behavior | Pending | Pending | Pending |
-| 3 - Evidence and smoke checklist | Pending | Pending | Pending |
-| 4 - Guardrails, cleanup, and verification | Pending | Pending | Pending |
+| 1 - Setup and RED coverage | T001-T009 | Complete | Setup evidence recorded; RED harness helpers added; initial RED observed for supporting-only PR metadata |
+| 2 - Reconciliation behavior | T010-T041 | Complete | Exact merged-PR truth, done label projection, fail-closed local-only `done`, and duplicate-sync idempotency implemented; focused Vitest passes 30 tests under Node 22 |
+| 3 - Evidence and smoke checklist | T042-T049 | Blocked at `G_PILOT_MERGE` | T042-T044 guardrails complete and checklist scaffolding added; T045-T049 require explicit operator approval for fresh synthetic PR creation, manual merge, sync, duplicate-sync evidence, and cleanup/retention |
+| 4 - Guardrails, cleanup, and verification | T050-T055 | Pending | Final verification and roadmap/status hygiene wait on live UAT gate |
 
 ---
 

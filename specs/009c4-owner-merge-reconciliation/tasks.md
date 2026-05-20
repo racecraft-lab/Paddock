@@ -10,11 +10,11 @@
 
 **Purpose**: Confirm the branch, feature artifacts, package manager, and no-new-surface boundaries before writing RED tests.
 
-- [ ] T001 Verify the worktree remains on branch `009c4-owner-merge-reconciliation`, verify prerequisite-backed SpecKit commands use `SPECIFY_FEATURE=009-owner-merge-reconciliation` plus `SPECIFY_FEATURE_DIRECTORY=specs/009c4-owner-merge-reconciliation`, and record both checks in `docs/ai/specs/SPEC-009C4-workflow.md`
-- [ ] T002 Verify `pnpm-lock.yaml` is the package-manager lockfile and record `pnpm` command usage in `specs/009c4-owner-merge-reconciliation/quickstart.md`
-- [ ] T003 [P] Verify `specs/009c4-owner-merge-reconciliation/spec.md`, `specs/009c4-owner-merge-reconciliation/plan.md`, and `docs/ai/specs/SPEC-009C4-design-concept.md` remain aligned on manual sync and `G_PILOT_MERGE`
-- [ ] T004 [P] Verify archive-sweep startup evidence excludes `specs/009c4-owner-merge-reconciliation` as the current target in `docs/ai/specs/SPEC-009C4-workflow.md`
-- [ ] T005 [P] Inventory existing manual sync and task-chain seams in `src/lib/github-sync-engine.ts`, `src/app/api/github/sync/route.ts`, and `src/lib/task-dispatch.ts` without making production edits
+- [x] T001 Verify the worktree remains on branch `009c4-owner-merge-reconciliation`, verify prerequisite-backed SpecKit commands use `SPECIFY_FEATURE=009-owner-merge-reconciliation` plus `SPECIFY_FEATURE_DIRECTORY=specs/009c4-owner-merge-reconciliation`, and record both checks in `docs/ai/specs/SPEC-009C4-workflow.md`
+- [x] T002 Verify `pnpm-lock.yaml` is the package-manager lockfile and record `pnpm` command usage in `specs/009c4-owner-merge-reconciliation/quickstart.md`
+- [x] T003 [P] Verify `specs/009c4-owner-merge-reconciliation/spec.md`, `specs/009c4-owner-merge-reconciliation/plan.md`, and `docs/ai/specs/SPEC-009C4-design-concept.md` remain aligned on manual sync and `G_PILOT_MERGE`
+- [x] T004 [P] Verify archive-sweep startup evidence excludes `specs/009c4-owner-merge-reconciliation` as the current target in `docs/ai/specs/SPEC-009C4-workflow.md`
+- [x] T005 [P] Inventory existing manual sync and task-chain seams in `src/lib/github-sync-engine.ts`, `src/app/api/github/sync/route.ts`, and `src/lib/task-dispatch.ts` without making production edits
 
 ---
 
@@ -24,10 +24,10 @@
 
 **CRITICAL**: No production code change in `src/lib/github-sync-engine.ts` may occur until the relevant RED task in this phase or a user-story test task fails for the intended reason.
 
-- [ ] T006 Add or extend fixture helpers for linked PR-producing tasks, exact PR evidence, mismatched PR evidence, closed issue evidence, failed sync evidence, activities, notifications, labels, and task-chain calls in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T007 Add helper assertions for "no terminal side effects" including no `done` status, no done label projection, no stale ready-label removal, no `github_pr_merged` terminal activity, no `advanceTaskChain`, no duplicate launch, and no cleanup call in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T008 Add helper assertions for successful terminal evidence including `tasks.status='done'`, `completed_at`, exact PR identity, `github_synced_at`, done label projection, stale ready-label removal, terminal activity, bounded notifications, and one task-chain advancement in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T009 Run the focused Vitest file and confirm any new SPEC-009C4 tests are RED before implementation using `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T006 Add or extend fixture helpers for linked PR-producing tasks, exact PR evidence, mismatched PR evidence, closed issue evidence, failed sync evidence, activities, notifications, labels, and task-chain calls in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T007 Add helper assertions for "no terminal side effects" including no `done` status, no done label projection, no stale ready-label removal, no `github_pr_merged` terminal activity, no `advanceTaskChain`, no duplicate launch, and no cleanup call in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T008 Add helper assertions for successful terminal evidence including `tasks.status='done'`, `completed_at`, exact PR identity, `github_synced_at`, done label projection, stale ready-label removal, terminal activity, bounded notifications, and one task-chain advancement in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T009 Run the focused Vitest file and confirm any new SPEC-009C4 tests are RED before implementation using `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 **Checkpoint**: Test harness is ready; user story phases can proceed with RED tests first.
 
@@ -41,15 +41,15 @@
 
 ### Tests for User Story 1
 
-- [ ] T010 [P] [US1] Write a RED test proving a linked `ready_for_owner` task with no `G_PILOT_MERGE` evidence remains `ready_for_owner` with no terminal side effects in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T011 [P] [US1] Write a RED test proving unmerged exact PR evidence does not complete the linked task and records reconciliation-required evidence in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T012 [P] [US1] Write a RED checklist assertion that `docs/qa/pilot-smoke-checklist.md` requires fresh C4 PR identity, pre-merge `ready_for_owner`, manual `G_PILOT_MERGE`, and explicit non-use of SPEC-009C3 PR #49 in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T010 [P] [US1] Write a RED test proving a linked `ready_for_owner` task with no `G_PILOT_MERGE` evidence remains `ready_for_owner` with no terminal side effects in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T011 [P] [US1] Write a RED test proving unmerged exact PR evidence does not complete the linked task and records reconciliation-required evidence in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T012 [P] [US1] Write a RED checklist assertion that `docs/qa/pilot-smoke-checklist.md` requires fresh C4 PR identity, pre-merge `ready_for_owner`, manual `G_PILOT_MERGE`, and explicit non-use of SPEC-009C3 PR #49 in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T013 [US1] Patch `src/lib/github-sync-engine.ts` only if T010 or T011 proves the existing pre-merge or unmerged-PR path can complete or launch incorrectly
-- [ ] T014 [US1] Add the `G_PILOT_MERGE` live smoke evidence template and SPEC-009C3 PR #49 exclusion language in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T015 [US1] Run the focused tests for the owner merge gate and confirm T010, T011, and T012 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T013 [US1] Patch `src/lib/github-sync-engine.ts` only if T010 or T011 proves the existing pre-merge or unmerged-PR path can complete or launch incorrectly
+- [x] T014 [US1] Add the `G_PILOT_MERGE` live smoke evidence template and SPEC-009C3 PR #49 exclusion language in `docs/qa/pilot-smoke-checklist.md`
+- [x] T015 [US1] Run the focused tests for the owner merge gate and confirm T010, T011, and T012 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 **Checkpoint**: US1 proves the owner gate can be reviewed independently.
 
@@ -63,18 +63,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T016 [P] [US2] Write a RED test proving exact merged PR evidence for the linked `github_repo` and `github_pr_number` transitions the task from `ready_for_owner` to `done` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T017 [P] [US2] Write a RED test proving successful reconciliation applies or projects `mc:done` and removes stale `mc:ready-for-owner` projection in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T018 [P] [US2] Write a RED test proving successful reconciliation records terminal `github_pr_merged` activity and bounded notification evidence in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T019 [P] [US2] Write a RED test proving `advanceTaskChain` runs only after verified exact merged PR evidence and produces exactly one successor launch or terminal advancement in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T020 [P] [US2] Write a RED contract-level assertion for `POST /api/github/sync` trigger shape and `pullFromGitHub(project, workspaceId)` reuse in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T016 [P] [US2] Write a RED test proving exact merged PR evidence for the linked `github_repo` and `github_pr_number` transitions the task from `ready_for_owner` to `done` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T017 [P] [US2] Write a RED test proving successful reconciliation applies or projects `mc:done` and removes stale `mc:ready-for-owner` projection in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T018 [P] [US2] Write a RED test proving successful reconciliation records terminal `github_pr_merged` activity and bounded notification evidence in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T019 [P] [US2] Write a RED test proving `advanceTaskChain` runs only after verified exact merged PR evidence and produces exactly one successor launch or terminal advancement in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T020 [P] [US2] Write a RED contract-level assertion for `POST /api/github/sync` trigger shape and `pullFromGitHub(project, workspaceId)` reuse in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Patch exact merged PR reconciliation in `src/lib/github-sync-engine.ts` only for proven failures from T016, T017, T018, or T019
-- [ ] T022 [US2] Patch `src/app/api/github/sync/route.ts` only if T020 proves the manual API route bypasses the existing `pullFromGitHub(project, workspaceId)` path
-- [ ] T023 [US2] Verify no new sync API, webhook, poller, or scheduler entrypoint was added while implementing US2 in `src/app/api/github/sync/route.ts`
-- [ ] T024 [US2] Run the focused tests for exact merged PR reconciliation and confirm T016 through T020 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T021 [US2] Patch exact merged PR reconciliation in `src/lib/github-sync-engine.ts` only for proven failures from T016, T017, T018, or T019
+- [x] T022 [US2] Patch `src/app/api/github/sync/route.ts` only if T020 proves the manual API route bypasses the existing `pullFromGitHub(project, workspaceId)` path
+- [x] T023 [US2] Verify no new sync API, webhook, poller, or scheduler entrypoint was added while implementing US2 in `src/app/api/github/sync/route.ts`
+- [x] T024 [US2] Run the focused tests for exact merged PR reconciliation and confirm T016 through T020 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 **Checkpoint**: US2 proves the production manual sync happy path independently.
 
@@ -88,19 +88,19 @@
 
 ### Tests for User Story 3
 
-- [ ] T025 [P] [US3] Write a RED test proving closed issue evidence or supporting-only PR metadata (`merged_at`/`merge_commit_sha` without explicit merged PR truth) leaves the task `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T026 [P] [US3] Write a RED test proving a merged PR with the wrong PR number does not complete the linked task in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T027 [P] [US3] Write a RED test proving a merged PR from the wrong repository does not complete the linked task in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T028 [P] [US3] Write a RED test proving GitHub transport, auth, permission, rate-limit, timeout, or upstream API failure records failed-sync evidence and leaves the task `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T029 [P] [US3] Write a RED test proving fixture or mocked PR evidence cannot be passed through production API/UI callsites as live smoke proof in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T030 [P] [US3] Write a RED test proving local-only `done` mutation without current exact merged PR evidence cannot satisfy the C4 terminal gate in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T025 [P] [US3] Write a RED test proving closed issue evidence or supporting-only PR metadata (`merged_at`/`merge_commit_sha` without explicit merged PR truth) leaves the task `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T026 [P] [US3] Write a RED test proving a merged PR with the wrong PR number does not complete the linked task in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T027 [P] [US3] Write a RED test proving a merged PR from the wrong repository does not complete the linked task in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T028 [P] [US3] Write a RED test proving GitHub transport, auth, permission, rate-limit, timeout, or upstream API failure records failed-sync evidence and leaves the task `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T029 [P] [US3] Write a RED test proving fixture or mocked PR evidence cannot be passed through production API/UI callsites as live smoke proof in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T030 [P] [US3] Write a RED test proving local-only `done` mutation without current exact merged PR evidence cannot satisfy the C4 terminal gate in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T031 [US3] Patch fail-closed PR identity handling in `src/lib/github-sync-engine.ts` only for proven failures from T025, T026, or T027
-- [ ] T032 [US3] Patch failed-sync handling in `src/lib/github-sync-engine.ts` only if T028 proves transport/API failures can write terminal side effects
-- [ ] T033 [US3] Patch fixture-boundary handling in `src/lib/github-sync-engine.ts` or `src/app/api/github/sync/route.ts` only if T029 proves test fixtures can reach production callsites
-- [ ] T034 [US3] Run the focused negative-case tests and confirm T025 through T030 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T031 [US3] Patch fail-closed PR identity handling in `src/lib/github-sync-engine.ts` only for proven failures from T025, T026, or T027
+- [x] T032 [US3] Patch failed-sync handling in `src/lib/github-sync-engine.ts` only if T028 proves transport/API failures can write terminal side effects
+- [x] T033 [US3] Patch fixture-boundary handling in `src/lib/github-sync-engine.ts` or `src/app/api/github/sync/route.ts` only if T029 proves test fixtures can reach production callsites
+- [x] T034 [US3] Run the focused negative-case tests and confirm T025 through T030 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 **Checkpoint**: US3 proves the fail-closed cases independently.
 
@@ -114,16 +114,16 @@
 
 ### Tests for User Story 4
 
-- [ ] T035 [P] [US4] Write a RED test proving duplicate manual sync keeps task status stable at `done` and does not create duplicate terminal completion in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T036 [P] [US4] Write a RED test proving duplicate sync does not call `advanceTaskChain` or launch downstream work more than once in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T037 [P] [US4] Write a RED test proving duplicate sync does not flood terminal activities, owner-action notifications, reconciliation-required notifications, or cleanup evidence in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
-- [ ] T038 [P] [US4] Write a RED evidence-source assertion for SPEC-009D handoff fields from tasks, activities, notifications, task artifacts, quality reviews, GitHub labels, and smoke checklist text in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T035 [P] [US4] Write a RED test proving duplicate manual sync keeps task status stable at `done` and does not create duplicate terminal completion in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T036 [P] [US4] Write a RED test proving duplicate sync does not call `advanceTaskChain` or launch downstream work more than once in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T037 [P] [US4] Write a RED test proving duplicate sync does not flood terminal activities, owner-action notifications, reconciliation-required notifications, or cleanup evidence in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T038 [P] [US4] Write a RED evidence-source assertion for SPEC-009D handoff fields from tasks, activities, notifications, task artifacts, quality reviews, GitHub labels, and smoke checklist text in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T039 [US4] Patch duplicate-sync idempotency in `src/lib/github-sync-engine.ts` only for proven failures from T035, T036, or T037
-- [ ] T040 [US4] Update SPEC-009D handoff source mapping in `docs/qa/pilot-smoke-checklist.md` without adding packet YAML, JSON, table, API, dashboard, or UI
-- [ ] T041 [US4] Run the focused duplicate-sync and handoff tests and confirm T035 through T038 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [x] T039 [US4] Patch duplicate-sync idempotency in `src/lib/github-sync-engine.ts` only for proven failures from T035, T036, or T037
+- [x] T040 [US4] Update SPEC-009D handoff source mapping in `docs/qa/pilot-smoke-checklist.md` without adding packet YAML, JSON, table, API, dashboard, or UI
+- [x] T041 [US4] Run the focused duplicate-sync and handoff tests and confirm T035 through T038 are GREEN in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 
 **Checkpoint**: US4 proves duplicate sync and handoff evidence independently.
 
@@ -133,9 +133,9 @@
 
 **Purpose**: Prove future-spec boundaries, execute fresh C4 smoke evidence, clean UAT residue, and run the required verification commands.
 
-- [ ] T042 [P] Verify no new webhook, poller, scheduler, or sync API path was introduced in `src/app/api/github/sync/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/task-dispatch.ts`
-- [ ] T043 [P] Verify no claim/run schema, sandbox lifecycle, harness adapter, review packet table, lifecycle snapshot API, evidence dashboard, packet UI, new migration, or new runtime dependency was introduced in `src/`, `scripts/`, `package.json`, and `pnpm-lock.yaml`
-- [ ] T044 [P] Verify no new SPEC-009C4-owned TypeScript module requires additions to `tsconfig.spec-strict.json` or `eslint.config.mjs`; if a new module was necessary, add exact entries in `tsconfig.spec-strict.json` and `eslint.config.mjs`
+- [x] T042 [P] Verify no new webhook, poller, scheduler, or sync API path was introduced in `src/app/api/github/sync/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/task-dispatch.ts`
+- [x] T043 [P] Verify no claim/run schema, sandbox lifecycle, harness adapter, review packet table, lifecycle snapshot API, evidence dashboard, packet UI, new migration, or new runtime dependency was introduced in `src/`, `scripts/`, `package.json`, and `pnpm-lock.yaml`
+- [x] T044 [P] Verify no new SPEC-009C4-owned TypeScript module requires additions to `tsconfig.spec-strict.json` or `eslint.config.mjs`; if a new module was necessary, add exact entries in `tsconfig.spec-strict.json` and `eslint.config.mjs`
 - [ ] T045 Create a fresh synthetic draft PR for C4 live UAT and record its URL/number, target repo, workspace/project identity, linked task id, and pre-merge `ready_for_owner` state in `docs/qa/pilot-smoke-checklist.md`
 - [ ] T046 Manually merge the fresh synthetic C4 PR at `G_PILOT_MERGE` and record timestamp, operator, target deployment, and explicit non-use of SPEC-009C3 PR #49 in `docs/qa/pilot-smoke-checklist.md`
 - [ ] T047 Run manual GitHub sync via `POST /api/github/sync` or the GitHub Sync panel and record sync result, task status, done label projection, stale ready-label removal, terminal activity, notification evidence, and duplicate sync evidence in `docs/qa/pilot-smoke-checklist.md`

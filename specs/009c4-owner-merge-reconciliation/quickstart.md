@@ -3,6 +3,7 @@
 ## Prerequisites
 
 - Node >=22 and pnpm.
+- Package manager lockfile: `pnpm-lock.yaml`; use pnpm commands only.
 - Worktree branch: `009c4-owner-merge-reconciliation`.
 - Manual GitHub sync remains the production reconciliation trigger.
 - A fresh synthetic C4 PR exists or will be created for live UAT; do not use SPEC-009C3 PR #49.
@@ -55,7 +56,7 @@ Do not create packet YAML/JSON, packet persistence, lifecycle snapshot API, evid
 Run focused tests first during RED/GREEN loops:
 
 ```bash
-pnpm test
+pnpm test src/lib/__tests__/github-sync-ready-for-owner.test.ts
 ```
 
 Run full verification before completion:
@@ -64,4 +65,4 @@ Run full verification before completion:
 pnpm test:all
 ```
 
-Use focused commands (`pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, or `pnpm test:e2e`) while narrowing failures, but keep `pnpm test:all` as the final PR gate. If no UI surface changes, record the no-new-UI-journey rationale separately from the full gate result.
+Use focused commands (`pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, or `pnpm test:e2e`) while narrowing failures, but keep `pnpm test:all` as the final PR gate. If no UI surface changes, record the no-new-UI-journey rationale separately from the full gate result. Do not use npm, yarn, or bun for C4 verification.
