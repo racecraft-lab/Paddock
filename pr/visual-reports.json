@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-20T03:41:36.955Z",
+  "updatedAt": "2026-05-20T06:48:59.818Z",
   "prs": [
+    {
+      "prNumber": "54",
+      "prTitle": "feat(spec-009d): add pilot review packet artifacts",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/54",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/54/",
+      "headRef": "009d-pilot-review-lifecycle",
+      "baseRef": "main",
+      "updatedAt": "2026-05-20T06:48:59.818Z",
+      "latest": {
+        "storybook": {
+          "runId": "26146132267",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26146132267",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/54/storybook/latest/?v=26146132267-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/54/runs/26146132267-attempt-1/storybook/",
+          "updatedAt": "2026-05-20T06:48:59.818Z"
+        }
+      }
+    },
     {
       "prNumber": "53",
       "prTitle": "fix(security): remediate dependency advisories",

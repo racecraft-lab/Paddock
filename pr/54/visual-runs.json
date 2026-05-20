@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "54",
+  "prTitle": "feat(spec-009d): add pilot review packet artifacts",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/54",
+  "headRef": "009d-pilot-review-lifecycle",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "26146132267",
+      "runAttempt": "1",
+      "runKey": "26146132267-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26146132267",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/54/runs/26146132267-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/54/storybook/latest/?v=26146132267-attempt-1",
+      "headSha": "d4a20f4c68fb17fb7bd684d399538f3722f40444",
+      "headRef": "009d-pilot-review-lifecycle",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-05-20T06:48:59.818Z"
+    }
+  ],
+  "updatedAt": "2026-05-20T06:48:59.818Z"
+}
