@@ -21,9 +21,45 @@ Generic API envelope returned by `GET /api/tasks/[id]/evidence`.
 
 - Must not inline artifact body content.
 - Must not include storage URI, object path, signed URL, raw secret value, parser internals, or actor identity for unsafe artifact states.
+- Must treat stored evidence-derived strings as untrusted display text; raw HTML, Markdown links, autolinks, script-capable markup, and unsafe URL schemes must not become active links or executable markup.
+- Active links may be constructed only from typed contract references such as GitHub issue/PR references, artifact ids or hashes, source-map pointers, checklist anchors, or static UAT links after protocol and destination-family validation.
 - Must use v1 snake_case states: `eligible`, `not_eligible`, `incomplete`, `available`, `missing`, `stale`, `redacted`, `quarantined`, `superseded`, `unavailable`, and `deferred`.
 - Oversized and malformed evidence are warning reason codes, not top-level eligibility states.
 - Missing or incomplete evidence for an otherwise readable task remains a `200` domain state.
+
+## V1 Evidence State Model
+
+This section is the authoritative state model for SPEC-009E. The API-provided state is authoritative for every task evidence section. UI rendering is a one-way projection from this model and must not reinterpret, synthesize, persist, or override section states.
+
+### Allowed Evidence States
+
+| API state | Meaning | Display behavior | Metadata | Prohibited behavior |
+| --- | --- | --- | --- | --- |
+| `eligible` | Pilot eligibility inputs satisfy the stored-evidence contract for the task. | Show eligible pilot proof and source-map references. | Eligibility inputs and source-map pointers. | Do not infer eligibility from client-side links, cached data, or hidden refreshes. |
+| `not_eligible` | The task is local-only, non-pilot, or lacks required GitHub-linked identity. | Show a compact not-eligible explanation. | Missing or ineligible reason codes. | Do not convert to `missing`; absence is intentional for this context. |
+| `incomplete` | Some relevant proof exists, but required proof categories are missing or unavailable. | Show incomplete state and list missing categories. | Missing category and completeness reason codes. | Do not merge neighboring sections or local state to complete proof. |
+| `available` | Stored evidence exists and is safe to summarize. | Show the available summary, safe references, and permitted metadata. | Stored ids, labels, hashes, sizes, timestamps, or source-map pointers when safe. | Do not downgrade based on client-side timestamp checks. |
+| `missing` | Expected stored evidence is absent. | Show missing proof with API-provided reason. | Missing reason codes or expected source names. | Do not synthesize placeholder proof or trigger collection. |
+| `stale` | Stored evidence exists but a newer stored lifecycle, sync, artifact, packet, or activity record supersedes its current-proof value. | Show stale proof as trace or warning evidence. | Stale or source-disagreement reason codes. | Do not make freshness decisions from wall-clock age or call external sources to refresh it. |
+| `redacted` | Evidence exists but only a post-redaction safe preview or metadata may be exposed. | Show redacted state and permitted safe metadata only. | Existing redaction status, hash, byte count, source-map pointer, and safe preview when allowed. | Do not recover, cache, infer, or display redacted content. |
+| `quarantined` | Evidence exists but trust/safety or artifact policy bars content exposure. | Show metadata-only quarantined state. | Existing security-scan status, hash, byte count, and safe reason code. | Do not expose raw content, preview text, storage URI, object paths, signed URLs, parser internals, or actor identity. |
+| `superseded` | Evidence exists but has been replaced by newer stored evidence. | Show trace-only superseded state when needed for source-map continuity. | Superseding artifact id or warning reason when safe. | Do not count superseded evidence as current proof. |
+| `unavailable` | A required stored source or artifact store cannot currently be read. | Show unavailable state or section warning while preserving other readable sections. | `artifact_storage_disabled`, `artifact_storage_unavailable`, cleanup rationale, or source unavailable reason. | Do not convert to `missing`, repair the source, or hide other readable evidence. |
+| `deferred` | The category belongs to a later spec or future runtime authority. | Show deferred label and owning future spec. | Owner spec and human-readable label. | Do not expose controls or attempt local evaluation. |
+
+### Section-by-Section V1 State Matrix
+
+| V1 section | Allowed states | Authoritative stored sources | Notes |
+| --- | --- | --- | --- |
+| `task` | `available`, `missing`, `unavailable` | Authorized task row and workspace scope. | Masked auth/scope failures remain HTTP boundary errors rather than evidence states. |
+| `pilot_eligibility` | `eligible`, `not_eligible`, `incomplete`, `missing`, `unavailable` | Stored task identity, packet/source-map references, retained GitHub issue/PR evidence, and stored smoke proof. | Packet-local `local_only_excluded` maps to `not_eligible`. |
+| `identity` | `available`, `missing`, `stale`, `incomplete`, `unavailable` | Stored `github_repo`, issue/PR numbers, retained GitHub issue #50 / PR #51 references, and sync rows. | Missing PR proof is incomplete when issue proof or other pilot evidence is present. |
+| `packet_artifacts` | `available`, `missing`, `stale`, `redacted`, `quarantined`, `superseded`, `unavailable` | Existing task artifact metadata and SPEC-009D packet/source-map references. | Artifact content remains behind existing artifact read routes. |
+| `smoke` | `available`, `missing`, `incomplete`, `unavailable` | Stored packet/source-map smoke references or static UAT links. | Runtime derivation does not parse `docs/qa/pilot-smoke-checklist.md`. |
+| `current_stage` | `available`, `missing`, `stale`, `unavailable` | Current task/activity rows, with packet snapshot state as warning evidence. | Current task/activity rows win for live stage; stale packet state remains trace evidence. |
+| `warnings` | `available`, `missing` | Derived from stored evidence states and safe reason codes. | Oversized, malformed, unsafe, secret-bearing, cleanup, and source-conflict details are warning reasons, not top-level states. |
+| `deferrals` | `deferred` | Static SPEC-013/SPEC-014 ownership labels and any stored source-map pointer proving absence. | Seven future-state categories are display-only. |
+| `source_map` | `available`, `missing`, `stale`, `unavailable`, `deferred` | Stored task, activity, artifact, packet, quality review, governance, GitHub sync, retained GitHub issue/PR, static UAT link, or cleanup note references. | Empty source maps are allowed only for explicit future deferrals where no stored evidence proves absence. |
 
 ## Task
 
@@ -163,4 +199,5 @@ Trace pointer explaining where a section's evidence came from.
 **Rules**:
 
 - Source map may point at retained external issue #50 / PR #51 and static UAT links as archived proof.
+- Source map notes are untrusted display text; they may name a typed source but must not be parsed into active Markdown links, autolinks, raw HTML, or executable markup.
 - Cleaned disposable row pointers are represented as `unavailable` or `missing` with cleanup rationale, never as current live state.

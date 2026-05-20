@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
-  "updated_at": "2026-05-20T21:00:00Z",
-  "active_step": "Phase 4: Checklist - api-contracts",
+  "updated_at": "2026-05-20T22:25:00Z",
+  "active_step": "Phase 5: Tasks",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009E",
@@ -231,6 +231,99 @@
       "markers": 0
     }
   },
+  "phase_4": {
+    "status": "completed",
+    "domains": {
+      "api-contracts": {
+        "status": "completed",
+        "items": 17,
+        "gaps_found": 2,
+        "gaps_remediated": 2,
+        "files": [
+          "specs/009e-pilot-evidence-surfaces/spec.md",
+          "specs/009e-pilot-evidence-surfaces/contracts/task-evidence.openapi.yaml",
+          "specs/009e-pilot-evidence-surfaces/checklists/api-contracts.md"
+        ],
+        "consensus": [],
+        "markers": 0
+      },
+      "ux": {
+        "status": "completed",
+        "items": 23,
+        "gaps_found": 0,
+        "gaps_remediated": 0,
+        "files": [
+          "specs/009e-pilot-evidence-surfaces/checklists/ux.md"
+        ],
+        "consensus": [],
+        "markers": 0
+      },
+      "accessibility": {
+        "status": "completed",
+        "items": 14,
+        "gaps_found": 2,
+        "gaps_remediated": 2,
+        "files": [
+          "specs/009e-pilot-evidence-surfaces/spec.md",
+          "specs/009e-pilot-evidence-surfaces/plan.md",
+          "specs/009e-pilot-evidence-surfaces/checklists/accessibility.md"
+        ],
+        "consensus": [],
+        "markers": 0
+      },
+      "state-management": {
+        "status": "completed",
+        "items": 31,
+        "gaps_found": 3,
+        "gaps_remediated": 3,
+        "files": [
+          "specs/009e-pilot-evidence-surfaces/spec.md",
+          "specs/009e-pilot-evidence-surfaces/plan.md",
+          "specs/009e-pilot-evidence-surfaces/data-model.md",
+          "specs/009e-pilot-evidence-surfaces/checklists/state-management.md"
+        ],
+        "consensus": [],
+        "markers": 0
+      },
+      "data-integrity": {
+        "status": "completed",
+        "items": 27,
+        "gaps_found": 0,
+        "gaps_remediated": 0,
+        "files": [
+          "specs/009e-pilot-evidence-surfaces/checklists/data-integrity.md"
+        ],
+        "consensus": [],
+        "markers": 0
+      },
+      "security": {
+        "status": "completed",
+        "items": 22,
+        "gaps_found": 1,
+        "gaps_remediated": 1,
+        "files": [
+          "specs/009e-pilot-evidence-surfaces/spec.md",
+          "specs/009e-pilot-evidence-surfaces/plan.md",
+          "specs/009e-pilot-evidence-surfaces/data-model.md",
+          "specs/009e-pilot-evidence-surfaces/contracts/task-evidence.openapi.yaml",
+          "specs/009e-pilot-evidence-surfaces/checklists/security.md"
+        ],
+        "consensus": [],
+        "markers": 0
+      }
+    },
+    "totals": {
+      "items": 134,
+      "gaps_found": 8,
+      "gaps_remediated": 8
+    },
+    "gate": {
+      "id": "G4",
+      "pass": true,
+      "reason": "0 unresolved [Gap] markers",
+      "markers": 0
+    }
+  },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -244,19 +337,19 @@
     {"step": "Phase 2: Clarify - UAT And Cleanup Evidence", "status": "completed"},
     {"step": "Phase 2: Clarify - UAT And Cleanup Evidence Consensus", "status": "completed"},
     {"step": "Phase 3: Plan", "status": "completed"},
-    {"step": "Phase 4: Checklist - api-contracts", "status": "in_progress"},
-    {"step": "Phase 4: Checklist - api-contracts Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - ux", "status": "pending"},
-    {"step": "Phase 4: Checklist - ux Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - accessibility", "status": "pending"},
-    {"step": "Phase 4: Checklist - accessibility Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - state-management", "status": "pending"},
-    {"step": "Phase 4: Checklist - state-management Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - data-integrity", "status": "pending"},
-    {"step": "Phase 4: Checklist - data-integrity Consensus", "status": "pending"},
-    {"step": "Phase 4: Checklist - security", "status": "pending"},
-    {"step": "Phase 4: Checklist - security Consensus", "status": "pending"},
-    {"step": "Phase 5: Tasks", "status": "pending"},
+    {"step": "Phase 4: Checklist - api-contracts", "status": "completed"},
+    {"step": "Phase 4: Checklist - api-contracts Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - ux", "status": "completed"},
+    {"step": "Phase 4: Checklist - ux Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - accessibility", "status": "completed"},
+    {"step": "Phase 4: Checklist - accessibility Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - state-management", "status": "completed"},
+    {"step": "Phase 4: Checklist - state-management Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - data-integrity", "status": "completed"},
+    {"step": "Phase 4: Checklist - data-integrity Consensus", "status": "completed"},
+    {"step": "Phase 4: Checklist - security", "status": "completed"},
+    {"step": "Phase 4: Checklist - security Consensus", "status": "completed"},
+    {"step": "Phase 5: Tasks", "status": "in_progress"},
     {"step": "Phase 6: Analyze", "status": "pending"},
     {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
     {"step": "Phase 7: Implement - Pending task decomposition", "status": "pending"},

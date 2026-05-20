@@ -10,7 +10,12 @@ paths:
         Returns a generic task evidence envelope with pilot-derived v1 sections.
         This endpoint is read-only and must not call GitHub, generate packets,
         run smoke scripts, trigger sync, mutate tasks, write activities, or
-        parse smoke checklist Markdown at runtime.
+        parse smoke checklist Markdown at runtime. Stored evidence-derived
+        strings are inert display text; clients must create active links only
+        from typed task evidence references such as GitHub issue/PR references,
+        artifact ids or hashes, source-map pointers, checklist anchors, or
+        static UAT links after validating allowed protocols and destination
+        families.
       parameters:
         - name: id
           in: path
@@ -34,25 +39,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/InvalidWorkspaceScopeErrorResponse"
         "401":
           description: Unauthenticated read.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/UnauthenticatedErrorResponse"
         "403":
           description: Authenticated caller is forbidden from an explicit workspace scope, following existing authorization behavior.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/ForbiddenWorkspaceScopeErrorResponse"
         "404":
           description: Masked missing task or task outside authorized workspace scope.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/TaskNotFoundErrorResponse"
 components:
   schemas:
     ErrorResponse:
@@ -62,7 +67,43 @@ components:
       properties:
         error:
           type: string
-          examples: [task_not_found, unauthorized, forbidden, invalid_workspace_scope]
+          enum:
+            - unauthenticated
+            - invalid_workspace_scope
+            - forbidden_workspace_scope
+            - task_not_found
+    InvalidWorkspaceScopeErrorResponse:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+          const: invalid_workspace_scope
+    UnauthenticatedErrorResponse:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+          const: unauthenticated
+    ForbiddenWorkspaceScopeErrorResponse:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+          const: forbidden_workspace_scope
+    TaskNotFoundErrorResponse:
+      type: object
+      required: [error]
+      additionalProperties: false
+      properties:
+        error:
+          type: string
+          const: task_not_found
     EvidenceState:
       type: string
       enum:
@@ -192,6 +233,11 @@ components:
       properties:
         state:
           $ref: "#/components/schemas/EvidenceState"
+        unavailable_reason:
+          type: string
+          enum:
+            - artifact_storage_disabled
+            - artifact_storage_unavailable
         references:
           type: array
           items:
@@ -261,15 +307,45 @@ components:
             type: string
     EvidenceWarning:
       type: object
-      required: [code, message]
+      required: [code, message, section, reason]
       additionalProperties: false
       properties:
         code:
           type: string
+          enum:
+            - section_unavailable
+            - evidence_incomplete
+            - source_conflict
+            - stale_evidence
+            - unsafe_evidence
+            - cleanup_rationale
         message:
           type: string
         section:
           type: string
+          enum:
+            - task
+            - pilot_eligibility
+            - identity
+            - packet_artifacts
+            - smoke
+            - current_stage
+            - deferrals
+            - source_map
+        reason:
+          type: string
+          enum:
+            - artifact_storage_disabled
+            - artifact_storage_unavailable
+            - missing_proof
+            - source_disagreement
+            - stale
+            - superseded
+            - malformed
+            - oversized
+            - unsafe
+            - secret_bearing
+            - cleaned_uat_rows
     DeferralEvidence:
       type: object
       required: [category, state, owner_spec, label]

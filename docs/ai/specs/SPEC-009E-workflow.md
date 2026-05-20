@@ -45,8 +45,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated `specs/009e-pilot-evidence-surfaces/spec.md` and requirements checklist; G1 passed with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | Four sessions resolved API route/contract, task detail Evidence section, stored source/state semantics, UAT retained evidence, and cleanup handling; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, OpenAPI contract, and quickstart; G3 passed |
-| Checklist | `$speckit-checklist` | In Progress | Run focused API, UX/accessibility, state-management, data-integrity, security, and error-handling domains |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict read-only and route/UI scope |
+| Checklist | `$speckit-checklist` | Complete | Six domains complete; 134 items, 8 gaps remediated, G4 passed with 0 unresolved gaps |
+| Tasks | `$speckit-tasks` | In Progress | Generate TDD-first tasks with strict read-only and route/UI scope |
 | Analyze | `$speckit-analyze` | Pending | Check drift against roadmap and design concept, especially no sync/generation/schema expansion |
 | Implement | `$speckit-implement` | Pending | Implement only after G6 passes; verify locally and with UAT evidence |
 
@@ -444,13 +444,13 @@ Focus on SPEC-009E requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| api-contracts | Pending | Pending | Pending |
-| ux | Pending | Pending | Pending |
-| accessibility | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| data-integrity | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
-| Total | Pending | Pending | Pending |
+| api-contracts | 17 | 2 found, 2 remediated | `spec.md` FR-019/FR-020, `contracts/task-evidence.openapi.yaml`, `checklists/api-contracts.md` |
+| ux | 23 | 0 | `checklists/ux.md`, `spec.md` FR-010/FR-011/FR-022/FR-024, `quickstart.md` |
+| accessibility | 14 | 2 found, 2 remediated | `spec.md` FR-023/FR-033/FR-034, SC-006/SC-007; `plan.md` UI Journey Gate; `checklists/accessibility.md` |
+| state-management | 31 | 3 found, 3 remediated | `spec.md` FR-035/FR-036/FR-037; `plan.md` read-only/UI state constraints; `data-model.md` state catalog and section matrix; `checklists/state-management.md` |
+| data-integrity | 27 | 0 | `checklists/data-integrity.md`, `spec.md` stored-evidence/source-map requirements, `data-model.md` state matrix, OpenAPI `SourceMapEntry` |
+| security | 22 | 1 found, 1 remediated | `spec.md` FR-038; `plan.md` stored text/link constraints; `data-model.md`; OpenAPI route description; `checklists/security.md` |
+| Total | 134 | 8 found, 8 remediated | No unresolved `[Gap]` markers |
 
 ---
 

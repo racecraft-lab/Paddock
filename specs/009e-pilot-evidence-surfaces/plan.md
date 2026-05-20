@@ -23,6 +23,47 @@ The durable route is task-scoped rather than pilot-specific. As required by the 
 **Reviewability Budget**: Primary surface is API/read model with secondary UI display. Projected reviewable LOC: warn range but below block threshold. Projected production files: 4-6. Projected total files: 10-14. Budget result: allowed, with PR review order API/helper -> UI -> tests -> UAT ledger.
 **Strict Scope**: Add every new TS/TSX module introduced by SPEC-009E to `tsconfig.spec-strict.json` and `eslint.config.mjs`; expected new modules are `src/lib/task-evidence.ts` and `src/app/api/tasks/[id]/evidence/route.ts` if implementation confirms those paths.
 
+## Read-Only State Management Constraints
+
+SPEC-009E is a read-only evidence presentation feature. The HTTP `GET` route, server helper, and UI must preserve HTTP safe-method expectations by retrieving stored evidence without requesting or causing origin-server state changes.
+
+### Server Route / Helper
+
+- Use read-only retrieval over existing task, activity, artifact, review, governance, GitHub sync, packet/source-map, and UAT reference rows.
+- Do not perform database writes, task updates, artifact writes, packet generation, smoke execution, GitHub calls, sync triggers, queue/job enqueues, repair/backfill work, quarantine updates, supersession updates, redaction updates, activity writes, audit/event writes, or hidden refreshes.
+- Treat user retry, page reload, and task-detail reopen as another read-only API request only.
+- Use `data-model.md` §V1 Evidence State Model as the authoritative section-state matrix.
+
+### Client UI
+
+- Hold only ephemeral in-memory request/render state for loading, error, and current response display.
+- Do not persist evidence state, derived evidence state, or local evidence overrides in `localStorage`, `sessionStorage`, IndexedDB, Cache Storage, cookies, URL parameters, Zustand persistence, or application-level persisted caches.
+- Do not create local override controls or hidden local correction state for task evidence sections.
+- Retry/reload may re-fetch the API response but must not refresh, repair, backfill, or mutate evidence.
+
+## UI State Projection Contract
+
+The UI display model is a one-way projection from the API evidence state model.
+
+| API contract element | UI responsibility | Prohibited UI behavior |
+| --- | --- | --- |
+| `state` | Render the API-provided state through approved labels, colors, copy, and accessible descriptions. | No reinterpretation, synthesis, merge, upgrade, downgrade, hide, override, or coercion. |
+| `reason` / `reason_code` / `missing` | Display or summarize API-provided reasons where the section design needs them. | No client-created evidence reason codes. |
+| Freshness or stale metadata | Display API-provided stale/source-disagreement information when present. | No client-side freshness calculation or external refresh. |
+| Completeness metadata | Display API-provided missing categories and incomplete state. | No client-side completion by merging neighboring sections or cached evidence. |
+| `redacted`, `quarantined`, `superseded` | Preserve restricted/trust-state semantics exactly. | No cached fallback display, bypass, or local override. |
+| Unknown API state | Render an explicit unsupported contract/error condition. | No coercion to `missing`, `unavailable`, `available`, or any other known evidence state. |
+
+## Stored Text And Link Rendering Constraints
+
+Stored evidence-derived strings are untrusted display text, even after artifact redaction or compaction. The route/helper may return safe labels, warning reasons, source-map notes, and preview text only as inert text fields unless a value is modeled as a typed contract reference.
+
+- Do not parse stored values as raw HTML, script-capable markup, Markdown links, autolinks, or navigation triggers.
+- Construct active links only from typed, allowlisted references in the task evidence contract: GitHub issue/PR references, artifact ids or hashes, source-map pointers, checklist anchors, or static UAT links.
+- Validate typed URL references to allowed protocols and expected destination families before rendering as links.
+- Render unsafe schemes such as `javascript:`, `data:`, `vbscript:`, and `file:` as inert text.
+- Keep this behavior aligned with SPEC-009D packet Markdown precedent, where stored evidence strings are escaped and active links are generated only from packet-owned references.
+
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
@@ -47,6 +88,9 @@ The durable route is task-scoped rather than pilot-specific. As required by the 
 ### UI Journey Gate
 
 - Playwright must boot the real app, authenticate through supported auth seams, seed or select deterministic data, open task detail, and verify the Evidence section using accessible labels.
+- Accessibility assertions must cover keyboard navigation to the Details tab and within the Evidence section, including GitHub references, packet/artifact references, source-map pointers, warnings, missing-proof indicators, and deferred-section labels.
+- Screen-reader-oriented assertions or manual notes must prove eligibility, current stage, packet references, missing proof, warnings, and deferred sections have distinguishable labels or descriptions and are not conveyed by color alone.
+- Overflow/reflow evidence must include long packet names, GitHub references, source-map pointers, warning reason codes, and deferred labels at the narrow viewport used for UAT, with browser zoom up to 400% when practical.
 - Required screenshots: loading or initial open state, retained pilot evidence loaded state, incomplete/not-eligible state, and deferred categories visible. Responsive screenshot is required if the touched task detail layout changes at narrow width.
 - Docker-backed execution using the existing repository Docker build and disposable data directory is preferred when Docker is available; otherwise record the local app command and data directory used.
 - Failing e2e output and screenshots must be reviewed before PR update. Known UI defects in the touched journey block PR update.
@@ -61,6 +105,17 @@ The durable route is task-scoped rather than pilot-specific. As required by the 
 ### PR Review Packet Source
 
 The PR body must include: what changed, why, non-goals, review order, scope budget, FR/SC traceability, verification commands, Playwright screenshot artifact locations, known gaps, and rollback/flag notes. Rollback is removing the additive route/helper/UI section; no database rollback exists.
+
+### State Management Verification
+
+- Verify every v1 response section in `data-model.md` §V1 Evidence State Model accepts only its allowed API states.
+- Verify route/helper code performs read-only retrieval only: no persistence, mutation, job enqueue, refresh, repair, backfill, quarantine/supersession/redaction update, activity write, or audit/event write.
+- Verify UI retry/reload only re-fetches the read-only API response.
+- Verify the client stores no evidence override state in `localStorage`, `sessionStorage`, IndexedDB, Cache Storage, cookies, URL parameters, Zustand persistence, or persisted app cache.
+- Verify each API state renders according to the state model without client-side reinterpretation, synthesis, override, coercion, or client-side freshness/completeness inference.
+- Verify unknown API state renders an explicit unsupported contract/error condition.
+- Verify `redacted`, `quarantined`, and `superseded` never display cached or locally reconstructed evidence content.
+- Verify stored evidence-derived strings containing Markdown links, raw HTML, autolinks, or unsafe URL schemes render as inert text, and that active links are produced only from typed, allowlisted task evidence references.
 
 ## Project Structure
 
