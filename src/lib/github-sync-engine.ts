@@ -373,15 +373,15 @@ interface PullRequestMergeEvidence {
 }
 
 function hasMergedPrEvidence(pr: PullRequestMergeEvidence | null | undefined): pr is PullRequestMergeEvidence {
-  return Boolean(pr && (pr.merged === true || pr.merged_at || pr.merge_commit_sha))
+  return Boolean(pr && pr.merged === true)
 }
 
-function isReadyForOwnerMergeGatedTask(
+function isOwnerMergeGatedTask(
   task: ReadyForOwnerTaskRow,
   twoStepTerminalEnabled: boolean,
 ): boolean {
   return twoStepTerminalEnabled
-    && task.status === READY_FOR_OWNER_STATUS
+    && (task.status === READY_FOR_OWNER_STATUS || task.status === 'done')
     && task.produces_pr === 1
     && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT
 }
@@ -820,11 +820,15 @@ export async function pullFromGitHub(
           continue
         }
 
-        if (isReadyForOwnerMergeGatedTask(existingTask, resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
+        if (isOwnerMergeGatedTask(existingTask, resolveFlag('FEATURE_TWO_STEP_TERMINAL', {
           workspaceFlags: flagsRow?.feature_flags ?? null,
         }))) {
           const mergedPr = await mergedPullRequestEvidenceForTask(existingTask, opts?.webhookFixture)
           if (mergedPr) {
+            if (existingTask.status === 'done') {
+              continue
+            }
+
             const transition = resolveTaskTerminalTransition({
               taskId: existingTask.id,
               currentStatus: existingTask.status,
@@ -855,6 +859,22 @@ export async function pullFromGitHub(
               existingTask.id, workspaceId,
             )
 
+            const terminalPriority = labelToPriority(labelNames)
+            const terminalLabels = [
+              ...labelNames.filter(name =>
+                !ALL_STATUS_LABEL_NAMES.includes(name)
+                && !ALL_PRIORITY_LABEL_NAMES.includes(name),
+              ),
+              statusToLabel(transition.status as TaskStatus).name,
+              priorityToLabel(terminalPriority).name,
+            ]
+            await updateIssue(repo, issue.number, {
+              title: issue.title,
+              body: issue.body || '',
+              state: 'closed',
+              labels: terminalLabels,
+            })
+
             pulled++
             db_helpers.logActivity(
               'task_updated', 'task', existingTask.id, 'github-sync',
@@ -875,12 +895,16 @@ export async function pullFromGitHub(
           if (issue.state === 'closed') {
             db.prepare(`
               UPDATE tasks
-              SET title = ?, description = ?, priority = ?,
+              SET title = ?, description = ?,
+                  status = CASE WHEN status = 'done' THEN ? ELSE status END,
+                  completed_at = CASE WHEN status = 'done' THEN NULL ELSE completed_at END,
+                  priority = ?,
                   github_synced_at = ?, updated_at = ?
               WHERE id = ? AND workspace_id = ?
             `).run(
               issue.title,
               issue.body || '',
+              READY_FOR_OWNER_STATUS,
               labelToPriority(labelNames),
               now, now,
               existingTask.id, workspaceId,
