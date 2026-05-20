@@ -10,11 +10,11 @@
 
 **Purpose**: Confirm the branch, feature artifacts, package manager, and no-new-surface boundaries before writing RED tests.
 
-- [ ] T001 Verify the worktree remains on branch `009c4-owner-merge-reconciliation` and record the check in `docs/ai/specs/SPEC-009C4-workflow.md`
+- [ ] T001 Verify the worktree remains on branch `009c4-owner-merge-reconciliation`, verify prerequisite-backed SpecKit commands use `SPECIFY_FEATURE=009-owner-merge-reconciliation` plus `SPECIFY_FEATURE_DIRECTORY=specs/009c4-owner-merge-reconciliation`, and record both checks in `docs/ai/specs/SPEC-009C4-workflow.md`
 - [ ] T002 Verify `pnpm-lock.yaml` is the package-manager lockfile and record `pnpm` command usage in `specs/009c4-owner-merge-reconciliation/quickstart.md`
 - [ ] T003 [P] Verify `specs/009c4-owner-merge-reconciliation/spec.md`, `specs/009c4-owner-merge-reconciliation/plan.md`, and `docs/ai/specs/SPEC-009C4-design-concept.md` remain aligned on manual sync and `G_PILOT_MERGE`
 - [ ] T004 [P] Verify archive-sweep startup evidence excludes `specs/009c4-owner-merge-reconciliation` as the current target in `docs/ai/specs/SPEC-009C4-workflow.md`
-- [ ] T005 [P] Inventory existing manual sync and task-chain seams in `src/lib/github-sync-engine.ts`, `src/app/api/github/sync/route.ts`, and `src/lib/task-chain.ts` without making production edits
+- [ ] T005 [P] Inventory existing manual sync and task-chain seams in `src/lib/github-sync-engine.ts`, `src/app/api/github/sync/route.ts`, and `src/lib/task-dispatch.ts` without making production edits
 
 ---
 
@@ -88,7 +88,7 @@
 
 ### Tests for User Story 3
 
-- [ ] T025 [P] [US3] Write a RED test proving closed issue evidence without matching merged PR evidence leaves the task `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
+- [ ] T025 [P] [US3] Write a RED test proving closed issue evidence or supporting-only PR metadata (`merged_at`/`merge_commit_sha` without explicit merged PR truth) leaves the task `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 - [ ] T026 [P] [US3] Write a RED test proving a merged PR with the wrong PR number does not complete the linked task in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 - [ ] T027 [P] [US3] Write a RED test proving a merged PR from the wrong repository does not complete the linked task in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 - [ ] T028 [P] [US3] Write a RED test proving GitHub transport, auth, permission, rate-limit, timeout, or upstream API failure records failed-sync evidence and leaves the task `ready_for_owner` in `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
@@ -133,7 +133,7 @@
 
 **Purpose**: Prove future-spec boundaries, execute fresh C4 smoke evidence, clean UAT residue, and run the required verification commands.
 
-- [ ] T042 [P] Verify no new webhook, poller, scheduler, or sync API path was introduced in `src/app/api/github/sync/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/task-chain.ts`
+- [ ] T042 [P] Verify no new webhook, poller, scheduler, or sync API path was introduced in `src/app/api/github/sync/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/task-dispatch.ts`
 - [ ] T043 [P] Verify no claim/run schema, sandbox lifecycle, harness adapter, review packet table, lifecycle snapshot API, evidence dashboard, packet UI, new migration, or new runtime dependency was introduced in `src/`, `scripts/`, `package.json`, and `pnpm-lock.yaml`
 - [ ] T044 [P] Verify no new SPEC-009C4-owned TypeScript module requires additions to `tsconfig.spec-strict.json` or `eslint.config.mjs`; if a new module was necessary, add exact entries in `tsconfig.spec-strict.json` and `eslint.config.mjs`
 - [ ] T045 Create a fresh synthetic draft PR for C4 live UAT and record its URL/number, target repo, workspace/project identity, linked task id, and pre-merge `ready_for_owner` state in `docs/qa/pilot-smoke-checklist.md`
@@ -145,7 +145,7 @@
 - [ ] T051 Run `pnpm typecheck` and record the result in `docs/qa/pilot-smoke-checklist.md`
 - [ ] T052 Run `pnpm lint` and record the result in `docs/qa/pilot-smoke-checklist.md`
 - [ ] T053 Run `pnpm test` and record the result in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T054 Run `pnpm test:e2e` if UI or visible smoke surfaces changed; otherwise record the no-UI-change rationale in `docs/qa/pilot-smoke-checklist.md`
+- [ ] T054 Run `pnpm test:all` for the final PR gate, record the result in `docs/qa/pilot-smoke-checklist.md`, and separately record the no-new-UI-journey rationale if C4 changed only library tests and Markdown checklist evidence
 - [ ] T055 Update C4 roadmap/status hygiene after implementation and live UAT evidence are complete in `docs/ai/rc-factory-technical-roadmap.md` and `docs/ai/specs/SPEC-009C4-workflow.md`
 
 ---

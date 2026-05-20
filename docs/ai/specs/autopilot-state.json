@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
   "updated_at": "2026-05-19T00:00:00Z",
-  "active_step": "Phase 6: Analyze",
+  "active_step": "Phase 7: Setup and RED Harness (T001-T009)",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009C4",
@@ -276,6 +276,42 @@
       "transition_exception": true
     }
   },
+  "phase_6": {
+    "status": "completed",
+    "findings": {
+      "total": 5,
+      "critical": 1,
+      "high": 3,
+      "medium": 0,
+      "low": 1
+    },
+    "remediation": [
+      "Documented SPECIFY_FEATURE script-validation alias while keeping the actual git branch unchanged.",
+      "Replaced nonexistent src/lib/task-chain.ts task references with src/lib/task-dispatch.ts.",
+      "Added supporting-only merged_at/merge_commit_sha RED coverage.",
+      "Restored pnpm test:all as the final PR gate.",
+      "Corrected workflow counts to 20 FRs and 10 success criteria."
+    ],
+    "gate": {
+      "id": "G6",
+      "pass": true,
+      "reason": "0 CRITICAL/HIGH findings",
+      "markers": 0
+    }
+  },
+  "phase_7": {
+    "status": "in_progress",
+    "active_group": "Setup and RED Harness (T001-T009)",
+    "groups": {
+      "Setup and RED Harness (T001-T009)": "in_progress",
+      "US1 Owner Merge Gate (T010-T015)": "pending",
+      "US2 Manual Sync Done Reconciliation (T016-T024)": "pending",
+      "US3 Fail-Closed Negative Cases (T025-T034)": "pending",
+      "US4 Idempotency and Evidence Handoff (T035-T041)": "pending",
+      "Guardrails and Live UAT (T042-T049)": "pending",
+      "Verification and Status Hygiene (T050-T055)": "pending"
+    }
+  },
   "commands": {
     "BUILD": "pnpm build",
     "TYPECHECK": "pnpm typecheck",
@@ -382,15 +418,15 @@
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Setup and RED Harness (T001-T009)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US1 Owner Merge Gate (T010-T015)",

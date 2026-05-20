@@ -70,8 +70,8 @@ Source-of-truth scoping decisions:
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and manual sync reconciliation contract; G3 passed with 0 markers |
 | Checklist | `$speckit-checklist` | Complete | Ran five domains; 114 items, 3 gaps resolved, G4 passed with 0 remaining gap markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks across 7 groups; G5 and tasks reviewability gate passed under transition exception |
-| Analyze | `$speckit-analyze` | In Progress | Verify no C4 artifact pulls in later control-plane specs |
-| Implement | `$speckit-implement` | Pending | Execute tasks, verification, live `G_PILOT_MERGE` UAT, cleanup, PR packet, and push |
+| Analyze | `$speckit-analyze` | Complete | Found 5 issues, remediated all; G6 passed with 0 CRITICAL/HIGH findings |
+| Implement | `$speckit-implement` | In Progress | Execute tasks, verification, live `G_PILOT_MERGE` UAT, cleanup, PR packet, and push |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -98,13 +98,13 @@ only when its artifact and gate evidence are recorded here.
 |------|-----------------------|--------|----------|
 | Archive Sweep Startup | Step -1 | Pending | Detect archive extension, exclude current target `specs/009c4-owner-merge-reconciliation`, preserve completed prior-spec evidence, and stop or dry-run on unsafe dirty worktrees |
 | Prerequisites | Step 0 | Pending | Verify SpecKit CLI, package manager `pnpm`, remote `origin`, branch guard, reviewability preset, Node 22+, and clean worktree before phase execution |
-| Specify | Phase 1 / G1 | Complete | Generated `spec.md` with 18 FRs, 4 user stories, 12 acceptance scenarios, 8 success criteria; requirements checklist complete; G1 passed with 0 markers |
+| Specify | Phase 1 / G1 | Complete | Generated `spec.md` with 20 FRs, 4 user stories, 12 acceptance scenarios, 10 success criteria; requirements checklist complete; G1 passed with 0 markers |
 | Clarify | Phase 2 / G2 | Complete | Four sessions completed; G2 passed with 0 `[NEEDS CLARIFICATION]` markers; consensus decisions logged below |
 | Plan | Phase 3 / G3 | Complete | Generated `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, and `contracts/manual-github-sync-reconciliation.md`; G3 passed with 0 markers |
 | Checklist | Phase 4 / G4 | Complete | 114 checklist items across five domains; 3 error-handling gaps resolved; G4 passed with 0 remaining `[Gap]` markers |
 | Tasks | Phase 5 / G5 | Complete | 55 tasks, 7 groups, 24 parallel opportunities, 4 user stories covered; tasks reviewability gate passed under transition exception |
-| Analyze | Phase 6 / G6 | In Progress | Record cross-artifact analysis findings and resolutions |
-| Implement | Phase 7 / G7 | Pending | Record task completion, tests, live UAT, cleanup, roadmap/workflow updates, and push evidence |
+| Analyze | Phase 6 / G6 | Complete | 1 critical, 3 high, and 1 low issue remediated; G6 passed with 0 CRITICAL/HIGH findings |
+| Implement | Phase 7 / G7 | In Progress | Record task completion, tests, live UAT, cleanup, roadmap/workflow updates, and push evidence |
 | Post-Implementation Verify | Post step 10/12 | Pending | Record focused Vitest, broader checks, and any Playwright decision |
 | Cleanup / Reviewability / PR | Post steps 13-18 | Pending | Record reviewability gate, PR review packet, branch push, and post-merge UAT plan |
 
@@ -126,12 +126,18 @@ Expected branch:
 009c4-owner-merge-reconciliation
 ```
 
-If supported, set:
+For prerequisite-backed SpecKit scripts on this non-standard branch, keep the
+actual git branch unchanged and set a validator-compatible SpecKit alias plus
+the explicit feature directory:
 
 ```bash
-GIT_BRANCH_NAME=009c4-owner-merge-reconciliation
+SPECIFY_FEATURE=009-owner-merge-reconciliation
 SPECIFY_FEATURE_DIRECTORY=specs/009c4-owner-merge-reconciliation
 ```
+
+`SPECIFY_FEATURE` is only a script-validation alias. The actual branch guard
+remains `git rev-parse --abbrev-ref HEAD` returning
+`009c4-owner-merge-reconciliation`.
 
 ### Reviewability Gate
 
@@ -217,8 +223,10 @@ pnpm build
 
 If the Task Board, GitHub sync settings UI, pilot smoke checklist rendering, or
 operator evidence surfaces change, run the focused Playwright target or
-`pnpm test:e2e`. If only library tests and Markdown checklist evidence change,
-record Playwright as not applicable with rationale.
+`pnpm test:e2e` while narrowing the change. Before completion, run
+`pnpm test:all` as the final PR gate; if only library tests and Markdown
+checklist evidence changed, record the no-new-UI-journey rationale separately
+from the full gate result.
 
 ---
 
@@ -339,7 +347,7 @@ UAT target, evidence boundary, negative cases, and archive/status hygiene.
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | 18 |
+| Functional Requirements | 20 |
 | User Stories | 4 |
 | Acceptance Criteria | 12 |
 
@@ -669,7 +677,11 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A001 | CRITICAL | Final verification task did not preserve `pnpm test:all` PR gate | Resolved in T054, `quickstart.md`, and workflow verification text |
+| A002 | HIGH | SpecKit prerequisite validator rejected required `009c4` branch shape | Resolved with documented `SPECIFY_FEATURE=009-owner-merge-reconciliation` alias plus `SPECIFY_FEATURE_DIRECTORY` while preserving actual git branch |
+| A003 | HIGH | Tasks referenced nonexistent `src/lib/task-chain.ts` | Resolved by replacing task references with `src/lib/task-dispatch.ts` |
+| A004 | HIGH | Tasks lacked supporting-only PR metadata coverage | Resolved by amending T025 for `merged_at`/`merge_commit_sha` without explicit merged truth |
+| A005 | LOW | Workflow counts drifted after checklist remediation | Resolved: 20 FRs, 10 success criteria |
 
 ---
 

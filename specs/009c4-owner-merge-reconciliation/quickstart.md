@@ -61,11 +61,7 @@ pnpm test
 Run full verification before completion:
 
 ```bash
-pnpm build
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm test:e2e
+pnpm test:all
 ```
 
-Playwright is required only if C4 changes Task Board, GitHub Sync UI, smoke-checklist rendering, or another visible evidence surface. If no UI surface changes, record Playwright as not applicable with rationale unless the broader phase gate requires `pnpm test:e2e`.
+Use focused commands (`pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, or `pnpm test:e2e`) while narrowing failures, but keep `pnpm test:all` as the final PR gate. If no UI surface changes, record the no-new-UI-journey rationale separately from the full gate result.
