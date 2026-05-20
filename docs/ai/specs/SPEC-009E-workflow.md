@@ -43,8 +43,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/009e-pilot-evidence-surfaces/spec.md` and requirements checklist; G1 passed with 0 markers |
-| Clarify | `$speckit-clarify` | In Progress | Focus on API contract, task detail UI seam, state semantics, and UAT source data |
-| Plan | `$speckit-plan` | Pending | Plan read-only route, task detail Evidence UI, tests, and no-write guardrails |
+| Clarify | `$speckit-clarify` | Complete | Four sessions resolved API route/contract, task detail Evidence section, stored source/state semantics, UAT retained evidence, and cleanup handling; G2 passed with 0 markers |
+| Plan | `$speckit-plan` | In Progress | Plan read-only route, task detail Evidence UI, tests, and no-write guardrails |
 | Checklist | `$speckit-checklist` | Pending | Run focused API, UX/accessibility, state-management, data-integrity, security, and error-handling domains |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict read-only and route/UI scope |
 | Analyze | `$speckit-analyze` | Pending | Check drift against roadmap and design concept, especially no sync/generation/schema expansion |
@@ -286,10 +286,18 @@ Focus on post-merge UAT:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | API Contract And Naming | Pending | Pending |
-| 2 | Task Detail UI And Accessibility | Pending | Pending |
-| 3 | Evidence State And Stored Source Truth | Pending | Pending |
-| 4 | UAT And Cleanup Evidence | Pending | Pending |
+| 1 | API Contract And Naming | 5 | Standardized `GET /api/tasks/[id]/evidence`; accepted light response envelope; non-pilot/local-only tasks return compact `200` negative states; HTTP/error matrix accepted after consensus; artifact content remains behind existing artifact read routes |
+| 2 | Task Detail UI And Accessibility | 5 | Evidence stays as a compact read-only section in existing task detail Details; section renders for every opened task with density by state; explicit loading/empty/error/missing/stale/deferred states; accessible labelled section semantics; no global Evidence page or evidence-producing controls |
+| 3 | Evidence State And Stored Source Truth | 5 | Accepted compact v1 evidence-state vocabulary; source hierarchy favors current task/activity state for live identity/stage and packet artifacts for snapshots; task evidence uses lighter stored-row helper rather than packet generation; unsafe artifact rendering accepted after consensus; smoke checklist is UAT ledger/static stored reference, not runtime-parsed input |
+| 4 | UAT And Cleanup Evidence | 5 | UAT uses retained issue #50 / PR #51 plus SPEC-009D packet/source-map and smoke-checklist evidence as canonical proof; disposable SPEC-009E task rows may be seeded only as UI journey carriers; cleaned rows render as archived proof, not current active state; fixture cleanup requires backup/export, counts, owner/timestamp, and retained checklist/GitHub evidence; UAT records in `docs/qa/pilot-smoke-checklist.md` |
+
+### Consensus Resolution Log
+
+| Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|-------------------|---------|---------------|
+| API error behavior for missing task, unauthorized workspace scope, artifact store disabled, and incomplete evidence | 1 | security, codebase, domain | Accepted masked `404 task_not_found` for missing/cross-workspace task, `401/400/403` for auth/scope failures, `200` incomplete/not-eligible domain states, and section-level artifact warning when aggregate evidence can still render | codebase-analyst, spec-context-analyst, domain-researcher |
+| Rendering redacted, quarantined, superseded, oversized, malformed, unsafe, or secret-bearing artifact evidence | 1 | security, codebase, domain | Accepted safe metadata/status/source-map rendering only; redacted previews allowed only when already stored as safe derivatives; quarantined/unsafe/malformed/oversized evidence exposes no raw content, preview, storage URI, object path, signed URL, parser details, or actor identity; superseded remains trace-only; no quarantine override or mutation controls | codebase-analyst, spec-context-analyst, domain-researcher |
+| UAT retained evidence source and cleaned disposable row representation | 1 | spec, codebase | Accepted retained issue #50 / PR #51 plus SPEC-009D packet/source-map and smoke-checklist evidence as canonical proof; disposable SPEC-009E rows may be seeded only as UI carriers; cleaned rows render as archived/UAT proof with cleanup rationale and never as current active Mission Control state | codebase-analyst, spec-context-analyst |
 
 ---
 

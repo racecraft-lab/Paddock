@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009E-workflow.md",
-  "updated_at": "2026-05-20T19:55:00Z",
-  "active_step": "Phase 2: Clarify - API Contract And Naming",
+  "updated_at": "2026-05-20T20:45:00Z",
+  "active_step": "Phase 3: Plan",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009E",
@@ -79,7 +79,7 @@
       "specs/009e-pilot-evidence-surfaces/checklists/requirements.md"
     ],
     "metrics": {
-      "functional_requirements": 18,
+      "functional_requirements": 32,
       "user_stories": 3,
       "acceptance_scenarios": 9,
       "edge_cases": 6,
@@ -92,19 +92,128 @@
       "markers": 0
     }
   },
+  "phase_2": {
+    "status": "completed",
+    "sessions": {
+      "API Contract And Naming": {
+        "status": "completed",
+        "questions": 5,
+        "key_outcomes": [
+          "Accepted GET /api/tasks/[id]/evidence as the generic task-scoped v1 route.",
+          "Accepted a light task evidence envelope with schema_version, task, pilot_eligibility, identity, packet_artifacts, smoke, current_stage, warnings, deferrals, and source_map sections.",
+          "Accepted 200 responses with explicit not_eligible or incomplete states for non-pilot, local-only, and partial-proof tasks.",
+          "Accepted auth/scope/error matrix after consensus: 401 unauthenticated, 400 malformed workspace scope, existing 403 forbidden explicit workspace scope, masked 404 task_not_found for missing or cross-workspace task, and 200 domain states for incomplete evidence.",
+          "Accepted artifact references and safe metadata only; artifact content remains behind existing artifact read routes."
+        ],
+        "consensus": [
+          {
+            "item": "API error behavior for missing task, unauthorized workspace scope, artifact store disabled, and incomplete evidence",
+            "round": 1,
+            "routed_categories": [
+              "security",
+              "codebase",
+              "domain"
+            ],
+            "outcome": "Accepted masked 404 task_not_found for missing/cross-workspace task, 401/400/403 for auth/scope failures, 200 incomplete/not_eligible domain states, and section-level artifact warning when aggregate evidence can still render.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst",
+              "domain-researcher"
+            ]
+          }
+        ],
+        "markers": 0
+      },
+      "Task Detail UI And Accessibility": {
+        "status": "completed",
+        "questions": 5,
+        "key_outcomes": [
+          "Accepted a compact read-only Evidence section inside the existing task detail Details tab.",
+          "Accepted rendering the section for every opened task with density based on evidence state.",
+          "Accepted explicit loading, empty/no-evidence, route error, missing-proof, stale/unavailable, and deferred states.",
+          "Accepted labelled section semantics with accessible names, non-color-only status text, and polite async announcements unless Plan later chooses full tab semantics.",
+          "Confirmed no global Evidence page, diagnostics dashboard, or evidence-producing controls."
+        ],
+        "consensus": [],
+        "markers": 0
+      },
+      "Evidence State And Stored Source Truth": {
+        "status": "completed",
+        "questions": 5,
+        "key_outcomes": [
+          "Accepted compact snake_case v1 evidence states and warning reason codes for oversized or malformed evidence.",
+          "Accepted source hierarchy: current task/activity rows for live stage and identity; packet artifacts for packet existence and snapshot references; current artifact/review/governance/GitHub sync rows for section evidence; smoke checklist only through stored references or static UAT links.",
+          "Accepted a lighter read-only task evidence helper rather than calling buildPilotReviewPacket() as a packet generation path on GET.",
+          "Accepted safe metadata-only rendering for unsafe/non-current artifacts after security consensus.",
+          "Accepted no runtime Markdown parsing of docs/qa/pilot-smoke-checklist.md."
+        ],
+        "consensus": [
+          {
+            "item": "Rendering redacted, quarantined, superseded, oversized, malformed, unsafe, or secret-bearing artifact evidence",
+            "round": 1,
+            "routed_categories": [
+              "security",
+              "codebase",
+              "domain"
+            ],
+            "outcome": "Accepted safe metadata/status/source-map rendering only; redacted previews only when already stored as safe derivatives; quarantined/unsafe/malformed/oversized evidence exposes no raw content, preview, storage URI, object path, signed URL, parser details, or actor identity; superseded remains trace-only; no quarantine override or mutation controls.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst",
+              "domain-researcher"
+            ]
+          }
+        ],
+        "markers": 0
+      },
+      "UAT And Cleanup Evidence": {
+        "status": "completed",
+        "questions": 5,
+        "key_outcomes": [
+          "Accepted retained issue #50 / PR #51 plus SPEC-009D packet/source-map and smoke-checklist evidence as canonical UAT proof.",
+          "Accepted disposable SPEC-009E task rows only as browser-journey carriers when no live retained task row exists.",
+          "Accepted cleaned disposable rows as archived/UAT proof with cleanup rationale, never as current active Mission Control state.",
+          "Accepted backup/export, before/after counts, owner/timestamp, retained GitHub trail, and checklist evidence for any fixture cleanup.",
+          "Accepted docs/qa/pilot-smoke-checklist.md as canonical SPEC-009E UAT ledger."
+        ],
+        "consensus": [
+          {
+            "item": "UAT retained evidence source and cleaned disposable row representation",
+            "round": 1,
+            "routed_categories": [
+              "spec",
+              "codebase"
+            ],
+            "outcome": "Accepted retained issue #50 / PR #51 plus SPEC-009D packet/source-map and smoke-checklist evidence as canonical proof; disposable SPEC-009E rows may be seeded only as UI carriers; cleaned rows render as archived/UAT proof with cleanup rationale and never as current active Mission Control state.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst"
+            ]
+          }
+        ],
+        "markers": 0
+      }
+    },
+    "gate": {
+      "id": "G2",
+      "pass": true,
+      "reason": "0 [NEEDS CLARIFICATION] markers",
+      "markers": 0
+    }
+  },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
     {"step": "Phase 1: Specify", "status": "completed"},
-    {"step": "Phase 2: Clarify - API Contract And Naming", "status": "in_progress"},
-    {"step": "Phase 2: Clarify - API Contract And Naming Consensus", "status": "pending"},
-    {"step": "Phase 2: Clarify - Task Detail UI And Accessibility", "status": "pending"},
-    {"step": "Phase 2: Clarify - Task Detail UI And Accessibility Consensus", "status": "pending"},
-    {"step": "Phase 2: Clarify - Evidence State And Stored Source Truth", "status": "pending"},
-    {"step": "Phase 2: Clarify - Evidence State And Stored Source Truth Consensus", "status": "pending"},
-    {"step": "Phase 2: Clarify - UAT And Cleanup Evidence", "status": "pending"},
-    {"step": "Phase 2: Clarify - UAT And Cleanup Evidence Consensus", "status": "pending"},
-    {"step": "Phase 3: Plan", "status": "pending"},
+    {"step": "Phase 2: Clarify - API Contract And Naming", "status": "completed"},
+    {"step": "Phase 2: Clarify - API Contract And Naming Consensus", "status": "completed"},
+    {"step": "Phase 2: Clarify - Task Detail UI And Accessibility", "status": "completed"},
+    {"step": "Phase 2: Clarify - Task Detail UI And Accessibility Consensus", "status": "completed"},
+    {"step": "Phase 2: Clarify - Evidence State And Stored Source Truth", "status": "completed"},
+    {"step": "Phase 2: Clarify - Evidence State And Stored Source Truth Consensus", "status": "completed"},
+    {"step": "Phase 2: Clarify - UAT And Cleanup Evidence", "status": "completed"},
+    {"step": "Phase 2: Clarify - UAT And Cleanup Evidence Consensus", "status": "completed"},
+    {"step": "Phase 3: Plan", "status": "in_progress"},
     {"step": "Phase 4: Checklist - api-contracts", "status": "pending"},
     {"step": "Phase 4: Checklist - api-contracts Consensus", "status": "pending"},
     {"step": "Phase 4: Checklist - ux", "status": "pending"},
