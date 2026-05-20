@@ -148,6 +148,8 @@ function runTaskPipelineGuardrails() {
       'src/components/panels/task-board-panel.tsx',
       'src/components/panels/ready-for-owner-ux.stories.tsx',
       'src/index.ts',
+      // SPEC-009D reads stored owner-gate evidence into a review packet.
+      'src/lib/pilot-review-packet.ts',
       'src/store/index.ts',
     ])
     if (!readyForOwnerAllowlist.has(path) && /\bready_for_owner\b/.test(source)) {
