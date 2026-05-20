@@ -41,6 +41,23 @@
 - Use SPEC-009C3 PR #49 for UAT: rejected by FR-014 and SC-006.
 - Treat fixture evidence as live proof: rejected by FR-015.
 
+## Decision: Treat GitHub sync failure as failed-sync evidence with no terminal side effects
+
+**Rationale**: GitHub is an external trust boundary. Existing `pullFromGitHub` records inbound fetch failures in `github_syncs` with `status='error'` and returns without mutating per-issue task state; SPEC-009C4 should preserve that fail-closed shape for linked owner-gated tasks. GitHub's REST API also separates explicit merged-state checks from unavailable or rate-limited API responses, so sync failure cannot substitute for exact merged PR truth.
+
+**Alternatives considered**:
+- Complete from stale local task or issue state after sync failure: rejected by FR-008 and FR-019.
+- Add automatic retry/polling lifecycle in C4: rejected by FR-017; retry/backoff automation belongs to future GitHub sync automation work.
+- Treat transport/API failure as a reconciliation-required PR mismatch: rejected because it is failed-sync evidence, not current PR evidence.
+
+## Decision: Document cleanup failure without changing reconciliation state
+
+**Rationale**: Live UAT cleanup is operator evidence work after merge/sync evidence capture. If cleanup fails, the smoke checklist must keep the reconciled or unreconciled task state visible and record cleanup failure separately so SPEC-009D can distinguish reconciliation proof from cleanup debt.
+
+**Alternatives considered**:
+- Mark reconciliation failed because cleanup failed: rejected because cleanup happens after evidence capture and is not PR merged truth.
+- Hide cleanup failure behind retention rationale: rejected because C4 requires reviewable evidence and before/after counts when available.
+
 ## Decision: No UI coverage unless visible evidence surfaces change
 
 **Rationale**: The primary surface is library/API reconciliation plus smoke checklist text. Playwright becomes required only if implementation changes Task Board, GitHub Sync UI, smoke-checklist rendering, or another visible evidence surface.

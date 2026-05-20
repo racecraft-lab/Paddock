@@ -68,8 +68,8 @@ Source-of-truth scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated `specs/009c4-owner-merge-reconciliation/spec.md` from roadmap plus design concept; G1 passed with 0 markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved merge-gate, exact PR evidence, idempotency, and evidence handoff details; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and manual sync reconciliation contract; G3 passed with 0 markers |
-| Checklist | `$speckit-checklist` | In Progress | Run focused domains for data integrity, state lifecycle, error handling, security, and regression safety |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD tasks with RED-first reconciliation and negative coverage |
+| Checklist | `$speckit-checklist` | Complete | Ran five domains; 114 items, 3 gaps resolved, G4 passed with 0 remaining gap markers |
+| Tasks | `$speckit-tasks` | In Progress | Generate TDD tasks with RED-first reconciliation and negative coverage |
 | Analyze | `$speckit-analyze` | Pending | Verify no C4 artifact pulls in later control-plane specs |
 | Implement | `$speckit-implement` | Pending | Execute tasks, verification, live `G_PILOT_MERGE` UAT, cleanup, PR packet, and push |
 
@@ -101,8 +101,8 @@ only when its artifact and gate evidence are recorded here.
 | Specify | Phase 1 / G1 | Complete | Generated `spec.md` with 18 FRs, 4 user stories, 12 acceptance scenarios, 8 success criteria; requirements checklist complete; G1 passed with 0 markers |
 | Clarify | Phase 2 / G2 | Complete | Four sessions completed; G2 passed with 0 `[NEEDS CLARIFICATION]` markers; consensus decisions logged below |
 | Plan | Phase 3 / G3 | Complete | Generated `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, and `contracts/manual-github-sync-reconciliation.md`; G3 passed with 0 markers |
-| Checklist | Phase 4 / G4 | In Progress | Record checklist domains, gaps, and resolutions |
-| Tasks | Phase 5 / G5 | Pending | Record task count, parallel opportunities, and reviewability task-gate result |
+| Checklist | Phase 4 / G4 | Complete | 114 checklist items across five domains; 3 error-handling gaps resolved; G4 passed with 0 remaining `[Gap]` markers |
+| Tasks | Phase 5 / G5 | In Progress | Record task count, parallel opportunities, and reviewability task-gate result |
 | Analyze | Phase 6 / G6 | Pending | Record cross-artifact analysis findings and resolutions |
 | Implement | Phase 7 / G7 | Pending | Record task completion, tests, live UAT, cleanup, roadmap/workflow updates, and push evidence |
 | Post-Implementation Verify | Post step 10/12 | Pending | Record focused Vitest, broader checks, and any Playwright decision |
@@ -593,12 +593,12 @@ Focus on SPEC-009C4 requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
-| regression-safety | Pending | Pending | Pending |
-| **Total** | Pending | Pending | Pending |
+| data-integrity | 24 | 0 | Exact identity, authoritative merged PR truth, duplicate sync idempotency, bounded existing evidence, done label projection |
+| state-management | 24 | 0 | Two-step terminal state, `advanceTaskChain` guard, local-only completion rejection, duplicate-sync side-effect safety |
+| error-handling | 22 | 3 resolved | Added failed-sync evidence requirements, failed-reconciliation no-side-effect boundaries, and cleanup-failure evidence that preserves reconciliation state |
+| security | 24 | 0 | Fixture/live trust boundary, exact PR identity, manual owner merge gate, failed-sync side-effect boundary, smoke evidence redaction |
+| regression-safety | 20 | 0 | Non-pilot compatibility, ready-for-owner compatibility, future-spec boundaries, no packet UI/claim/run/sandbox/adapter/poller scope |
+| **Total** | 114 | 3 resolved | G4 passed with 0 remaining `[Gap]` markers |
 
 ---
 

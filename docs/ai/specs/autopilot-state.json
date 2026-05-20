@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009C4-workflow.md",
   "updated_at": "2026-05-19T00:00:00Z",
-  "active_step": "Phase 4: Checklist - data-integrity",
+  "active_step": "Phase 5: Tasks",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009C4",
@@ -195,6 +195,62 @@
     },
     "tooling_note": "setup-plan.sh --json rejected the 009c4 branch regex, then succeeded with explicit SPECIFY_FEATURE_DIRECTORY while leaving the git branch unchanged."
   },
+  "phase_4": {
+    "status": "completed",
+    "checklists": {
+      "data-integrity": {
+        "status": "completed",
+        "items": 24,
+        "gaps": 0,
+        "consensus": [],
+        "file": "specs/009c4-owner-merge-reconciliation/checklists/data-integrity.md"
+      },
+      "state-management": {
+        "status": "completed",
+        "items": 24,
+        "gaps": 0,
+        "consensus": [],
+        "file": "specs/009c4-owner-merge-reconciliation/checklists/state-management.md"
+      },
+      "error-handling": {
+        "status": "completed",
+        "items": 22,
+        "gaps": 3,
+        "consensus": [],
+        "file": "specs/009c4-owner-merge-reconciliation/checklists/error-handling.md",
+        "remediation": [
+          "Added failed-sync evidence requirements with no terminal side effects.",
+          "Enumerated failed reconciliation side-effect boundaries.",
+          "Separated live UAT cleanup failure evidence from reconciliation state."
+        ]
+      },
+      "security": {
+        "status": "completed",
+        "items": 24,
+        "gaps": 0,
+        "consensus": [],
+        "file": "specs/009c4-owner-merge-reconciliation/checklists/security.md"
+      },
+      "regression-safety": {
+        "status": "completed",
+        "items": 20,
+        "gaps": 0,
+        "consensus": [],
+        "file": "specs/009c4-owner-merge-reconciliation/checklists/regression-safety.md"
+      }
+    },
+    "totals": {
+      "items": 114,
+      "gaps": 3,
+      "remaining_gaps": 0
+    },
+    "gate": {
+      "id": "G4",
+      "pass": true,
+      "reason": "0 [Gap] markers",
+      "markers": 0
+    }
+  },
   "commands": {
     "BUILD": "pnpm build",
     "TYPECHECK": "pnpm typecheck",
@@ -257,47 +313,47 @@
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - data-integrity Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - state-management",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - state-management Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - error-handling",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - error-handling Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - security",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - security Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - regression-safety",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - regression-safety Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze",

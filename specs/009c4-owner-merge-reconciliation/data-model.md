@@ -33,12 +33,14 @@
 
 **State Transitions**:
 - `ready_for_owner` -> `ready_for_owner`: before manual merge, when PR is missing, unmerged, mismatched, or only issue-closed evidence exists.
+- `ready_for_owner` -> `ready_for_owner`: when GitHub sync cannot fetch current PR evidence because of transport, authentication, permission, rate-limit, timeout, or upstream API failure.
 - `ready_for_owner` -> `done`: only after manual GitHub sync observes exact linked PR merged truth.
 - `done` -> `done`: duplicate sync idempotency path; no duplicate launch or duplicate terminal side effects.
 
 **Validation Rules**:
 - `github_repo` and `github_pr_number` must match current exact GitHub PR evidence.
 - Closed issue state alone cannot complete the task.
+- Failed sync state cannot complete the task and must not emit terminal side effects.
 - Local-only status mutation cannot satisfy C4 terminal completion.
 
 ## GitHub PR Evidence
@@ -71,9 +73,11 @@
 - Sync result and timestamp
 - Terminal activity with `terminal_event='github_pr_merged'` when completion occurs
 - Reconciliation-required activity/evidence when completion is rejected
+- Failed sync status/error evidence when GitHub sync cannot fetch current issue or PR state
 
 **Validation Rules**:
 - Successful reconciliation must show task `done`, done label projection, stale `ready_for_owner` projection removed, terminal activity, sync evidence, and duplicate-launch absence.
+- Failed reconciliation or failed sync must leave the task in `ready_for_owner` and must not write `done`, project done labels, remove ready labels, emit terminal `github_pr_merged` activity, call task-chain advancement, launch downstream work, or run cleanup.
 - Duplicate sync must not create duplicate owner-action notifications, reconciliation-required notification floods, terminal activities, cleanup work, or downstream launches.
 - C4 must not add a new terminal-done notification type.
 
@@ -87,11 +91,13 @@
 - Linked task id
 - Merge timestamp
 - Cleanup status or explicit retention rationale
+- Cleanup failure step, owner, timestamp, before/after counts when available, and sanitized failure reason
 
 **Validation Rules**:
 - Must be distinct from closed/unmerged SPEC-009C3 PR #49.
 - Merged PR remains audit trail.
 - Disposable local Mission Control residue is cleaned only after evidence capture and backup/export, with before/after counts recorded.
+- Cleanup failure evidence must preserve the reconciled or unreconciled task state and must not be recorded as merge/sync reconciliation proof.
 
 ## SPEC-009D Evidence Handoff
 

@@ -12,9 +12,10 @@
 1. Write RED Vitest coverage for a linked pilot task that remains `ready_for_owner` before `G_PILOT_MERGE`.
 2. Add RED coverage where a closed issue without exact merged PR evidence leaves the task `ready_for_owner` and emits reconciliation-required evidence.
 3. Add RED coverage where a merged wrong repo or wrong PR number does not complete the linked task.
-4. Add RED coverage where exact merged PR evidence reconciles `ready_for_owner` to `done`, projects done labels, removes stale ready-for-owner projection, records terminal activity, and calls task-chain advancement only after verified `github_pr_merged`.
-5. Add RED coverage where duplicate manual sync after successful reconciliation is idempotent and creates no duplicate downstream launch, terminal activity flood, owner-action notification, reconciliation-required notification flood, or cleanup work.
-6. Change production code only for the focused failures above.
+4. Add RED coverage where GitHub sync transport/API failure records failed-sync evidence and leaves the linked task `ready_for_owner` with no `done` write, done label projection, stale ready-label removal, terminal `github_pr_merged` activity, task-chain advancement, duplicate launch, or cleanup work.
+5. Add RED coverage where exact merged PR evidence reconciles `ready_for_owner` to `done`, projects done labels, removes stale ready-for-owner projection, records terminal activity, and calls task-chain advancement only after verified `github_pr_merged`.
+6. Add RED coverage where duplicate manual sync after successful reconciliation is idempotent and creates no duplicate downstream launch, terminal activity flood, owner-action notification, reconciliation-required notification flood, or cleanup work.
+7. Change production code only for the focused failures above.
 
 ## Manual Sync Contract Check
 
@@ -44,6 +45,7 @@ Update `docs/qa/pilot-smoke-checklist.md` with text evidence only:
 - Resulting task status, done label projection, activity evidence, notification evidence, and sync evidence.
 - Duplicate sync evidence.
 - Cleanup status or explicit retention rationale.
+- Cleanup failure step, owner, timestamp, before/after counts when available, sanitized failure reason, and retained follow-up state if cleanup fails.
 - Explicit statement that closed/unmerged SPEC-009C3 PR #49 was not used.
 
 Do not create packet YAML/JSON, packet persistence, lifecycle snapshot API, evidence dashboard, packet UI, or committed binary screenshot evidence for C4.

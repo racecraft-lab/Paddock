@@ -79,6 +79,8 @@ As an operator preparing SPEC-009D review evidence, I need duplicate manual sync
 - The live smoke target is accidentally pointed at the closed/unmerged SPEC-009C3 PR #49 rather than a fresh synthetic pilot PR.
 - Fixture or mocked PR evidence is confused with live GitHub evidence outside tests.
 - Local task status is changed to `done` without verified GitHub merge evidence.
+- GitHub sync cannot fetch current PR evidence because of transport, authentication, permission, rate-limit, timeout, or upstream API failure.
+- Live UAT cleanup fails after reconciliation evidence is captured.
 
 ## Requirements *(mandatory)*
 
@@ -102,6 +104,8 @@ As an operator preparing SPEC-009D review evidence, I need duplicate manual sync
 - **FR-016**: System MUST start from focused RED coverage and change production behavior only for proven gaps in exact PR matching, idempotency, activity/label sync, or duplicate-launch prevention, consistent with design concept Q3.
 - **FR-017**: System MUST preserve future-spec boundaries by not introducing automatic GitHub polling, webhook listeners, scheduler lifecycle, claim-state tables, runner state, sandbox lifecycle, harness adapters, local execution models, review packet persistence, lifecycle snapshot APIs, or evidence UI.
 - **FR-018**: System MUST keep roadmap/status hygiene aligned with design concept Q7: C4 setup and phase artifacts may mark C4 in progress, while C4 completion and archive cleanup are deferred until implementation and live UAT are complete.
+- **FR-019**: System MUST treat GitHub sync transport, authentication, permission, rate-limit, timeout, and upstream API failures as failed-sync evidence, not merged PR evidence; the linked pilot task MUST remain `ready_for_owner` and MUST NOT receive `done` status, done label projection, stale ready-label removal, terminal `github_pr_merged` activity, task-chain advancement, duplicate launch, or cleanup work from that failed sync.
+- **FR-020**: System MUST document live UAT cleanup failures in `docs/qa/pilot-smoke-checklist.md` without hiding reconciliation state; cleanup failure evidence MUST identify the cleanup step, owner, timestamp, before/after counts when available, sanitized failure reason, and whether the merged PR audit trail or local disposable Mission Control residue remains retained for follow-up.
 
 ### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
 
@@ -133,6 +137,8 @@ As an operator preparing SPEC-009D review evidence, I need duplicate manual sync
 - **SC-006**: Live smoke documentation names a fresh synthetic C4 PR and contains zero reliance on closed/unmerged SPEC-009C3 PR #49 as merge proof.
 - **SC-007**: C4 artifacts introduce zero new automatic polling, webhook listener, scheduler path, claim/run schema, sandbox lifecycle, harness adapter, review packet table, lifecycle snapshot API, or evidence UI.
 - **SC-008**: SPEC-009D handoff review can identify issue/PR state, task status, labels, activities, notifications, owner merge gate evidence, and deferred future-spec fields from existing C4 evidence sources.
+- **SC-009**: 100% of covered GitHub sync failure cases leave the linked pilot task in `ready_for_owner`, record failed-sync evidence, and produce zero terminal side effects.
+- **SC-010**: Live smoke documentation preserves the reconciled or unreconciled task state even when cleanup fails, and records cleanup failure or retention rationale separately from merge/sync reconciliation evidence.
 
 ## Assumptions
 
@@ -160,6 +166,7 @@ As an operator preparing SPEC-009D review evidence, I need duplicate manual sync
 - `merge_commit_sha`, `merged_at`, issue-closed state, labels, or timeline metadata may be recorded as supporting audit evidence, but none of them satisfies the terminal completion gate without explicit merged-PR truth for the exact linked PR.
 - Accepted PR evidence must match the C4 pilot task's workspace/project scope, `github_repo`, `github_issue_number`, and `github_pr_number`; a different merged PR in the same repository or a closed issue without the linked merged PR remains insufficient.
 - Manual GitHub sync must emit reconciliation-required evidence with distinguishable reasons for missing PR evidence, unmerged linked PR evidence, mismatched identity evidence, and supporting-only evidence that lacks authoritative merged-PR truth.
+- Manual GitHub sync transport/API failure is not PR evidence. It records failed-sync evidence through the existing sync status/error surface and must not mutate the linked pilot task to `done`, project done labels, remove ready labels, emit terminal `github_pr_merged` activity, call task-chain advancement, launch downstream work, or run cleanup.
 - Successful reconciliation changes the task to `done`, projects the done label state, removes stale `ready_for_owner` projection, and records traceable activity/notification evidence.
 - Fixture evidence is test-only. The direct `pullFromGitHub` fixture option may be used by automated tests, but production API, UI, and poller callsites must not pass fixture payloads or use mocked evidence as live smoke proof.
 
@@ -171,6 +178,7 @@ As an operator preparing SPEC-009D review evidence, I need duplicate manual sync
 - GitHub label/status projection is part of successful reconciliation. C4 MUST prove the existing label mechanism removes stale `mc:ready-for-owner` projection and applies or projects `mc:done`; if the inbound merge path lacks this behavior, it is a C4 hardening gap to address with RED tests first.
 - Local-only status mutation cannot satisfy the C4 gate. Success requires a post-merge manual sync evidence tuple: linked task id, workspace/project identity, `github_repo`, `github_issue_number`, `github_pr_number`, current exact PR merged truth, successful sync row, `tasks.status='done'`, terminal activity with `terminal_event='github_pr_merged'`, done label projection, and duplicate-launch absence.
 - Live UAT cleanup keeps the merged GitHub PR as audit trail, cleans disposable local Mission Control residue only after evidence capture and backup or export, and records before/after counts, cleanup owner, and any explicit retention rationale in the smoke checklist.
+- Cleanup failure is documented as cleanup evidence, not reconciliation evidence. The smoke checklist must keep the task's reconciled or unreconciled state visible, record the failed cleanup step and sanitized reason, and state whether local disposable rows or external GitHub artifacts remain retained for follow-up.
 
 ### Session 4: SPEC-009D Evidence Handoff
 
@@ -189,3 +197,4 @@ As an operator preparing SPEC-009D review evidence, I need duplicate manual sync
 - **Q5 Evidence boundary**: C4 records smoke-checklist and existing task/activity/notification/label/sync evidence for SPEC-009D without building packet persistence or UI.
 - **Q6 Negative cases**: Exact PR mismatch, closed issue without merged PR, duplicate sync idempotency, no duplicate launch, and no local-only completion are in scope.
 - **Q7 Archive/status hygiene**: C4 is marked in progress during setup; completion and cleanup wait for implementation PR evidence, and archive sweep excludes the current target.
+- **Q8 Sync and cleanup failures**: Failed GitHub sync is failed-sync evidence with no terminal side effects; failed live UAT cleanup is documented separately without obscuring reconciliation state.

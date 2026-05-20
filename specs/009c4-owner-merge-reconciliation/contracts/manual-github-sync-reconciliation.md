@@ -37,6 +37,8 @@ The linked task may transition to `done` only when current GitHub PR state for t
 
 Supporting fields such as `merge_commit_sha`, `merged_at`, labels, issue closed state, or timeline metadata may be recorded for audit, but do not satisfy completion without exact merged PR truth.
 
+Failed GitHub sync is not merged PR truth. Transport, authentication, permission, rate-limit, timeout, and upstream API failures may be recorded through existing sync status/error evidence, but must not satisfy completion.
+
 ## Fail-Closed Rules
 
 Manual sync must leave the task in `ready_for_owner` and emit reconciliation-required evidence when:
@@ -48,6 +50,9 @@ Manual sync must leave the task in `ready_for_owner` and emit reconciliation-req
 - A PR in a different repo is merged.
 - Fixture or mocked evidence appears outside tests.
 - Local task status was changed without verified GitHub merged PR evidence.
+- GitHub sync cannot fetch current PR evidence because of transport, authentication, permission, rate-limit, timeout, or upstream API failure.
+
+Fail-closed reconciliation must not write `done`, project done labels, remove stale ready labels, record terminal `github_pr_merged` activity, call task-chain advancement, launch downstream work, or run cleanup.
 
 ## Successful Side Effects
 
@@ -72,6 +77,12 @@ Repeating manual sync with the same merged PR evidence must leave:
 - No duplicate owner-action notification.
 - No reconciliation-required notification flood.
 - No duplicate cleanup work.
+
+## Live UAT Cleanup Failure
+
+Cleanup runs only after reconciliation evidence has been captured and backup/export expectations are satisfied. If cleanup fails, `docs/qa/pilot-smoke-checklist.md` must record the cleanup step, owner, timestamp, before/after counts when available, sanitized failure reason, and explicit retention or follow-up state.
+
+Cleanup failure evidence must preserve the task's reconciled or unreconciled state and must not be treated as proof that merge/sync reconciliation succeeded or failed.
 
 ## Test Fixture Boundary
 
