@@ -660,8 +660,9 @@ To fill during implementation:
 - Packet derivation lives in `src/lib/pilot-review-packet.ts` and uses stored Mission Control evidence only.
 - JSON and Markdown packet artifacts publish through existing SPEC-007 task artifact behavior with `schema_version="spec-009d.packet.v1"`.
 - No packet-specific route, dashboard, runtime dependency, migration, fresh GitHub call, polling, claim authority, retry control, sandbox lifecycle, adapter registry, or real harness execution was added.
-- Build blockers resolved during verification: removed network-dependent Google font fetches, pinned Next/eslint-config-next to 16.1.6, moved route test reset helpers out of a Next route module, rebuilt `better-sqlite3`, and regenerated standalone output with the native binding present.
-- Verification passed under Node 22.22.2: focused packet/artifact/disposition tests (20 tests), existing task-artifact seam tests (38 tests), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test` (2907 passing tests), and `pnpm test:e2e` (646 passing tests).
+- Build blockers resolved during verification: removed network-dependent Google font fetches, moved route test reset helpers out of a Next route module, regenerated the lockfile against patched Next 16.2.6, rebuilt `better-sqlite3`, and regenerated standalone output with the native binding present.
+- Verification passed under Node 22.22.2: focused packet/artifact/disposition tests (20 tests), existing task-artifact seam tests (38 tests), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm guardrails`, `pnpm audit:high`, `pnpm test` (2920 passing tests), and `pnpm test:e2e` (646 passing tests).
+- UAT passed on 2026-05-20: a disposable Mission Control database in `/private/tmp/mc-spec009d-uat-20260520-uat1` was seeded from retained issue #50 / PR #51 evidence, packet generation produced `candidate.state="proven"` and `current_stage="done"` with 15 source-map pointers, JSON artifact `2` and Markdown artifact `3` were published through real `publishArtifact()`, both artifacts were inspected through existing `/api/task-artifacts` HTTP routes, and seeded rows were removed after backup.
 - Implementation PR opened: https://github.com/racecraft-lab/mission-control/pull/54
 
 ---

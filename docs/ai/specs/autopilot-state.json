@@ -393,9 +393,9 @@
       "unit": {
         "command": "pnpm test",
         "pass": true,
-        "files_passed": 277,
+        "files_passed": 278,
         "files_skipped": 33,
-        "tests_passed": 2907,
+        "tests_passed": 2920,
         "tests_skipped": 3,
         "tests_todo": 84
       },
@@ -435,6 +435,22 @@
       "base": "main",
       "head": "009d-pilot-review-lifecycle",
       "draft": false
+    },
+    "uat": {
+      "status": "completed",
+      "date": "2026-05-20",
+      "data_dir": "/private/tmp/mc-spec009d-uat-20260520-uat1",
+      "backup": "/private/tmp/mc-spec009d-uat-20260520-uat1/backups/mission-control.db.spec009d-uat-20260520-uat1.bak",
+      "source_evidence": "retained issue #50 / PR #51 plus stored Mission Control rows",
+      "packet_state": "proven",
+      "current_stage": "done",
+      "source_map_pointers": 15,
+      "json_artifact_id": 2,
+      "json_sha256": "44e63cd35ca3d3a1bef85aac701915999893fcd1082ebe333f6ec6bc3921b556",
+      "markdown_artifact_id": 3,
+      "markdown_sha256": "22e03db419d4bcbf0bbcf0dfab3acb2635d51ff0d6a3de66c3e2c81fa43fcbdf",
+      "http_inspection": "existing /api/task-artifacts list/read routes returned both packet artifacts",
+      "cleanup": "seeded rows removed after backup; counts 2/3/3/1/1/1/1/1/1 to 0/0/0/0/0/0/0/0/0"
     },
     "review_remediation": {
       "status": "pending_review_feedback"

@@ -44,6 +44,7 @@ SPEC-009D gives operators and reviewers one compact lifecycle packet for the sel
 
 - `pnpm exec vitest run src/lib/__tests__/pilot-review-packet.test.ts src/lib/__tests__/pilot-review-packet-artifacts.test.ts src/app/api/dispositions/__tests__/rollup.test.ts`: 3 files, 20 tests passed.
 - `pnpm exec vitest run src/lib/__tests__/task-artifacts-publish.test.ts src/app/api/task-artifacts/__tests__/admin-actions.test.ts`: 2 files, 38 tests passed.
+- SPEC-009D UAT on 2026-05-20: disposable DB `/private/tmp/mc-spec009d-uat-20260520-uat1/mission-control.db` seeded stored issue #50 / PR #51 evidence; packet state `proven`, current stage `done`, 15 source-map pointers; real artifact store published JSON artifact `2` and Markdown artifact `3`; existing `/api/task-artifacts` routes returned both artifacts; cleanup removed seeded rows after backup.
 - `pnpm typecheck`: passed.
 - `pnpm lint`: passed.
 - `pnpm build`: passed under Node 22 outside the sandbox.

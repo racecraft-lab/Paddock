@@ -398,6 +398,45 @@ alone.
   `.next/standalone` build after rebuilding `better-sqlite3`, so the native
   binding is present in the standalone server used by Playwright.
 
+### 2026-05-20 SPEC-009D UAT Run Evidence
+
+- Scope: disposable local UAT using stored Mission Control evidence only. No
+  fresh GitHub mutation or live GitHub lookup was required; the run reused the
+  retained external audit trail issue #50 and merged PR #51 from SPEC-009C4.
+- Target: branch `009d-pilot-review-lifecycle`, commit `8f249fa`, Node
+  `v22.22.2`, temp data dir
+  `/private/tmp/mc-spec009d-uat-20260520-uat1`, temp HTTP target
+  `http://127.0.0.1:3149`.
+- Seeded evidence: workspace `3`, project `2`, root task `1`, owner task `2`,
+  upstream readiness artifact `1`, resource policy event `1`, and GitHub sync
+  row `1`. The root task used issue #50; the owner task used PR #51 and status
+  `done`.
+- Packet generation: the UAT harness ran the real migrations, loaded stored
+  task/activity/notification/artifact/quality-review/governance/GitHub-sync
+  rows plus the retained smoke-checklist reference, and generated a
+  `candidate.state="proven"` packet with `current_stage="done"` and 15 source
+  map pointers.
+- Artifact publication: the real `publishArtifact()` path wrote JSON artifact
+  `2` with SHA-256
+  `44e63cd35ca3d3a1bef85aac701915999893fcd1082ebe333f6ec6bc3921b556`
+  (`10732` bytes) and Markdown artifact `3` with SHA-256
+  `22e03db419d4bcbf0bbcf0dfab3acb2635d51ff0d6a3de66c3e2c81fa43fcbdf`
+  (`2055` bytes), both with schema version `spec-009d.packet.v1`.
+- HTTP inspection: the disposable server returned the packet through existing
+  artifact routes only. `GET /api/task-artifacts?workspace_id=3&artifact_type=pilot_review_packet_json`
+  returned one JSON packet row, `GET /api/task-artifacts?workspace_id=3&artifact_type=pilot_review_packet_markdown`
+  returned one Markdown packet row, and `GET /api/task-artifacts/2?workspace_id=3`
+  plus `GET /api/task-artifacts/3?workspace_id=3` returned readable packet
+  contents. The JSON read verified schema version, proven state, done stage,
+  15 source-map pointers, and all SPEC-013/SPEC-014 deferrals. The Markdown
+  read named JSON artifact `#2` and linked issue #50 / PR #51.
+- Backup before cleanup:
+  `/private/tmp/mc-spec009d-uat-20260520-uat1/backups/mission-control.db.spec009d-uat-20260520-uat1.bak`.
+- Cleanup result: disposable rows for tasks/artifacts/activities/
+  notifications/quality-reviews/resource-policy-events/github-syncs/projects/
+  workspaces went from `2/3/3/1/1/1/1/1/1` to `0/0/0/0/0/0/0/0/0`.
+  No disposable `[mc-pilot]` task rows remain in the UAT database.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control
