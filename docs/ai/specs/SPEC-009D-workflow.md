@@ -56,7 +56,7 @@ Source-of-truth scoping decisions:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/009d-pilot-review-lifecycle/spec.md` with 14 FRs, 4 user stories, 10 acceptance scenarios, and no unresolved markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve API seam, JSON contract names, future-field ownership, and artifact/source-map details |
+| Clarify | `$speckit-clarify` | Complete | Resolved artifact-only inspection seam, JSON/Markdown packet terms, source-map pointer shape, future-spec owner map, local-only exclusion, redaction, staleness, and cleaned C4 replay source rules |
 | Plan | `$speckit-plan` | Pending | Produce architecture, data model, contracts, and quickstart for packet derivation |
 | Checklist | `$speckit-checklist` | Pending | Run targeted domains for API, data integrity, security/redaction, state management, and error handling |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first implementation tasks bounded by the packet scope |
@@ -357,9 +357,16 @@ To fill after running clarify:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Packet contract and source map | Pending | Pending |
-| 2 | API seam and artifact inspection | Pending | Pending |
-| 3 | Deferrals, redaction, and staleness | Pending | Pending |
+| 1 | Packet contract and source map | 5 | Accepted canonical JSON/Markdown artifact terms, RFC 6901-style source-map pointers, archived C4 replay source rules, local-only eligibility proof, and deterministic field precedence |
+| 2 | API seam and artifact inspection | 4 | Accepted no new packet route by default; use existing task artifact publish/list/read APIs, artifact-type discovery, durable pilot candidate task ownership, and no new list filters unless Plan proves required |
+| 3 | Deferrals, redaction, and staleness | 5 | Accepted explicit `deferrals.<field>` envelope, canonical SPEC-013/SPEC-014 owner map, packet-local `evidence_state` safety states, structural staleness only, and publication blockers limited to identity/sync proof, invalid JSON/schema, or unsafe storage/display conditions |
+
+### Consensus Resolution Log
+
+| Phase | Item | Round | Routed Categories | Outcome | Analysts Used |
+|-------|------|-------|-------------------|---------|---------------|
+| Clarify Session 1 | SPEC-009C4 cleaned target replay source evidence | 1 | codebase, spec | Accepted archived smoke-checklist evidence plus retained `github_syncs` rows for cleaned target replay evidence; live row pointers remain required for current active-state claims | codebase-analyst, spec-context-analyst |
+| Clarify Session 3 | Safety states for redacted, quarantined, oversized, missing, malformed, superseded, and stale evidence | 1 | security | Accepted packet-local `evidence_state` values with metadata-only quarantined/unsafe evidence, no raw secret-bearing content, structural warnings, and fail-closed publication only for invalid/unsafe packets or failed candidate identity/sync proof | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009D-workflow.md",
-  "updated_at": "2026-05-20T03:48:00Z",
-  "active_step": "Phase 2: Clarify - Packet Contract and Source Map",
+  "updated_at": "2026-05-20T04:21:00Z",
+  "active_step": "Phase 3: Plan",
   "status": "In Progress",
   "active_workflow": {
     "spec_id": "SPEC-009D",
@@ -106,6 +106,83 @@
       "markers": 0
     }
   },
+  "phase_2": {
+    "status": "in_progress",
+    "sessions": {
+      "Packet Contract and Source Map": {
+        "status": "completed",
+        "questions": 5,
+        "key_outcomes": [
+          "Accepted canonical JSON and Markdown packet artifact terms.",
+          "Accepted RFC 6901-style source_map pointers with typed source references.",
+          "Accepted archived SPEC-009C4 target replay evidence using smoke checklist plus retained github_syncs rows when disposable rows were cleaned.",
+          "Accepted GitHub linkage plus sync proof as the local-only exclusion rule.",
+          "Accepted deterministic field precedence for stage, latest artifact/error, governance, Aegis, owner gate, duplicate-active-stage, and linked issue/PR fields."
+        ],
+        "consensus": [
+          {
+            "item": "SPEC-009C4 cleaned target replay source evidence",
+            "round": 1,
+            "routed_categories": [
+              "codebase",
+              "spec"
+            ],
+            "outcome": "Accepted archived smoke-checklist evidence plus retained github_syncs rows for cleaned target replay evidence; live row pointers remain required for current active-state claims.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst"
+            ]
+          }
+        ],
+        "markers": 0
+      },
+      "API Seam and Artifact Inspection": {
+        "status": "completed",
+        "questions": 4,
+        "key_outcomes": [
+          "Accepted no new packet-specific API route by default.",
+          "Accepted existing task artifact publish/list/read APIs as the inspection seam.",
+          "Accepted durable GitHub-linked pilot candidate task ownership for packet artifacts.",
+          "Accepted no new task_id, schema_version, or packet-specific artifact filters unless Plan proves required for SC-001."
+        ],
+        "consensus": [],
+        "markers": 0
+      },
+      "Deferrals, Redaction, and Staleness": {
+        "status": "completed",
+        "questions": 5,
+        "key_outcomes": [
+          "Accepted explicit deferrals envelope with state, owner_specs, reason_code, reason, and source_map.",
+          "Accepted canonical future-spec owner map for SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, SPEC-014A, SPEC-014B, SPEC-014C, and SPEC-014D fields.",
+          "Accepted packet-local evidence_state values without extending persisted artifact enums.",
+          "Accepted structural staleness only; no time-based freshness gate or fresh GitHub call requirement.",
+          "Accepted publication blockers limited to candidate identity/sync proof failure, invalid packet JSON/schema, and unsafe storage/display conditions."
+        ],
+        "consensus": [
+          {
+            "item": "Safety states for redacted, quarantined, oversized, missing, malformed, superseded, and stale evidence",
+            "round": 1,
+            "routed_categories": [
+              "security"
+            ],
+            "outcome": "Accepted packet-local evidence_state values with metadata-only quarantined/unsafe evidence, no raw secret-bearing content, structural warnings, and fail-closed publication only for invalid/unsafe packets or failed candidate identity/sync proof.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst",
+              "domain-researcher"
+            ]
+          }
+        ],
+        "markers": 0
+      }
+    },
+    "gate": {
+      "id": "G2",
+      "pass": true,
+      "reason": "0 [NEEDS CLARIFICATION] markers",
+      "markers": 0
+    }
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs apply eligibility",
@@ -121,31 +198,31 @@
     },
     {
       "step": "Phase 2: Clarify - Packet Contract and Source Map",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Packet Contract and Source Map Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - API Seam and Artifact Inspection",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - API Seam and Artifact Inspection Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Deferrals, Redaction, and Staleness",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Deferrals, Redaction, and Staleness Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 3: Plan",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - api-contracts",
