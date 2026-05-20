@@ -1,0 +1,49 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/mission-control",
+  "reportMode": "pr",
+  "reportScope": "run",
+  "surface": "playwright",
+  "surfaceLabel": "Playwright UI E2E",
+  "workflowName": "Mission Control UI E2E",
+  "workflowFile": "mission-control-ui-e2e.yml",
+  "prNumber": "55",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/55",
+  "runId": "26194024377",
+  "runAttempt": "1",
+  "runKey": "26194024377-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26194024377",
+  "headRef": "009e-pilot-evidence-surfaces",
+  "baseRef": "main",
+  "headSha": "f84df4250ec6cde1cd605fb72da6e415ec43f998",
+  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/55/runs/26194024377-attempt-1/playwright/",
+  "latestHref": "https://racecraft-lab.github.io/mission-control/pr/55/playwright/latest/?v=26194024377-attempt-1",
+  "createdAt": "2026-05-20T22:45:09.134Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 0,
+    "open": 0,
+    "passed": 0,
+    "total": 0
+  },
+  "reviewScope": {
+    "domains": [],
+    "filtered": 154,
+    "reason": "changed-files-no-review-domain"
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/mission-control",
+    "prNumber": "55",
+    "surface": "playwright",
+    "surfaceLabel": "Playwright UI E2E",
+    "headSha": "f84df4250ec6cde1cd605fb72da6e415ec43f998",
+    "runKey": "26194024377-attempt-1",
+    "items": []
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "55",
+  "prTitle": "SPEC-009E task evidence surface",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/55",
+  "headRef": "009e-pilot-evidence-surfaces",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26194024377",
+      "runAttempt": "1",
+      "runKey": "26194024377-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26194024377",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/55/runs/26194024377-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/55/playwright/latest/?v=26194024377-attempt-1",
+      "headSha": "f84df4250ec6cde1cd605fb72da6e415ec43f998",
+      "headRef": "009e-pilot-evidence-surfaces",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-20T22:45:09.134Z"
+    }
+  ],
+  "updatedAt": "2026-05-20T22:45:09.134Z"
+}
