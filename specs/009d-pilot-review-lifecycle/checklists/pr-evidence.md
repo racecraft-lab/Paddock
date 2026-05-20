@@ -51,6 +51,10 @@ SPEC-009D gives operators and reviewers one compact lifecycle packet for the sel
 - `pnpm test`: 277 files passed, 2907 tests passed, 33 files skipped, 3 tests skipped, 84 todo.
 - `pnpm test:e2e`: 646 Playwright tests passed.
 - `CI=true pnpm install --lockfile-only --frozen-lockfile --ignore-scripts`: passed.
+- Post-merge closeout on 2026-05-20: PR #54 merged to `main` as
+  `765264be667bd31d6266f606602a219312f72f23`; merge-commit checks passed for
+  Quality Gate, CodeQL, Mission Control UI E2E, Visual Storybook Snapshots,
+  Playwright visual approval, and Storybook visual approval.
 
 ## Rollback And Flags
 

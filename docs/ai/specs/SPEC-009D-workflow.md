@@ -63,6 +63,10 @@ Source-of-truth scoping decisions:
 | Analyze | `$speckit-analyze` | Complete | Resolved strict-scope drift so all SPEC-009D-owned TypeScript modules require explicit TypeScript and ESLint coverage |
 | Implement | `$speckit-implement` | Complete | Implemented packet derivation, artifact publication, deferrals, local-only exclusion, strict-scope coverage, and verification evidence |
 
+**Post-merge closeout:** Complete on `main` after PR #54 merged as
+`765264be667bd31d6266f606602a219312f72f23`; SPEC-009D UAT evidence, cleanup,
+and main CI/CD success are recorded below.
+
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
 ### Phase Gates
@@ -663,7 +667,12 @@ To fill during implementation:
 - Build blockers resolved during verification: removed network-dependent Google font fetches, moved route test reset helpers out of a Next route module, regenerated the lockfile against patched Next 16.2.6, rebuilt `better-sqlite3`, and regenerated standalone output with the native binding present.
 - Verification passed under Node 22.22.2: focused packet/artifact/disposition tests (20 tests), existing task-artifact seam tests (38 tests), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm guardrails`, `pnpm audit:high`, `pnpm test` (2920 passing tests), and `pnpm test:e2e` (646 passing tests).
 - UAT passed on 2026-05-20: a disposable Mission Control database in `/private/tmp/mc-spec009d-uat-20260520-uat1` was seeded from retained issue #50 / PR #51 evidence, packet generation produced `candidate.state="proven"` and `current_stage="done"` with 15 source-map pointers, JSON artifact `2` and Markdown artifact `3` were published through real `publishArtifact()`, both artifacts were inspected through existing `/api/task-artifacts` HTTP routes, and seeded rows were removed after backup.
-- Implementation PR opened: https://github.com/racecraft-lab/mission-control/pull/54
+- Implementation PR merged: https://github.com/racecraft-lab/mission-control/pull/54
+- Merge commit: `765264be667bd31d6266f606602a219312f72f23`.
+- Main CI/CD closeout: PR and push checks for the merge commit passed on
+  2026-05-20, including Quality Gate, CodeQL, Mission Control UI E2E, Visual
+  Storybook Snapshots, Playwright visual approval, and Storybook visual
+  approval.
 
 ---
 
@@ -681,7 +690,9 @@ To fill during implementation:
 - [x] Roadmap and this workflow reflect final implementation status.
 - [x] PR evidence includes review packet, scope budget, verification evidence,
   known gaps, and rollback or no-migration notes.
-- [x] PR #54 opened against `main`.
+- [x] PR #54 merged to `main` as
+  `765264be667bd31d6266f606602a219312f72f23`.
+- [x] Post-merge main CI/CD checks verified green for the merge commit.
 
 ---
 

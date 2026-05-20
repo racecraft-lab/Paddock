@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009D-workflow.md",
-  "updated_at": "2026-05-20T06:21:52Z",
-  "active_step": "Post: Review Remediation",
-  "status": "PR Open",
+  "updated_at": "2026-05-20T17:44:32Z",
+  "active_step": "Complete",
+  "status": "Complete",
   "active_workflow": {
     "spec_id": "SPEC-009D",
     "workflow_file": "docs/ai/specs/SPEC-009D-workflow.md",
@@ -417,7 +417,7 @@
     }
   },
   "post": {
-    "status": "pr_open",
+    "status": "complete",
     "reviewability_diff_gate": {
       "command": "reviewability-gate.sh diff HEAD~2..HEAD",
       "pass": true,
@@ -434,7 +434,10 @@
       "url": "https://github.com/racecraft-lab/mission-control/pull/54",
       "base": "main",
       "head": "009d-pilot-review-lifecycle",
-      "draft": false
+      "draft": false,
+      "state": "MERGED",
+      "merged_at": "2026-05-20T15:34:06Z",
+      "merge_commit": "765264be667bd31d6266f606602a219312f72f23"
     },
     "uat": {
       "status": "completed",
@@ -453,7 +456,25 @@
       "cleanup": "seeded rows removed after backup; counts 2/3/3/1/1/1/1/1/1 to 0/0/0/0/0/0/0/0/0"
     },
     "review_remediation": {
-      "status": "pending_review_feedback"
+      "status": "complete",
+      "notes": "PR #54 merged with no outstanding review remediation required after approval."
+    },
+    "main_ci": {
+      "status": "passed",
+      "checked_at": "2026-05-20T17:44:32Z",
+      "head_sha": "765264be667bd31d6266f606602a219312f72f23",
+      "checks": [
+        "Quality Gate",
+        "CodeQL",
+        "Mission Control UI E2E",
+        "Visual Storybook Snapshots",
+        "Playwright visual approval",
+        "Storybook visual approval"
+      ]
+    },
+    "retrospective": {
+      "status": "not_required",
+      "notes": "No separate retrospective artifact was required for the docs-only merged-state hygiene pass."
     }
   },
   "plan": [
@@ -611,11 +632,11 @@
     },
     {
       "step": "Post: Review Remediation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Retrospective",
-      "status": "pending"
+      "status": "not_required"
     }
   ]
 }
