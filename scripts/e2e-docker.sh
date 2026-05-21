@@ -24,6 +24,7 @@ AUTH_USER="${AUTH_USER:-testadmin}"
 AUTH_PASS="${AUTH_PASS:-testpass1234!}"
 AUTH_SECRET="${AUTH_SECRET:-e2e-auth-secret-00000000000000000000000000000000}"
 API_KEY="${API_KEY:-test-api-key-e2e-12345}"
+SPEC_007_FIXED_NOW_ISO="${MC_SPEC_007_FIXED_NOW:-$(node -e 'console.log(new Date().toISOString())')}"
 CONTAINERS=()
 DATA_DIRS=()
 
@@ -79,6 +80,7 @@ start_container() {
     -e AUTH_SECRET="$AUTH_SECRET" \
     -e API_KEY="$API_KEY" \
     -e MISSION_CONTROL_TEST_MODE=1 \
+    -e MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" \
     -e MC_DISABLE_RATE_LIMIT=1 \
     -e MC_WORKLOAD_QUEUE_DEPTH_THROTTLE=1000 \
     -e MC_WORKLOAD_QUEUE_DEPTH_SHED=2000 \
@@ -167,7 +169,7 @@ if [ "$#" -eq 0 ]; then
   echo "[e2e-docker] seeding SPEC-005 ready-for-owner fixture in mounted database..."
   MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-ready-for-owner.cjs
   echo "[e2e-docker] seeding SPEC-007 disposition/artifact fixture in mounted database..."
-  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-007.cjs
+  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" node scripts/seed-e2e-spec-007.cjs
   echo "[e2e-docker] seeding SPEC-008 governance fixture in mounted database..."
   MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-008.cjs
 
@@ -220,7 +222,7 @@ else
     SPEC_007_PRESEEDED=0
     if should_seed_spec_007 "$@"; then
       echo "[e2e-docker] seeding SPEC-007 disposition/artifact fixture in mounted database..."
-      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-007.cjs
+      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" node scripts/seed-e2e-spec-007.cjs
       SPEC_007_PRESEEDED=1
     fi
     SPEC_008_PRESEEDED=0

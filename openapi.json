@@ -14713,6 +14713,125 @@
         }
       }
     },
+    "/api/tasks/{id}/evidence": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Read task evidence",
+        "description": "Returns a read-only task evidence envelope derived from stored Mission Control state. The endpoint does not trigger GitHub sync, packet generation, smoke execution, task mutation, artifact mutation, or activity writes.",
+        "operationId": "getTaskEvidence",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Optional explicit workspace scope"
+          },
+          {
+            "name": "workspace_scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "facility"
+              ]
+            },
+            "description": "Optional facility workspace scope"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stored task evidence envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "schema_version",
+                    "task",
+                    "pilot_eligibility",
+                    "identity",
+                    "packet_artifacts",
+                    "smoke",
+                    "current_stage",
+                    "warnings",
+                    "deferrals",
+                    "source_map"
+                  ],
+                  "properties": {
+                    "schema_version": {
+                      "type": "string",
+                      "const": "task_evidence.v1"
+                    },
+                    "task": {
+                      "type": "object"
+                    },
+                    "pilot_eligibility": {
+                      "type": "object"
+                    },
+                    "identity": {
+                      "type": "object"
+                    },
+                    "packet_artifacts": {
+                      "type": "object"
+                    },
+                    "smoke": {
+                      "type": "object"
+                    },
+                    "current_stage": {
+                      "type": "object"
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "deferrals": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "source_map": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid workspace scope"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/api/tasks/{id}/branch": {
       "get": {
         "tags": [

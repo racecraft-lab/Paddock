@@ -59,6 +59,11 @@ const specStrictFiles = [
   'src/lib/__tests__/pilot-review-packet.fixtures.ts',
   'src/lib/__tests__/pilot-review-packet.test.ts',
   'src/lib/__tests__/pilot-review-packet-artifacts.test.ts',
+  // SPEC-009E task evidence route, helper, and compact task-detail UI.
+  'src/lib/task-evidence.ts',
+  'src/lib/__tests__/task-evidence.fixtures.ts',
+  'src/lib/__tests__/task-evidence.test.ts',
+  'src/components/panels/task-evidence-section.tsx',
 ]
 
 const config = tseslint.config(

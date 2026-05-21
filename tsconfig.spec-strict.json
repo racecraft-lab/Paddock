@@ -56,9 +56,13 @@
     "src/lib/mission-control-seed/**/*.ts",
     "src/lib/pilot-issue-eligibility.ts",
     "src/lib/pilot-review-packet.ts",
+    "src/lib/task-evidence.ts",
     "src/lib/__tests__/pilot-review-packet.fixtures.ts",
     "src/lib/__tests__/pilot-review-packet.test.ts",
     "src/lib/__tests__/pilot-review-packet-artifacts.test.ts",
+    "src/lib/__tests__/task-evidence.fixtures.ts",
+    "src/lib/__tests__/task-evidence.test.ts",
+    "src/components/panels/task-evidence-section.tsx",
     "scripts/seed-mission-control-product-line.ts"
   ]
 }

@@ -442,6 +442,86 @@ alone.
   E2E, Visual Storybook Snapshots, Playwright visual approval, and Storybook
   visual approval.
 
+## 2026-05-20 SPEC-009E Task Evidence Surface UAT
+
+- Scope: read-only task detail Evidence surface on branch
+  `009e-pilot-evidence-surfaces` under Node `v22.22.2`. The run used stored
+  Mission Control rows only; it did not call GitHub, generate packets, execute
+  smoke, trigger sync, mutate task evidence through the route, add a dashboard,
+  or add migration/runtime dependency changes.
+- Retained external audit trail: GitHub issue #50 and PR #51 from the
+  SPEC-009C4/SPEC-009D pilot remain the canonical issue/PR proof. The
+  disposable browser carrier task used the same repo/issue/PR identity only to
+  render the UI journey from stored rows.
+- UAT command:
+
+  ```bash
+  direnv exec . pnpm test:e2e -- tests/e2e/task-detail-evidence.spec.ts
+  ```
+
+- Browser evidence artifacts:
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-eligible.png`,
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-local-only.png`,
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-partial-proof.png`,
+  and
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-fixture-export.json`.
+- Fixture export: `spec-009e.e2e-export.v1`, generated
+  `2026-05-20T22:26:27.864Z`, recorded disposable task ids `1/2/3`, artifact
+  rows `1/2/3/4`, activity row `4`, quality-review row `1`, governance row
+  `1`, GitHub sync row `1`, retained repo `racecraft-lab/mission-control`,
+  retained issue `50`, and retained PR `51`.
+- UI assertions: retained pilot carrier showed `eligible`,
+  `ready_for_owner`, issue #50, PR #51, review-packet artifact references, the
+  static smoke checklist reference `docs/qa/pilot-smoke-checklist.md#spec-009e`,
+  source-map evidence, and all seven deferred future-state categories. The
+  local-only carrier showed `not_eligible` with missing GitHub repo/issue
+  reasons. The partial-proof carrier showed `incomplete`,
+  `missing_github_pr_number`, oversized/unsafe/quarantined warning evidence,
+  and no action controls.
+- Cleanup: initial failed local runs left three disposable carrier task rows;
+  they were manually removed from the local e2e database before the final run
+  (`{"before":3,"after":0}`). The final successful run cleaned inserted
+  evidence rows and disposable carrier tasks; post-run counts were
+  `{"disposable_tasks_remaining":0,"matching_evidence_rows_remaining":0}`.
+  The retained GitHub issue/PR audit trail and this checklist are the durable
+  proof, not the cleaned local rows.
+- Docker note: Docker CLI is installed, but the daemon was unavailable during
+  this run (`Cannot connect to the Docker daemon at
+  unix:///Users/fredrickgabelmann/.docker/run/docker.sock`), so the optional
+  Docker build journey was not run.
+- Full UAT rerun on the product-code head `fe8e4b53`: the focused browser
+  journey passed again with `direnv exec . pnpm test:e2e --
+  tests/e2e/task-detail-evidence.spec.ts` (`1` Chromium test, `6.6s`). The
+  fresh fixture export was generated `2026-05-20T23:49:37.908Z`, retained
+  GitHub proof repo `racecraft-lab/mission-control`, issue `50`, and PR `51`,
+  and wrote screenshot evidence at
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-eligible.png`
+  (`622x855`),
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-local-only.png`
+  (`622x892`), and
+  `test-results/spec-009e-task-evidence/spec-009e-evidence-partial-proof.png`
+  (`622x1001`). The post-run cleanup query returned
+  `{"disposable_tasks_remaining":0,"matching_artifacts_remaining":0,"matching_activities_remaining":0,"matching_reviews_remaining":0,"matching_syncs_remaining":0}`.
+  Focused helper/API/component/read-only guard tests passed again (`4` files,
+  `14` tests). Full unit UAT confidence came from the sandbox-external
+  `direnv exec . pnpm test` pass (`281` passed files, `2933` passed tests,
+  `33` skipped files, `84` todo tests). Local Docker UAT remains blocked by the
+  unavailable daemon, while hosted PR Docker UI E2E and visual review checks
+  were green on the same product-code head.
+- Verification commands run outside the Codex sandbox with `direnv exec .`:
+  `pnpm typecheck`, `pnpm lint`, focused SPEC-009E Vitest route/helper/component
+  tests plus direct-insert guard (`4` files, `14` tests), full `pnpm test`
+  (`281` passed files, `2933` passed tests, `33` skipped files, `84` todo
+  tests), `pnpm build`, `pnpm api:parity`, `pnpm audit:high`, and the focused
+  Playwright journey above.
+- PR review packet notes: review order is `src/lib/task-evidence.ts`, then
+  `src/app/api/tasks/[id]/evidence/route.ts`, then
+  `src/components/panels/task-evidence-section.tsx` and task-board integration,
+  then the Playwright journey and tracking docs. Rollback requires no database
+  rollback: revert the route/helper/UI/test/doc changes. Known deferred work
+  remains explicitly labeled for SPEC-013A, SPEC-013A1, SPEC-013B,
+  SPEC-013C, and SPEC-014A-D.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control

@@ -328,3 +328,26 @@ git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation
 git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation-handoff/plan.md
 git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation-handoff/tasks.md
 ```
+
+---
+
+## SPEC-009E: Pilot Eligibility and Evidence Surfaces
+
+- **Feature**: RC Factory Phase 8E — read-only task-scoped pilot eligibility and evidence surfaces
+- **Branch**: `009e-pilot-evidence-surfaces`
+- **Spec Path**: `specs/009e-pilot-evidence-surfaces/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/55
+- **Merge Commit**: Pending PR merge
+- **Tree Reference**: Pending PR merge; use branch `009e-pilot-evidence-surfaces` until merged
+- **CI URL**: Pending PR #55 checks
+- **Argos URL**: N/A until PR visual checks publish
+- **Task Completion**: 59/59
+- **Archive Sweep**: SPEC-009E was the current target and was explicitly excluded from startup archive cleanup. Archive extension v1.1.0 was installed, but Codex did not have a direct archive command; the run recorded eligible prior specs without applying cleanup.
+- **Summary**: Added generic stored-evidence-only `task_evidence.v1` derivation, authenticated read-only `GET /api/tasks/[id]/evidence`, compact task detail Evidence UI, local-only and partial-proof states, safe metadata/source-map rendering, retained issue #50 / PR #51 UAT proof, and explicit SPEC-013/SPEC-014 deferrals. No migration, new runtime dependency, write action, GitHub sync trigger, packet-generation action, global dashboard, runner, claim, sandbox, adapter, or harness behavior was added.
+
+**Recovery Commands**:
+```text
+git show 009e-pilot-evidence-surfaces:specs/009e-pilot-evidence-surfaces/spec.md
+git show 009e-pilot-evidence-surfaces:specs/009e-pilot-evidence-surfaces/plan.md
+git show 009e-pilot-evidence-surfaces:specs/009e-pilot-evidence-surfaces/tasks.md
+```
