@@ -75,6 +75,23 @@ docs/             Documentation and guides
 
 Path alias: `@/*` maps to `./src/*`
 
+## Repo Knowledge Map
+
+- Canonical machine-readable index: `docs/ai/repo-knowledge-index.json`
+  with schema at `docs/ai/repo-knowledge-index.schema.json`.
+- Durable intent: `docs/rc-factory-v1-prd.md` and
+  `docs/ai/rc-factory-technical-roadmap.md`.
+- Current SpecKit ledgers and status pointers: `docs/ai/specs/`,
+  `docs/ai/specs/SPEC-012A-workflow.md`, and
+  `docs/ai/specs/autopilot-state.json`.
+- QA and recovery evidence: `docs/qa/pilot-smoke-checklist.md` and
+  `docs/runbook/migration-rollback.md`.
+- Workflow contract source: `docs/ai/workflows/mission-control/workflow-contract.yaml`.
+- Local checks: `pnpm knowledge:index:check`, `pnpm knowledge:index:smoke`,
+  and `pnpm guardrails -- --suite repo-knowledge-index`.
+- GitNexus refresh guidance stays in the GitNexus section below. `.gitnexus/`
+  remains ignored local output and is not CI truth.
+
 ## Data Directory
 
 Set `MISSION_CONTROL_DATA_DIR` env var to change the data location (defaults to `.data/`).
@@ -151,6 +168,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through existing `better-sqlite3` synchronous helpers; packet output persists through existing `task_artifacts` rows (009d-pilot-review-lifecycle)
 - TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Zustand where existing task detail panels need it, Tailwind CSS 3, `better-sqlite3`; no new runtime dependency (009e-pilot-evidence-surfaces)
 - SQLite through existing `better-sqlite3` helpers; no migration and no rollback SQL planned (009e-pilot-evidence-surfaces)
+- TypeScript 5.7 strict for the repository baseline; SPEC-012A-owned guard scripts use Node.js >=22 `.mjs` with built-in modules only + Next.js 16 App Router, React 19, better-sqlite3, Zustand, Tailwind CSS 3 remain unchanged; no new runtime dependency and no new parser dependency (012a-repo-knowledge-index)
+- Checked-in JSON, JSON Schema, Markdown docs, and fixture files under `docs/ai/`, root `AGENTS.md`, `scripts/spec-012a/`, and `specs/012a-repo-knowledge-index/` (012a-repo-knowledge-index)
 
 ## Recent Changes
 - Archive cleanup (2026-05-16): `.specify/memory/{spec,plan,changelog}.md` now carries recovery/provenance summaries through SPEC-009C2. Active completed folders were removed from `specs/**`; recover raw artifacts with the `git show <tree-ref>:specs/<feature>/...` commands recorded in `.specify/memory/changelog.md`.

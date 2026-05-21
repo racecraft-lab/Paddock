@@ -1,0 +1,29 @@
+{
+  "description": "Add external and Obsidian-style links that should warn without failing.",
+  "expected": {
+    "exitCode": 0,
+    "codes": ["external_link_warning", "wikilink_warning"]
+  },
+  "mutations": [
+    {
+      "type": "append_link",
+      "path": "AGENTS.md",
+      "link": {
+        "target": "https://example.com/spec-012a-warning-only",
+        "required": false,
+        "repo_owned": false,
+        "description": "External warning-only fixture link"
+      }
+    },
+    {
+      "type": "append_link",
+      "path": "AGENTS.md",
+      "link": {
+        "target": "[[Mission Control Repo Knowledge]]",
+        "required": false,
+        "repo_owned": false,
+        "description": "Obsidian warning-only fixture link"
+      }
+    }
+  ]
+}

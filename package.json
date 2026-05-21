@@ -11,6 +11,8 @@
     "mc:mcp": "node scripts/mc-mcp-server.cjs",
     "mc:tui": "node scripts/mc-tui.cjs",
     "workflow-contract": "pnpm run verify:node && node --experimental-strip-types scripts/workflow-contracts/workflow-contract-cli.ts",
+    "knowledge:index:check": "pnpm run verify:node && node scripts/spec-012a/verify-repo-knowledge-index.mjs",
+    "knowledge:index:smoke": "pnpm run verify:node && node scripts/spec-012a/fresh-agent-proxy.mjs",
     "seed:mission-control": "pnpm run verify:node && node --experimental-strip-types scripts/seed-mission-control-product-line.ts",
     "dev": "pnpm run verify:node && next dev --hostname 127.0.0.1 --port ${PORT:-3000}",
     "build": "pnpm run verify:node && next build",

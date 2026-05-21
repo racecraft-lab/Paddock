@@ -1,0 +1,209 @@
+{
+  "version": "1.0.0",
+  "last_verified": "2026-05-21",
+  "entries": [
+    {
+      "path": "AGENTS.md",
+      "kind": "operator-tooling",
+      "purpose": "Root instructions, concise Repo Knowledge Map, and GitNexus operator guidance for fresh agents.",
+      "owner": "Mission Control maintainers",
+      "freshness": {
+        "cadence": "per PR touching repo instructions or GitNexus guidance",
+        "trigger": "when setup, verification, or local index-refresh instructions change"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-012A"],
+      "verification_commands": ["pnpm knowledge:index:smoke"],
+      "required": true,
+      "repo_owned": true,
+      "links": [
+        {
+          "target": "docs/ai/repo-knowledge-index.json",
+          "required": true,
+          "repo_owned": true,
+          "description": "Canonical machine-readable repo knowledge index"
+        },
+        {
+          "target": "docs/rc-factory-v1-prd.md",
+          "required": true,
+          "repo_owned": true,
+          "description": "Durable RC Factory product intent"
+        },
+        {
+          "target": "docs/ai/rc-factory-technical-roadmap.md",
+          "required": true,
+          "repo_owned": true,
+          "description": "Technical roadmap and current spec status"
+        },
+        {
+          "target": "docs/ai/specs/",
+          "required": true,
+          "repo_owned": true,
+          "description": "SpecKit workflow ledger directory"
+        },
+        {
+          "target": "docs/qa/pilot-smoke-checklist.md",
+          "required": true,
+          "repo_owned": true,
+          "description": "Pilot UAT and manual smoke evidence checklist"
+        },
+        {
+          "target": "docs/runbook/migration-rollback.md",
+          "required": true,
+          "repo_owned": true,
+          "description": "Rollback and migration recovery runbook"
+        }
+      ]
+    },
+    {
+      "path": "docs/ai/repo-knowledge-index.json",
+      "kind": "operator-tooling",
+      "purpose": "Canonical machine-readable index of durable repository knowledge, ownership, freshness, and verification commands.",
+      "owner": "Mission Control maintainers",
+      "freshness": {
+        "cadence": "per PR touching indexed paths",
+        "trigger": "when a required source-of-truth path, owner, or verification command changes"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-012A"],
+      "verification_commands": ["pnpm knowledge:index:check"],
+      "required": false,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/repo-knowledge-index.schema.json",
+      "kind": "contract",
+      "purpose": "JSON Schema describing the index contract for agent and guard consumption.",
+      "owner": "Mission Control maintainers",
+      "freshness": {
+        "cadence": "per schema or guard change",
+        "trigger": "when index fields, metadata rules, or guard semantics change"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-012A"],
+      "verification_commands": ["pnpm knowledge:index:check"],
+      "required": false,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/rc-factory-v1-prd.md",
+      "kind": "durable-intent",
+      "purpose": "Product intent and high-level RC Factory scope that future specs refine rather than rewrite.",
+      "owner": "Product strategy",
+      "freshness": {
+        "cadence": "before roadmap reshaping or release-planning specs",
+        "trigger": "when product direction, audience, or factory scope changes"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": [],
+      "verification_commands": ["Manual review when roadmap phases change"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/rc-factory-technical-roadmap.md",
+      "kind": "durable-intent",
+      "purpose": "Technical sequencing, dependency graph, current spec statuses, and implementation evidence ledger.",
+      "owner": "Architecture",
+      "freshness": {
+        "cadence": "after each spec setup, merge, UAT, or hygiene pass",
+        "trigger": "when a spec status, dependency, merge SHA, or verification result changes"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-012A", "SPEC-013A"],
+      "verification_commands": ["pnpm knowledge:index:check", "Manual roadmap status review"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/specs/",
+      "kind": "execution-ledger",
+      "purpose": "SpecKit workflow, design concept, and execution ledger directory for current and prior specs.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per SpecKit phase transition",
+        "trigger": "when setup, autopilot, implementation, or closeout changes workflow artifacts"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-012A"],
+      "verification_commands": ["Manual check: no unresolved clarification, checklist gap, CRITICAL, or HIGH markers in active spec artifacts"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/specs/SPEC-012A-workflow.md",
+      "kind": "execution-ledger",
+      "purpose": "Active SPEC-012A workflow ledger, phase gates, implementation progress, and verification evidence.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per SPEC-012A phase transition",
+        "trigger": "when autopilot phase status, implementation progress, or verification evidence changes"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-012A"],
+      "verification_commands": ["pnpm knowledge:index:check"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/specs/autopilot-state.json",
+      "kind": "status-pointer",
+      "purpose": "Machine-readable autopilot state pointer for the active SPEC-012A workflow and phase.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per autopilot phase transition",
+        "trigger": "when active workflow, active step, or phase plan state changes"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-012A"],
+      "verification_commands": ["node -e \"JSON.parse(require('node:fs').readFileSync('docs/ai/specs/autopilot-state.json','utf8'))\""],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/qa/pilot-smoke-checklist.md",
+      "kind": "qa-evidence",
+      "purpose": "Manual pilot smoke and UAT evidence ledger for the self-hosting pilot path.",
+      "owner": "QA operators",
+      "freshness": {
+        "cadence": "after every pilot UAT or post-merge smoke",
+        "trigger": "when a pilot issue, PR, deployment SHA, or cleanup result changes"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-009C1", "SPEC-009C2", "SPEC-009C3", "SPEC-009C4", "SPEC-009D", "SPEC-009E"],
+      "verification_commands": ["Manual UAT evidence review"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/runbook/migration-rollback.md",
+      "kind": "rollback-runbook",
+      "purpose": "Migration and rollback recovery guidance for Mission Control operator changes.",
+      "owner": "Operations",
+      "freshness": {
+        "cadence": "before migrations or deployment-affecting specs",
+        "trigger": "when migration, backup, deploy, or rollback assumptions change"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": [],
+      "verification_commands": ["Manual rollback runbook review"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/workflows/mission-control/workflow-contract.yaml",
+      "kind": "contract",
+      "purpose": "Mission Control workflow contract imported/exported by SPEC-009A tooling and reused by downstream routing specs.",
+      "owner": "Workflow maintainers",
+      "freshness": {
+        "cadence": "per workflow contract change",
+        "trigger": "when workflow templates, routing rules, or prompt contracts change"
+      },
+      "last_verified": "2026-05-21",
+      "related_specs": ["SPEC-009A", "SPEC-012A"],
+      "verification_commands": ["pnpm workflow-contract export -- --source db --out docs/ai/workflows/mission-control/workflow-contract.yaml"],
+      "required": true,
+      "repo_owned": true
+    }
+  ]
+}

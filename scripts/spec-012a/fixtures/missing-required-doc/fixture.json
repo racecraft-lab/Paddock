@@ -1,0 +1,13 @@
+{
+  "description": "Remove one required discovery entry from the canonical index.",
+  "expected": {
+    "exitCode": 1,
+    "codes": ["required_entry_missing"]
+  },
+  "mutations": [
+    {
+      "type": "remove_entry",
+      "path": "docs/rc-factory-v1-prd.md"
+    }
+  ]
+}
