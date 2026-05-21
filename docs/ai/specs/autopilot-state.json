@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T15:11:00Z",
-  "active_step": "Post: PR Creation",
+  "updated_at": "2026-05-21T15:14:00Z",
+  "active_step": "Post: Review Remediation",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -72,6 +72,13 @@
       "status": "completed",
       "path": "/private/tmp/speckit-pr-body-012a.md",
       "notes": "The canonical .git/speckit-pr-body.md output path is not usable from this linked worktree because .git is a file; the generated repo-template body was written to /private/tmp and filled with SPEC-012A evidence."
+    },
+    "pr_creation": {
+      "status": "completed",
+      "number": 56,
+      "url": "https://github.com/racecraft-lab/mission-control/pull/56",
+      "head_ref_oid": "dee274d869c245237b08faf3b37bc9942d16f5d0",
+      "initial_remote_state": "mergeStateStatus=BLOCKED, reviewDecision=REVIEW_REQUIRED, checks pending"
     }
   },
   "plan": [
@@ -109,8 +116,8 @@
     {"step": "Post: Cleanup", "status": "completed"},
     {"step": "Post: Reviewability Diff Gate", "status": "completed"},
     {"step": "Post: PR Body Generation", "status": "completed"},
-    {"step": "Post: PR Creation", "status": "in_progress"},
-    {"step": "Post: Review Remediation", "status": "pending"},
+    {"step": "Post: PR Creation", "status": "completed"},
+    {"step": "Post: Review Remediation", "status": "in_progress"},
     {"step": "Post: Retrospective", "status": "pending"}
   ]
 }

@@ -601,7 +601,7 @@ Post-implementation code review also corrected the live status-pointer guard pat
 - [x] `git diff --check` passes.
 - [x] Roadmap/workflow/status docs are updated in the spec branch.
 - [ ] Full `pnpm test` suite is green without the known full-suite-only `task-chain-advancement.routing.test.ts` baseline failure described above.
-- [ ] Branch is pushed and PR is ready for review.
+- [x] Branch is pushed and PR #56 is ready for review: https://github.com/racecraft-lab/mission-control/pull/56
 
 ### Post-Implementation Reviewability Evidence
 
