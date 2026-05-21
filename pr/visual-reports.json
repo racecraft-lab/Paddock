@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-21T00:12:26.248Z",
+  "updatedAt": "2026-05-21T00:20:53.270Z",
   "prs": [
     {
       "prNumber": "55",
@@ -9,21 +9,21 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/55/",
       "headRef": "009e-pilot-evidence-surfaces",
       "baseRef": "main",
-      "updatedAt": "2026-05-21T00:12:26.248Z",
+      "updatedAt": "2026-05-21T00:20:53.270Z",
       "latest": {
+        "playwright": {
+          "runId": "26197379350",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26197379350",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/55/playwright/latest/?v=26197379350-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/55/runs/26197379350-attempt-1/playwright/",
+          "updatedAt": "2026-05-21T00:20:53.270Z"
+        },
         "storybook": {
           "runId": "26197379321",
           "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26197379321",
           "latestHref": "https://racecraft-lab.github.io/mission-control/pr/55/storybook/latest/?v=26197379321-attempt-1",
           "reportHref": "https://racecraft-lab.github.io/mission-control/pr/55/runs/26197379321-attempt-1/storybook/",
           "updatedAt": "2026-05-21T00:12:26.248Z"
-        },
-        "playwright": {
-          "runId": "26194591969",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26194591969",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/55/playwright/latest/?v=26194591969-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/55/runs/26194591969-attempt-1/playwright/",
-          "updatedAt": "2026-05-20T23:03:42.935Z"
         }
       }
     },
