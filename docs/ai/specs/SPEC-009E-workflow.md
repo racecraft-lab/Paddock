@@ -50,6 +50,10 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Analyze | `$speckit-analyze` | Complete | G6 passed with 0 findings and no unresolved consensus |
 | Implement | `$speckit-implement` | Complete | Implemented the generic task evidence route/helper, compact task detail Evidence section, focused tests, and UAT evidence; G7 local gates passed |
 
+**Post-merge closeout:** Complete on `main` after PR #55 merged as
+`40507874b012abffe2356a66be36613c6dea5809`; SPEC-009E UAT evidence, cleanup,
+roadmap status, and main check-run success are recorded below.
+
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
 ### Phase Gates
@@ -622,6 +626,13 @@ Docker CLI was present, but Docker daemon access was unavailable during UAT, so 
   - `test-results/spec-009e-task-evidence/spec-009e-evidence-partial-proof.png`
   - `test-results/spec-009e-task-evidence/spec-009e-evidence-fixture-export.json`
 - Final cleanup evidence: `{"disposable_tasks_remaining":0,"matching_evidence_rows_remaining":0}`.
+- Implementation PR merged: https://github.com/racecraft-lab/mission-control/pull/55
+- Merge commit: `40507874b012abffe2356a66be36613c6dea5809`.
+- Main check-run closeout: push checks for the merge commit passed on
+  2026-05-21 UTC, including `quality-gate`,
+  `docker-ui-e2e / visual-review-report`,
+  `visual-storybook / visual-review-report`, `Analyze (actions)`, and
+  `Analyze (javascript-typescript)`.
 
 ---
 
@@ -636,7 +647,9 @@ Docker CLI was present, but Docker daemon access was unavailable during UAT, so 
 - [x] `pnpm test` or `pnpm test:all` passes when scope requires it
 - [x] `docs/qa/pilot-smoke-checklist.md` or SPEC-009E evidence checklist records UAT
 - [x] PR body includes what/why/how, validation, evidence, reviewer guide, known deferrals, and rollback/flag notes
-- [x] Branch pushed and PR opened: https://github.com/racecraft-lab/mission-control/pull/55
+- [x] PR #55 merged to `main` as
+  `40507874b012abffe2356a66be36613c6dea5809`.
+- [x] Post-merge main check runs verified green for the merge commit.
 
 ---
 
