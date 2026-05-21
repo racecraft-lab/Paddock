@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
   "updated_at": "2026-05-21T14:17:17Z",
-  "active_step": "Phase 7: Package and CI guard wiring (T024-T027)",
+  "active_step": "Phase 7: Verification docs and status evidence (T028-T032)",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -68,8 +68,8 @@
     {"step": "Phase 7: Canonical index schema and root map (T008-T011)", "status": "completed"},
     {"step": "Phase 7: Repository knowledge index guard (T012-T018)", "status": "completed"},
     {"step": "Phase 7: Fresh-agent proxy smoke (T019-T023)", "status": "completed"},
-    {"step": "Phase 7: Package and CI guard wiring (T024-T027)", "status": "in_progress"},
-    {"step": "Phase 7: Verification docs and status evidence (T028-T032)", "status": "pending"},
+    {"step": "Phase 7: Package and CI guard wiring (T024-T027)", "status": "completed"},
+    {"step": "Phase 7: Verification docs and status evidence (T028-T032)", "status": "in_progress"},
     {"step": "Post: Verification and Status Sync", "status": "pending"},
     {"step": "Post: Verify Implementation", "status": "pending"},
     {"step": "Post: Code Review", "status": "pending"},

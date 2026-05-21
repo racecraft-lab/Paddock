@@ -10,7 +10,9 @@ function parseArgs(argv) {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]
-    if (arg === '--suite') {
+    if (arg === '--') {
+      continue
+    } else if (arg === '--suite') {
       const suite = argv[index + 1]
       if (!suite) throw new Error('--suite requires a value')
       suites.push(suite)
@@ -254,6 +256,11 @@ const guardrailSuites = [
     key: 'spec-evidence-screenshots',
     label: 'Spec evidence screenshot guard',
     run: () => runNodeScriptGuardrail('scripts/verify-spec-evidence-screenshots.mjs'),
+  },
+  {
+    key: 'repo-knowledge-index',
+    label: 'Repo knowledge index guard',
+    run: () => runNodeScriptGuardrail('scripts/spec-012a/verify-repo-knowledge-index.mjs'),
   },
 ]
 

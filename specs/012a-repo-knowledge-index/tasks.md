@@ -61,10 +61,10 @@ rewrites, or nested `AGENTS.md` rollout.
 
 **Purpose**: Make the guard easy to run locally and covered by existing CI.
 
-- [ ] T024 Add focused package scripts `knowledge:index:check` and `knowledge:index:smoke` to `package.json`.
-- [ ] T025 Update `scripts/check-guardrails.mjs` with a `repo-knowledge-index` suite that invokes the blocking index guard.
-- [ ] T026 Verify `pnpm guardrails -- --suite repo-knowledge-index` runs the new guard without requiring `.gitnexus/`, network, secrets, or operator services.
-- [ ] T027 Confirm `.github/workflows/quality-gate.yml` already runs `pnpm guardrails`; update workflow only if required to keep the new suite covered.
+- [x] T024 Add focused package scripts `knowledge:index:check` and `knowledge:index:smoke` to `package.json`.
+- [x] T025 Update `scripts/check-guardrails.mjs` with a `repo-knowledge-index` suite that invokes the blocking index guard.
+- [x] T026 Verify `pnpm guardrails -- --suite repo-knowledge-index` runs the new guard without requiring `.gitnexus/`, network, secrets, or operator services.
+- [x] T027 Confirm `.github/workflows/quality-gate.yml` already runs `pnpm guardrails`; update workflow only if required to keep the new suite covered.
 
 ## Phase 6: Verification, Docs, and Status Evidence
 
