@@ -39,7 +39,9 @@ function parseArgs(argv) {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index]
-    if (arg === '--fixture') {
+    if (arg === '--') {
+      continue
+    } else if (arg === '--fixture') {
       const fixture = argv[index + 1]
       if (!fixture) throw new Error('--fixture requires a path')
       args.fixture = fixture

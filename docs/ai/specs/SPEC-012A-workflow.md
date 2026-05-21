@@ -570,6 +570,7 @@ Execute `specs/012a-repo-knowledge-index/tasks.md` in order.
 |---------|--------|
 | `pnpm knowledge:index:check` | Pass: `[repo-knowledge-index] passed with 0 warning(s)` |
 | `pnpm knowledge:index:smoke` | Pass: resolved 9 required targets from `AGENTS.md` through `docs/ai/repo-knowledge-index.json` |
+| `direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/<fixture> --json` | Expected fixture behavior satisfied during UAT after accepting the pnpm argument separator; negative fixtures exit 1 with `fixture_expectations.ok=true`, warning-only fixture exits 0 |
 | `pnpm guardrails -- --suite repo-knowledge-index` | Pass: `Repo knowledge index guard passed`; 1 suite passed |
 | `direnv exec . pnpm guardrails` | Pass: all 3 guardrail suites passed, including `repo-knowledge-index` |
 | `pnpm typecheck` | Pass |
@@ -577,7 +578,7 @@ Execute `specs/012a-repo-knowledge-index/tasks.md` in order.
 | `direnv exec . pnpm build` | Pass outside the Codex sandbox under Node v22.22.2 |
 | `direnv exec . pnpm test:e2e` | Pass: 647 Playwright tests passed |
 | `direnv exec . pnpm test src/lib/__tests__/task-chain-advancement.routing.test.ts` | Pass: 14/14 focused Vitest tests passed |
-| `direnv exec . pnpm test` | Known baseline failure in full-suite order only: `src/lib/__tests__/task-chain-advancement.routing.test.ts` reported `advanced: false` / `reason: stalled` in pilot-evidence routing cases; the same file passes in isolation and SPEC-012A changes no runtime source or runtime test files |
+| `direnv exec . pnpm test` | Pass during UAT: 282 files passed, 33 skipped; 2934 tests passed, 3 skipped, 84 todo |
 | `git diff --check` | Pass |
 
 Fixture verification emitted expected codes: `required_entry_missing`,
@@ -600,7 +601,7 @@ Post-implementation code review also corrected the live status-pointer guard pat
 - [x] `pnpm test:e2e` passes outside the Codex sandbox.
 - [x] `git diff --check` passes.
 - [x] Roadmap/workflow/status docs are updated in the spec branch.
-- [ ] Full `pnpm test` suite is green without the known full-suite-only `task-chain-advancement.routing.test.ts` baseline failure described above.
+- [x] Full `pnpm test` suite is green during UAT.
 - [x] Branch is pushed and PR #56 is ready for review: https://github.com/racecraft-lab/mission-control/pull/56
 
 ### Post-Implementation Reviewability Evidence
@@ -652,11 +653,12 @@ specs/
 
 - The concise `AGENTS.md` map plus machine-readable JSON index kept repo discovery centralized without turning root instructions into a long duplicate of every durable doc.
 - Fixture-backed guard work caught the live status-pointer invocation gap during closeout, which was fixed before PR creation.
+- UAT caught the documented pnpm fixture-command separator path; accepting literal `--` in the guard parser keeps quickstart commands executable as written.
 
 ### Challenges Encountered
 
 - The worktree initially loaded Node v26.0.0, which cannot build the current `better-sqlite3` dependency. Running through `direnv exec .` restored the repo-pinned Node v22.22.2 toolchain.
-- Full Vitest execution still has an order-sensitive pilot-evidence routing failure in `src/lib/__tests__/task-chain-advancement.routing.test.ts`; the file passes when run directly, and the SPEC-012A diff does not touch that runtime surface.
+- The documented negative fixture commands use pnpm's `--` separator; the guard parser must tolerate that separator before reading `--fixture`.
 
 ### Patterns to Reuse
 

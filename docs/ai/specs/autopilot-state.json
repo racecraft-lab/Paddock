@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T15:20:00Z",
+  "updated_at": "2026-05-21T15:50:16Z",
   "active_step": "Complete",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
@@ -44,7 +44,7 @@
   },
   "post_implementation": {
     "integration_suite": {
-      "status": "completed-with-known-baseline-gap",
+      "status": "completed",
       "passed": [
         "direnv exec . pnpm knowledge:index:check",
         "direnv exec . pnpm knowledge:index:smoke",
@@ -52,11 +52,20 @@
         "direnv exec . pnpm typecheck",
         "direnv exec . pnpm lint",
         "direnv exec . pnpm build",
+        "direnv exec . pnpm test",
         "direnv exec . pnpm test:e2e",
         "direnv exec . pnpm test src/lib/__tests__/task-chain-advancement.routing.test.ts",
         "git diff --check"
       ],
-      "known_gap": "Full direnv exec . pnpm test was run twice and failed in full-suite order in src/lib/__tests__/task-chain-advancement.routing.test.ts with advanced=false / reason=stalled in pilot-evidence routing cases; the focused file passes 14/14 and SPEC-012A changes no runtime source or runtime test files."
+      "expected_fixture_behavior": [
+        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/missing-required-metadata --json",
+        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/missing-required-doc --json",
+        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/stale-status-pointer --json",
+        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/broken-required-link --json",
+        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/invalid-related-spec --json",
+        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/warning-only-links --json"
+      ],
+      "uat_note": "Full UAT on 2026-05-21 caught and fixed the documented pnpm fixture-command separator path; full direnv exec . pnpm test passed with 282 files passed, 33 skipped, 2934 tests passed, 3 skipped, and 84 todo."
     },
     "cleanup": {
       "status": "completed",
