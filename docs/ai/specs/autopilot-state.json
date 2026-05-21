@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T22:00:44Z",
-  "active_step": "Phase 5: Tasks",
+  "updated_at": "2026-05-21T22:09:24Z",
+  "active_step": "Phase 6: Analyze",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -120,18 +120,42 @@
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
       "status": "pending"
     },
     {
-      "step": "Phase 7: Implement - Pending task decomposition",
+      "step": "Phase 7: Setup and strict-scope prep (T001-T004)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Foundational tests and helpers (T005-T011)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US1 NEEDS_SPEC route (T012-T018)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US2 human and specialist routes (T019-T029)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US3 closure recommendations (T030-T036)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: US4 idempotent evidence display (T037-T044)",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Polish, UAT, guardrails, verification (T045-T055)",
       "status": "pending"
     },
     {
@@ -380,6 +404,23 @@
         "gaps": 0,
         "consensus": "none required"
       }
+    },
+    "tasks": {
+      "status": "completed",
+      "gate": "G5 pass, 55 tasks, 0 markers",
+      "files": [
+        "specs/009f-production-triage-routing/tasks.md"
+      ],
+      "task_count": 55,
+      "phases": 7,
+      "story_task_counts": {
+        "US1": 7,
+        "US2": 11,
+        "US3": 7,
+        "US4": 8
+      },
+      "parallel_markers": 23,
+      "reviewability": "tasks gate passed under transition exception; implementation must stay within generated task and plan scope"
     }
   }
 }

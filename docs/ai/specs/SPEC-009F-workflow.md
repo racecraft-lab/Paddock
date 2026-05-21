@@ -49,8 +49,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved lane payload contracts, terminal/idempotent state, Evidence API/UI shape, specialist matching/rollout, and UAT/regression boundaries |
 | Plan | `$speckit-plan` | Complete | Created plan, research, data model, contract, and quickstart for stored-evidence-only routing with no migration, no dependency, and no live side effects |
 | Checklist | `$speckit-checklist` | Complete | Ran data-integrity, api-contracts, state-management, error-handling, security, ux-accessibility, and regression-safety; all gaps remediated |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails |
-| Analyze | `$speckit-analyze` | Pending | Verify design concept/spec/plan/tasks/checklists agree on recommendation-only scope and no successor/live-side-effect drift |
+| Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails; G5 passed |
+| Analyze | `$speckit-analyze` | In Progress | Verify design concept/spec/plan/tasks/checklists agree on recommendation-only scope and no successor/live-side-effect drift |
 | Implement | `$speckit-implement` | Pending | Execute generated tasks; final gate must prove all six non-remediation outcomes route correctly without remediation successors or external mutation |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -535,10 +535,21 @@ Tasks must include explicit verification commands and should keep parallel marke
 
 ### Tasks Gate Checklist
 
-- [ ] Every acceptance criterion has task coverage.
-- [ ] RED tasks precede implementation tasks for production code.
-- [ ] No task implements future operator action controls or external mutations.
-- [ ] Final verification includes focused tests, typecheck/lint/build as required, and operator-readable Evidence inspection.
+- [x] Every acceptance criterion has task coverage.
+- [x] RED tasks precede implementation tasks for production code.
+- [x] No task implements future operator action controls or external mutations.
+- [x] Final verification includes focused tests, typecheck/lint/build as required, and operator-readable Evidence inspection.
+
+### Tasks Results
+
+| Item | Result |
+|------|--------|
+| Files created | `specs/009f-production-triage-routing/tasks.md` |
+| Task count | 55 tasks across setup, foundational, US1-US4, and polish/cross-cutting phases |
+| Story coverage | US1: 7 tasks; US2: 11 tasks; US3: 7 tasks; US4: 8 tasks |
+| Parallel markers | 23 disjoint-ownership task markers |
+| Gate | G5 passed via `validate-gate.sh G5 specs/009f-production-triage-routing` with 55 tasks and 0 markers |
+| Reviewability | `reviewability-gate.sh tasks specs/009f-production-triage-routing` passed under transition exception; warnings/blockers require implementation to stay within the generated task and plan scope |
 
 ---
 
