@@ -140,7 +140,7 @@ pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/tr
 - [ ] T037 [P] [US4] Add RED routing tests for unchanged same-outcome retry, changed same-outcome supersession, changed-disposition conflict, missing-activity backfill, validation failure before artifact publish, and artifact-publish failure isolation in `src/lib/__tests__/triage-routing.test.ts`
 - [ ] T038 [P] [US4] Add RED task Evidence tests for `available`, `missing`, `incomplete`, `unavailable`, `conflict`, and trace-only `superseded` `triage_routing` states, newest current artifact selection, warnings, missing fields, and `source_map` entries in `src/lib/__tests__/task-evidence.test.ts`
 - [ ] T039 [P] [US4] Add RED component tests for compact `Triage routing` block labels, empty/recorded/incomplete/unavailable/superseded/unassigned states, proposed labels with `applied: false`, deferred side effects, no buttons/forms/menus, inert text, and safe-link-only keyboard focus in `src/components/panels/__tests__/task-evidence-section.test.tsx`
-- [ ] T040 [P] [US4] Add RED OpenAPI contract assertion for `triage_routing` on existing `GET /api/tasks/{id}/evidence` response with no new triage-routing path or operation in `openapi.json`
+- [ ] T040 [P] [US4] Add RED OpenAPI contract assertion in `src/lib/__tests__/api-contract-parity.test.ts` that checked-in `openapi.json` includes `triage_routing` on the existing `GET /api/tasks/{id}/evidence` response with no new triage-routing path or operation
 
 ### Implementation for User Story 4
 

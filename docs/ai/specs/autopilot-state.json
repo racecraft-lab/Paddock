@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T22:09:24Z",
-  "active_step": "Phase 6: Analyze",
+  "updated_at": "2026-05-21T22:19:04Z",
+  "active_step": "Phase 7: Setup and strict-scope prep (T001-T004)",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -124,15 +124,15 @@
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Setup and strict-scope prep (T001-T004)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: Foundational tests and helpers (T005-T011)",
@@ -421,6 +421,30 @@
       },
       "parallel_markers": 23,
       "reviewability": "tasks gate passed under transition exception; implementation must stay within generated task and plan scope"
+    },
+    "analyze": {
+      "status": "completed",
+      "gate": "G6 pass, 0 CRITICAL/HIGH findings remain",
+      "findings": {
+        "critical": 0,
+        "high": 1,
+        "medium": 3,
+        "low": 1,
+        "remediated": 5
+      },
+      "files_modified": [
+        "docs/ai/specs/SPEC-009F-design-concept.md",
+        "docs/ai/specs/SPEC-009F-workflow.md",
+        "specs/009f-production-triage-routing/plan.md",
+        "specs/009f-production-triage-routing/quickstart.md",
+        "specs/009f-production-triage-routing/tasks.md"
+      ],
+      "commands": [
+        "count-markers.sh findings specs/009f-production-triage-routing",
+        "count-markers.sh all specs/009f-production-triage-routing",
+        "validate-gate.sh G6 specs/009f-production-triage-routing"
+      ],
+      "consensus": "none required"
     }
   }
 }

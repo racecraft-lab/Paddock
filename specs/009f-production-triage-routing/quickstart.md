@@ -25,6 +25,7 @@ pnpm typecheck
 pnpm lint
 pnpm build
 pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts
+pnpm api:parity
 node scripts/spec-009f/check-scope-guards.mjs
 ```
 
@@ -36,6 +37,7 @@ pnpm typecheck
 pnpm lint
 pnpm test
 pnpm test:e2e
+pnpm api:parity
 ```
 
 `pnpm test` may need to run outside the Codex sandbox per project guidance.

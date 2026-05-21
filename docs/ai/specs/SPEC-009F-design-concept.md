@@ -117,14 +117,14 @@ stop_reason: "natural"
 
 **Branch:** Operator surface
 
-**Recommended answer:** Extend the existing task Evidence route and section with a `triageRouting` section.
+**Recommended answer:** Extend the existing task Evidence route and section with a `triage_routing` section.
 > SPEC-009E established a generic task-local evidence pattern. Reusing it avoids a second surface and lets operators inspect disposition, lane, artifacts, and deferred side effects in one place.
 
 **Alternatives offered:**
 - Separate triage-routing route/section: clearer ownership but duplicates patterns.
 - Backend only for v1: persist lane artifacts and tests, but defer operator-facing display.
 
-**User's answer:** A - Extend task-local Evidence with `triageRouting`.
+**User's answer:** A - Extend task-local Evidence with `triage_routing`.
 
 ---
 
@@ -266,7 +266,7 @@ stop_reason: "natural"
 - **What:** Exact specialist matching inputs and confidence rules.
   **Why deferred:** Q4 chose recommendation matching from existing metadata, but the precise fields should be verified against current code in Clarify/Plan.
   **Suggested next step:** Resolve during `/speckit.clarify` and consensus against `projects`, `agents`, `project_agent_assignments`, and task metadata.
-- **What:** Exact v1 response shape for `triageRouting` inside task evidence.
+- **What:** Exact v1 response shape for `triage_routing` inside task evidence.
   **Why deferred:** Q6 chose the existing Evidence route/section, but field naming should align with SPEC-009E implementation details.
   **Suggested next step:** Resolve during Plan using `src/lib/task-evidence.ts` and `GET /api/tasks/[id]/evidence`.
 - **What:** Whether `PILOT_MISSION_CONTROL_E2E` alone is sufficient or a dedicated flag is needed.

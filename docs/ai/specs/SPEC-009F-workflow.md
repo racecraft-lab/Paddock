@@ -50,7 +50,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Plan | `$speckit-plan` | Complete | Created plan, research, data model, contract, and quickstart for stored-evidence-only routing with no migration, no dependency, and no live side effects |
 | Checklist | `$speckit-checklist` | Complete | Ran data-integrity, api-contracts, state-management, error-handling, security, ux-accessibility, and regression-safety; all gaps remediated |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails; G5 passed |
-| Analyze | `$speckit-analyze` | In Progress | Verify design concept/spec/plan/tasks/checklists agree on recommendation-only scope and no successor/live-side-effect drift |
+| Analyze | `$speckit-analyze` | Complete | G6 passed after artifact-only consistency remediations; no CRITICAL/HIGH findings remain |
 | Implement | `$speckit-implement` | Pending | Execute generated tasks; final gate must prove all six non-remediation outcomes route correctly without remediation successors or external mutation |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -230,7 +230,7 @@ Generate user stories and success criteria that prove all six non-remediation ou
 | Files created | `specs/009f-production-triage-routing/spec.md`; `specs/009f-production-triage-routing/checklists/requirements.md` |
 | Files modified | `.specify/feature.json`; `docs/ai/specs/autopilot-state.json`; this workflow |
 | User stories | 4 stories covering SpecKit handoff, human/specialist routing, closure recommendations, and idempotent Evidence display |
-| Requirements | 18 functional requirements, including all six non-remediation outcomes and no-side-effect guardrails |
+| Requirements | 41 functional requirements after Clarify and checklist remediation, including all six non-remediation outcomes and no-side-effect guardrails |
 | Gate | G1 passed via `validate-gate.sh G1 specs/009f-production-triage-routing` with 0 markers |
 
 ---
@@ -587,9 +587,20 @@ Remediate CRITICAL/HIGH findings before implementation. Do not widen scope; spli
 
 ### Analyze Gate Checklist
 
-- [ ] Marker scans are clean.
-- [ ] No CRITICAL/HIGH findings remain.
-- [ ] Any MEDIUM/LOW accepted risks are recorded with owner and follow-up.
+- [x] Marker scans are clean.
+- [x] No CRITICAL/HIGH findings remain.
+- [x] Any MEDIUM/LOW accepted risks are recorded with owner and follow-up.
+
+### Analyze Results
+
+| Item | Result |
+|------|--------|
+| Findings | 5 total: 0 CRITICAL, 1 HIGH, 3 MEDIUM, 1 LOW |
+| Remediation | All findings resolved with artifact-only edits; no scope expansion |
+| High finding fixed | T040 now points to executable RED OpenAPI contract coverage in `src/lib/__tests__/api-contract-parity.test.ts` instead of treating `openapi.json` as a test file |
+| Other fixes | Normalized `triage_routing` naming in the design concept; corrected four-lane-family wording; added `pnpm api:parity` quickstart verification; updated workflow requirement count |
+| Consensus | None required; no unresolved CRITICAL/HIGH findings remained after remediation |
+| Gate | G6 passed via `validate-gate.sh G6 specs/009f-production-triage-routing`; marker scans clean |
 
 ---
 
