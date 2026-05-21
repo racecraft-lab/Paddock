@@ -32,13 +32,13 @@
 
 **CRITICAL**: No user story implementation begins until this phase is complete.
 
-- [ ] T005 [P] Add RED common envelope, schema version, supported-disposition, proposed-label normalization, and safe evidence reference tests in `src/lib/__tests__/triage-routing-payloads.test.ts`
-- [ ] T006 Add RED text normalization/security tests for limits, C0/C1 controls, newline caps, stripped query/fragments, unsafe schemes, non-allowlisted destinations, and sanitized failure reasons in `src/lib/__tests__/triage-routing-payloads.test.ts`
-- [ ] T007 [P] Add RED fixture builders for six SPEC-009F non-remediation outcomes and disposable cleanup metadata in `src/lib/__tests__/task-evidence.fixtures.ts`
-- [ ] T008 [P] Add RED routing gate tests for `PILOT_MISSION_CONTROL_E2E`, `mission-control_issue_triage`, `racecraft-lab/mission-control`, unsupported dispositions, and `ACTIONABLE_REMEDIATION` preservation in `src/lib/__tests__/triage-routing.test.ts`
-- [ ] T009 [P] Add RED static guard expectations for no GitHub mutation, no label application, no remediation/non-remediation successors, no claim/runner/sandbox/adapter/auto-merge drift, no migrations, no new runtime dependency, and no committed `test-results/` screenshots in `scripts/spec-009f/check-scope-guards.mjs`
-- [ ] T010 Implement shared SPEC-009F constants, disposition/lane/artifact type maps, normalized string utilities, proposed label normalization, safe evidence reference validation, validation result types, and idempotency key builder in `src/lib/triage-routing-payloads.ts`
-- [ ] T011 Implement routing helper scaffolding for source-task gates, supported-disposition dispatch, `ACTIONABLE_REMEDIATION` skip result, failure result shapes, and no-successor/no-external-mutation seams in `src/lib/triage-routing.ts`
+- [x] T005 [P] Add RED common envelope, schema version, supported-disposition, proposed-label normalization, and safe evidence reference tests in `src/lib/__tests__/triage-routing-payloads.test.ts`
+- [x] T006 Add RED text normalization/security tests for limits, C0/C1 controls, newline caps, stripped query/fragments, unsafe schemes, non-allowlisted destinations, and sanitized failure reasons in `src/lib/__tests__/triage-routing-payloads.test.ts`
+- [x] T007 [P] Add RED fixture builders for six SPEC-009F non-remediation outcomes and disposable cleanup metadata in `src/lib/__tests__/task-evidence.fixtures.ts`
+- [x] T008 [P] Add RED routing gate tests for `PILOT_MISSION_CONTROL_E2E`, `mission-control_issue_triage`, `racecraft-lab/mission-control`, unsupported dispositions, and `ACTIONABLE_REMEDIATION` preservation in `src/lib/__tests__/triage-routing.test.ts`
+- [x] T009 [P] Add RED static guard expectations for no GitHub mutation, no label application, no remediation/non-remediation successors, no claim/runner/sandbox/adapter/auto-merge drift, no migrations, no new runtime dependency, and no committed `test-results/` screenshots in `scripts/spec-009f/check-scope-guards.mjs`
+- [x] T010 Implement shared SPEC-009F constants, disposition/lane/artifact type maps, normalized string utilities, proposed label normalization, safe evidence reference validation, validation result types, and idempotency key builder in `src/lib/triage-routing-payloads.ts`
+- [x] T011 Implement routing helper scaffolding for source-task gates, supported-disposition dispatch, `ACTIONABLE_REMEDIATION` skip result, failure result shapes, and no-successor/no-external-mutation seams in `src/lib/triage-routing.ts`
 
 **Checkpoint**: Shared payload contracts, fixture seeds, guard script, and source gates are ready for story implementation.
 

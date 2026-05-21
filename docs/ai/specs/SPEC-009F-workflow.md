@@ -646,7 +646,8 @@ Verification must prove all six non-remediation outcomes, no remediation success
 | Task Group | Status | Evidence |
 |------------|--------|----------|
 | Setup and strict-scope prep (T001-T004) | Complete | Created guard placeholder, strict TypeScript entries, ESLint entries, and SPEC-009F UAT skeleton; `node scripts/spec-009f/check-scope-guards.mjs`, `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`, narrow ESLint check, and UAT section grep passed |
-| Foundational tests and helpers (T005-T011) | In Progress | Pending RED payload, fixture, routing gate, and static guard tests |
+| Foundational tests and helpers (T005-T011) | Complete | Added payload contract tests/helpers, six-outcome fixtures, routing source gates, and static scope guard; 27 focused tests, strict spec TypeScript, focused lint, and scope guard passed |
+| US1 NEEDS_SPEC route (T012-T018) | In Progress | Pending handoff payload, routing artifact/activity, fixture extension, and task Evidence derivation |
 
 ### Completion Checklist
 

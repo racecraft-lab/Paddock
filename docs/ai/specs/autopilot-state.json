@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T22:26:54Z",
-  "active_step": "Phase 7: Foundational tests and helpers (T005-T011)",
+  "updated_at": "2026-05-21T22:46:14Z",
+  "active_step": "Phase 7: US1 NEEDS_SPEC route (T012-T018)",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -136,11 +136,11 @@
     },
     {
       "step": "Phase 7: Foundational tests and helpers (T005-T011)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US1 NEEDS_SPEC route (T012-T018)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US2 human and specialist routes (T019-T029)",
@@ -452,9 +452,16 @@
         "T001",
         "T002",
         "T003",
-        "T004"
+        "T004",
+        "T005",
+        "T006",
+        "T007",
+        "T008",
+        "T009",
+        "T010",
+        "T011"
       ],
-      "current_group": "Foundational tests and helpers (T005-T011)",
+      "current_group": "US1 NEEDS_SPEC route (T012-T018)",
       "groups": {
         "T001-T004": {
           "status": "completed",
@@ -470,6 +477,25 @@
             "pnpm exec eslint eslint.config.mjs src/components/panels/__tests__/task-evidence-section.test.tsx",
             "rg -n \"SPEC-009F Production Triage Routing UAT|pending T047|Six-outcome matrix|Explicit non-use evidence\" docs/qa/pilot-smoke-checklist.md"
           ]
+        },
+        "T005-T011": {
+          "status": "completed",
+          "files": [
+            "src/lib/triage-routing-payloads.ts",
+            "src/lib/__tests__/triage-routing-payloads.test.ts",
+            "src/lib/__tests__/task-evidence.fixtures.ts",
+            "src/lib/triage-routing.ts",
+            "src/lib/__tests__/triage-routing.test.ts",
+            "scripts/spec-009f/check-scope-guards.mjs"
+          ],
+          "commands": [
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts",
+            "pnpm exec eslint src/lib/triage-routing-payloads.ts src/lib/triage-routing.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.fixtures.ts scripts/spec-009f/check-scope-guards.mjs",
+            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs"
+          ],
+          "focused_tests": 27,
+          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
         }
       }
     }
