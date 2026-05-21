@@ -33,7 +33,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate `specs/012a-repo-knowledge-index/spec.md` from roadmap and design concept |
+| Specify | `$speckit-specify` | Complete | Generated `specs/012a-repo-knowledge-index/spec.md` with 18 FRs, 4 user stories, 11 acceptance scenarios, 5 success criteria, and no unresolved markers; G1 passed |
 | Clarify | `$speckit-clarify` | Pending | Resolve index schema, freshness semantics, guard integration, and docs-map boundaries |
 | Plan | `$speckit-plan` | Pending | Plan JSON index, validation scripts, concise `AGENTS.md` map, CI/local guard wiring |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: data-integrity, integration, regression-safety, error-handling |
@@ -72,7 +72,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 | XV. Spec Artifact Provenance | Setup artifacts and workflow evidence remain durable | Design concept, workflow, roadmap status, and later generated specs are tracked |
 | XVI. Reviewability And Verification Debt Control | Scope remains reviewable and split decisions are recorded | Reviewability gate result below is preserved; tasks keep file ownership narrow |
 
-**Constitution Check:** Pending until Specify and Plan confirm the final artifact shape.
+**Constitution Check:** Initial Specify pass verified process/tooling-only scope, archive evidence policy, reviewability budget declaration, and no runtime/migration/UI behavior. Re-check after Plan and Implement confirm the final artifact shape.
 
 ### Reviewability Gate
 
@@ -237,14 +237,14 @@ Fresh agents need to discover Mission Control repo truth from checked-in artifac
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 18 |
+| User Stories | 4 |
+| Acceptance Criteria | 11 |
 
 ### Files Generated
 
-- [ ] `specs/012a-repo-knowledge-index/spec.md`
-- [ ] `specs/012a-repo-knowledge-index/checklists/requirements.md`
+- [x] `specs/012a-repo-knowledge-index/spec.md`
+- [x] `specs/012a-repo-knowledge-index/checklists/requirements.md`
 
 ---
 
