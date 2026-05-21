@@ -3,6 +3,33 @@
   "reports": [
     {
       "surface": "storybook",
+      "runId": "26198676256",
+      "runAttempt": "1",
+      "runKey": "26198676256-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26198676256",
+      "reportKey": "40507874b012abffe2356a66be36613c6dea5809",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/40507874b012abffe2356a66be36613c6dea5809/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/?v=26198676256-attempt-1",
+      "headSha": "40507874b012abffe2356a66be36613c6dea5809",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "009e-pilot-evidence-surfaces",
+        "headSha": "1efae8dc03f597c41b06914ce0085d0ffffcc584",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/55/",
+        "mergeCommitSha": "",
+        "number": "55",
+        "title": "SPEC-009E task evidence surface",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/55"
+      },
+      "createdAt": "2026-05-21T00:50:37.654Z"
+    },
+    {
+      "surface": "storybook",
       "runId": "26172911500",
       "runAttempt": "1",
       "runKey": "26172911500-attempt-1",
@@ -552,5 +579,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-20T15:44:16.570Z"
+  "updatedAt": "2026-05-21T00:50:37.654Z"
 }
