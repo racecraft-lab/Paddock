@@ -77,7 +77,7 @@
       "status": "completed",
       "number": 56,
       "url": "https://github.com/racecraft-lab/mission-control/pull/56",
-      "head_ref_oid": "dee274d869c245237b08faf3b37bc9942d16f5d0",
+      "head_ref_oid_at_pr_creation": "dee274d869c245237b08faf3b37bc9942d16f5d0",
       "initial_remote_state": "mergeStateStatus=BLOCKED, reviewDecision=REVIEW_REQUIRED, checks pending"
     }
   },
