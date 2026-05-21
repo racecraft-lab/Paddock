@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T20:34:09Z",
-  "active_step": "Phase 2: Clarify - Lane Payload Contracts",
+  "updated_at": "2026-05-21T21:02:05Z",
+  "active_step": "Phase 3: Plan",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -20,47 +20,47 @@
     },
     {
       "step": "Phase 2: Clarify - Lane Payload Contracts",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Lane Payload Contracts Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Terminal State And Idempotency",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Terminal State And Idempotency Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Evidence API/UI Shape",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Evidence API/UI Shape Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Specialist Matching And Rollout Scope",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Specialist Matching And Rollout Scope Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - UAT And Regression Boundaries",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - UAT And Regression Boundaries Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 3: Plan",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
@@ -235,6 +235,81 @@
       "user_stories": 4,
       "functional_requirements": 18,
       "success_criteria": 6
+    },
+    "clarify": {
+      "lane_payload_contracts": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": "Q4 security consensus accepted safe-reference/redaction contract with URL allowlist amendment",
+        "spec_updates": [
+          "Clarifications Session 2026-05-21 - Lane Payload Contracts",
+          "FR-019",
+          "FR-020",
+          "FR-021",
+          "FR-022",
+          "Lane Payload Envelope",
+          "Proposed Label Recommendation",
+          "Safe Evidence Reference"
+        ]
+      },
+      "terminal_state_idempotency": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": "none required",
+        "spec_updates": [
+          "FR-023",
+          "FR-024",
+          "FR-025",
+          "FR-026",
+          "FR-027",
+          "FR-028",
+          "SC-007"
+        ]
+      },
+      "evidence_api_ui_shape": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": "none required",
+        "spec_updates": [
+          "triage_routing API shape",
+          "FR-014",
+          "FR-015",
+          "FR-029",
+          "FR-030"
+        ]
+      },
+      "specialist_matching_rollout": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": "none required",
+        "spec_updates": [
+          "FR-031",
+          "FR-032",
+          "FR-033",
+          "FR-034",
+          "Specialist Recommendation"
+        ]
+      },
+      "uat_regression_boundaries": {
+        "status": "completed",
+        "questions": 5,
+        "consensus": "none required",
+        "spec_updates": [
+          "FR-035",
+          "FR-036",
+          "FR-037",
+          "FR-038",
+          "FR-039",
+          "SC-008",
+          "SC-009",
+          "SC-010"
+        ]
+      },
+      "status": "completed",
+      "gate": "G2 pass, 0 [NEEDS CLARIFICATION] markers",
+      "sessions": 5,
+      "questions": 25,
+      "consensus_items": 1
     }
   }
 }

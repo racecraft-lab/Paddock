@@ -46,7 +46,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Created `specs/009f-production-triage-routing/spec.md` and requirements checklist; G1 passed with 0 unresolved markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve lane payload fields, specialist matching, task Evidence response shape, rollout flag boundary, and idempotency details |
+| Clarify | `$speckit-clarify` | Complete | Resolved lane payload contracts, terminal/idempotent state, Evidence API/UI shape, specialist matching/rollout, and UAT/regression boundaries |
 | Plan | `$speckit-plan` | Pending | Plan stored-evidence-only routing, typed payload validation, Evidence route/section extension, focused fixtures, and no-migration/no-side-effect guardrails |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains: data-integrity, api-contracts, state-management, error-handling, security, ux/accessibility, and regression-safety |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails |
@@ -252,6 +252,22 @@ Questions to resolve:
 
 Expected output: spec amendments and contract notes for strict typed payloads.
 
+#### Session 1 Results
+
+Accepted answers:
+
+- Use one common lane payload envelope with `schema_version: "spec-009f.triage_routing.v1"` and artifact types `triage_speckit_handoff`, `triage_clarification_request`, `triage_specialist_recommendation`, and `triage_closure_recommendation`.
+- Require lane-specific fields for SpecKit handoff, clarification request, specialist recommendation/unassigned state, and duplicate/obsolete/invalid closure recommendations.
+- Store proposed GitHub labels as normalized recommendation metadata only: `{ name, source, action: "recommend_add", applied: false }`.
+- Store normalized safe strings and typed safe evidence references only. URLs are optional, query strings/fragments are stripped by default, and active links require protocol and destination-family validation.
+- Add a focused pure payload helper near triage routing; call it before artifact publishing while existing artifact storage keeps persistence, redaction, size/MIME limits, supersession, and secret scanning ownership.
+
+Consensus:
+
+| Round | Routed Categories | Outcome | Analysts Used |
+|-------|-------------------|---------|---------------|
+| 1 | security, codebase, spec, domain | Accepted safe-reference/redaction contract with URL allowlist amendment; no Round 2 or human review needed | codebase-analyst, spec-context-analyst, domain-researcher |
+
 ### Session 2: Terminal State And Idempotency
 
 Questions to resolve:
@@ -262,6 +278,19 @@ Questions to resolve:
 - Failure behavior when artifact persistence partially fails.
 
 Expected output: state lifecycle and retry/idempotency requirements.
+
+#### Session 2 Results
+
+Accepted answers:
+
+- Successful non-remediation routes keep the source Issue Triage task `done` and write `triage_routing_recorded` with description `Recorded terminal triage routing for <DISPOSITION>`.
+- The canonical idempotency key is `spec-009f.triage_routing.v1:{workspace_id}:{source_task_id}:{disposition}`.
+- Same-outcome retries with unchanged normalized payload content create no new artifact or activity.
+- Same-outcome retries with changed normalized payload content publish a new artifact that supersedes the prior active artifact and keep superseded artifacts trace-only.
+- Changed-disposition retries after a non-unknown disposition is recorded are visibly rejected with `triage_routing_conflict`; they do not create terminal routing evidence for the attempted new outcome.
+- Artifact publish failures write sanitized `triage_routing_artifact_publish_failed` evidence, skip `triage_routing_recorded`, and expose `triageRouting` as incomplete or unavailable until retry. Retry backfills missing recorded activity when an artifact already exists.
+
+Consensus: None required; the clarify executor found current repo evidence sufficient.
 
 ### Session 3: Evidence API/UI Shape
 
@@ -274,6 +303,19 @@ Questions to resolve:
 
 Expected output: API/UI contract amendments and display-state vocabulary.
 
+#### Session 3 Results
+
+Accepted answers:
+
+- The Evidence API field is required as snake_case `triage_routing` to match existing task Evidence JSON style; the UI block label is `Triage routing`.
+- `triage_routing` includes `state`, `routing_status`, `disposition`, `lane`, `artifact`, `activity_reference`, `idempotency_key`, `recommended_next_action`, `proposed_labels`, `deferred_side_effects`, `missing`, `warnings`, optional `lane_detail`, and `superseded_artifacts`.
+- Reuse existing task Evidence `state` values and keep route-specific `routing_status` separate as `missing`, `recorded`, `failed`, or `conflict`.
+- Add server-side `buildTriageRoutingEvidence()` in or near `src/lib/task-evidence.ts`; the React component must not parse or validate raw routing payloads.
+- Current route selection uses the newest non-superseded, non-quarantined SPEC-009F routing artifact with matching schema version and routing artifact type. Superseded artifacts are trace-only.
+- Extend the existing Evidence section with compact display states: `No triage routing recorded.`, `Routing recorded`, `Triage routing incomplete`, `Triage routing unavailable`, `Superseded routing evidence`, `Specialist unassigned`, and `Deferred side effects`. No v1 action buttons.
+
+Consensus: None required; the clarify executor found current repo evidence sufficient.
+
 ### Session 4: Specialist Matching And Rollout Scope
 
 Questions to resolve:
@@ -284,6 +326,19 @@ Questions to resolve:
 - How behavior remains absent/off for non-Mission-Control workflows.
 
 Expected output: matching rules, fallback state, and rollout decision.
+
+#### Session 4 Results
+
+Accepted answers:
+
+- Specialist recommendations may use only deterministic Mission Control workspace metadata: source task/workspace, `projects.area_slug`, normalized `area:*` routing evidence, `project_agent_assignments`, and same-workspace `agents` rows.
+- Do not infer specialist ownership from free-form issue title/body/rationale keywords, raw agent config/soul content, logs, or GitHub body text.
+- Recommend only when exactly one safe lane and exactly one eligible owner assignment resolve; otherwise record `specialist_state: "unassigned"` with `missing_metadata` and `owner_action`.
+- Existing specialist workflow/template metadata may inform recommendation wording, but SPEC-009F must not execute, route to, or create `mission-control_specialist_route` or any other non-remediation successor.
+- `PILOT_MISSION_CONTROL_E2E` remains the v1 rollout gate; no dedicated SPEC-009F feature flag is planned.
+- Routing requires all absence/off gates: pilot flag resolved true, source task template slug `mission-control_issue_triage`, GitHub repo `racecraft-lab/mission-control`, supported disposition, and existing evidence prerequisites. Otherwise no SPEC-009F artifacts, activities, proposed labels, dispatches, or successors are written.
+
+Consensus: None required; the clarify executor found current repo evidence sufficient.
 
 ### Session 5: UAT And Regression Boundaries
 
@@ -296,11 +351,35 @@ Questions to resolve:
 
 Expected output: UAT checklist and regression guard requirements.
 
+#### Session 5 Results
+
+Accepted answers:
+
+- Use deterministic local/test database fixtures for all six supported dispositions: `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, and `INVALID`; no live GitHub creation or mutation.
+- Each fixture asserts typed routing artifact, `task_dispositions`, `triage_routing_recorded`, source task `done`, no Issue Remediation successor, and no non-remediation successor.
+- Add or extend a focused Playwright task Evidence journey covering all six outcomes, the `Task evidence` region, the `Triage routing` block, and absence of mutation/action controls.
+- Review artifacts live under `test-results/spec-009f-triage-routing/`, including six region screenshots and `spec-009f-triage-routing-fixture-export.json`; screenshots are not committed.
+- Cleanup exports inserted ids, deletes disposable artifacts/activities/tasks/reviews/sync rows/flag overrides, and records post-cleanup zero counts.
+- Guardrails must prove no GitHub mutation calls, label application, successor creation, claim, runner, sandbox, adapter, or auto-merge drift; add/adapt a SPEC-009F static/diff scope guard.
+- Record UAT evidence in `docs/qa/pilot-smoke-checklist.md` under `SPEC-009F Production Triage Routing UAT`.
+
+Consensus: None required; the clarify executor found current repo evidence sufficient.
+
 ### Clarify Gate Checklist
 
-- [ ] All open questions from the Design Concept are resolved or explicitly deferred.
-- [ ] No unresolved marker remains in `spec.md`.
-- [ ] Consensus log records any non-obvious API, security, or rollout decisions.
+- [x] All open questions from the Design Concept are resolved or explicitly deferred.
+- [x] No unresolved marker remains in `spec.md`.
+- [x] Consensus log records any non-obvious API, security, or rollout decisions.
+
+### Clarify Results
+
+| Session | Questions | Outcome |
+|---------|-----------|---------|
+| Lane Payload Contracts | 5 | Added common payload envelope, lane-specific fields, proposed-label metadata, safe evidence references, and payload validation ownership |
+| Terminal State And Idempotency | 5 | Added `done` source-task state, `triage_routing_recorded`, idempotency key, supersession, conflict, and partial failure semantics |
+| Evidence API/UI Shape | 5 | Added `triage_routing` API shape, Evidence state vocabulary, server helper ownership, active artifact selection, and UI copy/accessibility contract |
+| Specialist Matching And Rollout Scope | 5 | Added deterministic matching inputs, unassigned fallback, no specialist successor, `PILOT_MISSION_CONTROL_E2E` rollout, and non-Mission-Control absence gates |
+| UAT And Regression Boundaries | 5 | Added six-outcome fixture matrix, Playwright Evidence journey, fixture cleanup, static/diff guards, and pilot smoke checklist UAT ledger |
 
 ---
 
