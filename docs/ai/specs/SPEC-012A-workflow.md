@@ -35,7 +35,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/012a-repo-knowledge-index/spec.md` with 18 FRs, 4 user stories, 11 acceptance scenarios, 5 success criteria, and no unresolved markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved index/schema paths, required entries, metadata semantics, guard failure classes, stale status pointer detection, fresh-agent proxy behavior, GitNexus discoverability, and `pnpm guardrails`/Quality Gate integration; G2 passed |
-| Plan | `$speckit-plan` | Pending | Plan JSON index, validation scripts, concise `AGENTS.md` map, CI/local guard wiring |
+| Plan | `$speckit-plan` | Complete | Planned JSON index/schema, Node built-in guard scripts, fresh-agent proxy, concise `AGENTS.md` map, package scripts, and `pnpm guardrails`/Quality Gate wiring; G3 passed |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: data-integrity, integration, regression-safety, error-handling |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first process/tooling tasks |
 | Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept drift and reviewability boundaries |
@@ -72,7 +72,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 | XV. Spec Artifact Provenance | Setup artifacts and workflow evidence remain durable | Design concept, workflow, roadmap status, and later generated specs are tracked |
 | XVI. Reviewability And Verification Debt Control | Scope remains reviewable and split decisions are recorded | Reviewability gate result below is preserved; tasks keep file ownership narrow |
 
-**Constitution Check:** Initial Specify pass verified process/tooling-only scope, archive evidence policy, reviewability budget declaration, and no runtime/migration/UI behavior. Re-check after Plan and Implement confirm the final artifact shape.
+**Constitution Check:** Specify and Plan verified process/tooling-only scope, archive evidence policy, reviewability budget declaration, no runtime/migration/UI behavior, no new runtime dependency, and TDD-first negative fixture coverage. Re-check after Implement confirms the final artifact shape.
 
 ### Reviewability Gate
 
@@ -348,11 +348,11 @@ Focus on fresh-agent discovery and integration:
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | JSON index, guard scripts, `AGENTS.md` map, CI/local wiring |
-| `research.md` | Pending | Index schema, guard semantics, fresh-agent proxy decisions |
-| `data-model.md` | Pending | Docs index entry model and freshness/status pointer model |
-| `contracts/` | Pending | JSON index schema or validation contract if needed |
-| `quickstart.md` | Pending | Operator/fresh-agent verification path |
+| `plan.md` | Complete | JSON index/schema, guard scripts, `AGENTS.md` map, CI/local wiring |
+| `research.md` | Complete | Index schema, guard semantics, fresh-agent proxy decisions |
+| `data-model.md` | Complete | Knowledge Index, Canonical Index Entry, Freshness Rule, Guard Finding, Status Pointer |
+| `contracts/` | Complete | `contracts/repo-knowledge-index-contract.md` defines guard, smoke, and guardrails integration contracts |
+| `quickstart.md` | Complete | Operator/fresh-agent verification path |
 
 ---
 

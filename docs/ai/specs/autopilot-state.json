@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T14:05:00Z",
-  "active_step": "Phase 3: Plan",
+  "updated_at": "2026-05-21T14:21:00Z",
+  "active_step": "Phase 4: Checklist - data-integrity",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -52,8 +52,8 @@
     {"step": "Phase 2: Clarify - Session 2: Guard Failure Semantics Consensus", "status": "completed"},
     {"step": "Phase 2: Clarify - Session 3: Fresh-Agent Proxy and CI Integration", "status": "completed"},
     {"step": "Phase 2: Clarify - Session 3: Fresh-Agent Proxy and CI Integration Consensus", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "in_progress"},
-    {"step": "Phase 4: Checklist - data-integrity", "status": "pending"},
+    {"step": "Phase 3: Plan", "status": "completed"},
+    {"step": "Phase 4: Checklist - data-integrity", "status": "in_progress"},
     {"step": "Phase 4: Checklist - data-integrity Consensus", "status": "pending"},
     {"step": "Phase 4: Checklist - integration", "status": "pending"},
     {"step": "Phase 4: Checklist - integration Consensus", "status": "pending"},
