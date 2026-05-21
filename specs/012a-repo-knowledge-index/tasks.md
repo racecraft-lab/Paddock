@@ -39,13 +39,13 @@ rewrites, or nested `AGENTS.md` rollout.
 
 **Purpose**: Implement blocking validation against RED fixtures and the real index.
 
-- [ ] T012 Create `scripts/spec-012a/verify-repo-knowledge-index.mjs` CLI skeleton with `--fixture`, `--json`, and default repo-root modes.
-- [ ] T013 Implement JSON parse and schema-shape validation with Node built-in modules only; cover `index_missing`, `schema_missing`, `json_malformed`, and `schema_invalid`.
-- [ ] T014 Implement required entry and required path validation, including duplicate path detection, outside-repo traversal rejection, and `required_path_missing`.
-- [ ] T015 Implement metadata validation for `owner`, `freshness`, `last_verified`, `related_specs`, and `verification_commands`, including `metadata_missing`, `metadata_invalid`, and `related_spec_invalid`.
-- [ ] T016 Implement required repo-local Markdown link validation with relative path normalization and same-file heading handling.
-- [ ] T017 Implement SPEC-012A stale status pointer validation across roadmap, workflow, and `autopilot-state.json`, with observed/expected values in findings.
-- [ ] T018 Verify all RED fixtures fail or warn with the expected stable finding codes, then verify `docs/ai/repo-knowledge-index.json` passes.
+- [x] T012 Create `scripts/spec-012a/verify-repo-knowledge-index.mjs` CLI skeleton with `--fixture`, `--json`, and default repo-root modes.
+- [x] T013 Implement JSON parse and schema-shape validation with Node built-in modules only; cover `index_missing`, `schema_missing`, `json_malformed`, and `schema_invalid`.
+- [x] T014 Implement required entry and required path validation, including duplicate path detection, outside-repo traversal rejection, and `required_path_missing`.
+- [x] T015 Implement metadata validation for `owner`, `freshness`, `last_verified`, `related_specs`, and `verification_commands`, including `metadata_missing`, `metadata_invalid`, and `related_spec_invalid`.
+- [x] T016 Implement required repo-local Markdown link validation with relative path normalization and same-file heading handling.
+- [x] T017 Implement SPEC-012A stale status pointer validation across roadmap, workflow, and `autopilot-state.json`, with observed/expected values in findings.
+- [x] T018 Verify all RED fixtures fail or warn with the expected stable finding codes, then verify `docs/ai/repo-knowledge-index.json` passes.
 
 ## Phase 4: Fresh-Agent Proxy Smoke
 
