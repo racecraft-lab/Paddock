@@ -17,6 +17,7 @@
 - Success activity is `triage_routing_recorded` on the source task.
 - Conflict activity is `triage_routing_conflict`.
 - Publish-failure activity is `triage_routing_artifact_publish_failed`.
+- Payload validation failure activity is `triage_routing_validation_failed`; it contains sanitized source task id, workspace id, disposition when known, idempotency key when derivable, bounded field/path error reasons, and `routing_status: "failed"`, but never raw payload text, raw issue bodies, logs, secrets, storage URIs, or parser internals.
 
 **State transitions**:
 
@@ -29,6 +30,8 @@ recorded
   -> superseded+recorded   same outcome with changed normalized payload
 recorded
   -> conflict              changed disposition retry after non-unknown route exists
+missing|recorded
+  -> failed                lane payload validation fails before artifact publish
 missing|recorded
   -> failed                artifact publish fails before recorded activity
 failed
@@ -58,10 +61,17 @@ failed
 
 **Validation rules**:
 
-- Strings are bounded plain text and normalized before persistence.
+- Strings normalize to NFC, trim leading/trailing whitespace, normalize CRLF/CR to LF, convert tabs to single spaces, and persist no C0/C1 controls except bounded LF in multiline fields.
+- `triage_rationale`, closure rationales, and `proposed_scope` are limited to 2,000 characters and 8 LF characters.
+- `recommended_next_action`, `owner_action`, `DeferredSideEffect.reason`, target audience, duplicate target, superseding condition, invalidity reason, and other single-value lane text are limited to 500 characters and no LF.
+- List items in `blocking_questions`, `evidence_needed`, `non_goals`, `matching_basis`, `missing_metadata`, `validation_evidence`, `warnings`, and sanitized failure reasons are limited to 300 characters each and no LF.
+- `SafeEvidenceReference.label` is limited to 120 characters with no LF. `proposed_labels.name` is limited to 50 characters with no LF.
+- Over-limit or control-character-bearing values fail closed before artifact publishing; validation-failure evidence stores only sanitized field/path reasons, never rejected raw values.
 - Raw issue bodies, raw logs, credentials, tokens, signed URLs, storage URIs, raw secrets, parser internals, actor identity, and PII-bearing key/value material are rejected or replaced with safe metadata.
 - `proposed_labels` are trim/lowercase/deduped and must have `action: "recommend_add"` and `applied: false`.
-- Evidence links are typed safe references. URL links strip query strings/fragments and render as active links only after strict protocol and destination-family validation.
+- Evidence links are typed safe references. URL links strip query strings/fragments before storage and validation.
+- Active links are allowed only for same-origin Mission Control task/artifact/activity references, `https://github.com/racecraft-lab/mission-control/issues/{number}`, `https://github.com/racecraft-lab/mission-control/pull/{number}`, and repo-local/static docs or SPEC-009F checklist paths under `docs/` or `specs/009f-production-triage-routing/`.
+- Unsafe schemes (`javascript:`, `data:`, `vbscript:`, `file:`, `blob:`, `about:`, `ftp:`, `mailto:`, `tel:`, `ws:`, `wss:`), userinfo/credentials, arbitrary hosts, signed URLs, storage URIs/object paths, broad external links, and `SafeEvidenceReference.type: "other"` render as inert text in v1.
 
 ## SpecKit Handoff Payload
 

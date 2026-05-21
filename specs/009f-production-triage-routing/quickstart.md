@@ -6,9 +6,9 @@ SPEC-009F routes terminal non-remediation Issue Triage outcomes into stored reco
 
 ## Expected Implementation Order
 
-1. Add RED payload validator tests for all six supported outcomes.
+1. Add RED payload validator tests for all six supported outcomes, including bad schema/version/field payloads and sanitized validation-failure reasons.
 2. Implement `src/lib/triage-routing-payloads.ts`.
-3. Add RED routing tests for gates, idempotency, supersession, conflicts, artifact-publish failure, no successors, and `ACTIONABLE_REMEDIATION` preservation.
+3. Add RED routing tests for gates, idempotency, supersession, conflicts, validation failure before artifact publishing, artifact-publish failure, no successors, and `ACTIONABLE_REMEDIATION` preservation.
 4. Implement `src/lib/triage-routing.ts`.
 5. Add RED task Evidence helper tests for `triage_routing`.
 6. Extend `src/lib/task-evidence.ts`.

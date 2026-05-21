@@ -4,6 +4,8 @@
 
 `GET /api/tasks/:id/evidence` remains the only API surface. SPEC-009F extends the existing response with `triage_routing`.
 
+The checked-in OpenAPI contract for `GET /api/tasks/{id}/evidence` must include `triage_routing` in the `200` response schema and required response section list. The API index keeps the existing task Evidence operation only; SPEC-009F does not add a new triage-routing path, operation, or route.
+
 ```ts
 interface TaskEvidenceResponse {
   schema_version: "task_evidence.v1"
@@ -189,7 +191,34 @@ interface SafeEvidenceReference {
 }
 ```
 
-`url` values are optional. When present they must be stripped of query strings and fragments before storage. The UI renders active links only for validated destination families; otherwise labels render as inert text.
+## Text Field Normalization Contract
+
+All SPEC-009F persisted/displayed strings normalize to NFC, trim leading/trailing whitespace, normalize CRLF/CR to LF, convert tabs to single spaces, and persist no C0/C1 control characters except LF in multiline fields where allowed.
+
+Field limits:
+
+| Field class | Max characters | Newline limit |
+|-------------|----------------|---------------|
+| `triage_rationale`, closure rationales, `proposed_scope` | 2,000 | 8 LF |
+| `recommended_next_action`, `owner_action`, `DeferredSideEffect.reason`, target audience, duplicate target, superseding condition, invalidity reason, other single-value lane text | 500 | 0 |
+| Items in `blocking_questions`, `evidence_needed`, `non_goals`, `matching_basis`, `missing_metadata`, `validation_evidence`, `warnings`, sanitized failure reasons | 300 per item | 0 |
+| `SafeEvidenceReference.label` | 120 | 0 |
+| `proposed_labels.name` | 50 | 0 |
+
+Over-limit or control-character-bearing values fail closed before artifact publishing. Validation-failure evidence may include sanitized field/path reasons only and must not persist the rejected raw value.
+
+## Safe Evidence Reference Link Contract
+
+`url` values are optional. When present they must be stripped of query strings and fragments before storage and validation.
+
+Active link allowlist:
+
+- Same-origin Mission Control task, artifact, or activity references constructed from typed ids.
+- `https://github.com/racecraft-lab/mission-control/issues/{number}` for `github_issue`.
+- `https://github.com/racecraft-lab/mission-control/pull/{number}` for `github_pr`.
+- Repo-local/static docs or SPEC-009F checklist paths under `docs/` or `specs/009f-production-triage-routing/` for `static_doc`.
+
+The UI renders all other labels as inert text. `SafeEvidenceReference.type: "other"` is inert in v1. Unsafe schemes (`javascript:`, `data:`, `vbscript:`, `file:`, `blob:`, `about:`, `ftp:`, `mailto:`, `tel:`, `ws:`, `wss:`), userinfo/credentials, signed URLs, storage URIs/object paths, arbitrary hosts, and broad external links are never active links.
 
 ## Routing Helper Contract
 
@@ -217,6 +246,7 @@ Required behavior:
 - On same-outcome unchanged payload, create no new artifact or activity.
 - On same-outcome changed payload, supersede prior artifact and record a new activity.
 - On changed disposition retry, record sanitized conflict activity and create no terminal artifact.
+- On supported-disposition payload validation failure, return `{ status: "failed" }`, create no terminal routing artifact, create no `triage_routing_recorded` activity, and expose only sanitized validation details through failed/incomplete `triage_routing` evidence. Raw `triage_output` is never returned or persisted in failure evidence.
 - On artifact publish failure, record sanitized failure activity and expose incomplete/unavailable Evidence state.
 
 ## UI Contract
@@ -238,5 +268,6 @@ SPEC-009F adds one compact read-only block:
 - Superseded trace label: `Superseded routing evidence`
 - Specialist fallback label: `Specialist unassigned`
 - Deferred section label: `Deferred side effects`
+- Keyboard/screen-reader behavior: the block inherits the existing Task Evidence region, heading, loading, and error semantics. Only allowlisted typed links are keyboard-focusable. Routing labels, states, proposed labels, recommended next actions, missing/unassigned states, superseded trace labels, and deferred side effects render as inert read-only text with visible labels and screen-reader-accessible names or descriptions.
 
 No buttons, forms, menus, mutation controls, or disabled future action controls are allowed in v1.

@@ -87,6 +87,8 @@ src/components/panels/
 `-- __tests__/
     `-- task-evidence-section.test.tsx  # extend UI rendering/no-action-control coverage
 
+openapi.json                            # update existing task Evidence response schema with triage_routing
+
 tests/e2e/
 `-- spec-009f-triage-routing.spec.ts    # new six-outcome Evidence journey and screenshots
 
@@ -101,23 +103,24 @@ docs/qa/
 
 ## Exact Likely Implementation Files
 
-- `src/lib/triage-routing-payloads.ts` (created): strict schema version, disposition/lane/artifact constants, common envelope types, lane-specific payload types, normalization, proposed-label normalization, safe evidence reference validation, and payload builders/validators.
+- `src/lib/triage-routing-payloads.ts` (created): strict schema version, disposition/lane/artifact constants, common envelope types, lane-specific payload types, NFC/whitespace/control-character normalization, field-specific text length/newline limits, proposed-label normalization, explicit safe evidence reference allowlist validation, and payload builders/validators.
 - `src/lib/triage-routing.ts` (created): source-task gates, idempotency key generation, supported-disposition routing, same-outcome retry handling, changed-disposition conflict handling, artifact publish/supersede orchestration, and activity recording.
 - `src/lib/task-evidence.ts` (modified): add `triage_routing` response section, allowed section matrix entry, route-specific status type, validated routing artifact selection, failed/conflict activity mapping, source-map entries, warnings, and inert text output.
-- `src/components/panels/task-evidence-section.tsx` (modified): render compact read-only `Triage routing` block with existing Evidence semantics, no action controls, inert text, validated links only, proposed labels as metadata, and unassigned/deferred states.
-- `src/lib/__tests__/triage-routing-payloads.test.ts` (created): RED coverage for six payload families, bad schema/version/fields, safe text/reference stripping, proposed-label normalization, and unsupported outcomes.
-- `src/lib/__tests__/triage-routing.test.ts` (created): RED coverage for six routing outcomes, `ACTIONABLE_REMEDIATION` preservation, no successors, no GitHub mutation seam calls, flag/source gates, idempotency, supersession, conflict, publish failure, and missing-activity backfill.
+- `src/components/panels/task-evidence-section.tsx` (modified): render compact read-only `Triage routing` block with existing Evidence semantics, no action controls, inert text, active links only for allowlisted same-origin/GitHub/static references, proposed labels as metadata, and unassigned/deferred states.
+- `src/lib/__tests__/triage-routing-payloads.test.ts` (created): RED coverage for six payload families, bad schema/version/fields, sanitized validation-failure reasons, over-limit text, control characters, newline limits, safe text/reference stripping, query/fragment stripping, unsafe schemes, non-allowlisted destinations, proposed-label normalization, and unsupported outcomes.
+- `src/lib/__tests__/triage-routing.test.ts` (created): RED coverage for six routing outcomes, `ACTIONABLE_REMEDIATION` preservation, no successors, no GitHub mutation seam calls, flag/source gates, idempotency, supersession, conflict, validation failure before artifact publish, publish failure, and missing-activity backfill.
 - `src/lib/__tests__/task-evidence.fixtures.ts` (modified): add fixture schema columns/tables used by SPEC-009F and deterministic six-outcome seed helpers.
 - `src/lib/__tests__/task-evidence.test.ts` (modified): assert `triage_routing` available/missing/incomplete/conflict/superseded states and no raw unsafe content.
-- `src/components/panels/__tests__/task-evidence-section.test.tsx` (modified): assert block labels/states, proposed labels with `applied: false`, no buttons/controls, accessible region preservation, and fallback wording.
-- `tests/e2e/spec-009f-triage-routing.spec.ts` (created): seed six tasks, open `/tasks`, inspect `Task evidence` and `Triage routing`, assert no mutation/action controls, attach six screenshots and fixture export, cleanup rows.
+- `src/components/panels/__tests__/task-evidence-section.test.tsx` (modified): assert block labels/states, proposed labels with `applied: false`, no buttons/controls, accessible region preservation, keyboard focus only on allowlisted links inside `Triage routing`, screen-reader-distinguishable labels/states, color-independent status text, inert rendering of stored strings and non-allowlisted links, and fallback wording.
+- `openapi.json` (modified): extend the existing `GET /api/tasks/{id}/evidence` response schema with required `triage_routing` fields and enums while preserving the existing route operation.
+- `tests/e2e/spec-009f-triage-routing.spec.ts` (created): seed six tasks, open `/tasks`, inspect `Task evidence` and `Triage routing`, assert keyboard reachability for allowlisted references, screen-reader-distinguishable route labels/states, no mutation/action controls, attach six screenshots and fixture export, cleanup rows.
 - `scripts/spec-009f/check-scope-guards.mjs` (created): scan `origin/main...HEAD` for forbidden successor/template/claim/runner/sandbox/adapter/auto-merge/GitHub mutation drift and committed screenshot binaries.
 - `tsconfig.spec-strict.json` (modified): include new SPEC-009F TS modules and tests where strict scope requires.
 - `eslint.config.mjs` (modified): include new SPEC-009F TS modules/tests in strict type-checked lint scope.
 - `docs/qa/pilot-smoke-checklist.md` (modified): add durable SPEC-009F UAT section with command, commit, matrix, artifact paths, screenshots paths, cleanup counts, and explicit no-live-side-effect statement.
 - `specs/009f-production-triage-routing/*` (created/modified): generated plan, research, data model, contract, quickstart, and later tasks/checklists.
 
-Out of scope unless Analyze proves unavoidable: `docs/ai/workflows/mission-control/workflow-contract.yaml`, migrations, OpenAPI index, task board data fetching, GitHub sync modules, `task-create.ts`, runner/claim/sandbox/adapter modules, and workflow-template successor definitions.
+Out of scope unless Analyze proves unavoidable: `docs/ai/workflows/mission-control/workflow-contract.yaml`, migrations, new API-index operations, task board data fetching, GitHub sync modules, `task-create.ts`, runner/claim/sandbox/adapter modules, and workflow-template successor definitions.
 
 ## Phase 0: Research
 
@@ -166,8 +169,11 @@ pnpm typecheck
 pnpm lint
 pnpm build
 pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts
+pnpm api:parity
 node scripts/spec-009f/check-scope-guards.mjs
 ```
+
+Security-specific assertions in the focused Vitest and UI suites must cover the Security Normalization And Link Allowlist contract: over-limit values, control characters, newline limits, stripped query/fragment values, allowed GitHub/static/internal references, unsafe schemes, non-allowlisted destinations, and inert rendering.
 
 Full verification before PR update:
 
@@ -177,6 +183,7 @@ pnpm typecheck
 pnpm lint
 pnpm test
 pnpm test:e2e
+pnpm api:parity
 ```
 
 Codex sandbox note: per project guidance, run `pnpm test` outside the sandbox if the suite fails under local runtime resource restrictions.

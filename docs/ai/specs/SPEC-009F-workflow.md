@@ -48,7 +48,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Specify | `$speckit-specify` | Complete | Created `specs/009f-production-triage-routing/spec.md` and requirements checklist; G1 passed with 0 unresolved markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved lane payload contracts, terminal/idempotent state, Evidence API/UI shape, specialist matching/rollout, and UAT/regression boundaries |
 | Plan | `$speckit-plan` | Complete | Created plan, research, data model, contract, and quickstart for stored-evidence-only routing with no migration, no dependency, and no live side effects |
-| Checklist | `$speckit-checklist` | Pending | Run focused domains: data-integrity, api-contracts, state-management, error-handling, security, ux/accessibility, and regression-safety |
+| Checklist | `$speckit-checklist` | Complete | Ran data-integrity, api-contracts, state-management, error-handling, security, ux-accessibility, and regression-safety; all gaps remediated |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails |
 | Analyze | `$speckit-analyze` | Pending | Verify design concept/spec/plan/tasks/checklists agree on recommendation-only scope and no successor/live-side-effect drift |
 | Implement | `$speckit-implement` | Pending | Execute generated tasks; final gate must prove all six non-remediation outcomes route correctly without remediation successors or external mutation |
@@ -476,8 +476,22 @@ Run at least these domains:
 
 ### Checklist Gate Checklist
 
-- [ ] Every `[Gap]` is remediated or marked out of scope with rationale.
-- [ ] Checklist findings do not widen the spec into SPEC-013 or SPEC-014 work.
+- [x] Every `[Gap]` is remediated or marked out of scope with rationale.
+- [x] Checklist findings do not widen the spec into SPEC-013 or SPEC-014 work.
+
+### Checklist Results
+
+| Domain | Items | Gaps | Outcome |
+|--------|-------|------|---------|
+| data-integrity | 24 | 0 | Passed; no remediation required |
+| api-contracts | 22 | 1 | Added OpenAPI/API-index parity requirements and `pnpm api:parity` verification |
+| state-management | 23 | 1 | Made `ACTIONABLE_REMEDIATION` preservation explicit |
+| error-handling | 21 | 1 | Added sanitized validation-failure and incomplete-state requirements |
+| security | 24 | 2 | Added quantified text limits and active-link allowlists |
+| ux-accessibility | 17 | 1 | Added keyboard-focus and screen-reader requirements |
+| regression-safety | 22 | 0 | Passed; no remediation required |
+
+G4 passed via `validate-gate.sh G4 specs/009f-production-triage-routing` with 0 `[Gap]` markers. `count-markers.sh all` returned zero gaps, clarifications, and findings.
 
 ---
 

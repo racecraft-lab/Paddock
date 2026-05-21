@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T21:09:49Z",
-  "active_step": "Phase 4: Checklist - data-integrity",
+  "updated_at": "2026-05-21T22:00:44Z",
+  "active_step": "Phase 5: Tasks",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -64,63 +64,63 @@
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - data-integrity Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - api-contracts",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - api-contracts Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - state-management",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - state-management Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - error-handling",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - error-handling Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - security",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - security Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - ux-accessibility",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - ux-accessibility Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - regression-safety",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - regression-safety Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze",
@@ -322,6 +322,64 @@
         "specs/009f-production-triage-routing/quickstart.md"
       ],
       "reviewability": "no split required if implementation stays within planned file/surface limits"
+    },
+    "checklist": {
+      "data_integrity": {
+        "status": "completed",
+        "items": 24,
+        "gaps": 0,
+        "consensus": "none required"
+      },
+      "api_contracts": {
+        "status": "completed",
+        "items": 22,
+        "gaps": 1,
+        "remediated": 1,
+        "consensus": "none required",
+        "verification": [
+          "pnpm api:parity"
+        ]
+      },
+      "state_management": {
+        "status": "completed",
+        "items": 23,
+        "gaps": 1,
+        "remediated": 1,
+        "consensus": "none required"
+      },
+      "error_handling": {
+        "status": "completed",
+        "items": 21,
+        "gaps": 1,
+        "remediated": 1,
+        "consensus": "none required"
+      },
+      "security": {
+        "status": "completed",
+        "items": 24,
+        "gaps": 2,
+        "remediated": 2,
+        "consensus": "none required"
+      },
+      "ux_accessibility": {
+        "status": "completed",
+        "items": 17,
+        "gaps": 1,
+        "remediated": 1,
+        "consensus": "none required"
+      },
+      "status": "completed",
+      "gate": "G4 pass, 0 [Gap] markers",
+      "domains": 7,
+      "total_items": 153,
+      "total_gaps": 6,
+      "remediated": 6,
+      "regression_safety": {
+        "status": "completed",
+        "items": 22,
+        "gaps": 0,
+        "consensus": "none required"
+      }
     }
   }
 }
