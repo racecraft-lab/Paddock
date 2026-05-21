@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T15:14:00Z",
-  "active_step": "Post: Review Remediation",
+  "updated_at": "2026-05-21T15:20:00Z",
+  "active_step": "Complete",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -79,6 +79,15 @@
       "url": "https://github.com/racecraft-lab/mission-control/pull/56",
       "head_ref_oid_at_pr_creation": "dee274d869c245237b08faf3b37bc9942d16f5d0",
       "initial_remote_state": "mergeStateStatus=BLOCKED, reviewDecision=REVIEW_REQUIRED, checks pending"
+    },
+    "review_remediation": {
+      "status": "completed-with-human-gate",
+      "remote_checks": "CodeQL and quality-gate passed on head b759870d8f9dc5e487bb4c09078461a99ceb67b2 before closeout ledger update.",
+      "remaining_human_gate": "visual-review-approval/playwright and visual-review-approval/storybook are failing with Visual review approval is missing because package.json changed; no UI/Storybook/Docker/visual baseline/e2e test files changed."
+    },
+    "retrospective": {
+      "status": "completed",
+      "notes": "No optional speckit-retrospective-analyze Codex skill is installed; lessons learned were recorded in the workflow file."
     }
   },
   "plan": [
@@ -117,7 +126,7 @@
     {"step": "Post: Reviewability Diff Gate", "status": "completed"},
     {"step": "Post: PR Body Generation", "status": "completed"},
     {"step": "Post: PR Creation", "status": "completed"},
-    {"step": "Post: Review Remediation", "status": "in_progress"},
-    {"step": "Post: Retrospective", "status": "pending"}
+    {"step": "Post: Review Remediation", "status": "completed"},
+    {"step": "Post: Retrospective", "status": "completed"}
   ]
 }

@@ -613,6 +613,10 @@ bash /Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/spec
 
 It returned `status=block` with `transition_exception=false` even though the diff contains ratified transition-exception markers. The false negative is in the local gate script's exception detector (`grep -q` under `pipefail` can close the pipeline early before `git diff` exits). A temporary patched copy that preserves the same thresholds and uses non-quiet grep returned `status=exception`, `pass=true`, `reviewable_loc=3120`, `production_files=10`, `total_files=31`, and `primary_surface_count=6`. The exception remains limited to the SPEC-012A planned docs/process/script scope listed in this workflow.
 
+### PR Check Evidence
+
+PR #56 was opened at https://github.com/racecraft-lab/mission-control/pull/56. Remote checks on head `b759870d8f9dc5e487bb4c09078461a99ceb67b2` passed CodeQL and `quality-gate`; the Quality Gate run passed guardrails, dependency audit, lint, typecheck, unit tests, build, and e2e in GitHub Actions. The remaining failing contexts are `visual-review-approval/playwright` and `visual-review-approval/storybook`, both reporting `Visual review approval is missing`. Those are human visual-approval status contexts triggered because `package.json` changed; no UI, Storybook, Docker, visual baseline, or e2e test files changed in SPEC-012A.
+
 ---
 
 ## Project Structure Reference
