@@ -19,10 +19,10 @@
 
 **Purpose**: Prepare SPEC-009F-owned files and strict-scope entries without adding dependencies, migrations, routes, or successors.
 
-- [ ] T001 Create SPEC-009F guard script placeholder in `scripts/spec-009f/check-scope-guards.mjs`
-- [ ] T002 [P] Add SPEC-009F production/test file entries to `tsconfig.spec-strict.json`
-- [ ] T003 [P] Add SPEC-009F production/test file entries to `eslint.config.mjs`
-- [ ] T004 [P] Create SPEC-009F UAT evidence section skeleton in `docs/qa/pilot-smoke-checklist.md`
+- [x] T001 Create SPEC-009F guard script placeholder in `scripts/spec-009f/check-scope-guards.mjs`
+- [x] T002 [P] Add SPEC-009F production/test file entries to `tsconfig.spec-strict.json`
+- [x] T003 [P] Add SPEC-009F production/test file entries to `eslint.config.mjs`
+- [x] T004 [P] Create SPEC-009F UAT evidence section skeleton in `docs/qa/pilot-smoke-checklist.md`
 
 ---
 

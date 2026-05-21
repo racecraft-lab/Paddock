@@ -528,6 +528,28 @@ alone.
   `visual-storybook / visual-review-report`, `Analyze (actions)`, and
   `Analyze (javascript-typescript)`.
 
+## SPEC-009F Production Triage Routing UAT
+
+- Status: pending T047 UAT evidence capture. Do not mark SPEC-009F UAT complete
+  until each placeholder below is replaced with run-specific evidence.
+- Branch and commit: `TBD`.
+- UAT command: `TBD`.
+- Fixture export: `test-results/spec-009f-triage-routing/spec-009f-triage-routing-fixture-export.json`
+  (`TBD`).
+- Six-outcome matrix: record `NEEDS_SPEC`, `NEEDS_HUMAN`,
+  `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, and `INVALID` with source task
+  id, disposition, lane, routing status, current artifact id, activity id, and
+  task Evidence state.
+- Screenshot evidence: record the six
+  `test-results/spec-009f-triage-routing/` screenshot paths, one per routed
+  outcome.
+- Cleanup counts: record before and after counts for disposable workspace,
+  project, task, artifact, activity, quality-review, notification, and sync
+  rows created solely for the UAT run.
+- Explicit non-use evidence: confirm the run did not mutate live GitHub, create
+  Issue Remediation or non-remediation successor tasks, claim work, start a
+  runner, use sandbox or adapter state, auto-merge, or send external messages.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control

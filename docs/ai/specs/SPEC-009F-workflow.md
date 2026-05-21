@@ -641,6 +641,13 @@ Verification must prove all six non-remediation outcomes, no remediation success
 - Record verification evidence in this workflow before PR creation.
 - If browser-visible UI changes land in the task Evidence section, run focused Playwright/browser verification.
 
+### Implementation Progress
+
+| Task Group | Status | Evidence |
+|------------|--------|----------|
+| Setup and strict-scope prep (T001-T004) | Complete | Created guard placeholder, strict TypeScript entries, ESLint entries, and SPEC-009F UAT skeleton; `node scripts/spec-009f/check-scope-guards.mjs`, `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false`, narrow ESLint check, and UAT section grep passed |
+| Foundational tests and helpers (T005-T011) | In Progress | Pending RED payload, fixture, routing gate, and static guard tests |
+
 ### Completion Checklist
 
 - [ ] All generated tasks complete.

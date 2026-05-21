@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T22:19:04Z",
-  "active_step": "Phase 7: Setup and strict-scope prep (T001-T004)",
+  "updated_at": "2026-05-21T22:26:54Z",
+  "active_step": "Phase 7: Foundational tests and helpers (T005-T011)",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -132,11 +132,11 @@
     },
     {
       "step": "Phase 7: Setup and strict-scope prep (T001-T004)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Foundational tests and helpers (T005-T011)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US1 NEEDS_SPEC route (T012-T018)",
@@ -445,6 +445,33 @@
         "validate-gate.sh G6 specs/009f-production-triage-routing"
       ],
       "consensus": "none required"
+    },
+    "implementation": {
+      "status": "in_progress",
+      "completed_tasks": [
+        "T001",
+        "T002",
+        "T003",
+        "T004"
+      ],
+      "current_group": "Foundational tests and helpers (T005-T011)",
+      "groups": {
+        "T001-T004": {
+          "status": "completed",
+          "files": [
+            "scripts/spec-009f/check-scope-guards.mjs",
+            "tsconfig.spec-strict.json",
+            "eslint.config.mjs",
+            "docs/qa/pilot-smoke-checklist.md"
+          ],
+          "commands": [
+            "node scripts/spec-009f/check-scope-guards.mjs",
+            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+            "pnpm exec eslint eslint.config.mjs src/components/panels/__tests__/task-evidence-section.test.tsx",
+            "rg -n \"SPEC-009F Production Triage Routing UAT|pending T047|Six-outcome matrix|Explicit non-use evidence\" docs/qa/pilot-smoke-checklist.md"
+          ]
+        }
+      }
     }
   }
 }
