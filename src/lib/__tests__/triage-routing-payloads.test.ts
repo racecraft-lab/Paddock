@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildNeedsSpecTriageRoutingPayload,
   buildTriageRoutingIdempotencyKey,
   normalizeProposedLabels,
   normalizeSafeEvidenceReference,
@@ -10,6 +11,7 @@ import {
   TRIAGE_ROUTING_DISPOSITION_TO_LANE,
   TRIAGE_ROUTING_LANES,
   TRIAGE_ROUTING_SCHEMA_VERSION,
+  validateNeedsSpecTriageRoutingPayload,
   validateCommonTriageRoutingPayloadEnvelope,
 } from '@/lib/triage-routing-payloads';
 
@@ -344,5 +346,190 @@ describe('SPEC-009F triage routing text and link security', () => {
     );
     expect(JSON.stringify(result)).not.toContain('raw-secret');
     expect(JSON.stringify(result)).not.toContain('ACTIONABLE_REMEDIATION');
+  });
+});
+
+describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
+  it('builds a normalized SpecKit handoff payload with deferred setup held for the owner', () => {
+    const result = buildNeedsSpecTriageRoutingPayload({
+      source_task_id: 42,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 123,
+        url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=raw-secret#frag',
+      },
+      triage_rationale: ' Needs a SpecKit brief\r\nbefore implementation\twork. ',
+      recommended_next_action: ' Owner reviews and runs setup manually. ',
+      proposed_labels: [' MC:Needs-Spec ', 'mc:needs-spec', ' Area:Routing '],
+      evidence_links: [
+        {
+          type: 'github_issue',
+          label: ' Issue 123 ',
+          url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=raw-secret',
+        },
+      ],
+      proposed_scope: ' Specify the production routing behavior.\r\nKeep the scope tight. ',
+      non_goals: [' Do not create a spec worktree automatically. ', ' Do not enter Issue Remediation. '],
+      deferred_setup_action: {
+        owner_action: ' Owner decides whether to start SpecKit setup from this handoff. ',
+      },
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        schema_version: 'spec-009f.triage_routing.v1',
+        artifact_type: 'triage_speckit_handoff',
+        source_task_id: 42,
+        workspace_id: 7,
+        source_issue: {
+          repo: 'racecraft-lab/mission-control',
+          number: 123,
+          url: 'https://github.com/racecraft-lab/mission-control/issues/123',
+        },
+        disposition: 'NEEDS_SPEC',
+        lane: 'speckit_handoff',
+        routing_status: 'recorded',
+        triage_rationale: 'Needs a SpecKit brief\nbefore implementation work.',
+        recommended_next_action: 'Owner reviews and runs setup manually.',
+        proposed_labels: [
+          {
+            name: 'mc:needs-spec',
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+          {
+            name: 'area:routing',
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+        ],
+        evidence_links: [
+          {
+            type: 'github_issue',
+            label: 'Issue 123',
+            url: 'https://github.com/racecraft-lab/mission-control/issues/123',
+          },
+        ],
+        deferred_side_effects: [
+          {
+            side_effect: 'speckit_setup',
+            deferred: true,
+            reason: 'SpecKit setup remains an owner action.',
+          },
+        ],
+        lane_detail: {
+          proposed_scope: 'Specify the production routing behavior.\nKeep the scope tight.',
+          non_goals: ['Do not create a spec worktree automatically.', 'Do not enter Issue Remediation.'],
+          deferred_setup_action: {
+            automatic_setup: false,
+            owner_action: 'Owner decides whether to start SpecKit setup from this handoff.',
+          },
+        },
+        produced_at: '2026-05-21T12:00:00.000Z',
+        idempotency_key: 'spec-009f.triage_routing.v1:7:42:NEEDS_SPEC',
+      },
+    });
+  });
+
+  it('validates NEEDS_SPEC handoff payloads and rejects automatic setup without leaking raw values', () => {
+    const result = validateNeedsSpecTriageRoutingPayload({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_clarification_request',
+      source_task_id: 42,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 123,
+      },
+      disposition: 'NEEDS_HUMAN',
+      lane: 'clarification_request',
+      routing_status: 'recorded',
+      triage_rationale: 'raw-secret needs spec',
+      recommended_next_action: 'Owner reviews the handoff.',
+      proposed_labels: ['raw-secret-label'],
+      evidence_links: [],
+      deferred_side_effects: [
+        {
+          side_effect: 'speckit_setup',
+          deferred: true,
+          reason: 'Owner action only.',
+        },
+      ],
+      lane_detail: {
+        proposed_scope: 'raw-secret scope',
+        non_goals: ['safe non-goal', 'raw-secret\nbad non-goal'],
+        deferred_setup_action: {
+          automatic_setup: true,
+          owner_action: 'raw-secret owner action',
+        },
+      },
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: 'disposition', code: 'unsupported_disposition' }),
+        expect.objectContaining({ path: 'lane', code: 'invalid_lane' }),
+        expect.objectContaining({ path: 'artifact_type', code: 'invalid_artifact_type' }),
+        expect.objectContaining({ path: 'lane_detail.non_goals.1', code: 'too_many_newlines' }),
+        expect.objectContaining({
+          path: 'lane_detail.deferred_setup_action.automatic_setup',
+          code: 'invalid_literal',
+        }),
+      ]),
+    );
+    expect(JSON.stringify(result)).not.toContain('raw-secret');
+  });
+
+  it('rejects NEEDS_SPEC payloads that omit the deferred SpecKit setup side effect', () => {
+    const result = validateNeedsSpecTriageRoutingPayload({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_speckit_handoff',
+      source_task_id: 42,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 123,
+      },
+      disposition: 'NEEDS_SPEC',
+      lane: 'speckit_handoff',
+      routing_status: 'recorded',
+      triage_rationale: 'Needs a spec before implementation.',
+      recommended_next_action: 'Owner reviews and runs setup manually.',
+      proposed_labels: ['mc:needs-spec'],
+      evidence_links: [],
+      deferred_side_effects: [
+        {
+          side_effect: 'github_label',
+          deferred: true,
+          reason: 'Labels are recommendations only.',
+        },
+      ],
+      lane_detail: {
+        proposed_scope: 'Specify the production routing behavior.',
+        non_goals: ['Do not enter Issue Remediation.'],
+        deferred_setup_action: {
+          automatic_setup: false,
+          owner_action: 'Owner decides whether to start SpecKit setup from this handoff.',
+        },
+      },
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      issues: [
+        {
+          path: 'deferred_side_effects',
+          code: 'missing_deferred_side_effect',
+        },
+      ],
+    });
   });
 });

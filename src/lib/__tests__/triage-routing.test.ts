@@ -13,6 +13,9 @@ import {
 } from './task-evidence.fixtures'
 
 const openDbs: Database.Database[] = []
+const SCAFFOLDED_TRIAGE_ROUTING_DISPOSITIONS = SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS.filter(
+  (disposition) => disposition !== 'NEEDS_SPEC',
+)
 
 afterEach(() => {
   while (openDbs.length > 0) {
@@ -73,6 +76,20 @@ function route(
     disposition,
     rationale: 'Deterministic triage rationale for routing.',
   })
+}
+
+function readTask(database: Database.Database, taskId: number): {
+  status: string
+  workflow_template_slug: string | null
+  github_synced_at: number | null
+} {
+  return database
+    .prepare('SELECT status, workflow_template_slug, github_synced_at FROM tasks WHERE id = ?')
+    .get(taskId) as {
+    status: string
+    workflow_template_slug: string | null
+    github_synced_at: number | null
+  }
 }
 
 describe('SPEC-009F triage routing source gates', () => {
@@ -168,7 +185,156 @@ describe('SPEC-009F triage routing source gates', () => {
 })
 
 describe('SPEC-009F triage routing disposition dispatch', () => {
-  it.each(SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS)(
+  it('records NEEDS_SPEC as a terminal SpecKit handoff without successors or external setup', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { githubIssueNumber: 923 })
+    const before = snapshotSpec009fDisposableCounts(database)
+
+    const result = route(database, taskId, 'NEEDS_SPEC')
+    const after = snapshotSpec009fDisposableCounts(database)
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'recorded',
+      disposition: 'NEEDS_SPEC',
+      source: {
+        taskId,
+        workspaceId: 1,
+        workflowTemplateSlug: 'mission-control_issue_triage',
+        githubRepo: 'racecraft-lab/mission-control',
+        githubIssueNumber: 923,
+      },
+      route: {
+        lane: 'speckit_handoff',
+        artifactType: 'triage_speckit_handoff',
+      },
+      effects: {
+        createSuccessor: false,
+        mutateExternal: false,
+        publishArtifact: true,
+        dispatchAgent: false,
+      },
+      artifact: {
+        type: 'triage_speckit_handoff',
+        schemaVersion: 'spec-009f.triage_routing.v1',
+        idempotencyKey: `spec-009f.triage_routing.v1:1:${String(taskId)}:NEEDS_SPEC`,
+      },
+    })
+
+    if (!result.ok || result.status !== 'recorded') {
+      throw new Error('NEEDS_SPEC routing was not recorded')
+    }
+
+    expect(after).toEqual({
+      ...before,
+      activities: before.activities + 1,
+      taskArtifacts: before.taskArtifacts + 1,
+    })
+    expect(readTask(database, taskId)).toEqual({
+      status: 'done',
+      workflow_template_slug: 'mission-control_issue_triage',
+      github_synced_at: 1779400000,
+    })
+    expect(
+      database.prepare('SELECT COUNT(*) AS count FROM tasks WHERE parent_task_id = ? OR root_task_id = ?').get(taskId, taskId),
+    ).toEqual({ count: 0 })
+
+    const artifact = database
+      .prepare(`
+        SELECT task_id, workspace_id, workflow_template_slug, artifact_type, schema_version,
+               storage_kind, content_json, mime_type, redaction_status, security_scan_status
+        FROM task_artifacts
+        WHERE id = ?
+      `)
+      .get(result.artifact.id) as {
+      task_id: number
+      workspace_id: number
+      workflow_template_slug: string | null
+      artifact_type: string
+      schema_version: string
+      storage_kind: string
+      content_json: string
+      mime_type: string
+      redaction_status: string
+      security_scan_status: string
+    }
+    const payload = JSON.parse(artifact.content_json) as {
+      schema_version: string
+      artifact_type: string
+      source_task_id: number
+      workspace_id: number
+      disposition: string
+      lane: string
+      routing_status: string
+      idempotency_key: string
+      deferred_side_effects: { side_effect: string; deferred: boolean }[]
+      lane_detail: { deferred_setup_action: { automatic_setup: boolean } }
+    }
+    expect(artifact).toMatchObject({
+      task_id: taskId,
+      workspace_id: 1,
+      workflow_template_slug: 'mission-control_issue_triage',
+      artifact_type: 'triage_speckit_handoff',
+      schema_version: 'spec-009f.triage_routing.v1',
+      storage_kind: 'inline_json',
+      mime_type: 'application/json',
+      redaction_status: 'clean',
+      security_scan_status: 'scanned_clean',
+    })
+    expect(payload).toMatchObject({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_speckit_handoff',
+      source_task_id: taskId,
+      workspace_id: 1,
+      disposition: 'NEEDS_SPEC',
+      lane: 'speckit_handoff',
+      routing_status: 'recorded',
+      idempotency_key: result.artifact.idempotencyKey,
+      lane_detail: {
+        deferred_setup_action: {
+          automatic_setup: false,
+        },
+      },
+    })
+    expect(payload.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'speckit_setup', deferred: true }),
+      ]),
+    )
+
+    const activity = database
+      .prepare('SELECT type, entity_type, entity_id, actor, data FROM activities WHERE id = ?')
+      .get(result.activity.id) as {
+      type: string
+      entity_type: string
+      entity_id: number
+      actor: string
+      data: string
+    }
+    expect(activity).toMatchObject({
+      type: 'triage_routing_recorded',
+      entity_type: 'task',
+      entity_id: taskId,
+      actor: 'mission-control',
+    })
+    expect(JSON.parse(activity.data)).toMatchObject({
+      source_task_id: taskId,
+      workspace_id: 1,
+      disposition: 'NEEDS_SPEC',
+      lane: 'speckit_handoff',
+      routing_status: 'recorded',
+      artifact_id: result.artifact.id,
+      idempotency_key: result.artifact.idempotencyKey,
+      deferred_side_effects: {
+        github_mutation: true,
+        speckit_setup: true,
+        successor_task: true,
+      },
+    })
+  })
+
+  it.each(SCAFFOLDED_TRIAGE_ROUTING_DISPOSITIONS)(
     'dispatches %s to a recordable lane without successors, external mutation, or writes',
     (disposition) => {
       const database = db()

@@ -1,3 +1,15 @@
+import {
+  TRIAGE_ROUTING_ARTIFACT_TYPES,
+  TRIAGE_ROUTING_SCHEMA_VERSION,
+  validateNeedsSpecTriageRoutingPayload,
+  type DeferredSideEffect,
+  type NeedsSpecTriageRoutingPayload,
+  type ProposedLabelRecommendation,
+  type SpecKitHandoffDetail,
+  type SupportedTriageRoutingDisposition,
+  type TriageRoutingArtifactType,
+  type TriageRoutingLane,
+} from './triage-routing-payloads'
 import type Database from 'better-sqlite3'
 
 export const TASK_EVIDENCE_SCHEMA_VERSION = 'task_evidence.v1'
@@ -27,6 +39,7 @@ export const SECTION_STATE_MATRIX = {
   current_stage: ['available', 'missing', 'stale', 'unavailable'],
   warnings: ['available', 'missing'],
   deferrals: ['deferred'],
+  triage_routing: ['missing', 'available', 'incomplete', 'unavailable', 'superseded'],
   source_map: ['available', 'missing', 'stale', 'unavailable', 'deferred'],
 } as const satisfies Record<string, readonly EvidenceState[]>
 
@@ -126,6 +139,39 @@ export interface CurrentStageEvidence {
   warnings: string[]
 }
 
+export type TriageRoutingEvidenceState = 'missing' | 'available' | 'incomplete' | 'unavailable' | 'superseded'
+export type TriageRoutingStatus = 'missing' | 'recorded' | 'failed' | 'conflict'
+export type TriageRoutingLaneDetail = SpecKitHandoffDetail
+
+export interface TriageRoutingArtifactReference {
+  state: TriageRoutingEvidenceState
+  artifact_id: string
+  artifact_type: TriageRoutingArtifactType
+  schema_version: typeof TRIAGE_ROUTING_SCHEMA_VERSION
+  display_name: string
+  sha256?: string
+  mime_type?: string
+  size_bytes?: number
+  created_at?: string
+}
+
+export interface TriageRoutingEvidence {
+  state: TriageRoutingEvidenceState
+  routing_status: TriageRoutingStatus
+  disposition?: SupportedTriageRoutingDisposition
+  lane?: TriageRoutingLane
+  artifact?: TriageRoutingArtifactReference
+  activity_reference?: string
+  idempotency_key?: string
+  recommended_next_action?: string
+  proposed_labels: ProposedLabelRecommendation[]
+  deferred_side_effects: DeferredSideEffect[]
+  missing: string[]
+  warnings: string[]
+  lane_detail?: TriageRoutingLaneDetail
+  superseded_artifacts: TriageRoutingArtifactReference[]
+}
+
 export type DeferralCategory =
   | 'run_state'
   | 'sync_automation'
@@ -171,6 +217,7 @@ export interface TaskEvidenceResponse {
   packet_artifacts: PacketArtifactsEvidence
   smoke: SmokeEvidence
   current_stage: CurrentStageEvidence
+  triage_routing: TriageRoutingEvidence
   warnings: EvidenceWarning[]
   deferrals: DeferralEvidence[]
   source_map: SourceMapEntry[]
@@ -211,6 +258,10 @@ interface ArtifactRow {
   security_scan_status: string | null
   supersedes_artifact_id: number | null
   created_at: number | string | null
+}
+
+interface TriageRoutingArtifactRow extends ArtifactRow {
+  content_json: string | null
 }
 
 interface ActivityRow {
@@ -338,6 +389,7 @@ export function buildTaskEvidence(
   const latestActivity = readLatestActivity(db, task)
   const smoke = buildSmokeEvidence(task, artifacts, latestActivity, sourceMap)
   const currentStage = buildCurrentStageEvidence(task, latestActivity, sourceMap)
+  const triageRouting = buildTriageRoutingEvidence(db, task, options.artifactStorageEnabled, warnings, sourceMap)
   addSupportingSourceRows(db, task, sourceMap)
 
   const pilotEligibility = buildPilotEligibilityEvidence(task, identity, artifacts, smoke)
@@ -362,6 +414,7 @@ export function buildTaskEvidence(
     packet_artifacts: artifacts,
     smoke,
     current_stage: currentStage,
+    triage_routing: triageRouting,
     warnings: dedupeWarnings(warnings),
     deferrals: TASK_EVIDENCE_DEFERRALS.map((entry) => ({ ...entry })),
     source_map: sourceMap,
@@ -486,6 +539,262 @@ function buildPacketArtifactEvidence(
     missing: references.some((ref) => ref.kind === 'packet_json' || ref.kind === 'packet_markdown')
       ? []
       : ['missing_packet_artifacts'],
+  }
+}
+
+function buildTriageRoutingEvidence(
+  db: Database.Database,
+  task: TaskRow,
+  artifactStorageEnabled: boolean,
+  warnings: EvidenceWarning[],
+  sourceMap: SourceMapEntry[],
+): TriageRoutingEvidence {
+  const empty = emptyTriageRoutingEvidence()
+
+  if (!artifactStorageEnabled) {
+    warnings.push(triageRoutingSectionUnavailableWarning('artifact_storage_disabled'))
+    sourceMap.push(source('triage_routing', 'artifact', undefined, 'unavailable', 'triage routing artifact storage disabled'))
+    return {
+      ...empty,
+      state: 'unavailable',
+      routing_status: 'missing',
+      missing: ['artifact_storage_disabled'],
+    }
+  }
+
+  if (!tableExists(db, 'task_artifacts')) {
+    warnings.push(triageRoutingSectionUnavailableWarning('artifact_storage_unavailable'))
+    sourceMap.push(source('triage_routing', 'artifact', undefined, 'unavailable', 'triage routing artifact storage unavailable'))
+    return {
+      ...empty,
+      state: 'unavailable',
+      routing_status: 'missing',
+      missing: ['artifact_storage_unavailable'],
+    }
+  }
+
+  const placeholders = TRIAGE_ROUTING_ARTIFACT_TYPES.map(() => '?').join(', ')
+  const rows = db.prepare(`
+    SELECT
+      id,
+      artifact_type,
+      schema_version,
+      storage_kind,
+      original_filename,
+      mime_type,
+      byte_size,
+      sha256,
+      preview_text,
+      redaction_status,
+      security_scan_status,
+      supersedes_artifact_id,
+      content_json,
+      created_at
+    FROM task_artifacts
+    WHERE task_id = ?
+      AND workspace_id = ?
+      AND schema_version = ?
+      AND artifact_type IN (${placeholders})
+    ORDER BY created_at DESC, id DESC
+  `).all(task.id, task.workspace_id, TRIAGE_ROUTING_SCHEMA_VERSION, ...TRIAGE_ROUTING_ARTIFACT_TYPES) as TriageRoutingArtifactRow[]
+
+  if (rows.length === 0) {
+    sourceMap.push(source('triage_routing', 'artifact', undefined, 'missing', 'no triage routing artifact found'))
+    return {
+      ...empty,
+      missing: ['missing_triage_routing_artifact'],
+    }
+  }
+
+  const supersededArtifacts = rows
+    .filter((row) => triageRoutingArtifactState(row) === 'superseded')
+    .map((row) => triageRoutingArtifactReference(row, 'superseded'))
+  const activeRow = rows.find((row) => triageRoutingArtifactState(row) === 'available')
+
+  if (!activeRow) {
+    sourceMap.push(source('triage_routing', 'artifact', undefined, 'unavailable', 'no current triage routing artifact found'))
+    return {
+      ...empty,
+      state: supersededArtifacts.length > 0 ? 'superseded' : 'unavailable',
+      missing: ['missing_current_triage_routing_artifact'],
+      superseded_artifacts: supersededArtifacts,
+    }
+  }
+
+  const artifact = triageRoutingArtifactReference(activeRow, 'available')
+  sourceMap.push(source('triage_routing', 'artifact', artifact.artifact_id, 'available', artifact.display_name))
+
+  const payload = readValidatedNeedsSpecPayload(activeRow)
+  if (!payload.ok) {
+    return {
+      ...empty,
+      state: 'incomplete',
+      routing_status: 'failed',
+      artifact,
+      missing: ['invalid_triage_routing_payload'],
+      warnings: payload.warnings,
+      superseded_artifacts: supersededArtifacts,
+    }
+  }
+
+  const activity = readRecordedTriageRoutingActivity(db, task, activeRow.id, payload.value)
+  const missing = activity ? [] : ['missing_triage_routing_recorded_activity']
+  if (activity) {
+    sourceMap.push(source('triage_routing', 'activity', String(activity.id), 'available', 'triage routing recorded activity'))
+  } else {
+    sourceMap.push(source('triage_routing', 'activity', undefined, 'missing', 'missing triage routing recorded activity'))
+  }
+
+  const evidence: TriageRoutingEvidence = {
+    state: activity ? 'available' : 'incomplete',
+    routing_status: 'recorded',
+    disposition: payload.value.disposition,
+    lane: payload.value.lane,
+    artifact,
+    idempotency_key: payload.value.idempotency_key,
+    recommended_next_action: sanitizeEvidenceDisplayText(payload.value.recommended_next_action),
+    proposed_labels: sanitizeProposedLabels(payload.value.proposed_labels),
+    deferred_side_effects: sanitizeDeferredSideEffects(payload.value.deferred_side_effects),
+    missing,
+    warnings: [],
+    lane_detail: sanitizeSpecKitHandoffDetail(payload.value.lane_detail),
+    superseded_artifacts: supersededArtifacts,
+  }
+  if (activity) evidence.activity_reference = `activity:${String(activity.id)}`
+  return evidence
+}
+
+function emptyTriageRoutingEvidence(): TriageRoutingEvidence {
+  return {
+    state: 'missing',
+    routing_status: 'missing',
+    proposed_labels: [],
+    deferred_side_effects: [],
+    missing: ['missing_triage_routing_artifact'],
+    warnings: [],
+    superseded_artifacts: [],
+  }
+}
+
+function readValidatedNeedsSpecPayload(
+  row: TriageRoutingArtifactRow,
+): { ok: true; value: NeedsSpecTriageRoutingPayload } | { ok: false; warnings: string[] } {
+  if (!row.content_json) return { ok: false, warnings: ['missing content_json for triage routing artifact'] }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(row.content_json)
+  } catch {
+    return { ok: false, warnings: ['content_json is not valid JSON'] }
+  }
+
+  const result = validateNeedsSpecTriageRoutingPayload(parsed)
+  if (!result.ok) {
+    return {
+      ok: false,
+      warnings: result.issues.map((issue) => sanitizeEvidenceDisplayText(`${issue.path}: ${issue.code}`)),
+    }
+  }
+  return { ok: true, value: result.value }
+}
+
+function readRecordedTriageRoutingActivity(
+  db: Database.Database,
+  task: TaskRow,
+  artifactId: number,
+  payload: NeedsSpecTriageRoutingPayload,
+): ActivityRow | null {
+  if (!tableExists(db, 'activities')) return null
+  const rows = db.prepare(`
+    SELECT id, type, description, data, created_at
+    FROM activities
+    WHERE type = 'triage_routing_recorded'
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND workspace_id = ?
+    ORDER BY created_at DESC, id DESC
+  `).all(task.id, task.workspace_id) as ActivityRow[]
+
+  for (const row of rows) {
+    const data = parseJsonRecord(row.data)
+    if (
+      data?.['artifact_id'] === artifactId &&
+      data['idempotency_key'] === payload.idempotency_key &&
+      data['disposition'] === payload.disposition
+    ) {
+      return row
+    }
+  }
+  return null
+}
+
+function triageRoutingArtifactReference(
+  row: TriageRoutingArtifactRow,
+  state: TriageRoutingEvidenceState,
+): TriageRoutingArtifactReference {
+  const type = isTriageRoutingArtifactType(row.artifact_type) ? row.artifact_type : 'triage_speckit_handoff'
+  const rawDisplayName = row.original_filename ?? artifactLabel(type, row.schema_version, row.id)
+  const reference: TriageRoutingArtifactReference = {
+    state,
+    artifact_id: String(row.id),
+    artifact_type: type,
+    schema_version: TRIAGE_ROUTING_SCHEMA_VERSION,
+    display_name: sanitizeEvidenceDisplayText(rawDisplayName),
+  }
+  const sha256 = safeSha(row.sha256)
+  const sizeBytes = positiveInteger(row.byte_size)
+  const createdAt = toIso(row.created_at)
+  if (sha256) reference.sha256 = sha256
+  if (row.mime_type) reference.mime_type = sanitizeEvidenceDisplayText(row.mime_type)
+  if (sizeBytes) reference.size_bytes = sizeBytes
+  if (createdAt) reference.created_at = createdAt
+  return reference
+}
+
+function triageRoutingArtifactState(row: TriageRoutingArtifactRow): TriageRoutingEvidenceState {
+  const redaction = normalizeStatus(row.redaction_status)
+  const security = normalizeStatus(row.security_scan_status)
+  if (
+    redaction === 'quarantined'
+    || redaction === 'rejected'
+    || security === 'scanned_with_findings'
+    || security === 'hash_mismatch'
+    || security === 'file_missing'
+    || security.includes('secret')
+  ) {
+    return 'unavailable'
+  }
+  if (redaction === 'superseded') return 'superseded'
+  return 'available'
+}
+
+function sanitizeProposedLabels(labels: readonly ProposedLabelRecommendation[]): ProposedLabelRecommendation[] {
+  return labels
+    .map((label) => ({
+      name: sanitizeEvidenceDisplayText(label.name),
+      source: 'triage_routing' as const,
+      action: 'recommend_add' as const,
+      applied: false as const,
+    }))
+    .filter((label) => label.name.length > 0)
+}
+
+function sanitizeDeferredSideEffects(sideEffects: readonly DeferredSideEffect[]): DeferredSideEffect[] {
+  return sideEffects.map((entry) => ({
+    side_effect: entry.side_effect,
+    deferred: true,
+    reason: sanitizeEvidenceDisplayText(entry.reason),
+  }))
+}
+
+function sanitizeSpecKitHandoffDetail(detail: SpecKitHandoffDetail): SpecKitHandoffDetail {
+  return {
+    proposed_scope: sanitizeEvidenceDisplayText(detail.proposed_scope),
+    non_goals: detail.non_goals.map((entry) => sanitizeEvidenceDisplayText(entry)).filter((entry) => entry.length > 0),
+    deferred_setup_action: {
+      automatic_setup: false,
+      owner_action: sanitizeEvidenceDisplayText(detail.deferred_setup_action.owner_action),
+    },
   }
 }
 
@@ -645,6 +954,10 @@ function artifactKind(artifactType: string | null): ArtifactReferenceKind {
   return 'other'
 }
 
+function isTriageRoutingArtifactType(value: string | null): value is TriageRoutingArtifactType {
+  return TRIAGE_ROUTING_ARTIFACT_TYPES.includes(value as TriageRoutingArtifactType)
+}
+
 function artifactLabel(artifactType: string | null, schemaVersion: string | null, id: number): string {
   const type = artifactType ? artifactType.replace(/_/g, ' ') : 'artifact'
   const schema = schemaVersion ? ` ${schemaVersion}` : ''
@@ -732,6 +1045,19 @@ function sectionUnavailableWarning(reason: 'artifact_storage_disabled' | 'artifa
   }
 }
 
+function triageRoutingSectionUnavailableWarning(
+  reason: 'artifact_storage_disabled' | 'artifact_storage_unavailable',
+): EvidenceWarning {
+  return {
+    code: 'section_unavailable',
+    section: 'triage_routing',
+    reason,
+    message: reason === 'artifact_storage_disabled'
+      ? 'Triage routing artifact storage is disabled for this scope.'
+      : 'Triage routing artifact storage is unavailable for this scope.',
+  }
+}
+
 function artifactWarning(reason: EvidenceWarningReason, artifactId: number): EvidenceWarning {
   return {
     code: reason === 'superseded' ? 'stale_evidence' : 'unsafe_evidence',
@@ -770,6 +1096,18 @@ function tableExists(db: Database.Database, tableName: string): boolean {
 function columnExists(db: Database.Database, tableName: string, columnName: string): boolean {
   const rows = db.prepare(`PRAGMA table_info(${tableName})`).all() as { name: string }[]
   return rows.some((row) => row.name === columnName)
+}
+
+function parseJsonRecord(value: string | null): Record<string, unknown> | null {
+  if (!value) return null
+  try {
+    const parsed = JSON.parse(value) as unknown
+    return typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null
+  } catch {
+    return null
+  }
 }
 
 function safeRepository(repo: string | null): string | null {

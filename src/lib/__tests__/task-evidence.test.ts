@@ -14,6 +14,7 @@ import {
   seedEligiblePilotEvidence,
   seedLocalOnlyTask,
   seedPartialProofTask,
+  seedSpec009fNonRemediationOutcome,
   snapshotEvidenceCounts,
 } from './task-evidence.fixtures'
 
@@ -67,6 +68,13 @@ describe('SPEC-009E task evidence helper', () => {
       'unavailable',
     ])
     expect(SECTION_STATE_MATRIX.deferrals).toEqual(['deferred'])
+    expect(SECTION_STATE_MATRIX.triage_routing).toEqual([
+      'missing',
+      'available',
+      'incomplete',
+      'unavailable',
+      'superseded',
+    ])
   })
 
   it('derives an eligible retained pilot trail from stored Mission Control rows only', () => {
@@ -208,5 +216,83 @@ describe('SPEC-009E task evidence helper', () => {
     expect(JSON.stringify(evidence)).not.toContain('storage_uri')
     expect(JSON.stringify(evidence)).not.toContain('javascript:alert')
     expect(JSON.stringify(evidence)).not.toContain('<script>')
+  })
+})
+
+describe('SPEC-009F task evidence triage routing', () => {
+  it('derives NEEDS_SPEC triage routing evidence from terminal handoff artifacts and activities', () => {
+    const database = db()
+    const seed = seedSpec009fNonRemediationOutcome(database, 'NEEDS_SPEC')
+    const before = snapshotEvidenceCounts(database)
+
+    const evidence = scopedBuild(database, seed.taskId)
+    const after = snapshotEvidenceCounts(database)
+
+    expect(after).toEqual(before)
+    expect(evidence.triage_routing).toMatchObject({
+      state: 'available',
+      routing_status: 'recorded',
+      disposition: 'NEEDS_SPEC',
+      lane: 'speckit_handoff',
+      artifact: {
+        state: 'available',
+        artifact_id: String(seed.artifactId),
+        artifact_type: 'triage_speckit_handoff',
+        schema_version: 'spec-009f.triage_routing.v1',
+      },
+      activity_reference: `activity:${String(seed.activityId)}`,
+      idempotency_key: `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_SPEC`,
+      recommended_next_action: 'Review the NEEDS_SPEC recommendation in Mission Control.',
+      proposed_labels: [
+        {
+          name: 'mc:triage-routing',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+        {
+          name: 'mc:needs-spec',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+      ],
+      missing: [],
+      warnings: [],
+      lane_detail: {
+        proposed_scope: 'Specify a focused production behavior change from the triage evidence.',
+        non_goals: ['Do not create a spec worktree automatically.', 'Do not enter Issue Remediation.'],
+        deferred_setup_action: {
+          automatic_setup: false,
+          owner_action: 'Owner decides whether to start SpecKit setup from this handoff.',
+        },
+      },
+      superseded_artifacts: [],
+    })
+    expect(evidence.triage_routing.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          side_effect: 'speckit_setup',
+          deferred: true,
+          reason: 'SpecKit setup remains an owner action.',
+        }),
+      ]),
+    )
+    expect(evidence.source_map).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        section: 'triage_routing',
+        source_type: 'artifact',
+        source_id: String(seed.artifactId),
+        state: 'available',
+      }),
+      expect.objectContaining({
+        section: 'triage_routing',
+        source_type: 'activity',
+        source_id: String(seed.activityId),
+        state: 'available',
+      }),
+    ]))
+    expect(JSON.stringify(evidence.triage_routing)).not.toContain('storage_uri')
+    expect(JSON.stringify(evidence.triage_routing)).not.toContain('javascript:')
   })
 })

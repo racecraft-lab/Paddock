@@ -116,6 +116,23 @@ export interface TriageRoutingPayloadEnvelope {
   readonly idempotency_key: string;
 }
 
+export interface SpecKitHandoffDetail {
+  readonly proposed_scope: string;
+  readonly non_goals: string[];
+  readonly deferred_setup_action: {
+    readonly automatic_setup: false;
+    readonly owner_action: string;
+  };
+}
+
+export interface NeedsSpecTriageRoutingPayload
+  extends Omit<TriageRoutingPayloadEnvelope, 'artifact_type' | 'disposition' | 'lane'> {
+  readonly artifact_type: 'triage_speckit_handoff';
+  readonly disposition: 'NEEDS_SPEC';
+  readonly lane: 'speckit_handoff';
+  readonly lane_detail: SpecKitHandoffDetail;
+}
+
 export interface TriageRoutingValidationIssue {
   readonly path: string;
   readonly code:
@@ -128,6 +145,8 @@ export interface TriageRoutingValidationIssue {
     | 'invalid_datetime'
     | 'invalid_integer'
     | 'invalid_reference_type'
+    | 'invalid_literal'
+    | 'missing_deferred_side_effect'
     | 'text_too_long'
     | 'too_many_newlines'
     | 'control_character';
@@ -218,9 +237,23 @@ export function normalizeProposedLabels(labels: unknown): TriageRoutingValidatio
   const seen = new Set<string>();
   const normalizedLabels: ProposedLabelRecommendation[] = [];
   const issues: TriageRoutingValidationIssue[] = [];
+  const labelItems = labels as unknown[];
 
-  labels.forEach((label, index) => {
-    const result = normalizeTriageRoutingText(label, {
+  labelItems.forEach((label, index) => {
+    const rawName = isRecord(label) ? label['name'] : label;
+    if (isRecord(label)) {
+      if (label['source'] !== 'triage_routing') {
+        issues.push(issue(`proposed_labels.${String(index)}.source`, 'invalid_literal', 'source must be triage_routing'));
+      }
+      if (label['action'] !== 'recommend_add') {
+        issues.push(issue(`proposed_labels.${String(index)}.action`, 'invalid_literal', 'action must be recommend_add'));
+      }
+      if (label['applied'] !== false) {
+        issues.push(issue(`proposed_labels.${String(index)}.applied`, 'invalid_literal', 'applied must be false'));
+      }
+    }
+
+    const result = normalizeTriageRoutingText(rawName, {
       field: `proposed_labels.${String(index)}.name`,
       max_chars: 50,
       max_newlines: 0,
@@ -394,6 +427,193 @@ export function validateCommonTriageRoutingPayloadEnvelope(
       }),
     },
   };
+}
+
+export function buildNeedsSpecTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<NeedsSpecTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const deferredSetupAction = isRecord(input['deferred_setup_action']) ? input['deferred_setup_action'] : {};
+
+  return validateNeedsSpecTriageRoutingPayload({
+    ...input,
+    schema_version: TRIAGE_ROUTING_SCHEMA_VERSION,
+    artifact_type: 'triage_speckit_handoff',
+    disposition: 'NEEDS_SPEC',
+    lane: 'speckit_handoff',
+    routing_status: 'recorded',
+    deferred_side_effects: [
+      {
+        side_effect: 'speckit_setup',
+        deferred: true,
+        reason: 'SpecKit setup remains an owner action.',
+      },
+    ],
+    lane_detail: {
+      proposed_scope: input['proposed_scope'],
+      non_goals: input['non_goals'],
+      deferred_setup_action: {
+        automatic_setup: false,
+        owner_action: deferredSetupAction['owner_action'],
+      },
+    },
+  });
+}
+
+export function validateNeedsSpecTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<NeedsSpecTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const issues: TriageRoutingValidationIssue[] = [];
+  if (input['disposition'] !== 'NEEDS_SPEC') {
+    issues.push(issue('disposition', 'unsupported_disposition', 'disposition must be NEEDS_SPEC'));
+  }
+  if (input['lane'] !== 'speckit_handoff') {
+    issues.push(issue('lane', 'invalid_lane', 'lane must be speckit_handoff'));
+  }
+  if (input['artifact_type'] !== 'triage_speckit_handoff') {
+    issues.push(issue('artifact_type', 'invalid_artifact_type', 'artifact_type must be triage_speckit_handoff'));
+  }
+
+  const envelope = validateCommonTriageRoutingPayloadEnvelope(input);
+  collectIssues(issues, envelope);
+
+  const laneDetail = normalizeSpecKitHandoffDetail(input['lane_detail']);
+  collectIssues(issues, laneDetail);
+
+  if (envelope.ok && !hasDeferredSideEffect(envelope.value.deferred_side_effects, 'speckit_setup')) {
+    issues.push(
+      issue(
+        'deferred_side_effects',
+        'missing_deferred_side_effect',
+        'deferred_side_effects must include deferred speckit_setup',
+      ),
+    );
+  }
+
+  if (issues.length > 0 || !envelope.ok || !laneDetail.ok) return { ok: false, issues };
+
+  return {
+    ok: true,
+    value: {
+      ...envelope.value,
+      artifact_type: 'triage_speckit_handoff',
+      disposition: 'NEEDS_SPEC',
+      lane: 'speckit_handoff',
+      lane_detail: laneDetail.value,
+    },
+  };
+}
+
+function normalizeSpecKitHandoffDetail(input: unknown): TriageRoutingValidationResult<SpecKitHandoffDetail> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('lane_detail', 'invalid_type', 'lane_detail must be an object')] };
+  }
+
+  const issues: TriageRoutingValidationIssue[] = [];
+  const proposedScope = normalizeTriageRoutingText(input['proposed_scope'], {
+    field: 'lane_detail.proposed_scope',
+    max_chars: 2000,
+    max_newlines: 8,
+  });
+  const nonGoals = normalizeLaneTextList(input['non_goals'], 'lane_detail.non_goals');
+  const deferredSetupAction = normalizeDeferredSetupAction(input['deferred_setup_action']);
+
+  collectIssues(issues, proposedScope);
+  collectIssues(issues, nonGoals);
+  collectIssues(issues, deferredSetupAction);
+
+  if (issues.length > 0 || !proposedScope.ok || !nonGoals.ok || !deferredSetupAction.ok) {
+    return { ok: false, issues };
+  }
+
+  return {
+    ok: true,
+    value: {
+      proposed_scope: proposedScope.value,
+      non_goals: nonGoals.value,
+      deferred_setup_action: deferredSetupAction.value,
+    },
+  };
+}
+
+function normalizeLaneTextList(input: unknown, path: string): TriageRoutingValidationResult<string[]> {
+  if (!Array.isArray(input)) {
+    return { ok: false, issues: [issue(path, 'invalid_type', `${path} must be an array`)] };
+  }
+
+  const values: string[] = [];
+  const issues: TriageRoutingValidationIssue[] = [];
+  input.forEach((item, index) => {
+    const result = normalizeTriageRoutingText(item, {
+      field: `${path}.${String(index)}`,
+      max_chars: 300,
+      max_newlines: 0,
+    });
+    collectIssues(issues, result);
+    if (result.ok && result.value.length > 0) values.push(result.value);
+  });
+
+  if (issues.length > 0) return { ok: false, issues };
+  return { ok: true, value: values };
+}
+
+function normalizeDeferredSetupAction(
+  input: unknown,
+): TriageRoutingValidationResult<SpecKitHandoffDetail['deferred_setup_action']> {
+  if (!isRecord(input)) {
+    return {
+      ok: false,
+      issues: [
+        issue(
+          'lane_detail.deferred_setup_action',
+          'invalid_type',
+          'lane_detail.deferred_setup_action must be an object',
+        ),
+      ],
+    };
+  }
+
+  const issues: TriageRoutingValidationIssue[] = [];
+  if (input['automatic_setup'] !== false) {
+    issues.push(
+      issue(
+        'lane_detail.deferred_setup_action.automatic_setup',
+        'invalid_literal',
+        'automatic_setup must be false',
+      ),
+    );
+  }
+
+  const ownerAction = normalizeTriageRoutingText(input['owner_action'], {
+    field: 'lane_detail.deferred_setup_action.owner_action',
+    max_chars: 500,
+    max_newlines: 0,
+  });
+  collectIssues(issues, ownerAction);
+
+  if (issues.length > 0 || !ownerAction.ok) return { ok: false, issues };
+
+  return {
+    ok: true,
+    value: {
+      automatic_setup: false,
+      owner_action: ownerAction.value,
+    },
+  };
+}
+
+function hasDeferredSideEffect(
+  sideEffects: readonly DeferredSideEffect[],
+  sideEffect: TriageRoutingDeferredSideEffectType,
+): boolean {
+  return sideEffects.some((entry) => entry.side_effect === sideEffect);
 }
 
 function normalizeEvidenceLinks(input: unknown): TriageRoutingValidationResult<SafeEvidenceReference[]> {

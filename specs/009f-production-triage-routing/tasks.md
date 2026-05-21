@@ -52,16 +52,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T012 [P] [US1] Add RED `NEEDS_SPEC` payload validator tests for `triage_speckit_handoff`, `proposed_scope`, `non_goals`, `deferred_setup_action.automatic_setup: false`, proposed labels, and deferred setup side effect in `src/lib/__tests__/triage-routing-payloads.test.ts`
-- [ ] T013 [P] [US1] Add RED `NEEDS_SPEC` routing tests for terminal `done` source task, handoff artifact publish, `triage_routing_recorded`, no Issue Remediation successor, no non-remediation successor, no GitHub mutation, and no SpecKit setup/worktree creation in `src/lib/__tests__/triage-routing.test.ts`
-- [ ] T014 [P] [US1] Add RED task Evidence tests for `NEEDS_SPEC` `triage_routing` state, `speckit_handoff` lane detail, artifact/activity reference, proposed labels with `applied: false`, deferred setup side effect, and safe link rendering data in `src/lib/__tests__/task-evidence.test.ts`
+- [x] T012 [P] [US1] Add RED `NEEDS_SPEC` payload validator tests for `triage_speckit_handoff`, `proposed_scope`, `non_goals`, `deferred_setup_action.automatic_setup: false`, proposed labels, and deferred setup side effect in `src/lib/__tests__/triage-routing-payloads.test.ts`
+- [x] T013 [P] [US1] Add RED `NEEDS_SPEC` routing tests for terminal `done` source task, handoff artifact publish, `triage_routing_recorded`, no Issue Remediation successor, no non-remediation successor, no GitHub mutation, and no SpecKit setup/worktree creation in `src/lib/__tests__/triage-routing.test.ts`
+- [x] T014 [P] [US1] Add RED task Evidence tests for `NEEDS_SPEC` `triage_routing` state, `speckit_handoff` lane detail, artifact/activity reference, proposed labels with `applied: false`, deferred setup side effect, and safe link rendering data in `src/lib/__tests__/task-evidence.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement `NEEDS_SPEC` handoff payload builder and validator in `src/lib/triage-routing-payloads.ts`
-- [ ] T016 [US1] Implement `NEEDS_SPEC` routing artifact/activity recording and source-task terminal evidence in `src/lib/triage-routing.ts`
-- [ ] T017 [US1] Extend six-outcome fixture helpers with deterministic `NEEDS_SPEC` rows, artifact metadata, activity metadata, and cleanup ids in `src/lib/__tests__/task-evidence.fixtures.ts`
-- [ ] T018 [US1] Extend server-side task Evidence derivation for `NEEDS_SPEC` `triage_routing` output in `src/lib/task-evidence.ts`
+- [x] T015 [US1] Implement `NEEDS_SPEC` handoff payload builder and validator in `src/lib/triage-routing-payloads.ts`
+- [x] T016 [US1] Implement `NEEDS_SPEC` routing artifact/activity recording and source-task terminal evidence in `src/lib/triage-routing.ts`
+- [x] T017 [US1] Extend six-outcome fixture helpers with deterministic `NEEDS_SPEC` rows, artifact metadata, activity metadata, and cleanup ids in `src/lib/__tests__/task-evidence.fixtures.ts`
+- [x] T018 [US1] Extend server-side task Evidence derivation for `NEEDS_SPEC` `triage_routing` output in `src/lib/task-evidence.ts`
 
 **Checkpoint**: User Story 1 can be verified independently with:
 
