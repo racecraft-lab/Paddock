@@ -25,21 +25,31 @@ pnpm knowledge:index:smoke
 Run both through the repository guardrails path used by CI:
 
 ```bash
-pnpm guardrails
+pnpm guardrails -- --suite repo-knowledge-index
 ```
+
+Expected passing output includes:
+
+- `[repo-knowledge-index] passed with 0 warning(s)`
+- `[fresh-agent-proxy] resolved 9 required target(s) from AGENTS.md through docs/ai/repo-knowledge-index.json`
+- `[guardrails] 1 guardrail suite(s) passed`
 
 ## Required Negative Fixture Evidence
 
-Before implementing the passing guard, create fixture-backed failing cases for:
+Fixture-backed negative cases:
 
 ```bash
 pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/missing-required-metadata
 pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/missing-required-doc
 pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/stale-status-pointer
 pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/broken-required-link
+pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/invalid-related-spec
+pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/warning-only-links
 ```
 
-Each fixture must fail for the expected reason and name the offending field, path, or relationship.
+The first five fixtures exit non-zero and emit the expected stable error code.
+`warning-only-links` exits zero while emitting `external_link_warning` and
+`wikilink_warning`.
 
 ## Full Verification For The PR
 
@@ -48,7 +58,8 @@ pnpm typecheck
 pnpm lint
 pnpm knowledge:index:check
 pnpm knowledge:index:smoke
-pnpm guardrails
+pnpm guardrails -- --suite repo-knowledge-index
+git diff --check
 ```
 
 Run `pnpm test` outside the Codex sandbox if unit tests are needed for final PR evidence.

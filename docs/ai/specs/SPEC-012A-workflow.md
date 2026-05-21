@@ -558,24 +558,39 @@ Execute `specs/012a-repo-knowledge-index/tasks.md` in order.
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Setup / RED fixtures | Pending | Pending | |
-| JSON index and validation guard | Pending | Pending | |
-| `AGENTS.md` map and GitNexus docs boundary | Pending | Pending | |
-| Fresh-agent proxy and CI wiring | Pending | Pending | |
-| Verification and status evidence | Pending | Pending | |
+| Setup / RED fixtures | T001-T007 | Complete | Added mutation fixtures covering missing required entries, missing metadata, broken required links, stale status pointers, invalid related specs, and warning-only links |
+| JSON index and validation guard | T008-T018 | Complete | Added canonical JSON index/schema plus Node built-in guard for schema shape, required entries, metadata, related specs, links, and status pointers |
+| `AGENTS.md` map and GitNexus docs boundary | T010, T021 | Complete | Added concise Repo Knowledge Map and verified GitNexus command, `.envrc.local`, and ignored `.gitnexus/` guidance from checked-in instructions |
+| Fresh-agent proxy and CI wiring | T019-T027 | Complete | Added fresh-agent proxy, package scripts, and `repo-knowledge-index` guardrail suite covered by existing Quality Gate `pnpm guardrails` step |
+| Verification and status evidence | T028-T032 | Complete | Focused checks, typecheck, lint, and whitespace validation passed on 2026-05-21 |
+
+### Implementation Verification Evidence
+
+| Command | Result |
+|---------|--------|
+| `pnpm knowledge:index:check` | Pass: `[repo-knowledge-index] passed with 0 warning(s)` |
+| `pnpm knowledge:index:smoke` | Pass: resolved 9 required targets from `AGENTS.md` through `docs/ai/repo-knowledge-index.json` |
+| `pnpm guardrails -- --suite repo-knowledge-index` | Pass: `Repo knowledge index guard passed`; 1 suite passed |
+| `pnpm typecheck` | Pass |
+| `pnpm lint` | Pass |
+| `git diff --check` | Pass |
+
+Fixture verification emitted expected codes: `required_entry_missing`,
+`metadata_missing`, `required_link_broken`, `status_pointer_stale`,
+`related_spec_invalid`, `external_link_warning`, and `wikilink_warning`.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All generated tasks are marked complete in `specs/012a-repo-knowledge-index/tasks.md`.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] Focused docs-index guard tests/scripts pass.
-- [ ] Fresh-agent proxy smoke passes.
-- [ ] Any package/CI guard added by this spec passes locally.
-- [ ] `git diff --check` passes.
-- [ ] Roadmap/workflow/status docs are updated in the spec branch.
+- [x] All generated tasks are marked complete in `specs/012a-repo-knowledge-index/tasks.md`.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] Focused docs-index guard tests/scripts pass.
+- [x] Fresh-agent proxy smoke passes.
+- [x] Any package/CI guard added by this spec passes locally.
+- [x] `git diff --check` passes.
+- [x] Roadmap/workflow/status docs are updated in the spec branch.
 - [ ] Branch is pushed and PR is ready for review.
 
 ---

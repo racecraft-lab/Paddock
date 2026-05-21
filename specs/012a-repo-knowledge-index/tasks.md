@@ -70,11 +70,11 @@ rewrites, or nested `AGENTS.md` rollout.
 
 **Purpose**: Close the process loop and record review evidence.
 
-- [ ] T028 Update `specs/012a-repo-knowledge-index/quickstart.md` with final command names, expected outputs, fixture commands, and clean-checkout assumptions.
-- [ ] T029 Update `docs/ai/specs/SPEC-012A-workflow.md` implementation progress and verification evidence.
-- [ ] T030 Update `docs/ai/rc-factory-technical-roadmap.md` with SPEC-012A implementation evidence when verification completes.
-- [ ] T031 Run focused verification: `pnpm knowledge:index:check`, `pnpm knowledge:index:smoke`, and `pnpm guardrails -- --suite repo-knowledge-index`.
-- [ ] T032 Run final branch verification: `pnpm typecheck`, `pnpm lint`, `git diff --check`, and any additional focused checks required by changed package/CI wiring.
+- [x] T028 Update `specs/012a-repo-knowledge-index/quickstart.md` with final command names, expected outputs, fixture commands, and clean-checkout assumptions.
+- [x] T029 Update `docs/ai/specs/SPEC-012A-workflow.md` implementation progress and verification evidence.
+- [x] T030 Update `docs/ai/rc-factory-technical-roadmap.md` with SPEC-012A implementation evidence when verification completes.
+- [x] T031 Run focused verification: `pnpm knowledge:index:check`, `pnpm knowledge:index:smoke`, and `pnpm guardrails -- --suite repo-knowledge-index`.
+- [x] T032 Run final branch verification: `pnpm typecheck`, `pnpm lint`, `git diff --check`, and any additional focused checks required by changed package/CI wiring.
 
 ## Dependencies and Execution Order
 
