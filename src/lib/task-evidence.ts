@@ -1,10 +1,16 @@
 import {
   TRIAGE_ROUTING_ARTIFACT_TYPES,
   TRIAGE_ROUTING_SCHEMA_VERSION,
+  validateNeedsHumanTriageRoutingPayload,
   validateNeedsSpecTriageRoutingPayload,
+  validateNeedsSpecialistTriageRoutingPayload,
+  type ClarificationRequestDetail,
   type DeferredSideEffect,
+  type NeedsHumanTriageRoutingPayload,
   type NeedsSpecTriageRoutingPayload,
+  type NeedsSpecialistTriageRoutingPayload,
   type ProposedLabelRecommendation,
+  type SpecialistRecommendationDetail,
   type SpecKitHandoffDetail,
   type SupportedTriageRoutingDisposition,
   type TriageRoutingArtifactType,
@@ -141,7 +147,15 @@ export interface CurrentStageEvidence {
 
 export type TriageRoutingEvidenceState = 'missing' | 'available' | 'incomplete' | 'unavailable' | 'superseded'
 export type TriageRoutingStatus = 'missing' | 'recorded' | 'failed' | 'conflict'
-export type TriageRoutingLaneDetail = SpecKitHandoffDetail
+export type TriageRoutingLaneDetail =
+  | SpecKitHandoffDetail
+  | ClarificationRequestDetail
+  | SpecialistRecommendationDetail
+
+type ValidatedTriageRoutingPayload =
+  | NeedsSpecTriageRoutingPayload
+  | NeedsHumanTriageRoutingPayload
+  | NeedsSpecialistTriageRoutingPayload
 
 export interface TriageRoutingArtifactReference {
   state: TriageRoutingEvidenceState
@@ -624,7 +638,7 @@ function buildTriageRoutingEvidence(
   const artifact = triageRoutingArtifactReference(activeRow, 'available')
   sourceMap.push(source('triage_routing', 'artifact', artifact.artifact_id, 'available', artifact.display_name))
 
-  const payload = readValidatedNeedsSpecPayload(activeRow)
+  const payload = readValidatedTriageRoutingPayload(activeRow)
   if (!payload.ok) {
     return {
       ...empty,
@@ -657,7 +671,7 @@ function buildTriageRoutingEvidence(
     deferred_side_effects: sanitizeDeferredSideEffects(payload.value.deferred_side_effects),
     missing,
     warnings: [],
-    lane_detail: sanitizeSpecKitHandoffDetail(payload.value.lane_detail),
+    lane_detail: sanitizeTriageRoutingLaneDetail(payload.value.lane_detail),
     superseded_artifacts: supersededArtifacts,
   }
   if (activity) evidence.activity_reference = `activity:${String(activity.id)}`
@@ -676,9 +690,9 @@ function emptyTriageRoutingEvidence(): TriageRoutingEvidence {
   }
 }
 
-function readValidatedNeedsSpecPayload(
+function readValidatedTriageRoutingPayload(
   row: TriageRoutingArtifactRow,
-): { ok: true; value: NeedsSpecTriageRoutingPayload } | { ok: false; warnings: string[] } {
+): { ok: true; value: ValidatedTriageRoutingPayload } | { ok: false; warnings: string[] } {
   if (!row.content_json) return { ok: false, warnings: ['missing content_json for triage routing artifact'] }
 
   let parsed: unknown
@@ -688,7 +702,12 @@ function readValidatedNeedsSpecPayload(
     return { ok: false, warnings: ['content_json is not valid JSON'] }
   }
 
-  const result = validateNeedsSpecTriageRoutingPayload(parsed)
+  const disposition = readDisposition(parsed)
+  const result = disposition === 'NEEDS_HUMAN'
+    ? validateNeedsHumanTriageRoutingPayload(parsed)
+    : disposition === 'NEEDS_SPECIALIST'
+      ? validateNeedsSpecialistTriageRoutingPayload(parsed)
+      : validateNeedsSpecTriageRoutingPayload(parsed)
   if (!result.ok) {
     return {
       ok: false,
@@ -702,7 +721,7 @@ function readRecordedTriageRoutingActivity(
   db: Database.Database,
   task: TaskRow,
   artifactId: number,
-  payload: NeedsSpecTriageRoutingPayload,
+  payload: ValidatedTriageRoutingPayload,
 ): ActivityRow | null {
   if (!tableExists(db, 'activities')) return null
   const rows = db.prepare(`
@@ -787,6 +806,12 @@ function sanitizeDeferredSideEffects(sideEffects: readonly DeferredSideEffect[])
   }))
 }
 
+function sanitizeTriageRoutingLaneDetail(detail: TriageRoutingLaneDetail): TriageRoutingLaneDetail {
+  if ('proposed_scope' in detail) return sanitizeSpecKitHandoffDetail(detail)
+  if ('blocking_questions' in detail) return sanitizeClarificationRequestDetail(detail)
+  return sanitizeSpecialistRecommendationDetail(detail)
+}
+
 function sanitizeSpecKitHandoffDetail(detail: SpecKitHandoffDetail): SpecKitHandoffDetail {
   return {
     proposed_scope: sanitizeEvidenceDisplayText(detail.proposed_scope),
@@ -796,6 +821,39 @@ function sanitizeSpecKitHandoffDetail(detail: SpecKitHandoffDetail): SpecKitHand
       owner_action: sanitizeEvidenceDisplayText(detail.deferred_setup_action.owner_action),
     },
   }
+}
+
+function sanitizeClarificationRequestDetail(detail: ClarificationRequestDetail): ClarificationRequestDetail {
+  return {
+    blocking_questions: sanitizeEvidenceTextList(detail.blocking_questions),
+    target_audience: sanitizeEvidenceDisplayText(detail.target_audience),
+    evidence_needed: sanitizeEvidenceTextList(detail.evidence_needed),
+    no_external_message_sent: true,
+  }
+}
+
+function sanitizeSpecialistRecommendationDetail(
+  detail: SpecialistRecommendationDetail,
+): SpecialistRecommendationDetail {
+  if (detail.specialist_state === 'recommended') {
+    return {
+      specialist_state: 'recommended',
+      recommended_lane: sanitizeEvidenceDisplayText(detail.recommended_lane),
+      recommended_owner: sanitizeEvidenceDisplayText(detail.recommended_owner),
+      matching_confidence: 'deterministic',
+      matching_basis: sanitizeEvidenceTextList(detail.matching_basis),
+    }
+  }
+
+  return {
+    specialist_state: 'unassigned',
+    missing_metadata: sanitizeEvidenceTextList(detail.missing_metadata),
+    owner_action: sanitizeEvidenceDisplayText(detail.owner_action),
+  }
+}
+
+function sanitizeEvidenceTextList(values: readonly string[]): string[] {
+  return values.map((entry) => sanitizeEvidenceDisplayText(entry)).filter((entry) => entry.length > 0)
 }
 
 function buildSmokeEvidence(
@@ -1108,6 +1166,12 @@ function parseJsonRecord(value: string | null): Record<string, unknown> | null {
   } catch {
     return null
   }
+}
+
+function readDisposition(value: unknown): string | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
+  const disposition = (value as Record<string, unknown>)['disposition']
+  return typeof disposition === 'string' ? disposition : null
 }
 
 function safeRepository(repo: string | null): string | null {

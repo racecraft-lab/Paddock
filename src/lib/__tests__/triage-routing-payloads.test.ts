@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildNeedsHumanTriageRoutingPayload,
+  buildNeedsSpecialistTriageRoutingPayload,
   buildNeedsSpecTriageRoutingPayload,
   buildTriageRoutingIdempotencyKey,
   normalizeProposedLabels,
@@ -11,6 +13,8 @@ import {
   TRIAGE_ROUTING_DISPOSITION_TO_LANE,
   TRIAGE_ROUTING_LANES,
   TRIAGE_ROUTING_SCHEMA_VERSION,
+  validateNeedsHumanTriageRoutingPayload,
+  validateNeedsSpecialistTriageRoutingPayload,
   validateNeedsSpecTriageRoutingPayload,
   validateCommonTriageRoutingPayloadEnvelope,
 } from '@/lib/triage-routing-payloads';
@@ -531,5 +535,294 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
         },
       ],
     });
+  });
+});
+
+describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
+  it('builds a normalized clarification request payload without sending an external message', () => {
+    const result = buildNeedsHumanTriageRoutingPayload({
+      source_task_id: 43,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 124,
+        url: 'https://github.com/racecraft-lab/mission-control/issues/124?token=raw-secret#frag',
+      },
+      triage_rationale: ' Needs owner clarification\r\nbefore routing\twork. ',
+      recommended_next_action: ' Owner answers the blocking questions. ',
+      proposed_labels: [
+        {
+          name: ' MC:Needs-Human ',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+        'Area:Routing',
+      ],
+      evidence_links: [
+        {
+          type: 'github_issue',
+          label: ' Issue 124 ',
+          url: 'https://github.com/racecraft-lab/mission-control/issues/124?token=raw-secret',
+        },
+      ],
+      blocking_questions: [
+        ' Which user-visible behavior should change? ',
+        'Which environment proves the issue?\r\n',
+      ],
+      target_audience: ' Issue owner ',
+      evidence_needed: [' Minimal reproduction notes ', ' Expected result confirmation '],
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        schema_version: 'spec-009f.triage_routing.v1',
+        artifact_type: 'triage_clarification_request',
+        source_task_id: 43,
+        workspace_id: 7,
+        source_issue: {
+          repo: 'racecraft-lab/mission-control',
+          number: 124,
+          url: 'https://github.com/racecraft-lab/mission-control/issues/124',
+        },
+        disposition: 'NEEDS_HUMAN',
+        lane: 'clarification_request',
+        routing_status: 'recorded',
+        triage_rationale: 'Needs owner clarification\nbefore routing work.',
+        recommended_next_action: 'Owner answers the blocking questions.',
+        proposed_labels: [
+          {
+            name: 'mc:needs-human',
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+          {
+            name: 'area:routing',
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+        ],
+        evidence_links: [
+          {
+            type: 'github_issue',
+            label: 'Issue 124',
+            url: 'https://github.com/racecraft-lab/mission-control/issues/124',
+          },
+        ],
+        lane_detail: {
+          blocking_questions: ['Which user-visible behavior should change?', 'Which environment proves the issue?'],
+          target_audience: 'Issue owner',
+          evidence_needed: ['Minimal reproduction notes', 'Expected result confirmation'],
+          no_external_message_sent: true,
+        },
+        produced_at: '2026-05-21T12:00:00.000Z',
+        idempotency_key: 'spec-009f.triage_routing.v1:7:43:NEEDS_HUMAN',
+      },
+    });
+    if (!result.ok) throw new Error('expected NEEDS_HUMAN payload to build')
+    expect(result.value.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'github_comment', deferred: true }),
+        expect.objectContaining({ side_effect: 'successor_task', deferred: true }),
+      ]),
+    );
+  });
+
+  it('validates NEEDS_HUMAN payloads and rejects unsafe clarification fields without leaking raw values', () => {
+    const result = validateNeedsHumanTriageRoutingPayload({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_clarification_request',
+      source_task_id: 43,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 124,
+      },
+      disposition: 'NEEDS_HUMAN',
+      lane: 'clarification_request',
+      routing_status: 'recorded',
+      triage_rationale: 'raw-secret needs human',
+      recommended_next_action: 'Owner answers the blocking questions.',
+      proposed_labels: ['mc:needs-human'],
+      evidence_links: [],
+      deferred_side_effects: [],
+      lane_detail: {
+        blocking_questions: ['safe question', 'raw-secret\nbad question'],
+        target_audience: 'Issue owner\u0000raw-secret',
+        evidence_needed: [`raw-secret:${'x'.repeat(301)}`],
+        no_external_message_sent: false,
+      },
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: 'lane_detail.blocking_questions.1', code: 'too_many_newlines' }),
+        expect.objectContaining({ path: 'lane_detail.target_audience', code: 'control_character' }),
+        expect.objectContaining({ path: 'lane_detail.evidence_needed.0', code: 'text_too_long' }),
+        expect.objectContaining({ path: 'lane_detail.no_external_message_sent', code: 'invalid_literal' }),
+      ]),
+    );
+    expect(JSON.stringify(result)).not.toContain('raw-secret');
+  });
+});
+
+describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
+  it('builds a deterministic specialist recommendation from explicit metadata', () => {
+    const result = buildNeedsSpecialistTriageRoutingPayload({
+      source_task_id: 44,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 125,
+      },
+      triage_rationale: ' Safe metadata identifies one specialist. ',
+      recommended_next_action: ' Owner reviews the specialist recommendation. ',
+      proposed_labels: [' MC:Needs-Specialist ', ' Area:QA '],
+      evidence_links: [],
+      specialist_state: 'recommended',
+      recommended_lane: ' qa-specialist ',
+      recommended_owner: ' spec-009f-specialist ',
+      matching_basis: [' project.area_slug=qa ', ' single same-workspace assignment '],
+      issue_body: 'raw-secret body must not be persisted',
+      inferred_from_issue_body: true,
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        schema_version: 'spec-009f.triage_routing.v1',
+        artifact_type: 'triage_specialist_recommendation',
+        source_task_id: 44,
+        workspace_id: 7,
+        disposition: 'NEEDS_SPECIALIST',
+        lane: 'specialist_recommendation',
+        routing_status: 'recorded',
+        triage_rationale: 'Safe metadata identifies one specialist.',
+        recommended_next_action: 'Owner reviews the specialist recommendation.',
+        proposed_labels: [
+          {
+            name: 'mc:needs-specialist',
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+          {
+            name: 'area:qa',
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+        ],
+        evidence_links: [],
+        lane_detail: {
+          specialist_state: 'recommended',
+          recommended_lane: 'qa-specialist',
+          recommended_owner: 'spec-009f-specialist',
+          matching_confidence: 'deterministic',
+          matching_basis: ['project.area_slug=qa', 'single same-workspace assignment'],
+        },
+        produced_at: '2026-05-21T12:00:00.000Z',
+        idempotency_key: 'spec-009f.triage_routing.v1:7:44:NEEDS_SPECIALIST',
+      },
+    });
+    if (!result.ok) throw new Error('expected NEEDS_SPECIALIST payload to build')
+    expect(result.value.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'github_assignment', deferred: true }),
+        expect.objectContaining({ side_effect: 'agent_dispatch', deferred: true }),
+      ]),
+    );
+    expect(JSON.stringify(result)).not.toContain('raw-secret');
+    expect(JSON.stringify(result)).not.toContain('issue_body');
+    expect(JSON.stringify(result)).not.toContain('inferred_from_issue_body');
+  });
+
+  it('validates persisted unassigned specialist recommendations with missing metadata and owner action', () => {
+    const result = validateNeedsSpecialistTriageRoutingPayload({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_specialist_recommendation',
+      source_task_id: 45,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 126,
+      },
+      disposition: 'NEEDS_SPECIALIST',
+      lane: 'specialist_recommendation',
+      routing_status: 'recorded',
+      triage_rationale: 'No safe specialist metadata is available.',
+      recommended_next_action: 'Owner supplies specialist context.',
+      proposed_labels: ['mc:needs-specialist'],
+      evidence_links: [],
+      deferred_side_effects: [],
+      lane_detail: {
+        specialist_state: 'unassigned',
+        missing_metadata: ['missing area', 'missing same-workspace assignment'],
+        owner_action: 'Owner chooses or supplies specialist context.',
+      },
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        artifact_type: 'triage_specialist_recommendation',
+        disposition: 'NEEDS_SPECIALIST',
+        lane: 'specialist_recommendation',
+        lane_detail: {
+          specialist_state: 'unassigned',
+          missing_metadata: ['missing area', 'missing same-workspace assignment'],
+          owner_action: 'Owner chooses or supplies specialist context.',
+        },
+      },
+    });
+  });
+
+  it('rejects unsafe or non-deterministic specialist details without leaking raw values', () => {
+    const result = validateNeedsSpecialistTriageRoutingPayload({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_specialist_recommendation',
+      source_task_id: 44,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 125,
+      },
+      disposition: 'NEEDS_SPECIALIST',
+      lane: 'specialist_recommendation',
+      routing_status: 'recorded',
+      triage_rationale: 'raw-secret needs specialist',
+      recommended_next_action: 'Owner reviews the specialist recommendation.',
+      proposed_labels: ['mc:needs-specialist'],
+      evidence_links: [],
+      deferred_side_effects: [],
+      lane_detail: {
+        specialist_state: 'recommended',
+        recommended_lane: 'qa-specialist\u0000raw-secret',
+        recommended_owner: 'spec-009f-specialist',
+        matching_confidence: 'probable',
+        matching_basis: ['safe basis', 'raw-secret\nbad basis'],
+        issue_body: 'raw-secret issue body',
+      },
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: 'lane_detail.recommended_lane', code: 'control_character' }),
+        expect.objectContaining({ path: 'lane_detail.matching_confidence', code: 'invalid_literal' }),
+        expect.objectContaining({ path: 'lane_detail.matching_basis.1', code: 'too_many_newlines' }),
+      ]),
+    );
+    expect(JSON.stringify(result)).not.toContain('raw-secret');
+    expect(JSON.stringify(result)).not.toContain('probable');
   });
 });

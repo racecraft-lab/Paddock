@@ -14,7 +14,10 @@ import {
   seedEligiblePilotEvidence,
   seedLocalOnlyTask,
   seedPartialProofTask,
+  seedSpec009fNeedsHumanTriageRouting,
   seedSpec009fNonRemediationOutcome,
+  seedSpec009fRecommendedSpecialistTriageRouting,
+  seedSpec009fUnassignedSpecialistTriageRouting,
   snapshotEvidenceCounts,
 } from './task-evidence.fixtures'
 
@@ -294,5 +297,189 @@ describe('SPEC-009F task evidence triage routing', () => {
     ]))
     expect(JSON.stringify(evidence.triage_routing)).not.toContain('storage_uri')
     expect(JSON.stringify(evidence.triage_routing)).not.toContain('javascript:')
+  })
+
+  it('derives NEEDS_HUMAN clarification routing evidence without mutating source rows', () => {
+    const database = db()
+    const seed = seedSpec009fNeedsHumanTriageRouting(database)
+    const before = snapshotEvidenceCounts(database)
+
+    const evidence = scopedBuild(database, seed.taskId)
+    const after = snapshotEvidenceCounts(database)
+
+    expect(after).toEqual(before)
+    expect(evidence.triage_routing).toMatchObject({
+      state: 'available',
+      routing_status: 'recorded',
+      disposition: 'NEEDS_HUMAN',
+      lane: 'clarification_request',
+      artifact: {
+        state: 'available',
+        artifact_id: String(seed.artifactId),
+        artifact_type: 'triage_clarification_request',
+        schema_version: 'spec-009f.triage_routing.v1',
+      },
+      activity_reference: `activity:${String(seed.activityId)}`,
+      idempotency_key: `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_HUMAN`,
+      recommended_next_action: 'Review the NEEDS_HUMAN recommendation in Mission Control.',
+      proposed_labels: [
+        {
+          name: 'mc:triage-routing',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+        {
+          name: 'mc:needs-human',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+      ],
+      lane_detail: {
+        blocking_questions: ['What user-visible behavior should change?', 'Which environment proves the issue?'],
+        target_audience: 'Issue owner',
+        evidence_needed: ['Minimal reproduction notes', 'Expected result confirmation'],
+        no_external_message_sent: true,
+      },
+      missing: [],
+      warnings: [],
+      superseded_artifacts: [],
+    })
+    expect(evidence.triage_routing.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          side_effect: 'github_comment',
+          deferred: true,
+          reason: 'No external clarification message is sent by the fixture.',
+        }),
+      ]),
+    )
+    expect(evidence.source_map).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        section: 'triage_routing',
+        source_type: 'artifact',
+        source_id: String(seed.artifactId),
+        state: 'available',
+      }),
+      expect.objectContaining({
+        section: 'triage_routing',
+        source_type: 'activity',
+        source_id: String(seed.activityId),
+        state: 'available',
+      }),
+    ]))
+  })
+
+  it('derives recommended NEEDS_SPECIALIST routing evidence with deferred assignment and dispatch', () => {
+    const database = db()
+    const seed = seedSpec009fRecommendedSpecialistTriageRouting(database)
+    const before = snapshotEvidenceCounts(database)
+
+    const evidence = scopedBuild(database, seed.taskId)
+    const after = snapshotEvidenceCounts(database)
+
+    expect(after).toEqual(before)
+    expect(evidence.triage_routing).toMatchObject({
+      state: 'available',
+      routing_status: 'recorded',
+      disposition: 'NEEDS_SPECIALIST',
+      lane: 'specialist_recommendation',
+      artifact: {
+        state: 'available',
+        artifact_id: String(seed.artifactId),
+        artifact_type: 'triage_specialist_recommendation',
+        schema_version: 'spec-009f.triage_routing.v1',
+      },
+      activity_reference: `activity:${String(seed.activityId)}`,
+      idempotency_key: `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_SPECIALIST`,
+      recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Mission Control.',
+      proposed_labels: [
+        {
+          name: 'mc:triage-routing',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+        {
+          name: 'mc:needs-specialist',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+      ],
+      lane_detail: {
+        specialist_state: 'recommended',
+        recommended_lane: 'qa-specialist',
+        recommended_owner: 'spec-009f-specialist',
+        matching_confidence: 'deterministic',
+        matching_basis: ['project.area_slug=qa', 'single same-workspace assignment', 'agent status online'],
+      },
+      missing: [],
+      warnings: [],
+      superseded_artifacts: [],
+    })
+    expect(evidence.triage_routing.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'github_assignment', deferred: true }),
+        expect.objectContaining({ side_effect: 'agent_dispatch', deferred: true }),
+      ]),
+    )
+  })
+
+  it('derives unassigned NEEDS_SPECIALIST routing evidence with missing metadata and inert owner action', () => {
+    const database = db()
+    const seed = seedSpec009fUnassignedSpecialistTriageRouting(database)
+    const before = snapshotEvidenceCounts(database)
+
+    const evidence = scopedBuild(database, seed.taskId)
+    const after = snapshotEvidenceCounts(database)
+    const rendered = JSON.stringify(evidence.triage_routing)
+
+    expect(after).toEqual(before)
+    expect(evidence.triage_routing).toMatchObject({
+      state: 'available',
+      routing_status: 'recorded',
+      disposition: 'NEEDS_SPECIALIST',
+      lane: 'specialist_recommendation',
+      artifact: {
+        state: 'available',
+        artifact_id: String(seed.artifactId),
+        artifact_type: 'triage_specialist_recommendation',
+        schema_version: 'spec-009f.triage_routing.v1',
+      },
+      activity_reference: `activity:${String(seed.activityId)}`,
+      recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Mission Control.',
+      proposed_labels: [
+        {
+          name: 'mc:triage-routing',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+        {
+          name: 'mc:needs-specialist',
+          source: 'triage_routing',
+          action: 'recommend_add',
+          applied: false,
+        },
+      ],
+      lane_detail: {
+        specialist_state: 'unassigned',
+        missing_metadata: ['project.area_slug', 'project_agent_assignments'],
+        owner_action: 'Assign a specialist owner in Mission Control before dispatch.',
+      },
+      missing: [],
+      warnings: [],
+    })
+    expect(evidence.triage_routing.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'github_assignment', deferred: true }),
+        expect.objectContaining({ side_effect: 'agent_dispatch', deferred: true }),
+      ]),
+    )
+    expect(rendered).not.toContain('<b>')
+    expect(rendered).not.toContain('javascript:')
+    expect(rendered).not.toContain('storage_uri')
   })
 })

@@ -5,10 +5,13 @@ import {
   SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS,
   TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE,
   TRIAGE_ROUTING_DISPOSITION_TO_LANE,
+  buildNeedsHumanTriageRoutingPayload,
+  buildNeedsSpecialistTriageRoutingPayload,
   buildNeedsSpecTriageRoutingPayload,
   type SupportedTriageRoutingDisposition,
   type TriageRoutingArtifactType,
   type TriageRoutingLane,
+  type TriageRoutingPayloadEnvelope,
 } from './triage-routing-payloads'
 import type Database from 'better-sqlite3'
 
@@ -17,6 +20,8 @@ const SOURCE_TEMPLATE_SLUG = 'mission-control_issue_triage'
 const SOURCE_REPO = 'racecraft-lab/mission-control'
 const ACTIONABLE_REMEDIATION = 'ACTIONABLE_REMEDIATION'
 const NEEDS_SPEC = 'NEEDS_SPEC'
+const NEEDS_HUMAN = 'NEEDS_HUMAN'
+const NEEDS_SPECIALIST = 'NEEDS_SPECIALIST'
 
 export interface TriageRoutingIssue {
   readonly code: string
@@ -37,6 +42,7 @@ export interface TriageRoutingSource {
   readonly workflowTemplateSlug: string | null
   readonly githubRepo: string | null
   readonly githubIssueNumber: number | null
+  readonly projectId: number | null
 }
 
 export interface TriageRoutingRoute {
@@ -46,7 +52,7 @@ export interface TriageRoutingRoute {
 
 export interface RecordedTriageRoutingArtifact {
   readonly id: number
-  readonly type: 'triage_speckit_handoff'
+  readonly type: TriageRoutingArtifactType
   readonly schemaVersion: typeof TRIAGE_ROUTING_SCHEMA_VERSION
   readonly idempotencyKey: string
 }
@@ -75,12 +81,9 @@ export type TriageRoutingResult =
   | {
       readonly ok: true
       readonly status: 'recorded'
-      readonly disposition: typeof NEEDS_SPEC
+      readonly disposition: typeof NEEDS_SPEC | typeof NEEDS_HUMAN | typeof NEEDS_SPECIALIST
       readonly source: TriageRoutingSource
-      readonly route: {
-        readonly lane: 'speckit_handoff'
-        readonly artifactType: 'triage_speckit_handoff'
-      }
+      readonly route: TriageRoutingRoute
       readonly effects: TriageRoutingEffects & { readonly publishArtifact: true }
       readonly artifact: RecordedTriageRoutingArtifact
       readonly activity: RecordedTriageRoutingActivity
@@ -88,7 +91,7 @@ export type TriageRoutingResult =
   | {
       readonly ok: true
       readonly status: 'recordable'
-      readonly disposition: Exclude<SupportedTriageRoutingDisposition, typeof NEEDS_SPEC>
+      readonly disposition: Exclude<SupportedTriageRoutingDisposition, typeof NEEDS_SPEC | typeof NEEDS_HUMAN | typeof NEEDS_SPECIALIST>
       readonly source: TriageRoutingSource
       readonly route: TriageRoutingRoute
       readonly effects: TriageRoutingEffects
@@ -129,12 +132,28 @@ interface SourceTaskRow {
   readonly workflow_template_slug: string | null
   readonly github_repo: string | null
   readonly github_issue_number: number | null
+  readonly project_id: number | null
 }
 
-interface RecordNeedsSpecRoutingResult {
+interface RecordTriageRoutingResult {
   readonly artifact: RecordedTriageRoutingArtifact
   readonly activity: RecordedTriageRoutingActivity
 }
+
+type RecordableNowDisposition = typeof NEEDS_SPEC | typeof NEEDS_HUMAN | typeof NEEDS_SPECIALIST
+
+type SpecialistResolution =
+  | {
+      readonly specialist_state: 'recommended'
+      readonly recommended_lane: string
+      readonly recommended_owner: string
+      readonly matching_basis: string[]
+    }
+  | {
+      readonly specialist_state: 'unassigned'
+      readonly missing_metadata: string[]
+      readonly owner_action: string
+    }
 
 export function routeTriageDisposition(
   db: Database.Database,
@@ -193,17 +212,18 @@ export function routeTriageDisposition(
     })
   }
 
-  if (input.disposition === NEEDS_SPEC) {
-    const recorded = recordNeedsSpecRouting(db, source, input)
+  if (isRecordableNowDisposition(input.disposition)) {
+    const route = {
+      lane: TRIAGE_ROUTING_DISPOSITION_TO_LANE[input.disposition],
+      artifactType: TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE[input.disposition],
+    }
+    const recorded = recordTriageRouting(db, source, input)
     return {
       ok: true,
       status: 'recorded',
-      disposition: NEEDS_SPEC,
+      disposition: input.disposition,
       source,
-      route: {
-        lane: 'speckit_handoff',
-        artifactType: 'triage_speckit_handoff',
-      },
+      route,
       effects: RECORDED_NEEDS_SPEC_EFFECTS,
       artifact: recorded.artifact,
       activity: recorded.activity,
@@ -223,11 +243,11 @@ export function routeTriageDisposition(
   }
 }
 
-function recordNeedsSpecRouting(
+function recordTriageRouting(
   db: Database.Database,
   source: TriageRoutingSource,
   input: RouteTriageDispositionInput,
-): RecordNeedsSpecRoutingResult {
+): RecordTriageRoutingResult {
   const tx = db.transaction(() => {
     db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ? AND workspace_id = ?').run(
       'done',
@@ -236,7 +256,7 @@ function recordNeedsSpecRouting(
       source.workspaceId,
     )
 
-    const payload = buildNeedsSpecPayload(source, input)
+    const payload = buildRoutingPayload(db, source, input)
     const payloadJson = JSON.stringify(payload)
     const artifactInfo = db
       .prepare(`
@@ -245,18 +265,19 @@ function recordNeedsSpecRouting(
           storage_kind, content_json, mime_type, byte_size, sha256, preview_text,
           redaction_status, security_scan_status, created_at
         )
-        VALUES (?, ?, ?, 'triage_speckit_handoff', ?, 'inline_json', ?, 'application/json',
+        VALUES (?, ?, ?, ?, ?, 'inline_json', ?, 'application/json',
           ?, ?, ?, 'clean', 'scanned_clean', ?)
       `)
       .run(
         source.taskId,
         source.workspaceId,
         source.workflowTemplateSlug,
+        payload.artifact_type,
         TRIAGE_ROUTING_SCHEMA_VERSION,
         payloadJson,
         Buffer.byteLength(payloadJson, 'utf8'),
         createHash('sha256').update(payloadJson, 'utf8').digest('hex'),
-        `NEEDS_SPEC speckit_handoff ${payload.recommended_next_action}`,
+        `${payload.disposition} ${payload.lane} ${payload.recommended_next_action}`,
         unixNow(),
       )
     const artifactId = Number(artifactInfo.lastInsertRowid)
@@ -264,16 +285,12 @@ function recordNeedsSpecRouting(
     const activityData = {
       source_task_id: source.taskId,
       workspace_id: source.workspaceId,
-      disposition: NEEDS_SPEC,
-      lane: 'speckit_handoff',
+      disposition: payload.disposition,
+      lane: payload.lane,
       routing_status: 'recorded',
       artifact_id: artifactId,
       idempotency_key: payload.idempotency_key,
-      deferred_side_effects: {
-        github_mutation: true,
-        speckit_setup: true,
-        successor_task: true,
-      },
+      deferred_side_effects: activityDeferredSideEffects(payload),
     }
     const activityInfo = db
       .prepare(`
@@ -282,7 +299,7 @@ function recordNeedsSpecRouting(
       `)
       .run(
         source.taskId,
-        'Recorded terminal triage routing for NEEDS_SPEC',
+        `Recorded terminal triage routing for ${payload.disposition}`,
         JSON.stringify(activityData),
         source.workspaceId,
         unixNow(),
@@ -291,7 +308,7 @@ function recordNeedsSpecRouting(
     return {
       artifact: {
         id: artifactId,
-        type: 'triage_speckit_handoff' as const,
+        type: payload.artifact_type,
         schemaVersion: TRIAGE_ROUTING_SCHEMA_VERSION,
         idempotencyKey: payload.idempotency_key,
       },
@@ -305,31 +322,25 @@ function recordNeedsSpecRouting(
   return tx()
 }
 
-function buildNeedsSpecPayload(source: TriageRoutingSource, input: RouteTriageDispositionInput) {
+function buildRoutingPayload(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  input: RouteTriageDispositionInput,
+): TriageRoutingPayloadEnvelope {
+  if (input.disposition === NEEDS_HUMAN) return buildNeedsHumanPayload(source, input)
+  if (input.disposition === NEEDS_SPECIALIST) return buildNeedsSpecialistPayload(db, source, input)
+  return buildNeedsSpecPayload(source, input)
+}
+
+function buildNeedsSpecPayload(source: TriageRoutingSource, input: RouteTriageDispositionInput): TriageRoutingPayloadEnvelope {
   const result = buildNeedsSpecTriageRoutingPayload({
     source_task_id: source.taskId,
     workspace_id: source.workspaceId,
-    source_issue: {
-      repo: source.githubRepo ?? undefined,
-      number: source.githubIssueNumber ?? undefined,
-      url:
-        source.githubIssueNumber === null
-          ? undefined
-          : `https://github.com/${SOURCE_REPO}/issues/${String(source.githubIssueNumber)}`,
-    },
+    source_issue: sourceIssue(source),
     triage_rationale: input.rationale ?? 'Issue triage determined this needs a SpecKit specification before implementation.',
     recommended_next_action: 'Owner reviews this handoff and decides whether to start SpecKit setup manually.',
     proposed_labels: ['mc:triage-routing', 'mc:needs-spec'],
-    evidence_links:
-      source.githubIssueNumber === null
-        ? []
-        : [
-            {
-              type: 'github_issue',
-              label: `Issue #${String(source.githubIssueNumber)}`,
-              url: `https://github.com/${SOURCE_REPO}/issues/${String(source.githubIssueNumber)}`,
-            },
-          ],
+    evidence_links: sourceEvidenceLinks(source),
     proposed_scope: 'Specify the production behavior change from the retained triage evidence.',
     non_goals: ['Do not create a spec worktree automatically.', 'Do not enter Issue Remediation.'],
     deferred_setup_action: {
@@ -342,6 +353,168 @@ function buildNeedsSpecPayload(source: TriageRoutingSource, input: RouteTriageDi
     throw new Error(`invalid_needs_spec_triage_routing_payload:${result.issues[0]?.path ?? 'unknown'}`)
   }
   return result.value
+}
+
+function buildNeedsHumanPayload(source: TriageRoutingSource, input: RouteTriageDispositionInput): TriageRoutingPayloadEnvelope {
+  const result = buildNeedsHumanTriageRoutingPayload({
+    source_task_id: source.taskId,
+    workspace_id: source.workspaceId,
+    source_issue: sourceIssue(source),
+    triage_rationale: input.rationale ?? 'Issue triage needs owner clarification before routing can continue.',
+    recommended_next_action: 'Owner answers the blocking questions in Mission Control.',
+    proposed_labels: ['mc:triage-routing', 'mc:needs-human'],
+    evidence_links: sourceEvidenceLinks(source),
+    blocking_questions: [
+      'What user-visible behavior should change?',
+      'Which environment or reproduction proves the issue?',
+    ],
+    target_audience: 'Issue owner',
+    evidence_needed: ['Minimal reproduction notes', 'Expected result confirmation'],
+    produced_at: new Date().toISOString(),
+  })
+
+  if (!result.ok) {
+    throw new Error(`invalid_needs_human_triage_routing_payload:${result.issues[0]?.path ?? 'unknown'}`)
+  }
+  return result.value
+}
+
+function buildNeedsSpecialistPayload(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  input: RouteTriageDispositionInput,
+): TriageRoutingPayloadEnvelope {
+  const resolution = resolveSpecialistMetadata(db, source)
+  const result = buildNeedsSpecialistTriageRoutingPayload({
+    source_task_id: source.taskId,
+    workspace_id: source.workspaceId,
+    source_issue: sourceIssue(source),
+    triage_rationale: input.rationale ?? 'Issue triage needs a specialist recommendation.',
+    recommended_next_action: resolution.specialist_state === 'recommended'
+      ? 'Owner reviews the specialist recommendation in Mission Control.'
+      : resolution.owner_action,
+    proposed_labels: resolution.specialist_state === 'recommended'
+      ? ['mc:triage-routing', 'mc:needs-specialist', `area:${resolution.recommended_lane.replace(/-specialist$/, '')}`]
+      : ['mc:triage-routing', 'mc:needs-specialist'],
+    evidence_links: sourceEvidenceLinks(source),
+    ...resolution,
+    produced_at: new Date().toISOString(),
+  })
+
+  if (!result.ok) {
+    throw new Error(`invalid_needs_specialist_triage_routing_payload:${result.issues[0]?.path ?? 'unknown'}`)
+  }
+  return result.value
+}
+
+function sourceIssue(source: TriageRoutingSource): {
+  readonly repo?: string
+  readonly number?: number
+  readonly url?: string
+} {
+  const issue: { repo?: string; number?: number; url?: string } = {}
+  if (source.githubRepo) issue.repo = source.githubRepo
+  if (source.githubIssueNumber !== null) {
+    issue.number = source.githubIssueNumber
+    issue.url = `https://github.com/${SOURCE_REPO}/issues/${String(source.githubIssueNumber)}`
+  }
+  return issue
+}
+
+function sourceEvidenceLinks(
+  source: TriageRoutingSource,
+): { readonly type: 'github_issue'; readonly label: string; readonly url: string }[] {
+  return source.githubIssueNumber === null
+    ? []
+    : [
+        {
+          type: 'github_issue',
+          label: `Issue #${String(source.githubIssueNumber)}`,
+          url: `https://github.com/${SOURCE_REPO}/issues/${String(source.githubIssueNumber)}`,
+        },
+      ]
+}
+
+function resolveSpecialistMetadata(db: Database.Database, source: TriageRoutingSource): SpecialistResolution {
+  const ownerAction = 'Owner chooses or supplies specialist context.'
+  if (source.projectId === null) {
+    return { specialist_state: 'unassigned', missing_metadata: ['missing_project'], owner_action: ownerAction }
+  }
+  if (!tableExists(db, 'projects') || !tableExists(db, 'project_agent_assignments') || !tableExists(db, 'agents')) {
+    return { specialist_state: 'unassigned', missing_metadata: ['missing_specialist_metadata_tables'], owner_action: ownerAction }
+  }
+
+  const project = db.prepare(`
+    SELECT id, area_slug, status
+    FROM projects
+    WHERE id = ? AND workspace_id = ?
+    LIMIT 1
+  `).get(source.projectId, source.workspaceId) as { id: number; area_slug: string | null; status: string | null } | undefined
+  if (!project) return { specialist_state: 'unassigned', missing_metadata: ['missing_project'], owner_action: ownerAction }
+  if (project.status && ['inactive', 'disabled', 'archived'].includes(project.status.toLowerCase())) {
+    return { specialist_state: 'unassigned', missing_metadata: ['inactive_project'], owner_action: ownerAction }
+  }
+
+  const areaSlug = normalizeAreaSlug(project.area_slug)
+  if (!areaSlug) return { specialist_state: 'unassigned', missing_metadata: ['missing_area'], owner_action: ownerAction }
+  const expectedLane = `${areaSlug}-specialist`
+  const rows = db.prepare(`
+    SELECT paa.agent_name, paa.role, a.status
+    FROM project_agent_assignments paa
+    INNER JOIN agents a
+      ON a.name = paa.agent_name
+     AND a.workspace_id = paa.workspace_id
+    WHERE paa.project_id = ?
+      AND paa.workspace_id = ?
+      AND paa.role = ?
+    ORDER BY paa.id ASC
+  `).all(project.id, source.workspaceId, expectedLane) as { agent_name: string; role: string | null; status: string | null }[]
+  const activeRows = rows.filter((row) => !row.status || ['online', 'active', 'idle'].includes(row.status.toLowerCase()))
+  if (rows.length === 0) {
+    return { specialist_state: 'unassigned', missing_metadata: ['missing_specialist_assignment'], owner_action: ownerAction }
+  }
+  if (activeRows.length === 0) {
+    return { specialist_state: 'unassigned', missing_metadata: ['missing_same_workspace_agent'], owner_action: ownerAction }
+  }
+  if (activeRows.length !== 1) {
+    return { specialist_state: 'unassigned', missing_metadata: ['ambiguous_specialist_assignment'], owner_action: ownerAction }
+  }
+  const activeRow = activeRows[0]
+  if (!activeRow) {
+    return { specialist_state: 'unassigned', missing_metadata: ['missing_same_workspace_agent'], owner_action: ownerAction }
+  }
+
+  return {
+    specialist_state: 'recommended',
+    recommended_lane: expectedLane,
+    recommended_owner: activeRow.agent_name,
+    matching_basis: [
+      `project.area_slug=${areaSlug}`,
+      `area:${areaSlug}`,
+      'single same-workspace assignment',
+      `agent status ${activeRow.status ?? 'available'}`,
+    ],
+  }
+}
+
+function activityDeferredSideEffects(payload: TriageRoutingPayloadEnvelope): Record<string, true> {
+  const deferred: Record<string, true> = {}
+  for (const sideEffect of payload.deferred_side_effects) {
+    deferred[sideEffect.side_effect] = true
+    if (sideEffect.side_effect.startsWith('github_')) deferred['github_mutation'] = true
+  }
+  if (payload.disposition === NEEDS_SPEC) {
+    deferred['github_mutation'] = true
+    deferred['speckit_setup'] = true
+    deferred['successor_task'] = true
+  }
+  return deferred
+}
+
+function normalizeAreaSlug(value: string | null): string | null {
+  if (!value) return null
+  const normalized = value.trim().toLowerCase()
+  return /^[a-z0-9]$|^[a-z0-9][a-z0-9-]{0,48}[a-z0-9]$/.test(normalized) ? normalized : null
 }
 
 function unixNow(): number {
@@ -361,7 +534,7 @@ function readSourceTask(
 ): TriageRoutingSource | null {
   const row = db
     .prepare(`
-      SELECT id, workspace_id, workflow_template_slug, github_repo, github_issue_number
+      SELECT id, workspace_id, workflow_template_slug, github_repo, github_issue_number, project_id
       FROM tasks
       WHERE id = ? AND workspace_id = ?
       LIMIT 1
@@ -374,6 +547,7 @@ function readSourceTask(
     workflowTemplateSlug: row.workflow_template_slug,
     githubRepo: row.github_repo,
     githubIssueNumber: row.github_issue_number,
+    projectId: row.project_id,
   }
 }
 
@@ -394,4 +568,17 @@ function failure(
 
 function isSupportedDisposition(input: string): input is SupportedTriageRoutingDisposition {
   return SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS.includes(input as SupportedTriageRoutingDisposition)
+}
+
+function isRecordableNowDisposition(disposition: SupportedTriageRoutingDisposition): disposition is RecordableNowDisposition {
+  return disposition === NEEDS_SPEC || disposition === NEEDS_HUMAN || disposition === NEEDS_SPECIALIST
+}
+
+function tableExists(db: Database.Database, tableName: string): boolean {
+  const row = db.prepare(`
+    SELECT name FROM sqlite_master
+    WHERE type = 'table' AND name = ?
+    LIMIT 1
+  `).get(tableName) as { name?: string } | undefined
+  return Boolean(row?.name)
 }

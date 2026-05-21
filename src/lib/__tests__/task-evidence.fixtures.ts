@@ -139,6 +139,11 @@ interface Spec009fTriageRoutingPayload {
       matching_basis: string[]
     }
     | {
+      specialist_state: 'unassigned'
+      missing_metadata: string[]
+      owner_action: string
+    }
+    | {
       closure_outcome: 'DUPLICATE'
       suspected_duplicate_target: string
       comparison_rationale: string
@@ -154,6 +159,11 @@ interface Spec009fTriageRoutingPayload {
       validation_evidence: string[]
       missing_reproducibility_context: string[]
     }
+}
+
+interface Spec009fFixtureOptions {
+  specialistState?: 'recommended' | 'unassigned'
+  includeUnsafeContent?: boolean
 }
 
 export function createTaskEvidenceDb(): Database.Database {
@@ -406,6 +416,7 @@ export function seedPartialProofTask(db: Database.Database, taskId = 700): numbe
 export function seedSpec009fNonRemediationOutcome(
   db: Database.Database,
   outcome: Spec009fNonRemediationOutcome,
+  options: Spec009fFixtureOptions = {},
 ): Spec009fFixtureSeed {
   const outcomeIndex = SUPPORTED_SPEC_009F_NON_REMEDIATION_OUTCOMES.indexOf(outcome)
   if (outcomeIndex < 0) throw new Error(`Unsupported SPEC-009F fixture outcome: ${outcome}`)
@@ -425,6 +436,8 @@ export function seedSpec009fNonRemediationOutcome(
     activityId,
     issueNumber,
     producedAt,
+    ...(options.specialistState ? { specialistState: options.specialistState } : {}),
+    ...(options.includeUnsafeContent !== undefined ? { includeUnsafeContent: options.includeUnsafeContent } : {}),
   })
   const payloadJson = JSON.stringify(payload)
 
@@ -513,6 +526,21 @@ export function seedSpec009fNonRemediationOutcome(
   }
 }
 
+export function seedSpec009fNeedsHumanTriageRouting(db: Database.Database): Spec009fFixtureSeed {
+  return seedSpec009fNonRemediationOutcome(db, 'NEEDS_HUMAN')
+}
+
+export function seedSpec009fRecommendedSpecialistTriageRouting(db: Database.Database): Spec009fFixtureSeed {
+  return seedSpec009fNonRemediationOutcome(db, 'NEEDS_SPECIALIST')
+}
+
+export function seedSpec009fUnassignedSpecialistTriageRouting(db: Database.Database): Spec009fFixtureSeed {
+  return seedSpec009fNonRemediationOutcome(db, 'NEEDS_SPECIALIST', {
+    specialistState: 'unassigned',
+    includeUnsafeContent: true,
+  })
+}
+
 export function seedSpec009fNonRemediationOutcomes(db: Database.Database): Spec009fFixtureSeed[] {
   return SUPPORTED_SPEC_009F_NON_REMEDIATION_OUTCOMES.map((outcome) => seedSpec009fNonRemediationOutcome(db, outcome))
 }
@@ -593,7 +621,15 @@ function seedSpec009fSpecialistMetadata(db: Database.Database): void {
 
 function spec009fPayload(
   outcome: Spec009fNonRemediationOutcome,
-  ids: { taskId: number; artifactId: number; activityId: number; issueNumber: number; producedAt: string },
+  ids: {
+    taskId: number
+    artifactId: number
+    activityId: number
+    issueNumber: number
+    producedAt: string
+    specialistState?: 'recommended' | 'unassigned'
+    includeUnsafeContent?: boolean
+  },
 ): Spec009fTriageRoutingPayload {
   const common = {
     schema_version: 'spec-009f.triage_routing.v1' as const,
@@ -607,7 +643,9 @@ function spec009fPayload(
     disposition: outcome,
     routing_status: 'recorded' as const,
     triage_rationale: `Deterministic SPEC-009F fixture rationale for ${outcome}.`,
-    recommended_next_action: `Review the ${outcome} recommendation in Mission Control.`,
+    recommended_next_action: ids.includeUnsafeContent
+      ? `Review the ${outcome} recommendation in Mission Control. javascript:alert(1)`
+      : `Review the ${outcome} recommendation in Mission Control.`,
     proposed_labels: [
       { name: 'mc:triage-routing', source: 'triage_routing' as const, action: 'recommend_add' as const, applied: false as const },
       { name: spec009fOutcomeLabel(outcome), source: 'triage_routing' as const, action: 'recommend_add' as const, applied: false as const },
@@ -653,6 +691,19 @@ function spec009fPayload(
   }
 
   if (outcome === 'NEEDS_SPECIALIST') {
+    if (ids.specialistState === 'unassigned') {
+      return {
+        ...common,
+        artifact_type: 'triage_specialist_recommendation',
+        lane: 'specialist_recommendation',
+        lane_detail: {
+          specialist_state: 'unassigned',
+          missing_metadata: ['project.area_slug', 'project_agent_assignments'],
+          owner_action: '<b>Assign</b> a specialist owner in Mission Control before dispatch.',
+        },
+      }
+    }
+
     return {
       ...common,
       artifact_type: 'triage_specialist_recommendation',

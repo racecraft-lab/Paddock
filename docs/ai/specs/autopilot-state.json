@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T23:06:22Z",
-  "active_step": "Phase 7: US2 human and specialist routes (T019-T029)",
+  "updated_at": "2026-05-21T23:25:34Z",
+  "active_step": "Phase 7: US3 closure recommendations (T030-T036)",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -144,11 +144,11 @@
     },
     {
       "step": "Phase 7: US2 human and specialist routes (T019-T029)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US3 closure recommendations (T030-T036)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US4 idempotent evidence display (T037-T044)",
@@ -466,9 +466,20 @@
         "T015",
         "T016",
         "T017",
-        "T018"
+        "T018",
+        "T019",
+        "T020",
+        "T021",
+        "T022",
+        "T023",
+        "T024",
+        "T025",
+        "T026",
+        "T027",
+        "T028",
+        "T029"
       ],
-      "current_group": "US2 human and specialist routes (T019-T029)",
+      "current_group": "US3 closure recommendations (T030-T036)",
       "groups": {
         "T001-T004": {
           "status": "completed",
@@ -522,6 +533,26 @@
             "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs"
           ],
           "focused_tests": 31,
+          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
+        },
+        "T019-T029": {
+          "status": "completed",
+          "files": [
+            "src/lib/triage-routing-payloads.ts",
+            "src/lib/__tests__/triage-routing-payloads.test.ts",
+            "src/lib/triage-routing.ts",
+            "src/lib/__tests__/triage-routing.test.ts",
+            "src/lib/task-evidence.ts",
+            "src/lib/__tests__/task-evidence.test.ts",
+            "src/lib/__tests__/task-evidence.fixtures.ts"
+          ],
+          "commands": [
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/task-evidence.test.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts",
+            "pnpm exec eslint src/lib/triage-routing-payloads.ts src/lib/triage-routing.ts src/lib/task-evidence.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/lib/__tests__/task-evidence.fixtures.ts",
+            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs"
+          ],
+          "focused_tests": 40,
           "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
         }
       }

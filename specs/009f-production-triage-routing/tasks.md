@@ -79,20 +79,20 @@ pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/tr
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Add RED `NEEDS_HUMAN` payload validator tests for `triage_clarification_request`, `blocking_questions`, `target_audience`, `evidence_needed`, `no_external_message_sent: true`, and sanitized inert strings in `src/lib/__tests__/triage-routing-payloads.test.ts`
-- [ ] T020 [US2] Add RED `NEEDS_SPECIALIST` payload validator tests for `triage_specialist_recommendation`, recommended state, unassigned state, deterministic confidence, matching basis, missing metadata, owner action, and no free-form issue/body inference fields in `src/lib/__tests__/triage-routing-payloads.test.ts`
-- [ ] T021 [P] [US2] Add RED routing tests for `NEEDS_HUMAN` clarification artifact, no external message, no successor, and metadata-only labels in `src/lib/__tests__/triage-routing.test.ts`
-- [ ] T022 [US2] Add RED routing tests for `NEEDS_SPECIALIST` deterministic same-workspace owner recommendation, unassigned fallback for missing/ambiguous metadata, no assignment, no dispatch, and no `mission-control_specialist_route` successor in `src/lib/__tests__/triage-routing.test.ts`
-- [ ] T023 [P] [US2] Add RED task Evidence tests for clarification and specialist `triage_routing` lane details, `Specialist unassigned`, missing metadata, owner action, deferred side effects, and no raw unsafe content in `src/lib/__tests__/task-evidence.test.ts`
+- [x] T019 [P] [US2] Add RED `NEEDS_HUMAN` payload validator tests for `triage_clarification_request`, `blocking_questions`, `target_audience`, `evidence_needed`, `no_external_message_sent: true`, and sanitized inert strings in `src/lib/__tests__/triage-routing-payloads.test.ts`
+- [x] T020 [US2] Add RED `NEEDS_SPECIALIST` payload validator tests for `triage_specialist_recommendation`, recommended state, unassigned state, deterministic confidence, matching basis, missing metadata, owner action, and no free-form issue/body inference fields in `src/lib/__tests__/triage-routing-payloads.test.ts`
+- [x] T021 [P] [US2] Add RED routing tests for `NEEDS_HUMAN` clarification artifact, no external message, no successor, and metadata-only labels in `src/lib/__tests__/triage-routing.test.ts`
+- [x] T022 [US2] Add RED routing tests for `NEEDS_SPECIALIST` deterministic same-workspace owner recommendation, unassigned fallback for missing/ambiguous metadata, no assignment, no dispatch, and no `mission-control_specialist_route` successor in `src/lib/__tests__/triage-routing.test.ts`
+- [x] T023 [P] [US2] Add RED task Evidence tests for clarification and specialist `triage_routing` lane details, `Specialist unassigned`, missing metadata, owner action, deferred side effects, and no raw unsafe content in `src/lib/__tests__/task-evidence.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement `NEEDS_HUMAN` clarification payload builder and validator in `src/lib/triage-routing-payloads.ts`
-- [ ] T025 [US2] Implement `NEEDS_SPECIALIST` recommendation and unassigned payload builders and validators in `src/lib/triage-routing-payloads.ts`
-- [ ] T026 [US2] Implement deterministic specialist metadata resolution from source task/workspace, `projects.area_slug`, normalized `area:*` routing evidence, `project_agent_assignments`, and same-workspace `agents` in `src/lib/triage-routing.ts`
-- [ ] T027 [US2] Implement `NEEDS_HUMAN` and `NEEDS_SPECIALIST` routing artifact/activity recording with no message, assignment, dispatch, or successor writes in `src/lib/triage-routing.ts`
-- [ ] T028 [US2] Extend fixture helpers with deterministic `NEEDS_HUMAN`, recommended `NEEDS_SPECIALIST`, and unassigned `NEEDS_SPECIALIST` rows and cleanup ids in `src/lib/__tests__/task-evidence.fixtures.ts`
-- [ ] T029 [US2] Extend server-side task Evidence derivation for clarification and specialist `triage_routing` output in `src/lib/task-evidence.ts`
+- [x] T024 [US2] Implement `NEEDS_HUMAN` clarification payload builder and validator in `src/lib/triage-routing-payloads.ts`
+- [x] T025 [US2] Implement `NEEDS_SPECIALIST` recommendation and unassigned payload builders and validators in `src/lib/triage-routing-payloads.ts`
+- [x] T026 [US2] Implement deterministic specialist metadata resolution from source task/workspace, `projects.area_slug`, normalized `area:*` routing evidence, `project_agent_assignments`, and same-workspace `agents` in `src/lib/triage-routing.ts`
+- [x] T027 [US2] Implement `NEEDS_HUMAN` and `NEEDS_SPECIALIST` routing artifact/activity recording with no message, assignment, dispatch, or successor writes in `src/lib/triage-routing.ts`
+- [x] T028 [US2] Extend fixture helpers with deterministic `NEEDS_HUMAN`, recommended `NEEDS_SPECIALIST`, and unassigned `NEEDS_SPECIALIST` rows and cleanup ids in `src/lib/__tests__/task-evidence.fixtures.ts`
+- [x] T029 [US2] Extend server-side task Evidence derivation for clarification and specialist `triage_routing` output in `src/lib/task-evidence.ts`
 
 **Checkpoint**: User Story 2 can be verified independently with:
 

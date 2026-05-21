@@ -125,12 +125,49 @@ export interface SpecKitHandoffDetail {
   };
 }
 
+export interface ClarificationRequestDetail {
+  readonly blocking_questions: string[];
+  readonly target_audience: string;
+  readonly evidence_needed: string[];
+  readonly no_external_message_sent: true;
+}
+
+export type SpecialistRecommendationDetail =
+  | {
+      readonly specialist_state: 'recommended';
+      readonly recommended_lane: string;
+      readonly recommended_owner: string;
+      readonly matching_confidence: 'deterministic';
+      readonly matching_basis: string[];
+    }
+  | {
+      readonly specialist_state: 'unassigned';
+      readonly missing_metadata: string[];
+      readonly owner_action: string;
+    };
+
 export interface NeedsSpecTriageRoutingPayload
   extends Omit<TriageRoutingPayloadEnvelope, 'artifact_type' | 'disposition' | 'lane'> {
   readonly artifact_type: 'triage_speckit_handoff';
   readonly disposition: 'NEEDS_SPEC';
   readonly lane: 'speckit_handoff';
   readonly lane_detail: SpecKitHandoffDetail;
+}
+
+export interface NeedsHumanTriageRoutingPayload
+  extends Omit<TriageRoutingPayloadEnvelope, 'artifact_type' | 'disposition' | 'lane'> {
+  readonly artifact_type: 'triage_clarification_request';
+  readonly disposition: 'NEEDS_HUMAN';
+  readonly lane: 'clarification_request';
+  readonly lane_detail: ClarificationRequestDetail;
+}
+
+export interface NeedsSpecialistTriageRoutingPayload
+  extends Omit<TriageRoutingPayloadEnvelope, 'artifact_type' | 'disposition' | 'lane'> {
+  readonly artifact_type: 'triage_specialist_recommendation';
+  readonly disposition: 'NEEDS_SPECIALIST';
+  readonly lane: 'specialist_recommendation';
+  readonly lane_detail: SpecialistRecommendationDetail;
 }
 
 export interface TriageRoutingValidationIssue {
@@ -511,6 +548,148 @@ export function validateNeedsSpecTriageRoutingPayload(
   };
 }
 
+export function buildNeedsHumanTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<NeedsHumanTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const detailInput = isRecord(input['lane_detail']) ? input['lane_detail'] : input;
+
+  return validateNeedsHumanTriageRoutingPayload({
+    ...input,
+    schema_version: TRIAGE_ROUTING_SCHEMA_VERSION,
+    artifact_type: 'triage_clarification_request',
+    disposition: 'NEEDS_HUMAN',
+    lane: 'clarification_request',
+    routing_status: 'recorded',
+    deferred_side_effects: defaultNeedsHumanDeferredSideEffects(),
+    lane_detail: {
+      blocking_questions: detailInput['blocking_questions'],
+      target_audience: detailInput['target_audience'],
+      evidence_needed: detailInput['evidence_needed'],
+      no_external_message_sent: true,
+    },
+  });
+}
+
+export function validateNeedsHumanTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<NeedsHumanTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const issues: TriageRoutingValidationIssue[] = [];
+  if (input['disposition'] !== 'NEEDS_HUMAN') {
+    issues.push(issue('disposition', 'unsupported_disposition', 'disposition must be NEEDS_HUMAN'));
+  }
+  if (input['lane'] !== 'clarification_request') {
+    issues.push(issue('lane', 'invalid_lane', 'lane must be clarification_request'));
+  }
+  if (input['artifact_type'] !== 'triage_clarification_request') {
+    issues.push(
+      issue('artifact_type', 'invalid_artifact_type', 'artifact_type must be triage_clarification_request'),
+    );
+  }
+
+  const envelope = validateCommonTriageRoutingPayloadEnvelope(input);
+  collectIssues(issues, envelope);
+
+  const laneDetail = normalizeClarificationRequestDetail(input['lane_detail']);
+  collectIssues(issues, laneDetail);
+
+  if (issues.length > 0 || !envelope.ok || !laneDetail.ok) return { ok: false, issues };
+
+  return {
+    ok: true,
+    value: {
+      ...envelope.value,
+      artifact_type: 'triage_clarification_request',
+      disposition: 'NEEDS_HUMAN',
+      lane: 'clarification_request',
+      lane_detail: laneDetail.value,
+    },
+  };
+}
+
+export function buildNeedsSpecialistTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<NeedsSpecialistTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const detailInput = isRecord(input['lane_detail']) ? input['lane_detail'] : input;
+  const specialistState = detailInput['specialist_state'];
+  const laneDetail =
+    specialistState === 'unassigned'
+      ? {
+          specialist_state: 'unassigned',
+          missing_metadata: detailInput['missing_metadata'],
+          owner_action: detailInput['owner_action'],
+        }
+      : {
+          specialist_state: specialistState,
+          recommended_lane: detailInput['recommended_lane'],
+          recommended_owner: detailInput['recommended_owner'],
+          matching_confidence: 'deterministic',
+          matching_basis: detailInput['matching_basis'],
+        };
+
+  return validateNeedsSpecialistTriageRoutingPayload({
+    ...input,
+    schema_version: TRIAGE_ROUTING_SCHEMA_VERSION,
+    artifact_type: 'triage_specialist_recommendation',
+    disposition: 'NEEDS_SPECIALIST',
+    lane: 'specialist_recommendation',
+    routing_status: 'recorded',
+    deferred_side_effects: defaultNeedsSpecialistDeferredSideEffects(),
+    lane_detail: laneDetail,
+  });
+}
+
+export function validateNeedsSpecialistTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<NeedsSpecialistTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const issues: TriageRoutingValidationIssue[] = [];
+  if (input['disposition'] !== 'NEEDS_SPECIALIST') {
+    issues.push(issue('disposition', 'unsupported_disposition', 'disposition must be NEEDS_SPECIALIST'));
+  }
+  if (input['lane'] !== 'specialist_recommendation') {
+    issues.push(issue('lane', 'invalid_lane', 'lane must be specialist_recommendation'));
+  }
+  if (input['artifact_type'] !== 'triage_specialist_recommendation') {
+    issues.push(
+      issue('artifact_type', 'invalid_artifact_type', 'artifact_type must be triage_specialist_recommendation'),
+    );
+  }
+
+  const envelope = validateCommonTriageRoutingPayloadEnvelope(input);
+  collectIssues(issues, envelope);
+
+  const laneDetail = normalizeSpecialistRecommendationDetail(input['lane_detail']);
+  collectIssues(issues, laneDetail);
+
+  if (issues.length > 0 || !envelope.ok || !laneDetail.ok) return { ok: false, issues };
+
+  return {
+    ok: true,
+    value: {
+      ...envelope.value,
+      artifact_type: 'triage_specialist_recommendation',
+      disposition: 'NEEDS_SPECIALIST',
+      lane: 'specialist_recommendation',
+      lane_detail: laneDetail.value,
+    },
+  };
+}
+
 function normalizeSpecKitHandoffDetail(input: unknown): TriageRoutingValidationResult<SpecKitHandoffDetail> {
   if (!isRecord(input)) {
     return { ok: false, issues: [issue('lane_detail', 'invalid_type', 'lane_detail must be an object')] };
@@ -541,6 +720,184 @@ function normalizeSpecKitHandoffDetail(input: unknown): TriageRoutingValidationR
       deferred_setup_action: deferredSetupAction.value,
     },
   };
+}
+
+function normalizeClarificationRequestDetail(input: unknown): TriageRoutingValidationResult<ClarificationRequestDetail> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('lane_detail', 'invalid_type', 'lane_detail must be an object')] };
+  }
+
+  const issues: TriageRoutingValidationIssue[] = [];
+  const blockingQuestions = normalizeLaneTextList(input['blocking_questions'], 'lane_detail.blocking_questions');
+  const targetAudience = normalizeTriageRoutingText(input['target_audience'], {
+    field: 'lane_detail.target_audience',
+    max_chars: 300,
+    max_newlines: 0,
+  });
+  const evidenceNeeded = normalizeLaneTextList(input['evidence_needed'], 'lane_detail.evidence_needed');
+
+  if (input['no_external_message_sent'] !== true) {
+    issues.push(
+      issue('lane_detail.no_external_message_sent', 'invalid_literal', 'no_external_message_sent must be true'),
+    );
+  }
+
+  collectIssues(issues, blockingQuestions);
+  collectIssues(issues, targetAudience);
+  collectIssues(issues, evidenceNeeded);
+
+  if (issues.length > 0 || !blockingQuestions.ok || !targetAudience.ok || !evidenceNeeded.ok) {
+    return { ok: false, issues };
+  }
+
+  return {
+    ok: true,
+    value: {
+      blocking_questions: blockingQuestions.value,
+      target_audience: targetAudience.value,
+      evidence_needed: evidenceNeeded.value,
+      no_external_message_sent: true,
+    },
+  };
+}
+
+function normalizeSpecialistRecommendationDetail(
+  input: unknown,
+): TriageRoutingValidationResult<SpecialistRecommendationDetail> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('lane_detail', 'invalid_type', 'lane_detail must be an object')] };
+  }
+
+  if (input['specialist_state'] === 'recommended') {
+    return normalizeRecommendedSpecialistDetail(input);
+  }
+  if (input['specialist_state'] === 'unassigned') {
+    return normalizeUnassignedSpecialistDetail(input);
+  }
+
+  return {
+    ok: false,
+    issues: [
+      issue(
+        'lane_detail.specialist_state',
+        'invalid_literal',
+        'specialist_state must be recommended or unassigned',
+      ),
+    ],
+  };
+}
+
+function normalizeRecommendedSpecialistDetail(
+  input: Record<string, unknown>,
+): TriageRoutingValidationResult<SpecialistRecommendationDetail> {
+  const issues: TriageRoutingValidationIssue[] = [];
+  const recommendedLane = normalizeTriageRoutingText(input['recommended_lane'], {
+    field: 'lane_detail.recommended_lane',
+    max_chars: 300,
+    max_newlines: 0,
+  });
+  const recommendedOwner = normalizeTriageRoutingText(input['recommended_owner'], {
+    field: 'lane_detail.recommended_owner',
+    max_chars: 300,
+    max_newlines: 0,
+  });
+  const matchingBasis = normalizeLaneTextList(input['matching_basis'], 'lane_detail.matching_basis');
+
+  if (input['matching_confidence'] !== 'deterministic') {
+    issues.push(
+      issue('lane_detail.matching_confidence', 'invalid_literal', 'matching_confidence must be deterministic'),
+    );
+  }
+
+  collectIssues(issues, recommendedLane);
+  collectIssues(issues, recommendedOwner);
+  collectIssues(issues, matchingBasis);
+
+  if (issues.length > 0 || !recommendedLane.ok || !recommendedOwner.ok || !matchingBasis.ok) {
+    return { ok: false, issues };
+  }
+
+  return {
+    ok: true,
+    value: {
+      specialist_state: 'recommended',
+      recommended_lane: recommendedLane.value,
+      recommended_owner: recommendedOwner.value,
+      matching_confidence: 'deterministic',
+      matching_basis: matchingBasis.value,
+    },
+  };
+}
+
+function normalizeUnassignedSpecialistDetail(
+  input: Record<string, unknown>,
+): TriageRoutingValidationResult<SpecialistRecommendationDetail> {
+  const issues: TriageRoutingValidationIssue[] = [];
+  const missingMetadata = normalizeLaneTextList(input['missing_metadata'], 'lane_detail.missing_metadata');
+  const ownerAction = normalizeTriageRoutingText(input['owner_action'], {
+    field: 'lane_detail.owner_action',
+    max_chars: 500,
+    max_newlines: 0,
+  });
+
+  collectIssues(issues, missingMetadata);
+  collectIssues(issues, ownerAction);
+
+  if (issues.length > 0 || !missingMetadata.ok || !ownerAction.ok) return { ok: false, issues };
+
+  return {
+    ok: true,
+    value: {
+      specialist_state: 'unassigned',
+      missing_metadata: missingMetadata.value,
+      owner_action: ownerAction.value,
+    },
+  };
+}
+
+function defaultNeedsHumanDeferredSideEffects(): DeferredSideEffect[] {
+  return [
+    {
+      side_effect: 'github_label',
+      deferred: true,
+      reason: 'SPEC-009F recommends labels but does not apply them.',
+    },
+    {
+      side_effect: 'successor_task',
+      deferred: true,
+      reason: 'SPEC-009F keeps non-remediation outcomes terminal.',
+    },
+    {
+      side_effect: 'github_comment',
+      deferred: true,
+      reason: 'No external clarification message is sent.',
+    },
+  ];
+}
+
+function defaultNeedsSpecialistDeferredSideEffects(): DeferredSideEffect[] {
+  return [
+    {
+      side_effect: 'github_label',
+      deferred: true,
+      reason: 'SPEC-009F recommends labels but does not apply them.',
+    },
+    {
+      side_effect: 'successor_task',
+      deferred: true,
+      reason: 'SPEC-009F keeps non-remediation outcomes terminal.',
+    },
+    {
+      side_effect: 'github_assignment',
+      deferred: true,
+      reason: 'No GitHub assignment is applied.',
+    },
+    {
+      side_effect: 'agent_dispatch',
+      deferred: true,
+      reason: 'Specialist recommendation does not dispatch an agent.',
+    },
+  ];
 }
 
 function normalizeLaneTextList(input: unknown, path: string): TriageRoutingValidationResult<string[]> {
