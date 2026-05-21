@@ -84,21 +84,42 @@ Repository CI can run the same freshness and discovery checks as local operators
 ### Functional Requirements
 
 - **FR-001**: The repository MUST provide a canonical machine-readable docs index under `docs/ai/`.
+- **FR-001A**: The canonical docs index filename MUST be `docs/ai/repo-knowledge-index.json`.
+- **FR-001B**: The repository MUST provide a JSON Schema for the canonical docs index at `docs/ai/repo-knowledge-index.schema.json`.
 - **FR-002**: The canonical index MUST include entries for the PRD, technical roadmap, SpecKit workflow directory or workflow pointers, QA checklist, rollback runbook, root `AGENTS.md`, and GitNexus instructions.
+- **FR-002A**: The minimum required discovery entries MUST include `AGENTS.md`, `docs/rc-factory-v1-prd.md`, `docs/ai/rc-factory-technical-roadmap.md`, `docs/ai/specs/`, `docs/ai/specs/SPEC-012A-workflow.md`, `docs/ai/specs/autopilot-state.json`, `docs/qa/pilot-smoke-checklist.md`, `docs/runbook/migration-rollback.md`, and `docs/ai/workflows/mission-control/workflow-contract.yaml`.
+- **FR-002B**: The `AGENTS.md` index entry MUST cover both the root Repo Knowledge Map and the GitNexus operator instructions so the index does not require duplicate `AGENTS.md` path entries.
 - **FR-003**: Every canonical index entry MUST include `path`, `purpose`, `owner`, `freshness`, `last_verified`, `related_specs`, and `verification_commands`.
+- **FR-003A**: `owner` MUST be a non-empty owning role or team string, not an individual-only memory note.
+- **FR-003B**: `freshness` MUST be structured enough for guards to evaluate, including a cadence or stale-after rule and the trigger that requires re-verification.
+- **FR-003C**: `last_verified` MUST be an ISO `YYYY-MM-DD` date representing the latest successful verification of the entry.
+- **FR-003D**: `related_specs` MUST be an array of valid `SPEC-###` or suffixed `SPEC-###X` identifiers, or an empty array when no spec owns the document.
+- **FR-003E**: `verification_commands` MUST be an array of local commands or explicit manual verification instructions that a fresh agent can run or follow from the repository checkout.
 - **FR-004**: Every canonical index entry's `path` MUST resolve to a repo-local file or directory when the entry is marked required.
 - **FR-005**: The index MUST distinguish durable intent documents from execution ledgers and status pointers so agents know which files describe long-lived decisions and which files record current workflow progress.
 - **FR-006**: Root `AGENTS.md` MUST include a concise Repo Knowledge Map section that points to the canonical index, PRD, technical roadmap, workflow location, QA checklist, rollback runbook, GitNexus instructions, and freshness/ownership guard.
 - **FR-007**: Root `AGENTS.md` MUST remain a routing map and MUST NOT duplicate the full canonical index in prose.
 - **FR-008**: The repository MUST provide a local guard command that fails when required indexed docs are missing.
+- **FR-008A**: The guard MUST fail locally and in CI for malformed index JSON, schema validation failures, missing `docs/ai/repo-knowledge-index.json`, missing `docs/ai/repo-knowledge-index.schema.json`, missing required discovery entries, missing required metadata, invalid required metadata, required paths that resolve outside the repository, broken required repo-local links, stale required status pointers, or invalid related spec IDs.
+- **FR-008B**: The guard MUST report warnings without a failing exit code for external URLs, Obsidian-style wikilinks, and optional non-required links unless the index explicitly declares the referenced fact to be repo-owned and required.
 - **FR-009**: The guard MUST fail when any required canonical metadata field is missing, empty, or structurally invalid.
 - **FR-010**: The guard MUST fail when indexed required status pointers are stale relative to the repo-owned source they claim to summarize.
+- **FR-010A**: Stale status detection MUST compare the SPEC-012A roadmap status, `docs/ai/specs/SPEC-012A-workflow.md` workflow overview, and `docs/ai/specs/autopilot-state.json` active workflow/state so an index cannot advertise a current workflow/status pointer that disagrees with checked-in roadmap or workflow ledger evidence.
+- **FR-010B**: Stale status detection MUST name the disagreeing files, the observed values, and the expected relationship in its failure output.
 - **FR-011**: The guard MUST fail when required repo-local links in canonical entries are broken.
+- **FR-011A**: Repo-local Markdown link validation MUST normalize links relative to the source file, reject traversal outside the repository, ignore same-file headings only when the target file exists, and fail required links whose target file or directory is missing.
 - **FR-012**: The guard MUST treat external URLs and Obsidian-style wikilinks as warnings or informational findings unless an indexed entry declares the referenced fact as repo-owned.
+- **FR-012A**: The guard MUST NOT perform network fetches for external URLs and MUST NOT require access to the operator's Obsidian vault.
 - **FR-013**: The guard MUST be runnable both locally and in CI without requiring secret material, operator-only services, or generated semantic-search indexes.
+- **FR-013A**: The repository MUST expose focused package scripts for index validation and fresh-agent proxy smoke checks, and `pnpm guardrails` MUST invoke the blocking index validation path so the existing Quality Gate workflow covers SPEC-012A.
+- **FR-013B**: The focused package scripts MUST be runnable on a clean checkout where `.gitnexus/` is absent and `.envrc.local` is ignored or missing.
 - **FR-014**: The repository MUST provide a deterministic fresh-agent proxy smoke check that proves the index resolves the PRD, technical roadmap, active/pending workflow pointers, QA checklist, rollback runbook, root `AGENTS.md`, and GitNexus instructions.
+- **FR-014A**: The fresh-agent proxy smoke check MUST start from the root `AGENTS.md` Repo Knowledge Map, follow the canonical index pointer, and resolve each required discovery target through the index rather than through hard-coded hidden context.
+- **FR-014B**: The fresh-agent proxy smoke check MUST prove that the GitNexus guidance is discoverable by locating the checked-in instruction containing `direnv exec . gitnexus analyze --embeddings --skip-agents-md`, linked-worktree `.envrc.local` setup guidance, and the ignored `.gitnexus/` boundary.
 - **FR-015**: The fresh-agent proxy smoke check MUST fail when any required discovery target cannot be resolved through the canonical index.
 - **FR-016**: GitNexus guidance MUST document the refresh command, required embedding environment, linked-worktree setup expectations, and the fact that `.gitnexus/` is ignored and not required for CI truth.
+- **FR-016A**: SPEC-012A MUST NOT add project-local GitNexus MCP, hook, skill, generated index, or committed `.gitnexus/` artifacts.
+- **FR-016B**: The root `AGENTS.md` Repo Knowledge Map MUST remain a concise set of links and routing notes; it MUST point to the canonical index and source-of-truth docs without embedding the JSON index contents or duplicating every indexed entry.
 - **FR-017**: SPEC-012A MUST NOT introduce runtime source behavior changes, database migrations, UI changes, scheduler or runner behavior, automatic GitHub sync, sandbox lifecycle changes, harness adapters, generated `.gitnexus/` artifacts, broad documentation rewrites, or directory-wide nested `AGENTS.md` rollout.
 - **FR-018**: The feature MUST preserve SpecKit workflow files as execution ledgers and roadmap/PRD documents as durable intent sources.
 

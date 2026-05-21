@@ -34,7 +34,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/012a-repo-knowledge-index/spec.md` with 18 FRs, 4 user stories, 11 acceptance scenarios, 5 success criteria, and no unresolved markers; G1 passed |
-| Clarify | `$speckit-clarify` | Pending | Resolve index schema, freshness semantics, guard integration, and docs-map boundaries |
+| Clarify | `$speckit-clarify` | Complete | Resolved index/schema paths, required entries, metadata semantics, guard failure classes, stale status pointer detection, fresh-agent proxy behavior, GitNexus discoverability, and `pnpm guardrails`/Quality Gate integration; G2 passed |
 | Plan | `$speckit-plan` | Pending | Plan JSON index, validation scripts, concise `AGENTS.md` map, CI/local guard wiring |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: data-integrity, integration, regression-safety, error-handling |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first process/tooling tasks |
@@ -237,7 +237,7 @@ Fresh agents need to discover Mission Control repo truth from checked-in artifac
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | 18 |
+| Functional Requirements | 39 after Clarify expansion |
 | User Stories | 4 |
 | Acceptance Criteria | 11 |
 
@@ -294,9 +294,17 @@ Focus on fresh-agent discovery and integration:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Index schema and required entries | Pending | Pending |
-| 2 | Guard failure semantics | Pending | Pending |
-| 3 | Fresh-agent proxy and CI integration | Pending | Pending |
+| 1 | Index schema and required entries | 5 | Accepted `docs/ai/repo-knowledge-index.json`, required JSON Schema at `docs/ai/repo-knowledge-index.schema.json`, minimum required discovery entries, single `AGENTS.md` entry covering both Repo Knowledge Map and GitNexus instructions, and structured metadata semantics for owner/freshness/last_verified/related_specs/verification_commands |
+| 2 | Guard failure semantics | 4 | Accepted hard-fail classes for malformed/missing required index/schema/docs/metadata/status/link/spec-id failures, warning-only handling for external URLs/Obsidian wikilinks/optional links, roadmap-workflow-autopilot-state stale pointer comparison, and repo-local Markdown link normalization with outside-repo traversal rejection |
+| 3 | Fresh-agent proxy and CI integration | 4 | Accepted fresh-agent proxy starts from `AGENTS.md` and resolves required targets through the canonical index; focused package scripts cover index validation and smoke checks; blocking validation wires into `pnpm guardrails` and therefore existing Quality Gate CI; GitNexus discoverability is verified from checked-in instructions without `.gitnexus/`; `AGENTS.md` stays link/map-only |
+
+### Consensus Resolution Log
+
+| Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|-------------------|---------|---------------|
+| Clarify Session 1 | N/A | N/A | No unresolved consensus items; parent accepted local repo evidence and setup decisions | N/A |
+| Clarify Session 2 | N/A | N/A | No unresolved consensus items; parent accepted roadmap/workflow/package/CI guardrail evidence for guard failure semantics | N/A |
+| Clarify Session 3 | N/A | N/A | No unresolved consensus items; parent accepted root-instruction, package-script, Quality Gate, and GitNexus guidance evidence for fresh-agent/CI integration | N/A |
 
 ---
 
