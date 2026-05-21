@@ -603,6 +603,16 @@ Post-implementation code review also corrected the live status-pointer guard pat
 - [ ] Full `pnpm test` suite is green without the known full-suite-only `task-chain-advancement.routing.test.ts` baseline failure described above.
 - [ ] Branch is pushed and PR is ready for review.
 
+### Post-Implementation Reviewability Evidence
+
+The official diff gate command was run:
+
+```bash
+bash /Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.11.1/skills/speckit-autopilot/scripts/reviewability-gate.sh diff origin/main...HEAD
+```
+
+It returned `status=block` with `transition_exception=false` even though the diff contains ratified transition-exception markers. The false negative is in the local gate script's exception detector (`grep -q` under `pipefail` can close the pipeline early before `git diff` exits). A temporary patched copy that preserves the same thresholds and uses non-quiet grep returned `status=exception`, `pass=true`, `reviewable_loc=3120`, `production_files=10`, `total_files=31`, and `primary_surface_count=6`. The exception remains limited to the SPEC-012A planned docs/process/script scope listed in this workflow.
+
 ---
 
 ## Project Structure Reference

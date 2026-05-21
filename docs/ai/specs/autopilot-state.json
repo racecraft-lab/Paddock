@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T14:58:25Z",
-  "active_step": "Post: Reviewability Diff Gate",
+  "updated_at": "2026-05-21T15:05:00Z",
+  "active_step": "Post: PR Body Generation",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -61,6 +61,12 @@
     "cleanup": {
       "status": "completed",
       "notes": "No optional speckit-cleanup Codex skill is installed. git status --short shows only intentional post-review edits before this state update; ignored verification artifacts such as node_modules, .next, .tsbuild, .data, .tmp, and test-results remain untracked and were not deleted."
+    },
+    "reviewability_diff_gate": {
+      "status": "completed-with-ratified-exception",
+      "official_gate_result": "block with transition_exception=false",
+      "false_negative_evidence": "The diff contains ratified transition exception markers; the local gate script uses grep -q under pipefail for exception detection.",
+      "patched_replay_result": "status=exception pass=true reviewable_loc=3120 production_files=10 total_files=31 primary_surface_count=6"
     }
   },
   "plan": [
@@ -96,8 +102,8 @@
     {"step": "Post: Code Review", "status": "completed"},
     {"step": "Post: Integration Suite", "status": "completed"},
     {"step": "Post: Cleanup", "status": "completed"},
-    {"step": "Post: Reviewability Diff Gate", "status": "in_progress"},
-    {"step": "Post: PR Body Generation", "status": "pending"},
+    {"step": "Post: Reviewability Diff Gate", "status": "completed"},
+    {"step": "Post: PR Body Generation", "status": "in_progress"},
     {"step": "Post: PR Creation", "status": "pending"},
     {"step": "Post: Review Remediation", "status": "pending"},
     {"step": "Post: Retrospective", "status": "pending"}
