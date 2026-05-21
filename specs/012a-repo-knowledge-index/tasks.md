@@ -30,10 +30,10 @@ rewrites, or nested `AGENTS.md` rollout.
 
 **Purpose**: Add the repo-owned discovery artifacts without broad docs rewrites.
 
-- [ ] T008 Add `docs/ai/repo-knowledge-index.schema.json` covering `version`, index `last_verified`, entries, required metadata, freshness rule shape, related spec pattern, required booleans, and optional link metadata.
-- [ ] T009 Add `docs/ai/repo-knowledge-index.json` with required entries for `AGENTS.md`, PRD, roadmap, `docs/ai/specs/`, SPEC-012A workflow, `autopilot-state.json`, QA checklist, rollback runbook, and workflow contract.
-- [ ] T010 Update root `AGENTS.md` with a concise Repo Knowledge Map section pointing to the canonical index, PRD, roadmap, workflow/status pointers, QA checklist, rollback runbook, guard commands, and GitNexus instructions.
-- [ ] T011 Verify `AGENTS.md` remains map-level only and does not embed the JSON index contents or duplicate every indexed entry.
+- [x] T008 Add `docs/ai/repo-knowledge-index.schema.json` covering `version`, index `last_verified`, entries, required metadata, freshness rule shape, related spec pattern, required booleans, and optional link metadata.
+- [x] T009 Add `docs/ai/repo-knowledge-index.json` with required entries for `AGENTS.md`, PRD, roadmap, `docs/ai/specs/`, SPEC-012A workflow, `autopilot-state.json`, QA checklist, rollback runbook, and workflow contract.
+- [x] T010 Update root `AGENTS.md` with a concise Repo Knowledge Map section pointing to the canonical index, PRD, roadmap, workflow/status pointers, QA checklist, rollback runbook, guard commands, and GitNexus instructions.
+- [x] T011 Verify `AGENTS.md` remains map-level only and does not embed the JSON index contents or duplicate every indexed entry.
 
 ## Phase 3: Repository Knowledge Index Guard
 

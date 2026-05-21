@@ -75,6 +75,23 @@ docs/             Documentation and guides
 
 Path alias: `@/*` maps to `./src/*`
 
+## Repo Knowledge Map
+
+- Canonical machine-readable index: `docs/ai/repo-knowledge-index.json`
+  with schema at `docs/ai/repo-knowledge-index.schema.json`.
+- Durable intent: `docs/rc-factory-v1-prd.md` and
+  `docs/ai/rc-factory-technical-roadmap.md`.
+- Current SpecKit ledgers and status pointers: `docs/ai/specs/`,
+  `docs/ai/specs/SPEC-012A-workflow.md`, and
+  `docs/ai/specs/autopilot-state.json`.
+- QA and recovery evidence: `docs/qa/pilot-smoke-checklist.md` and
+  `docs/runbook/migration-rollback.md`.
+- Workflow contract source: `docs/ai/workflows/mission-control/workflow-contract.yaml`.
+- Local checks: `pnpm knowledge:index:check`, `pnpm knowledge:index:smoke`,
+  and `pnpm guardrails -- --suite repo-knowledge-index`.
+- GitNexus refresh guidance stays in the GitNexus section below. `.gitnexus/`
+  remains ignored local output and is not CI truth.
+
 ## Data Directory
 
 Set `MISSION_CONTROL_DATA_DIR` env var to change the data location (defaults to `.data/`).
