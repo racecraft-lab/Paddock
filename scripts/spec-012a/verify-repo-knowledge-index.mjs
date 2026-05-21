@@ -523,6 +523,10 @@ function parseRoadmapStatus(source) {
 }
 
 function parseWorkflowStatus(source) {
+  if (/^- \[ \] /m.test(source)) {
+    return 'In Progress'
+  }
+
   const overviewMatch = source.match(/## Workflow Overview([\s\S]*?)### Phase Gates/)
   const overview = overviewMatch?.[1] ?? source
   const rows = [...overview.matchAll(/^\| ([^|]+) \| `[^`]+` \| ([^|]+) \|/gm)]

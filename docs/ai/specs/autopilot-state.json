@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
   "updated_at": "2026-05-21T14:17:17Z",
-  "active_step": "Post: Verify Implementation",
+  "active_step": "Post: Integration Suite",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -71,9 +71,9 @@
     {"step": "Phase 7: Package and CI guard wiring (T024-T027)", "status": "completed"},
     {"step": "Phase 7: Verification docs and status evidence (T028-T032)", "status": "completed"},
     {"step": "Post: Verification and Status Sync", "status": "completed"},
-    {"step": "Post: Verify Implementation", "status": "in_progress"},
-    {"step": "Post: Code Review", "status": "pending"},
-    {"step": "Post: Integration Suite", "status": "pending"},
+    {"step": "Post: Verify Implementation", "status": "completed"},
+    {"step": "Post: Code Review", "status": "completed"},
+    {"step": "Post: Integration Suite", "status": "in_progress"},
     {"step": "Post: Cleanup", "status": "pending"},
     {"step": "Post: Reviewability Diff Gate", "status": "pending"},
     {"step": "Post: PR Body Generation", "status": "pending"},
