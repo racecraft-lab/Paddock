@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T15:05:00Z",
-  "active_step": "Post: PR Body Generation",
+  "updated_at": "2026-05-21T15:11:00Z",
+  "active_step": "Post: PR Creation",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -67,6 +67,11 @@
       "official_gate_result": "block with transition_exception=false",
       "false_negative_evidence": "The diff contains ratified transition exception markers; the local gate script uses grep -q under pipefail for exception detection.",
       "patched_replay_result": "status=exception pass=true reviewable_loc=3120 production_files=10 total_files=31 primary_surface_count=6"
+    },
+    "pr_body_generation": {
+      "status": "completed",
+      "path": "/private/tmp/speckit-pr-body-012a.md",
+      "notes": "The canonical .git/speckit-pr-body.md output path is not usable from this linked worktree because .git is a file; the generated repo-template body was written to /private/tmp and filled with SPEC-012A evidence."
     }
   },
   "plan": [
@@ -103,8 +108,8 @@
     {"step": "Post: Integration Suite", "status": "completed"},
     {"step": "Post: Cleanup", "status": "completed"},
     {"step": "Post: Reviewability Diff Gate", "status": "completed"},
-    {"step": "Post: PR Body Generation", "status": "in_progress"},
-    {"step": "Post: PR Creation", "status": "pending"},
+    {"step": "Post: PR Body Generation", "status": "completed"},
+    {"step": "Post: PR Creation", "status": "in_progress"},
     {"step": "Post: Review Remediation", "status": "pending"},
     {"step": "Post: Retrospective", "status": "pending"}
   ]
