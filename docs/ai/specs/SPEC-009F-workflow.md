@@ -45,7 +45,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate `specs/009f-production-triage-routing/spec.md` from roadmap and design concept; G1 must pass with 0 unresolved markers |
+| Specify | `$speckit-specify` | Complete | Created `specs/009f-production-triage-routing/spec.md` and requirements checklist; G1 passed with 0 unresolved markers |
 | Clarify | `$speckit-clarify` | Pending | Resolve lane payload fields, specialist matching, task Evidence response shape, rollout flag boundary, and idempotency details |
 | Plan | `$speckit-plan` | Pending | Plan stored-evidence-only routing, typed payload validation, Evidence route/section extension, focused fixtures, and no-migration/no-side-effect guardrails |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains: data-integrity, api-contracts, state-management, error-handling, security, ux/accessibility, and regression-safety |
@@ -218,10 +218,20 @@ Generate user stories and success criteria that prove all six non-remediation ou
 
 ### Specify Gate Checklist
 
-- [ ] `spec.md` exists under `specs/009f-production-triage-routing/`.
-- [ ] No `[NEEDS CLARIFICATION]` markers remain unless explicitly deferred to Phase 2.
-- [ ] All Design Concept decisions Q1-Q15 are represented.
-- [ ] Scope boundaries match the roadmap and this workflow.
+- [x] `spec.md` exists under `specs/009f-production-triage-routing/`.
+- [x] No `[NEEDS CLARIFICATION]` markers remain unless explicitly deferred to Phase 2.
+- [x] All Design Concept decisions Q1-Q15 are represented.
+- [x] Scope boundaries match the roadmap and this workflow.
+
+### Specify Results
+
+| Item | Result |
+|------|--------|
+| Files created | `specs/009f-production-triage-routing/spec.md`; `specs/009f-production-triage-routing/checklists/requirements.md` |
+| Files modified | `.specify/feature.json`; `docs/ai/specs/autopilot-state.json`; this workflow |
+| User stories | 4 stories covering SpecKit handoff, human/specialist routing, closure recommendations, and idempotent Evidence display |
+| Requirements | 18 functional requirements, including all six non-remediation outcomes and no-side-effect guardrails |
+| Gate | G1 passed via `validate-gate.sh G1 specs/009f-production-triage-routing` with 0 markers |
 
 ---
 

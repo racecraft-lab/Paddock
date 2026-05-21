@@ -1,10 +1,206 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T18:10:02Z",
-  "active_step": "Complete",
-  "status": "Complete",
-  "current_spec_dir": "specs/012a-repo-knowledge-index",
-  "branch": "012a-repo-knowledge-index",
+  "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
+  "updated_at": "2026-05-21T20:34:09Z",
+  "active_step": "Phase 2: Clarify - Lane Payload Contracts",
+  "status": "In Progress",
+  "current_spec_dir": "specs/009f-production-triage-routing",
+  "branch": "009f-production-triage-routing",
+  "plan": [
+    {
+      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 0: Prerequisites",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 1: Specify",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Lane Payload Contracts",
+      "status": "in_progress"
+    },
+    {
+      "step": "Phase 2: Clarify - Lane Payload Contracts Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Terminal State And Idempotency",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Terminal State And Idempotency Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Evidence API/UI Shape",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Evidence API/UI Shape Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Specialist Matching And Rollout Scope",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - Specialist Matching And Rollout Scope Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - UAT And Regression Boundaries",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 2: Clarify - UAT And Regression Boundaries Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 3: Plan",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - api-contracts",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - api-contracts Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - error-handling Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - security",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - security Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - ux-accessibility",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - ux-accessibility Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - regression-safety",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - regression-safety Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 5: Tasks",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 6: Analyze",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 6: Analyze - Consensus",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement - Pending task decomposition",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verification and Status Sync",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verify Implementation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Code Review",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Integration Suite",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Cleanup",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Reviewability Diff Gate",
+      "status": "pending"
+    },
+    {
+      "step": "Post: PR Body Generation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: PR Creation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Review Remediation",
+      "status": "pending"
+    },
+    {
+      "step": "Post: Retrospective",
+      "status": "pending"
+    }
+  ],
+  "archive_sweep": {
+    "archive_extension_installed": true,
+    "archive_extension_enabled": true,
+    "cleanup_mode": "recorded-no-cleanup",
+    "safeToApplyCleanup": false,
+    "excludedCurrentSpec": "specs/009f-production-triage-routing",
+    "eligible_previous_specs": [
+      "specs/009c3-remediation-ready-for-owner",
+      "specs/009c4-owner-merge-reconciliation",
+      "specs/009d-pilot-review-lifecycle",
+      "specs/009e-pilot-evidence-surfaces",
+      "specs/012a-repo-knowledge-index"
+    ],
+    "notes": "Archive extension v1.1.0 is installed and enabled, but this Codex runtime exposes no direct speckit.archive.run skill/command. Startup sweep recorded eligible previous specs and excluded the current target without deleting active spec folders."
+  },
+  "prerequisites": {
+    "all_pass": true,
+    "branch": "009f-production-triage-routing",
+    "is_worktree": true,
+    "on_feature_branch": false,
+    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt; agents use built-in fallbacks",
+    "package_manager": "pnpm",
+    "required_agents_installed": true,
+    "optional_fast_helper_installed": true,
+    "implementation_agent": "implement-executor"
+  },
   "project_commands": {
     "BUILD": "pnpm build",
     "TYPECHECK": "pnpm typecheck",
@@ -16,135 +212,29 @@
     "SINGLE_FILE_INTEGRATION": "N/A",
     "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
   },
-  "archive_sweep": {
-    "archive_extension_installed": true,
-    "archive_extension_enabled": true,
-    "cleanup_mode": "recorded-no-cleanup",
-    "safeToApplyCleanup": false,
-    "excludedCurrentSpec": "specs/012a-repo-knowledge-index",
-    "eligible_previous_specs": [
-      "specs/009c3-remediation-ready-for-owner",
-      "specs/009c4-owner-merge-reconciliation",
-      "specs/009d-pilot-review-lifecycle",
-      "specs/009e-pilot-evidence-surfaces"
-    ],
-    "notes": "Archive extension v1.1.0 is installed and enabled. Codex has no direct archive command skill for speckit.archive.run; startup sweep recorded eligible prior specs and excluded the current target without deleting active spec folders."
-  },
-  "prerequisites": {
-    "all_pass": true,
-    "branch": "012a-repo-knowledge-index",
-    "is_worktree": true,
-    "on_feature_branch": false,
-    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt; agents use built-in fallbacks",
-    "package_manager": "pnpm",
-    "presets": [
+  "presets": {
+    "has_presets": true,
+    "names": [
       "speckit-pro-reviewability"
     ],
-    "required_agents_installed": true,
-    "optional_fast_helper_installed": true
-  },
-  "post_implementation": {
-    "integration_suite": {
-      "status": "completed",
-      "passed": [
-        "direnv exec . pnpm knowledge:index:check",
-        "direnv exec . pnpm knowledge:index:smoke",
-        "direnv exec . pnpm guardrails",
-        "direnv exec . pnpm typecheck",
-        "direnv exec . pnpm lint",
-        "direnv exec . pnpm build",
-        "direnv exec . pnpm test",
-        "direnv exec . pnpm test:e2e",
-        "direnv exec . pnpm test src/lib/__tests__/task-chain-advancement.routing.test.ts",
-        "git diff --check"
-      ],
-      "expected_fixture_behavior": [
-        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/missing-required-metadata --json",
-        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/missing-required-doc --json",
-        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/stale-status-pointer --json",
-        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/broken-required-link --json",
-        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/invalid-related-spec --json",
-        "direnv exec . pnpm knowledge:index:check -- --fixture scripts/spec-012a/fixtures/warning-only-links --json"
-      ],
-      "uat_note": "Full UAT on 2026-05-21 caught and fixed the documented pnpm fixture-command separator path; full direnv exec . pnpm test passed with 282 files passed, 33 skipped, 2934 tests passed, 3 skipped, and 84 todo."
-    },
-    "cleanup": {
-      "status": "completed",
-      "notes": "No optional speckit-cleanup Codex skill is installed. git status --short shows only intentional post-review edits before this state update; ignored verification artifacts such as node_modules, .next, .tsbuild, .data, .tmp, and test-results remain untracked and were not deleted."
-    },
-    "reviewability_diff_gate": {
-      "status": "completed-with-ratified-exception",
-      "official_gate_result": "block with transition_exception=false",
-      "false_negative_evidence": "The diff contains ratified transition exception markers; the local gate script uses grep -q under pipefail for exception detection.",
-      "patched_replay_result": "status=exception pass=true reviewable_loc=3120 production_files=10 total_files=31 primary_surface_count=6"
-    },
-    "pr_body_generation": {
-      "status": "completed",
-      "path": "/private/tmp/speckit-pr-body-012a.md",
-      "notes": "The canonical .git/speckit-pr-body.md output path is not usable from this linked worktree because .git is a file; the generated repo-template body was written to /private/tmp and filled with SPEC-012A evidence."
-    },
-    "pr_creation": {
-      "status": "completed",
-      "number": 56,
-      "url": "https://github.com/racecraft-lab/mission-control/pull/56",
-      "head_ref_oid_at_pr_creation": "dee274d869c245237b08faf3b37bc9942d16f5d0",
-      "initial_remote_state": "mergeStateStatus=BLOCKED, reviewDecision=REVIEW_REQUIRED, checks pending"
-    },
-    "review_remediation": {
-      "status": "completed",
-      "remote_checks": "PR #56 merged to main as a5e3fbece82fddec548b70763a703893ba409813 on 2026-05-21. CodeQL, quality-gate, docker-ui-e2e / visual-review-report, visual-storybook / visual-review-report, visual-review-approval/playwright, and visual-review-approval/storybook passed.",
-      "remaining_human_gate": "none"
-    },
-    "post_merge_closeout": {
-      "status": "completed",
-      "pr_number": 56,
-      "url": "https://github.com/racecraft-lab/mission-control/pull/56",
-      "merged_at": "2026-05-21T17:54:25Z",
-      "merge_commit": "a5e3fbece82fddec548b70763a703893ba409813",
-      "notes": "Roadmap and workflow hygiene recorded SPEC-012A as complete after the merged PR and final visual approval/check state were verified."
-    },
-    "retrospective": {
-      "status": "completed",
-      "notes": "No optional speckit-retrospective-analyze Codex skill is installed; lessons learned were recorded in the workflow file."
+    "templates": {
+      "spec": ".specify/presets/speckit-pro-reviewability/templates/spec-template.md",
+      "plan": ".specify/presets/speckit-pro-reviewability/templates/plan-template.md",
+      "tasks": ".specify/presets/speckit-pro-reviewability/templates/tasks-template.md"
     }
   },
-  "plan": [
-    {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
-    {"step": "Phase 0: Prerequisites", "status": "completed"},
-    {"step": "Phase 1: Specify", "status": "completed"},
-    {"step": "Phase 2: Clarify - Session 1: Index Schema and Required Entries", "status": "completed"},
-    {"step": "Phase 2: Clarify - Session 1: Index Schema and Required Entries Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - Session 2: Guard Failure Semantics", "status": "completed"},
-    {"step": "Phase 2: Clarify - Session 2: Guard Failure Semantics Consensus", "status": "completed"},
-    {"step": "Phase 2: Clarify - Session 3: Fresh-Agent Proxy and CI Integration", "status": "completed"},
-    {"step": "Phase 2: Clarify - Session 3: Fresh-Agent Proxy and CI Integration Consensus", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "completed"},
-    {"step": "Phase 4: Checklist - data-integrity", "status": "completed"},
-    {"step": "Phase 4: Checklist - data-integrity Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - integration", "status": "completed"},
-    {"step": "Phase 4: Checklist - integration Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - regression-safety", "status": "completed"},
-    {"step": "Phase 4: Checklist - regression-safety Consensus", "status": "completed"},
-    {"step": "Phase 4: Checklist - error-handling", "status": "completed"},
-    {"step": "Phase 4: Checklist - error-handling Consensus", "status": "completed"},
-    {"step": "Phase 5: Tasks", "status": "completed"},
-    {"step": "Phase 6: Analyze", "status": "completed"},
-    {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
-    {"step": "Phase 7: RED fixtures and expected failures (T001-T007)", "status": "completed"},
-    {"step": "Phase 7: Canonical index schema and root map (T008-T011)", "status": "completed"},
-    {"step": "Phase 7: Repository knowledge index guard (T012-T018)", "status": "completed"},
-    {"step": "Phase 7: Fresh-agent proxy smoke (T019-T023)", "status": "completed"},
-    {"step": "Phase 7: Package and CI guard wiring (T024-T027)", "status": "completed"},
-    {"step": "Phase 7: Verification docs and status evidence (T028-T032)", "status": "completed"},
-    {"step": "Post: Verification and Status Sync", "status": "completed"},
-    {"step": "Post: Verify Implementation", "status": "completed"},
-    {"step": "Post: Code Review", "status": "completed"},
-    {"step": "Post: Integration Suite", "status": "completed"},
-    {"step": "Post: Cleanup", "status": "completed"},
-    {"step": "Post: Reviewability Diff Gate", "status": "completed"},
-    {"step": "Post: PR Body Generation", "status": "completed"},
-    {"step": "Post: PR Creation", "status": "completed"},
-    {"step": "Post: Review Remediation", "status": "completed"},
-    {"step": "Post: Retrospective", "status": "completed"}
-  ]
+  "phase_results": {
+    "specify": {
+      "status": "completed",
+      "files": [
+        "specs/009f-production-triage-routing/spec.md",
+        "specs/009f-production-triage-routing/checklists/requirements.md",
+        ".specify/feature.json"
+      ],
+      "gate": "G1 pass, 0 markers",
+      "user_stories": 4,
+      "functional_requirements": 18,
+      "success_criteria": 6
+    }
+  }
 }
