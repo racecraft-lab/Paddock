@@ -37,7 +37,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Clarify | `$speckit-clarify` | Complete | Resolved index/schema paths, required entries, metadata semantics, guard failure classes, stale status pointer detection, fresh-agent proxy behavior, GitNexus discoverability, and `pnpm guardrails`/Quality Gate integration; G2 passed |
 | Plan | `$speckit-plan` | Complete | Planned JSON index/schema, Node built-in guard scripts, fresh-agent proxy, concise `AGENTS.md` map, package scripts, and `pnpm guardrails`/Quality Gate wiring; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, integration, regression-safety, and error-handling checklists; resolved related spec ID pattern and stable finding-code gaps; G4 passed |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first process/tooling tasks |
+| Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across fixtures, index/schema/map, guard, fresh-agent proxy, package/CI wiring, and verification; G5 passed and task reviewability gate passed with scoped transition exception |
 | Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept drift and reviewability boundaries |
 | Implement | `$speckit-implement` | Pending | Execute generated tasks only after G6 passes |
 
@@ -474,10 +474,12 @@ Focus on SPEC-012A requirements:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 32 |
+| Phases | 6 implementation phases |
+| Parallel Opportunities | 6 explicit `[P]` fixture tasks plus independent docs/map work |
+| User Stories Covered | US1, US2, US3, US4 |
+
+Reviewability tasks gate passed with a ratified transition exception. The exception is limited to the SPEC-012A docs/process deliverable: canonical index/schema files, concise root map, focused Node guard scripts, package scripts, guardrails wiring, fixtures, and verification evidence. It does not permit runtime behavior, migrations, UI, scheduler/runner behavior, GitHub sync automation, sandbox lifecycle, harness adapters, generated `.gitnexus/` artifacts, broad docs rewrites, or nested `AGENTS.md` rollout.
 
 ---
 
