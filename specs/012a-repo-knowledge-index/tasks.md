@@ -51,11 +51,11 @@ rewrites, or nested `AGENTS.md` rollout.
 
 **Purpose**: Prove discovery starts from checked-in root instructions and resolves through the index.
 
-- [ ] T019 Create `scripts/spec-012a/fresh-agent-proxy.mjs` that starts from root `AGENTS.md`, locates the canonical index pointer, and loads the index.
-- [ ] T020 Resolve PRD, roadmap, workflow/status pointers, QA checklist, rollback runbook, root instructions, and workflow contract through index entries only.
-- [ ] T021 Verify GitNexus guidance is discoverable by finding the refresh command, linked-worktree `.envrc.local` setup guidance, and ignored `.gitnexus/` boundary in checked-in docs.
-- [ ] T022 Fail the smoke check when a required discovery target is missing or when discovery bypasses the canonical index.
-- [ ] T023 Verify the smoke script passes on a clean checkout where `.gitnexus/` is absent.
+- [x] T019 Create `scripts/spec-012a/fresh-agent-proxy.mjs` that starts from root `AGENTS.md`, locates the canonical index pointer, and loads the index.
+- [x] T020 Resolve PRD, roadmap, workflow/status pointers, QA checklist, rollback runbook, root instructions, and workflow contract through index entries only.
+- [x] T021 Verify GitNexus guidance is discoverable by finding the refresh command, linked-worktree `.envrc.local` setup guidance, and ignored `.gitnexus/` boundary in checked-in docs.
+- [x] T022 Fail the smoke check when a required discovery target is missing or when discovery bypasses the canonical index.
+- [x] T023 Verify the smoke script passes on a clean checkout where `.gitnexus/` is absent.
 
 ## Phase 5: Package and CI Guard Wiring
 
