@@ -38,8 +38,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Plan | `$speckit-plan` | Complete | Planned JSON index/schema, Node built-in guard scripts, fresh-agent proxy, concise `AGENTS.md` map, package scripts, and `pnpm guardrails`/Quality Gate wiring; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, integration, regression-safety, and error-handling checklists; resolved related spec ID pattern and stable finding-code gaps; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated 32 TDD-first tasks across fixtures, index/schema/map, guard, fresh-agent proxy, package/CI wiring, and verification; G5 passed and task reviewability gate passed with scoped transition exception |
-| Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept drift and reviewability boundaries |
-| Implement | `$speckit-implement` | Pending | Execute generated tasks only after G6 passes |
+| Analyze | `$speckit-analyze` | Complete | Verified design concept/spec/plan/tasks/checklists agree on strict docs/process scope; marker count is 0, `git diff --check` is clean, and G6 passed with 0 CRITICAL/HIGH findings |
+| Implement | `$speckit-implement` | Pending | Execute generated tasks after G6 pass |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -520,7 +520,7 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| None | N/A | No CRITICAL, HIGH, MEDIUM, or LOW findings from artifact analysis | No remediation required; G6 passed |
 
 ---
 

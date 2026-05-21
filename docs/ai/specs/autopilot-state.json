@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T14:54:00Z",
-  "active_step": "Phase 6: Analyze",
+  "updated_at": "2026-05-21T14:17:17Z",
+  "active_step": "Phase 7: RED fixtures and expected failures (T001-T007)",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -62,9 +62,9 @@
     {"step": "Phase 4: Checklist - error-handling", "status": "completed"},
     {"step": "Phase 4: Checklist - error-handling Consensus", "status": "completed"},
     {"step": "Phase 5: Tasks", "status": "completed"},
-    {"step": "Phase 6: Analyze", "status": "in_progress"},
-    {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
-    {"step": "Phase 7: RED fixtures and expected failures (T001-T007)", "status": "pending"},
+    {"step": "Phase 6: Analyze", "status": "completed"},
+    {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
+    {"step": "Phase 7: RED fixtures and expected failures (T001-T007)", "status": "in_progress"},
     {"step": "Phase 7: Canonical index schema and root map (T008-T011)", "status": "pending"},
     {"step": "Phase 7: Repository knowledge index guard (T012-T018)", "status": "pending"},
     {"step": "Phase 7: Fresh-agent proxy smoke (T019-T023)", "status": "pending"},
