@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T14:17:17Z",
-  "active_step": "Post: Integration Suite",
+  "updated_at": "2026-05-21T14:58:25Z",
+  "active_step": "Post: Reviewability Diff Gate",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -42,6 +42,27 @@
     "required_agents_installed": true,
     "optional_fast_helper_installed": true
   },
+  "post_implementation": {
+    "integration_suite": {
+      "status": "completed-with-known-baseline-gap",
+      "passed": [
+        "direnv exec . pnpm knowledge:index:check",
+        "direnv exec . pnpm knowledge:index:smoke",
+        "direnv exec . pnpm guardrails",
+        "direnv exec . pnpm typecheck",
+        "direnv exec . pnpm lint",
+        "direnv exec . pnpm build",
+        "direnv exec . pnpm test:e2e",
+        "direnv exec . pnpm test src/lib/__tests__/task-chain-advancement.routing.test.ts",
+        "git diff --check"
+      ],
+      "known_gap": "Full direnv exec . pnpm test was run twice and failed in full-suite order in src/lib/__tests__/task-chain-advancement.routing.test.ts with advanced=false / reason=stalled in pilot-evidence routing cases; the focused file passes 14/14 and SPEC-012A changes no runtime source or runtime test files."
+    },
+    "cleanup": {
+      "status": "completed",
+      "notes": "No optional speckit-cleanup Codex skill is installed. git status --short shows only intentional post-review edits before this state update; ignored verification artifacts such as node_modules, .next, .tsbuild, .data, .tmp, and test-results remain untracked and were not deleted."
+    }
+  },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -73,9 +94,9 @@
     {"step": "Post: Verification and Status Sync", "status": "completed"},
     {"step": "Post: Verify Implementation", "status": "completed"},
     {"step": "Post: Code Review", "status": "completed"},
-    {"step": "Post: Integration Suite", "status": "in_progress"},
-    {"step": "Post: Cleanup", "status": "pending"},
-    {"step": "Post: Reviewability Diff Gate", "status": "pending"},
+    {"step": "Post: Integration Suite", "status": "completed"},
+    {"step": "Post: Cleanup", "status": "completed"},
+    {"step": "Post: Reviewability Diff Gate", "status": "in_progress"},
     {"step": "Post: PR Body Generation", "status": "pending"},
     {"step": "Post: PR Creation", "status": "pending"},
     {"step": "Post: Review Remediation", "status": "pending"},

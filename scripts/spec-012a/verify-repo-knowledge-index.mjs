@@ -600,7 +600,7 @@ function main() {
   if (baseIndex) {
     const index = fixture ? applyFixtureMutations(baseIndex, fixture) : baseIndex
     validateIndex(index, findings)
-    if (fixture?.status_pointer_override) validateStatusPointer(findings, fixture)
+    validateStatusPointer(findings, fixture)
   }
 
   const fixtureResult = verifyFixtureExpectations(fixture, findings)

@@ -571,13 +571,20 @@ Execute `specs/012a-repo-knowledge-index/tasks.md` in order.
 | `pnpm knowledge:index:check` | Pass: `[repo-knowledge-index] passed with 0 warning(s)` |
 | `pnpm knowledge:index:smoke` | Pass: resolved 9 required targets from `AGENTS.md` through `docs/ai/repo-knowledge-index.json` |
 | `pnpm guardrails -- --suite repo-knowledge-index` | Pass: `Repo knowledge index guard passed`; 1 suite passed |
+| `direnv exec . pnpm guardrails` | Pass: all 3 guardrail suites passed, including `repo-knowledge-index` |
 | `pnpm typecheck` | Pass |
 | `pnpm lint` | Pass |
+| `direnv exec . pnpm build` | Pass outside the Codex sandbox under Node v22.22.2 |
+| `direnv exec . pnpm test:e2e` | Pass: 647 Playwright tests passed |
+| `direnv exec . pnpm test src/lib/__tests__/task-chain-advancement.routing.test.ts` | Pass: 14/14 focused Vitest tests passed |
+| `direnv exec . pnpm test` | Known baseline failure in full-suite order only: `src/lib/__tests__/task-chain-advancement.routing.test.ts` reported `advanced: false` / `reason: stalled` in pilot-evidence routing cases; the same file passes in isolation and SPEC-012A changes no runtime source or runtime test files |
 | `git diff --check` | Pass |
 
 Fixture verification emitted expected codes: `required_entry_missing`,
 `metadata_missing`, `required_link_broken`, `status_pointer_stale`,
 `related_spec_invalid`, `external_link_warning`, and `wikilink_warning`.
+
+Post-implementation code review also corrected the live status-pointer guard path so `pnpm knowledge:index:check` validates the actual SPEC-012A roadmap, workflow, and `autopilot-state.json` pointers in normal repo mode, not only fixture override mode.
 
 ---
 
@@ -589,8 +596,11 @@ Fixture verification emitted expected codes: `required_entry_missing`,
 - [x] Focused docs-index guard tests/scripts pass.
 - [x] Fresh-agent proxy smoke passes.
 - [x] Any package/CI guard added by this spec passes locally.
+- [x] `pnpm build` passes outside the Codex sandbox.
+- [x] `pnpm test:e2e` passes outside the Codex sandbox.
 - [x] `git diff --check` passes.
 - [x] Roadmap/workflow/status docs are updated in the spec branch.
+- [ ] Full `pnpm test` suite is green without the known full-suite-only `task-chain-advancement.routing.test.ts` baseline failure described above.
 - [ ] Branch is pushed and PR is ready for review.
 
 ---
@@ -626,12 +636,15 @@ specs/
 
 ### What Worked Well
 
-- Pending.
+- The concise `AGENTS.md` map plus machine-readable JSON index kept repo discovery centralized without turning root instructions into a long duplicate of every durable doc.
+- Fixture-backed guard work caught the live status-pointer invocation gap during closeout, which was fixed before PR creation.
 
 ### Challenges Encountered
 
-- Pending.
+- The worktree initially loaded Node v26.0.0, which cannot build the current `better-sqlite3` dependency. Running through `direnv exec .` restored the repo-pinned Node v22.22.2 toolchain.
+- Full Vitest execution still has an order-sensitive pilot-evidence routing failure in `src/lib/__tests__/task-chain-advancement.routing.test.ts`; the file passes when run directly, and the SPEC-012A diff does not touch that runtime surface.
 
 ### Patterns to Reuse
 
-- Pending.
+- Keep future repo-discovery docs in `docs/ai/repo-knowledge-index.json` first, then expose only a short pointer map in `AGENTS.md`.
+- Use `direnv exec .` for Mission Control validation in linked worktrees so native dependencies and GitNexus-related environment settings resolve through the repo-local toolchain.
