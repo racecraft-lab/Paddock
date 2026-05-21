@@ -14,8 +14,11 @@ import {
   seedEligiblePilotEvidence,
   seedLocalOnlyTask,
   seedPartialProofTask,
+  seedSpec009fDuplicateClosureRouting,
+  seedSpec009fInvalidClosureRouting,
   seedSpec009fNeedsHumanTriageRouting,
   seedSpec009fNonRemediationOutcome,
+  seedSpec009fObsoleteClosureRouting,
   seedSpec009fRecommendedSpecialistTriageRouting,
   seedSpec009fUnassignedSpecialistTriageRouting,
   snapshotEvidenceCounts,
@@ -480,6 +483,80 @@ describe('SPEC-009F task evidence triage routing', () => {
     )
     expect(rendered).not.toContain('<b>')
     expect(rendered).not.toContain('javascript:')
+    expect(rendered).not.toContain('storage_uri')
+  })
+
+  it.each([
+    {
+      label: 'duplicate',
+      seedClosure: seedSpec009fDuplicateClosureRouting,
+      disposition: 'DUPLICATE',
+      expectedDetail: {
+        closure_outcome: 'DUPLICATE',
+        suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+        comparison_rationale: 'The reported behavior matches the retained duplicate target.',
+      },
+    },
+    {
+      label: 'obsolete',
+      seedClosure: seedSpec009fObsoleteClosureRouting,
+      disposition: 'OBSOLETE',
+      expectedDetail: {
+        closure_outcome: 'OBSOLETE',
+        superseding_condition: 'The referenced workflow contract has been replaced.',
+        non_actionability_rationale: 'Current production behavior no longer reaches the reported state.',
+      },
+    },
+    {
+      label: 'invalid',
+      seedClosure: seedSpec009fInvalidClosureRouting,
+      disposition: 'INVALID',
+      expectedDetail: {
+        closure_outcome: 'INVALID',
+        invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+        validation_evidence: ['Fixture validation did not find the claimed task state.', 'Stored GitHub identity is issue-only.'],
+        missing_reproducibility_context: ['Exact workspace scope', 'Observed task id'],
+      },
+    },
+  ])('derives $label closure routing evidence with inert outcome-specific detail', ({ seedClosure, disposition, expectedDetail }) => {
+    const database = db()
+    const seed = seedClosure(database)
+    const before = snapshotEvidenceCounts(database)
+
+    const evidence = scopedBuild(database, seed.taskId)
+    const after = snapshotEvidenceCounts(database)
+    const rendered = JSON.stringify(evidence.triage_routing)
+
+    expect(after).toEqual(before)
+    expect(evidence.triage_routing).toMatchObject({
+      state: 'available',
+      routing_status: 'recorded',
+      disposition,
+      lane: 'closure_recommendation',
+      artifact: {
+        state: 'available',
+        artifact_id: String(seed.artifactId),
+        artifact_type: 'triage_closure_recommendation',
+        schema_version: 'spec-009f.triage_routing.v1',
+      },
+      activity_reference: `activity:${String(seed.activityId)}`,
+      recommended_next_action: `Review the ${disposition} recommendation in Mission Control.`,
+      lane_detail: expectedDetail,
+      missing: [],
+      warnings: [],
+    })
+    expect(evidence.triage_routing.proposed_labels.length).toBeGreaterThan(0)
+    for (const label of evidence.triage_routing.proposed_labels) {
+      expect(label.applied).toBe(false)
+    }
+    expect(evidence.triage_routing.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'github_close', deferred: true }),
+        expect.objectContaining({ side_effect: 'github_comment', deferred: true }),
+      ]),
+    )
+    expect(rendered).not.toContain('javascript:')
+    expect(rendered).not.toContain('<b>')
     expect(rendered).not.toContain('storage_uri')
   })
 })

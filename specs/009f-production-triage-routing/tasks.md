@@ -110,16 +110,16 @@ pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/tr
 
 ### Tests for User Story 3
 
-- [ ] T030 [P] [US3] Add RED closure payload validator tests for shared `triage_closure_recommendation`, `DUPLICATE` suspected duplicate target and comparison rationale, `OBSOLETE` superseding condition and non-actionability rationale, and `INVALID` invalidity reason, validation evidence, and missing reproducibility context in `src/lib/__tests__/triage-routing-payloads.test.ts`
-- [ ] T031 [P] [US3] Add RED closure routing tests for `DUPLICATE`, `OBSOLETE`, and `INVALID` artifacts, `triage_routing_recorded`, terminal source task, metadata-only proposed labels, no GitHub close/comment/label/assignment, and no successor in `src/lib/__tests__/triage-routing.test.ts`
-- [ ] T032 [P] [US3] Add RED task Evidence tests for closure `triage_routing` lane detail variants, outcome-specific fields, recommended next action, deferred side effects, and safe/inert evidence references in `src/lib/__tests__/task-evidence.test.ts`
+- [x] T030 [P] [US3] Add RED closure payload validator tests for shared `triage_closure_recommendation`, `DUPLICATE` suspected duplicate target and comparison rationale, `OBSOLETE` superseding condition and non-actionability rationale, and `INVALID` invalidity reason, validation evidence, and missing reproducibility context in `src/lib/__tests__/triage-routing-payloads.test.ts`
+- [x] T031 [P] [US3] Add RED closure routing tests for `DUPLICATE`, `OBSOLETE`, and `INVALID` artifacts, `triage_routing_recorded`, terminal source task, metadata-only proposed labels, no GitHub close/comment/label/assignment, and no successor in `src/lib/__tests__/triage-routing.test.ts`
+- [x] T032 [P] [US3] Add RED task Evidence tests for closure `triage_routing` lane detail variants, outcome-specific fields, recommended next action, deferred side effects, and safe/inert evidence references in `src/lib/__tests__/task-evidence.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T033 [US3] Implement shared closure recommendation payload builder and validator for `DUPLICATE`, `OBSOLETE`, and `INVALID` in `src/lib/triage-routing-payloads.ts`
-- [ ] T034 [US3] Implement closure recommendation routing artifact/activity recording with no external issue mutation and no successor writes in `src/lib/triage-routing.ts`
-- [ ] T035 [US3] Extend fixture helpers with deterministic `DUPLICATE`, `OBSOLETE`, and `INVALID` rows, route artifacts, activities, and cleanup ids in `src/lib/__tests__/task-evidence.fixtures.ts`
-- [ ] T036 [US3] Extend server-side task Evidence derivation for closure recommendation `triage_routing` output in `src/lib/task-evidence.ts`
+- [x] T033 [US3] Implement shared closure recommendation payload builder and validator for `DUPLICATE`, `OBSOLETE`, and `INVALID` in `src/lib/triage-routing-payloads.ts`
+- [x] T034 [US3] Implement closure recommendation routing artifact/activity recording with no external issue mutation and no successor writes in `src/lib/triage-routing.ts`
+- [x] T035 [US3] Extend fixture helpers with deterministic `DUPLICATE`, `OBSOLETE`, and `INVALID` rows, route artifacts, activities, and cleanup ids in `src/lib/__tests__/task-evidence.fixtures.ts`
+- [x] T036 [US3] Extend server-side task Evidence derivation for closure recommendation `triage_routing` output in `src/lib/task-evidence.ts`
 
 **Checkpoint**: User Story 3 can be verified independently with:
 

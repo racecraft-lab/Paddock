@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildClosureRecommendationTriageRoutingPayload,
   buildNeedsHumanTriageRoutingPayload,
   buildNeedsSpecialistTriageRoutingPayload,
   buildNeedsSpecTriageRoutingPayload,
@@ -13,6 +14,7 @@ import {
   TRIAGE_ROUTING_DISPOSITION_TO_LANE,
   TRIAGE_ROUTING_LANES,
   TRIAGE_ROUTING_SCHEMA_VERSION,
+  validateClosureRecommendationTriageRoutingPayload,
   validateNeedsHumanTriageRoutingPayload,
   validateNeedsSpecialistTriageRoutingPayload,
   validateNeedsSpecTriageRoutingPayload,
@@ -824,5 +826,140 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
     );
     expect(JSON.stringify(result)).not.toContain('raw-secret');
     expect(JSON.stringify(result)).not.toContain('probable');
+  });
+});
+
+describe('SPEC-009F closure recommendation payloads', () => {
+  it.each([
+    {
+      disposition: 'DUPLICATE',
+      detail: {
+        suspected_duplicate_target: ' https://github.com/racecraft-lab/mission-control/issues/42 ',
+        comparison_rationale: ' The reported behavior matches the retained duplicate target. ',
+      },
+      expected: {
+        closure_outcome: 'DUPLICATE',
+        suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+        comparison_rationale: 'The reported behavior matches the retained duplicate target.',
+      },
+    },
+    {
+      disposition: 'OBSOLETE',
+      detail: {
+        superseding_condition: ' The referenced workflow contract has been replaced. ',
+        non_actionability_rationale: ' Current production behavior no longer reaches the reported state. ',
+      },
+      expected: {
+        closure_outcome: 'OBSOLETE',
+        superseding_condition: 'The referenced workflow contract has been replaced.',
+        non_actionability_rationale: 'Current production behavior no longer reaches the reported state.',
+      },
+    },
+    {
+      disposition: 'INVALID',
+      detail: {
+        invalidity_reason: ' The report lacks a reproducible Mission Control state. ',
+        validation_evidence: [' Fixture validation did not find the claimed task state. '],
+        missing_reproducibility_context: [' Exact workspace scope ', ' Observed task id '],
+      },
+      expected: {
+        closure_outcome: 'INVALID',
+        invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+        validation_evidence: ['Fixture validation did not find the claimed task state.'],
+        missing_reproducibility_context: ['Exact workspace scope', 'Observed task id'],
+      },
+    },
+  ] as const)('builds a normalized %s closure recommendation payload', ({ disposition, detail, expected }) => {
+    const result = buildClosureRecommendationTriageRoutingPayload({
+      source_task_id: 46,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 127,
+      },
+      disposition,
+      triage_rationale: ' Closure outcome is recommendation-only. ',
+      recommended_next_action: ' Owner reviews the closure recommendation. ',
+      proposed_labels: [' MC:Triage-Routing ', ` MC:${disposition.toLowerCase()} `],
+      evidence_links: [],
+      ...detail,
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        schema_version: 'spec-009f.triage_routing.v1',
+        artifact_type: 'triage_closure_recommendation',
+        source_task_id: 46,
+        workspace_id: 7,
+        disposition,
+        lane: 'closure_recommendation',
+        routing_status: 'recorded',
+        triage_rationale: 'Closure outcome is recommendation-only.',
+        recommended_next_action: 'Owner reviews the closure recommendation.',
+        proposed_labels: [
+          {
+            name: 'mc:triage-routing',
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+          {
+            name: `mc:${disposition.toLowerCase()}`,
+            source: 'triage_routing',
+            action: 'recommend_add',
+            applied: false,
+          },
+        ],
+        evidence_links: [],
+        lane_detail: expected,
+        produced_at: '2026-05-21T12:00:00.000Z',
+        idempotency_key: `spec-009f.triage_routing.v1:7:46:${disposition}`,
+      },
+    });
+    if (!result.ok) throw new Error('expected closure payload to build')
+    expect(result.value.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'github_close', deferred: true }),
+        expect.objectContaining({ side_effect: 'github_comment', deferred: true }),
+      ]),
+    );
+  });
+
+  it('rejects missing or unsafe closure details without leaking raw values', () => {
+    const result = validateClosureRecommendationTriageRoutingPayload({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_closure_recommendation',
+      source_task_id: 46,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 127,
+      },
+      disposition: 'INVALID',
+      lane: 'closure_recommendation',
+      routing_status: 'recorded',
+      triage_rationale: 'raw-secret invalid',
+      recommended_next_action: 'Owner reviews the closure recommendation.',
+      proposed_labels: ['mc:invalid'],
+      evidence_links: [],
+      deferred_side_effects: [],
+      lane_detail: {
+        closure_outcome: 'INVALID',
+        invalidity_reason: 'raw-secret\u0000bad',
+        validation_evidence: [`raw-secret:${'x'.repeat(301)}`],
+      },
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: 'lane_detail.invalidity_reason', code: 'control_character' }),
+        expect.objectContaining({ path: 'lane_detail.validation_evidence.0', code: 'text_too_long' }),
+      ]),
+    );
+    expect(JSON.stringify(result)).not.toContain('raw-secret');
   });
 });

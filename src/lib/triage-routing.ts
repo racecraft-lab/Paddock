@@ -5,6 +5,7 @@ import {
   SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS,
   TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE,
   TRIAGE_ROUTING_DISPOSITION_TO_LANE,
+  buildClosureRecommendationTriageRoutingPayload,
   buildNeedsHumanTriageRoutingPayload,
   buildNeedsSpecialistTriageRoutingPayload,
   buildNeedsSpecTriageRoutingPayload,
@@ -81,7 +82,7 @@ export type TriageRoutingResult =
   | {
       readonly ok: true
       readonly status: 'recorded'
-      readonly disposition: typeof NEEDS_SPEC | typeof NEEDS_HUMAN | typeof NEEDS_SPECIALIST
+      readonly disposition: SupportedTriageRoutingDisposition
       readonly source: TriageRoutingSource
       readonly route: TriageRoutingRoute
       readonly effects: TriageRoutingEffects & { readonly publishArtifact: true }
@@ -91,7 +92,7 @@ export type TriageRoutingResult =
   | {
       readonly ok: true
       readonly status: 'recordable'
-      readonly disposition: Exclude<SupportedTriageRoutingDisposition, typeof NEEDS_SPEC | typeof NEEDS_HUMAN | typeof NEEDS_SPECIALIST>
+      readonly disposition: never
       readonly source: TriageRoutingSource
       readonly route: TriageRoutingRoute
       readonly effects: TriageRoutingEffects
@@ -140,7 +141,7 @@ interface RecordTriageRoutingResult {
   readonly activity: RecordedTriageRoutingActivity
 }
 
-type RecordableNowDisposition = typeof NEEDS_SPEC | typeof NEEDS_HUMAN | typeof NEEDS_SPECIALIST
+type RecordableNowDisposition = SupportedTriageRoutingDisposition
 
 type SpecialistResolution =
   | {
@@ -329,6 +330,7 @@ function buildRoutingPayload(
 ): TriageRoutingPayloadEnvelope {
   if (input.disposition === NEEDS_HUMAN) return buildNeedsHumanPayload(source, input)
   if (input.disposition === NEEDS_SPECIALIST) return buildNeedsSpecialistPayload(db, source, input)
+  if (isClosureDisposition(input.disposition)) return buildClosurePayload(source, input)
   return buildNeedsSpecPayload(source, input)
 }
 
@@ -405,6 +407,47 @@ function buildNeedsSpecialistPayload(
     throw new Error(`invalid_needs_specialist_triage_routing_payload:${result.issues[0]?.path ?? 'unknown'}`)
   }
   return result.value
+}
+
+function buildClosurePayload(source: TriageRoutingSource, input: RouteTriageDispositionInput): TriageRoutingPayloadEnvelope {
+  const detail = closurePayloadDetail(input.disposition)
+  const result = buildClosureRecommendationTriageRoutingPayload({
+    source_task_id: source.taskId,
+    workspace_id: source.workspaceId,
+    source_issue: sourceIssue(source),
+    disposition: input.disposition,
+    triage_rationale: input.rationale ?? `Issue triage recommends ${input.disposition} closure handling.`,
+    recommended_next_action: `Owner reviews the ${input.disposition} closure recommendation in Mission Control.`,
+    proposed_labels: ['mc:triage-routing', `mc:${input.disposition.toLowerCase()}`],
+    evidence_links: sourceEvidenceLinks(source),
+    ...detail,
+    produced_at: new Date().toISOString(),
+  })
+
+  if (!result.ok) {
+    throw new Error(`invalid_closure_triage_routing_payload:${result.issues[0]?.path ?? 'unknown'}`)
+  }
+  return result.value
+}
+
+function closurePayloadDetail(disposition: string): Record<string, unknown> {
+  if (disposition === 'DUPLICATE') {
+    return {
+      suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+      comparison_rationale: 'The reported behavior matches the retained duplicate target.',
+    }
+  }
+  if (disposition === 'OBSOLETE') {
+    return {
+      superseding_condition: 'The referenced workflow contract has been replaced.',
+      non_actionability_rationale: 'Current production behavior no longer reaches the reported state.',
+    }
+  }
+  return {
+    invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+    validation_evidence: ['Fixture validation did not find the claimed task state.'],
+    missing_reproducibility_context: ['Exact workspace scope', 'Observed task id'],
+  }
 }
 
 function sourceIssue(source: TriageRoutingSource): {
@@ -571,7 +614,11 @@ function isSupportedDisposition(input: string): input is SupportedTriageRoutingD
 }
 
 function isRecordableNowDisposition(disposition: SupportedTriageRoutingDisposition): disposition is RecordableNowDisposition {
-  return disposition === NEEDS_SPEC || disposition === NEEDS_HUMAN || disposition === NEEDS_SPECIALIST
+  return isSupportedDisposition(disposition)
+}
+
+function isClosureDisposition(disposition: string): disposition is 'DUPLICATE' | 'OBSOLETE' | 'INVALID' {
+  return disposition === 'DUPLICATE' || disposition === 'OBSOLETE' || disposition === 'INVALID'
 }
 
 function tableExists(db: Database.Database, tableName: string): boolean {

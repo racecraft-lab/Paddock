@@ -541,6 +541,18 @@ export function seedSpec009fUnassignedSpecialistTriageRouting(db: Database.Datab
   })
 }
 
+export function seedSpec009fDuplicateClosureRouting(db: Database.Database): Spec009fFixtureSeed {
+  return seedSpec009fNonRemediationOutcome(db, 'DUPLICATE')
+}
+
+export function seedSpec009fObsoleteClosureRouting(db: Database.Database): Spec009fFixtureSeed {
+  return seedSpec009fNonRemediationOutcome(db, 'OBSOLETE')
+}
+
+export function seedSpec009fInvalidClosureRouting(db: Database.Database): Spec009fFixtureSeed {
+  return seedSpec009fNonRemediationOutcome(db, 'INVALID', { includeUnsafeContent: true })
+}
+
 export function seedSpec009fNonRemediationOutcomes(db: Database.Database): Spec009fFixtureSeed[] {
   return SUPPORTED_SPEC_009F_NON_REMEDIATION_OUTCOMES.map((outcome) => seedSpec009fNonRemediationOutcome(db, outcome))
 }

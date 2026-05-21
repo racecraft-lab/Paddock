@@ -146,6 +146,24 @@ export type SpecialistRecommendationDetail =
       readonly owner_action: string;
     };
 
+export type ClosureRecommendationDetail =
+  | {
+      readonly closure_outcome: 'DUPLICATE';
+      readonly suspected_duplicate_target: string;
+      readonly comparison_rationale: string;
+    }
+  | {
+      readonly closure_outcome: 'OBSOLETE';
+      readonly superseding_condition: string;
+      readonly non_actionability_rationale: string;
+    }
+  | {
+      readonly closure_outcome: 'INVALID';
+      readonly invalidity_reason: string;
+      readonly validation_evidence: string[];
+      readonly missing_reproducibility_context?: string[];
+    };
+
 export interface NeedsSpecTriageRoutingPayload
   extends Omit<TriageRoutingPayloadEnvelope, 'artifact_type' | 'disposition' | 'lane'> {
   readonly artifact_type: 'triage_speckit_handoff';
@@ -168,6 +186,14 @@ export interface NeedsSpecialistTriageRoutingPayload
   readonly disposition: 'NEEDS_SPECIALIST';
   readonly lane: 'specialist_recommendation';
   readonly lane_detail: SpecialistRecommendationDetail;
+}
+
+export interface ClosureRecommendationTriageRoutingPayload
+  extends Omit<TriageRoutingPayloadEnvelope, 'artifact_type' | 'lane'> {
+  readonly artifact_type: 'triage_closure_recommendation';
+  readonly disposition: 'DUPLICATE' | 'OBSOLETE' | 'INVALID';
+  readonly lane: 'closure_recommendation';
+  readonly lane_detail: ClosureRecommendationDetail;
 }
 
 export interface TriageRoutingValidationIssue {
@@ -690,6 +716,70 @@ export function validateNeedsSpecialistTriageRoutingPayload(
   };
 }
 
+export function buildClosureRecommendationTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<ClosureRecommendationTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const disposition = input['disposition'];
+  const detailInput = isRecord(input['lane_detail']) ? input['lane_detail'] : input;
+
+  return validateClosureRecommendationTriageRoutingPayload({
+    ...input,
+    schema_version: TRIAGE_ROUTING_SCHEMA_VERSION,
+    artifact_type: 'triage_closure_recommendation',
+    lane: 'closure_recommendation',
+    routing_status: 'recorded',
+    deferred_side_effects: defaultClosureDeferredSideEffects(),
+    lane_detail: closureLaneDetailInput(disposition, detailInput),
+  });
+}
+
+export function validateClosureRecommendationTriageRoutingPayload(
+  input: unknown,
+): TriageRoutingValidationResult<ClosureRecommendationTriageRoutingPayload> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('payload', 'invalid_type', 'payload must be an object')] };
+  }
+
+  const issues: TriageRoutingValidationIssue[] = [];
+  const disposition = input['disposition'];
+  if (!isClosureDisposition(disposition)) {
+    issues.push(issue('disposition', 'unsupported_disposition', 'disposition must be DUPLICATE, OBSOLETE, or INVALID'));
+  }
+  if (input['lane'] !== 'closure_recommendation') {
+    issues.push(issue('lane', 'invalid_lane', 'lane must be closure_recommendation'));
+  }
+  if (input['artifact_type'] !== 'triage_closure_recommendation') {
+    issues.push(
+      issue('artifact_type', 'invalid_artifact_type', 'artifact_type must be triage_closure_recommendation'),
+    );
+  }
+
+  const envelope = validateCommonTriageRoutingPayloadEnvelope(input);
+  collectIssues(issues, envelope);
+
+  const laneDetail = normalizeClosureRecommendationDetail(input['lane_detail'], disposition);
+  collectIssues(issues, laneDetail);
+
+  if (issues.length > 0 || !envelope.ok || !laneDetail.ok || !isClosureDisposition(disposition)) {
+    return { ok: false, issues };
+  }
+
+  return {
+    ok: true,
+    value: {
+      ...envelope.value,
+      artifact_type: 'triage_closure_recommendation',
+      disposition,
+      lane: 'closure_recommendation',
+      lane_detail: laneDetail.value,
+    },
+  };
+}
+
 function normalizeSpecKitHandoffDetail(input: unknown): TriageRoutingValidationResult<SpecKitHandoffDetail> {
   if (!isRecord(input)) {
     return { ok: false, issues: [issue('lane_detail', 'invalid_type', 'lane_detail must be an object')] };
@@ -898,6 +988,158 @@ function defaultNeedsSpecialistDeferredSideEffects(): DeferredSideEffect[] {
       reason: 'Specialist recommendation does not dispatch an agent.',
     },
   ];
+}
+
+function defaultClosureDeferredSideEffects(): DeferredSideEffect[] {
+  return [
+    {
+      side_effect: 'github_label',
+      deferred: true,
+      reason: 'SPEC-009F recommends labels but does not apply them.',
+    },
+    {
+      side_effect: 'successor_task',
+      deferred: true,
+      reason: 'SPEC-009F keeps non-remediation outcomes terminal.',
+    },
+    {
+      side_effect: 'github_close',
+      deferred: true,
+      reason: 'Closure outcomes are recommendation-only.',
+    },
+    {
+      side_effect: 'github_comment',
+      deferred: true,
+      reason: 'No external closure comment is posted.',
+    },
+  ];
+}
+
+function closureLaneDetailInput(disposition: unknown, input: Record<string, unknown>): Record<string, unknown> {
+  if (disposition === 'DUPLICATE') {
+    return {
+      closure_outcome: 'DUPLICATE',
+      suspected_duplicate_target: input['suspected_duplicate_target'],
+      comparison_rationale: input['comparison_rationale'],
+    };
+  }
+  if (disposition === 'OBSOLETE') {
+    return {
+      closure_outcome: 'OBSOLETE',
+      superseding_condition: input['superseding_condition'],
+      non_actionability_rationale: input['non_actionability_rationale'],
+    };
+  }
+  return {
+    closure_outcome: disposition,
+    invalidity_reason: input['invalidity_reason'],
+    validation_evidence: input['validation_evidence'],
+    missing_reproducibility_context: input['missing_reproducibility_context'],
+  };
+}
+
+function normalizeClosureRecommendationDetail(
+  input: unknown,
+  disposition: unknown,
+): TriageRoutingValidationResult<ClosureRecommendationDetail> {
+  if (!isRecord(input)) {
+    return { ok: false, issues: [issue('lane_detail', 'invalid_type', 'lane_detail must be an object')] };
+  }
+  if (input['closure_outcome'] !== disposition) {
+    return {
+      ok: false,
+      issues: [issue('lane_detail.closure_outcome', 'invalid_literal', 'closure_outcome must match disposition')],
+    };
+  }
+  if (disposition === 'DUPLICATE') return normalizeDuplicateClosureDetail(input);
+  if (disposition === 'OBSOLETE') return normalizeObsoleteClosureDetail(input);
+  if (disposition === 'INVALID') return normalizeInvalidClosureDetail(input);
+  return {
+    ok: false,
+    issues: [issue('lane_detail.closure_outcome', 'unsupported_disposition', 'closure_outcome is not supported')],
+  };
+}
+
+function normalizeDuplicateClosureDetail(
+  input: Record<string, unknown>,
+): TriageRoutingValidationResult<ClosureRecommendationDetail> {
+  const issues: TriageRoutingValidationIssue[] = [];
+  const target = normalizeTriageRoutingText(input['suspected_duplicate_target'], {
+    field: 'lane_detail.suspected_duplicate_target',
+    max_chars: 500,
+    max_newlines: 0,
+  });
+  const rationale = normalizeTriageRoutingText(input['comparison_rationale'], {
+    field: 'lane_detail.comparison_rationale',
+    max_chars: 2000,
+    max_newlines: 8,
+  });
+  collectIssues(issues, target);
+  collectIssues(issues, rationale);
+  if (issues.length > 0 || !target.ok || !rationale.ok) return { ok: false, issues };
+  return {
+    ok: true,
+    value: {
+      closure_outcome: 'DUPLICATE',
+      suspected_duplicate_target: target.value,
+      comparison_rationale: rationale.value,
+    },
+  };
+}
+
+function normalizeObsoleteClosureDetail(
+  input: Record<string, unknown>,
+): TriageRoutingValidationResult<ClosureRecommendationDetail> {
+  const issues: TriageRoutingValidationIssue[] = [];
+  const condition = normalizeTriageRoutingText(input['superseding_condition'], {
+    field: 'lane_detail.superseding_condition',
+    max_chars: 500,
+    max_newlines: 0,
+  });
+  const rationale = normalizeTriageRoutingText(input['non_actionability_rationale'], {
+    field: 'lane_detail.non_actionability_rationale',
+    max_chars: 2000,
+    max_newlines: 8,
+  });
+  collectIssues(issues, condition);
+  collectIssues(issues, rationale);
+  if (issues.length > 0 || !condition.ok || !rationale.ok) return { ok: false, issues };
+  return {
+    ok: true,
+    value: {
+      closure_outcome: 'OBSOLETE',
+      superseding_condition: condition.value,
+      non_actionability_rationale: rationale.value,
+    },
+  };
+}
+
+function normalizeInvalidClosureDetail(
+  input: Record<string, unknown>,
+): TriageRoutingValidationResult<ClosureRecommendationDetail> {
+  const issues: TriageRoutingValidationIssue[] = [];
+  const reason = normalizeTriageRoutingText(input['invalidity_reason'], {
+    field: 'lane_detail.invalidity_reason',
+    max_chars: 500,
+    max_newlines: 0,
+  });
+  const validationEvidence = normalizeLaneTextList(input['validation_evidence'], 'lane_detail.validation_evidence');
+  const missingContext = input['missing_reproducibility_context'] === undefined
+    ? { ok: true as const, value: [] }
+    : normalizeLaneTextList(input['missing_reproducibility_context'], 'lane_detail.missing_reproducibility_context');
+  collectIssues(issues, reason);
+  collectIssues(issues, validationEvidence);
+  collectIssues(issues, missingContext);
+  if (issues.length > 0 || !reason.ok || !validationEvidence.ok || !missingContext.ok) return { ok: false, issues };
+  return {
+    ok: true,
+    value: {
+      closure_outcome: 'INVALID',
+      invalidity_reason: reason.value,
+      validation_evidence: validationEvidence.value,
+      missing_reproducibility_context: missingContext.value,
+    },
+  };
 }
 
 function normalizeLaneTextList(input: unknown, path: string): TriageRoutingValidationResult<string[]> {
@@ -1114,6 +1356,10 @@ function isRecord(input: unknown): input is Record<string, unknown> {
 
 function isSupportedDisposition(input: unknown): input is SupportedTriageRoutingDisposition {
   return SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS.includes(input as SupportedTriageRoutingDisposition);
+}
+
+function isClosureDisposition(input: unknown): input is 'DUPLICATE' | 'OBSOLETE' | 'INVALID' {
+  return input === 'DUPLICATE' || input === 'OBSOLETE' || input === 'INVALID';
 }
 
 function isTriageRoutingLane(input: unknown): input is TriageRoutingLane {

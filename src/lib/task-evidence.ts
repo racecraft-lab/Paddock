@@ -1,10 +1,13 @@
 import {
   TRIAGE_ROUTING_ARTIFACT_TYPES,
   TRIAGE_ROUTING_SCHEMA_VERSION,
+  validateClosureRecommendationTriageRoutingPayload,
   validateNeedsHumanTriageRoutingPayload,
   validateNeedsSpecTriageRoutingPayload,
   validateNeedsSpecialistTriageRoutingPayload,
   type ClarificationRequestDetail,
+  type ClosureRecommendationDetail,
+  type ClosureRecommendationTriageRoutingPayload,
   type DeferredSideEffect,
   type NeedsHumanTriageRoutingPayload,
   type NeedsSpecTriageRoutingPayload,
@@ -151,11 +154,13 @@ export type TriageRoutingLaneDetail =
   | SpecKitHandoffDetail
   | ClarificationRequestDetail
   | SpecialistRecommendationDetail
+  | ClosureRecommendationDetail
 
 type ValidatedTriageRoutingPayload =
   | NeedsSpecTriageRoutingPayload
   | NeedsHumanTriageRoutingPayload
   | NeedsSpecialistTriageRoutingPayload
+  | ClosureRecommendationTriageRoutingPayload
 
 export interface TriageRoutingArtifactReference {
   state: TriageRoutingEvidenceState
@@ -707,7 +712,9 @@ function readValidatedTriageRoutingPayload(
     ? validateNeedsHumanTriageRoutingPayload(parsed)
     : disposition === 'NEEDS_SPECIALIST'
       ? validateNeedsSpecialistTriageRoutingPayload(parsed)
-      : validateNeedsSpecTriageRoutingPayload(parsed)
+      : isClosureDisposition(disposition)
+        ? validateClosureRecommendationTriageRoutingPayload(parsed)
+        : validateNeedsSpecTriageRoutingPayload(parsed)
   if (!result.ok) {
     return {
       ok: false,
@@ -809,6 +816,7 @@ function sanitizeDeferredSideEffects(sideEffects: readonly DeferredSideEffect[])
 function sanitizeTriageRoutingLaneDetail(detail: TriageRoutingLaneDetail): TriageRoutingLaneDetail {
   if ('proposed_scope' in detail) return sanitizeSpecKitHandoffDetail(detail)
   if ('blocking_questions' in detail) return sanitizeClarificationRequestDetail(detail)
+  if ('closure_outcome' in detail) return sanitizeClosureRecommendationDetail(detail)
   return sanitizeSpecialistRecommendationDetail(detail)
 }
 
@@ -849,6 +857,35 @@ function sanitizeSpecialistRecommendationDetail(
     specialist_state: 'unassigned',
     missing_metadata: sanitizeEvidenceTextList(detail.missing_metadata),
     owner_action: sanitizeEvidenceDisplayText(detail.owner_action),
+  }
+}
+
+function sanitizeClosureRecommendationDetail(detail: ClosureRecommendationDetail): ClosureRecommendationDetail {
+  if (detail.closure_outcome === 'DUPLICATE') {
+    return {
+      closure_outcome: 'DUPLICATE',
+      suspected_duplicate_target: sanitizeEvidenceDisplayText(detail.suspected_duplicate_target),
+      comparison_rationale: sanitizeEvidenceDisplayText(detail.comparison_rationale),
+    }
+  }
+  if (detail.closure_outcome === 'OBSOLETE') {
+    return {
+      closure_outcome: 'OBSOLETE',
+      superseding_condition: sanitizeEvidenceDisplayText(detail.superseding_condition),
+      non_actionability_rationale: sanitizeEvidenceDisplayText(detail.non_actionability_rationale),
+    }
+  }
+  const base = {
+    closure_outcome: 'INVALID' as const,
+    invalidity_reason: sanitizeEvidenceDisplayText(detail.invalidity_reason),
+    validation_evidence: sanitizeEvidenceTextList(detail.validation_evidence),
+  }
+  if (!detail.missing_reproducibility_context) {
+    return base
+  }
+  return {
+    ...base,
+    missing_reproducibility_context: sanitizeEvidenceTextList(detail.missing_reproducibility_context),
   }
 }
 
@@ -1172,6 +1209,10 @@ function readDisposition(value: unknown): string | null {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return null
   const disposition = (value as Record<string, unknown>)['disposition']
   return typeof disposition === 'string' ? disposition : null
+}
+
+function isClosureDisposition(disposition: string | null): disposition is 'DUPLICATE' | 'OBSOLETE' | 'INVALID' {
+  return disposition === 'DUPLICATE' || disposition === 'OBSOLETE' || disposition === 'INVALID'
 }
 
 function safeRepository(repo: string | null): string | null {

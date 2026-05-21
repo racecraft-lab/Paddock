@@ -2,20 +2,12 @@ import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it } from 'vitest'
 import { routeTriageDisposition, type TriageRoutingResult } from '@/lib/triage-routing'
 import {
-  SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS,
-  TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE,
-  TRIAGE_ROUTING_DISPOSITION_TO_LANE,
-} from '@/lib/triage-routing-payloads'
-import {
   closeTaskEvidenceDb,
   createTaskEvidenceDb,
   snapshotSpec009fDisposableCounts,
 } from './task-evidence.fixtures'
 
 const openDbs: Database.Database[] = []
-const SCAFFOLDED_TRIAGE_ROUTING_DISPOSITIONS = SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS.filter(
-  (disposition) => !['NEEDS_SPEC', 'NEEDS_HUMAN', 'NEEDS_SPECIALIST'].includes(disposition),
-)
 
 afterEach(() => {
   while (openDbs.length > 0) {
@@ -563,42 +555,85 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
     expect(payload.lane_detail.missing_metadata).toEqual(expect.arrayContaining(['missing_project']))
   })
 
-  it.each(SCAFFOLDED_TRIAGE_ROUTING_DISPOSITIONS)(
-    'dispatches %s to a recordable lane without successors, external mutation, or writes',
-    (disposition) => {
-      const database = db()
-      enablePilot(database)
-      const taskId = seedSourceTask(database, { githubIssueNumber: 923 })
-      const before = snapshotSpec009fDisposableCounts(database)
-
-      const result = route(database, taskId, disposition)
-      const after = snapshotSpec009fDisposableCounts(database)
-
-      expect(result).toMatchObject({
-        ok: true,
-        status: 'recordable',
-        disposition,
-        source: {
-          taskId,
-          workspaceId: 1,
-          workflowTemplateSlug: 'mission-control_issue_triage',
-          githubRepo: 'racecraft-lab/mission-control',
-          githubIssueNumber: 923,
-        },
-        route: {
-          lane: TRIAGE_ROUTING_DISPOSITION_TO_LANE[disposition],
-          artifactType: TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE[disposition],
-        },
-        effects: {
-          createSuccessor: false,
-          mutateExternal: false,
-          publishArtifact: false,
-          dispatchAgent: false,
-        },
-      })
-      expect(after).toEqual(before)
+  it.each([
+    {
+      disposition: 'DUPLICATE',
+      expectedDetail: {
+        closure_outcome: 'DUPLICATE',
+        suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+      },
     },
-  )
+    {
+      disposition: 'OBSOLETE',
+      expectedDetail: {
+        closure_outcome: 'OBSOLETE',
+        superseding_condition: 'The referenced workflow contract has been replaced.',
+      },
+    },
+    {
+      disposition: 'INVALID',
+      expectedDetail: {
+        closure_outcome: 'INVALID',
+        invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+      },
+    },
+  ])('records %s as a closure recommendation without external mutation or successors', ({ disposition, expectedDetail }) => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9500, githubIssueNumber: 927 })
+    const before = snapshotSpec009fDisposableCounts(database)
+    const notificationCountBefore = countRows(database, 'notifications')
+
+    const result = route(database, taskId, disposition)
+    const after = snapshotSpec009fDisposableCounts(database)
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'recorded',
+      disposition,
+      route: {
+        lane: 'closure_recommendation',
+        artifactType: 'triage_closure_recommendation',
+      },
+      effects: {
+        createSuccessor: false,
+        mutateExternal: false,
+        publishArtifact: true,
+        dispatchAgent: false,
+      },
+    })
+    if (!result.ok || result.status !== 'recorded') throw new Error(`${disposition} routing was not recorded`)
+
+    expect(after).toEqual({
+      ...before,
+      activities: before.activities + 1,
+      taskArtifacts: before.taskArtifacts + 1,
+    })
+    expect(countRows(database, 'notifications')).toBe(notificationCountBefore)
+    expect(readTask(database, taskId).assigned_to).toBeNull()
+    expect(
+      database.prepare('SELECT COUNT(*) AS count FROM tasks WHERE parent_task_id = ? OR root_task_id = ?').get(taskId, taskId),
+    ).toEqual({ count: 0 })
+
+    const artifact = database.prepare('SELECT artifact_type, content_json FROM task_artifacts WHERE id = ?').get(result.artifact.id) as {
+      artifact_type: string
+      content_json: string
+    }
+    const payload = JSON.parse(artifact.content_json) as {
+      lane_detail: Record<string, unknown>
+      proposed_labels: { applied: boolean }[]
+      deferred_side_effects: { side_effect: string; deferred: boolean }[]
+    }
+    expect(artifact.artifact_type).toBe('triage_closure_recommendation')
+    expect(payload.lane_detail).toMatchObject(expectedDetail)
+    expect(payload.proposed_labels.every((label) => !label.applied)).toBe(true)
+    expect(payload.deferred_side_effects).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ side_effect: 'github_close', deferred: true }),
+        expect.objectContaining({ side_effect: 'github_comment', deferred: true }),
+      ]),
+    )
+  })
 
   it('skips ACTIONABLE_REMEDIATION so the existing remediation successor flow is preserved', () => {
     const database = db()

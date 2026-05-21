@@ -649,7 +649,8 @@ Verification must prove all six non-remediation outcomes, no remediation success
 | Foundational tests and helpers (T005-T011) | Complete | Added payload contract tests/helpers, six-outcome fixtures, routing source gates, and static scope guard; 27 focused tests, strict spec TypeScript, focused lint, and scope guard passed |
 | US1 NEEDS_SPEC route (T012-T018) | Complete | Added `NEEDS_SPEC` handoff payload validation, terminal artifact/activity recording, task Evidence `triage_routing` derivation, and fixture-backed tests; 31 focused tests, strict spec TypeScript, focused lint, and scope guard passed |
 | US2 human and specialist routes (T019-T029) | Complete | Added `NEEDS_HUMAN` clarification and `NEEDS_SPECIALIST` recommended/unassigned payloads, terminal routing writes, deterministic specialist metadata resolution, and task Evidence derivation; 40 focused tests, strict spec TypeScript, focused lint, and scope guard passed |
-| US3 closure recommendations (T030-T036) | In Progress | Next implementation group for duplicate, obsolete, and invalid closure recommendation lanes |
+| US3 closure recommendations (T030-T036) | Complete | Added shared `triage_closure_recommendation` payload validation, closure routing artifact/activity recording for `DUPLICATE`, `OBSOLETE`, and `INVALID`, deterministic closure fixtures, and task Evidence closure derivation; 47 focused tests, strict spec TypeScript, focused lint, and scope guard passed |
+| US4 idempotent evidence display (T037-T044) | In Progress | Next implementation group for idempotent routing display, API evidence shape, and UI evidence surfaces |
 
 ### Completion Checklist
 
