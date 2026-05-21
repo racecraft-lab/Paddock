@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "56",
+  "prTitle": "SPEC-012A: Repo Knowledge Index and AGENTS Map",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/56",
+  "headRef": "012a-repo-knowledge-index",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26234547799",
+      "runAttempt": "1",
+      "runKey": "26234547799-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26234547799",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/56/runs/26234547799-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/56/playwright/latest/?v=26234547799-attempt-1",
+      "headSha": "dee274d869c245237b08faf3b37bc9942d16f5d0",
+      "headRef": "012a-repo-knowledge-index",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-21T15:18:18.297Z"
+    }
+  ],
+  "updatedAt": "2026-05-21T15:18:18.297Z"
+}
