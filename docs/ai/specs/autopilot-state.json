@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T21:02:05Z",
-  "active_step": "Phase 3: Plan",
+  "updated_at": "2026-05-21T21:09:49Z",
+  "active_step": "Phase 4: Checklist - data-integrity",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -60,11 +60,11 @@
     },
     {
       "step": "Phase 3: Plan",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - data-integrity Consensus",
@@ -310,6 +310,18 @@
       "sessions": 5,
       "questions": 25,
       "consensus_items": 1
+    },
+    "plan": {
+      "status": "completed",
+      "gate": "G3 pass, 0 unresolved markers",
+      "files": [
+        "specs/009f-production-triage-routing/plan.md",
+        "specs/009f-production-triage-routing/research.md",
+        "specs/009f-production-triage-routing/data-model.md",
+        "specs/009f-production-triage-routing/contracts/triage-routing-contract.md",
+        "specs/009f-production-triage-routing/quickstart.md"
+      ],
+      "reviewability": "no split required if implementation stays within planned file/surface limits"
     }
   }
 }

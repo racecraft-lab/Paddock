@@ -170,6 +170,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through existing `better-sqlite3` helpers; no migration and no rollback SQL planned (009e-pilot-evidence-surfaces)
 - TypeScript 5.7 strict for the repository baseline; SPEC-012A-owned guard scripts use Node.js >=22 `.mjs` with built-in modules only + Next.js 16 App Router, React 19, better-sqlite3, Zustand, Tailwind CSS 3 remain unchanged; no new runtime dependency and no new parser dependency (012a-repo-knowledge-index)
 - Checked-in JSON, JSON Schema, Markdown docs, and fixture files under `docs/ai/`, root `AGENTS.md`, `scripts/spec-012a/`, and `specs/012a-repo-knowledge-index/` (012a-repo-knowledge-index)
+- TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application on Node >=22 + Existing Next.js, React, Zustand where already used, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright; no new runtime dependency (009f-production-triage-routing)
+- Existing SQLite tables through `better-sqlite3`: `tasks`, `workflow_templates`, `task_dispositions`, `task_artifacts`, `activities`, `projects`, `project_agent_assignments`, and `agents`; no migration (009f-production-triage-routing)
 
 ## Recent Changes
 - Archive cleanup (2026-05-16): `.specify/memory/{spec,plan,changelog}.md` now carries recovery/provenance summaries through SPEC-009C2. Active completed folders were removed from `specs/**`; recover raw artifacts with the `git show <tree-ref>:specs/<feature>/...` commands recorded in `.specify/memory/changelog.md`.

@@ -34,7 +34,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 - `NEEDS_HUMAN` creates a stored clarification-request artifact with blocking questions.
 - `NEEDS_SPECIALIST` recommends an owner/lane from existing metadata when safe, otherwise records an unassigned specialist state.
 - Duplicate, obsolete, and invalid share a closure-recommendation model with outcome-specific required fields.
-- The existing task Evidence route/section gains a `triageRouting` section.
+- The existing task Evidence route/section gains API field `triage_routing` and UI block `Triage routing`.
 - The existing `PILOT_MISSION_CONTROL_E2E` product-line scope is the default rollout boundary unless Clarify proves a dedicated flag is required.
 - Existing `task_dispositions`, `task_artifacts`, and `activities` persist typed lane payloads. No migration is planned.
 - Non-remediation outcomes are terminal Issue Triage outcomes with evidence only; no successor templates are added.
@@ -47,7 +47,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Created `specs/009f-production-triage-routing/spec.md` and requirements checklist; G1 passed with 0 unresolved markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved lane payload contracts, terminal/idempotent state, Evidence API/UI shape, specialist matching/rollout, and UAT/regression boundaries |
-| Plan | `$speckit-plan` | Pending | Plan stored-evidence-only routing, typed payload validation, Evidence route/section extension, focused fixtures, and no-migration/no-side-effect guardrails |
+| Plan | `$speckit-plan` | Complete | Created plan, research, data model, contract, and quickstart for stored-evidence-only routing with no migration, no dependency, and no live side effects |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains: data-integrity, api-contracts, state-management, error-handling, security, ux/accessibility, and regression-safety |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails |
 | Analyze | `$speckit-analyze` | Pending | Verify design concept/spec/plan/tasks/checklists agree on recommendation-only scope and no successor/live-side-effect drift |
@@ -61,7 +61,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 |------|------------|-------------------|
 | G0 | After setup | Branch is `009f-production-triage-routing`; design concept and workflow exist; reviewability preset resolves; roadmap marks SPEC-009F `In Progress` on this branch only |
 | G1 | After Specify | Requirements cover all six non-remediation outcomes, recommendation-only side effects, typed lane artifacts, terminal triage completion, Evidence surface, idempotency, UAT, and no unresolved markers |
-| G2 | After Clarify | Lane payload schemas, specialist matching fallback, `triageRouting` API/UI shape, feature-flag scope, duplicate rerun semantics, and label recommendation rules are resolved |
+| G2 | After Clarify | Lane payload schemas, specialist matching fallback, `triage_routing` API shape, `Triage routing` UI shape, feature-flag scope, duplicate rerun semantics, and label recommendation rules are resolved |
 | G3 | After Plan | Architecture reuses existing dispositions/artifacts/activities and SPEC-009E task evidence seams; no migration, new table, live GitHub mutation, successor templates, claim, runner, sandbox, adapter, or auto-merge work |
 | G4 | After Checklist | All gaps are remediated or explicitly out of scope without widening into SPEC-013A/A1/B/C or SPEC-014A-D |
 | G5 | After Tasks | Tasks are dependency ordered, TDD-first, fixture-backed across all six outcomes, and include operator-readable Evidence inspection |
@@ -141,7 +141,7 @@ Allowed:
 - Production routing/evidence for non-remediation triage outcomes.
 - Typed payload schemas for SpecKit handoff, clarification request, specialist recommendation, and closure recommendation artifacts.
 - Existing disposition/artifact/activity persistence.
-- Existing task Evidence API/UI extension with a compact `triageRouting` section.
+- Existing task Evidence API/UI extension with compact API field `triage_routing` and UI block `Triage routing`.
 - Fixture-driven tests for `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, and `INVALID`.
 - Operator-readable recommended next actions and proposed GitHub labels as metadata only.
 
@@ -164,7 +164,7 @@ Forbidden:
 - [ ] `NEEDS_HUMAN` produces a clarification-request artifact with blocking questions and target audience.
 - [ ] `NEEDS_SPECIALIST` recommends an owner/lane from existing metadata when safe, or records unassigned-specialist when no safe match exists.
 - [ ] Duplicate/obsolete/invalid outcomes use a shared closure-recommendation model with outcome-specific required fields.
-- [ ] The task Evidence route/section exposes `triageRouting` state, artifacts, recommended labels, deferred side effects, and idempotency/supersession state.
+- [ ] The task Evidence route/section exposes `triage_routing` state, artifacts, recommended labels, deferred side effects, and idempotency/supersession state through UI block `Triage routing`.
 
 ---
 
@@ -201,7 +201,7 @@ Route `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, 
 6. Routing persists through existing `task_dispositions`, `task_artifacts`, and `activities`; no new migration is planned.
 7. The source Issue Triage task completes with terminal non-remediation evidence and no successor template.
 8. Repeated routing is idempotent by outcome and source triage task, updating or superseding existing evidence without duplicates.
-9. Task Evidence exposes a compact `triageRouting` section with lane, status, artifact references, recommended next action, proposed labels, deferred side effects, and missing/unassigned states.
+9. Task Evidence exposes compact API field `triage_routing` and UI block `Triage routing` with lane, status, artifact references, recommended next action, proposed labels, deferred side effects, and missing/unassigned states.
 10. Existing `PILOT_MISSION_CONTROL_E2E` product-line scope is the default rollout boundary unless Clarify proves a dedicated flag is required.
 
 ### Non-goals
@@ -288,7 +288,7 @@ Accepted answers:
 - Same-outcome retries with unchanged normalized payload content create no new artifact or activity.
 - Same-outcome retries with changed normalized payload content publish a new artifact that supersedes the prior active artifact and keep superseded artifacts trace-only.
 - Changed-disposition retries after a non-unknown disposition is recorded are visibly rejected with `triage_routing_conflict`; they do not create terminal routing evidence for the attempted new outcome.
-- Artifact publish failures write sanitized `triage_routing_artifact_publish_failed` evidence, skip `triage_routing_recorded`, and expose `triageRouting` as incomplete or unavailable until retry. Retry backfills missing recorded activity when an artifact already exists.
+- Artifact publish failures write sanitized `triage_routing_artifact_publish_failed` evidence, skip `triage_routing_recorded`, and expose `triage_routing` as incomplete or unavailable until retry. Retry backfills missing recorded activity when an artifact already exists.
 
 Consensus: None required; the clarify executor found current repo evidence sufficient.
 
@@ -296,7 +296,7 @@ Consensus: None required; the clarify executor found current repo evidence suffi
 
 Questions to resolve:
 
-- Exact `triageRouting` response shape inside `GET /api/tasks/[id]/evidence`.
+- Exact `triage_routing` response shape inside `GET /api/tasks/[id]/evidence`.
 - Task detail Evidence rendering for all six lanes, unassigned specialist, missing evidence, superseded evidence, and deferred side effects.
 - Whether existing task evidence helpers need a new sub-helper for triage routing.
 - Accessibility and loading/error/empty-state wording.
@@ -407,7 +407,7 @@ Architect the smallest implementation that:
 2. Defines strict TypeScript schemas/types for lane payload families.
 3. Adds or extends a routing helper for terminal non-remediation outcomes.
 4. Preserves `ACTIONABLE_REMEDIATION` behavior and only changes non-remediation lanes.
-5. Extends task evidence derivation and route response with `triageRouting`.
+5. Extends task evidence derivation and route response with `triage_routing`.
 6. Extends the existing task Evidence section only as needed for read-only display.
 7. Provides deterministic fixtures for all six non-remediation outcomes.
 8. Adds no migration, no new runtime dependency, and no live external side effects.
@@ -440,11 +440,21 @@ Plan must list exact files likely touched and explain why each is in scope. If t
 
 ### Plan Gate Checklist
 
-- [ ] No migration unless explicitly justified and split-approved.
-- [ ] No new runtime dependency.
-- [ ] No external side effect path.
-- [ ] Existing remediation path remains unchanged.
-- [ ] UAT/manual verification path is concrete.
+- [x] No migration unless explicitly justified and split-approved.
+- [x] No new runtime dependency.
+- [x] No external side effect path.
+- [x] Existing remediation path remains unchanged.
+- [x] UAT/manual verification path is concrete.
+
+### Plan Results
+
+| Item | Result |
+|------|--------|
+| Files created | `plan.md`, `research.md`, `data-model.md`, `contracts/triage-routing-contract.md`, `quickstart.md` |
+| Files modified | `AGENTS.md`; this workflow; `autopilot-state.json` |
+| Architecture | Reuse existing disposition/artifact/activity persistence; add strict payload and routing helpers; extend existing task Evidence API/UI |
+| Reviewability | No split required if implementation stays within planned file/surface limits |
+| Gate | G3 passed via `validate-gate.sh G3 specs/009f-production-triage-routing` with 0 unresolved markers |
 
 ---
 
@@ -457,7 +467,7 @@ Plan must list exact files likely touched and explain why each is in scope. If t
 Run at least these domains:
 
 - `data-integrity`: typed artifacts, source task identity, idempotency, supersession, no duplicate evidence.
-- `api-contracts`: `triageRouting` response shape, error behavior, artifact references, proposed labels, deferred side effects.
+- `api-contracts`: `triage_routing` response shape, error behavior, artifact references, proposed labels, deferred side effects.
 - `state-management`: terminal triage completion, no successor templates, scope/flag behavior, repeated runs.
 - `error-handling`: invalid payloads, missing artifact store, persistence failure, unsupported specialist metadata, partial evidence.
 - `security`: redaction, no raw unsafe artifact rendering, no external mutation, no sensitive actor/credential leakage.
@@ -500,7 +510,7 @@ Task groups should cover:
 5. `NEEDS_HUMAN` clarification artifact.
 6. `NEEDS_SPECIALIST` recommendation/unassigned fallback.
 7. Duplicate/obsolete/invalid closure recommendation model.
-8. Task Evidence route/helper `triageRouting` extension.
+8. Task Evidence route/helper `triage_routing` extension.
 9. Task Evidence UI section extension if Plan includes UI changes.
 10. Proposed GitHub label metadata only; no label application.
 11. Guardrails for no GitHub mutation, no remediation successor, no claim/runner/sandbox/adapter/auto-merge.
