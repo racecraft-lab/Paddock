@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-21T15:35:54.457Z",
+  "updatedAt": "2026-05-21T15:58:00.213Z",
   "prs": [
     {
       "prNumber": "56",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/56/",
       "headRef": "012a-repo-knowledge-index",
       "baseRef": "main",
-      "updatedAt": "2026-05-21T15:35:54.457Z",
+      "updatedAt": "2026-05-21T15:58:00.213Z",
       "latest": {
+        "storybook": {
+          "runId": "26237230704",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26237230704",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/56/storybook/latest/?v=26237230704-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/56/runs/26237230704-attempt-1/storybook/",
+          "updatedAt": "2026-05-21T15:58:00.213Z"
+        },
         "playwright": {
           "runId": "26235261985",
           "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26235261985",
