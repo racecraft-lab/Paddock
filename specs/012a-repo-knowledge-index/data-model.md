@@ -41,7 +41,7 @@ Planned optional fields:
 Validation rules:
 
 - Required metadata fields must be present and non-empty.
-- `related_specs` values must match `^SPEC-[0-9]{3}[A-Z]?$`.
+- `related_specs` values must match `^SPEC-[0-9]{3}[A-Z0-9]*$`.
 - `verification_commands` must contain at least one command or manual verification instruction.
 - Required entries must resolve to existing files or directories.
 
@@ -100,6 +100,7 @@ Validation rules:
 - Any `error` exits non-zero.
 - Warnings for external URLs, Obsidian-style wikilinks, and optional links do not fail CI.
 - Failure output names the offending entry, field, file, or status relationship.
+- Finding codes are stable and include at least `index_missing`, `schema_missing`, `json_malformed`, `schema_invalid`, `required_entry_missing`, `required_path_missing`, `required_path_outside_repo`, `metadata_missing`, `metadata_invalid`, `related_spec_invalid`, `required_link_broken`, `status_pointer_stale`, `external_link_warning`, `wikilink_warning`, and `optional_link_warning`.
 
 ## Status Pointer Check
 

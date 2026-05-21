@@ -51,6 +51,24 @@ Behavior:
 - Does not read outside the repository.
 - Does not require `.gitnexus/`, `.envrc.local`, secrets, LM Studio, or an Obsidian vault.
 
+Stable finding codes:
+
+- `index_missing`
+- `schema_missing`
+- `json_malformed`
+- `schema_invalid`
+- `required_entry_missing`
+- `required_path_missing`
+- `required_path_outside_repo`
+- `metadata_missing`
+- `metadata_invalid`
+- `related_spec_invalid`
+- `required_link_broken`
+- `status_pointer_stale`
+- `external_link_warning`
+- `wikilink_warning`
+- `optional_link_warning`
+
 Fixture mode:
 
 ```bash

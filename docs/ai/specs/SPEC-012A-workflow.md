@@ -36,7 +36,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Specify | `$speckit-specify` | Complete | Generated `specs/012a-repo-knowledge-index/spec.md` with 18 FRs, 4 user stories, 11 acceptance scenarios, 5 success criteria, and no unresolved markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved index/schema paths, required entries, metadata semantics, guard failure classes, stale status pointer detection, fresh-agent proxy behavior, GitNexus discoverability, and `pnpm guardrails`/Quality Gate integration; G2 passed |
 | Plan | `$speckit-plan` | Complete | Planned JSON index/schema, Node built-in guard scripts, fresh-agent proxy, concise `AGENTS.md` map, package scripts, and `pnpm guardrails`/Quality Gate wiring; G3 passed |
-| Checklist | `$speckit-checklist` | Pending | Recommended domains: data-integrity, integration, regression-safety, error-handling |
+| Checklist | `$speckit-checklist` | Complete | Completed data-integrity, integration, regression-safety, and error-handling checklists; resolved related spec ID pattern and stable finding-code gaps; G4 passed |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first process/tooling tasks |
 | Analyze | `$speckit-analyze` | Pending | Check spec/plan/tasks/design-concept drift and reviewability boundaries |
 | Implement | `$speckit-implement` | Pending | Execute generated tasks only after G6 passes |
@@ -426,11 +426,11 @@ Focus on SPEC-012A requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| integration | Pending | Pending | Pending |
-| regression-safety | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| **Total** | Pending | Pending | Pending |
+| data-integrity | 8 | 1 resolved, 0 remaining | `spec.md`, `data-model.md` |
+| integration | 6 | 0 remaining | `plan.md`, `contracts/repo-knowledge-index-contract.md` |
+| regression-safety | 8 | 0 remaining | `spec.md`, `plan.md` |
+| error-handling | 7 | 1 resolved, 0 remaining | `data-model.md`, `contracts/repo-knowledge-index-contract.md` |
+| **Total** | 29 | 2 resolved, 0 remaining | G4 passed |
 
 ---
 

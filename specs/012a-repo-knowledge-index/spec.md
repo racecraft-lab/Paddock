@@ -93,7 +93,7 @@ Repository CI can run the same freshness and discovery checks as local operators
 - **FR-003A**: `owner` MUST be a non-empty owning role or team string, not an individual-only memory note.
 - **FR-003B**: `freshness` MUST be structured enough for guards to evaluate, including a cadence or stale-after rule and the trigger that requires re-verification.
 - **FR-003C**: `last_verified` MUST be an ISO `YYYY-MM-DD` date representing the latest successful verification of the entry.
-- **FR-003D**: `related_specs` MUST be an array of valid `SPEC-###` or suffixed `SPEC-###X` identifiers, or an empty array when no spec owns the document.
+- **FR-003D**: `related_specs` MUST be an array of valid `SPEC-###` identifiers with optional alphanumeric suffixes such as `SPEC-009C1`, or an empty array when no spec owns the document.
 - **FR-003E**: `verification_commands` MUST be an array of local commands or explicit manual verification instructions that a fresh agent can run or follow from the repository checkout.
 - **FR-004**: Every canonical index entry's `path` MUST resolve to a repo-local file or directory when the entry is marked required.
 - **FR-005**: The index MUST distinguish durable intent documents from execution ledgers and status pointers so agents know which files describe long-lived decisions and which files record current workflow progress.
