@@ -18,13 +18,13 @@ rewrites, or nested `AGENTS.md` rollout.
 
 **Purpose**: Create deterministic invalid inputs before guard implementation.
 
-- [ ] T001 Create `scripts/spec-012a/fixtures/README.md` documenting fixture mode, expected finding codes, and clean-checkout assumptions.
-- [ ] T002 [P] Create `scripts/spec-012a/fixtures/missing-required-doc/` with an index fixture missing one required discovery path and an expected `required_entry_missing` or `required_path_missing` finding.
-- [ ] T003 [P] Create `scripts/spec-012a/fixtures/missing-required-metadata/` with an entry missing `owner`, `freshness`, `last_verified`, `related_specs`, or `verification_commands` and expected `metadata_missing` findings.
-- [ ] T004 [P] Create `scripts/spec-012a/fixtures/broken-required-link/` with a required repo-local Markdown link target missing and expected `required_link_broken`.
-- [ ] T005 [P] Create `scripts/spec-012a/fixtures/stale-status-pointer/` with disagreeing roadmap/workflow/state values and expected `status_pointer_stale`.
-- [ ] T006 [P] Create `scripts/spec-012a/fixtures/invalid-related-spec/` with an invalid `related_specs` value and expected `related_spec_invalid`.
-- [ ] T007 [P] Create `scripts/spec-012a/fixtures/warning-only-links/` with external URLs and Obsidian wikilinks that should emit warnings without a failing exit.
+- [x] T001 Create `scripts/spec-012a/fixtures/README.md` documenting fixture mode, expected finding codes, and clean-checkout assumptions.
+- [x] T002 [P] Create `scripts/spec-012a/fixtures/missing-required-doc/` with an index fixture missing one required discovery path and an expected `required_entry_missing` or `required_path_missing` finding.
+- [x] T003 [P] Create `scripts/spec-012a/fixtures/missing-required-metadata/` with an entry missing `owner`, `freshness`, `last_verified`, `related_specs`, or `verification_commands` and expected `metadata_missing` findings.
+- [x] T004 [P] Create `scripts/spec-012a/fixtures/broken-required-link/` with a required repo-local Markdown link target missing and expected `required_link_broken`.
+- [x] T005 [P] Create `scripts/spec-012a/fixtures/stale-status-pointer/` with disagreeing roadmap/workflow/state values and expected `status_pointer_stale`.
+- [x] T006 [P] Create `scripts/spec-012a/fixtures/invalid-related-spec/` with an invalid `related_specs` value and expected `related_spec_invalid`.
+- [x] T007 [P] Create `scripts/spec-012a/fixtures/warning-only-links/` with external URLs and Obsidian wikilinks that should emit warnings without a failing exit.
 
 ## Phase 2: Canonical Index, Schema, and Root Map
 

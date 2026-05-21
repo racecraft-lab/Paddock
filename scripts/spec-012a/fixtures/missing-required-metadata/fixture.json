@@ -1,0 +1,14 @@
+{
+  "description": "Remove required owner metadata from a required discovery entry.",
+  "expected": {
+    "exitCode": 1,
+    "codes": ["metadata_missing"]
+  },
+  "mutations": [
+    {
+      "type": "delete_field",
+      "path": "AGENTS.md",
+      "field": "owner"
+    }
+  ]
+}

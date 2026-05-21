@@ -1,0 +1,19 @@
+{
+  "description": "Add a required repo-local link whose target does not exist.",
+  "expected": {
+    "exitCode": 1,
+    "codes": ["required_link_broken"]
+  },
+  "mutations": [
+    {
+      "type": "append_link",
+      "path": "AGENTS.md",
+      "link": {
+        "target": "docs/spec-012a-missing-required-link-target.md",
+        "required": true,
+        "repo_owned": true,
+        "description": "Broken required-link fixture target"
+      }
+    }
+  ]
+}

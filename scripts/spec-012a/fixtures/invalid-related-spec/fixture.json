@@ -1,0 +1,15 @@
+{
+  "description": "Use a related_specs value that does not match SPEC-### with optional alphanumeric suffix.",
+  "expected": {
+    "exitCode": 1,
+    "codes": ["related_spec_invalid"]
+  },
+  "mutations": [
+    {
+      "type": "set_field",
+      "path": "AGENTS.md",
+      "field": "related_specs",
+      "value": ["SPEC-ABC"]
+    }
+  ]
+}
