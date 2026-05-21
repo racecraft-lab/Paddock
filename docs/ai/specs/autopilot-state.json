@@ -1,7 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-012A-workflow.md",
-  "updated_at": "2026-05-21T15:50:16Z",
+  "updated_at": "2026-05-21T18:10:02Z",
   "active_step": "Complete",
+  "status": "Complete",
   "current_spec_dir": "specs/012a-repo-knowledge-index",
   "branch": "012a-repo-knowledge-index",
   "project_commands": {
@@ -90,9 +91,17 @@
       "initial_remote_state": "mergeStateStatus=BLOCKED, reviewDecision=REVIEW_REQUIRED, checks pending"
     },
     "review_remediation": {
-      "status": "completed-with-human-gate",
-      "remote_checks": "CodeQL and quality-gate passed on head b759870d8f9dc5e487bb4c09078461a99ceb67b2 before closeout ledger update.",
-      "remaining_human_gate": "visual-review-approval/playwright and visual-review-approval/storybook are failing with Visual review approval is missing because package.json changed; no UI/Storybook/Docker/visual baseline/e2e test files changed."
+      "status": "completed",
+      "remote_checks": "PR #56 merged to main as a5e3fbece82fddec548b70763a703893ba409813 on 2026-05-21. CodeQL, quality-gate, docker-ui-e2e / visual-review-report, visual-storybook / visual-review-report, visual-review-approval/playwright, and visual-review-approval/storybook passed.",
+      "remaining_human_gate": "none"
+    },
+    "post_merge_closeout": {
+      "status": "completed",
+      "pr_number": 56,
+      "url": "https://github.com/racecraft-lab/mission-control/pull/56",
+      "merged_at": "2026-05-21T17:54:25Z",
+      "merge_commit": "a5e3fbece82fddec548b70763a703893ba409813",
+      "notes": "Roadmap and workflow hygiene recorded SPEC-012A as complete after the merged PR and final visual approval/check state were verified."
     },
     "retrospective": {
       "status": "completed",

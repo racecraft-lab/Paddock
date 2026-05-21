@@ -133,7 +133,7 @@
     {
       "path": "docs/ai/specs/SPEC-012A-workflow.md",
       "kind": "execution-ledger",
-      "purpose": "Active SPEC-012A workflow ledger, phase gates, implementation progress, and verification evidence.",
+      "purpose": "Completed SPEC-012A workflow ledger, phase gates, implementation progress, and verification evidence.",
       "owner": "SpecKit operators",
       "freshness": {
         "cadence": "per SPEC-012A phase transition",
@@ -148,7 +148,7 @@
     {
       "path": "docs/ai/specs/autopilot-state.json",
       "kind": "status-pointer",
-      "purpose": "Machine-readable autopilot state pointer for the active SPEC-012A workflow and phase.",
+      "purpose": "Machine-readable autopilot state pointer for the latest completed SPEC-012A workflow and phase.",
       "owner": "SpecKit operators",
       "freshness": {
         "cadence": "per autopilot phase transition",

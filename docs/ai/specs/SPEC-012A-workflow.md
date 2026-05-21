@@ -182,12 +182,12 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] Agents can start from repo-local docs and discover PRD, roadmap, workflow, runbook, ownership, and current status evidence.
-- [ ] Canonical docs index contains required metadata for each required entry.
-- [ ] Root `AGENTS.md` remains concise and points to the index and source-of-truth docs.
-- [ ] Local/CI guard fails on missing files, missing owner/freshness metadata, stale status pointers, or broken repo-local required links.
-- [ ] External URLs and Obsidian wikilinks do not hard-fail unless they claim a repo-owned fact.
-- [ ] GitNexus refresh instructions are discoverable, but `.gitnexus/` remains ignored and uncommitted.
+- [x] Agents can start from repo-local docs and discover PRD, roadmap, workflow, runbook, ownership, and current status evidence.
+- [x] Canonical docs index contains required metadata for each required entry.
+- [x] Root `AGENTS.md` remains concise and points to the index and source-of-truth docs.
+- [x] Local/CI guard fails on missing files, missing owner/freshness metadata, stale status pointers, or broken repo-local required links.
+- [x] External URLs and Obsidian wikilinks do not hard-fail unless they claim a repo-owned fact.
+- [x] GitNexus refresh instructions are discoverable, but `.gitnexus/` remains ignored and uncommitted.
 
 ---
 
@@ -602,7 +602,7 @@ Post-implementation code review also corrected the live status-pointer guard pat
 - [x] `git diff --check` passes.
 - [x] Roadmap/workflow/status docs are updated in the spec branch.
 - [x] Full `pnpm test` suite is green during UAT.
-- [x] Branch is pushed and PR #56 is ready for review: https://github.com/racecraft-lab/mission-control/pull/56
+- [x] PR #56 merged to `main` as `a5e3fbece82fddec548b70763a703893ba409813` on 2026-05-21: https://github.com/racecraft-lab/mission-control/pull/56
 
 ### Post-Implementation Reviewability Evidence
 
@@ -616,7 +616,7 @@ It returned `status=block` with `transition_exception=false` even though the dif
 
 ### PR Check Evidence
 
-PR #56 was opened at https://github.com/racecraft-lab/mission-control/pull/56. Remote checks on head `b759870d8f9dc5e487bb4c09078461a99ceb67b2` passed CodeQL and `quality-gate`; the Quality Gate run passed guardrails, dependency audit, lint, typecheck, unit tests, build, and e2e in GitHub Actions. The remaining failing contexts are `visual-review-approval/playwright` and `visual-review-approval/storybook`, both reporting `Visual review approval is missing`. Those are human visual-approval status contexts triggered because `package.json` changed; no UI, Storybook, Docker, visual baseline, or e2e test files changed in SPEC-012A.
+PR #56 merged at https://github.com/racecraft-lab/mission-control/pull/56 as `a5e3fbece82fddec548b70763a703893ba409813` on 2026-05-21. The final remote check state passed CodeQL, `quality-gate`, `docker-ui-e2e / visual-review-report`, `visual-storybook / visual-review-report`, `visual-review-approval/playwright`, and `visual-review-approval/storybook`. The Quality Gate run passed guardrails, dependency audit, lint, typecheck, unit tests, build, and e2e in GitHub Actions. SPEC-012A changed docs/process/script/package surfaces only; no UI, Storybook, Docker, visual baseline, or e2e test files changed.
 
 ---
 
