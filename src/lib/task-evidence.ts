@@ -617,7 +617,22 @@ function buildTriageRoutingEvidence(
     ORDER BY created_at DESC, id DESC
   `).all(task.id, task.workspace_id, TRIAGE_ROUTING_SCHEMA_VERSION, ...TRIAGE_ROUTING_ARTIFACT_TYPES) as TriageRoutingArtifactRow[]
 
+  const problemActivity = readLatestTriageRoutingProblemActivity(db, task)
+
+  const supersededArtifacts = rows
+    .filter((row) => triageRoutingArtifactState(row) === 'superseded')
+    .map((row) => {
+      const reference = triageRoutingArtifactReference(row, 'superseded')
+      sourceMap.push(source('triage_routing', 'artifact', reference.artifact_id, 'superseded', 'superseded triage routing artifact'))
+      return reference
+    })
+  const activeRow = rows.find((row) => triageRoutingArtifactState(row) === 'available')
+
   if (rows.length === 0) {
+    if (problemActivity) {
+      sourceMap.push(source('triage_routing', 'activity', String(problemActivity.id), 'available', problemActivity.type ?? 'triage routing problem activity'))
+      return problemActivityTriageRoutingEvidence(problemActivity, supersededArtifacts)
+    }
     sourceMap.push(source('triage_routing', 'artifact', undefined, 'missing', 'no triage routing artifact found'))
     return {
       ...empty,
@@ -625,12 +640,11 @@ function buildTriageRoutingEvidence(
     }
   }
 
-  const supersededArtifacts = rows
-    .filter((row) => triageRoutingArtifactState(row) === 'superseded')
-    .map((row) => triageRoutingArtifactReference(row, 'superseded'))
-  const activeRow = rows.find((row) => triageRoutingArtifactState(row) === 'available')
-
   if (!activeRow) {
+    if (problemActivity) {
+      sourceMap.push(source('triage_routing', 'activity', String(problemActivity.id), 'available', problemActivity.type ?? 'triage routing problem activity'))
+      return problemActivityTriageRoutingEvidence(problemActivity, supersededArtifacts)
+    }
     sourceMap.push(source('triage_routing', 'artifact', undefined, 'unavailable', 'no current triage routing artifact found'))
     return {
       ...empty,
@@ -657,6 +671,21 @@ function buildTriageRoutingEvidence(
   }
 
   const activity = readRecordedTriageRoutingActivity(db, task, activeRow.id, payload.value)
+  if (problemActivity && isProblemActivityNewer(problemActivity, activity)) {
+    sourceMap.push(source('triage_routing', 'activity', String(problemActivity.id), 'available', problemActivity.type ?? 'triage routing problem activity'))
+    const problemEvidence = problemActivityTriageRoutingEvidence(problemActivity, supersededArtifacts)
+    return {
+      ...problemEvidence,
+      disposition: payload.value.disposition,
+      lane: payload.value.lane,
+      artifact,
+      idempotency_key: payload.value.idempotency_key,
+      recommended_next_action: sanitizeEvidenceDisplayText(payload.value.recommended_next_action),
+      proposed_labels: sanitizeProposedLabels(payload.value.proposed_labels),
+      deferred_side_effects: sanitizeDeferredSideEffects(payload.value.deferred_side_effects),
+      lane_detail: sanitizeTriageRoutingLaneDetail(payload.value.lane_detail),
+    }
+  }
   const missing = activity ? [] : ['missing_triage_routing_recorded_activity']
   if (activity) {
     sourceMap.push(source('triage_routing', 'activity', String(activity.id), 'available', 'triage routing recorded activity'))
@@ -681,6 +710,91 @@ function buildTriageRoutingEvidence(
   }
   if (activity) evidence.activity_reference = `activity:${String(activity.id)}`
   return evidence
+}
+
+function problemActivityTriageRoutingEvidence(
+  activity: ActivityRow,
+  supersededArtifacts: TriageRoutingArtifactReference[],
+): TriageRoutingEvidence {
+  const data = parseJsonRecord(activity.data)
+  const type = activity.type ?? ''
+  const routingStatus: TriageRoutingStatus = type === 'triage_routing_conflict' ? 'conflict' : 'failed'
+  const disposition = isSupportedTriageRoutingDisposition(data?.['disposition']) ? data['disposition'] : undefined
+  const idempotencyKey = typeof data?.['idempotency_key'] === 'string'
+    ? sanitizeEvidenceDisplayText(data['idempotency_key'])
+    : undefined
+
+  const evidence: TriageRoutingEvidence = {
+    state: type === 'triage_routing_artifact_publish_failed' ? 'unavailable' : 'incomplete',
+    routing_status: routingStatus,
+    proposed_labels: [],
+    deferred_side_effects: [],
+    activity_reference: `activity:${String(activity.id)}`,
+    missing: type === 'triage_routing_conflict'
+      ? ['conflicting_triage_routing_disposition']
+      : ['missing_triage_routing_artifact'],
+    warnings: [problemActivityWarning(activity)],
+    superseded_artifacts: supersededArtifacts,
+  }
+  if (disposition) evidence.disposition = disposition
+  if (idempotencyKey) evidence.idempotency_key = idempotencyKey
+  return evidence
+}
+
+function problemActivityWarning(activity: ActivityRow): string {
+  const data = parseJsonRecord(activity.data)
+  const failureCode = typeof data?.['failure_code'] === 'string'
+    ? sanitizeEvidenceDisplayText(data['failure_code'])
+    : sanitizeEvidenceDisplayText(activity.type ?? 'triage_routing_failed')
+  if (activity.type === 'triage_routing_conflict') {
+    const existing = typeof data?.['existing_disposition'] === 'string'
+      ? sanitizeEvidenceDisplayText(data['existing_disposition'])
+      : 'existing route'
+    const attempted = typeof data?.['attempted_disposition'] === 'string'
+      ? sanitizeEvidenceDisplayText(data['attempted_disposition'])
+      : 'attempted route'
+    return `conflict: ${existing} already recorded; ${attempted} was rejected`
+  }
+  return failureCode
+}
+
+function readLatestTriageRoutingProblemActivity(
+  db: Database.Database,
+  task: TaskRow,
+): ActivityRow | null {
+  if (!tableExists(db, 'activities')) return null
+  const row = db.prepare(`
+    SELECT id, type, description, data, created_at
+    FROM activities
+    WHERE type IN (
+      'triage_routing_conflict',
+      'triage_routing_validation_failed',
+      'triage_routing_artifact_publish_failed'
+    )
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND workspace_id = ?
+    ORDER BY created_at DESC, id DESC
+    LIMIT 1
+  `).get(task.id, task.workspace_id) as ActivityRow | undefined
+  return row ?? null
+}
+
+function isProblemActivityNewer(problem: ActivityRow, recorded: ActivityRow | null): boolean {
+  if (!recorded) return true
+  const problemTime = activitySortValue(problem)
+  const recordedTime = activitySortValue(recorded)
+  if (problemTime !== recordedTime) return problemTime > recordedTime
+  return problem.id > recorded.id
+}
+
+function activitySortValue(activity: ActivityRow): number {
+  if (typeof activity.created_at === 'number') return activity.created_at
+  if (typeof activity.created_at === 'string') {
+    const parsed = Date.parse(activity.created_at)
+    return Number.isNaN(parsed) ? 0 : parsed
+  }
+  return 0
 }
 
 function emptyTriageRoutingEvidence(): TriageRoutingEvidence {
@@ -1051,6 +1165,17 @@ function artifactKind(artifactType: string | null): ArtifactReferenceKind {
 
 function isTriageRoutingArtifactType(value: string | null): value is TriageRoutingArtifactType {
   return TRIAGE_ROUTING_ARTIFACT_TYPES.includes(value as TriageRoutingArtifactType)
+}
+
+function isSupportedTriageRoutingDisposition(value: unknown): value is SupportedTriageRoutingDisposition {
+  return typeof value === 'string' && [
+    'NEEDS_SPEC',
+    'NEEDS_HUMAN',
+    'NEEDS_SPECIALIST',
+    'DUPLICATE',
+    'OBSOLETE',
+    'INVALID',
+  ].includes(value)
 }
 
 function artifactLabel(artifactType: string | null, schemaVersion: string | null, id: number): string {

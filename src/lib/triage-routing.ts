@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto'
 import { resolveFlag } from './feature-flags'
 import {
+  TRIAGE_ROUTING_ARTIFACT_TYPES,
   TRIAGE_ROUTING_SCHEMA_VERSION,
   SUPPORTED_TRIAGE_ROUTING_DISPOSITIONS,
   TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE,
@@ -9,6 +10,7 @@ import {
   buildNeedsHumanTriageRoutingPayload,
   buildNeedsSpecialistTriageRoutingPayload,
   buildNeedsSpecTriageRoutingPayload,
+  buildTriageRoutingIdempotencyKey,
   type SupportedTriageRoutingDisposition,
   type TriageRoutingArtifactType,
   type TriageRoutingLane,
@@ -69,6 +71,9 @@ export type TriageRoutingFailureReason =
   | 'unsupported_source_template'
   | 'unsupported_source_repo'
   | 'unsupported_disposition'
+  | 'conflicting_disposition'
+  | 'payload_validation_failed'
+  | 'artifact_publish_failed'
 
 export type TriageRoutingResult =
   | {
@@ -142,6 +147,16 @@ interface RecordTriageRoutingResult {
 }
 
 type RecordableNowDisposition = SupportedTriageRoutingDisposition
+
+interface ExistingTriageRoutingArtifactRow {
+  readonly id: number
+  readonly artifact_type: string | null
+  readonly content_json: string | null
+  readonly redaction_status: string | null
+  readonly security_scan_status: string | null
+  readonly supersedes_artifact_id: number | null
+  readonly created_at: number | string | null
+}
 
 type SpecialistResolution =
   | {
@@ -218,7 +233,43 @@ export function routeTriageDisposition(
       lane: TRIAGE_ROUTING_DISPOSITION_TO_LANE[input.disposition],
       artifactType: TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE[input.disposition],
     }
-    const recorded = recordTriageRouting(db, source, input)
+    const payload = tryBuildRoutingPayload(db, source, input)
+    if (!payload.ok) {
+      recordRoutingFailureActivity(db, source, input.disposition, 'triage_routing_validation_failed', {
+        failure_code: 'payload_validation_failed',
+        issue: payload.issue,
+      })
+      return failure('payload_validation_failed', source, {
+        code: 'payload_validation_failed',
+        path: payload.issue.path,
+        message: 'Triage routing payload validation failed before artifact publication.',
+      })
+    }
+
+    const currentArtifact = readCurrentTriageRoutingArtifact(db, source)
+    const currentPayload = currentArtifact ? parseStoredRoutingPayload(currentArtifact) : null
+    if (currentArtifact && currentPayload && currentPayload.disposition !== input.disposition) {
+      recordRoutingConflictActivity(db, source, currentPayload, input.disposition)
+      return failure('conflicting_disposition', source, {
+        code: 'conflicting_disposition',
+        path: 'disposition',
+        message: 'A terminal routing disposition is already recorded for this source task.',
+      })
+    }
+
+    let recorded: RecordTriageRoutingResult
+    try {
+      recorded = recordTriageRouting(db, source, payload.value, currentArtifact, currentPayload)
+    } catch {
+      recordRoutingFailureActivity(db, source, input.disposition, 'triage_routing_artifact_publish_failed', {
+        failure_code: 'artifact_publish_failed',
+      })
+      return failure('artifact_publish_failed', source, {
+        code: 'artifact_publish_failed',
+        path: 'task_artifacts',
+        message: 'Triage routing artifact publication failed; sanitized failure evidence was recorded.',
+      })
+    }
     return {
       ok: true,
       status: 'recorded',
@@ -247,7 +298,9 @@ export function routeTriageDisposition(
 function recordTriageRouting(
   db: Database.Database,
   source: TriageRoutingSource,
-  input: RouteTriageDispositionInput,
+  payload: TriageRoutingPayloadEnvelope,
+  currentArtifact: ExistingTriageRoutingArtifactRow | null,
+  currentPayload: TriageRoutingPayloadEnvelope | null,
 ): RecordTriageRoutingResult {
   const tx = db.transaction(() => {
     db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ? AND workspace_id = ?').run(
@@ -257,54 +310,39 @@ function recordTriageRouting(
       source.workspaceId,
     )
 
-    const payload = buildRoutingPayload(db, source, input)
-    const payloadJson = JSON.stringify(payload)
-    const artifactInfo = db
-      .prepare(`
-        INSERT INTO task_artifacts (
-          task_id, workspace_id, workflow_template_slug, artifact_type, schema_version,
-          storage_kind, content_json, mime_type, byte_size, sha256, preview_text,
-          redaction_status, security_scan_status, created_at
-        )
-        VALUES (?, ?, ?, ?, ?, 'inline_json', ?, 'application/json',
-          ?, ?, ?, 'clean', 'scanned_clean', ?)
-      `)
-      .run(
-        source.taskId,
-        source.workspaceId,
-        source.workflowTemplateSlug,
-        payload.artifact_type,
-        TRIAGE_ROUTING_SCHEMA_VERSION,
-        payloadJson,
-        Buffer.byteLength(payloadJson, 'utf8'),
-        createHash('sha256').update(payloadJson, 'utf8').digest('hex'),
-        `${payload.disposition} ${payload.lane} ${payload.recommended_next_action}`,
-        unixNow(),
+    if (
+      currentArtifact &&
+      currentPayload?.disposition === payload.disposition &&
+      canonicalRoutingPayloadJson(currentPayload) === canonicalRoutingPayloadJson(payload)
+    ) {
+      const existingActivity = readRecordedRoutingActivity(
+        db,
+        source,
+        currentArtifact.id,
+        currentPayload.idempotency_key,
+        currentPayload.disposition,
       )
-    const artifactId = Number(artifactInfo.lastInsertRowid)
-
-    const activityData = {
-      source_task_id: source.taskId,
-      workspace_id: source.workspaceId,
-      disposition: payload.disposition,
-      lane: payload.lane,
-      routing_status: 'recorded',
-      artifact_id: artifactId,
-      idempotency_key: payload.idempotency_key,
-      deferred_side_effects: activityDeferredSideEffects(payload),
+      const activity = existingActivity ?? insertRecordedRoutingActivity(db, source, currentPayload, currentArtifact.id)
+      return {
+        artifact: {
+          id: currentArtifact.id,
+          type: currentPayload.artifact_type,
+          schemaVersion: TRIAGE_ROUTING_SCHEMA_VERSION,
+          idempotencyKey: currentPayload.idempotency_key,
+        },
+        activity,
+      }
     }
-    const activityInfo = db
-      .prepare(`
-        INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-        VALUES ('triage_routing_recorded', 'task', ?, 'mission-control', ?, ?, ?, ?)
-      `)
-      .run(
-        source.taskId,
-        `Recorded terminal triage routing for ${payload.disposition}`,
-        JSON.stringify(activityData),
-        source.workspaceId,
-        unixNow(),
-      )
+
+    const supersedesArtifactId = currentArtifact && currentPayload?.disposition === payload.disposition
+      ? currentArtifact.id
+      : undefined
+    const artifactId = insertRoutingArtifact(db, source, payload, supersedesArtifactId)
+    if (supersedesArtifactId) {
+      db.prepare('UPDATE task_artifacts SET redaction_status = ? WHERE id = ? AND task_id = ? AND workspace_id = ?')
+        .run('superseded', supersedesArtifactId, source.taskId, source.workspaceId)
+    }
+    const activity = insertRecordedRoutingActivity(db, source, payload, artifactId, supersedesArtifactId)
 
     return {
       artifact: {
@@ -313,14 +351,245 @@ function recordTriageRouting(
         schemaVersion: TRIAGE_ROUTING_SCHEMA_VERSION,
         idempotencyKey: payload.idempotency_key,
       },
-      activity: {
-        id: Number(activityInfo.lastInsertRowid),
-        type: 'triage_routing_recorded' as const,
-      },
+      activity,
     }
   })
 
   return tx()
+}
+
+function tryBuildRoutingPayload(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  input: RouteTriageDispositionInput,
+): { ok: true; value: TriageRoutingPayloadEnvelope } | { ok: false; issue: TriageRoutingIssue } {
+  try {
+    return { ok: true, value: buildRoutingPayload(db, source, input) }
+  } catch (error) {
+    return {
+      ok: false,
+      issue: validationIssueFromError(error),
+    }
+  }
+}
+
+function insertRoutingArtifact(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  payload: TriageRoutingPayloadEnvelope,
+  supersedesArtifactId?: number,
+): number {
+  const payloadJson = JSON.stringify(payload)
+  const artifactInfo = db
+    .prepare(`
+      INSERT INTO task_artifacts (
+        task_id, workspace_id, workflow_template_slug, artifact_type, schema_version,
+        storage_kind, content_json, mime_type, byte_size, sha256, preview_text,
+        redaction_status, security_scan_status, supersedes_artifact_id, created_at
+      )
+      VALUES (?, ?, ?, ?, ?, 'inline_json', ?, 'application/json',
+        ?, ?, ?, 'clean', 'scanned_clean', ?, ?)
+    `)
+    .run(
+      source.taskId,
+      source.workspaceId,
+      source.workflowTemplateSlug,
+      payload.artifact_type,
+      TRIAGE_ROUTING_SCHEMA_VERSION,
+      payloadJson,
+      Buffer.byteLength(payloadJson, 'utf8'),
+      createHash('sha256').update(payloadJson, 'utf8').digest('hex'),
+      `${payload.disposition} ${payload.lane} ${payload.recommended_next_action}`,
+      supersedesArtifactId ?? null,
+      unixNow(),
+    )
+  return Number(artifactInfo.lastInsertRowid)
+}
+
+function insertRecordedRoutingActivity(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  payload: TriageRoutingPayloadEnvelope,
+  artifactId: number,
+  supersedesArtifactId?: number,
+): RecordedTriageRoutingActivity {
+  const activityData = {
+    source_task_id: source.taskId,
+    workspace_id: source.workspaceId,
+    disposition: payload.disposition,
+    lane: payload.lane,
+    routing_status: 'recorded',
+    artifact_id: artifactId,
+    ...(supersedesArtifactId ? { supersedes_artifact_id: supersedesArtifactId } : {}),
+    idempotency_key: payload.idempotency_key,
+    deferred_side_effects: activityDeferredSideEffects(payload),
+  }
+  const activityInfo = db
+    .prepare(`
+      INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
+      VALUES ('triage_routing_recorded', 'task', ?, 'mission-control', ?, ?, ?, ?)
+    `)
+    .run(
+      source.taskId,
+      `Recorded terminal triage routing for ${payload.disposition}`,
+      JSON.stringify(activityData),
+      source.workspaceId,
+      unixNow(),
+    )
+  return {
+    id: Number(activityInfo.lastInsertRowid),
+    type: 'triage_routing_recorded',
+  }
+}
+
+function readRecordedRoutingActivity(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  artifactId: number,
+  idempotencyKey: string,
+  disposition: SupportedTriageRoutingDisposition,
+): RecordedTriageRoutingActivity | null {
+  const rows = db.prepare(`
+    SELECT id, data
+    FROM activities
+    WHERE type = 'triage_routing_recorded'
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND workspace_id = ?
+    ORDER BY created_at DESC, id DESC
+  `).all(source.taskId, source.workspaceId) as { id: number; data: string | null }[]
+  for (const row of rows) {
+    const data = parseJsonRecord(row.data)
+    if (
+      data?.['artifact_id'] === artifactId &&
+      data['idempotency_key'] === idempotencyKey &&
+      data['disposition'] === disposition
+    ) {
+      return { id: row.id, type: 'triage_routing_recorded' }
+    }
+  }
+  return null
+}
+
+function readCurrentTriageRoutingArtifact(
+  db: Database.Database,
+  source: TriageRoutingSource,
+): ExistingTriageRoutingArtifactRow | null {
+  const placeholders = TRIAGE_ROUTING_ARTIFACT_TYPES.map(() => '?').join(', ')
+  const rows = db.prepare(`
+    SELECT id, artifact_type, content_json, redaction_status, security_scan_status,
+           supersedes_artifact_id, created_at
+    FROM task_artifacts
+    WHERE task_id = ?
+      AND workspace_id = ?
+      AND schema_version = ?
+      AND artifact_type IN (${placeholders})
+    ORDER BY created_at DESC, id DESC
+  `).all(source.taskId, source.workspaceId, TRIAGE_ROUTING_SCHEMA_VERSION, ...TRIAGE_ROUTING_ARTIFACT_TYPES) as ExistingTriageRoutingArtifactRow[]
+  return rows.find(isCurrentRoutingArtifact) ?? null
+}
+
+function isCurrentRoutingArtifact(row: ExistingTriageRoutingArtifactRow): boolean {
+  const redaction = normalizeStatus(row.redaction_status)
+  const security = normalizeStatus(row.security_scan_status)
+  return redaction !== 'superseded'
+    && redaction !== 'quarantined'
+    && redaction !== 'rejected'
+    && security !== 'scanned_with_findings'
+    && security !== 'hash_mismatch'
+    && security !== 'file_missing'
+    && !security.includes('secret')
+}
+
+function parseStoredRoutingPayload(row: ExistingTriageRoutingArtifactRow): TriageRoutingPayloadEnvelope | null {
+  if (!row.content_json) return null
+  try {
+    const parsed = JSON.parse(row.content_json) as Partial<TriageRoutingPayloadEnvelope>
+    const disposition = parsed.disposition
+    if (typeof disposition !== 'string' || !isSupportedDisposition(disposition)) return null
+    return parsed.schema_version === TRIAGE_ROUTING_SCHEMA_VERSION
+      && parsed.artifact_type === TRIAGE_ROUTING_DISPOSITION_TO_ARTIFACT_TYPE[disposition]
+      ? parsed as TriageRoutingPayloadEnvelope
+      : null
+  } catch {
+    return null
+  }
+}
+
+function canonicalRoutingPayloadJson(payload: TriageRoutingPayloadEnvelope): string {
+  return stableJsonWithoutProducedAt(payload)
+}
+
+function stableJsonWithoutProducedAt(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => stableJsonWithoutProducedAt(entry)).join(',')}]`
+  }
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([key]) => key !== 'produced_at')
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, entry]) => `${JSON.stringify(key)}:${stableJsonWithoutProducedAt(entry)}`)
+    return `{${entries.join(',')}}`
+  }
+  return JSON.stringify(value)
+}
+
+function recordRoutingConflictActivity(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  currentPayload: TriageRoutingPayloadEnvelope,
+  attemptedDisposition: SupportedTriageRoutingDisposition,
+): void {
+  recordRoutingFailureActivity(db, source, attemptedDisposition, 'triage_routing_conflict', {
+    failure_code: 'conflicting_disposition',
+    existing_disposition: currentPayload.disposition,
+    attempted_disposition: attemptedDisposition,
+    existing_idempotency_key: currentPayload.idempotency_key,
+  })
+}
+
+function recordRoutingFailureActivity(
+  db: Database.Database,
+  source: TriageRoutingSource,
+  disposition: SupportedTriageRoutingDisposition,
+  type: 'triage_routing_conflict' | 'triage_routing_validation_failed' | 'triage_routing_artifact_publish_failed',
+  details: Record<string, unknown>,
+): void {
+  db.prepare(`
+    INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
+    VALUES (?, 'task', ?, 'mission-control', ?, ?, ?, ?)
+  `).run(
+    type,
+    source.taskId,
+    type === 'triage_routing_conflict'
+      ? `Detected conflicting triage routing for ${disposition}`
+      : `Failed terminal triage routing for ${disposition}`,
+    JSON.stringify({
+      source_task_id: source.taskId,
+      workspace_id: source.workspaceId,
+      disposition,
+      routing_status: type === 'triage_routing_conflict' ? 'conflict' : 'failed',
+      idempotency_key: buildTriageRoutingIdempotencyKey({
+        workspace_id: source.workspaceId,
+        source_task_id: source.taskId,
+        disposition,
+      }),
+      ...details,
+    }),
+    source.workspaceId,
+    unixNow(),
+  )
+}
+
+function validationIssueFromError(error: unknown): TriageRoutingIssue {
+  const message = error instanceof Error ? error.message : String(error)
+  const match = /^invalid_[^:]+:(.+)$/.exec(message)
+  const path = match?.[1] ?? 'payload'
+  return {
+    code: 'payload_validation_failed',
+    path,
+    message: 'Triage routing payload validation failed.',
+  }
 }
 
 function buildRoutingPayload(
@@ -619,6 +888,22 @@ function isRecordableNowDisposition(disposition: SupportedTriageRoutingDispositi
 
 function isClosureDisposition(disposition: string): disposition is 'DUPLICATE' | 'OBSOLETE' | 'INVALID' {
   return disposition === 'DUPLICATE' || disposition === 'OBSOLETE' || disposition === 'INVALID'
+}
+
+function parseJsonRecord(input: string | null): Record<string, unknown> | null {
+  if (!input) return null
+  try {
+    const parsed = JSON.parse(input) as unknown
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed as Record<string, unknown>
+      : null
+  } catch {
+    return null
+  }
+}
+
+function normalizeStatus(value: string | null): string {
+  return value?.trim().toLowerCase() ?? ''
 }
 
 function tableExists(db: Database.Database, tableName: string): boolean {

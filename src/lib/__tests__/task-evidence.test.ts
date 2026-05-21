@@ -226,6 +226,20 @@ describe('SPEC-009E task evidence helper', () => {
 })
 
 describe('SPEC-009F task evidence triage routing', () => {
+  function insertTriageRoutingProblemActivity(
+    database: Database.Database,
+    taskId: number,
+    type: 'triage_routing_conflict' | 'triage_routing_validation_failed' | 'triage_routing_artifact_publish_failed',
+    data: Record<string, unknown>,
+    createdAt = 1779400900,
+  ): number {
+    const info = database.prepare(`
+      INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
+      VALUES (?, 'task', ?, 'mission-control', 'SPEC-009F problem activity', ?, 1, ?)
+    `).run(type, taskId, JSON.stringify(data), createdAt)
+    return Number(info.lastInsertRowid)
+  }
+
   it('derives NEEDS_SPEC triage routing evidence from terminal handoff artifacts and activities', () => {
     const database = db()
     const seed = seedSpec009fNonRemediationOutcome(database, 'NEEDS_SPEC')
@@ -300,6 +314,162 @@ describe('SPEC-009F task evidence triage routing', () => {
     ]))
     expect(JSON.stringify(evidence.triage_routing)).not.toContain('storage_uri')
     expect(JSON.stringify(evidence.triage_routing)).not.toContain('javascript:')
+  })
+
+  it('maps missing and artifact-storage-unavailable triage routing evidence explicitly', () => {
+    const database = db()
+    const taskId = seedEligiblePilotEvidence(database)
+
+    const missing = scopedBuild(database, taskId)
+    const unavailable = scopedBuild(database, taskId, false)
+
+    expect(missing.triage_routing).toMatchObject({
+      state: 'missing',
+      routing_status: 'missing',
+      missing: ['missing_triage_routing_artifact'],
+    })
+    expect(unavailable.triage_routing).toMatchObject({
+      state: 'unavailable',
+      routing_status: 'missing',
+      missing: ['artifact_storage_disabled'],
+    })
+    expect(unavailable.warnings).toContainEqual(expect.objectContaining({
+      code: 'section_unavailable',
+      section: 'triage_routing',
+      reason: 'artifact_storage_disabled',
+    }))
+  })
+
+  it('selects the newest current route and preserves superseded artifacts as trace-only evidence', () => {
+    const database = db()
+    const seed = seedSpec009fNonRemediationOutcome(database, 'NEEDS_SPEC')
+    const newArtifactId = seed.artifactId + 200
+    const newActivityId = seed.activityId + 200
+    const idempotencyKey = `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_SPEC`
+    const nextPayload = {
+      ...seed.payload,
+      idempotency_key: idempotencyKey,
+      triage_rationale: 'Updated deterministic SPEC-009F fixture rationale.',
+      recommended_next_action: 'Review the newest NEEDS_SPEC route in Mission Control.',
+      produced_at: '2026-05-21T14:00:00.000Z',
+    }
+    const payloadJson = JSON.stringify(nextPayload)
+    database
+      .prepare('UPDATE task_artifacts SET redaction_status = ? WHERE id = ?')
+      .run('superseded', seed.artifactId)
+    database.prepare(`
+      INSERT INTO task_artifacts (
+        id, task_id, workspace_id, project_id, producer_agent_id, workflow_template_slug,
+        artifact_type, schema_version, storage_kind, content_json, mime_type, byte_size,
+        sha256, preview_text, redaction_status, security_scan_status, supersedes_artifact_id, created_at
+      )
+      VALUES (?, ?, 1, 9900, 9901, 'mission-control_issue_triage',
+        'triage_speckit_handoff', 'spec-009f.triage_routing.v1', 'inline_json', ?, 'application/json',
+        ?, ?, 'Updated routing artifact', 'clean', 'scanned_clean', ?, 1779400800)
+    `).run(newArtifactId, seed.taskId, payloadJson, Buffer.byteLength(payloadJson, 'utf8'), 'f'.repeat(64), seed.artifactId)
+    database.prepare(`
+      INSERT INTO activities (id, type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
+      VALUES (?, 'triage_routing_recorded', 'task', ?, 'mission-control', 'Recorded terminal triage routing for NEEDS_SPEC', ?, 1, 1779400810)
+    `).run(newActivityId, seed.taskId, JSON.stringify({
+      source_task_id: seed.taskId,
+      workspace_id: 1,
+      disposition: 'NEEDS_SPEC',
+      lane: 'speckit_handoff',
+      routing_status: 'recorded',
+      artifact_id: newArtifactId,
+      supersedes_artifact_id: seed.artifactId,
+      idempotency_key: idempotencyKey,
+    }))
+
+    const evidence = scopedBuild(database, seed.taskId)
+
+    expect(evidence.triage_routing).toMatchObject({
+      state: 'available',
+      routing_status: 'recorded',
+      artifact: {
+        artifact_id: String(newArtifactId),
+      },
+      activity_reference: `activity:${String(newActivityId)}`,
+      recommended_next_action: 'Review the newest NEEDS_SPEC route in Mission Control.',
+      superseded_artifacts: [
+        expect.objectContaining({
+          state: 'superseded',
+          artifact_id: String(seed.artifactId),
+        }),
+      ],
+    })
+    expect(evidence.source_map).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        section: 'triage_routing',
+        source_type: 'artifact',
+        source_id: String(seed.artifactId),
+        state: 'superseded',
+      }),
+    ]))
+  })
+
+  it('maps conflict and failed routing activities without exposing raw unsafe failure details', () => {
+    const database = db()
+    const seed = seedSpec009fNonRemediationOutcome(database, 'NEEDS_SPEC')
+    const conflictActivityId = insertTriageRoutingProblemActivity(database, seed.taskId, 'triage_routing_conflict', {
+      source_task_id: seed.taskId,
+      workspace_id: 1,
+      disposition: 'NEEDS_HUMAN',
+      routing_status: 'conflict',
+      idempotency_key: `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_HUMAN`,
+      existing_disposition: 'NEEDS_SPEC',
+      attempted_disposition: 'NEEDS_HUMAN',
+    })
+
+    const conflict = scopedBuild(database, seed.taskId)
+
+    expect(conflict.triage_routing).toMatchObject({
+      state: 'incomplete',
+      routing_status: 'conflict',
+      disposition: 'NEEDS_SPEC',
+      activity_reference: `activity:${String(conflictActivityId)}`,
+      missing: ['conflicting_triage_routing_disposition'],
+    })
+    expect(conflict.triage_routing.warnings.join(' ')).toContain('NEEDS_SPEC already recorded')
+
+    const failureTaskId = seedEligiblePilotEvidence(database, 9900)
+    insertTriageRoutingProblemActivity(database, failureTaskId, 'triage_routing_validation_failed', {
+      disposition: 'NEEDS_SPEC',
+      routing_status: 'failed',
+      failure_code: 'payload_validation_failed',
+      raw_error: 'javascript:alert(1) storage_uri=/secret',
+    })
+    const failed = scopedBuild(database, failureTaskId)
+
+    expect(failed.triage_routing).toMatchObject({
+      state: 'incomplete',
+      routing_status: 'failed',
+      disposition: 'NEEDS_SPEC',
+      missing: ['missing_triage_routing_artifact'],
+      warnings: ['payload_validation_failed'],
+    })
+    expect(JSON.stringify(failed.triage_routing)).not.toContain('javascript:')
+    expect(JSON.stringify(failed.triage_routing)).not.toContain('storage_uri')
+  })
+
+  it('reports trace-only superseded routing evidence when no current artifact remains', () => {
+    const database = db()
+    const seed = seedSpec009fNonRemediationOutcome(database, 'NEEDS_HUMAN')
+    database.prepare('UPDATE task_artifacts SET redaction_status = ? WHERE id = ?').run('superseded', seed.artifactId)
+
+    const evidence = scopedBuild(database, seed.taskId)
+
+    expect(evidence.triage_routing).toMatchObject({
+      state: 'superseded',
+      routing_status: 'missing',
+      missing: ['missing_current_triage_routing_artifact'],
+      superseded_artifacts: [
+        expect.objectContaining({
+          state: 'superseded',
+          artifact_id: String(seed.artifactId),
+        }),
+      ],
+    })
   })
 
   it('derives NEEDS_HUMAN clarification routing evidence without mutating source rows', () => {

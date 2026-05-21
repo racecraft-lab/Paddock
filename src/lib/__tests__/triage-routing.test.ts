@@ -64,11 +64,20 @@ function route(
   taskId: number,
   disposition: string,
 ): TriageRoutingResult {
+  return routeWith(database, taskId, disposition)
+}
+
+function routeWith(
+  database: Database.Database,
+  taskId: number,
+  disposition: string,
+  overrides: { rationale?: string | null } = {},
+): TriageRoutingResult {
   return routeTriageDisposition(database, {
     taskId,
     workspaceId: 1,
     disposition,
-    rationale: 'Deterministic triage rationale for routing.',
+    rationale: overrides.rationale ?? 'Deterministic triage rationale for routing.',
   })
 }
 
@@ -116,6 +125,26 @@ function seedSpecialistMetadata(database: Database.Database, overrides: {
 
 function countRows(database: Database.Database, table: string): number {
   return (database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get() as { count: number }).count
+}
+
+function latestActivity(database: Database.Database, taskId: number): { type: string; data: string | null } {
+  return database
+    .prepare('SELECT type, data FROM activities WHERE entity_id = ? ORDER BY created_at DESC, id DESC LIMIT 1')
+    .get(taskId) as { type: string; data: string | null }
+}
+
+function artifactRow(database: Database.Database, artifactId: number): {
+  id: number
+  redaction_status: string
+  supersedes_artifact_id: number | null
+} {
+  return database
+    .prepare('SELECT id, redaction_status, supersedes_artifact_id FROM task_artifacts WHERE id = ?')
+    .get(artifactId) as {
+    id: number
+    redaction_status: string
+    supersedes_artifact_id: number | null
+  }
 }
 
 describe('SPEC-009F triage routing source gates', () => {
@@ -664,6 +693,157 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       },
     })
     expect(after).toEqual(before)
+  })
+
+  it('keeps unchanged same-outcome retries idempotent without duplicate artifacts or activities', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9600, githubIssueNumber: 928 })
+
+    const first = route(database, taskId, 'NEEDS_SPEC')
+    const afterFirst = snapshotSpec009fDisposableCounts(database)
+    const second = route(database, taskId, 'NEEDS_SPEC')
+    const afterSecond = snapshotSpec009fDisposableCounts(database)
+
+    if (!first.ok || first.status !== 'recorded' || !second.ok || second.status !== 'recorded') {
+      throw new Error('Expected both retries to resolve as recorded routes')
+    }
+    expect(second.artifact.id).toBe(first.artifact.id)
+    expect(second.activity.id).toBe(first.activity.id)
+    expect(afterSecond).toEqual(afterFirst)
+  })
+
+  it('supersedes the prior active artifact when same-outcome normalized payload content changes', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9601, githubIssueNumber: 929 })
+
+    const first = routeWith(database, taskId, 'NEEDS_SPEC', { rationale: 'Original deterministic rationale.' })
+    const afterFirst = snapshotSpec009fDisposableCounts(database)
+    const second = routeWith(database, taskId, 'NEEDS_SPEC', { rationale: 'Updated deterministic rationale.' })
+    const afterSecond = snapshotSpec009fDisposableCounts(database)
+
+    if (!first.ok || first.status !== 'recorded' || !second.ok || second.status !== 'recorded') {
+      throw new Error('Expected changed same-outcome retry to record a new route')
+    }
+    expect(second.artifact.id).not.toBe(first.artifact.id)
+    expect(afterSecond).toEqual({
+      ...afterFirst,
+      activities: afterFirst.activities + 1,
+      taskArtifacts: afterFirst.taskArtifacts + 1,
+    })
+    expect(artifactRow(database, first.artifact.id).redaction_status).toBe('superseded')
+    expect(artifactRow(database, second.artifact.id).supersedes_artifact_id).toBe(first.artifact.id)
+    expect(JSON.parse(latestActivity(database, taskId).data ?? '{}')).toMatchObject({
+      artifact_id: second.artifact.id,
+      supersedes_artifact_id: first.artifact.id,
+      routing_status: 'recorded',
+    })
+  })
+
+  it('records a conflict activity without publishing an attempted changed-disposition artifact', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9602, githubIssueNumber: 930 })
+
+    const first = route(database, taskId, 'NEEDS_SPEC')
+    const afterFirst = snapshotSpec009fDisposableCounts(database)
+    const conflict = route(database, taskId, 'NEEDS_HUMAN')
+    const afterConflict = snapshotSpec009fDisposableCounts(database)
+
+    if (!first.ok || first.status !== 'recorded') throw new Error('Initial route was not recorded')
+    expect(conflict).toMatchObject({
+      ok: false,
+      status: 'failed',
+      reason: 'conflicting_disposition',
+    })
+    expect(afterConflict).toEqual({
+      ...afterFirst,
+      activities: afterFirst.activities + 1,
+    })
+    const activity = latestActivity(database, taskId)
+    expect(activity.type).toBe('triage_routing_conflict')
+    expect(JSON.parse(activity.data ?? '{}')).toMatchObject({
+      routing_status: 'conflict',
+      existing_disposition: 'NEEDS_SPEC',
+      attempted_disposition: 'NEEDS_HUMAN',
+    })
+  })
+
+  it('backfills a missing recorded activity without creating a duplicate active artifact', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9603, githubIssueNumber: 931 })
+
+    const first = route(database, taskId, 'NEEDS_HUMAN')
+    if (!first.ok || first.status !== 'recorded') throw new Error('Initial route was not recorded')
+    database.prepare("DELETE FROM activities WHERE type = 'triage_routing_recorded' AND entity_id = ?").run(taskId)
+    const afterDelete = snapshotSpec009fDisposableCounts(database)
+
+    const retry = route(database, taskId, 'NEEDS_HUMAN')
+    const afterRetry = snapshotSpec009fDisposableCounts(database)
+
+    if (!retry.ok || retry.status !== 'recorded') throw new Error('Retry route was not recorded')
+    expect(retry.artifact.id).toBe(first.artifact.id)
+    expect(retry.activity.id).not.toBe(first.activity.id)
+    expect(afterRetry).toEqual({
+      ...afterDelete,
+      activities: afterDelete.activities + 1,
+    })
+  })
+
+  it('records sanitized validation-failure activity before artifact publish', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9604, githubIssueNumber: 932 })
+    const before = snapshotSpec009fDisposableCounts(database)
+
+    const result = routeWith(database, taskId, 'NEEDS_SPEC', { rationale: 'x'.repeat(2101) })
+    const after = snapshotSpec009fDisposableCounts(database)
+
+    expect(result).toMatchObject({
+      ok: false,
+      status: 'failed',
+      reason: 'payload_validation_failed',
+    })
+    expect(after).toEqual({
+      ...before,
+      activities: before.activities + 1,
+    })
+    const activity = latestActivity(database, taskId)
+    expect(activity.type).toBe('triage_routing_validation_failed')
+    expect(activity.data ?? '').not.toContain('x'.repeat(100))
+  })
+
+  it('isolates artifact publish failures into sanitized failure activity without terminal artifact rows', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9605, githubIssueNumber: 933 })
+    database.exec(`
+      CREATE TRIGGER spec_009f_fail_routing_artifact
+      BEFORE INSERT ON task_artifacts
+      WHEN NEW.artifact_type LIKE 'triage_%'
+      BEGIN
+        SELECT RAISE(FAIL, 'artifact store down token=SECRET');
+      END;
+    `)
+    const before = snapshotSpec009fDisposableCounts(database)
+
+    const result = route(database, taskId, 'NEEDS_SPECIALIST')
+    const after = snapshotSpec009fDisposableCounts(database)
+
+    expect(result).toMatchObject({
+      ok: false,
+      status: 'failed',
+      reason: 'artifact_publish_failed',
+    })
+    expect(after).toEqual({
+      ...before,
+      activities: before.activities + 1,
+    })
+    const activity = latestActivity(database, taskId)
+    expect(activity.type).toBe('triage_routing_artifact_publish_failed')
+    expect(activity.data ?? '').not.toContain('SECRET')
   })
 
   it('fails closed for unsupported dispositions without echoing raw disposition text or writing rows', () => {

@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T23:37:18Z",
-  "active_step": "Phase 7: US4 idempotent evidence display (T037-T044)",
+  "updated_at": "2026-05-21T23:50:52Z",
+  "active_step": "Phase 7: Polish, UAT, guardrails, verification (T045-T055)",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -152,11 +152,11 @@
     },
     {
       "step": "Phase 7: US4 idempotent evidence display (T037-T044)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Polish, UAT, guardrails, verification (T045-T055)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Verification and Status Sync",
@@ -484,9 +484,17 @@
         "T033",
         "T034",
         "T035",
-        "T036"
+        "T036",
+        "T037",
+        "T038",
+        "T039",
+        "T040",
+        "T041",
+        "T042",
+        "T043",
+        "T044"
       ],
-      "current_group": "US4 idempotent evidence display (T037-T044)",
+      "current_group": "Polish, UAT, guardrails, verification (T045-T055)",
       "groups": {
         "T001-T004": {
           "status": "completed",
@@ -580,6 +588,29 @@
             "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/Applications/VMware Fusion.app/Contents/Public:/Users/fredrickgabelmann/.codex/tmp/arg0/codex-arg0BEfd5c:/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/node_modules/.bin:/Users/fredrickgabelmann/.antigravity/antigravity/bin:/opt/homebrew/opt/openjdk/bin:/Users/fredrickgabelmann/Library/pnpm:/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/Cellar/pyenv-virtualenv/1.3.0/shims:/Users/fredrickgabelmann/.pyenv/shims:/opt/homebrew/Cellar/zplug/2.4.2/bin:/Users/fredrickgabelmann/.bun/bin:/Users/fredrickgabelmann/.local/bin:/usr/local/opt/llvm/bin:/opt/homebrew/opt/sqlite/bin:/Users/fredrickgabelmann/.pyenv/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/Users/fredrickgabelmann/.swiftly/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Applications/iTerm.app/Contents/Resources/utilities:/Applications/Obsidian.app/Contents/MacOS:/Users/fredrickgabelmann/.cache/lm-studio/bin:/Applications/Docker.app/Contents/Resources/bin:/Applications/Obsidian.app/Contents/MacOS node scripts/spec-009f/check-scope-guards.mjs"
           ],
           "focused_tests": 47,
+          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
+        },
+        "T037-T044": {
+          "status": "completed",
+          "files": [
+            "src/lib/triage-routing.ts",
+            "src/lib/__tests__/triage-routing.test.ts",
+            "src/lib/task-evidence.ts",
+            "src/lib/__tests__/task-evidence.test.ts",
+            "src/components/panels/task-evidence-section.tsx",
+            "src/components/panels/__tests__/task-evidence-section.test.tsx",
+            "src/lib/__tests__/api-contract-parity.test.ts",
+            "openapi.json"
+          ],
+          "commands": [
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/Applications/VMware Fusion.app/Contents/Public:/Users/fredrickgabelmann/.codex/tmp/arg0/codex-arg0BEfd5c:/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/node_modules/.bin:/Users/fredrickgabelmann/.antigravity/antigravity/bin:/opt/homebrew/opt/openjdk/bin:/Users/fredrickgabelmann/Library/pnpm:/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/Cellar/pyenv-virtualenv/1.3.0/shims:/Users/fredrickgabelmann/.pyenv/shims:/opt/homebrew/Cellar/zplug/2.4.2/bin:/Users/fredrickgabelmann/.bun/bin:/Users/fredrickgabelmann/.local/bin:/usr/local/opt/llvm/bin:/opt/homebrew/opt/sqlite/bin:/Users/fredrickgabelmann/.pyenv/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/Users/fredrickgabelmann/.swiftly/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Applications/iTerm.app/Contents/Resources/utilities:/Applications/Obsidian.app/Contents/MacOS:/Users/fredrickgabelmann/.cache/lm-studio/bin:/Applications/Docker.app/Contents/Resources/bin:/Applications/Obsidian.app/Contents/MacOS pnpm test src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/api-contract-parity.test.ts",
+            "pnpm api:parity",
+            "pnpm exec eslint src/lib/triage-routing.ts src/lib/task-evidence.ts src/components/panels/task-evidence-section.tsx src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/api-contract-parity.test.ts",
+            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/Applications/VMware Fusion.app/Contents/Public:/Users/fredrickgabelmann/.codex/tmp/arg0/codex-arg0BEfd5c:/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/node_modules/.bin:/Users/fredrickgabelmann/.antigravity/antigravity/bin:/opt/homebrew/opt/openjdk/bin:/Users/fredrickgabelmann/Library/pnpm:/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/Cellar/pyenv-virtualenv/1.3.0/shims:/Users/fredrickgabelmann/.pyenv/shims:/opt/homebrew/Cellar/zplug/2.4.2/bin:/Users/fredrickgabelmann/.bun/bin:/Users/fredrickgabelmann/.local/bin:/usr/local/opt/llvm/bin:/opt/homebrew/opt/sqlite/bin:/Users/fredrickgabelmann/.pyenv/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/Users/fredrickgabelmann/.swiftly/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Applications/iTerm.app/Contents/Resources/utilities:/Applications/Obsidian.app/Contents/MacOS:/Users/fredrickgabelmann/.cache/lm-studio/bin:/Applications/Docker.app/Contents/Resources/bin:/Applications/Obsidian.app/Contents/MacOS node scripts/spec-009f/check-scope-guards.mjs"
+          ],
+          "focused_tests": 45,
+          "api_parity": "passed",
           "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
         }
       }

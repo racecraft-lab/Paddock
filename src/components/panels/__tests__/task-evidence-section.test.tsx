@@ -64,6 +64,15 @@ function evidence(overrides: Partial<TaskEvidenceResponse> = {}): TaskEvidenceRe
       activity_reference: 'activity:1',
       warnings: [],
     },
+    triage_routing: {
+      state: 'missing',
+      routing_status: 'missing',
+      proposed_labels: [],
+      deferred_side_effects: [],
+      missing: ['missing_triage_routing_artifact'],
+      warnings: [],
+      superseded_artifacts: [],
+    },
     warnings: [
       {
         code: 'stale_evidence',
@@ -101,6 +110,8 @@ describe('TaskEvidenceSection', () => {
       .toHaveAttribute('href', 'https://github.com/racecraft-lab/mission-control/pull/51')
     expect(within(region).getByText(/SPEC-009D packet unsafe/i)).toBeInTheDocument()
     expect(within(region).queryByRole('link', { name: /unsafe/i })).not.toBeInTheDocument()
+    expect(within(region).getByText('Triage routing')).toBeInTheDocument()
+    expect(within(region).getByText('No triage routing recorded.')).toBeInTheDocument()
   })
 
   it('renders loading, route error, incomplete, and deferred states without controls', () => {
@@ -131,6 +142,101 @@ describe('TaskEvidenceSection', () => {
     expect(screen.getByText('missing_smoke_proof')).toBeInTheDocument()
     expect(screen.getAllByText('deferred')).toHaveLength(7)
     expect(screen.queryByRole('button', { name: /refresh|generate|sync|retry|claim|sandbox|harness/i })).not.toBeInTheDocument()
+  })
+
+  it('renders compact read-only triage routing states and inert recommendation text', () => {
+    const { rerender } = render(<TaskEvidenceSection
+      evidence={evidence({
+        triage_routing: {
+          state: 'available',
+          routing_status: 'recorded',
+          disposition: 'NEEDS_SPECIALIST',
+          lane: 'specialist_recommendation',
+          artifact: {
+            state: 'available',
+            artifact_id: '9602',
+            artifact_type: 'triage_specialist_recommendation',
+            schema_version: 'spec-009f.triage_routing.v1',
+            display_name: 'Specialist routing <b>artifact</b>',
+          },
+          activity_reference: 'activity:9702',
+          idempotency_key: 'spec-009f.triage_routing.v1:1:9502:NEEDS_SPECIALIST',
+          recommended_next_action: 'Review [unsafe](javascript:alert(1)) specialist recommendation.',
+          proposed_labels: [
+            { name: 'mc:needs-specialist', source: 'triage_routing', action: 'recommend_add', applied: false },
+          ],
+          deferred_side_effects: [
+            { side_effect: 'agent_dispatch', deferred: true, reason: 'No agent is dispatched.' },
+          ],
+          missing: [],
+          warnings: [],
+          lane_detail: {
+            specialist_state: 'unassigned',
+            missing_metadata: ['missing_project'],
+            owner_action: 'Owner chooses a specialist.',
+          },
+          superseded_artifacts: [],
+        },
+      })}
+      loading={false}
+      error={null}
+    />)
+
+    const region = screen.getByRole('region', { name: /task evidence/i })
+    expect(within(region).getByText('Routing recorded')).toBeInTheDocument()
+    expect(within(region).getByText('Specialist unassigned')).toBeInTheDocument()
+    expect(within(region).getByText(/mc:needs-specialist applied: false/i)).toBeInTheDocument()
+    expect(within(region).getByText(/Deferred side effects/i)).toBeInTheDocument()
+    expect(within(region).getByText(/Review unsafe specialist recommendation/i)).toBeInTheDocument()
+    expect(within(region).queryByRole('link', { name: /unsafe/i })).not.toBeInTheDocument()
+
+    rerender(<TaskEvidenceSection
+      evidence={evidence({
+        triage_routing: {
+          state: 'incomplete',
+          routing_status: 'conflict',
+          disposition: 'NEEDS_SPEC',
+          proposed_labels: [],
+          deferred_side_effects: [],
+          missing: ['conflicting_triage_routing_disposition'],
+          warnings: ['conflict: NEEDS_SPEC already recorded; NEEDS_HUMAN was rejected'],
+          superseded_artifacts: [],
+        },
+      })}
+      loading={false}
+      error={null}
+    />)
+    expect(screen.getByText('Triage routing conflict')).toBeInTheDocument()
+    expect(screen.getByText('conflicting_triage_routing_disposition')).toBeInTheDocument()
+
+    rerender(<TaskEvidenceSection
+      evidence={evidence({
+        triage_routing: {
+          state: 'unavailable',
+          routing_status: 'failed',
+          proposed_labels: [],
+          deferred_side_effects: [],
+          missing: ['artifact_storage_disabled'],
+          warnings: ['artifact_publish_failed'],
+          superseded_artifacts: [
+            {
+              state: 'superseded',
+              artifact_id: '9601',
+              artifact_type: 'triage_speckit_handoff',
+              schema_version: 'spec-009f.triage_routing.v1',
+              display_name: 'Superseded routing evidence',
+            },
+          ],
+        },
+      })}
+      loading={false}
+      error={null}
+    />)
+    expect(screen.getByText('Triage routing unavailable')).toBeInTheDocument()
+    expect(screen.getAllByText(/Superseded routing evidence/i).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+    expect(screen.queryByRole('form')).not.toBeInTheDocument()
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument()
   })
 
   it('renders unknown API states as unsupported contract text instead of coercing them', () => {
