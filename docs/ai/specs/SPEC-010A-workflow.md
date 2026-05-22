@@ -506,6 +506,7 @@ Plan must list exact files likely touched and explain why each is in scope. If t
 |--------|--------|-------|------|--------|
 | data-integrity | Complete | 25 | 1 found, 1 remediated | Expanded no-mutation snapshot evidence across config-owned seed surfaces plus all preserved operational/history surfaces; final marker count 0 |
 | state-management | Complete | 25 | 0 | Lifecycle, mode boundaries, wrapper compatibility, facility/global assignment separation, Product Line B exclusion, and no autonomous work state covered; final marker count 0 |
+| error-handling | Complete | 26 | 0 | Stable JSON codes, config paths/fields, redacted evidence, fail-closed validation, transaction boundaries, no partial writes, and no-mutation proof covered; final marker count 0 |
 
 ---
 
