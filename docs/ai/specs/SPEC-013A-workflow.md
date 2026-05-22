@@ -132,6 +132,15 @@ specify preset resolve tasks-template
 
 Each command resolved to `.specify/presets/speckit-pro-reviewability/templates/`.
 
+### Implementation Setup Evidence
+
+| Item | Evidence |
+|------|----------|
+| Package manager | `pnpm-lock.yaml` is present and Phase 5 recorded `pnpm` as the package manager in `specs/013a-run-state-spine/tasks.md` |
+| Archive sweep | Startup verified the archive extension registry, excluded `specs/013a-run-state-spine` as the current target, identified eligible prior specs, and recorded `cleanup_mode=recorded-no-cleanup` because Codex archive command files were not present |
+| Screenshot artifacts | SPEC-013A Playwright screenshots and fixture exports are review artifacts under `test-results/spec-013a-task-stage-attempts/`; screenshot binaries are not committed durable artifacts |
+| Reviewability decision | Tasks reviewability gate passed as a transition exception. Continue with the full SPEC-013A model/debug slice, but split if implementation adds any unplanned surface or any fixture write endpoint, claim/retry/release/cancel control, scheduler launch, GitHub reconciliation, sandbox lifecycle, harness adapter, or auto-merge behavior |
+
 ---
 
 ## Specification Context
@@ -577,13 +586,20 @@ For each task:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 1 - Setup and guardrails | Pending | Pending | Pending |
-| 2 - Schema and migrations | Pending | Pending | Pending |
+| 1 - Setup and guardrails | T001-T007 | 7/7 | Added strict-scope config entries, RED API docs/index assertions, run-state scope guard script, package/archive/screenshot/reviewability evidence |
+| 2 - Schema and migrations | T008-T018 | In Progress | Starting foundational migration, flag, rollback, helper, and guardrail integration tasks |
 | 3 - Helpers and projections | Pending | Pending | Pending |
 | 4 - Read-only API | Pending | Pending | Pending |
 | 5 - UI/debug inspection | Pending | Pending | Pending |
 | 6 - Runtime isolation and verification | Pending | Pending | Pending |
 | 7 - Docs/UAT/status | Pending | Pending | Pending |
+
+### Implementation Verification Log
+
+| Task Group | Commands | Result |
+|------------|----------|--------|
+| T001-T007 | `node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test`; `node scripts/spec-013a/check-run-state-scope-guards.mjs`; `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-setup.tsbuildinfo`; `pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs`; `pnpm check:strict-scope`; `git diff --check` | Pass |
+| T005 RED | `pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts` | Expected fail: `openapi.json` and `/api/index` do not yet define `GET /api/tasks/{id}/stage-attempts` |
 
 ---
 

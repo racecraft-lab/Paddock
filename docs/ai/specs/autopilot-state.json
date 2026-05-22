@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T17:54:47Z",
-  "active_step": "Phase 7: Implement T001-T007 Setup and scope guardrails",
+  "updated_at": "2026-05-22T18:09:29Z",
+  "active_step": "Phase 7: Implement T008-T018 Foundation migration, flag, and helper spine",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -108,11 +108,11 @@
     },
     {
       "step": "Phase 7: Implement T001-T007 Setup and scope guardrails",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Implement T008-T018 Foundation migration, flag, and helper spine",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: Implement T019-T032 US1 inspection API and task-detail UI",
@@ -442,6 +442,24 @@
         "Replaced active setup-time open questions with resolved post-Clarify/Plan decisions."
       ],
       "consensus_items": 0
+    },
+    "implement": {
+      "status": "in_progress",
+      "groups": {
+        "T001-T007": {
+          "status": "completed",
+          "summary": "Recorded package manager, archive/screenshot/reviewability evidence, added SPEC-013A strict-scope config entries, added RED API documentation/index assertions, and created the run-state scope guard script.",
+          "verification": [
+            "node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test",
+            "node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-setup.tsbuildinfo",
+            "pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs",
+            "pnpm check:strict-scope",
+            "git diff --check"
+          ],
+          "expected_red": "pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts fails because openapi.json and /api/index do not yet define the stage-attempts route."
+        }
+      }
     }
   }
 }

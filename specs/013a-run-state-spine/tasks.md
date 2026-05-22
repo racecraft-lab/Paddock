@@ -20,13 +20,13 @@
 
 **Purpose**: Confirm implementation boundaries and add failing guard/test scaffolding before production edits.
 
-- [ ] T001 Confirm `pnpm-lock.yaml` is the package-manager source and record the `pnpm` decision in `specs/013a-run-state-spine/tasks.md`
-- [ ] T002 [P] Add RED strict-scope entries for SPEC-013A planned modules in `tsconfig.spec-strict.json`
-- [ ] T003 [P] Add RED lint/strict coverage for SPEC-013A planned modules in `eslint.config.mjs`
-- [ ] T004 [P] Add RED forbidden-scope guard fixtures for attempt table/runtime isolation and direct production task inserts in `scripts/spec-013a/check-run-state-scope-guards.mjs`
-- [ ] T005 [P] Add RED API documentation/index assertions for `GET /api/tasks/[id]/stage-attempts` in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T006 Record Archive Sweep startup/dry-run evidence, current-target exclusion, and screenshot artifact policy in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T007 Verify reviewability budget against `specs/013a-run-state-spine/plan.md` and record continue/split decision in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T001 Confirm `pnpm-lock.yaml` is the package-manager source and record the `pnpm` decision in `specs/013a-run-state-spine/tasks.md`
+- [x] T002 [P] Add RED strict-scope entries for SPEC-013A planned modules in `tsconfig.spec-strict.json`
+- [x] T003 [P] Add RED lint/strict coverage for SPEC-013A planned modules in `eslint.config.mjs`
+- [x] T004 [P] Add RED forbidden-scope guard fixtures for attempt table/runtime isolation and direct production task inserts in `scripts/spec-013a/check-run-state-scope-guards.mjs`
+- [x] T005 [P] Add RED API documentation/index assertions for `GET /api/tasks/[id]/stage-attempts` in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T006 Record Archive Sweep startup/dry-run evidence, current-target exclusion, and screenshot artifact policy in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T007 Verify reviewability budget against `specs/013a-run-state-spine/plan.md` and record continue/split decision in `docs/ai/specs/SPEC-013A-workflow.md`
 
 ---
 
