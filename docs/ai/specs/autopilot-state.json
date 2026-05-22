@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T17:30:05Z",
-  "active_step": "Phase 4: Checklist - reliability",
+  "updated_at": "2026-05-22T17:36:01Z",
+  "active_step": "Phase 5: Tasks",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -88,15 +88,15 @@
     },
     {
       "step": "Phase 4: Checklist - reliability",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - reliability Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze",
@@ -414,6 +414,29 @@
       "consensus": {
         "required": false,
         "reason": "checklist-executor remediated both gaps directly with high confidence and no unresolved items"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 4: Checklist - reliability",
+      "status": "Complete",
+      "timestamp": "2026-05-22T17:36:01Z",
+      "summary": "Reliability checklist produced 26 items. One gap was found and remediated by adding operator-facing rollback-by-no-op and no-migration recovery requirements to spec and quickstart evidence. G4 passed with 0 markers.",
+      "consensus": {
+        "required": false,
+        "reason": "checklist-executor remediated the gap directly with high confidence and no unresolved items"
+      },
+      "gate": {
+        "name": "G4",
+        "pass": true,
+        "markers": 0
       },
       "markers": {
         "gaps": 0,

@@ -51,7 +51,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Specify | `$speckit-specify` | Complete | Generated `specs/010a-generic-product-line-seeder/spec.md` and requirements checklist; after Clarify session 4 the spec has 5 user stories, 29 FRs, 13 success criteria, and 0 unresolved markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved schema path/sections, existing-target semantics, workflow/flag/agent/governance rules, CLI contract, wrapper behavior, evidence envelope, redaction fixtures, and docs paths; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, three contracts, and Codex AGENTS context; G3 passed with 0 markers and no migration/dependency/UI/runtime scope |
-| Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and operator-process checks |
+| Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, error-handling, security, and reliability checks; G4 passed with 0 markers |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for config schema, CLI, parity fixtures, validation, and docs |
 | Analyze | `$speckit-analyze` | Pending | Check drift across spec, plan, tasks, workflow, and design concept before implementation |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and parity/no-mutation verification |
@@ -508,6 +508,7 @@ Plan must list exact files likely touched and explain why each is in scope. If t
 | state-management | Complete | 25 | 0 | Lifecycle, mode boundaries, wrapper compatibility, facility/global assignment separation, Product Line B exclusion, and no autonomous work state covered; final marker count 0 |
 | error-handling | Complete | 26 | 0 | Stable JSON codes, config paths/fields, redacted evidence, fail-closed validation, transaction boundaries, no partial writes, and no-mutation proof covered; final marker count 0 |
 | security | Complete | 19 | 2 found, 2 remediated | Added explicit untrusted operator-evidence redaction/no-raw-hash requirements and safe single-document non-executing YAML parsing with remote-reference rejection; final marker count 0 |
+| reliability | Complete | 26 | 1 found, 1 remediated | Promoted rollback-by-no-op, no-migration rollback boundary, not-mutated evidence, and manual backup-restore or reviewed re-apply recovery path into operator-facing spec and quickstart evidence; G4 passed with 0 markers |
 
 ---
 
@@ -571,8 +572,8 @@ Focus on Generic Product-Line Seeder requirements:
 
 ### Checklist Gate Checklist
 
-- [ ] Every `[Gap]` is remediated or marked out of scope with rationale.
-- [ ] Checklist findings do not widen the spec into SPEC-010B or runtime execution work.
+- [x] Every `[Gap]` is remediated or marked out of scope with rationale.
+- [x] Checklist findings do not widen the spec into SPEC-010B or runtime execution work.
 
 ---
 

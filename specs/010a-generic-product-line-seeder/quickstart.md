@@ -162,6 +162,16 @@ Expected:
 - only negative assertions or test guard names for excluded surfaces
 - no implementation path for Product Line B, GitHub mutation, task creation, dispatch, claim, runner, sandbox, adapter, auto-merge, or SpecKit setup/autopilot
 
+## Rollback And No-Op Recovery
+
+Expected:
+
+- SPEC-010A adds no migration and therefore has no migration rollback file or automated rollback runner.
+- Not running `pnpm seed:product-line` or `pnpm seed:mission-control` leaves target state unchanged.
+- Validation failures, existing-target refusals, blocked preflight, and verify drift return `mutation_status:"not_mutated"` with before/after or observed-state evidence where applicable.
+- Residue conflicts remain operator-cleanup decisions; the seeder never deletes, unlinks, or automatically repairs target state.
+- Recovery from an undesired successful apply is an operator database-backup restore or a reviewed config re-apply decision, not GitHub mutation, task dispatch, runner launch, sandbox cleanup, automatic deletion, or SpecKit invocation.
+
 ## Final Verification
 
 ```bash

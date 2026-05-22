@@ -137,6 +137,7 @@ As a future SPEC-010B implementer, I can add a new product-line config using the
 - **FR-027**: System MUST provide operator-facing evidence that target-config residue blocking is detection-only and never performs automatic deletion, unlinking, or cleanup.
 - **FR-028**: System MUST keep all product-line seed behavior reusable for a future product line through config changes alone, without requiring per-product-line seeder code changes.
 - **FR-029**: System MUST document the schema, command modes, evidence shape, existing-target policy, residue blocking policy, Mission Control compatibility path, and Product Line B exclusion boundary for maintainers and operators in `docs/runbooks/product-line-seed.md`, update `docs/runbooks/mission-control-seed-predeploy.md` for the compatibility path, and keep implementation validation in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- **FR-030**: System MUST document SPEC-010A rollback and recovery as an explicit-command no-op model: there is no migration rollback or automated rollback runner because no schema migration is introduced; not running the seed command leaves target state unchanged; validation failures, existing-target refusals, blocked preflight, and verify drift MUST produce `mutation_status:"not_mutated"` evidence; and recovery from an undesired successful apply is an operator database-backup restore or reviewed config re-apply decision, not automatic deletion, unlinking, cleanup, GitHub mutation, task dispatch, runner launch, or SpecKit invocation.
 
 ### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
 
@@ -185,6 +186,7 @@ As a future SPEC-010B implementer, I can add a new product-line config using the
 - **SC-011**: The Mission Control compatibility wrapper produces the same success/failure evidence categories as the generic command using the Mission Control config, including refusal without `--allow-existing` and idempotent success with `--allow-existing`.
 - **SC-012**: Repository review finds zero Product Line B seed configs, Product Line B smoke artifacts, GitHub mutation behavior, work dispatch behavior, runner launch behavior, sandbox creation behavior, or SpecKit setup/autopilot invocation in SPEC-010A seed execution.
 - **SC-013**: A future product-line fixture can be schema-validated by changing config values only, with no product-line-specific seeder code edits.
+- **SC-014**: Operator-facing docs and quickstart evidence identify the rollback-by-no-op model, no-migration rollback boundary, `not_mutated` failure/refusal/verify evidence, and manual backup-restore or reviewed re-apply recovery path for an undesired successful apply.
 
 ## Assumptions
 
