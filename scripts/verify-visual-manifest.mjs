@@ -87,11 +87,11 @@ function getPlaywrightConfig(rootOverride) {
   return {
     label: 'visual-playwright-manifest',
     root: defaultRoot(rootOverride),
-    expectedSnapshots: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS || '141', 10),
-    expectedTests: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS || '101', 10),
-    allowedTestTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008,@workflow-contracts'),
-    allowedSnapshotTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS || 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008,workflow-contracts'),
-    requiredDomainCounts: parseCounts(process.env.MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120,workflow-contracts:1'),
+    expectedSnapshots: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS || '142', 10),
+    expectedTests: Number.parseInt(process.env.MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS || '102', 10),
+    allowedTestTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS || '@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008,@spec-013a,@workflow-contracts'),
+    allowedSnapshotTags: parseList(process.env.MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS || 'product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008,spec-013a,workflow-contracts'),
+    requiredDomainCounts: parseCounts(process.env.MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS || 'product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120,spec-013a:1,workflow-contracts:1'),
   }
 }
 

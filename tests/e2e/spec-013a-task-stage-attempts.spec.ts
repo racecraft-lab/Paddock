@@ -7,6 +7,7 @@ import {
   dismissOnboardingForE2E,
   loginAsE2EAdmin,
 } from '../helpers'
+import { captureVisualSnapshot } from '../visual/visual-snapshot'
 
 const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ??
   path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
@@ -323,7 +324,7 @@ test.describe.serial('SPEC-013A task detail stage attempts', () => {
     cleanupDirectRows()
   })
 
-  test('shows active, linked, missing, archived, and projection-drift stage attempts as read-only state', async ({ page }, testInfo) => {
+  test('shows active, linked, missing, archived, and projection-drift stage attempts as read-only state @spec-013a', async ({ page }, testInfo) => {
     const task = await createStageAttemptsTask(page)
     seedStageAttemptRows(task)
 
@@ -351,5 +352,18 @@ test.describe.serial('SPEC-013A task detail stage attempts', () => {
     await expect(region.locator('button, form, input, select, textarea, [role="menu"]')).toHaveCount(0)
 
     await attachStageAttemptScreenshot(region, testInfo)
+    await captureVisualSnapshot(page, testInfo, {
+      domain: 'spec-013a',
+      name: 'task-stage-attempts',
+      tags: ['spec-013a', '@spec-013a'],
+      title: 'SPEC-013A / Task Stage Attempts',
+      description: 'Review the task detail Run state / Stage attempts section with active, archived, missing-run, and projection-drift attempt states.',
+      expected: 'The task detail panel shows read-only stage attempt state, lifecycle evidence, missing-run warnings, archive markers, and projection-drift warnings without action controls.',
+      reviewFocus: [
+        'Run state and stage attempts section is visible and readable',
+        'Active and archived attempts are structurally distinct without relying only on color',
+        'Warnings are visible without introducing release, cancel, retry, or claim controls',
+      ],
+    })
   })
 })

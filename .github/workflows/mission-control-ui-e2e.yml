@@ -23,6 +23,7 @@ on:
       - 'tests/e2e/governance-*.spec.ts'
       - 'tests/e2e/ready-for-owner-kanban.spec.ts'
       - 'tests/e2e/spec-007-ui-visual.spec.ts'
+      - 'tests/e2e/spec-013a-task-stage-attempts.spec.ts'
       - 'tests/e2e/spec-008/**'
       - 'tests/e2e/workflow-contract-diagnostics.spec.ts'
       - 'tests/e2e/fixtures/workflow-contract-diagnostics.ts'
@@ -65,6 +66,7 @@ on:
       - 'tests/e2e/governance-*.spec.ts'
       - 'tests/e2e/ready-for-owner-kanban.spec.ts'
       - 'tests/e2e/spec-007-ui-visual.spec.ts'
+      - 'tests/e2e/spec-013a-task-stage-attempts.spec.ts'
       - 'tests/e2e/spec-008/**'
       - 'tests/e2e/workflow-contract-diagnostics.spec.ts'
       - 'tests/e2e/fixtures/workflow-contract-diagnostics.ts'
@@ -109,11 +111,11 @@ jobs:
         SPEC_008_AXE_ENABLED=1
         pnpm test:e2e:docker
       manifest_command: >-
-        MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS=141
-        MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS=101
-        MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS=@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008,@workflow-contracts
-        MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS=product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008,workflow-contracts
-        MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS=product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120,workflow-contracts:1
+        MC_VISUAL_PLAYWRIGHT_EXPECTED_SNAPSHOTS=142
+        MC_VISUAL_PLAYWRIGHT_EXPECTED_TESTS=102
+        MC_VISUAL_PLAYWRIGHT_ALLOWED_TEST_TAGS=@product-line-switcher,@feature-flag-admin,@ready-for-owner,@spec-007,@spec-008,@spec-013a,@workflow-contracts
+        MC_VISUAL_PLAYWRIGHT_ALLOWED_SNAPSHOT_TAGS=product-line-switcher,feature-flag-admin,ready-for-owner,spec-007,spec-008,spec-013a,workflow-contracts
+        MC_VISUAL_PLAYWRIGHT_REQUIRED_DOMAIN_COUNTS=product-line-switcher:9,feature-flag-admin:2,ready-for-owner:3,spec-007:5,spec-008:120,spec-013a:1,workflow-contracts:1
         pnpm test:e2e:visual-manifest
       image_directory_path: test-results/visual-current/playwright
       manifest_dir: test-results/visual-current/playwright
