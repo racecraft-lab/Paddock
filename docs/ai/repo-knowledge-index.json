@@ -148,14 +148,14 @@
     {
       "path": "docs/ai/specs/autopilot-state.json",
       "kind": "status-pointer",
-      "purpose": "Machine-readable autopilot state pointer for the latest completed SPEC-012A workflow and phase.",
+      "purpose": "Machine-readable autopilot state pointer for the current SpecKit workflow and phase.",
       "owner": "SpecKit operators",
       "freshness": {
         "cadence": "per autopilot phase transition",
         "trigger": "when active workflow, active step, or phase plan state changes"
       },
-      "last_verified": "2026-05-21",
-      "related_specs": ["SPEC-012A"],
+      "last_verified": "2026-05-22",
+      "related_specs": ["SPEC-012A", "SPEC-009F"],
       "verification_commands": ["node -e \"JSON.parse(require('node:fs').readFileSync('docs/ai/specs/autopilot-state.json','utf8'))\""],
       "required": true,
       "repo_owned": true

@@ -470,27 +470,36 @@ function validateStatusPointer(findings, fixture = null) {
   const workflowStatus = values.workflow_status?.trim()
   const stateWorkflowFile = values.state_workflow_file?.trim()
   const stateActiveStep = values.state_active_step?.trim()
-  const expectedWorkflowStatus = roadmapStatus === 'Complete' ? 'Complete' : 'In Progress'
+  const stateWorkflowSpec = specIdFromWorkflowPath(stateWorkflowFile)
+  const allowedWorkflowStatuses =
+    roadmapStatus === 'Complete'
+      ? ['Complete']
+      : roadmapStatus === 'In Progress'
+        ? ['In Progress', 'Complete']
+        : []
 
   if (
     !['In Progress', 'Complete'].includes(roadmapStatus) ||
-    workflowStatus !== expectedWorkflowStatus ||
-    stateWorkflowFile !== WORKFLOW_PATH ||
-    (expectedWorkflowStatus === 'In Progress' && !stateActiveStep)
+    !stateWorkflowSpec ||
+    !allowedWorkflowStatuses.includes(workflowStatus) ||
+    (workflowStatus === 'In Progress' && !stateActiveStep)
   ) {
     addFinding(
       findings,
       'error',
       'status_pointer_stale',
-      'SPEC-012A roadmap, workflow, and autopilot state pointers disagree',
+      'roadmap, workflow, and autopilot state pointers disagree',
       {
         path: STATE_PATH,
         entry_path: STATE_PATH,
         details: {
           expected: {
-            roadmap_status: roadmapStatus === 'Complete' ? 'Complete' : 'In Progress',
-            workflow_status: expectedWorkflowStatus,
-            state_workflow_file: WORKFLOW_PATH,
+            roadmap_status: 'In Progress or Complete',
+            workflow_status:
+              roadmapStatus === 'Complete'
+                ? 'Complete'
+                : 'In Progress or Complete for an active PR workflow',
+            state_workflow_file: 'docs/ai/specs/SPEC-###-workflow.md',
           },
           observed: values,
         },
@@ -502,16 +511,22 @@ function validateStatusPointer(findings, fixture = null) {
 function readStatusPointerValues(findings) {
   try {
     const roadmap = readText(ROADMAP_PATH)
-    const workflow = readText(WORKFLOW_PATH)
     const state = JSON.parse(readText(STATE_PATH))
+    const stateWorkflowFile = state.workflow_file
+    const stateWorkflowSpec = specIdFromWorkflowPath(stateWorkflowFile)
+    if (!stateWorkflowSpec) {
+      throw new Error(`autopilot state workflow_file is not a SpecKit workflow path: ${stateWorkflowFile ?? 'missing'}`)
+    }
+    const workflow = readText(stateWorkflowFile)
     return {
-      roadmap_status: parseRoadmapStatus(roadmap),
+      spec_id: stateWorkflowSpec,
+      roadmap_status: parseRoadmapStatus(roadmap, stateWorkflowSpec),
       workflow_status: parseWorkflowStatus(workflow),
-      state_workflow_file: state.workflow_file,
+      state_workflow_file: stateWorkflowFile,
       state_active_step: state.active_step,
     }
   } catch (error) {
-    addFinding(findings, 'error', 'status_pointer_stale', `Unable to read SPEC-012A status pointers: ${error.message}`, {
+    addFinding(findings, 'error', 'status_pointer_stale', `Unable to read SpecKit status pointers: ${error.message}`, {
       path: STATE_PATH,
       entry_path: STATE_PATH,
     })
@@ -519,8 +534,18 @@ function readStatusPointerValues(findings) {
   }
 }
 
-function parseRoadmapStatus(source) {
-  const match = source.match(/^\| SPEC-012A \| [^|]* \| [^|]* \| [^|]* \| ([^|]+) \|/m)
+function specIdFromWorkflowPath(path) {
+  if (typeof path !== 'string') return null
+  const match = path.match(/^docs\/ai\/specs\/(SPEC-[0-9]{3}[A-Z0-9]*)-workflow\.md$/)
+  return match?.[1] ?? null
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function parseRoadmapStatus(source, specId) {
+  const match = source.match(new RegExp(`^\\| ${escapeRegExp(specId)} \\| [^|]* \\| [^|]* \\| [^|]* \\| ([^|]+) \\|`, 'm'))
   return match?.[1]?.trim() ?? null
 }
 
