@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T17:46:45Z",
-  "active_step": "Phase 6: Analyze",
+  "updated_at": "2026-05-22T17:54:47Z",
+  "active_step": "Phase 7: Implement T001-T007 Setup and scope guardrails",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -100,15 +100,15 @@
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Implement T001-T007 Setup and scope guardrails",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: Implement T008-T018 Foundation migration, flag, and helper spine",
@@ -423,6 +423,25 @@
         "primary_surface_count": 6,
         "notes": "Transition exception ratified in tasks.md because SPEC-013A intentionally spans schema, helper, route, and compact UI as the minimum durable run-state spine."
       }
+    },
+    "analyze": {
+      "status": "completed",
+      "gate": "G6 pass, 0 CRITICAL/HIGH findings",
+      "findings": {
+        "critical": 0,
+        "high": 0,
+        "medium": 2,
+        "low": 0,
+        "remaining": 0
+      },
+      "files": [
+        "docs/ai/specs/SPEC-013A-design-concept.md"
+      ],
+      "remediations": [
+        "Clarified setup-time run_id decision with later soft-reference/no-FK Plan outcome.",
+        "Replaced active setup-time open questions with resolved post-Clarify/Plan decisions."
+      ],
+      "consensus_items": 0
     }
   }
 }

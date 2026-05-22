@@ -143,6 +143,8 @@ stop_reason: "natural"
 
 **User's answer:** A - optional `run_id` link to `runs.id`.
 
+**Post-Clarify/Plan resolution:** The setup answer records the intended optional runtime-run relationship, not a database foreign-key requirement. Later SPEC-013A Clarify and Plan refined this to `task_stage_attempts.run_id` as a nullable `TEXT` soft reference with app-level lookup, no database foreign key to `runs.id`, and no duplicated runtime-run execution fields. See `specs/013a-run-state-spine/spec.md` FR-005, `specs/013a-run-state-spine/research.md` "Optional Runtime Run Link", `specs/013a-run-state-spine/data-model.md`, and `specs/013a-run-state-spine/plan.md` Implementation Boundaries.
+
 ---
 
 ### Q8. What should be the strict boundary between SPEC-013A and SPEC-013B?
@@ -158,20 +160,14 @@ stop_reason: "natural"
 
 **User's answer:** A - model/debug only, with no work selection, claim enforcement, duplicate-launch prevention, scheduler call, or GitHub reconciliation.
 
-## Open Questions
+## Setup-Time Open Questions - Resolved After Clarify/Plan
 
-- **What:** Exact table names, migration number, indexes, and rollback SQL shape.
-  **Why deferred:** Better resolved during `/speckit.clarify` and `/speckit.plan` against live `src/lib/migrations.ts`.
-  **Suggested next step:** Clarify the schema contract before Plan; cite live schema evidence.
-- **What:** Exact lifecycle status enum and whether state transitions are represented as separate event rows, current projection columns, or both.
-  **Why deferred:** Q3 chose the pattern but not exact field names.
-  **Suggested next step:** Clarify lifecycle vocabulary and projection invariants.
-- **What:** Exact API route and UI placement for the read-only debug surface.
-  **Why deferred:** Q5 chose minimal API plus task-detail/debug section, but implementation should inspect current task evidence and detail panel seams first.
-  **Suggested next step:** Plan should compare reuse of `GET /api/tasks/[id]/evidence` style patterns with a smaller run-state-specific route.
-- **What:** Whether debug writes should be fixture-only, test-only, or operator-authenticated in non-production contexts.
-  **Why deferred:** Q8 allows explicit debug APIs but not scheduler/claim behavior.
-  **Suggested next step:** Clarify write boundaries and auth requirements before tasks.
+These questions were intentionally deferred at setup time and are no longer active after SPEC-013A Clarify, Plan, Checklist, and Tasks.
+
+- **Schema names, migration number, indexes, and rollback SQL:** Resolved as two additive tables, `task_stage_attempts` and `task_stage_attempt_events`, in migration `076_task_stage_attempts`, with idempotent rollback SQL at `docs/migrations/rollback-M76.sql`. Uniqueness is limited to `(workspace_id, task_id, stage_key, attempt_number)` with non-unique inspection indexes and no one-active-attempt or claim-authority constraint.
+- **Lifecycle enum and projection shape:** Resolved as append-only observed lifecycle events plus current projection columns. The lifecycle vocabulary is exactly `created`, `running`, `succeeded`, `failed`, `released`, `cancelled`, and `archived`; valid projection drift is warning-only read evidence with no hidden repair or control-plane side effect.
+- **API route and UI placement:** Resolved as dedicated read-only `GET /api/tasks/[id]/stage-attempts` returning the `task_stage_attempts.v1` envelope, plus a compact read-only `Run state` / `Stage attempts` section in the existing task detail surface near Evidence. Existing task Evidence routes remain table-blind.
+- **Write boundary:** Resolved by Plan as no runtime fixture/UAT write endpoint for SPEC-013A. Representative rows are created through tests or deterministic disposable UAT seed setup only; no claim, dispatch, scheduler, retry, GitHub reconciliation, sandbox, harness, or auto-merge behavior is introduced.
 
 ## Recommended Next Step
 

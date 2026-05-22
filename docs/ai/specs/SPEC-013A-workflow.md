@@ -39,8 +39,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Plan | `$speckit-plan` | Complete | G3 passed; selected migration `076_task_stage_attempts`, generated research/data-model/API contract/quickstart, and rejected runtime fixture endpoint for this implementation |
 | Checklist | `$speckit-checklist` | Complete | G4 passed; 107 checklist items, 14 gaps remediated, zero remaining active `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | G5 passed; generated 58 TDD-first tasks across 6 phases, with 26 parallel opportunities and a ratified transition exception for the planned schema/helper/API/UI scope |
-| Analyze | `$speckit-analyze` | In Progress | Cross-check spec, plan, tasks, and design concept for scope drift |
-| Implement | `$speckit-implement` | Pending | Execute tasks only after G6 passes |
+| Analyze | `$speckit-analyze` | Complete | G6 passed after remediating 2 medium design-concept drift findings; zero CRITICAL/HIGH findings remain |
+| Implement | `$speckit-implement` | In Progress | Executing T001-T007 setup and scope guardrails first |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -535,7 +535,8 @@ Focus on SPEC-013A cross-artifact consistency:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| Pending | Pending | Pending | Pending |
+| A1 | Medium | Setup-time Q7 still described optional `run_id` link without the later no-FK refinement | Added Post-Clarify/Plan resolution note: nullable `TEXT` soft reference, app-level lookup, no DB FK, no duplicated runtime-run fields |
+| A2 | Medium | Setup-time Open Questions still listed schema/API/lifecycle/write-boundary questions as active after Clarify/Plan resolved them | Replaced active Open Questions with resolved setup-time questions covering final table, lifecycle, route/UI, and write-boundary decisions |
 
 ---
 
