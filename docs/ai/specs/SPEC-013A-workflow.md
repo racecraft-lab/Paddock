@@ -587,7 +587,7 @@ For each task:
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
 | 1 - Setup and guardrails | T001-T007 | 7/7 | Added strict-scope config entries, RED API docs/index assertions, run-state scope guard script, package/archive/screenshot/reviewability evidence |
-| 2 - Schema and migrations | T008-T018 | In Progress | Starting foundational migration, flag, rollback, helper, and guardrail integration tasks |
+| 2 - Schema and migrations | T008-T018 | 11/11 | Added M76 migration/rollback SQL, default-off task control-plane flag, helper/model behavior, and focused foundation tests |
 | 3 - Helpers and projections | Pending | Pending | Pending |
 | 4 - Read-only API | Pending | Pending | Pending |
 | 5 - UI/debug inspection | Pending | Pending | Pending |
@@ -600,6 +600,7 @@ For each task:
 |------------|----------|--------|
 | T001-T007 | `node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test`; `node scripts/spec-013a/check-run-state-scope-guards.mjs`; `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-setup.tsbuildinfo`; `pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs`; `pnpm check:strict-scope`; `git diff --check` | Pass |
 | T005 RED | `pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts` | Expected fail: `openapi.json` and `/api/index` do not yet define `GET /api/tasks/{id}/stage-attempts` |
+| T008-T018 | `direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/feature-flags.test.ts`; `direnv exec . pnpm exec eslint src/lib/migrations.ts src/lib/task-stage-attempts.ts src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/feature-flags.ts src/lib/__tests__/feature-flags.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-foundation.tsbuildinfo`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `git diff --check` | Pass; focused Vitest 39/39 |
 
 ---
 

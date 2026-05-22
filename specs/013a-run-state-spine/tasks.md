@@ -36,17 +36,17 @@
 
 **Critical**: No user story implementation can begin until this phase is complete.
 
-- [ ] T008 [P] Add RED migration tests for idempotent migration `076_task_stage_attempts`, required tables, columns, status checks, uniqueness, and inspection indexes in `src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts`
-- [ ] T009 [P] Add RED rollback SQL tests for child-first drops, marker cleanup, foreign-key check guidance, and operator history-loss warning in `src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts`
-- [ ] T010 [P] Add RED helper tests for lifecycle vocabulary, create attempt, append lifecycle event, projection update transactionality, optional `run_id`, ordering, and bounded metadata in `src/lib/__tests__/task-stage-attempts.test.ts`
-- [ ] T011 [P] Add RED helper tests for unknown-state fail-closed writes, invalid stored-state reads, lifecycle snippet max of 10, missing/unavailable run summaries, and projection-drift warnings in `src/lib/__tests__/task-stage-attempts.test.ts`
-- [ ] T012 Add default-off `FEATURE_TASK_CONTROL_PLANE` typed registry test coverage using `resolveFlag` in `src/lib/__tests__/feature-flags.test.ts`
-- [ ] T013 Implement migration `076_task_stage_attempts` for `task_stage_attempts` and `task_stage_attempt_events` in `src/lib/migrations.ts`
-- [ ] T014 Add idempotent rollback SQL for migration `076_task_stage_attempts` in `docs/migrations/rollback-M76.sql`
-- [ ] T015 Add `FEATURE_TASK_CONTROL_PLANE` as a default-off typed registry entry in `src/lib/feature-flags.ts`
-- [ ] T016 Implement task-stage attempt validation, lifecycle append, projection update, archive projection, run summary serialization, ordering, and warning helpers in `src/lib/task-stage-attempts.ts`
-- [ ] T017 Implement SPEC-013A scope guardrails for inline flag reads, runtime table references/imports, direct production `INSERT INTO tasks`, and SPEC-013B/014 drift in `scripts/spec-013a/check-run-state-scope-guards.mjs`
-- [ ] T018 Run the focused foundational RED-to-green tests and record results in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T008 [P] Add RED migration tests for idempotent migration `076_task_stage_attempts`, required tables, columns, status checks, uniqueness, and inspection indexes in `src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts`
+- [x] T009 [P] Add RED rollback SQL tests for child-first drops, marker cleanup, foreign-key check guidance, and operator history-loss warning in `src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts`
+- [x] T010 [P] Add RED helper tests for lifecycle vocabulary, create attempt, append lifecycle event, projection update transactionality, optional `run_id`, ordering, and bounded metadata in `src/lib/__tests__/task-stage-attempts.test.ts`
+- [x] T011 [P] Add RED helper tests for unknown-state fail-closed writes, invalid stored-state reads, lifecycle snippet max of 10, missing/unavailable run summaries, and projection-drift warnings in `src/lib/__tests__/task-stage-attempts.test.ts`
+- [x] T012 Add default-off `FEATURE_TASK_CONTROL_PLANE` typed registry test coverage using `resolveFlag` in `src/lib/__tests__/feature-flags.test.ts`
+- [x] T013 Implement migration `076_task_stage_attempts` for `task_stage_attempts` and `task_stage_attempt_events` in `src/lib/migrations.ts`
+- [x] T014 Add idempotent rollback SQL for migration `076_task_stage_attempts` in `docs/migrations/rollback-M76.sql`
+- [x] T015 Add `FEATURE_TASK_CONTROL_PLANE` as a default-off typed registry entry in `src/lib/feature-flags.ts`
+- [x] T016 Implement task-stage attempt validation, lifecycle append, projection update, archive projection, run summary serialization, ordering, and warning helpers in `src/lib/task-stage-attempts.ts`
+- [x] T017 Implement SPEC-013A scope guardrails for inline flag reads, runtime table references/imports, direct production `INSERT INTO tasks`, and SPEC-013B/014 drift in `scripts/spec-013a/check-run-state-scope-guards.mjs`
+- [x] T018 Run the focused foundational RED-to-green tests and record results in `docs/ai/specs/SPEC-013A-workflow.md`
 
 **Checkpoint**: Foundation ready. Migration, rollback, feature flag, helper, and scope guards are available for user-story work.
 
