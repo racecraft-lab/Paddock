@@ -267,7 +267,7 @@
     "reviewability_diff_gate": {
       "status": "exception",
       "command": "reviewability-gate.sh diff origin/main...HEAD",
-      "reviewable_loc": 11049,
+      "reviewable_loc": 11222,
       "production_files": 16,
       "total_files": 43,
       "primary_surface_count": 6,
