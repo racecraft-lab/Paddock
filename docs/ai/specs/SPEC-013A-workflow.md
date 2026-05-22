@@ -37,8 +37,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Specify | `$speckit-specify` | Complete | G1 passed; generated `specs/013a-run-state-spine/spec.md` and requirements checklist with zero clarification markers |
 | Clarify | `$speckit-clarify` | Complete | G2 passed; 20 clarification answers and 5 consensus resolutions recorded with zero unresolved markers |
 | Plan | `$speckit-plan` | Complete | G3 passed; selected migration `076_task_stage_attempts`, generated research/data-model/API contract/quickstart, and rejected runtime fixture endpoint for this implementation |
-| Checklist | `$speckit-checklist` | In Progress | Starting data-integrity checklist |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict boundaries against SPEC-013B/C and SPEC-014A-D |
+| Checklist | `$speckit-checklist` | Complete | G4 passed; 107 checklist items, 14 gaps remediated, zero remaining active `[Gap]` markers |
+| Tasks | `$speckit-tasks` | In Progress | Generate TDD-first tasks with strict boundaries against SPEC-013B/C and SPEC-014A-D |
 | Analyze | `$speckit-analyze` | Pending | Cross-check spec, plan, tasks, and design concept for scope drift |
 | Implement | `$speckit-implement` | Pending | Execute tasks only after G6 passes |
 
@@ -453,12 +453,12 @@ Focus on SPEC-013A requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| api-contracts | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| regression-safety | Pending | Pending | Pending |
-| ux-accessibility | Pending | Pending | Pending |
-| **Total** | Pending | Pending | Pending |
+| data-integrity | 20 | 1 found, 1 remediated | `spec.md`, `plan.md`, `quickstart.md`, `checklists/data-integrity.md` |
+| api-contracts | 22 | 4 found, 4 remediated | `spec.md`, `plan.md`, `contracts/task-stage-attempts-api.md`, `checklists/api-contracts.md` |
+| state-management | 18 | 2 found, 2 remediated | Projection drift warning behavior added across spec, plan, data model, research, contract, quickstart, and checklist |
+| regression-safety | 24 | 2 found, 2 remediated | Task creation parity and SPEC-013B/014 drift guardrails tightened in spec, plan, and checklist |
+| ux-accessibility | 23 | 5 found, 5 remediated | FR-028/FR-029/SC-013 plus plan accessibility/browser evidence |
+| **Total** | 107 | 14 found, 14 remediated | G4 pass, zero active `[Gap]` markers |
 
 ---
 

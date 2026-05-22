@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T16:07:53Z",
-  "active_step": "Phase 4: Checklist - data-integrity",
+  "updated_at": "2026-05-22T17:40:00Z",
+  "active_step": "Phase 5: Tasks",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -56,47 +56,47 @@
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - data-integrity Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - api-contracts",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - api-contracts Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - state-management",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - state-management Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - regression-safety",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - regression-safety Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - ux-accessibility",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - ux-accessibility Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze",
@@ -326,6 +326,54 @@
         "FEATURE_TASK_CONTROL_PLANE typed default-off registry entry using resolveFlag.",
         "Static guardrails for inline env reads and forbidden runtime/evidence table references."
       ]
+    },
+    "checklist": {
+      "status": "completed",
+      "gate": "G4 pass, 0 active [Gap] markers",
+      "domains": {
+        "data_integrity": {
+          "items": 20,
+          "gaps_found": 1,
+          "gaps_remediated": 1,
+          "consensus_items": 0,
+          "outcome": "Migration idempotency, rollback, live schema evidence, and non-claim uniqueness requirements tightened."
+        },
+        "api_contracts": {
+          "items": 22,
+          "gaps_found": 4,
+          "gaps_remediated": 4,
+          "consensus_items": 0,
+          "outcome": "No-attempt, invalid/future state, lifecycle-entry limit, and OpenAPI/API-index parity requirements tightened."
+        },
+        "state_management": {
+          "items": 18,
+          "gaps_found": 2,
+          "gaps_remediated": 2,
+          "consensus_items": 0,
+          "outcome": "Projection drift warning behavior and stale/malformed lifecycle handling tightened."
+        },
+        "regression_safety": {
+          "items": 24,
+          "gaps_found": 2,
+          "gaps_remediated": 2,
+          "consensus_items": 0,
+          "outcome": "Direct production task insert parity and SPEC-013B/014 drift guardrails tightened."
+        },
+        "ux_accessibility": {
+          "items": 23,
+          "gaps_found": 5,
+          "gaps_remediated": 5,
+          "consensus_items": 0,
+          "outcome": "Named region/status/alert semantics, non-color-only states, read-only link wording, text-fit evidence, and browser accessibility checks tightened."
+        }
+      },
+      "totals": {
+        "domains": 5,
+        "items": 107,
+        "gaps_found": 14,
+        "gaps_remediated": 14,
+        "consensus_items": 0
+      }
     }
   }
 }

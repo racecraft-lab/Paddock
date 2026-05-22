@@ -21,6 +21,17 @@
 - Event log only: rejected because task detail would need heavier reconstruction for every read.
 - Enforceable state machine: rejected because claim/reconciliation authority is out of scope.
 
+## Projection Drift Handling
+
+**Decision**: Treat valid-but-stale projection drift as warning-only read evidence. Writes append the lifecycle event and update the stored projection in one transaction; reads derive an expected projection from valid lifecycle history, return stored projection fields, and emit `projection_drift` warnings when stored values disagree.
+
+**Rationale**: The lifecycle event history is the audit source for reconstructing expected state, while stored projection columns are a bounded read model for task-detail inspection. Warning-only drift handling keeps the read route honest without turning SPEC-013A into a repair engine or later control-plane authority.
+
+**Alternatives considered**:
+- Trust projection columns only: rejected because stale-but-valid projections would hide state drift from reviewer evidence.
+- Rebuild and return derived state only: rejected because it would mask stored projection drift and weaken UAT/debug evidence.
+- Repair drift during reads: rejected because hidden mutation belongs outside a read-only inspection route and could create control-plane side effects.
+
 ## Status Vocabulary
 
 **Decision**: Use exactly `created`, `running`, `succeeded`, `failed`, `released`, `cancelled`, and `archived`.
@@ -81,4 +92,3 @@
 **Alternatives considered**:
 - Manual review only: rejected because the boundary is central to flag-off safety.
 - Broad grep over all source: rejected because migrations, rollback SQL, helper, route, fixtures, and tests intentionally reference the tables.
-

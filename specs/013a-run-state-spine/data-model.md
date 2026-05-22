@@ -46,7 +46,15 @@ Represents one observed execution attempt for one task stage. It is durable atte
 - Archiving sets `status='archived'`, sets `archived_at`, updates `updated_at`, and appends an `archived` event.
 - `released` and `cancelled` are passive observed states only.
 - Unknown statuses fail closed on writes.
+- Writes that create attempts, record lifecycle events, or archive attempts must append the lifecycle event and update the current projection in one transaction so there is no event-only or projection-only partial state.
+- Reads derive an expected projection from valid lifecycle history for warning purposes only:
+  - `status`: latest valid lifecycle event by `(observed_at ASC, id ASC)`
+  - `updated_at`: latest valid lifecycle event `observed_at`
+  - `started_at`: first valid `running` event `observed_at`, or `null`
+  - `completed_at`: latest valid `succeeded`, `failed`, `released`, or `cancelled` event `observed_at`, or `null`
+  - `archived_at`: latest valid `archived` event `observed_at`, or `null`
 - Reads may safely mark unknown stored states as warnings, but writes must not create them.
+- Reads compare stored projection values to the expected projection and return warning-only `projection_drift` entries when valid stored values disagree with lifecycle history. Reads do not repair rows, synthesize lifecycle events, or trigger runtime/control-plane behavior.
 
 ## Entity: Attempt Lifecycle Entry
 
@@ -184,4 +192,3 @@ SPEC-013A must not add:
 - harness adapter fields
 - auto-merge fields
 - global dashboard state
-

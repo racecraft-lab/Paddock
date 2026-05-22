@@ -79,6 +79,7 @@ specs/013a-run-state-spine/
 ```text
 src/
 ├── app/api/tasks/[id]/stage-attempts/route.ts
+├── app/api/index/route.ts
 ├── components/panels/task-stage-attempts-section.tsx
 ├── components/panels/task-board-panel.tsx
 └── lib/
@@ -98,6 +99,8 @@ scripts/spec-013a/
 
 tests/e2e/
 └── spec-013a-task-stage-attempts.spec.ts
+
+openapi.json
 ```
 
 **Structure Decision**: Use the existing Mission Control single-app layout. Keep model/projection logic in one helper, expose one task-scoped route, and render one compact component from the existing task detail modal. Do not create a global dashboard or runtime write endpoint.
@@ -120,10 +123,13 @@ See `data-model.md`, `contracts/task-stage-attempts-api.md`, and `quickstart.md`
 ## Implementation Boundaries
 
 - No runtime fixture/UAT write endpoint is selected for SPEC-013A. Representative attempt rows will be created by tests and deterministic UAT seeding in disposable data directories.
+- SPEC-013A must not add direct runtime task insertion, successor-task creation, or any alternate task-creation path. All task creation remains through `createTask()` in `src/lib/task-create.ts`, and verification must run the existing task-pipeline guard or an equivalent SPEC-013A assertion that fails on production `INSERT INTO tasks` outside that file.
 - Existing task Evidence route remains table-blind to `task_stage_attempts` and `task_stage_attempt_events`.
 - `released` and `cancelled` remain passive observed lifecycle values only; no release/cancel/retry/claim UI controls are added.
 - `run_id` is a nullable text field with app-level lookup. No foreign key to `runs.id`.
 - Runtime paths named in the spec must not import `task-stage-attempts.ts` or reference attempt table strings.
+- The read route contract includes visible-task/no-attempts `200` responses, active and archived attempts, linked and missing/unavailable run links, invalid stored-state warnings, and a maximum of 10 lifecycle entries per attempt.
+- API discoverability updates are limited to `openapi.json` and `src/app/api/index/route.ts`; both describe the route as generic task-scoped read-only inspection for future SPEC-013B/C reuse without action vocabulary.
 
 ## Migration Plan
 
@@ -133,6 +139,8 @@ See `data-model.md`, `contracts/task-stage-attempts-api.md`, and `quickstart.md`
   - `task_stage_attempt_events`
 - Parent uniqueness: `UNIQUE(workspace_id, task_id, stage_key, attempt_number)`.
 - Read indexes: by task/stage/attempt, status/archive, optional `run_id`, and event ordering.
+- Idempotency evidence: apply the migration twice against the same representative database and prove the second run creates no duplicate tables, indexes, lifecycle events, or migration markers.
+- Live schema evidence: record `PRAGMA table_xinfo(task_stage_attempts)`, `PRAGMA table_xinfo(task_stage_attempt_events)`, `PRAGMA index_list(...)`, `PRAGMA index_xinfo(...)` for the attempt uniqueness and inspection indexes, a `schema_migrations` query for `076_task_stage_attempts`, and `PRAGMA foreign_key_check` with no returned violations.
 - Rollback file: `docs/migrations/rollback-M76.sql`.
 - Rollback order: drop child events first, drop attempts second, delete only `076_task_stage_attempts` from `schema_migrations`, then run or instruct `PRAGMA foreign_key_check`.
 - Operator warning: rollback removes attempt history unless backed up/exported first.
@@ -140,19 +148,25 @@ See `data-model.md`, `contracts/task-stage-attempts-api.md`, and `quickstart.md`
 ## Verification Plan
 
 - RED migration tests for idempotency, table/column/index shape, uniqueness, rollback file presence, child-first rollback text, migration marker cleanup text, and foreign-key check guidance.
-- RED helper tests for status validation, append-only lifecycle recording, current projection derivation, archive semantics, soft `run_id`, missing/unavailable run summary, ordering, metadata bounding, and fail-closed unknown states.
-- Route tests for viewer auth, workspace masking, invalid explicit scope `400`, forbidden scope `403`, masked nonexistent/out-of-scope `404 task_not_found`, empty attempts, archived attempts, linked/missing run states, bounded lifecycle snippets, and table-blind evidence route.
+- Migration smoke evidence for implementation/UAT must include the second-run idempotency result plus live SQLite schema inspection using `PRAGMA table_xinfo`, `PRAGMA index_list`, `PRAGMA index_xinfo`, `PRAGMA foreign_key_check`, and a `schema_migrations` marker query for `076_task_stage_attempts`.
+- RED helper tests for status validation, append-only lifecycle recording, atomic event append plus projection update, event-only/projection-only partial-write rollback on failure, current projection derivation from valid lifecycle history, archive semantics, soft `run_id`, missing/unavailable run summary, ordering, metadata bounding, fail-closed unknown states, and valid-but-stale projection drift warnings.
+- Route tests for viewer auth, workspace masking, invalid explicit scope `400`, forbidden scope `403`, masked nonexistent/out-of-scope `404 task_not_found`, empty attempts, archived attempts, linked/missing run states, bounded lifecycle snippets, valid-but-stale `status` drift, timestamp drift for `updated_at`/`started_at`/`completed_at`/`archived_at`, invalid lifecycle entries ignored for drift derivation but still warned, no mutation after drift read, and table-blind evidence route.
+- Contract/index tests or static assertions for `openapi.json` and `src/app/api/index/route.ts` proving `GET /api/tasks/[id]/stage-attempts` is documented as viewer-authenticated read-only task inspection with no mutation methods.
 - Component tests for loading, route error, empty, linked run, missing run, archived marker, bounded lifecycle list, and no action controls.
-- Playwright journey for task detail `Run state` / `Stage attempts` section with screenshots for no attempts, mixed attempts, archived attempt, linked/missing run, and responsive layout.
+- Component tests for task-detail run-state accessibility must assert a named region, status semantics for loading/progress text, alert semantics for route errors, visible text or structural labels for empty/active/archived/missing-run/invalid-state/projection-drift states, allowlisted run links or inert run text with descriptive accessible names, and absence of buttons, forms, menus, disabled placeholder controls, or action-like claim/retry/release/cancel/launch labels.
+- Component and browser evidence must cover long stage keys, workflow-template slugs, run ids, warning codes, and lifecycle messages with wrapping or break behavior that preserves the existing task-detail panel density and avoids horizontal overflow.
+- Playwright journey for task detail `Run state` / `Stage attempts` section with screenshots for no attempts, mixed attempts, archived attempt, linked/missing run, route error, invalid-state/projection-drift warning, and responsive layout. The journey must include an accessibility check for non-color-only state communication and read-only/no-control assertions.
 - Static guardrails:
   - No inline `process.env.FEATURE_TASK_CONTROL_PLANE` outside `src/lib/feature-flags.ts`.
   - No imports of `task-stage-attempts` and no table-name strings in scheduler, dispatch, task-chain, Aegis, GitHub sync/poller, runtime runs, pilot review packet, or existing task evidence route/helper paths.
-  - No claim/retry/release/cancel/scheduler/GitHub/sandbox/harness/auto-merge action controls in SPEC-013A UI/route names.
+  - Preserve task-creation parity: fail on direct production `INSERT INTO tasks` outside `src/lib/task-create.ts` by running `node scripts/check-guardrails.mjs --suite task-pipeline` or by invoking an equivalent assertion from `scripts/spec-013a/check-run-state-scope-guards.mjs`.
+  - No SPEC-013B/014 drift vocabulary or code paths in schema columns, response fields, helper/function names, imports, route names, UI controls, or production code for claim ownership/locking, retry/backoff authority, release/cancel authority, scheduler launch, GitHub reconciliation or mutation, sandbox lifecycle, harness adapter execution, or auto-merge behavior.
+  - Allow attempts/table strings only in SPEC-013A-approved migrations, rollback SQL, read helper/route/component, tests, fixtures, and deterministic UAT seed setup.
 - Required commands:
   - `pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx`
   - `pnpm exec playwright test tests/e2e/spec-013a-task-stage-attempts.spec.ts`
+  - `node scripts/check-guardrails.mjs --suite task-pipeline`
   - `node scripts/spec-013a/check-run-state-scope-guards.mjs`
   - `pnpm typecheck`
   - `pnpm lint`
   - `pnpm build`
-
