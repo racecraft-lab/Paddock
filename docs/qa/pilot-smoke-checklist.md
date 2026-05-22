@@ -533,7 +533,7 @@ alone.
 - Status: focused local UAT and full e2e suite captured for T047/T050/T055 on
   2026-05-22 UTC.
 - Branch and commit: `009f-production-triage-routing`; implementation base
-  `e63672bf`, with final polish evidence committed after this checklist update.
+  `e63672bf`, final review hardening commit `f9295524`.
 - UAT command:
   `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts`.
 - Full e2e command:

@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-22T01:28:17Z",
-  "active_step": "Post: Reviewability Diff Gate",
+  "updated_at": "2026-05-22T01:36:34Z",
+  "active_step": "Post: PR Creation",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -180,15 +180,15 @@
     },
     {
       "step": "Post: Reviewability Diff Gate",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: PR Body Generation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Creation",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Review Remediation",
@@ -263,6 +263,29 @@
         "node scripts/spec-009f/check-scope-guards.mjs passed",
         "pnpm lint passed"
       ]
+    },
+    "reviewability_diff_gate": {
+      "status": "exception",
+      "command": "reviewability-gate.sh diff origin/main...HEAD",
+      "reviewable_loc": 10781,
+      "production_files": 15,
+      "total_files": 39,
+      "primary_surface_count": 6,
+      "primary_surfaces": [
+        "API",
+        "UI",
+        "docs/process",
+        "other",
+        "scheduler/runtime",
+        "seed/config"
+      ],
+      "exception": "Accepted because SPEC-009F remains one terminal triage-routing evidence behavior surface plus the existing task Evidence extension; the extra footprint is generated SpecKit artifacts, API parity, security payload tests, UAT fixtures, and guard tooling."
+    },
+    "pr_body_generation": {
+      "status": "completed",
+      "path": "/private/tmp/speckit-pr-body-009f.md",
+      "source_template": ".github/pull_request_template.md",
+      "notes": "Generated body was rewritten to fill the host template with SPEC-009F review order, traceability, verification results, known gaps, rollback, and reviewability exception rationale."
     }
   },
   "phase_results": {
