@@ -52,7 +52,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved schema path/sections, existing-target semantics, workflow/flag/agent/governance rules, CLI contract, wrapper behavior, evidence envelope, redaction fixtures, and docs paths; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, three contracts, and Codex AGENTS context; G3 passed with 0 markers and no migration/dependency/UI/runtime scope |
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, error-handling, security, and reliability checks; G4 passed with 0 markers |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for config schema, CLI, parity fixtures, validation, and docs |
+| Tasks | `$speckit-tasks` | Complete | Generated 73 TDD-first tasks across 8 task phases; G5 passed; reviewability gate passes under bounded transition exception |
 | Analyze | `$speckit-analyze` | Pending | Check drift across spec, plan, tasks, workflow, and design concept before implementation |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and parity/no-mutation verification |
 
@@ -620,10 +620,16 @@ Tasks must include explicit verification commands and should mark parallel-safe 
 
 ### Tasks Gate Checklist
 
-- [ ] Every acceptance criterion has task coverage.
-- [ ] RED tasks precede implementation tasks for production code.
-- [ ] No task implements Product Line B onboarding or external mutations.
-- [ ] Final verification includes focused tests, typecheck/lint/build as required, and operator-readable parity/no-mutation evidence.
+- [x] Every acceptance criterion has task coverage.
+- [x] RED tasks precede implementation tasks for production code.
+- [x] No task implements Product Line B onboarding or external mutations.
+- [x] Final verification includes focused tests, typecheck/lint/build as required, and operator-readable parity/no-mutation evidence.
+
+### Tasks Progress
+
+| Status | Tasks | Phases | Parallel-safe | Gate | Reviewability |
+|--------|-------|--------|---------------|------|---------------|
+| Complete | 73 | 8 | 8 tasks marked `[P]` | G5 passed with 0 markers | `reviewability-gate.sh tasks` returned `status:"exception"` under the ratified transition exception; post-implementation diff gate remains required |
 
 ---
 
