@@ -1,7 +1,10 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import Database from 'better-sqlite3'
 import { describe, expect, it } from 'vitest'
+import { stringify as stringifyYaml } from 'yaml'
 
 const productLineSeedFiles = [
   'docs/ai/product-lines',
@@ -300,6 +303,29 @@ export function assertNoProductLineSeedScopeDrift(sourceName: string, content: s
 
 function source(path: string): string {
   return readFileSync(path, 'utf8')
+}
+
+function writeSeedConfigFixture(config: Record<string, unknown>, name = 'product-line-seed.yaml'): string {
+  const dir = mkdtempSync(join(tmpdir(), 'product-line-seed-us4-'))
+  const path = join(dir, name)
+  writeFileSync(path, stringifyYaml(config))
+  return path
+}
+
+function expectNoMutationProof(result: Record<string, unknown>): void {
+  const snapshotBefore = result['snapshot_before'] as Record<string, unknown>
+  const snapshotAfter = result['snapshot_after'] as Record<string, unknown>
+  const evidence = result['evidence'] as Record<string, unknown>
+
+  expect(snapshotBefore).toBeTruthy()
+  expect(snapshotAfter).toBeTruthy()
+  expect(snapshotAfter).toEqual(snapshotBefore)
+  expect(evidence['no_mutation_proof']).toEqual({
+    compared: true,
+    passed: true,
+    before_hash: snapshotBefore['hash'],
+    after_hash: snapshotAfter['hash'],
+  })
 }
 
 async function importTypeModule(): Promise<Record<string, unknown>> {
@@ -1009,5 +1035,354 @@ describe('Mission Control product-line seed parity', () => {
     expect(subsurfaces['notifications']).toMatchObject({ count: 1 })
     expect(subsurfaces['notifications']?.unavailable).toBeUndefined()
     db.close()
+  })
+})
+
+describe('product-line seed fail-closed validation', () => {
+  it('maps identity, GitHub ownership, unsupported fields, invalid types, duplicate declarations, and conflicts to stable field codes', async () => {
+    const config = await importConfigModule()
+    const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
+
+    const errors = validate(parsedConfigFixture({
+      product_line: { display_name: 42, agent_prefix: 'Mission Control Platform' },
+      github: { owner: 'racecraft-lab', repo: 42, full_name: 'racecraft-lab/not-mission-control', unsupported: true },
+      departments: [
+        { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/mission-control', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
+        { slug: 'qa', name: 'Duplicate QA', ticket_prefix: 'QA', area_slug: 'qa-2', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
+      ],
+      feature_flags: {
+        enabled: ['FEATURE_WORKSPACE_SWITCHER'],
+        disabled_or_absent: ['FEATURE_WORKSPACE_SWITCHER'],
+      },
+    }))
+
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'PRODUCT_LINE_IDENTITY_INVALID', path: '$.product_line.slug' }),
+      expect.objectContaining({ code: 'CONFIG_FIELD_TYPE_INVALID', path: '$.product_line.display_name' }),
+      expect.objectContaining({ code: 'AGENT_PREFIX_INVALID', path: '$.product_line.agent_prefix' }),
+      expect.objectContaining({ code: 'CONFIG_UNKNOWN_FIELD', path: '$.github.unsupported' }),
+      expect.objectContaining({ code: 'GITHUB_OWNER_REPO_INVALID', path: '$.github.repo' }),
+      expect.objectContaining({ code: 'GITHUB_OWNER_REPO_INVALID', path: '$.github.full_name' }),
+      expect.objectContaining({ code: 'CONFIG_DUPLICATE_DECLARATION', path: '$.departments[1].slug' }),
+      expect.objectContaining({ code: 'CONFIG_DUPLICATE_DECLARATION', path: '$.departments[1].ticket_prefix' }),
+      expect.objectContaining({ code: 'CONFIG_CONFLICTING_DECLARATION', path: '$.feature_flags.disabled_or_absent[0]' }),
+    ]))
+  })
+
+  it('fails closed for workflow family, path, parse, slug, repo, and template ownership contract errors', async () => {
+    const config = await importConfigModule()
+    const seed = await importSeedModule()
+    const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const brokenContract = writeSeedConfigFixture({ family: 'mission-control', templates: '[' }, 'broken-workflow.yaml')
+    const repoMismatchContract = writeSeedConfigFixture({}, 'repo-mismatch-workflow.yaml')
+    writeFileSync(repoMismatchContract, source('docs/ai/workflows/mission-control/workflow-contract.yaml').replaceAll('repo: racecraft-lab/mission-control', 'repo: other-owner/other-repo'))
+
+    expect(validate(parsedConfigFixture({ workflow_contract: { family: 'not-supported', path: 'docs/ai/workflows/mission-control/workflow-contract.yaml', required_slugs: ['mission-control_issue_triage'] } })))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ code: 'UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', path: '$.workflow_contract.family' })]))
+    expect(validate(parsedConfigFixture({ workflow_contract: { family: 'mission-control', path: '../outside.yaml', required_slugs: ['mission-control_issue_triage'] } })))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ code: 'WORKFLOW_CONTRACT_PATH_INVALID', path: '$.workflow_contract.path' })]))
+    expect(validate(parsedConfigFixture({ workflow_contract: { family: 'mission-control', path: brokenContract, required_slugs: ['mission-control_issue_triage'] } })))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ code: 'WORKFLOW_CONTRACT_PARSE_FAILED', path: '$.workflow_contract.path' })]))
+    expect(validate(parsedConfigFixture({ workflow_contract: { family: 'mission-control', path: 'docs/ai/workflows/mission-control/workflow-contract.yaml', required_slugs: ['missing_slug', 'missing_slug'] } })))
+      .toEqual(expect.arrayContaining([
+        expect.objectContaining({ code: 'WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING', path: '$.workflow_contract.required_slugs[0]' }),
+        expect.objectContaining({ code: 'WORKFLOW_CONTRACT_REQUIRED_SLUG_AMBIGUOUS', path: '$.workflow_contract.required_slugs[1]' }),
+      ]))
+    expect(validate(parsedConfigFixture({ workflow_contract: { family: 'mission-control', path: repoMismatchContract, required_slugs: ['mission-control_issue_triage'] } })))
+      .toEqual(expect.arrayContaining([expect.objectContaining({ code: 'WORKFLOW_CONTRACT_REPO_MISMATCH', path: '$.workflow_contract.path' })]))
+
+    const db = makeProductLineSeedTestDb()
+    db.prepare("INSERT INTO workspaces (slug, name, feature_flags) VALUES ('mission-control', 'Mission Control', '{}')").run()
+    db.prepare("INSERT INTO workflow_templates (workspace_id, slug, name, created_by) VALUES ((SELECT id FROM workspaces WHERE slug = 'mission-control'), 'mission-control_issue_triage', 'Manual collision', 'operator')").run()
+    const ownershipConflict = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'preflight',
+      json: true,
+      allowExisting: false,
+    })
+
+    expect(ownershipConflict).toMatchObject({
+      ok: false,
+      status: 'contract_not_ready',
+      code: 'WORKFLOW_TEMPLATE_OWNERSHIP_CONFLICT',
+      mutation_status: 'not_mutated',
+      exit_code: 3,
+    })
+    expectNoMutationProof(ownershipConflict)
+    db.close()
+  })
+
+  it('maps feature flag validation and reserved target state failures to stable codes', async () => {
+    const config = await importConfigModule()
+    const seed = await importSeedModule()
+    const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const previousEnv = process.env['FEATURE_WORKSPACE_SWITCHER']
+    process.env['FEATURE_WORKSPACE_SWITCHER'] = '0'
+    try {
+      const errors = validate(parsedConfigFixture({
+        feature_flags: {
+          enabled: ['UNKNOWN_ENABLED', 'FEATURE_WORKSPACE_SWITCHER', 'FEATURE_WORKSPACE_SWITCHER', 'FEATURE_TWO_STEP_TERMINAL', 'FEATURE_TASK_CONTROL_PLANE'],
+          disabled_or_absent: ['UNKNOWN_DISABLED', 'FEATURE_WORKSPACE_SWITCHER', 'UNKNOWN_DISABLED'],
+        },
+      }))
+
+      expect(errors).toEqual(expect.arrayContaining([
+        expect.objectContaining({ code: 'FEATURE_FLAG_UNKNOWN_ENABLED', path: '$.feature_flags.enabled[0]' }),
+        expect.objectContaining({ code: 'FEATURE_FLAG_ENV_FORCE_OFF', path: '$.feature_flags.enabled[1]' }),
+        expect.objectContaining({ code: 'FEATURE_FLAG_DUPLICATE', path: '$.feature_flags.enabled[2]' }),
+        expect.objectContaining({ code: 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED', path: '$.feature_flags.enabled[4]' }),
+        expect.objectContaining({ code: 'FEATURE_FLAG_UNKNOWN_DISABLED_OR_ABSENT', path: '$.feature_flags.disabled_or_absent[0]' }),
+        expect.objectContaining({ code: 'FEATURE_FLAG_CONFLICT', path: '$.feature_flags.disabled_or_absent[1]' }),
+        expect.objectContaining({ code: 'FEATURE_FLAG_DUPLICATE', path: '$.feature_flags.disabled_or_absent[2]' }),
+        expect.objectContaining({ code: 'FEATURE_FLAG_CASCADE_PREREQUISITE_MISSING', path: '$.feature_flags.enabled' }),
+      ]))
+    } finally {
+      if (previousEnv === undefined) {
+        Reflect.deleteProperty(process.env, 'FEATURE_WORKSPACE_SWITCHER')
+      } else {
+        process.env['FEATURE_WORKSPACE_SWITCHER'] = previousEnv
+      }
+    }
+
+    const db = makeProductLineSeedTestDb()
+    db.prepare("UPDATE workspaces SET feature_flags = ? WHERE slug = 'facility'")
+      .run(JSON.stringify({ FEATURE_TASK_CONTROL_PLANE: true }))
+    const result = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'preflight',
+      json: true,
+      allowExisting: false,
+    })
+
+    expect(result).toMatchObject({
+      ok: false,
+      status: 'blocked_preflight',
+      code: 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED',
+      mutation_status: 'not_mutated',
+      exit_code: 2,
+    })
+    expect(result['errors']).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED', path: '$.target.feature_flags.FEATURE_TASK_CONTROL_PLANE' }),
+    ]))
+    expectNoMutationProof(result)
+    db.close()
+  })
+
+  it('maps department and agent validation failures to stable codes', async () => {
+    const config = await importConfigModule()
+    const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
+    const errors = validate(parsedConfigFixture({
+      product_line: { slug: 'mission-control', display_name: 'Mission Control', agent_prefix: 'Mission Control' },
+      departments: [
+        { slug: '', name: '', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'other-owner/other-repo', github_sync_enabled: 'yes', is_triage_project: true, is_repo_sync_owner: true },
+      ],
+      agent_assignments: {
+        product_line_assignments: [
+          { agent_key: 'mission-control-platform-qa', role: 'qa', department_slug: 'missing' },
+          { agent_key: 'Bad Key', role: 'qa', department_slug: 'qa' },
+        ],
+        shared_support: [
+          { scope: 'workspace', shared_support_role: '', agent_name: '' },
+        ],
+      },
+    }))
+
+    expect(errors).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'AGENT_PREFIX_INVALID', path: '$.product_line.agent_prefix' }),
+      expect.objectContaining({ code: 'DEPARTMENT_INVALID', path: '$.departments[0].slug' }),
+      expect.objectContaining({ code: 'DEPARTMENT_GITHUB_REPO_MISMATCH', path: '$.departments[0].github_repo' }),
+      expect.objectContaining({ code: 'DEPARTMENT_INVALID', path: '$.departments[0].github_sync_enabled' }),
+      expect.objectContaining({ code: 'AGENT_KEY_INVALID', path: '$.agent_assignments.product_line_assignments[0].agent_key' }),
+      expect.objectContaining({ code: 'AGENT_ASSIGNMENT_DEPARTMENT_MISSING', path: '$.agent_assignments.product_line_assignments[0].department_slug' }),
+      expect.objectContaining({ code: 'AGENT_KEY_INVALID', path: '$.agent_assignments.product_line_assignments[1].agent_key' }),
+      expect.objectContaining({ code: 'SHARED_SUPPORT_ASSIGNMENT_INVALID', path: '$.agent_assignments.shared_support[0].scope' }),
+      expect.objectContaining({ code: 'SHARED_SUPPORT_ASSIGNMENT_INVALID', path: '$.agent_assignments.shared_support[0].shared_support_role' }),
+      expect.objectContaining({ code: 'SHARED_SUPPORT_ASSIGNMENT_INVALID', path: '$.agent_assignments.shared_support[0].agent_name' }),
+    ]))
+  })
+
+  it('blocks first-intake governance defaults unless explicit allowance and per-policy reason are present', async () => {
+    const config = await importConfigModule()
+    const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
+
+    const unsafe = validate(parsedConfigFixture({
+      governance_defaults: [
+        { identity: 'blocking-wip', policy_type: 'wip_limit', limit_kind: 'concurrent_tasks', limit_value: 1, period: null, timezone: 'America/Chicago', enforcement: 'alert', enabled: true, default_template: true },
+        { identity: 'defer-budget', policy_type: 'budget', limit_kind: 'usd', limit_value: 1, period: 'day', timezone: 'America/Chicago', enforcement: 'defer', enabled: true, default_template: false },
+      ],
+      safety_policy: {
+        existing_target: 'refuse_unless_allow_existing',
+        allow_first_intake_blocking_governance: false,
+        config_owned_surfaces: [...expectedConfigOwnedSurfaces],
+        preserved_surfaces: [...expectedPreservedSurfaces],
+        blocked_side_effects: ['github_mutation'],
+      },
+    }))
+    const allowed = validate(parsedConfigFixture({
+      governance_defaults: [
+        { identity: 'blocking-wip', policy_type: 'wip_limit', limit_kind: 'concurrent_tasks', limit_value: 1, period: null, timezone: 'America/Chicago', enforcement: 'alert', enabled: true, default_template: true, first_intake_blocking_reason: 'Operator explicitly wants first intake blocked.' },
+      ],
+      safety_policy: {
+        existing_target: 'refuse_unless_allow_existing',
+        allow_first_intake_blocking_governance: true,
+        config_owned_surfaces: [...expectedConfigOwnedSurfaces],
+        preserved_surfaces: [...expectedPreservedSurfaces],
+        blocked_side_effects: ['github_mutation'],
+      },
+    }))
+
+    expect(unsafe).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'GOVERNANCE_FIRST_INTAKE_BLOCKING', path: '$.governance_defaults[0].first_intake_blocking_reason' }),
+      expect.objectContaining({ code: 'GOVERNANCE_FIRST_INTAKE_BLOCKING', path: '$.governance_defaults[1].first_intake_blocking_reason' }),
+    ]))
+    expect(allowed).not.toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'GOVERNANCE_FIRST_INTAKE_BLOCKING' }),
+    ]))
+  })
+
+  it('blocks target repo/product-line conflicts and emits redaction-safe cleanup evidence without cleanup mutation', async () => {
+    const seed = await importSeedModule()
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const repoConflictDb = makeProductLineSeedTestDb()
+    repoConflictDb.prepare("INSERT INTO projects (workspace_id, slug, name, ticket_prefix, github_repo, github_sync_enabled) VALUES (1, 'external-sync', 'External Sync', 'EXT', 'other-owner/other-repo', 1)").run()
+
+    const repoConflict = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db: repoConflictDb,
+      dbPath: ':memory:',
+      mode: 'preflight',
+      json: true,
+      allowExisting: false,
+    })
+
+    expect(repoConflict).toMatchObject({
+      ok: false,
+      status: 'blocked_preflight',
+      code: 'TARGET_REPO_CONFLICT',
+      mutation_status: 'not_mutated',
+      redaction: { raw_secret_values_emitted: false },
+      evidence: {
+        cleanup_policy: 'detection_only_no_automatic_deletion_or_unlinking',
+      },
+      exit_code: 2,
+    })
+    expect(JSON.stringify(repoConflict)).not.toContain('sk-test-operator-secret-raw-value')
+    expect(JSON.stringify(repoConflict)).not.toContain('"raw_operator_evidence":')
+    expect(repoConflict['errors']).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'TARGET_REPO_CONFLICT', path: '$.target.residue[0]' }),
+      expect.objectContaining({ code: 'TARGET_RESIDUE_BLOCKED', path: '$.target.residue' }),
+    ]))
+    expectNoMutationProof(repoConflict)
+    expect(repoConflictDb.prepare("SELECT COUNT(*) as count FROM projects WHERE slug = 'external-sync'").get()).toEqual({ count: 1 })
+    repoConflictDb.close()
+
+    const productLineConflictDb = makeProductLineSeedTestDb()
+    productLineConflictDb.prepare("INSERT INTO workspaces (slug, name, feature_flags) VALUES ('mission-control', 'Not Mission Control', '{}')").run()
+    const productLineConflict = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db: productLineConflictDb,
+      dbPath: ':memory:',
+      mode: 'preflight',
+      json: true,
+      allowExisting: false,
+    })
+
+    expect(productLineConflict).toMatchObject({
+      ok: false,
+      status: 'blocked_preflight',
+      code: 'TARGET_PRODUCT_LINE_CONFLICT',
+      mutation_status: 'not_mutated',
+      exit_code: 2,
+    })
+    expectNoMutationProof(productLineConflict)
+    productLineConflictDb.close()
+  })
+
+  it('proves no mutation for validation failures, blocked preflight, existing-target refusal, and proof failure handling', async () => {
+    const seed = await importSeedModule()
+    const evidence = await importEvidenceModule()
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const makeResult = evidence['makeProductLineSeedResultEnvelope'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const invalidPath = writeSeedConfigFixture(parsedConfigFixture({ github: { owner: 'racecraft-lab' } }), 'invalid.yaml')
+    const validationDb = makeProductLineSeedTestDb()
+    const validationFailure = run({
+      entrypoint: 'seed:product-line',
+      configPath: invalidPath,
+      db: validationDb,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+    expect(validationFailure).toMatchObject({ ok: false, status: 'validation_failed', mutation_status: 'not_mutated' })
+    expectNoMutationProof(validationFailure)
+    validationDb.close()
+
+    const existingDb = makeProductLineSeedTestDb()
+    run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db: existingDb,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+    const existingRefusal = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db: existingDb,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+    expect(existingRefusal).toMatchObject({
+      ok: false,
+      status: 'existing_target_refused',
+      code: 'EXISTING_TARGET_REQUIRES_ALLOW_EXISTING',
+      mutation_status: 'not_mutated',
+    })
+    expectNoMutationProof(existingRefusal)
+    existingDb.close()
+
+    const failedProof = makeResult({
+      ok: false,
+      entrypoint: 'seed:product-line',
+      mode: 'apply',
+      status: 'unexpected_error',
+      code: 'UNEXPECTED_ERROR',
+      mutationStatus: 'not_mutated',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      evidence: {},
+      snapshotBefore: { schema_version: 'product-line-seed-snapshot-v1', hash: 'before', surfaces: {}, preserved_operational_state: { hash: 'before', subsurfaces: {} } },
+      snapshotAfter: { schema_version: 'product-line-seed-snapshot-v1', hash: 'after', surfaces: {}, preserved_operational_state: { hash: 'after', subsurfaces: {} } },
+    })
+
+    expect(failedProof).toMatchObject({
+      ok: false,
+      status: 'unexpected_error',
+      code: 'NO_MUTATION_PROOF_FAILED',
+      mutation_status: 'not_mutated',
+      exit_code: 5,
+      evidence: {
+        no_mutation_proof: {
+          compared: true,
+          passed: false,
+          before_hash: 'before',
+          after_hash: 'after',
+        },
+      },
+    })
   })
 })

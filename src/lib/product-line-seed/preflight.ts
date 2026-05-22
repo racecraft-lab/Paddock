@@ -1,3 +1,4 @@
+import { loadWorkflowContractFromFile } from '../workflow-contracts/yaml-loader.ts'
 import {
   PRODUCT_LINE_SEED_RESULT_SCHEMA_VERSION,
   type ProductLineResidue,
@@ -14,6 +15,18 @@ export function detectProductLineTargetResidue(
   config: ProductLineSeedConfig,
 ): ProductLineResidue[] {
   const residue: ProductLineResidue[] = []
+  if (tableExists(db, 'workspaces')) {
+    const row = db.prepare('SELECT id, name FROM workspaces WHERE slug = ?').get(config.product_line.slug) as
+      | { id: number; name: string }
+      | undefined
+    if (row && row.name !== config.product_line.display_name) {
+      residue.push({
+        kind: 'product_line_identity_conflict',
+        count: 1,
+        identifiers: { workspace_id: row.id, expected_slug: config.product_line.slug },
+      })
+    }
+  }
   if (tableExists(db, 'projects')) {
     const projects = db.prepare(`
       SELECT github_repo, COUNT(*) as count, GROUP_CONCAT(id) as ids
@@ -50,7 +63,42 @@ export function detectProductLineTargetResidue(
       identifiers: { flag: reservedFutureFlag },
     })
   }
+  const ownershipConflict = findWorkflowTemplateOwnershipConflict(db, config)
+  if (ownershipConflict) {
+    residue.push(ownershipConflict)
+  }
   return residue
+}
+
+function findWorkflowTemplateOwnershipConflict(
+  db: ProductLineSeedDatabase,
+  config: ProductLineSeedConfig,
+): ProductLineResidue | null {
+  if (!tableExists(db, 'workflow_templates') || !tableExists(db, 'workspaces')) return null
+  const workspace = db.prepare('SELECT id FROM workspaces WHERE slug = ?').get(config.product_line.slug) as { id: number } | undefined
+  if (!workspace) return null
+  const contract = loadWorkflowContractFromFile(config.workflow_contract.path)
+  const slugs = contract.templates.map((template) => template.slug)
+  if (slugs.length === 0) return null
+  const placeholders = slugs.map(() => '?').join(', ')
+  const rows = db.prepare(`
+    SELECT id, slug, created_by
+    FROM workflow_templates
+    WHERE workspace_id = ?
+      AND slug IN (${placeholders})
+      AND created_by <> 'workflow-contract'
+    ORDER BY slug ASC, id ASC
+  `).all(workspace.id, ...slugs) as { id: number; slug: string; created_by: string | null }[]
+  if (rows.length === 0) return null
+  return {
+    kind: 'workflow_template_ownership_conflict',
+    count: rows.length,
+    identifiers: {
+      template_ids: rows.map((row) => row.id),
+      template_slugs: rows.map((row) => row.slug),
+      owners: rows.map((row) => row.created_by ?? 'unknown'),
+    },
+  }
 }
 
 export function buildPendingProductLineSeedResult(

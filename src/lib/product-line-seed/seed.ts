@@ -13,6 +13,7 @@ import type {
   GovernanceDefault,
   ProductLineSeedConfig,
   ProductLineSeedDatabase,
+  ProductLineSeedErrorCode,
   ProductLineSeedResultEnvelope,
   ProductLineSeedRunOptions,
   ProductLineSeedValidationError,
@@ -36,7 +37,7 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
     } catch (error) {
       const errors = configErrors(error)
       const firstCode = errors[0]?.code ?? 'CONFIG_SCHEMA_INVALID'
-      const contractNotReady = firstCode === 'UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY' || firstCode === 'WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING'
+      const contractNotReady = isWorkflowContractCode(firstCode)
       const snapshotAfter = collectProductLineSeedSnapshot(db)
       return makeProductLineSeedResultEnvelope({
         ok: false,
@@ -58,14 +59,17 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
     const existingTarget = workspaceExists(db, config.product_line.slug)
     const validationEvidence = buildValidationEvidence()
     const residue = detectProductLineTargetResidue(db, config)
+      .filter((entry) => options.mode === 'preflight' || entry.kind !== 'product_line_identity_conflict')
     if (residue.length > 0) {
       const snapshotAfter = collectProductLineSeedSnapshot(db, config)
+      const code = codeForResidue(residue[0]?.kind)
+      const contractNotReady = isWorkflowContractCode(code)
       return makeProductLineSeedResultEnvelope({
         ok: false,
         entrypoint: options.entrypoint,
         mode: options.mode,
-        status: 'blocked_preflight',
-        code: 'NON_TARGET_RESIDUE_DETECTED',
+        status: contractNotReady ? 'contract_not_ready' : 'blocked_preflight',
+        code,
         mutationStatus: 'not_mutated',
         configPath: options.configPath,
         config,
@@ -76,11 +80,20 @@ export function runProductLineSeed(options: ProductLineSeedRunOptions): ProductL
           residue,
           cleanup_policy: 'detection_only_no_automatic_deletion_or_unlinking',
         },
-        errors: residue.map((entry, index) => ({
-          code: 'NON_TARGET_RESIDUE_DETECTED',
-          path: `$.target.residue[${String(index)}]`,
-          message: `Target residue detected for ${entry.kind}.`,
-        })),
+        errors: [
+          ...residue.map((entry, index) => ({
+            code: codeForResidue(entry.kind),
+            path: residuePath(entry, index),
+            message: `Target residue detected for ${entry.kind}.`,
+          })),
+          ...residue.some((entry) => codeForResidue(entry.kind) === 'TARGET_REPO_CONFLICT')
+            ? [{
+                code: 'TARGET_RESIDUE_BLOCKED' as const,
+                path: '$.target.residue',
+                message: 'Target-config-aware residue requires operator cleanup; no deletion, unlinking, or cleanup was performed.',
+              }]
+            : [],
+        ],
         snapshotBefore,
         snapshotAfter,
         redaction,
@@ -448,6 +461,32 @@ function buildValidationEvidence(): Record<string, string> {
   }
 }
 
+function isWorkflowContractCode(code: ProductLineSeedErrorCode): boolean {
+  return code === 'UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY' ||
+    code === 'WORKFLOW_CONTRACT_PATH_INVALID' ||
+    code === 'WORKFLOW_CONTRACT_PARSE_FAILED' ||
+    code === 'WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING' ||
+    code === 'WORKFLOW_CONTRACT_REQUIRED_SLUG_AMBIGUOUS' ||
+    code === 'WORKFLOW_CONTRACT_REPO_MISMATCH' ||
+    code === 'WORKFLOW_TEMPLATE_OWNERSHIP_CONFLICT'
+}
+
+function codeForResidue(kind: string | undefined): ProductLineSeedErrorCode {
+  if (kind === 'product_line_identity_conflict') return 'TARGET_PRODUCT_LINE_CONFLICT'
+  if (kind === 'project_github_sync' || kind === 'task_github_sync') return 'TARGET_REPO_CONFLICT'
+  if (kind === 'reserved_future_flag_enabled') return 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED'
+  if (kind === 'workflow_template_ownership_conflict') return 'WORKFLOW_TEMPLATE_OWNERSHIP_CONFLICT'
+  return 'NON_TARGET_RESIDUE_DETECTED'
+}
+
+function residuePath(entry: { kind: string; identifiers?: unknown }, index?: number): string {
+  if (entry.kind === 'reserved_future_flag_enabled' && isRecord(entry.identifiers)) {
+    const flag = entry.identifiers['flag']
+    if (typeof flag === 'string') return `$.target.feature_flags.${flag}`
+  }
+  return `$.target.residue[${String(index ?? 0)}]`
+}
+
 function configErrors(error: unknown): ProductLineSeedValidationError[] {
   if (error instanceof ProductLineSeedConfigValidationError) return error.errors
   return [{
@@ -455,6 +494,10 @@ function configErrors(error: unknown): ProductLineSeedValidationError[] {
     path: '$',
     message: error instanceof Error ? error.message : 'Product-line seed config could not be loaded.',
   }]
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
 }
 
 function drift(path: string, message: string): ProductLineSeedValidationError {

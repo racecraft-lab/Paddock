@@ -115,14 +115,21 @@ export function makeProductLineSeedResultEnvelope(options: {
   redaction?: RedactionProof
   actionRequired?: string | null
 }): ProductLineSeedResultEnvelope {
-  const exitCode = exitCodeFor(options.code)
+  const noMutationProof = compareNoMutationSnapshots(options.snapshotBefore ?? null, options.snapshotAfter ?? null)
+  const code = options.mutationStatus === 'not_mutated' && noMutationProof.compared && !noMutationProof.passed
+    ? 'NO_MUTATION_PROOF_FAILED'
+    : options.code
+  const exitCode = exitCodeFor(code)
+  const evidence = options.mutationStatus === 'not_mutated' && noMutationProof.compared
+    ? { ...options.evidence, no_mutation_proof: noMutationProof }
+    : options.evidence ?? {}
   return {
     schema_version: PRODUCT_LINE_SEED_RESULT_SCHEMA_VERSION,
     ok: options.ok,
     entrypoint: options.entrypoint,
     mode: options.mode,
     status: options.status,
-    code: options.code,
+    code,
     mutation_status: options.mutationStatus,
     config: {
       path: options.configPath,
@@ -136,7 +143,7 @@ export function makeProductLineSeedResultEnvelope(options: {
           existing_target: options.existingTarget ?? false,
         }
       : null,
-    evidence: options.evidence ?? {},
+    evidence,
     errors: options.errors ?? [],
     snapshot_before: options.snapshotBefore ?? null,
     snapshot_after: options.snapshotAfter ?? null,
@@ -148,10 +155,76 @@ export function makeProductLineSeedResultEnvelope(options: {
 
 export function exitCodeFor(code: ProductLineSeedErrorCode): 0 | 2 | 3 | 4 | 5 {
   if (code === 'READY' || code === 'SEEDED' || code === 'VERIFIED') return 0
-  if (code === 'UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY' || code === 'WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING') return 3
-  if (code === 'CONFIG_PARSE_FAILED' || code === 'CONFIG_UNSAFE_YAML_SYNTAX' || code === 'CONFIG_SCHEMA_INVALID' || code === 'EXISTING_TARGET_REQUIRES_ALLOW_EXISTING' || code === 'NON_TARGET_RESIDUE_DETECTED') return 2
+  if (
+    code === 'UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY' ||
+    code === 'WORKFLOW_CONTRACT_PATH_INVALID' ||
+    code === 'WORKFLOW_CONTRACT_PARSE_FAILED' ||
+    code === 'WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING' ||
+    code === 'WORKFLOW_CONTRACT_REQUIRED_SLUG_AMBIGUOUS' ||
+    code === 'WORKFLOW_CONTRACT_REPO_MISMATCH' ||
+    code === 'WORKFLOW_TEMPLATE_OWNERSHIP_CONFLICT'
+  ) return 3
+  if (
+    code === 'CONFIG_PARSE_FAILED' ||
+    code === 'CONFIG_UNSAFE_YAML_SYNTAX' ||
+    code === 'CONFIG_SCHEMA_INVALID' ||
+    code === 'CONFIG_SCHEMA_VERSION_UNSUPPORTED' ||
+    code === 'CONFIG_REQUIRED_SECTION_MISSING' ||
+    code === 'CONFIG_UNKNOWN_FIELD' ||
+    code === 'CONFIG_FIELD_TYPE_INVALID' ||
+    code === 'CONFIG_DUPLICATE_DECLARATION' ||
+    code === 'CONFIG_CONFLICTING_DECLARATION' ||
+    code === 'PRODUCT_LINE_IDENTITY_INVALID' ||
+    code === 'GITHUB_OWNER_REPO_INVALID' ||
+    code === 'EXISTING_TARGET_REQUIRES_ALLOW_EXISTING' ||
+    code === 'NON_TARGET_RESIDUE_DETECTED' ||
+    code === 'TARGET_REPO_CONFLICT' ||
+    code === 'TARGET_PRODUCT_LINE_CONFLICT' ||
+    code === 'TARGET_RESIDUE_BLOCKED' ||
+    code === 'FEATURE_FLAG_UNKNOWN_ENABLED' ||
+    code === 'FEATURE_FLAG_UNKNOWN_DISABLED_OR_ABSENT' ||
+    code === 'FEATURE_FLAG_DUPLICATE' ||
+    code === 'FEATURE_FLAG_CONFLICT' ||
+    code === 'FEATURE_FLAG_RESERVED_FUTURE_ENABLED' ||
+    code === 'FEATURE_FLAG_ENV_FORCE_OFF' ||
+    code === 'FEATURE_FLAG_CASCADE_PREREQUISITE_MISSING' ||
+    code === 'DEPARTMENT_INVALID' ||
+    code === 'DEPARTMENT_GITHUB_REPO_MISMATCH' ||
+    code === 'AGENT_PREFIX_INVALID' ||
+    code === 'AGENT_KEY_INVALID' ||
+    code === 'AGENT_ASSIGNMENT_DEPARTMENT_MISSING' ||
+    code === 'SHARED_SUPPORT_ASSIGNMENT_INVALID' ||
+    code === 'GOVERNANCE_POLICY_INVALID' ||
+    code === 'GOVERNANCE_FIRST_INTAKE_BLOCKING' ||
+    code === 'GOVERNANCE_POLICY_IDENTITY_DUPLICATE'
+  ) return 2
   if (code === 'VERIFY_DRIFT_DETECTED') return 4
   return 5
+}
+
+export function compareNoMutationSnapshots(
+  snapshotBefore: ProductLineSeedSnapshot | null,
+  snapshotAfter: ProductLineSeedSnapshot | null,
+): {
+  compared: boolean
+  passed: boolean
+  before_hash: string | null
+  after_hash: string | null
+} {
+  if (!snapshotBefore || !snapshotAfter) {
+    return {
+      compared: false,
+      passed: false,
+      before_hash: snapshotBefore?.hash ?? null,
+      after_hash: snapshotAfter?.hash ?? null,
+    }
+  }
+  return {
+    compared: true,
+    passed: snapshotBefore.hash === snapshotAfter.hash,
+    before_hash: snapshotBefore.hash,
+    after_hash: snapshotAfter.hash,
+  }
 }
 
 export function collectProductLineSeedSnapshot(

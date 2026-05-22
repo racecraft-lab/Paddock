@@ -170,19 +170,19 @@ pnpm seed:mission-control -- --db .data/spec-010a-parity.db --mode verify --json
 
 ### Tests for User Story 4
 
-- [ ] T051 [US4] Write RED tests for missing identity, missing GitHub ownership, unsupported fields, invalid types, duplicate declarations, and conflicting declarations in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T052 [US4] Write RED tests for unsupported workflow family, invalid path, parse failure, missing required slug, ambiguous slug, repo mismatch, and template ownership conflict in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T053 [US4] Write RED tests for unknown enabled flags, unknown disabled/absent flags, duplicate flags, enabled/disabled conflicts, reserved future flags true in target state, env force-off, and missing cascade prerequisites in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T054 [US4] Write RED tests for invalid departments, department GitHub repo mismatch, invalid agent prefix, invalid agent key, missing assignment department, and invalid shared support assignment in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T055 [US4] Write RED tests for unsafe first-intake-blocking governance defaults without explicit allowance and per-policy reason in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T056 [US4] Write RED tests for target repository conflict, target product-line conflict, residue blocking, and redaction-safe cleanup evidence in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T057 [US4] Write RED no-mutation snapshot tests comparing `snapshot_before` and `snapshot_after` for validation failures, blocked preflight, and existing-target refusal in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T051 [US4] Write RED tests for missing identity, missing GitHub ownership, unsupported fields, invalid types, duplicate declarations, and conflicting declarations in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T052 [US4] Write RED tests for unsupported workflow family, invalid path, parse failure, missing required slug, ambiguous slug, repo mismatch, and template ownership conflict in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T053 [US4] Write RED tests for unknown enabled flags, unknown disabled/absent flags, duplicate flags, enabled/disabled conflicts, reserved future flags true in target state, env force-off, and missing cascade prerequisites in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T054 [US4] Write RED tests for invalid departments, department GitHub repo mismatch, invalid agent prefix, invalid agent key, missing assignment department, and invalid shared support assignment in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T055 [US4] Write RED tests for unsafe first-intake-blocking governance defaults without explicit allowance and per-policy reason in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T056 [US4] Write RED tests for target repository conflict, target product-line conflict, residue blocking, and redaction-safe cleanup evidence in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T057 [US4] Write RED no-mutation snapshot tests comparing `snapshot_before` and `snapshot_after` for validation failures, blocked preflight, and existing-target refusal in `src/lib/__tests__/product-line-seed.test.ts`.
 
 ### Implementation for User Story 4
 
-- [ ] T058 [US4] Complete validation error code mapping and config path or field path evidence for all contract codes in `src/lib/product-line-seed/config.ts`.
-- [ ] T059 [US4] Complete no-mutation snapshot comparison and `NO_MUTATION_PROOF_FAILED` handling in `src/lib/product-line-seed/evidence.ts`.
-- [ ] T060 [US4] Complete blocked preflight result construction for existing-target refusal, residue conflict, unsafe governance, contract-not-ready, validation failure, CLI error, and unexpected errors in `src/lib/product-line-seed/preflight.ts`.
+- [x] T058 [US4] Complete validation error code mapping and config path or field path evidence for all contract codes in `src/lib/product-line-seed/config.ts`.
+- [x] T059 [US4] Complete no-mutation snapshot comparison and `NO_MUTATION_PROOF_FAILED` handling in `src/lib/product-line-seed/evidence.ts`.
+- [x] T060 [US4] Complete blocked preflight result construction for existing-target refusal, residue conflict, unsafe governance, contract-not-ready, validation failure, CLI error, and unexpected errors in `src/lib/product-line-seed/preflight.ts`.
 
 **Checkpoint**: User Story 4 is complete when all unsafe config classes fail closed before writes and emit redacted structured no-mutation evidence.
 
