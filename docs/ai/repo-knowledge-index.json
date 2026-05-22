@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "last_verified": "2026-05-21",
+  "last_verified": "2026-05-22",
   "entries": [
     {
       "path": "AGENTS.md",
@@ -11,7 +11,7 @@
         "cadence": "per PR touching repo instructions or GitNexus guidance",
         "trigger": "when setup, verification, or local index-refresh instructions change"
       },
-      "last_verified": "2026-05-21",
+      "last_verified": "2026-05-22",
       "related_specs": ["SPEC-012A"],
       "verification_commands": ["pnpm knowledge:index:smoke"],
       "required": true,
@@ -64,7 +64,7 @@
         "cadence": "per PR touching indexed paths",
         "trigger": "when a required source-of-truth path, owner, or verification command changes"
       },
-      "last_verified": "2026-05-21",
+      "last_verified": "2026-05-22",
       "related_specs": ["SPEC-012A"],
       "verification_commands": ["pnpm knowledge:index:check"],
       "required": false,
@@ -109,8 +109,8 @@
         "cadence": "after each spec setup, merge, UAT, or hygiene pass",
         "trigger": "when a spec status, dependency, merge SHA, or verification result changes"
       },
-      "last_verified": "2026-05-21",
-      "related_specs": ["SPEC-012A", "SPEC-013A"],
+      "last_verified": "2026-05-22",
+      "related_specs": ["SPEC-009F", "SPEC-013A"],
       "verification_commands": ["pnpm knowledge:index:check", "Manual roadmap status review"],
       "required": true,
       "repo_owned": true
@@ -124,8 +124,8 @@
         "cadence": "per SpecKit phase transition",
         "trigger": "when setup, autopilot, implementation, or closeout changes workflow artifacts"
       },
-      "last_verified": "2026-05-21",
-      "related_specs": ["SPEC-012A"],
+      "last_verified": "2026-05-22",
+      "related_specs": ["SPEC-012A", "SPEC-009F"],
       "verification_commands": ["Manual check: no unresolved clarification, checklist gap, CRITICAL, or HIGH markers in active spec artifacts"],
       "required": true,
       "repo_owned": true
@@ -169,8 +169,8 @@
         "cadence": "after every pilot UAT or post-merge smoke",
         "trigger": "when a pilot issue, PR, deployment SHA, or cleanup result changes"
       },
-      "last_verified": "2026-05-21",
-      "related_specs": ["SPEC-009C1", "SPEC-009C2", "SPEC-009C3", "SPEC-009C4", "SPEC-009D", "SPEC-009E"],
+      "last_verified": "2026-05-22",
+      "related_specs": ["SPEC-009C1", "SPEC-009C2", "SPEC-009C3", "SPEC-009C4", "SPEC-009D", "SPEC-009E", "SPEC-009F"],
       "verification_commands": ["Manual UAT evidence review"],
       "required": true,
       "repo_owned": true

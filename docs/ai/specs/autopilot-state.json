@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-22T01:47:29Z",
-  "active_step": "All phases and post-implementation items complete",
-  "status": "Complete",
+  "updated_at": "2026-05-22T14:11:03Z",
+  "active_step": "PR #57 merged; target deployment and HITL UAT evidence pending",
+  "status": "UAT Pending",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
   "plan": [
@@ -197,6 +197,14 @@
     {
       "step": "Post: Retrospective",
       "status": "completed"
+    },
+    {
+      "step": "Post: PR Merge Observation",
+      "status": "completed"
+    },
+    {
+      "step": "Post: Target Deployment and HITL UAT",
+      "status": "pending"
     }
   ],
   "archive_sweep": {
@@ -309,14 +317,38 @@
       "critical_findings": 0,
       "significant_findings": 0
     },
+    "post_merge_closeout": {
+      "status": "uat-pending",
+      "pr_number": 57,
+      "url": "https://github.com/racecraft-lab/mission-control/pull/57",
+      "merged_at": "2026-05-22T13:00:42Z",
+      "merge_commit": "d396ed205b281d10a2b5cb95542209e816ebd95a",
+      "merged_head": "c8ef2ea1ff2f7df50948ff68579b8e433c5f4754",
+      "passed_merge_checks": [
+        "Analyze (actions)",
+        "Analyze (javascript-typescript)",
+        "CodeQL",
+        "quality-gate",
+        "playwright-approval / visual-approval-status",
+        "storybook-approval / visual-approval-status",
+        "visual-review-approval/playwright",
+        "visual-review-approval/storybook"
+      ],
+      "pending": [
+        "target deployment promotion",
+        "PILOT_MISSION_CONTROL_E2E scope confirmation",
+        "named HITL UAT evidence for all six non-remediation outcomes on the target deployment"
+      ],
+      "notes": "PR #57 is merged, but roadmap policy requires target deployment and HITL UAT evidence before SPEC-009F can move from UAT Pending to Complete."
+    },
     "roadmap_prd_hygiene": {
       "status": "completed",
-      "next_after_pr57_merge": "SPEC-013A",
+      "next_after_pr57_uat_closeout": "SPEC-013A",
       "parallel_options": [
         "SPEC-010A",
         "SPEC-011"
       ],
-      "notes": "Roadmap and PRD now make the next unblocked spec pointer part of closeout hygiene so post-merge status has an explicit next setup target."
+      "notes": "Roadmap and PRD now make the next unblocked spec pointer part of closeout hygiene. SPEC-013A becomes the explicit next setup target after target deployment and HITL UAT close out SPEC-009F."
     }
   },
   "phase_results": {

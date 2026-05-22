@@ -51,9 +51,9 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Ran data-integrity, api-contracts, state-management, error-handling, security, ux-accessibility, and regression-safety; all gaps remediated |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | G6 passed after artifact-only consistency remediations; no CRITICAL/HIGH findings remain |
-| Implement | `$speckit-implement` | Complete | T001-T055 complete; PR #57 is open, pushed, and carries reviewability exception plus verification evidence |
+| Implement | `$speckit-implement` | Complete | T001-T055 complete; PR #57 merged to `main` as `d396ed205b281d10a2b5cb95542209e816ebd95a`; target deployment/HITL UAT remains pending |
 
-**Status Legend:** Pending | In Progress | Complete | Blocked
+**Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
 
 ### Phase Gates
 
@@ -157,14 +157,14 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] Operators can drive `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, and `INVALID` fixtures.
-- [ ] Each outcome records a terminal non-remediation lane with typed artifact payload, disposition, activity evidence, source task, rationale, and recommended next action.
-- [ ] No Issue Remediation successor, claim, runner, sandbox, adapter, auto-close, external comment, applied label, or auto-merge side effect is created.
-- [ ] `NEEDS_SPEC` produces a SpecKit-ready handoff artifact without creating a spec branch/worktree.
-- [ ] `NEEDS_HUMAN` produces a clarification-request artifact with blocking questions and target audience.
-- [ ] `NEEDS_SPECIALIST` recommends an owner/lane from existing metadata when safe, or records unassigned-specialist when no safe match exists.
-- [ ] Duplicate/obsolete/invalid outcomes use a shared closure-recommendation model with outcome-specific required fields.
-- [ ] The task Evidence route/section exposes `triage_routing` state, artifacts, recommended labels, deferred side effects, and idempotency/supersession state through UI block `Triage routing`.
+- [x] Operators can drive `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, and `INVALID` fixtures.
+- [x] Each outcome records a terminal non-remediation lane with typed artifact payload, disposition, activity evidence, source task, rationale, and recommended next action.
+- [x] No Issue Remediation successor, claim, runner, sandbox, adapter, auto-close, external comment, applied label, or auto-merge side effect is created.
+- [x] `NEEDS_SPEC` produces a SpecKit-ready handoff artifact without creating a spec branch/worktree.
+- [x] `NEEDS_HUMAN` produces a clarification-request artifact with blocking questions and target audience.
+- [x] `NEEDS_SPECIALIST` recommends an owner/lane from existing metadata when safe, or records unassigned-specialist when no safe match exists.
+- [x] Duplicate/obsolete/invalid outcomes use a shared closure-recommendation model with outcome-specific required fields.
+- [x] The task Evidence route/section exposes `triage_routing` state, artifacts, recommended labels, deferred side effects, and idempotency/supersession state through UI block `Triage routing`.
 
 ---
 
@@ -683,10 +683,17 @@ guard/UAT evidence.
 
 - PR: https://github.com/racecraft-lab/mission-control/pull/57
 - Implementation evidence commit: `f9a18575`
+- Merge evidence: PR #57 merged to `main` as
+  `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22. GitHub merge
+  checks passed for CodeQL, Quality Gate, and visual approval contexts.
+- Current closeout status: `UAT Pending`. Target deployment promotion and named
+  HITL UAT evidence are not yet recorded, so this workflow must not mark
+  SPEC-009F `Complete`.
 - Review remediation: no review comments or reviews existed when checked;
   Copilot review waiting was skipped by operator direction because monthly quota
   is exhausted.
 - Retrospective: `specs/009f-production-triage-routing/retrospective.md`
-- Roadmap/PRD hygiene: this branch records that after PR #57 merges, the next
-  recommended SpecKit setup target is SPEC-013A. SPEC-010A and SPEC-011 remain
-  parallel options only when file ownership stays disjoint.
+- Roadmap/PRD hygiene: this closeout records that after SPEC-009F target
+  deployment/HITL UAT, the next recommended SpecKit setup target is SPEC-013A.
+  SPEC-010A and SPEC-011 remain parallel options only when file ownership stays
+  disjoint.

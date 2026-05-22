@@ -469,15 +469,18 @@ function validateStatusPointer(findings, fixture = null) {
   const stateWorkflowFile = values.state_workflow_file?.trim()
   const stateActiveStep = values.state_active_step?.trim()
   const stateWorkflowSpec = specIdFromWorkflowPath(stateWorkflowFile)
+  const allowedRoadmapStatuses = ['In Progress', 'UAT Pending', 'Complete']
   const allowedWorkflowStatuses =
     roadmapStatus === 'Complete'
       ? ['Complete']
+      : roadmapStatus === 'UAT Pending'
+        ? ['Complete']
       : roadmapStatus === 'In Progress'
         ? ['In Progress', 'Complete']
         : []
 
   if (
-    !['In Progress', 'Complete'].includes(roadmapStatus) ||
+    !allowedRoadmapStatuses.includes(roadmapStatus) ||
     !stateWorkflowSpec ||
     !allowedWorkflowStatuses.includes(workflowStatus) ||
     (workflowStatus === 'In Progress' && !stateActiveStep)
@@ -492,10 +495,12 @@ function validateStatusPointer(findings, fixture = null) {
         entry_path: STATE_PATH,
         details: {
           expected: {
-            roadmap_status: 'In Progress or Complete',
+            roadmap_status: 'In Progress, UAT Pending, or Complete',
             workflow_status:
               roadmapStatus === 'Complete'
                 ? 'Complete'
+                : roadmapStatus === 'UAT Pending'
+                  ? 'Complete'
                 : 'In Progress or Complete for an active PR workflow',
             state_workflow_file: 'docs/ai/specs/SPEC-###-workflow.md',
           },

@@ -534,6 +534,11 @@ alone.
   2026-05-22 UTC.
 - Branch and commit: `009f-production-triage-routing`; implementation base
   `e63672bf`, final review hardening commit `f9295524`.
+- Post-merge closeout: PR #57 merged to `main` as
+  `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22. This section is
+  still branch/local fixture UAT evidence only; target deployment promotion,
+  `PILOT_MISSION_CONTROL_E2E` target-scope confirmation, and HITL UAT replay
+  are pending before SPEC-009F can be marked complete.
 - UAT command:
   `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts`.
 - Full e2e command:
