@@ -54,7 +54,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, error-handling, security, and reliability checks; G4 passed with 0 markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 73 TDD-first tasks across 8 task phases; G5 passed; reviewability gate passes under bounded reviewability waiver |
 | Analyze | `$speckit-analyze` | Complete | Remediated 2 MEDIUM artifact consistency findings; G6 passed with 0 CRITICAL/HIGH findings and 0 markers |
-| Implement | `$speckit-implement` | In Progress | Completed setup/foundation tasks T001-T018; continuing TDD implementation by task group |
+| Implement | `$speckit-implement` | Complete | Completed T001-T073, merged PR #59, and recorded post-merge UAT evidence from merged `main` |
 
 **Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
 
@@ -743,6 +743,14 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 - [x] Roadmap/workflow status synced.
 - [x] PR packet includes review order, traceability, validation, known gaps, and rollback/flag notes in [PR #59](https://github.com/racecraft-lab/mission-control/pull/59).
 
+### Post-Merge UAT Evidence - 2026-05-22
+
+- Scope: merged `main` checkout `028abca9` under Node v22.22.2; disposable DB `/private/tmp/mission-control-uat-010a-013a.joRGvX/spec-010a-uat-r2.db` copied from the local `.data` baseline; local `.data/mission-control.db` was not mutated.
+- Generic seeder flow passed: `preflight` returned `READY` with `mutation_status:not_mutated`; first apply returned `SEEDED`; existing-target apply without `--allow-existing` failed with `EXISTING_TARGET_REQUIRES_ALLOW_EXISTING` and stable no-mutation hash; apply `--allow-existing`, generic `verify`, and `seed:mission-control` wrapper verify all passed with stable seeded snapshot hash.
+- Seed shape matched Mission Control config: one workspace, six department projects, six product-line-scoped assignments, nine workflow templates, one config-owned feature flag in the seed evidence snapshot, and three governance defaults. Direct DB inspection confirmed zero Product Line B workspaces, zero tasks, and zero runs.
+- Fail-closed validation passed: invalid reserved-flag config failed before writes with `FEATURE_FLAG_RESERVED_FUTURE_ENABLED`, `FEATURE_FLAG_CONFLICT`, and `CONFIG_CONFLICTING_DECLARATION`; no-mutation comparison passed and `raw_secret_values_emitted:false`.
+- Static scope search found only negative safety-policy/evidence/test references and no Product Line B onboarding, GitHub mutation, dispatch, runner, sandbox, auto-merge, or SpecKit setup/autopilot invocation drift.
+
 ---
 
 ## Project Structure Reference
@@ -769,15 +777,15 @@ specs/010a-generic-product-line-seeder/         # generated SpecKit artifacts
 
 ### What Worked Well
 
-- Pending implementation.
+- The generic CLI and compatibility wrapper produced the same Mission Control seed shape from a disposable DB without touching the local runtime database.
 
 ### Challenges Encountered
 
-- Pending implementation.
+- Existing-target safety needed explicit evidence for both refusal and reviewed re-apply; the UAT sequence now captures both paths with stable snapshot hashes.
 
 ### Patterns to Reuse
 
-- Pending implementation.
+- Keep process-only seed UAT on copied databases, record no-mutation hashes for failed validation, and pair CLI evidence with direct DB shape checks.
 
 ---
 

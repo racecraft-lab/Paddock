@@ -41,7 +41,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Tasks | `$speckit-tasks` | Complete | G5 passed; generated 58 TDD-first tasks across 6 phases, with 26 parallel opportunities and a ratified transition exception for the planned schema/helper/API/UI scope |
 | Analyze | `$speckit-analyze` | Complete | G6 passed after remediating 2 medium design-concept drift findings; zero CRITICAL/HIGH findings remain |
 | Implement | `$speckit-implement` | Complete | G7 passed; T001-T058 implemented with migration/helper/route/component/guardrail/e2e coverage |
-| Post-Implementation | `$speckit-autopilot` closeout | Complete | Full unit and e2e suites passed; PR #58 opened as draft; review-remediation heartbeat `spec-013a-pr-review-remediation` scheduled |
+| Post-Implementation | `$speckit-autopilot` closeout | Complete | Full unit and e2e suites passed; PR #58 merged; post-merge UAT evidence recorded from merged `main` |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -626,6 +626,14 @@ For each task:
 - [x] PR review packet records reviewability, verification, flag, rollback, and known-gap evidence.
 - [x] Draft PR opened: https://github.com/racecraft-lab/mission-control/pull/58.
 - [x] Review-remediation heartbeat scheduled: `spec-013a-pr-review-remediation`.
+
+### Post-Merge UAT Evidence - 2026-05-22
+
+- Scope: merged `main` checkout `028abca9` under Node v22.22.2; `FEATURE_TASK_CONTROL_PLANE` remained scoped to the SPEC-013A debug/read path and was not promoted into claim, scheduler, retry, GitHub reconciliation, sandbox, adapter, or auto-merge behavior.
+- Focused post-merge verification passed: `direnv exec . pnpm exec vitest run src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx` passed 4 files / 31 tests.
+- Runtime-boundary guards passed: `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs` passed across 48 changed files, and `direnv exec . node scripts/check-guardrails.mjs --suite task-pipeline` passed, proving legacy task-pipeline runtime remains table-blind.
+- Browser UAT passed after rebuilding standalone output with `direnv exec . pnpm build`: `direnv exec . pnpm exec playwright test tests/e2e/spec-013a-task-stage-attempts.spec.ts` passed 1/1 and produced `test-results/spec-013a-task-stage-attempts/spec-013a-task-stage-attempts.png`.
+- Disposable e2e DB inspection retained migration marker `076_task_stage_attempts`, required attempt/event tables and indexes, and `PRAGMA foreign_key_check` returned zero rows. Cleanup evidence showed zero attempts, zero events, and zero fixture tasks remaining after the journey.
 
 ### Deferred Work Notes
 
