@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-22T21:11:51.180Z",
+  "updatedAt": "2026-05-22T21:14:54.445Z",
   "prs": [
     {
       "prNumber": "59",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/59/",
       "headRef": "010a-generic-product-line-seeder",
       "baseRef": "main",
-      "updatedAt": "2026-05-22T21:11:51.180Z",
+      "updatedAt": "2026-05-22T21:14:54.445Z",
       "latest": {
+        "storybook": {
+          "runId": "26311894345",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26311894345",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/59/storybook/latest/?v=26311894345-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/59/runs/26311894345-attempt-1/storybook/",
+          "updatedAt": "2026-05-22T21:14:54.445Z"
+        },
         "playwright": {
           "runId": "26311894302",
           "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26311894302",
