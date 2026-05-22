@@ -53,7 +53,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, three contracts, and Codex AGENTS context; G3 passed with 0 markers and no migration/dependency/UI/runtime scope |
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, error-handling, security, and reliability checks; G4 passed with 0 markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 73 TDD-first tasks across 8 task phases; G5 passed; reviewability gate passes under bounded transition exception |
-| Analyze | `$speckit-analyze` | Pending | Check drift across spec, plan, tasks, workflow, and design concept before implementation |
+| Analyze | `$speckit-analyze` | Complete | Remediated 2 MEDIUM artifact consistency findings; G6 passed with 0 CRITICAL/HIGH findings and 0 markers |
 | Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and parity/no-mutation verification |
 
 **Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
@@ -668,9 +668,16 @@ Remediate CRITICAL/HIGH findings before implementation. Do not widen scope; spli
 
 ### Analyze Gate Checklist
 
-- [ ] Marker scans are clean.
-- [ ] No CRITICAL/HIGH findings remain.
-- [ ] Any MEDIUM/LOW accepted risks are recorded with owner and follow-up.
+- [x] Marker scans are clean.
+- [x] No CRITICAL/HIGH findings remain.
+- [x] Any MEDIUM/LOW accepted risks are recorded with owner and follow-up.
+
+### Analysis Results
+
+| ID | Severity | Issue | Resolution |
+|----|----------|-------|------------|
+| A1 | MEDIUM | PR review packet traceability stopped at FR-029 / SC-013 after checklist remediation added FR-030 / SC-014 | Updated plan traceability to FR-001 through FR-030 and SC-001 through SC-014 |
+| A2 | MEDIUM | Preserved non-owned operational/history surfaces were inconsistent across spec, tasks, quickstart, and checklist wording for evidence/read-model state | Aligned spec, tasks, quickstart, and data-integrity checklist with issues, histories, and task evidence/read-model state |
 
 ---
 

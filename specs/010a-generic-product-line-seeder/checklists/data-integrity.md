@@ -20,7 +20,7 @@
 
 - [x] CHK008 Are existing-target refusal and `--allow-existing` requirements unambiguous for apply mode and read-only verify mode? [Clarity, Spec §FR-018, §FR-021]
 - [x] CHK009 Are config-owned update surfaces enumerated precisely enough to distinguish reviewed seed changes from preserved target state? [Clarity, Spec §FR-019]
-- [x] CHK010 Are non-config-owned operational/history preservation requirements complete for tasks, activities, comments, notifications, dispositions, artifacts, quality reviews, GitHub sync state, governance audit rows, manual templates, row identity, timestamps, counters, lineage, and unrelated flags? [Completeness, Spec §FR-020]
+- [x] CHK010 Are non-config-owned operational/history preservation requirements complete for issues, tasks, task evidence/read-model state, activities, histories, comments, notifications, dispositions, artifacts, quality reviews, GitHub sync state, governance audit rows, manual templates, row identity, timestamps, counters, lineage, and unrelated flags? [Completeness, Spec §FR-020]
 - [x] CHK011 Are success criteria measurable for preserving non-owned issue, task, activity, history, and related operational state during existing-target apply? [Measurability, Spec §SC-009]
 - [x] CHK012 Are requirements explicit that target residue blocking is detection-only and never performs automatic deletion or unlinking? [Consistency, Spec §FR-027]
 

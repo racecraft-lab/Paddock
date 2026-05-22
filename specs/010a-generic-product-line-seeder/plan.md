@@ -141,7 +141,7 @@ The PR description must be generated from:
 - Non-goals: no Product Line B, no UI, no migration, no runtime/admin config authoring, no GitHub mutation, no task creation, no dispatch/claim/runner/sandbox/adapter/auto-merge
 - Review order: config, contracts/types/schema, validation/preflight, apply/verify/evidence, CLI/wrapper, tests, docs
 - Scope budget: actual reviewable LOC, production file count, total file count, and primary surface count
-- Traceability: FR-001 through FR-029 and SC-001 through SC-013 mapped through tests and quickstart evidence
+- Traceability: FR-001 through FR-030 and SC-001 through SC-014 mapped through tests and quickstart evidence
 - Verification: focused Vitest, `pnpm typecheck`, `pnpm lint`, `pnpm build`, apply-twice evidence, verify evidence, invalid-config no-mutation evidence, existing-target refusal evidence, wrapper parity evidence, and grep/static absence evidence
 - Known gaps: no Product Line B real config or live smoke because SPEC-010B owns that work
 - Rollback/flags: rollback is no-op by not running the seed command; seeded config-owned flags can be disabled through existing workspace flag state; no migration rollback is required

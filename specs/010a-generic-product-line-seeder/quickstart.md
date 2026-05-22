@@ -75,7 +75,7 @@ pnpm seed:product-line -- \
 Expected:
 
 - config-owned rows are stable and not duplicated
-- non-config-owned FR-020 operational/history state is preserved, including task, issue, activity, history, comment, notification, disposition, artifact, quality-review, GitHub sync, governance audit/ledger, manual template, unrelated flag, row ID, timestamp, counter, task status/linkage/lineage, assignment timestamp, and workflow use-counter evidence
+- non-config-owned FR-020 operational/history state is preserved, including task, issue, task evidence/read-model state, activity, history, comment, notification, disposition, artifact, quality-review, GitHub sync, governance audit/ledger, manual template, unrelated flag, row ID, timestamp, counter, task status/linkage/lineage, assignment timestamp, and workflow use-counter evidence
 - before/after snapshots and stable identity hashes are present
 
 ## Verify
