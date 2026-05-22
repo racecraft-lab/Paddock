@@ -11,16 +11,16 @@ The design is driven by the setup interview decisions: Q1/Q9 require checked-in 
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.7 strict on Node.js >=22 in the existing Next.js 16 / React 19 repository baseline  
-**Primary Dependencies**: Existing Next.js/React/Zustand stack, `better-sqlite3`, direct `yaml@2.8.2`, existing workflow-contract tooling, existing feature-flag registry; no new runtime dependency  
-**Storage**: SQLite through `better-sqlite3`; existing `workspaces`, `projects`, `project_agent_assignments`, `workflow_templates`, `workflow_contract_*`, `resource_policies`, task/history/evidence/GitHub sync tables; no migration  
+**Language/Version**: TypeScript 5.7 strict on Node.js >=22 in the existing Next.js 16 / React 19 repository baseline
+**Primary Dependencies**: Existing Next.js/React/Zustand stack, `better-sqlite3`, direct `yaml@2.8.2`, existing workflow-contract tooling, existing feature-flag registry; no new runtime dependency
+**Storage**: SQLite through `better-sqlite3`; existing `workspaces`, `projects`, `project_agent_assignments`, `workflow_templates`, `workflow_contract_*`, `resource_policies`, task/history/evidence/GitHub sync tables; no migration
 **Testing**: Focused Vitest tests for config validation, CLI contracts, invalid-config no-mutation snapshots across all FR-020 preserved operational/history surfaces and invariants, existing-target policy, wrapper parity, workflow/flag/agent/governance validation; `pnpm typecheck`, `pnpm lint`, and `pnpm build` as required
-**Target Platform**: Local operator CLI in the Mission Control repo on Node.js >=22; no browser/UI surface  
-**Project Type**: CLI/library plus checked-in configuration and operator documentation  
-**Performance Goals**: Deterministic local seed operations over normal operator SQLite targets; validation and preflight complete before any write transaction; evidence hashes stable across repeated runs  
-**Constraints**: Config validation and conflict preflight happen before opening write transactions; apply uses one transaction; verify is read-only; unknown CLI flags are rejected; unsupported workflow families fail before writes; Product Line B/runtime execution/GitHub mutation are excluded  
-**Scale/Scope**: One canonical Mission Control config, one generic seed library, one generic CLI entrypoint, one compatibility wrapper, focused fixtures, and concise runbooks  
-**Reviewability Budget**: Primary surface `seed/config`; secondary surfaces `tests/contracts/docs`. Projected reviewable LOC about 650-780, production files 8, total files 22-24, primary surface count 1. Result: within block thresholds but above warn thresholds for LOC/production files; no split required if implementation stays inside the listed file set. If implementation exceeds 800 reviewable LOC, 8 production files, 25 total files, or adds a second primary surface, split deferred advanced reuse into a follow-up `SPEC-010A1` and keep SPEC-010A to Mission Control parity and generic seed contracts only.  
+**Target Platform**: Local operator CLI in the Mission Control repo on Node.js >=22; no browser/UI surface
+**Project Type**: CLI/library plus checked-in configuration and operator documentation
+**Performance Goals**: Deterministic local seed operations over normal operator SQLite targets; validation and preflight complete before any write transaction; evidence hashes stable across repeated runs
+**Constraints**: Config validation and conflict preflight happen before opening write transactions; apply uses one transaction; verify is read-only; unknown CLI flags are rejected; unsupported workflow families fail before writes; Product Line B/runtime execution/GitHub mutation are excluded
+**Scale/Scope**: One canonical Mission Control config, one generic seed library, one generic CLI entrypoint, one compatibility wrapper, focused fixtures, and concise runbooks
+**Reviewability Budget**: Primary surface `seed/config`; secondary surfaces `tests/contracts/docs`. Projected reviewable LOC about 650-780, production files 8, total files 22-24, primary surface count 1. Result: within block thresholds but above warn thresholds for LOC/production files; no split required if implementation stays inside the listed file set. If implementation exceeds 800 reviewable LOC, 8 production files, 25 total files, or adds a second primary surface, split deferred advanced reuse into a follow-up `SPEC-010A1` and keep SPEC-010A to Mission Control parity and generic seed contracts only.
 **Strict Scope**: Add these spec-owned TS files to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `src/lib/product-line-seed/types.ts`, `src/lib/product-line-seed/schema.ts`, `src/lib/product-line-seed/config.ts`, `src/lib/product-line-seed/preflight.ts`, `src/lib/product-line-seed/seed.ts`, `src/lib/product-line-seed/evidence.ts`, `scripts/seed-product-line.ts`, `scripts/seed-mission-control-product-line.ts`, `src/lib/__tests__/product-line-seed.test.ts`, `src/lib/__tests__/product-line-seed-cli.test.ts`.
 
 ## Constitution Check

@@ -177,12 +177,13 @@ if [ "$#" -eq 0 ]; then
   docker restart "$FLAG_ON_CONTAINER" >/dev/null
   wait_for_health "$FLAG_ON_CONTAINER"
 
-  echo "[e2e-docker] running seeded Product Line, Ready for Owner, SPEC-007, and SPEC-008 e2e suite."
+  echo "[e2e-docker] running seeded Product Line, Ready for Owner, SPEC-007, SPEC-008, and SPEC-013A e2e suite."
   run_playwright "$FLAG_ON_DATA_DIR" 1 1 1 1 \
     tests/product-line-switcher-ui.spec.ts \
     tests/feature-flags-admin-ui.spec.ts \
     tests/e2e/ready-for-owner-kanban.spec.ts \
     tests/e2e/spec-007-ui-visual.spec.ts \
+    tests/e2e/spec-013a-task-stage-attempts.spec.ts \
     tests/e2e/workflow-contract-diagnostics.spec.ts \
     tests/product-line-scope-api.spec.ts \
     tests/product-line-scope-matrix.spec.ts \

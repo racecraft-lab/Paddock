@@ -81,6 +81,16 @@ const specStrictFiles = [
   'src/lib/__tests__/triage-routing.test.ts',
   'src/components/panels/__tests__/task-evidence-section.test.tsx',
   'tests/e2e/spec-009f-triage-routing.spec.ts',
+  // SPEC-013A run-state persistence spine.
+  'src/lib/task-stage-attempts.ts',
+  'src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts',
+  'src/lib/__tests__/task-stage-attempts.test.ts',
+  'src/lib/__tests__/task-stage-attempts-route.test.ts',
+  'src/app/api/index/route.ts',
+  'src/app/api/tasks/[id]/stage-attempts/route.ts',
+  'src/components/panels/task-stage-attempts-section.tsx',
+  'src/components/panels/__tests__/task-stage-attempts-section.test.tsx',
+  'tests/e2e/spec-013a-task-stage-attempts.spec.ts',
 ]
 
 const config = tseslint.config(

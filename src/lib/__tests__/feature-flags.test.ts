@@ -17,6 +17,15 @@ describe('resolveFlag', () => {
     expect(resolveFlag('FEATURE_WORKSPACE_SWITCHER', { env: {} })).toBe(false)
   })
 
+  it('defaults FEATURE_TASK_CONTROL_PLANE off without env force-on', () => {
+    expect(FEATURE_FLAG_KEYS).toContain('FEATURE_TASK_CONTROL_PLANE')
+    expect(resolveFlag('FEATURE_TASK_CONTROL_PLANE', { env: {} })).toBe(false)
+    expect(resolveFlag('FEATURE_TASK_CONTROL_PLANE', {
+      env: { FEATURE_TASK_CONTROL_PLANE: '1' },
+      workspaceFlags: null,
+    })).toBe(false)
+  })
+
   it('honors workspace JSON opt-in', () => {
     expect(resolveFlag('FEATURE_WORKSPACE_SWITCHER', {
       env: {},
@@ -152,8 +161,23 @@ describe('feature flag registry', () => {
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
+      'FEATURE_TASK_CONTROL_PLANE',
     ])
     expect(Object.keys(FEATURE_FLAG_REGISTRY).sort()).toEqual([...FEATURE_FLAG_KEYS].sort())
+  })
+
+  it('registers FEATURE_TASK_CONTROL_PLANE as the default-off SPEC-013A foundation flag', () => {
+    expect(FEATURE_FLAG_REGISTRY.FEATURE_TASK_CONTROL_PLANE).toMatchObject({
+      key: 'FEATURE_TASK_CONTROL_PLANE',
+      spec: 'Run-State Persistence Spine',
+      phase: 11,
+      upstreamImpact: 'upstream-divergent',
+      activationScope: 'productLineWorkspace',
+      riskTier: 'critical',
+      defaultValue: false,
+      adminManageable: false,
+      implementationStatus: 'not_implemented',
+    })
   })
 
   it('keeps dependency graph explicit for downstream and pilot flags', () => {
@@ -194,10 +218,12 @@ describe('feature flag registry', () => {
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
+      'FEATURE_TASK_CONTROL_PLANE',
     ])
     expect(getFeatureFlagCascadeDependents('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
+      'FEATURE_TASK_CONTROL_PLANE',
     ])
   })
 

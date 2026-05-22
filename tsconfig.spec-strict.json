@@ -76,6 +76,13 @@
     "src/lib/__tests__/triage-routing-payloads.test.ts",
     "src/lib/__tests__/triage-routing.test.ts",
     "src/components/panels/task-evidence-section.tsx",
+    "src/lib/task-stage-attempts.ts",
+    "src/app/api/index/route.ts",
+    "src/components/panels/task-stage-attempts-section.tsx",
+    "src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts",
+    "src/lib/__tests__/task-stage-attempts.test.ts",
+    "src/lib/__tests__/task-stage-attempts-route.test.ts",
+    "src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
     "scripts/seed-mission-control-product-line.ts"
   ]
 }
