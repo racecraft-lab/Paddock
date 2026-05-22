@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T19:24:24Z",
+  "updated_at": "2026-05-22T19:27:23Z",
   "active_step": "Post: Retrospective",
   "status": "Completed",
   "current_spec_dir": "specs/013a-run-state-spine",
@@ -556,7 +556,7 @@
     },
     "reviewability": {
       "status": "exception",
-      "diff_gate": "Raw diff gate blocked at 6653 reviewable LOC, 18 production files, 39 total files, and 7 primary surfaces.",
+      "diff_gate": "Raw diff gate blocked at 6697 reviewable LOC, 18 production files, 39 total files, and 7 primary surfaces.",
       "tasks_gate": "Tasks gate passed under ratified transition exception at 2320 estimated reviewable LOC, 24 production files, 116 total files, and 6 primary surfaces.",
       "exception_source": "specs/013a-run-state-spine/tasks.md"
     },
