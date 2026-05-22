@@ -13,6 +13,7 @@ import {
 const stageAttemptsRoutePath = '@/app/api/tasks/[id]/stage-attempts/route'
 const repoRoot = path.resolve(__dirname, '..', '..', '..')
 const openapiPath = path.join(repoRoot, 'openapi.json')
+const evidenceRoutePath = path.join(repoRoot, 'src', 'app', 'api', 'tasks', '[id]', 'evidence', 'route.ts')
 const openDbs: Database.Database[] = []
 
 interface OpenApiOperation {
@@ -393,6 +394,33 @@ describe('GET /api/tasks/[id]/stage-attempts route', () => {
     })
   })
 
+  it('keeps read-only inspection available when FEATURE_TASK_CONTROL_PLANE is false', async () => {
+    const db = openRouteDb()
+    createTaskStageAttempt(db, {
+      workspaceId: 7,
+      taskId: 101,
+      stageKey: 'flag_off_read',
+      attemptNumber: 1,
+      status: 'running',
+      observedAt: '2026-05-22T12:00:00.000Z',
+    })
+
+    const { response, body } = await requestStageAttempts(db, '101', '?workspace_id=7')
+    const attempts = body['attempts'] as Record<string, unknown>[]
+
+    expect(response.status).toBe(200)
+    expect(body).toMatchObject({
+      schema_version: 'task_stage_attempts.v1',
+      task: { id: '101', workspace_id: '7' },
+    })
+    expect(attempts).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        stage_key: 'flag_off_read',
+        status: 'running',
+      }),
+    ]))
+  })
+
   it('serializes active attempts, attempt ordering, linked and missing runs, invalid state, and bounded lifecycle snippets', async () => {
     const db = openRouteDb()
     insertRun(db, 'run-linked')
@@ -634,5 +662,14 @@ describe('GET /api/tasks/[id]/stage-attempts route', () => {
         message: 'archive without deletion',
       }),
     ]))
+  })
+})
+
+describe('SPEC-013A runtime table-blind guardrails', () => {
+  it('keeps the existing task evidence route table-blind to task-stage attempts', () => {
+    const evidenceRoute = fs.readFileSync(evidenceRoutePath, 'utf8')
+
+    expect(evidenceRoute).not.toMatch(/task_stage_attempts|task_stage_attempt_events|task-stage-attempts|TaskStageAttempt|taskStageAttempt/)
+    expect(evidenceRoute).not.toMatch(/task_stage_attempts\.v1/)
   })
 })

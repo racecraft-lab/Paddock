@@ -55,6 +55,12 @@ const forbiddenPatterns = [
   },
   {
     pattern:
+      /\b(?:retryTaskStageAttempt[A-Za-z0-9_]*|releaseTaskStageAttempt[A-Za-z0-9_]*|cancelTaskStageAttempt[A-Za-z0-9_]*|scheduleTaskStageAttempt[A-Za-z0-9_]*|launchTaskStageAttempt[A-Za-z0-9_]*|dispatchTaskStageAttempt[A-Za-z0-9_]*|autoMerge[A-Za-z0-9_]*|mergePullRequest[A-Za-z0-9_]*|mutateGitHub[A-Za-z0-9_]*|updateGitHubFromAttempt[A-Za-z0-9_]*)\b/i,
+    reason: 'SPEC-013B/C retry/release/cancel/scheduler/GitHub/merge authority drift',
+    isAllowed: (path) => isTestOrDocsPath(path),
+  },
+  {
+    pattern:
       /\b(?:CREATE\s+UNIQUE\s+INDEX[\s\S]{0,160}(?:active|running)[\s\S]{0,160}task_stage_attempts|UNIQUE[\s\S]{0,160}(?:active|running)[\s\S]{0,160}task_stage_attempts)\b/i,
     reason: 'SPEC-013B claim/reconciliation/one-active-attempt drift',
     isAllowed: (path) => isTestOrDocsPath(path),
@@ -259,6 +265,40 @@ const selfTestFixtures = [
     expected: 'Runtime path references task-stage attempt helper/table',
   },
   {
+    name: 'blocks protected runtime surfaces from becoming attempt-table aware',
+    entries: [
+      {
+        path: 'src/lib/scheduler.ts',
+        content: "const sql = 'SELECT id FROM task_stage_attempts'\n",
+      },
+      {
+        path: 'src/lib/task-chain/index.ts',
+        content: "import { listTaskStageAttemptsForTask } from '../task-stage-attempts'\n",
+      },
+      {
+        path: 'src/lib/aegis.ts',
+        content: "type Local = TaskStageAttempt\n",
+      },
+      {
+        path: 'src/lib/github-sync-poller.ts',
+        content: "const path = '/api/tasks/1/stage-attempts'\n",
+      },
+      {
+        path: 'src/lib/runs.ts',
+        content: "db.prepare('SELECT run_id FROM task_stage_attempts').all()\n",
+      },
+      {
+        path: 'src/lib/pilot-review-packet.ts',
+        content: "const schema = 'task_stage_attempts.v1'\n",
+      },
+      {
+        path: 'src/app/api/tasks/[id]/evidence/route.ts',
+        content: "import { listTaskStageAttemptsForTask } from '@/lib/task-stage-attempts'\n",
+      },
+    ],
+    expected: 'Runtime path references task-stage attempt helper/table',
+  },
+  {
     name: 'allows attempt table references in migrations',
     entries: [
       {
@@ -327,6 +367,16 @@ const selfTestFixtures = [
       },
     ],
     expected: 'SPEC-013B claim/reconciliation/one-active-attempt drift',
+  },
+  {
+    name: 'blocks retry release cancel scheduler GitHub and merge authority drift',
+    entries: [
+      {
+        path: 'src/lib/task-stage-attempts.ts',
+        content: 'export function releaseTaskStageAttemptAndMergePullRequest() { return null }\n',
+      },
+    ],
+    expected: 'SPEC-013B/C retry/release/cancel/scheduler/GitHub/merge authority drift',
   },
   {
     name: 'blocks SPEC-014 sandbox drift',

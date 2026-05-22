@@ -114,18 +114,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T041 [P] [US3] Add RED static guard tests for scheduler, dispatch, task-chain, Aegis, GitHub sync/poller, runtime runs, pilot review packet, and evidence table-blindness in `scripts/spec-013a/check-run-state-scope-guards.mjs`
-- [ ] T042 [P] [US3] Add RED evidence-route table-blind assertions for existing task evidence behavior in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T043 [P] [US3] Add RED flag-off route test proving read-only inspection remains available when `FEATURE_TASK_CONTROL_PLANE=false` in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T044 [P] [US3] Add RED guard assertions against claim/retry/release/cancel authority, scheduler launch, GitHub mutation, sandbox lifecycle, harness adapter, and auto-merge drift in `scripts/spec-013a/check-run-state-scope-guards.mjs`
+- [x] T041 [P] [US3] Add RED static guard tests for scheduler, dispatch, task-chain, Aegis, GitHub sync/poller, runtime runs, pilot review packet, and evidence table-blindness in `scripts/spec-013a/check-run-state-scope-guards.mjs`
+- [x] T042 [P] [US3] Add RED evidence-route table-blind assertions for existing task evidence behavior in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T043 [P] [US3] Add RED flag-off route test proving read-only inspection remains available when `FEATURE_TASK_CONTROL_PLANE=false` in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T044 [P] [US3] Add RED guard assertions against claim/retry/release/cancel authority, scheduler launch, GitHub mutation, sandbox lifecycle, harness adapter, and auto-merge drift in `scripts/spec-013a/check-run-state-scope-guards.mjs`
 
 ### Implementation for User Story 3
 
-- [ ] T045 [US3] Finalize runtime table-blind allowlists and forbidden path checks in `scripts/spec-013a/check-run-state-scope-guards.mjs`
-- [ ] T046 [US3] Verify existing task evidence route remains table-blind without importing attempt helpers in `src/app/api/tasks/[id]/evidence/route.ts`
-- [ ] T047 [US3] Verify task-control-plane flag reads use `resolveFlag` only and no inline env reads exist outside `src/lib/feature-flags.ts`
-- [ ] T048 [US3] Run `node scripts/check-guardrails.mjs --suite task-pipeline` and record direct task-insert guard evidence in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T049 [US3] Run `node scripts/spec-013a/check-run-state-scope-guards.mjs` and record runtime-isolation evidence in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T045 [US3] Finalize runtime table-blind allowlists and forbidden path checks in `scripts/spec-013a/check-run-state-scope-guards.mjs`
+- [x] T046 [US3] Verify existing task evidence route remains table-blind without importing attempt helpers in `src/app/api/tasks/[id]/evidence/route.ts`
+- [x] T047 [US3] Verify task-control-plane flag reads use `resolveFlag` only and no inline env reads exist outside `src/lib/feature-flags.ts`
+- [x] T048 [US3] Run `node scripts/check-guardrails.mjs --suite task-pipeline` and record direct task-insert guard evidence in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T049 [US3] Run `node scripts/spec-013a/check-run-state-scope-guards.mjs` and record runtime-isolation evidence in `docs/ai/specs/SPEC-013A-workflow.md`
 
 **Checkpoint**: All user stories are independently functional and SPEC-013A remains a persistence/read-inspection slice only.
 

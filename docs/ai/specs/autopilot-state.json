@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T18:58:54Z",
-  "active_step": "Phase 7: Implement T041-T049 US3 flag-off runtime safety",
+  "updated_at": "2026-05-22T19:03:35Z",
+  "active_step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -124,11 +124,11 @@
     },
     {
       "step": "Phase 7: Implement T041-T049 US3 flag-off runtime safety",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Verification and Status Sync",
@@ -497,6 +497,19 @@
             "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
           ],
           "focused_tests": "Vitest 21/21 passing; Playwright 1/1 passing"
+        },
+        "T041-T049": {
+          "status": "completed",
+          "summary": "Added runtime table-blind guard fixtures, evidence-route table-blind assertion, flag-off read-route coverage, and task-pipeline guardrail evidence.",
+          "verification": [
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test",
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts",
+            "direnv exec . pnpm exec eslint scripts/spec-013a/check-run-state-scope-guards.mjs src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts",
+            "direnv exec . node scripts/check-guardrails.mjs --suite task-pipeline",
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us3.tsbuildinfo"
+          ],
+          "focused_tests": "scope guard self-test 15 fixtures; Vitest 32/32 passing"
         }
       }
     }
