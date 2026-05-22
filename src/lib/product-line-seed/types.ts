@@ -354,6 +354,7 @@ export interface ProductLineSeedRunOptions {
   entrypoint: 'seed:product-line' | 'seed:mission-control'
   configPath: string
   dbPath?: string
+  db?: ProductLineSeedDatabase
   mode: ProductLineSeedMode
   json: boolean
   allowExisting: boolean

@@ -103,12 +103,69 @@ export function makeProductLineSeedTestDb(): Database.Database {
       workspace_id INTEGER NOT NULL,
       slug TEXT,
       name TEXT NOT NULL,
+      description TEXT,
+      model TEXT NOT NULL DEFAULT 'sonnet',
+      task_prompt TEXT NOT NULL DEFAULT '',
+      timeout_seconds INTEGER NOT NULL DEFAULT 300,
+      agent_role TEXT,
+      tags TEXT,
+      output_schema TEXT,
+      routing_rules TEXT,
+      next_template_slug TEXT,
+      produces_pr INTEGER NOT NULL DEFAULT 0,
+      external_terminal_event TEXT,
+      allow_redacted_artifacts INTEGER NOT NULL DEFAULT 0,
       created_by TEXT NOT NULL DEFAULT 'system',
       enabled INTEGER NOT NULL DEFAULT 1,
       created_at INTEGER NOT NULL DEFAULT 100,
       updated_at INTEGER NOT NULL DEFAULT 100,
       last_used_at INTEGER,
       use_count INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE UNIQUE INDEX idx_workflow_templates_workspace_slug
+      ON workflow_templates(workspace_id, slug)
+      WHERE slug IS NOT NULL;
+    CREATE TABLE workflow_contract_runs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      family TEXT NOT NULL,
+      workspace_id INTEGER NOT NULL,
+      mode TEXT NOT NULL,
+      status TEXT NOT NULL,
+      mutation_status TEXT NOT NULL,
+      source_path TEXT,
+      export_path TEXT,
+      contract_hash TEXT,
+      routing_hashes_json TEXT,
+      output_schema_hashes_json TEXT,
+      diff_json TEXT NOT NULL DEFAULT '{}',
+      template_counts_json TEXT NOT NULL DEFAULT '{}',
+      error_count INTEGER NOT NULL DEFAULT 0,
+      lkg_snapshot_id INTEGER,
+      recovery_command TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      completed_at TEXT
+    );
+    CREATE TABLE workflow_contract_run_errors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      run_id INTEGER NOT NULL REFERENCES workflow_contract_runs(id) ON DELETE CASCADE,
+      code TEXT NOT NULL,
+      manifest_path TEXT,
+      canonical_model_path TEXT,
+      template_slug TEXT,
+      message TEXT NOT NULL,
+      remediation_hint TEXT NOT NULL,
+      details TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE workflow_contract_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      family TEXT NOT NULL,
+      workspace_id INTEGER NOT NULL,
+      contract_hash TEXT NOT NULL,
+      canonical_json TEXT NOT NULL,
+      runtime_templates_json TEXT NOT NULL,
+      recovery_command TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     CREATE TABLE resource_policies (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -265,6 +322,12 @@ async function importSchemaModule(): Promise<Record<string, unknown>> {
 
 async function importConfigModule(): Promise<Record<string, unknown>> {
   const path = 'src/lib/product-line-seed/config.ts'
+  expect(existsSync(path)).toBe(true)
+  return import(pathToFileURL(`${process.cwd()}/${path}`).href) as Promise<Record<string, unknown>>
+}
+
+async function importSeedModule(): Promise<Record<string, unknown>> {
+  const path = 'src/lib/product-line-seed/seed.ts'
   expect(existsSync(path)).toBe(true)
   return import(pathToFileURL(`${process.cwd()}/${path}`).href) as Promise<Record<string, unknown>>
 }
@@ -527,5 +590,215 @@ describe('product-line seed config review validation', () => {
     expect(configSource).not.toMatch(/(authorize|enable|launch|start|create|mutate|claim|merge)[^\n]*(github|dispatch|task|runner|sandbox|adapter|auto.?merge|speckit)/i)
     expect((canonical['safety_policy'] as { blocked_side_effects: unknown[] }).blocked_side_effects)
       .toEqual(types['BLOCKED_SIDE_EFFECTS'])
+  })
+})
+
+describe('product-line seed generic preflight/apply/verify', () => {
+  it('preflights identity, ownership, workflow, flags, assignments, governance, and target residue without writes', async () => {
+    const seed = await importSeedModule()
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const db = makeProductLineSeedTestDb()
+    const before = db.prepare('SELECT COUNT(*) as count FROM workspaces').get()
+
+    const result = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'preflight',
+      json: true,
+      allowExisting: false,
+    })
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: 'ready',
+      code: 'READY',
+      mutation_status: 'not_mutated',
+      exit_code: 0,
+      config: { schema_version: 'product-line-seed-v1', product_line_slug: 'mission-control' },
+      target: { product_line_slug: 'mission-control', existing_target: false },
+      redaction: { raw_secret_values_emitted: false },
+    })
+    expect(result['evidence']).toMatchObject({
+      validation: {
+        identity: 'safe',
+        github_ownership: 'safe',
+        workflow_contract: 'safe',
+        required_slugs: 'safe',
+        feature_flags: 'safe',
+        assignments: 'safe',
+        governance_defaults: 'safe',
+        target_residue: 'safe',
+      },
+      residue: [],
+      cleanup_policy: 'detection_only_no_automatic_deletion_or_unlinking',
+    })
+    expect(db.prepare('SELECT COUNT(*) as count FROM workspaces').get()).toEqual(before)
+    db.close()
+  })
+
+  it('applies an empty safe target by creating only config-owned seed surfaces', async () => {
+    const seed = await importSeedModule()
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const db = makeProductLineSeedTestDb()
+
+    const result = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+
+    expect(result).toMatchObject({ ok: true, status: 'seeded', code: 'SEEDED', mutation_status: 'applied', exit_code: 0 })
+    expect(db.prepare("SELECT name, feature_flags FROM workspaces WHERE slug = 'mission-control'").get()).toMatchObject({
+      name: 'Mission Control',
+    })
+    expect(db.prepare("SELECT COUNT(*) as count FROM projects WHERE workspace_id = (SELECT id FROM workspaces WHERE slug = 'mission-control')").get())
+      .toEqual({ count: 6 })
+    expect(db.prepare('SELECT COUNT(*) as count FROM project_agent_assignments').get()).toEqual({ count: 6 })
+    expect(db.prepare("SELECT COUNT(*) as count FROM workflow_templates WHERE created_by = 'workflow-contract' AND enabled = 1").get())
+      .toEqual({ count: 9 })
+    expect(db.prepare("SELECT COUNT(*) as count FROM resource_policies WHERE notes LIKE 'SPEC-009B:mission-control:%'").get())
+      .toEqual({ count: 3 })
+    expect(db.prepare("SELECT json_extract(feature_flags, '$.FEATURE_WORKSPACE_SWITCHER') as enabled FROM workspaces WHERE slug = 'mission-control'").get())
+      .toEqual({ enabled: 1 })
+    db.close()
+  })
+
+  it('verifies matching targets read-only and reports drift with exit code 4', async () => {
+    const seed = await importSeedModule()
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const db = makeProductLineSeedTestDb()
+    run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+    const beforeVerify = db.prepare('SELECT COUNT(*) as count FROM workflow_contract_runs').get()
+
+    const verified = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'verify',
+      json: true,
+      allowExisting: false,
+    })
+    db.prepare("UPDATE workspaces SET name = 'Drifted' WHERE slug = 'mission-control'").run()
+    const drifted = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'verify',
+      json: true,
+      allowExisting: false,
+    })
+
+    expect(verified).toMatchObject({ ok: true, status: 'verified', code: 'VERIFIED', mutation_status: 'verified', exit_code: 0 })
+    expect(db.prepare('SELECT COUNT(*) as count FROM workflow_contract_runs').get()).toEqual(beforeVerify)
+    expect(drifted).toMatchObject({
+      ok: false,
+      status: 'verification_failed',
+      code: 'VERIFY_DRIFT_DETECTED',
+      mutation_status: 'not_mutated',
+      exit_code: 4,
+    })
+    expect(drifted['errors']).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'VERIFY_DRIFT_DETECTED', path: '$.target.workspace_identity.name' }),
+    ]))
+    db.close()
+  })
+
+  it('refuses existing targets without allow-existing and preserves FR-020 state during config-owned updates', async () => {
+    const seed = await importSeedModule()
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const db = makeProductLineSeedTestDb()
+    run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+    const refusalSnapshot = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+    const preservedBefore = {
+      task: db.prepare('SELECT id, status, github_repo, github_issue_number, parent_task_id, root_task_id, chain_id FROM tasks WHERE id = 1').get(),
+      issue: db.prepare('SELECT id, external_id FROM issues WHERE id = 1').get(),
+      activity: db.prepare('SELECT id, action FROM activities WHERE id = 1').get(),
+      history: db.prepare('SELECT id, status FROM task_histories WHERE id = 1').get(),
+      comment: db.prepare('SELECT id, body FROM task_comments WHERE id = 1').get(),
+      notification: db.prepare('SELECT id, message FROM notifications WHERE id = 1').get(),
+      disposition: db.prepare('SELECT id, outcome FROM task_dispositions WHERE id = 1').get(),
+      artifact: db.prepare('SELECT id, artifact_type, uri FROM task_artifacts WHERE id = 1').get(),
+      qualityReview: db.prepare('SELECT id, reviewer FROM quality_reviews WHERE id = 1').get(),
+      githubSync: db.prepare('SELECT id, repo, cursor FROM github_sync_state WHERE id = 1').get(),
+      governanceAudit: db.prepare('SELECT id, policy_id, action FROM resource_policy_events WHERE id = 1').get(),
+      manualWorkflow: db.prepare("SELECT id, slug, use_count FROM workflow_templates WHERE slug = 'manual-template'").get(),
+      facilityFlags: db.prepare("SELECT feature_flags FROM workspaces WHERE slug = 'facility'").get(),
+      manualProject: db.prepare("SELECT id, ticket_counter, created_at FROM projects WHERE slug = 'manual'").get(),
+    }
+    db.prepare("UPDATE workspaces SET name = 'Needs Update', feature_flags = '{\"UNRELATED_FLAG\":true,\"FEATURE_WORKSPACE_SWITCHER\":false}' WHERE slug = 'mission-control'").run()
+    db.prepare("UPDATE project_agent_assignments SET role = 'old-role', assigned_at = 123 WHERE agent_name = 'mission-control-platform-qa'").run()
+
+    const updated = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: true,
+    })
+
+    expect(refusalSnapshot).toMatchObject({
+      ok: false,
+      status: 'existing_target_refused',
+      code: 'EXISTING_TARGET_REQUIRES_ALLOW_EXISTING',
+      mutation_status: 'not_mutated',
+      action_required: '--allow-existing',
+      exit_code: 2,
+    })
+    expect(updated).toMatchObject({ ok: true, status: 'seeded', mutation_status: 'applied' })
+    expect(db.prepare("SELECT name, json_extract(feature_flags, '$.UNRELATED_FLAG') as unrelated, json_extract(feature_flags, '$.FEATURE_WORKSPACE_SWITCHER') as switcher FROM workspaces WHERE slug = 'mission-control'").get())
+      .toEqual({ name: 'Mission Control', unrelated: 1, switcher: 1 })
+    expect(db.prepare("SELECT role, assigned_at FROM project_agent_assignments WHERE agent_name = 'mission-control-platform-qa'").get())
+      .toEqual({ role: 'qa', assigned_at: 123 })
+    expect({
+      task: db.prepare('SELECT id, status, github_repo, github_issue_number, parent_task_id, root_task_id, chain_id FROM tasks WHERE id = 1').get(),
+      issue: db.prepare('SELECT id, external_id FROM issues WHERE id = 1').get(),
+      activity: db.prepare('SELECT id, action FROM activities WHERE id = 1').get(),
+      history: db.prepare('SELECT id, status FROM task_histories WHERE id = 1').get(),
+      comment: db.prepare('SELECT id, body FROM task_comments WHERE id = 1').get(),
+      notification: db.prepare('SELECT id, message FROM notifications WHERE id = 1').get(),
+      disposition: db.prepare('SELECT id, outcome FROM task_dispositions WHERE id = 1').get(),
+      artifact: db.prepare('SELECT id, artifact_type, uri FROM task_artifacts WHERE id = 1').get(),
+      qualityReview: db.prepare('SELECT id, reviewer FROM quality_reviews WHERE id = 1').get(),
+      githubSync: db.prepare('SELECT id, repo, cursor FROM github_sync_state WHERE id = 1').get(),
+      governanceAudit: db.prepare('SELECT id, policy_id, action FROM resource_policy_events WHERE id = 1').get(),
+      manualWorkflow: db.prepare("SELECT id, slug, use_count FROM workflow_templates WHERE slug = 'manual-template'").get(),
+      facilityFlags: db.prepare("SELECT feature_flags FROM workspaces WHERE slug = 'facility'").get(),
+      manualProject: db.prepare("SELECT id, ticket_counter, created_at FROM projects WHERE slug = 'manual'").get(),
+    }).toEqual(preservedBefore)
+    db.close()
   })
 })

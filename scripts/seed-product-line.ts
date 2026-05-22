@@ -30,6 +30,7 @@ function parseArgs(args: string[]):
   const knownFlags = new Set(['allow-existing', 'config', 'db', 'json', 'mode', 'operator-evidence'])
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index]
+    if (arg === '--') continue
     if (!arg?.startsWith('--')) return { ok: false, message: `Unexpected positional argument: ${arg ?? ''}` }
     const key = arg.slice(2)
     if (!knownFlags.has(key)) return { ok: false, message: `Unknown flag: --${key}` }
@@ -44,16 +45,17 @@ function parseArgs(args: string[]):
 
   const configPath = stringFlag(flags.get('config'))
   if (!configPath) return { ok: false, message: '--config is required' }
+  const dbPath = stringFlag(flags.get('db'))
+  if (!dbPath) return { ok: false, message: '--db is required' }
   const mode = stringFlag(flags.get('mode'))
   if (!isProductLineSeedMode(mode)) return { ok: false, message: '--mode must be preflight, apply, or verify' }
-  const dbPath = stringFlag(flags.get('db'))
   const operatorEvidencePath = stringFlag(flags.get('operator-evidence'))
   return {
     ok: true,
     options: {
       entrypoint: 'seed:product-line',
       configPath,
-      ...(dbPath === undefined ? {} : { dbPath }),
+      dbPath,
       mode,
       json: flags.get('json') === true,
       allowExisting: flags.get('allow-existing') === true,

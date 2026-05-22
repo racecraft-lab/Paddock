@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T18:49:33Z",
-  "active_step": "Phase 7: US2 Generic Modes (T028-T043)",
+  "updated_at": "2026-05-22T19:12:27Z",
+  "active_step": "Phase 7: US3 Mission Control Parity (T044-T050)",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -116,11 +116,11 @@
     },
     {
       "step": "Phase 7: US2 Generic Modes (T028-T043)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US3 Mission Control Parity (T044-T050)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US4 Fail-Closed Safety (T051-T060)",
@@ -609,6 +609,47 @@
           "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts",
           "direnv exec . pnpm typecheck",
           "direnv exec . pnpm lint"
+        ],
+        "result": "passed"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 7: US2 Generic Modes (T028-T043)",
+      "status": "Complete",
+      "timestamp": "2026-05-22T19:12:27Z",
+      "summary": "Completed US2 generic mode tasks T028-T043: CLI contract tests, preflight/apply/verify behavior, existing-target safety, operator-evidence redaction, result envelopes, snapshot collection, residue detection, workflow-contract and feature-flag validation, generic orchestration, config-owned projection, and CLI mode dispatch.",
+      "details": {
+        "tasks_completed": [
+          "T028",
+          "T029",
+          "T030",
+          "T031",
+          "T032",
+          "T033",
+          "T034",
+          "T035",
+          "T036",
+          "T037",
+          "T038",
+          "T039",
+          "T040",
+          "T041",
+          "T042",
+          "T043"
+        ],
+        "verification": [
+          "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts",
+          "direnv exec . pnpm typecheck",
+          "direnv exec . pnpm lint",
+          "direnv exec . pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --db :memory: --mode preflight --json"
         ],
         "result": "passed"
       },

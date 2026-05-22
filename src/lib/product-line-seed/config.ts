@@ -1,6 +1,11 @@
 import { readFileSync } from 'node:fs'
 import { parseAllDocuments } from 'yaml'
-import { validateProductLineSeedTopLevelShape } from './schema'
+import {
+  getFeatureFlagCascadePrerequisites,
+  isFeatureFlagKey,
+} from '../feature-flags.ts'
+import { loadWorkflowContractFromFile } from '../workflow-contracts/yaml-loader.ts'
+import { validateProductLineSeedTopLevelShape } from './schema.ts'
 import {
   BLOCKED_SIDE_EFFECTS,
   CONFIG_OWNED_SURFACES,
@@ -8,7 +13,14 @@ import {
   type ProductLineSeedConfig,
   type ProductLineSeedErrorCode,
   type ProductLineSeedValidationError,
-} from './types'
+} from './types.ts'
+
+const RESERVED_DISABLED_OR_ABSENT_FLAGS = new Set([
+  'PILOT_PRODUCT_LINE_A_E2E',
+  'FEATURE_TASK_CONTROL_PLANE',
+  'FEATURE_AGENT_RUNNER_SANDBOXES',
+])
+const SLUG_SAFE_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 export class ProductLineSeedConfigNotImplementedError extends Error {
   constructor(action: string) {
@@ -107,7 +119,10 @@ export function validateProductLineSeedConfig(config: unknown): ProductLineSeedV
   validateObject(config['product_line'], '$.product_line', ['slug', 'display_name', 'agent_prefix'], errors)
   validateStringField(config['product_line'], 'slug', '$.product_line.slug', errors)
   validateStringField(config['product_line'], 'display_name', '$.product_line.display_name', errors)
-  validateStringField(config['product_line'], 'agent_prefix', '$.product_line.agent_prefix', errors)
+  const agentPrefix = validateStringField(config['product_line'], 'agent_prefix', '$.product_line.agent_prefix', errors)
+  if (agentPrefix && !SLUG_SAFE_PATTERN.test(agentPrefix)) {
+    errors.push(error('CONFIG_SCHEMA_INVALID', '$.product_line.agent_prefix', 'agent_prefix must be slug-safe lowercase text.'))
+  }
 
   validateObject(config['github'], '$.github', ['owner', 'repo', 'full_name'], errors)
   validateStringField(config['github'], 'owner', '$.github.owner', errors)
@@ -128,16 +143,46 @@ export function validateProductLineSeedConfig(config: unknown): ProductLineSeedV
   validateStringField(config['workflow_contract'], 'family', '$.workflow_contract.family', errors)
   validateStringField(config['workflow_contract'], 'path', '$.workflow_contract.path', errors)
   validateStringArrayField(config['workflow_contract'], 'required_slugs', '$.workflow_contract.required_slugs', errors)
+  validateWorkflowContractDeclaration(config['workflow_contract'], errors)
 
   validateDepartments(config['departments'], typeof config['github'] === 'object' && config['github'] !== null
     ? (config['github'] as Record<string, unknown>)['full_name']
     : null, errors)
-  validateAgentAssignments(config['agent_assignments'], config['departments'], errors)
+  validateAgentAssignments(config['agent_assignments'], config['departments'], agentPrefix, errors)
   validateFeatureFlags(config['feature_flags'], errors)
-  validateGovernanceDefaults(config['governance_defaults'], errors)
+  const allowBlockingGovernance = isRecord(config['safety_policy'])
+    ? config['safety_policy']['allow_first_intake_blocking_governance'] === true
+    : false
+  validateGovernanceDefaults(config['governance_defaults'], allowBlockingGovernance, errors)
   validateSafetyPolicy(config['safety_policy'], errors)
 
   return errors
+}
+
+function validateWorkflowContractDeclaration(value: unknown, errors: ProductLineSeedValidationError[]): void {
+  if (!isRecord(value)) return
+  if (value['family'] !== 'mission-control') {
+    errors.push(error('UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', '$.workflow_contract.family', 'SPEC-010A supports only the mission-control workflow contract family.'))
+    return
+  }
+  if (typeof value['path'] !== 'string') return
+  let contract: ReturnType<typeof loadWorkflowContractFromFile>
+  try {
+    contract = loadWorkflowContractFromFile(value['path'])
+  } catch (loadError) {
+    errors.push(error('WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING', '$.workflow_contract.path', loadError instanceof Error ? loadError.message : 'Workflow contract could not be loaded.'))
+    return
+  }
+  if (contract.family !== 'mission-control') {
+    errors.push(error('UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', '$.workflow_contract.family', 'Workflow contract file family must be mission-control.'))
+  }
+  const contractSlugs = new Set(contract.templates.map((template) => template.slug))
+  const requiredSlugs = Array.isArray(value['required_slugs']) ? value['required_slugs'] : []
+  for (const [index, slug] of requiredSlugs.entries()) {
+    if (typeof slug === 'string' && !contractSlugs.has(slug)) {
+      errors.push(error('WORKFLOW_CONTRACT_REQUIRED_SLUGS_MISSING', `$.workflow_contract.required_slugs[${String(index)}]`, `Required workflow slug is missing from contract: ${slug}.`))
+    }
+  }
 }
 
 function validateDepartments(value: unknown, githubFullName: unknown, errors: ProductLineSeedValidationError[]): void {
@@ -176,7 +221,12 @@ function validateDepartments(value: unknown, githubFullName: unknown, errors: Pr
   }
 }
 
-function validateAgentAssignments(value: unknown, departments: unknown, errors: ProductLineSeedValidationError[]): void {
+function validateAgentAssignments(
+  value: unknown,
+  departments: unknown,
+  agentPrefix: string | null,
+  errors: ProductLineSeedValidationError[],
+): void {
   validateObject(value, '$.agent_assignments', ['product_line_assignments', 'shared_support'], errors, ['shared_support'])
   if (!isRecord(value)) return
 
@@ -196,6 +246,14 @@ function validateAgentAssignments(value: unknown, departments: unknown, errors: 
     validateObject(assignment, path, ['agent_key', 'role', 'department_slug'], errors)
     if (!isRecord(assignment)) continue
     validateUniqueString(assignment['agent_key'], `${path}.agent_key`, agentKeys, errors)
+    if (typeof assignment['agent_key'] === 'string') {
+      if (!SLUG_SAFE_PATTERN.test(assignment['agent_key'])) {
+        errors.push(error('CONFIG_SCHEMA_INVALID', `${path}.agent_key`, 'agent_key must be slug-safe lowercase text.'))
+      }
+      if (agentPrefix && assignment['agent_key'].startsWith(`${agentPrefix}-`)) {
+        errors.push(error('CONFIG_SCHEMA_INVALID', `${path}.agent_key`, 'agent_key must not include the product-line agent prefix.'))
+      }
+    }
     validateStringField(assignment, 'role', `${path}.role`, errors)
     validateStringField(assignment, 'department_slug', `${path}.department_slug`, errors)
     if (typeof assignment['department_slug'] === 'string' && !departmentSlugs.has(assignment['department_slug'])) {
@@ -228,17 +286,30 @@ function validateFeatureFlags(value: unknown, errors: ProductLineSeedValidationE
   const enabledSet = new Set<string>()
   for (const [index, flag] of enabled.entries()) {
     if (enabledSet.has(flag)) errors.push(error('CONFIG_SCHEMA_INVALID', `$.feature_flags.enabled[${String(index)}]`, `Duplicate enabled feature flag: ${flag}.`))
+    if (!isFeatureFlagKey(flag)) errors.push(error('CONFIG_SCHEMA_INVALID', `$.feature_flags.enabled[${String(index)}]`, `Unknown enabled feature flag: ${flag}.`))
+    if (RESERVED_DISABLED_OR_ABSENT_FLAGS.has(flag)) errors.push(error('CONFIG_SCHEMA_INVALID', `$.feature_flags.enabled[${String(index)}]`, `Reserved disabled_or_absent feature flag must not be enabled: ${flag}.`))
+    if (process.env[flag] === '0') errors.push(error('CONFIG_SCHEMA_INVALID', `$.feature_flags.enabled[${String(index)}]`, `Feature flag is forced OFF by environment: ${flag}.`))
     enabledSet.add(flag)
   }
   const disabledSet = new Set<string>()
   for (const [index, flag] of disabled.entries()) {
     if (disabledSet.has(flag)) errors.push(error('CONFIG_SCHEMA_INVALID', `$.feature_flags.disabled_or_absent[${String(index)}]`, `Duplicate disabled_or_absent feature flag: ${flag}.`))
     if (enabledSet.has(flag)) errors.push(error('CONFIG_SCHEMA_INVALID', `$.feature_flags.disabled_or_absent[${String(index)}]`, `Feature flag cannot be both enabled and disabled_or_absent: ${flag}.`))
+    if (!isFeatureFlagKey(flag) && !RESERVED_DISABLED_OR_ABSENT_FLAGS.has(flag)) {
+      errors.push(error('CONFIG_SCHEMA_INVALID', `$.feature_flags.disabled_or_absent[${String(index)}]`, `Unknown disabled_or_absent feature flag: ${flag}.`))
+    }
     disabledSet.add(flag)
+  }
+  for (const flag of enabled) {
+    if (!isFeatureFlagKey(flag)) continue
+    const missing = getFeatureFlagCascadePrerequisites(flag).filter((prerequisite) => !enabledSet.has(prerequisite))
+    if (missing.length > 0) {
+      errors.push(error('CONFIG_SCHEMA_INVALID', '$.feature_flags.enabled', `Feature flag ${flag} is missing cascade prerequisites: ${missing.join(', ')}.`))
+    }
   }
 }
 
-function validateGovernanceDefaults(value: unknown, errors: ProductLineSeedValidationError[]): void {
+function validateGovernanceDefaults(value: unknown, allowBlockingGovernance: boolean, errors: ProductLineSeedValidationError[]): void {
   if (!Array.isArray(value)) {
     errors.push(error('CONFIG_SCHEMA_INVALID', '$.governance_defaults', 'governance_defaults must be an array.'))
     return
@@ -273,6 +344,15 @@ function validateGovernanceDefaults(value: unknown, errors: ProductLineSeedValid
     validateStringField(policy, 'enforcement', `${path}.enforcement`, errors)
     validateBooleanField(policy, 'enabled', `${path}.enabled`, errors)
     validateBooleanField(policy, 'default_template', `${path}.default_template`, errors)
+    const blocksFirstIntake = policy['enabled'] === true && (
+      policy['policy_type'] === 'blackout' ||
+      policy['policy_type'] === 'degraded_window' ||
+      policy['policy_type'] === 'wip_limit' ||
+      policy['enforcement'] !== 'alert'
+    )
+    if (blocksFirstIntake && (!allowBlockingGovernance || typeof policy['first_intake_blocking_reason'] !== 'string' || policy['first_intake_blocking_reason'].length === 0)) {
+      errors.push(error('CONFIG_SCHEMA_INVALID', `${path}.first_intake_blocking_reason`, 'First-intake-blocking governance requires an explicit allowance and per-policy reason.'))
+    }
   }
 }
 

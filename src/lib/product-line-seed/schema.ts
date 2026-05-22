@@ -4,7 +4,7 @@ import {
   FR020_PRESERVED_SURFACES,
   PRODUCT_LINE_SEED_SCHEMA_VERSION,
   type ProductLineSeedValidationError,
-} from './types'
+} from './types.ts'
 
 export const PRODUCT_LINE_SEED_REQUIRED_TOP_LEVEL_SECTIONS = [
   'schema_version',

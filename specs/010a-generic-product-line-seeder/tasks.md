@@ -98,25 +98,25 @@ pnpm lint
 
 ### Tests for User Story 2
 
-- [ ] T028 [US2] Write RED CLI contract tests for `--config`, `--db`, `--mode preflight|apply|verify`, `--json`, `--allow-existing`, `--operator-evidence`, required flags, invalid modes, and unknown flag rejection in `src/lib/__tests__/product-line-seed-cli.test.ts`.
-- [ ] T029 [US2] Write RED preflight tests for identity, GitHub ownership, workflow contract, required slugs, feature flags, assignments, governance defaults, and target residue evidence in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T030 [US2] Write RED apply tests for empty safe target creation of workspace, departments, agent assignments, workflow template projection, feature flags, and governance defaults in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T031 [US2] Write RED verify tests proving matching targets are read-only and drifted targets return `VERIFY_DRIFT_DETECTED` with exit code 4 in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T032 [US2] Write RED existing-target tests for refusal without `--allow-existing` and config-owned-only updates with preserved tasks, task evidence/read-model state, issues, activities, histories, comments, notifications, dispositions, artifacts, quality reviews, GitHub sync state, governance audit rows, manual workflow templates, row IDs, timestamps, counters, lineage, assignment timestamps, workflow use counters, and unrelated flags in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T033 [US2] Write RED operator-evidence tests proving raw operator evidence is never echoed, logged, snapshotted, or hashed in `src/lib/__tests__/product-line-seed-cli.test.ts`.
+- [x] T028 [US2] Write RED CLI contract tests for `--config`, `--db`, `--mode preflight|apply|verify`, `--json`, `--allow-existing`, `--operator-evidence`, required flags, invalid modes, and unknown flag rejection in `src/lib/__tests__/product-line-seed-cli.test.ts`.
+- [x] T029 [US2] Write RED preflight tests for identity, GitHub ownership, workflow contract, required slugs, feature flags, assignments, governance defaults, and target residue evidence in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T030 [US2] Write RED apply tests for empty safe target creation of workspace, departments, agent assignments, workflow template projection, feature flags, and governance defaults in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T031 [US2] Write RED verify tests proving matching targets are read-only and drifted targets return `VERIFY_DRIFT_DETECTED` with exit code 4 in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T032 [US2] Write RED existing-target tests for refusal without `--allow-existing` and config-owned-only updates with preserved tasks, task evidence/read-model state, issues, activities, histories, comments, notifications, dispositions, artifacts, quality reviews, GitHub sync state, governance audit rows, manual workflow templates, row IDs, timestamps, counters, lineage, assignment timestamps, workflow use counters, and unrelated flags in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T033 [US2] Write RED operator-evidence tests proving raw operator evidence is never echoed, logged, snapshotted, or hashed in `src/lib/__tests__/product-line-seed-cli.test.ts`.
 
 ### Implementation for User Story 2
 
-- [ ] T034 [US2] Implement result envelope construction, redaction proof fields, stable statuses, action fields, and exit-code mapping in `src/lib/product-line-seed/evidence.ts`.
-- [ ] T035 [US2] Implement snapshot collection for config-owned seed surfaces and every FR-020 preserved operational/history subsurface in `src/lib/product-line-seed/evidence.ts`.
-- [ ] T036 [US2] Implement target-config-aware residue conflict detection with redacted evidence and no automatic deletion or unlinking in `src/lib/product-line-seed/preflight.ts`.
-- [ ] T037 [US2] Implement workflow contract family/path/required-slug validation through the existing importer source of truth in `src/lib/product-line-seed/config.ts`.
-- [ ] T038 [US2] Implement feature flag registry validation, disabled/absent reserved future flags, duplicates, conflicts, cascade prerequisite, and env force-off checks in `src/lib/product-line-seed/config.ts`.
-- [ ] T039 [US2] Implement agent prefix, agent key, department mapping, derived agent name, and shared support validation in `src/lib/product-line-seed/config.ts`.
-- [ ] T040 [US2] Implement governance defaults validation using existing `resource_policies` field expectations and first-intake-blocking safeguards in `src/lib/product-line-seed/config.ts`.
-- [ ] T041 [US2] Implement generic preflight/apply/verify orchestration, pre-write fail-closed behavior, one-transaction apply, and read-only verify in `src/lib/product-line-seed/seed.ts`.
-- [ ] T042 [US2] Implement config-owned field projection for workspaces, projects, project agent assignments, workflow templates, feature flags, and governance defaults in `src/lib/product-line-seed/seed.ts`.
-- [ ] T043 [US2] Implement generic CLI parsing, mode dispatch, JSON output, redacted unexpected errors, and process exit behavior in `scripts/seed-product-line.ts`.
+- [x] T034 [US2] Implement result envelope construction, redaction proof fields, stable statuses, action fields, and exit-code mapping in `src/lib/product-line-seed/evidence.ts`.
+- [x] T035 [US2] Implement snapshot collection for config-owned seed surfaces and every FR-020 preserved operational/history subsurface in `src/lib/product-line-seed/evidence.ts`.
+- [x] T036 [US2] Implement target-config-aware residue conflict detection with redacted evidence and no automatic deletion or unlinking in `src/lib/product-line-seed/preflight.ts`.
+- [x] T037 [US2] Implement workflow contract family/path/required-slug validation through the existing importer source of truth in `src/lib/product-line-seed/config.ts`.
+- [x] T038 [US2] Implement feature flag registry validation, disabled/absent reserved future flags, duplicates, conflicts, cascade prerequisite, and env force-off checks in `src/lib/product-line-seed/config.ts`.
+- [x] T039 [US2] Implement agent prefix, agent key, department mapping, derived agent name, and shared support validation in `src/lib/product-line-seed/config.ts`.
+- [x] T040 [US2] Implement governance defaults validation using existing `resource_policies` field expectations and first-intake-blocking safeguards in `src/lib/product-line-seed/config.ts`.
+- [x] T041 [US2] Implement generic preflight/apply/verify orchestration, pre-write fail-closed behavior, one-transaction apply, and read-only verify in `src/lib/product-line-seed/seed.ts`.
+- [x] T042 [US2] Implement config-owned field projection for workspaces, projects, project agent assignments, workflow templates, feature flags, and governance defaults in `src/lib/product-line-seed/seed.ts`.
+- [x] T043 [US2] Implement generic CLI parsing, mode dispatch, JSON output, redacted unexpected errors, and process exit behavior in `scripts/seed-product-line.ts`.
 
 **Checkpoint**: User Story 2 is complete when the generic CLI supports preflight/apply/verify and all mutation boundaries are backed by structured evidence.
 
