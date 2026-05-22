@@ -69,7 +69,6 @@
     "src/components/panels/task-evidence-section.tsx",
     "src/lib/task-stage-attempts.ts",
     "src/app/api/index/route.ts",
-    "src/app/api/tasks/[id]/stage-attempts/route.ts",
     "src/components/panels/task-stage-attempts-section.tsx",
     "src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts",
     "src/lib/__tests__/task-stage-attempts.test.ts",

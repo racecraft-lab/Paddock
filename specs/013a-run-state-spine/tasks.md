@@ -60,23 +60,23 @@
 
 ### Tests for User Story 1
 
-- [ ] T019 [P] [US1] Add RED route auth and workspace masking tests for unauthenticated, viewer-or-higher, malformed scope `400`, forbidden scope `403`, and masked `404 task_not_found` in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T020 [P] [US1] Add RED route envelope tests for no attempts, active attempts, multiple attempt ordering, linked run, missing/unavailable run, invalid stored state, and bounded lifecycle snippets in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T021 [P] [US1] Add RED route projection-drift tests for `status`, `updated_at`, `started_at`, `completed_at`, and `archived_at` warnings with no read-time mutation in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T022 [P] [US1] Add RED OpenAPI and API-index parity tests for the read-only task-scoped route in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T023 [P] [US1] Add RED component tests for loading, no-attempts, active attempt, linked run, missing run, invalid-state warning, projection-drift warning, bounded lifecycle, and no action controls in `src/components/panels/__tests__/task-stage-attempts-section.test.tsx`
-- [ ] T024 [P] [US1] Add RED accessibility component tests for named region, status semantics, alert semantics, non-color-only state labels, read-only link wording, and absent buttons/forms/menus in `src/components/panels/__tests__/task-stage-attempts-section.test.tsx`
-- [ ] T025 [P] [US1] Add RED Playwright task-detail journey for no attempts, mixed attempts, linked/missing run, invalid-state warning, projection-drift warning, screenshots, and responsive text-fit in `tests/e2e/spec-013a-task-stage-attempts.spec.ts`
+- [x] T019 [P] [US1] Add RED route auth and workspace masking tests for unauthenticated, viewer-or-higher, malformed scope `400`, forbidden scope `403`, and masked `404 task_not_found` in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T020 [P] [US1] Add RED route envelope tests for no attempts, active attempts, multiple attempt ordering, linked run, missing/unavailable run, invalid stored state, and bounded lifecycle snippets in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T021 [P] [US1] Add RED route projection-drift tests for `status`, `updated_at`, `started_at`, `completed_at`, and `archived_at` warnings with no read-time mutation in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T022 [P] [US1] Add RED OpenAPI and API-index parity tests for the read-only task-scoped route in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T023 [P] [US1] Add RED component tests for loading, no-attempts, active attempt, linked run, missing run, invalid-state warning, projection-drift warning, bounded lifecycle, and no action controls in `src/components/panels/__tests__/task-stage-attempts-section.test.tsx`
+- [x] T024 [P] [US1] Add RED accessibility component tests for named region, status semantics, alert semantics, non-color-only state labels, read-only link wording, and absent buttons/forms/menus in `src/components/panels/__tests__/task-stage-attempts-section.test.tsx`
+- [x] T025 [P] [US1] Add RED Playwright task-detail journey for no attempts, mixed attempts, linked/missing run, invalid-state warning, projection-drift warning, screenshots, and responsive text-fit in `tests/e2e/spec-013a-task-stage-attempts.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T026 [US1] Implement `GET /api/tasks/[id]/stage-attempts` as a viewer-authenticated read-only route in `src/app/api/tasks/[id]/stage-attempts/route.ts`
-- [ ] T027 [US1] Update API documentation for `GET /api/tasks/[id]/stage-attempts` as read-only viewer task inspection in `openapi.json`
-- [ ] T028 [US1] Update the local API index entry for `GET /api/tasks/[id]/stage-attempts` in `src/app/api/index/route.ts`
-- [ ] T029 [US1] Implement the compact read-only `Run state` / `Stage attempts` section in `src/components/panels/task-stage-attempts-section.tsx`
-- [ ] T030 [US1] Mount the run-state section near the existing Evidence surface without moving Evidence logic in `src/components/panels/task-board-panel.tsx`
-- [ ] T031 [US1] Add deterministic e2e seed setup for representative attempts and runs in `tests/e2e/spec-013a-task-stage-attempts.spec.ts`
-- [ ] T032 [US1] Run US1 route/component/e2e tests and record independent-test evidence in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T026 [US1] Implement `GET /api/tasks/[id]/stage-attempts` as a viewer-authenticated read-only route in `src/app/api/tasks/[id]/stage-attempts/route.ts`
+- [x] T027 [US1] Update API documentation for `GET /api/tasks/[id]/stage-attempts` as read-only viewer task inspection in `openapi.json`
+- [x] T028 [US1] Update the local API index entry for `GET /api/tasks/[id]/stage-attempts` in `src/app/api/index/route.ts`
+- [x] T029 [US1] Implement the compact read-only `Run state` / `Stage attempts` section in `src/components/panels/task-stage-attempts-section.tsx`
+- [x] T030 [US1] Mount the run-state section near the existing Evidence surface without moving Evidence logic in `src/components/panels/task-board-panel.tsx`
+- [x] T031 [US1] Add deterministic e2e seed setup for representative attempts and runs in `tests/e2e/spec-013a-task-stage-attempts.spec.ts`
+- [x] T032 [US1] Run US1 route/component/e2e tests and record independent-test evidence in `docs/ai/specs/SPEC-013A-workflow.md`
 
 **Checkpoint**: User Story 1 is independently functional and testable as the MVP.
 

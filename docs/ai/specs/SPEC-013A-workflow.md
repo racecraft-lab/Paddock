@@ -588,11 +588,10 @@ For each task:
 |-------|-------|-----------|-------|
 | 1 - Setup and guardrails | T001-T007 | 7/7 | Added strict-scope config entries, RED API docs/index assertions, run-state scope guard script, package/archive/screenshot/reviewability evidence |
 | 2 - Schema and migrations | T008-T018 | 11/11 | Added M76 migration/rollback SQL, default-off task control-plane flag, helper/model behavior, and focused foundation tests |
-| 3 - Helpers and projections | Pending | Pending | Pending |
-| 4 - Read-only API | Pending | Pending | Pending |
-| 5 - UI/debug inspection | Pending | Pending | Pending |
-| 6 - Runtime isolation and verification | Pending | Pending | Pending |
-| 7 - Docs/UAT/status | Pending | Pending | Pending |
+| 3 - US1 inspection API and task-detail UI | T019-T032 | 14/14 | Added viewer-authenticated read-only route, OpenAPI/API-index docs, compact task-detail run-state section, deterministic e2e journey, and scope/strict guard refinements |
+| 4 - US2 archive behavior | T033-T040 | Pending | Pending |
+| 5 - US3 flag-off runtime safety | T041-T049 | Pending | Pending |
+| 6 - Polish and verification | T050-T058 | Pending | Pending |
 
 ### Implementation Verification Log
 
@@ -601,6 +600,7 @@ For each task:
 | T001-T007 | `node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test`; `node scripts/spec-013a/check-run-state-scope-guards.mjs`; `pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-setup.tsbuildinfo`; `pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs`; `pnpm check:strict-scope`; `git diff --check` | Pass |
 | T005 RED | `pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts` | Expected fail: `openapi.json` and `/api/index` do not yet define `GET /api/tasks/{id}/stage-attempts` |
 | T008-T018 | `direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/feature-flags.test.ts`; `direnv exec . pnpm exec eslint src/lib/migrations.ts src/lib/task-stage-attempts.ts src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/feature-flags.ts src/lib/__tests__/feature-flags.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-foundation.tsbuildinfo`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `git diff --check` | Pass; focused Vitest 39/39 |
+| T019-T032 | `direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx`; `direnv exec . pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts 'src/app/api/tasks/[id]/stage-attempts/route.ts' src/app/api/index/route.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx src/components/panels/task-board-panel.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us1.tsbuildinfo`; `direnv exec . pnpm api:parity`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `git diff --check`; `direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts` | Pass; focused Vitest 11/11; API parity OK; Playwright 1/1 |
 
 ---
 

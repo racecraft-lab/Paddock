@@ -23,6 +23,7 @@ const allowedAttemptReferencePaths = [
   /^src\/lib\/task-stage-attempts\.ts$/,
   /^src\/app\/api\/tasks\/\[id\]\/stage-attempts\/route\.ts$/,
   /^src\/components\/panels\/task-stage-attempts-section\.tsx$/,
+  /^src\/components\/panels\/task-board-panel\.tsx$/,
   /^src\/app\/api\/index\/route\.ts$/,
   /^openapi\.json$/,
   /^specs\/013a-run-state-spine\//,
@@ -263,6 +264,16 @@ const selfTestFixtures = [
       {
         path: 'src/lib/migrations.ts',
         content: 'CREATE TABLE IF NOT EXISTS task_stage_attempts (id INTEGER PRIMARY KEY)\n',
+      },
+    ],
+    expectedPass: true,
+  },
+  {
+    name: 'allows task detail panel host to mount the read-only attempt section',
+    entries: [
+      {
+        path: 'src/components/panels/task-board-panel.tsx',
+        content: "import { TaskStageAttemptsSection } from '@/components/panels/task-stage-attempts-section'\n",
       },
     ],
     expectedPass: true,
