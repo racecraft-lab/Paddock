@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26310860977",
+      "runAttempt": "1",
+      "runKey": "26310860977-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26310860977",
+      "reportKey": "a3a79250bc0fa8ac79d36a787f8119d1add62678",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/a3a79250bc0fa8ac79d36a787f8119d1add62678/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/?v=26310860977-attempt-1",
+      "headSha": "a3a79250bc0fa8ac79d36a787f8119d1add62678",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "013a-run-state-spine",
+        "headSha": "283bf93f7a3f9d36672e03b264f47f0f85a249ff",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/58/",
+        "mergeCommitSha": "",
+        "number": "58",
+        "title": "SPEC-013A: Run-state persistence spine",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/58"
+      },
+      "createdAt": "2026-05-22T20:48:47.165Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26310860981",
       "runAttempt": "1",
@@ -633,5 +660,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-22T20:46:17.193Z"
+  "updatedAt": "2026-05-22T20:48:47.165Z"
 }
