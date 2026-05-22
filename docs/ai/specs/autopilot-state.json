@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T19:27:23Z",
-  "active_step": "Post: Retrospective",
+  "updated_at": "2026-05-22T23:06:08Z",
+  "active_step": "Post: Archive Extension",
   "status": "Completed",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -174,18 +174,35 @@
   "archive_sweep": {
     "archive_extension_installed": true,
     "archive_extension_enabled": true,
-    "cleanup_mode": "recorded-no-cleanup",
+    "cleanup_mode": "manual-archive-no-cleanup",
     "safeToApplyCleanup": false,
-    "excludedCurrentSpec": "specs/013a-run-state-spine",
+    "excludedCurrentSpec": null,
     "eligible_previous_specs": [
       "specs/009c3-remediation-ready-for-owner",
       "specs/009c4-owner-merge-reconciliation",
       "specs/009d-pilot-review-lifecycle",
       "specs/009e-pilot-evidence-surfaces",
       "specs/009f-production-triage-routing",
-      "specs/012a-repo-knowledge-index"
+      "specs/010a-generic-product-line-seeder",
+      "specs/012a-repo-knowledge-index",
+      "specs/013a-run-state-spine"
     ],
-    "notes": "Archive extension is installed and enabled. Codex extension command files are not present in this worktree, so startup recorded local sweep eligibility and did not delete or move active specs."
+    "archived_specs": [
+      "specs/009c3-remediation-ready-for-owner",
+      "specs/009c4-owner-merge-reconciliation",
+      "specs/009d-pilot-review-lifecycle",
+      "specs/009e-pilot-evidence-surfaces",
+      "specs/009f-production-triage-routing",
+      "specs/010a-generic-product-line-seeder",
+      "specs/012a-repo-knowledge-index",
+      "specs/013a-run-state-spine"
+    ],
+    "cleanup_blocked_by": [
+      "apply-cleanup not requested",
+      "unrelated untracked .agents/.codex files keep the cleanup worktree dirty",
+      "check-prerequisites.sh rejects main as not a feature branch"
+    ],
+    "notes": "Archive extension v1.1.0 is installed and enabled. The 2026-05-22 run followed the vendored command contract manually because the installed SpecKit CLI has no extension-run command and check-prerequisites.sh rejects main. Memory files were updated; active specs were not deleted or moved."
   },
   "environment": {
     "worktree": "/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/013a-run-state-spine",

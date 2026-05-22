@@ -2,7 +2,7 @@
 
 **Feature Branch**: `009e-pilot-evidence-surfaces`
 **Created**: 2026-05-20
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "SPEC-009E - Pilot Eligibility and Evidence Surfaces"
 
 ## Clarifications

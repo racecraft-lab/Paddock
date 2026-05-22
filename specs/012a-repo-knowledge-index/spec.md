@@ -2,7 +2,7 @@
 
 **Feature Branch**: `012a-repo-knowledge-index`
 **Created**: 2026-05-21
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "Fresh agents need a repo-owned JSON docs index under `docs/ai/`, a concise `AGENTS.md` Repo Knowledge Map, required ownership/freshness metadata, local and CI-runnable guards, a deterministic fresh-agent proxy smoke check, and GitNexus refresh documentation without runtime behavior changes."
 
 ## User Scenarios & Testing *(mandatory)*

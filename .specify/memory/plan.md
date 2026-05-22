@@ -9,7 +9,12 @@ SPEC-006 (PR #21 merged 2026-05-01) under SPEC-007 autopilot Phase 0 sweep.
 Revision 2026-05-02: SPEC-008 autopilot Phase 0 sweep re-confirmed prior
 SPEC-004/006 archive after SPEC-007 cleanup landed on main.
 Revision 2026-05-16: Applied archive cleanup on clean `main` through SPEC-009C2;
-active `specs/**` is empty until the next spec setup creates SPEC-009C3.
+active `specs/**` was empty until later spec setup recreated completed sources.
+Revision 2026-05-22: Ran archive extension workflow manually from `main` for
+completed active specs SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F,
+SPEC-010A, SPEC-012A, and SPEC-013A. Memory updated; cleanup not applied because
+`--apply-cleanup` was not requested and the checkout had unrelated untracked
+`.agents/.codex` files.
 
 ---
 
@@ -82,7 +87,14 @@ docs/
 └── scripts/bash/                   # check-prerequisites.sh, validate-gate.sh, etc.
 
 specs/
-└── (empty after 2026-05-16 archive cleanup; next setup should create SPEC-009C3)
+├── 009c3-remediation-ready-for-owner      # archived to memory 2026-05-22; source retained, no cleanup
+├── 009c4-owner-merge-reconciliation       # archived to memory 2026-05-22; source retained, no cleanup
+├── 009d-pilot-review-lifecycle            # archived to memory 2026-05-22; source retained, no cleanup
+├── 009e-pilot-evidence-surfaces           # archived to memory 2026-05-22; source retained, no cleanup
+├── 009f-production-triage-routing         # archived to memory 2026-05-22; source retained, no cleanup
+├── 010a-generic-product-line-seeder       # archived to memory 2026-05-22; source retained, no cleanup
+├── 012a-repo-knowledge-index              # archived to memory 2026-05-22; source retained, no cleanup
+└── 013a-run-state-spine                   # archived to memory 2026-05-22; source retained, no cleanup
 
 # Archived (cleanup applied):
 # - 001-foundation-migrations    (SPEC-001, archived 2026-04-28)
@@ -98,6 +110,16 @@ specs/
 # - 009b-mission-control-seed    (SPEC-009B, archived after PR #30 merge — cleanup applied 2026-05-16)
 # - 009c1-pilot-issue-ingest     (SPEC-009C1, archived after PR #34/#40 merge — cleanup applied 2026-05-16)
 # - 009c2-triage-remediation-handoff (SPEC-009C2, archived after PR #43/#46 merge — cleanup applied 2026-05-16)
+
+# Archived to memory; cleanup not applied:
+# - 009c3-remediation-ready-for-owner      (SPEC-009C3, PR #48, post-merge UAT)
+# - 009c4-owner-merge-reconciliation       (SPEC-009C4, PR #52, target replay UAT)
+# - 009d-pilot-review-lifecycle            (SPEC-009D, PR #54, packet UAT)
+# - 009e-pilot-evidence-surfaces           (SPEC-009E, PR #55, evidence-surface UAT)
+# - 009f-production-triage-routing         (SPEC-009F, PR #57, HITL closeout)
+# - 010a-generic-product-line-seeder       (SPEC-010A, PR #59, post-merge UAT)
+# - 012a-repo-knowledge-index              (SPEC-012A, PR #56, knowledge-index UAT)
+# - 013a-run-state-spine                   (SPEC-013A, PR #58, post-merge UAT)
 ```
 
 ---
@@ -497,11 +519,75 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 - Reuses workflow-contract, task-chain, disposition, artifact, and activity surfaces with no schema migration.
 - Post-merge fix resolves successor assignees through project workspace; HAL smoke with synthetic issue #47 passed and cleanup was verified.
 
+## SPEC-009C3 Plan Summary [Source: specs/009c3-remediation-ready-for-owner]
+
+**Branch**: `009c3-remediation-ready-for-owner` | **Merged**: 2026-05-19 | **PR**: #48
+
+- Drives actionable remediation through planning, dev, review, Aegis, and `ready_for_owner` using existing workflow-template, task-chain, disposition, artifact, quality-review, notification, and governance advisory surfaces.
+- Adds readiness evidence and deterministic fixture PR identity without implementing owner merge reconciliation, claims, run tables, sandbox/adapter work, automatic polling, broad Product Line B cleanup, or dedicated evidence UI.
+- Post-merge HAL UAT created draft PR #49, drove synthetic dev task `39` to `ready_for_owner`, verified five `spec-009c3.v1` artifacts plus Aegis approval and owner notification, then cleaned synthetic rows and retained the audit trail.
+
+## SPEC-009C4 Plan Summary [Source: specs/009c4-owner-merge-reconciliation]
+
+**Branch**: `009c4-owner-merge-reconciliation` | **Merged**: 2026-05-20 | **PR**: #52
+
+- Extends existing GitHub sync/reconciliation paths so exact linked merged PR truth moves PR-producing work from `ready_for_owner` to `done`.
+- Negative cases cover closed issue without merged PR, wrong repo/PR, supporting-only metadata, failed sync, local-only completion, and duplicate sync idempotency.
+- Target replay on HAL inserted disposable task `41` linked to retained issue #50 / PR #51, reconciled it to `done`, proved duplicate sync no-op behavior, retained sync log rows, and removed the disposable task after evidence capture.
+
+## SPEC-009D Plan Summary [Source: specs/009d-pilot-review-lifecycle]
+
+**Branch**: `009d-pilot-review-lifecycle` | **Merged**: 2026-05-20 | **PR**: #54
+
+- Adds `src/lib/pilot-review-packet.ts` and packet artifacts that derive from stored Mission Control evidence only.
+- Publishes JSON and Markdown packet artifacts through existing task artifact storage; no packet-specific route, dashboard, fresh GitHub call, poller, claim authority, retry control, sandbox lifecycle, adapter registry, or real harness execution.
+- UAT used retained issue #50 / PR #51 evidence to produce a proven packet, publish artifacts, inspect them via existing routes, and clean seeded rows after backup.
+
+## SPEC-009E Plan Summary [Source: specs/009e-pilot-evidence-surfaces]
+
+**Branch**: `009e-pilot-evidence-surfaces` | **Merged**: 2026-05-20 | **PR**: #55
+
+- Adds generic stored-evidence-only `src/lib/task-evidence.ts`, authenticated read-only `GET /api/tasks/[id]/evidence`, and compact task detail Evidence UI.
+- Represents proven, incomplete, local-only, partial, missing, warning, deferred, and cleaned-UAT proof states without GitHub refresh, packet generation, smoke execution, activity writes, artifact mutation, dispatch, runner, claim, sandbox, adapter, or harness behavior.
+- UAT used retained issue #50 / PR #51 plus SPEC-009D packet/source-map proof, disposable browser carrier rows, Playwright evidence, and final cleanup counts of zero disposable tasks/evidence rows.
+
+## SPEC-009F Plan Summary [Source: specs/009f-production-triage-routing]
+
+**Branch**: `009f-production-triage-routing` | **Merged**: 2026-05-22 | **PR**: #57
+
+- Adds typed production triage lane artifacts and task Evidence `triageRouting` display for six non-remediation outcomes: `NEEDS_SPEC`, needs-human, needs-specialist, duplicate, obsolete, and invalid.
+- Keeps clean-exit Issue Triage terminal without remediation successors and without live GitHub mutation, claim/runner/sandbox/adapter paths, successor templates, or auto-merge behavior.
+- Verification included focused routing/dispatch tests, SPEC-009F broader tests, API parity, scope guard, focused e2e UAT, build/typecheck/lint, full unit suite, full e2e suite, target deployment, and HITL replay of all six outcomes.
+
+## SPEC-010A Plan Summary [Source: specs/010a-generic-product-line-seeder]
+
+**Branch**: `010a-generic-product-line-seeder` | **Merged**: 2026-05-22 | **PR**: #59
+
+- Generalizes Mission Control seed behavior into checked-in product-line YAML configs and a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
+- Keeps `seed:mission-control` as compatibility wrapper; reuses existing `yaml@2.8.2`, workflow-contract import/apply tooling, feature-flag registry validation, resource policy rows, and existing seed tables with no migration.
+- Post-merge UAT ran against a disposable copied DB and proved preflight/apply/verify/wrapper parity, existing-target refusal and reviewed re-apply, invalid reserved-flag no-mutation, redaction, Mission Control seed shape, zero Product Line B workspaces, zero tasks/runs, and no Product Line B/runtime/GitHub/SpecKit drift.
+
+## SPEC-012A Plan Summary [Source: specs/012a-repo-knowledge-index]
+
+**Branch**: `012a-repo-knowledge-index` | **Merged**: 2026-05-21 | **PR**: #56
+
+- Adds `docs/ai/repo-knowledge-index.json`, `docs/ai/repo-knowledge-index.schema.json`, root Repo Knowledge Map updates, fixture-backed validator scripts, fresh-agent smoke, package scripts, and `pnpm guardrails -- --suite repo-knowledge-index`.
+- Scope is docs/process/script/package only: no runtime behavior, migration, UI, scheduler/runner behavior, GitHub sync automation, sandbox lifecycle, harness adapter, generated `.gitnexus/` artifact, broad docs rewrite, or nested AGENTS rollout.
+- UAT fixed pnpm literal `--` fixture parsing, then local verification and main checks passed.
+
+## SPEC-013A Plan Summary [Source: specs/013a-run-state-spine]
+
+**Branch**: `013a-run-state-spine` | **Merged**: 2026-05-22 | **PR**: #58
+
+- Adds additive migration `076_task_stage_attempts`, rollback SQL, task-stage attempt helper/model behavior, read-only `GET /api/tasks/[id]/stage-attempts`, and compact task-detail Run state section.
+- Lifecycle is observed state only; archive is non-destructive (`status='archived'`, `archived_at`, lifecycle event), and `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy dispatch/runtime paths table-blind.
+- Post-merge UAT rebuilt standalone output, passed focused Vitest, scope guard, task-pipeline guardrails, Playwright browser journey, M76 marker/table/index/FK checks, and cleanup counts of zero attempts/events/fixture tasks.
+
 ---
 
 ## Configuration and Routing
 
-### Feature Flags (as of SPEC-009C2)
+### Feature Flags (as of SPEC-013A)
 
 | Flag | Default | Resolution |
 |------|---------|------------|
@@ -512,6 +598,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `FEATURE_RESOURCE_GOVERNANCE` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-008) |
 | `FEATURE_OPENCLAW_HEALTH_COSTS` | OFF | Requires `FEATURE_RESOURCE_GOVERNANCE`; optional/fork-only, absent-safe (SPEC-008) |
 | `PILOT_MISSION_CONTROL_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
+| `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A debug/read path only; legacy runtime remains table-blind when OFF |
 
 ### Verification Commands
 
@@ -554,6 +641,31 @@ From SPEC-009B:
 - `src/lib/mission-control-seed/`
 - `scripts/seed-mission-control-product-line.ts`
 
+From SPEC-009E:
+- `src/lib/task-evidence.ts`
+- `src/app/api/tasks/[id]/evidence/route.ts`
+- `src/components/panels/task-evidence-section.tsx`
+
+From SPEC-009F:
+- `src/lib/triage-routing-evidence.ts`
+- `scripts/spec-009f/check-scope-guards.mjs`
+
+From SPEC-010A:
+- `src/lib/product-line-seed/`
+- `scripts/seed-product-line.ts`
+- `scripts/seed-mission-control-product-line.ts`
+
+From SPEC-012A:
+- `docs/ai/repo-knowledge-index.json`
+- `docs/ai/repo-knowledge-index.schema.json`
+- `scripts/spec-012a/`
+
+From SPEC-013A:
+- `src/lib/task-stage-attempts.ts`
+- `src/app/api/tasks/[id]/stage-attempts/route.ts`
+- `src/components/panels/task-stage-attempts-section.tsx`
+- `scripts/spec-013a/check-run-state-scope-guards.mjs`
+
 ---
 
 ## Gotchas
@@ -580,3 +692,9 @@ From SPEC-009B:
 - **SPEC-008 enableRequires chain**: `FEATURE_OPENCLAW_HEALTH_COSTS` requires `FEATURE_RESOURCE_GOVERNANCE` (registry `enableRequires: ['FEATURE_RESOURCE_GOVERNANCE']`). The matrix harness's `buildScenarioFlags(flag, 'on-isolation')` walks the chain and auto-satisfies prerequisites. `assertEnableRequires` in the harness throws `InvalidFeatureFlagConfigurationError` when a prerequisite is OFF.
 - **SPEC-008 axe-core fixture**: `tests/e2e/spec-008/governance-axe-shim.ts` exposes `axeAssert(page, stateLabel)`. The shim defers `@axe-core/playwright` import behind `SPEC_008_AXE_ENABLED=1` so local runs without the dep installed are no-ops. CI installs the dep and sets the env var. Static-source CI guard `scripts/spec-008/check-axe-coverage.mjs` scans every spec for `axeAssert(` calls and fails closed.
 - **SPEC-008 strict-scope**: every `src/lib/resource-*.ts`, `src/lib/observability/**/*.ts`, `src/lib/feature-flag-matrix.ts`, `src/types/{resource-*,observability,provider-account,governance-api}.ts`, `src/components/governance/**/*.{ts,tsx}`, `src/app/api/{governance,resource-*,otlp}/**/*.ts` MUST appear in BOTH `tsconfig.spec-strict.json` `include` AND `eslint.config.mjs` `specStrictFiles`. Layer-1 family check + Layer-2 file check at `tests/integration/strict-scope-guard.test.ts`. The glob-to-regex translator handles `**/` as `(?:.*/)?` so files DIRECTLY in a globbed directory match.
+- **SPEC-009E cleaned proof**: Retained issue #50 / PR #51 plus packet/source-map and smoke checklist references are durable proof after disposable UI carrier rows are cleaned. Do not present cleaned rows as current active Mission Control state.
+- **SPEC-009F clean exits**: `NEEDS_SPEC`, needs-human, needs-specialist, duplicate, obsolete, and invalid outcomes are terminal recommendation/evidence lanes in v1; they must not create Issue Remediation successors or mutate GitHub automatically.
+- **SPEC-010A existing targets**: Generic apply to an existing target requires explicit `--allow-existing`; unsafe configs must reject before writes and report stable no-mutation evidence.
+- **SPEC-012A pnpm separator**: `pnpm knowledge:index:check -- --fixture ... --json` passes the literal separator through; the guard parser accepts it intentionally.
+- **SPEC-013A runtime boundary**: `FEATURE_TASK_CONTROL_PLANE=false` keeps scheduler/dispatch/task-pipeline runtime table-blind. The task-stage attempt route/UI remains read-only debug inspection and exposes no claim/retry/release/cancel/launch controls.
+- **Archive extension on main**: `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` still rejects `main` as not a feature branch even though archive cleanup policy can allow reviewed main cleanups. The 2026-05-22 archive run therefore followed the vendored command contract manually and did not apply cleanup.

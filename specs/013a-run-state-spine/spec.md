@@ -2,7 +2,7 @@
 
 **Feature Branch**: `013a-run-state-spine`  
 **Created**: 2026-05-22  
-**Status**: Draft  
+**Status**: Completed
 **Input**: User description: "/speckit.specify SPEC-013A - Run-State Persistence Spine"
 
 ## Clarifications

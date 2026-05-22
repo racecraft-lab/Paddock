@@ -331,23 +331,187 @@ git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation
 
 ---
 
+<!-- Archive extension manual execution metadata -->
+<!-- archiveMode: single-feature batch | dryRun: false | applyCleanupRequested: false | safeToApplyCleanup: false -->
+<!-- Branch: main | Run: 2026-05-22 | archiveExtension: 1.1.0 | prerequisite-script: blocked on main feature-branch guard -->
+<!-- Cleanup not applied: no --apply-cleanup request, dirty worktree contains unrelated untracked .agents/.codex files, and source specs remain active for reviewable recovery. -->
+
+## SPEC-009C3: Dev/Review/Aegis to Ready for Owner
+
+- **Feature**: RC Factory Phase 8C3 — remediation chain reaches `ready_for_owner`
+- **Branch**: `009c3-remediation-ready-for-owner`
+- **Spec Path**: `specs/009c3-remediation-ready-for-owner/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/48
+- **Merge Commit**: `ac7760a222a33b4cefe886afae605238f479eaa5`
+- **Post-Merge Evidence Commit**: `13a104f658199bad24c5ea50ad9cbef85cf9e65b`
+- **Tree Reference**: `git show ac7760a222a33b4cefe886afae605238f479eaa5:specs/009c3-remediation-ready-for-owner/spec.md`
+- **CI URL**: N/A (workflow and roadmap record focused/full local verification plus HAL UAT)
+- **Argos URL**: N/A (no UI/browser workflow changed)
+- **Task Completion**: 70/70
+- **Summary**: Added remediation planning -> dev -> review -> Aegis readiness evidence, `ready_for_owner` routing for PR-producing dev tasks, C3 artifact envelope validation, sanitized failure activities, advisory governance readiness checks, deterministic fixture PR identity, and scope guards proving no merge/done reconciliation, claim/run table, sandbox/adapter, poller, broad slug migration, or dedicated evidence UI entered the slice.
+
+**Recovery Commands**:
+```text
+git show ac7760a222a33b4cefe886afae605238f479eaa5:specs/009c3-remediation-ready-for-owner/spec.md
+git show ac7760a222a33b4cefe886afae605238f479eaa5:specs/009c3-remediation-ready-for-owner/plan.md
+git show ac7760a222a33b4cefe886afae605238f479eaa5:specs/009c3-remediation-ready-for-owner/tasks.md
+```
+
+---
+
+## SPEC-009C4: Owner Merge Gate and Done Reconciliation
+
+- **Feature**: RC Factory Phase 8C4 — human merge gate reconciles `ready_for_owner` to `done`
+- **Branch**: `009c4-owner-merge-reconciliation`
+- **Spec Path**: `specs/009c4-owner-merge-reconciliation/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/52
+- **Merge Commit**: `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`
+- **Post-Merge Evidence Commit**: `539b14b40e2664799b7b187e7302e8ff005e96fa`
+- **Tree Reference**: `git show ddc709f2f200a4ee4df51398d39ef42d85bd6e54:specs/009c4-owner-merge-reconciliation/spec.md`
+- **CI URL**: N/A (workflow and roadmap record local verification, full test suites, and target replay UAT)
+- **Argos URL**: N/A
+- **Task Completion**: 55/55
+- **Summary**: Added exact merged-PR truth checks for linked PR-producing tasks, failed-sync no-terminal-side-effect handling, local-only done rejection, `mc:done` projection with stale ready-label removal, bounded terminal activity/notification assertions, duplicate-sync idempotency, live synthetic issue/PR UAT, target deployment replay, and cleanup evidence.
+
+**Recovery Commands**:
+```text
+git show ddc709f2f200a4ee4df51398d39ef42d85bd6e54:specs/009c4-owner-merge-reconciliation/spec.md
+git show ddc709f2f200a4ee4df51398d39ef42d85bd6e54:specs/009c4-owner-merge-reconciliation/plan.md
+git show ddc709f2f200a4ee4df51398d39ef42d85bd6e54:specs/009c4-owner-merge-reconciliation/tasks.md
+```
+
+---
+
+## SPEC-009D: Pilot Review Packet and Lifecycle Snapshot
+
+- **Feature**: RC Factory Phase 8D — stored-evidence pilot review packet and lifecycle snapshot
+- **Branch**: `009d-pilot-review-lifecycle`
+- **Spec Path**: `specs/009d-pilot-review-lifecycle/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/54
+- **Merge Commit**: `765264be667bd31d6266f606602a219312f72f23`
+- **Tree Reference**: `git show 765264be667bd31d6266f606602a219312f72f23:specs/009d-pilot-review-lifecycle/spec.md`
+- **CI URL**: N/A (workflow records main CI/CD checks and local verification)
+- **Argos URL**: N/A
+- **Task Completion**: 42/42
+- **Summary**: Added stored-evidence-only packet derivation, JSON and Markdown artifact publication through the existing artifact store, packet-local evidence states, source-map pointers, SPEC-013/SPEC-014 deferrals, local-only and partial-proof exclusion, packet UAT against retained issue #50 / PR #51 evidence, and no migration, packet-specific route, dashboard, fresh GitHub call, poller, claim authority, retry control, sandbox lifecycle, adapter registry, or real harness execution.
+
+**Recovery Commands**:
+```text
+git show 765264be667bd31d6266f606602a219312f72f23:specs/009d-pilot-review-lifecycle/spec.md
+git show 765264be667bd31d6266f606602a219312f72f23:specs/009d-pilot-review-lifecycle/plan.md
+git show 765264be667bd31d6266f606602a219312f72f23:specs/009d-pilot-review-lifecycle/tasks.md
+```
+
+---
+
 ## SPEC-009E: Pilot Eligibility and Evidence Surfaces
 
 - **Feature**: RC Factory Phase 8E — read-only task-scoped pilot eligibility and evidence surfaces
 - **Branch**: `009e-pilot-evidence-surfaces`
 - **Spec Path**: `specs/009e-pilot-evidence-surfaces/`
 - **PR URL**: https://github.com/racecraft-lab/mission-control/pull/55
-- **Merge Commit**: Pending PR merge
-- **Tree Reference**: Pending PR merge; use branch `009e-pilot-evidence-surfaces` until merged
-- **CI URL**: Pending PR #55 checks
-- **Argos URL**: N/A until PR visual checks publish
+- **Merge Commit**: `40507874b012abffe2356a66be36613c6dea5809`
+- **Post-Merge Evidence Commit**: `f4921b852d1ea9e6fbc220f2838f957a9d1ef0d8`
+- **Tree Reference**: `git show 40507874b012abffe2356a66be36613c6dea5809:specs/009e-pilot-evidence-surfaces/spec.md`
+- **CI URL**: N/A (workflow records local verification and post-merge checks)
+- **Argos URL**: N/A
 - **Task Completion**: 59/59
-- **Archive Sweep**: SPEC-009E was the current target and was explicitly excluded from startup archive cleanup. Archive extension v1.1.0 was installed, but Codex did not have a direct archive command; the run recorded eligible prior specs without applying cleanup.
-- **Summary**: Added generic stored-evidence-only `task_evidence.v1` derivation, authenticated read-only `GET /api/tasks/[id]/evidence`, compact task detail Evidence UI, local-only and partial-proof states, safe metadata/source-map rendering, retained issue #50 / PR #51 UAT proof, and explicit SPEC-013/SPEC-014 deferrals. No migration, new runtime dependency, write action, GitHub sync trigger, packet-generation action, global dashboard, runner, claim, sandbox, adapter, or harness behavior was added.
+- **Summary**: Added generic stored-evidence-only `task_evidence.v1` derivation, authenticated read-only `GET /api/tasks/[id]/evidence`, compact task detail Evidence UI, local-only and partial-proof states, safe metadata/source-map rendering, retained issue #50 / PR #51 UAT proof, disposable carrier cleanup, and explicit SPEC-013/SPEC-014 deferrals. No migration, new runtime dependency, write action, GitHub sync trigger, packet-generation action, global dashboard, runner, claim, sandbox, adapter, or harness behavior was added.
 
 **Recovery Commands**:
 ```text
-git show 009e-pilot-evidence-surfaces:specs/009e-pilot-evidence-surfaces/spec.md
-git show 009e-pilot-evidence-surfaces:specs/009e-pilot-evidence-surfaces/plan.md
-git show 009e-pilot-evidence-surfaces:specs/009e-pilot-evidence-surfaces/tasks.md
+git show 40507874b012abffe2356a66be36613c6dea5809:specs/009e-pilot-evidence-surfaces/spec.md
+git show 40507874b012abffe2356a66be36613c6dea5809:specs/009e-pilot-evidence-surfaces/plan.md
+git show 40507874b012abffe2356a66be36613c6dea5809:specs/009e-pilot-evidence-surfaces/tasks.md
+```
+
+---
+
+## SPEC-012A: Repo Knowledge Index and AGENTS Map
+
+- **Feature**: RC Factory Phase 10A — canonical repo knowledge index and root AGENTS map
+- **Branch**: `012a-repo-knowledge-index`
+- **Spec Path**: `specs/012a-repo-knowledge-index/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/56
+- **Merge Commit**: `a5e3fbece82fddec548b70763a703893ba409813`
+- **Tree Reference**: `git show a5e3fbece82fddec548b70763a703893ba409813:specs/012a-repo-knowledge-index/spec.md`
+- **CI URL**: N/A (workflow records Quality Gate and visual approval checks)
+- **Argos URL**: N/A
+- **Task Completion**: 32/32
+- **Summary**: Added `docs/ai/repo-knowledge-index.json`, its schema, concise root repo knowledge map, fixture-backed validation, fresh-agent proxy smoke script, `knowledge:index:*` scripts, guardrail wiring, and status-pointer checks. No runtime source behavior, migration, UI, scheduler/runner behavior, GitHub sync automation, sandbox lifecycle, harness adapter, generated `.gitnexus/` artifact, broad docs rewrite, or nested `AGENTS.md` rollout was added.
+
+**Recovery Commands**:
+```text
+git show a5e3fbece82fddec548b70763a703893ba409813:specs/012a-repo-knowledge-index/spec.md
+git show a5e3fbece82fddec548b70763a703893ba409813:specs/012a-repo-knowledge-index/plan.md
+git show a5e3fbece82fddec548b70763a703893ba409813:specs/012a-repo-knowledge-index/tasks.md
+```
+
+---
+
+## SPEC-009F: Production Triage Outcome Routing
+
+- **Feature**: RC Factory Phase 8F — production routing for non-remediation triage outcomes
+- **Branch**: `009f-production-triage-routing`
+- **Spec Path**: `specs/009f-production-triage-routing/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/57
+- **Merge Commit**: `d396ed205b281d10a2b5cb95542209e816ebd95a`
+- **Post-Merge Evidence Commit**: `6bc4f2a79d7af240b75ad22687310a754f1f587a`
+- **Tree Reference**: `git show d396ed205b281d10a2b5cb95542209e816ebd95a:specs/009f-production-triage-routing/spec.md`
+- **CI URL**: N/A (workflow records local verification, main checks, and HITL replay)
+- **Argos URL**: N/A
+- **Task Completion**: 55/55
+- **Summary**: Added typed production triage lane artifacts for `NEEDS_SPEC`, needs-human, needs-specialist, duplicate, obsolete, and invalid outcomes; terminal Issue Triage completion without remediation successors; idempotent reruns; task Evidence `triageRouting` display; fixture/HITL UAT for all six outcomes; and guards proving no live GitHub mutation, successor template, claim/runner/sandbox/adapter path, or auto-merge behavior.
+
+**Recovery Commands**:
+```text
+git show d396ed205b281d10a2b5cb95542209e816ebd95a:specs/009f-production-triage-routing/spec.md
+git show d396ed205b281d10a2b5cb95542209e816ebd95a:specs/009f-production-triage-routing/plan.md
+git show d396ed205b281d10a2b5cb95542209e816ebd95a:specs/009f-production-triage-routing/tasks.md
+```
+
+---
+
+## SPEC-010A: Generic Product-Line Seeder
+
+- **Feature**: RC Factory Phase 9A — reusable product-line seed tooling
+- **Branch**: `010a-generic-product-line-seeder`
+- **Spec Path**: `specs/010a-generic-product-line-seeder/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/59
+- **Merge Commit**: `9be6b544b6006bd5de2524d22bc8059a21eed41c`
+- **Post-Merge Evidence Commit**: `05fe404ab43ce026734b51ccc3d0e39830fac05f`
+- **Tree Reference**: `git show 9be6b544b6006bd5de2524d22bc8059a21eed41c:specs/010a-generic-product-line-seeder/spec.md`
+- **CI URL**: N/A (workflow records local verification and post-merge UAT)
+- **Argos URL**: N/A
+- **Task Completion**: 73/73
+- **Summary**: Added checked-in product-line YAML config support, generic `seed:product-line` preflight/apply/verify modes, `seed:mission-control` wrapper compatibility, fail-closed config validation, existing-target refusal and reviewed re-apply semantics, workflow-contract import reuse, feature-flag registry validation, advisory governance defaults, product-line-scoped assignments, redacted structured evidence, no-mutation failure proof, and static guards proving no Product Line B onboarding, GitHub mutation, dispatch, runner, sandbox, auto-merge, or SpecKit invocation drift.
+
+**Recovery Commands**:
+```text
+git show 9be6b544b6006bd5de2524d22bc8059a21eed41c:specs/010a-generic-product-line-seeder/spec.md
+git show 9be6b544b6006bd5de2524d22bc8059a21eed41c:specs/010a-generic-product-line-seeder/plan.md
+git show 9be6b544b6006bd5de2524d22bc8059a21eed41c:specs/010a-generic-product-line-seeder/tasks.md
+```
+
+---
+
+## SPEC-013A: Run-State Persistence Spine
+
+- **Feature**: RC Factory Phase 11A — durable task-stage attempt inspection spine
+- **Branch**: `013a-run-state-spine`
+- **Spec Path**: `specs/013a-run-state-spine/`
+- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/58
+- **Merge Commit**: `a3a79250bc0fa8ac79d36a787f8119d1add62678`
+- **Post-Merge Evidence Commit**: `05fe404ab43ce026734b51ccc3d0e39830fac05f`
+- **Tree Reference**: `git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/spec.md`
+- **CI URL**: N/A (workflow records full local/unit/e2e evidence and post-merge UAT)
+- **Argos URL**: N/A
+- **Task Completion**: 58/58
+- **Summary**: Added additive migration `076_task_stage_attempts`, rollback SQL, task-stage attempt helper/model behavior, read-only `GET /api/tasks/[id]/stage-attempts`, compact task-detail Run state section, OpenAPI/API-index parity, route/component/e2e coverage, non-destructive archive semantics, flag-off runtime table-blind guardrails, and cleanup evidence. Claim authority, scheduler launch, retry policy, GitHub reconciliation, sandbox lifecycle, adapter registry, and auto-merge behavior remain deferred.
+
+**Recovery Commands**:
+```text
+git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/spec.md
+git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/plan.md
+git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/tasks.md
 ```
