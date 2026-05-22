@@ -111,6 +111,15 @@ safety_policy:
     - github_sync_state
     - governance_audit_rows
     - manual_workflow_templates
+    - row_ids
+    - creation_timestamps
+    - task_status
+    - task_github_linkage
+    - task_lineage
+    - project_ticket_counters
+    - assignment_timestamps
+    - workflow_use_counters
+    - non_owned_feature_flags
   blocked_side_effects:
     - product_line_b
     - github_mutation

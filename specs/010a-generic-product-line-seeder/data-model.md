@@ -219,9 +219,38 @@ Fields:
 
 - `schema_version`: `product-line-seed-snapshot-v1`.
 - `hash`: `product-line-seed-snapshot-v1:sha256:<hex>`.
-- Per-surface row counts and stable ordered-JSON hashes for product-line, department, assignment, workflow, governance, task, issue, activity, history, evidence, and GitHub sync surfaces.
+- `surfaces`: stable count/hash map for config-owned seed surfaces:
+  - `product_line`
+  - `department`
+  - `assignment`
+  - `workflow`
+  - `governance`
+  - `feature_flags`
+- `preserved_operational_state`: required aggregate containing stable count/hash evidence for all non-config-owned FR-020 surfaces and invariants:
+  - `task`
+  - `issue`
+  - `activity`
+  - `history`
+  - `evidence`
+  - `comment`
+  - `notification`
+  - `disposition`
+  - `artifact`
+  - `quality_review`
+  - `github_sync_state`
+  - `governance_audit_or_ledger`
+  - `manual_workflow_template`
+  - `non_owned_feature_flags`
+  - `row_identity`
+  - `creation_timestamps`
+  - `task_status_linkage_lineage`
+  - `project_ticket_counters`
+  - `assignment_timestamps`
+  - `workflow_use_counters`
 
 Validation:
 
-- Snapshot hashes are deterministic.
-- Invalid-config and blocked-preflight no-mutation proof compares before and after snapshots.
+- Snapshot hashes are deterministic and use stable ordered JSON.
+- Invalid-config and blocked-preflight no-mutation proof compares `snapshot_before` and `snapshot_after` across both `surfaces` and `preserved_operational_state`.
+- Existing-target apply and apply-twice evidence must demonstrate that non-config-owned FR-020 surfaces remain stable except for reviewed config-owned field updates.
+- Snapshot evidence must obey result-envelope redaction rules and must not emit or hash raw secrets, raw logs, signed URLs, raw untrusted payloads, or matched secret substrings.

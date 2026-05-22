@@ -14,7 +14,7 @@ The design is driven by the setup interview decisions: Q1/Q9 require checked-in 
 **Language/Version**: TypeScript 5.7 strict on Node.js >=22 in the existing Next.js 16 / React 19 repository baseline  
 **Primary Dependencies**: Existing Next.js/React/Zustand stack, `better-sqlite3`, direct `yaml@2.8.2`, existing workflow-contract tooling, existing feature-flag registry; no new runtime dependency  
 **Storage**: SQLite through `better-sqlite3`; existing `workspaces`, `projects`, `project_agent_assignments`, `workflow_templates`, `workflow_contract_*`, `resource_policies`, task/history/evidence/GitHub sync tables; no migration  
-**Testing**: Focused Vitest tests for config validation, CLI contracts, invalid-config no-mutation snapshots, existing-target policy, wrapper parity, workflow/flag/agent/governance validation; `pnpm typecheck`, `pnpm lint`, and `pnpm build` as required  
+**Testing**: Focused Vitest tests for config validation, CLI contracts, invalid-config no-mutation snapshots across all FR-020 preserved operational/history surfaces and invariants, existing-target policy, wrapper parity, workflow/flag/agent/governance validation; `pnpm typecheck`, `pnpm lint`, and `pnpm build` as required
 **Target Platform**: Local operator CLI in the Mission Control repo on Node.js >=22; no browser/UI surface  
 **Project Type**: CLI/library plus checked-in configuration and operator documentation  
 **Performance Goals**: Deterministic local seed operations over normal operator SQLite targets; validation and preflight complete before any write transaction; evidence hashes stable across repeated runs  
@@ -102,7 +102,7 @@ src/lib/
 | `src/lib/product-line-seed/config.ts` | New safe YAML loading plus TypeScript semantic validation for identity, workflow family/path/slugs, flags, assignments, governance, and safety policy. |
 | `src/lib/product-line-seed/preflight.ts` | New target-config-aware existing-target/refusal/residue validation before writes. |
 | `src/lib/product-line-seed/seed.ts` | New generic preflight/apply/verify orchestration, one-transaction apply path, and delegation to workflow-contract import/apply logic. |
-| `src/lib/product-line-seed/evidence.ts` | New stable counts, ordered JSON snapshot hashing, verify drift evidence, redaction proof, and no-mutation comparison helpers. |
+| `src/lib/product-line-seed/evidence.ts` | New stable counts, ordered JSON snapshot hashing, verify drift evidence, redaction proof, full FR-020 preserved-operational-state hashing, and no-mutation comparison helpers. |
 | `scripts/seed-product-line.ts` | New generic operator CLI: `--config`, `--db`, `--mode`, `--json`, `--allow-existing`, `--operator-evidence`; rejects unknown flags. |
 | `scripts/seed-mission-control-product-line.ts` | Modify to delegate to the generic CLI using `docs/ai/product-lines/mission-control.yaml` while preserving command name/core flags. |
 | `package.json` | Add `seed:product-line`; keep `seed:mission-control`. |

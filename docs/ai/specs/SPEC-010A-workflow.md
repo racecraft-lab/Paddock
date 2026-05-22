@@ -500,6 +500,12 @@ Plan must list exact files likely touched and explain why each is in scope. If t
 | G3 gate | Pass: `validate-gate.sh G3 specs/010a-generic-product-line-seeder` returned `pass=true` |
 | Scope result | One primary surface (`seed/config`); no migration, new runtime dependency, UI, GitHub mutation, Product Line B, dispatch, claim, runner, sandbox, adapter, or auto-merge scope |
 
+### Checklist Progress
+
+| Domain | Status | Items | Gaps | Result |
+|--------|--------|-------|------|--------|
+| data-integrity | Complete | 25 | 1 found, 1 remediated | Expanded no-mutation snapshot evidence across config-owned seed surfaces plus all preserved operational/history surfaces; final marker count 0 |
+
 ---
 
 ## Phase 4: Checklist

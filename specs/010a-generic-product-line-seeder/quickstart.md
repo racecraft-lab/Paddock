@@ -75,7 +75,7 @@ pnpm seed:product-line -- \
 Expected:
 
 - config-owned rows are stable and not duplicated
-- non-config-owned task/history/GitHub sync/governance audit/manual template/unrelated flag state is preserved
+- non-config-owned FR-020 operational/history state is preserved, including task, issue, activity, history, comment, notification, disposition, artifact, quality-review, GitHub sync, governance audit/ledger, manual template, unrelated flag, row ID, timestamp, counter, task status/linkage/lineage, assignment timestamp, and workflow use-counter evidence
 - before/after snapshots and stable identity hashes are present
 
 ## Verify
@@ -146,7 +146,7 @@ Each invalid-config or blocked-preflight fixture must include:
 - `mutation_status:"not_mutated"`
 - `snapshot_before`
 - `snapshot_after`
-- matching per-surface counts and `product-line-seed-snapshot-v1:sha256:<hex>` hashes
+- matching per-surface counts and `product-line-seed-snapshot-v1:sha256:<hex>` hashes across config-owned seed surfaces plus the full `preserved_operational_state.subsurfaces` contract
 - `raw_secret_values_emitted:false`
 - redacted target evidence
 

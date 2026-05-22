@@ -110,12 +110,34 @@ Required refusal shape:
     "assignment": { "count": 6, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
     "workflow": { "count": 9, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
     "governance": { "count": 3, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
-    "task": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
-    "issue": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
-    "activity": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
-    "history": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
-    "evidence": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
-    "github_sync": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" }
+    "feature_flags": { "count": 1, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" }
+  },
+  "preserved_operational_state": {
+    "hash": "product-line-seed-snapshot-v1:sha256:<hex>",
+    "subsurfaces": {
+      "task": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "issue": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "activity": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "history": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "evidence": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "comment": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "notification": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "disposition": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "artifact": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "quality_review": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "github_sync_state": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "governance_audit_or_ledger": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "manual_workflow_template": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "non_owned_feature_flags": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "row_identity": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "creation_timestamps": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "task_status_linkage_lineage": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "project_ticket_counters": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "assignment_timestamps": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" },
+      "workflow_use_counters": { "count": 0, "hash": "product-line-seed-snapshot-v1:sha256:<hex>" }
+    }
   }
 }
 ```
+
+All listed `preserved_operational_state.subsurfaces` are required when the target database has the corresponding table or field. If a surface is not present in the target schema, the snapshot MUST include the key with `count:0`, a deterministic empty-surface hash, and evidence that the surface was unavailable rather than silently omitted.
