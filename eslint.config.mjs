@@ -64,6 +64,13 @@ const specStrictFiles = [
   'src/lib/__tests__/task-evidence.fixtures.ts',
   'src/lib/__tests__/task-evidence.test.ts',
   'src/components/panels/task-evidence-section.tsx',
+  // SPEC-009F production triage routing.
+  'src/lib/triage-routing-payloads.ts',
+  'src/lib/triage-routing.ts',
+  'src/lib/__tests__/triage-routing-payloads.test.ts',
+  'src/lib/__tests__/triage-routing.test.ts',
+  'src/components/panels/__tests__/task-evidence-section.test.tsx',
+  'tests/e2e/spec-009f-triage-routing.spec.ts',
 ]
 
 const config = tseslint.config(

@@ -107,6 +107,8 @@ export function TaskEvidenceSection({ evidence, loading, error }: TaskEvidenceSe
         )}
       </EvidenceBlock>
 
+      <TriageRoutingBlock evidence={evidence} />
+
       <EvidenceBlock label="Smoke proof">
         <div className="flex flex-wrap gap-1.5">
           {evidence.smoke.references.length > 0
@@ -167,6 +169,108 @@ export function TaskEvidenceSection({ evidence, loading, error }: TaskEvidenceSe
         </EvidenceBlock>
       )}
     </section>
+  )
+}
+
+function TriageRoutingBlock({ evidence }: { evidence: TaskEvidenceResponse }) {
+  const route = evidence.triage_routing
+  const title = route.routing_status === 'recorded' && route.state === 'available'
+    ? 'Routing recorded'
+    : route.routing_status === 'conflict'
+      ? 'Triage routing conflict'
+      : route.state === 'incomplete'
+        ? 'Triage routing incomplete'
+        : route.state === 'unavailable'
+          ? 'Triage routing unavailable'
+          : route.state === 'superseded'
+            ? 'Superseded routing evidence'
+            : 'No triage routing recorded.'
+  const detail = route.lane_detail
+  const specialistUnassigned = detail && 'specialist_state' in detail && detail.specialist_state === 'unassigned'
+
+  return (
+    <EvidenceBlock label="Triage routing">
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="font-medium text-foreground">{title}</span>
+          <StateBadge state={route.state} />
+          <span className="rounded border border-border/40 px-1.5 py-0.5 font-mono text-[10px] text-foreground/80">
+            {safeText(route.routing_status)}
+          </span>
+        </div>
+
+        <dl className="grid gap-1 sm:grid-cols-2">
+          {route.disposition && <EvidenceKV label="Disposition" value={route.disposition} />}
+          {route.lane && <EvidenceKV label="Lane" value={route.lane} />}
+          {route.artifact && <EvidenceKV label="Artifact" value={`${route.artifact.display_name} ${route.artifact.artifact_id}`} />}
+          {route.activity_reference && <EvidenceKV label="Activity" value={route.activity_reference} />}
+          {route.idempotency_key && <EvidenceKV label="Idempotency" value={route.idempotency_key} />}
+          {route.recommended_next_action && <EvidenceKV label="Recommended next action" value={route.recommended_next_action} />}
+        </dl>
+
+        {specialistUnassigned && (
+          <p className="rounded border border-amber-500/25 bg-amber-500/10 px-2 py-1 text-xs text-amber-100">
+            Specialist unassigned
+          </p>
+        )}
+
+        {route.missing.length > 0 && (
+          <TokenList label="Missing" values={route.missing} tone="amber" />
+        )}
+        {route.warnings.length > 0 && (
+          <TokenList label="Warnings" values={route.warnings} tone="amber" />
+        )}
+        {route.proposed_labels.length > 0 && (
+          <TokenList
+            label="Proposed labels"
+            values={route.proposed_labels.map((label) => `${label.name} applied: ${String(label.applied)}`)}
+          />
+        )}
+        {route.deferred_side_effects.length > 0 && (
+          <TokenList
+            label="Deferred side effects"
+            values={route.deferred_side_effects.map((effect) => `${effect.side_effect}: ${effect.reason}`)}
+          />
+        )}
+        {route.superseded_artifacts.length > 0 && (
+          <TokenList
+            label="Superseded routing evidence"
+            values={route.superseded_artifacts.map((artifact) => `${artifact.display_name} ${artifact.artifact_id}`)}
+          />
+        )}
+      </div>
+    </EvidenceBlock>
+  )
+}
+
+function EvidenceKV({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[10px] uppercase tracking-wider text-muted-foreground/70">{label}</dt>
+      <dd className="break-words text-foreground/85">{safeText(value)}</dd>
+    </div>
+  )
+}
+
+function TokenList({ label, values, tone }: { label: string; values: readonly string[]; tone?: 'amber' }) {
+  return (
+    <div>
+      <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground/70">{label}</div>
+      <ul className="flex flex-wrap gap-1.5">
+        {values.map((value, index) => (
+          <li
+            key={`${label}-${String(index)}-${value}`}
+            className={`rounded border px-1.5 py-0.5 font-mono text-[10px] break-all ${
+              tone === 'amber'
+                ? 'border-amber-500/25 text-amber-100'
+                : 'border-border/40 text-foreground/80'
+            }`}
+          >
+            {safeText(value)}
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 
@@ -242,6 +346,7 @@ function collectUnsupportedStates(evidence: TaskEvidenceResponse): { section: st
     { section: 'packet_artifacts', state: evidence.packet_artifacts.state },
     { section: 'smoke', state: evidence.smoke.state },
     { section: 'current_stage', state: evidence.current_stage.state },
+    { section: 'triage_routing', state: evidence.triage_routing.state },
   ]
   for (const reference of evidence.packet_artifacts.references) {
     states.push({ section: `artifact:${reference.artifact_id ?? reference.kind}`, state: reference.state })

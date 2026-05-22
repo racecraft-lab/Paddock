@@ -13,6 +13,7 @@ import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerm
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
 import { publishArtifact, sanitizeDispositionFailurePayload } from './task-artifacts'
+import { routeTriageDisposition } from './triage-routing'
 import { evaluateSpec007AegisSignals } from './aegis-review'
 import { createHash } from 'crypto'
 
@@ -30,6 +31,15 @@ const PILOT_TRIAGE_DISPOSITION_ENUM = [
   'NEEDS_SPECIALIST',
   'NEEDS_SPEC',
 ] as const
+
+const SPEC_009F_TERMINAL_DISPOSITION_FAILURES = new Set([
+  'DUPLICATE',
+  'OBSOLETE',
+  'INVALID',
+  'NEEDS_HUMAN',
+  'NEEDS_SPECIALIST',
+  'NEEDS_SPEC',
+])
 
 type TriageTemplateProfile = {
   readonly dispositions: readonly string[]
@@ -311,6 +321,24 @@ function writePilotTriageEvidence(
   if (!isTaskArtifactsEnabled(db, parent.workspace_id)) return
   const context = successorContextFor(db, result, parent.workspace_id)
   if (disposition === 'ACTIONABLE_REMEDIATION' && context.successorTaskId === null) return
+
+  const routingResult = routeTriageDisposition(db, {
+    taskId: parent.id,
+    workspaceId: parent.workspace_id,
+    disposition,
+    rationale,
+  })
+  if (
+    !routingResult.ok
+    && SPEC_009F_TERMINAL_DISPOSITION_FAILURES.has(disposition)
+    && (
+      routingResult.reason === 'payload_validation_failed'
+      || routingResult.reason === 'conflicting_disposition'
+      || routingResult.reason === 'artifact_publish_failed'
+    )
+  ) {
+    return
+  }
 
   const content = expectedPilotTriageContent(parent, disposition, rationale, context)
   const existingArtifact = selectActivePilotTriageArtifact(db, parent)

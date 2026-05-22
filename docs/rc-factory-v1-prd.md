@@ -420,7 +420,8 @@ it does not automatically make a feature low-risk or broadly reusable.
 
 ## Rollout Source Of Truth
 
-The technical roadmap owns phase sequencing, status, and dependency order. Spec
+The technical roadmap owns phase sequencing, status, dependency order, and the
+next unblocked spec pointer after each implementation PR merges. Spec
 directories own detailed requirements, generated tasks, checklists, research,
 data models, exact acceptance evidence, and completion notes. Migration files
 own exact DDL. Workflow contracts own executable agent policy.

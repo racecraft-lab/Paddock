@@ -528,6 +528,61 @@ alone.
   `visual-storybook / visual-review-report`, `Analyze (actions)`, and
   `Analyze (javascript-typescript)`.
 
+## SPEC-009F Production Triage Routing UAT
+
+- Status: focused local UAT and full e2e suite captured for T047/T050/T055 on
+  2026-05-22 UTC.
+- Branch and commit: `009f-production-triage-routing`; implementation base
+  `e63672bf`, final review hardening commit `f9295524`.
+- UAT command:
+  `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts`.
+- Full e2e command:
+  `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e`
+  passed with `648 passed`.
+- Post-review security regression:
+  `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/task-dispatch.test.ts`
+  passed with `84 passed`; SPEC-009F routing artifacts publish through
+  `publishArtifact()` so existing artifact redaction, secret scanning,
+  size/MIME limits, and supersession behavior remain authoritative, and
+  production dispatch skips legacy triage artifact publication after
+  SPEC-009F validation/conflict/publish failures.
+- Fixture export: `test-results/spec-009f-triage-routing/spec-009f-triage-routing-fixture-export.json`
+  (`schema_version: spec-009f.e2e-export.v1`, generated
+  `2026-05-22T00:30:51.630Z`, `no_live_side_effects: true`).
+- Six-outcome matrix:
+  - `NEEDS_SPEC`: task `12`, lane `speckit_handoff`, status `recorded`,
+    artifact `1`, activity `150`, Evidence state `available`, successors `0`.
+  - `NEEDS_HUMAN`: task `13`, lane `clarification_request`, status `recorded`,
+    artifact `2`, activity `152`, Evidence state `available`, successors `0`.
+  - `NEEDS_SPECIALIST`: task `14`, lane `specialist_recommendation`, status
+    `recorded`, artifact `3`, activity `154`, Evidence state `available`,
+    successors `0`.
+  - `DUPLICATE`: task `15`, lane `closure_recommendation`, status `recorded`,
+    artifact `4`, activity `156`, Evidence state `available`, successors `0`.
+  - `OBSOLETE`: task `16`, lane `closure_recommendation`, status `recorded`,
+    artifact `5`, activity `158`, Evidence state `available`, successors `0`.
+  - `INVALID`: task `17`, lane `closure_recommendation`, status `recorded`,
+    artifact `6`, activity `160`, Evidence state `available`, successors `0`.
+- Screenshot evidence:
+  `test-results/spec-009f-triage-routing/spec-009f-needs-spec.png`,
+  `test-results/spec-009f-triage-routing/spec-009f-needs-human.png`,
+  `test-results/spec-009f-triage-routing/spec-009f-needs-specialist.png`,
+  `test-results/spec-009f-triage-routing/spec-009f-duplicate.png`,
+  `test-results/spec-009f-triage-routing/spec-009f-obsolete.png`, and
+  `test-results/spec-009f-triage-routing/spec-009f-invalid.png`.
+- Cleanup counts: six disposable tasks, six routing artifacts, six terminal
+  routing activities plus six task-create activities were removed by the e2e
+  cleanup. Post-cleanup verification for task ids `12`-`17` returned
+  `tasks=0`, `task_artifacts=0`, `activities=0`, and `task_dispositions=0`.
+  No quality-review, notification, sync, workspace, or project rows are created
+  by this SPEC-009F UAT fixture.
+- Explicit non-use evidence: the fixture export records
+  `no_live_side_effects: true`; the route source is local SQLite fixture rows
+  plus the production `/api/tasks` status update path through
+  `advanceTaskChain()`. The run did not mutate live GitHub, create Issue
+  Remediation or non-remediation successor tasks, claim work, start a runner,
+  use sandbox or adapter state, auto-merge, or send external messages.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control

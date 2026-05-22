@@ -14767,6 +14767,7 @@
                     "packet_artifacts",
                     "smoke",
                     "current_stage",
+                    "triage_routing",
                     "warnings",
                     "deferrals",
                     "source_map"
@@ -14810,6 +14811,240 @@
                       "type": "array",
                       "items": {
                         "type": "object"
+                      }
+                    },
+                    "triage_routing": {
+                      "type": "object",
+                      "required": [
+                        "state",
+                        "routing_status",
+                        "proposed_labels",
+                        "deferred_side_effects",
+                        "missing",
+                        "warnings",
+                        "superseded_artifacts"
+                      ],
+                      "properties": {
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "missing",
+                            "available",
+                            "incomplete",
+                            "unavailable",
+                            "superseded"
+                          ]
+                        },
+                        "routing_status": {
+                          "type": "string",
+                          "enum": [
+                            "missing",
+                            "recorded",
+                            "failed",
+                            "conflict"
+                          ]
+                        },
+                        "disposition": {
+                          "type": "string",
+                          "enum": [
+                            "NEEDS_SPEC",
+                            "NEEDS_HUMAN",
+                            "NEEDS_SPECIALIST",
+                            "DUPLICATE",
+                            "OBSOLETE",
+                            "INVALID"
+                          ]
+                        },
+                        "lane": {
+                          "type": "string",
+                          "enum": [
+                            "speckit_handoff",
+                            "clarification_request",
+                            "specialist_recommendation",
+                            "closure_recommendation"
+                          ]
+                        },
+                        "artifact": {
+                          "type": "object",
+                          "required": [
+                            "state",
+                            "artifact_id",
+                            "artifact_type",
+                            "schema_version",
+                            "display_name"
+                          ],
+                          "properties": {
+                            "state": {
+                              "type": "string",
+                              "enum": [
+                                "missing",
+                                "available",
+                                "incomplete",
+                                "unavailable",
+                                "superseded"
+                              ]
+                            },
+                            "artifact_id": {
+                              "type": "string"
+                            },
+                            "artifact_type": {
+                              "type": "string",
+                              "enum": [
+                                "triage_speckit_handoff",
+                                "triage_clarification_request",
+                                "triage_specialist_recommendation",
+                                "triage_closure_recommendation"
+                              ]
+                            },
+                            "schema_version": {
+                              "type": "string",
+                              "const": "spec-009f.triage_routing.v1"
+                            },
+                            "display_name": {
+                              "type": "string"
+                            },
+                            "sha256": {
+                              "type": "string"
+                            },
+                            "mime_type": {
+                              "type": "string"
+                            },
+                            "size_bytes": {
+                              "type": "integer"
+                            },
+                            "created_at": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "activity_reference": {
+                          "type": "string"
+                        },
+                        "idempotency_key": {
+                          "type": "string"
+                        },
+                        "recommended_next_action": {
+                          "type": "string"
+                        },
+                        "proposed_labels": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "name",
+                              "source",
+                              "action",
+                              "applied"
+                            ],
+                            "properties": {
+                              "name": {
+                                "type": "string"
+                              },
+                              "source": {
+                                "type": "string",
+                                "const": "triage_routing"
+                              },
+                              "action": {
+                                "type": "string",
+                                "enum": [
+                                  "recommend_add"
+                                ]
+                              },
+                              "applied": {
+                                "type": "boolean",
+                                "const": false
+                              }
+                            }
+                          }
+                        },
+                        "deferred_side_effects": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "side_effect",
+                              "deferred",
+                              "reason"
+                            ],
+                            "properties": {
+                              "side_effect": {
+                                "type": "string"
+                              },
+                              "deferred": {
+                                "type": "boolean",
+                                "const": true
+                              },
+                              "reason": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "missing": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "warnings": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "lane_detail": {
+                          "type": "object"
+                        },
+                        "superseded_artifacts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "required": [
+                              "state",
+                              "artifact_id",
+                              "artifact_type",
+                              "schema_version",
+                              "display_name"
+                            ],
+                            "properties": {
+                              "state": {
+                                "type": "string",
+                                "const": "superseded"
+                              },
+                              "artifact_id": {
+                                "type": "string"
+                              },
+                              "artifact_type": {
+                                "type": "string",
+                                "enum": [
+                                  "triage_speckit_handoff",
+                                  "triage_clarification_request",
+                                  "triage_specialist_recommendation",
+                                  "triage_closure_recommendation"
+                                ]
+                              },
+                              "schema_version": {
+                                "type": "string",
+                                "const": "spec-009f.triage_routing.v1"
+                              },
+                              "display_name": {
+                                "type": "string"
+                              },
+                              "sha256": {
+                                "type": "string"
+                              },
+                              "mime_type": {
+                                "type": "string"
+                              },
+                              "size_bytes": {
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   }

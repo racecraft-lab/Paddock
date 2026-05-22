@@ -97,4 +97,44 @@ describe('api-contract-parity helpers', () => {
     expect(report.missingInRoutes).toEqual([])
     expect(report.ignoredOperations).toEqual(['PATCH /api/tasks/{id}'])
   })
+
+  it('keeps triage routing on the existing task evidence response contract only', () => {
+    const openapi = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'openapi.json'), 'utf8')) as {
+      paths: Record<string, any>
+    }
+    const triageRoutingPaths = Object.keys(openapi.paths).filter((apiPath) => /triage[-_]routing/i.test(apiPath))
+
+    expect(triageRoutingPaths).toEqual([])
+    expect(openapi.paths['/api/tasks/{id}/evidence']?.get).toBeDefined()
+
+    const schema = openapi.paths['/api/tasks/{id}/evidence']
+      .get
+      .responses['200']
+      .content['application/json']
+      .schema
+
+    expect(schema.required).toContain('triage_routing')
+    expect(schema.properties.triage_routing).toMatchObject({
+      type: 'object',
+      required: [
+        'state',
+        'routing_status',
+        'proposed_labels',
+        'deferred_side_effects',
+        'missing',
+        'warnings',
+        'superseded_artifacts',
+      ],
+      properties: {
+        state: {
+          type: 'string',
+          enum: ['missing', 'available', 'incomplete', 'unavailable', 'superseded'],
+        },
+        routing_status: {
+          type: 'string',
+          enum: ['missing', 'recorded', 'failed', 'conflict'],
+        },
+      },
+    })
+  })
 })
