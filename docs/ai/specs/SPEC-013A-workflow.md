@@ -591,7 +591,7 @@ For each task:
 | 3 - US1 inspection API and task-detail UI | T019-T032 | 14/14 | Added viewer-authenticated read-only route, OpenAPI/API-index docs, compact task-detail run-state section, deterministic e2e journey, and scope/strict guard refinements |
 | 4 - US2 archive behavior | T033-T040 | 8/8 | Added explicit non-destructive archive identity tests, default route archive evidence, active-vs-archived UI labels, and fresh-build Playwright coverage |
 | 5 - US3 flag-off runtime safety | T041-T049 | 9/9 | Added protected-runtime table-blind guard fixtures, evidence-route blindness assertion, flag-off read-route test, and task-pipeline guardrail evidence |
-| 6 - Polish and verification | T050-T058 | Pending | Pending |
+| 6 - Polish and verification | T050-T058 | 9/9 | Captured live schema and rollback evidence, API parity, focused tests, full typecheck/lint/build, final Playwright journey, and deferred-work notes |
 
 ### Implementation Verification Log
 
@@ -603,22 +603,27 @@ For each task:
 | T019-T032 | `direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx`; `direnv exec . pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts 'src/app/api/tasks/[id]/stage-attempts/route.ts' src/app/api/index/route.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx src/components/panels/task-board-panel.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us1.tsbuildinfo`; `direnv exec . pnpm api:parity`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `git diff --check`; `direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts` | Pass; focused Vitest 11/11; API parity OK; Playwright 1/1 |
 | T033-T040 | `direnv exec . pnpm test src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx`; `direnv exec . pnpm exec eslint src/lib/task-stage-attempts.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us2.tsbuildinfo`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `direnv exec . pnpm build`; `direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts` | Pass; focused Vitest 21/21; build passed; Playwright 1/1 after fresh build |
 | T041-T049 | `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts`; `direnv exec . pnpm exec eslint scripts/spec-013a/check-run-state-scope-guards.mjs src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts`; `direnv exec . node scripts/check-guardrails.mjs --suite task-pipeline`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us3.tsbuildinfo` | Pass; scope guard self-test 15 fixtures; focused Vitest 32/32; task-pipeline guardrails passed |
+| T050-T058 | M76 schema capture from extracted migration SQL applied twice; rollback SQL check; `direnv exec . pnpm api:parity`; `direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx`; `direnv exec . pnpm typecheck`; `direnv exec . pnpm lint`; `direnv exec . pnpm build`; `direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts` | Pass; schema marker count 1 after double apply, required tables/indexes present, `PRAGMA foreign_key_check` returned no rows; rollback child-first/history-warning/marker/FK checks passed; API parity OK; focused Vitest 31/31; typecheck/lint/build passed; Playwright 1/1 |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All tasks marked complete in `specs/013a-run-state-spine/tasks.md`.
-- [ ] Focused migration/helper/route/component tests pass.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] `pnpm test` or justified focused subset passes.
-- [ ] `pnpm build` passes when runtime/API/UI files changed.
-- [ ] Focused Playwright/UI journey passes if task detail UI changes.
-- [ ] Static guardrails prove no claim, scheduler launch, retry policy, GitHub reconciliation, sandbox, adapter, or auto-merge behavior was introduced.
-- [ ] Rollback SQL and operator runbook updates exist if migration is added.
-- [ ] Roadmap and workflow status are updated on the spec branch.
-- [ ] PR review packet records reviewability, verification, flag, rollback, and known-gap evidence.
+- [x] All tasks marked complete in `specs/013a-run-state-spine/tasks.md`.
+- [x] Focused migration/helper/route/component tests pass.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] `pnpm test` or justified focused subset passes.
+- [x] `pnpm build` passes when runtime/API/UI files changed.
+- [x] Focused Playwright/UI journey passes if task detail UI changes.
+- [x] Static guardrails prove no claim, scheduler launch, retry policy, GitHub reconciliation, sandbox, adapter, or auto-merge behavior was introduced.
+- [x] Rollback SQL and operator runbook updates exist if migration is added.
+- [x] Roadmap and workflow status are updated on the spec branch.
+- [x] PR review packet records reviewability, verification, flag, rollback, and known-gap evidence.
+
+### Deferred Work Notes
+
+SPEC-013A intentionally stops at additive persistence, read-only inspection, archive preservation, and runtime table-blind guardrails. Claim/reconciliation authority remains deferred to SPEC-013B/C, and sandbox/harness adapter launch behavior remains deferred to SPEC-014.
 
 ---
 

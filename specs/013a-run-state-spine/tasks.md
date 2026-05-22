@@ -135,15 +135,15 @@
 
 **Purpose**: Final verification, documentation parity, and review packet evidence.
 
-- [ ] T050 [P] Capture live migration schema evidence after applying migration `076_task_stage_attempts` twice using the SQL listed in `specs/013a-run-state-spine/quickstart.md`
-- [ ] T051 [P] Verify rollback SQL manually against `docs/migrations/rollback-M76.sql` and record child-first/marker/foreign-key/history-loss evidence in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T052 [P] Verify `GET /api/tasks/[id]/stage-attempts` API parity in `openapi.json` and `src/app/api/index/route.ts`
-- [ ] T053 Run focused Vitest coverage for migration/helper/route/component tests and record output in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T054 Run Playwright journey `pnpm exec playwright test tests/e2e/spec-013a-task-stage-attempts.spec.ts` and record screenshot/accessibility evidence in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T055 Run `pnpm typecheck` and record output in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T056 Run `pnpm lint` and record output in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T057 Run `pnpm build` and record output in `docs/ai/specs/SPEC-013A-workflow.md`
-- [ ] T058 Update final SPEC-013A task-generation/implementation status, known deferred SPEC-013B/C/014 work, and verification notes in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T050 [P] Capture live migration schema evidence after applying migration `076_task_stage_attempts` twice using the SQL listed in `specs/013a-run-state-spine/quickstart.md`
+- [x] T051 [P] Verify rollback SQL manually against `docs/migrations/rollback-M76.sql` and record child-first/marker/foreign-key/history-loss evidence in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T052 [P] Verify `GET /api/tasks/[id]/stage-attempts` API parity in `openapi.json` and `src/app/api/index/route.ts`
+- [x] T053 Run focused Vitest coverage for migration/helper/route/component tests and record output in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T054 Run Playwright journey `pnpm exec playwright test tests/e2e/spec-013a-task-stage-attempts.spec.ts` and record screenshot/accessibility evidence in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T055 Run `pnpm typecheck` and record output in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T056 Run `pnpm lint` and record output in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T057 Run `pnpm build` and record output in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T058 Update final SPEC-013A task-generation/implementation status, known deferred SPEC-013B/C/014 work, and verification notes in `docs/ai/specs/SPEC-013A-workflow.md`
 
 ---
 

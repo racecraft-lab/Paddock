@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T19:03:35Z",
-  "active_step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
+  "updated_at": "2026-05-22T19:11:14Z",
+  "active_step": "Post: Verification and Status Sync",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -128,11 +128,11 @@
     },
     {
       "step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Verify Implementation",
@@ -444,7 +444,7 @@
       "consensus_items": 0
     },
     "implement": {
-      "status": "in_progress",
+      "status": "completed",
       "groups": {
         "T001-T007": {
           "status": "completed",
@@ -510,6 +510,21 @@
             "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us3.tsbuildinfo"
           ],
           "focused_tests": "scope guard self-test 15 fixtures; Vitest 32/32 passing"
+        },
+        "T050-T058": {
+          "status": "completed",
+          "summary": "Captured live schema and rollback evidence, API parity, focused tests, full typecheck/lint/build, final Playwright journey, and deferred SPEC-013B/C/014 notes.",
+          "verification": [
+            "M76 schema capture from extracted migration SQL applied twice",
+            "rollback-M76 SQL check",
+            "direnv exec . pnpm api:parity",
+            "direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
+            "direnv exec . pnpm typecheck",
+            "direnv exec . pnpm lint",
+            "direnv exec . pnpm build",
+            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
+          ],
+          "focused_tests": "Vitest 31/31 passing; Playwright 1/1 passing"
         }
       }
     }
