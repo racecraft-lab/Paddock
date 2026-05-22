@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-22T01:36:34Z",
+  "updated_at": "2026-05-22T01:37:38Z",
   "active_step": "Post: PR Creation",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
@@ -267,7 +267,7 @@
     "reviewability_diff_gate": {
       "status": "exception",
       "command": "reviewability-gate.sh diff origin/main...HEAD",
-      "reviewable_loc": 10781,
+      "reviewable_loc": 10803,
       "production_files": 15,
       "total_files": 39,
       "primary_surface_count": 6,
