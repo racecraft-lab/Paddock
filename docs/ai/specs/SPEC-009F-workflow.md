@@ -655,8 +655,8 @@ Verification must prove all six non-remediation outcomes, no remediation success
 
 ### Reviewability Diff Gate Exception
 
-The raw post-implementation diff gate measured 11,007 reviewable additions, 15
-production-classified files, 41 total files, and six heuristic surfaces against
+The raw post-implementation diff gate measured 11,049 reviewable additions, 16
+production-classified files, 43 total files, and six heuristic surfaces against
 `origin/main...HEAD`, so the generic single-surface budget blocked. SPEC-009F
 is still proceeding with an explicit reviewability exception because the
 behavioral surface remains terminal triage routing evidence plus the existing
