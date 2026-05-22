@@ -90,17 +90,17 @@
 
 ### Tests for User Story 2
 
-- [ ] T033 [P] [US2] Add RED helper tests for non-destructive archive behavior, archived projection fields, archived lifecycle event, and unchanged row identity in `src/lib/__tests__/task-stage-attempts.test.ts`
-- [ ] T034 [P] [US2] Add RED route tests proving archived attempts remain in the default `task_stage_attempts.v1` response with archive evidence in `src/lib/__tests__/task-stage-attempts-route.test.ts`
-- [ ] T035 [P] [US2] Add RED component tests for archived marker text, archive timestamp display, active-vs-archived structural distinction, and no release/cancel controls in `src/components/panels/__tests__/task-stage-attempts-section.test.tsx`
-- [ ] T036 [P] [US2] Add RED Playwright assertions and screenshots for archived and non-archived attempts in `tests/e2e/spec-013a-task-stage-attempts.spec.ts`
+- [x] T033 [P] [US2] Add RED helper tests for non-destructive archive behavior, archived projection fields, archived lifecycle event, and unchanged row identity in `src/lib/__tests__/task-stage-attempts.test.ts`
+- [x] T034 [P] [US2] Add RED route tests proving archived attempts remain in the default `task_stage_attempts.v1` response with archive evidence in `src/lib/__tests__/task-stage-attempts-route.test.ts`
+- [x] T035 [P] [US2] Add RED component tests for archived marker text, archive timestamp display, active-vs-archived structural distinction, and no release/cancel controls in `src/components/panels/__tests__/task-stage-attempts-section.test.tsx`
+- [x] T036 [P] [US2] Add RED Playwright assertions and screenshots for archived and non-archived attempts in `tests/e2e/spec-013a-task-stage-attempts.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T037 [US2] Complete archive helper behavior and serialization in `src/lib/task-stage-attempts.ts`
-- [ ] T038 [US2] Ensure archived attempts are returned by default with distinct archive evidence in `src/app/api/tasks/[id]/stage-attempts/route.ts`
-- [ ] T039 [US2] Render archived attempts with visible text/structural labels and compact wrapping in `src/components/panels/task-stage-attempts-section.tsx`
-- [ ] T040 [US2] Run US2 helper/route/component/e2e tests and record independent-test evidence in `docs/ai/specs/SPEC-013A-workflow.md`
+- [x] T037 [US2] Complete archive helper behavior and serialization in `src/lib/task-stage-attempts.ts`
+- [x] T038 [US2] Ensure archived attempts are returned by default with distinct archive evidence in `src/app/api/tasks/[id]/stage-attempts/route.ts`
+- [x] T039 [US2] Render archived attempts with visible text/structural labels and compact wrapping in `src/components/panels/task-stage-attempts-section.tsx`
+- [x] T040 [US2] Run US2 helper/route/component/e2e tests and record independent-test evidence in `docs/ai/specs/SPEC-013A-workflow.md`
 
 **Checkpoint**: User Stories 1 and 2 both work independently, including archive preservation.
 

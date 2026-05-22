@@ -331,6 +331,8 @@ test.describe.serial('SPEC-013A task detail stage attempts', () => {
     await expect(page.getByRole('region', { name: /^Task Board$/i })).toBeVisible()
 
     const region = await openStageAttempts(page, task.title)
+    await expect(region.getByText(/^Active attempt$/i).first()).toBeVisible()
+    await expect(region.getByText(/^Archived attempt$/i).first()).toBeVisible()
     await expect(region.getByRole('status').filter({ hasText: /attempt analysis #1 is running/i })).toBeVisible()
     await expect(region.getByText(/linked run \(read-only reference\): spec-013a-linked-run/i)).toBeVisible()
     await expect(region.getByText(/agent aegis/i)).toBeVisible()

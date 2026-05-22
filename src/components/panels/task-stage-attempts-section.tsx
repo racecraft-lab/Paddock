@@ -80,6 +80,7 @@ function SectionShell({ children, className = '' }: { children: ReactNode; class
 
 function AttemptCard({ attempt }: { attempt: SerializedTaskStageAttempt }) {
   const active = ACTIVE_STATUSES.has(attempt.status)
+  const stateLabel = attempt.archived_at ? 'Archived attempt' : active ? 'Active attempt' : 'Stored attempt'
   const lifecycle = attempt.lifecycle.slice(-LIFECYCLE_LIMIT)
 
   return (
@@ -90,6 +91,9 @@ function AttemptCard({ attempt }: { attempt: SerializedTaskStageAttempt }) {
             {`Attempt ${safeText(attempt.stage_key)} #${String(attempt.attempt_number)}`}
           </h5>
           <div className="mt-1 flex flex-wrap gap-1.5">
+            <span className="rounded border border-border/40 bg-card/60 px-1.5 py-0.5 text-[10px] text-foreground">
+              {stateLabel}
+            </span>
             <span className="rounded border border-border/40 bg-card/60 px-1.5 py-0.5 text-[10px] text-foreground">
               {`Stage: ${safeText(attempt.stage_key)}`}
             </span>

@@ -167,6 +167,12 @@ describe('TaskStageAttemptsSection', () => {
       attempts={envelope({
         attempts: [
           attempt({
+            id: '45',
+            stage_key: 'analysis',
+            attempt_number: 1,
+            lifecycle: [],
+          }),
+          attempt({
             status: 'archived',
             archived_at: '2026-05-22T12:11:00.000Z',
             lifecycle,
@@ -175,12 +181,15 @@ describe('TaskStageAttemptsSection', () => {
       })}
     />)
 
+    expectPresent(screen.getByText('Active attempt'))
+    expectPresent(screen.getByText('Archived attempt'))
     expectPresent(screen.getByText('State: archived'))
     expectPresent(screen.getByText(/Archived at 2026-05-22T12:11:00.000Z/i))
     expect(screen.queryByText(/^lifecycle event 1$/i)).toBeNull()
     expect(screen.queryByText(/^lifecycle event 2$/i)).toBeNull()
     expectPresent(screen.getByText(/lifecycle event 12/i))
     expect(screen.getAllByText(/Lifecycle:/i)).toHaveLength(10)
+    expect(screen.queryByRole('button', { name: /release|cancel/i })).toBeNull()
   })
 
   it('uses named regions, status semantics, alert semantics, non-color labels, and no action controls', () => {

@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T18:51:01Z",
-  "active_step": "Phase 7: Implement T033-T040 US2 non-destructive archive behavior",
+  "updated_at": "2026-05-22T18:58:54Z",
+  "active_step": "Phase 7: Implement T041-T049 US3 flag-off runtime safety",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -120,11 +120,11 @@
     },
     {
       "step": "Phase 7: Implement T033-T040 US2 non-destructive archive behavior",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Implement T041-T049 US3 flag-off runtime safety",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
@@ -484,6 +484,19 @@
             "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
           ],
           "focused_tests": "Vitest 11/11 passing; Playwright 1/1 passing"
+        },
+        "T033-T040": {
+          "status": "completed",
+          "summary": "Strengthened non-destructive archive coverage, default route archive evidence, active-vs-archived UI labels, and fresh-build Playwright verification.",
+          "verification": [
+            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
+            "direnv exec . pnpm exec eslint src/lib/task-stage-attempts.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts",
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us2.tsbuildinfo",
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "direnv exec . pnpm build",
+            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
+          ],
+          "focused_tests": "Vitest 21/21 passing; Playwright 1/1 passing"
         }
       }
     }

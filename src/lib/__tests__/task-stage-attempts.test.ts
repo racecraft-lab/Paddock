@@ -271,6 +271,11 @@ describe('SPEC-013A task stage attempt helpers', () => {
       attemptNumber: 1,
       observedAt: '2026-05-22T12:00:00.000Z',
     })
+    const identityBefore = db.prepare(`
+      SELECT id, workspace_id, task_id, stage_key, attempt_number
+      FROM task_stage_attempts
+      WHERE id = ?
+    `).get(attempt.id)
 
     const archived = archiveTaskStageAttempt(db, {
       attemptId: Number(attempt.id),
@@ -278,6 +283,11 @@ describe('SPEC-013A task stage attempt helpers', () => {
       actorType: 'operator',
       message: 'uat cleanup',
     })
+    const identityAfter = db.prepare(`
+      SELECT id, workspace_id, task_id, stage_key, attempt_number
+      FROM task_stage_attempts
+      WHERE id = ?
+    `).get(attempt.id)
 
     expect(archived).toMatchObject({
       id: attempt.id,
@@ -290,6 +300,7 @@ describe('SPEC-013A task stage attempt helpers', () => {
       observed_at: '2026-05-22T12:10:00.000Z',
       message: 'uat cleanup',
     })
+    expect(identityAfter).toEqual(identityBefore)
     expect(db.prepare('SELECT COUNT(*) AS count FROM task_stage_attempts WHERE id = ?').get(attempt.id) as CountRow).toEqual({ count: 1 })
   })
 

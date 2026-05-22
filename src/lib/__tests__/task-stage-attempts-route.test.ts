@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { GET as getApiIndex } from '@/app/api/index/route'
 import {
   appendTaskStageAttemptEvent,
+  archiveTaskStageAttempt,
   createTaskStageAttempt,
 } from '../task-stage-attempts'
 
@@ -590,5 +591,48 @@ describe('GET /api/tasks/[id]/stage-attempts route', () => {
         },
       },
     ])
+  })
+
+  it('returns archived attempts by default with archive evidence and preserved rows', async () => {
+    const db = openRouteDb()
+    const attempt = createTaskStageAttempt(db, {
+      workspaceId: 7,
+      taskId: 101,
+      stageKey: 'review',
+      attemptNumber: 1,
+      status: 'running',
+      observedAt: '2026-05-22T12:00:00.000Z',
+    })
+    archiveTaskStageAttempt(db, {
+      attemptId: Number(attempt.id),
+      observedAt: '2026-05-22T12:15:00.000Z',
+      actorType: 'operator',
+      actorId: 'owner',
+      message: 'archive without deletion',
+    })
+    const rowCountBefore = rowCount(db, 'task_stage_attempts')
+    const eventCountBefore = rowCount(db, 'task_stage_attempt_events')
+
+    const { response, body } = await requestStageAttempts(db)
+    const attempts = body['attempts'] as Record<string, unknown>[]
+    const archived = attempts.find((entry) => entry['id'] === attempt.id)
+
+    expect(response.status).toBe(200)
+    expect(rowCount(db, 'task_stage_attempts')).toBe(rowCountBefore)
+    expect(rowCount(db, 'task_stage_attempt_events')).toBe(eventCountBefore)
+    expect(archived).toMatchObject({
+      id: attempt.id,
+      stage_key: 'review',
+      attempt_number: 1,
+      status: 'archived',
+      archived_at: '2026-05-22T12:15:00.000Z',
+    })
+    expect(archived?.['lifecycle']).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        status: 'archived',
+        observed_at: '2026-05-22T12:15:00.000Z',
+        message: 'archive without deletion',
+      }),
+    ]))
   })
 })
