@@ -138,16 +138,16 @@ pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --
 
 ### Tests for User Story 3
 
-- [ ] T044 [US3] Write RED parity tests for Mission Control identity, departments, agent assignments, GitHub ownership, workflow families, required workflow slugs, feature flags, governance defaults, and non-dispatch boundaries in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T045 [US3] Write RED apply-twice idempotency tests proving no duplicate workspace, department, assignment, workflow, governance, or config-owned feature-flag records in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T046 [US3] Write RED compatibility wrapper tests proving `seed:mission-control` delegates to the canonical config and matches generic evidence categories for preflight, apply, verify, refusal, and `--allow-existing` in `src/lib/__tests__/product-line-seed-cli.test.ts`.
+- [x] T044 [US3] Write RED parity tests for Mission Control identity, departments, agent assignments, GitHub ownership, workflow families, required workflow slugs, feature flags, governance defaults, and non-dispatch boundaries in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T045 [US3] Write RED apply-twice idempotency tests proving no duplicate workspace, department, assignment, workflow, governance, or config-owned feature-flag records in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T046 [US3] Write RED compatibility wrapper tests proving `seed:mission-control` delegates to the canonical config and matches generic evidence categories for preflight, apply, verify, refusal, and `--allow-existing` in `src/lib/__tests__/product-line-seed-cli.test.ts`.
 
 ### Implementation for User Story 3
 
-- [ ] T047 [US3] Modify the compatibility wrapper to delegate to generic product-line seed behavior with `docs/ai/product-lines/mission-control.yaml` in `scripts/seed-mission-control-product-line.ts`.
-- [ ] T048 [US3] Preserve the existing `seed:mission-control` command name and core flags while routing to generic existing-target policy in `package.json`.
-- [ ] T049 [US3] Add stable parity evidence assertions for the Mission Control config path, result envelope, snapshot counts, and apply-twice hashes in `src/lib/product-line-seed/evidence.ts`.
-- [ ] T050 [US3] Record Mission Control apply-once, apply-twice, verify, and wrapper parity evidence instructions in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T047 [US3] Modify the compatibility wrapper to delegate to generic product-line seed behavior with `docs/ai/product-lines/mission-control.yaml` in `scripts/seed-mission-control-product-line.ts`.
+- [x] T048 [US3] Preserve the existing `seed:mission-control` command name and core flags while routing to generic existing-target policy in `package.json`.
+- [x] T049 [US3] Add stable parity evidence assertions for the Mission Control config path, result envelope, snapshot counts, and apply-twice hashes in `src/lib/product-line-seed/evidence.ts`.
+- [x] T050 [US3] Record Mission Control apply-once, apply-twice, verify, and wrapper parity evidence instructions in `specs/010a-generic-product-line-seeder/quickstart.md`.
 
 **Checkpoint**: User Story 3 is complete when Mission Control parity evidence is reproducible through both generic and compatibility entrypoints.
 

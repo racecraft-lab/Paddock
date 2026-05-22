@@ -726,6 +726,7 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 | Setup And Foundations | T001-T018 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, and `direnv exec . pnpm lint` passed |
 | US1 Config Review | T019-T027 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts`, `direnv exec . pnpm typecheck`, and `direnv exec . pnpm lint` passed |
 | US2 Generic Modes | T028-T043 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `direnv exec . pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --db :memory: --mode preflight --json` passed |
+| US3 Mission Control Parity | T044-T050 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and disposable DB generic apply/apply `--allow-existing`/verify plus wrapper verify commands passed |
 
 ### Completion Checklist
 

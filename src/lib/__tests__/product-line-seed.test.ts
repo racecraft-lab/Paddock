@@ -802,3 +802,212 @@ describe('product-line seed generic preflight/apply/verify', () => {
     db.close()
   })
 })
+
+describe('Mission Control product-line seed parity', () => {
+  it('matches Mission Control identity, ownership, departments, workflows, flags, governance, and non-dispatch safety boundaries', async () => {
+    const types = await importTypeModule()
+    const config = await importConfigModule()
+    const load = config['loadProductLineSeedConfigFromFile'] as (path: string) => Record<string, unknown>
+    const canonical = load('docs/ai/product-lines/mission-control.yaml')
+
+    expect(canonical).toMatchObject({
+      product_line: {
+        slug: 'mission-control',
+        display_name: 'Mission Control',
+        agent_prefix: 'mission-control-platform',
+      },
+      github: {
+        owner: 'racecraft-lab',
+        repo: 'mission-control',
+        full_name: 'racecraft-lab/mission-control',
+      },
+      workflow_contract: {
+        family: 'mission-control',
+        path: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+        required_slugs: types['MISSION_CONTROL_REQUIRED_WORKFLOW_SLUGS'],
+      },
+      feature_flags: {
+        enabled: types['MISSION_CONTROL_ENABLED_FLAGS'],
+        disabled_or_absent: types['MISSION_CONTROL_DISABLED_OR_ABSENT_FLAGS'],
+      },
+      governance_defaults: types['MISSION_CONTROL_GOVERNANCE_DEFAULTS'],
+      safety_policy: {
+        blocked_side_effects: types['BLOCKED_SIDE_EFFECTS'],
+        allow_first_intake_blocking_governance: false,
+      },
+    })
+    expect(canonical['departments']).toEqual(types['MISSION_CONTROL_DEPARTMENTS'])
+    expect(canonical['agent_assignments']).toEqual({
+      product_line_assignments: types['MISSION_CONTROL_ROLE_ASSIGNMENTS'],
+    })
+  })
+
+  it('applies twice with allow-existing without duplicating config-owned records or changing stable hashes', async () => {
+    const evidence = await importEvidenceModule()
+    const seed = await importSeedModule()
+    const summarizeParityEvidence = evidence['summarizeProductLineSeedParityEvidence'] as (value: unknown) => Record<string, unknown>
+    const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
+    const db = makeProductLineSeedTestDb()
+
+    const first = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: false,
+    })
+    const second = run({
+      entrypoint: 'seed:product-line',
+      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      db,
+      dbPath: ':memory:',
+      mode: 'apply',
+      json: true,
+      allowExisting: true,
+    })
+
+    const workspace = db.prepare("SELECT COUNT(*) as count FROM workspaces WHERE slug = 'mission-control'").get()
+    const departments = db.prepare("SELECT COUNT(*) as count FROM projects WHERE workspace_id = (SELECT id FROM workspaces WHERE slug = 'mission-control')").get()
+    const assignments = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM project_agent_assignments paa
+      JOIN projects p ON p.id = paa.project_id
+      JOIN workspaces w ON w.id = p.workspace_id
+      WHERE w.slug = 'mission-control'
+    `).get()
+    const workflows = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM workflow_templates wt
+      JOIN workspaces w ON w.id = wt.workspace_id
+      WHERE w.slug = 'mission-control' AND wt.created_by = 'workflow-contract'
+    `).get()
+    const governance = db.prepare(`
+      SELECT COUNT(*) as count
+      FROM resource_policies rp
+      JOIN workspaces w ON w.id = rp.workspace_id
+      WHERE w.slug = 'mission-control' AND rp.notes LIKE 'SPEC-009B:mission-control:%'
+    `).get()
+    const flags = db.prepare("SELECT feature_flags FROM workspaces WHERE slug = 'mission-control'").get() as { feature_flags: string }
+    const parsedFlags = JSON.parse(flags.feature_flags) as Record<string, boolean>
+
+    expect(first).toMatchObject({
+      ok: true,
+      entrypoint: 'seed:product-line',
+      config: { path: 'docs/ai/product-lines/mission-control.yaml' },
+      status: 'seeded',
+      mutation_status: 'applied',
+    })
+    expect(second).toMatchObject({
+      ok: true,
+      entrypoint: 'seed:product-line',
+      config: { path: 'docs/ai/product-lines/mission-control.yaml' },
+      status: 'seeded',
+      mutation_status: 'applied',
+    })
+    expect({ workspace, departments, assignments, workflows, governance }).toEqual({
+      workspace: { count: 1 },
+      departments: { count: 6 },
+      assignments: { count: 6 },
+      workflows: { count: 9 },
+      governance: { count: 3 },
+    })
+    expect(Object.keys(parsedFlags).filter((key) => key.startsWith('FEATURE_') || key.startsWith('PILOT_')).sort()).toEqual([
+      'FEATURE_AREA_LABEL_ROUTING',
+      'FEATURE_DISPOSITION_LOGGING',
+      'FEATURE_GLOBAL_AEGIS',
+      'FEATURE_OPENCLAW_HEALTH_COSTS',
+      'FEATURE_RESOURCE_GOVERNANCE',
+      'FEATURE_TASK_ARTIFACTS',
+      'FEATURE_TASK_PIPELINES',
+      'FEATURE_TWO_STEP_TERMINAL',
+      'FEATURE_WORKSPACE_SWITCHER',
+      'PILOT_MISSION_CONTROL_E2E',
+    ])
+    expect(second['snapshot_before']).toMatchObject({
+      surfaces: {
+        workspace_identity: { count: 1 },
+        department_projects: { count: 6 },
+        agent_assignments: { count: 6 },
+        workflow_contract_templates: { count: 9 },
+        feature_flags: { count: 1 },
+        governance_defaults: { count: 3 },
+      },
+    })
+    expect(second['snapshot_after']).toMatchObject((second['snapshot_before'] as Record<string, unknown>))
+    expect((second['snapshot_after'] as { hash: string }).hash).toBe((second['snapshot_before'] as { hash: string }).hash)
+    expect(summarizeParityEvidence(second)).toEqual({
+      schema_version: 'product-line-seed-result-v1',
+      entrypoint: 'seed:product-line',
+      mode: 'apply',
+      status: 'seeded',
+      config_path: 'docs/ai/product-lines/mission-control.yaml',
+      product_line_slug: 'mission-control',
+      snapshot_before_hash: (second['snapshot_before'] as { hash: string }).hash,
+      snapshot_after_hash: (second['snapshot_after'] as { hash: string }).hash,
+      apply_twice_hash_stable: true,
+      snapshot_counts: {
+        workspace_identity: 1,
+        department_projects: 6,
+        agent_assignments: 6,
+        workflow_contract_templates: 9,
+        feature_flags: 1,
+        governance_defaults: 3,
+      },
+    })
+    db.close()
+  })
+
+  it('snapshots current Mission Control operational tables without assuming legacy task_id columns', async () => {
+    const evidence = await importEvidenceModule()
+    const collectSnapshot = evidence['collectProductLineSeedSnapshot'] as (db: Database.Database) => {
+      preserved_operational_state: {
+        subsurfaces: Record<string, { count: number; unavailable?: boolean }>
+      }
+    }
+    const db = makeProductLineSeedTestDb()
+    db.exec(`
+      DROP TABLE activities;
+      CREATE TABLE activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT,
+        entity_type TEXT,
+        entity_id INTEGER,
+        actor TEXT,
+        description TEXT,
+        data TEXT,
+        created_at TEXT,
+        workspace_id INTEGER
+      );
+      INSERT INTO activities (type, entity_type, entity_id, actor, description, data, created_at, workspace_id)
+      VALUES ('task.created', 'task', 1, 'aegis', 'created task', '{}', '2026-01-01T00:00:00Z', 1);
+
+      DROP TABLE notifications;
+      CREATE TABLE notifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        recipient TEXT,
+        type TEXT,
+        title TEXT,
+        message TEXT,
+        source_type TEXT,
+        source_id INTEGER,
+        read_at TEXT,
+        delivered_at TEXT,
+        created_at TEXT,
+        workspace_id INTEGER
+      );
+      INSERT INTO notifications (recipient, type, title, message, source_type, source_id, created_at, workspace_id)
+      VALUES ('owner', 'task', 'Task', 'Ready', 'task', 1, '2026-01-01T00:00:00Z', 1);
+    `)
+
+    const snapshot = collectSnapshot(db)
+    const subsurfaces = snapshot.preserved_operational_state.subsurfaces
+
+    expect(subsurfaces['activities']).toMatchObject({ count: 1 })
+    expect(subsurfaces['activities']?.unavailable).toBeUndefined()
+    expect(subsurfaces['notifications']).toMatchObject({ count: 1 })
+    expect(subsurfaces['notifications']?.unavailable).toBeUndefined()
+    db.close()
+  })
+})

@@ -42,6 +42,14 @@ export type RedactionSafeSnapshotInput =
   | RedactionSafeSnapshotInput[]
   | { readonly [key: string]: RedactionSafeSnapshotInput }
 
+interface SnapshotQuery {
+  table: string
+  sql: string
+  params?: unknown[]
+  columns?: string[]
+  orderBy?: string[]
+}
+
 export function orderedJsonStringify(value: unknown): string {
   if (Array.isArray(value)) {
     return `[${value.map((entry) => orderedJsonStringify(entry)).join(',')}]`
@@ -186,6 +194,24 @@ export function collectOperatorEvidenceRedaction(path: string | undefined): Reda
   }
 }
 
+export function summarizeProductLineSeedParityEvidence(envelope: ProductLineSeedResultEnvelope): Record<string, unknown> {
+  const snapshotCounts = Object.fromEntries(
+    Object.entries(envelope.snapshot_after?.surfaces ?? {}).map(([surface, value]) => [surface, value.count]),
+  )
+  return {
+    schema_version: envelope.schema_version,
+    entrypoint: envelope.entrypoint,
+    mode: envelope.mode,
+    status: envelope.status,
+    config_path: envelope.config.path,
+    product_line_slug: envelope.config.product_line_slug,
+    snapshot_before_hash: envelope.snapshot_before?.hash ?? null,
+    snapshot_after_hash: envelope.snapshot_after?.hash ?? null,
+    apply_twice_hash_stable: envelope.snapshot_before?.hash === envelope.snapshot_after?.hash,
+    snapshot_counts: snapshotCounts,
+  }
+}
+
 function collectRedactedFieldPaths(value: unknown, path = '$'): string[] {
   if (Array.isArray(value)) {
     return value.flatMap((entry, index) => collectRedactedFieldPaths(entry, `${path}[${String(index)}]`))
@@ -197,9 +223,12 @@ function collectRedactedFieldPaths(value: unknown, path = '$'): string[] {
   })
 }
 
-function snapshotSurface(db: ProductLineSeedDatabase, query: { table: string; sql: string; params?: unknown[] }) {
+function snapshotSurface(db: ProductLineSeedDatabase, query: SnapshotQuery) {
   if (!tableExists(db, query.table)) {
     return { count: 0, hash: hashProductLineSeedSnapshot([]), unavailable: true }
+  }
+  if (query.columns) {
+    return snapshotExistingColumns(db, query)
   }
   const rows = db.prepare(query.sql).all(...(query.params ?? [])) as RedactionSafeSnapshotInput[]
   return {
@@ -208,7 +237,25 @@ function snapshotSurface(db: ProductLineSeedDatabase, query: { table: string; sq
   }
 }
 
-function queryForConfigOwnedSurface(surface: string, config: ProductLineSeedConfig | undefined): { table: string; sql: string; params?: unknown[] } {
+function snapshotExistingColumns(db: ProductLineSeedDatabase, query: SnapshotQuery) {
+  const existingColumns = new Set(tableColumns(db, query.table))
+  const selectedColumns = (query.columns ?? []).filter((column) => existingColumns.has(column))
+  if (selectedColumns.length === 0) {
+    return { count: 0, hash: hashProductLineSeedSnapshot([]), unavailable: true }
+  }
+  const orderColumns = (query.orderBy ?? ['id']).filter((column) => existingColumns.has(column))
+  const sql = [
+    `SELECT ${selectedColumns.map(quoteIdentifier).join(', ')} FROM ${quoteIdentifier(query.table)}`,
+    orderColumns.length > 0 ? `ORDER BY ${orderColumns.map(quoteIdentifier).join(', ')} ASC` : '',
+  ].filter(Boolean).join(' ')
+  const rows = db.prepare(sql).all() as RedactionSafeSnapshotInput[]
+  return {
+    count: rows.length,
+    hash: hashProductLineSeedSnapshot(rows),
+  }
+}
+
+function queryForConfigOwnedSurface(surface: string, config: ProductLineSeedConfig | undefined): SnapshotQuery {
   const slug = config?.product_line.slug ?? ''
   switch (surface) {
     case 'workspace_identity':
@@ -256,7 +303,7 @@ function queryForConfigOwnedSurface(surface: string, config: ProductLineSeedConf
   }
 }
 
-function queryForPreservedSurface(surface: string): { table: string; sql: string; params?: unknown[] } {
+function queryForPreservedSurface(surface: string): SnapshotQuery {
   switch (surface) {
     case 'tasks':
     case 'task_evidence_read_model_state':
@@ -268,27 +315,54 @@ function queryForPreservedSurface(surface: string): { table: string; sql: string
         sql: `SELECT id, workspace_id, project_id, title, status, github_repo, github_issue_number,
           github_synced_at, github_branch, github_pr_number, github_pr_state, parent_task_id,
           root_task_id, chain_id, chain_stage, dispatch_attempts, created_at FROM tasks ORDER BY id ASC`,
+        columns: [
+          'id',
+          'workspace_id',
+          'project_id',
+          'title',
+          'status',
+          'github_repo',
+          'github_issue_number',
+          'github_synced_at',
+          'github_branch',
+          'github_pr_number',
+          'github_pr_state',
+          'parent_task_id',
+          'root_task_id',
+          'chain_id',
+          'chain_stage',
+          'dispatch_attempts',
+          'created_at',
+        ],
       }
     case 'issues':
-      return { table: 'issues', sql: 'SELECT id, task_id, external_id FROM issues ORDER BY id ASC' }
+      return { table: 'issues', sql: 'SELECT id, task_id, external_id FROM issues ORDER BY id ASC', columns: ['id', 'task_id', 'external_id'] }
     case 'activities':
-      return { table: 'activities', sql: 'SELECT id, task_id, action FROM activities ORDER BY id ASC' }
+      return {
+        table: 'activities',
+        sql: 'SELECT id, task_id, action FROM activities ORDER BY id ASC',
+        columns: ['id', 'task_id', 'action', 'type', 'entity_type', 'entity_id', 'actor', 'description', 'data', 'created_at', 'workspace_id'],
+      }
     case 'histories':
-      return { table: 'task_histories', sql: 'SELECT id, task_id, status FROM task_histories ORDER BY id ASC' }
+      return { table: 'task_histories', sql: 'SELECT id, task_id, status FROM task_histories ORDER BY id ASC', columns: ['id', 'task_id', 'status'] }
     case 'comments':
-      return { table: 'task_comments', sql: 'SELECT id, task_id FROM task_comments ORDER BY id ASC' }
+      return { table: 'task_comments', sql: 'SELECT id, task_id FROM task_comments ORDER BY id ASC', columns: ['id', 'task_id', 'body', 'created_at', 'workspace_id'] }
     case 'notifications':
-      return { table: 'notifications', sql: 'SELECT id, task_id FROM notifications ORDER BY id ASC' }
+      return {
+        table: 'notifications',
+        sql: 'SELECT id, task_id FROM notifications ORDER BY id ASC',
+        columns: ['id', 'task_id', 'recipient', 'type', 'title', 'message', 'source_type', 'source_id', 'read_at', 'delivered_at', 'created_at', 'workspace_id'],
+      }
     case 'dispositions':
-      return { table: 'task_dispositions', sql: 'SELECT id, task_id, outcome FROM task_dispositions ORDER BY id ASC' }
+      return { table: 'task_dispositions', sql: 'SELECT id, task_id, outcome FROM task_dispositions ORDER BY id ASC', columns: ['id', 'task_id', 'outcome', 'disposition', 'reason', 'workspace_id'] }
     case 'artifacts':
-      return { table: 'task_artifacts', sql: 'SELECT id, task_id, artifact_type FROM task_artifacts ORDER BY id ASC' }
+      return { table: 'task_artifacts', sql: 'SELECT id, task_id, artifact_type FROM task_artifacts ORDER BY id ASC', columns: ['id', 'task_id', 'workspace_id', 'project_id', 'workflow_template_slug', 'artifact_type', 'schema_version', 'storage_kind', 'created_at'] }
     case 'quality_reviews':
-      return { table: 'quality_reviews', sql: 'SELECT id, task_id, reviewer FROM quality_reviews ORDER BY id ASC' }
+      return { table: 'quality_reviews', sql: 'SELECT id, task_id, reviewer FROM quality_reviews ORDER BY id ASC', columns: ['id', 'task_id', 'reviewer', 'status', 'created_at', 'workspace_id'] }
     case 'github_sync_state':
-      return { table: 'github_sync_state', sql: 'SELECT id, repo, cursor FROM github_sync_state ORDER BY id ASC' }
+      return { table: 'github_sync_state', sql: 'SELECT id, repo, cursor FROM github_sync_state ORDER BY id ASC', columns: ['id', 'repo', 'cursor', 'created_at', 'updated_at'] }
     case 'governance_audit_rows':
-      return { table: 'resource_policy_events', sql: 'SELECT id, policy_id, action FROM resource_policy_events ORDER BY id ASC' }
+      return { table: 'resource_policy_events', sql: 'SELECT id, policy_id, action FROM resource_policy_events ORDER BY id ASC', columns: ['id', 'policy_id', 'action', 'created_at', 'workspace_id'] }
     case 'manual_workflow_templates':
     case 'workflow_use_counters':
       return { table: 'workflow_templates', sql: "SELECT id, workspace_id, slug, created_by, use_count, last_used_at FROM workflow_templates WHERE created_by <> 'workflow-contract' ORDER BY id ASC" }
@@ -308,6 +382,15 @@ function queryForPreservedSurface(surface: string): { table: string; sql: string
 function tableExists(db: ProductLineSeedDatabase, table: string): boolean {
   const row = db.prepare("SELECT 1 as ok FROM sqlite_master WHERE type = 'table' AND name = ?").get(table) as { ok: number } | undefined
   return Boolean(row?.ok)
+}
+
+function tableColumns(db: ProductLineSeedDatabase, table: string): string[] {
+  return (db.prepare(`PRAGMA table_info(${quoteIdentifier(table)})`).all() as { name: string }[]).map((column) => column.name)
+}
+
+function quoteIdentifier(identifier: string): string {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(identifier)) throw new Error(`Unsafe SQL identifier: ${identifier}`)
+  return `"${identifier}"`
 }
 
 function isSensitiveKey(key: string): boolean {

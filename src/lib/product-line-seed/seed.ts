@@ -239,10 +239,14 @@ function applyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig)
 }
 
 function upsertWorkspace(db: ProductLineSeedDatabase, config: ProductLineSeedConfig, tenantId: number): number {
-  const existing = db.prepare('SELECT id FROM workspaces WHERE slug = ?').get(config.product_line.slug) as { id: number } | undefined
+  const existing = db.prepare('SELECT id, name, tenant_id FROM workspaces WHERE slug = ?').get(config.product_line.slug) as
+    | { id: number; name: string; tenant_id: number }
+    | undefined
   if (existing) {
-    db.prepare('UPDATE workspaces SET name = ?, tenant_id = ?, updated_at = unixepoch() WHERE id = ?')
-      .run(config.product_line.display_name, tenantId, existing.id)
+    if (existing.name !== config.product_line.display_name || existing.tenant_id !== tenantId) {
+      db.prepare('UPDATE workspaces SET name = ?, tenant_id = ?, updated_at = unixepoch() WHERE id = ?')
+        .run(config.product_line.display_name, tenantId, existing.id)
+    }
     return existing.id
   }
   const result = db.prepare('INSERT INTO workspaces (slug, name, tenant_id, created_at, updated_at) VALUES (?, ?, ?, unixepoch(), unixepoch())')
@@ -257,7 +261,17 @@ function upsertDepartments(
 ): Record<string, number> {
   const projectIds: Record<string, number> = {}
   for (const department of config.departments) {
-    const existing = db.prepare('SELECT id FROM projects WHERE workspace_id = ? AND slug = ?').get(workspaceId, department.slug) as { id: number } | undefined
+    const existing = db.prepare(`
+      SELECT id, name, ticket_prefix, area_slug, github_repo, github_sync_enabled, is_triage_project, is_repo_sync_owner
+      FROM projects WHERE workspace_id = ? AND slug = ?
+    `).get(workspaceId, department.slug) as
+      | (DepartmentDeclaration & {
+        id: number
+        github_sync_enabled: boolean | number
+        is_triage_project: boolean | number
+        is_repo_sync_owner: boolean | number
+      })
+      | undefined
     const values = {
       name: department.name,
       ticket_prefix: department.ticket_prefix,
@@ -268,7 +282,9 @@ function upsertDepartments(
       is_repo_sync_owner: department.is_repo_sync_owner ? 1 : 0,
     }
     if (existing) {
-      updateRow(db, 'projects', values, 'id = ?', [existing.id])
+      if (hasRowDrift(existing as unknown as Record<string, unknown>, values)) {
+        updateRow(db, 'projects', values, 'id = ?', [existing.id])
+      }
       projectIds[department.slug] = existing.id
     } else {
       const result = insertRow(db, 'projects', {
@@ -293,10 +309,12 @@ function upsertAssignments(
     const projectId = projectIds[assignment.department_slug]
     if (!projectId) throw new Error(`Missing department project for ${assignment.department_slug}`)
     const agentName = `${config.product_line.agent_prefix}-${assignment.agent_key}`
-    const existing = db.prepare('SELECT id FROM project_agent_assignments WHERE project_id = ? AND agent_name = ?')
-      .get(projectId, agentName) as { id: number } | undefined
+    const existing = db.prepare('SELECT id, role FROM project_agent_assignments WHERE project_id = ? AND agent_name = ?')
+      .get(projectId, agentName) as { id: number; role: string } | undefined
     if (existing) {
-      updateRow(db, 'project_agent_assignments', { role: assignment.role }, 'id = ?', [existing.id])
+      if (existing.role !== assignment.role) {
+        updateRow(db, 'project_agent_assignments', { role: assignment.role }, 'id = ?', [existing.id])
+      }
     } else {
       insertRow(db, 'project_agent_assignments', {
         project_id: projectId,
@@ -313,7 +331,10 @@ function upsertFeatureFlags(db: ProductLineSeedDatabase, config: ProductLineSeed
   const flags = parseFlags(row?.feature_flags ?? null)
   for (const flag of config.feature_flags.disabled_or_absent) Reflect.deleteProperty(flags, flag)
   for (const flag of config.feature_flags.enabled) flags[flag] = true
-  db.prepare('UPDATE workspaces SET feature_flags = ?, updated_at = unixepoch() WHERE id = ?').run(JSON.stringify(flags), workspaceId)
+  const nextFlags = JSON.stringify(flags)
+  if (row?.feature_flags !== nextFlags) {
+    db.prepare('UPDATE workspaces SET feature_flags = ?, updated_at = unixepoch() WHERE id = ?').run(nextFlags, workspaceId)
+  }
 }
 
 function importWorkflows(db: ProductLineSeedDatabase, config: ProductLineSeedConfig, workspaceId: number): void {
@@ -328,10 +349,17 @@ function importWorkflows(db: ProductLineSeedDatabase, config: ProductLineSeedCon
 
 function upsertGovernanceDefaults(db: ProductLineSeedDatabase, config: ProductLineSeedConfig, workspaceId: number): void {
   for (const policy of config.governance_defaults) {
-    const existing = db.prepare('SELECT id FROM resource_policies WHERE workspace_id = ? AND notes = ?').get(workspaceId, policy.notes ?? policy.identity) as { id: number } | undefined
+    const existing = db.prepare(`
+      SELECT id, notes, policy_type, limit_kind, limit_value, period, timezone, enforcement, enabled, default_template
+      FROM resource_policies WHERE workspace_id = ? AND notes = ?
+    `).get(workspaceId, policy.notes ?? policy.identity) as
+      | ({ id: number } & Record<string, unknown>)
+      | undefined
     const values = governanceValues(policy)
     if (existing) {
-      updateRow(db, 'resource_policies', { ...values, updated_at: currentTimestamp() }, 'id = ?', [existing.id])
+      if (hasRowDrift(existing, values)) {
+        updateRow(db, 'resource_policies', { ...values, updated_at: currentTimestamp() }, 'id = ?', [existing.id])
+      }
     } else {
       insertRow(db, 'resource_policies', {
         workspace_id: workspaceId,
@@ -478,6 +506,10 @@ function updateRow(
   if (entries.length === 0) return
   db.prepare(`UPDATE ${table} SET ${entries.map(([key]) => `${key} = ?`).join(', ')} WHERE ${whereClause}`)
     .run(...entries.map(([, value]) => value), ...whereParams)
+}
+
+function hasRowDrift(existing: Record<string, unknown>, expected: Record<string, unknown>): boolean {
+  return Object.entries(expected).some(([key, value]) => existing[key] !== value)
 }
 
 function tableExists(db: ProductLineSeedDatabase, table: string): boolean {

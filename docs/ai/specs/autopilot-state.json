@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T19:12:27Z",
-  "active_step": "Phase 7: US3 Mission Control Parity (T044-T050)",
+  "updated_at": "2026-05-22T19:32:49Z",
+  "active_step": "Phase 7: US4 Fail-Closed Safety (T051-T060)",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -120,11 +120,11 @@
     },
     {
       "step": "Phase 7: US3 Mission Control Parity (T044-T050)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US4 Fail-Closed Safety (T051-T060)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US5 Reuse Docs And Guards (T061-T065)",
@@ -652,6 +652,45 @@
           "direnv exec . pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --db :memory: --mode preflight --json"
         ],
         "result": "passed"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 7: US3 Mission Control Parity (T044-T050)",
+      "status": "Complete",
+      "timestamp": "2026-05-22T19:32:49Z",
+      "summary": "Completed US3 parity tasks T044-T050: Mission Control parity tests, apply-twice idempotency, compatibility wrapper delegation, stable parity summaries, quickstart evidence instructions, and a parent-discovered live-schema snapshot regression for operational tables without legacy task_id columns.",
+      "details": {
+        "tasks_completed": [
+          "T044",
+          "T045",
+          "T046",
+          "T047",
+          "T048",
+          "T049",
+          "T050"
+        ],
+        "verification": [
+          "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts",
+          "direnv exec . pnpm typecheck",
+          "direnv exec . pnpm lint",
+          "cp .data/mission-control.db /private/tmp/spec010a-parent-parity.db",
+          "direnv exec . pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --db /private/tmp/spec010a-parent-parity.db --mode apply --json",
+          "direnv exec . pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --db /private/tmp/spec010a-parent-parity.db --mode apply --allow-existing --json",
+          "direnv exec . pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --db /private/tmp/spec010a-parent-parity.db --mode verify --json",
+          "direnv exec . pnpm seed:mission-control -- --db /private/tmp/spec010a-parent-parity.db --mode verify --json"
+        ],
+        "result": "passed",
+        "warnings": [
+          "Node emits the existing MODULE_TYPELESS_PACKAGE_JSON warning for stripped TypeScript CLI entrypoints."
+        ]
       },
       "markers": {
         "gaps": 0,

@@ -14,16 +14,30 @@ export interface GenericSeedCliResult {
   stderr: string
 }
 
+export interface GenericSeedCliDefaults {
+  entrypoint?: 'seed:product-line' | 'seed:mission-control'
+  configPath?: string
+  db?: Parameters<typeof runProductLineSeed>[0]['db']
+}
+
 export function runSeedProductLineCli(args: string[], writeOutput = false): GenericSeedCliResult {
-  const parsed = parseArgs(args)
+  return runSeedProductLineCliWithDefaults(args, {}, writeOutput)
+}
+
+export function runSeedProductLineCliWithDefaults(
+  args: string[],
+  defaults: GenericSeedCliDefaults,
+  writeOutput = false,
+): GenericSeedCliResult {
+  const parsed = parseArgs(args, defaults)
   if (!parsed.ok) {
-    const envelope = cliErrorEnvelope(parsed.message)
+    const envelope = cliErrorEnvelope(parsed.message, defaults)
     return emit(envelope, writeOutput)
   }
   return emit(runProductLineSeed(parsed.options), writeOutput)
 }
 
-function parseArgs(args: string[]):
+function parseArgs(args: string[], defaults: GenericSeedCliDefaults):
   | { ok: true; options: Parameters<typeof runProductLineSeed>[0] }
   | { ok: false; message: string } {
   const flags = new Map<string, string | true>()
@@ -43,7 +57,7 @@ function parseArgs(args: string[]):
     }
   }
 
-  const configPath = stringFlag(flags.get('config'))
+  const configPath = stringFlag(flags.get('config')) ?? defaults.configPath
   if (!configPath) return { ok: false, message: '--config is required' }
   const dbPath = stringFlag(flags.get('db'))
   if (!dbPath) return { ok: false, message: '--db is required' }
@@ -53,9 +67,10 @@ function parseArgs(args: string[]):
   return {
     ok: true,
     options: {
-      entrypoint: 'seed:product-line',
+      entrypoint: defaults.entrypoint ?? 'seed:product-line',
       configPath,
       dbPath,
+      ...(defaults.db === undefined ? {} : { db: defaults.db }),
       mode,
       json: flags.get('json') === true,
       allowExisting: flags.get('allow-existing') === true,
@@ -72,17 +87,17 @@ function stringFlag(value: string | true | undefined): string | undefined {
   return typeof value === 'string' ? value : undefined
 }
 
-function cliErrorEnvelope(message: string): ProductLineSeedResultEnvelope {
+function cliErrorEnvelope(message: string, defaults: GenericSeedCliDefaults): ProductLineSeedResultEnvelope {
   return {
     schema_version: PRODUCT_LINE_SEED_RESULT_SCHEMA_VERSION,
     ok: false,
-    entrypoint: 'seed:product-line',
+    entrypoint: defaults.entrypoint ?? 'seed:product-line',
     mode: 'unknown',
     status: 'cli_error',
     code: 'CLI_USAGE_ERROR',
     mutation_status: 'not_mutated',
     config: {
-      path: MISSION_CONTROL_SEED_DEFAULTS.configPath,
+      path: defaults.configPath ?? MISSION_CONTROL_SEED_DEFAULTS.configPath,
       schema_version: null,
       product_line_slug: null,
     },

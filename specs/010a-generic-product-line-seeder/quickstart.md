@@ -77,6 +77,8 @@ Expected:
 - config-owned rows are stable and not duplicated
 - non-config-owned FR-020 operational/history state is preserved, including task, issue, task evidence/read-model state, activity, history, comment, notification, disposition, artifact, quality-review, GitHub sync, governance audit/ledger, manual template, unrelated flag, row ID, timestamp, counter, task status/linkage/lineage, assignment timestamp, and workflow use-counter evidence
 - before/after snapshots and stable identity hashes are present
+- apply-twice parity evidence reports the same `snapshot_before.hash` and `snapshot_after.hash`
+- snapshot counts remain `workspace_identity:1`, `department_projects:6`, `agent_assignments:6`, `workflow_contract_templates:9`, `feature_flags:1`, and `governance_defaults:3`
 
 ## Verify
 
@@ -117,6 +119,36 @@ Expected:
 - delegates to the generic behavior using `docs/ai/product-lines/mission-control.yaml`
 - produces equivalent evidence categories to `seed:product-line`
 - requires `--allow-existing` for existing-target apply
+
+Wrapper parity sequence:
+
+```bash
+pnpm seed:product-line -- \
+  --config docs/ai/product-lines/mission-control.yaml \
+  --db .data/spec-010a-parity.db \
+  --mode apply \
+  --json
+
+pnpm seed:product-line -- \
+  --config docs/ai/product-lines/mission-control.yaml \
+  --db .data/spec-010a-parity.db \
+  --mode apply \
+  --allow-existing \
+  --json
+
+pnpm seed:product-line -- \
+  --config docs/ai/product-lines/mission-control.yaml \
+  --db .data/spec-010a-parity.db \
+  --mode verify \
+  --json
+
+pnpm seed:mission-control -- \
+  --db .data/spec-010a-parity.db \
+  --mode verify \
+  --json
+```
+
+The wrapper result envelope must keep `entrypoint:"seed:mission-control"` while using `config.path:"docs/ai/product-lines/mission-control.yaml"` and the same validation evidence categories, config-owned snapshot counts, existing-target refusal status, and `--allow-existing` policy as `seed:product-line`.
 
 ## Invalid Config No-Mutation Proof
 
