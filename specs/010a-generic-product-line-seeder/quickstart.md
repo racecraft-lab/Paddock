@@ -207,9 +207,19 @@ Expected:
 ## Final Verification
 
 ```bash
-pnpm typecheck
-pnpm lint
-pnpm build
+direnv exec . pnpm test -- src/lib/__tests__/product-line-seed.test.ts
+direnv exec . pnpm test -- src/lib/__tests__/product-line-seed-cli.test.ts
+direnv exec . pnpm typecheck
+direnv exec . pnpm lint
+direnv exec . pnpm build
 ```
 
 Run `pnpm test:all` before merge if the final diff or branch policy requires full verification.
+
+Implementation validation for US5 docs/static guard changes also includes:
+
+```bash
+direnv exec . rg -n "Product Line B|product-line-b|focusengine|createTask\\(|INSERT INTO tasks|gh issue|github.*(create|comment|close|label)|runner|sandbox|auto.?merge|speckit-setup|speckit-autopilot" \
+  docs/ai/product-lines scripts/seed-product-line.ts scripts/seed-mission-control-product-line.ts src/lib/product-line-seed src/lib/__tests__/product-line-seed*.test.ts
+direnv exec . git diff --check
+```

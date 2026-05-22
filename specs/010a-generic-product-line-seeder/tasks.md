@@ -201,14 +201,14 @@ pnpm test -- src/lib/__tests__/product-line-seed-cli.test.ts
 
 ### Tests for User Story 5
 
-- [ ] T061 [US5] Write RED static/diff guard tests for no Product Line B config, smoke evidence, live enablement, GitHub mutation, task creation, dispatch, claim, runner, sandbox, harness adapter, auto-merge, or SpecKit setup/autopilot in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T062 [US5] Write RED docs coverage tests or checklist assertions for schema, command modes, evidence shape, existing-target policy, residue blocking, wrapper path, Product Line B exclusion, rollback-by-no-op, and implementation validation in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T061 [US5] Write RED static/diff guard tests for no Product Line B config, smoke evidence, live enablement, GitHub mutation, task creation, dispatch, claim, runner, sandbox, harness adapter, auto-merge, or SpecKit setup/autopilot in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T062 [US5] Write RED docs coverage tests or checklist assertions for schema, command modes, evidence shape, existing-target policy, residue blocking, wrapper path, Product Line B exclusion, rollback-by-no-op, and implementation validation in `src/lib/__tests__/product-line-seed.test.ts`.
 
 ### Implementation for User Story 5
 
-- [ ] T063 [US5] Document schema, command modes, evidence shape, existing-target policy, residue blocking policy, Mission Control wrapper, Product Line B exclusion, and rollback-by-no-op in `docs/runbooks/product-line-seed.md`.
-- [ ] T064 [US5] Update Mission Control seed predeploy guidance for the compatibility wrapper and generic evidence model in `docs/runbooks/mission-control-seed-predeploy.md`.
-- [ ] T065 [US5] Keep implementation validation, Mission Control parity commands, invalid-config no-mutation commands, and static guard commands current in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T063 [US5] Document schema, command modes, evidence shape, existing-target policy, residue blocking policy, Mission Control wrapper, Product Line B exclusion, and rollback-by-no-op in `docs/runbooks/product-line-seed.md`.
+- [x] T064 [US5] Update Mission Control seed predeploy guidance for the compatibility wrapper and generic evidence model in `docs/runbooks/mission-control-seed-predeploy.md`.
+- [x] T065 [US5] Keep implementation validation, Mission Control parity commands, invalid-config no-mutation commands, and static guard commands current in `specs/010a-generic-product-line-seeder/quickstart.md`.
 
 **Checkpoint**: User Story 5 is complete when a future product-line config can be reasoned about from the checked-in schema/docs while SPEC-010A contains no Product Line B or runtime execution behavior.
 

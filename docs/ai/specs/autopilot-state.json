@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T19:46:36Z",
-  "active_step": "Phase 7: US5 Reuse Docs And Guards (T061-T065)",
+  "updated_at": "2026-05-22T19:57:53Z",
+  "active_step": "Phase 7: Polish And Verification (T066-T073)",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -128,11 +128,11 @@
     },
     {
       "step": "Phase 7: US5 Reuse Docs And Guards (T061-T065)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: Polish And Verification (T066-T073)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Verification and Status Sync",
@@ -721,6 +721,37 @@
         ],
         "verification": [
           "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts",
+          "direnv exec . pnpm typecheck",
+          "direnv exec . pnpm lint",
+          "git diff --check"
+        ],
+        "result": "passed"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 7: US5 Reuse Docs And Guards (T061-T065)",
+      "status": "Complete",
+      "timestamp": "2026-05-22T19:57:53Z",
+      "summary": "Completed US5 reuse docs and static guard tasks T061-T065: static scope guard tests, docs coverage assertions, generic product-line seed runbook, Mission Control predeploy wrapper guidance, and refreshed quickstart validation commands.",
+      "details": {
+        "tasks_completed": [
+          "T061",
+          "T062",
+          "T063",
+          "T064",
+          "T065"
+        ],
+        "verification": [
+          "direnv exec . rg -n \"Product Line B|product-line-b|focusengine|createTask\\\\(|INSERT INTO tasks|gh issue|github.*(create|comment|close|label)|runner|sandbox|auto.?merge|speckit-setup|speckit-autopilot\" docs/ai/product-lines scripts/seed-product-line.ts scripts/seed-mission-control-product-line.ts src/lib/product-line-seed src/lib/__tests__/product-line-seed*.test.ts",
+          "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts",
           "direnv exec . pnpm typecheck",
           "direnv exec . pnpm lint",
           "git diff --check"

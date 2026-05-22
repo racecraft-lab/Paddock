@@ -17,6 +17,26 @@ const productLineSeedFiles = [
   'scripts/seed-product-line.ts',
 ] as const
 
+const productLineSeedDocs = [
+  'docs/runbooks/product-line-seed.md',
+  'docs/runbooks/mission-control-seed-predeploy.md',
+  'specs/010a-generic-product-line-seeder/quickstart.md',
+] as const
+
+const staticScopeGuardSources = [
+  'docs/ai/product-lines/mission-control.yaml',
+  'scripts/seed-product-line.ts',
+  'scripts/seed-mission-control-product-line.ts',
+  'src/lib/product-line-seed/types.ts',
+  'src/lib/product-line-seed/schema.ts',
+  'src/lib/product-line-seed/config.ts',
+  'src/lib/product-line-seed/evidence.ts',
+  'src/lib/product-line-seed/preflight.ts',
+  'src/lib/product-line-seed/seed.ts',
+  'src/lib/__tests__/product-line-seed.test.ts',
+  'src/lib/__tests__/product-line-seed-cli.test.ts',
+] as const
+
 const specStrictFiles = [
   'src/lib/product-line-seed/types.ts',
   'src/lib/product-line-seed/schema.ts',
@@ -296,6 +316,9 @@ export const staticScopeGuardTerms = [
   'speckit-autopilot',
 ] as const
 
+const staticScopeGuardPattern =
+  /Product Line B|product-line-b|focusengine|createTask\(|INSERT INTO tasks|gh issue|github.*(create|comment|close|label)|live enablement|smoke evidence|task creation|dispatch|claim|runner|sandbox|harness adapter|auto.?merge|speckit-setup|speckit-autopilot/i
+
 export function assertNoProductLineSeedScopeDrift(sourceName: string, content: string): void {
   const matches = staticScopeGuardTerms.filter((term) => content.toLowerCase().includes(term.toLowerCase()))
   expect(matches, `${sourceName} contains out-of-scope terms: ${matches.join(', ')}`).toEqual([])
@@ -303,6 +326,27 @@ export function assertNoProductLineSeedScopeDrift(sourceName: string, content: s
 
 function source(path: string): string {
   return readFileSync(path, 'utf8')
+}
+
+function matchingLines(path: string, pattern: RegExp): string[] {
+  return source(path)
+    .split('\n')
+    .map((line, index) => ({ line, index: index + 1 }))
+    .filter(({ line }) => pattern.test(line))
+    .map(({ line, index }) => `${path}:${String(index)}:${line.trim()}`)
+}
+
+function isNegativeStaticGuardMatch(match: string): boolean {
+  return /\b(no|not|without|exclusion|excluded|blocked|block|guard|negative|forbid|forbidden|does not|must not|never|free of|out-of-scope|scope)\b/i.test(match)
+    || /blocked_side_effects|disabled_or_absent|FEATURE_AGENT_RUNNER_SANDBOXES|FEATURE_TASK_CONTROL_PLANE|FEATURE_AUTO_MERGE/i.test(match)
+    || /mission-control\.yaml:\d+:- (dispatch|claim|runner|sandbox|auto_merge)$/i.test(match)
+    || /types\.ts:\d+:'(dispatch|claim|runner|sandbox|auto_merge)'/i.test(match)
+    || /dispatch_attempts|github_sync_state|is_repo_sync_owner|enforcement:.*block_dispatch|block_dispatch|SELECT .* FROM tasks|INSERT INTO tasks .*Preserved issue/i.test(match)
+    || /product-line-seed\.test\.ts:\d+:'(Product Line B|product-line-b|focusengine|dispatch|claim|runner|sandbox|auto-merge|speckit-setup|speckit-autopilot)'/i.test(match)
+    || /product-line-seed\.test\.ts:\d+:\/Product Line B\|product-line-b\|focusengine/i.test(match)
+    || /staticScopeGuard|static-scope guard helper|staticScopeGuardPattern|This would authorize Product Line B dispatch|toThrow\(|test\(match\)/i.test(match)
+    || /rg -n "Product Line B\|product-line-b\|focusengine/i.test(match)
+    || /non-dispatch safety boundaries/i.test(match)
 }
 
 function writeSeedConfigFixture(config: Record<string, unknown>, name = 'product-line-seed.yaml'): string {
@@ -1384,5 +1428,72 @@ describe('product-line seed fail-closed validation', () => {
         },
       },
     })
+  })
+})
+
+describe('product-line seed reuse docs and static guards', () => {
+  it('keeps seed surfaces free of Product Line B and runtime execution behavior except negative guard evidence', () => {
+    const matches = staticScopeGuardSources.flatMap((path) => matchingLines(path, staticScopeGuardPattern))
+    const disallowedMatches = matches.filter((match) => !isNegativeStaticGuardMatch(match))
+
+    expect(disallowedMatches).toEqual([])
+    expect(matches).toEqual(expect.arrayContaining([
+      expect.stringContaining('docs/ai/product-lines/mission-control.yaml'),
+      expect.stringContaining('blocked_side_effects'),
+    ]))
+  })
+
+  it('documents reusable schema, modes, evidence, safety policy, wrapper parity, exclusions, rollback, and validation', () => {
+    expect(productLineSeedDocs.filter((path) => !existsSync(path))).toEqual([])
+
+    const runbook = source('docs/runbooks/product-line-seed.md')
+    const predeploy = source('docs/runbooks/mission-control-seed-predeploy.md')
+    const quickstart = source('specs/010a-generic-product-line-seeder/quickstart.md')
+
+    expect(runbook).toEqual(expect.stringContaining('## Schema'))
+    expect(runbook).toEqual(expect.stringContaining('schema_version: product-line-seed-v1'))
+    expect(runbook).toEqual(expect.stringContaining('## Command Modes'))
+    expect(runbook).toEqual(expect.stringContaining('preflight'))
+    expect(runbook).toEqual(expect.stringContaining('apply'))
+    expect(runbook).toEqual(expect.stringContaining('verify'))
+    expect(runbook).toEqual(expect.stringContaining('## Evidence Shape'))
+    expect(runbook).toEqual(expect.stringContaining('schema_version:"product-line-seed-result-v1"'))
+    expect(runbook).toEqual(expect.stringContaining('snapshot_before'))
+    expect(runbook).toEqual(expect.stringContaining('snapshot_after'))
+    expect(runbook).toEqual(expect.stringContaining('preserved_operational_state.subsurfaces'))
+    expect(runbook).toEqual(expect.stringContaining('## Existing Target Policy'))
+    expect(runbook).toEqual(expect.stringContaining('--allow-existing'))
+    expect(runbook).toEqual(expect.stringContaining('EXISTING_TARGET_REQUIRES_ALLOW_EXISTING'))
+    expect(runbook).toEqual(expect.stringContaining('## Residue Blocking Policy'))
+    expect(runbook).toEqual(expect.stringContaining('detection_only_no_automatic_deletion_or_unlinking'))
+    expect(runbook).toEqual(expect.stringContaining('TARGET_RESIDUE_BLOCKED'))
+    expect(runbook).toEqual(expect.stringContaining('## Mission Control Compatibility Wrapper'))
+    expect(runbook).toEqual(expect.stringContaining('pnpm seed:mission-control'))
+    expect(runbook).toEqual(expect.stringContaining('docs/ai/product-lines/mission-control.yaml'))
+    expect(runbook).toEqual(expect.stringContaining('## Product Line B Exclusion'))
+    expect(runbook).toEqual(expect.stringContaining('SPEC-010A does not create Product Line B'))
+    expect(runbook).toEqual(expect.stringContaining('## Rollback By No-Op'))
+    expect(runbook).toEqual(expect.stringContaining('no migration'))
+    expect(runbook).toEqual(expect.stringContaining('not running the command leaves target state unchanged'))
+    expect(runbook).toEqual(expect.stringContaining('## Implementation Validation'))
+    expect(runbook).toEqual(expect.stringContaining('pnpm test -- src/lib/__tests__/product-line-seed.test.ts'))
+    expect(runbook).toEqual(expect.stringContaining('rg -n "Product Line B|product-line-b|focusengine'))
+
+    expect(predeploy).toEqual(expect.stringContaining('pnpm seed:mission-control'))
+    expect(predeploy).toEqual(expect.stringContaining('compatibility wrapper'))
+    expect(predeploy).toEqual(expect.stringContaining('generic product-line evidence model'))
+    expect(predeploy).toEqual(expect.stringContaining('schema_version:"product-line-seed-result-v1"'))
+    expect(predeploy).toEqual(expect.stringContaining('preserved_operational_state.subsurfaces'))
+    expect(predeploy).toEqual(expect.stringContaining('docs/ai/product-lines/mission-control.yaml'))
+
+    expect(quickstart).toEqual(expect.stringContaining('pnpm seed:product-line --'))
+    expect(quickstart).toEqual(expect.stringContaining('pnpm seed:mission-control --'))
+    expect(quickstart).toEqual(expect.stringContaining('pnpm test -- src/lib/__tests__/product-line-seed.test.ts'))
+    expect(quickstart).toEqual(expect.stringContaining('pnpm typecheck'))
+    expect(quickstart).toEqual(expect.stringContaining('pnpm lint'))
+    expect(quickstart).toEqual(expect.stringContaining('Invalid Config No-Mutation Proof'))
+    expect(quickstart).toEqual(expect.stringContaining('Wrapper parity sequence'))
+    expect(quickstart).toEqual(expect.stringContaining('Static Scope Guards'))
+    expect(quickstart).toEqual(expect.stringContaining('Rollback And No-Op Recovery'))
   })
 })
