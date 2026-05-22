@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T16:17:01Z",
-  "active_step": "Phase 2: Clarify - Config Schema And File Layout",
+  "updated_at": "2026-05-22T16:46:54Z",
+  "active_step": "Phase 3: Plan",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -20,39 +20,39 @@
     },
     {
       "step": "Phase 2: Clarify - Config Schema And File Layout",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Config Schema And File Layout Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Existing Target And No-Mutation Semantics",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Existing Target And No-Mutation Semantics Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Workflow, Flags, Agents, And Governance",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Workflow, Flags, Agents, And Governance Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - CLI Compatibility And Operator Evidence",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - CLI Compatibility And Operator Evidence Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 3: Plan",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
@@ -202,6 +202,121 @@
           "name": "G1",
           "pass": true
         }
+      }
+    },
+    {
+      "phase": "Phase 2: Clarify - Config Schema And File Layout",
+      "status": "Complete",
+      "timestamp": "2026-05-22T16:22:26Z",
+      "summary": "Accepted schema clarification decisions for canonical config path, required top-level sections, agent assignment representation, JSON Schema plus TypeScript validator ownership, and safety_policy contents.",
+      "consensus": {
+        "required": false,
+        "reason": "clarify-executor returned all recommendations with high confidence and no unresolved items"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 2: Clarify - Existing Target And No-Mutation Semantics",
+      "status": "Complete",
+      "timestamp": "2026-05-22T16:27:21Z",
+      "summary": "Accepted existing-target and no-mutation decisions: apply requires --allow-existing; config-owned fields and preserved history surfaces are explicit; invalid-config/blocked-preflight proof uses per-surface counts and stable SHA-256 snapshots; existing-target refusal shape/code is fixed.",
+      "consensus": {
+        "required": false,
+        "reason": "clarify-executor returned all recommendations with high confidence and no unresolved items"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 2: Clarify - Workflow, Flags, Agents, And Governance",
+      "status": "Complete",
+      "timestamp": "2026-05-22T16:38:17Z",
+      "summary": "Accepted workflow/flag/agent/governance decisions: SPEC-010A supports only the mission-control workflow-contract family; enabled flags are registry-only; disabled_or_absent accepts registry keys plus reserved future flags FEATURE_TASK_CONTROL_PLANE and FEATURE_AGENT_RUNNER_SANDBOXES only; seed flag writes are config-owned seed operations, not admin mutations; product-line agent names derive from agent_prefix and agent_key with explicit facility/global shared support; unsafe governance defaults are first-intake-blocking unless explicitly overridden.",
+      "consensus": {
+        "required": true,
+        "round": 2,
+        "routed_categories": [
+          "codebase",
+          "spec",
+          "domain"
+        ],
+        "outcome": "2-of-3 majority accepted split validation with a narrow spec-owned reserved-absent future flag list.",
+        "analysts_used": [
+          "codebase-analyst",
+          "spec-context-analyst",
+          "domain-researcher"
+        ]
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 2: Clarify - CLI Compatibility And Operator Evidence",
+      "status": "Complete",
+      "timestamp": "2026-05-22T16:46:54Z",
+      "summary": "Accepted CLI/evidence decisions: generic CLI uses --config/--db/--mode/--json/--allow-existing/operator-evidence; result envelope schema is product-line-seed-result-v1 with stable fields and exit codes; seed:mission-control delegates to generic --allow-existing behavior; docs live in generic and Mission Control runbooks plus spec quickstart; invalid-config fixtures cover distinct failure classes and enforce redacted no-mutation evidence.",
+      "consensus": {
+        "required": true,
+        "rounds": [
+          {
+            "item": "Mission Control wrapper existing-target authorization",
+            "round": 1,
+            "routed_categories": [
+              "codebase",
+              "spec"
+            ],
+            "outcome": "Accepted wrapper delegation to generic --allow-existing behavior while preserving command name/core flags.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst"
+            ]
+          },
+          {
+            "item": "Invalid-config fixture and redaction contract",
+            "round": 1,
+            "routed_categories": [
+              "security"
+            ],
+            "outcome": "Accepted validation-class fixture coverage, no-mutation snapshots, raw_secret_values_emitted:false, redacted_fields, and no raw secret/token/credential output.",
+            "analysts_used": [
+              "codebase-analyst",
+              "spec-context-analyst",
+              "domain-researcher"
+            ]
+          }
+        ]
+      },
+      "gate": {
+        "name": "G2",
+        "pass": true,
+        "markers": 0
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
       }
     }
   ]

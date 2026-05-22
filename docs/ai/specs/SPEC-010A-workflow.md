@@ -48,8 +48,8 @@ The design concept is the source of truth for setup-time scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Complete | Generated `specs/010a-generic-product-line-seeder/spec.md` and requirements checklist with 5 user stories, 26 FRs, 12 success criteria, and 0 unresolved markers; G1 passed |
-| Clarify | `$speckit-clarify` | Pending | Resolve schema field names, existing-target semantics, validation codes, and wrapper behavior |
+| Specify | `$speckit-specify` | Complete | Generated `specs/010a-generic-product-line-seeder/spec.md` and requirements checklist; after Clarify session 4 the spec has 5 user stories, 29 FRs, 13 success criteria, and 0 unresolved markers; G1 passed |
+| Clarify | `$speckit-clarify` | Complete | Resolved schema path/sections, existing-target semantics, workflow/flag/agent/governance rules, CLI contract, wrapper behavior, evidence envelope, redaction fixtures, and docs paths; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Pending | Design reusable seed modules over existing Mission Control seed and workflow-contract seams |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and operator-process checks |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for config schema, CLI, parity fixtures, validation, and docs |
@@ -281,7 +281,7 @@ Generate requirements that prove Mission Control parity from generic config, fai
 |-------|--------|
 | Status | Complete |
 | Generated artifacts | `specs/010a-generic-product-line-seeder/spec.md`; `specs/010a-generic-product-line-seeder/checklists/requirements.md` |
-| Requirements coverage | 5 user stories; 26 functional requirements; 12 success criteria; 16/16 requirements checklist items complete |
+| Requirements coverage | 5 user stories; 29 functional requirements after Clarify session 4; 13 success criteria after Clarify session 2; 16/16 requirements checklist items complete |
 | Marker scan | `count-markers.sh all specs/010a-generic-product-line-seeder` returned 0 gaps, 0 clarifications, and 0 findings |
 | G1 gate | Pass: `validate-gate.sh G1 specs/010a-generic-product-line-seeder` returned `pass=true` |
 | Scope result | Mission Control parity, generic config/CLI, existing-target safety, no-mutation evidence, workflow import, flags, governance, agents, and Product Line B/runtime-execution exclusions are represented |
@@ -306,6 +306,18 @@ Focus on product-line seed config schema:
 - Whether JSON Schema, TypeScript validator, or both are required for reviewability and CLI errors.
 ```
 
+#### Session 1 Result
+
+| Question | Accepted Answer | Evidence / Impact |
+|----------|-----------------|-------------------|
+| Canonical config path and schema marker | `docs/ai/product-lines/mission-control.yaml` with `schema_version: product-line-seed-v1` | Stabilizes review path, CLI default config path, and docs references |
+| Required top-level sections | `schema_version`, `product_line`, `github`, `workflow_contract`, `departments`, `agent_assignments`, `feature_flags`, `governance_defaults`, `safety_policy` | Keeps schema reviewable and prevents Plan from inventing incompatible section names |
+| Agent assignment representation | `agent_prefix` plus per-assignment `agent_key`, role, and department mapping; shared support references must be explicit by role | Prevents accidental reuse of non-product-line agents |
+| Validation owner | JSON Schema plus TypeScript semantic validator owned by `src/lib/product-line-seed/` | JSON Schema handles shape and unknown fields; TypeScript semantic validation handles registry, workflow, governance, residue, and stable CLI error codes |
+| Safety policy contents | Existing-target default `refuse_unless_allow_existing`, config-owned surfaces, preserved surfaces, blocked side effects, and first-intake-blocking governance default false | Makes safety boundaries reviewable in config, not only tests/docs |
+
+**Consensus:** None required; clarify executor returned all five recommendations with high confidence and no unresolved items.
+
 ### Session 2: Existing Target And No-Mutation Semantics
 
 ```bash
@@ -318,6 +330,18 @@ Focus on idempotency and existing target safety:
 - Snapshot/hash strategy for invalid-config and blocked-preflight no-mutation proof.
 ```
 
+#### Session 2 Result
+
+| Question | Accepted Answer | Evidence / Impact |
+|----------|-----------------|-------------------|
+| Existing-target apply authorization | Require `--allow-existing` for `seed:product-line --mode apply`; verify mode remains read-only and needs no flag | Default apply refuses existing targets and reports `action_required:"--allow-existing"` |
+| Config-owned fields | Update only reviewed config-owned fields: workspace name and owned flags; declared project fields; assignment role by project/agent identity; workflow-contract-owned template fields through the importer; governance policies keyed by stable config identity | Prevents silent takeover of live operational state |
+| Preserved history | Preserve tasks, activities, comments, notifications, dispositions, artifacts, quality reviews, GitHub sync state, governance audit/ledger rows, manual workflow templates, IDs, created timestamps, task linkage/status/lineage, project ticket counters, assignment timestamps, workflow use counters, and non-owned flags | Makes existing-target history preservation testable |
+| No-mutation proof | Emit `snapshot_before` and `snapshot_after` with per-surface row counts plus stable ordered-JSON SHA-256 hashes formatted as `product-line-seed-snapshot-v1:sha256:<hex>` | Provides deterministic proof for invalid-config and blocked-preflight no-write cases |
+| Existing-target refusal shape | `ok:false`, `mode:"apply"`, `status:"existing_target_refused"`, `code:"EXISTING_TARGET_REQUIRES_ALLOW_EXISTING"`, `mutation_status:"not_mutated"`, target identity, and `action_required:"--allow-existing"` | Separates validation failure, target safety refusal, and verify drift |
+
+**Consensus:** None required; clarify executor returned all five recommendations with high confidence and no unresolved items.
+
 ### Session 3: Workflow, Flags, Agents, And Governance
 
 ```bash
@@ -329,6 +353,24 @@ Focus on config sections that interact with existing runtime policy:
 - AgentPrefix assignment rules and global/facility support references.
 - Governance defaults using existing `resource_policies` without blocking first intake accidentally.
 ```
+
+#### Session 3 Result
+
+| Question | Accepted Answer | Evidence / Impact |
+|----------|-----------------|-------------------|
+| Workflow contract family support | SPEC-010A keeps `workflow_contract.family` config-owned but supports only `mission-control`; unsupported families fail before writes with `UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY` | Avoids widening into generic workflow-contract infrastructure |
+| Disabled/absent future flags | `enabled` must be registry keys; `disabled_or_absent` may contain registry keys plus reserved future flags `FEATURE_TASK_CONTROL_PLANE` and `FEATURE_AGENT_RUNNER_SANDBOXES` only | Keeps typo prevention strict while preserving fail-closed future runner/sandbox safety |
+| Feature flag mutation path | Seeder is not the admin flag mutation path; it may write reviewed config-owned workspace flag JSON only after registry, scope, cascade, env force-off, duplicates/conflicts, and reserved-absent validation | Preserves SPEC-009B parity without opening admin UI semantics |
+| Agent assignment boundary | Product-line names derive from slug-safe `agent_prefix + "-" + agent_key`; shared support requires explicit `shared_support_role`, `agent_name`, and `scope: facility_global` | Prevents accidental Facility/global assignment |
+| Governance defaults | Enabled `blackout`, `degraded_window`, enabled `wip_limit`, and non-`alert` enforcement are first-intake-blocking unless explicitly allowed with per-policy reason | Makes unsafe governance testable before writes |
+
+**Consensus:** One item required category-routed consensus. Round 1 codebase and spec analysts agreed on split validation but differed on reserved-absent list breadth. Round 2 domain analysis produced a 2-of-3 majority for the narrow spec-owned reserved list (`FEATURE_TASK_CONTROL_PLANE`, `FEATURE_AGENT_RUNNER_SANDBOXES`).
+
+#### Consensus Resolution Log
+
+| Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|-------------------|---------|---------------|
+| Disabled/absent future flags not yet in `FEATURE_FLAG_REGISTRY` | 2 | codebase, spec, domain | Accepted split validation with narrow reserved-absent list: enabled registry-only; disabled/absent registry keys plus `FEATURE_TASK_CONTROL_PLANE` and `FEATURE_AGENT_RUNNER_SANDBOXES` only | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ### Session 4: CLI Compatibility And Operator Evidence
 
@@ -343,11 +385,30 @@ Focus on operator surface and UAT:
 - Docs/runbook paths that operators should follow.
 ```
 
+#### Session 4 Result
+
+| Question | Accepted Answer | Evidence / Impact |
+|----------|-----------------|-------------------|
+| Generic CLI contract | `pnpm seed:product-line -- --config <yaml> --db <db> --mode preflight|apply|verify --json [--allow-existing] [--operator-evidence <json>]`; reject unknown flags | Stabilizes operator docs, tests, and CLI contract artifacts without adding a parser dependency |
+| Result envelope and exit codes | Use `schema_version:"product-line-seed-result-v1"` with stable result fields and exit codes `0` success, `2` blocked/refusal, `3` workflow/config contract not ready, `4` verify drift, `5` CLI/unexpected error | Makes CI and UAT machine-readable |
+| Mission Control wrapper existing-target behavior | `seed:mission-control` delegates to generic behavior and requires `--allow-existing` for existing-target apply; verify remains read-only | Compatibility means same command path and equivalent evidence, not a silent bypass |
+| Operator docs/UAT paths | Add generic runbook `docs/runbooks/product-line-seed.md`, update `docs/runbooks/mission-control-seed-predeploy.md`, and keep implementation quickstart under `specs/010a-generic-product-line-seeder/quickstart.md` | Gives durable operator instructions outside spec-only artifacts |
+| Invalid-config/redaction fixtures | Required fixture classes include missing identity, unsupported field, invalid flag, reserved flag enabled, unsupported workflow family, missing workflow slug, unsafe governance, duplicate/conflicting declarations, existing-target refusal, and repo/product-line ownership conflict; failures emit no-mutation snapshots and redacted target evidence | Prevents under-testing unsafe configs and ensures no secrets leak in conflict output |
+
+**Consensus:** Two items required consensus. Q3 reached Round 1 agreement between codebase and spec analysts. Q5 used security routing with all three analysts; all agreed on fixture-class coverage plus explicit redaction/no-mutation contract.
+
+#### Consensus Resolution Log
+
+| Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|-------------------|---------|---------------|
+| Mission Control wrapper existing-target authorization | 1 | codebase, spec | Accepted wrapper delegation to generic `--allow-existing` behavior while preserving command name/core flags | codebase-analyst, spec-context-analyst |
+| Invalid-config fixture and redaction contract | 1 | security | Accepted required validation-class fixture coverage, no-mutation snapshots, `raw_secret_values_emitted:false`, `redacted_fields`, and no raw secret/token/credential output | codebase-analyst, spec-context-analyst, domain-researcher |
+
 ### Clarify Gate Checklist
 
-- [ ] All open questions from the Design Concept are resolved or explicitly deferred.
-- [ ] Existing-target behavior and no-mutation proof are unambiguous.
-- [ ] CLI and config paths are stable enough for Plan and Tasks.
+- [x] All open questions from the Design Concept are resolved or explicitly deferred.
+- [x] Existing-target behavior and no-mutation proof are unambiguous.
+- [x] CLI and config paths are stable enough for Plan and Tasks.
 
 ---
 
