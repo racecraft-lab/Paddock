@@ -162,17 +162,17 @@ pnpm api:parity
 
 **Purpose**: Complete UAT fixtures, review evidence, guardrails, and full verification without widening scope.
 
-- [ ] T045 [P] Add focused six-outcome Playwright journey for `/tasks`, `Task evidence` region inspection, `Triage routing` block assertions, no mutation/action controls, safe-link keyboard focus, fixture export, screenshot attachments, and cleanup in `tests/e2e/spec-009f-triage-routing.spec.ts`
-- [ ] T046 [P] Complete SPEC-009F diff/static guard implementation for forbidden GitHub mutation, label application, remediation/non-remediation successors, claim/runner/sandbox/adapter/auto-merge drift, migrations, runtime dependency changes, API route additions, and committed screenshot binaries in `scripts/spec-009f/check-scope-guards.mjs`
-- [ ] T047 [P] Record SPEC-009F UAT evidence placeholders for branch/commit, command, fixture export path, six-outcome matrix, screenshot paths, cleanup counts, and explicit no-live-side-effect statement in `docs/qa/pilot-smoke-checklist.md`
-- [ ] T048 Run focused unit/component verification command and fix SPEC-009F regressions in `src/lib/__tests__/triage-routing-payloads.test.ts`, `src/lib/__tests__/triage-routing.test.ts`, `src/lib/__tests__/task-evidence.test.ts`, and `src/components/panels/__tests__/task-evidence-section.test.tsx`: `pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx`
-- [ ] T049 Run API parity and guard verification and fix SPEC-009F drift in `openapi.json` and `scripts/spec-009f/check-scope-guards.mjs`: `pnpm api:parity && node scripts/spec-009f/check-scope-guards.mjs`
-- [ ] T050 Run focused e2e UAT verification and update non-committed review artifacts under `test-results/spec-009f-triage-routing/`: `pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts`
-- [ ] T051 Run build verification and fix SPEC-009F build issues in `src/lib/triage-routing-payloads.ts`, `src/lib/triage-routing.ts`, `src/lib/task-evidence.ts`, `src/components/panels/task-evidence-section.tsx`, `openapi.json`, and `scripts/spec-009f/check-scope-guards.mjs`: `pnpm build`
-- [ ] T052 Run typecheck verification and fix SPEC-009F type issues in `src/lib/triage-routing-payloads.ts`, `src/lib/triage-routing.ts`, `src/lib/task-evidence.ts`, `src/components/panels/task-evidence-section.tsx`, `tsconfig.spec-strict.json`, and `eslint.config.mjs`: `pnpm typecheck`
-- [ ] T053 Run lint verification and fix SPEC-009F lint issues in `src/lib/triage-routing-payloads.ts`, `src/lib/triage-routing.ts`, `src/lib/task-evidence.ts`, `src/components/panels/task-evidence-section.tsx`, `scripts/spec-009f/check-scope-guards.mjs`, and `eslint.config.mjs`: `pnpm lint`
-- [ ] T054 Run full unit verification outside the Codex sandbox if sandbox runtime resources fail, and fix SPEC-009F regressions in `src/lib/__tests__/triage-routing-payloads.test.ts`, `src/lib/__tests__/triage-routing.test.ts`, `src/lib/__tests__/task-evidence.test.ts`, and `src/components/panels/__tests__/task-evidence-section.test.tsx`: `pnpm test`
-- [ ] T055 Run full e2e verification and fix SPEC-009F regressions in `tests/e2e/spec-009f-triage-routing.spec.ts` and `docs/qa/pilot-smoke-checklist.md`: `pnpm test:e2e`
+- [x] T045 [P] Add focused six-outcome Playwright journey for `/tasks`, `Task evidence` region inspection, `Triage routing` block assertions, no mutation/action controls, safe-link keyboard focus, fixture export, screenshot attachments, and cleanup in `tests/e2e/spec-009f-triage-routing.spec.ts`
+- [x] T046 [P] Complete SPEC-009F diff/static guard implementation for forbidden GitHub mutation, label application, remediation/non-remediation successors, claim/runner/sandbox/adapter/auto-merge drift, migrations, runtime dependency changes, API route additions, and committed screenshot binaries in `scripts/spec-009f/check-scope-guards.mjs`
+- [x] T047 [P] Record SPEC-009F UAT evidence placeholders for branch/commit, command, fixture export path, six-outcome matrix, screenshot paths, cleanup counts, and explicit no-live-side-effect statement in `docs/qa/pilot-smoke-checklist.md`
+- [x] T048 Run focused unit/component verification command and fix SPEC-009F regressions in `src/lib/__tests__/triage-routing-payloads.test.ts`, `src/lib/__tests__/triage-routing.test.ts`, `src/lib/__tests__/task-evidence.test.ts`, and `src/components/panels/__tests__/task-evidence-section.test.tsx`: `pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx`
+- [x] T049 Run API parity and guard verification and fix SPEC-009F drift in `openapi.json` and `scripts/spec-009f/check-scope-guards.mjs`: `pnpm api:parity && node scripts/spec-009f/check-scope-guards.mjs`
+- [x] T050 Run focused e2e UAT verification and update non-committed review artifacts under `test-results/spec-009f-triage-routing/`: `pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts`
+- [x] T051 Run build verification and fix SPEC-009F build issues in `src/lib/triage-routing-payloads.ts`, `src/lib/triage-routing.ts`, `src/lib/task-evidence.ts`, `src/components/panels/task-evidence-section.tsx`, `openapi.json`, and `scripts/spec-009f/check-scope-guards.mjs`: `pnpm build`
+- [x] T052 Run typecheck verification and fix SPEC-009F type issues in `src/lib/triage-routing-payloads.ts`, `src/lib/triage-routing.ts`, `src/lib/task-evidence.ts`, `src/components/panels/task-evidence-section.tsx`, `tsconfig.spec-strict.json`, and `eslint.config.mjs`: `pnpm typecheck`
+- [x] T053 Run lint verification and fix SPEC-009F lint issues in `src/lib/triage-routing-payloads.ts`, `src/lib/triage-routing.ts`, `src/lib/task-evidence.ts`, `src/components/panels/task-evidence-section.tsx`, `scripts/spec-009f/check-scope-guards.mjs`, and `eslint.config.mjs`: `pnpm lint`
+- [x] T054 Run full unit verification outside the Codex sandbox if sandbox runtime resources fail, and fix SPEC-009F regressions in `src/lib/__tests__/triage-routing-payloads.test.ts`, `src/lib/__tests__/triage-routing.test.ts`, `src/lib/__tests__/task-evidence.test.ts`, and `src/components/panels/__tests__/task-evidence-section.test.tsx`: `pnpm test`
+- [x] T055 Run full e2e verification and fix SPEC-009F regressions in `tests/e2e/spec-009f-triage-routing.spec.ts` and `docs/qa/pilot-smoke-checklist.md`: `pnpm test:e2e`
 
 ---
 
@@ -266,3 +266,13 @@ pnpm test:e2e
 ```
 
 `pnpm test` may need to run outside the Codex sandbox per project guidance.
+
+### Post-Implementation Reviewability Gate
+
+- Ratified exception: SPEC-009F proceeds as one PR because the behavior remains
+  one terminal triage-routing evidence surface plus the existing task Evidence
+  extension. The measured diff exceeds the generic budget due generated
+  SpecKit artifacts, API parity, security payload tests, UAT fixtures, and
+  guard tooling; no migration, dependency, live GitHub mutation, successor
+  template, claim/runner/sandbox/adapter path, or auto-merge behavior was
+  added.

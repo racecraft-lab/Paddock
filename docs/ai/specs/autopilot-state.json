@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-21T23:50:52Z",
-  "active_step": "Phase 7: Polish, UAT, guardrails, verification (T045-T055)",
+  "updated_at": "2026-05-22T01:28:17Z",
+  "active_step": "Post: Reviewability Diff Gate",
   "status": "In Progress",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
@@ -156,31 +156,31 @@
     },
     {
       "step": "Phase 7: Polish, UAT, guardrails, verification (T045-T055)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Implementation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Code Review",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Integration Suite",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Cleanup",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Reviewability Diff Gate",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: PR Body Generation",
@@ -245,6 +245,24 @@
       "spec": ".specify/presets/speckit-pro-reviewability/templates/spec-template.md",
       "plan": ".specify/presets/speckit-pro-reviewability/templates/plan-template.md",
       "tasks": ".specify/presets/speckit-pro-reviewability/templates/tasks-template.md"
+    }
+  },
+  "post_implementation": {
+    "cleanup": {
+      "status": "completed",
+      "command_available": false,
+      "fallback": ".claude/skills/speckit-cleanup-run/SKILL.md",
+      "files_changed": [
+        "tests/e2e/spec-009f-triage-routing.spec.ts"
+      ],
+      "issues_fixed": [
+        "@typescript-eslint/array-type in the SPEC-009F Playwright UAT fixture"
+      ],
+      "deferred": [],
+      "validation": [
+        "node scripts/spec-009f/check-scope-guards.mjs passed",
+        "pnpm lint passed"
+      ]
     }
   },
   "phase_results": {
@@ -447,7 +465,7 @@
       "consensus": "none required"
     },
     "implementation": {
-      "status": "in_progress",
+      "status": "completed",
       "completed_tasks": [
         "T001",
         "T002",
@@ -492,7 +510,18 @@
         "T041",
         "T042",
         "T043",
-        "T044"
+        "T044",
+        "T045",
+        "T046",
+        "T047",
+        "T048",
+        "T049",
+        "T050",
+        "T051",
+        "T052",
+        "T053",
+        "T054",
+        "T055"
       ],
       "current_group": "Polish, UAT, guardrails, verification (T045-T055)",
       "groups": {
@@ -612,6 +641,64 @@
           "focused_tests": 45,
           "api_parity": "passed",
           "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
+        },
+        "T045-T055": {
+          "status": "completed",
+          "files": [
+            "src/lib/triage-routing.ts",
+            "src/lib/__tests__/triage-routing.test.ts",
+            "src/lib/task-dispatch.ts",
+            "src/lib/__tests__/task-dispatch.test.ts",
+            "tests/e2e/spec-009f-triage-routing.spec.ts",
+            "scripts/spec-009f/check-scope-guards.mjs",
+            "docs/qa/pilot-smoke-checklist.md",
+            "specs/009f-production-triage-routing/tasks.md"
+          ],
+          "review_artifacts": [
+            "test-results/spec-009f-triage-routing/spec-009f-triage-routing-fixture-export.json",
+            "test-results/spec-009f-triage-routing/spec-009f-needs-spec.png",
+            "test-results/spec-009f-triage-routing/spec-009f-needs-human.png",
+            "test-results/spec-009f-triage-routing/spec-009f-needs-specialist.png",
+            "test-results/spec-009f-triage-routing/spec-009f-duplicate.png",
+            "test-results/spec-009f-triage-routing/spec-009f-obsolete.png",
+            "test-results/spec-009f-triage-routing/spec-009f-invalid.png"
+          ],
+          "commands": [
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-dispatch.test.ts",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/task-dispatch.test.ts",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm api:parity",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-dispatch.test.ts",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/task-dispatch.test.ts",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test",
+            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e"
+          ],
+          "focused_tests": 84,
+          "unit_suite": "284 passed, 33 skipped; 2991 tests passed, 3 skipped, 84 todo",
+          "e2e_suite": "648 passed",
+          "build": "passed outside sandbox after sandbox-only Turbopack localhost bind EPERM",
+          "api_parity": "passed",
+          "scope_guard": "passed; committed review artifacts under test-results/spec-009f-triage-routing are forbidden",
+          "post_review_fix": "SPEC-009F routing artifacts now publish through publishArtifact so task-artifacts ownership of secret detection, redaction, size/MIME checks, and supersession is preserved; production dispatch now stops legacy triage_outcome publication after SPEC-009F validation/conflict/publish failures. Focused routing/dispatch tests pass 41 tests and broader focused SPEC-009F tests pass 84 tests; final read-only review found no blocking findings. The e2e UAT fixture drives routing through the production /api/tasks status update path and advanceTaskChain(), not a helper-only shortcut.",
+          "cleanup_verification": {
+            "task_ids": [
+              12,
+              13,
+              14,
+              15,
+              16,
+              17
+            ],
+            "tasks": 0,
+            "task_artifacts": 0,
+            "activities": 0,
+            "task_dispositions": 0
+          },
+          "node_runtime_note": "SQLite-backed tests and Next.js verification used Node 22.22.2 because this worktree's better-sqlite3 native addon was installed for Node 22."
         }
       }
     }

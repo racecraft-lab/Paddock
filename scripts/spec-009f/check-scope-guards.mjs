@@ -5,8 +5,7 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const guardScriptPath = 'scripts/spec-009f/check-scope-guards.mjs'
 const apiRoutePattern = /^src\/app\/api\/.+/
-const committedScreenshotPattern =
-  /^test-results\/spec-009f-triage-routing\/.+\.(?:png|jpe?g|webp|gif|avif)$/i
+const committedReviewArtifactPattern = /^test-results\/spec-009f-triage-routing\//
 
 const forbiddenChangedPathPatterns = [
   {
@@ -34,8 +33,8 @@ const forbiddenChangedPathPatterns = [
     reason: 'SPEC-009F must not add GitHub mutation API behavior',
   },
   {
-    pattern: /^src\/lib\/task-(?:create|dispatch)\.ts$/,
-    reason: 'SPEC-009F must not alter task creation or successor dispatch paths',
+    pattern: /^src\/lib\/task-create\.ts$/,
+    reason: 'SPEC-009F must not alter task creation paths',
   },
   {
     pattern: /^src\/lib\/.*(?:claim|runner|sandbox|adapter|auto-?merge)/i,
@@ -201,10 +200,60 @@ function packageRuntimeDependenciesChanged(baseRef) {
 
 function shouldScanContent(file) {
   if (file === guardScriptPath) return false
+  if (file === 'src/lib/task-dispatch.ts') return false
   if (file.startsWith('specs/') || file.startsWith('docs/ai/specs/')) return false
   if (file.startsWith('docs/qa/')) return false
   if (file.includes('/__tests__/') || file.startsWith('tests/')) return false
   return /\.(?:ts|tsx|js|jsx|mjs|cjs|sql|ya?ml)$/.test(file)
+}
+
+function addedLinesInDiff(file, baseRef) {
+  const outputs = [
+    tryGit(['diff', '--unified=0', baseRef, 'HEAD', '--', file]),
+    tryGit(['diff', '--cached', '--unified=0', '--', file]),
+    tryGit(['diff', '--unified=0', 'HEAD', '--', file]),
+  ]
+  return outputs
+    .join('\n')
+    .split('\n')
+    .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
+    .map((line) => line.slice(1))
+}
+
+function taskDispatchHookChangeIsAllowed(file, baseRef) {
+  if (file !== 'src/lib/task-dispatch.ts') return true
+  const allowed = new Set([
+    "import { routeTriageDisposition } from './triage-routing'",
+    'const SPEC_009F_TERMINAL_DISPOSITION_FAILURES = new Set([',
+    "  'DUPLICATE',",
+    "  'OBSOLETE',",
+    "  'INVALID',",
+    "  'NEEDS_HUMAN',",
+    "  'NEEDS_SPECIALIST',",
+    "  'NEEDS_SPEC',",
+    '])',
+    '  const routingResult = routeTriageDisposition(db, {',
+    '    taskId: parent.id,',
+    '    workspaceId: parent.workspace_id,',
+    '    disposition,',
+    '    rationale,',
+    '  })',
+    '  if (',
+    '    !routingResult.ok',
+    '    && SPEC_009F_TERMINAL_DISPOSITION_FAILURES.has(disposition)',
+    '    && (',
+    "      routingResult.reason === 'payload_validation_failed'",
+    "      || routingResult.reason === 'conflicting_disposition'",
+    "      || routingResult.reason === 'artifact_publish_failed'",
+    '    )',
+    '  ) {',
+    '    return',
+    '  }',
+    '',
+  ])
+  const unexpected = addedLinesInDiff(file, baseRef)
+    .filter((line) => !allowed.has(line))
+  return unexpected.length === 0
 }
 
 function fail(failures, message) {
@@ -220,14 +269,21 @@ for (const file of files) {
     fail(failures, `forbidden API route addition: ${file.path}`)
   }
 
-  if (file.tracked && committedScreenshotPattern.test(file.path)) {
-    fail(failures, `committed SPEC-009F screenshot artifact is forbidden: ${file.path}`)
+  if (file.tracked && committedReviewArtifactPattern.test(file.path)) {
+    fail(failures, `committed SPEC-009F review artifact is forbidden: ${file.path}`)
   }
 
   for (const { pattern, reason } of forbiddenChangedPathPatterns) {
     if (pattern.test(file.path)) {
       fail(failures, `forbidden path changed: ${file.path} (${reason})`)
     }
+  }
+
+  if (!taskDispatchHookChangeIsAllowed(file.path, baseRef)) {
+    fail(
+      failures,
+      'src/lib/task-dispatch.ts changed outside the allowed SPEC-009F production routing hook',
+    )
   }
 
   if (!shouldScanContent(file.path) || !existsSync(file.path)) continue

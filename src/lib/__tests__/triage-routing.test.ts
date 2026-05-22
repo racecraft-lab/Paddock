@@ -8,6 +8,7 @@ import {
 } from './task-evidence.fixtures'
 
 const openDbs: Database.Database[] = []
+const FAKE_AKIA = 'AKIAIOSFODNN7EXAMPLE'
 
 afterEach(() => {
   while (openDbs.length > 0) {
@@ -174,6 +175,33 @@ describe('SPEC-009F triage routing source gates', () => {
     expect(after).toEqual(before)
   })
 
+  it('honors the PILOT_MISSION_CONTROL_E2E env force-on exception', () => {
+    const original = process.env['PILOT_MISSION_CONTROL_E2E']
+    process.env['PILOT_MISSION_CONTROL_E2E'] = '1'
+    try {
+      const database = db()
+      database
+        .prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
+        .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: true, PILOT_MISSION_CONTROL_E2E: false }))
+      const taskId = seedSourceTask(database)
+
+      const result = route(database, taskId, 'NEEDS_SPEC')
+
+      expect(result).toMatchObject({
+        ok: true,
+        status: 'recorded',
+        disposition: 'NEEDS_SPEC',
+      })
+      expect(latestActivity(database, taskId).type).toBe('triage_routing_recorded')
+    } finally {
+      if (original === undefined) {
+        delete process.env['PILOT_MISSION_CONTROL_E2E']
+      } else {
+        process.env['PILOT_MISSION_CONTROL_E2E'] = original
+      }
+    }
+  })
+
   it('fails closed for source tasks outside mission-control_issue_triage and performs no writes', () => {
     const database = db()
     enablePilot(database)
@@ -335,8 +363,8 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       schema_version: 'spec-009f.triage_routing.v1',
       storage_kind: 'inline_json',
       mime_type: 'application/json',
-      redaction_status: 'clean',
-      security_scan_status: 'scanned_clean',
+      redaction_status: 'pending',
+      security_scan_status: 'pending',
     })
     expect(payload).toMatchObject({
       schema_version: 'spec-009f.triage_routing.v1',
@@ -844,6 +872,31 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
     const activity = latestActivity(database, taskId)
     expect(activity.type).toBe('triage_routing_artifact_publish_failed')
     expect(activity.data ?? '').not.toContain('SECRET')
+  })
+
+  it('rejects secret-bearing routing artifacts through the task artifact publisher', () => {
+    const database = db()
+    enablePilot(database)
+    const taskId = seedSourceTask(database, { taskId: 9606, githubIssueNumber: 934 })
+    const before = snapshotSpec009fDisposableCounts(database)
+
+    const result = routeWith(database, taskId, 'NEEDS_SPEC', {
+      rationale: `Owner pasted credential ${FAKE_AKIA} in triage notes.`,
+    })
+    const after = snapshotSpec009fDisposableCounts(database)
+
+    expect(result).toMatchObject({
+      ok: false,
+      status: 'failed',
+      reason: 'artifact_publish_failed',
+    })
+    expect(after).toEqual({
+      ...before,
+      activities: before.activities + 1,
+    })
+    const activity = latestActivity(database, taskId)
+    expect(activity.type).toBe('triage_routing_artifact_publish_failed')
+    expect(activity.data ?? '').not.toContain(FAKE_AKIA)
   })
 
   it('fails closed for unsupported dispositions without echoing raw disposition text or writing rows', () => {

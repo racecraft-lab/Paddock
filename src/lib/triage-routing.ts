@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto'
 import { resolveFlag } from './feature-flags'
+import { publishArtifact } from './task-artifacts'
 import {
   TRIAGE_ROUTING_ARTIFACT_TYPES,
   TRIAGE_ROUTING_SCHEMA_VERSION,
@@ -338,10 +338,6 @@ function recordTriageRouting(
       ? currentArtifact.id
       : undefined
     const artifactId = insertRoutingArtifact(db, source, payload, supersedesArtifactId)
-    if (supersedesArtifactId) {
-      db.prepare('UPDATE task_artifacts SET redaction_status = ? WHERE id = ? AND task_id = ? AND workspace_id = ?')
-        .run('superseded', supersedesArtifactId, source.taskId, source.workspaceId)
-    }
     const activity = insertRecordedRoutingActivity(db, source, payload, artifactId, supersedesArtifactId)
 
     return {
@@ -380,30 +376,20 @@ function insertRoutingArtifact(
   supersedesArtifactId?: number,
 ): number {
   const payloadJson = JSON.stringify(payload)
-  const artifactInfo = db
-    .prepare(`
-      INSERT INTO task_artifacts (
-        task_id, workspace_id, workflow_template_slug, artifact_type, schema_version,
-        storage_kind, content_json, mime_type, byte_size, sha256, preview_text,
-        redaction_status, security_scan_status, supersedes_artifact_id, created_at
-      )
-      VALUES (?, ?, ?, ?, ?, 'inline_json', ?, 'application/json',
-        ?, ?, ?, 'clean', 'scanned_clean', ?, ?)
-    `)
-    .run(
-      source.taskId,
-      source.workspaceId,
-      source.workflowTemplateSlug,
-      payload.artifact_type,
-      TRIAGE_ROUTING_SCHEMA_VERSION,
-      payloadJson,
-      Buffer.byteLength(payloadJson, 'utf8'),
-      createHash('sha256').update(payloadJson, 'utf8').digest('hex'),
-      `${payload.disposition} ${payload.lane} ${payload.recommended_next_action}`,
-      supersedesArtifactId ?? null,
-      unixNow(),
-    )
-  return Number(artifactInfo.lastInsertRowid)
+  const artifact = publishArtifact({
+    task_id: source.taskId,
+    artifact_type: payload.artifact_type,
+    storage_kind: 'inline_json',
+    content: payloadJson,
+    mime: 'application/json',
+    schema_version: TRIAGE_ROUTING_SCHEMA_VERSION,
+    active_workspace_id: source.workspaceId,
+    is_facility_caller: false,
+    db,
+    ...(supersedesArtifactId !== undefined ? { supersedes: supersedesArtifactId } : {}),
+    ...(source.workflowTemplateSlug !== null ? { workflow_template_slug: source.workflowTemplateSlug } : {}),
+  })
+  return artifact.id
 }
 
 function insertRecordedRoutingActivity(
@@ -837,7 +823,7 @@ function pilotFlagEnabled(db: Database.Database, workspaceId: number): boolean {
   const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as
     | { feature_flags: string | null }
     | undefined
-  return resolveFlag(PILOT_FLAG, { env: {}, workspaceFlags: row?.feature_flags ?? null })
+  return resolveFlag(PILOT_FLAG, { workspaceFlags: row?.feature_flags ?? null })
 }
 
 function readSourceTask(

@@ -4,6 +4,8 @@ import { runMigrations } from '@/lib/migrations'
 import { resolveGatewayAgentIdForReviewAgent, resolveTaskDispatchModelOverride } from '@/lib/task-dispatch'
 import type { ResolveTaskTerminalTransitionInput, TaskTerminalTransitionResult } from '@/lib/task-status'
 
+const SPEC_009F_FAKE_AKIA = 'AKIAIOSFODNN7EXAMPLE'
+
 describe('resolveTaskDispatchModelOverride', () => {
   it('returns null when the agent has no explicit dispatch model override', () => {
     expect(resolveTaskDispatchModelOverride({ agent_config: null })).toBeNull()
@@ -217,6 +219,54 @@ function createSpec009C3PipelineDb(): Database.Database {
   return db
 }
 
+const SPEC_009F_TRIAGE_OUTPUT_SCHEMA = JSON.stringify({
+  type: 'object',
+  required: ['disposition', 'rationale'],
+  properties: {
+    disposition: {
+      type: 'string',
+      enum: [
+        'ACTIONABLE_REMEDIATION',
+        'DUPLICATE',
+        'OBSOLETE',
+        'INVALID',
+        'NEEDS_HUMAN',
+        'NEEDS_SPECIALIST',
+        'NEEDS_SPEC',
+      ],
+    },
+    rationale: { type: 'string' },
+  },
+  additionalProperties: false,
+})
+
+function createSpec009FTriageDispatchDb(): Database.Database {
+  const db = new Database(':memory:')
+  runMigrations(db)
+  db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1').run(JSON.stringify({
+    FEATURE_TASK_PIPELINES: true,
+    FEATURE_TASK_ARTIFACTS: true,
+    FEATURE_DISPOSITION_LOGGING: true,
+    PILOT_MISSION_CONTROL_E2E: true,
+  }))
+  db.prepare(`
+    INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix, area_slug)
+    VALUES (990, 'Mission Control', 'mission-control', 1, 'MC', 'dev')
+  `).run()
+  db.prepare(`
+    INSERT INTO workflow_templates (
+      id, workspace_id, slug, name, task_prompt, model, agent_role,
+      output_schema, routing_rules, next_template_slug, produces_pr,
+      external_terminal_event, created_by
+    )
+    VALUES (
+      990, 1, 'mission-control_issue_triage', 'Issue Triage', 'Triage issue',
+      'sonnet', 'triage', ?, '[]', NULL, 0, NULL, 'workflow-contract'
+    )
+  `).run(SPEC_009F_TRIAGE_OUTPUT_SCHEMA)
+  return db
+}
+
 function seedSpec009C3Chain(db: Database.Database, reviewVerdict: 'pass' | 'fix'): void {
   db.prepare(`
     INSERT INTO tasks (
@@ -373,6 +423,109 @@ async function importTaskDispatchWithDb(
 
   return import('@/lib/task-dispatch')
 }
+
+describe('advanceTaskChain SPEC-009F triage routing', () => {
+  it('records typed routing evidence from the production triage completion path', async () => {
+    dispatchDb = createSpec009FTriageDispatchDb()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (
+        id, title, description, status, priority, resolution, assigned_to, created_by,
+        workspace_id, project_id, workflow_template_id, workflow_template_slug,
+        github_repo, github_issue_number, github_synced_at, created_at, updated_at
+      )
+      VALUES (
+        9900, 'SPEC-009F source task', 'Production triage route', 'done', 'medium',
+        ?, 'triage-agent', 'system', 1, 990, 990, 'mission-control_issue_triage',
+        'racecraft-lab/mission-control', 1090, 1779400000, 1779400000, 1779400000
+      )
+    `).run(JSON.stringify({
+      disposition: 'NEEDS_SPEC',
+      rationale: 'Needs a bounded SpecKit handoff.',
+    }))
+    const { advanceTaskChain } = await importTaskDispatchWithDb(dispatchDb)
+
+    const result = advanceTaskChain({
+      taskId: 9900,
+      workspaceId: 1,
+      previousStatus: 'review',
+      trigger: 'detail_task_update',
+    })
+
+    expect(result).toEqual({ advanced: false, reason: 'chain_terminated' })
+    expect(dispatchDb.prepare(`
+      SELECT disposition, reason
+      FROM task_dispositions
+      WHERE task_id = 9900 AND workspace_id = 1
+    `).get()).toEqual({
+      disposition: 'NEEDS_SPEC',
+      reason: 'Needs a bounded SpecKit handoff.',
+    })
+    expect(dispatchDb.prepare(`
+      SELECT artifact_type, schema_version
+      FROM task_artifacts
+      WHERE task_id = 9900 AND workspace_id = 1 AND artifact_type = 'triage_speckit_handoff'
+    `).get()).toEqual({
+      artifact_type: 'triage_speckit_handoff',
+      schema_version: 'spec-009f.triage_routing.v1',
+    })
+    expect(dispatchDb.prepare(`
+      SELECT type
+      FROM activities
+      WHERE entity_id = 9900 AND workspace_id = 1 AND type = 'triage_routing_recorded'
+    `).get()).toEqual({ type: 'triage_routing_recorded' })
+    expect(dispatchDb.prepare(`
+      SELECT COUNT(*) AS count
+      FROM tasks
+      WHERE parent_task_id = 9900 AND workspace_id = 1
+    `).get()).toEqual({ count: 0 })
+  })
+
+  it('stops legacy triage artifact publication when SPEC-009F routing rejects secret-bearing rationale', async () => {
+    dispatchDb = createSpec009FTriageDispatchDb()
+    dispatchDb.prepare(`
+      INSERT INTO tasks (
+        id, title, description, status, priority, resolution, assigned_to, created_by,
+        workspace_id, project_id, workflow_template_id, workflow_template_slug,
+        github_repo, github_issue_number, github_synced_at, created_at, updated_at
+      )
+      VALUES (
+        9901, 'SPEC-009F secret-bearing source task', 'Production triage route', 'done', 'medium',
+        ?, 'triage-agent', 'system', 1, 990, 990, 'mission-control_issue_triage',
+        'racecraft-lab/mission-control', 1091, 1779400000, 1779400000, 1779400000
+      )
+    `).run(JSON.stringify({
+      disposition: 'NEEDS_SPEC',
+      rationale: `Needs handoff but includes credential ${SPEC_009F_FAKE_AKIA}.`,
+    }))
+    const { advanceTaskChain } = await importTaskDispatchWithDb(dispatchDb)
+
+    const result = advanceTaskChain({
+      taskId: 9901,
+      workspaceId: 1,
+      previousStatus: 'review',
+      trigger: 'detail_task_update',
+    })
+
+    expect(result).toEqual({ advanced: false, reason: 'chain_terminated' })
+    expect(dispatchDb.prepare(`
+      SELECT COUNT(*) AS count
+      FROM task_artifacts
+      WHERE task_id = 9901 AND workspace_id = 1
+    `).get()).toEqual({ count: 0 })
+    expect(dispatchDb.prepare(`
+      SELECT COUNT(*) AS count
+      FROM activities
+      WHERE entity_id = 9901 AND workspace_id = 1 AND type = 'pilot_triage_artifact_publish_failed'
+    `).get()).toEqual({ count: 0 })
+    const routingFailure = dispatchDb.prepare(`
+      SELECT data
+      FROM activities
+      WHERE entity_id = 9901 AND workspace_id = 1 AND type = 'triage_routing_artifact_publish_failed'
+    `).get() as { data: string | null } | undefined
+    expect(routingFailure).toBeDefined()
+    expect(routingFailure?.data ?? '').not.toContain(SPEC_009F_FAKE_AKIA)
+  })
+})
 
 describe('autoRouteInboxTasks pilot hold', () => {
   it('holds GitHub-linked Mission Control pilot tasks while routing ordinary inbox tasks', async () => {

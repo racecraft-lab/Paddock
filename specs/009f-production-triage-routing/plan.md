@@ -34,7 +34,7 @@ If implementation cannot preserve these constraints, split before coding. Do not
 **Performance Goals**: Task Evidence derivation remains bounded to one task and same-workspace stored rows; no live network calls; no background dispatch
 **Constraints**: Recommendation-only, no live external side effects, no successor creation for non-remediation outcomes, no migration, no new runtime dependency, no new API route, no automatic SpecKit setup, no UI action controls
 **Scale/Scope**: Six deterministic non-remediation outcome families; one current active routing artifact per source task/outcome with superseded artifacts trace-only
-**Reviewability Budget**: Primary surface is terminal triage routing evidence. Secondary surfaces are the existing task Evidence route/UI and fixture/UAT evidence. Project setup carries a roadmap transition exception, but this plan stays under the implementation block threshold target: projected 5 production files and 14 total touched files. No split required if tasks keep this file set.
+**Reviewability Budget**: Primary surface is terminal triage routing evidence. Secondary surfaces are the existing task Evidence route/UI and fixture/UAT evidence. Project setup carries a roadmap setup exception, but this plan stays under the implementation block threshold target: projected 5 production files and 14 total touched files. No split required if tasks keep this file set.
 **Strict Scope**: Add `src/lib/triage-routing-payloads.ts` and `src/lib/triage-routing.ts` to `tsconfig.spec-strict.json` and `eslint.config.mjs`. Existing strict-scope files to extend: `src/lib/task-evidence.ts`, `src/components/panels/task-evidence-section.tsx`, `src/lib/__tests__/task-evidence.fixtures.ts`, and `src/lib/__tests__/task-evidence.test.ts`.
 
 ## Constitution Check
@@ -157,7 +157,7 @@ Split decision: no split required for this plan. Split immediately if coding req
 
 ## Complexity Tracking
 
-No constitution violations are justified. The roadmap transition exception exists from setup, but SPEC-009F's implementation plan remains narrower than the transition heuristic and does not rely on new primary surfaces.
+No constitution violations are justified. The roadmap setup exception exists from setup, but SPEC-009F's implementation plan remains narrower than the transition heuristic and does not rely on new primary surfaces.
 
 ## Verification Plan
 
