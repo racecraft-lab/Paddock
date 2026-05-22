@@ -733,15 +733,15 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 
 ### Completion Checklist
 
-- [ ] All generated tasks complete.
-- [ ] Focused config/seed/CLI tests pass.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] `pnpm build` passes if production/API files change.
-- [ ] Mission Control generic-config apply-twice/verify parity evidence exists.
-- [ ] Invalid-config and blocked-preflight no-mutation evidence exists.
-- [ ] Roadmap/workflow status synced.
-- [ ] PR packet includes review order, traceability, validation, known gaps, and rollback/flag notes.
+- [x] All generated tasks complete.
+- [x] Focused config/seed/CLI tests pass.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] `pnpm build` passes if production/API files change.
+- [x] Mission Control generic-config apply-twice/verify parity evidence exists.
+- [x] Invalid-config and blocked-preflight no-mutation evidence exists.
+- [x] Roadmap/workflow status synced.
+- [x] PR packet includes review order, traceability, validation, known gaps, and rollback/flag notes in [PR #59](https://github.com/racecraft-lab/mission-control/pull/59).
 
 ---
 
