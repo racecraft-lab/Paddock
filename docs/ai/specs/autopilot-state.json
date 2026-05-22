@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T16:46:54Z",
-  "active_step": "Phase 3: Plan",
+  "updated_at": "2026-05-22T16:55:42Z",
+  "active_step": "Phase 4: Checklist - data-integrity",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -52,11 +52,11 @@
     },
     {
       "step": "Phase 3: Plan",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - data-integrity Consensus",
@@ -309,6 +309,39 @@
         "name": "G2",
         "pass": true,
         "markers": 0
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 3: Plan",
+      "status": "Complete",
+      "timestamp": "2026-05-22T16:55:42Z",
+      "summary": "Generated plan, research, data model, quickstart, three contracts, and AGENTS context update. G3 passed with 0 markers and strict no-migration/no-dependency/no-UI/no-runtime-expansion scope.",
+      "details": {
+        "files": [
+          "AGENTS.md",
+          "specs/010a-generic-product-line-seeder/plan.md",
+          "specs/010a-generic-product-line-seeder/research.md",
+          "specs/010a-generic-product-line-seeder/data-model.md",
+          "specs/010a-generic-product-line-seeder/quickstart.md",
+          "specs/010a-generic-product-line-seeder/contracts/product-line-seed-config.md",
+          "specs/010a-generic-product-line-seeder/contracts/cli-result-envelope.md",
+          "specs/010a-generic-product-line-seeder/contracts/validation-error-codes.md",
+          "docs/ai/specs/SPEC-010A-workflow.md"
+        ],
+        "gate": {
+          "name": "G3",
+          "pass": true,
+          "markers": 0
+        },
+        "scope": "primary surface seed/config; no migration, dependency, UI, GitHub mutation, Product Line B, dispatch, claim, runner, sandbox, adapter, or auto-merge"
       },
       "markers": {
         "gaps": 0,

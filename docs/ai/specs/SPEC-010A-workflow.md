@@ -50,7 +50,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 |-------|---------|--------|-------|
 | Specify | `$speckit-specify` | Complete | Generated `specs/010a-generic-product-line-seeder/spec.md` and requirements checklist; after Clarify session 4 the spec has 5 user stories, 29 FRs, 13 success criteria, and 0 unresolved markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved schema path/sections, existing-target semantics, workflow/flag/agent/governance rules, CLI contract, wrapper behavior, evidence envelope, redaction fixtures, and docs paths; G2 passed with 0 markers |
-| Plan | `$speckit-plan` | Pending | Design reusable seed modules over existing Mission Control seed and workflow-contract seams |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, three contracts, and Codex AGENTS context; G3 passed with 0 markers and no migration/dependency/UI/runtime scope |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and operator-process checks |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks for config schema, CLI, parity fixtures, validation, and docs |
 | Analyze | `$speckit-analyze` | Pending | Check drift across spec, plan, tasks, workflow, and design concept before implementation |
@@ -482,12 +482,23 @@ Plan must list exact files likely touched and explain why each is in scope. If t
 
 ### Plan Gate Checklist
 
-- [ ] No migration.
-- [ ] No new runtime dependency.
-- [ ] No GitHub mutation or autonomous execution path.
-- [ ] Existing SPEC-009B Mission Control seed behavior remains covered.
-- [ ] Product Line B stays out of scope.
-- [ ] UAT/manual verification path is concrete.
+- [x] No migration.
+- [x] No new runtime dependency.
+- [x] No GitHub mutation or autonomous execution path.
+- [x] Existing SPEC-009B Mission Control seed behavior remains covered.
+- [x] Product Line B stays out of scope.
+- [x] UAT/manual verification path is concrete.
+
+### Plan Result
+
+| Field | Result |
+|-------|--------|
+| Status | Complete |
+| Generated artifacts | `plan.md`, `research.md`, `data-model.md`, `quickstart.md`, `contracts/product-line-seed-config.md`, `contracts/cli-result-envelope.md`, `contracts/validation-error-codes.md` |
+| Context update | `AGENTS.md` active technology/storage entries added by SpecKit agent context update |
+| Marker scan | 0 gaps, 0 clarifications, 0 findings |
+| G3 gate | Pass: `validate-gate.sh G3 specs/010a-generic-product-line-seeder` returned `pass=true` |
+| Scope result | One primary surface (`seed/config`); no migration, new runtime dependency, UI, GitHub mutation, Product Line B, dispatch, claim, runner, sandbox, adapter, or auto-merge scope |
 
 ---
 
