@@ -35,8 +35,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch/worktree, archive registry, presets, package manager, command map, and required Codex subagents verified before Specify |
 | Specify | `$speckit-specify` | Complete | G1 passed; generated `specs/013a-run-state-spine/spec.md` and requirements checklist with zero clarification markers |
-| Clarify | `$speckit-clarify` | In Progress | First session is schema identity and lifecycle |
-| Plan | `$speckit-plan` | Pending | Plan additive schema if justified by Q1 decision, typed helpers, read-only API/UI, tests, and rollback |
+| Clarify | `$speckit-clarify` | Complete | G2 passed; 20 clarification answers and 5 consensus resolutions recorded with zero unresolved markers |
+| Plan | `$speckit-plan` | In Progress | Plan additive schema if justified by Q1 decision, typed helpers, read-only API/UI, tests, and rollback |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains for data integrity, API contracts, state management, regression safety, and UX/accessibility |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict boundaries against SPEC-013B/C and SPEC-014A-D |
 | Analyze | `$speckit-analyze` | Pending | Cross-check spec, plan, tasks, and design concept for scope drift |
@@ -317,10 +317,10 @@ Focus on inspection surface and strict boundaries:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Schema identity and lifecycle | Pending | Pending |
-| 2 | Flag-off runtime isolation and debug reads | Pending | Pending |
-| 3 | Runs relationship and archive semantics | Pending | Pending |
-| 4 | API/UI surface and SPEC-013B boundary | Pending | Pending |
+| 1 | Schema identity and lifecycle | 5 | Accepted two-table attempt/event model, required identity fields, seven-state lifecycle vocabulary, inspection-only indexes, and human-admin-session debug write boundary |
+| 2 | Flag-off runtime isolation and debug reads | 5 | Accepted table-blind runtime path list, flag-off debug read payload, workspace masking/auth rules, typed default-off flag registry entry, and static guardrails |
+| 3 | Runs relationship and archive semantics | 5 | Accepted soft nullable run link, compact read-time run summary, archive status/timestamp/event semantics, child-first rollback, and trusted proxy-auth human-admin rule |
+| 4 | API/UI surface and SPEC-013B boundary | 5 | Accepted dedicated task-scoped read route, compact task-detail section, controlled fixture/UAT endpoint conditions, explicit no-control-plane contract, and `task_stage_attempts.v1` envelope |
 
 ---
 
@@ -592,6 +592,18 @@ For each task:
 - [ ] Rollback SQL and operator runbook updates exist if migration is added.
 - [ ] Roadmap and workflow status are updated on the spec branch.
 - [ ] PR review packet records reviewability, verification, flag, rollback, and known-gap evidence.
+
+---
+
+## Consensus Resolution Log
+
+| Phase | Item | Round | Routed Categories | Outcome | Analysts Used |
+|-------|------|-------|-------------------|---------|---------------|
+| Clarify Session 1 | Debug write boundary for create/update/archive lifecycle records | 1 | security | Accepted with conditions: human-admin session guard for runtime debug writes, authenticated read-only operator inspection, lifecycle append/update only as observed-state recording, no execution-control authority | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 2 | Auth and workspace masking rules for attempt inspection and debug writes | 1 | security, codebase | Accepted with caveat: read path follows existing viewer-or-higher workspace masking and masked task-not-found behavior; debug writes require verified human-admin context excluding API-key and agent-key callers; Plan must confirm trusted proxy-auth treatment | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 | Trusted proxy-auth admin handling for debug writes | 1 | security | Accepted with conditions: trusted proxy-auth admins count only as real positive-id human admins; global API-key, agent API-key, and agent-identity requests never satisfy the debug-write guard | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 4 | Fixture/UAT write endpoint boundary | 1 | security, codebase | Accepted with conditions: at most one spec-scoped fixture/UAT endpoint, human-admin-only, mutation/rate limited, CSRF-protected for cookie auth, structured-audited, unavailable outside fixture/UAT unless explicitly reviewed, and inert beyond attempt/event/audit rows | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 4 | No-control-plane schema/API/UI contract | 1 | security, spec | Accepted with precision: encode explicit forbidden schema/field/helper/UI/action controls; `released` and `cancelled` remain passive observed states only | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ---
 

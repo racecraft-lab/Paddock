@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
   "updated_at": "2026-05-22T16:07:53Z",
-  "active_step": "Phase 2: Clarify - Schema Identity And Lifecycle",
+  "active_step": "Phase 3: Plan",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -20,39 +20,39 @@
     },
     {
       "step": "Phase 2: Clarify - Schema Identity And Lifecycle",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Schema Identity And Lifecycle Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Flag-Off Runtime Isolation And Debug Reads",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Flag-Off Runtime Isolation And Debug Reads Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Runs Relationship And Archive Semantics",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - Runs Relationship And Archive Semantics Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - API/UI Surface And SPEC-013B Boundary",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 2: Clarify - API/UI Surface And SPEC-013B Boundary Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 3: Plan",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
@@ -197,6 +197,113 @@
       "functional_requirements": 14,
       "acceptance_scenarios": 7,
       "success_criteria": 5
+    },
+    "clarify": {
+      "sessions": {
+        "schema_identity_and_lifecycle": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 1,
+          "outcome": "Accepted two-table task_stage_attempts/task_stage_attempt_events model, required identity fields, seven-state lifecycle vocabulary, inspection-only indexes, and human-admin-session debug write boundary."
+        },
+        "flag_off_runtime_isolation_and_debug_reads": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 1,
+          "outcome": "Accepted table-blind runtime path list, compact flag-off debug read payload, workspace masking/auth rules, typed default-off flag registry entry, and static guardrails."
+        },
+        "runs_relationship_and_archive_semantics": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 1,
+          "outcome": "Accepted soft nullable run link, compact read-time run summary, archived status/timestamp/event semantics, child-first rollback, and trusted proxy-auth human-admin rule."
+        },
+        "api_ui_surface_and_spec_013b_boundary": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 2,
+          "outcome": "Accepted dedicated task-scoped read route, compact task-detail section, controlled fixture/UAT endpoint conditions, explicit no-control-plane contract, and task_stage_attempts.v1 envelope."
+        }
+      },
+      "consensus": [
+        {
+          "session": "Schema Identity And Lifecycle",
+          "item": "Debug write boundary for create/update/archive lifecycle records",
+          "round": 1,
+          "routed_categories": [
+            "security"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with conditions: human-admin session guard for runtime debug writes, authenticated read-only operator inspection, lifecycle append/update only as observed-state recording, no execution-control authority."
+        },
+        {
+          "session": "Flag-Off Runtime Isolation And Debug Reads",
+          "item": "Auth and workspace masking rules for attempt inspection and debug writes",
+          "round": 1,
+          "routed_categories": [
+            "security",
+            "codebase"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with caveat: read path follows existing viewer-or-higher workspace masking and masked task-not-found behavior; debug writes require verified human-admin context excluding API-key and agent-key callers; Plan must confirm trusted proxy-auth treatment."
+        },
+        {
+          "session": "Runs Relationship And Archive Semantics",
+          "item": "Trusted proxy-auth admin handling for debug writes",
+          "round": 1,
+          "routed_categories": [
+            "security"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with conditions: trusted proxy-auth admins count only as real positive-id human admins; global API-key, agent API-key, and agent-identity requests never satisfy the debug-write guard."
+        },
+        {
+          "session": "API/UI Surface And SPEC-013B Boundary",
+          "item": "Fixture/UAT write endpoint boundary",
+          "round": 1,
+          "routed_categories": [
+            "security",
+            "codebase"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with conditions: at most one spec-scoped fixture/UAT endpoint, human-admin-only, mutation/rate limited, CSRF-protected for cookie auth, structured-audited, unavailable outside fixture/UAT unless explicitly reviewed, and inert beyond attempt/event/audit rows."
+        },
+        {
+          "session": "API/UI Surface And SPEC-013B Boundary",
+          "item": "No-control-plane schema/API/UI contract",
+          "round": 1,
+          "routed_categories": [
+            "security",
+            "spec"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with precision: encode explicit forbidden schema/field/helper/UI/action controls; released and cancelled remain passive observed states only."
+        }
+      ],
+      "status": "completed",
+      "gate": "G2 pass, 0 [NEEDS CLARIFICATION] markers",
+      "total_questions": 20,
+      "consensus_items": 5
     }
   }
 }

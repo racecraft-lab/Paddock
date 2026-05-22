@@ -5,6 +5,40 @@
 **Status**: Draft  
 **Input**: User description: "/speckit.specify SPEC-013A - Run-State Persistence Spine"
 
+## Clarifications
+
+### Session 2026-05-22 - Schema Identity And Lifecycle
+
+- Q: Where should attempt identity, current projection, and lifecycle history live? A: Use two additive tables: `task_stage_attempts` for attempt identity/current projection and `task_stage_attempt_events` for append-only observed lifecycle history.
+- Q: Which attempt identity fields are required? A: Require `workspace_id`, `task_id`, non-null `stage_key`, `attempt_number`, `status`, `created_at`, `updated_at`, nullable `started_at`, `completed_at`, `archived_at`, nullable `run_id`, and optional `workflow_template_id` / `workflow_template_slug` copied from the task context when the attempt is created.
+- Q: Which lifecycle states belong in SPEC-013A? A: Keep exactly `created`, `running`, `succeeded`, `failed`, `released`, `cancelled`, and `archived`; do not add claim, retry, timeout, or blocked vocabulary in this slice.
+- Q: Which uniqueness/index behavior supports inspection without implementing SPEC-013B claim authority? A: Use uniqueness only for attempt number per task-stage, specifically `workspace_id`, `task_id`, `stage_key`, and `attempt_number`; add non-unique inspection indexes for task, status, optional `run_id`, and lifecycle ordering; do not add one-active-attempt uniqueness.
+- Q: What write boundary is allowed? A: SPEC-013A permits only explicit debug, fixture, or test-support writes for creating representative attempts, appending/updating observed lifecycle state, and non-destructively archiving attempts. Any runtime debug write API must require a human-admin session, while operator-facing inspection remains authenticated and read-only. These writes must not select work, claim work, prevent duplicate launch, dispatch, call the scheduler, reconcile GitHub/task state, retry/backoff, launch harnesses, manage sandboxes, or mutate review-packet behavior.
+
+### Session 2026-05-22 - Flag-Off Runtime Isolation And Debug Reads
+
+- Q: Which runtime paths must ignore attempt rows when `FEATURE_TASK_CONTROL_PLANE=false`? A: Existing scheduler, dispatch, task-chain advancement, Aegis review, GitHub sync/poller, runtime runs, pilot review packet, and existing task evidence routes remain table-blind to `task_stage_attempts` and `task_stage_attempt_events`; only a dedicated debug inspection surface may read attempt data.
+- Q: What exactly does flag-off debug inspection show? A: A compact read-only attempt list with task/workspace/stage identity, attempt number, status, created/updated/started/completed/archived timestamps, workflow template id/slug when present, optional `run_id` link state (`none`, `linked`, `missing/unavailable`), and recent lifecycle summary. It shows archived attempts distinctly and exposes no claim, retry, release, cancel, scheduler, or launch controls.
+- Q: What auth and workspace masking rules apply? A: Reads require authenticated viewer-or-higher semantics and existing workspace-scope masking: malformed scope returns `400`, forbidden explicit scope returns `403`, and nonexistent/out-of-scope tasks both return masked `404 task_not_found`. Debug writes require a verified human-admin context that rejects global API-key and agent API-key callers; Plan must confirm whether trusted proxy-auth human admins count as human-admin context.
+- Q: Should `FEATURE_TASK_CONTROL_PLANE` enter the typed flag registry now? A: Yes. SPEC-013A adds the typed default-off registry entry so implementation can use `resolveFlag` without string casts or inline environment reads; admin enablement and safe ON behavior remain later-spec decisions.
+- Q: What static guardrails are required? A: Add SPEC-013A guardrails that block inline `process.env.FEATURE_TASK_CONTROL_PLANE` reads outside the flag registry, and block named runtime/evidence/packet paths from importing attempt helpers or directly referencing attempt table names. Allow attempt table strings only in migrations, rollback SQL, debug route/helper, fixtures, and tests.
+
+### Session 2026-05-22 - Runs Relationship And Archive Semantics
+
+- Q: Should `task_stage_attempts.run_id` use a foreign key to `runs.id`? A: Use a soft nullable text reference with app-level lookup, not a database foreign key, so attempts remain inspectable when a linked run is missing/unavailable and rollback is not constrained by `runs` foreign-key behavior.
+- Q: Which runtime-run fields should attempt inspection reference rather than duplicate? A: Store only the durable `run_id` link on the attempt. At read time, expose a compact run summary such as run id, status, started/ended timestamps, agent name, runtime, git branch/commit, and error state when available; do not copy steps, cost, eval, provenance, tags, or full run metadata into attempt rows.
+- Q: How should archive state work? A: Archiving sets `status='archived'`, sets `archived_at`, appends an `archived` lifecycle event, and keeps archived attempts queryable in task-detail/debug inspection by default with a distinct archived marker.
+- Q: What rollback behavior is required? A: Provide idempotent rollback SQL that drops `task_stage_attempt_events` before `task_stage_attempts`, deletes only the SPEC-013A migration marker, includes or instructs `PRAGMA foreign_key_check`, and warns operators that rollback removes attempt history unless backed up/exported first.
+- Q: Should trusted proxy-auth admin users count as the human-admin context for debug writes? A: Yes, when auth resolution yields a real trusted proxy-auth or session-cookie admin with a normal positive persisted user identity. Global API-key callers, agent API-key callers, and requests carrying agent identity never satisfy the human-admin debug-write guard.
+
+### Session 2026-05-22 - API/UI Surface And SPEC-013B Boundary
+
+- Q: What read-only route exposes task-stage attempts? A: Use a dedicated task-scoped route, `GET /api/tasks/[id]/stage-attempts`, and keep existing task Evidence routes table-blind to attempt tables.
+- Q: Where does the UI render attempt inspection? A: Add a separate compact read-only `Run state` / `Stage attempts` section in the existing task detail Details tab near Evidence, backed by the dedicated attempt route. Do not add a global dashboard, modal control center, or controls inside the Evidence component.
+- Q: Is a write/debug endpoint allowed outside tests? A: Plan may select at most one spec-scoped fixture/UAT endpoint, such as `POST /api/admin/spec-013a/attempt-fixtures`, for representative create/event/archive actions only. It must be human-admin-only, mutation/rate limited, CSRF-protected when cookie auth can authorize it, structured-audited with actor/request/row/outcome details, unavailable outside fixture/UAT need unless explicitly reviewed, and it must never mutate task status, scheduler, dispatch, run launch, GitHub sync, retry, sandbox, or review-packet state.
+- Q: How should SPEC-013A encode prohibitions against later control-plane behavior? A: Encode the boundary as contract language and guardrails. SPEC-013A must not add claim tokens, active-owner fields, one-active-attempt enforcement, duplicate-launch prevention, work selection, scheduler calls, GitHub/task reconciliation, retry/backoff controls, release/cancel action controls, sandbox lifecycle, harness adapters, auto-merge behavior, or UI action controls. The allowed `released` and `cancelled` lifecycle values are passive observed states only.
+- Q: What response envelope should the read route return? A: Use a `task_stage_attempts.v1` envelope with `task`, ordered `attempts`, and `warnings`. Each attempt includes identity, timestamps, status, archive evidence, workflow template context, `run_link.state` (`none`, `linked`, `missing_unavailable`), optional compact `run_summary`, and bounded recent lifecycle entries. Order attempts by `stage_key` then latest attempt number; order lifecycle snippets chronologically.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Inspect Task-Stage Attempt State (Priority: P1)
@@ -59,25 +93,39 @@ As a reviewer or future implementer, I need `FEATURE_TASK_CONTROL_PLANE=false` b
 - Archived attempts must not be physically deleted, exported-and-deleted, or moved to a separate archive table in this slice.
 - Unknown, malformed, or future lifecycle states must fail closed for writes and render safely for read-only inspection.
 - Feature-flag-off operation must not block debug reads, but must not affect scheduler, dispatch, claim, retry, GitHub sync, task-chain, or review-packet behavior.
+- Nonexistent and out-of-scope task IDs must not leak task existence through distinguishable read responses.
+- Debug write routes must reject API-key and agent-key callers even if those callers otherwise carry admin-like permissions.
+- Rolling back SPEC-013A persistence removes attempt history unless the operator backs it up or exports it before rollback.
+- `released` and `cancelled` are passive observed lifecycle states only and must not create release/cancel UI controls.
+- Runtime fixture endpoints, if present, must be intentionally unavailable outside fixture/UAT use unless security review explicitly accepts production reachability.
 
 ## Requirements *(mandatory)*
 
 ### Functional Requirements
 
-- **FR-001**: System MUST maintain a dedicated additive task-stage-attempt persistence model separate from runtime run metadata.
+- **FR-001**: System MUST maintain dedicated additive `task_stage_attempts` and `task_stage_attempt_events` persistence separate from runtime run metadata.
 - **FR-002**: System MUST represent one append-only attempt per task-stage execution.
-- **FR-003**: Each attempt MUST be keyed or identifiable by task identity, workflow identity, stage identity, attempt number, current lifecycle state, lifecycle history, archive status, and optional runtime-run linkage.
+- **FR-003**: Each attempt MUST be keyed or identifiable by `workspace_id`, `task_id`, non-null `stage_key`, `attempt_number`, current lifecycle state, lifecycle history, archive status, and optional runtime-run linkage, with optional workflow-template id/slug context captured from the task when available.
 - **FR-004**: System MUST allow an attempt to exist before a concrete runtime run exists.
-- **FR-005**: System MUST preserve optional linkage from a task-stage attempt to an existing runtime run without duplicating runtime-run execution fields as the authoritative source of run details.
-- **FR-006**: System MUST record lifecycle as observed state history plus a current-state projection.
-- **FR-007**: System MUST use the lifecycle vocabulary `created`, `running`, `succeeded`, `failed`, `released`, `cancelled`, and `archived` for this slice unless a later clarification explicitly revises the vocabulary.
-- **FR-008**: System MUST treat archive as non-destructive attempt state or timestamp evidence; attempts MUST NOT be physically deleted, moved to archive tables, or exported-and-deleted by SPEC-013A behavior.
-- **FR-009**: System MUST provide authenticated read-only operator inspection of task-stage attempts, including lifecycle history summary, current state, archive evidence, and optional runtime-run linkage.
-- **FR-010**: System MUST keep read-only debug inspection available when `FEATURE_TASK_CONTROL_PLANE=false`.
-- **FR-011**: With `FEATURE_TASK_CONTROL_PLANE=false`, existing scheduler, dispatch, GitHub sync, task-chain, and review-packet behavior MUST ignore task-stage-attempt rows.
+- **FR-005**: System MUST preserve optional linkage from a task-stage attempt to an existing runtime run as a soft nullable `run_id` text reference without a database foreign key and without duplicating runtime-run execution fields as the authoritative source of run details.
+- **FR-006**: System MUST record lifecycle as append-only observed state history plus current-state projection columns on the attempt record.
+- **FR-007**: System MUST use exactly the lifecycle vocabulary `created`, `running`, `succeeded`, `failed`, `released`, `cancelled`, and `archived` for this slice.
+- **FR-008**: System MUST treat archive as non-destructive attempt state, timestamp evidence, and lifecycle event evidence; attempts MUST NOT be physically deleted, moved to archive tables, or exported-and-deleted by SPEC-013A behavior.
+- **FR-009**: System MUST provide authenticated read-only operator inspection of task-stage attempts, including lifecycle history summary, current state, archive evidence, optional workflow-template context, and optional runtime-run linkage.
+- **FR-010**: System MUST keep read-only debug inspection available when `FEATURE_TASK_CONTROL_PLANE=false`, showing compact attempt identity, timestamps, status, archive evidence, optional run link state, and recent lifecycle summary without action controls.
+- **FR-011**: With `FEATURE_TASK_CONTROL_PLANE=false`, existing scheduler, dispatch, task-chain advancement, Aegis review, GitHub sync/poller, runtime runs, pilot review packet, and existing task evidence behavior MUST ignore task-stage-attempt rows.
 - **FR-012**: System MUST NOT introduce claim authority, duplicate-launch prevention, scheduler launch, automatic GitHub sync, terminal reconciliation, retry/backoff controls, sandbox lifecycle, harness adapters, full dashboard, or auto-merge behavior in SPEC-013A.
-- **FR-013**: System MUST include rollback coverage for any additive persistence changes introduced for the task-stage-attempt model.
+- **FR-013**: System MUST include idempotent rollback SQL for additive persistence changes, dropping event/history tables before parent attempt tables and documenting operator data-loss/backup expectations.
 - **FR-014**: System MUST explain in reviewer-facing evidence why existing runtime runs and runtime-run metadata are insufficient as the sole durable task-stage-attempt model.
+- **FR-015**: System MUST constrain uniqueness to attempt number per task-stage, not one-active-attempt enforcement or duplicate-launch prevention.
+- **FR-016**: System MUST apply existing workspace-scope masking to attempt reads, including masked `404 task_not_found` responses for nonexistent and out-of-scope tasks.
+- **FR-017**: System MUST restrict any runtime debug write API for representative attempt create/update/archive behavior to a verified human-admin context that excludes global API-key callers, agent API-key callers, and requests carrying agent identity; trusted proxy-auth human admins count only when resolved as real positive-id admins.
+- **FR-018**: System MUST add `FEATURE_TASK_CONTROL_PLANE` to the typed feature-flag registry as default-off and MUST use `resolveFlag` for checks instead of inline environment reads or string casts.
+- **FR-019**: System MUST include static guardrails that prevent named runtime/evidence/packet paths from importing attempt helpers or directly referencing attempt tables.
+- **FR-020**: System MUST expose read-only attempt inspection through a dedicated task-scoped route shaped as `GET /api/tasks/[id]/stage-attempts`, while existing task Evidence routes remain table-blind to attempt tables.
+- **FR-021**: System MUST render attempt inspection as a separate compact read-only task-detail section near Evidence, not as a global dashboard, modal control center, or action surface.
+- **FR-022**: System MAY expose at most one spec-scoped fixture/UAT endpoint for representative create/event/archive actions, and that endpoint MUST be human-admin-only, mutation/rate limited, CSRF-protected when cookie auth can authorize it, structured-audited, and inert with respect to runtime control-plane state.
+- **FR-023**: System MUST NOT add schema columns, response fields, UI controls, helper names, or guard bypasses that imply claim ownership, locking, launch authority, retry/release/cancel authority, scheduler integration, GitHub reconciliation, sandbox lifecycle, harness adapter execution, or auto-merge behavior.
 
 ### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
 
@@ -89,11 +137,12 @@ As a reviewer or future implementer, I need `FEATURE_TASK_CONTROL_PLANE=false` b
 
 ### Key Entities *(include if feature involves data)*
 
-- **Task-Stage Attempt**: A durable record of one observed task-stage execution attempt. Key attributes include task identity, workflow identity, stage identity, attempt number, current lifecycle state, archive evidence, creation/update timing, and optional runtime-run linkage.
-- **Attempt Lifecycle Entry**: An observed lifecycle state entry for a task-stage attempt. It records the state, timing, and reviewable context needed to reconstruct how the attempt reached its current projection.
-- **Current State Projection**: The compact current view of an attempt derived from lifecycle history for operator inspection and future control-plane consumers.
-- **Runtime Run Link**: An optional relationship from a task-stage attempt to an existing runtime run. It preserves continuity with current runtime execution records without making the runtime run mandatory.
-- **Archive Evidence**: Non-destructive evidence that an attempt is archived, represented by archived state and/or timestamp while preserving the original attempt and lifecycle context.
+- **Task-Stage Attempt (`task_stage_attempts`)**: A durable record of one observed task-stage execution attempt. Key attributes include workspace identity, task identity, stage identity, attempt number, current lifecycle state, archive evidence, creation/update timing, optional workflow-template context, and optional runtime-run linkage.
+- **Attempt Lifecycle Entry (`task_stage_attempt_events`)**: An append-only observed lifecycle state entry for a task-stage attempt. It records the state, timing, and reviewable context needed to reconstruct how the attempt reached its current projection.
+- **Current State Projection**: The compact current view of an attempt stored on the attempt record and derived from lifecycle history for operator inspection and future control-plane consumers.
+- **Runtime Run Link**: A soft optional `run_id` text relationship from a task-stage attempt to an existing runtime run. It preserves continuity with current runtime execution records without making the runtime run mandatory or blocking inspection when the run is missing.
+- **Archive Evidence**: Non-destructive evidence that an attempt is archived, represented by `status='archived'`, `archived_at`, and an `archived` lifecycle entry while preserving the original attempt and lifecycle context.
+- **Attempt Inspection Envelope**: The read contract for `task_stage_attempts.v1`, containing task identity, ordered attempt summaries, bounded lifecycle snippets, optional run link summary, warnings, and no action controls.
 
 ## Success Criteria *(mandatory)*
 
@@ -104,12 +153,22 @@ As a reviewer or future implementer, I need `FEATURE_TASK_CONTROL_PLANE=false` b
 - **SC-003**: 100% of archived representative attempts remain inspectable after archive action and are not physically deleted, moved to a separate archive table, or exported-and-deleted.
 - **SC-004**: Reviewer evidence demonstrates at least one attempt without a runtime-run link and at least one attempt with a runtime-run link, proving the relationship is optional.
 - **SC-005**: Reviewer evidence identifies no claim authority, duplicate-launch prevention, scheduler launch, retry/backoff controls, sandbox lifecycle, harness adapter, automatic GitHub sync, terminal reconciliation, full dashboard, or auto-merge behavior added by this slice.
+- **SC-006**: Static guardrails fail if `FEATURE_TASK_CONTROL_PLANE` is read inline or if scheduler, dispatch, task-chain, Aegis, GitHub sync, runtime-run, pilot review packet, or existing task evidence paths directly reference task-stage-attempt persistence.
+- **SC-007**: Migration rollback evidence shows child-first table removal, SPEC-013A migration-marker cleanup, foreign-key check guidance, and an operator warning that rollback removes attempt history unless backed up or exported.
+- **SC-008**: API/UI contract evidence shows the dedicated read route and compact task-detail section expose attempt state without claim, retry, release, cancel, launch, scheduler, GitHub, sandbox, harness, or auto-merge controls.
+- **SC-009**: Any fixture/UAT write endpoint evidence shows human-admin-only access, API-key/agent-key rejection, mutation/rate limiting, CSRF coverage when cookie-authenticated, structured audit output, and no mutation outside attempt/event/audit rows.
 
 ## Assumptions
 
 - The selected model is a dedicated additive task-stage-attempt spine rather than reuse-only runtime-run metadata.
 - Runtime runs remain the source of truth for runtime execution details; task-stage attempts are the source of truth for task-stage attempt identity, lifecycle, archive status, and pre-run visibility.
-- The initial lifecycle vocabulary is `created`, `running`, `succeeded`, `failed`, `released`, `cancelled`, and `archived`.
+- The lifecycle vocabulary is exactly `created`, `running`, `succeeded`, `failed`, `released`, `cancelled`, and `archived` for SPEC-013A.
 - Read-only inspection is authenticated and compact, located near existing task detail or debug evidence surfaces if planning confirms that placement.
-- Any write path used to create or archive representative attempts is explicit debug, fixture, or test-support behavior only and does not select work or launch execution.
+- Any write path used to create, append/update observed lifecycle state, or archive representative attempts is explicit debug, fixture, or test-support behavior only and does not select work, claim work, enforce duplicate prevention, launch execution, retry, reconcile, or mutate review-packet behavior.
+- A runtime debug write API, if Plan includes one, uses a human-admin session guard rather than generic admin-role/API-key authority.
+- Trusted proxy-auth human admins count as human-admin context for debug writes only when auth resolution yields a real positive-id admin and no API-key or agent identity; API-key and agent-key callers are never sufficient.
+- Attempt read payloads may include a compact runtime-run summary resolved at read time, but attempts do not persist run execution snapshots.
+- The read API response envelope is versioned as `task_stage_attempts.v1` and does not reuse the task evidence envelope.
+- Inspection-support indexes may optimize task, status, optional `run_id`, and lifecycle ordering, but SPEC-013A does not create one-active-attempt uniqueness.
+- Any fixture/UAT endpoint route name is finalized in Plan; the spec requires the boundary and controls, not a specific route path beyond being spec-scoped and separate from the read route.
 - Later specs own GitHub sync automation, claim/reconciliation authority, retry controls, scheduler launch, sandbox lifecycle, harness adapters, and richer dashboards.
