@@ -729,6 +729,7 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 | US3 Mission Control Parity | T044-T050 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and disposable DB generic apply/apply `--allow-existing`/verify plus wrapper verify commands passed |
 | US4 Fail-Closed Safety | T051-T060 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `git diff --check` passed |
 | US5 Reuse Docs And Guards | T061-T065 | Complete | Static guard command, `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `git diff --check` passed |
+| Polish And Verification | T066-T073 | Complete | Focused tests, CLI parity sequence, static guard, migration/dependency guard, `pnpm typecheck`, `pnpm lint`, `pnpm build` outside sandbox, and `git diff --check` passed; `pnpm test:all` not required by branch policy |
 
 ### Completion Checklist
 

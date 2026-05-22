@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T19:57:53Z",
-  "active_step": "Phase 7: Polish And Verification (T066-T073)",
+  "updated_at": "2026-05-22T20:11:35Z",
+  "active_step": "Post: Verification and Status Sync",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -132,11 +132,11 @@
     },
     {
       "step": "Phase 7: Polish And Verification (T066-T073)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "pending"
+      "status": "in_progress"
     }
   ],
   "archive_sweep": {
@@ -757,6 +757,50 @@
           "git diff --check"
         ],
         "result": "passed"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 7: Polish And Verification (T066-T073)",
+      "status": "Complete",
+      "timestamp": "2026-05-22T20:11:35Z",
+      "summary": "Completed final verification tasks T066-T073: focused product-line seed tests, CLI parity sequence, static scope guard, migration/dependency guard review, typecheck, lint, build, and conditional test:all disposition recorded in quickstart.",
+      "details": {
+        "tasks_completed": [
+          "T066",
+          "T067",
+          "T068",
+          "T069",
+          "T070",
+          "T071",
+          "T072",
+          "T073"
+        ],
+        "verification": [
+          "direnv exec . pnpm exec vitest run src/lib/__tests__/product-line-seed.test.ts",
+          "direnv exec . pnpm exec vitest run src/lib/__tests__/product-line-seed-cli.test.ts",
+          "CLI parity preflight/apply/existing-target-refusal/apply --allow-existing/verify/wrapper verify against /private/tmp/spec-010a-phase8/phase8-parity.db",
+          "direnv exec . rg -n \"Product Line B|product-line-b|focusengine|createTask\\\\(|INSERT INTO tasks|gh issue|github.*(create|comment|close|label)|runner|sandbox|auto.?merge|speckit-setup|speckit-autopilot\" docs/ai/product-lines scripts/seed-product-line.ts scripts/seed-mission-control-product-line.ts src/lib/product-line-seed src/lib/__tests__/product-line-seed*.test.ts",
+          "git diff --name-only origin/main...HEAD -- src/lib/migrations.ts docs/migrations pnpm-lock.yaml",
+          "git diff origin/main...HEAD -- package.json pnpm-lock.yaml",
+          "direnv exec . pnpm typecheck",
+          "direnv exec . pnpm lint",
+          "direnv exec . pnpm build outside sandbox",
+          "git diff --check"
+        ],
+        "result": "passed",
+        "test_all": "not run; documented as conditional and not required by branch policy for this phase",
+        "warnings": [
+          "Node emits the existing MODULE_TYPELESS_PACKAGE_JSON warning for stripped TypeScript CLI entrypoints.",
+          "Sandboxed pnpm build fails with Turbopack Operation not permitted port-binding artifact; rerun outside sandbox passed."
+        ]
       },
       "markers": {
         "gaps": 0,

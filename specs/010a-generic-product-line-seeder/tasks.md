@@ -223,14 +223,14 @@ pnpm test -- src/lib/__tests__/product-line-seed.test.ts
 
 **Purpose**: Final evidence, reviewability, and repository guardrails across all user stories.
 
-- [ ] T066 Run focused product-line seed tests and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
-- [ ] T067 Run CLI parity commands for preflight, apply, apply `--allow-existing`, verify, wrapper verify, and existing-target refusal and record evidence references in `specs/010a-generic-product-line-seeder/quickstart.md`.
-- [ ] T068 Run static scope guard command and record Product Line B/runtime/GitHub mutation exclusion evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
-- [ ] T069 Run migration/dependency guard review proving no migration and no new runtime dependency in `specs/010a-generic-product-line-seeder/quickstart.md`.
-- [ ] T070 Run `pnpm typecheck` and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
-- [ ] T071 Run `pnpm lint` and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
-- [ ] T072 Run `pnpm build` and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
-- [ ] T073 Run `pnpm test:all` when branch policy requires full verification and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T066 Run focused product-line seed tests and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T067 Run CLI parity commands for preflight, apply, apply `--allow-existing`, verify, wrapper verify, and existing-target refusal and record evidence references in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T068 Run static scope guard command and record Product Line B/runtime/GitHub mutation exclusion evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T069 Run migration/dependency guard review proving no migration and no new runtime dependency in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T070 Run `pnpm typecheck` and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T071 Run `pnpm lint` and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T072 Run `pnpm build` and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
+- [x] T073 Run `pnpm test:all` when branch policy requires full verification and record pass/fail evidence in `specs/010a-generic-product-line-seeder/quickstart.md`.
 
 **Verification commands**:
 

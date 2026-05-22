@@ -223,3 +223,42 @@ direnv exec . rg -n "Product Line B|product-line-b|focusengine|createTask\\(|INS
   docs/ai/product-lines scripts/seed-product-line.ts scripts/seed-mission-control-product-line.ts src/lib/product-line-seed src/lib/__tests__/product-line-seed*.test.ts
 direnv exec . git diff --check
 ```
+
+## Phase 8 Evidence - 2026-05-22
+
+All Node and pnpm commands below were run with `direnv exec .` from the `010a-generic-product-line-seeder` worktree using Node `v22.22.2`.
+
+Focused product-line seed tests:
+
+- `pnpm exec vitest run src/lib/__tests__/product-line-seed.test.ts` passed: 1 file, 32 tests.
+- `pnpm exec vitest run src/lib/__tests__/product-line-seed-cli.test.ts` passed: 1 file, 8 tests.
+- A discarded `pnpm test -- src/lib/__tests__/product-line-seed.test.ts` attempt expanded to the full Vitest suite and failed in unrelated `src/lib/__tests__/mc-provisioner-daemon.test.ts` socket setup; the focused files above were rerun with `pnpm exec vitest run <file>` for SPEC-010A evidence.
+
+CLI parity evidence was run against copied disposable database `/private/tmp/spec-010a-phase8/phase8-parity.db`, created from `.data/mission-control.db`; `.data/mission-control.db` was not mutated. Full result envelopes are stored under `/private/tmp/spec-010a-phase8/`.
+
+- `preflight.json`: `ok:true`, `status:"ready"`, `code:"READY"`, `mutation_status:"not_mutated"`, `existing_target:false`.
+- `apply.json`: `ok:true`, `status:"seeded"`, `code:"SEEDED"`, `mutation_status:"applied"`, `existing_target:false`.
+- `existing-target-refusal.stderr.json`: `ok:false`, `status:"existing_target_refused"`, `code:"EXISTING_TARGET_REQUIRES_ALLOW_EXISTING"`, `mutation_status:"not_mutated"`, `action_required:"--allow-existing"`, `exit_code:2`.
+- `apply-allow-existing.json`: `ok:true`, `status:"seeded"`, `code:"SEEDED"`, `mutation_status:"applied"`, `existing_target:true`.
+- `verify.json`: `ok:true`, `status:"verified"`, `code:"VERIFIED"`, `mutation_status:"verified"`, `entrypoint:"seed:product-line"`.
+- `wrapper-verify.json`: `ok:true`, `status:"verified"`, `code:"VERIFIED"`, `mutation_status:"verified"`, `entrypoint:"seed:mission-control"`.
+- Known warning preserved for TypeScript script entrypoints: Node `MODULE_TYPELESS_PACKAGE_JSON` warning appeared during CLI runs.
+
+Static scope guard:
+
+- `rg -n "Product Line B|product-line-b|focusengine|createTask\\(|INSERT INTO tasks|gh issue|github.*(create|comment|close|label)|runner|sandbox|auto.?merge|speckit-setup|speckit-autopilot" docs/ai/product-lines scripts/seed-product-line.ts scripts/seed-mission-control-product-line.ts src/lib/product-line-seed src/lib/__tests__/product-line-seed*.test.ts` exited 0.
+- `rg --count-matches ...` reported matches only in negative/static guard tests, blocked-side-effect config values, safety policy types, and preserved-state snapshot evidence: `product-line-seed.test.ts:55`, `mission-control.yaml:3`, `types.ts:3`, `evidence.ts:2`.
+- No Product Line B config, runtime execution path, GitHub mutation path, task creation path, dispatch/claim path, runner/sandbox/adapter path, auto-merge path, or SpecKit setup/autopilot path was introduced.
+
+Migration and dependency guard review:
+
+- `git diff --name-only origin/main...HEAD -- src/lib/migrations.ts docs/migrations pnpm-lock.yaml` produced no output.
+- `git diff origin/main...HEAD -- package.json pnpm-lock.yaml` shows only one `package.json` script addition: `seed:product-line`.
+- No migration, rollback SQL, lockfile, or runtime dependency change is present in the branch diff.
+
+Repository verification:
+
+- `pnpm typecheck` passed.
+- `pnpm lint` passed.
+- `pnpm build` failed inside the Codex sandbox with the known Turbopack `binding to a port` / `Operation not permitted (os error 1)` artifact, then passed when rerun outside the sandbox.
+- `pnpm test:all` was not run because SPEC-010A Phase 8 and the quickstart make it conditional on branch policy or final diff requiring full verification. This branch's Phase 8 coverage is the focused product-line tests, CLI parity sequence, static scope guard, migration/dependency guard, typecheck, lint, build, and `git diff --check`.
