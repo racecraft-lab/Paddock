@@ -724,6 +724,7 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 | Group | Tasks | Status | Verification |
 |-------|-------|--------|--------------|
 | Setup And Foundations | T001-T018 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, and `direnv exec . pnpm lint` passed |
+| US1 Config Review | T019-T027 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts`, `direnv exec . pnpm typecheck`, and `direnv exec . pnpm lint` passed |
 
 ### Completion Checklist
 

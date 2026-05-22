@@ -67,18 +67,18 @@ pnpm test -- src/lib/__tests__/product-line-seed-cli.test.ts
 
 ### Tests for User Story 1
 
-- [ ] T019 [US1] Write RED tests for required top-level sections, schema marker, unknown top-level fields, and duplicate declarations in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T020 [US1] Write RED tests for safe single-document YAML parsing that rejects custom tags, anchors, aliases, merge keys, multi-document streams, executable constructs, and remote references in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T021 [US1] Write RED tests for canonical Mission Control config coverage of identity, display name, agent prefix, GitHub ownership, workflow family/path/slugs, departments, assignments, flags, governance defaults, and safety policy in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T022 [US1] Write RED static tests proving `docs/ai/product-lines/mission-control.yaml` contains no Product Line B config, runtime work launch, GitHub mutation, dispatch, claim, runner, sandbox, adapter, auto-merge, or SpecKit setup/autopilot authorization in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T019 [US1] Write RED tests for required top-level sections, schema marker, unknown top-level fields, and duplicate declarations in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T020 [US1] Write RED tests for safe single-document YAML parsing that rejects custom tags, anchors, aliases, merge keys, multi-document streams, executable constructs, and remote references in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T021 [US1] Write RED tests for canonical Mission Control config coverage of identity, display name, agent prefix, GitHub ownership, workflow family/path/slugs, departments, assignments, flags, governance defaults, and safety policy in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T022 [US1] Write RED static tests proving `docs/ai/product-lines/mission-control.yaml` contains no Product Line B config, runtime work launch, GitHub mutation, dispatch, claim, runner, sandbox, adapter, auto-merge, or SpecKit setup/autopilot authorization in `src/lib/__tests__/product-line-seed.test.ts`.
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Implement JSON Schema constants for required product-line seed config shape and unknown-field rejection in `src/lib/product-line-seed/schema.ts`.
-- [ ] T024 [US1] Implement non-executing single-document YAML loading and unsafe syntax classification in `src/lib/product-line-seed/config.ts`.
-- [ ] T025 [US1] Implement semantic validation for schema version, required sections, duplicate declarations, conflicting declarations, unknown fields, and typed field errors in `src/lib/product-line-seed/config.ts`.
-- [ ] T026 [US1] Create the canonical Mission Control YAML seed config with reviewed required sections in `docs/ai/product-lines/mission-control.yaml`.
-- [ ] T027 [US1] Add reviewer-oriented comments or stable ordering only where needed to keep `docs/ai/product-lines/mission-control.yaml` human-reviewable without creating Product Line B examples.
+- [x] T023 [US1] Implement JSON Schema constants for required product-line seed config shape and unknown-field rejection in `src/lib/product-line-seed/schema.ts`.
+- [x] T024 [US1] Implement non-executing single-document YAML loading and unsafe syntax classification in `src/lib/product-line-seed/config.ts`.
+- [x] T025 [US1] Implement semantic validation for schema version, required sections, duplicate declarations, conflicting declarations, unknown fields, and typed field errors in `src/lib/product-line-seed/config.ts`.
+- [x] T026 [US1] Create the canonical Mission Control YAML seed config with reviewed required sections in `docs/ai/product-lines/mission-control.yaml`.
+- [x] T027 [US1] Add reviewer-oriented comments or stable ordering only where needed to keep `docs/ai/product-lines/mission-control.yaml` human-reviewable without creating Product Line B examples.
 
 **Checkpoint**: User Story 1 is complete when the Mission Control YAML config is reviewable and config validation tests pass without any database writes.
 

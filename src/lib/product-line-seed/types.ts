@@ -87,21 +87,21 @@ export const MISSION_CONTROL_DISABLED_OR_ABSENT_FLAGS = [
 ] as const
 
 export const MISSION_CONTROL_DEPARTMENTS = [
-  { slug: 'qa', name: 'QA', ticketPrefix: 'QA', areaSlug: 'qa', triage: true, repoSyncOwner: true, githubRepo: 'racecraft-lab/mission-control' },
-  { slug: 'development', name: 'Development', ticketPrefix: 'DEV', areaSlug: 'dev', triage: false, repoSyncOwner: false, githubRepo: null },
-  { slug: 'devsecops', name: 'DevSecOps', ticketPrefix: 'SEC', areaSlug: 'devsecops', triage: false, repoSyncOwner: false, githubRepo: null },
-  { slug: 'marketing', name: 'Marketing', ticketPrefix: 'MKT', areaSlug: 'marketing', triage: false, repoSyncOwner: false, githubRepo: null },
-  { slug: 'customer-service', name: 'Customer Service', ticketPrefix: 'CS', areaSlug: 'customer-service', triage: false, repoSyncOwner: false, githubRepo: null },
-  { slug: 'finance', name: 'Finance', ticketPrefix: 'FIN', areaSlug: 'finance', triage: false, repoSyncOwner: false, githubRepo: null },
+  { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/mission-control', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
+  { slug: 'development', name: 'Development', ticket_prefix: 'DEV', area_slug: 'dev', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
+  { slug: 'devsecops', name: 'DevSecOps', ticket_prefix: 'SEC', area_slug: 'devsecops', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
+  { slug: 'marketing', name: 'Marketing', ticket_prefix: 'MKT', area_slug: 'marketing', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
+  { slug: 'customer-service', name: 'Customer Service', ticket_prefix: 'CS', area_slug: 'customer-service', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
+  { slug: 'finance', name: 'Finance', ticket_prefix: 'FIN', area_slug: 'finance', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
 ] as const
 
 export const MISSION_CONTROL_ROLE_ASSIGNMENTS = [
-  { role: 'researcher', agentKey: 'research', agentName: 'mission-control-platform-research', departmentSlug: 'qa' },
-  { role: 'planner', agentKey: 'planner', agentName: 'mission-control-platform-planner', departmentSlug: 'qa' },
-  { role: 'dev', agentKey: 'dev', agentName: 'mission-control-platform-dev', departmentSlug: 'development' },
-  { role: 'ui', agentKey: 'ui', agentName: 'mission-control-platform-ui', departmentSlug: 'development' },
-  { role: 'devsecops', agentKey: 'devsecops', agentName: 'mission-control-platform-devsecops', departmentSlug: 'devsecops' },
-  { role: 'qa', agentKey: 'qa', agentName: 'mission-control-platform-qa', departmentSlug: 'qa' },
+  { agent_key: 'research', role: 'researcher', department_slug: 'qa' },
+  { agent_key: 'planner', role: 'planner', department_slug: 'qa' },
+  { agent_key: 'dev', role: 'dev', department_slug: 'development' },
+  { agent_key: 'ui', role: 'ui', department_slug: 'development' },
+  { agent_key: 'devsecops', role: 'devsecops', department_slug: 'devsecops' },
+  { agent_key: 'qa', role: 'qa', department_slug: 'qa' },
 ] as const
 
 export const MISSION_CONTROL_GOVERNANCE_DEFAULTS = [

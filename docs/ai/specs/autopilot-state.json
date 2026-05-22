@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T18:11:46Z",
-  "active_step": "Phase 7: US1 Config Review (T019-T027)",
+  "updated_at": "2026-05-22T18:49:33Z",
+  "active_step": "Phase 7: US2 Generic Modes (T028-T043)",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -112,11 +112,11 @@
     },
     {
       "step": "Phase 7: US1 Config Review (T019-T027)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US2 Generic Modes (T028-T043)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US3 Mission Control Parity (T044-T050)",
@@ -574,6 +574,39 @@
         ],
         "verification": [
           "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts",
+          "direnv exec . pnpm typecheck",
+          "direnv exec . pnpm lint"
+        ],
+        "result": "passed"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 7: US1 Config Review (T019-T027)",
+      "status": "Complete",
+      "timestamp": "2026-05-22T18:49:33Z",
+      "summary": "Completed US1 config review tasks T019-T027: RED tests for required config sections, safe YAML parsing, canonical config coverage, static scope guardrails; JSON Schema constants; non-executing YAML loader; semantic validation; and canonical Mission Control product-line YAML.",
+      "details": {
+        "tasks_completed": [
+          "T019",
+          "T020",
+          "T021",
+          "T022",
+          "T023",
+          "T024",
+          "T025",
+          "T026",
+          "T027"
+        ],
+        "verification": [
+          "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts",
           "direnv exec . pnpm typecheck",
           "direnv exec . pnpm lint"
         ],

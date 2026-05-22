@@ -257,6 +257,18 @@ async function importEvidenceModule(): Promise<Record<string, unknown>> {
   return import(pathToFileURL(`${process.cwd()}/${path}`).href) as Promise<Record<string, unknown>>
 }
 
+async function importSchemaModule(): Promise<Record<string, unknown>> {
+  const path = 'src/lib/product-line-seed/schema.ts'
+  expect(existsSync(path)).toBe(true)
+  return import(pathToFileURL(`${process.cwd()}/${path}`).href) as Promise<Record<string, unknown>>
+}
+
+async function importConfigModule(): Promise<Record<string, unknown>> {
+  const path = 'src/lib/product-line-seed/config.ts'
+  expect(existsSync(path)).toBe(true)
+  return import(pathToFileURL(`${process.cwd()}/${path}`).href) as Promise<Record<string, unknown>>
+}
+
 describe('generic product-line seed foundation', () => {
   it('creates the setup files and registers them in strict TypeScript and ESLint scopes', () => {
     expect(productLineSeedFiles.filter((path) => !existsSync(path))).toEqual([])
@@ -342,5 +354,178 @@ describe('generic product-line seed foundation', () => {
     expect(() => {
       assertNoProductLineSeedScopeDrift('dirty-fixture', 'This would authorize Product Line B dispatch.')
     }).toThrow(/Product Line B/)
+  })
+})
+
+describe('product-line seed config review validation', () => {
+  it('defines a closed JSON-schema surface for the required top-level sections', async () => {
+    const schema = await importSchemaModule()
+
+    expect(schema['PRODUCT_LINE_SEED_REQUIRED_TOP_LEVEL_SECTIONS']).toEqual([
+      'schema_version',
+      'product_line',
+      'github',
+      'workflow_contract',
+      'departments',
+      'agent_assignments',
+      'feature_flags',
+      'governance_defaults',
+      'safety_policy',
+    ])
+    expect(schema['PRODUCT_LINE_SEED_CONFIG_JSON_SCHEMA']).toMatchObject({
+      type: 'object',
+      additionalProperties: false,
+      required: schema['PRODUCT_LINE_SEED_REQUIRED_TOP_LEVEL_SECTIONS'],
+      properties: {
+        schema_version: { const: 'product-line-seed-v1' },
+        product_line: { type: 'object', additionalProperties: false },
+        github: { type: 'object', additionalProperties: false },
+        workflow_contract: { type: 'object', additionalProperties: false },
+        departments: { type: 'array' },
+        agent_assignments: { type: 'object', additionalProperties: false },
+        feature_flags: { type: 'object', additionalProperties: false },
+        governance_defaults: { type: 'array' },
+        safety_policy: { type: 'object', additionalProperties: false },
+      },
+    })
+  })
+
+  it('reports missing required sections, bad schema marker, unknown top-level fields, and duplicate declarations', async () => {
+    const config = await importConfigModule()
+    const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
+
+    const missingAndUnknown = validate({
+      schema_version: 'wrong-version',
+      product_line: { slug: 'mission-control', display_name: 'Mission Control', agent_prefix: 'mission-control-platform' },
+      github: { owner: 'racecraft-lab', repo: 'mission-control', full_name: 'racecraft-lab/mission-control' },
+      workflow_contract: {
+        family: 'mission-control',
+        path: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+        required_slugs: ['mission-control_issue_triage'],
+      },
+      departments: [],
+      feature_flags: { enabled: [], disabled_or_absent: [] },
+      governance_defaults: [],
+      safety_policy: {
+        existing_target: 'refuse_unless_allow_existing',
+        allow_first_intake_blocking_governance: false,
+        config_owned_surfaces: [...expectedConfigOwnedSurfaces],
+        preserved_surfaces: [...expectedPreservedSurfaces],
+        blocked_side_effects: ['github_mutation'],
+      },
+      out_of_contract: true,
+    })
+
+    expect(missingAndUnknown).toEqual(expect.arrayContaining([
+      expect.objectContaining({ code: 'CONFIG_SCHEMA_INVALID', path: '$.schema_version' }),
+      expect.objectContaining({ code: 'CONFIG_SCHEMA_INVALID', path: '$.agent_assignments' }),
+      expect.objectContaining({ code: 'CONFIG_SCHEMA_INVALID', path: '$.out_of_contract' }),
+    ]))
+
+    const duplicates = validate(parsedConfigFixture({
+      departments: [
+        { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/mission-control', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
+        { slug: 'qa', name: 'Duplicate QA', ticket_prefix: 'QA2', area_slug: 'qa-2', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
+      ],
+      agent_assignments: {
+        product_line_assignments: [
+          { agent_key: 'qa', role: 'qa', department_slug: 'qa' },
+          { agent_key: 'qa', role: 'qa-review', department_slug: 'qa' },
+        ],
+      },
+      feature_flags: {
+        enabled: ['FEATURE_WORKSPACE_SWITCHER', 'FEATURE_WORKSPACE_SWITCHER', 'FEATURE_GLOBAL_AEGIS'],
+        disabled_or_absent: ['FEATURE_GLOBAL_AEGIS'],
+      },
+      governance_defaults: [
+        { identity: 'daily-budget', policy_type: 'budget', limit_kind: 'usd', limit_value: 10, period: 'day', timezone: 'America/Chicago', enforcement: 'alert', enabled: true, default_template: false },
+        { identity: 'daily-budget', policy_type: 'budget', limit_kind: 'token', limit_value: 1000, period: 'day', timezone: 'America/Chicago', enforcement: 'alert', enabled: true, default_template: false },
+      ],
+    }))
+
+    expect(duplicates).toEqual(expect.arrayContaining([
+      expect.objectContaining({ path: '$.departments[1].slug' }),
+      expect.objectContaining({ path: '$.agent_assignments.product_line_assignments[1].agent_key' }),
+      expect.objectContaining({ path: '$.feature_flags.enabled[1]' }),
+      expect.objectContaining({ path: '$.feature_flags.disabled_or_absent[0]' }),
+      expect.objectContaining({ path: '$.governance_defaults[1].identity' }),
+    ]))
+  })
+
+  it.each([
+    ['custom tags', 'schema_version: !unsafe product-line-seed-v1\n'],
+    ['anchors', 'schema_version: &version product-line-seed-v1\nproduct_line: *version\n'],
+    ['aliases', 'schema_version: product-line-seed-v1\nproduct_line: *missing\n'],
+    ['merge keys', 'base: &base\n  schema_version: product-line-seed-v1\n<<: *base\n'],
+    ['multi-document streams', 'schema_version: product-line-seed-v1\n---\nschema_version: product-line-seed-v1\n'],
+    ['executable tags', 'schema_version: !!js/function >\n  function () { return process.env; }\n'],
+    ['remote references', 'schema_version: product-line-seed-v1\n$ref: https://example.invalid/product-line.yaml\n'],
+  ])('rejects unsafe YAML %s before semantic validation', async (_label, yaml) => {
+    const config = await importConfigModule()
+    const classify = config['classifyUnsafeProductLineSeedYamlSyntax'] as (source: string, path?: string) => { code: string, path: string, message: string }[]
+    const load = config['loadProductLineSeedConfigFromString'] as (source: string, path?: string) => unknown
+
+    expect(classify(yaml, 'unsafe.yaml')).toEqual([
+      expect.objectContaining({ code: 'CONFIG_UNSAFE_YAML_SYNTAX', path: 'unsafe.yaml' }),
+    ])
+    expect(() => load(yaml, 'unsafe.yaml')).toThrow(/CONFIG_UNSAFE_YAML_SYNTAX/)
+  })
+
+  it('loads the canonical Mission Control config with reviewed identity, ownership, routing, flags, governance, and safety policy', async () => {
+    const types = await importTypeModule()
+    const config = await importConfigModule()
+    const load = config['loadProductLineSeedConfigFromFile'] as (path: string) => Record<string, unknown>
+    const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
+
+    const canonical = load('docs/ai/product-lines/mission-control.yaml')
+
+    expect(validate(canonical)).toEqual([])
+    expect(canonical).toMatchObject({
+      schema_version: 'product-line-seed-v1',
+      product_line: {
+        slug: 'mission-control',
+        display_name: 'Mission Control',
+        agent_prefix: 'mission-control-platform',
+      },
+      github: {
+        owner: 'racecraft-lab',
+        repo: 'mission-control',
+        full_name: 'racecraft-lab/mission-control',
+      },
+      workflow_contract: {
+        family: 'mission-control',
+        path: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+        required_slugs: types['MISSION_CONTROL_REQUIRED_WORKFLOW_SLUGS'],
+      },
+      feature_flags: {
+        enabled: types['MISSION_CONTROL_ENABLED_FLAGS'],
+        disabled_or_absent: types['MISSION_CONTROL_DISABLED_OR_ABSENT_FLAGS'],
+      },
+      governance_defaults: types['MISSION_CONTROL_GOVERNANCE_DEFAULTS'],
+      safety_policy: {
+        existing_target: 'refuse_unless_allow_existing',
+        allow_first_intake_blocking_governance: false,
+        config_owned_surfaces: types['CONFIG_OWNED_SURFACES'],
+        preserved_surfaces: types['FR020_PRESERVED_SURFACES'],
+        blocked_side_effects: types['BLOCKED_SIDE_EFFECTS'],
+      },
+    })
+    expect(canonical['departments']).toEqual(types['MISSION_CONTROL_DEPARTMENTS'])
+    expect(canonical['agent_assignments']).toEqual({
+      product_line_assignments: types['MISSION_CONTROL_ROLE_ASSIGNMENTS'],
+    })
+  })
+
+  it('keeps the canonical config free of Product Line B config and runtime authorization surfaces', async () => {
+    const types = await importTypeModule()
+    const configSource = source('docs/ai/product-lines/mission-control.yaml')
+    const config = await importConfigModule()
+    const load = config['loadProductLineSeedConfigFromFile'] as (path: string) => Record<string, unknown>
+    const canonical = load('docs/ai/product-lines/mission-control.yaml')
+
+    expect(configSource).not.toMatch(/Product Line B|product-line-b|focusengine/i)
+    expect(configSource).not.toMatch(/(authorize|enable|launch|start|create|mutate|claim|merge)[^\n]*(github|dispatch|task|runner|sandbox|adapter|auto.?merge|speckit)/i)
+    expect((canonical['safety_policy'] as { blocked_side_effects: unknown[] }).blocked_side_effects)
+      .toEqual(types['BLOCKED_SIDE_EFFECTS'])
   })
 })
