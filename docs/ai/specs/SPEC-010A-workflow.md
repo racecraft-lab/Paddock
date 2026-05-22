@@ -52,7 +52,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Clarify | `$speckit-clarify` | Complete | Resolved schema path/sections, existing-target semantics, workflow/flag/agent/governance rules, CLI contract, wrapper behavior, evidence envelope, redaction fixtures, and docs paths; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, three contracts, and Codex AGENTS context; G3 passed with 0 markers and no migration/dependency/UI/runtime scope |
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, error-handling, security, and reliability checks; G4 passed with 0 markers |
-| Tasks | `$speckit-tasks` | Complete | Generated 73 TDD-first tasks across 8 task phases; G5 passed; reviewability gate passes under bounded transition exception |
+| Tasks | `$speckit-tasks` | Complete | Generated 73 TDD-first tasks across 8 task phases; G5 passed; reviewability gate passes under bounded reviewability waiver |
 | Analyze | `$speckit-analyze` | Complete | Remediated 2 MEDIUM artifact consistency findings; G6 passed with 0 CRITICAL/HIGH findings and 0 markers |
 | Implement | `$speckit-implement` | In Progress | Completed setup/foundation tasks T001-T018; continuing TDD implementation by task group |
 
@@ -106,7 +106,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 {"mode":"setup","status":"exception","pass":true,"reviewable_loc":8,"production_files":25,"total_files":0,"primary_surface_count":7,"primary_surfaces":["API","harness/adapter","or docs/process","scheduler/runtime","schema/migration","seed/config","UI"],"thresholds":{"warn":{"reviewable_loc":400,"production_files":6,"total_files":15,"primary_surfaces":1},"block":{"reviewable_loc":800,"production_files":8,"total_files":25,"primary_surfaces":1}},"transition_exception":true,"warnings":["production files 25 exceeds warn threshold 6","primary surfaces 7 exceeds warn threshold 1"],"blockers":["production files 25 exceeds block threshold 8","more than one primary surface requires split or exception"]}
 ```
 
-The setup gate passed under the roadmap transition exception. Downstream phases must keep implementation narrower than the roadmap-wide heuristic: generic seed/config tooling, Mission Control parity evidence, and no Product Line B onboarding.
+The setup gate passed under the roadmap reviewability waiver. Downstream phases must keep implementation narrower than the roadmap-wide heuristic: generic seed/config tooling, Mission Control parity evidence, and no Product Line B onboarding.
 
 ### Reviewability Preset
 
@@ -629,7 +629,7 @@ Tasks must include explicit verification commands and should mark parallel-safe 
 
 | Status | Tasks | Phases | Parallel-safe | Gate | Reviewability |
 |--------|-------|--------|---------------|------|---------------|
-| Complete | 73 | 8 | 8 tasks marked `[P]` | G5 passed with 0 markers | `reviewability-gate.sh tasks` returned `status:"exception"` under the ratified transition exception; post-implementation diff gate remains required |
+| Complete | 73 | 8 | 8 tasks marked `[P]` | G5 passed with 0 markers | `reviewability-gate.sh tasks` returned `status:"exception"` under the ratified reviewability waiver; post-implementation diff gate remains required |
 
 ---
 
