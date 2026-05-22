@@ -22,7 +22,7 @@ successor template, claim/runner/sandbox/adapter path, or auto-merge behavior
 was added.
 
 The main process deviation was reviewability size: the final PR exceeds the
-generic one-surface budget, but the workflow records a ratified exception
+generic one-surface budget, but the workflow records an approved exception
 because the behavior remains one terminal triage-routing evidence surface plus
 the existing task Evidence extension. The extra footprint is SpecKit artifacts,
 API parity, security payload tests, UAT fixtures, and guard tooling.
