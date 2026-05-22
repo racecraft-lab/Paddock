@@ -13,8 +13,8 @@ SPEC-005, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, SPEC-009C1, and SPEC-009C2;
 recovery commands are recorded in `.specify/memory/changelog.md`.
 Revision 2026-05-22: Archived completed active specs SPEC-009C3, SPEC-009C4,
 SPEC-009D, SPEC-009E, SPEC-009F, SPEC-010A, SPEC-012A, and SPEC-013A into
-project memory. Cleanup was not applied because `--apply-cleanup` was not
-requested and the checkout had unrelated untracked `.agents/.codex` files.
+project memory. Cleanup was then applied after a clean-worktree gate, removing
+active completed folders from `specs/**`.
 
 ---
 

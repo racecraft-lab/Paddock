@@ -12,9 +12,8 @@ Revision 2026-05-16: Applied archive cleanup on clean `main` through SPEC-009C2;
 active `specs/**` was empty until later spec setup recreated completed sources.
 Revision 2026-05-22: Ran archive extension workflow manually from `main` for
 completed active specs SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F,
-SPEC-010A, SPEC-012A, and SPEC-013A. Memory updated; cleanup not applied because
-`--apply-cleanup` was not requested and the checkout had unrelated untracked
-`.agents/.codex` files.
+SPEC-010A, SPEC-012A, and SPEC-013A. Memory updated and cleanup applied after a
+clean-worktree gate; active completed folders were removed from `specs/**`.
 
 ---
 
@@ -87,14 +86,7 @@ docs/
 └── scripts/bash/                   # check-prerequisites.sh, validate-gate.sh, etc.
 
 specs/
-├── 009c3-remediation-ready-for-owner      # archived to memory 2026-05-22; source retained, no cleanup
-├── 009c4-owner-merge-reconciliation       # archived to memory 2026-05-22; source retained, no cleanup
-├── 009d-pilot-review-lifecycle            # archived to memory 2026-05-22; source retained, no cleanup
-├── 009e-pilot-evidence-surfaces           # archived to memory 2026-05-22; source retained, no cleanup
-├── 009f-production-triage-routing         # archived to memory 2026-05-22; source retained, no cleanup
-├── 010a-generic-product-line-seeder       # archived to memory 2026-05-22; source retained, no cleanup
-├── 012a-repo-knowledge-index              # archived to memory 2026-05-22; source retained, no cleanup
-└── 013a-run-state-spine                   # archived to memory 2026-05-22; source retained, no cleanup
+└── (empty after 2026-05-22 archive cleanup; next active spec setup recreates specs/<feature>)
 
 # Archived (cleanup applied):
 # - 001-foundation-migrations    (SPEC-001, archived 2026-04-28)
@@ -110,16 +102,14 @@ specs/
 # - 009b-mission-control-seed    (SPEC-009B, archived after PR #30 merge — cleanup applied 2026-05-16)
 # - 009c1-pilot-issue-ingest     (SPEC-009C1, archived after PR #34/#40 merge — cleanup applied 2026-05-16)
 # - 009c2-triage-remediation-handoff (SPEC-009C2, archived after PR #43/#46 merge — cleanup applied 2026-05-16)
-
-# Archived to memory; cleanup not applied:
-# - 009c3-remediation-ready-for-owner      (SPEC-009C3, PR #48, post-merge UAT)
-# - 009c4-owner-merge-reconciliation       (SPEC-009C4, PR #52, target replay UAT)
-# - 009d-pilot-review-lifecycle            (SPEC-009D, PR #54, packet UAT)
-# - 009e-pilot-evidence-surfaces           (SPEC-009E, PR #55, evidence-surface UAT)
-# - 009f-production-triage-routing         (SPEC-009F, PR #57, HITL closeout)
-# - 010a-generic-product-line-seeder       (SPEC-010A, PR #59, post-merge UAT)
-# - 012a-repo-knowledge-index              (SPEC-012A, PR #56, knowledge-index UAT)
-# - 013a-run-state-spine                   (SPEC-013A, PR #58, post-merge UAT)
+# - 009c3-remediation-ready-for-owner      (SPEC-009C3, PR #48, post-merge UAT — cleanup applied 2026-05-22)
+# - 009c4-owner-merge-reconciliation       (SPEC-009C4, PR #52, target replay UAT — cleanup applied 2026-05-22)
+# - 009d-pilot-review-lifecycle            (SPEC-009D, PR #54, packet UAT — cleanup applied 2026-05-22)
+# - 009e-pilot-evidence-surfaces           (SPEC-009E, PR #55, evidence-surface UAT — cleanup applied 2026-05-22)
+# - 009f-production-triage-routing         (SPEC-009F, PR #57, HITL closeout — cleanup applied 2026-05-22)
+# - 010a-generic-product-line-seeder       (SPEC-010A, PR #59, post-merge UAT — cleanup applied 2026-05-22)
+# - 012a-repo-knowledge-index              (SPEC-012A, PR #56, knowledge-index UAT — cleanup applied 2026-05-22)
+# - 013a-run-state-spine                   (SPEC-013A, PR #58, post-merge UAT — cleanup applied 2026-05-22)
 ```
 
 ---

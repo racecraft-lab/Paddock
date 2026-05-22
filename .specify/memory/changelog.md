@@ -332,9 +332,10 @@ git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation
 ---
 
 <!-- Archive extension manual execution metadata -->
-<!-- archiveMode: single-feature batch | dryRun: false | applyCleanupRequested: false | safeToApplyCleanup: false -->
-<!-- Branch: main | Run: 2026-05-22 | archiveExtension: 1.1.0 | prerequisite-script: blocked on main feature-branch guard -->
-<!-- Cleanup not applied: no --apply-cleanup request, dirty worktree contains unrelated untracked .agents/.codex files, and source specs remain active for reviewable recovery. -->
+<!-- archiveMode: single-feature batch | dryRun: false | applyCleanupRequested: true | safeToApplyCleanup: true -->
+<!-- Branch: main | Run: 2026-05-22 | archiveExtension: 1.1.0 | prerequisite-script: blocked on main feature-branch guard; manual cleanup contract followed. -->
+<!-- Cleanup command: git rm -r specs/009c3-remediation-ready-for-owner specs/009c4-owner-merge-reconciliation specs/009d-pilot-review-lifecycle specs/009e-pilot-evidence-surfaces specs/009f-production-triage-routing specs/010a-generic-product-line-seeder specs/012a-repo-knowledge-index specs/013a-run-state-spine -->
+<!-- Cleanup gate: clean main worktree after temporarily stashing unrelated untracked .agents/.codex paths; no history rewrite. -->
 
 ## SPEC-009C3: Dev/Review/Aegis to Ready for Owner
 
