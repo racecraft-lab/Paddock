@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-22T20:30:45.230Z",
+  "updatedAt": "2026-05-22T21:11:51.180Z",
   "prs": [
+    {
+      "prNumber": "59",
+      "prTitle": "SPEC-010A generic product-line seeder",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/59",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/59/",
+      "headRef": "010a-generic-product-line-seeder",
+      "baseRef": "main",
+      "updatedAt": "2026-05-22T21:11:51.180Z",
+      "latest": {
+        "playwright": {
+          "runId": "26311894302",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26311894302",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/59/playwright/latest/?v=26311894302-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/59/runs/26311894302-attempt-1/playwright/",
+          "updatedAt": "2026-05-22T21:11:51.180Z"
+        }
+      }
+    },
     {
       "prNumber": "58",
       "prTitle": "SPEC-013A: Run-state persistence spine",

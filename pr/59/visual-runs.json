@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "59",
+  "prTitle": "SPEC-010A generic product-line seeder",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/59",
+  "headRef": "010a-generic-product-line-seeder",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26311894302",
+      "runAttempt": "1",
+      "runKey": "26311894302-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26311894302",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/59/runs/26311894302-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/59/playwright/latest/?v=26311894302-attempt-1",
+      "headSha": "aa59174c35033ba0e366b2fb9c011ad9d37d60f7",
+      "headRef": "010a-generic-product-line-seeder",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-22T21:11:51.180Z"
+    }
+  ],
+  "updatedAt": "2026-05-22T21:11:51.180Z"
+}
