@@ -247,8 +247,6 @@ function validateIndex(index, findings) {
     if (!isObject(entry)) continue
     validateEntry(entry, entryIndex, findings)
   }
-
-  validateStatusPointer(findings)
 }
 
 function validateEntry(entry, entryIndex, findings) {

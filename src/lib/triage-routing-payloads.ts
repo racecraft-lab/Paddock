@@ -95,7 +95,6 @@ export interface SourceIssueReference {
   readonly repo?: string;
   readonly number?: number;
   readonly url?: string;
-  readonly [key: string]: unknown;
 }
 
 export interface TriageRoutingPayloadEnvelope {
@@ -1288,13 +1287,23 @@ function normalizeSourceIssue(input: unknown, issues: TriageRoutingValidationIss
     return undefined;
   }
 
-  const sourceIssue: SourceIssueReference = { ...input };
+  const sourceIssue: { repo?: string; number?: number; url?: string } = {};
+  if (input['repo'] !== undefined) {
+    const repo = normalizeTriageRoutingText(input['repo'], {
+      field: 'source_issue.repo',
+      max_chars: 200,
+      max_newlines: 0,
+    });
+    collectIssues(issues, repo);
+    if (repo.ok) sourceIssue.repo = repo.value;
+  }
+  if (input['number'] !== undefined) {
+    const number = readPositiveInteger(input['number'], 'source_issue.number', issues);
+    if (number !== undefined) sourceIssue.number = number;
+  }
   if (typeof input['url'] === 'string') {
     const url = normalizeEvidenceUrl('github_issue', input['url']) ?? normalizeEvidenceUrl('github_pr', input['url']);
-    if (url) return { ...sourceIssue, url };
-    const { url: discardedUrl, ...withoutUrl } = sourceIssue;
-    void discardedUrl;
-    return withoutUrl;
+    if (url) sourceIssue.url = url;
   }
   return sourceIssue;
 }

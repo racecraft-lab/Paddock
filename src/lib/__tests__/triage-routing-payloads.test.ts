@@ -131,6 +131,7 @@ describe('SPEC-009F triage routing payload foundation', () => {
         repo: 'racecraft-lab/mission-control',
         number: 123,
         url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=secret',
+        unsafe_extra: 'raw-secret',
       },
       disposition: 'NEEDS_SPEC',
       lane: 'speckit_handoff',
@@ -440,6 +441,47 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
         idempotency_key: 'spec-009f.triage_routing.v1:7:42:NEEDS_SPEC',
       },
     });
+    expect(JSON.stringify(result)).not.toContain('unsafe_extra');
+    expect(JSON.stringify(result)).not.toContain('raw-secret');
+  });
+
+  it('rejects invalid source issue numbers without preserving unknown fields', () => {
+    const result = validateCommonTriageRoutingPayloadEnvelope({
+      schema_version: 'spec-009f.triage_routing.v1',
+      artifact_type: 'triage_speckit_handoff',
+      source_task_id: 42,
+      workspace_id: 7,
+      source_issue: {
+        repo: 'racecraft-lab/mission-control',
+        number: 0,
+        url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=secret',
+        unsafe_extra: 'raw-secret',
+      },
+      disposition: 'NEEDS_SPEC',
+      lane: 'speckit_handoff',
+      routing_status: 'recorded',
+      triage_rationale: 'Needs a SpecKit brief before implementation.',
+      recommended_next_action: 'Owner reviews and runs setup manually.',
+      proposed_labels: ['mc:needs-spec'],
+      evidence_links: [],
+      deferred_side_effects: [
+        {
+          side_effect: 'speckit_setup',
+          deferred: true,
+          reason: 'No automatic setup is performed.',
+        },
+      ],
+      produced_at: '2026-05-21T12:00:00.000Z',
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.ok ? [] : result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: 'source_issue.number', code: 'invalid_integer' }),
+      ]),
+    );
+    expect(JSON.stringify(result)).not.toContain('unsafe_extra');
+    expect(JSON.stringify(result)).not.toContain('raw-secret');
   });
 
   it('validates NEEDS_SPEC handoff payloads and rejects automatic setup without leaking raw values', () => {

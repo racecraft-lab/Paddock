@@ -71,6 +71,7 @@ export type TriageRoutingFailureReason =
   | 'unsupported_source_template'
   | 'unsupported_source_repo'
   | 'unsupported_disposition'
+  | 'artifact_storage_disabled'
   | 'conflicting_disposition'
   | 'payload_validation_failed'
   | 'artifact_publish_failed'
@@ -225,6 +226,14 @@ export function routeTriageDisposition(
       code: 'unsupported_disposition',
       path: 'disposition',
       message: 'Disposition is not supported by SPEC-009F non-remediation routing.',
+    })
+  }
+
+  if (!taskArtifactsEnabled(db, input.workspaceId)) {
+    return failure('artifact_storage_disabled', source, {
+      code: 'artifact_storage_disabled',
+      path: 'FEATURE_TASK_ARTIFACTS',
+      message: 'Task artifact storage is disabled for this workspace.',
     })
   }
 
@@ -688,20 +697,22 @@ function buildClosurePayload(source: TriageRoutingSource, input: RouteTriageDisp
 function closurePayloadDetail(disposition: string): Record<string, unknown> {
   if (disposition === 'DUPLICATE') {
     return {
-      suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
-      comparison_rationale: 'The reported behavior matches the retained duplicate target.',
+      suspected_duplicate_target: 'owner_confirmation_required',
+      comparison_rationale:
+        'Triage marked this issue as duplicate, but no duplicate target was provided in the triage output. Owner must confirm the target before external closure.',
     }
   }
   if (disposition === 'OBSOLETE') {
     return {
-      superseding_condition: 'The referenced workflow contract has been replaced.',
-      non_actionability_rationale: 'Current production behavior no longer reaches the reported state.',
+      superseding_condition: 'owner_confirmation_required',
+      non_actionability_rationale:
+        'Triage marked this issue as obsolete, but no superseding condition was provided in the triage output. Owner must confirm the condition before external closure.',
     }
   }
   return {
-    invalidity_reason: 'The report lacks a reproducible Mission Control state.',
-    validation_evidence: ['Fixture validation did not find the claimed task state.'],
-    missing_reproducibility_context: ['Exact workspace scope', 'Observed task id'],
+    invalidity_reason: 'owner_confirmation_required',
+    validation_evidence: ['Triage marked this issue as invalid, but no validation evidence was provided in the triage output.'],
+    missing_reproducibility_context: ['owner confirmation before external closure'],
   }
 }
 
@@ -824,6 +835,13 @@ function pilotFlagEnabled(db: Database.Database, workspaceId: number): boolean {
     | { feature_flags: string | null }
     | undefined
   return resolveFlag(PILOT_FLAG, { workspaceFlags: row?.feature_flags ?? null })
+}
+
+function taskArtifactsEnabled(db: Database.Database, workspaceId: number): boolean {
+  const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as
+    | { feature_flags: string | null }
+    | undefined
+  return resolveFlag('FEATURE_TASK_ARTIFACTS', { workspaceFlags: row?.feature_flags ?? null })
 }
 
 function readSourceTask(

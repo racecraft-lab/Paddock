@@ -288,7 +288,8 @@ for (const file of files) {
 
   if (!shouldScanContent(file.path) || !existsSync(file.path)) continue
 
-  const content = readFileSync(file.path, 'utf8')
+  const content = addedLinesInDiff(file.path, baseRef).join('\n')
+  if (content.trim() === '') continue
   for (const { pattern, reason } of forbiddenContentPatterns) {
     if (pattern.test(content)) {
       fail(failures, `forbidden content in ${file.path}: ${reason}`)

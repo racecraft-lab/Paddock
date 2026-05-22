@@ -29,6 +29,12 @@ function enablePilot(database: Database.Database): void {
     .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: true, PILOT_MISSION_CONTROL_E2E: true }))
 }
 
+function enablePilotWithoutArtifacts(database: Database.Database): void {
+  database
+    .prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
+    .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: false, PILOT_MISSION_CONTROL_E2E: true }))
+}
+
 function seedSourceTask(
   database: Database.Database,
   overrides: {
@@ -617,21 +623,21 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       disposition: 'DUPLICATE',
       expectedDetail: {
         closure_outcome: 'DUPLICATE',
-        suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+        suspected_duplicate_target: 'owner_confirmation_required',
       },
     },
     {
       disposition: 'OBSOLETE',
       expectedDetail: {
         closure_outcome: 'OBSOLETE',
-        superseding_condition: 'The referenced workflow contract has been replaced.',
+        superseding_condition: 'owner_confirmation_required',
       },
     },
     {
       disposition: 'INVALID',
       expectedDetail: {
         closure_outcome: 'INVALID',
-        invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+        invalidity_reason: 'owner_confirmation_required',
       },
     },
   ])('records %s as a closure recommendation without external mutation or successors', ({ disposition, expectedDetail }) => {
@@ -683,6 +689,9 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
     }
     expect(artifact.artifact_type).toBe('triage_closure_recommendation')
     expect(payload.lane_detail).toMatchObject(expectedDetail)
+    expect(JSON.stringify(payload.lane_detail)).not.toContain('issues/42')
+    expect(JSON.stringify(payload.lane_detail)).not.toContain('workflow contract has been replaced')
+    expect(JSON.stringify(payload.lane_detail)).not.toContain('Fixture validation did not find')
     expect(payload.proposed_labels.every((label) => !label.applied)).toBe(true)
     expect(payload.deferred_side_effects).toEqual(
       expect.arrayContaining([
@@ -690,6 +699,36 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
         expect.objectContaining({ side_effect: 'github_comment', deferred: true }),
       ]),
     )
+  })
+
+  it('fails closed without publishing when artifact storage is disabled for direct callers', () => {
+    const database = db()
+    enablePilotWithoutArtifacts(database)
+    const taskId = seedSourceTask(database, { taskId: 9600 })
+    const before = snapshotSpec009fDisposableCounts(database)
+    const previousPilotFlag = process.env['PILOT_MISSION_CONTROL_E2E']
+
+    try {
+      process.env['PILOT_MISSION_CONTROL_E2E'] = '1'
+      const result = route(database, taskId, 'NEEDS_SPEC')
+      const after = snapshotSpec009fDisposableCounts(database)
+
+      expect(result).toMatchObject({
+        ok: false,
+        status: 'failed',
+        reason: 'artifact_storage_disabled',
+        effects: {
+          createSuccessor: false,
+          mutateExternal: false,
+          publishArtifact: false,
+          dispatchAgent: false,
+        },
+      })
+      expect(after).toEqual(before)
+    } finally {
+      if (previousPilotFlag === undefined) delete process.env['PILOT_MISSION_CONTROL_E2E']
+      else process.env['PILOT_MISSION_CONTROL_E2E'] = previousPilotFlag
+    }
   })
 
   it('skips ACTIONABLE_REMEDIATION so the existing remediation successor flow is preserved', () => {

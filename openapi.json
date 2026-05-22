@@ -14866,15 +14866,35 @@
                         },
                         "artifact": {
                           "type": "object",
+                          "required": [
+                            "state",
+                            "artifact_id",
+                            "artifact_type",
+                            "schema_version",
+                            "display_name"
+                          ],
                           "properties": {
                             "state": {
-                              "type": "string"
+                              "type": "string",
+                              "enum": [
+                                "missing",
+                                "available",
+                                "incomplete",
+                                "unavailable",
+                                "superseded"
+                              ]
                             },
                             "artifact_id": {
                               "type": "string"
                             },
                             "artifact_type": {
-                              "type": "string"
+                              "type": "string",
+                              "enum": [
+                                "triage_speckit_handoff",
+                                "triage_clarification_request",
+                                "triage_specialist_recommendation",
+                                "triage_closure_recommendation"
+                              ]
                             },
                             "schema_version": {
                               "type": "string",
@@ -14978,7 +14998,51 @@
                         "superseded_artifacts": {
                           "type": "array",
                           "items": {
-                            "type": "object"
+                            "type": "object",
+                            "required": [
+                              "state",
+                              "artifact_id",
+                              "artifact_type",
+                              "schema_version",
+                              "display_name"
+                            ],
+                            "properties": {
+                              "state": {
+                                "type": "string",
+                                "const": "superseded"
+                              },
+                              "artifact_id": {
+                                "type": "string"
+                              },
+                              "artifact_type": {
+                                "type": "string",
+                                "enum": [
+                                  "triage_speckit_handoff",
+                                  "triage_clarification_request",
+                                  "triage_specialist_recommendation",
+                                  "triage_closure_recommendation"
+                                ]
+                              },
+                              "schema_version": {
+                                "type": "string",
+                                "const": "spec-009f.triage_routing.v1"
+                              },
+                              "display_name": {
+                                "type": "string"
+                              },
+                              "sha256": {
+                                "type": "string"
+                              },
+                              "mime_type": {
+                                "type": "string"
+                              },
+                              "size_bytes": {
+                                "type": "integer"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              }
+                            }
                           }
                         }
                       }
