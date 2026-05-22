@@ -52,6 +52,16 @@ const specStrictFiles = [
   // SPEC-009B Mission Control product-line seed.
   'src/lib/mission-control-seed/**/*.ts',
   'scripts/seed-mission-control-product-line.ts',
+  // SPEC-010A generic product-line seed.
+  'src/lib/product-line-seed/types.ts',
+  'src/lib/product-line-seed/schema.ts',
+  'src/lib/product-line-seed/config.ts',
+  'src/lib/product-line-seed/evidence.ts',
+  'src/lib/product-line-seed/preflight.ts',
+  'src/lib/product-line-seed/seed.ts',
+  'src/lib/__tests__/product-line-seed.test.ts',
+  'src/lib/__tests__/product-line-seed-cli.test.ts',
+  'scripts/seed-product-line.ts',
   // SPEC-009C1 pilot issue ingest and eligibility.
   'src/lib/pilot-issue-eligibility.ts',
   // SPEC-009D pilot review packet and focused contract tests.

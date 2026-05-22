@@ -54,7 +54,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, error-handling, security, and reliability checks; G4 passed with 0 markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 73 TDD-first tasks across 8 task phases; G5 passed; reviewability gate passes under bounded transition exception |
 | Analyze | `$speckit-analyze` | Complete | Remediated 2 MEDIUM artifact consistency findings; G6 passed with 0 CRITICAL/HIGH findings and 0 markers |
-| Implement | `$speckit-implement` | Pending | Execute tasks with red-green-refactor and parity/no-mutation verification |
+| Implement | `$speckit-implement` | In Progress | Completed setup/foundation tasks T001-T018; continuing TDD implementation by task group |
 
 **Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
 
@@ -718,6 +718,12 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 - Keep implementation branch-local until PR review.
 - Record verification evidence in this workflow before PR creation.
 - If only docs/config/CLI surfaces change, browser verification is not expected unless later artifacts add UI.
+
+### Implementation Progress
+
+| Group | Tasks | Status | Verification |
+|-------|-------|--------|--------------|
+| Setup And Foundations | T001-T018 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, and `direnv exec . pnpm lint` passed |
 
 ### Completion Checklist
 

@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T17:52:31Z",
-  "active_step": "Phase 7: Setup And Foundations (T001-T018)",
+  "updated_at": "2026-05-22T18:11:46Z",
+  "active_step": "Phase 7: US1 Config Review (T019-T027)",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -108,11 +108,11 @@
     },
     {
       "step": "Phase 7: Setup And Foundations (T001-T018)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US1 Config Review (T019-T027)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US2 Generic Modes (T028-T043)",
@@ -536,6 +536,48 @@
         "name": "G6",
         "pass": true,
         "markers": 0
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 7: Setup And Foundations (T001-T018)",
+      "status": "Complete",
+      "timestamp": "2026-05-22T18:11:46Z",
+      "summary": "Completed setup and foundational tasks T001-T018: package script, strict/lint scope, product-line seed module scaffold, foundational types/constants, redaction-safe snapshot hashing, test harness helpers, CLI helpers, and static scope guard helpers.",
+      "details": {
+        "tasks_completed": [
+          "T001",
+          "T002",
+          "T003",
+          "T004",
+          "T005",
+          "T006",
+          "T007",
+          "T008",
+          "T009",
+          "T010",
+          "T011",
+          "T012",
+          "T013",
+          "T014",
+          "T015",
+          "T016",
+          "T017",
+          "T018"
+        ],
+        "verification": [
+          "direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts",
+          "direnv exec . pnpm typecheck",
+          "direnv exec . pnpm lint"
+        ],
+        "result": "passed"
       },
       "markers": {
         "gaps": 0,

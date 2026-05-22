@@ -19,17 +19,17 @@ Ratified transition exception: `reviewability-gate.sh tasks specs/010a-generic-p
 
 **Purpose**: Establish the exact config, CLI, and strict-check ownership surface before story work begins.
 
-- [ ] T001 Add the generic `seed:product-line` script while preserving `seed:mission-control` in `package.json`.
-- [ ] T002 Register SPEC-010A production and test TypeScript files in `tsconfig.spec-strict.json`.
-- [ ] T003 Register SPEC-010A production and test TypeScript files in `eslint.config.mjs`.
-- [ ] T004 [P] Create the product-line config directory placeholder or ensure it exists for `docs/ai/product-lines/mission-control.yaml`.
-- [ ] T005 [P] Create empty product-line seed module index structure in `src/lib/product-line-seed/types.ts`.
-- [ ] T006 [P] Create empty product-line seed schema module in `src/lib/product-line-seed/schema.ts`.
-- [ ] T007 [P] Create empty product-line seed config loader module in `src/lib/product-line-seed/config.ts`.
-- [ ] T008 [P] Create empty product-line seed evidence module in `src/lib/product-line-seed/evidence.ts`.
-- [ ] T009 [P] Create empty product-line seed preflight module in `src/lib/product-line-seed/preflight.ts`.
-- [ ] T010 [P] Create empty product-line seed orchestration module in `src/lib/product-line-seed/seed.ts`.
-- [ ] T011 [P] Create empty generic CLI entrypoint in `scripts/seed-product-line.ts`.
+- [x] T001 Add the generic `seed:product-line` script while preserving `seed:mission-control` in `package.json`.
+- [x] T002 Register SPEC-010A production and test TypeScript files in `tsconfig.spec-strict.json`.
+- [x] T003 Register SPEC-010A production and test TypeScript files in `eslint.config.mjs`.
+- [x] T004 [P] Create the product-line config directory placeholder or ensure it exists for `docs/ai/product-lines/mission-control.yaml`.
+- [x] T005 [P] Create empty product-line seed module index structure in `src/lib/product-line-seed/types.ts`.
+- [x] T006 [P] Create empty product-line seed schema module in `src/lib/product-line-seed/schema.ts`.
+- [x] T007 [P] Create empty product-line seed config loader module in `src/lib/product-line-seed/config.ts`.
+- [x] T008 [P] Create empty product-line seed evidence module in `src/lib/product-line-seed/evidence.ts`.
+- [x] T009 [P] Create empty product-line seed preflight module in `src/lib/product-line-seed/preflight.ts`.
+- [x] T010 [P] Create empty product-line seed orchestration module in `src/lib/product-line-seed/seed.ts`.
+- [x] T011 [P] Create empty generic CLI entrypoint in `scripts/seed-product-line.ts`.
 
 **Verification commands**:
 
@@ -44,13 +44,13 @@ pnpm lint
 
 **Critical**: No user-story implementation starts until these tasks are complete.
 
-- [ ] T012 Define product-line seed config, result envelope, snapshot, mutation-status, validation-error, residue, and mode types in `src/lib/product-line-seed/types.ts`.
-- [ ] T013 Extract generic Mission Control seed validation constants and config-owned surface names from existing Mission Control seed assumptions into `src/lib/product-line-seed/types.ts`.
-- [ ] T014 Implement ordered JSON and SHA-256 snapshot hash helpers with redaction-safe input contracts in `src/lib/product-line-seed/evidence.ts`.
-- [ ] T015 Implement a reusable in-memory/disposable SQLite seed test harness covering config-owned and FR-020 preserved surfaces in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T016 Implement CLI invocation helper and output parsing helper for pnpm script entrypoints in `src/lib/__tests__/product-line-seed-cli.test.ts`.
-- [ ] T017 Add shared invalid-config fixture builders for YAML strings, parsed configs, target residue, and preserved operational state in `src/lib/__tests__/product-line-seed.test.ts`.
-- [ ] T018 Add shared static-scope guard helper for Product Line B, GitHub mutation, dispatch, claim, runner, sandbox, adapter, auto-merge, and SpecKit setup/autopilot strings in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T012 Define product-line seed config, result envelope, snapshot, mutation-status, validation-error, residue, and mode types in `src/lib/product-line-seed/types.ts`.
+- [x] T013 Extract generic Mission Control seed validation constants and config-owned surface names from existing Mission Control seed assumptions into `src/lib/product-line-seed/types.ts`.
+- [x] T014 Implement ordered JSON and SHA-256 snapshot hash helpers with redaction-safe input contracts in `src/lib/product-line-seed/evidence.ts`.
+- [x] T015 Implement a reusable in-memory/disposable SQLite seed test harness covering config-owned and FR-020 preserved surfaces in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T016 Implement CLI invocation helper and output parsing helper for pnpm script entrypoints in `src/lib/__tests__/product-line-seed-cli.test.ts`.
+- [x] T017 Add shared invalid-config fixture builders for YAML strings, parsed configs, target residue, and preserved operational state in `src/lib/__tests__/product-line-seed.test.ts`.
+- [x] T018 Add shared static-scope guard helper for Product Line B, GitHub mutation, dispatch, claim, runner, sandbox, adapter, auto-merge, and SpecKit setup/autopilot strings in `src/lib/__tests__/product-line-seed.test.ts`.
 
 **Verification commands**:
 
