@@ -4,14 +4,15 @@
 
 SPEC-009B seeds Mission Control as Product Line A and verifies readiness. It does not unlink GitHub repos, delete tickets, stop OpenClaw runtime agents, mutate cron jobs, create pilot tasks, claim work, dispatch agents, launch runners, create sandboxes, or merge pull requests.
 
+SPEC-010A keeps the legacy `seed:mission-control` command as a compatibility wrapper over the generic product-line seeder. The wrapper delegates to `docs/ai/product-lines/mission-control.yaml` and emits the generic product-line evidence model, including `schema_version:"product-line-seed-result-v1"`, config-owned snapshots, `preserved_operational_state.subsurfaces`, redaction proof, existing-target refusal evidence, and no-mutation proof for blocked paths.
+
 ## Preflight
 
-Run preflight before any apply attempt:
+Run preflight before any apply attempt. For new automation, prefer the compatibility wrapper command so Mission Control predeploy checks exercise the generic seeder path:
 
 ```bash
-node --experimental-strip-types scripts/seed-mission-control-product-line.ts \
+pnpm seed:mission-control -- \
   --db .data/mission-control.db \
-  --contract docs/ai/workflows/mission-control/workflow-contract.yaml \
   --mode preflight \
   --operator-evidence src/lib/__tests__/mission-control-seed/fixtures/operator-evidence.json \
   --json
@@ -38,28 +39,37 @@ Expected dirty-target result: exit code `2`, `status: "blocked_preflight"`, `mut
 Run apply only after clean preflight:
 
 ```bash
-node --experimental-strip-types scripts/seed-mission-control-product-line.ts \
+pnpm seed:mission-control -- \
   --db .data/mission-control.db \
-  --contract docs/ai/workflows/mission-control/workflow-contract.yaml \
   --mode apply \
   --json
 ```
 
-Expected result: `ok: true`, `status: "seeded"`, `mutation_status: "applied"`, six departments, six required role assignments, nine workflow templates, three governance rows, canonical `PILOT_MISSION_CONTROL_E2E`, and zero pilot task/chain records.
+Expected result: `ok: true`, `status: "seeded"`, `mutation_status: "applied"`, `config.path:"docs/ai/product-lines/mission-control.yaml"`, six departments, six required role assignments, nine workflow templates, three governance rows, canonical `PILOT_MISSION_CONTROL_E2E`, and zero pilot task/chain records.
 
 ## Verify
 
 Run verify after one apply and again after a second apply:
 
 ```bash
-node --experimental-strip-types scripts/seed-mission-control-product-line.ts \
+pnpm seed:mission-control -- \
   --db .data/mission-control.db \
-  --contract docs/ai/workflows/mission-control/workflow-contract.yaml \
   --mode verify \
   --json
 ```
 
-Expected result: `ok: true`, `status: "verified"`, stable identity evidence, all canonical Mission Control feature flags enabled, all disallowed runner/sandbox/auto-merge/task-control flags disabled or absent, zero new pilot tasks, zero successor records, zero per-agent seed tasks, zero claims, zero dispatched state, zero runner rows, zero sandbox rows, and zero auto-merge markers.
+Expected result: `ok: true`, `status: "verified"`, `mutation_status: "verified"`, stable identity evidence, all canonical Mission Control feature flags enabled, all disallowed runner/sandbox/auto-merge/task-control flags disabled or absent, matching `snapshot_before` and `snapshot_after` or observed-state evidence where applicable, zero new pilot tasks, zero successor records, zero per-agent seed tasks, zero claims, zero dispatched state, zero runner rows, zero sandbox rows, and zero auto-merge markers.
+
+## Generic Evidence Compatibility
+
+The predeploy gate should treat the wrapper output as generic product-line evidence:
+
+- `entrypoint:"seed:mission-control"` identifies the compatibility wrapper.
+- `config.path:"docs/ai/product-lines/mission-control.yaml"` proves the wrapper used the canonical generic config.
+- `schema_version:"product-line-seed-result-v1"` identifies the stable result envelope.
+- `snapshot_before`, `snapshot_after`, and `preserved_operational_state.subsurfaces` are the review surface for existing-target apply, blocked-preflight, and no-mutation proofs.
+- `EXISTING_TARGET_REQUIRES_ALLOW_EXISTING` remains the required refusal for existing-target apply without `--allow-existing`.
+- `detection_only_no_automatic_deletion_or_unlinking` remains the residue policy; cleanup is an operator decision outside the seeder.
 
 ## Validation Evidence
 

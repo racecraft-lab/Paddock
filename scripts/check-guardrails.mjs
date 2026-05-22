@@ -125,7 +125,8 @@ function runTaskPipelineGuardrails() {
     // legitimate implementation.
     //
     // - FEATURE_AREA_LABEL_ROUTING: SPEC-006 owns this flag. Allowed in
-    //   the central resolver and the SPEC-006-touched files listed below.
+    //   the central resolver, the SPEC-006-touched files listed below, and
+    //   SPEC-010A's declarative product-line seed defaults.
     // - ready_for_owner: SPEC-005 owns this. Allowed in the status vocabulary,
     //   GitHub label mapping, task API guard, and Kanban/store surfaces listed below.
     // - CrabTrap: SPEC-011 owns this. NO production owner yet, so it
@@ -137,6 +138,7 @@ function runTaskPipelineGuardrails() {
       'src/lib/github-sync-poller.ts',
       'src/app/api/projects/[id]/route.ts',
       'src/components/modals/project-manager-modal.tsx',
+      'src/lib/product-line-seed/types.ts',
     ])
     if (!areaLabelRoutingAllowlist.has(path) && /\bFEATURE_AREA_LABEL_ROUTING\b/.test(source)) {
       fail(`SPEC-006 marker (FEATURE_AREA_LABEL_ROUTING) outside allowed files: ${path}`)

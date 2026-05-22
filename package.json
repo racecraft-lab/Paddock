@@ -14,6 +14,7 @@
     "knowledge:index:check": "pnpm run verify:node && node scripts/spec-012a/verify-repo-knowledge-index.mjs",
     "knowledge:index:smoke": "pnpm run verify:node && node scripts/spec-012a/fresh-agent-proxy.mjs",
     "seed:mission-control": "pnpm run verify:node && node --experimental-strip-types scripts/seed-mission-control-product-line.ts",
+    "seed:product-line": "pnpm run verify:node && node --experimental-strip-types scripts/seed-product-line.ts",
     "dev": "pnpm run verify:node && next dev --hostname 127.0.0.1 --port ${PORT:-3000}",
     "build": "pnpm run verify:node && next build",
     "start": "pnpm run verify:node && next start --hostname 0.0.0.0 --port ${PORT:-3000}",
