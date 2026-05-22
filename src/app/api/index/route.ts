@@ -16,6 +16,7 @@ const endpoints: Endpoint[] = [
   { path: '/api/tasks', methods: ['GET', 'POST'], description: 'Task CRUD — list, create', tag: 'Tasks', auth: 'viewer/operator' },
   { path: '/api/tasks/:id', methods: ['GET', 'PATCH', 'DELETE'], description: 'Task detail — read, update, delete', tag: 'Tasks', auth: 'viewer/operator/admin' },
   { path: '/api/tasks/:id/evidence', methods: ['GET'], description: 'Read-only task evidence surface', tag: 'Tasks', auth: 'viewer' },
+  { path: '/api/tasks/:id/stage-attempts', methods: ['GET'], description: 'Read-only task stage attempts inspection', tag: 'Tasks', auth: 'viewer' },
   { path: '/api/tasks/:id/comments', methods: ['GET', 'POST'], description: 'Task comments — list, add', tag: 'Tasks', auth: 'viewer/operator' },
   { path: '/api/tasks/:id/broadcast', methods: ['POST'], description: 'Broadcast task update via SSE', tag: 'Tasks', auth: 'operator' },
   { path: '/api/tasks/queue', methods: ['GET'], description: 'Task queue — next assignable tasks', tag: 'Tasks', auth: 'viewer' },
@@ -180,7 +181,7 @@ const payload = {
   },
 }
 
-export async function GET() {
+export function GET() {
   return NextResponse.json(payload, {
     headers: {
       'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',

@@ -1,10 +1,10 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-22T14:50:30Z",
-  "active_step": "Complete",
-  "status": "Complete",
-  "current_spec_dir": "specs/009f-production-triage-routing",
-  "branch": "009f-production-triage-routing",
+  "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
+  "updated_at": "2026-05-22T19:27:23Z",
+  "active_step": "Post: Retrospective",
+  "status": "Completed",
+  "current_spec_dir": "specs/013a-run-state-spine",
+  "branch": "013a-run-state-spine",
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -19,43 +19,35 @@
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Lane Payload Contracts",
+      "step": "Phase 2: Clarify - Schema Identity And Lifecycle",
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Lane Payload Contracts Consensus",
+      "step": "Phase 2: Clarify - Schema Identity And Lifecycle Consensus",
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Terminal State And Idempotency",
+      "step": "Phase 2: Clarify - Flag-Off Runtime Isolation And Debug Reads",
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Terminal State And Idempotency Consensus",
+      "step": "Phase 2: Clarify - Flag-Off Runtime Isolation And Debug Reads Consensus",
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Evidence API/UI Shape",
+      "step": "Phase 2: Clarify - Runs Relationship And Archive Semantics",
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Evidence API/UI Shape Consensus",
+      "step": "Phase 2: Clarify - Runs Relationship And Archive Semantics Consensus",
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Specialist Matching And Rollout Scope",
+      "step": "Phase 2: Clarify - API/UI Surface And SPEC-013B Boundary",
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Specialist Matching And Rollout Scope Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - UAT And Regression Boundaries",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - UAT And Regression Boundaries Consensus",
+      "step": "Phase 2: Clarify - API/UI Surface And SPEC-013B Boundary Consensus",
       "status": "completed"
     },
     {
@@ -87,19 +79,11 @@
       "status": "completed"
     },
     {
-      "step": "Phase 4: Checklist - error-handling",
+      "step": "Phase 4: Checklist - regression-safety",
       "status": "completed"
     },
     {
-      "step": "Phase 4: Checklist - error-handling Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - security",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - security Consensus",
+      "step": "Phase 4: Checklist - regression-safety Consensus",
       "status": "completed"
     },
     {
@@ -108,14 +92,6 @@
     },
     {
       "step": "Phase 4: Checklist - ux-accessibility Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - regression-safety",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - regression-safety Consensus",
       "status": "completed"
     },
     {
@@ -131,31 +107,27 @@
       "status": "completed"
     },
     {
-      "step": "Phase 7: Setup and strict-scope prep (T001-T004)",
+      "step": "Phase 7: Implement T001-T007 Setup and scope guardrails",
       "status": "completed"
     },
     {
-      "step": "Phase 7: Foundational tests and helpers (T005-T011)",
+      "step": "Phase 7: Implement T008-T018 Foundation migration, flag, and helper spine",
       "status": "completed"
     },
     {
-      "step": "Phase 7: US1 NEEDS_SPEC route (T012-T018)",
+      "step": "Phase 7: Implement T019-T032 US1 inspection API and task-detail UI",
       "status": "completed"
     },
     {
-      "step": "Phase 7: US2 human and specialist routes (T019-T029)",
+      "step": "Phase 7: Implement T033-T040 US2 non-destructive archive behavior",
       "status": "completed"
     },
     {
-      "step": "Phase 7: US3 closure recommendations (T030-T036)",
+      "step": "Phase 7: Implement T041-T049 US3 flag-off runtime safety",
       "status": "completed"
     },
     {
-      "step": "Phase 7: US4 idempotent evidence display (T037-T044)",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Polish, UAT, guardrails, verification (T045-T055)",
+      "step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
       "status": "completed"
     },
     {
@@ -197,14 +169,6 @@
     {
       "step": "Post: Retrospective",
       "status": "completed"
-    },
-    {
-      "step": "Post: PR Merge Observation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Target Deployment and HITL UAT",
-      "status": "completed"
     }
   ],
   "archive_sweep": {
@@ -212,581 +176,405 @@
     "archive_extension_enabled": true,
     "cleanup_mode": "recorded-no-cleanup",
     "safeToApplyCleanup": false,
-    "excludedCurrentSpec": "specs/009f-production-triage-routing",
+    "excludedCurrentSpec": "specs/013a-run-state-spine",
     "eligible_previous_specs": [
       "specs/009c3-remediation-ready-for-owner",
       "specs/009c4-owner-merge-reconciliation",
       "specs/009d-pilot-review-lifecycle",
       "specs/009e-pilot-evidence-surfaces",
+      "specs/009f-production-triage-routing",
       "specs/012a-repo-knowledge-index"
     ],
-    "notes": "Archive extension v1.1.0 is installed and enabled, but this Codex runtime exposes no direct speckit.archive.run skill/command. Startup sweep recorded eligible previous specs and excluded the current target without deleting active spec folders."
+    "notes": "Archive extension is installed and enabled. Codex extension command files are not present in this worktree, so startup recorded local sweep eligibility and did not delete or move active specs."
   },
-  "prerequisites": {
-    "all_pass": true,
-    "branch": "009f-production-triage-routing",
-    "is_worktree": true,
-    "on_feature_branch": false,
-    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt; agents use built-in fallbacks",
+  "environment": {
+    "worktree": "/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/013a-run-state-spine",
     "package_manager": "pnpm",
-    "required_agents_installed": true,
-    "optional_fast_helper_installed": true,
-    "implementation_agent": "implement-executor"
-  },
-  "project_commands": {
-    "BUILD": "pnpm build",
-    "TYPECHECK": "pnpm typecheck",
-    "LINT": "pnpm lint",
-    "LINT_FIX": "N/A",
-    "UNIT_TEST": "pnpm test",
-    "INTEGRATION_TEST": "pnpm test:e2e",
-    "SINGLE_FILE_TEST": "pnpm test",
-    "SINGLE_FILE_INTEGRATION": "N/A",
-    "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
-  },
-  "presets": {
-    "has_presets": true,
-    "names": [
-      "speckit-pro-reviewability"
-    ],
-    "templates": {
-      "spec": ".specify/presets/speckit-pro-reviewability/templates/spec-template.md",
-      "plan": ".specify/presets/speckit-pro-reviewability/templates/plan-template.md",
-      "tasks": ".specify/presets/speckit-pro-reviewability/templates/tasks-template.md"
-    }
-  },
-  "post_implementation": {
-    "cleanup": {
-      "status": "completed",
-      "command_available": false,
-      "fallback": ".claude/skills/speckit-cleanup-run/SKILL.md",
-      "files_changed": [
-        "tests/e2e/spec-009f-triage-routing.spec.ts"
-      ],
-      "issues_fixed": [
-        "@typescript-eslint/array-type in the SPEC-009F Playwright UAT fixture"
-      ],
-      "deferred": [],
-      "validation": [
-        "node scripts/spec-009f/check-scope-guards.mjs passed",
-        "pnpm lint passed"
-      ]
+    "commands": {
+      "BUILD": "pnpm build",
+      "TYPECHECK": "pnpm typecheck",
+      "LINT": "pnpm lint",
+      "LINT_FIX": "N/A",
+      "UNIT_TEST": "pnpm test",
+      "INTEGRATION_TEST": "pnpm test:e2e",
+      "SINGLE_FILE_TEST": "pnpm test",
+      "SINGLE_FILE_INTEGRATION": "N/A",
+      "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
     },
-    "reviewability_diff_gate": {
-      "status": "exception",
-      "command": "reviewability-gate.sh diff origin/main...HEAD",
-      "reviewable_loc": 11222,
-      "production_files": 16,
-      "total_files": 43,
-      "primary_surface_count": 6,
-      "primary_surfaces": [
-        "API",
-        "UI",
-        "docs/process",
-        "other",
-        "scheduler/runtime",
-        "seed/config"
-      ],
-      "exception": "Accepted because SPEC-009F remains one terminal triage-routing evidence behavior surface plus the existing task Evidence extension; the extra footprint is generated SpecKit artifacts, API parity, security payload tests, UAT fixtures, and guard tooling."
-    },
-    "pr_body_generation": {
-      "status": "completed",
-      "path": "/private/tmp/speckit-pr-body-009f.md",
-      "source_template": ".github/pull_request_template.md",
-      "notes": "Generated body was rewritten to fill the host template with SPEC-009F review order, traceability, verification results, known gaps, rollback, and reviewability exception rationale."
-    },
-    "pr_creation": {
-      "status": "completed",
-      "number": 57,
-      "url": "https://github.com/racecraft-lab/mission-control/pull/57",
-      "head": "f9a18575af85b5d9d1b0c54060f1adf5e5e676e9",
-      "head_scope": "Initial PR creation and implementation evidence commit before post-implementation docs hygiene.",
-      "base": "main"
-    },
-    "review_remediation": {
-      "status": "completed",
-      "comments": 0,
-      "reviews": 0,
-      "note": "No actionable review input existed. Copilot review waiting was skipped by operator direction because monthly quota is exhausted."
-    },
-    "retrospective": {
-      "status": "completed",
-      "path": "specs/009f-production-triage-routing/retrospective.md",
-      "completion_rate": 100,
-      "spec_adherence": 100,
-      "critical_findings": 0,
-      "significant_findings": 0
-    },
-    "post_merge_closeout": {
-      "status": "completed",
-      "pr_number": 57,
-      "url": "https://github.com/racecraft-lab/mission-control/pull/57",
-      "merged_at": "2026-05-22T13:00:42Z",
-      "merge_commit": "d396ed205b281d10a2b5cb95542209e816ebd95a",
-      "merged_head": "c8ef2ea1ff2f7df50948ff68579b8e433c5f4754",
-      "passed_merge_checks": [
-        "Analyze (actions)",
-        "Analyze (javascript-typescript)",
-        "CodeQL",
-        "quality-gate",
-        "playwright-approval / visual-approval-status",
-        "storybook-approval / visual-approval-status",
-        "visual-review-approval/playwright",
-        "visual-review-approval/storybook"
-      ],
-      "completed": [
-        "target deployment promotion",
-        "PILOT_MISSION_CONTROL_E2E scope confirmation",
-        "named HITL UAT evidence for all six non-remediation outcomes on the target deployment"
-      ],
-      "notes": "Operator closeout on 2026-05-22 confirmed target deployment promotion, PILOT_MISSION_CONTROL_E2E target-scope validation, and HITL replay of the six non-remediation outcomes with no reported UAT defects."
-    },
-    "roadmap_prd_hygiene": {
-      "status": "completed",
-      "next_after_spec009f_completion": "SPEC-013A",
-      "parallel_options": [
-        "SPEC-010A",
-        "SPEC-011"
-      ],
-      "notes": "Roadmap and PRD now make the next unblocked spec pointer part of closeout hygiene. SPEC-013A is the explicit next setup target after SPEC-009F completion."
-    }
+    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt; agents will use built-in fallbacks.",
+    "preset": "speckit-pro-reviewability"
   },
   "phase_results": {
     "specify": {
       "status": "completed",
       "files": [
-        "specs/009f-production-triage-routing/spec.md",
-        "specs/009f-production-triage-routing/checklists/requirements.md",
+        "specs/013a-run-state-spine/spec.md",
+        "specs/013a-run-state-spine/checklists/requirements.md",
         ".specify/feature.json"
       ],
       "gate": "G1 pass, 0 markers",
-      "user_stories": 4,
-      "functional_requirements": 18,
-      "success_criteria": 6
+      "user_stories": 3,
+      "functional_requirements": 14,
+      "acceptance_scenarios": 7,
+      "success_criteria": 5
     },
     "clarify": {
-      "lane_payload_contracts": {
-        "status": "completed",
-        "questions": 5,
-        "consensus": "Q4 security consensus accepted safe-reference/redaction contract with URL allowlist amendment",
-        "spec_updates": [
-          "Clarifications Session 2026-05-21 - Lane Payload Contracts",
-          "FR-019",
-          "FR-020",
-          "FR-021",
-          "FR-022",
-          "Lane Payload Envelope",
-          "Proposed Label Recommendation",
-          "Safe Evidence Reference"
-        ]
+      "sessions": {
+        "schema_identity_and_lifecycle": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 1,
+          "outcome": "Accepted two-table task_stage_attempts/task_stage_attempt_events model, required identity fields, seven-state lifecycle vocabulary, inspection-only indexes, and human-admin-session debug write boundary."
+        },
+        "flag_off_runtime_isolation_and_debug_reads": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 1,
+          "outcome": "Accepted table-blind runtime path list, compact flag-off debug read payload, workspace masking/auth rules, typed default-off flag registry entry, and static guardrails."
+        },
+        "runs_relationship_and_archive_semantics": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 1,
+          "outcome": "Accepted soft nullable run link, compact read-time run summary, archived status/timestamp/event semantics, child-first rollback, and trusted proxy-auth human-admin rule."
+        },
+        "api_ui_surface_and_spec_013b_boundary": {
+          "status": "completed",
+          "questions": 5,
+          "consensus_items": 2,
+          "outcome": "Accepted dedicated task-scoped read route, compact task-detail section, controlled fixture/UAT endpoint conditions, explicit no-control-plane contract, and task_stage_attempts.v1 envelope."
+        }
       },
-      "terminal_state_idempotency": {
-        "status": "completed",
-        "questions": 5,
-        "consensus": "none required",
-        "spec_updates": [
-          "FR-023",
-          "FR-024",
-          "FR-025",
-          "FR-026",
-          "FR-027",
-          "FR-028",
-          "SC-007"
-        ]
-      },
-      "evidence_api_ui_shape": {
-        "status": "completed",
-        "questions": 5,
-        "consensus": "none required",
-        "spec_updates": [
-          "triage_routing API shape",
-          "FR-014",
-          "FR-015",
-          "FR-029",
-          "FR-030"
-        ]
-      },
-      "specialist_matching_rollout": {
-        "status": "completed",
-        "questions": 5,
-        "consensus": "none required",
-        "spec_updates": [
-          "FR-031",
-          "FR-032",
-          "FR-033",
-          "FR-034",
-          "Specialist Recommendation"
-        ]
-      },
-      "uat_regression_boundaries": {
-        "status": "completed",
-        "questions": 5,
-        "consensus": "none required",
-        "spec_updates": [
-          "FR-035",
-          "FR-036",
-          "FR-037",
-          "FR-038",
-          "FR-039",
-          "SC-008",
-          "SC-009",
-          "SC-010"
-        ]
-      },
+      "consensus": [
+        {
+          "session": "Schema Identity And Lifecycle",
+          "item": "Debug write boundary for create/update/archive lifecycle records",
+          "round": 1,
+          "routed_categories": [
+            "security"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with conditions: human-admin session guard for runtime debug writes, authenticated read-only operator inspection, lifecycle append/update only as observed-state recording, no execution-control authority."
+        },
+        {
+          "session": "Flag-Off Runtime Isolation And Debug Reads",
+          "item": "Auth and workspace masking rules for attempt inspection and debug writes",
+          "round": 1,
+          "routed_categories": [
+            "security",
+            "codebase"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with caveat: read path follows existing viewer-or-higher workspace masking and masked task-not-found behavior; debug writes require verified human-admin context excluding API-key and agent-key callers; Plan must confirm trusted proxy-auth treatment."
+        },
+        {
+          "session": "Runs Relationship And Archive Semantics",
+          "item": "Trusted proxy-auth admin handling for debug writes",
+          "round": 1,
+          "routed_categories": [
+            "security"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with conditions: trusted proxy-auth admins count only as real positive-id human admins; global API-key, agent API-key, and agent-identity requests never satisfy the debug-write guard."
+        },
+        {
+          "session": "API/UI Surface And SPEC-013B Boundary",
+          "item": "Fixture/UAT write endpoint boundary",
+          "round": 1,
+          "routed_categories": [
+            "security",
+            "codebase"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with conditions: at most one spec-scoped fixture/UAT endpoint, human-admin-only, mutation/rate limited, CSRF-protected for cookie auth, structured-audited, unavailable outside fixture/UAT unless explicitly reviewed, and inert beyond attempt/event/audit rows."
+        },
+        {
+          "session": "API/UI Surface And SPEC-013B Boundary",
+          "item": "No-control-plane schema/API/UI contract",
+          "round": 1,
+          "routed_categories": [
+            "security",
+            "spec"
+          ],
+          "analysts_used": [
+            "codebase-analyst",
+            "spec-context-analyst",
+            "domain-researcher"
+          ],
+          "outcome": "Accepted with precision: encode explicit forbidden schema/field/helper/UI/action controls; released and cancelled remain passive observed states only."
+        }
+      ],
       "status": "completed",
       "gate": "G2 pass, 0 [NEEDS CLARIFICATION] markers",
-      "sessions": 5,
-      "questions": 25,
-      "consensus_items": 1
+      "total_questions": 20,
+      "consensus_items": 5
     },
     "plan": {
       "status": "completed",
       "gate": "G3 pass, 0 unresolved markers",
       "files": [
-        "specs/009f-production-triage-routing/plan.md",
-        "specs/009f-production-triage-routing/research.md",
-        "specs/009f-production-triage-routing/data-model.md",
-        "specs/009f-production-triage-routing/contracts/triage-routing-contract.md",
-        "specs/009f-production-triage-routing/quickstart.md"
+        "specs/013a-run-state-spine/plan.md",
+        "specs/013a-run-state-spine/research.md",
+        "specs/013a-run-state-spine/data-model.md",
+        "specs/013a-run-state-spine/quickstart.md",
+        "specs/013a-run-state-spine/contracts/task-stage-attempts-api.md",
+        "AGENTS.md"
       ],
-      "reviewability": "no split required if implementation stays within planned file/surface limits"
+      "migration_id": "076_task_stage_attempts",
+      "runtime_fixture_endpoint": "not selected",
+      "technical_decisions": [
+        "Dedicated additive task_stage_attempts and task_stage_attempt_events tables.",
+        "Soft nullable run_id with read-time compact run summary and no foreign key to runs.",
+        "Dedicated GET /api/tasks/[id]/stage-attempts route with task_stage_attempts.v1 envelope.",
+        "Compact read-only task detail Run state / Stage attempts section near Evidence.",
+        "FEATURE_TASK_CONTROL_PLANE typed default-off registry entry using resolveFlag.",
+        "Static guardrails for inline env reads and forbidden runtime/evidence table references."
+      ]
     },
     "checklist": {
-      "data_integrity": {
-        "status": "completed",
-        "items": 24,
-        "gaps": 0,
-        "consensus": "none required"
-      },
-      "api_contracts": {
-        "status": "completed",
-        "items": 22,
-        "gaps": 1,
-        "remediated": 1,
-        "consensus": "none required",
-        "verification": [
-          "pnpm api:parity"
-        ]
-      },
-      "state_management": {
-        "status": "completed",
-        "items": 23,
-        "gaps": 1,
-        "remediated": 1,
-        "consensus": "none required"
-      },
-      "error_handling": {
-        "status": "completed",
-        "items": 21,
-        "gaps": 1,
-        "remediated": 1,
-        "consensus": "none required"
-      },
-      "security": {
-        "status": "completed",
-        "items": 24,
-        "gaps": 2,
-        "remediated": 2,
-        "consensus": "none required"
-      },
-      "ux_accessibility": {
-        "status": "completed",
-        "items": 17,
-        "gaps": 1,
-        "remediated": 1,
-        "consensus": "none required"
-      },
       "status": "completed",
-      "gate": "G4 pass, 0 [Gap] markers",
-      "domains": 7,
-      "total_items": 153,
-      "total_gaps": 6,
-      "remediated": 6,
-      "regression_safety": {
-        "status": "completed",
-        "items": 22,
-        "gaps": 0,
-        "consensus": "none required"
+      "gate": "G4 pass, 0 active [Gap] markers",
+      "domains": {
+        "data_integrity": {
+          "items": 20,
+          "gaps_found": 1,
+          "gaps_remediated": 1,
+          "consensus_items": 0,
+          "outcome": "Migration idempotency, rollback, live schema evidence, and non-claim uniqueness requirements tightened."
+        },
+        "api_contracts": {
+          "items": 22,
+          "gaps_found": 4,
+          "gaps_remediated": 4,
+          "consensus_items": 0,
+          "outcome": "No-attempt, invalid/future state, lifecycle-entry limit, and OpenAPI/API-index parity requirements tightened."
+        },
+        "state_management": {
+          "items": 18,
+          "gaps_found": 2,
+          "gaps_remediated": 2,
+          "consensus_items": 0,
+          "outcome": "Projection drift warning behavior and stale/malformed lifecycle handling tightened."
+        },
+        "regression_safety": {
+          "items": 24,
+          "gaps_found": 2,
+          "gaps_remediated": 2,
+          "consensus_items": 0,
+          "outcome": "Direct production task insert parity and SPEC-013B/014 drift guardrails tightened."
+        },
+        "ux_accessibility": {
+          "items": 23,
+          "gaps_found": 5,
+          "gaps_remediated": 5,
+          "consensus_items": 0,
+          "outcome": "Named region/status/alert semantics, non-color-only states, read-only link wording, text-fit evidence, and browser accessibility checks tightened."
+        }
+      },
+      "totals": {
+        "domains": 5,
+        "items": 107,
+        "gaps_found": 14,
+        "gaps_remediated": 14,
+        "consensus_items": 0
       }
     },
     "tasks": {
       "status": "completed",
-      "gate": "G5 pass, 55 tasks, 0 markers",
+      "gate": "G5 pass, 58 tasks found, 0 markers",
       "files": [
-        "specs/009f-production-triage-routing/tasks.md"
+        "specs/013a-run-state-spine/tasks.md"
       ],
-      "task_count": 55,
-      "phases": 7,
-      "story_task_counts": {
-        "US1": 7,
-        "US2": 11,
-        "US3": 7,
-        "US4": 8
-      },
-      "parallel_markers": 23,
-      "reviewability": "tasks gate passed under transition exception; implementation must stay within generated task and plan scope"
+      "total_tasks": 58,
+      "phase_count": 6,
+      "parallel_opportunities": 26,
+      "user_stories_covered": 3,
+      "task_groups": [
+        "T001-T007 Setup and scope guardrails",
+        "T008-T018 Foundation migration, flag, and helper spine",
+        "T019-T032 US1 inspection API and task-detail UI",
+        "T033-T040 US2 non-destructive archive behavior",
+        "T041-T049 US3 flag-off runtime safety",
+        "T050-T058 Polish, verification, and review evidence"
+      ],
+      "reviewability_gate": {
+        "status": "exception",
+        "pass": true,
+        "transition_exception": true,
+        "reviewable_loc": 2320,
+        "production_files": 24,
+        "total_files": 114,
+        "primary_surface_count": 6,
+        "notes": "Transition exception ratified in tasks.md because SPEC-013A intentionally spans schema, helper, route, and compact UI as the minimum durable run-state spine."
+      }
     },
     "analyze": {
       "status": "completed",
-      "gate": "G6 pass, 0 CRITICAL/HIGH findings remain",
+      "gate": "G6 pass, 0 CRITICAL/HIGH findings",
       "findings": {
         "critical": 0,
-        "high": 1,
-        "medium": 3,
-        "low": 1,
-        "remediated": 5
+        "high": 0,
+        "medium": 2,
+        "low": 0,
+        "remaining": 0
       },
-      "files_modified": [
-        "docs/ai/specs/SPEC-009F-design-concept.md",
-        "docs/ai/specs/SPEC-009F-workflow.md",
-        "specs/009f-production-triage-routing/plan.md",
-        "specs/009f-production-triage-routing/quickstart.md",
-        "specs/009f-production-triage-routing/tasks.md"
+      "files": [
+        "docs/ai/specs/SPEC-013A-design-concept.md"
       ],
-      "commands": [
-        "count-markers.sh findings specs/009f-production-triage-routing",
-        "count-markers.sh all specs/009f-production-triage-routing",
-        "validate-gate.sh G6 specs/009f-production-triage-routing"
+      "remediations": [
+        "Clarified setup-time run_id decision with later soft-reference/no-FK Plan outcome.",
+        "Replaced active setup-time open questions with resolved post-Clarify/Plan decisions."
       ],
-      "consensus": "none required"
+      "consensus_items": 0
     },
-    "implementation": {
+    "implement": {
       "status": "completed",
-      "completed_tasks": [
-        "T001",
-        "T002",
-        "T003",
-        "T004",
-        "T005",
-        "T006",
-        "T007",
-        "T008",
-        "T009",
-        "T010",
-        "T011",
-        "T012",
-        "T013",
-        "T014",
-        "T015",
-        "T016",
-        "T017",
-        "T018",
-        "T019",
-        "T020",
-        "T021",
-        "T022",
-        "T023",
-        "T024",
-        "T025",
-        "T026",
-        "T027",
-        "T028",
-        "T029",
-        "T030",
-        "T031",
-        "T032",
-        "T033",
-        "T034",
-        "T035",
-        "T036",
-        "T037",
-        "T038",
-        "T039",
-        "T040",
-        "T041",
-        "T042",
-        "T043",
-        "T044",
-        "T045",
-        "T046",
-        "T047",
-        "T048",
-        "T049",
-        "T050",
-        "T051",
-        "T052",
-        "T053",
-        "T054",
-        "T055"
-      ],
-      "current_group": "Polish, UAT, guardrails, verification (T045-T055)",
       "groups": {
-        "T001-T004": {
+        "T001-T007": {
           "status": "completed",
-          "files": [
-            "scripts/spec-009f/check-scope-guards.mjs",
-            "tsconfig.spec-strict.json",
-            "eslint.config.mjs",
-            "docs/qa/pilot-smoke-checklist.md"
+          "summary": "Recorded package manager, archive/screenshot/reviewability evidence, added SPEC-013A strict-scope config entries, added RED API documentation/index assertions, and created the run-state scope guard script.",
+          "verification": [
+            "node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test",
+            "node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-setup.tsbuildinfo",
+            "pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs",
+            "pnpm check:strict-scope",
+            "git diff --check"
           ],
-          "commands": [
-            "node scripts/spec-009f/check-scope-guards.mjs",
-            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
-            "pnpm exec eslint eslint.config.mjs src/components/panels/__tests__/task-evidence-section.test.tsx",
-            "rg -n \"SPEC-009F Production Triage Routing UAT|pending T047|Six-outcome matrix|Explicit non-use evidence\" docs/qa/pilot-smoke-checklist.md"
-          ]
+          "expected_red": "pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts fails because openapi.json and /api/index do not yet define the stage-attempts route."
         },
-        "T005-T011": {
+        "T008-T018": {
           "status": "completed",
-          "files": [
-            "src/lib/triage-routing-payloads.ts",
-            "src/lib/__tests__/triage-routing-payloads.test.ts",
-            "src/lib/__tests__/task-evidence.fixtures.ts",
-            "src/lib/triage-routing.ts",
-            "src/lib/__tests__/triage-routing.test.ts",
-            "scripts/spec-009f/check-scope-guards.mjs"
+          "summary": "Added M76 task-stage attempt tables, rollback SQL, default-off FEATURE_TASK_CONTROL_PLANE registry entry, explicit-database helper/model behavior, and focused foundation tests.",
+          "verification": [
+            "direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/feature-flags.test.ts",
+            "direnv exec . pnpm exec eslint src/lib/migrations.ts src/lib/task-stage-attempts.ts src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/feature-flags.ts src/lib/__tests__/feature-flags.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-foundation.tsbuildinfo",
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "git diff --check"
           ],
-          "commands": [
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts",
-            "pnpm exec eslint src/lib/triage-routing-payloads.ts src/lib/triage-routing.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.fixtures.ts scripts/spec-009f/check-scope-guards.mjs",
-            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs"
-          ],
-          "focused_tests": 27,
-          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
+          "focused_tests": "39/39 passing"
         },
-        "T012-T018": {
+        "T019-T032": {
           "status": "completed",
-          "files": [
-            "src/lib/triage-routing-payloads.ts",
-            "src/lib/__tests__/triage-routing-payloads.test.ts",
-            "src/lib/triage-routing.ts",
-            "src/lib/__tests__/triage-routing.test.ts",
-            "src/lib/task-evidence.ts",
-            "src/lib/__tests__/task-evidence.test.ts",
-            "src/lib/__tests__/task-evidence.fixtures.ts"
+          "summary": "Added the read-only viewer route, OpenAPI/API-index entries, task-detail run-state section, deterministic Playwright journey, and US1 guard refinements.",
+          "verification": [
+            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
+            "direnv exec . pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts 'src/app/api/tasks/[id]/stage-attempts/route.ts' src/app/api/index/route.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx src/components/panels/task-board-panel.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs",
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us1.tsbuildinfo",
+            "direnv exec . pnpm api:parity",
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "git diff --check",
+            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
           ],
-          "commands": [
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts",
-            "pnpm exec eslint src/lib/triage-routing-payloads.ts src/lib/triage-routing.ts src/lib/task-evidence.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/lib/__tests__/task-evidence.fixtures.ts",
-            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs"
-          ],
-          "focused_tests": 31,
-          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
+          "focused_tests": "Vitest 11/11 passing; Playwright 1/1 passing"
         },
-        "T019-T029": {
+        "T033-T040": {
           "status": "completed",
-          "files": [
-            "src/lib/triage-routing-payloads.ts",
-            "src/lib/__tests__/triage-routing-payloads.test.ts",
-            "src/lib/triage-routing.ts",
-            "src/lib/__tests__/triage-routing.test.ts",
-            "src/lib/task-evidence.ts",
-            "src/lib/__tests__/task-evidence.test.ts",
-            "src/lib/__tests__/task-evidence.fixtures.ts"
+          "summary": "Strengthened non-destructive archive coverage, default route archive evidence, active-vs-archived UI labels, and fresh-build Playwright verification.",
+          "verification": [
+            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
+            "direnv exec . pnpm exec eslint src/lib/task-stage-attempts.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts",
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us2.tsbuildinfo",
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "direnv exec . pnpm build",
+            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
           ],
-          "commands": [
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/task-evidence.test.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts",
-            "pnpm exec eslint src/lib/triage-routing-payloads.ts src/lib/triage-routing.ts src/lib/task-evidence.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/lib/__tests__/task-evidence.fixtures.ts",
-            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs"
-          ],
-          "focused_tests": 40,
-          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
+          "focused_tests": "Vitest 21/21 passing; Playwright 1/1 passing"
         },
-        "T030-T036": {
+        "T041-T049": {
           "status": "completed",
-          "files": [
-            "src/lib/triage-routing-payloads.ts",
-            "src/lib/__tests__/triage-routing-payloads.test.ts",
-            "src/lib/triage-routing.ts",
-            "src/lib/__tests__/triage-routing.test.ts",
-            "src/lib/task-evidence.ts",
-            "src/lib/__tests__/task-evidence.test.ts",
-            "src/lib/__tests__/task-evidence.fixtures.ts"
+          "summary": "Added runtime table-blind guard fixtures, evidence-route table-blind assertion, flag-off read-route coverage, and task-pipeline guardrail evidence.",
+          "verification": [
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test",
+            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
+            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts",
+            "direnv exec . pnpm exec eslint scripts/spec-013a/check-run-state-scope-guards.mjs src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts",
+            "direnv exec . node scripts/check-guardrails.mjs --suite task-pipeline",
+            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us3.tsbuildinfo"
           ],
-          "commands": [
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/Applications/VMware Fusion.app/Contents/Public:/Users/fredrickgabelmann/.codex/tmp/arg0/codex-arg0BEfd5c:/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/node_modules/.bin:/Users/fredrickgabelmann/.antigravity/antigravity/bin:/opt/homebrew/opt/openjdk/bin:/Users/fredrickgabelmann/Library/pnpm:/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/Cellar/pyenv-virtualenv/1.3.0/shims:/Users/fredrickgabelmann/.pyenv/shims:/opt/homebrew/Cellar/zplug/2.4.2/bin:/Users/fredrickgabelmann/.bun/bin:/Users/fredrickgabelmann/.local/bin:/usr/local/opt/llvm/bin:/opt/homebrew/opt/sqlite/bin:/Users/fredrickgabelmann/.pyenv/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/Users/fredrickgabelmann/.swiftly/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Applications/iTerm.app/Contents/Resources/utilities:/Applications/Obsidian.app/Contents/MacOS:/Users/fredrickgabelmann/.cache/lm-studio/bin:/Applications/Docker.app/Contents/Resources/bin:/Applications/Obsidian.app/Contents/MacOS pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts",
-            "pnpm exec eslint src/lib/triage-routing-payloads.ts src/lib/triage-routing.ts src/lib/task-evidence.ts src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/lib/__tests__/task-evidence.fixtures.ts",
-            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/Applications/VMware Fusion.app/Contents/Public:/Users/fredrickgabelmann/.codex/tmp/arg0/codex-arg0BEfd5c:/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/node_modules/.bin:/Users/fredrickgabelmann/.antigravity/antigravity/bin:/opt/homebrew/opt/openjdk/bin:/Users/fredrickgabelmann/Library/pnpm:/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/Cellar/pyenv-virtualenv/1.3.0/shims:/Users/fredrickgabelmann/.pyenv/shims:/opt/homebrew/Cellar/zplug/2.4.2/bin:/Users/fredrickgabelmann/.bun/bin:/Users/fredrickgabelmann/.local/bin:/usr/local/opt/llvm/bin:/opt/homebrew/opt/sqlite/bin:/Users/fredrickgabelmann/.pyenv/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/Users/fredrickgabelmann/.swiftly/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Applications/iTerm.app/Contents/Resources/utilities:/Applications/Obsidian.app/Contents/MacOS:/Users/fredrickgabelmann/.cache/lm-studio/bin:/Applications/Docker.app/Contents/Resources/bin:/Applications/Obsidian.app/Contents/MacOS node scripts/spec-009f/check-scope-guards.mjs"
-          ],
-          "focused_tests": 47,
-          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
+          "focused_tests": "scope guard self-test 15 fixtures; Vitest 32/32 passing"
         },
-        "T037-T044": {
+        "T050-T058": {
           "status": "completed",
-          "files": [
-            "src/lib/triage-routing.ts",
-            "src/lib/__tests__/triage-routing.test.ts",
-            "src/lib/task-evidence.ts",
-            "src/lib/__tests__/task-evidence.test.ts",
-            "src/components/panels/task-evidence-section.tsx",
-            "src/components/panels/__tests__/task-evidence-section.test.tsx",
-            "src/lib/__tests__/api-contract-parity.test.ts",
-            "openapi.json"
+          "summary": "Captured live schema and rollback evidence, API parity, focused tests, full typecheck/lint/build, final Playwright journey, and deferred SPEC-013B/C/014 notes.",
+          "verification": [
+            "M76 schema capture from extracted migration SQL applied twice",
+            "rollback-M76 SQL check",
+            "direnv exec . pnpm api:parity",
+            "direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
+            "direnv exec . pnpm typecheck",
+            "direnv exec . pnpm lint",
+            "direnv exec . pnpm build",
+            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
           ],
-          "commands": [
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/Applications/VMware Fusion.app/Contents/Public:/Users/fredrickgabelmann/.codex/tmp/arg0/codex-arg0BEfd5c:/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/node_modules/.bin:/Users/fredrickgabelmann/.antigravity/antigravity/bin:/opt/homebrew/opt/openjdk/bin:/Users/fredrickgabelmann/Library/pnpm:/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/Cellar/pyenv-virtualenv/1.3.0/shims:/Users/fredrickgabelmann/.pyenv/shims:/opt/homebrew/Cellar/zplug/2.4.2/bin:/Users/fredrickgabelmann/.bun/bin:/Users/fredrickgabelmann/.local/bin:/usr/local/opt/llvm/bin:/opt/homebrew/opt/sqlite/bin:/Users/fredrickgabelmann/.pyenv/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/Users/fredrickgabelmann/.swiftly/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Applications/iTerm.app/Contents/Resources/utilities:/Applications/Obsidian.app/Contents/MacOS:/Users/fredrickgabelmann/.cache/lm-studio/bin:/Applications/Docker.app/Contents/Resources/bin:/Applications/Obsidian.app/Contents/MacOS pnpm test src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/api-contract-parity.test.ts",
-            "pnpm api:parity",
-            "pnpm exec eslint src/lib/triage-routing.ts src/lib/task-evidence.ts src/components/panels/task-evidence-section.tsx src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/api-contract-parity.test.ts",
-            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/pkg/env/global/bin:/Library/Apple/usr/bin:/usr/local/MacGPG2/bin:/Applications/VMware Fusion.app/Contents/Public:/Users/fredrickgabelmann/.codex/tmp/arg0/codex-arg0BEfd5c:/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/node_modules/.bin:/Users/fredrickgabelmann/.antigravity/antigravity/bin:/opt/homebrew/opt/openjdk/bin:/Users/fredrickgabelmann/Library/pnpm:/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:/opt/homebrew/Cellar/pyenv-virtualenv/1.3.0/shims:/Users/fredrickgabelmann/.pyenv/shims:/opt/homebrew/Cellar/zplug/2.4.2/bin:/Users/fredrickgabelmann/.bun/bin:/Users/fredrickgabelmann/.local/bin:/usr/local/opt/llvm/bin:/opt/homebrew/opt/sqlite/bin:/Users/fredrickgabelmann/.pyenv/bin:/opt/homebrew/opt/ruby/bin:/opt/homebrew/lib/ruby/gems/3.3.0/bin:/Users/fredrickgabelmann/.swiftly/bin:/Users/fredrickgabelmann/bin:/Library/Frameworks/Python.framework/Versions/3.11/bin:/Applications/iTerm.app/Contents/Resources/utilities:/Applications/Obsidian.app/Contents/MacOS:/Users/fredrickgabelmann/.cache/lm-studio/bin:/Applications/Docker.app/Contents/Resources/bin:/Applications/Obsidian.app/Contents/MacOS node scripts/spec-009f/check-scope-guards.mjs"
-          ],
-          "focused_tests": 45,
-          "api_parity": "passed",
-          "node_runtime_note": "SQLite-backed tests use Node 22.22.2 because the shared better-sqlite3 native addon is built for NODE_MODULE_VERSION 127; default Homebrew Node 26 reports NODE_MODULE_VERSION 147 and is not used for SQLite verification."
-        },
-        "T045-T055": {
-          "status": "completed",
-          "files": [
-            "src/lib/triage-routing.ts",
-            "src/lib/__tests__/triage-routing.test.ts",
-            "src/lib/task-dispatch.ts",
-            "src/lib/__tests__/task-dispatch.test.ts",
-            "tests/e2e/spec-009f-triage-routing.spec.ts",
-            "scripts/spec-009f/check-scope-guards.mjs",
-            "docs/qa/pilot-smoke-checklist.md",
-            "specs/009f-production-triage-routing/tasks.md"
-          ],
-          "review_artifacts": [
-            "test-results/spec-009f-triage-routing/spec-009f-triage-routing-fixture-export.json",
-            "test-results/spec-009f-triage-routing/spec-009f-needs-spec.png",
-            "test-results/spec-009f-triage-routing/spec-009f-needs-human.png",
-            "test-results/spec-009f-triage-routing/spec-009f-needs-specialist.png",
-            "test-results/spec-009f-triage-routing/spec-009f-duplicate.png",
-            "test-results/spec-009f-triage-routing/spec-009f-obsolete.png",
-            "test-results/spec-009f-triage-routing/spec-009f-invalid.png"
-          ],
-          "commands": [
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-dispatch.test.ts",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/task-dispatch.test.ts",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm api:parity",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-009f/check-scope-guards.mjs",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e tests/e2e/spec-009f-triage-routing.spec.ts",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-dispatch.test.ts",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test src/lib/__tests__/triage-routing-payloads.test.ts src/lib/__tests__/triage-routing.test.ts src/lib/__tests__/task-evidence.test.ts src/components/panels/__tests__/task-evidence-section.test.tsx src/lib/__tests__/task-dispatch.test.ts",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test",
-            "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e"
-          ],
-          "focused_tests": 84,
-          "unit_suite": "284 passed, 33 skipped; 2991 tests passed, 3 skipped, 84 todo",
-          "e2e_suite": "648 passed",
-          "build": "passed outside sandbox after sandbox-only Turbopack localhost bind EPERM",
-          "api_parity": "passed",
-          "scope_guard": "passed; committed review artifacts under test-results/spec-009f-triage-routing are forbidden",
-          "post_review_fix": "SPEC-009F routing artifacts now publish through publishArtifact so task-artifacts ownership of secret detection, redaction, size/MIME checks, and supersession is preserved; production dispatch now stops legacy triage_outcome publication after SPEC-009F validation/conflict/publish failures. Focused routing/dispatch tests pass 41 tests and broader focused SPEC-009F tests pass 84 tests; final read-only review found no blocking findings. The e2e UAT fixture drives routing through the production /api/tasks status update path and advanceTaskChain(), not a helper-only shortcut.",
-          "cleanup_verification": {
-            "task_ids": [
-              12,
-              13,
-              14,
-              15,
-              16,
-              17
-            ],
-            "tasks": 0,
-            "task_artifacts": 0,
-            "activities": 0,
-            "task_dispositions": 0
-          },
-          "node_runtime_note": "SQLite-backed tests and Next.js verification used Node 22.22.2 because this worktree's better-sqlite3 native addon was installed for Node 22."
+          "focused_tests": "Vitest 31/31 passing; Playwright 1/1 passing; full Vitest 288 files / 3026 tests passing; full Playwright 649/649 passing"
         }
       }
+    }
+  },
+  "post_implementation": {
+    "status": "completed",
+    "verify_implementation": {
+      "status": "skipped",
+      "reason": "Optional speckit-verify extension is not installed in this Codex skill set; implementation verification was covered by T050-T058 and post integration gates."
+    },
+    "code_review": {
+      "status": "skipped",
+      "reason": "Optional speckit-review extension is not installed in this Codex skill set; PR review is handled by GitHub PR #58 and the review-remediation heartbeat."
+    },
+    "integration_suite": {
+      "status": "completed",
+      "commands": [
+        "direnv exec . pnpm test",
+        "direnv exec . pnpm test:e2e"
+      ],
+      "results": [
+        "Vitest passed: 288 files, 3026 tests, 33 skipped, 84 todo",
+        "Playwright passed: 649 tests"
+      ]
+    },
+    "cleanup": {
+      "status": "skipped",
+      "reason": "Optional speckit-cleanup extension is not installed; no generated cleanup-safe files remained in git status."
+    },
+    "reviewability": {
+      "status": "exception",
+      "diff_gate": "Raw diff gate blocked at 6697 reviewable LOC, 18 production files, 39 total files, and 7 primary surfaces.",
+      "tasks_gate": "Tasks gate passed under ratified transition exception at 2320 estimated reviewable LOC, 24 production files, 116 total files, and 6 primary surfaces.",
+      "exception_source": "specs/013a-run-state-spine/tasks.md"
+    },
+    "pr": {
+      "status": "created",
+      "url": "https://github.com/racecraft-lab/mission-control/pull/58",
+      "draft": true,
+      "branch": "013a-run-state-spine",
+      "base": "main"
+    },
+    "review_remediation": {
+      "status": "scheduled",
+      "automation_id": "spec-013a-pr-review-remediation",
+      "cadence": "FREQ=MINUTELY;INTERVAL=5"
+    },
+    "retrospective": {
+      "status": "skipped",
+      "reason": "Optional speckit-retrospective-analyze extension is not installed."
     }
   }
 }

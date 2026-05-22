@@ -3383,6 +3383,78 @@ const migrations: Migration[] = [
       ).run()
     },
   },
+  {
+    id: '076_task_stage_attempts',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS task_stage_attempts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          attempt_number INTEGER NOT NULL CHECK(attempt_number > 0),
+          status TEXT NOT NULL CHECK(status IN (
+            'created',
+            'running',
+            'succeeded',
+            'failed',
+            'released',
+            'cancelled',
+            'archived'
+          )),
+          created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+          updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+          started_at TEXT,
+          completed_at TEXT,
+          archived_at TEXT,
+          run_id TEXT,
+          workflow_template_id INTEGER,
+          workflow_template_slug TEXT,
+          metadata_json TEXT,
+          UNIQUE(workspace_id, task_id, stage_key, attempt_number)
+        );
+
+        CREATE TABLE IF NOT EXISTS task_stage_attempt_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          attempt_id INTEGER NOT NULL,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          attempt_number INTEGER NOT NULL CHECK(attempt_number > 0),
+          status TEXT NOT NULL CHECK(status IN (
+            'created',
+            'running',
+            'succeeded',
+            'failed',
+            'released',
+            'cancelled',
+            'archived'
+          )),
+          observed_at TEXT NOT NULL,
+          actor_type TEXT CHECK(actor_type IS NULL OR actor_type IN ('test', 'fixture', 'operator', 'system')),
+          actor_id TEXT,
+          message TEXT,
+          metadata_json TEXT,
+          FOREIGN KEY(attempt_id) REFERENCES task_stage_attempts(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_task_stage_attempts_task_stage_attempt
+          ON task_stage_attempts(workspace_id, task_id, stage_key, attempt_number DESC);
+        CREATE INDEX IF NOT EXISTS idx_task_stage_attempts_task_status
+          ON task_stage_attempts(workspace_id, task_id, status, updated_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_task_stage_attempts_run_id
+          ON task_stage_attempts(workspace_id, run_id)
+          WHERE run_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_task_stage_attempts_archived
+          ON task_stage_attempts(workspace_id, archived_at)
+          WHERE archived_at IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_task_stage_attempt_events_attempt_order
+          ON task_stage_attempt_events(attempt_id, observed_at ASC, id ASC);
+        CREATE INDEX IF NOT EXISTS idx_task_stage_attempt_events_task_order
+          ON task_stage_attempt_events(workspace_id, task_id, stage_key, attempt_number, observed_at ASC, id ASC);
+      `)
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {

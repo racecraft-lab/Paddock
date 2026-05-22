@@ -14713,6 +14713,224 @@
         }
       }
     },
+    "/api/tasks/{id}/stage-attempts": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Read task stage attempts",
+        "description": "Read-only viewer-authenticated task inspection route that returns the task_stage_attempts.v1 envelope for visible tasks without scheduling, dispatching, retrying, claiming, or mutating task-stage attempt state.",
+        "operationId": "getTaskStageAttempts",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Optional explicit workspace scope"
+          },
+          {
+            "name": "workspace_scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "facility"
+              ]
+            },
+            "description": "Optional facility workspace scope"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only task stage attempts inspection envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "schema_version",
+                    "task",
+                    "attempts",
+                    "warnings"
+                  ],
+                  "properties": {
+                    "schema_version": {
+                      "type": "string",
+                      "const": "task_stage_attempts.v1"
+                    },
+                    "task": {
+                      "type": "object",
+                      "nullable": true,
+                      "required": [
+                        "id",
+                        "workspace_id",
+                        "title",
+                        "status"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "workspace_id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "status": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "attempts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "workspace_id",
+                          "task_id",
+                          "stage_key",
+                          "attempt_number",
+                          "status",
+                          "created_at",
+                          "updated_at",
+                          "started_at",
+                          "completed_at",
+                          "archived_at",
+                          "workflow_template_id",
+                          "workflow_template_slug",
+                          "run_id",
+                          "run_link",
+                          "run_summary",
+                          "metadata",
+                          "lifecycle"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "workspace_id": {
+                            "type": "string"
+                          },
+                          "task_id": {
+                            "type": "string"
+                          },
+                          "stage_key": {
+                            "type": "string"
+                          },
+                          "attempt_number": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          },
+                          "started_at": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "completed_at": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "archived_at": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "workflow_template_id": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "workflow_template_slug": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "run_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "run_link": {
+                            "type": "object"
+                          },
+                          "run_summary": {
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "metadata": {},
+                          "lifecycle": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            },
+                            "maxItems": 10
+                          }
+                        }
+                      }
+                    },
+                    "warnings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed workspace scope"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/api/tasks/{id}/evidence": {
       "get": {
         "tags": [

@@ -45,6 +45,7 @@ export const DEFAULT_VISUAL_REVIEW_PATHS = [
   'tests/e2e/governance-*.spec.ts',
   'tests/e2e/ready-for-owner-kanban.spec.ts',
   'tests/e2e/spec-007-ui-visual.spec.ts',
+  'tests/e2e/spec-013a-task-stage-attempts.spec.ts',
   'tests/e2e/spec-008/**',
   'tests/e2e/workflow-contract-diagnostics.spec.ts',
   'tests/e2e/fixtures/workflow-contract-diagnostics.ts',

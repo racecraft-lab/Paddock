@@ -17,7 +17,9 @@ import { Button } from '@/components/ui/button'
 import { ProjectManagerModal } from '@/components/modals/project-manager-modal'
 import { SessionMessage, shouldShowTimestamp, type SessionTranscriptMessage } from '@/components/chat/session-message'
 import { TaskEvidenceSection } from '@/components/panels/task-evidence-section'
+import { TaskStageAttemptsSection } from '@/components/panels/task-stage-attempts-section'
 import type { TaskEvidenceResponse } from '@/lib/task-evidence'
+import type { TaskStageAttemptEnvelope } from '@/lib/task-stage-attempts'
 
 const log = createClientLogger('TaskBoard')
 
@@ -1262,6 +1264,9 @@ function TaskDetailModal({
   const [taskEvidence, setTaskEvidence] = useState<TaskEvidenceResponse | null>(null)
   const [taskEvidenceLoading, setTaskEvidenceLoading] = useState(false)
   const [taskEvidenceError, setTaskEvidenceError] = useState<string | null>(null)
+  const [taskStageAttempts, setTaskStageAttempts] = useState<TaskStageAttemptEnvelope | null>(null)
+  const [taskStageAttemptsLoading, setTaskStageAttemptsLoading] = useState(false)
+  const [taskStageAttemptsError, setTaskStageAttemptsError] = useState<string | null>(null)
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -1304,6 +1309,22 @@ function TaskDetailModal({
     }
   }, [activeProductLineScope, task.id])
 
+  const fetchTaskStageAttempts = useCallback(async () => {
+    try {
+      setTaskStageAttemptsLoading(true)
+      setTaskStageAttemptsError(null)
+      const response = await fetch(appendScopeToPath(`/api/tasks/${task.id}/stage-attempts`, activeProductLineScope))
+      if (!response.ok) throw new Error('Failed to fetch stage attempts')
+      const data = await response.json()
+      setTaskStageAttempts(data as TaskStageAttemptEnvelope)
+    } catch {
+      setTaskStageAttempts(null)
+      setTaskStageAttemptsError('Failed to load stage attempts')
+    } finally {
+      setTaskStageAttemptsLoading(false)
+    }
+  }, [activeProductLineScope, task.id])
+
   useEffect(() => {
     fetchComments()
   }, [fetchComments])
@@ -1313,6 +1334,9 @@ function TaskDetailModal({
   useEffect(() => {
     fetchTaskEvidence()
   }, [fetchTaskEvidence])
+  useEffect(() => {
+    fetchTaskStageAttempts()
+  }, [fetchTaskStageAttempts])
   
   useSmartPoll(fetchComments, 15000)
 
@@ -1704,6 +1728,12 @@ function TaskDetailModal({
                 evidence={taskEvidence}
                 loading={taskEvidenceLoading}
                 error={taskEvidenceError}
+              />
+
+              <TaskStageAttemptsSection
+                attempts={taskStageAttempts}
+                loading={taskStageAttemptsLoading}
+                error={taskStageAttemptsError}
               />
 
               {/* Agent session */}

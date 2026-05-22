@@ -11,6 +11,7 @@ export type FeatureFlagKey =
   | 'FEATURE_RESOURCE_GOVERNANCE'
   | 'FEATURE_OPENCLAW_HEALTH_COSTS'
   | 'PILOT_MISSION_CONTROL_E2E'
+  | 'FEATURE_TASK_CONTROL_PLANE'
 
 export type FeatureFlagActivationScope =
   | 'authWorkspace'
@@ -83,6 +84,7 @@ export const FEATURE_FLAG_KEYS = [
   'FEATURE_RESOURCE_GOVERNANCE',
   'FEATURE_OPENCLAW_HEALTH_COSTS',
   'PILOT_MISSION_CONTROL_E2E',
+  'FEATURE_TASK_CONTROL_PLANE',
 ] as const satisfies readonly FeatureFlagKey[]
 
 const ENV_FORCE_ON_EXCEPTIONS = new Set(['PILOT_MISSION_CONTROL_E2E'])
@@ -319,6 +321,27 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     implementedAfter: ['Mission Control pilot'],
     preflightRequires: ['Mission Control seed data, workflow templates, GitHub issue trigger, and pilot smoke checklist are ready.'],
     rollbackBehavior: 'Disable pilot automation and fall back to explicit operator task assignment.',
+    evidence: {},
+  },
+  FEATURE_TASK_CONTROL_PLANE: {
+    key: 'FEATURE_TASK_CONTROL_PLANE',
+    label: 'Task control plane',
+    description: 'Run-state persistence spine foundation for task control-plane workflows.',
+    spec: 'Run-State Persistence Spine',
+    phase: 11,
+    upstreamImpact: 'upstream-divergent',
+    activationScope: 'productLineWorkspace',
+    riskTier: 'critical',
+    defaultValue: false,
+    adminManageable: false,
+    requiresHuman: true,
+    requiresReason: true,
+    requiresPreflight: true,
+    implementationStatus: 'not_implemented',
+    enableRequires: ['PILOT_MISSION_CONTROL_E2E'],
+    implementedAfter: ['Run-State Persistence Spine'],
+    preflightRequires: ['Task control-plane persistence, replay, and operator rollback behavior are verified.'],
+    rollbackBehavior: 'Disable to keep task control-plane persistence inactive while preserving existing runtime state rows.',
     evidence: {},
   },
 }
