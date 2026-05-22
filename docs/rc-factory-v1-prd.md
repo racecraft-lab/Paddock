@@ -294,9 +294,9 @@ reconciliation.
 
 ### FR-I Mission Control Product Line Pilot
 
-- **FR-I1:** Seed Mission Control as the first Product Line with department
-  projects, workflow families, flags, governance defaults, and GitHub sync to
-  `racecraft-lab/mission-control`.
+- **FR-I1:** Seed Mission Control as the first Product Line from a repo-owned
+  product-line config with department projects, workflow families, flags,
+  governance defaults, and GitHub sync to `racecraft-lab/mission-control`.
 - **FR-I2:** Issue Triage is the first workflow family. It classifies issues as
   actionable remediation, duplicate, obsolete, invalid, needs human
   clarification, needs specialist, or needs spec.
@@ -307,6 +307,9 @@ reconciliation.
   issues and must not be conflated with direct remediation.
 - **FR-I5:** Existing synced Mission Control issues are treated as intake. They
   retain GitHub linkage and start through Issue Triage before remediation.
+- **FR-I6:** Product Line seed inputs are checked-in, reviewable config
+  artifacts with typed validation, preflight/apply/verify modes, and fail-closed
+  behavior before writes.
 
 ### FR-J Workflow Contracts And Harness Gardening
 
@@ -336,6 +339,7 @@ is limited to the entities Mission Control needs:
 - Task artifacts.
 - Resource policies and policy events.
 - Workflow-contract diagnostics and last-known-good snapshots.
+- Product Line seed configs and seed verification evidence.
 - Run/claim/sandbox state for later runner phases.
 
 Migrations are additive unless a future spec explicitly justifies otherwise.

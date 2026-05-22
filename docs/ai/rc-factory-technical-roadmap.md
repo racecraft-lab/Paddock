@@ -175,12 +175,12 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-009D | 8D | Pilot Review Packet and Lifecycle Snapshot | pilot-review-lifecycle | Complete | P1 | SPEC-007, SPEC-008, SPEC-009C4 | SPEC-009E, SPEC-013A | Phase 8D |
 | SPEC-009E | 8E | Pilot Eligibility and Evidence Surfaces | pilot-evidence-surfaces | Complete | P2 | SPEC-009D | SPEC-009F, SPEC-013A | Phase 8E |
 | SPEC-009F | 8F | Production Triage Outcome Routing | production-triage-routing | Complete | P1 | SPEC-009E, SPEC-012A | Later production triage lanes | Phase 8F |
-| SPEC-010A | 9A | Generic Product-Line Seeder | generic-product-line-seeder | In Progress | P2 | SPEC-002A, SPEC-009B | SPEC-010B | Phase 9A |
+| SPEC-010A | 9A | Generic Product-Line Seeder | generic-product-line-seeder | UAT Pending | P2 | SPEC-002A, SPEC-009B | SPEC-010B | Phase 9A |
 | SPEC-010B | 9B | Product Line B Onboarding Smoke | product-line-b-smoke | Pending | P2 | SPEC-009C4, SPEC-010A | SPEC-012B | Phase 9B |
 | SPEC-011 | 7.5 | CrabTrap Honeypot Adapter | crabtrap-honeypot | Pending | P2 | SPEC-008 | — | Phase 7.5 |
 | SPEC-012A | 10A | Repo Knowledge Index and AGENTS Map | repo-knowledge-index | Complete | P1 | SPEC-002A, SPEC-009A | SPEC-012B, SPEC-013A | Phase 10A |
 | SPEC-012B | 10B | Harness-Gardening Drift Guards | harness-gardening-guards | Pending | P1 | SPEC-010B, SPEC-012A | Later cleanup specs | Phase 10B |
-| SPEC-013A | 11A | Run-State Persistence Spine | run-state-spine | In Progress | P1 | SPEC-009D, SPEC-012A | SPEC-013A1 | Phase 11A |
+| SPEC-013A | 11A | Run-State Persistence Spine | run-state-spine | UAT Pending | P1 | SPEC-009D, SPEC-012A | SPEC-013A1 | Phase 11A |
 | SPEC-013A1 | 11A1 | GitHub Sync Automation and Poller Lifecycle | github-sync-automation | Pending | P1 | SPEC-009D, SPEC-012A, SPEC-013A | SPEC-013B | Phase 11A1 |
 | SPEC-013B | 11B | Claim and Reconciliation Authority | claim-reconciliation | Pending | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-013A1 | SPEC-013C, SPEC-014A | Phase 11B |
 | SPEC-013C | 11C | Retry/Backoff and Debug Surfaces | retry-debug-surfaces | Pending | P1 | SPEC-013B | SPEC-014C | Phase 11C |
@@ -191,13 +191,13 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 ### Pending Mini-Spec Parallelization Snapshot
 
-**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, SPEC-009C1, SPEC-009C2, SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F, and SPEC-012A are complete per the implementation evidence recorded below. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, SPEC-009A PR #28 as `2b78970e`, SPEC-009B PR #30 as `1d5c994c`, SPEC-009C1 PR #34 as `7d544f39`, the SPEC-009C1 post-merge routing fix PR #40 as `e6ee19ee`, SPEC-009C2 PR #43 as `a63afdea`, the SPEC-009C2 post-merge assignee fix PR #46 as `19b2db98`, SPEC-009C3 PR #48 as `ac7760a2`, SPEC-009C4 PR #52 as `ddc709f2`, SPEC-009D PR #54 as `765264b`, SPEC-009E PR #55 as `40507874`, SPEC-009F PR #57 as `d396ed2`, and SPEC-012A PR #56 as `a5e3fbec`. SPEC-009F has local implementation verification, fixture UAT, merge evidence, and operator-confirmed target deployment/HITL UAT closeout recorded on 2026-05-22. SPEC-013A setup is in progress on branch `013a-run-state-spine` with design concept and workflow artifacts prepared for autopilot. SPEC-009C4 has target HAL deployment and UAT replay evidence recorded; SPEC-009D has packet UAT, merge, and main CI evidence recorded; SPEC-009E has task evidence surface UAT, merge, and main CI evidence recorded; SPEC-012A has repo knowledge index UAT, merge, visual approval, and main CI evidence recorded.
+**Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, SPEC-009C1, SPEC-009C2, SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F, and SPEC-012A are complete per the implementation evidence recorded below. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, SPEC-009A PR #28 as `2b78970e`, SPEC-009B PR #30 as `1d5c994c`, SPEC-009C1 PR #34 as `7d544f39`, the SPEC-009C1 post-merge routing fix PR #40 as `e6ee19ee`, SPEC-009C2 PR #43 as `a63afdea`, the SPEC-009C2 post-merge assignee fix PR #46 as `19b2db98`, SPEC-009C3 PR #48 as `ac7760a2`, SPEC-009C4 PR #52 as `ddc709f2`, SPEC-009D PR #54 as `765264b`, SPEC-009E PR #55 as `40507874`, SPEC-009F PR #57 as `d396ed2`, SPEC-012A PR #56 as `a5e3fbec`, SPEC-013A PR #58 as `a3a79250`, and SPEC-010A PR #59 as `9be6b544`. SPEC-010A and SPEC-013A are merged but remain `UAT Pending` until their post-merge checkout/deployment, flag or process scope, and HITL UAT evidence are recorded. SPEC-009F has local implementation verification, fixture UAT, merge evidence, and operator-confirmed target deployment/HITL UAT closeout recorded on 2026-05-22. SPEC-009C4 has target HAL deployment and UAT replay evidence recorded; SPEC-009D has packet UAT, merge, and main CI evidence recorded; SPEC-009E has task evidence surface UAT, merge, and main CI evidence recorded; SPEC-012A has repo knowledge index UAT, merge, visual approval, and main CI evidence recorded.
 
-- **Active setup after SPEC-009F:** SPEC-013A is in progress on branch `013a-run-state-spine` because it is the highest-priority unblocked run-state prerequisite. SPEC-010A is also in progress on branch `010a-generic-product-line-seeder` with PR #59 open for the generic seeder slice; SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
+- **Active closeout after SPEC-010A/SPEC-013A merges:** no active implementation workflow should be treated as in progress on `main` for those specs. Close the post-merge UAT/status gaps for SPEC-013A and SPEC-010A before starting their dependent specs. SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C1 -> SPEC-009C2 -> SPEC-009C3 -> SPEC-009C4 -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
-- **Scale/doc parallel path:** SPEC-010A has started after SPEC-009B; SPEC-010B waits for SPEC-010A now that SPEC-009C4 is complete; SPEC-012B waits for two-product-line reality from SPEC-010B.
+- **Scale/doc parallel path:** SPEC-010A implementation has merged and is UAT Pending; SPEC-010B waits for SPEC-010A acceptance now that SPEC-009C4 is complete; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Evidence, routing, and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-009F owns production routing/evidence for non-remediation triage outcomes after the pilot evidence surfaces exist. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
-- **Control-plane path:** SPEC-013A -> SPEC-013A1 -> SPEC-013B -> SPEC-013C starts after the pilot review packet and repo knowledge index exist. These specs own run-state, GitHub sync automation, claim/reconciliation, and retry state; they do not launch harnesses.
+- **Control-plane path:** SPEC-013A implementation has merged and is UAT Pending; SPEC-013A1 waits for SPEC-013A acceptance before GitHub sync automation, claim/reconciliation, and retry state proceed. These specs do not launch harnesses.
 - **Runner path:** SPEC-014A -> SPEC-014B establishes sandbox ownership and fake adapter proof first. SPEC-014C and SPEC-014D then run in parallel if they do not touch the same adapter files.
 
 ### Spec-by-Spec HITL UAT Matrix
@@ -547,11 +547,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Definition of done:** Operators can drive each non-remediation triage fixture and inspect the correct production lane/evidence while verifying that no Issue Remediation successor, claim, runner, sandbox, or auto-close side effect is created unless that side effect is explicitly owned by this spec.
 - **Setup evidence:** Branch `009f-production-triage-routing` was created from `main` on 2026-05-21. Grill Me setup decisions require recommendation-only routing/evidence, typed lane artifacts in existing disposition/artifact/activity storage, task Evidence `triageRouting` display, `PILOT_MISSION_CONTROL_E2E` v1 scope, terminal Issue Triage outcomes without successors, and no automatic GitHub mutation, SpecKit setup, claim, runner, sandbox, adapter, or auto-merge behavior.
 - **Implementation evidence:** PR #57 merged to `main` as `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22 after branch verification captured at `f9a18575` and post-implementation docs hygiene at `c8ef2ea1`. Local verification passed under Node 22.22.2: focused routing/dispatch tests (41), broader focused SPEC-009F tests (84), `pnpm api:parity`, `node scripts/spec-009f/check-scope-guards.mjs`, focused e2e UAT, `pnpm build`, `pnpm typecheck`, `pnpm lint`, full `pnpm test` (2,991 passed, 3 skipped, 84 todo), and full `pnpm test:e2e` (648 passed). GitHub merge checks passed for CodeQL, Quality Gate, and visual approval contexts. Reviewability diff gate passed under the approved exception because the behavior remains terminal triage-routing evidence plus the existing task Evidence extension, with the extra footprint in generated SpecKit artifacts, API parity, security payload tests, UAT fixtures, and guard tooling. Operator closeout on 2026-05-22 confirmed target deployment promotion, `PILOT_MISSION_CONTROL_E2E` target-scope validation, and HITL replay of the six non-remediation outcomes with no reported UAT defects. No migration, runtime dependency, live GitHub mutation, successor template, claim/runner/sandbox/adapter path, or auto-merge behavior was added.
-- **Next spec:** SPEC-013A (`run-state-spine`) is the active setup target on branch `013a-run-state-spine`. SPEC-010A is in progress on branch `010a-generic-product-line-seeder` with PR #59 open; SPEC-011 remains an optional parallel start only when file ownership stays disjoint.
+- **Next closeout:** SPEC-013A and SPEC-010A are merged but UAT Pending. Finish those post-merge acceptance checks before starting dependent SPEC-013A1 or SPEC-010B. SPEC-011 remains an optional parallel start only when file ownership stays disjoint.
 
 ### SPEC-010A: Generic Product-Line Seeder
 
-- **Status:** In Progress
+- **Status:** UAT Pending
 - **Priority:** P2
 - **Branch short name:** `generic-product-line-seeder`
 - **Dependencies:** SPEC-002A, SPEC-009B
@@ -564,7 +564,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Autopilot notes:** Keep facility agents global, product-line agents isolated, and GitHub repo identity explicit. This can run while the remaining SPEC-009C handoff slices are being smoked because it does not touch pilot execution.
 - **Definition of done:** The generic seeder can reproduce the Mission Control seed from config and rejects incomplete or unsafe product-line configs without mutating existing workspaces.
 - **Setup evidence:** Branch `010a-generic-product-line-seeder` was created from `main` on 2026-05-22. Grill Me setup decisions require checked-in YAML product-line configs under `docs/ai/product-lines/`, Mission Control as the first reusable fixture, generic `seed:product-line` preflight/apply/verify modes, `seed:mission-control` compatibility wrapper behavior, fail-closed validation before writes, target-config-aware redacted residue blocking, explicit existing-target apply/verify policy, feature flag validation through `FEATURE_FLAG_REGISTRY`, workflow contract imports through the existing SPEC-009A library, advisory/default governance rows using `resource_policies`, product-line-scoped `agentPrefix` assignments, and no Product Line B config/smoke, GitHub mutation, dispatch, claim, runner, sandbox, adapter, auto-merge, or SpecKit setup/autopilot invocation.
-- **Implementation PR:** PR #59 (`010a-generic-product-line-seeder`) opened on 2026-05-22 with G7, focused tests, CLI parity, static guard, typecheck, lint, build, and reviewability exception evidence. Status remains `In Progress` until merge/deployment/UAT evidence satisfies the roadmap status policy.
+- **Implementation evidence:** PR #59 (`010a-generic-product-line-seeder`) merged to `main` as `9be6b544b6006bd5de2524d22bc8059a21eed41c` on 2026-05-22. Branch evidence recorded G7, focused tests, CLI parity, static guard, typecheck, lint, build, and reviewability exception evidence.
+- **Post-merge acceptance gap:** Status remains `UAT Pending` until a post-merge checkout records the generic `seed:product-line` preflight/apply/verify UAT against the Mission Control config, no-mutation failure evidence, and the operator scope used for acceptance.
 
 ### SPEC-010B: Product Line B Onboarding Smoke
 
@@ -629,7 +630,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-013A: Run-State Persistence Spine
 
-- **Status:** In Progress
+- **Status:** UAT Pending
 - **Priority:** P1
 - **Branch short name:** `run-state-spine`
 - **Dependencies:** SPEC-009D, SPEC-012A
@@ -641,6 +642,8 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** run-state model, migration only if justified and additive, serialization helpers, fixtures, and read-only debug output. No claim authority, no scheduler launch, no retry policy.
 - **Autopilot notes:** The output is an observable state spine that SPEC-013A1 and SPEC-013B can claim against. It must explain why existing `AgentRun` fields are insufficient before adding new tables.
 - **Definition of done:** A task-stage attempt can be represented, inspected, archived, and ignored safely with `FEATURE_TASK_CONTROL_PLANE=false`.
+- **Implementation evidence:** PR #58 (`013a-run-state-spine`) merged to `main` as `a3a79250bc0fa8ac79d36a787f8119d1add62678` on 2026-05-22. Workflow evidence records all phases complete, full unit and e2e suites passing, M76 rollback evidence, API parity, run-state scope guardrails, and the no-claim/no-scheduler/no-retry/no-harness boundary.
+- **Post-merge acceptance gap:** Status remains `UAT Pending` until a post-merge checkout or target deployment records `FEATURE_TASK_CONTROL_PLANE` flag scope, create/inspect/archive attempt UAT, flag-off runtime-ignore evidence, and any cleanup or retention evidence.
 
 ### SPEC-013A1: GitHub Sync Automation and Poller Lifecycle
 
@@ -1393,17 +1396,17 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8F and Phase 10A are complete and remain the substrate for all later work. SPEC-013A is now the active setup branch because it is the highest-priority unblocked run-state prerequisite. SPEC-010A is in progress on branch `010a-generic-product-line-seeder` with PR #59 open; SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8F and Phase 10A are complete and remain the substrate for all later work. SPEC-013A and SPEC-010A have merged but are UAT Pending, so their dependent specs remain blocked until post-merge acceptance evidence is recorded. SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
-SPEC-013A setup is now in progress on branch `013a-run-state-spine`; run `$speckit-autopilot docs/ai/specs/SPEC-013A-workflow.md` from that worktree to execute the workflow.
+SPEC-013A and SPEC-010A should next receive post-merge UAT/status closeout from the merged `main` checkout before SPEC-013A1 or SPEC-010B setup begins.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
 - SPEC-012A is complete and now feeds SPEC-012B and SPEC-013A as a checked-in repo knowledge substrate.
-- SPEC-010A is in progress on branch `010a-generic-product-line-seeder` with PR #59 open; SPEC-011 may also start when file ownership stays disjoint.
+- SPEC-010A is UAT Pending after PR #59 merged; SPEC-011 may also start when file ownership stays disjoint.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
-- SPEC-009F is complete and SPEC-013A setup has started on branch `013a-run-state-spine`; continue with `$speckit-autopilot docs/ai/specs/SPEC-013A-workflow.md` unless the operator intentionally chooses disjoint parallel SPEC-010A or SPEC-011 work first.
-- SPEC-013A1 runs after SPEC-013A and before SPEC-013B so automatic GitHub sync is explicit before claim/reconciliation relies on scheduler ticks.
+- SPEC-009F is complete and SPEC-013A is UAT Pending after PR #58 merged; finish SPEC-013A acceptance before SPEC-013A1.
+- SPEC-013A1 runs after SPEC-013A acceptance and before SPEC-013B so automatic GitHub sync is explicit before claim/reconciliation relies on scheduler ticks.
 - SPEC-014C and SPEC-014D may run in parallel only after SPEC-014B and only if adapter modules, fixtures, and deployment docs are isolated.
 
 ## Timeline (Small-Spec Estimate)

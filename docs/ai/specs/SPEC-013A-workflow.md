@@ -200,13 +200,13 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] A task-stage attempt can be represented with task identity, workflow/stage identity, attempt number, lifecycle history, current projection, and optional `run_id`.
-- [ ] Attempt rows can be inspected through an authenticated read-only API and compact task-detail/debug UI without requiring terminal history.
-- [ ] Archived attempt state is non-destructive and traceable.
-- [ ] `FEATURE_TASK_CONTROL_PLANE=false` causes legacy dispatch/scheduler behavior to ignore run-state rows.
-- [ ] Existing `runs` / `AgentRun` fields are not duplicated unnecessarily; optional linkage is documented.
-- [ ] The spec records why the dedicated attempt table is justified despite the roadmap's reuse-first caution.
-- [ ] No claim authority, retry policy, scheduler launch, GitHub reconciliation, sandbox lifecycle, harness adapter, or auto-merge behavior is introduced.
+- [x] A task-stage attempt can be represented with task identity, workflow/stage identity, attempt number, lifecycle history, current projection, and optional `run_id`.
+- [x] Attempt rows can be inspected through an authenticated read-only API and compact task-detail/debug UI without requiring terminal history.
+- [x] Archived attempt state is non-destructive and traceable.
+- [x] `FEATURE_TASK_CONTROL_PLANE=false` causes legacy dispatch/scheduler behavior to ignore run-state rows.
+- [x] Existing `runs` / `AgentRun` fields are not duplicated unnecessarily; optional linkage is documented.
+- [x] The spec records why the dedicated attempt table is justified despite the roadmap's reuse-first caution.
+- [x] No claim authority, retry policy, scheduler launch, GitHub reconciliation, sandbox lifecycle, harness adapter, or auto-merge behavior is introduced.
 
 ---
 

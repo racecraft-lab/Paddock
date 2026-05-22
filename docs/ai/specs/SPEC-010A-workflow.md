@@ -196,17 +196,17 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] Generic product-line seeder consumes checked-in YAML config and validates required identity, agent, repo, workflow, feature-flag, and governance fields.
-- [ ] Mission Control seed can be reproduced from the generic config with apply-twice and verify-mode evidence matching the SPEC-009B invariants.
-- [ ] Incomplete or unsafe configs fail closed before writes and return structured JSON errors with field/path codes.
-- [ ] No-mutation tests prove invalid configs do not change workspace, project, assignment, task, workflow-template, or governance rows.
-- [ ] Existing product-line workspace handling is explicit, preserves history, and mutates only config-owned fields.
-- [ ] Workflow templates are imported through the existing workflow-contract library using config-declared family/path/required slugs.
-- [ ] Feature flags are validated against `FEATURE_FLAG_REGISTRY`; configured disabled/absent flags stay off.
-- [ ] Product-line-scoped agent assignments use explicit `agentPrefix`; facility/global agents are not accidentally assigned.
-- [ ] Target-config residue preflight blocks ownership conflicts with redacted evidence and no automatic cleanup.
-- [ ] `seed:mission-control` remains available as a compatibility wrapper around the Mission Control config.
-- [ ] No Product Line B config/smoke, GitHub mutation, scheduler dispatch, claim, runner, sandbox, adapter, or auto-merge behavior is added.
+- [x] Generic product-line seeder consumes checked-in YAML config and validates required identity, agent, repo, workflow, feature-flag, and governance fields.
+- [x] Mission Control seed can be reproduced from the generic config with apply-twice and verify-mode evidence matching the SPEC-009B invariants.
+- [x] Incomplete or unsafe configs fail closed before writes and return structured JSON errors with field/path codes.
+- [x] No-mutation tests prove invalid configs do not change workspace, project, assignment, task, workflow-template, or governance rows.
+- [x] Existing product-line workspace handling is explicit, preserves history, and mutates only config-owned fields.
+- [x] Workflow templates are imported through the existing workflow-contract library using config-declared family/path/required slugs.
+- [x] Feature flags are validated against `FEATURE_FLAG_REGISTRY`; configured disabled/absent flags stay off.
+- [x] Product-line-scoped agent assignments use explicit `agentPrefix`; facility/global agents are not accidentally assigned.
+- [x] Target-config residue preflight blocks ownership conflicts with redacted evidence and no automatic cleanup.
+- [x] `seed:mission-control` remains available as a compatibility wrapper around the Mission Control config.
+- [x] No Product Line B config/smoke, GitHub mutation, scheduler dispatch, claim, runner, sandbox, adapter, or auto-merge behavior is added.
 
 ---
 
