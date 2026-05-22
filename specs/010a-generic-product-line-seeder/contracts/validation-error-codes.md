@@ -4,8 +4,8 @@
 
 | Code | Meaning |
 |------|---------|
-| `CONFIG_PARSE_FAILED` | YAML could not be parsed safely. |
-| `CONFIG_UNSAFE_YAML_SYNTAX` | YAML uses custom tags, anchors, aliases, merge keys, or multi-document streams. |
+| `CONFIG_PARSE_FAILED` | YAML is malformed or could not be loaded by the approved non-executing parser profile; unsafe syntax classes are reported as `CONFIG_UNSAFE_YAML_SYNTAX`. |
+| `CONFIG_UNSAFE_YAML_SYNTAX` | YAML uses custom tags, anchors, aliases, merge keys, multi-document streams, executable constructs, constructor/object instantiation syntax, or remote reference loading. |
 | `CONFIG_SCHEMA_VERSION_UNSUPPORTED` | `schema_version` is not `product-line-seed-v1`. |
 | `CONFIG_REQUIRED_SECTION_MISSING` | A required top-level section is absent. |
 | `CONFIG_UNKNOWN_FIELD` | Unknown top-level or section field was supplied. |

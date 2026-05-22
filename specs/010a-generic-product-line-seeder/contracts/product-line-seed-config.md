@@ -135,6 +135,11 @@ safety_policy:
 
 ## Validation Rules
 
+- Config loading must use a single-document, non-executing YAML schema/profile.
+- Config loading must not evaluate code, instantiate custom objects, invoke constructors, resolve executable constructs, or perform network/file remote reference loading.
+- Config loading must reject custom tags, anchors, aliases, merge keys, multi-document streams, executable constructs, and remote reference loading before JSON Schema or TypeScript semantic validation.
+- Unsafe YAML syntax failures must return `CONFIG_UNSAFE_YAML_SYNTAX` with structured, redacted field/path evidence where available.
+- Malformed or unloadable YAML that does not match an unsafe-syntax class must return `CONFIG_PARSE_FAILED`.
 - `schema_version` must equal `product-line-seed-v1`.
 - `workflow_contract.family` must equal `mission-control` for SPEC-010A.
 - `workflow_contract.required_slugs` must all exist in the referenced contract.

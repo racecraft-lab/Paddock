@@ -16,6 +16,16 @@ pnpm seed:mission-control -- --db <db> --mode preflight|apply|verify --json [--a
 
 Unknown flags must fail with exit code `5` and `mutation_status:"not_mutated"`.
 
+## Operator Evidence Redaction
+
+`--operator-evidence <json>` is an untrusted operator-provided boundary input.
+
+The result envelope MAY include operator-evidence-derived context only when it is parsed, summarized, and redacted. The envelope MUST NOT echo the raw operator evidence payload in `evidence`, `errors`, `snapshot_before`, `snapshot_after`, logs, review output, or unexpected-error output.
+
+Operator-evidence-derived output MUST remain actionable using field paths, stable IDs, rule IDs, counts, normalized labels, or hashes. It MUST include redaction proof through `redaction.raw_secret_values_emitted:false` and `redaction.redacted_fields` when any field is omitted or transformed.
+
+Operator-evidence-derived hashes MUST NOT hash raw credentials, tokens, passwords, raw secret values, signed URLs, raw logs, raw untrusted payloads, raw operator-evidence payloads, or matched secret substrings.
+
 ## Result Envelope
 
 All modes return the stable envelope:

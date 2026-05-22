@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010A-workflow.md",
-  "updated_at": "2026-05-22T17:19:54Z",
-  "active_step": "Phase 4: Checklist - security",
+  "updated_at": "2026-05-22T17:30:05Z",
+  "active_step": "Phase 4: Checklist - reliability",
   "status": "In Progress",
   "current_spec_dir": "specs/010a-generic-product-line-seeder",
   "branch": "010a-generic-product-line-seeder",
@@ -80,15 +80,15 @@
     },
     {
       "step": "Phase 4: Checklist - security",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - security Consensus",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - reliability",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - reliability Consensus",
@@ -396,6 +396,24 @@
       "consensus": {
         "required": false,
         "reason": "checklist-executor found zero unresolved items"
+      },
+      "markers": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
+    },
+    {
+      "phase": "Phase 4: Checklist - security",
+      "status": "Complete",
+      "timestamp": "2026-05-22T17:30:05Z",
+      "summary": "Security checklist produced 19 items. Two gaps were found and remediated by adding explicit untrusted operator-evidence redaction/no-raw-hash requirements and safe single-document non-executing YAML parsing with unsafe syntax and remote reference rejection. Final marker count is 0.",
+      "consensus": {
+        "required": false,
+        "reason": "checklist-executor remediated both gaps directly with high confidence and no unresolved items"
       },
       "markers": {
         "gaps": 0,
