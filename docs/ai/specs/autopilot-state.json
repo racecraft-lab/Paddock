@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
   "updated_at": "2026-05-22T16:07:53Z",
-  "active_step": "Phase 3: Plan",
+  "active_step": "Phase 4: Checklist - data-integrity",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -52,11 +52,11 @@
     },
     {
       "step": "Phase 3: Plan",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 4: Checklist - data-integrity Consensus",
@@ -304,6 +304,28 @@
       "gate": "G2 pass, 0 [NEEDS CLARIFICATION] markers",
       "total_questions": 20,
       "consensus_items": 5
+    },
+    "plan": {
+      "status": "completed",
+      "gate": "G3 pass, 0 unresolved markers",
+      "files": [
+        "specs/013a-run-state-spine/plan.md",
+        "specs/013a-run-state-spine/research.md",
+        "specs/013a-run-state-spine/data-model.md",
+        "specs/013a-run-state-spine/quickstart.md",
+        "specs/013a-run-state-spine/contracts/task-stage-attempts-api.md",
+        "AGENTS.md"
+      ],
+      "migration_id": "076_task_stage_attempts",
+      "runtime_fixture_endpoint": "not selected",
+      "technical_decisions": [
+        "Dedicated additive task_stage_attempts and task_stage_attempt_events tables.",
+        "Soft nullable run_id with read-time compact run summary and no foreign key to runs.",
+        "Dedicated GET /api/tasks/[id]/stage-attempts route with task_stage_attempts.v1 envelope.",
+        "Compact read-only task detail Run state / Stage attempts section near Evidence.",
+        "FEATURE_TASK_CONTROL_PLANE typed default-off registry entry using resolveFlag.",
+        "Static guardrails for inline env reads and forbidden runtime/evidence table references."
+      ]
     }
   }
 }

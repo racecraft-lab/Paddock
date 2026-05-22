@@ -36,8 +36,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch/worktree, archive registry, presets, package manager, command map, and required Codex subagents verified before Specify |
 | Specify | `$speckit-specify` | Complete | G1 passed; generated `specs/013a-run-state-spine/spec.md` and requirements checklist with zero clarification markers |
 | Clarify | `$speckit-clarify` | Complete | G2 passed; 20 clarification answers and 5 consensus resolutions recorded with zero unresolved markers |
-| Plan | `$speckit-plan` | In Progress | Plan additive schema if justified by Q1 decision, typed helpers, read-only API/UI, tests, and rollback |
-| Checklist | `$speckit-checklist` | Pending | Run focused domains for data integrity, API contracts, state management, regression safety, and UX/accessibility |
+| Plan | `$speckit-plan` | Complete | G3 passed; selected migration `076_task_stage_attempts`, generated research/data-model/API contract/quickstart, and rejected runtime fixture endpoint for this implementation |
+| Checklist | `$speckit-checklist` | In Progress | Starting data-integrity checklist |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict boundaries against SPEC-013B/C and SPEC-014A-D |
 | Analyze | `$speckit-analyze` | Pending | Cross-check spec, plan, tasks, and design concept for scope drift |
 | Implement | `$speckit-implement` | Pending | Execute tasks only after G6 passes |
@@ -370,11 +370,11 @@ Focus on inspection surface and strict boundaries:
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, schema decision, constitution gates |
-| `research.md` | Pending | Dedicated table justification, lifecycle/projection, flag behavior, API/UI decisions |
-| `data-model.md` | Pending | Attempt entity, lifecycle event/projection, archive state, optional run link |
-| `contracts/` | Pending | Read-only API contract and fixture contract |
-| `quickstart.md` | Pending | Operator UAT and rollback/flag-off verification path |
+| `plan.md` | Complete | Technical context, schema decision, constitution gates, migration id `076_task_stage_attempts` |
+| `research.md` | Complete | Dedicated table justification, lifecycle/projection, flag behavior, API/UI decisions |
+| `data-model.md` | Complete | Attempt entity, lifecycle event/projection, archive state, optional soft run link |
+| `contracts/` | Complete | Read-only `GET /api/tasks/[id]/stage-attempts` contract |
+| `quickstart.md` | Complete | Operator UAT and rollback/flag-off verification path |
 
 ---
 
