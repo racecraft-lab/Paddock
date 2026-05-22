@@ -40,7 +40,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Checklist | `$speckit-checklist` | Complete | G4 passed; 107 checklist items, 14 gaps remediated, zero remaining active `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | G5 passed; generated 58 TDD-first tasks across 6 phases, with 26 parallel opportunities and a ratified transition exception for the planned schema/helper/API/UI scope |
 | Analyze | `$speckit-analyze` | Complete | G6 passed after remediating 2 medium design-concept drift findings; zero CRITICAL/HIGH findings remain |
-| Implement | `$speckit-implement` | In Progress | Executing T001-T007 setup and scope guardrails first |
+| Implement | `$speckit-implement` | Complete | G7 passed; T001-T058 implemented with migration/helper/route/component/guardrail/e2e coverage |
+| Post-Implementation | `$speckit-autopilot` closeout | Complete | Full unit and e2e suites passed; PR #58 opened as draft; review-remediation heartbeat `spec-013a-pr-review-remediation` scheduled |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -604,6 +605,7 @@ For each task:
 | T033-T040 | `direnv exec . pnpm test src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx`; `direnv exec . pnpm exec eslint src/lib/task-stage-attempts.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us2.tsbuildinfo`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `direnv exec . pnpm build`; `direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts` | Pass; focused Vitest 21/21; build passed; Playwright 1/1 after fresh build |
 | T041-T049 | `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test`; `direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs`; `direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts`; `direnv exec . pnpm exec eslint scripts/spec-013a/check-run-state-scope-guards.mjs src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts`; `direnv exec . node scripts/check-guardrails.mjs --suite task-pipeline`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us3.tsbuildinfo` | Pass; scope guard self-test 15 fixtures; focused Vitest 32/32; task-pipeline guardrails passed |
 | T050-T058 | M76 schema capture from extracted migration SQL applied twice; rollback SQL check; `direnv exec . pnpm api:parity`; `direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx`; `direnv exec . pnpm typecheck`; `direnv exec . pnpm lint`; `direnv exec . pnpm build`; `direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts` | Pass; schema marker count 1 after double apply, required tables/indexes present, `PRAGMA foreign_key_check` returned no rows; rollback child-first/history-warning/marker/FK checks passed; API parity OK; focused Vitest 31/31; typecheck/lint/build passed; Playwright 1/1 |
+| Post Integration | `direnv exec . pnpm test`; `direnv exec . pnpm test:e2e`; reviewability diff gate; tasks reviewability gate; PR body generation; `gh pr create --draft --base main --head 013a-run-state-spine --title "SPEC-013A: Run-state persistence spine" --body-file /private/tmp/spec-013a-pr-body.md` | Pass; full Vitest 288 files / 3026 tests passed, 33 skipped, 84 todo; full Playwright 649/649 passed; diff gate reported raw block at 6653 LOC / 18 production files / 39 total files / 7 surfaces; tasks gate passed under ratified transition exception at 2320 estimated LOC / 24 production files / 116 total files / 6 surfaces; draft PR #58 opened |
 
 ---
 
@@ -614,12 +616,16 @@ For each task:
 - [x] `pnpm typecheck` passes.
 - [x] `pnpm lint` passes.
 - [x] `pnpm test` or justified focused subset passes.
+- [x] Full `pnpm test` passes after final closeout repairs.
 - [x] `pnpm build` passes when runtime/API/UI files changed.
 - [x] Focused Playwright/UI journey passes if task detail UI changes.
+- [x] Full `pnpm test:e2e` passes.
 - [x] Static guardrails prove no claim, scheduler launch, retry policy, GitHub reconciliation, sandbox, adapter, or auto-merge behavior was introduced.
 - [x] Rollback SQL and operator runbook updates exist if migration is added.
 - [x] Roadmap and workflow status are updated on the spec branch.
 - [x] PR review packet records reviewability, verification, flag, rollback, and known-gap evidence.
+- [x] Draft PR opened: https://github.com/racecraft-lab/mission-control/pull/58.
+- [x] Review-remediation heartbeat scheduled: `spec-013a-pr-review-remediation`.
 
 ### Deferred Work Notes
 
