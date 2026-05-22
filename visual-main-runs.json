@@ -3,6 +3,33 @@
   "reports": [
     {
       "surface": "storybook",
+      "runId": "26313265182",
+      "runAttempt": "1",
+      "runKey": "26313265182-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26313265182",
+      "reportKey": "9be6b544b6006bd5de2524d22bc8059a21eed41c",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/9be6b544b6006bd5de2524d22bc8059a21eed41c/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/?v=26313265182-attempt-1",
+      "headSha": "9be6b544b6006bd5de2524d22bc8059a21eed41c",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "010a-generic-product-line-seeder",
+        "headSha": "aa59174c35033ba0e366b2fb9c011ad9d37d60f7",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/59/",
+        "mergeCommitSha": "",
+        "number": "59",
+        "title": "SPEC-010A generic product-line seeder",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/59"
+      },
+      "createdAt": "2026-05-22T21:40:50.658Z"
+    },
+    {
+      "surface": "storybook",
       "runId": "26310860977",
       "runAttempt": "1",
       "runKey": "26310860977-attempt-1",
@@ -660,5 +687,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-22T20:48:47.165Z"
+  "updatedAt": "2026-05-22T21:40:50.658Z"
 }
