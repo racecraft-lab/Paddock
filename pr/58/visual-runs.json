@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "58",
+  "prTitle": "SPEC-013A: Run-state persistence spine",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/58",
+  "headRef": "013a-run-state-spine",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26308521013",
+      "runAttempt": "1",
+      "runKey": "26308521013-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26308521013",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/58/runs/26308521013-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/58/playwright/latest/?v=26308521013-attempt-1",
+      "headSha": "06b25f1b4c72b058a41d85f76036d2c45e0cee1a",
+      "headRef": "013a-run-state-spine",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-22T19:53:48.500Z"
+    }
+  ],
+  "updatedAt": "2026-05-22T19:53:48.500Z"
+}

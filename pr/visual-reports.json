@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-21T16:08:00.136Z",
+  "updatedAt": "2026-05-22T19:53:48.500Z",
   "prs": [
+    {
+      "prNumber": "58",
+      "prTitle": "SPEC-013A: Run-state persistence spine",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/58",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/58/",
+      "headRef": "013a-run-state-spine",
+      "baseRef": "main",
+      "updatedAt": "2026-05-22T19:53:48.500Z",
+      "latest": {
+        "playwright": {
+          "runId": "26308521013",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26308521013",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/58/playwright/latest/?v=26308521013-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/58/runs/26308521013-attempt-1/playwright/",
+          "updatedAt": "2026-05-22T19:53:48.500Z"
+        }
+      }
+    },
     {
       "prNumber": "56",
       "prTitle": "SPEC-012A: Repo Knowledge Index and AGENTS Map",
