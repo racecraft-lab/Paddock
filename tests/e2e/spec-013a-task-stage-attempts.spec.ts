@@ -5,6 +5,8 @@ import Database from 'better-sqlite3'
 import {
   API_KEY_HEADER,
   dismissOnboardingForE2E,
+  enableWorkspaceSwitcherFlagForE2E,
+  getWorkflowTestWorkspaceId,
   loginAsE2EAdmin,
 } from '../helpers'
 import { captureVisualSnapshot } from '../visual/visual-snapshot'
@@ -24,6 +26,8 @@ interface TaskWorkspaceRow {
 }
 
 const createdTasks: CreatedTask[] = []
+let restoreWorkspaceSwitcher: (() => void) | null = null
+let workspaceId = 0
 
 function sqlPlaceholders(values: readonly unknown[]): string {
   return values.map(() => '?').join(', ')
@@ -37,9 +41,17 @@ function checkpoint(db: Database.Database): void {
   }
 }
 
+function scoped(pathname: string, selectedWorkspaceId = workspaceId): string {
+  if (!selectedWorkspaceId) {
+    throw new Error('SPEC-013A e2e workspace id has not been initialized')
+  }
+  const separator = pathname.includes('?') ? '&' : '?'
+  return `${pathname}${separator}workspace_id=${encodeURIComponent(String(selectedWorkspaceId))}`
+}
+
 async function createStageAttemptsTask(page: Page): Promise<CreatedTask> {
   const title = 'SPEC-013A Run State Stage Attempts Fixture'
-  const response = await page.request.post('/api/tasks', {
+  const response = await page.request.post(scoped('/api/tasks'), {
     headers: API_KEY_HEADER,
     data: {
       title,
@@ -314,21 +326,29 @@ test.describe.serial('SPEC-013A task detail stage attempts', () => {
     })
     const cookieHeader = await loginAsE2EAdmin(page, request)
     await dismissOnboardingForE2E(request, cookieHeader)
+    restoreWorkspaceSwitcher ??= await enableWorkspaceSwitcherFlagForE2E(request)
+    if (!workspaceId) {
+      workspaceId = await getWorkflowTestWorkspaceId(request)
+    }
   })
 
   test.afterAll(async ({ request }) => {
     cleanupDirectRows()
     for (const task of [...createdTasks].reverse()) {
-      await request.delete(`/api/tasks/${String(task.id)}`, { headers: API_KEY_HEADER }).catch(() => undefined)
+      if (workspaceId) {
+        await request.delete(scoped(`/api/tasks/${String(task.id)}`), { headers: API_KEY_HEADER }).catch(() => undefined)
+      }
     }
     cleanupDirectRows()
+    restoreWorkspaceSwitcher?.()
+    restoreWorkspaceSwitcher = null
   })
 
   test('shows active, linked, missing, archived, and projection-drift stage attempts as read-only state @spec-013a', async ({ page }, testInfo) => {
     const task = await createStageAttemptsTask(page)
     seedStageAttemptRows(task)
 
-    await page.goto('/tasks')
+    await page.goto(scoped('/tasks'))
     await expect(page.getByRole('region', { name: /^Task Board$/i })).toBeVisible()
 
     const region = await openStageAttempts(page, task.title)
