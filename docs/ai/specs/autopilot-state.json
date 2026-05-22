@@ -1,8 +1,8 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-009F-workflow.md",
-  "updated_at": "2026-05-22T14:11:03Z",
-  "active_step": "PR #57 merged; target deployment and HITL UAT evidence pending",
-  "status": "UAT Pending",
+  "updated_at": "2026-05-22T14:50:30Z",
+  "active_step": "Complete",
+  "status": "Complete",
   "current_spec_dir": "specs/009f-production-triage-routing",
   "branch": "009f-production-triage-routing",
   "plan": [
@@ -204,7 +204,7 @@
     },
     {
       "step": "Post: Target Deployment and HITL UAT",
-      "status": "pending"
+      "status": "completed"
     }
   ],
   "archive_sweep": {
@@ -318,7 +318,7 @@
       "significant_findings": 0
     },
     "post_merge_closeout": {
-      "status": "uat-pending",
+      "status": "completed",
       "pr_number": 57,
       "url": "https://github.com/racecraft-lab/mission-control/pull/57",
       "merged_at": "2026-05-22T13:00:42Z",
@@ -334,21 +334,21 @@
         "visual-review-approval/playwright",
         "visual-review-approval/storybook"
       ],
-      "pending": [
+      "completed": [
         "target deployment promotion",
         "PILOT_MISSION_CONTROL_E2E scope confirmation",
         "named HITL UAT evidence for all six non-remediation outcomes on the target deployment"
       ],
-      "notes": "PR #57 is merged, but roadmap policy requires target deployment and HITL UAT evidence before SPEC-009F can move from UAT Pending to Complete."
+      "notes": "Operator closeout on 2026-05-22 confirmed target deployment promotion, PILOT_MISSION_CONTROL_E2E target-scope validation, and HITL replay of the six non-remediation outcomes with no reported UAT defects."
     },
     "roadmap_prd_hygiene": {
       "status": "completed",
-      "next_after_pr57_uat_closeout": "SPEC-013A",
+      "next_after_spec009f_completion": "SPEC-013A",
       "parallel_options": [
         "SPEC-010A",
         "SPEC-011"
       ],
-      "notes": "Roadmap and PRD now make the next unblocked spec pointer part of closeout hygiene. SPEC-013A becomes the explicit next setup target after target deployment and HITL UAT close out SPEC-009F."
+      "notes": "Roadmap and PRD now make the next unblocked spec pointer part of closeout hygiene. SPEC-013A is the explicit next setup target after SPEC-009F completion."
     }
   },
   "phase_results": {

@@ -51,7 +51,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Ran data-integrity, api-contracts, state-management, error-handling, security, ux-accessibility, and regression-safety; all gaps remediated |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | G6 passed after artifact-only consistency remediations; no CRITICAL/HIGH findings remain |
-| Implement | `$speckit-implement` | Complete | T001-T055 complete; PR #57 merged to `main` as `d396ed205b281d10a2b5cb95542209e816ebd95a`; target deployment/HITL UAT remains pending |
+| Implement | `$speckit-implement` | Complete | T001-T055 complete; PR #57 merged to `main` as `d396ed205b281d10a2b5cb95542209e816ebd95a`; target deployment/HITL UAT closeout recorded |
 
 **Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
 
@@ -686,14 +686,14 @@ guard/UAT evidence.
 - Merge evidence: PR #57 merged to `main` as
   `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22. GitHub merge
   checks passed for CodeQL, Quality Gate, and visual approval contexts.
-- Current closeout status: `UAT Pending`. Target deployment promotion and named
-  HITL UAT evidence are not yet recorded, so this workflow must not mark
-  SPEC-009F `Complete`.
+- Current closeout status: `Complete`. Operator closeout on 2026-05-22
+  confirmed target deployment promotion, `PILOT_MISSION_CONTROL_E2E`
+  target-scope validation, and HITL replay of the six non-remediation outcomes
+  with no reported UAT defects.
 - Review remediation: no review comments or reviews existed when checked;
   Copilot review waiting was skipped by operator direction because monthly quota
   is exhausted.
 - Retrospective: `specs/009f-production-triage-routing/retrospective.md`
-- Roadmap/PRD hygiene: this closeout records that after SPEC-009F target
-  deployment/HITL UAT, the next recommended SpecKit setup target is SPEC-013A.
-  SPEC-010A and SPEC-011 remain parallel options only when file ownership stays
-  disjoint.
+- Roadmap/PRD hygiene: this closeout records SPEC-009F complete and makes
+  SPEC-013A the next recommended SpecKit setup target. SPEC-010A and SPEC-011
+  remain parallel options only when file ownership stays disjoint.
