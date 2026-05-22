@@ -48,7 +48,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Specify | `$speckit-specify` | Pending | Generate requirements for generic product-line seed config, CLI, parity proof, and no-mutation validation |
+| Specify | `$speckit-specify` | Complete | Generated `specs/010a-generic-product-line-seeder/spec.md` and requirements checklist with 5 user stories, 26 FRs, 12 success criteria, and 0 unresolved markers; G1 passed |
 | Clarify | `$speckit-clarify` | Pending | Resolve schema field names, existing-target semantics, validation codes, and wrapper behavior |
 | Plan | `$speckit-plan` | Pending | Design reusable seed modules over existing Mission Control seed and workflow-contract seams |
 | Checklist | `$speckit-checklist` | Pending | Run focused data-integrity, state-management, error-handling, security, and operator-process checks |
@@ -115,6 +115,34 @@ Preset `speckit-pro-reviewability` is present. Template resolution verified:
 - `spec-template` resolves to `.specify/presets/speckit-pro-reviewability/templates/spec-template.md`
 - `plan-template` resolves to `.specify/presets/speckit-pro-reviewability/templates/plan-template.md`
 - `tasks-template` resolves to `.specify/presets/speckit-pro-reviewability/templates/tasks-template.md`
+
+### Archive Sweep Startup
+
+| Field | Result |
+|-------|--------|
+| Status | Complete |
+| Timestamp | 2026-05-22T16:09:45Z |
+| Extension | Installed and enabled: `archive` v1.1.0 |
+| Current target | `specs/010a-generic-product-line-seeder` excluded from archive and cleanup |
+| Mode | `recorded-no-cleanup` |
+| safeToApplyCleanup | false |
+| Reason | Codex runtime exposes archive command documents but no executable archive command bridge in this worktree; previous spec folders are preserved |
+| Prior spec directories observed | `specs/009c3-remediation-ready-for-owner`, `specs/009c4-owner-merge-reconciliation`, `specs/009d-pilot-review-lifecycle`, `specs/009e-pilot-evidence-surfaces`, `specs/009f-production-triage-routing`, `specs/012a-repo-knowledge-index` |
+
+### Phase 0 Prerequisites Results
+
+| Check | Result |
+|-------|--------|
+| Timestamp | 2026-05-22T16:10:59Z |
+| Prerequisite script | Pass: `all_pass=true`; branch `010a-generic-product-line-seeder`; isolated worktree `true` |
+| Branch note | Plugin branch heuristic reported `on_feature_branch=false`; git branch and workflow branch match, so phase agents must skip branch creation |
+| Package manager | `pnpm` from `pnpm-lock.yaml` |
+| Project commands | `BUILD=pnpm build`; `TYPECHECK=pnpm typecheck`; `LINT=pnpm lint`; `UNIT_TEST=pnpm test`; `INTEGRATION_TEST=pnpm test:e2e`; authoritative full verification uses `pnpm test:all` from AGENTS.md |
+| MCP availability | Missing `tavily-mcp`, `context7`, and `RepoPrompt`; agents use built-in fallbacks |
+| Preset | `speckit-pro-reviewability` with spec, plan, and tasks templates resolved |
+| Required Codex agents | Installed in `/Users/fredrickgabelmann/.codex/agents`: `phase-executor`, `clarify-executor`, `checklist-executor`, `analyze-executor`, `implement-executor`, `codebase-analyst`, `spec-context-analyst`, `domain-researcher` |
+| Optional Codex agent | Installed: `autopilot-fast-helper` |
+| Implementation agent | `implement-executor` |
 
 ---
 
@@ -242,10 +270,21 @@ Generate requirements that prove Mission Control parity from generic config, fai
 
 ### Specify Gate Checklist
 
-- [ ] `spec.md` exists under `specs/010a-generic-product-line-seeder/`.
-- [ ] No `[NEEDS CLARIFICATION]` markers remain unless explicitly queued for Phase 2.
-- [ ] All Design Concept decisions Q1-Q12 are represented.
-- [ ] Scope boundaries match the roadmap and this workflow.
+- [x] `spec.md` exists under `specs/010a-generic-product-line-seeder/`.
+- [x] No `[NEEDS CLARIFICATION]` markers remain unless explicitly queued for Phase 2.
+- [x] All Design Concept decisions Q1-Q12 are represented.
+- [x] Scope boundaries match the roadmap and this workflow.
+
+### Specify Result
+
+| Field | Result |
+|-------|--------|
+| Status | Complete |
+| Generated artifacts | `specs/010a-generic-product-line-seeder/spec.md`; `specs/010a-generic-product-line-seeder/checklists/requirements.md` |
+| Requirements coverage | 5 user stories; 26 functional requirements; 12 success criteria; 16/16 requirements checklist items complete |
+| Marker scan | `count-markers.sh all specs/010a-generic-product-line-seeder` returned 0 gaps, 0 clarifications, and 0 findings |
+| G1 gate | Pass: `validate-gate.sh G1 specs/010a-generic-product-line-seeder` returned `pass=true` |
+| Scope result | Mission Control parity, generic config/CLI, existing-target safety, no-mutation evidence, workflow import, flags, governance, agents, and Product Line B/runtime-execution exclusions are represented |
 
 ---
 
