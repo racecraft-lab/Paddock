@@ -38,8 +38,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Clarify | `$speckit-clarify` | Complete | G2 passed; 20 clarification answers and 5 consensus resolutions recorded with zero unresolved markers |
 | Plan | `$speckit-plan` | Complete | G3 passed; selected migration `076_task_stage_attempts`, generated research/data-model/API contract/quickstart, and rejected runtime fixture endpoint for this implementation |
 | Checklist | `$speckit-checklist` | Complete | G4 passed; 107 checklist items, 14 gaps remediated, zero remaining active `[Gap]` markers |
-| Tasks | `$speckit-tasks` | In Progress | Generate TDD-first tasks with strict boundaries against SPEC-013B/C and SPEC-014A-D |
-| Analyze | `$speckit-analyze` | Pending | Cross-check spec, plan, tasks, and design concept for scope drift |
+| Tasks | `$speckit-tasks` | Complete | G5 passed; generated 58 TDD-first tasks across 6 phases, with 26 parallel opportunities and a ratified transition exception for the planned schema/helper/API/UI scope |
+| Analyze | `$speckit-analyze` | In Progress | Cross-check spec, plan, tasks, and design concept for scope drift |
 | Implement | `$speckit-implement` | Pending | Execute tasks only after G6 passes |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -498,10 +498,17 @@ Focus on SPEC-013A requirements:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 58 |
+| Phases | 6 |
+| Parallel Opportunities | 26 tasks marked `[P]` |
+| User Stories Covered | 3 |
+
+### Tasks Reviewability Gate
+
+| Gate | Status | Notes |
+|------|--------|-------|
+| G5 | Pass | 58 tasks found, zero unresolved markers |
+| Tasks reviewability | Exception | Transition exception ratified in `tasks.md`; raw budget remains 2320 reviewable LOC, 24 production files, 114 total files, and 6 primary surfaces because SPEC-013A intentionally spans schema, helper, route, and compact UI as the minimum durable run-state spine |
 
 ---
 

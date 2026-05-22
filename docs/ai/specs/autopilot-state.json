@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T17:40:00Z",
-  "active_step": "Phase 5: Tasks",
+  "updated_at": "2026-05-22T17:46:45Z",
+  "active_step": "Phase 6: Analyze",
   "status": "In Progress",
   "current_spec_dir": "specs/013a-run-state-spine",
   "branch": "013a-run-state-spine",
@@ -96,18 +96,38 @@
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
       "status": "pending"
     },
     {
-      "step": "Phase 7: Implement - Pending task decomposition",
+      "step": "Phase 7: Implement T001-T007 Setup and scope guardrails",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement T008-T018 Foundation migration, flag, and helper spine",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement T019-T032 US1 inspection API and task-detail UI",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement T033-T040 US2 non-destructive archive behavior",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement T041-T049 US3 flag-off runtime safety",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
       "status": "pending"
     },
     {
@@ -373,6 +393,35 @@
         "gaps_found": 14,
         "gaps_remediated": 14,
         "consensus_items": 0
+      }
+    },
+    "tasks": {
+      "status": "completed",
+      "gate": "G5 pass, 58 tasks found, 0 markers",
+      "files": [
+        "specs/013a-run-state-spine/tasks.md"
+      ],
+      "total_tasks": 58,
+      "phase_count": 6,
+      "parallel_opportunities": 26,
+      "user_stories_covered": 3,
+      "task_groups": [
+        "T001-T007 Setup and scope guardrails",
+        "T008-T018 Foundation migration, flag, and helper spine",
+        "T019-T032 US1 inspection API and task-detail UI",
+        "T033-T040 US2 non-destructive archive behavior",
+        "T041-T049 US3 flag-off runtime safety",
+        "T050-T058 Polish, verification, and review evidence"
+      ],
+      "reviewability_gate": {
+        "status": "exception",
+        "pass": true,
+        "transition_exception": true,
+        "reviewable_loc": 2320,
+        "production_files": 24,
+        "total_files": 114,
+        "primary_surface_count": 6,
+        "notes": "Transition exception ratified in tasks.md because SPEC-013A intentionally spans schema, helper, route, and compact UI as the minimum durable run-state spine."
       }
     }
   }
