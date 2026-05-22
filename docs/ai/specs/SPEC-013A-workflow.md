@@ -33,9 +33,9 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Pending | Verify branch/worktree, archive sweep, presets, package manager, and command map before Specify |
-| Specify | `$speckit-specify` | Pending | Generate `specs/013a-run-state-spine/spec.md` from roadmap plus design concept |
-| Clarify | `$speckit-clarify` | Pending | Required for schema identity, lifecycle projection, flag-off reads, archive semantics, and debug write boundaries |
+| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch/worktree, archive registry, presets, package manager, command map, and required Codex subagents verified before Specify |
+| Specify | `$speckit-specify` | Complete | G1 passed; generated `specs/013a-run-state-spine/spec.md` and requirements checklist with zero clarification markers |
+| Clarify | `$speckit-clarify` | In Progress | First session is schema identity and lifecycle |
 | Plan | `$speckit-plan` | Pending | Plan additive schema if justified by Q1 decision, typed helpers, read-only API/UI, tests, and rollback |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains for data integrity, API contracts, state management, regression safety, and UX/accessibility |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict boundaries against SPEC-013B/C and SPEC-014A-D |
@@ -76,7 +76,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 | XIV. Real UI Journey Quality Gate | New task-detail/debug UI receives browser coverage if changed | Focused Playwright journey covers visible read-only run-state section when UI changes |
 | XVI. Reviewability And Verification Debt Control | SPEC-013A stays one model/debug slice and records split boundaries | Analyze blocks claim authority, scheduler launch, retry policy, GitHub reconciliation, sandbox, adapter, or full dashboard drift |
 
-**Constitution Check:** Pending. Re-check after Specify, Plan, Analyze, and Implement.
+**Constitution Check:** Startup prerequisites verified the project constitution exists. Re-check after Specify, Plan, Analyze, and Implement.
 
 ### Reviewability Gate
 
@@ -248,13 +248,13 @@ Mission Control can ingest issues, route triage outcomes, produce review packets
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 14 |
+| User Stories | 3 |
+| Acceptance Criteria | 7 acceptance scenarios / 5 success criteria |
 
 ### Files Generated
 
-- [ ] `specs/013a-run-state-spine/spec.md`
+- [x] `specs/013a-run-state-spine/spec.md`
 
 ---
 
