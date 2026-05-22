@@ -51,7 +51,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Checklist | `$speckit-checklist` | Complete | Ran data-integrity, api-contracts, state-management, error-handling, security, ux-accessibility, and regression-safety; all gaps remediated |
 | Tasks | `$speckit-tasks` | Complete | Generated 55 TDD-first tasks for lane schemas, routing helper, idempotency, Evidence API/UI extension, fixture/UAT evidence, and guardrails; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | G6 passed after artifact-only consistency remediations; no CRITICAL/HIGH findings remain |
-| Implement | `$speckit-implement` | In Progress | T001-T055 complete; post-implementation status sync, reviewability gate, PR, and push remain before G7 closes |
+| Implement | `$speckit-implement` | Complete | T001-T055 complete; PR #57 is open, pushed, and carries reviewability exception plus verification evidence |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -655,8 +655,8 @@ Verification must prove all six non-remediation outcomes, no remediation success
 
 ### Reviewability Diff Gate Exception
 
-The raw post-implementation diff gate measured 9,893 reviewable additions, 12
-production-classified files, 36 total files, and six heuristic surfaces against
+The raw post-implementation diff gate measured 10,803 reviewable additions, 15
+production-classified files, 39 total files, and six heuristic surfaces against
 `origin/main...HEAD`, so the generic single-surface budget blocked. SPEC-009F
 is still proceeding with an explicit reviewability exception because the
 behavioral surface remains terminal triage routing evidence plus the existing
@@ -676,5 +676,17 @@ guard/UAT evidence.
 - [x] `pnpm lint` passes.
 - [x] `pnpm build` passes if production/API/UI files change.
 - [x] Browser/operator evidence exists if UI changes.
-- [ ] Roadmap/workflow status synced.
-- [ ] PR packet includes review order, traceability, validation, known gaps, and rollback/flag notes.
+- [x] Roadmap/workflow status synced.
+- [x] PR packet includes review order, traceability, validation, known gaps, and rollback/flag notes.
+
+### Post-Implementation Closeout
+
+- PR: https://github.com/racecraft-lab/mission-control/pull/57
+- Implementation evidence commit: `f9a18575`
+- Review remediation: no review comments or reviews existed when checked;
+  Copilot review waiting was skipped by operator direction because monthly quota
+  is exhausted.
+- Retrospective: `specs/009f-production-triage-routing/retrospective.md`
+- Roadmap/PRD hygiene: this branch records that after PR #57 merges, the next
+  recommended SpecKit setup target is SPEC-013A. SPEC-010A and SPEC-011 remain
+  parallel options only when file ownership stays disjoint.
