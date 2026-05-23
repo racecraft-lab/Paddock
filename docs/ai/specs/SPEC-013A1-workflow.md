@@ -38,7 +38,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Clarify | `$speckit-clarify` | Complete | Resolved lifecycle state, cursor/failure semantics, scheduler/lease/backoff defaults, GitHub Sync API/UI ownership with `operator` auth, and duplicate-safe owner/flag behavior; G2 passed with 0 clarification markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and GitHub Sync lifecycle API contract; selected additive M77 `077_github_sync_lifecycle`; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Completed scheduler-runtime, data-integrity, api-contracts, state-management, error-handling, ux, and extra observability checklist coverage; remediated 23 total gaps; G4 passed with 0 remaining `[Gap]` markers |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with focused tests for failure cursors, pagination, leases, owner filtering, manual sync fallback, feature flag/default-off, and UI/API status |
+| Tasks | `$speckit-tasks` | Complete | Generated 72 TDD-first tasks across 7 phases, 4 user stories, 26 parallel opportunities, focused verification commands, and a ratified reviewability transition exception; G5 passed |
 | Analyze | `$speckit-analyze` | Pending | Verify design concept, spec, plan, checklists, and tasks agree on scope and contain no claim/dispatch/remediation/harness/sandbox/auto-merge drift |
 | Implement | `$speckit-implement` | Pending | Execute generated tasks only after Analyze passes; verify with focused tests, typecheck/lint/build as appropriate, and final guardrails |
 
@@ -490,10 +490,10 @@ Focus on SPEC-013A1 requirements:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | |
-| Phases | |
-| Parallel Opportunities | |
-| User Stories Covered | |
+| Total Tasks | 72 |
+| Phases | 7 |
+| Parallel Opportunities | 26 |
+| User Stories Covered | 4 |
 
 ---
 
