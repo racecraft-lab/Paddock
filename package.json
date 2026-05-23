@@ -41,6 +41,7 @@
     "visual:reg-suit:playwright": "pnpm run verify:node && reg-suit -c regconfig.playwright.json run",
     "visual:reg-suit:storybook": "pnpm run verify:node && reg-suit -c regconfig.storybook.json run",
     "guardrails": "pnpm run verify:node && node scripts/check-guardrails.mjs",
+    "guardrails:spec-013a1": "pnpm run verify:node && node scripts/spec-013a1/check-github-sync-scope.mjs",
     "check:tos-doc": "node scripts/check-tos-doc.mjs",
     "check:no-copilot-token-tracker": "node scripts/check-no-copilot-token-tracker-dep.mjs",
     "test:evidence:screenshots": "pnpm run verify:node && node scripts/check-guardrails.mjs --suite spec-evidence-screenshots",

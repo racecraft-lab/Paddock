@@ -9,12 +9,12 @@
 
 **Purpose**: Establish spec-owned file boundaries, fixtures, and reviewability checks before behavioral work starts.
 
-- [ ] T001 Verify package manager and runtime assumptions from `pnpm-lock.yaml`, `package.json`, and `docs/ai/specs/SPEC-013A1-workflow.md`
-- [ ] T002 Add SPEC-013A1 file ownership entries for new strict modules in `tsconfig.spec-strict.json`
-- [ ] T003 Add SPEC-013A1 lint ownership entries for new strict modules in `eslint.config.mjs`
-- [ ] T004 [P] Create shared lifecycle API/test fixtures in `src/lib/__tests__/fixtures/github-sync-lifecycle-fixtures.ts`
-- [ ] T005 [P] Create e2e lifecycle fixture helpers in `tests/e2e/fixtures/github-sync-lifecycle.ts`
-- [ ] T006 Record reviewability budget checkpoint and accepted split exception in `specs/013a1-github-sync-automation/tasks.md`
+- [x] T001 Verify package manager and runtime assumptions from `pnpm-lock.yaml`, `package.json`, and `docs/ai/specs/SPEC-013A1-workflow.md`
+- [x] T002 Add SPEC-013A1 file ownership entries for new strict modules in `tsconfig.spec-strict.json`
+- [x] T003 Add SPEC-013A1 lint ownership entries for new strict modules in `eslint.config.mjs`
+- [x] T004 [P] Create shared lifecycle API/test fixtures in `src/lib/__tests__/fixtures/github-sync-lifecycle-fixtures.ts`
+- [x] T005 [P] Create e2e lifecycle fixture helpers in `tests/e2e/fixtures/github-sync-lifecycle.ts`
+- [x] T006 Record reviewability budget checkpoint and accepted split exception in `specs/013a1-github-sync-automation/tasks.md`
 
 ---
 
@@ -24,22 +24,27 @@
 
 **CRITICAL**: No user story implementation should begin until this phase is complete.
 
-- [ ] T007 Write failing M77 migration idempotence, index, unique-scope, rollback, and rerun tests in `src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts`
-- [ ] T008 Add additive M77 `077_github_sync_lifecycle` tables and indexes in `src/lib/migrations.ts`
-- [ ] T009 Add manual rollback SQL for M77 lifecycle tables and schema marker cleanup in `docs/migrations/rollback-M77.sql`
-- [ ] T010 [P] Define lifecycle control, run, diagnostics, backoff, health, and API envelope types in `src/lib/github-sync-lifecycle-types.ts`
-- [ ] T011 [P] Write failing lifecycle validation and serialization tests in `src/lib/__tests__/github-sync-lifecycle-api.test.ts`
-- [ ] T012 Implement lifecycle request/response validation, safe-field allowlists, and serialization helpers in `src/lib/github-sync-lifecycle-api.ts`
-- [ ] T013 Write failing lifecycle service tests for control state, run history, lease acquire/release, activity evidence, and health derivation in `src/lib/__tests__/github-sync-lifecycle.test.ts`
-- [ ] T014 Implement lifecycle control/run persistence, lease helpers, activity emission, diagnostics allowlisting, and health summary derivation in `src/lib/github-sync-lifecycle.ts`
-- [ ] T015 Write failing GitHub boundary classification and retry signal tests in `src/lib/__tests__/github-sync-lifecycle-errors.test.ts`
-- [ ] T016 Implement GitHub failure classification, sanitized messages, retry signal precedence, cap/fallback diagnostics, and secret-redaction enforcement in `src/lib/github-sync-lifecycle.ts`
-- [ ] T017 Add `FEATURE_GITHUB_SYNC_AUTOMATION` default-off registry coverage tests in `src/lib/__tests__/feature-flags.test.ts`
-- [ ] T018 Register `FEATURE_GITHUB_SYNC_AUTOMATION` through the existing `resolveFlag` path in `src/lib/feature-flags.ts`
-- [ ] T019 Add SPEC-013A1 forbidden-authority guard fixture that rejects claim, dispatch, remediation, harness, sandbox, auto-merge, and automatic triage behavior in `scripts/spec-013a1/check-github-sync-scope.mjs`
-- [ ] T020 Add package script for the SPEC-013A1 guard in `package.json`
+- [x] T007 Write failing M77 migration idempotence, index, unique-scope, rollback, and rerun tests in `src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts`
+- [x] T008 Add additive M77 `077_github_sync_lifecycle` tables and indexes in `src/lib/migrations.ts`
+- [x] T009 Add manual rollback SQL for M77 lifecycle tables and schema marker cleanup in `docs/migrations/rollback-M77.sql`
+- [x] T010 [P] Define lifecycle control, run, diagnostics, backoff, health, and API envelope types in `src/lib/github-sync-lifecycle-types.ts`
+- [x] T011 [P] Write failing lifecycle validation and serialization tests in `src/lib/__tests__/github-sync-lifecycle-api.test.ts`
+- [x] T012 Implement lifecycle request/response validation, safe-field allowlists, and serialization helpers in `src/lib/github-sync-lifecycle-api.ts`
+- [x] T013 Write failing lifecycle service tests for control state, run history, lease acquire/release, activity evidence, and health derivation in `src/lib/__tests__/github-sync-lifecycle.test.ts`
+- [x] T014 Implement lifecycle control/run persistence, lease helpers, activity emission, diagnostics allowlisting, and health summary derivation in `src/lib/github-sync-lifecycle.ts`
+- [x] T015 Write failing GitHub boundary classification and retry signal tests in `src/lib/__tests__/github-sync-lifecycle-errors.test.ts`
+- [x] T016 Implement GitHub failure classification, sanitized messages, retry signal precedence, cap/fallback diagnostics, and secret-redaction enforcement in `src/lib/github-sync-lifecycle.ts`
+- [x] T017 Add `FEATURE_GITHUB_SYNC_AUTOMATION` default-off registry coverage tests in `src/lib/__tests__/feature-flags.test.ts`
+- [x] T018 Register `FEATURE_GITHUB_SYNC_AUTOMATION` through the existing `resolveFlag` path in `src/lib/feature-flags.ts`
+- [x] T019 Add SPEC-013A1 forbidden-authority guard fixture that rejects claim, dispatch, remediation, harness, sandbox, auto-merge, and automatic triage behavior in `scripts/spec-013a1/check-github-sync-scope.mjs`
+- [x] T020 Add package script for the SPEC-013A1 guard in `package.json`
 
 **Checkpoint**: Foundation ready. Story work may start after migration, lifecycle primitives, flag registration, and guard coverage exist.
+
+Foundation evidence:
+- Package manager/runtime: `pnpm-lock.yaml`, `package.json`, and `docs/ai/specs/SPEC-013A1-workflow.md` verified under `direnv exec .` Node 22.22.2 after the initial Node 26 install attempt failed `better-sqlite3` native compilation.
+- Reviewability checkpoint: SPEC-013A1 remains under the accepted transition exception from setup/G5; current implementation is still limited to migration, lifecycle primitives, feature flag registration, fixtures, strict-scope ownership, and guardrails.
+- Verification: `pnpm exec vitest run src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts` (5 passed); `pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/github-sync-lifecycle-api.test.ts src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/github-sync-lifecycle-errors.test.ts` (46 passed); `pnpm guardrails:spec-013a1`; targeted ESLint over changed foundation files; `git diff --check`.
 
 ---
 

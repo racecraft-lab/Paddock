@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-23T02:47:27.764Z",
-  "active_step": "Phase 7: Setup and Foundation (T001-T020)",
+  "updated_at": "2026-05-23T03:08:11.170Z",
+  "active_step": "Phase 7: US1 Enable and Observe (T021-T033)",
   "current_spec_dir": "specs/013a1-github-sync-automation",
   "branch": "013a1-github-sync-automation",
   "archive_sweep": {
@@ -124,11 +124,11 @@
     },
     {
       "step": "Phase 7: Setup and Foundation (T001-T020)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US1 Enable and Observe (T021-T033)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US2 Manual Sync Fallback (T034-T040)",
@@ -319,6 +319,19 @@
       "remediated": 2,
       "remaining_critical_high": 0,
       "consensus_items": 0
+    },
+    "implement": {
+      "foundation": {
+        "status": "completed",
+        "tasks": "T001-T020",
+        "verification": [
+          "pnpm exec vitest run src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts",
+          "pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/github-sync-lifecycle-api.test.ts src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/github-sync-lifecycle-errors.test.ts",
+          "pnpm guardrails:spec-013a1",
+          "targeted eslint over changed foundation files",
+          "git diff --check"
+        ]
+      }
     }
   }
 }
