@@ -48,7 +48,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Post: Integration Suite | Project verification commands | Complete | `direnv exec . pnpm test:all` passed: strict scope, lint, typecheck, 300 Vitest files, build, and 651 Playwright tests |
 | Post: Cleanup | `$speckit-cleanup` | Complete | Report-only cleanup found 0 critical, 1 small evidence-tracking item, 0 medium, and 0 large issues; verification report is retained |
 | Post: Verification and Status Sync | Workflow/roadmap sync | In Progress | Syncing workflow, roadmap, UAT, and status artifacts before PR packaging |
-| Post: Reviewability Diff Gate | `reviewability-gate.sh diff` | Pending | Validate final diff against reviewability budget/exception before PR |
+| Post: Reviewability Diff Gate | `reviewability-gate.sh diff` | Complete | Final diff gate returned `status=exception`, `pass=true`, and `transition_exception=true` under the accepted multi-surface override |
 | Post: PR Body Generation | `generate-pr-body.sh` | Pending | Generate host-template-aware PR body with review packet |
 | Post: PR Creation | `gh pr create` | Pending | Push branch and open PR with generated body |
 | Post: Review Remediation | PR review loop | Pending | Monitor and remediate review feedback through the prescribed loop |
@@ -597,7 +597,7 @@ For each task:
 
 ### Post-Implementation Verification Evidence
 
-**Status (2026-05-23):** Implementation and UAT verification are complete. PR packaging, reviewability diff gate, PR creation, review-remediation polling, and retrospective remain in progress.
+**Status (2026-05-23):** Implementation, UAT verification, and reviewability diff-gate validation are complete. PR packaging, PR creation, review-remediation polling, and retrospective remain in progress.
 
 - Doctor extension: `.specify/extensions/doctor/scripts/bash/doctor.sh --json` -> passed with 0 errors, 0 warnings, 0 notes.
 - Verify implementation extension: no UAT blocker after stale references were corrected from non-existent artifacts to current files (`src/lib/scheduler.ts`, `src/components/panels/github-sync-panel.tsx`).
@@ -606,6 +606,7 @@ For each task:
 - Focused review-remediation regression: `direnv exec . pnpm exec vitest run src/lib/__tests__/github-sync-ready-for-owner.test.ts src/lib/__tests__/github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx` -> 4 files, 53 tests passed.
 - Integration suite: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), build passed, Playwright passed (651 tests).
 - Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; the untracked verification report is retained as durable evidence.
+- Reviewability diff gate: `reviewability-gate.sh diff origin/main...HEAD` -> `status=exception`, `pass=true`, `transition_exception=true`; blockers remain documented as accepted review scope under the SPEC-013A1 multi-surface override.
 
 ---
 

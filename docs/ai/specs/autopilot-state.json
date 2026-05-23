@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-23T15:36:00.000Z",
-  "active_step": "Post: Reviewability Diff Gate",
+  "updated_at": "2026-05-23T15:48:00.000Z",
+  "active_step": "Post: PR Body Generation",
   "current_spec_dir": "specs/013a1-github-sync-automation",
   "branch": "013a1-github-sync-automation",
   "archive_sweep": {
@@ -176,11 +176,11 @@
     },
     {
       "step": "Post: Reviewability Diff Gate",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: PR Body Generation",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: PR Creation",
@@ -439,10 +439,21 @@
         "notes": "Workflow, autopilot state, roadmap, tasks evidence, and repo knowledge status were synced before PR packaging."
       },
       "reviewability_diff_gate": {
-        "status": "in_progress"
+        "status": "completed",
+        "command": "reviewability-gate.sh diff origin/main...HEAD",
+        "result": {
+          "status": "exception",
+          "pass": true,
+          "transition_exception": true,
+          "reviewable_loc": 11060,
+          "production_files": 35,
+          "total_files": 63,
+          "primary_surface_count": 7
+        },
+        "notes": "The accepted multi-surface override is documented in the workflow and verify-tasks report; blockers remain visible for reviewer scope planning."
       },
       "pr_body_generation": {
-        "status": "pending"
+        "status": "in_progress"
       },
       "pr_creation": {
         "status": "pending"

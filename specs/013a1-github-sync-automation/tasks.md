@@ -210,6 +210,7 @@ US1 evidence:
 - Strict scope guard: `direnv exec . pnpm check:strict-scope` -> passed after allowing declared SPEC-013A1 strict modules and removing stale non-existent lint ownership.
 - Full integration suite/UAT: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, full Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), production build passed, and Playwright passed (651 tests, including both SPEC-013A1 GitHub sync automation journeys).
 - Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; retained the verify-tasks report as durable evidence.
+- Reviewability diff gate: `reviewability-gate.sh diff origin/main...HEAD` -> `status=exception`, `pass=true`, `transition_exception=true`, with documented blockers accepted under the SPEC-013A1 multi-surface override.
 
 ---
 
