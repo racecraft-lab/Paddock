@@ -150,20 +150,27 @@ US1 evidence:
 
 ### Tests for User Story 4
 
-- [ ] T053 [P] [US4] Write failing SPEC-006 owner-selection tests for single project, exactly one owner, non-owner skipped outcomes, no owner, multiple owners, and no `FEATURE_AREA_LABEL_ROUTING` dependency in `src/lib/__tests__/github-sync-lifecycle-ownership.test.ts`
-- [ ] T054 [P] [US4] Write failing duplicate-ingestion prevention tests for grouped candidates and shared repositories in `src/lib/__tests__/spec006-poller.test.ts`
-- [ ] T055 [P] [US4] Write failing API/UI tests for skipped owner, skipped non-owner, ownership unresolved, skipped counters, owner diagnostics, and health severity in `src/app/api/github/sync/__tests__/route.test.ts`
-- [ ] T056 [P] [US4] Extend Playwright shared-repository coverage for owner polling, skipped non-owner visibility, ownership-unresolved visibility, and no duplicate issue rows in `tests/e2e/spec-013a1-github-sync-automation.spec.ts`
+- [X] T053 [P] [US4] Write failing SPEC-006 owner-selection tests for single project, exactly one owner, non-owner skipped outcomes, no owner, multiple owners, and no `FEATURE_AREA_LABEL_ROUTING` dependency in `src/lib/__tests__/github-sync-lifecycle-ownership.test.ts`
+- [X] T054 [P] [US4] Write failing duplicate-ingestion prevention tests for grouped candidates and shared repositories in `src/lib/__tests__/spec006-poller.test.ts`
+- [X] T055 [P] [US4] Write failing API/UI tests for skipped owner, skipped non-owner, ownership unresolved, skipped counters, owner diagnostics, and health severity in `src/app/api/github/sync/__tests__/route.test.ts`
+- [X] T056 [P] [US4] Extend Playwright shared-repository coverage for owner polling, skipped non-owner visibility, ownership-unresolved visibility, and no duplicate issue rows in `tests/e2e/spec-013a1-github-sync-automation.spec.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T057 [US4] Implement candidate grouping and ownership decisions by `(workspace_id, github_repo)` in `src/lib/github-sync-poller.ts`
-- [ ] T058 [US4] Record skipped owner, skipped non-owner, and ownership-unresolved terminal lifecycle transitions without GitHub ingestion in `src/lib/github-sync-lifecycle.ts`
-- [ ] T059 [US4] Preserve SPEC-006 owner semantics independently from `FEATURE_AREA_LABEL_ROUTING` in `src/lib/github-sync-poller.ts`
-- [ ] T060 [US4] Surface ownership decisions, skipped counters, owner project IDs, unresolved ownership, and duplicate-prevention diagnostics in `src/app/api/github/sync/route.ts`
-- [ ] T061 [US4] Render shared-repository ownership, skipped non-owner, and ownership-unresolved labels in `src/components/panels/github-sync-panel.tsx`
+- [X] T057 [US4] Implement candidate grouping and ownership decisions by `(workspace_id, github_repo)` in `src/lib/github-sync-poller.ts`
+- [X] T058 [US4] Record skipped owner, skipped non-owner, and ownership-unresolved terminal lifecycle transitions without GitHub ingestion in `src/lib/github-sync-lifecycle.ts`
+- [X] T059 [US4] Preserve SPEC-006 owner semantics independently from `FEATURE_AREA_LABEL_ROUTING` in `src/lib/github-sync-poller.ts`
+- [X] T060 [US4] Surface ownership decisions, skipped counters, owner project IDs, unresolved ownership, and duplicate-prevention diagnostics in `src/app/api/github/sync/route.ts`
+- [X] T061 [US4] Render shared-repository ownership, skipped non-owner, and ownership-unresolved labels in `src/components/panels/github-sync-panel.tsx`
 
 **Checkpoint**: User Story 4 is independently functional when shared repositories cannot duplicate automatic ingestion and every skipped ownership decision is reviewable.
+
+**US4 Verification Evidence (2026-05-23)**:
+- `direnv exec . pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle-ownership.test.ts src/lib/__tests__/spec006-poller.test.ts src/app/api/github/sync/__tests__/route.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx` -> 4 files, 30 tests passed.
+- `direnv exec . pnpm typecheck` -> passed outside the sandbox after sandboxed `.tsbuild` writes returned EPERM.
+- `direnv exec . pnpm exec eslint src/lib/github-sync-lifecycle.ts src/lib/github-sync-lifecycle-types.ts src/lib/github-sync-poller.ts src/lib/__tests__/github-sync-lifecycle-ownership.test.ts src/lib/__tests__/spec006-poller.test.ts src/app/api/github/sync/__tests__/route.test.ts src/components/panels/github-sync-panel.tsx src/components/panels/__tests__/github-sync-panel.test.tsx tests/e2e/spec-013a1-github-sync-automation.spec.ts` -> passed.
+- `direnv exec . pnpm build` -> passed outside the sandbox after sandboxed `.next/trace` writes returned EPERM.
+- `direnv exec . pnpm exec playwright test tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium` -> 2 tests passed outside the sandbox after sandboxed `test-results/.last-run.json` writes returned EPERM.
 
 ---
 

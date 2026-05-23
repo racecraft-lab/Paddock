@@ -40,7 +40,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Checklist | `$speckit-checklist` | Complete | Completed scheduler-runtime, data-integrity, api-contracts, state-management, error-handling, ux, and extra observability checklist coverage; remediated 23 total gaps; G4 passed with 0 remaining `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 72 TDD-first tasks across 7 phases, 4 user stories, 26 parallel opportunities, focused verification commands, and a ratified reviewability transition exception; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Remediated 2 medium cross-artifact findings; G6 passed with 0 remaining CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | In Progress | Foundation T001-T020, US1 Enable and Observe T021-T033, US2 Manual Sync Fallback T034-T040, and US3 Failure Recovery T041-T052 complete; starting US4 Duplicate Prevention (T053-T061) |
+| Implement | `$speckit-implement` | In Progress | Foundation T001-T020, US1 Enable and Observe T021-T033, US2 Manual Sync Fallback T034-T040, US3 Failure Recovery T041-T052, and US4 Duplicate Prevention T053-T061 complete; starting Polish and Verification (T062-T072) |
 | Post: Doctor Extension Check | `$speckit-doctor` | Pending | Installed extension health check is retained in the durable post-implementation ladder |
 | Post: Verify Implementation | `$speckit-verify` | Pending | Validate implemented behavior against the generated spec after G7 passes |
 | Post: Verify Tasks Phantom Check | `$speckit-verify-tasks` | Pending | Detect any completed task claims without matching implementation evidence |
@@ -575,9 +575,8 @@ For each task:
 | 2 - Enable and Observe | T021-T033 | Complete | Added GET lifecycle envelope, PATCH control route, scheduler-owned automation task, bounded automatic tick seams, cursor-aware automatic pull options, GitHub Sync panel lifecycle controls/status, and focused Playwright journey |
 | 3 - Manual Sync Fallback | T034-T040 | Complete | Preserved manual trigger and trigger-all success bodies, added deterministic same-scope 409 overlap responses, lifecycle rejected/skipped overlap terminal rows, automatic skipped-overlap records, lease release coverage, independent scope behavior, and panel retry guidance |
 | 4 - Failure Recovery | T041-T052 | Complete | Added success-only cursor safety, bounded automatic partials, malformed-page failure handling, retry signal/cap/fallback diagnostics, sanitized failure evidence, panel diagnostics, focused unit/component verification, typecheck, build, and Playwright UAT |
-| 3 - Scheduler and Sync Semantics | | | |
-| 4 - API/UI Operator Controls | | | |
-| 5 - Verification and Guardrails | | | |
+| 5 - Duplicate Prevention | T053-T061 | Complete | Added shared-repository owner resolution, non-owner and ownership-unresolved terminal lifecycle rows, duplicate-ingestion prevention tests, owner diagnostics in the API envelope, panel labels/reasons, and focused Playwright UAT |
+| 6 - Polish and Verification | T062-T072 | In Progress | Starting docs, OpenAPI/API-index, knowledge-index, guardrail, archive, review packet, and full verification evidence tasks |
 
 ---
 

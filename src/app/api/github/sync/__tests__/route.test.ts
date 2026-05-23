@@ -150,6 +150,9 @@ function seedLifecycleControl(
     lease_started_at?: number | null
     lease_expires_at?: number | null
     last_started_at?: number | null
+    skipped_owner_count?: number
+    skipped_non_owner_count?: number
+    last_error?: string | null
   },
 ): void {
   db.prepare(`
@@ -157,9 +160,10 @@ function seedLifecycleControl(
       workspace_id, github_repo, enabled, interval_seconds, max_pages, max_issues,
       max_duration_seconds, owner_project_id, next_retry_at, next_retry_reason,
       backoff_seconds, total_failures, lease_run_id, lease_owner, lease_started_at,
-      lease_expires_at, last_started_at, created_at, updated_at
+      lease_expires_at, last_started_at, skipped_owner_count, skipped_non_owner_count,
+      last_error, created_at, updated_at
     )
-    VALUES (?, ?, ?, 300, 10, 1000, 45, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1779500000, 1779500000)
+    VALUES (?, ?, ?, 300, 10, 1000, 45, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1779500000, 1779500000)
   `).run(
     values.workspace_id,
     values.github_repo,
@@ -174,6 +178,9 @@ function seedLifecycleControl(
     values.lease_started_at ?? null,
     values.lease_expires_at ?? null,
     values.last_started_at ?? null,
+    values.skipped_owner_count ?? 0,
+    values.skipped_non_owner_count ?? 0,
+    values.last_error ?? null,
   )
 }
 
@@ -185,21 +192,24 @@ function seedLifecycleRun(
     github_repo: string
     result: string
     failure_reason?: string | null
+    project_id?: number | null
+    diagnostics?: Record<string, unknown>
   },
 ): void {
   db.prepare(`
     INSERT INTO github_sync_lifecycle_runs (
-      run_id, workspace_id, github_repo, trigger, started_at, completed_at,
+      run_id, workspace_id, github_repo, project_id, trigger, started_at, completed_at,
       result, failure_reason, cursor_before, cursor_after, diagnostics_json
     )
-    VALUES (?, ?, ?, 'automatic', 1779500000, 1779500003, ?, ?, 'cursor-1', 'cursor-1', ?)
+    VALUES (?, ?, ?, ?, 'automatic', 1779500000, 1779500003, ?, ?, 'cursor-1', 'cursor-1', ?)
   `).run(
     values.run_id,
     values.workspace_id,
     values.github_repo,
+    values.project_id ?? null,
     values.result,
     values.failure_reason ?? null,
-    JSON.stringify({
+    JSON.stringify(values.diagnostics ?? {
       cursor_effect: 'unchanged',
       failure: {
         category: values.failure_reason ?? null,
@@ -295,6 +305,113 @@ describe('GET /api/github/sync lifecycle envelope', () => {
       severity: 'red',
       reason: 'repeated sync failures',
       state_drivers: ['repeated_failure'],
+    })
+  })
+
+  it('surfaces ownership decisions, skipped counters, owner IDs, and unresolved duplicate-prevention diagnostics', async () => {
+    mocks.githubSyncAutomationEnabled = true
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedLifecycleControl(db, {
+      workspace_id: 4,
+      github_repo: 'org/shared',
+      owner_project_id: 3,
+      skipped_non_owner_count: 1,
+    })
+    seedLifecycleRun(db, {
+      run_id: 'ghsync_skipped_non_owner_1',
+      workspace_id: 4,
+      github_repo: 'org/shared',
+      result: 'skipped_non_owner',
+      project_id: 8,
+      diagnostics: {
+        cursor_effect: 'unchanged',
+        ownership: {
+          decision: 'skipped_non_owner',
+          project_id: 8,
+          owner_project_id: 3,
+          eligible_project_ids: [3, 8],
+          skipped_project_ids: [8],
+          reason: 'owner_selected',
+        },
+      },
+    })
+    seedLifecycleControl(db, {
+      workspace_id: 4,
+      github_repo: 'org/unresolved',
+      skipped_owner_count: 0,
+      skipped_non_owner_count: 0,
+      last_error: 'ownership_unresolved',
+    })
+    seedLifecycleRun(db, {
+      run_id: 'ghsync_ownership_unresolved_1',
+      workspace_id: 4,
+      github_repo: 'org/unresolved',
+      result: 'ownership_unresolved',
+      diagnostics: {
+        cursor_effect: 'unchanged',
+        ownership: {
+          decision: 'ownership_unresolved',
+          project_id: null,
+          owner_project_id: null,
+          eligible_project_ids: [10, 11],
+          skipped_project_ids: [],
+          reason: 'no_repo_sync_owner',
+        },
+      },
+    })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await GET(getRequest('/api/github/sync?workspace_id=4'))
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    const scopes = body.github_sync_lifecycle.scopes as Array<{
+      scope: { github_repo: string; owner_project_id: number | null }
+      skipped: { owner: number; non_owner: number }
+      last_error: string | null
+      diagnostics: {
+        ownership: string | null
+        ownership_detail: {
+          decision: string
+          owner_project_id: number | null
+          eligible_project_ids: number[]
+          skipped_project_ids: number[]
+          reason: string
+        } | null
+        health_summary: { severity: string; state_drivers: string[] }
+      }
+    }>
+    const shared = scopes.find((scope) => scope.scope.github_repo === 'org/shared')
+    expect(shared).toMatchObject({
+      scope: { owner_project_id: 3 },
+      skipped: { owner: 0, non_owner: 1 },
+      diagnostics: {
+        ownership: 'skipped_non_owner',
+        ownership_detail: {
+          decision: 'skipped_non_owner',
+          owner_project_id: 3,
+          eligible_project_ids: [3, 8],
+          skipped_project_ids: [8],
+          reason: 'owner_selected',
+        },
+      },
+    })
+    const unresolved = scopes.find((scope) => scope.scope.github_repo === 'org/unresolved')
+    expect(unresolved).toMatchObject({
+      last_error: 'ownership_unresolved',
+      diagnostics: {
+        ownership: 'ownership_unresolved',
+        ownership_detail: {
+          decision: 'ownership_unresolved',
+          eligible_project_ids: [10, 11],
+          reason: 'no_repo_sync_owner',
+        },
+        health_summary: {
+          severity: 'red',
+          state_drivers: ['ownership_unresolved'],
+        },
+      },
     })
   })
 })

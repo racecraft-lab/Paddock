@@ -104,7 +104,15 @@ function lifecycleEnvelope(overrides: Record<string, unknown> = {}) {
         skipped: { owner: 0, non_owner: 0 },
         diagnostics: {
           latest_partial_run_reason: null,
-          ownership: 'owner',
+          ownership: 'owner_selected',
+          ownership_detail: {
+            decision: 'owner_selected',
+            project_id: 101,
+            owner_project_id: 101,
+            eligible_project_ids: [101],
+            skipped_project_ids: [],
+            reason: 'single_project',
+          },
           lease: { age_seconds: null, stale: false },
           cursor_effect: 'advanced',
           manual_fallback_available: true,
@@ -164,7 +172,15 @@ function lifecycleEnvelope(overrides: Record<string, unknown> = {}) {
         skipped: { owner: 1, non_owner: 2 },
         diagnostics: {
           latest_partial_run_reason: 'max_pages',
-          ownership: 'owner',
+          ownership: 'owner_selected',
+          ownership_detail: {
+            decision: 'owner_selected',
+            project_id: 102,
+            owner_project_id: 102,
+            eligible_project_ids: [102],
+            skipped_project_ids: [],
+            reason: 'single_project',
+          },
           lease: { age_seconds: 12, stale: false },
           cursor_effect: 'preserved',
           manual_fallback_available: true,
@@ -218,7 +234,15 @@ function lifecycleEnvelope(overrides: Record<string, unknown> = {}) {
         skipped: { owner: 0, non_owner: 0 },
         diagnostics: {
           latest_partial_run_reason: null,
-          ownership: 'owner',
+          ownership: 'owner_selected',
+          ownership_detail: {
+            decision: 'owner_selected',
+            project_id: 103,
+            owner_project_id: 103,
+            eligible_project_ids: [103],
+            skipped_project_ids: [],
+            reason: 'single_project',
+          },
           lease: { age_seconds: null, stale: false },
           cursor_effect: 'preserved',
           manual_fallback_available: true,
@@ -235,6 +259,130 @@ function lifecycleEnvelope(overrides: Record<string, unknown> = {}) {
             manual_fallback_available: true,
             runbook_links: [],
             recovery_affordances: [{ id: 'reset_backoff', endpoint: '/api/github/sync/control' }],
+          },
+        },
+      },
+      {
+        scope: { workspace_id: 1, github_repo: 'racecraft/skipped-non-owner', owner_project_id: 104 },
+        controls: {
+          enabled: true,
+          interval_seconds: 300,
+          max_pages: 10,
+          max_issues: 1000,
+          max_duration_seconds: 45,
+          disabled_reason: null,
+          next_eligible_at: '2026-05-23T04:05:00.000Z',
+        },
+        active_run: null,
+        last_run: {
+          run_id: 'run-skipped-non-owner',
+          trigger: 'automatic',
+          result: 'skipped_non_owner',
+          started_at: '2026-05-23T03:58:00.000Z',
+          completed_at: '2026-05-23T03:58:00.000Z',
+          pulled: 0,
+          pushed: 0,
+          partial_run_reason: null,
+          failure_reason: null,
+          cursor_advanced: false,
+        },
+        last_success_cursor: '2026-05-23T03:40:00.000Z',
+        last_error: null,
+        backoff: {
+          seconds: 0,
+          next_retry_at: null,
+          reason: null,
+          signal_source: 'none',
+          cap_applied: false,
+          fallback_applied: false,
+        },
+        counters: { successes: 0, failures: 0, partials: 0, overlap_rejections: 0 },
+        skipped: { owner: 0, non_owner: 1 },
+        diagnostics: {
+          latest_partial_run_reason: null,
+          ownership: 'skipped_non_owner',
+          ownership_detail: {
+            decision: 'skipped_non_owner',
+            project_id: 105,
+            owner_project_id: 104,
+            eligible_project_ids: [104, 105],
+            skipped_project_ids: [105],
+            reason: 'owner_selected',
+          },
+          lease: { age_seconds: null, stale: false },
+          cursor_effect: 'unchanged',
+          manual_fallback_available: true,
+          failure: { category: null, sanitized_message: null, redaction_applied: false },
+          health_summary: {
+            severity: 'amber',
+            reason: 'ownership skipped latest attempt',
+            source_updated_at: '2026-05-23T03:58:00.000Z',
+            state_drivers: ['ownership_skipped'],
+            manual_fallback_available: true,
+            runbook_links: [],
+            recovery_affordances: [],
+          },
+        },
+      },
+      {
+        scope: { workspace_id: 1, github_repo: 'racecraft/unresolved-owner', owner_project_id: null },
+        controls: {
+          enabled: true,
+          interval_seconds: 300,
+          max_pages: 10,
+          max_issues: 1000,
+          max_duration_seconds: 45,
+          disabled_reason: null,
+          next_eligible_at: '2026-05-23T04:05:00.000Z',
+        },
+        active_run: null,
+        last_run: {
+          run_id: 'run-ownership-unresolved',
+          trigger: 'automatic',
+          result: 'ownership_unresolved',
+          started_at: '2026-05-23T03:59:00.000Z',
+          completed_at: '2026-05-23T03:59:00.000Z',
+          pulled: 0,
+          pushed: 0,
+          partial_run_reason: null,
+          failure_reason: null,
+          cursor_advanced: false,
+        },
+        last_success_cursor: null,
+        last_error: 'ownership_unresolved',
+        backoff: {
+          seconds: 0,
+          next_retry_at: null,
+          reason: null,
+          signal_source: 'none',
+          cap_applied: false,
+          fallback_applied: false,
+        },
+        counters: { successes: 0, failures: 0, partials: 0, overlap_rejections: 0 },
+        skipped: { owner: 0, non_owner: 0 },
+        diagnostics: {
+          latest_partial_run_reason: null,
+          ownership: 'ownership_unresolved',
+          ownership_detail: {
+            decision: 'ownership_unresolved',
+            project_id: null,
+            owner_project_id: null,
+            eligible_project_ids: [106, 107],
+            skipped_project_ids: [],
+            reason: 'no_repo_sync_owner',
+          },
+          lease: { age_seconds: null, stale: false },
+          cursor_effect: 'unchanged',
+          manual_fallback_available: true,
+          failure: { category: null, sanitized_message: null, redaction_applied: false },
+          health_summary: {
+            severity: 'red',
+            reason: 'ownership unresolved',
+            source_updated_at: '2026-05-23T03:59:00.000Z',
+            state_drivers: ['ownership_unresolved'],
+            manual_fallback_available: true,
+            runbook_links: [],
+            recovery_affordances: [],
           },
         },
       },
@@ -302,15 +450,21 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
     expect(within(lifecycle).getByText('Running')).toBeInTheDocument()
     expect(within(lifecycle).getByText(/Partial run/)).toBeInTheDocument()
     expect(within(lifecycle).getByText(/Failed with backoff/)).toBeInTheDocument()
+    expect(within(lifecycle).getByText('Skipped non-owner')).toBeInTheDocument()
+    expect(within(lifecycle).getByText('Ownership unresolved')).toBeInTheDocument()
     expect(within(lifecycle).getAllByText('Disabled').length).toBeGreaterThan(0)
     expect(within(lifecycle).getByText('Skipped owner: 1')).toBeInTheDocument()
     expect(within(lifecycle).getByText('Skipped non-owner: 2')).toBeInTheDocument()
+    expect(within(lifecycle).getByText('Ownership: skipped_non_owner')).toBeInTheDocument()
+    expect(within(lifecycle).getByText('Ownership: ownership_unresolved')).toBeInTheDocument()
+    expect(within(lifecycle).getByText('Ownership reason: owner_selected')).toBeInTheDocument()
+    expect(within(lifecycle).getByText('Ownership reason: no_repo_sync_owner')).toBeInTheDocument()
     expect(within(lifecycle).getByText(/Backoff until/)).toBeInTheDocument()
     expect(within(lifecycle).getByText('Backoff reason: github_retry_after')).toBeInTheDocument()
     expect(within(lifecycle).getByText('Backoff source: retry_after')).toBeInTheDocument()
     expect(within(lifecycle).getByText('Failure category: github_rate_limited')).toBeInTheDocument()
     expect(within(lifecycle).getByText('Redacted failure details')).toBeInTheDocument()
-    expect(within(lifecycle).getByRole('status')).toHaveTextContent('3 automatic scopes')
+    expect(within(lifecycle).getByRole('status')).toHaveTextContent('5 automatic scopes')
     expect(screen.getByText('Two-Way Sync')).toBeInTheDocument()
     expect(screen.getByText('Sync History')).toBeInTheDocument()
   })

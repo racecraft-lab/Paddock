@@ -59,7 +59,15 @@ function lifecycleEnvelope(mode: LifecycleMode) {
         skipped: { owner: 0, non_owner: 0 },
         diagnostics: {
           latest_partial_run_reason: null,
-          ownership: 'owner',
+          ownership: 'owner_selected',
+          ownership_detail: {
+            decision: 'owner_selected',
+            project_id: 101,
+            owner_project_id: 101,
+            eligible_project_ids: [101],
+            skipped_project_ids: [],
+            reason: 'single_project',
+          },
           lease: { age_seconds: null, stale: false },
           cursor_effect: mode === 'success' ? 'advanced' : null,
           manual_fallback_available: true,
@@ -173,6 +181,78 @@ function diagnosticLifecycleEnvelope() {
             severity: 'green',
             reason: 'stale lease recovered',
             state_drivers: ['stale_recovered'],
+          },
+        },
+      },
+      {
+        ...successScope,
+        scope: { workspace_id: 4, github_repo: 'racecraft/skipped-non-owner', owner_project_id: 204 },
+        last_run: {
+          run_id: 'e2e-skipped-non-owner',
+          trigger: 'automatic',
+          result: 'skipped_non_owner',
+          started_at: '2026-05-23T03:54:00.000Z',
+          completed_at: '2026-05-23T03:54:00.000Z',
+          pulled: 0,
+          pushed: 0,
+          partial_run_reason: null,
+          failure_reason: null,
+          cursor_advanced: false,
+        },
+        skipped: { owner: 0, non_owner: 1 },
+        diagnostics: {
+          ...successScope.diagnostics,
+          ownership: 'skipped_non_owner',
+          ownership_detail: {
+            decision: 'skipped_non_owner',
+            project_id: 205,
+            owner_project_id: 204,
+            eligible_project_ids: [204, 205],
+            skipped_project_ids: [205],
+            reason: 'owner_selected',
+          },
+          health_summary: {
+            ...successScope.diagnostics.health_summary,
+            severity: 'amber',
+            reason: 'ownership skipped latest attempt',
+            state_drivers: ['ownership_skipped'],
+          },
+        },
+      },
+      {
+        ...successScope,
+        scope: { workspace_id: 4, github_repo: 'racecraft/unresolved-owner', owner_project_id: null },
+        last_run: {
+          run_id: 'e2e-ownership-unresolved',
+          trigger: 'automatic',
+          result: 'ownership_unresolved',
+          started_at: '2026-05-23T03:56:00.000Z',
+          completed_at: '2026-05-23T03:56:00.000Z',
+          pulled: 0,
+          pushed: 0,
+          partial_run_reason: null,
+          failure_reason: null,
+          cursor_advanced: false,
+        },
+        last_success_cursor: null,
+        last_error: 'ownership_unresolved',
+        skipped: { owner: 0, non_owner: 0 },
+        diagnostics: {
+          ...successScope.diagnostics,
+          ownership: 'ownership_unresolved',
+          ownership_detail: {
+            decision: 'ownership_unresolved',
+            project_id: null,
+            owner_project_id: null,
+            eligible_project_ids: [206, 207],
+            skipped_project_ids: [],
+            reason: 'no_repo_sync_owner',
+          },
+          health_summary: {
+            ...successScope.diagnostics.health_summary,
+            severity: 'red',
+            reason: 'ownership unresolved',
+            state_drivers: ['ownership_unresolved'],
           },
         },
       },
@@ -397,6 +477,12 @@ test.describe('SPEC-013A1 GitHub sync automation journey', () => {
     await expect(lifecycle.getByText('Failed with backoff').first()).toBeVisible()
     await expect(lifecycle.getByText('Partial run').first()).toBeVisible()
     await expect(lifecycle.getByText('Stale lease recovered').first()).toBeVisible()
+    await expect(lifecycle.getByText('Skipped non-owner').first()).toBeVisible()
+    await expect(lifecycle.getByText('Ownership unresolved').first()).toBeVisible()
+    await expect(lifecycle.getByText('Ownership: skipped_non_owner').first()).toBeVisible()
+    await expect(lifecycle.getByText('Ownership: ownership_unresolved').first()).toBeVisible()
+    await expect(lifecycle.getByText('Ownership reason: owner_selected').first()).toBeVisible()
+    await expect(lifecycle.getByText('Ownership reason: no_repo_sync_owner').first()).toBeVisible()
     await expect(lifecycle.getByText('Backoff source: retry_after').first()).toBeVisible()
     await expect(lifecycle.getByText('Redacted failure details').first()).toBeVisible()
     await expect(lifecycle).not.toContainText(/claim|dispatch|remediation execution|sandbox|auto-merge|triage/i)

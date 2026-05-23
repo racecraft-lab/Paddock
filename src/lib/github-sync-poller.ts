@@ -12,7 +12,9 @@ import {
   classifyGitHubSyncFailure,
   completeLifecycleRun,
   computeLifecycleRetry,
+  recordLifecycleOwnershipUnresolved,
   recordLifecycleRunStarted,
+  recordLifecycleSkippedNonOwner,
   recordLifecycleSkippedOverlap,
 } from '@/lib/github-sync-lifecycle'
 import { GITHUB_SYNC_AUTOMATION_FLAG } from '@/lib/github-sync-lifecycle-types'
@@ -46,6 +48,7 @@ interface AutomationProjectCandidate {
   github_sync_enabled: number
   github_default_branch: string | null
   workspace_id: number
+  is_repo_sync_owner: number
 }
 
 interface AutomationTickResult {
@@ -102,33 +105,62 @@ function readWorkspaceFlags(db: ReturnType<typeof getDatabase>, workspaceId: num
   }
 }
 
-function selectAutomationProject(
+function selectAutomationProjects(
   db: ReturnType<typeof getDatabase>,
   candidate: AutomationControlCandidate,
-): AutomationProjectCandidate | undefined {
-  if (candidate.owner_project_id !== null) {
-    return db.prepare(`
-      SELECT id, github_repo, github_sync_enabled, github_default_branch, workspace_id
-      FROM projects
-      WHERE id = ?
-        AND workspace_id = ?
-        AND github_repo = ?
-        AND github_sync_enabled = 1
-        AND status = 'active'
-      LIMIT 1
-    `).get(candidate.owner_project_id, candidate.workspace_id, candidate.github_repo) as AutomationProjectCandidate | undefined
-  }
-
+): AutomationProjectCandidate[] {
   return db.prepare(`
-    SELECT id, github_repo, github_sync_enabled, github_default_branch, workspace_id
+    SELECT id, github_repo, github_sync_enabled, github_default_branch, workspace_id, is_repo_sync_owner
     FROM projects
     WHERE workspace_id = ?
       AND github_repo = ?
       AND github_sync_enabled = 1
       AND status = 'active'
-    ORDER BY is_repo_sync_owner DESC, id ASC
-    LIMIT 1
-  `).get(candidate.workspace_id, candidate.github_repo) as AutomationProjectCandidate | undefined
+    ORDER BY id ASC
+  `).all(candidate.workspace_id, candidate.github_repo) as AutomationProjectCandidate[]
+}
+
+function resolveAutomationOwner(projects: AutomationProjectCandidate[]): {
+  project?: AutomationProjectCandidate
+  nonOwners: AutomationProjectCandidate[]
+  unresolved: boolean
+  reason?: string
+} {
+  if (projects.length === 0) {
+    return { nonOwners: [], unresolved: true, reason: 'no_enabled_project' }
+  }
+  if (projects.length === 1) {
+    return { project: projects[0], nonOwners: [], unresolved: false, reason: 'single_project' }
+  }
+
+  const owners = projects.filter((project) => project.is_repo_sync_owner === 1)
+  if (owners.length !== 1) {
+    return {
+      nonOwners: [],
+      unresolved: true,
+      reason: owners.length === 0 ? 'no_repo_sync_owner' : 'multiple_repo_sync_owners',
+    }
+  }
+
+  return {
+    project: owners[0],
+    nonOwners: projects.filter((project) => project.id !== owners[0].id),
+    unresolved: false,
+    reason: 'owner_selected',
+  }
+}
+
+function persistAutomationOwner(
+  db: ReturnType<typeof getDatabase>,
+  candidate: AutomationControlCandidate,
+  ownerProjectId: number | null,
+  now: number,
+): void {
+  db.prepare(`
+    UPDATE github_sync_lifecycle_controls
+    SET owner_project_id = ?, updated_at = ?
+    WHERE workspace_id = ? AND github_repo = ?
+  `).run(ownerProjectId, now, candidate.workspace_id, candidate.github_repo)
 }
 
 export async function runGitHubSyncAutomationTick(
@@ -159,10 +191,40 @@ export async function runGitHubSyncAutomationTick(
       continue
     }
 
-    const project = selectAutomationProject(db, candidate)
-    if (!project) {
+    const projects = selectAutomationProjects(db, candidate)
+    const ownership = resolveAutomationOwner(projects)
+    const eligibleProjectIds = projects.map((project) => project.id)
+    if (ownership.unresolved || !ownership.project) {
+      recordLifecycleOwnershipUnresolved(db, {
+        run_id: runIdFor(candidate, now),
+        workspace_id: candidate.workspace_id,
+        github_repo: candidate.github_repo,
+        trigger: 'automatic',
+        cursor_before: candidate.last_success_cursor,
+        eligible_project_ids: eligibleProjectIds,
+        reason: ownership.reason,
+        now,
+      })
       scopesSkipped++
       continue
+    }
+    const project = ownership.project
+    persistAutomationOwner(db, candidate, project.id, now)
+    for (const skippedProject of ownership.nonOwners) {
+      recordLifecycleSkippedNonOwner(db, {
+        run_id: runIdFor(candidate, now),
+        workspace_id: candidate.workspace_id,
+        github_repo: candidate.github_repo,
+        trigger: 'automatic',
+        project_id: skippedProject.id,
+        owner_project_id: project.id,
+        cursor_before: candidate.last_success_cursor,
+        eligible_project_ids: eligibleProjectIds,
+        skipped_project_ids: [skippedProject.id],
+        reason: ownership.reason,
+        now,
+      })
+      scopesSkipped++
     }
 
     const run_id = runIdFor(candidate, now)

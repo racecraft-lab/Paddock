@@ -129,6 +129,15 @@ export interface LifecycleFailureDiagnostics {
   redaction_applied: boolean
 }
 
+export interface LifecycleOwnershipDiagnostics {
+  decision: string | null
+  project_id: number | null
+  owner_project_id: number | null
+  eligible_project_ids: number[]
+  skipped_project_ids: number[]
+  reason: string | null
+}
+
 export interface LifecycleScopeStatus {
   scope: LifecycleScope
   controls: Omit<LifecycleControlStatus, 'workspace_id' | 'github_repo' | 'owner_project_id'>
@@ -142,6 +151,7 @@ export interface LifecycleScopeStatus {
   diagnostics: {
     latest_partial_run_reason: string | null
     ownership: string | null
+    ownership_detail: LifecycleOwnershipDiagnostics | null
     lease: { age_seconds: number | null; stale: boolean }
     cursor_effect: string | null
     manual_fallback_available: boolean

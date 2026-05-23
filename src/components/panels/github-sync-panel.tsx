@@ -606,6 +606,8 @@ export function GitHubSyncPanel() {
                         {scope.backoff.fallback_applied && <div>Backoff fallback applied</div>}
                         {scope.last_run?.failure_reason && <div>Failure category: {scope.last_run.failure_reason}</div>}
                         {scope.diagnostics.failure.redaction_applied && <div>Redacted failure details</div>}
+                        {scope.diagnostics.ownership && <div>Ownership: {scope.diagnostics.ownership}</div>}
+                        {scope.diagnostics.ownership_detail?.reason && <div>Ownership reason: {scope.diagnostics.ownership_detail.reason}</div>}
                         {scope.last_error && <div>Last error: {scope.last_error}</div>}
                         {scope.controls.disabled_reason && <div>Disabled reason: {scope.controls.disabled_reason}</div>}
                       </div>

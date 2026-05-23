@@ -493,6 +493,103 @@ export function recordLifecycleSkippedOverlap(db: Database.Database, input: Over
   recordLifecycleOverlap(db, input, 'skipped_overlap', 'github_sync_skipped_overlap')
 }
 
+type OwnershipLifecycleInput = LifecycleScope & {
+  run_id: string
+  trigger: LifecycleTrigger
+  result: 'skipped_owner' | 'skipped_non_owner' | 'ownership_unresolved'
+  project_id?: number | null
+  owner_project_id?: number | null
+  cursor_before?: string | null
+  eligible_project_ids?: number[]
+  skipped_project_ids?: number[]
+  reason?: string
+  now: number
+}
+
+function recordLifecycleOwnershipDecision(
+  db: Database.Database,
+  input: OwnershipLifecycleInput,
+  activityType: 'github_sync_skipped_owner' | 'github_sync_skipped_non_owner' | 'github_sync_ownership_unresolved',
+): void {
+  const cursor = input.cursor_before ?? null
+  const diagnostics = {
+    cursor_effect: 'unchanged',
+    ownership: {
+      decision: input.result,
+      project_id: input.project_id ?? null,
+      owner_project_id: input.owner_project_id ?? null,
+      eligible_project_ids: input.eligible_project_ids ?? [],
+      skipped_project_ids: input.skipped_project_ids ?? [],
+      reason: input.reason ?? input.result,
+    },
+  }
+
+  db.prepare(`
+    INSERT INTO github_sync_lifecycle_runs (
+      run_id, workspace_id, github_repo, project_id, trigger, started_at, completed_at,
+      result, cursor_before, cursor_after, cursor_advanced, diagnostics_json
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+  `).run(
+    input.run_id,
+    input.workspace_id,
+    input.github_repo,
+    input.project_id ?? null,
+    input.trigger,
+    input.now,
+    input.now,
+    input.result,
+    cursor,
+    cursor,
+    JSON.stringify(diagnostics),
+  )
+
+  const skippedOwnerIncrement = input.result === 'skipped_owner' ? 1 : 0
+  const skippedNonOwnerIncrement = input.result === 'skipped_non_owner' ? 1 : 0
+  db.prepare(`
+    UPDATE github_sync_lifecycle_controls
+    SET skipped_owner_count = skipped_owner_count + ?,
+        skipped_non_owner_count = skipped_non_owner_count + ?,
+        owner_project_id = ?,
+        last_error = ?,
+        last_completed_at = ?,
+        updated_at = ?
+    WHERE workspace_id = ? AND github_repo = ?
+  `).run(
+    skippedOwnerIncrement,
+    skippedNonOwnerIncrement,
+    input.owner_project_id ?? null,
+    input.result === 'ownership_unresolved' ? 'ownership_unresolved' : null,
+    input.now,
+    input.now,
+    input.workspace_id,
+    input.github_repo,
+  )
+
+  const payload: Record<string, unknown> = {
+    workspace_id: input.workspace_id,
+    github_repo: input.github_repo,
+    run_id: input.run_id,
+    trigger: input.trigger,
+    result: input.result,
+    cursor_advanced: false,
+  }
+  if (input.project_id != null) payload['project_id'] = input.project_id
+  if (input.owner_project_id != null) payload['owner_project_id'] = input.owner_project_id
+  emitActivity(db, activityType, input, payload, input.now)
+}
+
+export function recordLifecycleSkippedOwner(db: Database.Database, input: Omit<OwnershipLifecycleInput, 'result'>): void {
+  recordLifecycleOwnershipDecision(db, { ...input, result: 'skipped_owner' }, 'github_sync_skipped_owner')
+}
+
+export function recordLifecycleSkippedNonOwner(db: Database.Database, input: Omit<OwnershipLifecycleInput, 'result'>): void {
+  recordLifecycleOwnershipDecision(db, { ...input, result: 'skipped_non_owner' }, 'github_sync_skipped_non_owner')
+}
+
+export function recordLifecycleOwnershipUnresolved(db: Database.Database, input: Omit<OwnershipLifecycleInput, 'result'>): void {
+  recordLifecycleOwnershipDecision(db, { ...input, result: 'ownership_unresolved' }, 'github_sync_ownership_unresolved')
+}
+
 export function getLifecycleStatusForScope(
   db: Database.Database,
   input: LifecycleScope & { now: number },
@@ -513,6 +610,29 @@ export function getLifecycleStatusForScope(
     redaction_applied?: boolean
   }
   const retry = (diagnostics['retry'] ?? {}) as Partial<LifecycleRetryPlan>
+  const ownership = (diagnostics['ownership'] ?? {}) as {
+    decision?: string | null
+    project_id?: number | null
+    owner_project_id?: number | null
+    eligible_project_ids?: unknown
+    skipped_project_ids?: unknown
+    reason?: string | null
+  }
+  const ownershipDecision = ownership.decision ?? (control.owner_project_id ? 'owner_selected' : null)
+  const ownershipDetail = ownershipDecision
+    ? {
+        decision: ownershipDecision,
+        project_id: typeof ownership.project_id === 'number' ? ownership.project_id : null,
+        owner_project_id: typeof ownership.owner_project_id === 'number' ? ownership.owner_project_id : control.owner_project_id,
+        eligible_project_ids: Array.isArray(ownership.eligible_project_ids)
+          ? ownership.eligible_project_ids.filter((id): id is number => typeof id === 'number')
+          : [],
+        skipped_project_ids: Array.isArray(ownership.skipped_project_ids)
+          ? ownership.skipped_project_ids.filter((id): id is number => typeof id === 'number')
+          : [],
+        reason: typeof ownership.reason === 'string' ? ownership.reason : null,
+      }
+    : null
 
   const status: LifecycleScopeStatus = {
     scope: {
@@ -574,12 +694,13 @@ export function getLifecycleStatusForScope(
     },
     diagnostics: {
       latest_partial_run_reason: control.latest_partial_run_reason,
-      ownership: control.owner_project_id ? 'owner_selected' : null,
       lease: {
         age_seconds: control.lease_started_at ? input.now - control.lease_started_at : null,
         stale: Boolean(control.lease_expires_at && control.lease_expires_at <= input.now),
       },
       cursor_effect: typeof diagnostics['cursor_effect'] === 'string' ? diagnostics['cursor_effect'] : null,
+      ownership: ownershipDecision,
+      ownership_detail: ownershipDetail,
       manual_fallback_available: true,
       failure: {
         category: failure.category ?? null,
@@ -628,6 +749,12 @@ export function deriveLifecycleHealthSummary(status: LifecycleScopeStatus): Life
   }
   if (status.last_run?.result === 'skipped_overlap' || status.last_run?.result === 'rejected_overlap') {
     return { ...placeholderHealth(Date.parse(sourceUpdatedAt) / 1000), severity: 'amber', reason: 'sync overlap blocked latest attempt', source_updated_at: sourceUpdatedAt, state_drivers: ['overlap_blocked'] }
+  }
+  if (status.last_run?.result === 'ownership_unresolved') {
+    return { ...placeholderHealth(Date.parse(sourceUpdatedAt) / 1000), severity: 'red', reason: 'ownership unresolved', source_updated_at: sourceUpdatedAt, state_drivers: ['ownership_unresolved'] }
+  }
+  if (status.last_run?.result === 'skipped_owner' || status.last_run?.result === 'skipped_non_owner') {
+    return { ...placeholderHealth(Date.parse(sourceUpdatedAt) / 1000), severity: 'amber', reason: 'ownership skipped latest attempt', source_updated_at: sourceUpdatedAt, state_drivers: ['ownership_skipped'] }
   }
   if (status.backoff.seconds > 0 || status.last_run?.result === 'failed' || status.last_run?.result === 'partial') {
     return { ...placeholderHealth(Date.parse(sourceUpdatedAt) / 1000), severity: 'amber', reason: status.backoff.seconds > 0 ? 'backoff scheduled' : 'latest run needs attention', source_updated_at: sourceUpdatedAt, state_drivers: status.backoff.seconds > 0 ? ['active_backoff'] : ['latest_terminal_attention'] }
