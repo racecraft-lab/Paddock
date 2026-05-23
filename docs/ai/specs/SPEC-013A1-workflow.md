@@ -37,7 +37,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Specify | `$speckit-specify` | Complete | Generated `specs/013a1-github-sync-automation/spec.md` with 4 user stories, 24 FRs, 12 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved lifecycle state, cursor/failure semantics, scheduler/lease/backoff defaults, GitHub Sync API/UI ownership with `operator` auth, and duplicate-safe owner/flag behavior; G2 passed with 0 clarification markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and GitHub Sync lifecycle API contract; selected additive M77 `077_github_sync_lifecycle`; G3 passed |
-| Checklist | `$speckit-checklist` | Pending | Run targeted checklists for scheduler/runtime, data-integrity, api-contracts, ux/state-management, error-handling, and regression-safety; close all real gaps |
+| Checklist | `$speckit-checklist` | Complete | Completed scheduler-runtime, data-integrity, api-contracts, state-management, error-handling, ux, and extra observability checklist coverage; remediated 23 total gaps; G4 passed with 0 remaining `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with focused tests for failure cursors, pagination, leases, owner filtering, manual sync fallback, feature flag/default-off, and UI/API status |
 | Analyze | `$speckit-analyze` | Pending | Verify design concept, spec, plan, checklists, and tasks agree on scope and contain no claim/dispatch/remediation/harness/sandbox/auto-merge drift |
 | Implement | `$speckit-implement` | Pending | Execute generated tasks only after Analyze passes; verify with focused tests, typecheck/lint/build as appropriate, and final guardrails |
@@ -258,7 +258,7 @@ SPEC-009C1 intentionally left GitHub issue sync operator-triggered or fixture-dr
 | Metric | Value |
 |--------|-------|
 | User Stories | 4 |
-| Functional Requirements | 34 after Clarify |
+| Functional Requirements | 49 after Checklist |
 | Clarification Markers | 0 |
 | Acceptance Scenarios | 12 |
 | Success Criteria | 7 |
@@ -299,6 +299,7 @@ Resolve these SPEC-013A1 questions:
 |------|-------|-------------------|---------|---------------|
 | Q4 API/UI/auth surface | 1 | security, codebase, spec | Unanimous high-confidence decision: GitHub Sync API/UI surface with `operator` role; admin-only remains for credentials, global policy, feature flag mutation, or role management. | codebase-analyst, spec-context-analyst, domain-researcher |
 | Q5 owner semantics and flag-off behavior | 1 | codebase, spec | High-confidence agreement: add `FEATURE_GITHUB_SYNC_AUTOMATION` default-off; automatic polling groups by `(workspace_id, github_repo)`, selects one owner or skips `ownership_unresolved`, and does not require `FEATURE_AREA_LABEL_ROUTING` except for actual area-label behavior. | codebase-analyst, spec-context-analyst |
+| CHK007 secret-safe diagnostics | 1 | security | High-confidence decision: remediation is sufficient after adding a positive diagnostic safe-field allowlist; implementation must sanitize before lifecycle/activity persistence and reject or drop non-allowlisted fields by default. | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ---
 
@@ -407,6 +408,16 @@ Focus on SPEC-013A1 requirements:
 ```
 
 ```bash
+/speckit.checklist state-management
+
+Focus on SPEC-013A1 requirements:
+- Lifecycle control state is separate from run history
+- Enabled/disabled, running lease, cursor, partial-run, backoff, and skipped-owner state transitions are explicit
+- `FEATURE_GITHUB_SYNC_AUTOMATION` flag-off behavior preserves manual sync
+- State transitions remain auditable and rollback-safe
+```
+
+```bash
 /speckit.checklist error-handling
 
 Focus on SPEC-013A1 requirements:
@@ -415,17 +426,28 @@ Focus on SPEC-013A1 requirements:
 - Manual retry remains possible without cursor corruption
 ```
 
+```bash
+/speckit.checklist ux
+
+Focus on SPEC-013A1 requirements:
+- GitHub Sync panel exposes enable/disable, interval, backoff reset, current running state, last run, last success cursor, last error, and skipped-owner diagnostics
+- Manual sync fallback remains discoverable and clearly separated from automatic poller controls
+- Conflict, disabled, partial, failed, and stale-recovered states are understandable to operators
+- The UI does not suggest task claim, remediation execution, harness, sandbox, auto-merge, or triage behavior
+```
+
 ### Checklist Results
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| scheduler-runtime | | | |
-| data-integrity | | | |
-| api-contracts | | | |
-| state-management | | | |
-| error-handling | | | |
-| ux | | | |
-| **Total** | | | |
+| scheduler-runtime | 18 | 1 closed | FR-003, FR-004, FR-007, FR-018 through FR-020, FR-035 |
+| data-integrity | 24 | 0 | FR-011 through FR-018, FR-024, FR-031 through FR-034, M77 model |
+| api-contracts | 26 | 4 closed | FR-025 through FR-030 plus deterministic 409/manual batch/disable/scope-filtering contract |
+| state-management | 26 | 1 closed | FR-010, FR-011 through FR-020, ownership terminal states |
+| error-handling | 23 | 3 closed | FR-014 through FR-018, FR-041 through FR-043 |
+| ux | 20 | 9 closed | FR-044 through FR-049, SC-008 |
+| observability (extra) | 18 | 5 closed | FR-036 through FR-040 |
+| **Total** | 155 | 23 closed, 0 remaining | G4 passed |
 
 ---
 

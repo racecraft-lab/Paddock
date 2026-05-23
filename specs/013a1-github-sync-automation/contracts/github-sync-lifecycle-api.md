@@ -4,6 +4,8 @@
 
 - All endpoints require authenticated `operator` role unless an existing endpoint is already stricter.
 - Product Line/workspace scope is resolved through the existing workspace scope helpers.
+- `GET /api/github/sync` keeps the current scope-resolution behavior for the existing `syncs` and `poller` fields, and `github_sync_lifecycle.scopes` MUST include only lifecycle scopes visible to the resolved Product Line/workspace context.
+- Invalid, duplicate, or conflicting scope carriers return the existing structured `{ "error": "<scope error>" }` route behavior before lifecycle data is generated.
 - `PATCH /api/github/sync/control` requires an explicit workspace scope.
 - Enabling automation requires `FEATURE_GITHUB_SYNC_AUTOMATION` to resolve true for the target workspace through `resolveFlag`.
 - This API does not mutate production feature flags.
@@ -70,7 +72,10 @@ Response 200:
         "backoff": {
           "seconds": 0,
           "next_retry_at": null,
-          "reason": null
+          "reason": null,
+          "signal_source": null,
+          "cap_applied": false,
+          "fallback_applied": false
         },
         "counters": {
           "successes": 12,
@@ -84,17 +89,66 @@ Response 200:
         },
         "diagnostics": {
           "latest_partial_run_reason": null,
-          "ownership": "owner_selected"
+          "ownership": "owner_selected",
+          "lease": {
+            "age_seconds": 0,
+            "stale": false
+          },
+          "cursor_effect": "advanced",
+          "manual_fallback_available": true,
+          "failure": {
+            "category": null,
+            "sanitized_message": null,
+            "redaction_applied": false
+          },
+          "health_summary": {
+            "severity": "green",
+            "reason": "last run succeeded",
+            "source_updated_at": "2026-05-23T00:00:03.000Z",
+            "state_drivers": [],
+            "manual_fallback_available": true,
+            "runbook_links": [
+              {
+                "id": "github_sync_lifecycle",
+                "href": "/docs/runbook/migration-rollback.md"
+              }
+            ],
+            "recovery_affordances": [
+              {
+                "id": "manual_sync",
+                "endpoint": "/api/github/sync"
+              },
+              {
+                "id": "reset_backoff",
+                "endpoint": "/api/github/sync/control"
+              }
+            ]
+          }
         }
       }
     ],
     "diagnostics": {
       "scheduler_task_registered": true,
-      "schema_version": "077_github_sync_lifecycle"
+      "schema_version": "077_github_sync_lifecycle",
+      "telemetry_service": "none"
     }
   }
 }
 ```
+
+Diagnostics rules:
+- `health_summary.severity` is `disabled` when the feature flag or scope control is off, `green` when the latest terminal run succeeded and no stale lease/backoff is active, `amber` for active backoff, partial runs, overlap or skipped-ownership increases, or transient failure, and `red` for stale leases, repeated failures, ownership unresolved, or schema unavailable.
+- `health_summary` is derived from M77 lifecycle control/run state and existing local Mission Control diagnostics patterns; this contract does not introduce an external telemetry service.
+- `failure.category` MUST be one of `transport_timeout`, `transport_network`, `github_rate_limited`, `github_auth_or_scope`, `github_not_found`, `github_http_4xx`, `github_http_5xx`, `github_malformed_json`, `github_unexpected_shape`, `github_issue_schema_invalid`, `database_error`, or `unknown`.
+- `github_malformed_json`, `github_unexpected_shape`, and `github_issue_schema_invalid` MUST be distinguishable in diagnostics so malformed transport payloads are not confused with valid empty pages.
+- `failure.sanitized_message`, `last_error`, run `failure_reason`, diagnostics, activity payloads, and health summaries MUST be constructed from explicit safe-field allowlists and MUST NOT contain `GITHUB_TOKEN`, authorization headers, raw GitHub response bodies, personal access tokens, API keys, credentials, or matched secret substrings.
+- Lifecycle diagnostics may include status code class, GitHub request id when present, endpoint category, rate-limit counters, retry count, redacted error class, timestamp, and internal correlation ids. Raw request/response headers and bodies are excluded by default unless a future contract explicitly allowlists and redacts a specific field.
+- Automatic retry timing MUST choose retry signals in this order: valid `Retry-After`, valid future `X-RateLimit-Reset`, bounded exponential backoff.
+- `backoff.signal_source` MUST be `retry_after`, `x_ratelimit_reset`, `exponential`, or `none`.
+- `backoff.cap_applied` MUST be true when the selected retry time exceeds the Product Line/workspace maximum and is capped.
+- Invalid, past, or unparsable retry headers MUST set `fallback_applied=true` when exponential backoff is used instead.
+- A run stopped by a malformed later page reports `last_run.result='partial'` and `last_run.partial_run_reason='malformed_page'` only when a prior safe resume boundary exists; a malformed first page or unsafe malformed page reports `last_run.result='failed'` with the matching `failure.category`; in both cases, `last_success_cursor` remains unchanged unless a success-only safe cursor advancement rule is satisfied.
+- `manual_fallback_available` indicates whether the existing manual `POST /api/github/sync` fallback remains available after applying feature flag, lifecycle control, role, and overlap state.
 
 ## POST /api/github/sync
 
@@ -112,7 +166,9 @@ Success response 200:
 { "ok": true, "pulled": 1, "pushed": 0 }
 ```
 
-Same-scope overlap response 409:
+Same-scope manual overlap is deterministic rejection in API v1. No queued or serialized manual response is introduced.
+
+Single-project same-scope overlap response 409:
 
 ```json
 {
@@ -132,9 +188,34 @@ Same-scope overlap response 409:
 ```
 
 Rules:
-- `trigger-all` keeps existing success shape.
+- `trigger-all` keeps the existing success shape when every requested scope acquires its lease.
+- `trigger-all` preflights requested repository scopes before starting work. If one or more requested scopes are already leased, the request returns deterministic 409 and no new manual sync starts for the batch.
+- `trigger-all` overlap response includes a `conflicts` array:
+
+```json
+{
+  "ok": false,
+  "error": "GitHub sync already running for one or more requested scopes",
+  "code": "github_sync_overlap",
+  "conflicts": [
+    {
+      "workspace_id": 4,
+      "github_repo": "racecraft-lab/mission-control",
+      "active_run": {
+        "run_id": "ghsync_01J...",
+        "trigger": "automatic",
+        "started_at": "2026-05-23T00:00:00.000Z",
+        "lease_expires_at": "2026-05-23T00:02:00.000Z"
+      },
+      "retry_after_seconds": 30
+    }
+  ]
+}
+```
+
 - Manual sync may bypass automatic backoff only after acquiring the same scope lease.
 - Manual sync never becomes the automatic lifecycle control endpoint.
+- Non-overlapping Product Line/workspace/repository scopes may proceed independently.
 
 ## PATCH /api/github/sync/control
 
@@ -194,6 +275,34 @@ Success response 200:
 }
 ```
 
+Disable response 200 while a run is active:
+
+```json
+{
+  "ok": true,
+  "control": {
+    "workspace_id": 4,
+    "github_repo": "racecraft-lab/mission-control",
+    "enabled": false,
+    "disabled_reason": "operator_disabled",
+    "next_eligible_at": null,
+    "backoff_seconds": 0
+  },
+  "active_run": {
+    "run_id": "ghsync_01J...",
+    "trigger": "automatic",
+    "started_at": "2026-05-23T00:00:00.000Z",
+    "lease_expires_at": "2026-05-23T00:02:00.000Z"
+  }
+}
+```
+
+Disablement rules:
+- Disablement is rollback-safe and non-blocking in API v1.
+- `enabled=false` prevents future automatic ticks for the scope immediately.
+- An already-owned run may finish and release its lease, be marked terminal stopped or partial, or be recovered later through stale lease recovery.
+- Manual sync remains available after disablement if it acquires the same scope lease.
+
 Validation errors:
 - 400 `workspace_id_required`
 - 400 `github_repo_required`
@@ -202,7 +311,6 @@ Validation errors:
 - 400 `max_issues_out_of_bounds`
 - 400 `max_duration_out_of_bounds`
 - 403 `feature_flag_disabled` when enabling without `FEATURE_GITHUB_SYNC_AUTOMATION`
-- 409 `active_run_present` when disabling with a policy that requires stop-before-disable
 
 Bounds:
 - `interval_seconds >= 60`

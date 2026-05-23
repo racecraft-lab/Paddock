@@ -52,11 +52,14 @@
 
    - `GET /api/github/sync` shows enabled controls, next eligible time, active run while running, and last run after completion.
    - The GitHub Sync panel shows lifecycle status and backoff/error/partial state when present.
+   - The lifecycle diagnostics include health severity, scheduler registration, schema version, lease state, cursor effect, ownership decision, skipped counts, and manual fallback availability.
+   - The activity feed includes lifecycle evidence for started, succeeded, failed, backoff, partial, skipped ownership, overlap, stale recovery, enable/disable, and manual fallback events when those states are exercised.
 
 8. Verify manual fallback:
 
    - Trigger manual sync for the same project.
-   - If an automatic run owns the same scope, expect deterministic 409 overlap details or skipped automatic overlap.
+   - If an automatic run owns the same scope, expect deterministic 409 `github_sync_overlap` details for the manual request.
+   - Trigger `trigger-all` while one requested scope is leased and expect deterministic 409 details with a `conflicts` array and no partial manual batch start.
    - Trigger manual sync for a non-overlapping scope and verify it can proceed independently.
 
 9. Verify cursor integrity:
@@ -64,6 +67,7 @@
    - Force a GitHub fetch failure in a focused test or controlled fixture.
    - Confirm `last_success_cursor` does not change.
    - Confirm `last_error`, failure counter, backoff, and next retry reason are visible.
+   - Confirm API responses, activity payloads, lifecycle diagnostics, and health summaries contain allowlisted sanitized categories/messages only, reject or drop non-allowlisted diagnostic fields by default, and do not include token-shaped, authorization-header-shaped, raw GitHub response, API-key-shaped, or credential-like strings.
 
 10. Verify shared-repository owner behavior:
 
@@ -79,7 +83,7 @@
      -d '{"workspace_id":4,"github_repo":"racecraft-lab/mission-control","enabled":false,"disabled_reason":"operator_disabled"}'
    ```
 
-   Confirm no future automatic tick starts and manual sync remains usable.
+   Confirm the PATCH response is 200 even if a run is active, no future automatic tick starts, any active run remains visible until it finishes or is recovered, and manual sync remains usable after disablement.
 
 ## Full Verification
 
