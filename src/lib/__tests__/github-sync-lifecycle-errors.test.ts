@@ -154,5 +154,27 @@ describe('github sync lifecycle retry signals', () => {
       cap_applied: true,
       fallback_applied: false,
     })
+
+    db.prepare(`
+      UPDATE github_sync_lifecycle_controls
+      SET backoff_seconds = 0,
+          next_retry_at = NULL,
+          next_retry_reason = NULL,
+          consecutive_failures = 0
+      WHERE workspace_id = ? AND github_repo = ?
+    `).run(DEFAULT_WORKSPACE_ID, DEFAULT_REPO)
+
+    expect(getLifecycleStatusForScope(db, {
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      now: LIFECYCLE_NOW + 3,
+    }).backoff).toMatchObject({
+      seconds: 0,
+      next_retry_at: null,
+      reason: null,
+      signal_source: 'none',
+      cap_applied: false,
+      fallback_applied: false,
+    })
   })
 })

@@ -637,6 +637,7 @@ export function getLifecycleStatusForScope(
     redaction_applied?: boolean
   }
   const retry = (diagnostics['retry'] ?? {}) as Partial<LifecycleRetryPlan>
+  const hasActiveBackoff = control.backoff_seconds > 0 || control.next_retry_at != null || control.next_retry_reason != null
   const ownership = (diagnostics['ownership'] ?? {}) as {
     decision?: string | null
     project_id?: number | null
@@ -705,9 +706,11 @@ export function getLifecycleStatusForScope(
       seconds: control.backoff_seconds,
       next_retry_at: toIso(control.next_retry_at),
       reason: control.next_retry_reason as LifecycleBackoffReason,
-      signal_source: retry.signal_source ?? retrySignalSource(control.next_retry_reason as LifecycleBackoffReason),
-      cap_applied: retry.cap_applied ?? false,
-      fallback_applied: retry.fallback_applied ?? control.next_retry_reason === 'exponential_backoff',
+      signal_source: hasActiveBackoff
+        ? (retry.signal_source ?? retrySignalSource(control.next_retry_reason as LifecycleBackoffReason) ?? 'none')
+        : 'none',
+      cap_applied: hasActiveBackoff ? (retry.cap_applied ?? false) : false,
+      fallback_applied: hasActiveBackoff ? (retry.fallback_applied ?? control.next_retry_reason === 'exponential_backoff') : false,
     },
     counters: {
       successes: control.total_successes,
