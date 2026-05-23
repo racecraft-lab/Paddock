@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'node:crypto'
 import { getDatabase } from '@/lib/db'
 import { requireRole } from '@/lib/auth'
 import { logger } from '@/lib/logger'
@@ -12,6 +13,7 @@ import {
   getLifecycleStatusForScope,
   recordLifecycleRejectedOverlap,
   recordLifecycleRunStarted,
+  releaseLifecycleLease,
 } from '@/lib/github-sync-lifecycle'
 import {
   GITHUB_SYNC_AUTOMATION_FLAG,
@@ -171,7 +173,7 @@ function readManualLifecycleControl(
 }
 
 function manualRunId(project: Pick<GitHubSyncProject, 'id'>, workspaceId: number, now: number): string {
-  return `ghsync_manual_${now}_${workspaceId}_${project.id}`
+  return `ghsync_manual_${now}_${workspaceId}_${project.id}_${randomUUID()}`
 }
 
 function manualLeaseOwner(user: { id: number; username?: string | null }): string {
@@ -287,16 +289,26 @@ async function runManualProjectSyncWithLifecycle(
     }
   }
 
-  recordLifecycleRunStarted(db, {
-    run_id,
-    workspace_id: input.workspaceId,
-    github_repo: input.project.github_repo,
-    trigger: 'manual',
-    lease_owner: input.actor,
-    project_id: input.project.id,
-    cursor_before: input.control.last_success_cursor,
-    now: input.now,
-  })
+  try {
+    recordLifecycleRunStarted(db, {
+      run_id,
+      workspace_id: input.workspaceId,
+      github_repo: input.project.github_repo,
+      trigger: 'manual',
+      lease_owner: input.actor,
+      project_id: input.project.id,
+      cursor_before: input.control.last_success_cursor,
+      now: input.now,
+    })
+  } catch (err) {
+    releaseLifecycleLease(db, {
+      workspace_id: input.workspaceId,
+      github_repo: input.project.github_repo,
+      run_id,
+      now: input.now,
+    })
+    throw err
+  }
 
   try {
     const result = await pullFromGitHub(input.project, input.workspaceId) as ManualSyncResult

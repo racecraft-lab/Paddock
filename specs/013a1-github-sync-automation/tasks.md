@@ -14,7 +14,7 @@
 - [x] T003 Add SPEC-013A1 lint ownership entries for new strict modules in `eslint.config.mjs`
 - [x] T004 [P] Create shared lifecycle API/test fixtures in `src/lib/__tests__/fixtures/github-sync-lifecycle-fixtures.ts`
 - [x] T005 [P] Create e2e lifecycle fixture helpers in `tests/e2e/fixtures/github-sync-lifecycle.ts`
-- [x] T006 Record reviewability budget checkpoint and accepted split exception in `specs/013a1-github-sync-automation/tasks.md`
+- [x] T006 Record reviewability budget checkpoint and accepted split override in `specs/013a1-github-sync-automation/tasks.md`
 
 ---
 
@@ -43,7 +43,7 @@
 
 Foundation evidence:
 - Package manager/runtime: `pnpm-lock.yaml`, `package.json`, and `docs/ai/specs/SPEC-013A1-workflow.md` verified under `direnv exec .` Node 22.22.2 after the initial Node 26 install attempt failed `better-sqlite3` native compilation.
-- Reviewability checkpoint: SPEC-013A1 remains under the accepted transition exception from setup/G5; current implementation is still limited to migration, lifecycle primitives, feature flag registration, fixtures, strict-scope ownership, and guardrails.
+- Reviewability checkpoint: SPEC-013A1 remains under the accepted transition override from setup/G5; current implementation is still limited to migration, lifecycle primitives, feature flag registration, fixtures, strict-scope ownership, and guardrails.
 - Verification: `pnpm exec vitest run src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts` (5 passed); `pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/github-sync-lifecycle-api.test.ts src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/github-sync-lifecycle-errors.test.ts` (46 passed); `pnpm guardrails:spec-013a1`; targeted ESLint over changed foundation files; `git diff --check`.
 
 ---
@@ -71,7 +71,7 @@ Foundation evidence:
 - [x] T029 [US1] Refactor automatic tick helpers for scoped lifecycle execution while preserving test-only tick seams in `src/lib/github-sync-poller.ts`
 - [x] T030 [US1] Add bounded cursor-aware automatic pull options without changing manual defaults in `src/lib/github-sync-engine.ts`
 - [x] T031 [US1] Render automatic lifecycle status, controls, diagnostics, health severity, and accessible status messages in `src/components/panels/github-sync-panel.tsx`
-- [x] T032 [US1] Add focused lifecycle control subcomponent if needed to keep the existing panel reviewable in `src/components/panels/github-sync-lifecycle-section.tsx`
+- [x] T032 [US1] Keep lifecycle controls reviewable inside the existing GitHub Sync panel without adding an unnecessary subcomponent in `src/components/panels/github-sync-panel.tsx`
 - [x] T033 [US1] Add UI copy mapping for disabled, running, success, failed/backoff, partial bounded stop, skipped overlap, rejected overlap, skipped owner, skipped non-owner, ownership unresolved, and stale recovered states in `src/components/panels/github-sync-panel.tsx`
 
 **Checkpoint**: User Story 1 is independently functional when scoped automatic polling can be enabled, observed, disabled, and verified through API, UI, activity, and lifecycle state.
@@ -200,6 +200,16 @@ US1 evidence:
 - Repo knowledge index: `direnv exec . pnpm knowledge:index:check` -> passed with 0 warnings.
 - Full verification ladder: `direnv exec . pnpm build` passed; `direnv exec . pnpm typecheck` passed; `direnv exec . pnpm lint` passed; `direnv exec . pnpm test` -> 300 files passed, 3,137 tests passed, 3 skipped, 84 todo; `direnv exec . pnpm test:e2e` -> 651 tests passed.
 - Full-suite remediation: updated feature-flag cascade expectation for `FEATURE_GITHUB_SYNC_AUTOMATION`; updated SPEC-010A product-line seed docs guard to use the durable workflow ledger after archive cleanup removed the generated quickstart from active `specs/**`.
+
+**Post-Implementation Verification Evidence (2026-05-23)**:
+- Doctor extension: `.specify/extensions/doctor/scripts/bash/doctor.sh --json` -> passed with 0 errors, 0 warnings, 0 notes.
+- Verify implementation extension: no UAT blocker remained after stale references were corrected from non-existent artifacts to current files.
+- Verify tasks phantom check: `specs/013a1-github-sync-automation/verify-tasks-report.md` -> 72/72 completed tasks verified; 0 partial, 0 weak, 0 not found, 0 skipped, 0 flagged tasks.
+- Code review extension: initial blockers for stale lifecycle completion clearing replacement leases and same-second manual run ID collisions were fixed; rerun review passed with 0 critical and 0 important findings.
+- Focused review-remediation regression: `direnv exec . pnpm exec vitest run src/lib/__tests__/github-sync-ready-for-owner.test.ts src/lib/__tests__/github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx` -> 4 files, 53 tests passed.
+- Strict scope guard: `direnv exec . pnpm check:strict-scope` -> passed after allowing declared SPEC-013A1 strict modules and removing stale non-existent lint ownership.
+- Full integration suite/UAT: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, full Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), production build passed, and Playwright passed (651 tests, including both SPEC-013A1 GitHub sync automation journeys).
+- Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; retained the verify-tasks report as durable evidence.
 
 ---
 

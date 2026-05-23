@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
-import { appendScopeToPath } from '@/types/product-line'
+import { appendScopeToPath, type ActiveProductLineScope } from '@/types/product-line'
 import type { LifecycleEnvelope, LifecycleRunResult, LifecycleScopeStatus } from '@/lib/github-sync-lifecycle-types'
 
 interface GitHubLabel {
@@ -109,6 +109,12 @@ function syncErrorFeedback(data: any, fallback: string) {
     typeof retryAfter === 'number' ? `Try again in ${retryAfter} seconds` : null,
   ].filter(Boolean)
   return details.length > 0 ? `${base}. ${details.join('. ')}` : base
+}
+
+function syncScopeBody(scope: ActiveProductLineScope | null) {
+  if (!scope) return {}
+  if (scope.kind === 'productLine') return { workspace_id: scope.productLineId }
+  return { workspace_scope: 'facility' }
 }
 
 export function GitHubSyncPanel() {
@@ -371,7 +377,7 @@ export function GitHubSyncPanel() {
       const res = await fetch('/api/github/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'trigger', project_id: projectId }),
+        body: JSON.stringify({ action: 'trigger', project_id: projectId, ...syncScopeBody(activeProductLineScope) }),
       })
       const data = await res.json()
       if (res.ok) {
@@ -393,7 +399,7 @@ export function GitHubSyncPanel() {
       const res = await fetch('/api/github/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'trigger-all' }),
+        body: JSON.stringify({ action: 'trigger-all', ...syncScopeBody(activeProductLineScope) }),
       })
       const data = await res.json()
       if (res.ok) {

@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-23T14:14:25.000Z",
-  "active_step": "Post: Doctor Extension Check",
+  "updated_at": "2026-05-23T15:36:00.000Z",
+  "active_step": "Post: Reviewability Diff Gate",
   "current_spec_dir": "specs/013a1-github-sync-automation",
   "branch": "013a1-github-sync-automation",
   "archive_sweep": {
@@ -148,35 +148,35 @@
     },
     {
       "step": "Post: Doctor Extension Check",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Implementation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Tasks Phantom Check",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Code Review",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Integration Suite",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Cleanup",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Verification and Status Sync",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Reviewability Diff Gate",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: PR Body Generation",
@@ -398,6 +398,60 @@
           "pnpm test:e2e"
         ],
         "notes": "Quickstart, rollback runbook, OpenAPI/API index, repo knowledge index, task evidence, and review packet are synced. Full verification passed with 300 Vitest files and 651 Playwright tests."
+      }
+    },
+    "post_implementation": {
+      "doctor": {
+        "status": "completed",
+        "verification": ".specify/extensions/doctor/scripts/bash/doctor.sh --json",
+        "notes": "0 errors, 0 warnings, 0 notes."
+      },
+      "verify": {
+        "status": "completed",
+        "notes": "No UAT blocker remained after stale review-packet/task references were corrected to current files."
+      },
+      "verify_tasks": {
+        "status": "completed",
+        "report": "specs/013a1-github-sync-automation/verify-tasks-report.md",
+        "tasks_verified": 72,
+        "flagged_tasks": 0
+      },
+      "review": {
+        "status": "completed",
+        "notes": "Initial lifecycle lease/manual run-id blockers were remediated; rerun review found no critical or important findings."
+      },
+      "integration_suite": {
+        "status": "completed",
+        "verification": "direnv exec . pnpm test:all",
+        "notes": "Strict scope, lint, typecheck, 300 Vitest files, production build, and 651 Playwright tests passed."
+      },
+      "cleanup": {
+        "status": "completed",
+        "mode": "report-only",
+        "critical": 0,
+        "small": 1,
+        "medium": 0,
+        "large": 0,
+        "notes": "Only small finding was the untracked verify-tasks report; it is retained as durable evidence."
+      },
+      "verification_and_status_sync": {
+        "status": "completed",
+        "notes": "Workflow, autopilot state, roadmap, tasks evidence, and repo knowledge status were synced before PR packaging."
+      },
+      "reviewability_diff_gate": {
+        "status": "in_progress"
+      },
+      "pr_body_generation": {
+        "status": "pending"
+      },
+      "pr_creation": {
+        "status": "pending"
+      },
+      "review_remediation": {
+        "status": "pending"
+      },
+      "retrospective": {
+        "status": "pending"
       }
     }
   }

@@ -100,7 +100,6 @@ const specStrictFiles = [
   'src/lib/__tests__/github-sync-lifecycle.test.ts',
   'src/lib/__tests__/github-sync-lifecycle-errors.test.ts',
   'src/app/api/github/sync/control/route.ts',
-  'src/components/panels/github-sync-lifecycle-section.tsx',
   'tests/e2e/fixtures/github-sync-lifecycle.ts',
   'tests/e2e/spec-013a1-github-sync-automation.spec.ts',
 ]

@@ -117,6 +117,80 @@ describe('github sync lifecycle service', () => {
     expect(db.prepare("SELECT type FROM activities WHERE type = 'github_sync_stale_recovered'").get()).toEqual({
       type: 'github_sync_stale_recovered',
     })
+    expect(db.prepare(`
+      SELECT result, stale_recovered_from_run_id
+      FROM github_sync_lifecycle_runs
+      WHERE result = 'stale_recovered'
+    `).get()).toEqual({
+      result: 'stale_recovered',
+      stale_recovered_from_run_id: 'ghsync_run_2',
+    })
+  })
+
+  it('does not let a late stale run completion clear a replacement lease', () => {
+    db = createLifecycleTestDb()
+    seedLifecycleControl(db, {
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+    })
+
+    const oldLease = acquireLifecycleLease(db, {
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      run_id: 'ghsync_stale_old',
+      lease_owner: 'scheduler:old',
+      now: LIFECYCLE_NOW,
+      max_duration_seconds: 45,
+    })
+    expect(oldLease.acquired).toBe(true)
+    recordLifecycleRunStarted(db, {
+      run_id: 'ghsync_stale_old',
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      trigger: 'automatic',
+      lease_owner: 'scheduler:old',
+      cursor_before: '2026-05-22T23:49:59.000Z',
+      now: LIFECYCLE_NOW,
+    })
+
+    const replacementLease = acquireLifecycleLease(db, {
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      run_id: 'ghsync_replacement',
+      lease_owner: 'scheduler:new',
+      now: LIFECYCLE_NOW + 500,
+      max_duration_seconds: 45,
+    })
+    expect(replacementLease).toMatchObject({
+      acquired: true,
+      stale_recovered_from_run_id: 'ghsync_stale_old',
+    })
+
+    completeLifecycleRun(db, {
+      run_id: 'ghsync_stale_old',
+      result: 'success',
+      cursor_after: '2026-05-23T00:00:00.000Z',
+      next_retry_at: LIFECYCLE_NOW + 800,
+      now: LIFECYCLE_NOW + 501,
+    })
+
+    expect(db.prepare(`
+      SELECT lease_run_id, lease_owner, total_successes, last_success_cursor
+      FROM github_sync_lifecycle_controls
+      WHERE workspace_id = ? AND github_repo = ?
+    `).get(DEFAULT_WORKSPACE_ID, DEFAULT_REPO)).toEqual({
+      lease_run_id: 'ghsync_replacement',
+      lease_owner: 'scheduler:new',
+      total_successes: 0,
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+    })
+    expect(db.prepare(`
+      SELECT result, cursor_advanced
+      FROM github_sync_lifecycle_runs
+      WHERE run_id = 'ghsync_stale_old'
+    `).get()).toEqual({
+      result: 'success',
+      cursor_advanced: 1,
+    })
   })
 
   it('records run history, updates counters, preserves failed cursors, and derives health', () => {

@@ -22,9 +22,12 @@ if ! git rev-parse --verify --quiet "${BASE_BRANCH}" >/dev/null; then
   fi
 fi
 
+allowed_new_modules='^(src/app/api/github/sync/control/route\.ts|src/lib/github-sync-lifecycle-api\.ts|src/lib/github-sync-lifecycle-types\.ts|src/lib/github-sync-lifecycle\.ts)$'
+
 added_files=$(git diff "${BASE_BRANCH}"...HEAD --name-only --diff-filter=A \
   | grep -E '^src/.*\.(ts|tsx)$' \
   | grep -v -E '(^|/)__tests__/' \
+  | grep -v -E "${allowed_new_modules}" \
   || true)
 
 if [[ -n "${added_files}" ]]; then
@@ -36,6 +39,8 @@ if [[ -n "${added_files}" ]]; then
   echo "src/lib/github-sync-poller.ts, src/lib/migrations.ts," >&2
   echo "src/app/api/projects/[id]/route.ts, src/app/api/github/route.ts," >&2
   echo "src/components/modals/project-manager-modal.tsx." >&2
+  echo "SPEC-013A1 declared strict modules are also allowed: lifecycle service," >&2
+  echo "lifecycle API/types, and the sync control route." >&2
   exit 1
 fi
 

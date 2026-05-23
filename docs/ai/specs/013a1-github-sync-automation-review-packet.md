@@ -10,7 +10,7 @@ Out of scope: task claim authority, task dispatch, task launch, Issue Remediatio
 
 1. Migration and rollback: `src/lib/migrations.ts`, `docs/migrations/rollback-M77.sql`, `docs/runbook/migration-rollback.md`.
 2. Lifecycle state machine: `src/lib/github-sync-lifecycle.ts`, `src/lib/github-sync-lifecycle-api.ts`, `src/lib/github-sync-lifecycle-types.ts`.
-3. Scheduler/poller integration: `src/lib/github-sync-poller.ts`, `src/lib/scheduler-tasks.ts`.
+3. Scheduler/poller integration: `src/lib/github-sync-poller.ts`, `src/lib/scheduler.ts`.
 4. API contracts: `src/app/api/github/sync/route.ts`, `src/app/api/github/sync/control/route.ts`, `openapi.json`, `src/app/api/index/route.ts`.
 5. Operator UI/UAT: `src/components/panels/github-sync-panel.tsx`, `tests/e2e/spec-013a1-github-sync-automation.spec.ts`.
 6. Guardrails/docs/status: `scripts/spec-013a1/check-github-sync-scope.mjs`, `specs/013a1-github-sync-automation/`, `docs/ai/specs/SPEC-013A1-workflow.md`, `docs/ai/repo-knowledge-index.json`.
@@ -43,7 +43,7 @@ Out of scope: task claim authority, task dispatch, task launch, Issue Remediatio
 
 - Automatic polling remains default-off and requires operator enablement before live rollout.
 - No external GitHub network UAT was run in this branch; GitHub API interactions are covered through existing sync seams, mocks, and e2e route stubs.
-- Reviewability remains under the recorded transition exception because this spec intentionally spans migration, scheduler, API, UI, docs, and verification surfaces.
+- Reviewability remains under the recorded transition override because this spec intentionally spans migration, scheduler, API, UI, docs, and verification surfaces.
 
 ## Rollback And Flags
 

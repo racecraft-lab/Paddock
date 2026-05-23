@@ -38,16 +38,16 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Clarify | `$speckit-clarify` | Complete | Resolved lifecycle state, cursor/failure semantics, scheduler/lease/backoff defaults, GitHub Sync API/UI ownership with `operator` auth, and duplicate-safe owner/flag behavior; G2 passed with 0 clarification markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and GitHub Sync lifecycle API contract; selected additive M77 `077_github_sync_lifecycle`; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Completed scheduler-runtime, data-integrity, api-contracts, state-management, error-handling, ux, and extra observability checklist coverage; remediated 23 total gaps; G4 passed with 0 remaining `[Gap]` markers |
-| Tasks | `$speckit-tasks` | Complete | Generated 72 TDD-first tasks across 7 phases, 4 user stories, 26 parallel opportunities, focused verification commands, and a ratified reviewability transition exception; G5 passed |
+| Tasks | `$speckit-tasks` | Complete | Generated 72 TDD-first tasks across 7 phases, 4 user stories, 26 parallel opportunities, focused verification commands, and a ratified reviewability transition override; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Remediated 2 medium cross-artifact findings; G6 passed with 0 remaining CRITICAL/HIGH findings |
 | Implement | `$speckit-implement` | Complete | All implementation tasks T001-T072 complete. Full verification passed: API parity, build, typecheck, lint, full Vitest (300 files, 3,137 tests), full Playwright (651 tests), guardrails, focused UAT, docs/index updates, and review packet |
-| Post: Doctor Extension Check | `$speckit-doctor` | Pending | Installed extension health check is retained in the durable post-implementation ladder |
-| Post: Verify Implementation | `$speckit-verify` | Pending | Validate implemented behavior against the generated spec after G7 passes |
-| Post: Verify Tasks Phantom Check | `$speckit-verify-tasks` | Pending | Detect any completed task claims without matching implementation evidence |
-| Post: Code Review | `$speckit-review` | Pending | Run the SpecKit review extension after implementation verification |
-| Post: Integration Suite | Project verification commands | Pending | Run full detected verification suite or documented equivalent |
-| Post: Cleanup | `$speckit-cleanup` | Pending | Review implementation cleanup/tech-debt findings before PR packaging |
-| Post: Verification and Status Sync | Workflow/roadmap sync | Pending | Sync workflow, roadmap, UAT, and status artifacts before PR packaging |
+| Post: Doctor Extension Check | `$speckit-doctor` | Complete | Doctor extension health check passed with 0 errors, 0 warnings, and 0 notes |
+| Post: Verify Implementation | `$speckit-verify` | Complete | Verify extension found no UAT blocker after stale artifact references were corrected |
+| Post: Verify Tasks Phantom Check | `$speckit-verify-tasks` | Complete | 72 completed tasks audited; 72 verified, 0 partial/weak/not found/skipped |
+| Post: Code Review | `$speckit-review` | Complete | Review found two lifecycle/manual-sync blockers; both remediated and rerun review passed with no critical or important findings |
+| Post: Integration Suite | Project verification commands | Complete | `direnv exec . pnpm test:all` passed: strict scope, lint, typecheck, 300 Vitest files, build, and 651 Playwright tests |
+| Post: Cleanup | `$speckit-cleanup` | Complete | Report-only cleanup found 0 critical, 1 small evidence-tracking item, 0 medium, and 0 large issues; verification report is retained |
+| Post: Verification and Status Sync | Workflow/roadmap sync | In Progress | Syncing workflow, roadmap, UAT, and status artifacts before PR packaging |
 | Post: Reviewability Diff Gate | `reviewability-gate.sh diff` | Pending | Validate final diff against reviewability budget/exception before PR |
 | Post: PR Body Generation | `generate-pr-body.sh` | Pending | Generate host-template-aware PR body with review packet |
 | Post: PR Creation | `gh pr create` | Pending | Push branch and open PR with generated body |
@@ -129,7 +129,9 @@ Result:
 }
 ```
 
-Decision: setup may proceed under the roadmap transition exception, but downstream phases must keep actual implementation to SPEC-013A1 strict scope: GitHub sync poller lifecycle, scheduler/runtime integration, status/debug output, operator disable controls, interval/backoff safety, and tests.
+Decision: setup may proceed under the roadmap transition override, but downstream phases must keep actual implementation to SPEC-013A1 strict scope: GitHub sync poller lifecycle, scheduler/runtime integration, status/debug output, operator disable controls, interval/backoff safety, and tests.
+
+Final diff-gate note: SPEC-013A1 retains the ratified multi-surface override because the accepted scope intentionally spans migration, API, scheduler/runtime, UI, docs/process, and guard/config surfaces, while forbidden claim, dispatch, remediation, harness, sandbox, auto-merge, and automatic triage authority remains excluded and verified by guardrails.
 
 ### Reviewability Preset
 
@@ -591,7 +593,19 @@ For each task:
 - [x] Manual sync fallback verified.
 - [x] No duplicate ingestion verified for multiple projects sharing one repo.
 - [x] Automatic polling can be disabled without losing manual sync.
-- [ ] Workflow and roadmap status are updated.
+- [x] Workflow and roadmap status are updated.
+
+### Post-Implementation Verification Evidence
+
+**Status (2026-05-23):** Implementation and UAT verification are complete. PR packaging, reviewability diff gate, PR creation, review-remediation polling, and retrospective remain in progress.
+
+- Doctor extension: `.specify/extensions/doctor/scripts/bash/doctor.sh --json` -> passed with 0 errors, 0 warnings, 0 notes.
+- Verify implementation extension: no UAT blocker after stale references were corrected from non-existent artifacts to current files (`src/lib/scheduler.ts`, `src/components/panels/github-sync-panel.tsx`).
+- Verify tasks extension: `specs/013a1-github-sync-automation/verify-tasks-report.md` records 72/72 completed tasks verified, 0 flagged tasks, and no UAT/PR blocker.
+- Code review extension: initial stale-completion and manual-run-id blockers were remediated; rerun review passed with no critical or important findings.
+- Focused review-remediation regression: `direnv exec . pnpm exec vitest run src/lib/__tests__/github-sync-ready-for-owner.test.ts src/lib/__tests__/github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx` -> 4 files, 53 tests passed.
+- Integration suite: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), build passed, Playwright passed (651 tests).
+- Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; the untracked verification report is retained as durable evidence.
 
 ---
 

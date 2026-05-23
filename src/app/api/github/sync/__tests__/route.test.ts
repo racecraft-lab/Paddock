@@ -584,6 +584,37 @@ describe('POST /api/github/sync workspace scoping', () => {
     })
   })
 
+  it('uses unique manual lifecycle run IDs for repeated same-second project triggers', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db)
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/repo', owner_project_id: 3 })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const first = await POST(request({ action: 'trigger', project_id: 3, workspace_id: 4 }))
+    const second = await POST(request({ action: 'trigger', project_id: 3, workspace_id: 4 }))
+
+    expect(first.status).toBe(200)
+    expect(second.status).toBe(200)
+    const rows = db.prepare(`
+      SELECT run_id, result
+      FROM github_sync_lifecycle_runs
+      WHERE workspace_id = 4 AND github_repo = 'org/repo' AND trigger = 'manual'
+      ORDER BY run_id ASC
+    `).all() as Array<{ run_id: string; result: string }>
+    expect(rows).toHaveLength(2)
+    expect(new Set(rows.map((row) => row.run_id)).size).toBe(2)
+    expect(rows).toEqual([
+      expect.objectContaining({ run_id: expect.stringMatching(/^ghsync_manual_/), result: 'success' }),
+      expect.objectContaining({ run_id: expect.stringMatching(/^ghsync_manual_/), result: 'success' }),
+    ])
+    expect(db.prepare(`
+      SELECT lease_run_id, lease_owner
+      FROM github_sync_lifecycle_controls
+      WHERE workspace_id = 4 AND github_repo = 'org/repo'
+    `).get()).toEqual({ lease_run_id: null, lease_owner: null })
+  })
+
   it('allows non-overlapping scopes to sync while another scope is leased', async () => {
     const db = freshMigratedDb()
     seedFacilityAndProductLine(db)

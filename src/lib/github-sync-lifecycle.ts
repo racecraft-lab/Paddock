@@ -227,6 +227,32 @@ export function acquireLifecycleLease(
   )
 
   if (staleRunId) {
+    const cursor = control.last_success_cursor ?? null
+    db.prepare(`
+      INSERT OR IGNORE INTO github_sync_lifecycle_runs (
+        run_id, workspace_id, github_repo, trigger, lease_owner, started_at, completed_at,
+        result, cursor_before, cursor_after, cursor_advanced, stale_recovered_from_run_id,
+        diagnostics_json
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, 'stale_recovered', ?, ?, 0, ?, ?)
+    `).run(
+      `${input.run_id}:stale_recovered:${staleRunId}`,
+      input.workspace_id,
+      input.github_repo,
+      input.lease_owner.startsWith('operator:') ? 'manual' : 'automatic',
+      input.lease_owner,
+      input.now,
+      input.now,
+      cursor,
+      cursor,
+      staleRunId,
+      JSON.stringify({
+        cursor_effect: 'unchanged',
+        stale_recovered: {
+          recovered_from_run_id: staleRunId,
+          replacement_run_id: input.run_id,
+        },
+      }),
+    )
     emitActivity(
       db,
       'github_sync_stale_recovered',
@@ -382,7 +408,7 @@ export function completeLifecycleRun(
       next_retry_at = ?,
       next_retry_reason = ?,
       updated_at = ?
-    WHERE workspace_id = ? AND github_repo = ?
+    WHERE workspace_id = ? AND github_repo = ? AND (lease_run_id = ? OR lease_run_id IS NULL)
   `).run(
     input.now,
     cursorAdvanced ? 1 : 0,
@@ -395,6 +421,7 @@ export function completeLifecycleRun(
     input.now,
     run.workspace_id,
     run.github_repo,
+    input.run_id,
   )
 
   const activityType = manualAwareActivityType(input.result, run.trigger)

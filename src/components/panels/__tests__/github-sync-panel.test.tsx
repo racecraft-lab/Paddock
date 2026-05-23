@@ -2,6 +2,10 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { GitHubSyncPanel } from '../github-sync-panel'
 
+const storeMocks = vi.hoisted(() => ({
+  activeProductLineScope: null as unknown,
+}))
+
 vi.mock('next-intl', () => ({
   useTranslations: () => Object.assign(
     (key: string, values?: Record<string, unknown>) => {
@@ -52,7 +56,7 @@ vi.mock('next-intl', () => ({
 }))
 
 vi.mock('@/store', () => ({
-  useMissionControl: () => ({ activeProductLineScope: null }),
+  useMissionControl: () => ({ activeProductLineScope: storeMocks.activeProductLineScope }),
 }))
 
 function lifecycleEnvelope(overrides: Record<string, unknown> = {}) {
@@ -436,6 +440,7 @@ function installFetchMock(envelope = lifecycleEnvelope()) {
 describe('GitHubSyncPanel automatic lifecycle', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    storeMocks.activeProductLineScope = null
   })
 
   it('renders automatic lifecycle state separately from manual sync history', async () => {
@@ -508,6 +513,14 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
   })
 
   it('surfaces manual sync overlap active-run details with retry guidance', async () => {
+    storeMocks.activeProductLineScope = {
+      kind: 'productLine',
+      tenantId: 1,
+      productLineId: 1,
+      productLine: { id: 1, slug: 'mission-control', name: 'Mission Control', tenant_id: 1 },
+      version: 1,
+      scopeKey: 'tenant:1:product-line:1',
+    }
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input)
       const method = init?.method || 'GET'
@@ -567,9 +580,24 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
     await waitFor(() => {
       expect(screen.getByText(/GitHub sync already running for this scope/)).toBeInTheDocument()
     })
+    const syncCall = fetchMock.mock.calls.find(([input, init]) => String(input) === '/api/github/sync' && init?.method === 'POST')
+    expect(JSON.parse(String(syncCall?.[1]?.body))).toMatchObject({
+      action: 'trigger',
+      project_id: 101,
+      workspace_id: 1,
+    })
     expect(screen.getByText(/ghsync_active_1/)).toBeInTheDocument()
     expect(screen.getByText(/automatic/)).toBeInTheDocument()
     expect(screen.getByText(/Try again in 45 seconds/)).toBeInTheDocument()
     expect(screen.queryByText(/Enable automation for racecraft\/mission-control/)).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Sync all' }))
+    await waitFor(() => {
+      expect(fetchMock.mock.calls.some(([, init]) => {
+        if (init?.method !== 'POST') return false
+        const body = JSON.parse(String(init.body))
+        return body.action === 'trigger-all' && body.workspace_id === 1
+      })).toBe(true)
+    })
   })
 })
