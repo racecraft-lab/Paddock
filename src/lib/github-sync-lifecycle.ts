@@ -102,6 +102,14 @@ function emitActivity(
   )
 }
 
+function manualAwareActivityType(result: Exclude<LifecycleRunResult, 'running'>, trigger: LifecycleTrigger): string {
+  if (trigger === 'manual' && result === 'success') return 'github_sync_manual_fallback_completed'
+  if (trigger === 'manual' && result === 'failed') return 'github_sync_manual_fallback_failed'
+  if (result === 'success') return 'github_sync_run_succeeded'
+  if (result === 'partial') return 'github_sync_partial_bounded_stop'
+  return 'github_sync_run_failed'
+}
+
 export function upsertLifecycleControl(
   db: Database.Database,
   input: LifecycleScope & {
@@ -318,7 +326,7 @@ export function completeLifecycleRun(
   `).get(input.run_id) as RunRow | undefined
   if (!run) throw new Error('lifecycle run not found')
 
-  const cursorAdvanced = input.result === 'success' && input.cursor_after !== null && input.cursor_after !== run.cursor_before
+  const cursorAdvanced = input.result === 'success' && input.cursor_after != null && input.cursor_after !== run.cursor_before
   const sanitizedFailure = input.failure_message ? sanitizeLifecycleMessage(input.failure_message) : null
   const diagnostics = {
     failure: {
@@ -381,12 +389,7 @@ export function completeLifecycleRun(
     run.github_repo,
   )
 
-  const activityType =
-    input.result === 'success'
-      ? 'github_sync_run_succeeded'
-      : input.result === 'partial'
-        ? 'github_sync_partial_bounded_stop'
-        : 'github_sync_run_failed'
+  const activityType = manualAwareActivityType(input.result, run.trigger)
   emitActivity(
     db,
     activityType,
@@ -405,6 +408,81 @@ export function completeLifecycleRun(
     },
     input.now,
   )
+}
+
+type OverlapLifecycleInput = LifecycleScope & {
+  run_id: string
+  trigger: LifecycleTrigger
+  project_id?: number | null
+  cursor_before?: string | null
+  conflicting_run_id: string
+  retry_after_seconds: number
+  lease_expires_at: number
+  now: number
+}
+
+function recordLifecycleOverlap(
+  db: Database.Database,
+  input: OverlapLifecycleInput,
+  result: 'rejected_overlap' | 'skipped_overlap',
+  activityType: 'github_sync_rejected_overlap' | 'github_sync_skipped_overlap',
+): void {
+  const cursor = input.cursor_before ?? null
+  const leaseExpiresAt = toIso(input.lease_expires_at)
+  db.prepare(`
+    INSERT INTO github_sync_lifecycle_runs (
+      run_id, workspace_id, github_repo, project_id, trigger, started_at, completed_at,
+      result, cursor_before, cursor_after, cursor_advanced, diagnostics_json
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+  `).run(
+    input.run_id,
+    input.workspace_id,
+    input.github_repo,
+    input.project_id ?? null,
+    input.trigger,
+    input.now,
+    input.now,
+    result,
+    cursor,
+    cursor,
+    JSON.stringify({
+      cursor_effect: 'unchanged',
+      overlap: {
+        conflicting_run_id: input.conflicting_run_id,
+        retry_after_seconds: input.retry_after_seconds,
+        lease_expires_at: leaseExpiresAt,
+      },
+    }),
+  )
+
+  db.prepare(`
+    UPDATE github_sync_lifecycle_controls
+    SET total_overlap_rejections = total_overlap_rejections + 1,
+        last_completed_at = ?,
+        updated_at = ?
+    WHERE workspace_id = ? AND github_repo = ?
+  `).run(input.now, input.now, input.workspace_id, input.github_repo)
+
+  const payload: Record<string, unknown> = {
+    workspace_id: input.workspace_id,
+    github_repo: input.github_repo,
+    run_id: input.run_id,
+    trigger: input.trigger,
+    result,
+    cursor_advanced: false,
+    retry_after_seconds: input.retry_after_seconds,
+    lease_expires_at: leaseExpiresAt,
+  }
+  if (input.project_id != null) payload['project_id'] = input.project_id
+  emitActivity(db, activityType, input, payload, input.now)
+}
+
+export function recordLifecycleRejectedOverlap(db: Database.Database, input: OverlapLifecycleInput): void {
+  recordLifecycleOverlap(db, input, 'rejected_overlap', 'github_sync_rejected_overlap')
+}
+
+export function recordLifecycleSkippedOverlap(db: Database.Database, input: OverlapLifecycleInput): void {
+  recordLifecycleOverlap(db, input, 'skipped_overlap', 'github_sync_skipped_overlap')
 }
 
 export function getLifecycleStatusForScope(
@@ -531,6 +609,9 @@ export function deriveLifecycleHealthSummary(status: LifecycleScopeStatus): Life
   }
   if (status.counters.failures >= 3) {
     return { ...placeholderHealth(Date.parse(sourceUpdatedAt) / 1000), severity: 'red', reason: 'repeated sync failures', source_updated_at: sourceUpdatedAt, state_drivers: ['repeated_failure'] }
+  }
+  if (status.last_run?.result === 'skipped_overlap' || status.last_run?.result === 'rejected_overlap') {
+    return { ...placeholderHealth(Date.parse(sourceUpdatedAt) / 1000), severity: 'amber', reason: 'sync overlap blocked latest attempt', source_updated_at: sourceUpdatedAt, state_drivers: ['overlap_blocked'] }
   }
   if (status.backoff.seconds > 0 || status.last_run?.result === 'failed' || status.last_run?.result === 'partial') {
     return { ...placeholderHealth(Date.parse(sourceUpdatedAt) / 1000), severity: 'amber', reason: status.backoff.seconds > 0 ? 'backoff scheduled' : 'latest run needs attention', source_updated_at: sourceUpdatedAt, state_drivers: status.backoff.seconds > 0 ? ['active_backoff'] : ['latest_terminal_attention'] }

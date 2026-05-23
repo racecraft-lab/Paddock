@@ -13,6 +13,7 @@ import {
   completeLifecycleRun,
   computeLifecycleRetry,
   recordLifecycleRunStarted,
+  recordLifecycleSkippedOverlap,
 } from '@/lib/github-sync-lifecycle'
 import { GITHUB_SYNC_AUTOMATION_FLAG } from '@/lib/github-sync-lifecycle-types'
 
@@ -174,6 +175,17 @@ export async function runGitHubSyncAutomationTick(
       max_duration_seconds: candidate.max_duration_seconds,
     })
     if (!lease.acquired) {
+      recordLifecycleSkippedOverlap(db, {
+        run_id,
+        workspace_id: candidate.workspace_id,
+        github_repo: candidate.github_repo,
+        trigger: 'automatic',
+        cursor_before: candidate.last_success_cursor,
+        conflicting_run_id: lease.conflict.run_id,
+        retry_after_seconds: lease.conflict.retry_after_seconds,
+        lease_expires_at: now + lease.conflict.retry_after_seconds,
+        now,
+      })
       scopesSkipped++
       continue
     }

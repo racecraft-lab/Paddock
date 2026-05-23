@@ -4,8 +4,10 @@ import {
   completeLifecycleRun,
   deriveLifecycleHealthSummary,
   getLifecycleStatusForScope,
+  recordLifecycleRejectedOverlap,
   releaseLifecycleLease,
   recordLifecycleRunStarted,
+  recordLifecycleSkippedOverlap,
   upsertLifecycleControl,
 } from '../github-sync-lifecycle'
 import {
@@ -175,6 +177,217 @@ describe('github sync lifecycle service', () => {
     expect(deriveLifecycleHealthSummary(status).severity).toBe('amber')
     expect(db.prepare("SELECT type FROM activities WHERE type = 'github_sync_run_failed'").get()).toEqual({
       type: 'github_sync_run_failed',
+    })
+  })
+
+  it('records manual fallback completion and failure activity while preserving failed cursors', () => {
+    db = createLifecycleTestDb()
+    seedLifecycleControl(db, {
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+    })
+
+    recordLifecycleRunStarted(db, {
+      run_id: 'ghsync_manual_success',
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      trigger: 'manual',
+      lease_owner: 'operator:manual',
+      project_id: 17,
+      cursor_before: '2026-05-22T23:49:59.000Z',
+      now: LIFECYCLE_NOW,
+    })
+    completeLifecycleRun(db, {
+      run_id: 'ghsync_manual_success',
+      result: 'success',
+      cursor_after: '2026-05-23T00:00:10.000Z',
+      next_retry_at: LIFECYCLE_NOW + 300,
+      now: LIFECYCLE_NOW + 2,
+    })
+
+    recordLifecycleRunStarted(db, {
+      run_id: 'ghsync_manual_failure',
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      trigger: 'manual',
+      lease_owner: 'operator:manual',
+      project_id: 17,
+      cursor_before: '2026-05-23T00:00:10.000Z',
+      now: LIFECYCLE_NOW + 10,
+    })
+    completeLifecycleRun(db, {
+      run_id: 'ghsync_manual_failure',
+      result: 'failed',
+      failure_reason: 'github_http_5xx',
+      failure_message: 'GitHub API returned a server error',
+      cursor_after: '2026-05-23T00:00:10.000Z',
+      backoff_seconds: 120,
+      next_retry_at: LIFECYCLE_NOW + 130,
+      now: LIFECYCLE_NOW + 12,
+    })
+
+    expect(db.prepare(`
+      SELECT type
+      FROM activities
+      WHERE type IN ('github_sync_manual_fallback_completed', 'github_sync_manual_fallback_failed')
+      ORDER BY id ASC
+    `).all()).toEqual([
+      { type: 'github_sync_manual_fallback_completed' },
+      { type: 'github_sync_manual_fallback_failed' },
+    ])
+    expect(db.prepare(`
+      SELECT result, cursor_before, cursor_after, cursor_advanced
+      FROM github_sync_lifecycle_runs
+      WHERE run_id = 'ghsync_manual_failure'
+    `).get()).toEqual({
+      result: 'failed',
+      cursor_before: '2026-05-23T00:00:10.000Z',
+      cursor_after: '2026-05-23T00:00:10.000Z',
+      cursor_advanced: 0,
+    })
+    expect(db.prepare(`
+      SELECT last_success_cursor, last_error, backoff_seconds, next_retry_at
+      FROM github_sync_lifecycle_controls
+    `).get()).toEqual({
+      last_success_cursor: '2026-05-23T00:00:10.000Z',
+      last_error: 'GitHub API returned a server error',
+      backoff_seconds: 120,
+      next_retry_at: LIFECYCLE_NOW + 130,
+    })
+  })
+
+  it('records rejected and skipped overlap terminal detail with retry guidance and cursor preservation', () => {
+    db = createLifecycleTestDb()
+    seedLifecycleControl(db, {
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+      lease_run_id: 'ghsync_active',
+      lease_owner: 'scheduler:active',
+      lease_started_at: LIFECYCLE_NOW,
+      lease_expires_at: LIFECYCLE_NOW + 120,
+    })
+
+    recordLifecycleRejectedOverlap(db, {
+      run_id: 'ghsync_manual_rejected',
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      trigger: 'manual',
+      project_id: 17,
+      cursor_before: '2026-05-22T23:49:59.000Z',
+      conflicting_run_id: 'ghsync_active',
+      retry_after_seconds: 90,
+      lease_expires_at: LIFECYCLE_NOW + 120,
+      now: LIFECYCLE_NOW + 30,
+    })
+
+    recordLifecycleSkippedOverlap(db, {
+      run_id: 'ghsync_auto_skipped',
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      trigger: 'automatic',
+      cursor_before: '2026-05-22T23:49:59.000Z',
+      conflicting_run_id: 'ghsync_active',
+      retry_after_seconds: 80,
+      lease_expires_at: LIFECYCLE_NOW + 120,
+      now: LIFECYCLE_NOW + 40,
+    })
+
+    expect(db.prepare(`
+      SELECT run_id, result, trigger, cursor_before, cursor_after, cursor_advanced
+      FROM github_sync_lifecycle_runs
+      ORDER BY started_at ASC
+    `).all()).toEqual([
+      {
+        run_id: 'ghsync_manual_rejected',
+        result: 'rejected_overlap',
+        trigger: 'manual',
+        cursor_before: '2026-05-22T23:49:59.000Z',
+        cursor_after: '2026-05-22T23:49:59.000Z',
+        cursor_advanced: 0,
+      },
+      {
+        run_id: 'ghsync_auto_skipped',
+        result: 'skipped_overlap',
+        trigger: 'automatic',
+        cursor_before: '2026-05-22T23:49:59.000Z',
+        cursor_after: '2026-05-22T23:49:59.000Z',
+        cursor_advanced: 0,
+      },
+    ])
+
+    expect(db.prepare(`
+      SELECT type, data
+      FROM activities
+      WHERE type IN ('github_sync_rejected_overlap', 'github_sync_skipped_overlap')
+      ORDER BY id ASC
+    `).all().map((row) => {
+      const typed = row as { type: string; data: string }
+      return {
+        ...typed,
+        data: JSON.parse(typed.data) as Record<string, unknown>,
+      }
+    })).toEqual([
+      {
+        type: 'github_sync_rejected_overlap',
+        data: {
+          workspace_id: DEFAULT_WORKSPACE_ID,
+          github_repo: DEFAULT_REPO,
+          run_id: 'ghsync_manual_rejected',
+          trigger: 'manual',
+          result: 'rejected_overlap',
+          project_id: 17,
+          cursor_advanced: false,
+          retry_after_seconds: 90,
+          lease_expires_at: new Date((LIFECYCLE_NOW + 120) * 1000).toISOString(),
+        },
+      },
+      {
+        type: 'github_sync_skipped_overlap',
+        data: {
+          workspace_id: DEFAULT_WORKSPACE_ID,
+          github_repo: DEFAULT_REPO,
+          run_id: 'ghsync_auto_skipped',
+          trigger: 'automatic',
+          result: 'skipped_overlap',
+          cursor_advanced: false,
+          retry_after_seconds: 80,
+          lease_expires_at: new Date((LIFECYCLE_NOW + 120) * 1000).toISOString(),
+        },
+      },
+    ])
+
+    const status = getLifecycleStatusForScope(db, {
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      now: LIFECYCLE_NOW + 41,
+    })
+    expect(status).toMatchObject({
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+      counters: { overlap_rejections: 2 },
+      last_run: {
+        run_id: 'ghsync_auto_skipped',
+        result: 'skipped_overlap',
+        cursor_advanced: false,
+      },
+      diagnostics: {
+        cursor_effect: 'unchanged',
+        health_summary: {
+          severity: 'amber',
+          state_drivers: ['overlap_blocked'],
+        },
+      },
+    })
+
+    const diagnostics = db.prepare(`
+      SELECT diagnostics_json
+      FROM github_sync_lifecycle_runs
+      WHERE run_id = 'ghsync_auto_skipped'
+    `).get() as { diagnostics_json: string }
+    expect(JSON.parse(diagnostics.diagnostics_json)).toMatchObject({
+      cursor_effect: 'unchanged',
+      overlap: {
+        conflicting_run_id: 'ghsync_active',
+        retry_after_seconds: 80,
+        lease_expires_at: new Date((LIFECYCLE_NOW + 120) * 1000).toISOString(),
+      },
     })
   })
 })

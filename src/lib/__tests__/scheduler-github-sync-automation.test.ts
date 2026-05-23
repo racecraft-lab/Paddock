@@ -278,4 +278,68 @@ describe('SPEC-013A1 / T023 scheduler-owned GitHub sync automation', () => {
       'org/repo-b',
     ])
   })
+
+  it('records skipped-overlap terminal lifecycle outcomes without GitHub ingestion when a same-scope lease exists', async () => {
+    const db = freshMigratedDb()
+    db.prepare(`UPDATE workspaces SET feature_flags = ? WHERE id = 1`).run(
+      JSON.stringify({ FEATURE_GITHUB_SYNC_AUTOMATION: true }),
+    )
+    seedAutomationScope(db, {
+      workspaceId: 1,
+      projectId: 11,
+      repo: 'org/repo-overlap',
+      nextRetryAt: 10,
+      lastSuccessCursor: '2026-05-22T23:49:59.000Z',
+    })
+    db.prepare(`
+      UPDATE github_sync_lifecycle_controls
+      SET lease_run_id = 'ghsync_manual_active',
+          lease_owner = 'operator:manual',
+          lease_started_at = ?,
+          lease_expires_at = ?
+      WHERE workspace_id = 1 AND github_repo = 'org/repo-overlap'
+    `).run(1_779_499_980, 1_779_500_120)
+    getDatabaseMock.mockReturnValue(db)
+
+    const result = await runGitHubSyncAutomationTickForTest({
+      now: 1_779_500_000,
+      candidateLimit: 1,
+      leaseOwner: 'scheduler:test',
+    })
+
+    expect(result).toMatchObject({
+      ok: true,
+      scopesConsidered: 1,
+      scopesStarted: 0,
+      scopesSkipped: 1,
+    })
+    expect(pullFromGitHubMock).not.toHaveBeenCalled()
+    expect(db.prepare(`
+      SELECT result, trigger, cursor_before, cursor_after, cursor_advanced
+      FROM github_sync_lifecycle_runs
+      WHERE github_repo = 'org/repo-overlap'
+    `).get()).toEqual({
+      result: 'skipped_overlap',
+      trigger: 'automatic',
+      cursor_before: '2026-05-22T23:49:59.000Z',
+      cursor_after: '2026-05-22T23:49:59.000Z',
+      cursor_advanced: 0,
+    })
+    expect(db.prepare(`
+      SELECT last_success_cursor, total_overlap_rejections
+      FROM github_sync_lifecycle_controls
+      WHERE workspace_id = 1 AND github_repo = 'org/repo-overlap'
+    `).get()).toEqual({
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+      total_overlap_rejections: 1,
+    })
+    expect(db.prepare(`
+      SELECT type, data
+      FROM activities
+      WHERE type = 'github_sync_skipped_overlap'
+    `).get()).toMatchObject({
+      type: 'github_sync_skipped_overlap',
+      data: expect.stringContaining('"retry_after_seconds":120'),
+    })
+  })
 })

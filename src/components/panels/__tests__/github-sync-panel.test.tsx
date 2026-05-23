@@ -348,4 +348,70 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
     expect(screen.getByText('Two-Way Sync')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Sync all' })).toBeInTheDocument()
   })
+
+  it('surfaces manual sync overlap active-run details with retry guidance', async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      const method = init?.method || 'GET'
+
+      if (url === '/api/integrations' && method === 'POST') {
+        return Response.json({ ok: true, detail: 'User: octocat' })
+      }
+      if (url.startsWith('/api/github/sync') && method === 'GET') {
+        return Response.json({ syncs: [], poller: { running: true }, github_sync_lifecycle: lifecycleEnvelope() })
+      }
+      if (url === '/api/github/sync' && method === 'POST') {
+        return Response.json({
+          ok: false,
+          error: 'GitHub sync already running for this scope',
+          code: 'github_sync_overlap',
+          active_run: {
+            run_id: 'ghsync_active_1',
+            trigger: 'automatic',
+            workspace_id: 1,
+            github_repo: 'racecraft/mission-control',
+            started_at: '2026-05-23T04:00:00.000Z',
+            lease_expires_at: '2026-05-23T04:01:00.000Z',
+          },
+          retry_after_seconds: 45,
+        }, { status: 409 })
+      }
+      if (url === '/api/github' && method === 'POST') {
+        return Response.json({ syncs: [] })
+      }
+      if (url.startsWith('/api/tasks')) {
+        return Response.json({ tasks: [] })
+      }
+      if (url.startsWith('/api/agents')) {
+        return Response.json({ agents: [] })
+      }
+      if (url.startsWith('/api/projects')) {
+        return Response.json({
+          projects: [
+            {
+              id: 101,
+              name: 'Mission Control',
+              github_repo: 'racecraft/mission-control',
+              github_sync_enabled: true,
+            },
+          ],
+        })
+      }
+
+      return Response.json({}, { status: 404 })
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    render(<GitHubSyncPanel />)
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Sync now' }))
+
+    await waitFor(() => {
+      expect(screen.getByText(/GitHub sync already running for this scope/)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/ghsync_active_1/)).toBeInTheDocument()
+    expect(screen.getByText(/automatic/)).toBeInTheDocument()
+    expect(screen.getByText(/Try again in 45 seconds/)).toBeInTheDocument()
+    expect(screen.queryByText(/Enable automation for racecraft\/mission-control/)).not.toBeInTheDocument()
+  })
 })

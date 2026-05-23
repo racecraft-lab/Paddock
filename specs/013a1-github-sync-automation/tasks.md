@@ -93,18 +93,22 @@ US1 evidence:
 
 ### Tests for User Story 2
 
-- [ ] T034 [P] [US2] Write failing manual `POST /api/github/sync` compatibility tests for unchanged `trigger` and `trigger-all` success responses in `src/app/api/github/sync/__tests__/route.test.ts`
-- [ ] T035 [P] [US2] Write failing same-scope overlap tests for manual 409 `github_sync_overlap`, trigger-all preflight conflicts, automatic skipped-overlap, lease release, and non-overlapping scope independence in `src/app/api/github/sync/__tests__/route.test.ts`
-- [ ] T036 [P] [US2] Write failing lifecycle service tests for manual fallback activity evidence, rejected overlap run detail, skipped overlap run detail, retry guidance, and cursor preservation in `src/lib/__tests__/github-sync-lifecycle.test.ts`
+- [x] T034 [P] [US2] Write failing manual `POST /api/github/sync` compatibility tests for unchanged `trigger` and `trigger-all` success responses in `src/app/api/github/sync/__tests__/route.test.ts`
+- [x] T035 [P] [US2] Write failing same-scope overlap tests for manual 409 `github_sync_overlap`, trigger-all preflight conflicts, automatic skipped-overlap, lease release, and non-overlapping scope independence in `src/app/api/github/sync/__tests__/route.test.ts`
+- [x] T036 [P] [US2] Write failing lifecycle service tests for manual fallback activity evidence, rejected overlap run detail, skipped overlap run detail, retry guidance, and cursor preservation in `src/lib/__tests__/github-sync-lifecycle.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T037 [US2] Wrap manual project sync and trigger-all sync in lifecycle lease preflight and conflict handling while preserving success bodies in `src/app/api/github/sync/route.ts`
-- [ ] T038 [US2] Record manual fallback completed/failed, rejected overlap, skipped overlap, and lease release transitions in `src/lib/github-sync-lifecycle.ts`
-- [ ] T039 [US2] Make automatic ticks record skipped-overlap terminal outcomes without GitHub ingestion when same-scope manual or automatic leases exist in `src/lib/github-sync-poller.ts`
-- [ ] T040 [US2] Surface same-scope conflict active-run details and retry guidance in the GitHub Sync panel without relabeling manual sync as lifecycle control in `src/components/panels/github-sync-panel.tsx`
+- [x] T037 [US2] Wrap manual project sync and trigger-all sync in lifecycle lease preflight and conflict handling while preserving success bodies in `src/app/api/github/sync/route.ts`
+- [x] T038 [US2] Record manual fallback completed/failed, rejected overlap, skipped overlap, and lease release transitions in `src/lib/github-sync-lifecycle.ts`
+- [x] T039 [US2] Make automatic ticks record skipped-overlap terminal outcomes without GitHub ingestion when same-scope manual or automatic leases exist in `src/lib/github-sync-poller.ts`
+- [x] T040 [US2] Surface same-scope conflict active-run details and retry guidance in the GitHub Sync panel without relabeling manual sync as lifecycle control in `src/components/panels/github-sync-panel.tsx`
 
 **Checkpoint**: User Story 2 is independently functional when manual sync is preserved, same-scope overlap is deterministic, and independent scopes can still sync.
+
+- Implementation evidence: Manual `trigger`/`trigger-all` now wrap idle lifecycle scopes with manual leases while preserving legacy success response bodies; same-scope manual requests return deterministic 409 `github_sync_overlap` responses with active-run and retry guidance; trigger-all preflights conflicts before ingestion; non-overlapping scopes still sync; automatic ticks record `skipped_overlap` without calling GitHub ingestion.
+- Lifecycle/UI evidence: manual fallback completion/failure activity, rejected/skipped overlap terminal rows, cursor preservation, overlap counters, amber `overlap_blocked` health, and GitHub Sync panel retry details are covered.
+- Verification: `pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx` (4 files, 25 tests passed); targeted ESLint over US2 files; `pnpm typecheck`.
 
 ---
 

@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   getSyncPollerStatus: vi.fn(() => ({ running: false, interval: 60000 })),
   loggerError: vi.fn(),
   githubSyncAutomationEnabled: false,
+  now: 1779500000,
 }))
 
 vi.mock('@/lib/auth', () => ({ requireRole: mocks.requireRole }))
@@ -53,6 +54,7 @@ beforeEach(() => {
   mocks.requireRole.mockReturnValue({
     user: { id: 7, username: 'admin', role: 'admin', tenant_id: 1, workspace_id: 2 },
   })
+  vi.spyOn(Date, 'now').mockReturnValue(mocks.now * 1000)
 })
 
 function freshMigratedDb(): Database.Database {
@@ -81,13 +83,43 @@ function seedFacilityAndProductLine(db: Database.Database): void {
 }
 
 function seedGithubProject(db: Database.Database): void {
+  seedGithubProjectRecord(db, {
+    id: 3,
+    workspace_id: 4,
+    name: 'QA',
+    slug: 'qa',
+    ticket_prefix: 'QA',
+    github_repo: 'org/repo',
+  })
+}
+
+function seedGithubProjectRecord(
+  db: Database.Database,
+  values: {
+    id: number
+    workspace_id: number
+    name: string
+    slug: string
+    ticket_prefix: string
+    github_repo: string
+    github_sync_enabled?: number
+  },
+): void {
   db.prepare(`
     INSERT INTO projects (
       id, workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled,
       status, created_at, updated_at
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, 'active', unixepoch(), unixepoch())
-  `).run(3, 4, 'QA', 'qa', 'QA', 'org/repo', 1)
+  `).run(
+    values.id,
+    values.workspace_id,
+    values.name,
+    values.slug,
+    values.ticket_prefix,
+    values.github_repo,
+    values.github_sync_enabled ?? 1,
+  )
 }
 
 function request(body: Record<string, unknown>): NextRequest {
@@ -113,15 +145,21 @@ function seedLifecycleControl(
     backoff_seconds?: number
     next_retry_at?: number | null
     next_retry_reason?: string | null
+    lease_run_id?: string | null
+    lease_owner?: string | null
+    lease_started_at?: number | null
+    lease_expires_at?: number | null
+    last_started_at?: number | null
   },
 ): void {
   db.prepare(`
     INSERT INTO github_sync_lifecycle_controls (
       workspace_id, github_repo, enabled, interval_seconds, max_pages, max_issues,
       max_duration_seconds, owner_project_id, next_retry_at, next_retry_reason,
-      backoff_seconds, total_failures, created_at, updated_at
+      backoff_seconds, total_failures, lease_run_id, lease_owner, lease_started_at,
+      lease_expires_at, last_started_at, created_at, updated_at
     )
-    VALUES (?, ?, ?, 300, 10, 1000, 45, ?, ?, ?, ?, ?, 1779500000, 1779500000)
+    VALUES (?, ?, ?, 300, 10, 1000, 45, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1779500000, 1779500000)
   `).run(
     values.workspace_id,
     values.github_repo,
@@ -131,6 +169,11 @@ function seedLifecycleControl(
     values.next_retry_reason ?? null,
     values.backoff_seconds ?? 0,
     values.total_failures ?? 0,
+    values.lease_run_id ?? null,
+    values.lease_owner ?? null,
+    values.lease_started_at ?? null,
+    values.lease_expires_at ?? null,
+    values.last_started_at ?? null,
   )
 }
 
@@ -272,5 +315,212 @@ describe('POST /api/github/sync workspace scoping', () => {
       expect.objectContaining({ id: 3, github_repo: 'org/repo' }),
       4,
     )
+  })
+
+  it('preserves the project trigger success response while wrapping an idle lifecycle scope', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db)
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/repo', owner_project_id: 3 })
+    mocks.getDatabase.mockReturnValue(db)
+    mocks.pullFromGitHub.mockResolvedValue({ pulled: 2, pushed: 1 })
+
+    const res = await POST(request({ action: 'trigger', project_id: 3, workspace_id: 4 }))
+
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({ ok: true, pulled: 2, pushed: 1 })
+    expect(mocks.pullFromGitHub).toHaveBeenCalledOnce()
+  })
+
+  it('preserves the trigger-all success response while wrapping idle lifecycle scopes', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db)
+    seedGithubProjectRecord(db, {
+      id: 8,
+      workspace_id: 4,
+      name: 'Ops',
+      slug: 'ops',
+      ticket_prefix: 'OPS',
+      github_repo: 'org/ops',
+    })
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/repo', owner_project_id: 3 })
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/ops', owner_project_id: 8 })
+    mocks.getDatabase.mockReturnValue(db)
+    mocks.pullFromGitHub
+      .mockResolvedValueOnce({ pulled: 2, pushed: 1 })
+      .mockResolvedValueOnce({ pulled: 3, pushed: 4 })
+
+    const res = await POST(request({ action: 'trigger-all', workspace_id: 4 }))
+
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({
+      ok: true,
+      projects_synced: 2,
+      pulled: 5,
+      pushed: 5,
+    })
+  })
+
+  it('rejects a same-scope project trigger when an active lifecycle lease exists', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db)
+    seedLifecycleControl(db, {
+      workspace_id: 4,
+      github_repo: 'org/repo',
+      owner_project_id: 3,
+      lease_run_id: 'ghsync_active_1',
+      lease_owner: 'scheduler:github_sync_automation',
+      lease_started_at: mocks.now - 30,
+      lease_expires_at: mocks.now + 90,
+      last_started_at: mocks.now - 30,
+    })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await POST(request({ action: 'trigger', project_id: 3, workspace_id: 4 }))
+
+    expect(res.status).toBe(409)
+    expect(await res.json()).toMatchObject({
+      ok: false,
+      error: 'GitHub sync already running for this scope',
+      code: 'github_sync_overlap',
+      active_run: {
+        run_id: 'ghsync_active_1',
+        trigger: 'automatic',
+        workspace_id: 4,
+        github_repo: 'org/repo',
+        lease_owner: 'scheduler:github_sync_automation',
+        lease_expires_at: new Date((mocks.now + 90) * 1000).toISOString(),
+      },
+      retry_after_seconds: 90,
+    })
+    expect(mocks.pullFromGitHub).not.toHaveBeenCalled()
+  })
+
+  it('preflights trigger-all conflicts and does not start any project sync when one requested scope is leased', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db)
+    seedGithubProjectRecord(db, {
+      id: 8,
+      workspace_id: 4,
+      name: 'Ops',
+      slug: 'ops',
+      ticket_prefix: 'OPS',
+      github_repo: 'org/ops',
+    })
+    seedLifecycleControl(db, {
+      workspace_id: 4,
+      github_repo: 'org/repo',
+      owner_project_id: 3,
+      lease_run_id: 'ghsync_active_1',
+      lease_owner: 'scheduler:github_sync_automation',
+      lease_started_at: mocks.now - 30,
+      lease_expires_at: mocks.now + 90,
+    })
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/ops', owner_project_id: 8 })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await POST(request({ action: 'trigger-all', workspace_id: 4 }))
+
+    expect(res.status).toBe(409)
+    expect(await res.json()).toMatchObject({
+      ok: false,
+      error: 'GitHub sync already running for one or more requested scopes',
+      code: 'github_sync_overlap',
+      conflicts: [
+        {
+          workspace_id: 4,
+          github_repo: 'org/repo',
+          active_run: {
+            run_id: 'ghsync_active_1',
+            trigger: 'automatic',
+          },
+          retry_after_seconds: 90,
+        },
+      ],
+    })
+    expect(mocks.pullFromGitHub).not.toHaveBeenCalled()
+  })
+
+  it('releases the manual lifecycle lease after a successful project trigger', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db)
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/repo', owner_project_id: 3 })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await POST(request({ action: 'trigger', project_id: 3, workspace_id: 4 }))
+
+    expect(res.status).toBe(200)
+    const control = db.prepare(`
+      SELECT lease_run_id, lease_owner, lease_started_at, lease_expires_at
+      FROM github_sync_lifecycle_controls
+      WHERE workspace_id = 4 AND github_repo = 'org/repo'
+    `).get()
+    expect(control).toEqual({
+      lease_run_id: null,
+      lease_owner: null,
+      lease_started_at: null,
+      lease_expires_at: null,
+    })
+  })
+
+  it('allows non-overlapping scopes to sync while another scope is leased', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedGithubProject(db)
+    seedGithubProjectRecord(db, {
+      id: 8,
+      workspace_id: 4,
+      name: 'Ops',
+      slug: 'ops',
+      ticket_prefix: 'OPS',
+      github_repo: 'org/ops',
+    })
+    seedLifecycleControl(db, {
+      workspace_id: 4,
+      github_repo: 'org/repo',
+      owner_project_id: 3,
+      lease_run_id: 'ghsync_active_1',
+      lease_owner: 'scheduler:github_sync_automation',
+      lease_started_at: mocks.now - 30,
+      lease_expires_at: mocks.now + 90,
+    })
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/ops', owner_project_id: 8 })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await POST(request({ action: 'trigger', project_id: 8, workspace_id: 4 }))
+
+    expect(res.status).toBe(200)
+    await expect(res.json()).resolves.toEqual({ ok: true, pulled: 1, pushed: 0 })
+    expect(mocks.pullFromGitHub).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 8, github_repo: 'org/ops' }),
+      4,
+    )
+  })
+
+  it('surfaces skipped-overlap lifecycle records in the GET envelope', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/repo', owner_project_id: 3 })
+    seedLifecycleRun(db, {
+      run_id: 'ghsync_skipped_overlap_1',
+      workspace_id: 4,
+      github_repo: 'org/repo',
+      result: 'skipped_overlap',
+    })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await GET(getRequest('/api/github/sync?workspace_id=4'))
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.github_sync_lifecycle.scopes[0].last_run).toMatchObject({
+      run_id: 'ghsync_skipped_overlap_1',
+      result: 'skipped_overlap',
+      trigger: 'automatic',
+    })
   })
 })

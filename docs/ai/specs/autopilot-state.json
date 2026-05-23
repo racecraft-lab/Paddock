@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-23T03:37:57.000Z",
-  "active_step": "Phase 7: US2 Manual Sync Fallback (T034-T040)",
+  "updated_at": "2026-05-23T13:15:51.000Z",
+  "active_step": "Phase 7: US3 Failure Recovery (T041-T052)",
   "current_spec_dir": "specs/013a1-github-sync-automation",
   "branch": "013a1-github-sync-automation",
   "archive_sweep": {
@@ -132,11 +132,11 @@
     },
     {
       "step": "Phase 7: US2 Manual Sync Fallback (T034-T040)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US3 Failure Recovery (T041-T052)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US4 Duplicate Prevention (T053-T061)",
@@ -344,6 +344,16 @@
           "git diff --check"
         ],
         "notes": "Scoped automatic polling can be enabled, observed, disabled, and verified through API, scheduler-owned tick seams, UI controls, and manual fallback journey coverage."
+      },
+      "us2_manual_sync_fallback": {
+        "status": "completed",
+        "tasks": "T034-T040",
+        "verification": [
+          "pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
+          "targeted eslint over US2 files",
+          "pnpm typecheck"
+        ],
+        "notes": "Manual trigger and trigger-all success bodies are preserved while same-scope overlap returns deterministic 409 responses, rejected/skipped overlap terminal rows preserve cursors, automatic overlap skips ingestion, independent scopes still sync, and panel feedback shows active-run retry guidance."
       }
     }
   }

@@ -98,6 +98,19 @@ function runStatusClass(scope: LifecycleScopeStatus) {
   return 'bg-secondary text-muted-foreground'
 }
 
+function syncErrorFeedback(data: any, fallback: string) {
+  const base = data?.error || fallback
+  if (data?.code !== 'github_sync_overlap') return base
+  const activeRun = data.active_run || data.conflicts?.[0]?.active_run
+  const retryAfter = data.retry_after_seconds ?? data.conflicts?.[0]?.retry_after_seconds
+  const details = [
+    activeRun?.run_id ? `Active run ${activeRun.run_id}` : null,
+    activeRun?.trigger ? `trigger ${activeRun.trigger === 'automatic' ? 'Automatic' : activeRun.trigger}` : null,
+    typeof retryAfter === 'number' ? `Try again in ${retryAfter} seconds` : null,
+  ].filter(Boolean)
+  return details.length > 0 ? `${base}. ${details.join('. ')}` : base
+}
+
 export function GitHubSyncPanel() {
   const t = useTranslations('githubSync')
   const { activeProductLineScope } = useMissionControl()
@@ -365,7 +378,7 @@ export function GitHubSyncPanel() {
         showFeedback(true, data.message || 'Sync triggered')
         fetchSyncHistory()
       } else {
-        showFeedback(false, data.error || t('syncFailed'))
+        showFeedback(false, syncErrorFeedback(data, t('syncFailed')))
       }
     } catch {
       showFeedback(false, t('networkError'))
@@ -387,7 +400,7 @@ export function GitHubSyncPanel() {
         showFeedback(true, data.message || 'Sync triggered for all projects')
         fetchSyncHistory()
       } else {
-        showFeedback(false, data.error || t('syncFailed'))
+        showFeedback(false, syncErrorFeedback(data, t('syncFailed')))
       }
     } catch {
       showFeedback(false, t('networkError'))
