@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-22T21:14:54.445Z",
+  "updatedAt": "2026-05-23T15:24:47.150Z",
   "prs": [
+    {
+      "prNumber": "60",
+      "prTitle": "SPEC-013A1: GitHub Sync Automation and Poller Lifecycle",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/60",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/60/",
+      "headRef": "013a1-github-sync-automation",
+      "baseRef": "main",
+      "updatedAt": "2026-05-23T15:24:47.150Z",
+      "latest": {
+        "playwright": {
+          "runId": "26336316476",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26336316476",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/60/playwright/latest/?v=26336316476-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/60/runs/26336316476-attempt-1/playwright/",
+          "updatedAt": "2026-05-23T15:24:47.150Z"
+        }
+      }
+    },
     {
       "prNumber": "59",
       "prTitle": "SPEC-010A generic product-line seeder",
