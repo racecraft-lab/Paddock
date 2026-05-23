@@ -176,6 +176,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through `better-sqlite3`; existing `workspaces`, `projects`, `project_agent_assignments`, `workflow_templates`, `workflow_contract_*`, `resource_policies`, task/history/evidence/GitHub sync tables; no migration (010a-generic-product-line-seeder)
 - TypeScript 5.7 strict on Node >=22 in Next.js 16 App Router / React 19 + Existing Next.js, React, Zustand where current task detail patterns require it, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright; no new runtime dependency (013a-run-state-spine)
 - SQLite through `src/lib/migrations.ts`; additive migration `076_task_stage_attempts` plus manual rollback `docs/migrations/rollback-M76.sql` (013a-run-state-spine)
+- TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Zustand where the existing GitHub Sync panel needs app state, Tailwind CSS 3, `better-sqlite3`, existing GitHub helper modules, Vitest, Playwright, ESLint, pnpm (013a1-github-sync-automation)
+- SQLite through `better-sqlite3`; additive M77 lifecycle tables through `src/lib/migrations.ts`; existing `github_syncs` remains the compatibility sync-history table (013a1-github-sync-automation)
 
 ## Recent Changes
 - Archive extension cleanup run (2026-05-22): `.specify/memory/{spec,plan,changelog}.md` now carries recovery/provenance summaries through SPEC-013A, including SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F, SPEC-010A, SPEC-012A, and SPEC-013A. Cleanup was applied after the clean-worktree gate; active completed folders were removed from `specs/**`, with raw artifact recovery commands recorded in `.specify/memory/changelog.md`.

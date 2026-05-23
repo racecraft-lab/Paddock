@@ -36,7 +36,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch `013a1-github-sync-automation`, isolated worktree, SpecKit CLI 0.8.13, required Codex subagents, reviewability preset, pnpm command map, and archive extension verified; no active `specs/` directory existed yet, so no prior spec cleanup was eligible |
 | Specify | `$speckit-specify` | Complete | Generated `specs/013a1-github-sync-automation/spec.md` with 4 user stories, 24 FRs, 12 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved lifecycle state, cursor/failure semantics, scheduler/lease/backoff defaults, GitHub Sync API/UI ownership with `operator` auth, and duplicate-safe owner/flag behavior; G2 passed with 0 clarification markers |
-| Plan | `$speckit-plan` | Pending | Plan bounded scheduler integration, additive state if needed, manual-sync serialization, tests, rollback, and observability without task claim/dispatch/remediation behavior |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and GitHub Sync lifecycle API contract; selected additive M77 `077_github_sync_lifecycle`; G3 passed |
 | Checklist | `$speckit-checklist` | Pending | Run targeted checklists for scheduler/runtime, data-integrity, api-contracts, ux/state-management, error-handling, and regression-safety; close all real gaps |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with focused tests for failure cursors, pagination, leases, owner filtering, manual sync fallback, feature flag/default-off, and UI/API status |
 | Analyze | `$speckit-analyze` | Pending | Verify design concept, spec, plan, checklists, and tasks agree on scope and contain no claim/dispatch/remediation/harness/sandbox/auto-merge drift |
@@ -352,11 +352,11 @@ Resolve these SPEC-013A1 questions:
 
 | Artifact | Path | Status |
 |----------|------|--------|
-| plan.md | `specs/013a1-github-sync-automation/plan.md` | |
-| research.md | `specs/013a1-github-sync-automation/research.md` | |
-| data-model.md | `specs/013a1-github-sync-automation/data-model.md` | |
-| contracts/ | `specs/013a1-github-sync-automation/contracts/` | |
-| quickstart.md | `specs/013a1-github-sync-automation/quickstart.md` | |
+| plan.md | `specs/013a1-github-sync-automation/plan.md` | Complete |
+| research.md | `specs/013a1-github-sync-automation/research.md` | Complete - 7 research decisions |
+| data-model.md | `specs/013a1-github-sync-automation/data-model.md` | Complete - 6 lifecycle entities |
+| contracts/ | `specs/013a1-github-sync-automation/contracts/` | Complete - `github-sync-lifecycle-api.md` |
+| quickstart.md | `specs/013a1-github-sync-automation/quickstart.md` | Complete |
 
 ---
 
