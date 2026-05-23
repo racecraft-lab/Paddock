@@ -213,26 +213,33 @@ export async function runGitHubSyncAutomationTick(
       })
       completeLifecycleRun(db, {
         run_id,
-        result: 'success',
+        result: result.result === 'partial' ? 'partial' : 'success',
+        partial_run_reason: result.partialRunReason ?? null,
         cursor_after: result.cursor ?? candidate.last_success_cursor,
         next_retry_at: now + candidate.interval_seconds,
         now: Math.floor(Date.now() / 1000),
       })
     } catch (err) {
       const failure = classifyGitHubSyncFailure(err)
+      const headers = err && typeof err === 'object' && 'headers' in err && typeof err.headers === 'object'
+        ? err.headers as Record<string, unknown>
+        : undefined
       const retry = computeLifecycleRetry({
         now,
         failure_count: candidate.consecutive_failures + 1,
         max_backoff_seconds: 30 * 60,
+        headers,
       })
       completeLifecycleRun(db, {
         run_id,
         result: 'failed',
         failure_reason: failure.category,
         failure_message: failure.sanitized_message,
+        failure_redaction_applied: failure.redaction_applied,
         cursor_after: candidate.last_success_cursor,
         backoff_seconds: retry.seconds,
         next_retry_at: retry.next_retry_at,
+        retry_plan: retry,
         now: Math.floor(Date.now() / 1000),
       })
     }

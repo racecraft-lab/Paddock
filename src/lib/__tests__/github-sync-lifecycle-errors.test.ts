@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import {
   classifyGitHubSyncFailure,
+  completeLifecycleRun,
   computeLifecycleRetry,
+  getLifecycleStatusForScope,
+  recordLifecycleRunStarted,
   sanitizeLifecycleMessage,
 } from '../github-sync-lifecycle'
-import { LIFECYCLE_NOW } from './fixtures/github-sync-lifecycle-fixtures'
+import {
+  createLifecycleTestDb,
+  DEFAULT_REPO,
+  DEFAULT_WORKSPACE_ID,
+  LIFECYCLE_NOW,
+  seedLifecycleControl,
+} from './fixtures/github-sync-lifecycle-fixtures'
 
 describe('github sync lifecycle failure classification', () => {
   it.each([
@@ -97,6 +106,53 @@ describe('github sync lifecycle retry signals', () => {
       signal_source: 'exponential',
       cap_applied: true,
       fallback_applied: true,
+    })
+  })
+
+  it('exposes retry signal source, cap, and fallback state through lifecycle status', () => {
+    const db = createLifecycleTestDb()
+    seedLifecycleControl(db, {
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+      consecutive_failures: 7,
+    })
+    recordLifecycleRunStarted(db, {
+      run_id: 'ghsync_retry_visibility',
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      trigger: 'automatic',
+      lease_owner: 'scheduler:test',
+      cursor_before: '2026-05-22T23:49:59.000Z',
+      now: LIFECYCLE_NOW,
+    })
+    const retry = computeLifecycleRetry({
+      now: LIFECYCLE_NOW,
+      failure_count: 8,
+      max_backoff_seconds: 300,
+      headers: { 'retry-after': '900' },
+    })
+
+    completeLifecycleRun(db, {
+      run_id: 'ghsync_retry_visibility',
+      result: 'failed',
+      failure_reason: 'github_rate_limited',
+      failure_message: 'rate limited',
+      cursor_after: '2026-05-22T23:49:59.000Z',
+      backoff_seconds: retry.seconds,
+      next_retry_at: retry.next_retry_at,
+      retry_plan: retry,
+      now: LIFECYCLE_NOW + 1,
+    })
+
+    expect(getLifecycleStatusForScope(db, {
+      workspace_id: DEFAULT_WORKSPACE_ID,
+      github_repo: DEFAULT_REPO,
+      now: LIFECYCLE_NOW + 2,
+    }).backoff).toMatchObject({
+      seconds: 300,
+      reason: 'github_retry_after',
+      signal_source: 'retry_after',
+      cap_applied: true,
+      fallback_applied: false,
     })
   })
 })

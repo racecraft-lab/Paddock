@@ -320,9 +320,11 @@ async function runManualProjectSyncWithLifecycle(
       result: 'failed',
       failure_reason: failure.category,
       failure_message: failure.sanitized_message,
+      failure_redaction_applied: failure.redaction_applied,
       cursor_after: input.control.last_success_cursor,
       backoff_seconds: retry.seconds,
       next_retry_at: retry.next_retry_at,
+      retry_plan: retry,
       now: Math.floor(Date.now() / 1000),
     })
     throw err

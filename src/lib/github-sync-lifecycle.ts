@@ -316,6 +316,9 @@ export function completeLifecycleRun(
     cursor_after?: string | null
     backoff_seconds?: number
     next_retry_at?: number | null
+    next_retry_reason?: LifecycleBackoffReason
+    retry_plan?: LifecycleRetryPlan
+    failure_redaction_applied?: boolean
     now: number
   },
 ): void {
@@ -328,13 +331,18 @@ export function completeLifecycleRun(
 
   const cursorAdvanced = input.result === 'success' && input.cursor_after != null && input.cursor_after !== run.cursor_before
   const sanitizedFailure = input.failure_message ? sanitizeLifecycleMessage(input.failure_message) : null
+  const failureRedactionApplied = [
+    sanitizedFailure?.redaction_applied,
+    input.failure_redaction_applied,
+  ].some((value) => value === true)
   const diagnostics = {
     failure: {
       category: input.failure_reason ?? null,
       sanitized_message: sanitizedFailure?.message ?? null,
-      redaction_applied: sanitizedFailure?.redaction_applied ?? false,
+      redaction_applied: failureRedactionApplied,
     },
     cursor_effect: cursorAdvanced ? 'advanced' : 'unchanged',
+    retry: input.retry_plan ?? null,
   }
 
   db.prepare(`
@@ -383,7 +391,7 @@ export function completeLifecycleRun(
     input.partial_run_reason ?? null,
     input.backoff_seconds ?? 0,
     input.next_retry_at ?? null,
-    input.backoff_seconds ? 'exponential_backoff' : null,
+    input.retry_plan?.reason ?? input.next_retry_reason ?? (input.backoff_seconds ? 'exponential_backoff' : null),
     input.now,
     run.workspace_id,
     run.github_repo,
@@ -504,6 +512,7 @@ export function getLifecycleStatusForScope(
     sanitized_message?: string | null
     redaction_applied?: boolean
   }
+  const retry = (diagnostics['retry'] ?? {}) as Partial<LifecycleRetryPlan>
 
   const status: LifecycleScopeStatus = {
     scope: {
@@ -549,9 +558,9 @@ export function getLifecycleStatusForScope(
       seconds: control.backoff_seconds,
       next_retry_at: toIso(control.next_retry_at),
       reason: control.next_retry_reason as LifecycleBackoffReason,
-      signal_source: control.next_retry_reason ? 'exponential' : null,
-      cap_applied: false,
-      fallback_applied: control.next_retry_reason === 'exponential_backoff',
+      signal_source: retry.signal_source ?? retrySignalSource(control.next_retry_reason as LifecycleBackoffReason),
+      cap_applied: retry.cap_applied ?? false,
+      fallback_applied: retry.fallback_applied ?? control.next_retry_reason === 'exponential_backoff',
     },
     counters: {
       successes: control.total_successes,
@@ -582,6 +591,13 @@ export function getLifecycleStatusForScope(
   }
   status.diagnostics.health_summary = deriveLifecycleHealthSummary(status)
   return status
+}
+
+function retrySignalSource(reason: LifecycleBackoffReason): LifecycleRetrySignalSource | null {
+  if (reason === 'github_retry_after') return 'retry_after'
+  if (reason === 'github_rate_limit_reset') return 'x_ratelimit_reset'
+  if (reason === 'exponential_backoff') return 'exponential'
+  return null
 }
 
 function placeholderHealth(now: number): LifecycleHealthSummary {

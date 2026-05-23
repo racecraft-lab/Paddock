@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-23T13:15:51.000Z",
-  "active_step": "Phase 7: US3 Failure Recovery (T041-T052)",
+  "updated_at": "2026-05-23T13:37:42.000Z",
+  "active_step": "Phase 7: US4 Duplicate Prevention (T053-T061)",
   "current_spec_dir": "specs/013a1-github-sync-automation",
   "branch": "013a1-github-sync-automation",
   "archive_sweep": {
@@ -136,11 +136,11 @@
     },
     {
       "step": "Phase 7: US3 Failure Recovery (T041-T052)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US4 Duplicate Prevention (T053-T061)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: Polish and Verification (T062-T072)",
@@ -354,6 +354,19 @@
           "pnpm typecheck"
         ],
         "notes": "Manual trigger and trigger-all success bodies are preserved while same-scope overlap returns deterministic 409 responses, rejected/skipped overlap terminal rows preserve cursors, automatic overlap skips ingestion, independent scopes still sync, and panel feedback shows active-run retry guidance."
+      },
+      "us3_failure_recovery": {
+        "status": "completed",
+        "tasks": "T041-T052",
+        "verification": [
+          "pnpm exec vitest run src/lib/__tests__/github-sync-engine-lifecycle.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/lib/__tests__/github-sync-lifecycle-errors.test.ts src/lib/__tests__/github-sync-lifecycle-redaction.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
+          "pnpm exec playwright test tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
+          "targeted eslint over US3 files",
+          "pnpm typecheck",
+          "pnpm build",
+          "git diff --check"
+        ],
+        "notes": "Automatic failure recovery now preserves last-success cursors on failure and partials, records bounded partial reasons for page/issue/duration stops, fails malformed first pages without cursor advancement, exposes retry signal/cap/fallback diagnostics, redacts failure evidence in lifecycle status/activity payloads, and renders failure/backoff/partial/stale-recovery diagnostics without forbidden authority copy."
       }
     }
   }

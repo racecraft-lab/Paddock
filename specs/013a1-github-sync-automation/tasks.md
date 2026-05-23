@@ -121,21 +121,21 @@ US1 evidence:
 
 ### Tests for User Story 3
 
-- [ ] T041 [P] [US3] Write failing success-only cursor tests for failed automatic runs, malformed first page, malformed later page, partial safe-boundary behavior, skipped outcomes, and stale recovery in `src/lib/__tests__/github-sync-lifecycle.test.ts`
-- [ ] T042 [P] [US3] Write failing bounded pagination and duration tests for max pages, max issues, max duration, partial-run reason, consumed bounds, and next-run resume state in `src/lib/__tests__/github-sync-engine-lifecycle.test.ts`
-- [ ] T043 [P] [US3] Write failing stale lease acquisition/recovery tests for expired lease detection, recovery run detail, replacement lease, and no operator data repair in `src/lib/__tests__/github-sync-lifecycle.test.ts`
-- [ ] T044 [P] [US3] Write failing retry/backoff tests for `Retry-After`, `X-RateLimit-Reset`, invalid/past retry headers, exponential fallback, cap visibility, and next retry API/UI fields in `src/lib/__tests__/github-sync-lifecycle-errors.test.ts`
-- [ ] T045 [P] [US3] Write failing observability redaction tests for API JSON, activity payloads, lifecycle diagnostics, health summaries, and token-shaped/raw-provider samples in `src/lib/__tests__/github-sync-lifecycle-redaction.test.ts`
-- [ ] T046 [P] [US3] Extend Playwright coverage for failed/backoff, partial bounded stop, stale recovery, sanitized failure text, health severity, and no forbidden authority copy in `tests/e2e/spec-013a1-github-sync-automation.spec.ts`
+- [x] T041 [P] [US3] Write failing success-only cursor tests for failed automatic runs, malformed first page, malformed later page, partial safe-boundary behavior, skipped outcomes, and stale recovery in `src/lib/__tests__/github-sync-lifecycle.test.ts`
+- [x] T042 [P] [US3] Write failing bounded pagination and duration tests for max pages, max issues, max duration, partial-run reason, consumed bounds, and next-run resume state in `src/lib/__tests__/github-sync-engine-lifecycle.test.ts`
+- [x] T043 [P] [US3] Write failing stale lease acquisition/recovery tests for expired lease detection, recovery run detail, replacement lease, and no operator data repair in `src/lib/__tests__/github-sync-lifecycle.test.ts`
+- [x] T044 [P] [US3] Write failing retry/backoff tests for `Retry-After`, `X-RateLimit-Reset`, invalid/past retry headers, exponential fallback, cap visibility, and next retry API/UI fields in `src/lib/__tests__/github-sync-lifecycle-errors.test.ts`
+- [x] T045 [P] [US3] Write failing observability redaction tests for API JSON, activity payloads, lifecycle diagnostics, health summaries, and token-shaped/raw-provider samples in `src/lib/__tests__/github-sync-lifecycle-redaction.test.ts`
+- [x] T046 [P] [US3] Extend Playwright coverage for failed/backoff, partial bounded stop, stale recovery, sanitized failure text, health severity, and no forbidden authority copy in `tests/e2e/spec-013a1-github-sync-automation.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T047 [US3] Implement success-only cursor advancement and preserve cursor on failed, partial, skipped, rejected, unresolved, and stale-recovered results in `src/lib/github-sync-lifecycle.ts`
-- [ ] T048 [US3] Implement bounded page, issue, and duration execution with partial result metadata and malformed-page handling in `src/lib/github-sync-engine.ts`
-- [ ] T049 [US3] Implement stale lease recovery, recovery activity evidence, replacement lease acquisition, and schema-unavailable health handling in `src/lib/github-sync-lifecycle.ts`
-- [ ] T050 [US3] Implement retry/backoff cap and signal-source exposure in lifecycle controls, API envelope, and UI state in `src/lib/github-sync-lifecycle.ts`
-- [ ] T051 [US3] Expose sanitized failure categories, last error, next retry, partial reason, skipped counters, and health severity in `src/app/api/github/sync/route.ts`
-- [ ] T052 [US3] Render failure, backoff, partial, stale-recovered, skipped, health, and manual fallback diagnostics in `src/components/panels/github-sync-panel.tsx`
+- [x] T047 [US3] Implement success-only cursor advancement and preserve cursor on failed, partial, skipped, rejected, unresolved, and stale-recovered results in `src/lib/github-sync-lifecycle.ts`
+- [x] T048 [US3] Implement bounded page, issue, and duration execution with partial result metadata and malformed-page handling in `src/lib/github-sync-engine.ts`
+- [x] T049 [US3] Implement stale lease recovery, recovery activity evidence, replacement lease acquisition, and schema-unavailable health handling in `src/lib/github-sync-lifecycle.ts`
+- [x] T050 [US3] Implement retry/backoff cap and signal-source exposure in lifecycle controls, API envelope, and UI state in `src/lib/github-sync-lifecycle.ts`
+- [x] T051 [US3] Expose sanitized failure categories, last error, next retry, partial reason, skipped counters, and health severity in `src/app/api/github/sync/route.ts`
+- [x] T052 [US3] Render failure, backoff, partial, stale-recovered, skipped, health, and manual fallback diagnostics in `src/components/panels/github-sync-panel.tsx`
 
 **Checkpoint**: User Story 3 is independently functional when every failure and partial path is bounded, visible, sanitized, and cursor-safe.
 

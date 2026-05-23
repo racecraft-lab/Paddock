@@ -10,7 +10,7 @@ const {
 } = vi.hoisted(() => ({
   getDatabaseMock: vi.fn(),
   runGitHubSyncAutomationTickMock: vi.fn(async () => ({ ok: true, message: 'GitHub sync automation tick complete' })),
-  pullFromGitHubMock: vi.fn(async () => ({ pulled: 0, pushed: 0 })),
+  pullFromGitHubMock: vi.fn(async (): Promise<unknown> => ({ pulled: 0, pushed: 0 })),
 }))
 
 vi.mock('@/lib/db', async () => {
@@ -340,6 +340,56 @@ describe('SPEC-013A1 / T023 scheduler-owned GitHub sync automation', () => {
     `).get()).toMatchObject({
       type: 'github_sync_skipped_overlap',
       data: expect.stringContaining('"retry_after_seconds":120'),
+    })
+  })
+
+  it('records automatic partial bounded stops without advancing the last success cursor', async () => {
+    const db = freshMigratedDb()
+    db.prepare(`UPDATE workspaces SET feature_flags = ? WHERE id = 1`).run(
+      JSON.stringify({ FEATURE_GITHUB_SYNC_AUTOMATION: true }),
+    )
+    seedAutomationScope(db, {
+      workspaceId: 1,
+      projectId: 11,
+      repo: 'org/repo-partial',
+      nextRetryAt: 10,
+      lastSuccessCursor: '2026-05-22T23:49:59.000Z',
+    })
+    getDatabaseMock.mockReturnValue(db)
+    pullFromGitHubMock.mockResolvedValueOnce({
+      pulled: 2,
+      pushed: 0,
+      cursor: '2026-05-23T00:00:02.000Z',
+      result: 'partial',
+      partialRunReason: 'max_pages',
+    })
+
+    const result = await runGitHubSyncAutomationTickForTest({
+      now: 1_779_500_000,
+      candidateLimit: 1,
+      leaseOwner: 'scheduler:test',
+    })
+
+    expect(result).toMatchObject({ scopesStarted: 1, scopesSkipped: 0 })
+    expect(db.prepare(`
+      SELECT result, partial_run_reason, cursor_before, cursor_after, cursor_advanced
+      FROM github_sync_lifecycle_runs
+      WHERE github_repo = 'org/repo-partial'
+    `).get()).toEqual({
+      result: 'partial',
+      partial_run_reason: 'max_pages',
+      cursor_before: '2026-05-22T23:49:59.000Z',
+      cursor_after: '2026-05-23T00:00:02.000Z',
+      cursor_advanced: 0,
+    })
+    expect(db.prepare(`
+      SELECT last_success_cursor, latest_partial_run_reason, total_partials
+      FROM github_sync_lifecycle_controls
+      WHERE workspace_id = 1 AND github_repo = 'org/repo-partial'
+    `).get()).toEqual({
+      last_success_cursor: '2026-05-22T23:49:59.000Z',
+      latest_partial_run_reason: 'max_pages',
+      total_partials: 1,
     })
   })
 })

@@ -79,6 +79,107 @@ function lifecycleEnvelope(mode: LifecycleMode) {
   }
 }
 
+function diagnosticLifecycleEnvelope() {
+  const base = lifecycleEnvelope('success')
+  const successScope = base.scopes[0]
+  return {
+    ...base,
+    scopes: [
+      {
+        ...successScope,
+        scope: { workspace_id: 4, github_repo: 'racecraft/failing', owner_project_id: 201 },
+        last_run: {
+          run_id: 'e2e-failed',
+          trigger: 'automatic',
+          result: 'failed',
+          started_at: '2026-05-23T03:45:00.000Z',
+          completed_at: '2026-05-23T03:45:02.000Z',
+          pulled: 0,
+          pushed: 0,
+          partial_run_reason: null,
+          failure_reason: 'github_rate_limited',
+          cursor_advanced: false,
+        },
+        last_success_cursor: '2026-05-23T03:40:00.000Z',
+        last_error: 'GitHub rate limited the request',
+        backoff: {
+          seconds: 300,
+          next_retry_at: '2026-05-23T04:15:00.000Z',
+          reason: 'github_retry_after',
+          signal_source: 'retry_after',
+          cap_applied: true,
+          fallback_applied: false,
+        },
+        counters: { successes: 1, failures: 1, partials: 0, overlap_rejections: 0 },
+        diagnostics: {
+          ...successScope.diagnostics,
+          cursor_effect: 'unchanged',
+          failure: { category: 'github_rate_limited', sanitized_message: 'GitHub rate limited the request', redaction_applied: true },
+          health_summary: {
+            ...successScope.diagnostics.health_summary,
+            severity: 'amber',
+            reason: 'backoff scheduled',
+            state_drivers: ['active_backoff'],
+          },
+        },
+      },
+      {
+        ...successScope,
+        scope: { workspace_id: 4, github_repo: 'racecraft/partial', owner_project_id: 202 },
+        last_run: {
+          run_id: 'e2e-partial',
+          trigger: 'automatic',
+          result: 'partial',
+          started_at: '2026-05-23T03:50:00.000Z',
+          completed_at: '2026-05-23T03:50:05.000Z',
+          pulled: 25,
+          pushed: 0,
+          partial_run_reason: 'max_pages',
+          failure_reason: null,
+          cursor_advanced: false,
+        },
+        last_success_cursor: '2026-05-23T03:40:00.000Z',
+        counters: { successes: 1, failures: 0, partials: 1, overlap_rejections: 0 },
+        diagnostics: {
+          ...successScope.diagnostics,
+          latest_partial_run_reason: 'max_pages',
+          health_summary: {
+            ...successScope.diagnostics.health_summary,
+            severity: 'amber',
+            reason: 'partial bounded stop',
+            state_drivers: ['partial_bounded_stop'],
+          },
+        },
+      },
+      {
+        ...successScope,
+        scope: { workspace_id: 4, github_repo: 'racecraft/recovered', owner_project_id: 203 },
+        last_run: {
+          run_id: 'e2e-stale-recovered',
+          trigger: 'automatic',
+          result: 'stale_recovered',
+          started_at: '2026-05-23T03:52:00.000Z',
+          completed_at: '2026-05-23T03:52:01.000Z',
+          pulled: 0,
+          pushed: 0,
+          partial_run_reason: null,
+          failure_reason: null,
+          cursor_advanced: false,
+        },
+        diagnostics: {
+          ...successScope.diagnostics,
+          health_summary: {
+            ...successScope.diagnostics.health_summary,
+            severity: 'green',
+            reason: 'stale lease recovered',
+            state_drivers: ['stale_recovered'],
+          },
+        },
+      },
+    ],
+  }
+}
+
 test.describe('SPEC-013A1 GitHub sync automation journey', () => {
   test('enables scoped automation, observes scheduler state, disables it, and preserves manual fallback', async ({ page }) => {
     let mode: LifecycleMode = 'disabled'
@@ -232,5 +333,72 @@ test.describe('SPEC-013A1 GitHub sync automation journey', () => {
       }),
     ])
     expect(manualSyncBodies).toEqual([expect.objectContaining({ action: 'trigger-all' })])
+  })
+
+  test('shows failure, partial, stale recovery, and sanitized lifecycle diagnostics without forbidden authority copy', async ({ page }) => {
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('mc-onboarding-dismissed', '1')
+    })
+
+    await page.route('**/api/**', async route => {
+      const request = route.request()
+      const url = new URL(request.url())
+      const method = request.method()
+
+      if (url.pathname === '/api/integrations' && method === 'POST') {
+        await route.fulfill({ json: { ok: true, detail: 'User: octocat' } })
+        return
+      }
+      if (url.pathname === '/api/status' && url.searchParams.get('action') === 'capabilities') {
+        await route.fulfill({ json: { gateway: false, claudeHome: true, interfaceMode: 'full', processUser: 'testadmin' } })
+        return
+      }
+      if (url.pathname === '/api/onboarding') {
+        await route.fulfill({ json: { completed: true, skipped: true, showOnboarding: false, isAdmin: true } })
+        return
+      }
+      if (url.pathname === '/api/github/sync' && method === 'GET') {
+        await route.fulfill({ json: { syncs: [], poller: { running: true, interval: 60000 }, github_sync_lifecycle: diagnosticLifecycleEnvelope() } })
+        return
+      }
+      if (url.pathname === '/api/github' && method === 'POST') {
+        await route.fulfill({ json: { syncs: [] } })
+        return
+      }
+      if (url.pathname === '/api/projects' && method === 'GET') {
+        await route.fulfill({ json: { projects: [] } })
+        return
+      }
+      if (url.pathname === '/api/tasks' && method === 'GET') {
+        await route.fulfill({ json: { tasks: [] } })
+        return
+      }
+      if (url.pathname === '/api/agents' && method === 'GET') {
+        await route.fulfill({ json: { agents: [] } })
+        return
+      }
+      if (url.pathname === '/api/workspaces') {
+        await route.fulfill({ json: { workspaces: [{ id: 4, slug: 'mission-control', name: 'Mission Control', feature_flags: { FEATURE_GITHUB_SYNC_AUTOMATION: true } }] } })
+        return
+      }
+
+      await route.continue()
+    })
+
+    await page.goto('/login')
+    await page.getByRole('textbox', { name: 'Username' }).fill(process.env.AUTH_USER ?? 'testadmin')
+    await page.getByRole('textbox', { name: 'Password' }).fill(process.env.AUTH_PASS ?? 'testpass1234!')
+    await page.getByRole('button', { name: 'Sign in' }).click()
+    await page.waitForURL(url => !url.pathname.startsWith('/login'))
+
+    await page.goto('/github')
+    await page.getByRole('button', { name: 'Skip setup' }).click({ timeout: 2_000 }).catch(() => undefined)
+    const lifecycle = page.locator('section[aria-label="Automatic GitHub sync lifecycle"]')
+    await expect(lifecycle.getByText('Failed with backoff').first()).toBeVisible()
+    await expect(lifecycle.getByText('Partial run').first()).toBeVisible()
+    await expect(lifecycle.getByText('Stale lease recovered').first()).toBeVisible()
+    await expect(lifecycle.getByText('Backoff source: retry_after').first()).toBeVisible()
+    await expect(lifecycle.getByText('Redacted failure details').first()).toBeVisible()
+    await expect(lifecycle).not.toContainText(/claim|dispatch|remediation execution|sandbox|auto-merge|triage/i)
   })
 })

@@ -600,6 +600,12 @@ export function GitHubSyncPanel() {
                         {scope.last_run && <div>Last result: {lastResultLabel(scope)}</div>}
                         {scope.last_run?.partial_run_reason && <div>Partial reason: {scope.last_run.partial_run_reason}</div>}
                         {scope.backoff.next_retry_at && <div>Backoff until {formatDateTime(scope.backoff.next_retry_at)}</div>}
+                        {scope.backoff.reason && <div>Backoff reason: {scope.backoff.reason}</div>}
+                        {scope.backoff.signal_source && scope.backoff.signal_source !== 'none' && <div>Backoff source: {scope.backoff.signal_source}</div>}
+                        {scope.backoff.cap_applied && <div>Backoff cap applied</div>}
+                        {scope.backoff.fallback_applied && <div>Backoff fallback applied</div>}
+                        {scope.last_run?.failure_reason && <div>Failure category: {scope.last_run.failure_reason}</div>}
+                        {scope.diagnostics.failure.redaction_applied && <div>Redacted failure details</div>}
                         {scope.last_error && <div>Last error: {scope.last_error}</div>}
                         {scope.controls.disabled_reason && <div>Disabled reason: {scope.controls.disabled_reason}</div>}
                       </div>
