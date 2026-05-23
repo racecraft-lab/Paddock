@@ -33,8 +33,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Pending | Verify branch/worktree, archive registry, reviewability preset, package manager, command map, GitHub sync code evidence, and no main-branch execution |
-| Specify | `$speckit-specify` | Pending | Generate `specs/013a1-github-sync-automation/spec.md`; requirements must cover lifecycle control, scheduler ticks, owner filtering, cursor safety, pagination, backoff, leases, observability, manual fallback, and strict no-execution boundary |
+| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch `013a1-github-sync-automation`, isolated worktree, SpecKit CLI 0.8.13, required Codex subagents, reviewability preset, pnpm command map, and archive extension verified; no active `specs/` directory existed yet, so no prior spec cleanup was eligible |
+| Specify | `$speckit-specify` | Complete | Generated `specs/013a1-github-sync-automation/spec.md` with 4 user stories, 24 FRs, 12 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
 | Clarify | `$speckit-clarify` | Pending | Resolve schema/control state shape, cursor semantics, API/UI scope, lease/backoff defaults, pagination bounds, feature-flag rollout, and legacy compatibility |
 | Plan | `$speckit-plan` | Pending | Plan bounded scheduler integration, additive state if needed, manual-sync serialization, tests, rollback, and observability without task claim/dispatch/remediation behavior |
 | Checklist | `$speckit-checklist` | Pending | Run targeted checklists for scheduler/runtime, data-integrity, api-contracts, ux/state-management, error-handling, and regression-safety; close all real gaps |
@@ -75,7 +75,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 | XIV. Real UI Journey Quality Gate | Operator control/status UI receives browser coverage if changed | Playwright or equivalent focused browser check proves enable/disable/status/manual fallback journey |
 | XVI. Reviewability And Verification Debt Control | Implementation stays within GitHub sync lifecycle and splits if it grows beyond the planned surfaces | Analyze blocks task claim, dispatch, Issue Remediation, harness, sandbox, auto-merge, or automatic triage drift |
 
-**Constitution Check:** Re-check after Specify, Plan, Analyze, and Implement. Any runtime/scheduler/schema/UI expansion beyond this workflow must be split or explicitly justified by a reviewability exception.
+**Constitution Check:** Specify re-check passed through G1 with 0 clarification markers and no expansion beyond GitHub sync lifecycle/control scope. Re-check again after Plan, Analyze, and Implement. Any runtime/scheduler/schema/UI expansion beyond this workflow must be split or explicitly justified by a reviewability exception.
 
 ### Reviewability Gate
 
@@ -257,11 +257,11 @@ SPEC-009C1 intentionally left GitHub issue sync operator-triggered or fixture-dr
 
 | Metric | Value |
 |--------|-------|
-| User Stories | |
-| Functional Requirements | |
-| Clarification Markers | |
-| Acceptance Scenarios | |
-| Success Criteria | |
+| User Stories | 4 |
+| Functional Requirements | 24 |
+| Clarification Markers | 0 |
+| Acceptance Scenarios | 12 |
+| Success Criteria | 7 |
 
 ---
 

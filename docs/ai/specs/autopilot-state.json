@@ -1,10 +1,42 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-013A-workflow.md",
-  "updated_at": "2026-05-22T23:27:46Z",
-  "active_step": "Post: Archive Cleanup",
-  "status": "Completed",
-  "current_spec_dir": "specs/013a-run-state-spine",
-  "branch": "013a-run-state-spine",
+  "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
+  "updated_at": "2026-05-23T00:56:53.888Z",
+  "active_step": "Phase 2: Clarify - Lifecycle and Compatibility",
+  "current_spec_dir": "specs/013a1-github-sync-automation",
+  "branch": "013a1-github-sync-automation",
+  "archive_sweep": {
+    "archive_extension_installed": true,
+    "cleanup_mode": "apply-eligible-on-feature-branch",
+    "current_target": "specs/013a1-github-sync-automation",
+    "excluded_current_spec": "specs/013a1-github-sync-automation",
+    "eligible_previous_specs": [],
+    "safeToApplyCleanup": true,
+    "notes": "Archive extension installed; no active specs/ directory exists yet, so no previously merged spec folders were eligible for cleanup."
+  },
+  "prerequisites": {
+    "scripts_dir": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.11.1/skills/speckit-autopilot/scripts",
+    "commands": {
+      "BUILD": "pnpm build",
+      "TYPECHECK": "pnpm typecheck",
+      "LINT": "pnpm lint",
+      "LINT_FIX": "N/A",
+      "UNIT_TEST": "pnpm test",
+      "INTEGRATION_TEST": "pnpm test:e2e",
+      "SINGLE_FILE_TEST": "pnpm test",
+      "SINGLE_FILE_INTEGRATION": "N/A",
+      "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
+    },
+    "mcp_servers": {
+      "available": [],
+      "missing": [
+        "tavily-mcp",
+        "context7",
+        "RepoPrompt"
+      ]
+    },
+    "agents_required_installed": true,
+    "preset": "speckit-pro-reviewability"
+  },
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -19,586 +51,150 @@
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Schema Identity And Lifecycle",
-      "status": "completed"
+      "step": "Phase 2: Clarify - Lifecycle and Compatibility",
+      "status": "in_progress"
     },
     {
-      "step": "Phase 2: Clarify - Schema Identity And Lifecycle Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Flag-Off Runtime Isolation And Debug Reads",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Flag-Off Runtime Isolation And Debug Reads Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Runs Relationship And Archive Semantics",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Runs Relationship And Archive Semantics Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - API/UI Surface And SPEC-013B Boundary",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - API/UI Surface And SPEC-013B Boundary Consensus",
-      "status": "completed"
+      "step": "Phase 2: Clarify - Lifecycle and Compatibility Consensus",
+      "status": "pending"
     },
     {
       "step": "Phase 3: Plan",
-      "status": "completed"
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - scheduler-runtime",
+      "status": "pending"
+    },
+    {
+      "step": "Phase 4: Checklist - scheduler-runtime Consensus",
+      "status": "pending"
     },
     {
       "step": "Phase 4: Checklist - data-integrity",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Phase 4: Checklist - data-integrity Consensus",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Phase 4: Checklist - api-contracts",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Phase 4: Checklist - api-contracts Consensus",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Phase 4: Checklist - state-management",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Phase 4: Checklist - state-management Consensus",
-      "status": "completed"
+      "status": "pending"
     },
     {
-      "step": "Phase 4: Checklist - regression-safety",
-      "status": "completed"
+      "step": "Phase 4: Checklist - error-handling",
+      "status": "pending"
     },
     {
-      "step": "Phase 4: Checklist - regression-safety Consensus",
-      "status": "completed"
+      "step": "Phase 4: Checklist - error-handling Consensus",
+      "status": "pending"
     },
     {
-      "step": "Phase 4: Checklist - ux-accessibility",
-      "status": "completed"
+      "step": "Phase 4: Checklist - ux",
+      "status": "pending"
     },
     {
-      "step": "Phase 4: Checklist - ux-accessibility Consensus",
-      "status": "completed"
+      "step": "Phase 4: Checklist - ux Consensus",
+      "status": "pending"
     },
     {
       "step": "Phase 5: Tasks",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Phase 6: Analyze",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Phase 6: Analyze - Consensus",
-      "status": "completed"
+      "status": "pending"
     },
     {
-      "step": "Phase 7: Implement T001-T007 Setup and scope guardrails",
-      "status": "completed"
+      "step": "Phase 7: Implement - Pending task decomposition",
+      "status": "pending"
     },
     {
-      "step": "Phase 7: Implement T008-T018 Foundation migration, flag, and helper spine",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Implement T019-T032 US1 inspection API and task-detail UI",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Implement T033-T040 US2 non-destructive archive behavior",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Implement T041-T049 US3 flag-off runtime safety",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Implement T050-T058 Polish, verification, and review evidence",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Verification and Status Sync",
-      "status": "completed"
+      "step": "Post: Doctor Extension Check",
+      "status": "pending"
     },
     {
       "step": "Post: Verify Implementation",
-      "status": "completed"
+      "status": "pending"
+    },
+    {
+      "step": "Post: Verify Tasks Phantom Check",
+      "status": "pending"
     },
     {
       "step": "Post: Code Review",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Integration Suite",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Cleanup",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Reviewability Diff Gate",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: PR Body Generation",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: PR Creation",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Review Remediation",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Retrospective",
-      "status": "completed"
+      "status": "pending"
     }
   ],
-  "archive_sweep": {
-    "archive_extension_installed": true,
-    "archive_extension_enabled": true,
-    "cleanup_mode": "manual-archive-cleanup-applied",
-    "safeToApplyCleanup": true,
-    "excludedCurrentSpec": null,
-    "eligible_previous_specs": [
-      "specs/009c3-remediation-ready-for-owner",
-      "specs/009c4-owner-merge-reconciliation",
-      "specs/009d-pilot-review-lifecycle",
-      "specs/009e-pilot-evidence-surfaces",
-      "specs/009f-production-triage-routing",
-      "specs/010a-generic-product-line-seeder",
-      "specs/012a-repo-knowledge-index",
-      "specs/013a-run-state-spine"
-    ],
-    "archived_specs": [
-      "specs/009c3-remediation-ready-for-owner",
-      "specs/009c4-owner-merge-reconciliation",
-      "specs/009d-pilot-review-lifecycle",
-      "specs/009e-pilot-evidence-surfaces",
-      "specs/009f-production-triage-routing",
-      "specs/010a-generic-product-line-seeder",
-      "specs/012a-repo-knowledge-index",
-      "specs/013a-run-state-spine"
-    ],
-    "cleanup_blocked_by": [],
-    "notes": "Archive extension v1.1.0 is installed and enabled. The 2026-05-22 run followed the vendored command contract manually because the installed SpecKit CLI has no extension-run command and check-prerequisites.sh rejects main. Memory files were updated, then --apply-cleanup intent was applied on clean main by removing the archived completed spec directories from active specs/**.",
-    "cleaned_specs": [
-      "specs/009c3-remediation-ready-for-owner",
-      "specs/009c4-owner-merge-reconciliation",
-      "specs/009d-pilot-review-lifecycle",
-      "specs/009e-pilot-evidence-surfaces",
-      "specs/009f-production-triage-routing",
-      "specs/010a-generic-product-line-seeder",
-      "specs/012a-repo-knowledge-index",
-      "specs/013a-run-state-spine"
-    ],
-    "cleanup_command": "git rm -r specs/009c3-remediation-ready-for-owner specs/009c4-owner-merge-reconciliation specs/009d-pilot-review-lifecycle specs/009e-pilot-evidence-surfaces specs/009f-production-triage-routing specs/010a-generic-product-line-seeder specs/012a-repo-knowledge-index specs/013a-run-state-spine"
-  },
-  "environment": {
-    "worktree": "/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/013a-run-state-spine",
-    "package_manager": "pnpm",
-    "commands": {
-      "BUILD": "pnpm build",
-      "TYPECHECK": "pnpm typecheck",
-      "LINT": "pnpm lint",
-      "LINT_FIX": "N/A",
-      "UNIT_TEST": "pnpm test",
-      "INTEGRATION_TEST": "pnpm test:e2e",
-      "SINGLE_FILE_TEST": "pnpm test",
-      "SINGLE_FILE_INTEGRATION": "N/A",
-      "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
-    },
-    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt; agents will use built-in fallbacks.",
-    "preset": "speckit-pro-reviewability"
+  "post_implementation_items": {
+    "doctor": true,
+    "verify": true,
+    "verify_tasks": true,
+    "review": true,
+    "integration_suite": true,
+    "cleanup": true,
+    "reviewability_diff_gate": true,
+    "pr_body_generation": true,
+    "pr_creation": true,
+    "review_remediation": true,
+    "retrospective": true
   },
   "phase_results": {
     "specify": {
       "status": "completed",
-      "files": [
-        "specs/013a-run-state-spine/spec.md",
-        "specs/013a-run-state-spine/checklists/requirements.md",
-        ".specify/feature.json"
-      ],
-      "gate": "G1 pass, 0 markers",
-      "user_stories": 3,
-      "functional_requirements": 14,
-      "acceptance_scenarios": 7,
-      "success_criteria": 5
-    },
-    "clarify": {
-      "sessions": {
-        "schema_identity_and_lifecycle": {
-          "status": "completed",
-          "questions": 5,
-          "consensus_items": 1,
-          "outcome": "Accepted two-table task_stage_attempts/task_stage_attempt_events model, required identity fields, seven-state lifecycle vocabulary, inspection-only indexes, and human-admin-session debug write boundary."
-        },
-        "flag_off_runtime_isolation_and_debug_reads": {
-          "status": "completed",
-          "questions": 5,
-          "consensus_items": 1,
-          "outcome": "Accepted table-blind runtime path list, compact flag-off debug read payload, workspace masking/auth rules, typed default-off flag registry entry, and static guardrails."
-        },
-        "runs_relationship_and_archive_semantics": {
-          "status": "completed",
-          "questions": 5,
-          "consensus_items": 1,
-          "outcome": "Accepted soft nullable run link, compact read-time run summary, archived status/timestamp/event semantics, child-first rollback, and trusted proxy-auth human-admin rule."
-        },
-        "api_ui_surface_and_spec_013b_boundary": {
-          "status": "completed",
-          "questions": 5,
-          "consensus_items": 2,
-          "outcome": "Accepted dedicated task-scoped read route, compact task-detail section, controlled fixture/UAT endpoint conditions, explicit no-control-plane contract, and task_stage_attempts.v1 envelope."
-        }
-      },
-      "consensus": [
-        {
-          "session": "Schema Identity And Lifecycle",
-          "item": "Debug write boundary for create/update/archive lifecycle records",
-          "round": 1,
-          "routed_categories": [
-            "security"
-          ],
-          "analysts_used": [
-            "codebase-analyst",
-            "spec-context-analyst",
-            "domain-researcher"
-          ],
-          "outcome": "Accepted with conditions: human-admin session guard for runtime debug writes, authenticated read-only operator inspection, lifecycle append/update only as observed-state recording, no execution-control authority."
-        },
-        {
-          "session": "Flag-Off Runtime Isolation And Debug Reads",
-          "item": "Auth and workspace masking rules for attempt inspection and debug writes",
-          "round": 1,
-          "routed_categories": [
-            "security",
-            "codebase"
-          ],
-          "analysts_used": [
-            "codebase-analyst",
-            "spec-context-analyst",
-            "domain-researcher"
-          ],
-          "outcome": "Accepted with caveat: read path follows existing viewer-or-higher workspace masking and masked task-not-found behavior; debug writes require verified human-admin context excluding API-key and agent-key callers; Plan must confirm trusted proxy-auth treatment."
-        },
-        {
-          "session": "Runs Relationship And Archive Semantics",
-          "item": "Trusted proxy-auth admin handling for debug writes",
-          "round": 1,
-          "routed_categories": [
-            "security"
-          ],
-          "analysts_used": [
-            "codebase-analyst",
-            "spec-context-analyst",
-            "domain-researcher"
-          ],
-          "outcome": "Accepted with conditions: trusted proxy-auth admins count only as real positive-id human admins; global API-key, agent API-key, and agent-identity requests never satisfy the debug-write guard."
-        },
-        {
-          "session": "API/UI Surface And SPEC-013B Boundary",
-          "item": "Fixture/UAT write endpoint boundary",
-          "round": 1,
-          "routed_categories": [
-            "security",
-            "codebase"
-          ],
-          "analysts_used": [
-            "codebase-analyst",
-            "spec-context-analyst",
-            "domain-researcher"
-          ],
-          "outcome": "Accepted with conditions: at most one spec-scoped fixture/UAT endpoint, human-admin-only, mutation/rate limited, CSRF-protected for cookie auth, structured-audited, unavailable outside fixture/UAT unless explicitly reviewed, and inert beyond attempt/event/audit rows."
-        },
-        {
-          "session": "API/UI Surface And SPEC-013B Boundary",
-          "item": "No-control-plane schema/API/UI contract",
-          "round": 1,
-          "routed_categories": [
-            "security",
-            "spec"
-          ],
-          "analysts_used": [
-            "codebase-analyst",
-            "spec-context-analyst",
-            "domain-researcher"
-          ],
-          "outcome": "Accepted with precision: encode explicit forbidden schema/field/helper/UI/action controls; released and cancelled remain passive observed states only."
-        }
-      ],
-      "status": "completed",
-      "gate": "G2 pass, 0 [NEEDS CLARIFICATION] markers",
-      "total_questions": 20,
-      "consensus_items": 5
-    },
-    "plan": {
-      "status": "completed",
-      "gate": "G3 pass, 0 unresolved markers",
-      "files": [
-        "specs/013a-run-state-spine/plan.md",
-        "specs/013a-run-state-spine/research.md",
-        "specs/013a-run-state-spine/data-model.md",
-        "specs/013a-run-state-spine/quickstart.md",
-        "specs/013a-run-state-spine/contracts/task-stage-attempts-api.md",
-        "AGENTS.md"
-      ],
-      "migration_id": "076_task_stage_attempts",
-      "runtime_fixture_endpoint": "not selected",
-      "technical_decisions": [
-        "Dedicated additive task_stage_attempts and task_stage_attempt_events tables.",
-        "Soft nullable run_id with read-time compact run summary and no foreign key to runs.",
-        "Dedicated GET /api/tasks/[id]/stage-attempts route with task_stage_attempts.v1 envelope.",
-        "Compact read-only task detail Run state / Stage attempts section near Evidence.",
-        "FEATURE_TASK_CONTROL_PLANE typed default-off registry entry using resolveFlag.",
-        "Static guardrails for inline env reads and forbidden runtime/evidence table references."
-      ]
-    },
-    "checklist": {
-      "status": "completed",
-      "gate": "G4 pass, 0 active [Gap] markers",
-      "domains": {
-        "data_integrity": {
-          "items": 20,
-          "gaps_found": 1,
-          "gaps_remediated": 1,
-          "consensus_items": 0,
-          "outcome": "Migration idempotency, rollback, live schema evidence, and non-claim uniqueness requirements tightened."
-        },
-        "api_contracts": {
-          "items": 22,
-          "gaps_found": 4,
-          "gaps_remediated": 4,
-          "consensus_items": 0,
-          "outcome": "No-attempt, invalid/future state, lifecycle-entry limit, and OpenAPI/API-index parity requirements tightened."
-        },
-        "state_management": {
-          "items": 18,
-          "gaps_found": 2,
-          "gaps_remediated": 2,
-          "consensus_items": 0,
-          "outcome": "Projection drift warning behavior and stale/malformed lifecycle handling tightened."
-        },
-        "regression_safety": {
-          "items": 24,
-          "gaps_found": 2,
-          "gaps_remediated": 2,
-          "consensus_items": 0,
-          "outcome": "Direct production task insert parity and SPEC-013B/014 drift guardrails tightened."
-        },
-        "ux_accessibility": {
-          "items": 23,
-          "gaps_found": 5,
-          "gaps_remediated": 5,
-          "consensus_items": 0,
-          "outcome": "Named region/status/alert semantics, non-color-only states, read-only link wording, text-fit evidence, and browser accessibility checks tightened."
-        }
-      },
-      "totals": {
-        "domains": 5,
-        "items": 107,
-        "gaps_found": 14,
-        "gaps_remediated": 14,
-        "consensus_items": 0
-      }
-    },
-    "tasks": {
-      "status": "completed",
-      "gate": "G5 pass, 58 tasks found, 0 markers",
-      "files": [
-        "specs/013a-run-state-spine/tasks.md"
-      ],
-      "total_tasks": 58,
-      "phase_count": 6,
-      "parallel_opportunities": 26,
-      "user_stories_covered": 3,
-      "task_groups": [
-        "T001-T007 Setup and scope guardrails",
-        "T008-T018 Foundation migration, flag, and helper spine",
-        "T019-T032 US1 inspection API and task-detail UI",
-        "T033-T040 US2 non-destructive archive behavior",
-        "T041-T049 US3 flag-off runtime safety",
-        "T050-T058 Polish, verification, and review evidence"
-      ],
-      "reviewability_gate": {
-        "status": "exception",
-        "pass": true,
-        "transition_exception": true,
-        "reviewable_loc": 2320,
-        "production_files": 24,
-        "total_files": 114,
-        "primary_surface_count": 6,
-        "notes": "Transition exception ratified in tasks.md because SPEC-013A intentionally spans schema, helper, route, and compact UI as the minimum durable run-state spine."
-      }
-    },
-    "analyze": {
-      "status": "completed",
-      "gate": "G6 pass, 0 CRITICAL/HIGH findings",
-      "findings": {
-        "critical": 0,
-        "high": 0,
-        "medium": 2,
-        "low": 0,
-        "remaining": 0
-      },
-      "files": [
-        "docs/ai/specs/SPEC-013A-design-concept.md"
-      ],
-      "remediations": [
-        "Clarified setup-time run_id decision with later soft-reference/no-FK Plan outcome.",
-        "Replaced active setup-time open questions with resolved post-Clarify/Plan decisions."
-      ],
-      "consensus_items": 0
-    },
-    "implement": {
-      "status": "completed",
-      "groups": {
-        "T001-T007": {
-          "status": "completed",
-          "summary": "Recorded package manager, archive/screenshot/reviewability evidence, added SPEC-013A strict-scope config entries, added RED API documentation/index assertions, and created the run-state scope guard script.",
-          "verification": [
-            "node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test",
-            "node scripts/spec-013a/check-run-state-scope-guards.mjs",
-            "pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-setup.tsbuildinfo",
-            "pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs",
-            "pnpm check:strict-scope",
-            "git diff --check"
-          ],
-          "expected_red": "pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts fails because openapi.json and /api/index do not yet define the stage-attempts route."
-        },
-        "T008-T018": {
-          "status": "completed",
-          "summary": "Added M76 task-stage attempt tables, rollback SQL, default-off FEATURE_TASK_CONTROL_PLANE registry entry, explicit-database helper/model behavior, and focused foundation tests.",
-          "verification": [
-            "direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/feature-flags.test.ts",
-            "direnv exec . pnpm exec eslint src/lib/migrations.ts src/lib/task-stage-attempts.ts src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/feature-flags.ts src/lib/__tests__/feature-flags.test.ts scripts/spec-013a/check-run-state-scope-guards.mjs",
-            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-foundation.tsbuildinfo",
-            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
-            "git diff --check"
-          ],
-          "focused_tests": "39/39 passing"
-        },
-        "T019-T032": {
-          "status": "completed",
-          "summary": "Added the read-only viewer route, OpenAPI/API-index entries, task-detail run-state section, deterministic Playwright journey, and US1 guard refinements.",
-          "verification": [
-            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
-            "direnv exec . pnpm exec eslint src/lib/__tests__/task-stage-attempts-route.test.ts 'src/app/api/tasks/[id]/stage-attempts/route.ts' src/app/api/index/route.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx src/components/panels/task-board-panel.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts scripts/spec-013a/check-run-state-scope-guards.mjs eslint.config.mjs",
-            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us1.tsbuildinfo",
-            "direnv exec . pnpm api:parity",
-            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
-            "git diff --check",
-            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
-          ],
-          "focused_tests": "Vitest 11/11 passing; Playwright 1/1 passing"
-        },
-        "T033-T040": {
-          "status": "completed",
-          "summary": "Strengthened non-destructive archive coverage, default route archive evidence, active-vs-archived UI labels, and fresh-build Playwright verification.",
-          "verification": [
-            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
-            "direnv exec . pnpm exec eslint src/lib/task-stage-attempts.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/task-stage-attempts-section.tsx src/components/panels/__tests__/task-stage-attempts-section.test.tsx tests/e2e/spec-013a-task-stage-attempts.spec.ts",
-            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us2.tsbuildinfo",
-            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
-            "direnv exec . pnpm build",
-            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
-          ],
-          "focused_tests": "Vitest 21/21 passing; Playwright 1/1 passing"
-        },
-        "T041-T049": {
-          "status": "completed",
-          "summary": "Added runtime table-blind guard fixtures, evidence-route table-blind assertion, flag-off read-route coverage, and task-pipeline guardrail evidence.",
-          "verification": [
-            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs --self-test",
-            "direnv exec . node scripts/spec-013a/check-run-state-scope-guards.mjs",
-            "direnv exec . pnpm test src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts",
-            "direnv exec . pnpm exec eslint scripts/spec-013a/check-run-state-scope-guards.mjs src/lib/__tests__/task-stage-attempts-route.test.ts src/lib/__tests__/feature-flags.test.ts",
-            "direnv exec . node scripts/check-guardrails.mjs --suite task-pipeline",
-            "direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit --tsBuildInfoFile /private/tmp/spec013a-us3.tsbuildinfo"
-          ],
-          "focused_tests": "scope guard self-test 15 fixtures; Vitest 32/32 passing"
-        },
-        "T050-T058": {
-          "status": "completed",
-          "summary": "Captured live schema and rollback evidence, API parity, focused tests, full typecheck/lint/build, final Playwright journey, and deferred SPEC-013B/C/014 notes.",
-          "verification": [
-            "M76 schema capture from extracted migration SQL applied twice",
-            "rollback-M76 SQL check",
-            "direnv exec . pnpm api:parity",
-            "direnv exec . pnpm test src/lib/__tests__/migrations-M76-task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts.test.ts src/lib/__tests__/task-stage-attempts-route.test.ts src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
-            "direnv exec . pnpm typecheck",
-            "direnv exec . pnpm lint",
-            "direnv exec . pnpm build",
-            "direnv exec . pnpm test:e2e tests/e2e/spec-013a-task-stage-attempts.spec.ts"
-          ],
-          "focused_tests": "Vitest 31/31 passing; Playwright 1/1 passing; full Vitest 288 files / 3026 tests passing; full Playwright 649/649 passing"
-        }
-      }
-    }
-  },
-  "post_implementation": {
-    "status": "completed",
-    "verify_implementation": {
-      "status": "skipped",
-      "reason": "Optional speckit-verify extension is not installed in this Codex skill set; implementation verification was covered by T050-T058 and post integration gates."
-    },
-    "code_review": {
-      "status": "skipped",
-      "reason": "Optional speckit-review extension is not installed in this Codex skill set; PR review is handled by GitHub PR #58 and the review-remediation heartbeat."
-    },
-    "integration_suite": {
-      "status": "completed",
-      "commands": [
-        "direnv exec . pnpm test",
-        "direnv exec . pnpm test:e2e"
-      ],
-      "results": [
-        "Vitest passed: 288 files, 3026 tests, 33 skipped, 84 todo",
-        "Playwright passed: 649 tests"
-      ]
-    },
-    "cleanup": {
-      "status": "skipped",
-      "reason": "Optional speckit-cleanup extension is not installed; no generated cleanup-safe files remained in git status."
-    },
-    "reviewability": {
-      "status": "exception",
-      "diff_gate": "Raw diff gate blocked at 6697 reviewable LOC, 18 production files, 39 total files, and 7 primary surfaces.",
-      "tasks_gate": "Tasks gate passed under ratified transition exception at 2320 estimated reviewable LOC, 24 production files, 116 total files, and 6 primary surfaces.",
-      "exception_source": "specs/013a-run-state-spine/tasks.md"
-    },
-    "pr": {
-      "status": "created",
-      "url": "https://github.com/racecraft-lab/mission-control/pull/58",
-      "draft": true,
-      "branch": "013a-run-state-spine",
-      "base": "main"
-    },
-    "review_remediation": {
-      "status": "scheduled",
-      "automation_id": "spec-013a-pr-review-remediation",
-      "cadence": "FREQ=MINUTELY;INTERVAL=5"
-    },
-    "retrospective": {
-      "status": "skipped",
-      "reason": "Optional speckit-retrospective-analyze extension is not installed."
+      "gate": "G1",
+      "gate_pass": true,
+      "spec_path": "specs/013a1-github-sync-automation/spec.md",
+      "user_stories": 4,
+      "functional_requirements": 24,
+      "acceptance_scenarios": 12,
+      "success_criteria": 7,
+      "clarification_markers": 0
     }
   }
 }
