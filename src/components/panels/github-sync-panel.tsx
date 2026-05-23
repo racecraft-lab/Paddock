@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useMissionControl } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
+import type { LifecycleEnvelope, LifecycleRunResult, LifecycleScopeStatus } from '@/lib/github-sync-lifecycle-types'
 
 interface GitHubLabel {
   name: string
@@ -48,6 +49,55 @@ interface LinkedTask {
   }
 }
 
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return 'Never'
+  return new Date(value).toLocaleString()
+}
+
+function scopeKey(scope: LifecycleScopeStatus) {
+  return `${scope.scope.workspace_id}:${scope.scope.github_repo}`
+}
+
+function healthClass(severity: string) {
+  if (severity === 'green') return 'bg-green-500/10 text-green-400'
+  if (severity === 'amber') return 'bg-yellow-500/10 text-yellow-400'
+  if (severity === 'red') return 'bg-destructive/10 text-destructive'
+  return 'bg-secondary text-muted-foreground'
+}
+
+function runStatusLabel(scope: LifecycleScopeStatus) {
+  if (scope.active_run) return 'Running'
+  if (!scope.controls.enabled) return 'Disabled'
+  if (!scope.last_run) return 'Enabled, waiting'
+  return lastResultLabel(scope)
+}
+
+function lastResultLabel(scope: LifecycleScopeStatus) {
+  if (!scope.last_run) return 'No completed run'
+  const labels: Record<LifecycleRunResult, string> = {
+    running: 'Running',
+    success: 'Last sync successful',
+    failed: scope.backoff.seconds > 0 || scope.backoff.next_retry_at ? 'Failed with backoff' : 'Failed',
+    partial: 'Partial run',
+    skipped_disabled: 'Disabled',
+    skipped_overlap: 'Skipped overlap',
+    rejected_overlap: 'Rejected overlap',
+    skipped_non_owner: 'Skipped non-owner',
+    skipped_owner: 'Skipped owner',
+    ownership_unresolved: 'Ownership unresolved',
+    stale_recovered: 'Stale lease recovered',
+  }
+  return labels[scope.last_run.result]
+}
+
+function runStatusClass(scope: LifecycleScopeStatus) {
+  const label = runStatusLabel(scope)
+  if (label === 'Last sync successful') return 'bg-green-500/10 text-green-400'
+  if (label === 'Running' || label === 'Partial run' || label.includes('Skipped')) return 'bg-yellow-500/10 text-yellow-400'
+  if (label === 'Failed' || label === 'Failed with backoff' || label === 'Ownership unresolved') return 'bg-destructive/10 text-destructive'
+  return 'bg-secondary text-muted-foreground'
+}
+
 export function GitHubSyncPanel() {
   const t = useTranslations('githubSync')
   const { activeProductLineScope } = useMissionControl()
@@ -71,6 +121,8 @@ export function GitHubSyncPanel() {
 
   // Sync history
   const [syncHistory, setSyncHistory] = useState<SyncRecord[]>([])
+  const [lifecycle, setLifecycle] = useState<LifecycleEnvelope | null>(null)
+  const [lifecycleBusyKey, setLifecycleBusyKey] = useState<string | null>(null)
 
   // Linked tasks
   const [linkedTasks, setLinkedTasks] = useState<LinkedTask[]>([])
@@ -126,6 +178,18 @@ export function GitHubSyncPanel() {
     } catch { /* ignore */ }
   }, [])
 
+  const fetchSyncLifecycle = useCallback(async () => {
+    try {
+      const res = await fetch(appendScopeToPath('/api/github/sync', activeProductLineScope), {
+        signal: AbortSignal.timeout(8000),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setLifecycle(data.github_sync_lifecycle || data.lifecycle || null)
+      }
+    } catch { /* ignore */ }
+  }, [activeProductLineScope])
+
   // Fetch linked tasks
   const fetchLinkedTasks = useCallback(async () => {
     try {
@@ -163,9 +227,9 @@ export function GitHubSyncPanel() {
   }, [activeProductLineScope])
 
   useEffect(() => {
-    Promise.allSettled([checkToken(), fetchSyncHistory(), fetchLinkedTasks(), fetchAgents(), fetchProjects()])
+    Promise.allSettled([checkToken(), fetchSyncHistory(), fetchSyncLifecycle(), fetchLinkedTasks(), fetchAgents(), fetchProjects()])
       .finally(() => setLoading(false))
-  }, [checkToken, fetchSyncHistory, fetchLinkedTasks, fetchAgents, fetchProjects])
+  }, [checkToken, fetchSyncHistory, fetchSyncLifecycle, fetchLinkedTasks, fetchAgents, fetchProjects])
 
   // Preview issues from GitHub
   const handlePreview = async () => {
@@ -245,6 +309,46 @@ export function GitHubSyncPanel() {
       }
     } catch {
       showFeedback(false, t('networkError'))
+    }
+  }
+
+  const handleLifecycleControl = async (
+    scope: LifecycleScopeStatus,
+    update: { enabled?: boolean; reset_backoff?: boolean },
+  ) => {
+    const key = scopeKey(scope)
+    setLifecycleBusyKey(key)
+    try {
+      const res = await fetch('/api/github/sync/control', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspace_id: scope.scope.workspace_id,
+          github_repo: scope.scope.github_repo,
+          interval_seconds: scope.controls.interval_seconds,
+          max_pages: scope.controls.max_pages,
+          max_issues: scope.controls.max_issues,
+          max_duration_seconds: scope.controls.max_duration_seconds,
+          enabled: update.enabled ?? scope.controls.enabled,
+          reset_backoff: update.reset_backoff,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        await fetchSyncLifecycle()
+        const action = update.reset_backoff
+          ? 'Backoff reset'
+          : update.enabled
+            ? 'Automatic sync enabled'
+            : 'Automatic sync disabled'
+        showFeedback(true, `${action} for ${scope.scope.github_repo}`)
+      } else {
+        showFeedback(false, data.error || 'Failed to update automatic sync')
+      }
+    } catch {
+      showFeedback(false, t('networkError'))
+    } finally {
+      setLifecycleBusyKey(null)
     }
   }
 
@@ -359,6 +463,140 @@ export function GitHubSyncPanel() {
           <span>{t('syncResultSkipped', { count: syncResult.skipped })}</span>
           {syncResult.errors > 0 && <span className="text-destructive">{t('syncResultErrors', { count: syncResult.errors })}</span>}
         </div>
+      )}
+
+      {lifecycle && (
+        <section
+          aria-label="Automatic GitHub sync lifecycle"
+          className="rounded-lg border border-border bg-card overflow-hidden"
+        >
+          <div className="px-4 py-3 border-b border-border flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Automatic polling</h3>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-2xs">
+                <span className={`px-2 py-1 rounded ${lifecycle.flag.enabled ? 'bg-green-500/10 text-green-400' : 'bg-secondary text-muted-foreground'}`}>
+                  {lifecycle.flag.enabled ? 'Feature flag on' : 'Feature flag off'}
+                </span>
+                <span className={`px-2 py-1 rounded ${lifecycle.diagnostics.scheduler_task_registered ? 'bg-green-500/10 text-green-400' : 'bg-yellow-500/10 text-yellow-400'}`}>
+                  {lifecycle.diagnostics.scheduler_task_registered ? 'Scheduler registered' : 'Scheduler pending'}
+                </span>
+                <span className="px-2 py-1 rounded bg-secondary text-muted-foreground">
+                  {lifecycle.diagnostics.schema_version}
+                </span>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">Manual sync remains available.</p>
+          </div>
+          <div className="p-4 space-y-3">
+            <div role="status" aria-live="polite" className="sr-only">
+              {lifecycle.scopes.length} automatic scopes
+            </div>
+            {!lifecycle.flag.enabled && (
+              <div className="rounded-md border border-border bg-secondary/30 p-3 text-xs text-muted-foreground">
+                Automatic polling is default-off until the feature flag and a scoped control are enabled.
+              </div>
+            )}
+            {lifecycle.scopes.length === 0 ? (
+              <div className="rounded-md border border-border bg-secondary/30 p-3 text-xs text-muted-foreground">
+                No automatic GitHub sync scopes are configured.
+              </div>
+            ) : (
+              lifecycle.scopes.map(scope => {
+                const busy = lifecycleBusyKey === scopeKey(scope)
+                const status = runStatusLabel(scope)
+                return (
+                  <div key={scopeKey(scope)} className="rounded-md border border-border bg-background/60 p-3">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                      <div className="min-w-0 space-y-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`px-2 py-1 rounded text-2xs ${runStatusClass(scope)}`}>
+                            {status}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-2xs ${healthClass(scope.diagnostics.health_summary.severity)}`}>
+                            Health: {scope.diagnostics.health_summary.severity}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-2xs ${scope.controls.enabled ? 'bg-green-500/10 text-green-400' : 'bg-secondary text-muted-foreground'}`}>
+                            {scope.controls.enabled ? 'Enabled' : 'Disabled'}
+                          </span>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-foreground font-mono truncate">
+                            {scope.scope.github_repo}
+                          </div>
+                          <div className="text-2xs text-muted-foreground">
+                            Workspace {scope.scope.workspace_id}
+                            {scope.scope.owner_project_id ? ` · owner project ${scope.scope.owner_project_id}` : ''}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => handleLifecycleControl(scope, { enabled: !scope.controls.enabled })}
+                          disabled={busy || !lifecycle.flag.enabled}
+                          aria-label={`${scope.controls.enabled ? 'Disable' : 'Enable'} automatic sync for ${scope.scope.github_repo}`}
+                        >
+                          {scope.controls.enabled ? 'Disable automation' : 'Enable automation'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="xs"
+                          onClick={() => handleLifecycleControl(scope, { reset_backoff: true })}
+                          disabled={busy || !lifecycle.flag.enabled || scope.backoff.seconds === 0}
+                          aria-label={`Reset backoff for ${scope.scope.github_repo}`}
+                        >
+                          Reset backoff
+                        </Button>
+                      </div>
+                    </div>
+
+                    <dl className="mt-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 text-2xs">
+                      <div className="rounded bg-secondary/30 px-2 py-1.5">
+                        <dt className="text-muted-foreground">Last run</dt>
+                        <dd className="text-foreground">{formatDateTime(scope.last_run?.completed_at || scope.last_run?.started_at)}</dd>
+                      </div>
+                      <div className="rounded bg-secondary/30 px-2 py-1.5">
+                        <dt className="text-muted-foreground">Next eligible</dt>
+                        <dd className="text-foreground">{formatDateTime(scope.controls.next_eligible_at || scope.backoff.next_retry_at)}</dd>
+                      </div>
+                      <div className="rounded bg-secondary/30 px-2 py-1.5">
+                        <dt className="text-muted-foreground">Cursor</dt>
+                        <dd className="text-foreground truncate">{scope.last_success_cursor || 'None'}</dd>
+                      </div>
+                      <div className="rounded bg-secondary/30 px-2 py-1.5">
+                        <dt className="text-muted-foreground">Bounds</dt>
+                        <dd className="text-foreground">
+                          {scope.controls.max_pages} pages · {scope.controls.max_issues} issues · {scope.controls.max_duration_seconds}s
+                        </dd>
+                      </div>
+                    </dl>
+
+                    <div className="mt-3 flex flex-wrap gap-2 text-2xs text-muted-foreground">
+                      <span>Successes: {scope.counters.successes}</span>
+                      <span>Failures: {scope.counters.failures}</span>
+                      <span>Partials: {scope.counters.partials}</span>
+                      <span>Overlap rejections: {scope.counters.overlap_rejections}</span>
+                      <span>Skipped owner: {scope.skipped.owner}</span>
+                      <span>Skipped non-owner: {scope.skipped.non_owner}</span>
+                    </div>
+
+                    {(scope.active_run || scope.last_run || scope.last_error || scope.backoff.next_retry_at || scope.controls.disabled_reason) && (
+                      <div className="mt-3 space-y-1 text-2xs text-muted-foreground">
+                        {scope.active_run && <div>Active run {scope.active_run.run_id} started {formatDateTime(scope.active_run.started_at)}</div>}
+                        {scope.last_run && <div>Last result: {lastResultLabel(scope)}</div>}
+                        {scope.last_run?.partial_run_reason && <div>Partial reason: {scope.last_run.partial_run_reason}</div>}
+                        {scope.backoff.next_retry_at && <div>Backoff until {formatDateTime(scope.backoff.next_retry_at)}</div>}
+                        {scope.last_error && <div>Last error: {scope.last_error}</div>}
+                        {scope.controls.disabled_reason && <div>Disabled reason: {scope.controls.disabled_reason}</div>}
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </section>
       )}
 
       {/* Import Issues Form */}

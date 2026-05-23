@@ -348,6 +348,12 @@ export interface GitHubTerminalFixture {
 
 export interface PullFromGitHubOptions {
   webhookFixture?: GitHubTerminalFixture
+  automatic?: {
+    cursor?: string | null
+    maxPages?: number
+    maxIssues?: number
+    maxDurationMs?: number
+  }
 }
 
 interface ReadyForOwnerTaskRow {
@@ -662,7 +668,7 @@ export async function pullFromGitHub(
   },
   workspaceId: number,
   opts?: PullFromGitHubOptions,
-): Promise<{ pulled: number; pushed: number }> {
+): Promise<{ pulled: number; pushed: number; cursor?: string | null }> {
   const repo = project.github_repo
   if (!repo || !project.github_sync_enabled) {
     return { pulled: 0, pushed: 0 }
@@ -690,18 +696,28 @@ export async function pullFromGitHub(
     ORDER BY created_at DESC LIMIT 1
   `).get(project.id, workspaceId) as { last_synced_at: number } | undefined
 
-  const sinceDate = lastSync
-    ? new Date(lastSync.last_synced_at * 1000).toISOString()
-    : undefined
+  const automatic = opts?.automatic
+  const sinceDate = automatic
+    ? (automatic.cursor ?? undefined)
+    : lastSync
+      ? new Date(lastSync.last_synced_at * 1000).toISOString()
+      : undefined
+  const fetchParams: {
+    state: 'all'
+    since?: string
+    per_page: number
+    page?: number
+  } = {
+    state: 'all',
+    per_page: automatic ? Math.max(1, Math.min(100, automatic.maxIssues ?? 100)) : 100,
+  }
+  if (sinceDate !== undefined) fetchParams.since = sinceDate
+  if (automatic) fetchParams.page = 1
 
   // Fetch all issues updated since last sync
   let issues: GitHubIssue[]
   try {
-    issues = await fetchIssues(repo, {
-      state: 'all',
-      since: sinceDate,
-      per_page: 100,
-    })
+    issues = await fetchIssues(repo, fetchParams)
   } catch (err) {
     logger.error({ err, repo }, 'Failed to fetch issues from GitHub')
     // Record failed sync
@@ -709,8 +725,21 @@ export async function pullFromGitHub(
       INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, error, project_id, changes_pushed, changes_pulled, workspace_id)
       VALUES (?, ?, 0, 'inbound', 'error', ?, ?, 0, 0, ?)
     `).run(repo, now, (err as Error).message, project.id, workspaceId)
-    return { pulled: 0, pushed: 0 }
+    return automatic
+      ? { pulled: 0, pushed: 0, cursor: automatic.cursor ?? null }
+      : { pulled: 0, pushed: 0 }
   }
+
+  const cursor = issues.reduce<string | null>(
+    (latest, issue) => {
+      if (!issue.updated_at) return latest
+      if (latest === null) return issue.updated_at
+      return new Date(issue.updated_at).getTime() > new Date(latest).getTime()
+        ? issue.updated_at
+        : latest
+    },
+    automatic?.cursor ?? sinceDate ?? null,
+  )
 
   for (const issue of issues) {
     try {
@@ -955,7 +984,7 @@ export async function pullFromGitHub(
 
   logger.info({ repo, pulled, pushed, projectId: project.id }, 'GitHub sync completed')
 
-  return { pulled, pushed }
+  return automatic ? { pulled, pushed, cursor } : { pulled, pushed }
 }
 
 /**

@@ -40,7 +40,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Checklist | `$speckit-checklist` | Complete | Completed scheduler-runtime, data-integrity, api-contracts, state-management, error-handling, ux, and extra observability checklist coverage; remediated 23 total gaps; G4 passed with 0 remaining `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 72 TDD-first tasks across 7 phases, 4 user stories, 26 parallel opportunities, focused verification commands, and a ratified reviewability transition exception; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Remediated 2 medium cross-artifact findings; G6 passed with 0 remaining CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | In Progress | Foundation T001-T020 complete; starting US1 Enable and Observe (T021-T033) |
+| Implement | `$speckit-implement` | In Progress | Foundation T001-T020 and US1 Enable and Observe T021-T033 complete; starting US2 Manual Sync Fallback (T034-T040) |
 | Post: Doctor Extension Check | `$speckit-doctor` | Pending | Installed extension health check is retained in the durable post-implementation ladder |
 | Post: Verify Implementation | `$speckit-verify` | Pending | Validate implemented behavior against the generated spec after G7 passes |
 | Post: Verify Tasks Phantom Check | `$speckit-verify-tasks` | Pending | Detect any completed task claims without matching implementation evidence |
@@ -572,7 +572,8 @@ For each task:
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
 | 1 - Foundation | T001-T020 | Complete | Added M77 schema/rollback, lifecycle primitives, validation/redaction/retry helpers, fixtures, feature flag, strict-scope ownership, and guardrail coverage |
-| 2 - Enable and Observe | T021-T033 | In Progress | Next task group selected |
+| 2 - Enable and Observe | T021-T033 | Complete | Added GET lifecycle envelope, PATCH control route, scheduler-owned automation task, bounded automatic tick seams, cursor-aware automatic pull options, GitHub Sync panel lifecycle controls/status, and focused Playwright journey |
+| 3 - Manual Sync Fallback | T034-T040 | In Progress | Next task group selected |
 | 2 - Lifecycle and State | | | |
 | 3 - Scheduler and Sync Semantics | | | |
 | 4 - API/UI Operator Controls | | | |

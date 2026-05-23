@@ -57,24 +57,30 @@ Foundation evidence:
 
 ### Tests for User Story 1
 
-- [ ] T021 [P] [US1] Write failing `GET /api/github/sync` lifecycle envelope tests for flag-off/default-off, scope filtering, schema diagnostics, health severity, and compatibility fields in `src/app/api/github/sync/__tests__/route.test.ts`
-- [ ] T022 [P] [US1] Write failing `PATCH /api/github/sync/control` tests for enable, disable, interval/bounds validation, feature-flag-disabled 403, reset backoff, and disable-while-active response in `src/app/api/github/sync/control/__tests__/route.test.ts`
-- [ ] T023 [P] [US1] Write failing scheduler registration and runtime tick tests for flag/control re-check, bounded candidate selection, shutdown future-tick stop, and no singleton product contract in `src/lib/__tests__/scheduler-github-sync-automation.test.ts`
-- [ ] T024 [P] [US1] Write failing GitHub Sync panel tests for distinct automatic lifecycle section, disabled/running/success/partial/error labels, backoff reset affordance, and accessible status updates in `src/components/panels/__tests__/github-sync-panel.test.tsx`
-- [ ] T025 [P] [US1] Write failing Playwright journey for enabling one scope, observing a scheduler tick, disabling automation, and preserving manual fallback in `tests/e2e/spec-013a1-github-sync-automation.spec.ts`
+- [x] T021 [P] [US1] Write failing `GET /api/github/sync` lifecycle envelope tests for flag-off/default-off, scope filtering, schema diagnostics, health severity, and compatibility fields in `src/app/api/github/sync/__tests__/route.test.ts`
+- [x] T022 [P] [US1] Write failing `PATCH /api/github/sync/control` tests for enable, disable, interval/bounds validation, feature-flag-disabled 403, reset backoff, and disable-while-active response in `src/app/api/github/sync/control/__tests__/route.test.ts`
+- [x] T023 [P] [US1] Write failing scheduler registration and runtime tick tests for flag/control re-check, bounded candidate selection, shutdown future-tick stop, and no singleton product contract in `src/lib/__tests__/scheduler-github-sync-automation.test.ts`
+- [x] T024 [P] [US1] Write failing GitHub Sync panel tests for distinct automatic lifecycle section, disabled/running/success/partial/error labels, backoff reset affordance, and accessible status updates in `src/components/panels/__tests__/github-sync-panel.test.tsx`
+- [x] T025 [P] [US1] Write failing Playwright journey for enabling one scope, observing a scheduler tick, disabling automation, and preserving manual fallback in `tests/e2e/spec-013a1-github-sync-automation.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T026 [US1] Enrich `GET /api/github/sync` with `github_sync_lifecycle.v1` while preserving existing `syncs` and `poller` fields in `src/app/api/github/sync/route.ts`
-- [ ] T027 [US1] Implement operator-only `PATCH /api/github/sync/control` enable, disable, bounds update, and idempotent backoff reset in `src/app/api/github/sync/control/route.ts`
-- [ ] T028 [US1] Replace automatic product reliance on the lazy singleton with scheduler-owned `github_sync_automation` registration and bounded tick entrypoints in `src/lib/scheduler.ts`
-- [ ] T029 [US1] Refactor automatic tick helpers for scoped lifecycle execution while preserving test-only tick seams in `src/lib/github-sync-poller.ts`
-- [ ] T030 [US1] Add bounded cursor-aware automatic pull options without changing manual defaults in `src/lib/github-sync-engine.ts`
-- [ ] T031 [US1] Render automatic lifecycle status, controls, diagnostics, health severity, and accessible status messages in `src/components/panels/github-sync-panel.tsx`
-- [ ] T032 [US1] Add focused lifecycle control subcomponent if needed to keep the existing panel reviewable in `src/components/panels/github-sync-lifecycle-section.tsx`
-- [ ] T033 [US1] Add UI copy mapping for disabled, running, success, failed/backoff, partial bounded stop, skipped overlap, rejected overlap, skipped owner, skipped non-owner, ownership unresolved, and stale recovered states in `src/components/panels/github-sync-panel.tsx`
+- [x] T026 [US1] Enrich `GET /api/github/sync` with `github_sync_lifecycle.v1` while preserving existing `syncs` and `poller` fields in `src/app/api/github/sync/route.ts`
+- [x] T027 [US1] Implement operator-only `PATCH /api/github/sync/control` enable, disable, bounds update, and idempotent backoff reset in `src/app/api/github/sync/control/route.ts`
+- [x] T028 [US1] Replace automatic product reliance on the lazy singleton with scheduler-owned `github_sync_automation` registration and bounded tick entrypoints in `src/lib/scheduler.ts`
+- [x] T029 [US1] Refactor automatic tick helpers for scoped lifecycle execution while preserving test-only tick seams in `src/lib/github-sync-poller.ts`
+- [x] T030 [US1] Add bounded cursor-aware automatic pull options without changing manual defaults in `src/lib/github-sync-engine.ts`
+- [x] T031 [US1] Render automatic lifecycle status, controls, diagnostics, health severity, and accessible status messages in `src/components/panels/github-sync-panel.tsx`
+- [x] T032 [US1] Add focused lifecycle control subcomponent if needed to keep the existing panel reviewable in `src/components/panels/github-sync-lifecycle-section.tsx`
+- [x] T033 [US1] Add UI copy mapping for disabled, running, success, failed/backoff, partial bounded stop, skipped overlap, rejected overlap, skipped owner, skipped non-owner, ownership unresolved, and stale recovered states in `src/components/panels/github-sync-panel.tsx`
 
 **Checkpoint**: User Story 1 is independently functional when scoped automatic polling can be enabled, observed, disabled, and verified through API, UI, activity, and lifecycle state.
+
+US1 evidence:
+- API/control TDD: GET lifecycle envelope and PATCH control tests added for compatibility fields, flag-off/default-off diagnostics, scoped filtering, health severity, enable/disable, bounds validation, feature-flag-disabled 403, reset backoff, and disable-while-active active-run visibility.
+- Scheduler/runtime TDD: scheduler-owned `github_sync_automation`, bounded candidate selection, flag/control re-check, future-tick shutdown, lifecycle automatic tick seams, and manual-default compatibility are covered by focused scheduler/engine lifecycle tests.
+- UI/e2e TDD: GitHub Sync panel component tests cover the separate automatic lifecycle section, disabled/running/success/partial/error labels, backoff reset affordance, scoped PATCH bodies, accessible live status, and manual fallback visibility. Playwright covers enable, observe scheduler state, disable, and manual `trigger-all` fallback on `/github`.
+- Verification: `pnpm exec vitest run src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/lib/__tests__/github-sync-engine-lifecycle.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx` (5 files, 18 tests passed); `pnpm exec playwright test tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium` (1 passed); targeted ESLint over US1 files; `pnpm typecheck`; `pnpm guardrails:spec-013a1`; `git diff --check`.
 
 ---
 

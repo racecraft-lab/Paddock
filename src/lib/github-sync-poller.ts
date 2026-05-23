@@ -7,11 +7,53 @@ import { getDatabase } from '@/lib/db'
 import { logger } from '@/lib/logger'
 import { pullFromGitHub, backfillAreaRouting } from '@/lib/github-sync-engine'
 import { resolveFlag } from '@/lib/feature-flags'
+import {
+  acquireLifecycleLease,
+  classifyGitHubSyncFailure,
+  completeLifecycleRun,
+  computeLifecycleRetry,
+  recordLifecycleRunStarted,
+} from '@/lib/github-sync-lifecycle'
+import { GITHUB_SYNC_AUTOMATION_FLAG } from '@/lib/github-sync-lifecycle-types'
 
 const INTERVAL_MS = parseInt(process.env.GITHUB_SYNC_INTERVAL_MS || '60000', 10)
 
 let intervalHandle: ReturnType<typeof setInterval> | null = null
 let lastRun: number | undefined
+
+interface AutomationTickOptions {
+  now?: number
+  candidateLimit?: number
+  leaseOwner?: string
+}
+
+interface AutomationControlCandidate {
+  workspace_id: number
+  github_repo: string
+  interval_seconds: number
+  max_pages: number
+  max_issues: number
+  max_duration_seconds: number
+  owner_project_id: number | null
+  last_success_cursor: string | null
+  consecutive_failures: number
+}
+
+interface AutomationProjectCandidate {
+  id: number
+  github_repo: string
+  github_sync_enabled: number
+  github_default_branch: string | null
+  workspace_id: number
+}
+
+interface AutomationTickResult {
+  ok: boolean
+  message: string
+  scopesConsidered: number
+  scopesStarted: number
+  scopesSkipped: number
+}
 
 export function startSyncPoller(): void {
   if (intervalHandle) return
@@ -35,10 +77,161 @@ export function stopSyncPoller(): void {
 }
 
 export function getSyncPollerStatus(): { running: boolean; interval: number; lastRun?: number } {
-  return {
+  const status: { running: boolean; interval: number; lastRun?: number } = {
     running: intervalHandle !== null,
     interval: INTERVAL_MS,
-    lastRun,
+  }
+  if (lastRun !== undefined) status.lastRun = lastRun
+  return status
+}
+
+function runIdFor(scope: AutomationControlCandidate, now: number): string {
+  const suffix = Math.random().toString(36).slice(2, 10)
+  return `ghsync_${now}_${scope.workspace_id}_${suffix}`
+}
+
+function readWorkspaceFlags(db: ReturnType<typeof getDatabase>, workspaceId: number): string | null {
+  try {
+    const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as
+      | { feature_flags: string | null }
+      | undefined
+    return row?.feature_flags ?? null
+  } catch {
+    return null
+  }
+}
+
+function selectAutomationProject(
+  db: ReturnType<typeof getDatabase>,
+  candidate: AutomationControlCandidate,
+): AutomationProjectCandidate | undefined {
+  if (candidate.owner_project_id !== null) {
+    return db.prepare(`
+      SELECT id, github_repo, github_sync_enabled, github_default_branch, workspace_id
+      FROM projects
+      WHERE id = ?
+        AND workspace_id = ?
+        AND github_repo = ?
+        AND github_sync_enabled = 1
+        AND status = 'active'
+      LIMIT 1
+    `).get(candidate.owner_project_id, candidate.workspace_id, candidate.github_repo) as AutomationProjectCandidate | undefined
+  }
+
+  return db.prepare(`
+    SELECT id, github_repo, github_sync_enabled, github_default_branch, workspace_id
+    FROM projects
+    WHERE workspace_id = ?
+      AND github_repo = ?
+      AND github_sync_enabled = 1
+      AND status = 'active'
+    ORDER BY is_repo_sync_owner DESC, id ASC
+    LIMIT 1
+  `).get(candidate.workspace_id, candidate.github_repo) as AutomationProjectCandidate | undefined
+}
+
+export async function runGitHubSyncAutomationTick(
+  options: AutomationTickOptions = {},
+): Promise<AutomationTickResult> {
+  const db = getDatabase()
+  const now = options.now ?? Math.floor(Date.now() / 1000)
+  const limit = Math.max(1, Math.min(options.candidateLimit ?? 10, 100))
+  const leaseOwner = options.leaseOwner ?? 'scheduler:github_sync_automation'
+  const candidates = db.prepare(`
+    SELECT workspace_id, github_repo, interval_seconds, max_pages, max_issues,
+           max_duration_seconds, owner_project_id, last_success_cursor, consecutive_failures
+    FROM github_sync_lifecycle_controls
+    WHERE enabled = 1
+      AND (next_retry_at IS NULL OR next_retry_at <= ?)
+    ORDER BY COALESCE(next_retry_at, 0) ASC, workspace_id ASC, github_repo ASC
+    LIMIT ?
+  `).all(now, limit) as AutomationControlCandidate[]
+
+  let scopesStarted = 0
+  let scopesSkipped = 0
+
+  for (const candidate of candidates) {
+    const workspaceFlags = readWorkspaceFlags(db, candidate.workspace_id)
+    const flagOn = resolveFlag(GITHUB_SYNC_AUTOMATION_FLAG, { workspaceFlags })
+    if (!flagOn) {
+      scopesSkipped++
+      continue
+    }
+
+    const project = selectAutomationProject(db, candidate)
+    if (!project) {
+      scopesSkipped++
+      continue
+    }
+
+    const run_id = runIdFor(candidate, now)
+    const lease = acquireLifecycleLease(db, {
+      workspace_id: candidate.workspace_id,
+      github_repo: candidate.github_repo,
+      run_id,
+      lease_owner: leaseOwner,
+      now,
+      max_duration_seconds: candidate.max_duration_seconds,
+    })
+    if (!lease.acquired) {
+      scopesSkipped++
+      continue
+    }
+
+    scopesStarted++
+    recordLifecycleRunStarted(db, {
+      run_id,
+      workspace_id: candidate.workspace_id,
+      github_repo: candidate.github_repo,
+      trigger: 'automatic',
+      lease_owner: leaseOwner,
+      project_id: project.id,
+      cursor_before: candidate.last_success_cursor,
+      now,
+    })
+
+    try {
+      const result = await pullFromGitHub(project, candidate.workspace_id, {
+        automatic: {
+          cursor: candidate.last_success_cursor,
+          maxPages: candidate.max_pages,
+          maxIssues: candidate.max_issues,
+          maxDurationMs: candidate.max_duration_seconds * 1000,
+        },
+      })
+      completeLifecycleRun(db, {
+        run_id,
+        result: 'success',
+        cursor_after: result.cursor ?? candidate.last_success_cursor,
+        next_retry_at: now + candidate.interval_seconds,
+        now: Math.floor(Date.now() / 1000),
+      })
+    } catch (err) {
+      const failure = classifyGitHubSyncFailure(err)
+      const retry = computeLifecycleRetry({
+        now,
+        failure_count: candidate.consecutive_failures + 1,
+        max_backoff_seconds: 30 * 60,
+      })
+      completeLifecycleRun(db, {
+        run_id,
+        result: 'failed',
+        failure_reason: failure.category,
+        failure_message: failure.sanitized_message,
+        cursor_after: candidate.last_success_cursor,
+        backoff_seconds: retry.seconds,
+        next_retry_at: retry.next_retry_at,
+        now: Math.floor(Date.now() / 1000),
+      })
+    }
+  }
+
+  return {
+    ok: true,
+    message: `GitHub sync automation: ${scopesStarted} started, ${scopesSkipped} skipped`,
+    scopesConsidered: candidates.length,
+    scopesStarted,
+    scopesSkipped,
   }
 }
 
@@ -187,4 +380,10 @@ async function runSyncTick(): Promise<void> {
  */
 export async function runSyncTickForTest(): Promise<void> {
   await runSyncTick()
+}
+
+export async function runGitHubSyncAutomationTickForTest(
+  options: AutomationTickOptions = {},
+): Promise<AutomationTickResult> {
+  return runGitHubSyncAutomationTick(options)
 }

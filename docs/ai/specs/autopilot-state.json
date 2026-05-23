@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-23T03:08:11.170Z",
-  "active_step": "Phase 7: US1 Enable and Observe (T021-T033)",
+  "updated_at": "2026-05-23T03:37:57.000Z",
+  "active_step": "Phase 7: US2 Manual Sync Fallback (T034-T040)",
   "current_spec_dir": "specs/013a1-github-sync-automation",
   "branch": "013a1-github-sync-automation",
   "archive_sweep": {
@@ -128,11 +128,11 @@
     },
     {
       "step": "Phase 7: US1 Enable and Observe (T021-T033)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Phase 7: US2 Manual Sync Fallback (T034-T040)",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Phase 7: US3 Failure Recovery (T041-T052)",
@@ -331,6 +331,19 @@
           "targeted eslint over changed foundation files",
           "git diff --check"
         ]
+      },
+      "us1_enable_and_observe": {
+        "status": "completed",
+        "tasks": "T021-T033",
+        "verification": [
+          "pnpm exec vitest run src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/lib/__tests__/github-sync-engine-lifecycle.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
+          "pnpm exec playwright test tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
+          "targeted eslint over US1 files",
+          "pnpm typecheck",
+          "pnpm guardrails:spec-013a1",
+          "git diff --check"
+        ],
+        "notes": "Scoped automatic polling can be enabled, observed, disabled, and verified through API, scheduler-owned tick seams, UI controls, and manual fallback journey coverage."
       }
     }
   }

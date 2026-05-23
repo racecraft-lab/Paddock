@@ -6,8 +6,9 @@ const mocks = vi.hoisted(() => ({
   requireRole: vi.fn(),
   getDatabase: vi.fn(),
   pullFromGitHub: vi.fn(async () => ({ pulled: 1, pushed: 0 })),
-  getSyncPollerStatus: vi.fn(() => ({ running: false })),
+  getSyncPollerStatus: vi.fn(() => ({ running: false, interval: 60000 })),
   loggerError: vi.fn(),
+  githubSyncAutomationEnabled: false,
 }))
 
 vi.mock('@/lib/auth', () => ({ requireRole: mocks.requireRole }))
@@ -15,8 +16,25 @@ vi.mock('@/lib/db', () => ({ getDatabase: mocks.getDatabase }))
 vi.mock('@/lib/github-sync-engine', () => ({ pullFromGitHub: mocks.pullFromGitHub }))
 vi.mock('@/lib/github-sync-poller', () => ({ getSyncPollerStatus: mocks.getSyncPollerStatus }))
 vi.mock('@/lib/logger', () => ({ logger: { error: mocks.loggerError } }))
+vi.mock('@/lib/feature-flags', () => ({
+  resolveFlag: vi.fn((name: string) => {
+    if (name === 'FEATURE_WORKSPACE_SWITCHER') return true
+    if (name === 'FEATURE_GITHUB_SYNC_AUTOMATION') return mocks.githubSyncAutomationEnabled
+    return false
+  }),
+  evaluateFeatureFlagCore: vi.fn((name: string) => ({
+    key: name,
+    value: name === 'FEATURE_GITHUB_SYNC_AUTOMATION' ? mocks.githubSyncAutomationEnabled : name === 'FEATURE_WORKSPACE_SWITCHER',
+    reason: name === 'FEATURE_GITHUB_SYNC_AUTOMATION' && !mocks.githubSyncAutomationEnabled
+      ? 'default_off'
+      : 'workspace_override',
+    envLocked: false,
+    envValue: null,
+    storedValue: name === 'FEATURE_GITHUB_SYNC_AUTOMATION' ? mocks.githubSyncAutomationEnabled : true,
+  })),
+}))
 
-import { POST } from '../route'
+import { GET, POST } from '../route'
 import { runMigrations } from '../../../../../lib/migrations'
 
 const openDbs: Database.Database[] = []
@@ -29,8 +47,9 @@ afterEach(() => {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mocks.githubSyncAutomationEnabled = false
   mocks.pullFromGitHub.mockResolvedValue({ pulled: 1, pushed: 0 })
-  mocks.getSyncPollerStatus.mockReturnValue({ running: false })
+  mocks.getSyncPollerStatus.mockReturnValue({ running: false, interval: 60000 })
   mocks.requireRole.mockReturnValue({
     user: { id: 7, username: 'admin', role: 'admin', tenant_id: 1, workspace_id: 2 },
   })
@@ -78,6 +97,164 @@ function request(body: Record<string, unknown>): NextRequest {
     body: JSON.stringify(body),
   })
 }
+
+function getRequest(path = '/api/github/sync'): NextRequest {
+  return new NextRequest(`http://localhost${path}`, { method: 'GET' })
+}
+
+function seedLifecycleControl(
+  db: Database.Database,
+  values: {
+    workspace_id: number
+    github_repo: string
+    enabled?: number
+    owner_project_id?: number | null
+    total_failures?: number
+    backoff_seconds?: number
+    next_retry_at?: number | null
+    next_retry_reason?: string | null
+  },
+): void {
+  db.prepare(`
+    INSERT INTO github_sync_lifecycle_controls (
+      workspace_id, github_repo, enabled, interval_seconds, max_pages, max_issues,
+      max_duration_seconds, owner_project_id, next_retry_at, next_retry_reason,
+      backoff_seconds, total_failures, created_at, updated_at
+    )
+    VALUES (?, ?, ?, 300, 10, 1000, 45, ?, ?, ?, ?, ?, 1779500000, 1779500000)
+  `).run(
+    values.workspace_id,
+    values.github_repo,
+    values.enabled ?? 1,
+    values.owner_project_id ?? null,
+    values.next_retry_at ?? null,
+    values.next_retry_reason ?? null,
+    values.backoff_seconds ?? 0,
+    values.total_failures ?? 0,
+  )
+}
+
+function seedLifecycleRun(
+  db: Database.Database,
+  values: {
+    run_id: string
+    workspace_id: number
+    github_repo: string
+    result: string
+    failure_reason?: string | null
+  },
+): void {
+  db.prepare(`
+    INSERT INTO github_sync_lifecycle_runs (
+      run_id, workspace_id, github_repo, trigger, started_at, completed_at,
+      result, failure_reason, cursor_before, cursor_after, diagnostics_json
+    )
+    VALUES (?, ?, ?, 'automatic', 1779500000, 1779500003, ?, ?, 'cursor-1', 'cursor-1', ?)
+  `).run(
+    values.run_id,
+    values.workspace_id,
+    values.github_repo,
+    values.result,
+    values.failure_reason ?? null,
+    JSON.stringify({
+      cursor_effect: 'unchanged',
+      failure: {
+        category: values.failure_reason ?? null,
+        sanitized_message: values.failure_reason ? 'GitHub API returned a server error' : null,
+        redaction_applied: false,
+      },
+    }),
+  )
+}
+
+describe('GET /api/github/sync lifecycle envelope', () => {
+  it('preserves compatibility fields and reports default-off lifecycle diagnostics', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedLifecycleControl(db, {
+      workspace_id: 4,
+      github_repo: 'org/repo',
+      enabled: 1,
+      owner_project_id: 3,
+    })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await GET(getRequest('/api/github/sync?workspace_id=4'))
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body).toEqual(expect.objectContaining({
+      syncs: [],
+      poller: { running: false, interval: 60000 },
+      github_sync_lifecycle: expect.objectContaining({
+        version: 'github_sync_lifecycle.v1',
+        flag: {
+          key: 'FEATURE_GITHUB_SYNC_AUTOMATION',
+          enabled: false,
+          reason: 'default_off',
+        },
+        diagnostics: {
+          scheduler_task_registered: true,
+          schema_version: '077_github_sync_lifecycle',
+          telemetry_service: 'none',
+        },
+      }),
+    }))
+    expect(body.github_sync_lifecycle.scopes[0].diagnostics.health_summary).toMatchObject({
+      severity: 'disabled',
+      state_drivers: ['feature_flag_disabled'],
+    })
+  })
+
+  it('filters lifecycle scopes with the same workspace scope as compatibility syncs', async () => {
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedWorkspace(db, 5, 'other-product', 'Other Product', '{"FEATURE_WORKSPACE_SWITCHER":true}')
+    seedLifecycleControl(db, { workspace_id: 4, github_repo: 'org/visible' })
+    seedLifecycleControl(db, { workspace_id: 5, github_repo: 'org/hidden' })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await GET(getRequest('/api/github/sync?workspace_id=4'))
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.github_sync_lifecycle.scopes.map((scope: { scope: { github_repo: string } }) => scope.scope.github_repo))
+      .toEqual(['org/visible'])
+  })
+
+  it('derives red health severity from repeated lifecycle failures', async () => {
+    mocks.githubSyncAutomationEnabled = true
+    const db = freshMigratedDb()
+    seedFacilityAndProductLine(db)
+    seedLifecycleControl(db, {
+      workspace_id: 4,
+      github_repo: 'org/repo',
+      total_failures: 3,
+      backoff_seconds: 120,
+      next_retry_at: 1779500120,
+      next_retry_reason: 'exponential_backoff',
+    })
+    seedLifecycleRun(db, {
+      run_id: 'ghsync_failure_1',
+      workspace_id: 4,
+      github_repo: 'org/repo',
+      result: 'failed',
+      failure_reason: 'github_http_5xx',
+    })
+    mocks.getDatabase.mockReturnValue(db)
+
+    const res = await GET(getRequest('/api/github/sync?workspace_id=4'))
+
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.github_sync_lifecycle.flag).toMatchObject({ enabled: true, reason: 'workspace_override' })
+    expect(body.github_sync_lifecycle.scopes[0].diagnostics.health_summary).toMatchObject({
+      severity: 'red',
+      reason: 'repeated sync failures',
+      state_drivers: ['repeated_failure'],
+    })
+  })
+})
 
 describe('POST /api/github/sync workspace scoping', () => {
   it('uses explicit Product Line workspace scope when a Facility admin triggers project sync', async () => {
