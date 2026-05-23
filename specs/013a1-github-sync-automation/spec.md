@@ -84,7 +84,7 @@ As a Mission Control operator managing multiple projects that reference one GitH
 
 ### Functional Requirements
 
-- **FR-001**: System MUST keep automatic GitHub issue polling behind a global feature flag that defaults off.
+- **FR-001**: System MUST keep automatic GitHub issue polling behind a dedicated `FEATURE_GITHUB_SYNC_AUTOMATION` feature flag that resolves through `resolveFlag` and defaults off.
 - **FR-002**: System MUST allow automatic GitHub issue polling to be enabled and disabled per Product Line/workspace.
 - **FR-003**: System MUST allow operators to configure a bounded polling interval per enabled Product Line/workspace.
 - **FR-004**: System MUST run automatic polling as a first-class scheduler-owned lifecycle task or equivalent bounded scheduler responsibility, without requiring an external cron as the product contract.
@@ -92,10 +92,10 @@ As a Mission Control operator managing multiple projects that reference one GitH
 - **FR-006**: System MUST preserve the existing manual GitHub sync behavior as an independent fallback when automatic polling is disabled, delayed, failed, or enabled.
 - **FR-007**: System MUST serialize or clearly reject overlapping manual and automatic sync attempts for the same Product Line/workspace/repository scope.
 - **FR-008**: System MUST allow non-overlapping Product Line/workspace/repository scopes to sync independently when overlap control does not apply.
-- **FR-009**: System MUST preserve SPEC-006 owner semantics for `(workspace_id, github_repo)` so that only the repository sync owner polls when area routing ownership applies.
+- **FR-009**: System MUST preserve SPEC-006 owner semantics for `(workspace_id, github_repo)` so that automatic polling selects exactly one repository sync owner when multiple eligible projects share a repository.
 - **FR-010**: System MUST record skipped owner and skipped non-owner outcomes when a scope does not poll because ownership rules select another scope.
 - **FR-011**: System MUST track lifecycle control state separately from run history.
-- **FR-012**: Lifecycle control state MUST include enablement, interval, current backoff, running or lease status, last started time, last completed time, last success cursor, last error, disabled reason, next retry time, next retry reason, aggregate counters, skipped owner count, skipped non-owner count, and latest partial-run reason.
+- **FR-012**: Lifecycle control state MUST include enablement, interval, page/issue/duration bounds, current backoff, running or lease status, owner project identifier, last started time, last completed time, last success cursor, last error, disabled reason, next retry time, next retry reason, aggregate counters, skipped owner count, skipped non-owner count, and latest partial-run reason.
 - **FR-013**: Run history MUST preserve individual automatic and manual sync attempt outcomes, including run identity, scope, start time, completion time, result, failure reason, partial-run reason, and cursor effect.
 - **FR-014**: System MUST NOT advance the last success cursor when a sync attempt fails.
 - **FR-015**: System MUST advance the last success cursor only after a successful bounded sync outcome that is safe to resume from.
@@ -108,6 +108,16 @@ As a Mission Control operator managing multiple projects that reference one GitH
 - **FR-022**: System MUST NOT introduce task claim authority, task dispatch, launch behavior, Issue Remediation execution, harness lifecycle behavior, auto-merge, or automatic triage.
 - **FR-023**: System MUST expose enough poller lifecycle state for reviewers to verify failures, backoff, duplicate-ingestion prevention, cursor preservation, and rollback-safe disablement.
 - **FR-024**: System MUST avoid duplicate GitHub issue ingestion when multiple projects share one repository.
+- **FR-025**: System MUST expose automatic GitHub sync lifecycle status through the GitHub Sync API surface by enriching `GET /api/github/sync` with a versioned `github_sync_lifecycle.v1` envelope.
+- **FR-026**: System MUST preserve the existing `POST /api/github/sync` manual sync request contract; manual sync MUST remain the operator fallback and MUST NOT become the automatic poller control endpoint.
+- **FR-027**: System MUST expose poller lifecycle mutations through `PATCH /api/github/sync/control` for Product Line/workspace-scoped enablement, disablement, bounded interval changes, and idempotent backoff reset.
+- **FR-028**: `PATCH /api/github/sync/control` MUST require an authenticated `operator` role for lifecycle control changes. Production feature flag mutation remains governed by the existing feature-flag administration surface and is not owned by this endpoint.
+- **FR-029**: The lifecycle status envelope MUST include `scope`, `controls`, `active_run`, `last_run`, `last_success_cursor`, `last_error`, `backoff`, `counters`, `skipped`, and `diagnostics`.
+- **FR-030**: The operator UI MUST place automatic sync lifecycle controls and status in the GitHub Sync surface, reusing the existing GitHub sync panel placement where available, rather than introducing a generic scheduler or admin settings surface.
+- **FR-031**: Automatic polling candidate selection MUST group eligible projects by `(workspace_id, github_repo)` before any automatic run starts.
+- **FR-032**: If exactly one eligible project maps to a repository, that project MAY poll automatically; if multiple eligible projects map to a repository and exactly one has `is_repo_sync_owner=1`, the owner MUST poll and non-owners MUST record skipped ownership outcomes.
+- **FR-033**: If multiple eligible projects map to a repository and no single owner is resolvable, automatic polling for that repository MUST be skipped with `ownership_unresolved`; the system MUST NOT fall back to duplicate per-project automatic polling.
+- **FR-034**: `FEATURE_AREA_LABEL_ROUTING` MUST continue to gate only area-label parsing, emission, routing, and backfill behavior; automatic polling MUST NOT require that flag unless the implementation explicitly uses area-label behavior.
 
 ### Spec Evidence And Archive Policy *(include when the spec touches `specs/**`, `.specify/**`, PR evidence, UI screenshots, or archival behavior)*
 
@@ -144,6 +154,7 @@ As a Mission Control operator managing multiple projects that reference one GitH
 - **Sync Ownership Decision**: The result of applying repository ownership rules to determine whether a scope may poll, must skip as non-owner, or must record a disabled or unresolved ownership state.
 - **Sync Cursor**: The durable position from which future GitHub issue sync resumes after the last successful bounded run.
 - **Partial Run State**: The recorded reason and resume context when a tick stops because page, issue, or duration bounds are reached.
+- **Lifecycle Status Envelope**: The versioned GitHub Sync status payload returned to operators, including scope, controls, active run, last run, cursor, error, backoff, counters, skipped outcomes, and diagnostics.
 
 ## Success Criteria *(mandatory)*
 
@@ -162,7 +173,10 @@ As a Mission Control operator managing multiple projects that reference one GitH
 - Operators already have permission to configure Product Line/workspace GitHub sync settings.
 - Existing manual GitHub sync remains the compatibility baseline and is not redesigned by this spec.
 - Existing GitHub issue ingestion behavior, issue identity rules, and SPEC-006 ownership semantics remain authoritative unless this spec explicitly constrains automatic polling.
-- Polling intervals, page limits, issue limits, tick-duration limits, lease expiry, and maximum backoff values are configurable within bounded defaults selected during planning.
+- Plan should target these bounded defaults unless implementation evidence justifies a safer value: scheduler wakes every 60 seconds, Product Line/workspace interval defaults to 5 minutes, each tick processes at most 10 pages, 1,000 issues, or 45 seconds, lease TTL is `max(120 seconds, 2x maxDuration)` capped at 10 minutes, and exponential backoff starts at 60 seconds and caps at 30 minutes while honoring GitHub retry-after or reset signals when available.
+- Failed attempts and partial runs write run history and diagnostics but do not advance the last success cursor; manual retry may bypass automatic backoff only after acquiring the same overlap control and preserving cursor rules.
+- `FEATURE_GITHUB_SYNC_AUTOMATION` off means no automatic polling starts and existing manual GitHub sync behavior remains the compatibility baseline.
+- Automatic polling uses the SPEC-006 owner column as a duplicate-prevention selector without enabling area-label parsing, emission, routing, or backfill behavior.
 - GitHub-linked tasks must be current enough for future scheduler/control-plane specs, but this spec does not grant any task claim, dispatch, or execution authority.
-- Automatic polling observability may be exposed through existing operator surfaces, new operator surfaces, or both, provided reviewers can verify the required lifecycle and run states.
+- Automatic polling observability is exposed through the GitHub Sync API/UI surface, not through generic scheduler or admin settings surfaces, provided reviewers can verify the required lifecycle and run states.
 - Rollback means disabling automatic polling behavior while preserving data readability and manual sync, not deleting historical run evidence.

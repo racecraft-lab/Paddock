@@ -35,7 +35,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch `013a1-github-sync-automation`, isolated worktree, SpecKit CLI 0.8.13, required Codex subagents, reviewability preset, pnpm command map, and archive extension verified; no active `specs/` directory existed yet, so no prior spec cleanup was eligible |
 | Specify | `$speckit-specify` | Complete | Generated `specs/013a1-github-sync-automation/spec.md` with 4 user stories, 24 FRs, 12 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
-| Clarify | `$speckit-clarify` | Pending | Resolve schema/control state shape, cursor semantics, API/UI scope, lease/backoff defaults, pagination bounds, feature-flag rollout, and legacy compatibility |
+| Clarify | `$speckit-clarify` | Complete | Resolved lifecycle state, cursor/failure semantics, scheduler/lease/backoff defaults, GitHub Sync API/UI ownership with `operator` auth, and duplicate-safe owner/flag behavior; G2 passed with 0 clarification markers |
 | Plan | `$speckit-plan` | Pending | Plan bounded scheduler integration, additive state if needed, manual-sync serialization, tests, rollback, and observability without task claim/dispatch/remediation behavior |
 | Checklist | `$speckit-checklist` | Pending | Run targeted checklists for scheduler/runtime, data-integrity, api-contracts, ux/state-management, error-handling, and regression-safety; close all real gaps |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with focused tests for failure cursors, pagination, leases, owner filtering, manual sync fallback, feature flag/default-off, and UI/API status |
@@ -258,7 +258,7 @@ SPEC-009C1 intentionally left GitHub issue sync operator-triggered or fixture-dr
 | Metric | Value |
 |--------|-------|
 | User Stories | 4 |
-| Functional Requirements | 24 |
+| Functional Requirements | 34 after Clarify |
 | Clarification Markers | 0 |
 | Acceptance Scenarios | 12 |
 | Success Criteria | 7 |
@@ -287,7 +287,18 @@ Resolve these SPEC-013A1 questions:
 
 | Question | Answer | Spec Updated |
 |----------|--------|--------------|
-| | | |
+| Lifecycle state | Use dedicated Product Line/workspace/repository lifecycle control state keyed by GitHub sync scope; `github_syncs` remains run history. Disabled scopes do not start future automatic ticks, while manual sync remains available. | Yes - FR-011, FR-012, FR-013, entities, assumptions |
+| Cursor and failure semantics | Advance the last-success cursor only after a fully successful bounded run. Failures and partial runs write diagnostics/history without advancing the success cursor. Manual retry may bypass automatic backoff only after acquiring the same overlap control and preserving cursor rules. | Yes - FR-014 through FR-018, assumptions |
+| Scheduler and concurrency | Target scheduler-owned task `github_issue_sync`: 60s scheduler wake, 5m default interval, 10 pages, 1000 issues, 45s max tick duration, lease TTL `max(120s, 2x maxDuration)` capped at 10m, stale takeover after expiry, and 60s to 30m bounded backoff honoring GitHub retry/reset signals. | Yes - FR-003, FR-004, FR-007, FR-018 through FR-020, assumptions |
+| API/UI/operator controls | GitHub Sync owns lifecycle controls: enrich `GET /api/github/sync` with `github_sync_lifecycle.v1`, preserve `POST /api/github/sync` manual trigger, add `PATCH /api/github/sync/control`, render in GitHub Sync panel, and require `operator` role. | Yes - FR-025 through FR-030, assumptions |
+| Owner semantics and flag-off behavior | Add `FEATURE_GITHUB_SYNC_AUTOMATION` default-off through `resolveFlag`. Flag off preserves manual/legacy behavior. Flag on groups candidates by `(workspace_id, github_repo)`, polls the single eligible project or single `is_repo_sync_owner=1`, and skips `ownership_unresolved` rather than duplicate per-project automatic polling. `FEATURE_AREA_LABEL_ROUTING` remains limited to area-label behavior. | Yes - FR-001, FR-009, FR-010, FR-024, FR-031 through FR-034, assumptions |
+
+### Consensus Resolution Log
+
+| Item | Round | Routed Categories | Outcome | Analysts Used |
+|------|-------|-------------------|---------|---------------|
+| Q4 API/UI/auth surface | 1 | security, codebase, spec | Unanimous high-confidence decision: GitHub Sync API/UI surface with `operator` role; admin-only remains for credentials, global policy, feature flag mutation, or role management. | codebase-analyst, spec-context-analyst, domain-researcher |
+| Q5 owner semantics and flag-off behavior | 1 | codebase, spec | High-confidence agreement: add `FEATURE_GITHUB_SYNC_AUTOMATION` default-off; automatic polling groups by `(workspace_id, github_repo)`, selects one owner or skips `ownership_unresolved`, and does not require `FEATURE_AREA_LABEL_ROUTING` except for actual area-label behavior. | codebase-analyst, spec-context-analyst |
 
 ---
 
