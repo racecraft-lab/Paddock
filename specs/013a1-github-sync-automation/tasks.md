@@ -9,7 +9,7 @@
 
 **Purpose**: Establish spec-owned file boundaries, fixtures, and reviewability checks before behavioral work starts.
 
-- [ ] T001 Verify package manager and runtime assumptions from `pnpm-lock.yaml`, `package.json`, and `docs/ai/specs/013a1-github-sync-automation-workflow.md`
+- [ ] T001 Verify package manager and runtime assumptions from `pnpm-lock.yaml`, `package.json`, and `docs/ai/specs/SPEC-013A1-workflow.md`
 - [ ] T002 Add SPEC-013A1 file ownership entries for new strict modules in `tsconfig.spec-strict.json`
 - [ ] T003 Add SPEC-013A1 lint ownership entries for new strict modules in `eslint.config.mjs`
 - [ ] T004 [P] Create shared lifecycle API/test fixtures in `src/lib/__tests__/fixtures/github-sync-lifecycle-fixtures.ts`
@@ -158,14 +158,14 @@
 
 - [ ] T062 [P] Update SPEC-013A1 quickstart verification notes with exact focused commands and observed evidence expectations in `specs/013a1-github-sync-automation/quickstart.md`
 - [ ] T063 [P] Update rollback procedure references for M77 lifecycle disablement and SQL rollback in `docs/runbook/migration-rollback.md`
-- [ ] T064 [P] Update OpenAPI/API index entries for `GET /api/github/sync`, `POST /api/github/sync`, and `PATCH /api/github/sync/control` in `openapi.json`
+- [ ] T064 [P] Update OpenAPI/API index entries for `GET /api/github/sync`, `POST /api/github/sync`, and `PATCH /api/github/sync/control` in `openapi.json` and `src/app/api/index/route.ts`
 - [ ] T065 [P] Update repo knowledge index for SPEC-013A1 source, API, migration, UI, and verification artifacts in `docs/ai/repo-knowledge-index.json`
 - [ ] T066 Run Archive Sweep dry-run/current-target exclusion evidence and record recovery-command status in `specs/013a1-github-sync-automation/tasks.md`
 - [ ] T067 Run screenshot/evidence guard verification and document no committed binary screenshot exception in `specs/013a1-github-sync-automation/tasks.md`
 - [ ] T068 Run SPEC-013A1 forbidden-authority guard script and record results in `specs/013a1-github-sync-automation/tasks.md`
 - [ ] T069 Run focused unit/API tests and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm test -- src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts`
 - [ ] T070 Run focused UI/e2e journey and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts`
-- [ ] T071 Run full verification and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e`
+- [ ] T071 Run full verification and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm api:parity && pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e`
 - [ ] T072 Generate PR review packet with review order, scope budget, traceability, verification evidence, known gaps, rollback/flag notes, and deferred SPEC-013B+/SPEC-014+ boundaries in `docs/ai/specs/013a1-github-sync-automation-review-packet.md`
 
 ---
@@ -253,7 +253,8 @@ pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts
 pnpm typecheck
 pnpm lint
 pnpm build
+pnpm api:parity
 pnpm test
 pnpm test:e2e
-pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e
+pnpm api:parity && pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e
 ```

@@ -39,8 +39,20 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, quickstart, and GitHub Sync lifecycle API contract; selected additive M77 `077_github_sync_lifecycle`; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Completed scheduler-runtime, data-integrity, api-contracts, state-management, error-handling, ux, and extra observability checklist coverage; remediated 23 total gaps; G4 passed with 0 remaining `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 72 TDD-first tasks across 7 phases, 4 user stories, 26 parallel opportunities, focused verification commands, and a ratified reviewability transition exception; G5 passed |
-| Analyze | `$speckit-analyze` | Pending | Verify design concept, spec, plan, checklists, and tasks agree on scope and contain no claim/dispatch/remediation/harness/sandbox/auto-merge drift |
-| Implement | `$speckit-implement` | Pending | Execute generated tasks only after Analyze passes; verify with focused tests, typecheck/lint/build as appropriate, and final guardrails |
+| Analyze | `$speckit-analyze` | Complete | Remediated 2 medium cross-artifact findings; G6 passed with 0 remaining CRITICAL/HIGH findings |
+| Implement | `$speckit-implement` | In Progress | G6 passed; starting task-level implementation with Setup and Foundation (T001-T020) |
+| Post: Doctor Extension Check | `$speckit-doctor` | Pending | Installed extension health check is retained in the durable post-implementation ladder |
+| Post: Verify Implementation | `$speckit-verify` | Pending | Validate implemented behavior against the generated spec after G7 passes |
+| Post: Verify Tasks Phantom Check | `$speckit-verify-tasks` | Pending | Detect any completed task claims without matching implementation evidence |
+| Post: Code Review | `$speckit-review` | Pending | Run the SpecKit review extension after implementation verification |
+| Post: Integration Suite | Project verification commands | Pending | Run full detected verification suite or documented equivalent |
+| Post: Cleanup | `$speckit-cleanup` | Pending | Review implementation cleanup/tech-debt findings before PR packaging |
+| Post: Verification and Status Sync | Workflow/roadmap sync | Pending | Sync workflow, roadmap, UAT, and status artifacts before PR packaging |
+| Post: Reviewability Diff Gate | `reviewability-gate.sh diff` | Pending | Validate final diff against reviewability budget/exception before PR |
+| Post: PR Body Generation | `generate-pr-body.sh` | Pending | Generate host-template-aware PR body with review packet |
+| Post: PR Creation | `gh pr create` | Pending | Push branch and open PR with generated body |
+| Post: Review Remediation | PR review loop | Pending | Monitor and remediate review feedback through the prescribed loop |
+| Post: Retrospective | `$speckit-retrospective-analyze` | Pending | Final SpecKit Pro post-implementation step |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -519,7 +531,8 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| | | | |
+| AN-001 | Medium | T001 referenced `docs/ai/specs/013a1-github-sync-automation-workflow.md`, which does not exist for this workflow. | Updated T001 to reference canonical `docs/ai/specs/SPEC-013A1-workflow.md`. |
+| AN-002 | Medium | API parity work cited OpenAPI updates but omitted the repository API index route and `pnpm api:parity` verification. | Added `src/app/api/index/route.ts` and `pnpm api:parity` to plan/tasks verification. |
 
 ---
 
@@ -558,7 +571,7 @@ For each task:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 1 - Foundation | | | |
+| 1 - Foundation | T001-T020 | In Progress | First Phase 7 task group selected after G6 passed |
 | 2 - Lifecycle and State | | | |
 | 3 - Scheduler and Sync Semantics | | | |
 | 4 - API/UI Operator Controls | | | |

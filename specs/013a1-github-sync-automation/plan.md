@@ -165,6 +165,7 @@ See `data-model.md`, `contracts/github-sync-lifecycle-api.md`, and `quickstart.m
   - `pnpm test -- src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts`
   - `pnpm test -- src/app/api/github/sync/__tests__/route.test.ts`
   - `pnpm test -- src/app/api/github/sync/control/__tests__/route.test.ts`
+  - `pnpm api:parity`
 - Focused scheduler/runtime:
   - Cover runtime-only scheduler registration, flag/control re-check before automatic tick acquisition, graceful shutdown stopping future ticks, disablement while a run is active, and stale lease recovery after simulated process interruption.
   - Cover GitHub boundary classification for timeout/abort, DNS/TLS/network failure, HTTP 5xx, HTTP 4xx permission or not-found, rate limit, malformed JSON, non-array issue page, invalid issue schema, and unknown errors.
@@ -185,6 +186,7 @@ See `data-model.md`, `contracts/github-sync-lifecycle-api.md`, and `quickstart.m
   - Assert dynamic lifecycle status updates are programmatically determinable for assistive technologies when the update does not move focus or change page context.
   - Assert UI copy does not contain claim, dispatch, remediation, harness, sandbox, auto-merge, or triage language for SPEC-013A1 lifecycle behavior.
 - Full gates:
+  - `pnpm api:parity`
   - `pnpm build`
   - `pnpm typecheck`
   - `pnpm lint`
