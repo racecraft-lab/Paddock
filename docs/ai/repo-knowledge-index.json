@@ -208,7 +208,7 @@
     {
       "path": "specs/013a1-github-sync-automation/",
       "kind": "execution-ledger",
-      "purpose": "Generated SPEC-013A1 spec, plan, tasks, quickstart, contracts, checklist artifacts, and verification reports for automatic GitHub sync lifecycle work.",
+      "purpose": "Generated SPEC-013A1 spec, plan, tasks, quickstart, contracts, checklist artifacts, verification reports, and retrospective for automatic GitHub sync lifecycle work.",
       "owner": "SpecKit operators",
       "freshness": {
         "cadence": "per SPEC-013A1 artifact change",
@@ -216,7 +216,7 @@
       },
       "last_verified": "2026-05-23",
       "related_specs": ["SPEC-013A1"],
-      "verification_commands": ["Manual check: tasks.md completion plus verify-tasks-report.md evidence for SPEC-013A1"],
+      "verification_commands": ["Manual check: tasks.md completion plus verify-tasks-report.md and retrospective.md evidence for SPEC-013A1"],
       "required": true,
       "repo_owned": true
     },

@@ -597,7 +597,7 @@ For each task:
 
 ### Post-Implementation Verification Evidence
 
-**Status (2026-05-23):** Implementation, UAT verification, and reviewability diff-gate validation are complete. PR packaging, PR creation, review-remediation polling, and retrospective remain in progress.
+**Status (2026-05-23):** Implementation, UAT verification, reviewability diff-gate validation, PR packaging, PR creation, review-remediation polling, and retrospective are complete. PR #60 is open with all checks/statuses green; the remaining gate is human GitHub review approval.
 
 - Doctor extension: `.specify/extensions/doctor/scripts/bash/doctor.sh --json` -> passed with 0 errors, 0 warnings, 0 notes.
 - Verify implementation extension: no UAT blocker after stale references were corrected from non-existent artifacts to current files (`src/lib/scheduler.ts`, `src/components/panels/github-sync-panel.tsx`).
@@ -607,6 +607,10 @@ For each task:
 - Integration suite: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), build passed, Playwright passed (651 tests).
 - Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; the untracked verification report is retained as durable evidence.
 - Reviewability diff gate: `reviewability-gate.sh diff origin/main...HEAD` -> `status=exception`, `pass=true`, `transition_exception=true`; blockers remain documented as accepted review scope under the SPEC-013A1 multi-surface override.
+- PR creation: PR #60 opened at https://github.com/racecraft-lab/mission-control/pull/60 from `013a1-github-sync-automation`.
+- Review remediation: lifecycle lease stale-completion and manual run-id collision blockers were fixed, focused regression passed, and rerun review found no critical or important findings.
+- PR checks and visual approval: CodeQL, quality gate, Docker UI visual report, Storybook visual report, Playwright visual report, and visual approval statuses passed on PR #60 after visual state approval.
+- Retrospective: `specs/013a1-github-sync-automation/retrospective.md` records 100% task completion, 100% spec adherence, 0 critical findings, 1 significant reviewability-scale finding, 1 minor live-provider-UAT scope note, and `uat_blocked=false`; `pr_blocked=true` only because GitHub reports `REVIEW_REQUIRED`.
 
 ---
 
