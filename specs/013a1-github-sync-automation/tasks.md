@@ -178,17 +178,28 @@ US1 evidence:
 
 **Purpose**: Final verification, docs, evidence, rollback validation, and review packet preparation.
 
-- [ ] T062 [P] Update SPEC-013A1 quickstart verification notes with exact focused commands and observed evidence expectations in `specs/013a1-github-sync-automation/quickstart.md`
-- [ ] T063 [P] Update rollback procedure references for M77 lifecycle disablement and SQL rollback in `docs/runbook/migration-rollback.md`
-- [ ] T064 [P] Update OpenAPI/API index entries for `GET /api/github/sync`, `POST /api/github/sync`, and `PATCH /api/github/sync/control` in `openapi.json` and `src/app/api/index/route.ts`
-- [ ] T065 [P] Update repo knowledge index for SPEC-013A1 source, API, migration, UI, and verification artifacts in `docs/ai/repo-knowledge-index.json`
-- [ ] T066 Run Archive Sweep dry-run/current-target exclusion evidence and record recovery-command status in `specs/013a1-github-sync-automation/tasks.md`
-- [ ] T067 Run screenshot/evidence guard verification and document no committed binary screenshot exception in `specs/013a1-github-sync-automation/tasks.md`
-- [ ] T068 Run SPEC-013A1 forbidden-authority guard script and record results in `specs/013a1-github-sync-automation/tasks.md`
-- [ ] T069 Run focused unit/API tests and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm test -- src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts`
-- [ ] T070 Run focused UI/e2e journey and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts`
-- [ ] T071 Run full verification and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm api:parity && pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e`
-- [ ] T072 Generate PR review packet with review order, scope budget, traceability, verification evidence, known gaps, rollback/flag notes, and deferred SPEC-013B+/SPEC-014+ boundaries in `docs/ai/specs/013a1-github-sync-automation-review-packet.md`
+- [X] T062 [P] Update SPEC-013A1 quickstart verification notes with exact focused commands and observed evidence expectations in `specs/013a1-github-sync-automation/quickstart.md`
+- [X] T063 [P] Update rollback procedure references for M77 lifecycle disablement and SQL rollback in `docs/runbook/migration-rollback.md`
+- [X] T064 [P] Update OpenAPI/API index entries for `GET /api/github/sync`, `POST /api/github/sync`, and `PATCH /api/github/sync/control` in `openapi.json` and `src/app/api/index/route.ts`
+- [X] T065 [P] Update repo knowledge index for SPEC-013A1 source, API, migration, UI, and verification artifacts in `docs/ai/repo-knowledge-index.json`
+- [X] T066 Run Archive Sweep dry-run/current-target exclusion evidence and record recovery-command status in `specs/013a1-github-sync-automation/tasks.md`
+- [X] T067 Run screenshot/evidence guard verification and document no committed binary screenshot exception in `specs/013a1-github-sync-automation/tasks.md`
+- [X] T068 Run SPEC-013A1 forbidden-authority guard script and record results in `specs/013a1-github-sync-automation/tasks.md`
+- [X] T069 Run focused unit/API tests and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm test -- src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts`
+- [X] T070 Run focused UI/e2e journey and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts`
+- [X] T071 Run full verification and record evidence in `specs/013a1-github-sync-automation/tasks.md`: `pnpm api:parity && pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e`
+- [X] T072 Generate PR review packet with review order, scope budget, traceability, verification evidence, known gaps, rollback/flag notes, and deferred SPEC-013B+/SPEC-014+ boundaries in `docs/ai/specs/013a1-github-sync-automation-review-packet.md`
+
+**Polish Verification Evidence (2026-05-23)**:
+- Archive Sweep dry-run/current-target exclusion: archive extension `archive` v1.1.0 installed; active `specs/**` inventory contains only `specs/013a1-github-sync-automation`, which is the current target and excluded from archive/cleanup. Eligible previous specs: none. Cleanup not applied; no recovery commands required for current target.
+- Screenshot evidence guard: `direnv exec . pnpm guardrails -- --suite spec-evidence-screenshots` -> checked 0 committed spec screenshots; policy passed.
+- Forbidden-authority guard: `direnv exec . pnpm guardrails:spec-013a1` -> passed, 19 changed files scanned at guard-run time.
+- Focused unit/API: `direnv exec . pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts` -> 4 files, 27 tests passed.
+- Focused UI/e2e: `direnv exec . pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium` -> 2 tests passed.
+- API parity: `direnv exec . pnpm api:parity` -> passed.
+- Repo knowledge index: `direnv exec . pnpm knowledge:index:check` -> passed with 0 warnings.
+- Full verification ladder: `direnv exec . pnpm build` passed; `direnv exec . pnpm typecheck` passed; `direnv exec . pnpm lint` passed; `direnv exec . pnpm test` -> 300 files passed, 3,137 tests passed, 3 skipped, 84 todo; `direnv exec . pnpm test:e2e` -> 651 tests passed.
+- Full-suite remediation: updated feature-flag cascade expectation for `FEATURE_GITHUB_SYNC_AUTOMATION`; updated SPEC-010A product-line seed docs guard to use the durable workflow ledger after archive cleanup removed the generated quickstart from active `specs/**`.
 
 ---
 

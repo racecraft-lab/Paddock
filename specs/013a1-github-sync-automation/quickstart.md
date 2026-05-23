@@ -9,26 +9,38 @@
 
 ## Local Verification Flow
 
+Use the repo-pinned runtime in this linked worktree:
+
+```bash
+direnv exec . <command>
+```
+
 1. Install and build prerequisites:
 
    ```bash
-   pnpm install
-   pnpm build
+   direnv exec . pnpm install
+   direnv exec . pnpm build
    ```
 
 2. Run focused tests first:
 
    ```bash
-   pnpm test -- src/lib/__tests__/github-sync-lifecycle.test.ts
-   pnpm test -- src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts
-   pnpm test -- src/app/api/github/sync/__tests__/route.test.ts
-   pnpm test -- src/app/api/github/sync/control/__tests__/route.test.ts
+   direnv exec . pnpm exec vitest run \
+     src/lib/__tests__/github-sync-lifecycle.test.ts \
+     src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts \
+     src/app/api/github/sync/__tests__/route.test.ts \
+     src/app/api/github/sync/control/__tests__/route.test.ts
+
+   direnv exec . pnpm exec vitest run \
+     src/lib/__tests__/github-sync-lifecycle-ownership.test.ts \
+     src/lib/__tests__/spec006-poller.test.ts \
+     src/components/panels/__tests__/github-sync-panel.test.tsx
    ```
 
 3. Start the app:
 
    ```bash
-   pnpm dev
+   direnv exec . pnpm dev
    ```
 
 4. Confirm flag-off behavior:
@@ -74,6 +86,8 @@
    - Configure two active projects in the same workspace with the same `github_repo`.
    - Ensure exactly one has `is_repo_sync_owner=1`.
    - Run an automatic tick and verify only the owner polls; non-owner skipped counters increase.
+   - Configure two active projects with the same `github_repo` and no owner; verify the automatic tick records `ownership_unresolved`, does not call GitHub, preserves the cursor, and surfaces red lifecycle health with `ownership_detail.reason`.
+   - Configure two active projects with the same `github_repo` and multiple owners only in a controlled fixture; verify the automatic tick fails closed with `ownership_unresolved` and no duplicate ingestion.
 
 11. Disable automation:
 
@@ -88,12 +102,27 @@
 ## Full Verification
 
 ```bash
-pnpm build
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm test:e2e
+direnv exec . pnpm api:parity
+direnv exec . pnpm build
+direnv exec . pnpm typecheck
+direnv exec . pnpm lint
+direnv exec . pnpm test
+direnv exec . pnpm test:e2e
+direnv exec . pnpm guardrails:spec-013a1
+direnv exec . pnpm guardrails -- --suite spec-evidence-screenshots
 ```
+
+Focused UAT command:
+
+```bash
+direnv exec . pnpm exec playwright test tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium
+```
+
+Expected focused UAT evidence:
+
+- The GitHub Sync panel shows enable/disable automation controls and leaves manual sync available.
+- Failure/backoff, bounded partial, stale recovery, skipped non-owner, and ownership-unresolved states are visible.
+- Lifecycle diagnostics show sanitized failures, ownership decisions, skipped counters, owner project IDs, and ownership reasons without task claim, dispatch, remediation execution, sandbox, auto-merge, or automatic triage copy.
 
 ## Rollback Check
 
@@ -101,3 +130,4 @@ pnpm test:e2e
 - Manual sync remains available.
 - Existing GitHub-linked tasks and `github_syncs` rows remain readable.
 - If schema rollback is required, apply `docs/migrations/rollback-M77.sql` using the operator rollback procedure.
+- After rollback, run `GET /api/github/sync`; compatibility fields (`syncs`, `poller`) remain available and the lifecycle envelope is empty or reports schema unavailable.

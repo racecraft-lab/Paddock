@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-23T13:58:59.000Z",
-  "active_step": "Phase 7: Polish and Verification (T062-T072)",
+  "updated_at": "2026-05-23T14:14:25.000Z",
+  "active_step": "Post: Doctor Extension Check",
   "current_spec_dir": "specs/013a1-github-sync-automation",
   "branch": "013a1-github-sync-automation",
   "archive_sweep": {
@@ -144,11 +144,11 @@
     },
     {
       "step": "Phase 7: Polish and Verification (T062-T072)",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: Doctor Extension Check",
-      "status": "pending"
+      "status": "in_progress"
     },
     {
       "step": "Post: Verify Implementation",
@@ -367,6 +367,37 @@
           "git diff --check"
         ],
         "notes": "Automatic failure recovery now preserves last-success cursors on failure and partials, records bounded partial reasons for page/issue/duration stops, fails malformed first pages without cursor advancement, exposes retry signal/cap/fallback diagnostics, redacts failure evidence in lifecycle status/activity payloads, and renders failure/backoff/partial/stale-recovery diagnostics without forbidden authority copy."
+      },
+      "us4_duplicate_prevention": {
+        "status": "completed",
+        "tasks": "T053-T061",
+        "verification": [
+          "pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle-ownership.test.ts src/lib/__tests__/spec006-poller.test.ts src/app/api/github/sync/__tests__/route.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
+          "pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
+          "targeted eslint over US4 files",
+          "pnpm typecheck",
+          "pnpm build",
+          "git diff --check"
+        ],
+        "notes": "Shared repositories are grouped by workspace and repo, only the selected owner polls, non-owners record skipped_non_owner evidence without GitHub ingestion, ownership_unresolved fails closed with red health, and owner diagnostics/skipped counters render in API and UI."
+      },
+      "polish_verification": {
+        "status": "completed",
+        "tasks": "T062-T072",
+        "verification": [
+          "pnpm api:parity",
+          "pnpm knowledge:index:check",
+          "pnpm guardrails -- --suite spec-evidence-screenshots",
+          "pnpm guardrails:spec-013a1",
+          "pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts",
+          "pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
+          "pnpm build",
+          "pnpm typecheck",
+          "pnpm lint",
+          "pnpm test",
+          "pnpm test:e2e"
+        ],
+        "notes": "Quickstart, rollback runbook, OpenAPI/API index, repo knowledge index, task evidence, and review packet are synced. Full verification passed with 300 Vitest files and 651 Playwright tests."
       }
     }
   }

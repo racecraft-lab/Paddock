@@ -5832,7 +5832,7 @@
         "tags": [
           "Admin"
         ],
-        "summary": "Get GitHub sync status for all projects",
+        "summary": "Get GitHub sync status and automatic lifecycle diagnostics",
         "operationId": "getGithubSyncStatus",
         "responses": {
           "200": {
@@ -5850,6 +5850,10 @@
                     },
                     "poller": {
                       "type": "object"
+                    },
+                    "github_sync_lifecycle": {
+                      "type": "object",
+                      "description": "Versioned automatic GitHub sync lifecycle envelope. Includes feature flag state, scheduler/schema diagnostics, per-scope lifecycle controls, active/last run state, backoff, skipped owner/non-owner counters, owner project IDs, ownership diagnostics, health summary, and manual fallback availability."
                     }
                   }
                 }
@@ -5886,6 +5890,9 @@
                   },
                   "project_id": {
                     "type": "integer"
+                  },
+                  "workspace_id": {
+                    "type": "integer"
                   }
                 }
               }
@@ -5902,6 +5909,79 @@
                 }
               }
             }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "description": "A lifecycle lease is already active for one or more requested GitHub sync scopes"
+          }
+        }
+      }
+    },
+    "/api/github/sync/control": {
+      "patch": {
+        "tags": [
+          "Admin"
+        ],
+        "summary": "Update automatic GitHub sync lifecycle controls",
+        "operationId": "patchGithubSyncLifecycleControl",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "workspace_id",
+                  "github_repo"
+                ],
+                "properties": {
+                  "workspace_id": {
+                    "type": "integer"
+                  },
+                  "github_repo": {
+                    "type": "string"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  },
+                  "interval_seconds": {
+                    "type": "integer",
+                    "minimum": 60
+                  },
+                  "max_pages": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "max_issues": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 5000
+                  },
+                  "max_duration_seconds": {
+                    "type": "integer",
+                    "minimum": 5,
+                    "maximum": 600
+                  },
+                  "disabled_reason": {
+                    "type": "string"
+                  },
+                  "reset_backoff": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated lifecycle control and current lifecycle envelope"
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"

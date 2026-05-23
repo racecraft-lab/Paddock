@@ -20,7 +20,7 @@ const productLineSeedFiles = [
 const productLineSeedDocs = [
   'docs/runbooks/product-line-seed.md',
   'docs/runbooks/mission-control-seed-predeploy.md',
-  'specs/010a-generic-product-line-seeder/quickstart.md',
+  'docs/ai/specs/SPEC-010A-workflow.md',
 ] as const
 
 const staticScopeGuardSources = [
@@ -1448,7 +1448,7 @@ describe('product-line seed reuse docs and static guards', () => {
 
     const runbook = source('docs/runbooks/product-line-seed.md')
     const predeploy = source('docs/runbooks/mission-control-seed-predeploy.md')
-    const quickstart = source('specs/010a-generic-product-line-seeder/quickstart.md')
+    const workflowLedger = source('docs/ai/specs/SPEC-010A-workflow.md')
 
     expect(runbook).toEqual(expect.stringContaining('## Schema'))
     expect(runbook).toEqual(expect.stringContaining('schema_version: product-line-seed-v1'))
@@ -1486,14 +1486,14 @@ describe('product-line seed reuse docs and static guards', () => {
     expect(predeploy).toEqual(expect.stringContaining('preserved_operational_state.subsurfaces'))
     expect(predeploy).toEqual(expect.stringContaining('docs/ai/product-lines/mission-control.yaml'))
 
-    expect(quickstart).toEqual(expect.stringContaining('pnpm seed:product-line --'))
-    expect(quickstart).toEqual(expect.stringContaining('pnpm seed:mission-control --'))
-    expect(quickstart).toEqual(expect.stringContaining('pnpm test -- src/lib/__tests__/product-line-seed.test.ts'))
-    expect(quickstart).toEqual(expect.stringContaining('pnpm typecheck'))
-    expect(quickstart).toEqual(expect.stringContaining('pnpm lint'))
-    expect(quickstart).toEqual(expect.stringContaining('Invalid Config No-Mutation Proof'))
-    expect(quickstart).toEqual(expect.stringContaining('Wrapper parity sequence'))
-    expect(quickstart).toEqual(expect.stringContaining('Static Scope Guards'))
-    expect(quickstart).toEqual(expect.stringContaining('Rollback And No-Op Recovery'))
+    expect(workflowLedger).toEqual(expect.stringContaining('pnpm seed:product-line --'))
+    expect(workflowLedger).toEqual(expect.stringContaining('seed:mission-control'))
+    expect(workflowLedger).toEqual(expect.stringContaining('pnpm test src/lib/__tests__/product-line-seed.test.ts'))
+    expect(workflowLedger).toEqual(expect.stringContaining('pnpm typecheck'))
+    expect(workflowLedger).toEqual(expect.stringContaining('pnpm lint'))
+    expect(workflowLedger).toEqual(expect.stringContaining('invalid-config no-mutation'))
+    expect(workflowLedger).toEqual(expect.stringContaining('wrapper verify commands passed'))
+    expect(workflowLedger).toEqual(expect.stringContaining('Static/diff guardrails'))
+    expect(workflowLedger).toEqual(expect.stringContaining('rollback-by-no-op'))
   })
 })

@@ -40,7 +40,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Checklist | `$speckit-checklist` | Complete | Completed scheduler-runtime, data-integrity, api-contracts, state-management, error-handling, ux, and extra observability checklist coverage; remediated 23 total gaps; G4 passed with 0 remaining `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 72 TDD-first tasks across 7 phases, 4 user stories, 26 parallel opportunities, focused verification commands, and a ratified reviewability transition exception; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Remediated 2 medium cross-artifact findings; G6 passed with 0 remaining CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | In Progress | Foundation T001-T020, US1 Enable and Observe T021-T033, US2 Manual Sync Fallback T034-T040, US3 Failure Recovery T041-T052, and US4 Duplicate Prevention T053-T061 complete; starting Polish and Verification (T062-T072) |
+| Implement | `$speckit-implement` | Complete | All implementation tasks T001-T072 complete. Full verification passed: API parity, build, typecheck, lint, full Vitest (300 files, 3,137 tests), full Playwright (651 tests), guardrails, focused UAT, docs/index updates, and review packet |
 | Post: Doctor Extension Check | `$speckit-doctor` | Pending | Installed extension health check is retained in the durable post-implementation ladder |
 | Post: Verify Implementation | `$speckit-verify` | Pending | Validate implemented behavior against the generated spec after G7 passes |
 | Post: Verify Tasks Phantom Check | `$speckit-verify-tasks` | Pending | Detect any completed task claims without matching implementation evidence |
@@ -576,21 +576,21 @@ For each task:
 | 3 - Manual Sync Fallback | T034-T040 | Complete | Preserved manual trigger and trigger-all success bodies, added deterministic same-scope 409 overlap responses, lifecycle rejected/skipped overlap terminal rows, automatic skipped-overlap records, lease release coverage, independent scope behavior, and panel retry guidance |
 | 4 - Failure Recovery | T041-T052 | Complete | Added success-only cursor safety, bounded automatic partials, malformed-page failure handling, retry signal/cap/fallback diagnostics, sanitized failure evidence, panel diagnostics, focused unit/component verification, typecheck, build, and Playwright UAT |
 | 5 - Duplicate Prevention | T053-T061 | Complete | Added shared-repository owner resolution, non-owner and ownership-unresolved terminal lifecycle rows, duplicate-ingestion prevention tests, owner diagnostics in the API envelope, panel labels/reasons, and focused Playwright UAT |
-| 6 - Polish and Verification | T062-T072 | In Progress | Starting docs, OpenAPI/API-index, knowledge-index, guardrail, archive, review packet, and full verification evidence tasks |
+| 6 - Polish and Verification | T062-T072 | Complete | Updated quickstart, rollback runbook, OpenAPI/API index, repo knowledge index, guard evidence, archive/current-target exclusion evidence, full verification evidence, and generated the SPEC-013A1 review packet |
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All generated tasks are complete in `specs/013a1-github-sync-automation/tasks.md`.
-- [ ] Focused tests pass.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] `pnpm build` passes when required by runtime/API/UI changes.
-- [ ] Focused browser/UAT evidence exists if UI changes.
-- [ ] Manual sync fallback verified.
-- [ ] No duplicate ingestion verified for multiple projects sharing one repo.
-- [ ] Automatic polling can be disabled without losing manual sync.
+- [x] All generated tasks are complete in `specs/013a1-github-sync-automation/tasks.md`.
+- [x] Focused tests pass.
+- [x] `pnpm typecheck` passes.
+- [x] `pnpm lint` passes.
+- [x] `pnpm build` passes when required by runtime/API/UI changes.
+- [x] Focused browser/UAT evidence exists if UI changes.
+- [x] Manual sync fallback verified.
+- [x] No duplicate ingestion verified for multiple projects sharing one repo.
+- [x] Automatic polling can be disabled without losing manual sync.
 - [ ] Workflow and roadmap status are updated.
 
 ---
