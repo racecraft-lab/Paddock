@@ -645,7 +645,7 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
       /await pullFromGitHub\(project, workspaceId\)/,
     )
     expect(readFileSync(join(root, 'src/components/panels/github-sync-panel.tsx'), 'utf8')).toMatch(
-      /JSON\.stringify\(\{ action: 'trigger', project_id: projectId \}\)/,
+      /JSON\.stringify\(\{ action: 'trigger', project_id: projectId, \.\.\.syncScopeBody\(activeProductLineScope\) \}\)/,
     )
   })
 

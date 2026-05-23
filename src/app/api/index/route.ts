@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const VERSION = '1.3.0'
+const VERSION = '1.3.1'
 export const revalidate = 300
 
 interface Endpoint {
@@ -127,6 +127,8 @@ const endpoints: Endpoint[] = [
 
   // ── GitHub ────────────────────────────────────────
   { path: '/api/github', methods: ['GET', 'POST'], description: 'GitHub issue sync', tag: 'GitHub', auth: 'viewer/operator' },
+  { path: '/api/github/sync', methods: ['GET', 'POST'], description: 'GitHub sync status, manual triggers, and automatic lifecycle diagnostics', tag: 'GitHub', auth: 'viewer/operator' },
+  { path: '/api/github/sync/control', methods: ['PATCH'], description: 'Automatic GitHub sync lifecycle controls and backoff reset', tag: 'GitHub', auth: 'operator' },
 
   // ── Super Admin ───────────────────────────────────
   { path: '/api/super/tenants', methods: ['GET', 'POST', 'PATCH', 'DELETE'], description: 'Tenant management', tag: 'Super Admin', auth: 'admin' },

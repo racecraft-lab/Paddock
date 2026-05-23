@@ -64,7 +64,7 @@ vi.mock('@/lib/feature-flags', async () => {
 })
 
 import { runMigrations } from '../migrations'
-import { runSyncTickForTest } from '../github-sync-poller'
+import { runGitHubSyncAutomationTickForTest, runSyncTickForTest } from '../github-sync-poller'
 
 const openDbs: Database.Database[] = []
 
@@ -82,6 +82,24 @@ function freshMigratedDb(): Database.Database {
   openDbs.push(db)
   runMigrations(db)
   return db
+}
+
+function enableGitHubSyncAutomation(db: Database.Database): void {
+  db.prepare(`UPDATE workspaces SET feature_flags = ? WHERE id = ?`).run(
+    JSON.stringify({ FEATURE_GITHUB_SYNC_AUTOMATION: true }),
+    1,
+  )
+}
+
+function seedLifecycleControl(db: Database.Database, repo: string): void {
+  db.prepare(`
+    INSERT INTO github_sync_lifecycle_controls (
+      workspace_id, github_repo, enabled, interval_seconds, max_pages, max_issues,
+      max_duration_seconds, owner_project_id, next_retry_at, last_success_cursor,
+      created_at, updated_at
+    )
+    VALUES (1, ?, 1, 300, 10, 1000, 45, NULL, 1, '2026-05-23T03:55:00.000Z', 1, 1)
+  `).run(repo)
 }
 
 function pollerSource(): string {
@@ -269,5 +287,62 @@ describe('SPEC-006 / T013 — mixed-tenant per-row resolveFlag (FR-052, P5-AC1)'
     // Cache: at most ONE read of feature_flags for the single workspace.
     expect(featureFlagsReads).toBeLessThanOrEqual(1)
     expect(pullFromGitHubMock).toHaveBeenCalledTimes(3)
+  })
+
+  it('T054 — automation groups shared-repository candidates and polls only the selected owner without FEATURE_AREA_LABEL_ROUTING', async () => {
+    const db = freshMigratedDb()
+    enableGitHubSyncAutomation(db)
+    db.exec(`
+      INSERT INTO projects (id, workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner, status)
+      VALUES
+        (10, 1, 'P-Owner', 'p-owner', 'PO', 'org/shared-automation', 1, 1, 'active'),
+        (11, 1, 'P-Non-Owner', 'p-non-owner', 'PN', 'org/shared-automation', 1, 0, 'active');
+    `)
+    seedLifecycleControl(db, 'org/shared-automation')
+    getDatabaseMock.mockReturnValue(db)
+
+    const result = await runGitHubSyncAutomationTickForTest({ now: 1_779_500_000, candidateLimit: 1 })
+
+    expect(result).toMatchObject({ scopesStarted: 1, scopesSkipped: 1 })
+    expect(pullFromGitHubMock).toHaveBeenCalledTimes(1)
+    const firstPullCall = pullFromGitHubMock.mock.calls[0] as unknown as
+      [{ id: number; github_repo: string }, ...unknown[]]
+    expect(firstPullCall[0]).toMatchObject({ id: 10, github_repo: 'org/shared-automation' })
+    expect(db.prepare(`
+      SELECT COUNT(*) AS count
+      FROM github_sync_lifecycle_runs
+      WHERE github_repo = 'org/shared-automation' AND result IN ('success', 'partial', 'failed')
+    `).get()).toEqual({ count: 1 })
+    expect(db.prepare(`
+      SELECT result, project_id
+      FROM github_sync_lifecycle_runs
+      WHERE github_repo = 'org/shared-automation' AND result = 'skipped_non_owner'
+    `).get()).toEqual({ result: 'skipped_non_owner', project_id: 11 })
+  })
+
+  it('T054 — automation fails closed for shared repositories with no owner and does not ingest duplicates', async () => {
+    const db = freshMigratedDb()
+    enableGitHubSyncAutomation(db)
+    db.exec(`
+      INSERT INTO projects (id, workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner, status)
+      VALUES
+        (20, 1, 'P-A', 'p-a', 'PA', 'org/unowned-automation', 1, 0, 'active'),
+        (21, 1, 'P-B', 'p-b', 'PB', 'org/unowned-automation', 1, 0, 'active');
+    `)
+    seedLifecycleControl(db, 'org/unowned-automation')
+    getDatabaseMock.mockReturnValue(db)
+
+    const result = await runGitHubSyncAutomationTickForTest({ now: 1_779_500_000, candidateLimit: 1 })
+
+    expect(result).toMatchObject({ scopesStarted: 0, scopesSkipped: 1 })
+    expect(pullFromGitHubMock).not.toHaveBeenCalled()
+    expect(db.prepare(`
+      SELECT result, diagnostics_json
+      FROM github_sync_lifecycle_runs
+      WHERE github_repo = 'org/unowned-automation'
+    `).get()).toMatchObject({
+      result: 'ownership_unresolved',
+      diagnostics_json: expect.stringContaining('no_repo_sync_owner'),
+    })
   })
 })

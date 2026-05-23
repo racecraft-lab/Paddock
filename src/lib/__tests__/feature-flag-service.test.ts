@@ -198,6 +198,7 @@ describe('updateWorkspaceFeatureFlag cascade persistence', () => {
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
+      'FEATURE_GITHUB_SYNC_AUTOMATION',
     ])
     expect(flags.FEATURE_WORKSPACE_SWITCHER).toBe(false)
     expect(flags.FEATURE_GLOBAL_AEGIS).toBe(false)

@@ -3455,6 +3455,133 @@ const migrations: Migration[] = [
       `)
     },
   },
+  {
+    id: '077_github_sync_lifecycle',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS github_sync_lifecycle_controls (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          github_repo TEXT NOT NULL CHECK(length(trim(github_repo)) > 0),
+          enabled INTEGER NOT NULL DEFAULT 0 CHECK(enabled IN (0, 1)),
+          interval_seconds INTEGER NOT NULL DEFAULT 300 CHECK(interval_seconds >= 60),
+          max_pages INTEGER NOT NULL DEFAULT 10 CHECK(max_pages BETWEEN 1 AND 100),
+          max_issues INTEGER NOT NULL DEFAULT 1000 CHECK(max_issues BETWEEN 1 AND 5000),
+          max_duration_seconds INTEGER NOT NULL DEFAULT 45 CHECK(max_duration_seconds BETWEEN 5 AND 600),
+          owner_project_id INTEGER,
+          disabled_reason TEXT,
+          next_retry_at INTEGER,
+          next_retry_reason TEXT,
+          backoff_seconds INTEGER NOT NULL DEFAULT 0 CHECK(backoff_seconds >= 0),
+          consecutive_failures INTEGER NOT NULL DEFAULT 0 CHECK(consecutive_failures >= 0),
+          lease_run_id TEXT,
+          lease_owner TEXT,
+          lease_started_at INTEGER,
+          lease_expires_at INTEGER,
+          last_started_at INTEGER,
+          last_completed_at INTEGER,
+          last_success_cursor TEXT,
+          last_error TEXT,
+          latest_partial_run_reason TEXT,
+          total_successes INTEGER NOT NULL DEFAULT 0 CHECK(total_successes >= 0),
+          total_failures INTEGER NOT NULL DEFAULT 0 CHECK(total_failures >= 0),
+          total_partials INTEGER NOT NULL DEFAULT 0 CHECK(total_partials >= 0),
+          total_overlap_rejections INTEGER NOT NULL DEFAULT 0 CHECK(total_overlap_rejections >= 0),
+          skipped_owner_count INTEGER NOT NULL DEFAULT 0 CHECK(skipped_owner_count >= 0),
+          skipped_non_owner_count INTEGER NOT NULL DEFAULT 0 CHECK(skipped_non_owner_count >= 0),
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+        );
+
+        CREATE TABLE IF NOT EXISTS github_sync_lifecycle_runs (
+          run_id TEXT PRIMARY KEY CHECK(length(trim(run_id)) > 0),
+          sync_id INTEGER REFERENCES github_syncs(id) ON DELETE SET NULL,
+          workspace_id INTEGER NOT NULL,
+          github_repo TEXT NOT NULL CHECK(length(trim(github_repo)) > 0),
+          project_id INTEGER,
+          trigger TEXT NOT NULL CHECK(trigger IN ('manual', 'automatic')),
+          requested_by TEXT,
+          lease_owner TEXT,
+          started_at INTEGER NOT NULL,
+          completed_at INTEGER,
+          result TEXT NOT NULL CHECK(result IN (
+            'running',
+            'success',
+            'failed',
+            'partial',
+            'skipped_disabled',
+            'skipped_overlap',
+            'rejected_overlap',
+            'skipped_non_owner',
+            'skipped_owner',
+            'ownership_unresolved',
+            'stale_recovered'
+          )),
+          failure_reason TEXT CHECK(failure_reason IS NULL OR failure_reason IN (
+            'transport_timeout',
+            'transport_network',
+            'github_rate_limited',
+            'github_auth_or_scope',
+            'github_not_found',
+            'github_http_4xx',
+            'github_http_5xx',
+            'github_malformed_json',
+            'github_unexpected_shape',
+            'github_issue_schema_invalid',
+            'database_error',
+            'unknown'
+          )),
+          partial_run_reason TEXT CHECK(partial_run_reason IS NULL OR partial_run_reason IN (
+            'max_pages',
+            'max_issues',
+            'max_duration',
+            'rate_limit_window',
+            'operator_disabled_during_run',
+            'malformed_page'
+          )),
+          cursor_before TEXT,
+          cursor_after TEXT,
+          cursor_advanced INTEGER NOT NULL DEFAULT 0 CHECK(cursor_advanced IN (0, 1)),
+          pages_fetched INTEGER NOT NULL DEFAULT 0 CHECK(pages_fetched >= 0),
+          issues_seen INTEGER NOT NULL DEFAULT 0 CHECK(issues_seen >= 0),
+          issues_pulled INTEGER NOT NULL DEFAULT 0 CHECK(issues_pulled >= 0),
+          issues_pushed INTEGER NOT NULL DEFAULT 0 CHECK(issues_pushed >= 0),
+          duration_ms INTEGER CHECK(duration_ms IS NULL OR duration_ms >= 0),
+          stale_recovered_from_run_id TEXT,
+          diagnostics_json TEXT,
+          CHECK(cursor_advanced = 0 OR (result = 'success' AND cursor_after IS NOT NULL)),
+          CHECK(
+            result NOT IN (
+              'failed',
+              'skipped_disabled',
+              'skipped_overlap',
+              'rejected_overlap',
+              'skipped_non_owner',
+              'skipped_owner',
+              'ownership_unresolved',
+              'stale_recovered'
+            )
+            OR cursor_after IS cursor_before
+          )
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_github_sync_lifecycle_controls_scope
+          ON github_sync_lifecycle_controls(workspace_id, github_repo);
+        CREATE INDEX IF NOT EXISTS idx_github_sync_lifecycle_controls_due
+          ON github_sync_lifecycle_controls(enabled, next_retry_at, workspace_id);
+        CREATE INDEX IF NOT EXISTS idx_github_sync_lifecycle_controls_lease
+          ON github_sync_lifecycle_controls(lease_expires_at)
+          WHERE lease_run_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_github_sync_lifecycle_runs_scope_started
+          ON github_sync_lifecycle_runs(workspace_id, github_repo, started_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_github_sync_lifecycle_runs_sync_id
+          ON github_sync_lifecycle_runs(sync_id)
+          WHERE sync_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_github_sync_lifecycle_runs_result
+          ON github_sync_lifecycle_runs(workspace_id, result, completed_at DESC);
+      `)
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {

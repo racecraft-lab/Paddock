@@ -83,6 +83,14 @@
     "src/lib/__tests__/task-stage-attempts.test.ts",
     "src/lib/__tests__/task-stage-attempts-route.test.ts",
     "src/components/panels/__tests__/task-stage-attempts-section.test.tsx",
-    "scripts/seed-mission-control-product-line.ts"
+    "scripts/seed-mission-control-product-line.ts",
+    "src/lib/github-sync-lifecycle-types.ts",
+    "src/lib/github-sync-lifecycle-api.ts",
+    "src/lib/github-sync-lifecycle.ts",
+    "src/lib/__tests__/fixtures/github-sync-lifecycle-fixtures.ts",
+    "src/lib/__tests__/github-sync-lifecycle-api.test.ts",
+    "src/lib/__tests__/github-sync-lifecycle.test.ts",
+    "src/lib/__tests__/github-sync-lifecycle-errors.test.ts",
+    "tests/e2e/fixtures/github-sync-lifecycle.ts"
   ]
 }

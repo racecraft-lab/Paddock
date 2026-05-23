@@ -91,6 +91,17 @@ const specStrictFiles = [
   'src/components/panels/task-stage-attempts-section.tsx',
   'src/components/panels/__tests__/task-stage-attempts-section.test.tsx',
   'tests/e2e/spec-013a-task-stage-attempts.spec.ts',
+  // SPEC-013A1 GitHub sync automation lifecycle.
+  'src/lib/github-sync-lifecycle-types.ts',
+  'src/lib/github-sync-lifecycle-api.ts',
+  'src/lib/github-sync-lifecycle.ts',
+  'src/lib/__tests__/fixtures/github-sync-lifecycle-fixtures.ts',
+  'src/lib/__tests__/github-sync-lifecycle-api.test.ts',
+  'src/lib/__tests__/github-sync-lifecycle.test.ts',
+  'src/lib/__tests__/github-sync-lifecycle-errors.test.ts',
+  'src/app/api/github/sync/control/route.ts',
+  'tests/e2e/fixtures/github-sync-lifecycle.ts',
+  'tests/e2e/spec-013a1-github-sync-automation.spec.ts',
 ]
 
 const config = tseslint.config(

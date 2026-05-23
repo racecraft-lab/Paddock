@@ -348,6 +348,25 @@ export interface GitHubTerminalFixture {
 
 export interface PullFromGitHubOptions {
   webhookFixture?: GitHubTerminalFixture
+  automatic?: {
+    cursor?: string | null
+    maxPages?: number
+    maxIssues?: number
+    maxDurationMs?: number
+  }
+}
+
+type AutomaticPartialRunReason = 'max_pages' | 'max_issues' | 'max_duration' | 'malformed_page'
+
+export interface PullFromGitHubResult {
+  pulled: number
+  pushed: number
+  cursor?: string | null
+  result?: 'success' | 'partial'
+  partialRunReason?: AutomaticPartialRunReason | null
+  pagesFetched?: number
+  issuesSeen?: number
+  durationMs?: number
 }
 
 interface ReadyForOwnerTaskRow {
@@ -384,6 +403,131 @@ function isOwnerMergeGatedTask(
     && (task.status === READY_FOR_OWNER_STATUS || task.status === 'done')
     && task.produces_pr === 1
     && task.external_terminal_event === READY_FOR_OWNER_TERMINAL_EVENT
+}
+
+function githubSyncBoundaryError(kind: string, message: string): Error & { kind: string } {
+  const err = new Error(message) as Error & { kind: string }
+  err.kind = kind
+  return err
+}
+
+function isValidGitHubIssue(value: unknown): value is GitHubIssue {
+  if (!value || typeof value !== 'object') return false
+  const issue = value as Partial<GitHubIssue>
+  return typeof issue.number === 'number'
+    && typeof issue.title === 'string'
+    && (issue.body === null || typeof issue.body === 'string')
+    && (issue.state === 'open' || issue.state === 'closed')
+    && Array.isArray(issue.labels)
+    && typeof issue.html_url === 'string'
+    && typeof issue.created_at === 'string'
+    && typeof issue.updated_at === 'string'
+}
+
+function latestCursor(issues: GitHubIssue[], initial: string | null): string | null {
+  return issues.reduce<string | null>(
+    (latest, issue) => {
+      if (!issue.updated_at) return latest
+      if (latest === null) return issue.updated_at
+      return new Date(issue.updated_at).getTime() > new Date(latest).getTime()
+        ? issue.updated_at
+        : latest
+    },
+    initial,
+  )
+}
+
+async function fetchAutomaticIssues(
+  repo: string,
+  input: {
+    sinceDate?: string
+    cursor: string | null
+    maxPages?: number
+    maxIssues?: number
+    maxDurationMs?: number
+  },
+): Promise<{
+  issues: GitHubIssue[]
+  cursor: string | null
+  partialRunReason: AutomaticPartialRunReason | null
+  pagesFetched: number
+  issuesSeen: number
+  durationMs: number
+}> {
+  const startedAt = Date.now()
+  const maxPages = Math.max(1, Math.min(100, input.maxPages ?? 10))
+  const maxIssues = Math.max(1, Math.min(5000, input.maxIssues ?? 1000))
+  const maxDurationMs = Math.max(1, input.maxDurationMs ?? 45_000)
+  const collected: GitHubIssue[] = []
+  let partialRunReason: AutomaticPartialRunReason | null = null
+  let pagesFetched = 0
+
+  for (let page = 1; page <= maxPages; page++) {
+    if (Date.now() - startedAt >= maxDurationMs) {
+      partialRunReason = 'max_duration'
+      break
+    }
+
+    const remaining = maxIssues - collected.length
+    if (remaining <= 0) {
+      partialRunReason = 'max_issues'
+      break
+    }
+
+    const pageIssues = await fetchIssues(repo, {
+      state: 'all',
+      since: input.sinceDate,
+      per_page: Math.min(100, remaining),
+      page,
+    }) as unknown
+    if (!Array.isArray(pageIssues)) {
+      if (pagesFetched > 0) {
+        partialRunReason = 'malformed_page'
+        break
+      }
+      throw githubSyncBoundaryError('unexpected_shape', 'GitHub issues page was not an array')
+    }
+
+    const validIssues: GitHubIssue[] = []
+    for (const issue of pageIssues) {
+      if (!isValidGitHubIssue(issue)) {
+        if (pagesFetched > 0) {
+          partialRunReason = 'malformed_page'
+          break
+        }
+        throw githubSyncBoundaryError('issue_schema_invalid', 'GitHub issue page contained an invalid issue')
+      }
+      validIssues.push(issue)
+    }
+    if (partialRunReason === 'malformed_page') break
+
+    pagesFetched++
+    if (validIssues.length === 0) break
+
+    const allowed = validIssues.slice(0, remaining)
+    collected.push(...allowed)
+    if (allowed.length < validIssues.length || collected.length >= maxIssues) {
+      partialRunReason = 'max_issues'
+      break
+    }
+    if (Date.now() - startedAt >= maxDurationMs) {
+      partialRunReason = 'max_duration'
+      break
+    }
+    if (page === maxPages) {
+      partialRunReason = 'max_pages'
+      break
+    }
+  }
+
+  return {
+    issues: collected,
+    cursor: latestCursor(collected, input.cursor),
+    partialRunReason,
+    pagesFetched,
+    issuesSeen: collected.length,
+    durationMs: Date.now() - startedAt,
+  }
 }
 
 function fixturePullRequestForTask(
@@ -662,7 +806,7 @@ export async function pullFromGitHub(
   },
   workspaceId: number,
   opts?: PullFromGitHubOptions,
-): Promise<{ pulled: number; pushed: number }> {
+): Promise<PullFromGitHubResult> {
   const repo = project.github_repo
   if (!repo || !project.github_sync_enabled) {
     return { pulled: 0, pushed: 0 }
@@ -690,18 +834,50 @@ export async function pullFromGitHub(
     ORDER BY created_at DESC LIMIT 1
   `).get(project.id, workspaceId) as { last_synced_at: number } | undefined
 
-  const sinceDate = lastSync
-    ? new Date(lastSync.last_synced_at * 1000).toISOString()
-    : undefined
+  const automatic = opts?.automatic
+  const sinceDate = automatic
+    ? (automatic.cursor ?? undefined)
+    : lastSync
+      ? new Date(lastSync.last_synced_at * 1000).toISOString()
+      : undefined
+  const fetchParams: {
+    state: 'all'
+    since?: string
+    per_page: number
+    page?: number
+  } = {
+    state: 'all',
+    per_page: automatic ? Math.max(1, Math.min(100, automatic.maxIssues ?? 100)) : 100,
+  }
+  if (sinceDate !== undefined) fetchParams.since = sinceDate
+  if (automatic) fetchParams.page = 1
 
   // Fetch all issues updated since last sync
   let issues: GitHubIssue[]
+  let cursor: string | null = automatic?.cursor ?? sinceDate ?? null
+  let partialRunReason: AutomaticPartialRunReason | null = null
+  let pagesFetched = 0
+  let issuesSeen = 0
+  let durationMs = 0
   try {
-    issues = await fetchIssues(repo, {
-      state: 'all',
-      since: sinceDate,
-      per_page: 100,
-    })
+    if (automatic) {
+      const fetched = await fetchAutomaticIssues(repo, {
+        sinceDate,
+        cursor,
+        maxPages: automatic.maxPages,
+        maxIssues: automatic.maxIssues,
+        maxDurationMs: automatic.maxDurationMs,
+      })
+      issues = fetched.issues
+      cursor = fetched.cursor
+      partialRunReason = fetched.partialRunReason
+      pagesFetched = fetched.pagesFetched
+      issuesSeen = fetched.issuesSeen
+      durationMs = fetched.durationMs
+    } else {
+      issues = await fetchIssues(repo, fetchParams)
+      cursor = latestCursor(issues, sinceDate ?? null)
+    }
   } catch (err) {
     logger.error({ err, repo }, 'Failed to fetch issues from GitHub')
     // Record failed sync
@@ -709,6 +885,7 @@ export async function pullFromGitHub(
       INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, error, project_id, changes_pushed, changes_pulled, workspace_id)
       VALUES (?, ?, 0, 'inbound', 'error', ?, ?, 0, 0, ?)
     `).run(repo, now, (err as Error).message, project.id, workspaceId)
+    if (automatic) throw err
     return { pulled: 0, pushed: 0 }
   }
 
@@ -949,13 +1126,34 @@ export async function pullFromGitHub(
 
   // Record sync
   db.prepare(`
-    INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, project_id, changes_pushed, changes_pulled, workspace_id)
-    VALUES (?, ?, ?, 'inbound', 'success', ?, ?, ?, ?)
-  `).run(repo, now, pulled, project.id, pushed, pulled, workspaceId)
+    INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, error, project_id, changes_pushed, changes_pulled, workspace_id)
+    VALUES (?, ?, ?, 'inbound', ?, ?, ?, ?, ?, ?)
+  `).run(
+    repo,
+    now,
+    pulled,
+    partialRunReason ? 'partial' : 'success',
+    partialRunReason,
+    project.id,
+    pushed,
+    pulled,
+    workspaceId,
+  )
 
   logger.info({ repo, pulled, pushed, projectId: project.id }, 'GitHub sync completed')
 
-  return { pulled, pushed }
+  return automatic
+    ? {
+        pulled,
+        pushed,
+        cursor,
+        result: partialRunReason ? 'partial' : 'success',
+        partialRunReason,
+        pagesFetched,
+        issuesSeen,
+        durationMs,
+      }
+    : { pulled, pushed }
 }
 
 /**

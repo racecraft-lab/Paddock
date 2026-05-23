@@ -26,6 +26,15 @@ describe('resolveFlag', () => {
     })).toBe(false)
   })
 
+  it('defaults FEATURE_GITHUB_SYNC_AUTOMATION off without env force-on', () => {
+    expect(FEATURE_FLAG_KEYS).toContain('FEATURE_GITHUB_SYNC_AUTOMATION')
+    expect(resolveFlag('FEATURE_GITHUB_SYNC_AUTOMATION', { env: {} })).toBe(false)
+    expect(resolveFlag('FEATURE_GITHUB_SYNC_AUTOMATION', {
+      env: { FEATURE_GITHUB_SYNC_AUTOMATION: '1' },
+      workspaceFlags: null,
+    })).toBe(false)
+  })
+
   it('honors workspace JSON opt-in', () => {
     expect(resolveFlag('FEATURE_WORKSPACE_SWITCHER', {
       env: {},
@@ -162,6 +171,7 @@ describe('feature flag registry', () => {
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
+      'FEATURE_GITHUB_SYNC_AUTOMATION',
     ])
     expect(Object.keys(FEATURE_FLAG_REGISTRY).sort()).toEqual([...FEATURE_FLAG_KEYS].sort())
   })
@@ -177,6 +187,21 @@ describe('feature flag registry', () => {
       defaultValue: false,
       adminManageable: false,
       implementationStatus: 'not_implemented',
+    })
+  })
+
+  it('registers FEATURE_GITHUB_SYNC_AUTOMATION as the default-off SPEC-013A1 lifecycle flag', () => {
+    expect(FEATURE_FLAG_REGISTRY.FEATURE_GITHUB_SYNC_AUTOMATION).toMatchObject({
+      key: 'FEATURE_GITHUB_SYNC_AUTOMATION',
+      spec: 'GitHub Sync Automation and Poller Lifecycle',
+      phase: 11,
+      upstreamImpact: 'upstream-divergent',
+      activationScope: 'productLineWorkspace',
+      riskTier: 'high',
+      defaultValue: false,
+      adminManageable: false,
+      implementationStatus: 'not_implemented',
+      enableRequires: ['FEATURE_TASK_CONTROL_PLANE'],
     })
   })
 
@@ -219,11 +244,16 @@ describe('feature flag registry', () => {
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
+      'FEATURE_GITHUB_SYNC_AUTOMATION',
     ])
     expect(getFeatureFlagCascadeDependents('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
+      'FEATURE_GITHUB_SYNC_AUTOMATION',
+    ])
+    expect(getFeatureFlagCascadeDependents('FEATURE_TASK_CONTROL_PLANE')).toEqual([
+      'FEATURE_GITHUB_SYNC_AUTOMATION',
     ])
   })
 

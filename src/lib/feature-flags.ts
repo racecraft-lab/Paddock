@@ -12,6 +12,7 @@ export type FeatureFlagKey =
   | 'FEATURE_OPENCLAW_HEALTH_COSTS'
   | 'PILOT_MISSION_CONTROL_E2E'
   | 'FEATURE_TASK_CONTROL_PLANE'
+  | 'FEATURE_GITHUB_SYNC_AUTOMATION'
 
 export type FeatureFlagActivationScope =
   | 'authWorkspace'
@@ -85,6 +86,7 @@ export const FEATURE_FLAG_KEYS = [
   'FEATURE_OPENCLAW_HEALTH_COSTS',
   'PILOT_MISSION_CONTROL_E2E',
   'FEATURE_TASK_CONTROL_PLANE',
+  'FEATURE_GITHUB_SYNC_AUTOMATION',
 ] as const satisfies readonly FeatureFlagKey[]
 
 const ENV_FORCE_ON_EXCEPTIONS = new Set(['PILOT_MISSION_CONTROL_E2E'])
@@ -342,6 +344,27 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     implementedAfter: ['Run-State Persistence Spine'],
     preflightRequires: ['Task control-plane persistence, replay, and operator rollback behavior are verified.'],
     rollbackBehavior: 'Disable to keep task control-plane persistence inactive while preserving existing runtime state rows.',
+    evidence: {},
+  },
+  FEATURE_GITHUB_SYNC_AUTOMATION: {
+    key: 'FEATURE_GITHUB_SYNC_AUTOMATION',
+    label: 'GitHub sync automation',
+    description: 'Default-off scheduler-owned GitHub issue polling lifecycle with scoped operator controls and diagnostics.',
+    spec: 'GitHub Sync Automation and Poller Lifecycle',
+    phase: 11,
+    upstreamImpact: 'upstream-divergent',
+    activationScope: 'productLineWorkspace',
+    riskTier: 'high',
+    defaultValue: false,
+    adminManageable: false,
+    requiresHuman: true,
+    requiresReason: true,
+    requiresPreflight: true,
+    implementationStatus: 'not_implemented',
+    enableRequires: ['FEATURE_TASK_CONTROL_PLANE'],
+    implementedAfter: ['GitHub Sync Automation and Poller Lifecycle'],
+    preflightRequires: ['M77 lifecycle state, manual sync fallback, duplicate-ingestion prevention, and automatic poller controls are verified.'],
+    rollbackBehavior: 'Disable to stop automatic GitHub polling while preserving manual sync and lifecycle history.',
     evidence: {},
   },
 }
