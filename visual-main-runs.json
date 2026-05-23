@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26343408561",
+      "runAttempt": "1",
+      "runKey": "26343408561-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26343408561",
+      "reportKey": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/?v=26343408561-attempt-1",
+      "headSha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "013a1-github-sync-automation",
+        "headSha": "42dd9136c12b7d840306037cbc8fea2979e09925",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/60/",
+        "mergeCommitSha": "",
+        "number": "60",
+        "title": "SPEC-013A1: GitHub Sync Automation and Poller Lifecycle",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/60"
+      },
+      "createdAt": "2026-05-23T21:01:22.698Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26313265181",
       "runAttempt": "1",
@@ -714,5 +741,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-22T21:47:52.255Z"
+  "updatedAt": "2026-05-23T21:01:22.698Z"
 }
