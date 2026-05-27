@@ -162,3 +162,8 @@ Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator 
 - User-level Codex and Claude MCP configs register GitNexus with an absolute user-local Node binary path; do not add project-local MCP, skill, or hook installs.
 - To create or refresh this repo index, run `gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
 - GitNexus stores the generated local index under `.gitnexus/`, which is ignored.
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
