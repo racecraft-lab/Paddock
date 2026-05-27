@@ -13,5 +13,5 @@ specify preset resolve tasks-template
 ```
 
 Those commands should resolve to `.specify/presets/speckit-pro-reviewability/templates/...`.
-If they do not, rerun `$speckit-setup` or the `ensure-reviewability-preset.sh`
+If they do not, rerun `$speckit-scaffold-spec` or the `ensure-reviewability-preset.sh`
 helper instead of patching core templates.
