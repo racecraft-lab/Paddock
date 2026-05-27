@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-27T02:25:23.958Z",
+  "updatedAt": "2026-05-27T02:28:28.977Z",
   "prs": [
     {
       "prNumber": "61",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/61/",
       "headRef": "codex/speckit-claude-codex-parity",
       "baseRef": "main",
-      "updatedAt": "2026-05-27T02:25:23.958Z",
+      "updatedAt": "2026-05-27T02:28:28.977Z",
       "latest": {
+        "storybook": {
+          "runId": "26486730665",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26486730665",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/61/storybook/latest/?v=26486730665-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/61/runs/26486730665-attempt-1/storybook/",
+          "updatedAt": "2026-05-27T02:28:28.977Z"
+        },
         "playwright": {
           "runId": "26486730651",
           "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26486730651",
