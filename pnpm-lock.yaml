@@ -24,7 +24,7 @@ overrides:
   postcss@<8.5.10: 8.5.12
   rollup@>=4.0.0 <4.59.0: 4.59.0
   fast-uri@<3.1.2: 3.1.2
-  tmp@<=0.2.3: 0.2.4
+  tmp@<0.2.6: 0.2.6
   unhead@<2.1.15: 2.1.15
   ws@>=8.0.0 <8.20.1: 8.20.1
   yaml@>=2.0.0 <2.8.3: 2.8.3
@@ -5909,8 +5909,8 @@ packages:
     resolution: {integrity: sha512-WMi/OQ2axVTf/ykqCQgXiIct+mSQDFdH2fkwhPwgEwvJ1kSzZRiinb0zF2Xb8u4+OqPChmyI6MEu4EezNJz+FQ==}
     hasBin: true
 
-  tmp@0.2.4:
-    resolution: {integrity: sha512-UdiSoX6ypifLmrfQ/XfiawN6hkjSBpCjhKxxZcWlUUmoXLaCKQU0bx4HF/tdDK2uzRuchf1txGvrWBzYREssoQ==}
+  tmp@0.2.6:
+    resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
     engines: {node: '>=14.14'}
 
   to-buffer@1.2.2:
@@ -10149,7 +10149,7 @@ snapshots:
     dependencies:
       chardet: 0.7.0
       iconv-lite: 0.4.24
-      tmp: 0.2.4
+      tmp: 0.2.6
 
   fast-copy@4.0.2: {}
 
@@ -13189,7 +13189,7 @@ snapshots:
     dependencies:
       tldts-core: 6.1.86
 
-  tmp@0.2.4: {}
+  tmp@0.2.6: {}
 
   to-buffer@1.2.2:
     dependencies:
