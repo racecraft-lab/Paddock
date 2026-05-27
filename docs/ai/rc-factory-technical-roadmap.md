@@ -29,7 +29,7 @@
 ### Mandatory External Context Refresh
 
 Harness Engineering and Symphony are external, recent, and not safe to treat
-as model-memory knowledge. For SPEC-012B, SPEC-013B, SPEC-013C, SPEC-014A,
+as model-memory knowledge. For SPEC-012B, SPEC-013B, SPEC-013C, SPEC-013D, SPEC-014A,
 SPEC-014B, SPEC-014C, SPEC-014D, and any future Symphony-inspired or
 harness-engineering spec, every setup/specify/plan/tasks/analyze/review run
 must fetch the current sources into the active context window before making
@@ -93,7 +93,7 @@ Every spec PR must produce a capability a human can review on the target Mission
 
 ## Current Codebase Baseline for Harness Work
 
-SPEC-013A-C and SPEC-014A-D must extend the existing Mission Control control-plane seams instead of designing a parallel runner:
+SPEC-013A-D and SPEC-014A-D must extend the existing Mission Control control-plane seams instead of designing a parallel runner:
 
 - `src/lib/adapters/adapter.ts` currently defines the narrow framework-adapter surface (`register`, `heartbeat`, `reportTask`, `getAssignments`, `disconnect`). The SPEC-014A-D harness adapters are a new, stricter execution contract layered above this shape, not a rename of the existing framework adapter.
 - `src/app/api/sessions/route.ts`, `src/lib/sessions.ts`, and the local session scanners already normalize OpenClaw gateway, Claude Code, Codex CLI, Hermes, and OpenCode session observations into one session surface. The runner must reuse that observation model and add launch/continue semantics only when an adapter proves the capability.
@@ -128,7 +128,8 @@ SPEC-013A-C and SPEC-014A-D must extend the existing Mission Control control-pla
 | 10B | Harness-gardening drift guards | Yes | None — process/tooling | Later cleanup specs |
 | 11A | Run-state persistence spine | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 11B |
 | 11B | Claim + reconciliation authority | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 11C, Phase 12A |
-| 11C | Retry/backoff + debug surfaces | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 12C |
+| 11C | Retry/backoff + debug API surfaces | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 11D |
+| 11D | Claim-control operator UX | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 12C |
 | 12A | Sandbox ownership + lifecycle contract | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | Phase 12B |
 | 12B | Harness adapter manifest + fake registry | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | Phase 12C, Phase 12D |
 | 12C | First real harness adapter pilot | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | Later adapter specs |
@@ -214,21 +215,22 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-013A | 11A | Run-State Persistence Spine | run-state-spine | Complete | P1 | SPEC-009D, SPEC-012A | SPEC-013A1 | Phase 11A |
 | SPEC-013A1 | 11A1 | GitHub Sync Automation and Poller Lifecycle | github-sync-automation | Complete | P1 | SPEC-009D, SPEC-012A, SPEC-013A | SPEC-013B | Phase 11A1 |
 | SPEC-013B | 11B | Claim and Reconciliation Authority | claim-reconciliation | Complete | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-013A1 | SPEC-013C, SPEC-014A | Phase 11B |
-| SPEC-013C | 11C | Retry/Backoff and Debug Surfaces | retry-debug-surfaces | Pending | P1 | SPEC-013B | SPEC-014C | Phase 11C |
+| SPEC-013C | 11C | Retry/Backoff and Debug API Surfaces | retry-debug-surfaces | Pending | P1 | SPEC-013B | SPEC-013D | Phase 11C |
+| SPEC-013D | 11D | Claim-Control Operator UX | claim-control-operator-ux | Pending | P1 | SPEC-013C | SPEC-014C | Phase 11D |
 | SPEC-014A | 12A | Sandbox Ownership and Lifecycle Contract | sandbox-lifecycle-contract | Pending | P1 | SPEC-013B | SPEC-014B | Phase 12A |
 | SPEC-014B | 12B | Harness Adapter Manifest and Fake Registry | adapter-manifest-fakes | Pending | P1 | SPEC-014A | SPEC-014C, SPEC-014D | Phase 12B |
-| SPEC-014C | 12C | First Real Harness Adapter Pilot | first-real-harness-adapter | Pending | P1 | SPEC-013C, SPEC-014B | Later adapter specs | Phase 12C |
+| SPEC-014C | 12C | First Real Harness Adapter Pilot | first-real-harness-adapter | Pending | P1 | SPEC-013D, SPEC-014B | Later adapter specs | Phase 12C |
 | SPEC-014D | 12D | OpenClaw and External Harness Adapter | openclaw-external-adapter | Pending | P2 | SPEC-014B | Later adapter specs | Phase 12D |
 
 ### Pending Mini-Spec Parallelization Snapshot
 
 **Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, SPEC-009C1, SPEC-009C2, SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F, SPEC-010A, SPEC-012A, SPEC-013A, SPEC-013A1, and SPEC-013B are complete per the implementation and UAT evidence recorded below. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, SPEC-009A PR #28 as `2b78970e`, SPEC-009B PR #30 as `1d5c994c`, SPEC-009C1 PR #34 as `7d544f39`, the SPEC-009C1 post-merge routing fix PR #40 as `e6ee19ee`, SPEC-009C2 PR #43 as `a63afdea`, the SPEC-009C2 post-merge assignee fix PR #46 as `19b2db98`, SPEC-009C3 PR #48 as `ac7760a2`, SPEC-009C4 PR #52 as `ddc709f2`, SPEC-009D PR #54 as `765264b`, SPEC-009E PR #55 as `40507874`, SPEC-009F PR #57 as `d396ed2`, SPEC-012A PR #56 as `a5e3fbec`, SPEC-013A PR #58 as `a3a79250`, SPEC-010A PR #59 as `9be6b544`, SPEC-013A1 PR #60 as `41e9df68`, and SPEC-013B PR #62 as `5e61d0ff`. SPEC-010A and SPEC-013A post-merge UAT closeout was recorded on 2026-05-22 from merged `main` checkout `028abca9` with disposable local UAT databases, rebuilt standalone browser evidence, flag/process scope checks, no-mutation checks, and cleanup evidence. SPEC-013A1 post-merge HITL UAT was operator-confirmed complete on 2026-05-27 after PR #60 merged, covering automatic GitHub polling enablement, lifecycle/status visibility, disable behavior, manual sync fallback, and duplicate-ingestion safety. SPEC-013B post-merge target UAT completed on HAL on 2026-05-27 after PR #62 merged, covering deployment promotion to `5e61d0ffc02f9345b265cd5420660d02bf693016`, one claim/launch path, duplicate prevention, terminal release, governance blocking, negative-intake exclusion, read-model visibility, and zero disposable-row residue. SPEC-009F has local implementation verification, fixture UAT, merge evidence, and operator-confirmed target deployment/HITL UAT closeout recorded on 2026-05-22. SPEC-009C4 has target HAL deployment and UAT replay evidence recorded; SPEC-009D has packet UAT, merge, and main CI evidence recorded; SPEC-009E has task evidence surface UAT, merge, and main CI evidence recorded; SPEC-012A has repo knowledge index UAT, merge, visual approval, and main CI evidence recorded.
 
-- **Current active setup:** No SPEC-013B implementation workflow remains active after PR #62 merge, HAL deployment promotion, and post-merge HITL UAT. SPEC-013C is the next control-plane retry/debug candidate, and SPEC-014A is unblocked for sandbox-lifecycle planning only; neither should duplicate SPEC-013B claim/reconciliation authority. SPEC-010B is also unblocked by SPEC-010A acceptance but still depends on Product Line B preflight cleanup. SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
+- **Current active setup:** No SPEC-013B implementation workflow remains active after PR #62 merge, HAL deployment promotion, and post-merge HITL UAT. SPEC-013C is the next control-plane retry/debug API candidate, SPEC-013D is the required operator UX follow-up before first real harness operation, and SPEC-014A is unblocked for sandbox-lifecycle planning only; none of these should duplicate SPEC-013B claim/reconciliation authority. SPEC-010B is also unblocked by SPEC-010A acceptance but still depends on Product Line B preflight cleanup. SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C1 -> SPEC-009C2 -> SPEC-009C3 -> SPEC-009C4 -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
 - **Scale/doc parallel path:** SPEC-010A is complete after post-merge UAT; SPEC-010B can start now that SPEC-009C4 and SPEC-010A are complete, subject to Product Line B preflight cleanup; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Evidence, routing, and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-009F owns production routing/evidence for non-remediation triage outcomes after the pilot evidence surfaces exist. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
-- **Control-plane path:** SPEC-013A, SPEC-013A1, and SPEC-013B are complete after post-merge UAT. SPEC-013C owns retry/debug controls next; SPEC-014A-D own execution inside already-claimed work. These completed specs do not launch harnesses.
+- **Control-plane path:** SPEC-013A, SPEC-013A1, and SPEC-013B are complete after post-merge UAT. SPEC-013C owns backend retry/debug API authority next; SPEC-013D owns the minimal operator UX needed to make those controls usable before first real harness operation. SPEC-014A-D own execution inside already-claimed work. These completed specs do not launch harnesses.
 - **Runner path:** SPEC-014A -> SPEC-014B establishes sandbox ownership and fake adapter proof first. SPEC-014C and SPEC-014D then run in parallel if they do not touch the same adapter files.
 
 ### Spec-by-Spec HITL UAT Matrix
@@ -263,7 +265,8 @@ This matrix is the second-pass review gate for every roadmap spec. Each row must
 | SPEC-013A | Durable run-attempt state exists without changing legacy dispatch | `FEATURE_TASK_CONTROL_PLANE` flag OFF/ON inspection | Create/inspect/archive one attempt record and verify flag OFF ignores it while UI/API expose bounded state when enabled |
 | SPEC-013A1 | GitHub sync polling is automatic, observable, and operator-controllable | Existing GitHub sync settings plus explicit poller lifecycle controls | Enable automatic polling for one product line, inspect status/last-run/error state, disable it, and verify manual sync still works |
 | SPEC-013B | Only one claim can own a GitHub-linked stage at a time | `FEATURE_TASK_CONTROL_PLANE` for one product-line workflow | Run concurrent scheduler ticks, verify one claim, governance/reconciliation gates, terminal release, and no duplicate launch |
-| SPEC-013C | Operators can retry, release, or cancel a claimed stage safely | `FEATURE_TASK_CONTROL_PLANE` debug surface | Retry/release/cancel one claimed stage and inspect state transition, audit evidence, backoff, and operator-visible error summary |
+| SPEC-013C | Backend retry/release/cancel authority exists without pretending API-only is enough UX | `FEATURE_TASK_CONTROL_PLANE` debug API surface | Retry/release/cancel one claimed stage through the authenticated API and inspect state transition, audit evidence, backoff, and JSON error summary; PR packet must name SPEC-013D as the required operator UX follow-up |
+| SPEC-013D | Operators can discover and use claim controls from the existing task experience | `FEATURE_TASK_CONTROL_PLANE` task-detail/evidence scope | Inspect a claimed stage in the task detail/evidence surface, see eligibility/backoff/error state, trigger retry/release/cancel with confirmation, and verify the UI reflects audit/debug outcomes without a new dashboard |
 | SPEC-014A | Sandbox lifecycle is explicit, bounded, and flag-gated | `FEATURE_AGENT_RUNNER_SANDBOXES` with fake lifecycle | Create fake Mission Control/OpenClaw/external lifecycles, verify bounded paths/handles/events/cleanup, and confirm flag OFF blocks create/run |
 | SPEC-014B | Harness adapters declare capabilities before execution | `FEATURE_AGENT_RUNNER_SANDBOXES` fake adapter registry | Run two fake adapters through the manifest, inspect visible/unassigned/assigned/eligible/blocked runtime-inventory states, and verify unsupported capabilities fail the attempt instead of stalling or switching harness |
 | SPEC-014C | One real harness adapter can execute an already-claimed stage | `FEATURE_AGENT_RUNNER_SANDBOXES` plus one real adapter manifest | Launch/continue one claimed stage, inspect artifacts/usage/failure summaries, and verify unsupported tool/user-input failure behavior |
@@ -510,7 +513,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** focused fixtures for the Issue Remediation family, artifact handoff, governance evidence, Aegis approval, and `ready_for_owner` state. No manual merge reconciliation and no formal claim-state table, sandbox runner, adapter registry, or full SpecKit/SDD execution lane.
 - **Autopilot notes:** Operator intervention is still forbidden in this spec; the human merge gate belongs to SPEC-009C4.
-- **Governance boundary note:** SPEC-009C3 verifies advisory governance evidence only: no resource-policy violations, no blocked budget/window result, and enough activity/artifact evidence for later review. Remaining durable governance, run-state, claim authority, control-plane, polling, retry/debug, sandbox, and adapter work remains in SPEC-009D, SPEC-009E, SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, and SPEC-014A-D.
+- **Governance boundary note:** SPEC-009C3 verifies advisory governance evidence only: no resource-policy violations, no blocked budget/window result, and enough activity/artifact evidence for later review. Remaining durable governance, run-state, claim authority, control-plane, polling, retry/debug API, claim-control UX, sandbox, and adapter work remains in SPEC-009D, SPEC-009E, SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, SPEC-013D, and SPEC-014A-D.
 - **Definition of done:** The pilot remediation task reaches `ready_for_owner` with a linked PR, disposition/artifact evidence, governance evidence, Aegis approval, and no resource-policy violations.
 - **Implementation evidence:** Local G7 passed on branch `009c3-remediation-ready-for-owner` with all 70 generated tasks checked; PR #48 merged as `ac7760a222a33b4cefe886afae605238f479eaa5`. Evidence includes C3 artifact envelope validation and sanitized failure activity, review `pass`/`fix` readiness routing, canonical Aegis approval gating through `quality_reviews`, advisory governance readiness blocking, deterministic fixture PR identity, PR-producing dev-task-only `ready_for_owner`, and scope-guard coverage proving no merge/done reconciliation, claim/run tables, sandbox/adapter work, automatic poller, broad slug migration, or dedicated evidence UI entered the diff. Final verification passed: focused C3 Vitest, full `pnpm test` with 276 files / 2876 tests, `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `node scripts/spec-009c3/check-scope-guards.mjs`. Post-merge HAL UAT on 2026-05-19 promoted HAL to `ac7760a222a33b4cefe886afae605238f479eaa5`, backed up `mission-control-data/backups/mission-control.db.spec009c3-uat-20260519-195459.bak`, applied workspace `4` workflow contract run `8`, created draft PR #49 as `isDraft=true`/`mergedAt=null`, drove synthetic dev task `39` through the live quality-review API to `ready_for_owner` with five `spec-009c3.v1` artifacts, one Aegis approval row, and a `task_ready_for_owner` notification, then closed unmerged PR #49 and removed all synthetic Mission Control smoke rows plus the temp branch/worktree. Playwright/e2e was N/A because no UI/browser workflow changed.
 
@@ -539,7 +542,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** SPEC-009E, SPEC-013A
 - **Scope source:** Phase 8D - Pilot review packet and lifecycle snapshot
 - **Acceptance criteria source:** Phase 8D Acceptance Criteria
-- **Scope summary:** Materialize a compact pilot review packet and lifecycle snapshot from existing task, activity, artifact, governance, scheduler, and `AgentRun` surfaces. Unsupported fields are explicitly labeled as SPEC-013A-C/SPEC-014A-D follow-up gaps, not silently inferred.
+- **Scope summary:** Materialize a compact pilot review packet and lifecycle snapshot from existing task, activity, artifact, governance, scheduler, and `AgentRun` surfaces. Unsupported fields are explicitly labeled as SPEC-013A-D/SPEC-014A-D follow-up gaps, not silently inferred.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** review packet assembly, lifecycle snapshot derivation, smoke checklist evidence capture, redaction/reuse of SPEC-007 artifact handling, and tests over current-state derivation.
 - **Autopilot notes:** Do not build the formal run-state model here. This spec gives humans enough evidence to trust the pilot and gives SPEC-013A a concrete baseline for what must become durable state.
@@ -578,7 +581,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Definition of done:** Operators can drive each non-remediation triage fixture and inspect the correct production lane/evidence while verifying that no Issue Remediation successor, claim, runner, sandbox, or auto-close side effect is created unless that side effect is explicitly owned by this spec.
 - **Setup evidence:** Branch `009f-production-triage-routing` was created from `main` on 2026-05-21. Grill Me setup decisions require recommendation-only routing/evidence, typed lane artifacts in existing disposition/artifact/activity storage, task Evidence `triageRouting` display, `PILOT_MISSION_CONTROL_E2E` v1 scope, terminal Issue Triage outcomes without successors, and no automatic GitHub mutation, SpecKit setup, claim, runner, sandbox, adapter, or auto-merge behavior.
 - **Implementation evidence:** PR #57 merged to `main` as `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22 after branch verification captured at `f9a18575` and post-implementation docs hygiene at `c8ef2ea1`. Local verification passed under Node 22.22.2: focused routing/dispatch tests (41), broader focused SPEC-009F tests (84), `pnpm api:parity`, `node scripts/spec-009f/check-scope-guards.mjs`, focused e2e UAT, `pnpm build`, `pnpm typecheck`, `pnpm lint`, full `pnpm test` (2,991 passed, 3 skipped, 84 todo), and full `pnpm test:e2e` (648 passed). GitHub merge checks passed for CodeQL, Quality Gate, and visual approval contexts. Reviewability diff gate passed under the approved exception because the behavior remains terminal triage-routing evidence plus the existing task Evidence extension, with the extra footprint in generated SpecKit artifacts, API parity, security payload tests, UAT fixtures, and guard tooling. Operator closeout on 2026-05-22 confirmed target deployment promotion, `PILOT_MISSION_CONTROL_E2E` target-scope validation, and HITL replay of the six non-remediation outcomes with no reported UAT defects. No migration, runtime dependency, live GitHub mutation, successor template, claim/runner/sandbox/adapter path, or auto-merge behavior was added.
-- **Next setup:** SPEC-013B is complete after PR #62 merge, HAL deployment, and post-merge UAT. SPEC-013C is the next control-plane retry/debug setup candidate, and SPEC-014A is unblocked for sandbox-lifecycle planning. SPEC-010B is unblocked by SPEC-010A acceptance but should still complete Product Line B preflight cleanup before smoke. SPEC-011 remains an optional parallel start only when file ownership stays disjoint.
+- **Next setup:** SPEC-013B is complete after PR #62 merge, HAL deployment, and post-merge UAT. SPEC-013C is the next control-plane retry/debug API setup candidate, SPEC-013D is the required operator UX follow-up before first real harness operation, and SPEC-014A is unblocked for sandbox-lifecycle planning. SPEC-010B is unblocked by SPEC-010A acceptance but should still complete Product Line B preflight cleanup before smoke. SPEC-011 remains an optional parallel start only when file ownership stays disjoint.
 
 ### SPEC-010A: Generic Product-Line Seeder
 
@@ -709,20 +712,35 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Definition of done:** With `FEATURE_TASK_CONTROL_PLANE=true`, concurrent ticks cannot claim the same stage twice, terminal task/GitHub state releases work before dispatch, and governance blocks/deferred states prevent new launches.
 - **Implementation evidence:** Branch `013b-claim-reconciliation` completed local SPEC-013B implementation on 2026-05-27. Evidence includes additive M78 `task_stage_claims` persistence and rollback SQL, a narrow `src/lib/task-claim-reconciliation.ts` claim/reconciliation module, `dispatchAssignedTasks` integration before the legacy launch mutation, read-only `GET /api/tasks/:id/claim-reconciliation`, API index/OpenAPI registration, focused migration/helper/dispatch/route Vitest coverage, and a manual pre-merge UAT replay packet. Verification passed under Node v22.22.2 via `direnv exec . pnpm test:all`: strict-scope, lint, typecheck, 304 Vitest files with 3167 passed tests, production build, and 651 Playwright tests. PR #62 merged to `main` as `5e61d0ffc02f9345b265cd5420660d02bf693016` on 2026-05-27. HAL target deployment pulled that commit, ran `pnpm install --frozen-lockfile`, rebuilt successfully under Next.js 16.2.6, verified `.next/standalone/server.js`, restarted `mission-control.service`, confirmed `/login` HTTP 200, confirmed OpenClaw gateway remained active, and verified migration markers `076_task_stage_attempts`, `077_github_sync_lifecycle`, and `078_task_stage_claims` in the live DB. Post-merge HAL UAT replay id `spec013b-hal-uat-2026-05-27T23-05-31-000Z` passed under service-compatible Node v24.15.0 / ABI 137: first tick `claim_acquired`, second tick `duplicate_prevented`, launch handoff released with final active-claim count `0`, read model returned `task_claim_reconciliation.v1` with no active claim, terminal `done` reconciled with `task_terminal_done`, governance block produced no claim with `governance_blocked`, local-only/repo-only/non-`assigned` tasks were excluded, and cleanup left zero UAT workspace/task residue. Deployment note: the Ideaverse runbook lookup surfaced inactive HAL NTP as a separate host-risk observation for 1Password startup reliability; it did not block the recovered Mission Control service or SPEC-013B UAT.
 
-### SPEC-013C: Retry/Backoff and Debug Surfaces
+### SPEC-013C: Retry/Backoff and Debug API Surfaces
 
 - **Status:** Pending
 - **Priority:** P1
 - **Branch short name:** `retry-debug-surfaces`
 - **Dependencies:** SPEC-013B
-- **Enables:** SPEC-014C
+- **Enables:** SPEC-013D
 - **Scope source:** Phase 11C - Retry/backoff and debug surfaces
 - **Acceptance criteria source:** Phase 11C Acceptance Criteria
-- **Scope summary:** Add bounded retry/backoff reason codes, operator cancel/retry/release controls, JSON debug surfaces, audit rows, and refresh triggers on top of the SPEC-013B claim authority.
+- **Scope summary:** Add bounded retry/backoff reason codes, authenticated API-only cancel/retry/release controls, JSON debug surfaces, audit rows, and refresh triggers on top of the SPEC-013B claim authority. SPEC-013C deliberately does not claim the operator experience is complete; the roadmap gap discovered during setup is split into SPEC-013D.
 - **Tool count / tool names:** N/A - not a tool-surface spec
-- **Strict Scope:** retry policy, debug API, minimal UI or CLI/MCP exposure if needed, audit integration, and focused tests. No sandbox lifecycle or adapter registry.
-- **Autopilot notes:** Separate normal continuation retries from failure, timeout, stale-state, and operator-release reasons. Do not mutate GitHub issue truth except through the documented sync/reconciliation path. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; map retry, reconciliation, and observable-attempt semantics to Mission Control debug controls without importing scheduler or harness behavior.
-- **Definition of done:** Operators can inspect, retry, release, or cancel a claimed stage through one documented surface; every mutation emits bounded state and audit evidence.
+- **Strict Scope:** retry policy, authenticated debug/control API, read-model extension, audit integration, and focused tests. No in-app operator control UI, no CLI/MCP action surface, no sandbox lifecycle, no adapter registry, and no new dashboard.
+- **Autopilot notes:** Separate normal continuation retries from failure, timeout, stale-state, operator-release, and operator-cancel reasons. Do not mutate GitHub issue truth except through the documented sync/reconciliation path. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; map retry, reconciliation, and observable-attempt semantics to Mission Control debug controls without importing scheduler or harness behavior. The PR body must identify SPEC-013D as the required UI follow-up and must not present the API-only controls as fully operational for non-terminal operators.
+- **Definition of done:** An authenticated API client can inspect, retry, release, or cancel a claimed stage; every mutation emits bounded state and audit evidence; the review packet records that operator UX adoption remains blocked on SPEC-013D.
+
+### SPEC-013D: Claim-Control Operator UX
+
+- **Status:** Pending
+- **Priority:** P1
+- **Branch short name:** `claim-control-operator-ux`
+- **Dependencies:** SPEC-013C
+- **Enables:** SPEC-014C
+- **Scope source:** Phase 11D - Claim-control operator UX
+- **Acceptance criteria source:** Phase 11D Acceptance Criteria
+- **Scope summary:** Make the SPEC-013C retry/release/cancel API usable from the existing task detail/evidence experience. Operators should see claim state, action eligibility, backoff, last error, audit/debug summaries, and confirmation affordances without needing terminal archaeology.
+- **Tool count / tool names:** N/A - not a tool-surface spec
+- **Strict Scope:** existing task detail/evidence UI, client calls to the SPEC-013C API, confirmation/error/loading states, accessibility/browser coverage, and operator-facing copy for retry/release/cancel outcomes. No new dashboard, no new retry semantics, no direct database mutation, no sandbox lifecycle, no adapter registry, and no harness execution.
+- **Autopilot notes:** Treat SPEC-013D as the UX completion gate for SPEC-013C, not as a place to re-open API semantics. Use existing Mission Control task evidence patterns, keep controls hidden or disabled when `FEATURE_TASK_CONTROL_PLANE` is off or the task/stage is ineligible, and surface audit/debug outcomes returned by SPEC-013C rather than recomputing claim state in the client.
+- **Definition of done:** An operator can discover a claimed stage from the existing task experience, understand why retry/release/cancel is or is not available, trigger the action with confirmation, see bounded success/error feedback, and inspect linked audit/debug evidence; flag-off and ineligible states remain non-actionable.
 
 ### SPEC-014A: Sandbox Ownership and Lifecycle Contract
 
@@ -759,7 +777,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Status:** Pending
 - **Priority:** P1
 - **Branch short name:** `first-real-harness-adapter`
-- **Dependencies:** SPEC-013C, SPEC-014B
+- **Dependencies:** SPEC-013D, SPEC-014B
 - **Enables:** Later adapter specs
 - **Scope source:** Phase 12C - First real harness adapter pilot
 - **Acceptance criteria source:** Phase 12C Acceptance Criteria
@@ -1355,7 +1373,8 @@ SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-ho
 | SPEC-013A | Run-state persistence spine | SPEC-009D, SPEC-012A | SPEC-012B | Inspect durable attempt state with the feature flag OFF and confirm legacy dispatch ignores it |
 | SPEC-013A1 | GitHub sync automation + poller lifecycle | SPEC-013A | SPEC-009E if file scopes are disjoint | Enable automatic GitHub polling, inspect status/error state, disable it, and verify manual sync fallback |
 | SPEC-013B | Claim + reconciliation authority | SPEC-013A1 | SPEC-014A planning only | Run concurrent scheduler ticks and confirm only one claim, GitHub-linked eligibility, governance gating, and terminal-state release |
-| SPEC-013C | Retry/backoff + debug surfaces | SPEC-013B | SPEC-014A/014B | Cancel/retry/release one claimed stage and inspect JSON/debug/audit state |
+| SPEC-013C | Retry/backoff + debug API surfaces | SPEC-013B | SPEC-014A/014B | Cancel/retry/release one claimed stage through the API and inspect JSON/debug/audit state; record SPEC-013D as required before operator adoption |
+| SPEC-013D | Claim-control operator UX | SPEC-013C | SPEC-014A/014B if UI file scope is disjoint | Discover claimed-stage controls in the existing task experience, trigger retry/release/cancel with confirmation, and inspect linked audit/debug evidence |
 
 ### Lane F - Sandboxes and Harness Adapters
 
@@ -1363,7 +1382,7 @@ SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-ho
 |---|---|---|---|---|
 | SPEC-014A | Sandbox ownership + lifecycle contract | SPEC-013B | SPEC-013C | Create fake Mission-Control/OpenClaw/external sandbox lifecycles and confirm paths/handles/cleanup are bounded |
 | SPEC-014B | Adapter manifest + fake registry | SPEC-014A | SPEC-013C | Run two fake adapters through the same manifest, inspect runtime-inventory state transitions, and confirm unsupported capabilities fail closed |
-| SPEC-014C | First real harness adapter pilot | SPEC-013C, SPEC-014B | SPEC-014D if adapter files are disjoint | Run one real adapter on an already-claimed GitHub-linked stage and inspect artifacts/usage/failure summaries |
+| SPEC-014C | First real harness adapter pilot | SPEC-013D, SPEC-014B | SPEC-014D if adapter files are disjoint | Run one real adapter on an already-claimed GitHub-linked stage and inspect artifacts/usage/failure summaries |
 | SPEC-014D | OpenClaw/external harness adapter | SPEC-014B | SPEC-014C if adapter files are disjoint | Enable OpenClaw/external adapter on target deployment, verify absent-safe OFF path, import unassigned inventory, and prove explicit assignment before eligibility |
 
 ## Dependency Graph
@@ -1372,7 +1391,7 @@ SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-ho
 Completed through SPEC-008
     ├─→ SPEC-009A ─→ SPEC-009B ─→ SPEC-009C1 ─→ SPEC-009C2 ─→ SPEC-009C3 ─→ SPEC-009C4 ─→ SPEC-009D
     │                    │                                                                       │              ├─→ SPEC-009E ─→ SPEC-009F
-    │                    │                                                                       │              └─→ SPEC-013A ─→ SPEC-013A1 ─→ SPEC-013B ─→ SPEC-013C
+    │                    │                                                                       │              └─→ SPEC-013A ─→ SPEC-013A1 ─→ SPEC-013B ─→ SPEC-013C ─→ SPEC-013D
     │                    │                                                                       │                                             └─→ SPEC-014A ─→ SPEC-014B ─┬─→ SPEC-014C
     │                    │                                                                       │                                                                      └─→ SPEC-014D
     │                    └─→ SPEC-010A ──────────────────────────────────────────────────────────┴─→ SPEC-010B ─→ SPEC-012B
@@ -1380,16 +1399,16 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8F, Phase 9A, Phase 10A, and Phase 11A-11B are complete and remain the substrate for all later work. SPEC-013C is now the next control-plane retry/debug setup after SPEC-013B post-merge acceptance, and SPEC-014A is unblocked for sandbox-lifecycle planning. SPEC-010B is also unblocked by SPEC-010A acceptance but still subject to Product Line B preflight cleanup. SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8F, Phase 9A, Phase 10A, and Phase 11A-11B are complete and remain the substrate for all later work. SPEC-013C is now the next control-plane retry/debug API setup after SPEC-013B post-merge acceptance, SPEC-013D is the required operator UX follow-up before real harness operation, and SPEC-014A is unblocked for sandbox-lifecycle planning. SPEC-010B is also unblocked by SPEC-010A acceptance but still subject to Product Line B preflight cleanup. SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-013A-D own run-state, GitHub sync automation, claim/reconciliation, retry API authority, and claim-control operator UX. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
-SPEC-013A1 implementation, PR #60, retrospective, and operator-confirmed post-merge UAT are complete on `main`. SPEC-013B implementation, PR #62, HAL deployment promotion, and post-merge HITL UAT are complete on `main`; SPEC-013C and SPEC-014A are unblocked in their documented lanes. SPEC-010B may also start after Product Line B preflight cleanup, while SPEC-012B continues to wait for SPEC-010B.
+SPEC-013A1 implementation, PR #60, retrospective, and operator-confirmed post-merge UAT are complete on `main`. SPEC-013B implementation, PR #62, HAL deployment promotion, and post-merge HITL UAT are complete on `main`; SPEC-013C and SPEC-014A are unblocked in their documented lanes. SPEC-013D waits for SPEC-013C and blocks SPEC-014C operational adoption. SPEC-010B may also start after Product Line B preflight cleanup, while SPEC-012B continues to wait for SPEC-010B.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
 - SPEC-012A is complete and now feeds SPEC-012B and SPEC-013A as a checked-in repo knowledge substrate.
 - SPEC-010A is complete after PR #59 and 2026-05-22 post-merge UAT; SPEC-010B may start after Product Line B preflight cleanup; SPEC-011 may also start when file ownership stays disjoint.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
-- SPEC-009F, SPEC-013A, SPEC-013A1, and SPEC-013B are complete after their recorded merge and UAT gates; SPEC-013C retry/debug and SPEC-014A sandbox-lifecycle planning are now the next control-plane dependencies.
+- SPEC-009F, SPEC-013A, SPEC-013A1, and SPEC-013B are complete after their recorded merge and UAT gates; SPEC-013C retry/debug API and SPEC-014A sandbox-lifecycle planning are now the next control-plane dependencies, with SPEC-013D required after SPEC-013C to close the operator UX gap before SPEC-014C.
 - SPEC-013B ran after SPEC-013A1 acceptance so automatic GitHub sync was explicit before claim/reconciliation relied on scheduler ticks.
 - SPEC-014C and SPEC-014D may run in parallel only after SPEC-014B and only if adapter modules, fixtures, and deployment docs are isolated.
 
@@ -1415,12 +1434,13 @@ Parallel agents may work simultaneously only when they own disjoint primary file
 | SPEC-013A1 | 1-1.5 | Yes before claim/reconciliation |
 | SPEC-013B | 2-3 | Yes |
 | SPEC-013C | 1.5-2 | Yes |
+| SPEC-013D | 1-1.5 | Yes before first real harness operation |
 | SPEC-014A | 1.5-2 | Yes |
 | SPEC-014B | 1.5-2 | Yes |
 | SPEC-014C | 2-3 | Yes for first real adapter |
 | SPEC-014D | 2-3 | Optional parallel after SPEC-014B |
 
-First self-hosting proof is roughly 6-9 engineering days after SPEC-008 for one engineer: SPEC-009A through SPEC-009D. The fully observable control-plane path through the first real harness adapter is roughly 18-27 critical-path engineering days, with SPEC-011, SPEC-010A/B, SPEC-012A/B, and SPEC-014D available as parallel work where file ownership is isolated.
+First self-hosting proof is roughly 6-9 engineering days after SPEC-008 for one engineer: SPEC-009A through SPEC-009D. The fully observable control-plane path through the first real harness adapter is roughly 19-28.5 critical-path engineering days after adding SPEC-013D for operator claim-control UX, with SPEC-011, SPEC-010A/B, SPEC-012A/B, and SPEC-014D available as parallel work where file ownership is isolated.
 
 ## V2 Readiness Backlog
 
