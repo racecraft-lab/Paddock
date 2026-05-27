@@ -3582,6 +3582,59 @@ const migrations: Migration[] = [
       `)
     },
   },
+  {
+    id: '078_task_stage_claims',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS task_stage_claims (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          task_stage_attempt_id INTEGER NOT NULL,
+          claim_state TEXT NOT NULL CHECK(claim_state IN ('active', 'released', 'stale_recovered')),
+          lease_owner TEXT NOT NULL CHECK(length(trim(lease_owner)) > 0),
+          lease_run_id TEXT,
+          lease_started_at INTEGER NOT NULL CHECK(lease_started_at > 0),
+          lease_expires_at INTEGER NOT NULL CHECK(lease_expires_at > lease_started_at),
+          release_reason TEXT CHECK(release_reason IS NULL OR release_reason IN (
+            'launch_handoff_completed',
+            'dispatch_failed',
+            'task_terminal_done',
+            'task_terminal_failed',
+            'github_issue_terminal',
+            'github_pr_terminal',
+            'governance_blocked',
+            'governance_deferred',
+            'attempt_terminal_reconciled',
+            'stale_claim_recovered',
+            'boundary_error_deferred'
+          )),
+          released_at INTEGER,
+          recovered_from_claim_id INTEGER,
+          metadata_json TEXT,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          FOREIGN KEY(task_stage_attempt_id) REFERENCES task_stage_attempts(id) ON DELETE CASCADE,
+          CHECK((claim_state = 'active' AND release_reason IS NULL AND released_at IS NULL) OR (claim_state <> 'active' AND release_reason IS NOT NULL AND released_at IS NOT NULL)),
+          CHECK((claim_state = 'stale_recovered') = (release_reason = 'stale_claim_recovered'))
+        );
+
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_task_stage_claims_active_unique
+          ON task_stage_claims(workspace_id, task_id, stage_key)
+          WHERE claim_state = 'active';
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_task_stage_claims_attempt_unique
+          ON task_stage_claims(task_stage_attempt_id);
+        CREATE INDEX IF NOT EXISTS idx_task_stage_claims_task_history
+          ON task_stage_claims(workspace_id, task_id, stage_key, id DESC);
+        CREATE INDEX IF NOT EXISTS idx_task_stage_claims_lease
+          ON task_stage_claims(lease_expires_at)
+          WHERE claim_state = 'active';
+        CREATE INDEX IF NOT EXISTS idx_task_stage_claims_state_updated
+          ON task_stage_claims(workspace_id, claim_state, updated_at DESC);
+      `)
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {

@@ -15011,6 +15011,133 @@
         }
       }
     },
+    "/api/tasks/{id}/claim-reconciliation": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Read task claim reconciliation evidence",
+        "description": "Read-only viewer-authenticated task inspection route that returns the task_claim_reconciliation.v1 envelope for visible tasks without scheduling, dispatching, claiming, releasing, retrying, or mutating task state.",
+        "operationId": "getTaskClaimReconciliation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Optional explicit workspace scope"
+          },
+          {
+            "name": "workspace_scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "facility"
+              ]
+            },
+            "description": "Optional facility workspace scope"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only task claim reconciliation envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "schema_version",
+                    "task",
+                    "feature_flag",
+                    "eligibility",
+                    "active_claim",
+                    "claim_history",
+                    "activities",
+                    "diagnostics"
+                  ],
+                  "properties": {
+                    "schema_version": {
+                      "type": "string",
+                      "const": "task_claim_reconciliation.v1"
+                    },
+                    "task": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "feature_flag": {
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "enabled"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "const": "FEATURE_TASK_CONTROL_PLANE"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "eligibility": {
+                      "type": "object"
+                    },
+                    "active_claim": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "claim_history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "activities": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "diagnostics": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed workspace scope"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
     "/api/tasks/{id}/evidence": {
       "get": {
         "tags": [

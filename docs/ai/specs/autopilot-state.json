@@ -1,42 +1,9 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-013A1-workflow.md",
-  "updated_at": "2026-05-27T02:49:41.000Z",
-  "active_step": "Complete - Post-Merge UAT Accepted",
-  "current_spec_dir": "specs/013a1-github-sync-automation",
-  "branch": "013a1-github-sync-automation",
-  "archive_sweep": {
-    "archive_extension_installed": true,
-    "cleanup_mode": "apply-eligible-on-feature-branch",
-    "current_target": "specs/013a1-github-sync-automation",
-    "excluded_current_spec": "specs/013a1-github-sync-automation",
-    "eligible_previous_specs": [],
-    "safeToApplyCleanup": true,
-    "notes": "Archive extension installed; no active specs/ directory exists yet, so no previously merged spec folders were eligible for cleanup."
-  },
-  "prerequisites": {
-    "scripts_dir": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/1.11.1/skills/speckit-autopilot/scripts",
-    "commands": {
-      "BUILD": "pnpm build",
-      "TYPECHECK": "pnpm typecheck",
-      "LINT": "pnpm lint",
-      "LINT_FIX": "N/A",
-      "UNIT_TEST": "pnpm test",
-      "INTEGRATION_TEST": "pnpm test:e2e",
-      "SINGLE_FILE_TEST": "pnpm test",
-      "SINGLE_FILE_INTEGRATION": "N/A",
-      "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
-    },
-    "mcp_servers": {
-      "available": [],
-      "missing": [
-        "tavily-mcp",
-        "context7",
-        "RepoPrompt"
-      ]
-    },
-    "agents_required_installed": true,
-    "preset": "speckit-pro-reviewability"
-  },
+  "workflow_file": "docs/ai/specs/SPEC-013B-workflow.md",
+  "updated_at": "2026-05-27T19:41:58Z",
+  "active_step": "Phase 7: Implement Complete",
+  "current_spec_dir": "specs/013b-claim-reconciliation",
+  "branch": "013b-claim-reconciliation",
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -51,11 +18,7 @@
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Lifecycle and Compatibility",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Lifecycle and Compatibility Consensus",
+      "step": "Phase 2: Clarify - Pending session discovery",
       "status": "completed"
     },
     {
@@ -63,51 +26,7 @@
       "status": "completed"
     },
     {
-      "step": "Phase 4: Checklist - scheduler-runtime",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - scheduler-runtime Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - data-integrity",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - data-integrity Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - api-contracts",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - api-contracts Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - state-management",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - state-management Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - error-handling",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - error-handling Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - ux",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - ux Consensus",
+      "step": "Phase 4: Checklist - Pending domain discovery",
       "status": "completed"
     },
     {
@@ -123,32 +42,16 @@
       "status": "completed"
     },
     {
-      "step": "Phase 7: Setup and Foundation (T001-T020)",
+      "step": "Phase 6.5: Confidence Gate",
       "status": "completed"
     },
     {
-      "step": "Phase 7: US1 Enable and Observe (T021-T033)",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: US2 Manual Sync Fallback (T034-T040)",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: US3 Failure Recovery (T041-T052)",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: US4 Duplicate Prevention (T053-T061)",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Polish and Verification (T062-T072)",
+      "step": "Phase 7: Implement - Pending task decomposition",
       "status": "completed"
     },
     {
       "step": "Post: Doctor Extension Check",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Verify Implementation",
@@ -156,11 +59,11 @@
     },
     {
       "step": "Post: Verify Tasks Phantom Check",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Code Review",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Integration Suite",
@@ -168,56 +71,126 @@
     },
     {
       "step": "Post: Cleanup",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Verification and Status Sync",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Reviewability Diff Gate",
       "status": "completed"
     },
     {
+      "step": "Post: Self-Review",
+      "status": "pending"
+    },
+    {
       "step": "Post: PR Body Generation",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: PR Creation",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Review Remediation",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Retrospective",
-      "status": "completed"
+      "status": "pending"
     }
   ],
-  "post_implementation_items": {
-    "doctor": true,
-    "verify": true,
-    "verify_tasks": true,
-    "review": true,
-    "integration_suite": true,
-    "cleanup": true,
-    "verification_and_status_sync": true,
-    "reviewability_diff_gate": true,
-    "pr_body_generation": true,
-    "pr_creation": true,
-    "review_remediation": true,
-    "retrospective": true
+  "plugin_repair": {
+    "status": "completed",
+    "notes": "Resolved Codex marketplace-name collision by renaming empty auto-discovered ~/.agents/plugins/marketplace.json to racecraft-agents-local-empty, then reinstalled speckit-pro 2.4.1 from racecraft-plugins-public. Repaired the 2.4.1 Codex prereq guard so it accepts Codex command/skill paths and no longer requires .claude/commands."
+  },
+  "preflight": {
+    "status": "passed",
+    "checked_at": "2026-05-27T17:14:59Z",
+    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/6b95/racecraft-mission-control/.worktrees/013b-claim-reconciliation",
+    "prerequisites": {
+      "all_pass": true,
+      "branch": "013b-claim-reconciliation",
+      "is_worktree": true,
+      "on_feature_branch": false,
+      "speckit_cli": "specify 0.8.13",
+      "codex_entrypoints": "All SpecKit Codex commands/skills installed via .codex/commands, .agents/skills, or ~/.codex/skills",
+      "mcp_servers": "All configured: tavily-mcp context7 RepoPrompt"
+    },
+    "project_commands": {
+      "BUILD": "pnpm build",
+      "TYPECHECK": "pnpm typecheck",
+      "LINT": "pnpm lint",
+      "LINT_FIX": "N/A",
+      "UNIT_TEST": "pnpm test",
+      "INTEGRATION_TEST": "pnpm test:e2e",
+      "SINGLE_FILE_TEST": "pnpm test",
+      "SINGLE_FILE_INTEGRATION": "N/A",
+      "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
+    },
+    "presets": {
+      "reviewability_preset": "speckit-pro-reviewability",
+      "templates": "spec-template, plan-template, and tasks-template resolve to .specify/presets/speckit-pro-reviewability/templates/"
+    }
+  },
+  "archive_sweep": {
+    "status": "completed",
+    "mode": "dry-run",
+    "checked_at": "2026-05-27T17:14:59Z",
+    "current_target": "specs/013b-claim-reconciliation",
+    "active_specs_discovered": [
+      "specs/013a1-github-sync-automation"
+    ],
+    "excluded_current_spec": null,
+    "eligible_previous_specs": [
+      {
+        "path": "specs/013a1-github-sync-automation",
+        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/60",
+        "merge_sha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
+        "post_merge_status_sha": "7c6ce2ee",
+        "uat": "Operator-confirmed post-merge HITL UAT complete on 2026-05-27 per roadmap."
+      }
+    ],
+    "archiveAlreadyRecorded": false,
+    "safeToApplyCleanup": false,
+    "cleanup_blockers": [
+      "Current branch is 013b-claim-reconciliation, not a safe base branch.",
+      "Worktree is dirty due to this autopilot-state update.",
+      "Dry-run did not apply archival edits or cleanup."
+    ],
+    "notes": "SPEC-013A1 is complete and merged, but cleanup is intentionally deferred from this feature worktree. No .claude files were read or modified."
+  },
+  "external_context": {
+    "status": "fetched",
+    "retrieved_at": "2026-05-27T17:28:00Z",
+    "sources": [
+      {
+        "name": "OpenAI Harness Engineering",
+        "url": "https://openai.com/index/harness-engineering/",
+        "relevance": "Repository-local knowledge as system of record; agent legibility; feedback loops and guardrails."
+      },
+      {
+        "name": "OpenAI Symphony announcement",
+        "url": "https://openai.com/index/open-source-codex-orchestration-symphony/",
+        "relevance": "Codex orchestration pattern: one agent per task/workspace, workflow captured in versioned repository file, app-server integration."
+      },
+      {
+        "name": "OpenAI Symphony SPEC",
+        "url": "https://github.com/openai/symphony/blob/main/SPEC.md",
+        "relevance": "Workflow config contract, dispatch preflight/reconciliation, Codex app-server source-of-truth separation, runtime event/status model."
+      }
+    ],
+    "boundary_note": "Use these sources for context only; SPEC-013B must not import Symphony runner, Linear, sandbox lifecycle, retry UI, harness adapter, or long-running execution behavior."
   },
   "phase_results": {
     "specify": {
       "status": "completed",
       "gate": "G1",
       "gate_pass": true,
-      "spec_path": "specs/013a1-github-sync-automation/spec.md",
+      "spec_path": "specs/013b-claim-reconciliation/spec.md",
+      "requirements_checklist": "specs/013b-claim-reconciliation/checklists/requirements.md",
       "user_stories": 4,
-      "functional_requirements": 24,
+      "functional_requirements": 19,
       "acceptance_scenarios": 12,
+      "edge_cases": 10,
       "success_criteria": 7,
       "clarification_markers": 0
     },
@@ -225,255 +198,216 @@
       "status": "completed",
       "gate": "G2",
       "gate_pass": true,
+      "questions_resolved": 20,
+      "consensus_items": 3,
       "clarification_markers": 0,
-      "questions_resolved": 5,
-      "consensus_items": 2,
-      "functional_requirements_after_clarify": 34
+      "sessions": {
+        "claim_schema_and_lease": {
+          "questions": 5,
+          "consensus_resolved": 1
+        },
+        "github_and_task_eligibility": {
+          "questions": 5,
+          "consensus_resolved": 1
+        },
+        "dispatch_governance_integration": {
+          "questions": 5,
+          "consensus_resolved": 0
+        },
+        "evidence_and_operator_inspection": {
+          "questions": 5,
+          "consensus_resolved": 1
+        }
+      },
+      "key_outcomes": [
+        "task_stage_claims active-claim model with partial unique active index",
+        "300s default/600s capped launch-critical lease",
+        "stale GitHub truth threshold min(max(2 * interval_seconds, 600), 3600) with lifecycle health gating",
+        "dispatchAssignedTasks per-task integration before legacy launch mutation",
+        "pre-claim governance decision handling",
+        "task_claim_reconciliation.v1 read-only evidence route",
+        "positive-allowlisted claim/reconciliation payloads"
+      ]
     },
     "plan": {
       "status": "completed",
       "gate": "G3",
       "gate_pass": true,
-      "migration": "M77 077_github_sync_lifecycle",
       "artifacts": [
-        "plan.md",
-        "research.md",
-        "data-model.md",
-        "contracts/github-sync-lifecycle-api.md",
-        "quickstart.md"
-      ]
+        "specs/013b-claim-reconciliation/plan.md",
+        "specs/013b-claim-reconciliation/research.md",
+        "specs/013b-claim-reconciliation/data-model.md",
+        "specs/013b-claim-reconciliation/quickstart.md",
+        "specs/013b-claim-reconciliation/contracts/task-claim-reconciliation-api.md",
+        "specs/013b-claim-reconciliation/contracts/task-claim-reconciliation-module.md"
+      ],
+      "planned_migration": "M78 078_task_stage_claims",
+      "strict_scope_files": 7,
+      "contracts": 2,
+      "reviewability_estimate": {
+        "reviewable_loc": 650,
+        "production_files": 5,
+        "total_files": 14,
+        "primary_surface": "scheduler/runtime claim authority"
+      },
+      "clarification_markers": 0,
+      "gap_markers": 0,
+      "critical_markers": 0
     },
     "checklist": {
-      "scheduler-runtime": {
-        "status": "completed",
-        "items": 18,
-        "gaps": 1,
-        "unresolved_consensus": 0
+      "status": "completed",
+      "gate": "G4",
+      "gate_pass": true,
+      "domains": {
+        "scheduler-runtime": {
+          "items": 30,
+          "open_gaps": 0
+        },
+        "data-integrity": {
+          "items": 15,
+          "open_gaps": 0
+        },
+        "api-contracts": {
+          "items": 20,
+          "open_gaps": 0
+        },
+        "state-management": {
+          "items": 18,
+          "open_gaps": 0
+        },
+        "security": {
+          "items": 30,
+          "open_gaps": 0
+        }
       },
-      "data-integrity": {
-        "status": "completed",
-        "items": 24,
+      "total_items": 113,
+      "marker_counter": {
         "gaps": 0,
-        "unresolved_consensus": 0
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
       },
-      "api-contracts": {
-        "status": "completed",
-        "items": 26,
-        "gaps": 4,
-        "unresolved_consensus": 0
-      },
-      "state-management": {
-        "status": "completed",
-        "items": 26,
-        "gaps": 1,
-        "unresolved_consensus": 0
-      },
-      "observability-extra": {
-        "status": "completed",
-        "items": 18,
-        "gaps": 5,
-        "unresolved_consensus": 1,
-        "consensus_resolved": true
-      },
-      "error-handling": {
-        "status": "completed",
-        "items": 23,
-        "gaps": 3,
-        "unresolved_consensus": 0
-      },
-      "ux": {
-        "status": "completed",
-        "items": 20,
-        "gaps": 9,
-        "unresolved_consensus": 0
-      },
-      "summary": {
-        "status": "completed",
-        "gate": "G4",
-        "gate_pass": true,
-        "total_items": 155,
-        "total_gaps_closed": 23,
-        "remaining_gaps": 0
-      }
+      "unresolved_consensus": 0
     },
     "tasks": {
       "status": "completed",
       "gate": "G5",
       "gate_pass": true,
-      "total_tasks": 72,
+      "task_file": "specs/013b-claim-reconciliation/tasks.md",
+      "total_tasks": 57,
       "phases": 7,
-      "parallel_opportunities": 26,
+      "parallel_opportunities": 23,
       "user_stories": 4,
-      "reviewability_gate": "exception-pass"
+      "mvp_scope": "User Story 1",
+      "reviewability_gate": {
+        "status": "exception",
+        "pass": true,
+        "transition_exception": true,
+        "reviewable_loc": 2280,
+        "production_files": 19,
+        "total_files": 97,
+        "primary_surface_count": 6,
+        "notes": "Tasks-mode gate uses synthetic task_count * 40 and path extraction from task prose; ratified exception documents that implementation remains constrained to the plan budget of about 650 LOC, 5 production files, and one primary surface."
+      },
+      "marker_counter": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      }
     },
     "analyze": {
       "status": "completed",
       "gate": "G6",
       "gate_pass": true,
-      "findings": {
-        "critical": 0,
-        "high": 0,
-        "medium": 2,
+      "original_findings": {
+        "total": 3,
+        "critical": 1,
+        "high": 2,
+        "medium": 0,
         "low": 0
       },
-      "remediated": 2,
-      "remaining_critical_high": 0,
-      "consensus_items": 0
+      "remediated_findings": 3,
+      "remaining_findings": {
+        "total": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "unresolved_consensus": 0,
+      "marker_counter": {
+        "gaps": 0,
+        "clarifications": 0,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "confidence_emit": {
+        "composite": 0.92,
+        "task_understanding": 0.95,
+        "approach_clarity": 0.91,
+        "requirements_alignment": 0.93,
+        "risk_assessment": 0.89,
+        "completeness": 0.92
+      }
+    },
+    "confidence_gate": {
+      "status": "completed",
+      "gate_pass": true,
+      "threshold": 0.9,
+      "mode": "advisory",
+      "composite": 0.92,
+      "recommended_action": "proceed"
     },
     "implement": {
-      "foundation": {
-        "status": "completed",
-        "tasks": "T001-T020",
-        "verification": [
-          "pnpm exec vitest run src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts",
-          "pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/github-sync-lifecycle-api.test.ts src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/github-sync-lifecycle-errors.test.ts",
-          "pnpm guardrails:spec-013a1",
-          "targeted eslint over changed foundation files",
-          "git diff --check"
-        ]
+      "status": "completed",
+      "gate": "G7",
+      "gate_pass": true,
+      "completed_at": "2026-05-27T19:41:58Z",
+      "task_file": "specs/013b-claim-reconciliation/tasks.md",
+      "tasks_completed": 57,
+      "production_files": [
+        "src/lib/task-claim-reconciliation.ts",
+        "src/lib/task-dispatch.ts",
+        "src/lib/migrations.ts",
+        "src/app/api/tasks/[id]/claim-reconciliation/route.ts",
+        "src/app/api/index/route.ts",
+        "openapi.json"
+      ],
+      "test_files": [
+        "src/lib/__tests__/task-claim-reconciliation-fixtures.ts",
+        "src/lib/__tests__/migrations-M78-task-stage-claims.test.ts",
+        "src/lib/__tests__/task-claim-reconciliation.test.ts",
+        "src/lib/__tests__/task-dispatch-claim-reconciliation.test.ts",
+        "src/lib/__tests__/task-claim-reconciliation-route.test.ts"
+      ],
+      "supporting_artifacts": [
+        "docs/migrations/rollback-M78.sql",
+        "specs/013b-claim-reconciliation/quickstart.md",
+        "docs/ai/rc-factory-technical-roadmap.md",
+        "AGENTS.md",
+        "tsconfig.spec-strict.json",
+        "eslint.config.mjs"
+      ],
+      "verification": {
+        "focused_vitest": "passed: 4 files, 17 tests",
+        "pnpm_test": "passed: 304 files, 3156 tests",
+        "pnpm_build": "passed outside Codex sandbox; route table includes /api/tasks/[id]/claim-reconciliation",
+        "pnpm_test_e2e": "passed: 651 tests",
+        "pnpm_test_all": "passed: strict-scope, lint, typecheck, unit, build, and e2e",
+        "runtime": "direnv exec . with Node.js v22.22.2"
       },
-      "us1_enable_and_observe": {
-        "status": "completed",
-        "tasks": "T021-T033",
-        "verification": [
-          "pnpm exec vitest run src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/lib/__tests__/github-sync-engine-lifecycle.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
-          "pnpm exec playwright test tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
-          "targeted eslint over US1 files",
-          "pnpm typecheck",
-          "pnpm guardrails:spec-013a1",
-          "git diff --check"
-        ],
-        "notes": "Scoped automatic polling can be enabled, observed, disabled, and verified through API, scheduler-owned tick seams, UI controls, and manual fallback journey coverage."
-      },
-      "us2_manual_sync_fallback": {
-        "status": "completed",
-        "tasks": "T034-T040",
-        "verification": [
-          "pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
-          "targeted eslint over US2 files",
-          "pnpm typecheck"
-        ],
-        "notes": "Manual trigger and trigger-all success bodies are preserved while same-scope overlap returns deterministic 409 responses, rejected/skipped overlap terminal rows preserve cursors, automatic overlap skips ingestion, independent scopes still sync, and panel feedback shows active-run retry guidance."
-      },
-      "us3_failure_recovery": {
-        "status": "completed",
-        "tasks": "T041-T052",
-        "verification": [
-          "pnpm exec vitest run src/lib/__tests__/github-sync-engine-lifecycle.test.ts src/lib/__tests__/scheduler-github-sync-automation.test.ts src/lib/__tests__/github-sync-lifecycle-errors.test.ts src/lib/__tests__/github-sync-lifecycle-redaction.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
-          "pnpm exec playwright test tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
-          "targeted eslint over US3 files",
-          "pnpm typecheck",
-          "pnpm build",
-          "git diff --check"
-        ],
-        "notes": "Automatic failure recovery now preserves last-success cursors on failure and partials, records bounded partial reasons for page/issue/duration stops, fails malformed first pages without cursor advancement, exposes retry signal/cap/fallback diagnostics, redacts failure evidence in lifecycle status/activity payloads, and renders failure/backoff/partial/stale-recovery diagnostics without forbidden authority copy."
-      },
-      "us4_duplicate_prevention": {
-        "status": "completed",
-        "tasks": "T053-T061",
-        "verification": [
-          "pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle-ownership.test.ts src/lib/__tests__/spec006-poller.test.ts src/app/api/github/sync/__tests__/route.test.ts src/components/panels/__tests__/github-sync-panel.test.tsx",
-          "pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
-          "targeted eslint over US4 files",
-          "pnpm typecheck",
-          "pnpm build",
-          "git diff --check"
-        ],
-        "notes": "Shared repositories are grouped by workspace and repo, only the selected owner polls, non-owners record skipped_non_owner evidence without GitHub ingestion, ownership_unresolved fails closed with red health, and owner diagnostics/skipped counters render in API and UI."
-      },
-      "polish_verification": {
-        "status": "completed",
-        "tasks": "T062-T072",
-        "verification": [
-          "pnpm api:parity",
-          "pnpm knowledge:index:check",
-          "pnpm guardrails -- --suite spec-evidence-screenshots",
-          "pnpm guardrails:spec-013a1",
-          "pnpm exec vitest run src/lib/__tests__/github-sync-lifecycle.test.ts src/lib/__tests__/migrations-M77-github-sync-lifecycle.test.ts src/app/api/github/sync/__tests__/route.test.ts src/app/api/github/sync/control/__tests__/route.test.ts",
-          "pnpm test:e2e -- tests/e2e/spec-013a1-github-sync-automation.spec.ts --project=chromium",
-          "pnpm build",
-          "pnpm typecheck",
-          "pnpm lint",
-          "pnpm test",
-          "pnpm test:e2e"
-        ],
-        "notes": "Quickstart, rollback runbook, OpenAPI/API index, repo knowledge index, task evidence, and review packet are synced. Full verification passed with 300 Vitest files and 651 Playwright tests."
-      }
-    },
-    "post_implementation": {
-      "doctor": {
-        "status": "completed",
-        "verification": ".specify/extensions/doctor/scripts/bash/doctor.sh --json",
-        "notes": "0 errors, 0 warnings, 0 notes."
-      },
-      "verify": {
-        "status": "completed",
-        "notes": "No UAT blocker remained after stale review-packet/task references were corrected to current files."
-      },
-      "verify_tasks": {
-        "status": "completed",
-        "report": "specs/013a1-github-sync-automation/verify-tasks-report.md",
-        "tasks_verified": 72,
-        "flagged_tasks": 0
-      },
-      "review": {
-        "status": "completed",
-        "notes": "Initial lifecycle lease/manual run-id blockers were remediated; rerun review found no critical or important findings."
-      },
-      "integration_suite": {
-        "status": "completed",
-        "verification": "direnv exec . pnpm test:all",
-        "notes": "Strict scope, lint, typecheck, 300 Vitest files, production build, and 651 Playwright tests passed."
-      },
-      "cleanup": {
-        "status": "completed",
-        "mode": "report-only",
-        "critical": 0,
-        "small": 1,
-        "medium": 0,
-        "large": 0,
-        "notes": "Only small finding was the untracked verify-tasks report; it is retained as durable evidence."
-      },
-      "verification_and_status_sync": {
-        "status": "completed",
-        "notes": "Workflow, autopilot state, roadmap, tasks evidence, and repo knowledge status were synced before PR packaging."
-      },
-      "reviewability_diff_gate": {
-        "status": "completed",
-        "command": "reviewability-gate.sh diff origin/main...HEAD",
-        "result": {
-          "status": "exception",
-          "pass": true,
-          "transition_exception": true,
-          "reviewable_loc": 11060,
-          "production_files": 35,
-          "total_files": 63,
-          "primary_surface_count": 7
-        },
-        "notes": "The accepted multi-surface override is documented in the workflow and verify-tasks report; blockers remain visible for reviewer scope planning."
-      },
-      "pr_body_generation": {
-        "status": "completed",
-        "body_file": "/private/tmp/spec-013a1-pr-body.md"
-      },
-      "pr_creation": {
-        "status": "completed",
-        "pull_request": "https://github.com/racecraft-lab/mission-control/pull/60",
-        "branch": "013a1-github-sync-automation"
-      },
-      "review_remediation": {
-        "status": "completed",
-        "notes": "Focused lifecycle/manual run-id blockers were remediated; PR checks and visual approvals passed before PR #60 merged."
-      },
-      "retrospective": {
-        "status": "completed",
-        "report": "specs/013a1-github-sync-automation/retrospective.md",
-        "completion_rate": 100,
-        "spec_adherence": 100,
-        "critical_findings": 0,
-        "uat_blocked": false,
-        "pr_blocked_reason": "Resolved: PR #60 merged to main as 41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca and operator-confirmed post-merge UAT completed on 2026-05-27."
-      }
+      "scope_notes": [
+        "No .claude files modified.",
+        "No runner, sandbox lifecycle, harness adapter, retry/cancel/manual-release control, auto-merge, automatic triage, primary dashboard UI, or successor-selection implementation added.",
+        "Post-merge HITL UAT remains pending before SPEC-013B can move to Complete on the roadmap."
+      ]
     }
   }
 }

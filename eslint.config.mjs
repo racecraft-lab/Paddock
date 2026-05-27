@@ -102,6 +102,14 @@ const specStrictFiles = [
   'src/app/api/github/sync/control/route.ts',
   'tests/e2e/fixtures/github-sync-lifecycle.ts',
   'tests/e2e/spec-013a1-github-sync-automation.spec.ts',
+  // SPEC-013B claim and reconciliation authority.
+  'src/lib/task-claim-reconciliation.ts',
+  'src/app/api/tasks/[id]/claim-reconciliation/route.ts',
+  'src/lib/__tests__/migrations-M78-task-stage-claims.test.ts',
+  'src/lib/__tests__/task-claim-reconciliation-fixtures.ts',
+  'src/lib/__tests__/task-claim-reconciliation.test.ts',
+  'src/lib/__tests__/task-dispatch-claim-reconciliation.test.ts',
+  'src/lib/__tests__/task-claim-reconciliation-route.test.ts',
 ]
 
 const config = tseslint.config(

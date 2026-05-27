@@ -9,6 +9,7 @@ import { PILOT_MISSION_CONTROL_REPO } from './pilot-issue-eligibility'
 import { getAegis } from './aegis'
 import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
 import { resolveFlag } from './feature-flags'
+import { reconcileAndAcquireTaskStageClaim, releaseTaskStageClaim } from './task-claim-reconciliation'
 import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition, type TaskStatus } from './task-status'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
@@ -2321,6 +2322,26 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
   const now = Math.floor(Date.now() / 1000)
 
   for (const task of tasks) {
+    const claimAdmission = reconcileAndAcquireTaskStageClaim(db, {
+      taskId: task.id,
+      workspaceId: task.workspace_id,
+      leaseOwner: 'scheduler',
+      leaseRunId: `dispatch-${task.id}-${now}`,
+      now,
+      correlationId: `task-dispatch-${task.id}-${now}`,
+    })
+    const activeClaimId = claimAdmission.outcome === 'claim_acquired'
+      ? claimAdmission.active_claim_id
+      : null
+
+    if (
+      claimAdmission.outcome !== 'flag_off_legacy' &&
+      claimAdmission.outcome !== 'claim_acquired'
+    ) {
+      results.push({ id: task.id, success: true })
+      continue
+    }
+
     // Mark as in_progress immediately to prevent re-dispatch
     db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?')
       .run('in_progress', now, task.id)
@@ -2485,10 +2506,28 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
       )
 
       results.push({ id: task.id, success: true })
+      if (activeClaimId !== null) {
+        releaseTaskStageClaim(db, {
+          claimId: activeClaimId,
+          workspaceId: task.workspace_id,
+          taskId: task.id,
+          reason: 'launch_handoff_completed',
+          metadata: { correlation_id: `task-dispatch-${task.id}-${now}` },
+        })
+      }
       logger.info({ taskId: task.id, agent: task.agent_name }, 'Task dispatched and completed')
     } catch (err: any) {
       const errorMsg = err.message || 'Unknown error'
       logger.error({ taskId: task.id, agent: task.agent_name, err }, 'Task dispatch failed')
+      if (activeClaimId !== null) {
+        releaseTaskStageClaim(db, {
+          claimId: activeClaimId,
+          workspaceId: task.workspace_id,
+          taskId: task.id,
+          reason: 'dispatch_failed',
+          metadata: { correlation_id: `task-dispatch-${task.id}-${now}` },
+        })
+      }
 
       // Increment dispatch_attempts and decide next status
       const currentAttempts = (db.prepare('SELECT dispatch_attempts FROM tasks WHERE id = ?').get(task.id) as { dispatch_attempts: number } | undefined)?.dispatch_attempts ?? 0
