@@ -670,9 +670,9 @@ Document a post-merge HITL replay:
 - [x] PR review packet documents scope, non-goals, verification, rollback, feature flag, and UAT.
 - [x] Codex autopilot early-completion failure mode is tracked and prevented by a plugin-repo PR.
 - [x] Manual pre-merge UAT evidence is recorded in `specs/013b-claim-reconciliation/uat-report.md`.
-- [ ] Post-merge HITL UAT evidence is recorded before status moves to Complete.
+- [x] Post-merge HITL UAT evidence is recorded before status moves to Complete.
 
-Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all` passed in package-script order: strict-scope, lint, typecheck, 304 Vitest files with 3167 passed tests, production build, and 651 Playwright tests. Manual pre-merge UAT then passed through an isolated migrated SQLite replay with one acquired claim, one duplicate-prevented competitor, one launch-handoff release, final active-claim count `0`, and zero claim rows for local-only, repo-only, and non-`assigned` negative intake cases. The final status intentionally leaves post-merge HITL UAT open because this branch has not been merged and replayed on the target environment.
+Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all` passed in package-script order: strict-scope, lint, typecheck, 304 Vitest files with 3167 passed tests, production build, and 651 Playwright tests. Manual pre-merge UAT then passed through an isolated migrated SQLite replay with one acquired claim, one duplicate-prevented competitor, one launch-handoff release, final active-claim count `0`, and zero claim rows for local-only, repo-only, and non-`assigned` negative intake cases. PR #62 merged to `main` as `5e61d0ffc02f9345b265cd5420660d02bf693016` on 2026-05-27. Post-merge target UAT then passed on HAL with replay id `spec013b-hal-uat-2026-05-27T23-05-31-000Z`: one claim/launch path, one duplicate-prevented competitor, launch-handoff release to zero active claims, terminal `done` release, governance block with no claim, local-only/repo-only/non-`assigned` exclusion, read-model evidence, and zero disposable workspace/task residue.
 
 ### Post-Implementation Evidence
 
@@ -686,8 +686,13 @@ Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all
 - PR body generation: completed using the host repository PR template plus the SpecKit review packet.
 - PR creation: opened ready-for-review PR #62, `https://github.com/racecraft-lab/mission-control/pull/62`.
 - Review remediation: initial PR inspection found no comments or reviews to remediate; GitHub checks were still pending and visual Playwright approval was marked missing while the companion visual report job was still in progress.
-- Retrospective: completed in `specs/013b-claim-reconciliation/retrospective.md`; no spec edits proposed, 57/57 tasks verified, and post-merge HITL UAT remains the only UAT gate.
+- Retrospective: completed in `specs/013b-claim-reconciliation/retrospective.md`; no spec edits proposed, 57/57 tasks verified, and post-merge HITL UAT is now complete.
 - Manual pre-merge UAT: completed on 2026-05-27 with replay id `spec-013b-manual-uat-2026-05-27T22-24-30-806Z`; evidence is recorded in `specs/013b-claim-reconciliation/uat-report.md`.
+- PR merge: PR #62 merged to `main` as `5e61d0ffc02f9345b265cd5420660d02bf693016` on 2026-05-27.
+- HAL deployment: `/home/fredrick-gabelmann/mission-control` fast-forwarded to `5e61d0ffc02f9345b265cd5420660d02bf693016`; `pnpm install --frozen-lockfile` and `pnpm build` passed; `.next/standalone/server.js` exists; `mission-control.service` restarted and served `/login` with HTTP 200; OpenClaw gateway stayed active; live DB contains migration markers `076_task_stage_attempts`, `077_github_sync_lifecycle`, and `078_task_stage_claims`.
+- Manual post-merge HAL UAT: completed on 2026-05-27 with replay id `spec013b-hal-uat-2026-05-27T23-05-31-000Z`; temporary target harness passed under service-compatible Node v24.15.0 / ABI 137, then was removed. Evidence is recorded in `specs/013b-claim-reconciliation/uat-report.md`.
+- Target cleanup: HAL git status was clean after removing the temporary harness; DB cleanup checks returned `0` UAT workspaces and `0` UAT task metadata matches.
+- Operational observation: the Ideaverse deployment/1Password runbook search was relevant. Initial restart attempts failed before app startup while `op` contacted 1Password during transient resolver/IPv6 issues; service recovered and UAT passed. `timedatectl` still reported `System clock synchronized: no` and inactive NTP, which remains a host reliability follow-up outside SPEC-013B code.
 - Plugin autopilot safety: `racecraft-plugins-public` PR #93 was merged to prevent Codex autopilot from ending before PR creation and post-phase completion in future runs; PR #95 is open for the reviewability-gate false-block fix discovered during this packaging pass.
 
 ### Self-Review
@@ -695,7 +700,7 @@ Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all
 1. Tests executed: yes. Final verification ran `direnv exec . pnpm test:all` with strict-scope, lint, typecheck, Vitest, production build, and Playwright all passing; focused SPEC-013B Vitest passed 4 files and 27 tests; `git diff --check` passed.
 2. Edge cases covered: eligibility and non-claimable tasks, local-only/repo-only exclusion, duplicate active-claim prevention, SQLite constraint races, stale leases, stale GitHub truth, SPEC-013A1 lifecycle readiness, governance allow/block/defer, terminal task/GitHub/attempt release, dispatch boundary errors, release compare failures, and read-only route side-effect safety.
 3. Requirements matched: FR-001 through FR-020 are implemented through T001 through T057, and the verify-tasks report confirms 57/57 completed tasks with no phantom completions or blockers.
-4. Follow-up: post-merge HITL UAT remains intentionally open until the branch lands and a target-environment concurrent scheduler replay can be recorded.
+4. Follow-up: no SPEC-013B completion blocker remains. Host NTP remains an operational reliability follow-up for 1Password startup, not a SPEC-013B code blocker.
 
 ---
 

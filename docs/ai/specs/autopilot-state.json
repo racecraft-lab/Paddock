@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013B-workflow.md",
-  "updated_at": "2026-05-27T21:55:47Z",
+  "updated_at": "2026-05-27T23:05:31Z",
   "active_step": "Complete",
   "current_spec_dir": "specs/013b-claim-reconciliation",
   "branch": "013b-claim-reconciliation",
@@ -107,17 +107,29 @@
     "notes": "Resolved Codex marketplace-name collision by renaming empty auto-discovered ~/.agents/plugins/marketplace.json to racecraft-agents-local-empty, then reinstalled speckit-pro. PR #93 was merged to prevent Codex autopilot from ending before post-phase completion and PR creation. PR #95 is open to fix the reviewability-gate false-block discovered during SPEC-013B packaging."
   },
   "pull_request": {
-    "status": "opened",
+    "status": "merged",
     "url": "https://github.com/racecraft-lab/mission-control/pull/62",
     "number": 62,
     "base": "main",
     "head": "013b-claim-reconciliation",
+    "merged_at": "2026-05-27T22:42:30Z",
+    "merge_commit": "5e61d0ffc02f9345b265cd5420660d02bf693016",
     "initial_review_remediation": "No PR comments or reviews were present immediately after creation. Checks were still pending; visual Playwright approval was marked missing while the companion visual report job was still in progress."
   },
   "retrospective": {
     "status": "completed",
     "path": "specs/013b-claim-reconciliation/retrospective.md",
-    "notes": "No spec edits proposed. 57/57 tasks verified. Post-merge HITL UAT remains open by design."
+    "notes": "No spec edits proposed. 57/57 tasks verified. PR #62 merge, HAL deployment, and post-merge HITL UAT are complete."
+  },
+  "post_merge_closeout": {
+    "status": "completed",
+    "completed_at": "2026-05-27T23:05:31Z",
+    "hal_worktree": "/home/fredrick-gabelmann/mission-control",
+    "hal_merge_commit": "5e61d0ffc02f9345b265cd5420660d02bf693016",
+    "deployment": "HAL pulled main, ran pnpm install --frozen-lockfile, ran pnpm build, verified .next/standalone/server.js, restarted mission-control.service, served /login with HTTP 200, kept openclaw-gateway.service active, and verified M76/M77/M78 migration markers.",
+    "uat_replay_id": "spec013b-hal-uat-2026-05-27T23-05-31-000Z",
+    "uat_summary": "Target replay proved one claim_acquired path, duplicate_prevented competitor, launch_handoff_completed release, terminal task_terminal_done release, governance_blocked no-claim gate, local-only/repo-only/non-assigned exclusion, read-model evidence, and zero disposable workspace/task residue.",
+    "operational_observation": "Ideaverse runbook lookup surfaced inactive HAL NTP as a 1Password startup reliability follow-up. Initial restart attempts hit transient DNS/IPv6 1Password errors before the service recovered; this did not block SPEC-013B UAT."
   },
   "preflight": {
     "status": "passed",
@@ -423,7 +435,7 @@
       "scope_notes": [
         "No .claude files modified.",
         "No runner, sandbox lifecycle, harness adapter, retry/cancel/manual-release control, auto-merge, automatic triage, primary dashboard UI, or successor-selection implementation added.",
-        "Post-merge HITL UAT remains pending before SPEC-013B can move to Complete on the roadmap."
+        "Post-merge HITL UAT completed on HAL before SPEC-013B moved to Complete on the roadmap."
       ]
     }
   }

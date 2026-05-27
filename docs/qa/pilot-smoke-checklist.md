@@ -588,6 +588,33 @@ alone.
   Remediation or non-remediation successor tasks, claim work, start a runner,
   use sandbox or adapter state, auto-merge, or send external messages.
 
+## SPEC-013B Claim Reconciliation HAL UAT
+
+- Status: post-merge target UAT captured on HAL on 2026-05-27.
+- Merge and deployment: PR #62 merged to `main` as
+  `5e61d0ffc02f9345b265cd5420660d02bf693016`; HAL live worktree
+  `/home/fredrick-gabelmann/mission-control` was fast-forwarded to that commit,
+  `pnpm install --frozen-lockfile` and `pnpm build` passed, standalone output
+  existed, `mission-control.service` restarted, `/login` returned HTTP 200, and
+  `openclaw-gateway.service` stayed active.
+- Live DB migration smoke: target DB
+  `/home/fredrick-gabelmann/mission-control-data/mission-control.db` contained
+  `076_task_stage_attempts`, `077_github_sync_lifecycle`, and
+  `078_task_stage_claims`; backup
+  `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec013b-target-uat-20260527-175012.bak`
+  was created before replay.
+- UAT command used a temporary HAL Vitest harness under service-compatible Node:
+  `SPEC013B_UAT_DB=/home/fredrick-gabelmann/mission-control-data/mission-control.db PATH=/usr/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/bin /home/linuxbrew/.linuxbrew/bin/pnpm --dir /home/fredrick-gabelmann/mission-control exec vitest run src/lib/__tests__/spec-013b-hal-uat.test.ts --reporter=verbose`.
+- Replay id: `spec013b-hal-uat-2026-05-27T23-05-31-000Z`.
+- Acceptance evidence: first scheduler tick returned `claim_acquired`, second
+  returned `duplicate_prevented`, launch handoff released with final active
+  claim count `0`, read model returned `task_claim_reconciliation.v1` with
+  `active_claim=null`, terminal `done` reconciled as `task_terminal_done`,
+  governance block produced no claim with `governance_blocked`, and local-only,
+  repo-only, and non-`assigned` tasks were excluded.
+- Cleanup evidence: temporary harness removed, HAL git status clean, and live DB
+  cleanup checks returned `0` UAT workspaces and `0` UAT task metadata matches.
+
 ## Local-Only Exclusion
 
 - Create or identify a local-only lookalike task through normal Mission Control

@@ -20,9 +20,9 @@ findings:
   significant: 1
   minor: 1
   positive: 4
-uat_blocked: true
-pr_blocked: true
-pr_block_reason: "PR #62 is open and requires human review; checks were still running at initial post-PR inspection, and post-merge HITL UAT remains pending by design."
+uat_blocked: false
+pr_blocked: false
+pr_block_reason: "PR #62 merged to main as 5e61d0ffc02f9345b265cd5420660d02bf693016 on 2026-05-27; HAL deployment promotion and post-merge HITL UAT are complete."
 ---
 
 # Retrospective: SPEC-013B
@@ -31,7 +31,7 @@ pr_block_reason: "PR #62 is open and requires human review; checks were still ru
 
 SPEC-013B completed 57/57 tasks and implemented the requested claim and reconciliation authority for GitHub issue-linked `assigned` task stages. The implementation adds additive M78 claim persistence, pre-claim reconciliation, governance allow/block/defer handling, launch-critical-section claims, stale recovery, terminal/gated release, read-only evidence, and dispatch integration without adding runner, harness, sandbox, retry UI, auto-merge, triage, or successor-selection behavior.
 
-Spec adherence is 100% by task verification: 57 verified, 0 partial, 0 weak, 0 not found, and 0 skipped. Local verification is green: focused SPEC-013B Vitest passed 4 files and 27 tests, and `direnv exec . pnpm test:all` passed strict-scope, lint, typecheck, 3167 Vitest tests, production build, and 651 Playwright tests. PR #62 is open; completion on the roadmap remains gated by post-merge HITL UAT.
+Spec adherence is 100% by task verification: 57 verified, 0 partial, 0 weak, 0 not found, and 0 skipped. Local verification is green: focused SPEC-013B Vitest passed 4 files and 27 tests, and `direnv exec . pnpm test:all` passed strict-scope, lint, typecheck, 3167 Vitest tests, production build, and 651 Playwright tests. PR #62 merged to `main` as `5e61d0ffc02f9345b265cd5420660d02bf693016`; HAL deployment promotion and post-merge HITL UAT replay id `spec013b-hal-uat-2026-05-27T23-05-31-000Z` are complete.
 
 ## Proposed Spec Changes
 
@@ -64,7 +64,7 @@ Report-only notes for future specs:
 | Active claims release safely | Pass | Release compare-and-set, stale-owner safety, launch success/failure, and retry regression tests pass. |
 | Evidence remains read-only and safe | Pass | Route side-effect row-count tests and metadata allowlist tests pass. |
 | Successor authority remains existing code | Pass | Static import guards and dispatch tests keep `advanceTaskChain` outside the new claim authority. |
-| Post-merge UAT replay is documented | Pending | Quickstart records the replay fields/procedure; UAT cannot complete until PR #62 lands. |
+| Post-merge UAT replay is documented | Pass | HAL replay id `spec013b-hal-uat-2026-05-27T23-05-31-000Z` is recorded in `uat-report.md`, and PR #62 has landed on `main`. |
 
 ## Architecture Drift Table
 

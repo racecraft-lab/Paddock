@@ -7,7 +7,7 @@
 
 ## Scope
 
-This replay validates the SPEC-013B claim/reconciliation user acceptance behavior against an isolated migrated SQLite database before PR merge. The target-environment post-merge HITL replay remains unavailable until PR #62 lands on `main`.
+This report records both the local pre-merge replay and the post-merge HAL target replay for SPEC-013B claim/reconciliation user acceptance behavior. PR #62 has now landed on `main`, and the target-environment HITL replay passed on HAL.
 
 No UI journey was exercised because SPEC-013B introduced no primary UI. The UAT surface is claim admission, duplicate prevention, launch-handoff release evidence, negative autonomous-intake exclusion, and the read-only reconciliation evidence model.
 
@@ -98,6 +98,74 @@ Result: 1 test file passed, 1 test passed. Node runtime: v22.22.2 through `diren
 }
 ```
 
-## Remaining UAT Boundary
+## Post-Merge HAL Target UAT
 
-This report satisfies the manual pre-merge UAT replay requested on 2026-05-27. The workflow's post-merge HITL UAT checkbox should remain open until PR #62 is merged and the same replay is run against the target `main` environment.
+**Date**: 2026-05-27
+**Replay type**: target post-merge HITL UAT replay on HAL
+**Merge commit**: `5e61d0ffc02f9345b265cd5420660d02bf693016`
+**Live worktree**: `/home/fredrick-gabelmann/mission-control`
+**Live DB**: `/home/fredrick-gabelmann/mission-control-data/mission-control.db`
+**Backup before UAT**: `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec013b-target-uat-20260527-175012.bak`
+
+The target replay used the existing Ideaverse Mission Control deployment runbook. HAL pulled PR #62's merge commit, ran `pnpm install --frozen-lockfile`, rebuilt successfully, verified `.next/standalone/server.js`, restarted `mission-control.service`, served `/login` with HTTP 200, kept `openclaw-gateway.service` active, and verified live DB migration markers `076_task_stage_attempts`, `077_github_sync_lifecycle`, and `078_task_stage_claims`.
+
+The replay used a temporary Vitest harness copied to HAL, run with the service-compatible Node path, and removed after success:
+
+```bash
+SPEC013B_UAT_DB=/home/fredrick-gabelmann/mission-control-data/mission-control.db \
+PATH=/usr/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/bin \
+/home/linuxbrew/.linuxbrew/bin/pnpm --dir /home/fredrick-gabelmann/mission-control \
+  exec vitest run src/lib/__tests__/spec-013b-hal-uat.test.ts --reporter=verbose
+```
+
+Result: 1 test file passed, 1 test passed. Runtime: Node v24.15.0 / ABI 137, matching the HAL service-compatible `better-sqlite3` build.
+
+## Post-Merge Evidence Packet
+
+| Field | Value |
+|-------|-------|
+| `uat_replay_id` | `spec013b-hal-uat-2026-05-27T23-05-31-000Z` |
+| Feature flag state | `FEATURE_TASK_CONTROL_PLANE=true` through a disposable `workspaces.feature_flags` row |
+| Disposable `workspace_id` | `9` |
+| Disposable `project_id` | `10` |
+| Primary `task_id` | `44` |
+| Primary `stage_key` | `spec013b-hal-uat-2026-05-27T23-05-31-000Z-dispatch` |
+| GitHub repo | `racecraft-lab/mission-control` |
+| Primary GitHub issue number | `62` |
+| First scheduler tick outcome | `claim_acquired` |
+| Second scheduler tick outcome | `duplicate_prevented` |
+| Acquired claim id | `2` |
+| `task_stage_attempt_id` | `2` |
+| Launch-handoff release reason | `launch_handoff_completed` |
+| Primary final active-claim count | `0` |
+| Read model schema version | `task_claim_reconciliation.v1` |
+| Read model active claim | `null` |
+| Terminal release task id | `45` |
+| Terminal release outcome | `terminal_reconciled` |
+| Terminal release reason | `task_terminal_done` |
+| Governance task id | `46` |
+| Governance outcome | `governance_deferred` |
+| Governance release reason | `governance_blocked` |
+| Cleanup residue | `0` UAT workspaces and `0` UAT task metadata matches |
+
+## Post-Merge Acceptance Results
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Target deployment promotion | Pass | HAL live worktree at `5e61d0ffc02f9345b265cd5420660d02bf693016`; standalone build exists; `/login` returned HTTP 200 |
+| Workspace-scoped feature flag opt-in | Pass | `FEATURE_TASK_CONTROL_PLANE=true` only through disposable workspace JSON |
+| Issue-linked assigned task enters claim intake | Pass | Task `44`, repo `racecraft-lab/mission-control`, issue `62` |
+| Concurrent scheduler tick replay permits one active claim | Pass | First tick acquired claim `2`; second tick returned `duplicate_prevented` for the same claim |
+| Duplicate tick does not launch | Pass | One active claim existed during the critical section; final active-claim count returned to `0` after handoff release |
+| Claim releases after launch handoff | Pass | Release reason `launch_handoff_completed` |
+| Terminal task state releases active work | Pass | Task `45` reconciled as `terminal_reconciled` with release reason `task_terminal_done` |
+| Governance gate prevents launch | Pass | Task `46` returned `governance_deferred`, release reason `governance_blocked`, and no claim row |
+| Evidence visible through read model | Pass | `task_claim_reconciliation.v1`, no active claim after release |
+| Local-only tasks are excluded | Pass | `not_claimable`, reason `missing_github_repo`, zero claim rows |
+| Repo-only tasks are excluded | Pass | `not_claimable`, reason `missing_github_issue_number`, zero claim rows |
+| Non-`assigned` tasks are excluded | Pass | `not_claimable`, reason `not_assigned`, zero claim rows |
+| Target cleanup | Pass | Temporary harness removed; HAL git status clean; live DB residue checks returned `0` |
+
+## Target Operational Note
+
+The HAL restart initially exposed a host-startup reliability issue before Mission Control reached Next.js: the 1Password CLI secret-resolution step in `mc-start.sh` hit transient resolver/IPv6 errors for `team-gabelmann.1password.com`. The service later recovered and remained active for UAT. The Ideaverse HAL/1Password runbook check also showed `timedatectl` reporting `System clock synchronized: no` and inactive NTP, which is a known host risk for 1Password service-account authentication. That host NTP follow-up is outside SPEC-013B and did not block the recovered deployment or UAT replay.
