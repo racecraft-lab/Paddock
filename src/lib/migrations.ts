@@ -3585,6 +3585,7 @@ const migrations: Migration[] = [
   {
     id: '078_task_stage_claims',
     up(db: Database.Database) {
+      addColumnIfMissing(db, 'tasks', 'github_issue_state', 'github_issue_state TEXT')
       db.exec(`
         CREATE TABLE IF NOT EXISTS task_stage_claims (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3594,7 +3595,7 @@ const migrations: Migration[] = [
           task_stage_attempt_id INTEGER NOT NULL,
           claim_state TEXT NOT NULL CHECK(claim_state IN ('active', 'released', 'stale_recovered')),
           lease_owner TEXT NOT NULL CHECK(length(trim(lease_owner)) > 0),
-          lease_run_id TEXT,
+          claim_run_id TEXT NOT NULL CHECK(length(trim(claim_run_id)) > 0),
           lease_started_at INTEGER NOT NULL CHECK(lease_started_at > 0),
           lease_expires_at INTEGER NOT NULL CHECK(lease_expires_at > lease_started_at),
           release_reason TEXT CHECK(release_reason IS NULL OR release_reason IN (
@@ -3611,12 +3612,14 @@ const migrations: Migration[] = [
             'boundary_error_deferred'
           )),
           released_at INTEGER,
-          recovered_from_claim_id INTEGER,
+          released_by_run_id TEXT,
+          stale_recovered_from_claim_id INTEGER,
           metadata_json TEXT,
           created_at INTEGER NOT NULL DEFAULT (unixepoch()),
           updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
           FOREIGN KEY(task_stage_attempt_id) REFERENCES task_stage_attempts(id) ON DELETE CASCADE,
           CHECK((claim_state = 'active' AND release_reason IS NULL AND released_at IS NULL) OR (claim_state <> 'active' AND release_reason IS NOT NULL AND released_at IS NOT NULL)),
+          CHECK((claim_state = 'active' AND released_by_run_id IS NULL) OR (claim_state <> 'active' AND released_by_run_id IS NOT NULL)),
           CHECK((claim_state = 'stale_recovered') = (release_reason = 'stale_claim_recovered'))
         );
 

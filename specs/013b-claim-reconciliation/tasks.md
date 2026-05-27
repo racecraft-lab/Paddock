@@ -20,7 +20,7 @@
 **Purpose**: Prepare strict-scope configuration, shared fixtures, migration/rollback placeholders, and scope guardrails before story work.
 
 - [x] T001 Verify reviewability scope against `specs/013b-claim-reconciliation/plan.md` and record any split decision in `specs/013b-claim-reconciliation/tasks.md`
-- [x] T002 [P] Add all SPEC-013B planned TS module/test/fixture paths, including `src/lib/__tests__/task-claim-reconciliation-fixtures.ts`, to `tsconfig.spec-strict.json`
+- [x] T002 [P] Add SPEC-013B isolated strict-scope paths, including `src/lib/task-claim-reconciliation.ts`, `src/lib/__tests__/migrations-M78-task-stage-claims.test.ts`, `src/lib/__tests__/task-claim-reconciliation-fixtures.ts`, and `src/lib/__tests__/task-claim-reconciliation.test.ts`, to `tsconfig.spec-strict.json`
 - [x] T003 [P] Add all SPEC-013B planned TS module/test/fixture paths, including `src/lib/__tests__/task-claim-reconciliation-fixtures.ts`, to `eslint.config.mjs`
 - [x] T004 [P] Create reusable claim/reconciliation test fixture builders in `src/lib/__tests__/task-claim-reconciliation-fixtures.ts`
 - [x] T005 [P] Add rollback placeholder for M78 in `docs/migrations/rollback-M78.sql`

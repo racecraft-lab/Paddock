@@ -49,6 +49,11 @@ function tableColumns(db: Database.Database): string[] {
     .map((column) => column.name)
 }
 
+function taskColumns(db: Database.Database): string[] {
+  return (db.prepare('PRAGMA table_xinfo(tasks)').all() as { name: string }[])
+    .map((column) => column.name)
+}
+
 function indexColumns(db: Database.Database, indexName: string): string[] {
   return (db.prepare(`PRAGMA index_xinfo(${indexName})`).all() as { name: string | null; key: number }[])
     .filter((column) => column.key === 1)
@@ -72,12 +77,14 @@ function insertClaim(
   const state = values.state ?? 'active'
   const reason = values.reason === undefined ? (state === 'active' ? null : 'launch_handoff_completed') : values.reason
   const releasedAt = state === 'active' ? null : 1770000300
+  const releasedByRunId = state === 'active' ? null : 'dispatch-run'
   db.prepare(`
     INSERT INTO task_stage_claims (
       workspace_id, task_id, stage_key, task_stage_attempt_id, claim_state,
-      lease_owner, lease_started_at, lease_expires_at, release_reason, released_at
-    ) VALUES (1, 100, 'dev', ?, ?, 'scheduler', 1770000000, 1770000300, ?, ?)
-  `).run(insertAttempt(db, values.attemptNumber ?? 1), state, reason, releasedAt)
+      lease_owner, claim_run_id, lease_started_at, lease_expires_at,
+      release_reason, released_at, released_by_run_id
+    ) VALUES (1, 100, 'dev', ?, ?, 'scheduler', 'dispatch-run', 1770000000, 1770000300, ?, ?, ?)
+  `).run(insertAttempt(db, values.attemptNumber ?? 1), state, reason, releasedAt, releasedByRunId)
 }
 
 describe('M78 task-stage claim persistence migration', () => {
@@ -98,12 +105,13 @@ describe('M78 task-stage claim persistence migration', () => {
       'task_stage_attempt_id',
       'claim_state',
       'lease_owner',
-      'lease_run_id',
+      'claim_run_id',
       'lease_started_at',
       'lease_expires_at',
       'release_reason',
       'released_at',
-      'recovered_from_claim_id',
+      'released_by_run_id',
+      'stale_recovered_from_claim_id',
       'metadata_json',
       'created_at',
       'updated_at',
@@ -121,7 +129,10 @@ describe('M78 task-stage claim persistence migration', () => {
 
     db.prepare(`
       UPDATE task_stage_claims
-      SET claim_state = 'released', release_reason = 'launch_handoff_completed', released_at = 1770000010
+      SET claim_state = 'released',
+          release_reason = 'launch_handoff_completed',
+          released_at = 1770000010,
+          released_by_run_id = 'dispatch-run'
       WHERE id = 1
     `).run()
     expect(() => {
@@ -160,6 +171,12 @@ describe('M78 task-stage claim persistence migration', () => {
     expect(indexColumns(db, 'idx_task_stage_claims_attempt_unique')).toEqual(['task_stage_attempt_id'])
     expect(indexColumns(db, 'idx_task_stage_claims_task_history')).toEqual(['workspace_id', 'task_id', 'stage_key', 'id'])
     expect(indexes.get('idx_task_stage_claims_lease')).toMatchObject({ unique: 0, partial: 1 })
+  })
+
+  it('adds live GitHub issue-state terminal truth to tasks', () => {
+    const db = openMigratedDb()
+
+    expect(taskColumns(db)).toContain('github_issue_state')
   })
 })
 

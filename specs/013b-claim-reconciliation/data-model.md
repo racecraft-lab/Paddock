@@ -91,7 +91,7 @@ Fields:
 - `github_repo`, `github_issue_number`, `github_pr_number`, `github_synced_at`, `github_truth_age_seconds`, `freshness_threshold_seconds`.
 - `lifecycle_result`, `lifecycle_health`, `lifecycle_interval_seconds`, `lifecycle_lease_stale`.
 - `governance_decision`, `governance_policy_event_id`, `governance_audit_id`, `governance_reason_codes`.
-- `boundary_error_category`: one of `sqlite_constraint_race`, `sqlite_busy`, `sqlite_database_error`, `malformed_claim_input`, `governance_evaluator_error`, `release_compare_failed`, or `unknown`.
+- `boundary_error_category`: one of `sqlite_constraint_race`, `sqlite_database_error`, `malformed_claim_input`, `governance_evaluator_error`, `release_compare_failed`, or `unknown_boundary_error`.
 - `correlation_id`, `redaction_applied`.
 
 Safety rules:

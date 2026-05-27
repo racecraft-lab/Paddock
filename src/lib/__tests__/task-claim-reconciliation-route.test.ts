@@ -79,6 +79,22 @@ function request(path: string, init?: ConstructorParameters<typeof NextRequest>[
   return new NextRequest(`http://localhost${path}`, init)
 }
 
+function readSideEffectCounts(db: ReturnType<typeof openTaskClaimDb>) {
+  const tables = [
+    'tasks',
+    'task_stage_claims',
+    'task_stage_attempts',
+    'task_stage_attempt_events',
+    'activities',
+    'github_sync_lifecycle_controls',
+    'github_sync_lifecycle_runs',
+  ] as const
+  return Object.fromEntries(tables.map((table) => [
+    table,
+    (db.prepare(`SELECT COUNT(*) as count FROM ${table}`).get() as { count: number }).count,
+  ])) as Record<(typeof tables)[number], number>
+}
+
 describe('SPEC-013B claim reconciliation API documentation', () => {
   it('documents the read-only OpenAPI contract and API index entry', async () => {
     const doc = loadOpenApiDoc()
@@ -118,11 +134,11 @@ describe('GET /api/tasks/[id]/claim-reconciliation', () => {
     })
     expect(malformed.status).toBe(400)
 
-    const before = claimDb.prepare('SELECT COUNT(*) as count FROM activities').get()
+    const before = readSideEffectCounts(claimDb)
     const response = await route.GET(request('/api/tasks/100/claim-reconciliation?workspace_id=1'), {
       params: Promise.resolve({ id: '100' }),
     })
-    const after = claimDb.prepare('SELECT COUNT(*) as count FROM activities').get()
+    const after = readSideEffectCounts(claimDb)
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toMatchObject({
       schema_version: 'task_claim_reconciliation.v1',

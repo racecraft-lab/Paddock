@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013B-workflow.md",
-  "updated_at": "2026-05-27T19:41:58Z",
-  "active_step": "Phase 7: Implement Complete",
+  "updated_at": "2026-05-27T21:49:15Z",
+  "active_step": "Post: PR Body Generation",
   "current_spec_dir": "specs/013b-claim-reconciliation",
   "branch": "013b-claim-reconciliation",
   "plan": [
@@ -51,7 +51,7 @@
     },
     {
       "step": "Post: Doctor Extension Check",
-      "status": "pending"
+      "status": "skipped"
     },
     {
       "step": "Post: Verify Implementation",
@@ -59,11 +59,11 @@
     },
     {
       "step": "Post: Verify Tasks Phantom Check",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Code Review",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Integration Suite",
@@ -71,7 +71,7 @@
     },
     {
       "step": "Post: Cleanup",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Reviewability Diff Gate",
@@ -79,7 +79,7 @@
     },
     {
       "step": "Post: Self-Review",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Body Generation",
@@ -96,11 +96,15 @@
     {
       "step": "Post: Retrospective",
       "status": "pending"
+    },
+    {
+      "step": "Plugin PR: fix Codex autopilot early-termination failure mode",
+      "status": "completed"
     }
   ],
   "plugin_repair": {
     "status": "completed",
-    "notes": "Resolved Codex marketplace-name collision by renaming empty auto-discovered ~/.agents/plugins/marketplace.json to racecraft-agents-local-empty, then reinstalled speckit-pro 2.4.1 from racecraft-plugins-public. Repaired the 2.4.1 Codex prereq guard so it accepts Codex command/skill paths and no longer requires .claude/commands."
+    "notes": "Resolved Codex marketplace-name collision by renaming empty auto-discovered ~/.agents/plugins/marketplace.json to racecraft-agents-local-empty, then reinstalled speckit-pro. PR #93 was merged to prevent Codex autopilot from ending before post-phase completion and PR creation. PR #95 is open to fix the reviewability-gate false-block discovered during SPEC-013B packaging."
   },
   "preflight": {
     "status": "passed",
@@ -396,8 +400,8 @@
         "eslint.config.mjs"
       ],
       "verification": {
-        "focused_vitest": "passed: 4 files, 17 tests",
-        "pnpm_test": "passed: 304 files, 3156 tests",
+        "focused_vitest": "passed: 4 files, 27 tests",
+        "pnpm_test": "passed: 304 files, 3167 tests, 33 skipped files, 3 skipped tests, 84 todo",
         "pnpm_build": "passed outside Codex sandbox; route table includes /api/tasks/[id]/claim-reconciliation",
         "pnpm_test_e2e": "passed: 651 tests",
         "pnpm_test_all": "passed: strict-scope, lint, typecheck, unit, build, and e2e",

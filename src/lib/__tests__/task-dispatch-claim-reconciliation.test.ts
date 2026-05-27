@@ -49,10 +49,20 @@ function openDispatchDb(): Database.Database {
       github_synced_at INTEGER,
       tags TEXT,
       metadata TEXT,
+      outcome TEXT,
+      resolution TEXT,
       dispatch_attempts INTEGER NOT NULL DEFAULT 0,
       error_message TEXT,
       created_at INTEGER NOT NULL DEFAULT 1,
       updated_at INTEGER NOT NULL DEFAULT 1
+    );
+    CREATE TABLE comments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      task_id INTEGER NOT NULL,
+      author TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at INTEGER NOT NULL,
+      workspace_id INTEGER NOT NULL
     );
     CREATE TABLE activities (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,7 +87,25 @@ function openDispatchDb(): Database.Database {
   return db
 }
 
-async function importDispatch(db: Database.Database, admission: unknown) {
+async function importDispatch(
+  db: Database.Database,
+  admission: unknown,
+  options: {
+    readonly runOpenClaw?: ReturnType<typeof vi.fn>
+    readonly releaseTaskStageClaim?: ReturnType<typeof vi.fn>
+    readonly boundaryCategory?: string
+  } = {},
+) {
+  const reconcileAndAcquireTaskStageClaim = vi.fn(() => {
+    if (admission instanceof Error) throw admission
+    return admission
+  })
+  const releaseTaskStageClaim = options.releaseTaskStageClaim ?? vi.fn(() => true)
+  const runOpenClaw = options.runOpenClaw ?? vi.fn().mockResolvedValue({
+    stdout: JSON.stringify({ payloads: [{ text: 'Agent completed implementation.' }], sessionId: 'session-1' }),
+    stderr: '',
+    code: 0,
+  })
   vi.doMock('@/lib/db', () => ({
     getDatabase: () => db,
     db_helpers: {
@@ -89,20 +117,25 @@ async function importDispatch(db: Database.Database, admission: unknown) {
       }),
     },
   }))
+  vi.doMock('@/lib/command', () => ({ runOpenClaw }))
+  vi.doMock('@/lib/config', () => ({ config: { openclawHome: '/tmp/openclaw' } }))
   vi.doMock('@/lib/event-bus', () => ({ eventBus: { broadcast: vi.fn() } }))
   vi.doMock('@/lib/github-sync-engine', () => ({ syncTaskOutbound: vi.fn() }))
   vi.doMock('@/lib/logger', () => ({ logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn() } }))
   vi.doMock('@/lib/task-claim-reconciliation', () => ({
-    reconcileAndAcquireTaskStageClaim: vi.fn(() => admission),
-    releaseTaskStageClaim: vi.fn(),
+    classifyClaimBoundaryError: vi.fn(() => options.boundaryCategory ?? 'sqlite_database_error'),
+    deriveTaskStageKey: vi.fn(() => 'dev'),
+    reconcileAndAcquireTaskStageClaim,
+    releaseTaskStageClaim,
   }))
-  return import('@/lib/task-dispatch')
+  const taskDispatchModule = await import('@/lib/task-dispatch')
+  return { ...taskDispatchModule, reconcileAndAcquireTaskStageClaim, releaseTaskStageClaim, runOpenClaw }
 }
 
 describe('dispatchAssignedTasks SPEC-013B claim boundary', () => {
   it('skips launch when claim reconciliation reports a duplicate active claim', async () => {
     const db = openDispatchDb()
-    const { dispatchAssignedTasks } = await importDispatch(db, {
+    const { dispatchAssignedTasks, runOpenClaw } = await importDispatch(db, {
       outcome: 'duplicate_prevented',
       stage_key: 'dev',
       active_claim_id: 88,
@@ -115,5 +148,127 @@ describe('dispatchAssignedTasks SPEC-013B claim boundary', () => {
     expect(result).toEqual({ ok: true, message: 'Dispatched 1/1 tasks' })
     expect(db.prepare('SELECT status FROM tasks WHERE id = 100').get()).toEqual({ status: 'assigned' })
     expect(db.prepare("SELECT COUNT(*) as count FROM activities WHERE type = 'task_dispatched'").get()).toEqual({ count: 0 })
+    expect(runOpenClaw).not.toHaveBeenCalled()
+  })
+
+  it('marks legacy flag-off admission as a normal dispatch path', async () => {
+    const db = openDispatchDb()
+    const { dispatchAssignedTasks, releaseTaskStageClaim, runOpenClaw } = await importDispatch(db, {
+      outcome: 'flag_off_legacy',
+      stage_key: 'dev',
+      active_claim_id: null,
+      task_stage_attempt_id: null,
+      reason: 'feature_flag_off',
+    })
+
+    const result = await dispatchAssignedTasks()
+
+    expect(result).toEqual({ ok: true, message: 'Dispatched 1/1 tasks' })
+    expect(db.prepare('SELECT status, outcome FROM tasks WHERE id = 100').get()).toEqual({ status: 'review', outcome: 'success' })
+    expect(db.prepare("SELECT COUNT(*) as count FROM activities WHERE type = 'task_dispatched'").get()).toEqual({ count: 1 })
+    expect(runOpenClaw).toHaveBeenCalledTimes(1)
+    expect(releaseTaskStageClaim).not.toHaveBeenCalled()
+  })
+
+  it('releases the owning claim after a successful launch handoff', async () => {
+    const db = openDispatchDb()
+    const { dispatchAssignedTasks, releaseTaskStageClaim, runOpenClaw } = await importDispatch(db, {
+      outcome: 'claim_acquired',
+      stage_key: 'dev',
+      active_claim_id: 77,
+      task_stage_attempt_id: 12,
+      reason: 'claim_acquired',
+    })
+
+    const result = await dispatchAssignedTasks()
+
+    expect(result).toEqual({ ok: true, message: 'Dispatched 1/1 tasks' })
+    expect(runOpenClaw).toHaveBeenCalledTimes(1)
+    interface ReleaseInput {
+      claimId: number
+      workspaceId: number
+      taskId: number
+      stageKey: string
+      claimRunId: string
+      releasedByRunId: string
+      reason: string
+    }
+    const releaseCalls = releaseTaskStageClaim.mock.calls as unknown as [unknown, ReleaseInput][]
+    const releaseInput = releaseCalls[0]?.[1]
+    expect(releaseInput).toBeDefined()
+    expect(releaseInput).toMatchObject({
+      claimId: 77,
+      workspaceId: 1,
+      taskId: 100,
+      stageKey: 'dev',
+      reason: 'launch_handoff_completed',
+    })
+    expect(releaseInput.claimRunId).toMatch(/^dispatch-100-\d+$/)
+    expect(releaseInput.releasedByRunId).toBe(releaseInput.claimRunId)
+  })
+
+  it('records a boundary deferral and continues the scheduler tick when claim admission throws', async () => {
+    const db = openDispatchDb()
+    const { dispatchAssignedTasks, runOpenClaw } = await importDispatch(db, new Error('SQLITE_BUSY: database is locked'))
+
+    const result = await dispatchAssignedTasks()
+
+    expect(result).toEqual({ ok: true, message: 'Dispatched 1/1 tasks' })
+    expect(db.prepare('SELECT status FROM tasks WHERE id = 100').get()).toEqual({ status: 'assigned' })
+    const boundaryRow = db.prepare(`
+      SELECT type, data
+      FROM activities
+      WHERE type = 'task_stage_claim_boundary_deferred'
+    `).get() as { type: string; data: string } | undefined
+    expect(boundaryRow?.type).toBe('task_stage_claim_boundary_deferred')
+    expect(boundaryRow?.data).toContain('"boundary_error_category":"sqlite_database_error"')
+    expect(runOpenClaw).not.toHaveBeenCalled()
+  })
+
+  it('records duplicate-prevented evidence instead of boundary deferral for SQLite constraint races', async () => {
+    const db = openDispatchDb()
+    const { dispatchAssignedTasks, runOpenClaw } = await importDispatch(db, new Error('SQLITE_CONSTRAINT_UNIQUE: idx_task_stage_claims_active_unique'), {
+      boundaryCategory: 'sqlite_constraint_race',
+    })
+
+    const result = await dispatchAssignedTasks()
+
+    expect(result).toEqual({ ok: true, message: 'Dispatched 1/1 tasks' })
+    expect(db.prepare('SELECT status FROM tasks WHERE id = 100').get()).toEqual({ status: 'assigned' })
+    expect(db.prepare("SELECT COUNT(*) as count FROM activities WHERE type = 'task_stage_claim_boundary_deferred'").get()).toEqual({ count: 0 })
+    const duplicateRow = db.prepare(`
+      SELECT type, data
+      FROM activities
+      WHERE type = 'task_stage_claim_duplicate_prevented'
+    `).get() as { type: string; data: string } | undefined
+    expect(duplicateRow?.type).toBe('task_stage_claim_duplicate_prevented')
+    expect(duplicateRow?.data).toContain('"outcome":"duplicate_prevented"')
+    expect(duplicateRow?.data).toContain('"boundary_error_category":"sqlite_constraint_race"')
+    expect(runOpenClaw).not.toHaveBeenCalled()
+  })
+
+  it('records a release compare boundary when claim release compare-and-set fails', async () => {
+    const db = openDispatchDb()
+    const releaseTaskStageClaim = vi.fn(() => false)
+    const { dispatchAssignedTasks, runOpenClaw } = await importDispatch(db, {
+      outcome: 'claim_acquired',
+      stage_key: 'dev',
+      active_claim_id: 77,
+      task_stage_attempt_id: 12,
+      reason: 'claim_acquired',
+    }, { releaseTaskStageClaim })
+
+    const result = await dispatchAssignedTasks()
+
+    expect(result).toEqual({ ok: true, message: 'Dispatched 1/1 tasks' })
+    expect(runOpenClaw).toHaveBeenCalledTimes(1)
+    expect(releaseTaskStageClaim).toHaveBeenCalledTimes(1)
+    const boundaryRow = db.prepare(`
+      SELECT type, data
+      FROM activities
+      WHERE type = 'task_stage_claim_boundary_deferred'
+    `).get() as { type: string; data: string } | undefined
+    expect(boundaryRow?.type).toBe('task_stage_claim_boundary_deferred')
+    expect(boundaryRow?.data).toContain('"boundary_error_category":"release_compare_failed"')
   })
 })

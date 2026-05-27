@@ -68,13 +68,13 @@ All commands were run with `direnv exec .` so the worktree used Node.js v22.22.2
 direnv exec . pnpm exec vitest run src/lib/__tests__/migrations-M78-task-stage-claims.test.ts src/lib/__tests__/task-claim-reconciliation.test.ts src/lib/__tests__/task-dispatch-claim-reconciliation.test.ts src/lib/__tests__/task-claim-reconciliation-route.test.ts
 ```
 
-Result: 4 files passed, 17 tests passed.
+Result: 4 files passed, 27 tests passed.
 
 ```bash
 direnv exec . pnpm test
 ```
 
-Result: 304 files passed, 33 skipped; 3156 tests passed, 3 skipped, 84 todo.
+Result: 304 files passed, 33 skipped; 3167 tests passed, 3 skipped, 84 todo.
 
 ```bash
 direnv exec . pnpm build
@@ -92,7 +92,7 @@ Result: 651 passed.
 direnv exec . pnpm test:all
 ```
 
-Result: passed. Package-script order completed `pnpm check:strict-scope`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm test:e2e`. The final e2e step reported 651 passed.
+Result: passed. Package-script order completed `pnpm check:strict-scope`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, and `pnpm test:e2e`. The final Vitest step reported 3167 passed tests and the final e2e step reported 651 passed.
 
 ### Reviewability And Guard Notes
 

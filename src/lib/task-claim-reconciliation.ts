@@ -1,4 +1,6 @@
 import { resolveFlag } from './feature-flags'
+import { writeDecision } from './resource-decision-writer'
+import { resourcePolicyEvaluator, type DecisionOutput } from './resource-evaluator'
 import { detectSecrets } from './secret-detector'
 import {
   appendTaskStageAttemptEvent,
@@ -88,12 +90,13 @@ interface ClaimRow {
   readonly task_stage_attempt_id: number
   readonly claim_state: 'active' | 'released' | 'stale_recovered'
   readonly lease_owner: string
-  readonly lease_run_id: string | null
+  readonly claim_run_id: string
   readonly lease_started_at: number
   readonly lease_expires_at: number
   readonly release_reason: TaskStageClaimReleaseReason | null
   readonly released_at: number | null
-  readonly recovered_from_claim_id: number | null
+  readonly released_by_run_id: string | null
+  readonly stale_recovered_from_claim_id: number | null
   readonly metadata_json: string | null
   readonly created_at: number
   readonly updated_at: number
@@ -107,6 +110,7 @@ export interface ReconcileAndAcquireTaskStageClaimInput {
   readonly taskId: number
   readonly workspaceId: number
   readonly leaseOwner: string
+  readonly claimRunId?: string | null
   readonly leaseRunId?: string | null
   readonly leaseSeconds?: number | null
   readonly now?: number
@@ -135,6 +139,9 @@ export interface ReleaseTaskStageClaimInput {
   readonly claimId: number
   readonly workspaceId: number
   readonly taskId: number
+  readonly stageKey: string
+  readonly claimRunId: string
+  readonly releasedByRunId?: string | null
   readonly reason: Exclude<TaskStageClaimReleaseReason, 'stale_claim_recovered'>
   readonly now?: number
   readonly metadata?: Record<string, unknown>
@@ -175,12 +182,13 @@ export interface SerializedClaim {
   readonly task_stage_attempt_id: string
   readonly claim_state: ClaimRow['claim_state']
   readonly lease_owner: string
-  readonly lease_run_id: string | null
+  readonly claim_run_id: string
   readonly lease_started_at: number
   readonly lease_expires_at: number
   readonly release_reason: TaskStageClaimReleaseReason | null
   readonly released_at: number | null
-  readonly recovered_from_claim_id: string | null
+  readonly released_by_run_id: string | null
+  readonly stale_recovered_from_claim_id: string | null
   readonly metadata: unknown
 }
 
@@ -202,7 +210,7 @@ export function deriveTaskStageKey(task: Pick<TaskRow, 'workflow_template_slug' 
   if (Number.isSafeInteger(task.workflow_template_id ?? NaN) && (task.workflow_template_id ?? 0) > 0) {
     return `workflow-template-${String(task.workflow_template_id)}`
   }
-  return 'assigned'
+  return 'assigned_dispatch'
 }
 
 export function validateGitHubRepositoryFullName(value: unknown): string | null {
@@ -231,7 +239,7 @@ export function reconcileAndAcquireTaskStageClaim(
 ): ReconcileAndAcquireTaskStageClaimResult {
   const now = input.now ?? Math.floor(Date.now() / 1000)
   const task = readTask(db, input.workspaceId, input.taskId)
-  const stageKey = task ? deriveTaskStageKey(task) : 'assigned'
+  const stageKey = task ? deriveTaskStageKey(task) : 'assigned_dispatch'
 
   if (!isTaskControlPlaneEnabled(db, input.workspaceId)) {
     return {
@@ -261,8 +269,11 @@ export function reconcileAndAcquireTaskStageClaim(
 
   const latestTerminalAttempt = readLatestTerminalAttempt(db, task.workspace_id, task.id, stageKey)
   if (latestTerminalAttempt) {
-    releaseMatchingActiveClaims(db, task, stageKey, 'attempt_terminal_reconciled', now, input.correlationId ?? null)
-    return evidenceOnly(db, input, task, stageKey, 'terminal_reconciled', 'attempt_terminal', now, 'attempt_terminal_reconciled')
+    const activeForTerminalAttempt = readActiveClaim(db, task.workspace_id, task.id, stageKey)
+    if (activeForTerminalAttempt?.task_stage_attempt_id === latestTerminalAttempt.id) {
+      releaseMatchingActiveClaims(db, task, stageKey, 'attempt_terminal_reconciled', now, input.correlationId ?? null)
+      return evidenceOnly(db, input, task, stageKey, 'terminal_reconciled', 'attempt_terminal', now, 'attempt_terminal_reconciled')
+    }
   }
 
   const eligibility = validateClaimEligibility(db, task, now)
@@ -270,18 +281,21 @@ export function reconcileAndAcquireTaskStageClaim(
     return notClaimableOrDeferred(db, input, task, stageKey, now, eligibility.reason, eligibility.defer)
   }
 
-  if (input.governanceDecision && input.governanceDecision.result !== 'allow') {
-    const releaseReason = input.governanceDecision.result === 'block' ? 'governance_blocked' : 'governance_deferred'
+  const governanceDecision = input.governanceDecision === undefined
+    ? evaluateGovernanceDecision(db, input, task, now)
+    : input.governanceDecision
+  if (governanceDecision && governanceDecision.result !== 'allow') {
+    const releaseReason = governanceDecision.result === 'block' ? 'governance_blocked' : 'governance_deferred'
     const outcome = 'governance_deferred'
     writeActivity(db, {
       task,
       type: TASK_STAGE_CLAIM_ACTIVITY_BY_OUTCOME[outcome],
-      description: `Task stage claim ${input.governanceDecision.result}ed by governance`,
+      description: `Task stage claim ${governanceDecision.result}ed by governance`,
       data: safeMetadata({
         outcome,
-        reason: input.governanceDecision.reason,
+        reason: governanceDecision.reason,
         release_reason: releaseReason,
-        policy_id: input.governanceDecision.policy_id ?? null,
+        policy_id: governanceDecision.policy_id ?? null,
         stage_key: stageKey,
         correlation_id: input.correlationId ?? null,
       }),
@@ -291,12 +305,13 @@ export function reconcileAndAcquireTaskStageClaim(
       stage_key: stageKey,
       active_claim_id: null,
       task_stage_attempt_id: null,
-      reason: input.governanceDecision.reason,
+      reason: governanceDecision.reason,
       release_reason: releaseReason,
     }
   }
 
-  return db.transaction(() => {
+  try {
+    return db.transaction(() => {
     const expired = db.prepare(`
       SELECT *
       FROM task_stage_claims
@@ -309,16 +324,18 @@ export function reconcileAndAcquireTaskStageClaim(
       LIMIT 1
     `).get(task.workspace_id, task.id, stageKey, now) as ClaimRow | undefined
 
+    const recoveredFromClaimId = expired?.id ?? null
     if (expired) {
       db.prepare(`
         UPDATE task_stage_claims
         SET claim_state = 'stale_recovered',
             release_reason = 'stale_claim_recovered',
             released_at = ?,
+            released_by_run_id = ?,
             updated_at = ?,
             metadata_json = ?
         WHERE id = ? AND claim_state = 'active'
-      `).run(now, now, JSON.stringify(safeMetadata({ recovered_by: input.leaseOwner, correlation_id: input.correlationId ?? null })), expired.id)
+      `).run(now, claimRunIdFor(input, task, stageKey, now), now, JSON.stringify(safeMetadata({ recovered_by: input.leaseOwner, correlation_id: input.correlationId ?? null })), expired.id)
       writeActivity(db, {
         task,
         type: TASK_STAGE_CLAIM_ACTIVITY_BY_OUTCOME.stale_recovered,
@@ -335,18 +352,7 @@ export function reconcileAndAcquireTaskStageClaim(
 
     const active = readActiveClaim(db, task.workspace_id, task.id, stageKey)
     if (active) {
-      writeActivity(db, {
-        task,
-        type: TASK_STAGE_CLAIM_ACTIVITY_BY_OUTCOME.duplicate_prevented,
-        description: 'Prevented duplicate active task stage claim',
-        data: safeMetadata({
-          outcome: 'duplicate_prevented',
-          active_claim_id: active.id,
-          stage_key: stageKey,
-          lease_expires_at: active.lease_expires_at,
-          correlation_id: input.correlationId ?? null,
-        }),
-      })
+      writeDuplicatePreventedActivity(db, task, active, stageKey, input.correlationId ?? null)
       return {
         outcome: 'duplicate_prevented',
         stage_key: stageKey,
@@ -357,6 +363,7 @@ export function reconcileAndAcquireTaskStageClaim(
     }
 
     const attemptNumber = nextAttemptNumber(db, task.workspace_id, task.id, stageKey)
+    const claimRunId = claimRunIdFor(input, task, stageKey, now)
     const attempt = createTaskStageAttempt(db, {
       workspaceId: task.workspace_id,
       taskId: task.id,
@@ -365,7 +372,7 @@ export function reconcileAndAcquireTaskStageClaim(
       status: 'running',
       actorType: 'system',
       actorId: input.leaseOwner,
-      runId: input.leaseRunId ?? null,
+      runId: claimRunId,
       message: 'Task stage claim acquired',
       metadata: safeMetadata({
         claim_owner: input.leaseOwner,
@@ -381,26 +388,29 @@ export function reconcileAndAcquireTaskStageClaim(
         task_stage_attempt_id,
         claim_state,
         lease_owner,
-        lease_run_id,
+        claim_run_id,
         lease_started_at,
         lease_expires_at,
+        stale_recovered_from_claim_id,
         metadata_json,
         created_at,
         updated_at
-      ) VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       task.workspace_id,
       task.id,
       stageKey,
       Number(attempt.id),
       input.leaseOwner,
-      input.leaseRunId ?? null,
+      claimRunId,
       now,
       now + leaseSeconds,
+      recoveredFromClaimId,
       JSON.stringify(safeMetadata({
         outcome: 'claim_acquired',
         github_repo: task.github_repo,
         github_issue_number: task.github_issue_number,
+        claim_run_id: claimRunId,
         lease_seconds: leaseSeconds,
         correlation_id: input.correlationId ?? null,
       })),
@@ -430,7 +440,23 @@ export function reconcileAndAcquireTaskStageClaim(
       task_stage_attempt_id: Number(attempt.id),
       reason: 'claim_acquired',
     } as const
-  })()
+    })()
+  } catch (err) {
+    if (classifyClaimBoundaryError(err) === 'sqlite_constraint_race') {
+      const active = readActiveClaim(db, task.workspace_id, task.id, stageKey)
+      if (active) {
+        writeDuplicatePreventedActivity(db, task, active, stageKey, input.correlationId ?? null)
+        return {
+          outcome: 'duplicate_prevented',
+          stage_key: stageKey,
+          active_claim_id: active.id,
+          task_stage_attempt_id: active.task_stage_attempt_id,
+          reason: 'sqlite_constraint_race',
+        }
+      }
+    }
+    throw err
+  }
 }
 
 export function releaseTaskStageClaim(
@@ -438,11 +464,19 @@ export function releaseTaskStageClaim(
   input: ReleaseTaskStageClaimInput,
 ): boolean {
   const now = input.now ?? Math.floor(Date.now() / 1000)
+  const releasedByRunId = normalizeRunId(input.releasedByRunId ?? input.claimRunId)
+  const claimRunId = normalizeRunId(input.claimRunId)
+  if (!claimRunId || !releasedByRunId || input.stageKey.trim().length === 0) return false
   const row = db.prepare(`
     SELECT *
     FROM task_stage_claims
-    WHERE id = ? AND workspace_id = ? AND task_id = ? AND claim_state = 'active'
-  `).get(input.claimId, input.workspaceId, input.taskId) as ClaimRow | undefined
+    WHERE id = ?
+      AND workspace_id = ?
+      AND task_id = ?
+      AND stage_key = ?
+      AND claim_run_id = ?
+      AND claim_state = 'active'
+  `).get(input.claimId, input.workspaceId, input.taskId, input.stageKey, claimRunId) as ClaimRow | undefined
   if (!row) return false
 
   const changed = db.prepare(`
@@ -450,10 +484,27 @@ export function releaseTaskStageClaim(
     SET claim_state = 'released',
         release_reason = ?,
         released_at = ?,
+        released_by_run_id = ?,
         updated_at = ?,
         metadata_json = ?
-    WHERE id = ? AND claim_state = 'active'
-  `).run(input.reason, now, now, JSON.stringify(safeMetadata(input.metadata ?? {})), input.claimId)
+    WHERE id = ?
+      AND workspace_id = ?
+      AND task_id = ?
+      AND stage_key = ?
+      AND claim_run_id = ?
+      AND claim_state = 'active'
+  `).run(
+    input.reason,
+    now,
+    releasedByRunId,
+    now,
+    JSON.stringify(safeMetadata({ ...input.metadata, released_by_run_id: releasedByRunId })),
+    input.claimId,
+    input.workspaceId,
+    input.taskId,
+    input.stageKey,
+    claimRunId,
+  )
 
   if (changed.changes !== 1) return false
   const task = readTask(db, input.workspaceId, input.taskId)
@@ -462,9 +513,9 @@ export function releaseTaskStageClaim(
       attemptId: row.task_stage_attempt_id,
       status: input.reason === 'launch_handoff_completed' ? 'released' : 'failed',
       actorType: 'system',
-      actorId: 'scheduler',
+      actorId: releasedByRunId,
       message: `Task stage claim released: ${input.reason}`,
-      metadata: safeMetadata({ outcome: 'released', release_reason: input.reason, claim_id: input.claimId }),
+      metadata: safeMetadata({ outcome: 'released', release_reason: input.reason, claim_id: input.claimId, released_by_run_id: releasedByRunId }),
     })
     writeActivity(db, {
       task,
@@ -476,6 +527,7 @@ export function releaseTaskStageClaim(
         task_stage_attempt_id: row.task_stage_attempt_id,
         stage_key: row.stage_key,
         release_reason: input.reason,
+        released_by_run_id: releasedByRunId,
         ...input.metadata,
       }),
     })
@@ -485,12 +537,83 @@ export function releaseTaskStageClaim(
 
 export function classifyClaimBoundaryError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error)
-  if (/unique|constraint/i.test(message)) return 'sqlite_constraint_duplicate'
-  if (/busy|locked/i.test(message)) return 'sqlite_busy'
-  if (/database|sqlite/i.test(message)) return 'database_error'
-  if (/governance/i.test(message)) return 'governance_error'
-  if (/malformed|invalid/i.test(message)) return 'malformed_input'
-  return 'unknown'
+  if (/unique|constraint/i.test(message)) return 'sqlite_constraint_race'
+  if (/busy|locked|database|sqlite/i.test(message)) return 'sqlite_database_error'
+  if (/governance/i.test(message)) return 'governance_evaluator_error'
+  if (/release.*compare|compare.*release|cas/i.test(message)) return 'release_compare_failed'
+  if (/malformed|invalid/i.test(message)) return 'malformed_claim_input'
+  return 'unknown_boundary_error'
+}
+
+function evaluateGovernanceDecision(
+  db: Database.Database,
+  input: ReconcileAndAcquireTaskStageClaimInput,
+  task: TaskRow,
+  now: number,
+): GovernanceDecision {
+  let output: DecisionOutput
+  try {
+    const agentId = agentIdForTask(db, task)
+    output = resourcePolicyEvaluator({
+      decision_class: 'task_dispatch',
+      scope: { product_line_id: task.workspace_id },
+      ...(agentId === null ? {} : { agent_id: agentId }),
+      workspace_flags: workspaceFlagsFor(db, task.workspace_id),
+    }, db)
+  } catch (err) {
+    throw new Error(`governance evaluator failed: ${classifyClaimBoundaryError(err)}`)
+  }
+
+  persistGovernanceDecision(db, input, task, output, now)
+  const policyId = output.policy_ids[0] ?? null
+  if (output.decision === 'allow') return { result: 'allow', policy_id: policyId }
+  return {
+    result: output.decision,
+    reason: output.reasons[0]?.code ?? `governance_${output.decision}`,
+    policy_id: policyId,
+  }
+}
+
+function persistGovernanceDecision(
+  db: Database.Database,
+  input: ReconcileAndAcquireTaskStageClaimInput,
+  task: TaskRow,
+  output: DecisionOutput,
+  now: number,
+): void {
+  const runId = normalizeRunId(input.claimRunId ?? input.leaseRunId)
+    ?? `claim-${String(task.workspace_id)}-${String(task.id)}-${String(now)}`
+  writeDecision(db, {
+    decision_id: `task-claim-${runId}-${String(now)}`,
+    task_id: task.id,
+    agent_id: agentIdForTask(db, task),
+    workspace_id: task.workspace_id,
+    decision: output.decision,
+    reasons: output.reasons,
+    policy_ids: output.policy_ids,
+    precedence_rank: null,
+    latency_ms: output.evaluated_at_ms,
+    breaker_state: 'closed',
+    evaluation_snapshot_json: null,
+    primary_policy_id: output.policy_ids[0] ?? null,
+    actor: 'scheduler',
+  })
+}
+
+function workspaceFlagsFor(db: Database.Database, workspaceId: number): string | null {
+  const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as { feature_flags: string | null } | undefined
+  return row?.feature_flags ?? null
+}
+
+function agentIdForTask(db: Database.Database, task: TaskRow): number | null {
+  if (!task.assigned_to) return null
+  const row = db.prepare(`
+    SELECT id
+    FROM agents
+    WHERE workspace_id = ? AND name = ?
+    LIMIT 1
+  `).get(task.workspace_id, task.assigned_to) as { id: number } | undefined
+  return row?.id ?? null
 }
 
 export function buildTaskClaimReconciliationReadModel(
@@ -660,6 +783,30 @@ function readActiveClaim(db: Database.Database, workspaceId: number, taskId: num
   `).get(workspaceId, taskId, stageKey) as ClaimRow | undefined) ?? null
 }
 
+function writeDuplicatePreventedActivity(
+  db: Database.Database,
+  task: TaskRow,
+  active: ClaimRow,
+  stageKey: string,
+  correlationId: string | null,
+): void {
+  writeActivity(db, {
+    task,
+    type: TASK_STAGE_CLAIM_ACTIVITY_BY_OUTCOME.duplicate_prevented,
+    description: 'Prevented duplicate active task stage claim',
+    data: safeMetadata({
+      outcome: 'duplicate_prevented',
+      reason: 'sqlite_constraint_race',
+      active_claim_id: active.id,
+      stage_key: stageKey,
+      lease_expires_at: active.lease_expires_at,
+      correlation_id: correlationId,
+      boundary_error_category: 'sqlite_constraint_race',
+      redacted: true,
+    }),
+  })
+}
+
 function readClaimHistory(db: Database.Database, workspaceId: number, taskId: number, limit: number): ClaimRow[] {
   return db.prepare(`
     SELECT *
@@ -704,13 +851,40 @@ function gitHubTruthFreshness(
   now: number,
 ): { readonly ok: true } | { readonly ok: false; readonly reason: string } {
   const control = db.prepare(`
-    SELECT enabled, interval_seconds, last_completed_at, last_error
+    SELECT enabled,
+           interval_seconds,
+           owner_project_id,
+           next_retry_at,
+           backoff_seconds,
+           consecutive_failures,
+           lease_run_id,
+           lease_expires_at,
+           last_completed_at,
+           last_error
     FROM github_sync_lifecycle_controls
     WHERE workspace_id = ? AND github_repo = ?
     LIMIT 1
-  `).get(task.workspace_id, repo) as { enabled: number; interval_seconds: number; last_completed_at: number | null; last_error: string | null } | undefined
+  `).get(task.workspace_id, repo) as {
+    enabled: number
+    interval_seconds: number
+    owner_project_id: number | null
+    next_retry_at: number | null
+    backoff_seconds: number
+    consecutive_failures: number
+    lease_run_id: string | null
+    lease_expires_at: number | null
+    last_completed_at: number | null
+    last_error: string | null
+  } | undefined
   if (control?.enabled !== 1) return { ok: false, reason: 'github_lifecycle_disabled' }
-  if (control.last_error) return { ok: false, reason: 'github_lifecycle_unhealthy' }
+  if (control.owner_project_id === null) return { ok: false, reason: 'github_lifecycle_ownership_unresolved' }
+  if (control.lease_run_id && control.lease_expires_at !== null && control.lease_expires_at <= now) {
+    return { ok: false, reason: 'github_lifecycle_stale_lease' }
+  }
+  if (control.last_error || control.consecutive_failures >= 3) return { ok: false, reason: 'github_lifecycle_unhealthy' }
+  if ((control.next_retry_at !== null && control.next_retry_at > now) || control.backoff_seconds > 0) {
+    return { ok: false, reason: 'github_lifecycle_backoff' }
+  }
   const syncedAt = numericTimestamp(task.github_synced_at) ?? control.last_completed_at
   if (!syncedAt) return { ok: false, reason: 'github_truth_missing' }
   const threshold = Math.min(Math.max(2 * Math.max(control.interval_seconds, 300), 600), 3600)
@@ -767,11 +941,30 @@ function releaseMatchingActiveClaims(
       claimId: claim.id,
       workspaceId: task.workspace_id,
       taskId: task.id,
+      stageKey,
+      claimRunId: claim.claim_run_id,
+      releasedByRunId: correlationId ?? claim.claim_run_id,
       reason,
       now,
       metadata: { correlation_id: correlationId },
     })
   }
+}
+
+function normalizeRunId(value: string | null | undefined): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function claimRunIdFor(
+  input: ReconcileAndAcquireTaskStageClaimInput,
+  task: TaskRow,
+  stageKey: string,
+  now: number,
+): string {
+  return normalizeRunId(input.claimRunId ?? input.leaseRunId)
+    ?? `claim-${String(task.workspace_id)}-${String(task.id)}-${stageKey}-${String(now)}`
 }
 
 function nextAttemptNumber(db: Database.Database, workspaceId: number, taskId: number, stageKey: string): number {
@@ -813,11 +1006,15 @@ function safeMetadata(input: Record<string, unknown>): Record<string, unknown> {
     'github_pr_number',
     'lease_seconds',
     'lease_expires_at',
+    'claim_run_id',
+    'released_by_run_id',
+    'stale_recovered_from_claim_id',
     'correlation_id',
     'policy_id',
     'observed_at',
     'recovered_by',
     'boundary_category',
+    'boundary_error_category',
     'redacted',
   ])
   const out: Record<string, unknown> = {}
@@ -845,12 +1042,13 @@ function serializeClaim(row: ClaimRow): SerializedClaim {
     task_stage_attempt_id: String(row.task_stage_attempt_id),
     claim_state: row.claim_state,
     lease_owner: row.lease_owner,
-    lease_run_id: row.lease_run_id,
+    claim_run_id: row.claim_run_id,
     lease_started_at: row.lease_started_at,
     lease_expires_at: row.lease_expires_at,
     release_reason: row.release_reason,
     released_at: row.released_at,
-    recovered_from_claim_id: row.recovered_from_claim_id === null ? null : String(row.recovered_from_claim_id),
+    released_by_run_id: row.released_by_run_id,
+    stale_recovered_from_claim_id: row.stale_recovered_from_claim_id === null ? null : String(row.stale_recovered_from_claim_id),
     metadata: safeParseJson(row.metadata_json),
   }
 }

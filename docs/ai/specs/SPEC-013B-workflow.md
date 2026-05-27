@@ -419,7 +419,7 @@ $speckit-plan
 ## Migration Requirements
 - If an active claim table is added, use the next migration id after live `src/lib/migrations.ts`.
 - Include idempotent forward migration tests and `docs/migrations/rollback-M<id>.sql`.
-- Add new TS/TSX files to `tsconfig.spec-strict.json` and `eslint.config.mjs`.
+- Add the isolated SPEC-013B claim module and pure helper tests to `tsconfig.spec-strict.json`; add all SPEC-013B TS/TSX files to `eslint.config.mjs`.
 ```
 
 ### Plan Results
@@ -543,7 +543,7 @@ $speckit-tasks
 - Do not add sandbox, harness, adapter, runner, manual release/retry/cancel controls, primary UI/dashboard, auto-merge, automatic triage, or Issue Remediation execution.
 - Do not make `task_stage_attempts.status = running` the active claim lock.
 - Do not admit local-only tasks into autonomous claim intake.
-- Add every new TS/TSX module to `tsconfig.spec-strict.json` and `eslint.config.mjs`.
+- Add every new TS/TSX module to `eslint.config.mjs`, and add the isolated SPEC-013B claim module plus pure helper tests to `tsconfig.spec-strict.json`. The read-only route and dispatch integration tests are covered by the main repo typecheck/lint/build/test gates because importing them into the declaration-only strict project pulls the existing auth/db/scheduler/GitHub runtime graph outside SPEC-013B ownership.
 ```
 
 ### Tasks Results
@@ -667,9 +667,28 @@ Document a post-merge HITL replay:
 - [x] Reviewability diff gate passes or records accepted exception.
 - [x] Roadmap, workflow, API index/OpenAPI if touched, migration rollback docs, and UAT checklist are synchronized.
 - [x] PR review packet documents scope, non-goals, verification, rollback, feature flag, and UAT.
+- [x] Codex autopilot early-completion failure mode is tracked and prevented by a plugin-repo PR.
 - [ ] Post-merge HITL UAT evidence is recorded before status moves to Complete.
 
-Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all` passed in package-script order: strict-scope, lint, typecheck, 304 Vitest files with 3156 passed tests, production build, and 651 Playwright tests. The final status intentionally leaves post-merge HITL UAT open because this branch has not been merged and replayed on the target environment.
+Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all` passed in package-script order: strict-scope, lint, typecheck, 304 Vitest files with 3167 passed tests, production build, and 651 Playwright tests. The final status intentionally leaves post-merge HITL UAT open because this branch has not been merged and replayed on the target environment.
+
+### Post-Implementation Evidence
+
+- Doctor extension check: skipped because `.specify/scripts/bash/doctor.sh` is not present in this repository.
+- Verify implementation: passed through focused Vitest, `pnpm typecheck`, and final full `pnpm test:all`.
+- Verify tasks phantom check: passed; `specs/013b-claim-reconciliation/verify-tasks-report.md` verifies 57/57 tasks with 0 blockers.
+- Code review: final retry-admission finding was fixed before packaging; regression coverage proves a released `dispatch_failed` passive attempt does not suppress the next retry claim.
+- Cleanup: no blockers found and no cleanup-only file edits were required.
+- Integration suite: passed through `direnv exec . pnpm test:all`, including 3167 Vitest tests and 651 Playwright tests.
+- Reviewability diff gate: ratified transition exception for the full SPEC-013B branch diff; patched gate output reports `status=exception`, `pass=true`, 6415 reviewable LOC, 14 production files, 62 total files, and 6 primary surfaces.
+- Plugin autopilot safety: `racecraft-plugins-public` PR #93 was merged to prevent Codex autopilot from ending before PR creation and post-phase completion in future runs; PR #95 is open for the reviewability-gate false-block fix discovered during this packaging pass.
+
+### Self-Review
+
+1. Tests executed: yes. Final verification ran `direnv exec . pnpm test:all` with strict-scope, lint, typecheck, Vitest, production build, and Playwright all passing; focused SPEC-013B Vitest passed 4 files and 27 tests; `git diff --check` passed.
+2. Edge cases covered: eligibility and non-claimable tasks, local-only/repo-only exclusion, duplicate active-claim prevention, SQLite constraint races, stale leases, stale GitHub truth, SPEC-013A1 lifecycle readiness, governance allow/block/defer, terminal task/GitHub/attempt release, dispatch boundary errors, release compare failures, and read-only route side-effect safety.
+3. Requirements matched: FR-001 through FR-020 are implemented through T001 through T057, and the verify-tasks report confirms 57/57 completed tasks with no phantom completions or blockers.
+4. Follow-up: post-merge HITL UAT remains intentionally open until the branch lands and a target-environment concurrent scheduler replay can be recorded.
 
 ---
 

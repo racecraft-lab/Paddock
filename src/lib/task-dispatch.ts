@@ -9,7 +9,7 @@ import { PILOT_MISSION_CONTROL_REPO } from './pilot-issue-eligibility'
 import { getAegis } from './aegis'
 import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
 import { resolveFlag } from './feature-flags'
-import { reconcileAndAcquireTaskStageClaim, releaseTaskStageClaim } from './task-claim-reconciliation'
+import { classifyClaimBoundaryError, deriveTaskStageKey, reconcileAndAcquireTaskStageClaim, releaseTaskStageClaim } from './task-claim-reconciliation'
 import { READY_FOR_OWNER_STATUS, READY_FOR_OWNER_TERMINAL_EVENT, resolveTaskTerminalTransition, type TaskStatus } from './task-status'
 import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
@@ -540,6 +540,8 @@ interface DispatchableTask {
   ticket_prefix: string | null
   project_ticket_no: number | null
   project_id: number | null
+  workflow_template_id?: number | null
+  workflow_template_slug?: string | null
   tags?: string[]
 }
 
@@ -755,6 +757,38 @@ function hasAdvancementMetadata(template: TaskPipelineTemplate): boolean {
 function isFeatureEnabled(db: any, workspaceId: number): boolean {
   const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?').get(workspaceId) as { feature_flags: string | null } | undefined
   return resolveFlag('FEATURE_TASK_PIPELINES', { workspaceFlags: row?.feature_flags ?? null })
+}
+
+function recordTaskStageClaimBoundary(
+  task: DispatchableTask,
+  input: {
+    readonly type?: 'task_stage_claim_boundary_deferred' | 'task_stage_claim_duplicate_prevented'
+    readonly outcome: 'boundary_deferred' | 'duplicate_prevented'
+    readonly reason: string
+    readonly boundaryErrorCategory: string
+    readonly stageKey: string
+    readonly correlationId: string
+  },
+): void {
+  const type = input.type ?? 'task_stage_claim_boundary_deferred'
+  db_helpers.logActivity(
+    type,
+    'task',
+    task.id,
+    'scheduler',
+    type === 'task_stage_claim_duplicate_prevented'
+      ? 'Task stage claim duplicate prevented'
+      : 'Task stage claim boundary deferred',
+    {
+      outcome: input.outcome,
+      reason: input.reason,
+      boundary_error_category: input.boundaryErrorCategory,
+      redacted: true,
+      stage_key: input.stageKey,
+      correlation_id: input.correlationId,
+    },
+    task.workspace_id
+  )
 }
 
 // SPEC-007 FR-040: Successor input_artifacts query.
@@ -2322,17 +2356,48 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
   const now = Math.floor(Date.now() / 1000)
 
   for (const task of tasks) {
-    const claimAdmission = reconcileAndAcquireTaskStageClaim(db, {
-      taskId: task.id,
-      workspaceId: task.workspace_id,
-      leaseOwner: 'scheduler',
-      leaseRunId: `dispatch-${task.id}-${now}`,
-      now,
-      correlationId: `task-dispatch-${task.id}-${now}`,
-    })
+    const claimRunId = `dispatch-${task.id}-${now}`
+    const correlationId = `task-dispatch-${task.id}-${now}`
+    let claimAdmission: ReturnType<typeof reconcileAndAcquireTaskStageClaim>
+    try {
+      claimAdmission = reconcileAndAcquireTaskStageClaim(db, {
+        taskId: task.id,
+        workspaceId: task.workspace_id,
+        leaseOwner: 'scheduler',
+        claimRunId,
+        now,
+        correlationId,
+      })
+    } catch (err) {
+      const boundaryCategory = classifyClaimBoundaryError(err)
+      const stageKey = deriveTaskStageKey(task)
+      if (boundaryCategory === 'sqlite_constraint_race') {
+        recordTaskStageClaimBoundary(task, {
+          type: 'task_stage_claim_duplicate_prevented',
+          outcome: 'duplicate_prevented',
+          reason: 'sqlite_constraint_race',
+          boundaryErrorCategory: boundaryCategory,
+          stageKey,
+          correlationId,
+        })
+      } else {
+        recordTaskStageClaimBoundary(task, {
+          outcome: 'boundary_deferred',
+          reason: 'boundary_error_deferred',
+          boundaryErrorCategory: boundaryCategory,
+          stageKey,
+          correlationId,
+        })
+      }
+      results.push({ id: task.id, success: true })
+      continue
+    }
     const activeClaimId = claimAdmission.outcome === 'claim_acquired'
       ? claimAdmission.active_claim_id
       : null
+    const activeClaimStageKey = claimAdmission.outcome === 'claim_acquired'
+      ? claimAdmission.stage_key
+      : deriveTaskStageKey(task)
 
     if (
       claimAdmission.outcome !== 'flag_off_legacy' &&
@@ -2342,27 +2407,51 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
       continue
     }
 
-    // Mark as in_progress immediately to prevent re-dispatch
-    db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?')
-      .run('in_progress', now, task.id)
-
-    eventBus.broadcast('task.status_changed', {
-      id: task.id,
-      status: 'in_progress',
-      previous_status: 'assigned',
-    })
-
-    db_helpers.logActivity(
-      'task_dispatched',
-      'task',
-      task.id,
-      'scheduler',
-      `Dispatching task "${task.title}" to agent ${task.agent_name}`,
-      { agent: task.agent_name, priority: task.priority },
-      task.workspace_id
-    )
-
     try {
+      const releaseClaimOrRecordBoundary = (reason: 'launch_handoff_completed' | 'dispatch_failed'): void => {
+        if (activeClaimId === null) return
+        const released = releaseTaskStageClaim(db, {
+          claimId: activeClaimId,
+          workspaceId: task.workspace_id,
+          taskId: task.id,
+          stageKey: activeClaimStageKey,
+          claimRunId,
+          releasedByRunId: claimRunId,
+          reason,
+          metadata: { correlation_id: correlationId },
+        })
+        if (!released) {
+          recordTaskStageClaimBoundary(task, {
+            outcome: 'boundary_deferred',
+            reason: 'boundary_error_deferred',
+            boundaryErrorCategory: 'release_compare_failed',
+            stageKey: activeClaimStageKey,
+            correlationId,
+          })
+        }
+      }
+
+      // Mark as in_progress immediately to prevent re-dispatch after the
+      // claim is owned; failures from here release the owning claim.
+      db.prepare('UPDATE tasks SET status = ?, updated_at = ? WHERE id = ?')
+        .run('in_progress', now, task.id)
+
+      eventBus.broadcast('task.status_changed', {
+        id: task.id,
+        status: 'in_progress',
+        previous_status: 'assigned',
+      })
+
+      db_helpers.logActivity(
+        'task_dispatched',
+        'task',
+        task.id,
+        'scheduler',
+        `Dispatching task "${task.title}" to agent ${task.agent_name}`,
+        { agent: task.agent_name, priority: task.priority },
+        task.workspace_id
+      )
+
       // Check for previous Aegis rejection feedback
       const rejectionRow = db.prepare(`
         SELECT content FROM comments
@@ -2506,27 +2595,31 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
       )
 
       results.push({ id: task.id, success: true })
-      if (activeClaimId !== null) {
-        releaseTaskStageClaim(db, {
-          claimId: activeClaimId,
-          workspaceId: task.workspace_id,
-          taskId: task.id,
-          reason: 'launch_handoff_completed',
-          metadata: { correlation_id: `task-dispatch-${task.id}-${now}` },
-        })
-      }
+      releaseClaimOrRecordBoundary('launch_handoff_completed')
       logger.info({ taskId: task.id, agent: task.agent_name }, 'Task dispatched and completed')
     } catch (err: any) {
       const errorMsg = err.message || 'Unknown error'
       logger.error({ taskId: task.id, agent: task.agent_name, err }, 'Task dispatch failed')
-      if (activeClaimId !== null) {
-        releaseTaskStageClaim(db, {
-          claimId: activeClaimId,
+      if (claimAdmission.outcome === 'claim_acquired') {
+        const released = releaseTaskStageClaim(db, {
+          claimId: activeClaimId ?? 0,
           workspaceId: task.workspace_id,
           taskId: task.id,
+          stageKey: activeClaimStageKey,
+          claimRunId,
+          releasedByRunId: claimRunId,
           reason: 'dispatch_failed',
-          metadata: { correlation_id: `task-dispatch-${task.id}-${now}` },
+          metadata: { correlation_id: correlationId },
         })
+        if (!released) {
+          recordTaskStageClaimBoundary(task, {
+            outcome: 'boundary_deferred',
+            reason: 'boundary_error_deferred',
+            boundaryErrorCategory: 'release_compare_failed',
+            stageKey: activeClaimStageKey,
+            correlationId,
+          })
+        }
       }
 
       // Increment dispatch_attempts and decide next status

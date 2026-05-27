@@ -22,7 +22,7 @@ if ! git rev-parse --verify --quiet "${BASE_BRANCH}" >/dev/null; then
   fi
 fi
 
-allowed_new_modules='^(src/app/api/github/sync/control/route\.ts|src/lib/github-sync-lifecycle-api\.ts|src/lib/github-sync-lifecycle-types\.ts|src/lib/github-sync-lifecycle\.ts)$'
+allowed_new_modules='^(src/app/api/github/sync/control/route\.ts|src/lib/github-sync-lifecycle-api\.ts|src/lib/github-sync-lifecycle-types\.ts|src/lib/github-sync-lifecycle\.ts|src/app/api/tasks/\[id\]/claim-reconciliation/route\.ts|src/lib/task-claim-reconciliation\.ts)$'
 
 added_files=$(git diff "${BASE_BRANCH}"...HEAD --name-only --diff-filter=A \
   | grep -E '^src/.*\.(ts|tsx)$' \
@@ -41,6 +41,8 @@ if [[ -n "${added_files}" ]]; then
   echo "src/components/modals/project-manager-modal.tsx." >&2
   echo "SPEC-013A1 declared strict modules are also allowed: lifecycle service," >&2
   echo "lifecycle API/types, and the sync control route." >&2
+  echo "SPEC-013B declared strict modules are also allowed: claim reconciliation" >&2
+  echo "service and read-only task claim reconciliation route." >&2
   exit 1
 fi
 
