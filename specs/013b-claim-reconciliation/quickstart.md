@@ -122,6 +122,8 @@ Record these fields for a post-merge human validation replay:
 - final active-claim count `0`
 - source references for activity, claim, and attempt rows
 
+Manual pre-merge replay evidence captured on 2026-05-27 is recorded in `specs/013b-claim-reconciliation/uat-report.md`. Replay id: `spec-013b-manual-uat-2026-05-27T22-24-30-806Z`.
+
 ### Post-Merge UAT Replay Procedure
 
 1. Enable `FEATURE_TASK_CONTROL_PLANE` for one Product Line workspace only.

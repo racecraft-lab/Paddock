@@ -240,6 +240,7 @@ Use the external context only to inform SPEC-013B boundaries: repository-local k
 - [x] Claim evidence links to SPEC-013A task-stage attempts without overloading passive attempt rows as locks.
 - [x] `advanceTaskChain` remains successor-selection authority and resource governance is not bypassed.
 - [x] No manual retry/release/cancel UI, sandbox lifecycle, harness adapter, full runner abstraction, auto-merge, or automatic triage behavior is introduced.
+- [x] Manual pre-merge UAT replay proves duplicate claim prevention, launch-handoff release, final active-claim count `0`, and negative autonomous-intake exclusion.
 - [ ] Post-merge HITL UAT proves concurrent scheduler tick replay, exactly one active claim/launch path, and release on terminal/gated state.
 
 ---
@@ -668,9 +669,10 @@ Document a post-merge HITL replay:
 - [x] Roadmap, workflow, API index/OpenAPI if touched, migration rollback docs, and UAT checklist are synchronized.
 - [x] PR review packet documents scope, non-goals, verification, rollback, feature flag, and UAT.
 - [x] Codex autopilot early-completion failure mode is tracked and prevented by a plugin-repo PR.
+- [x] Manual pre-merge UAT evidence is recorded in `specs/013b-claim-reconciliation/uat-report.md`.
 - [ ] Post-merge HITL UAT evidence is recorded before status moves to Complete.
 
-Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all` passed in package-script order: strict-scope, lint, typecheck, 304 Vitest files with 3167 passed tests, production build, and 651 Playwright tests. The final status intentionally leaves post-merge HITL UAT open because this branch has not been merged and replayed on the target environment.
+Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all` passed in package-script order: strict-scope, lint, typecheck, 304 Vitest files with 3167 passed tests, production build, and 651 Playwright tests. Manual pre-merge UAT then passed through an isolated migrated SQLite replay with one acquired claim, one duplicate-prevented competitor, one launch-handoff release, final active-claim count `0`, and zero claim rows for local-only, repo-only, and non-`assigned` negative intake cases. The final status intentionally leaves post-merge HITL UAT open because this branch has not been merged and replayed on the target environment.
 
 ### Post-Implementation Evidence
 
@@ -685,6 +687,7 @@ Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all
 - PR creation: opened ready-for-review PR #62, `https://github.com/racecraft-lab/mission-control/pull/62`.
 - Review remediation: initial PR inspection found no comments or reviews to remediate; GitHub checks were still pending and visual Playwright approval was marked missing while the companion visual report job was still in progress.
 - Retrospective: completed in `specs/013b-claim-reconciliation/retrospective.md`; no spec edits proposed, 57/57 tasks verified, and post-merge HITL UAT remains the only UAT gate.
+- Manual pre-merge UAT: completed on 2026-05-27 with replay id `spec-013b-manual-uat-2026-05-27T22-24-30-806Z`; evidence is recorded in `specs/013b-claim-reconciliation/uat-report.md`.
 - Plugin autopilot safety: `racecraft-plugins-public` PR #93 was merged to prevent Codex autopilot from ending before PR creation and post-phase completion in future runs; PR #95 is open for the reviewability-gate false-block fix discovered during this packaging pass.
 
 ### Self-Review
