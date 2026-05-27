@@ -241,7 +241,7 @@ Use the external context only to inform SPEC-013B boundaries: repository-local k
 - [x] `advanceTaskChain` remains successor-selection authority and resource governance is not bypassed.
 - [x] No manual retry/release/cancel UI, sandbox lifecycle, harness adapter, full runner abstraction, auto-merge, or automatic triage behavior is introduced.
 - [x] Manual pre-merge UAT replay proves duplicate claim prevention, launch-handoff release, final active-claim count `0`, and negative autonomous-intake exclusion.
-- [ ] Post-merge HITL UAT proves concurrent scheduler tick replay, exactly one active claim/launch path, and release on terminal/gated state.
+- [x] Post-merge HITL UAT proves concurrent scheduler tick replay, exactly one active claim/launch path, and release on terminal/gated state.
 
 ---
 
