@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26487107709",
+      "runAttempt": "1",
+      "runKey": "26487107709-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26487107709",
+      "reportKey": "5c15f02f368a2f8db01adf64936c96f3c3173873",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/5c15f02f368a2f8db01adf64936c96f3c3173873/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/?v=26487107709-attempt-1",
+      "headSha": "5c15f02f368a2f8db01adf64936c96f3c3173873",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/speckit-claude-codex-parity",
+        "headSha": "6fd5abe9ad3daf10cd0cc41acee730de55aa05c0",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/61/",
+        "mergeCommitSha": "",
+        "number": "61",
+        "title": "chore(speckit): align codex integration with claude",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/61"
+      },
+      "createdAt": "2026-05-27T02:39:23.233Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26487107609",
       "runAttempt": "1",
@@ -795,5 +822,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-27T02:36:35.924Z"
+  "updatedAt": "2026-05-27T02:39:23.233Z"
 }
