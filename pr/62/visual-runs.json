@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "62",
+  "prTitle": "fix(tasks): harden claim reconciliation admission",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/62",
+  "headRef": "013b-claim-reconciliation",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26540879091",
+      "runAttempt": "1",
+      "runKey": "26540879091-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26540879091",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/62/runs/26540879091-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/62/playwright/latest/?v=26540879091-attempt-1",
+      "headSha": "2394555a8998d341b642e727226f57acfeabc9ad",
+      "headRef": "013b-claim-reconciliation",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-27T21:59:52.064Z"
+    }
+  ],
+  "updatedAt": "2026-05-27T21:59:52.064Z"
+}

@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-27T02:28:28.977Z",
+  "updatedAt": "2026-05-27T21:59:52.064Z",
   "prs": [
+    {
+      "prNumber": "62",
+      "prTitle": "fix(tasks): harden claim reconciliation admission",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/62",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/62/",
+      "headRef": "013b-claim-reconciliation",
+      "baseRef": "main",
+      "updatedAt": "2026-05-27T21:59:52.064Z",
+      "latest": {
+        "playwright": {
+          "runId": "26540879091",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26540879091",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/62/playwright/latest/?v=26540879091-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/62/runs/26540879091-attempt-1/playwright/",
+          "updatedAt": "2026-05-27T21:59:52.064Z"
+        }
+      }
+    },
     {
       "prNumber": "61",
       "prTitle": "chore(speckit): align codex integration with claude",
