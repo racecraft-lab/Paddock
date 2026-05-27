@@ -94,8 +94,8 @@
         "cadence": "before roadmap reshaping or release-planning specs",
         "trigger": "when product direction, audience, or factory scope changes"
       },
-      "last_verified": "2026-05-21",
-      "related_specs": [],
+      "last_verified": "2026-05-27",
+      "related_specs": ["SPEC-012B", "SPEC-013B", "SPEC-013C", "SPEC-014A", "SPEC-014B", "SPEC-014C", "SPEC-014D"],
       "verification_commands": ["Manual review when roadmap phases change"],
       "required": true,
       "repo_owned": true
@@ -110,7 +110,7 @@
         "trigger": "when a spec status, dependency, merge SHA, or verification result changes"
       },
       "last_verified": "2026-05-27",
-      "related_specs": ["SPEC-009F", "SPEC-013A", "SPEC-013A1", "SPEC-013B"],
+      "related_specs": ["SPEC-009F", "SPEC-012B", "SPEC-013A", "SPEC-013A1", "SPEC-013B", "SPEC-013C", "SPEC-014A", "SPEC-014B", "SPEC-014C", "SPEC-014D"],
       "verification_commands": ["pnpm knowledge:index:check", "Manual roadmap status review"],
       "required": true,
       "repo_owned": true

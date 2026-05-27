@@ -26,6 +26,45 @@
 - GitHub review guidance: keep pull requests small, focused, contextual, and easy to review; provide reviewer order when multiple files are touched. Source: [GitHub pull request best practices](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/getting-started/best-practices-for-pull-requests).
 - Feature-flag discipline: release toggles let code deploy before broad release, but every flag adds carrying cost and validation complexity. Source: [Feature Toggles](https://martinfowler.com/articles/feature-toggles.html).
 
+### Mandatory External Context Refresh
+
+Harness Engineering and Symphony are external, recent, and not safe to treat
+as model-memory knowledge. For SPEC-012B, SPEC-013B, SPEC-013C, SPEC-014A,
+SPEC-014B, SPEC-014C, SPEC-014D, and any future Symphony-inspired or
+harness-engineering spec, every setup/specify/plan/tasks/analyze/review run
+must fetch the current sources into the active context window before making
+design decisions:
+
+1. `https://openai.com/index/harness-engineering/`
+2. `https://openai.com/index/open-source-codex-orchestration-symphony/`
+3. `https://github.com/openai/symphony/blob/main/SPEC.md`
+
+Do not rely on training data, cached memory, or stale repo summaries for these
+references. A generated design concept, workflow, plan, or review packet must
+record the retrieval date, source URLs, and the GitHub branch/ref or commit
+when available. If the resources cannot be fetched, stop at the phase gate and
+ask the operator to provide the current material; do not infer missing details
+from model memory.
+
+Each run should extract and apply, at minimum:
+
+- Harness Engineering's repository-knowledge pattern: short entry-point maps,
+  indexed source-of-truth docs, mechanical freshness checks, app/log/metric
+  legibility, structural guardrails, and continuous doc-gardening.
+- Symphony's control-plane pattern: tracker-driven work, isolated per-work-item
+  workspaces, repo-owned workflow policy, orchestrator-owned state,
+  reconciliation, retries, and observable attempts.
+- Symphony SPEC's implementation contracts: workflow/config parsing, workspace
+  safety, tracker refresh, dispatch/reconciliation/retry, agent client policy,
+  unsupported-capability behavior, and validation profiles.
+
+Mission Control adapts these references to GitHub Issues, SpecKit workflow
+contracts, Next.js/React/TypeScript/SQLite, `better-sqlite3`,
+OpenClaw/Codex/Claude/harness adapters, and existing task-chain governance. It
+must not import Symphony's Elixir prototype, Linear-only assumptions, or a
+general distributed scheduler unless a future spec explicitly ratifies that
+change.
+
 ## Upstream Impact Rubric
 
 | Label | Meaning |
@@ -625,7 +664,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add narrow cleanup-task generation and drift checks after two product lines exist: stale PRD/roadmap/workflow claims, missing evidence, stale feature-flag status, low-value tests, strict-scope drift, and broken source-of-truth links.
 - **Tool count / tool names:** N/A - process/tooling spec
 - **Strict Scope:** guard scripts, cleanup workflow template, docs/checklist updates, and tests over representative stale/fresh fixtures. No runtime product behavior.
-- **Autopilot notes:** This spec converts harness engineering into recurring small Mission Control tasks, not periodic broad rewrites.
+- **Autopilot notes:** This spec converts harness engineering into recurring small Mission Control tasks, not periodic broad rewrites. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC into context and record retrieval evidence in the workflow; do not infer the drift taxonomy from training data.
 - **Definition of done:** A guard can create or recommend one narrow Mission Control cleanup task for each supported drift class, with evidence and owner metadata attached.
 
 ### SPEC-013A: Run-State Persistence Spine
@@ -674,7 +713,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add one coordination path that prevents duplicate dispatch, reconciles task/GitHub/resource state before launch, gates autonomous eligibility on GitHub-linked work, and records release/stop decisions.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** scheduler/task-dispatch claim seam, resource-governance integration, GitHub-linked eligibility, reconciliation checks, and tests for concurrent ticks. No sandbox runner, no harness adapter, no retry UI.
-- **Autopilot notes:** Do not duplicate `advanceTaskChain`; SPEC-004 remains successor-selection authority. Web-created local-only tasks remain visible but not autonomous runner intake.
+- **Autopilot notes:** Do not duplicate `advanceTaskChain`; SPEC-004 remains successor-selection authority. Web-created local-only tasks remain visible but not autonomous runner intake. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC into context; claim/reconciliation semantics must be grounded in the live external contract plus current Mission Control code, not model memory.
 - **Definition of done:** With `FEATURE_TASK_CONTROL_PLANE=true`, concurrent ticks cannot claim the same stage twice, terminal task/GitHub state releases work before dispatch, and governance blocks/deferred states prevent new launches.
 
 ### SPEC-013C: Retry/Backoff and Debug Surfaces
@@ -689,7 +728,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add bounded retry/backoff reason codes, operator cancel/retry/release controls, JSON debug surfaces, audit rows, and refresh triggers on top of the SPEC-013B claim authority.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** retry policy, debug API, minimal UI or CLI/MCP exposure if needed, audit integration, and focused tests. No sandbox lifecycle or adapter registry.
-- **Autopilot notes:** Separate normal continuation retries from failure, timeout, stale-state, and operator-release reasons. Do not mutate GitHub issue truth except through the documented sync/reconciliation path.
+- **Autopilot notes:** Separate normal continuation retries from failure, timeout, stale-state, and operator-release reasons. Do not mutate GitHub issue truth except through the documented sync/reconciliation path. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; map retry, reconciliation, and observable-attempt semantics to Mission Control debug controls without importing scheduler or harness behavior.
 - **Definition of done:** Operators can inspect, retry, release, or cancel a claimed stage through one documented surface; every mutation emits bounded state and audit evidence.
 
 ### SPEC-014A: Sandbox Ownership and Lifecycle Contract
@@ -704,7 +743,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Define deterministic, sanitized, product-line-scoped sandbox keys/paths and lifecycle hooks for `mission_control`, `openclaw`, and `external_harness` ownership using fakes only. No real harness launches.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** sandbox path/key helpers, lifecycle hook interface, fake owner implementations, cleanup policy, and tests for path traversal/rollback. No adapter manifest, no token accounting, no real runner.
-- **Autopilot notes:** Sandbox ownership is a user/workflow choice. Mission Control-owned worktrees, OpenClaw-owned sandboxes, and external harness handles must all fit the same lifecycle vocabulary.
+- **Autopilot notes:** Sandbox ownership is a user/workflow choice. Mission Control-owned worktrees, OpenClaw-owned sandboxes, and external harness handles must all fit the same lifecycle vocabulary. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC into context and record how workspace safety, sandbox lifecycle, and context-legibility lessons map to Mission Control.
 - **Definition of done:** Sandbox paths cannot escape the configured root; lifecycle events are inspectable; disabling `FEATURE_AGENT_RUNNER_SANDBOXES` prevents all sandbox create/run paths.
 
 ### SPEC-014B: Harness Adapter Manifest and Fake Registry
@@ -719,7 +758,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Define the typed harness adapter manifest and registry: launch/resume/stop, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, MCP/skills/plugins/memory exposure, provider/account constraints, approval policy, timeout policy, user-input policy, and runtime-inventory state (`visible`, `unassigned`, `assigned`, `eligible`, `blocked`). Prove the contract with at least two fake adapters.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** adapter types, manifest validation, fake registry, capability-resolution packet, runtime-inventory state model, unsupported-capability fail-closed behavior, and tests. No real Codex/Claude/OpenClaw/Hermes execution.
-- **Autopilot notes:** A real adapter cannot land before the fake registry proves Mission Control state is not Codex-specific. Visibility in runtime inventory is not eligibility for work; eligibility requires explicit project-role assignment, selected adapter capability support, product-line runner flag enablement, governance allow, and tracker-linked task eligibility.
+- **Autopilot notes:** A real adapter cannot land before the fake registry proves Mission Control state is not Codex-specific. Visibility in runtime inventory is not eligibility for work; eligibility requires explicit project-role assignment, selected adapter capability support, product-line runner flag enablement, governance allow, and tracker-linked task eligibility. Before Specify or Plan, fetch the current external context and map Symphony SPEC client/workspace/validation requirements into the fake manifest contract.
 - **Definition of done:** Two fake adapters exercise the same contract, runtime inventory can show visible/unassigned entries without making them dispatchable, unsupported capabilities fail the run attempt instead of stalling or silently switching harnesses, and review packets can cite the selected adapter manifest and eligibility evidence.
 
 ### SPEC-014C: First Real Harness Adapter Pilot
@@ -734,7 +773,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Implement one real harness adapter path behind the registry. Prefer Codex app-server if available because structured threads, tool/file requests, approvals, and usage events map cleanly to Mission Control; otherwise choose the smallest locally provable adapter and document the limitation. HAL verification on 2026-05-07 found Codex CLI `0.124.0` installed with the `codex app-server` subcommand available, but not deployed as a Mission Control service.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** one adapter module, one smoke path, token/runtime summaries where available, artifact publication, redaction, and operator-visible run debug. No second real adapter, no OpenClaw-specific behavior unless this spec explicitly selects OpenClaw as the first real pilot.
-- **Autopilot notes:** The adapter executes already-claimed GitHub-linked work only. It does not choose successor templates, create local-only tasks, auto-merge, or bypass Aegis/owner gates.
+- **Autopilot notes:** The adapter executes already-claimed GitHub-linked work only. It does not choose successor templates, create local-only tasks, auto-merge, or bypass Aegis/owner gates. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; the selected real adapter must cite the live external context for launch/resume, workspace cwd, approval/sandbox policy, unsupported-capability behavior, and validation profile decisions.
 - **Definition of done:** One real adapter can launch or continue a claimed stage, publish artifacts, record usage/failure summaries, and fail safely on unsupported tool/user-input events.
 
 ### SPEC-014D: OpenClaw and External Harness Adapter
@@ -749,7 +788,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add the fork-only optional adapter boundary for OpenClaw-owned sandboxes and external harness handles. OpenClaw may provide gateway/session messaging, sandbox preparation, process control, plugin harness selection, MCP/skills exposure, memory injection, optional health/cost telemetry, and imported runtime-agent inventory; Mission Control still owns tracker state, project-role assignment, claims, governance, reconciliation, review packets, and handoff artifacts.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** adapter module(s), absent-safe config checks, fake/OpenClaw gateway fixtures, external-handle lifecycle tests, runtime-inventory import/refresh labels, and deployment docs. No Mission Control-owned sandbox changes unless required by the shared contract.
-- **Autopilot notes:** OpenClaw is the current application harness choice, not a product requirement. If OpenClaw is absent or disabled, Mission Control must still support Mission-Control-owned or other external-harness paths through the same registry. Imported OpenClaw agents start as visible unassigned inventory; role/domain workspace files should stay generic, and product/task context belongs in Mission Control assignment/run packets.
+- **Autopilot notes:** OpenClaw is the current application harness choice, not a product requirement. If OpenClaw is absent or disabled, Mission Control must still support Mission-Control-owned or other external-harness paths through the same registry. Imported OpenClaw agents start as visible unassigned inventory; role/domain workspace files should stay generic, and product/task context belongs in Mission Control assignment/run packets. Before Specify or Plan, fetch the current external context and document which Harness Engineering/Symphony contracts are implemented, adapted, or explicitly deferred.
 - **Definition of done:** `FEATURE_AGENT_RUNNER_SANDBOXES=false` or missing OpenClaw config leaves no OpenClaw path reachable; enabled adapter imports/refreshes OpenClaw runtime agents as non-dispatchable inventory until explicitly assigned and eligible, runs through the same manifest/lifecycle contract, and records failures without mutating GitHub or task terminal state outside reconciliation.
 
 ---

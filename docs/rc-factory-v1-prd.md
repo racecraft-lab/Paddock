@@ -61,6 +61,48 @@ not for indefinite cherry-pick compatibility with the pre-fork project.
    contract validation, strict-scope checks, migration tests, route contracts,
    visual evidence, and governance gates.
 8. Fork-only adapters remain optional, disabled by default, and absent-safe.
+9. External reference context must be fetched into the active model context for
+   Symphony-aligned and harness-engineering work. Do not rely on training data,
+   stale summaries, or memory when scoping or planning these product surfaces.
+
+## External Reference Context
+
+The factory vision depends on external references that postdate many model
+training cuts and can change over time. Any GPT-5.5 or later run that scopes,
+specifies, plans, tasks, analyzes, implements, or reviews Symphony-aligned
+control-plane work or harness-engineering work must fetch these sources into
+the current context window during that run:
+
+- OpenAI Harness Engineering:
+  <https://openai.com/index/harness-engineering/>
+- OpenAI Symphony announcement:
+  <https://openai.com/index/open-source-codex-orchestration-symphony/>
+- OpenAI Symphony service specification:
+  <https://github.com/openai/symphony/blob/main/SPEC.md>
+
+The generated design concept, workflow, plan, or review packet must record
+the retrieval date, source URLs, and for GitHub sources the branch/ref or
+commit when available. If the agent cannot fetch the sources, it must stop at
+the phase gate and ask the operator for the current material instead of filling
+gaps from model memory.
+
+The context extraction should preserve these durable lessons:
+
+- Harness Engineering: repository knowledge is the system of record; short
+  maps should point to indexed, mechanically checked sources of truth; UI,
+  logs, metrics, tests, and cleanup loops must be legible to agents.
+- Symphony: tracker work items form the control plane; each active work item
+  receives an isolated workspace; the orchestrator owns dispatch,
+  reconciliation, retry, and observability.
+- Symphony SPEC: workspace safety, tracker refresh, dispatch/reconciliation,
+  retry, app-server/client policy, and validation profiles are conceptual
+  contracts to adapt, not a stack to import wholesale.
+
+Mission Control must adapt these references to its own
+Next.js/React/TypeScript/SQLite stack, GitHub-first tracker model, SpecKit
+task-chain governance, and OpenClaw/Codex/Claude/harness adapter boundaries.
+The external references are source material for product intent and constraints,
+not authority to replace Mission Control's stack or public OSS roadmap.
 
 ## Product Goals
 
