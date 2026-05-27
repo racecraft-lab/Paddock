@@ -80,7 +80,7 @@ Report-only notes for future specs:
 
 ### SIGNIFICANT: Reviewability Scale Requires Transition Exception
 
-- Evidence: patched reviewability gate reports `status=exception`, `pass=true`, 6415 reviewable LOC, 14 production files, 62 total files, and 6 primary surfaces.
+- Evidence: patched reviewability gate reports `status=exception`, `pass=true`, 6560 reviewable LOC, 14 production files, 63 total files, and 6 primary surfaces.
 - Impact: Human review cost is higher than a normal reviewability budget, but the branch includes focused tests, verify-tasks evidence, a PR review packet, and explicit scope boundaries.
 - Root cause: SPEC-013B spans migration, dispatch runtime, GitHub truth projection, read-only API evidence, docs, and verification artifacts as one safety boundary.
 - Prevention: Future control-plane slices should either split earlier or explicitly budget migration/runtime/API/docs evidence as a transition-sized review packet.

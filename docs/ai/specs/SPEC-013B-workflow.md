@@ -680,7 +680,7 @@ Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all
 - Code review: final retry-admission finding was fixed before packaging; regression coverage proves a released `dispatch_failed` passive attempt does not suppress the next retry claim.
 - Cleanup: no blockers found and no cleanup-only file edits were required.
 - Integration suite: passed through `direnv exec . pnpm test:all`, including 3167 Vitest tests and 651 Playwright tests.
-- Reviewability diff gate: ratified transition exception for the full SPEC-013B branch diff; patched gate output reports `status=exception`, `pass=true`, 6415 reviewable LOC, 14 production files, 62 total files, and 6 primary surfaces.
+- Reviewability diff gate: ratified transition exception for the full SPEC-013B branch diff; patched gate output reports `status=exception`, `pass=true`, 6560 reviewable LOC, 14 production files, 63 total files, and 6 primary surfaces.
 - PR body generation: completed using the host repository PR template plus the SpecKit review packet.
 - PR creation: opened ready-for-review PR #62, `https://github.com/racecraft-lab/mission-control/pull/62`.
 - Review remediation: initial PR inspection found no comments or reviews to remediate; GitHub checks were still pending and visual Playwright approval was marked missing while the companion visual report job was still in progress.
