@@ -1,6 +1,6 @@
 # Mission Control AI Software Factory — Technical Roadmap
 
-> For SpecKit-Pro ingestion. Companion to the PRD at `docs/rc-factory-v1-prd.md`. Every phase is ship-safe on its own (additive migrations + feature flags), but ship-safe does **not** necessarily mean upstream-safe. Each phase below is explicitly labeled for upstream impact so fork pressure is visible before implementation.
+> For SpecKit-Pro ingestion. Companion to the PRD at `docs/rc-factory-v1-prd.md`. Every phase is ship-safe on its own (additive migrations + feature flags), sequenced for Mission Control's product direction, operator rollout safety, and reviewability.
 
 ## Guiding Principles
 
@@ -8,9 +8,9 @@
 2. **Feature flags for every new runtime behavior.** All flags default OFF. Flipping ON is an explicit operator action per product line, stored in the documented feature-flag storage mechanism.
 3. **Ship each phase to production** behind its flag before enabling. Deploy code ≠ activate behavior.
 4. **Dev-first, flag-scoped canary on live.** Write and commit changes in the PR worktree, merge through GitHub, then promote the merged `main` branch on the operator node. As of live verification on 2026-05-05, `mission-control.service` runs from `<operator-home>/mission-control` on `main`, with runtime data in `<operator-data-dir>`; `<retired-live-worktree>` is no longer present. Promotion is `git fetch`/update, `pnpm build`, and restart of `mission-control.service`. The "canary" is a feature flag flipped for ONE workspace (e.g., the facility workspace or a dedicated test workspace) on the live service, validated, then promoted to wider workspaces. OpenClaw is a separate active service from `<openclaw-release-symlink>` and should be restarted only when gateway/runtime code or config changes.
-5. **Upstream compat gate** on every PR: cherry-pick candidates from `builderz-labs/main` should still apply cleanly.
-6. **Prefer upstream-safe extensions over schema divergence.** If the same goal can be achieved with an additive adapter, config path, or feature-flagged runtime hook, choose that before adding schema.
-7. **OpenClaw-specific features are fork-only adapters.** They must be disabled by default and no-op cleanly when absent.
+5. **Install compatibility gate** on every PR: existing Mission Control installs must keep running with defaults, flags OFF, additive schema, and documented rollback.
+6. **Prefer additive, reversible extensions over destructive schema or runtime changes.** If the same goal can be achieved with an additive adapter, config path, or feature-flagged runtime hook, choose that before irreversible state changes.
+7. **Operator-specific adapters remain optional.** They must be disabled by default and no-op cleanly when absent.
 8. **Adopt Symphony as a contract, not a stack.** Mission Control may borrow Symphony's language-agnostic control-plane pattern — tracker-driven dispatch, per-task workspaces, repo-owned workflow policy, bounded concurrency, retries, reconciliation, and observability — while keeping Next.js/React/TypeScript/SQLite, GitHub-first sync, and existing SpecKit task-chain governance.
 9. **Keep harnesses pluggable and explicit.** Mission Control owns tracker truth, claims, governance, artifacts, review packets, and run-state reconciliation. Codex/ChatGPT, Claude Code, OpenClaw, Hermes, OpenCode, or later systems execute through declared harness adapters that publish launch/resume/transcript/token/tool/MCP/memory/skill/plugin/sandbox capabilities and fail closed when a capability is absent.
 10. **Separate tracker truth from local projections.** For SPEC-009 and later Symphony-aligned work, GitHub Issues are the v1 source work item and tracker of record. Mission Control tasks store synchronized projections, chain state, assignments, artifacts, governance, run metadata, and views. Manual/local tasks remain supported for non-Symphony work, but they are not pilot runner work items without explicit GitHub linkage.
@@ -26,13 +26,44 @@
 - GitHub review guidance: keep pull requests small, focused, contextual, and easy to review; provide reviewer order when multiple files are touched. Source: [GitHub pull request best practices](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/getting-started/best-practices-for-pull-requests).
 - Feature-flag discipline: release toggles let code deploy before broad release, but every flag adds carrying cost and validation complexity. Source: [Feature Toggles](https://martinfowler.com/articles/feature-toggles.html).
 
-## Upstream Impact Rubric
+### Mandatory External Context Refresh
 
-| Label | Meaning |
-|---|---|
-| `upstream-safe` | additive, opt-in, and realistic to upstream |
-| `upstream-divergent` | runtime-safe for current installs, but introduces schema/state/API divergence that increases permanent-fork pressure unless upstream accepts it |
-| `fork-only optional` | OpenClaw/local-environment-specific adapter that must remain absent-safe and disabled by default |
+Harness Engineering and Symphony are external, recent, and not safe to treat
+as model-memory knowledge. For SPEC-012B, SPEC-013B, SPEC-013C, SPEC-014A,
+SPEC-014B, SPEC-014C, SPEC-014D, and any future Symphony-inspired or
+harness-engineering spec, every setup/specify/plan/tasks/analyze/review run
+must fetch the current sources into the active context window before making
+design decisions:
+
+1. `https://openai.com/index/harness-engineering/`
+2. `https://openai.com/index/open-source-codex-orchestration-symphony/`
+3. `https://github.com/openai/symphony/blob/main/SPEC.md`
+
+Do not rely on training data, cached memory, or stale repo summaries for these
+references. A generated design concept, workflow, plan, or review packet must
+record the retrieval date, source URLs, and the GitHub branch/ref or commit
+when available. If the resources cannot be fetched, stop at the phase gate and
+ask the operator to provide the current material; do not infer missing details
+from model memory.
+
+Each run should extract and apply, at minimum:
+
+- Harness Engineering's repository-knowledge pattern: short entry-point maps,
+  indexed source-of-truth docs, mechanical freshness checks, app/log/metric
+  legibility, structural guardrails, and continuous doc-gardening.
+- Symphony's control-plane pattern: tracker-driven work, isolated per-work-item
+  workspaces, repo-owned workflow policy, orchestrator-owned state,
+  reconciliation, retries, and observable attempts.
+- Symphony SPEC's implementation contracts: workflow/config parsing, workspace
+  safety, tracker refresh, dispatch/reconciliation/retry, agent client policy,
+  unsupported-capability behavior, and validation profiles.
+
+Mission Control adapts these references to GitHub Issues, SpecKit workflow
+contracts, Next.js/React/TypeScript/SQLite, `better-sqlite3`,
+OpenClaw/Codex/Claude/harness adapters, and existing task-chain governance. It
+must not import Symphony's Elixir prototype, Linear-only assumptions, or a
+general distributed scheduler unless a future spec explicitly ratifies that
+change.
 
 ## Reviewability Contract
 
@@ -73,35 +104,35 @@ SPEC-013A-C and SPEC-014A-D must extend the existing Mission Control control-pla
 
 ## Phase Map (At a Glance)
 
-| Phase | Title | Ship-safe? | Feature Flag | Upstream impact | Blocks |
-|---|---|---|---|---|---|
-| 0 | Foundation migrations (M53–M61) | Yes | None — pure schema | `upstream-divergent` | — |
-| 1 | Product-line switcher + `activeWorkspace` | Yes | `FEATURE_WORKSPACE_SWITCHER` | `upstream-safe` | Phase 8B |
-| 1A | Spec archive + evidence retention | Yes | None — process/tooling | `upstream-safe` | Phase 2+ |
-| 2 | Aegis refactor (facility singleton) | Yes (shim) | `FEATURE_GLOBAL_AEGIS` | `upstream-divergent` | Phase 3, 8C |
-| 3 | Task pipeline engine + routing | Yes | `FEATURE_TASK_PIPELINES` | `upstream-divergent` | Phase 4, 6, 8A, 8C |
-| 4 | `ready_for_owner` state + two-step terminal | Yes | `FEATURE_TWO_STEP_TERMINAL` | `upstream-divergent` | Phase 8C |
-| 5 | Area-label GitHub sync | Yes | `FEATURE_AREA_LABEL_ROUTING` | `upstream-safe` | Phase 8B, 8C |
-| 6 | Disposition logging + artifact store + audit/admin panels | Yes | `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS` | `upstream-divergent` | Phase 8C, 8D |
-| 7 | Resource governance + Cost Tracker enforcement | Yes | `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS` | Mixed: governance core = `upstream-divergent`; OpenClaw health cost adapter = `fork-only optional` | Phase 8A, 8B, 8C |
-| 7.5 | CrabTrap honeypot adapter | Yes | `FEATURE_CRABTRAP_HONEYPOT` | `fork-only optional` | Parallel after Phase 7 |
-| 8A | Workflow contract roundtrip | Yes | None — contract tooling | `upstream-safe` | Phase 8B, Phase 10A |
-| 8B | Mission Control product-line seed + flag activation | Yes | `PILOT_MISSION_CONTROL_E2E` | Fork rollout only | Phase 8C, Phase 9A |
-| 8C | GitHub-linked Mission Control pilot smoke | Pilot gate | `PILOT_MISSION_CONTROL_E2E` | Fork rollout only | Phase 8D, Phase 9B |
-| 8D | Pilot review packet + lifecycle snapshot | Yes | `PILOT_MISSION_CONTROL_E2E` | Fork rollout only | Phase 11A |
-| 8E | Pilot eligibility + evidence surfaces | Yes | None — read-only task evidence surface | Fork rollout only | Phase 8F, Phase 11A |
-| 8F | Production triage outcome routing | Yes | Pilot/product-line scope to be defined in setup | Fork rollout only | Later production triage lanes |
-| 9A | Generic product-line seeder | Yes | None — seed tooling | Fork rollout only | Phase 9B |
-| 9B | Product Line B onboarding smoke | Post-pilot | Disabled workspace until operator enablement | Fork rollout only | Phase 10B |
-| 10A | Repo knowledge index + AGENTS map | Yes | None — process/tooling | `upstream-safe` | Phase 10B, Phase 11A |
-| 10B | Harness-gardening drift guards | Yes | None — process/tooling | `upstream-safe` | Later cleanup specs |
-| 11A | Run-state persistence spine | Yes | `FEATURE_TASK_CONTROL_PLANE` | `upstream-safe` core; persisted run-state schema = `upstream-divergent` | Phase 11B |
-| 11B | Claim + reconciliation authority | Yes | `FEATURE_TASK_CONTROL_PLANE` | `upstream-safe` core; persisted state = `upstream-divergent` | Phase 11C, Phase 12A |
-| 11C | Retry/backoff + debug surfaces | Yes | `FEATURE_TASK_CONTROL_PLANE` | `upstream-safe` core | Phase 12C |
-| 12A | Sandbox ownership + lifecycle contract | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | `upstream-divergent` | Phase 12B |
-| 12B | Harness adapter manifest + fake registry | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | `upstream-divergent` | Phase 12C, Phase 12D |
-| 12C | First real harness adapter pilot | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | `upstream-divergent` | Later adapter specs |
-| 12D | OpenClaw/external harness adapter | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | `fork-only optional` | Later adapter specs |
+| Phase | Title | Ship-safe? | Feature Flag | Blocks |
+|---|---|---|---|---|
+| 0 | Foundation migrations (M53–M61) | Yes | None — pure schema | — |
+| 1 | Product-line switcher + `activeWorkspace` | Yes | `FEATURE_WORKSPACE_SWITCHER` | Phase 8B |
+| 1A | Spec archive + evidence retention | Yes | None — process/tooling | Phase 2+ |
+| 2 | Aegis refactor (facility singleton) | Yes (shim) | `FEATURE_GLOBAL_AEGIS` | Phase 3, 8C |
+| 3 | Task pipeline engine + routing | Yes | `FEATURE_TASK_PIPELINES` | Phase 4, 6, 8A, 8C |
+| 4 | `ready_for_owner` state + two-step terminal | Yes | `FEATURE_TWO_STEP_TERMINAL` | Phase 8C |
+| 5 | Area-label GitHub sync | Yes | `FEATURE_AREA_LABEL_ROUTING` | Phase 8B, 8C |
+| 6 | Disposition logging + artifact store + audit/admin panels | Yes | `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS` | Phase 8C, 8D |
+| 7 | Resource governance + Cost Tracker enforcement | Yes | `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS` | Phase 8A, 8B, 8C |
+| 7.5 | CrabTrap honeypot adapter | Yes | `FEATURE_CRABTRAP_HONEYPOT` | Parallel after Phase 7 |
+| 8A | Workflow contract roundtrip | Yes | None — contract tooling | Phase 8B, Phase 10A |
+| 8B | Mission Control product-line seed + flag activation | Yes | `PILOT_MISSION_CONTROL_E2E` | Phase 8C, Phase 9A |
+| 8C | GitHub-linked Mission Control pilot smoke | Pilot gate | `PILOT_MISSION_CONTROL_E2E` | Phase 8D, Phase 9B |
+| 8D | Pilot review packet + lifecycle snapshot | Yes | `PILOT_MISSION_CONTROL_E2E` | Phase 11A |
+| 8E | Pilot eligibility + evidence surfaces | Yes | None — read-only task evidence surface | Phase 8F, Phase 11A |
+| 8F | Production triage outcome routing | Yes | Pilot/product-line scope to be defined in setup | Later production triage lanes |
+| 9A | Generic product-line seeder | Yes | None — seed tooling | Phase 9B |
+| 9B | Product Line B onboarding smoke | Post-pilot | Disabled workspace until operator enablement | Phase 10B |
+| 10A | Repo knowledge index + AGENTS map | Yes | None — process/tooling | Phase 10B, Phase 11A |
+| 10B | Harness-gardening drift guards | Yes | None — process/tooling | Later cleanup specs |
+| 11A | Run-state persistence spine | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 11B |
+| 11B | Claim + reconciliation authority | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 11C, Phase 12A |
+| 11C | Retry/backoff + debug surfaces | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 12C |
+| 12A | Sandbox ownership + lifecycle contract | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | Phase 12B |
+| 12B | Harness adapter manifest + fake registry | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | Phase 12C, Phase 12D |
+| 12C | First real harness adapter pilot | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | Later adapter specs |
+| 12D | OpenClaw/external harness adapter | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | Later adapter specs |
 
 ## SpecKit-Pro Autopilot Usage
 
@@ -127,7 +158,7 @@ resolve plan-template`, and `specify preset resolve tasks-template`; rerun
 `speckit-pro` setup/fixup or restore the preset registry rather than editing
 core `.specify/templates/*.md`.
 
-Each spec should be executed from its generated worktree/branch. The mini-spec sections below are the canonical detailed source for scope, deliverables, acceptance criteria, rollback, upstream-impact notes, and dependency/parallelization rules.
+Each spec should be executed from its generated worktree/branch. The mini-spec sections below are the canonical detailed source for scope, deliverables, acceptance criteria, rollback, rollout notes, and dependency/parallelization rules.
 
 ### Autopilot Ingestion Notes
 
@@ -182,7 +213,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-012B | 10B | Harness-Gardening Drift Guards | harness-gardening-guards | Pending | P1 | SPEC-010B, SPEC-012A | Later cleanup specs | Phase 10B |
 | SPEC-013A | 11A | Run-State Persistence Spine | run-state-spine | Complete | P1 | SPEC-009D, SPEC-012A | SPEC-013A1 | Phase 11A |
 | SPEC-013A1 | 11A1 | GitHub Sync Automation and Poller Lifecycle | github-sync-automation | Complete | P1 | SPEC-009D, SPEC-012A, SPEC-013A | SPEC-013B | Phase 11A1 |
-| SPEC-013B | 11B | Claim and Reconciliation Authority | claim-reconciliation | Pending | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-013A1 | SPEC-013C, SPEC-014A | Phase 11B |
+| SPEC-013B | 11B | Claim and Reconciliation Authority | claim-reconciliation | In Progress | P1 | SPEC-004, SPEC-006, SPEC-008, SPEC-013A1 | SPEC-013C, SPEC-014A | Phase 11B |
 | SPEC-013C | 11C | Retry/Backoff and Debug Surfaces | retry-debug-surfaces | Pending | P1 | SPEC-013B | SPEC-014C | Phase 11C |
 | SPEC-014A | 12A | Sandbox Ownership and Lifecycle Contract | sandbox-lifecycle-contract | Pending | P1 | SPEC-013B | SPEC-014B | Phase 12A |
 | SPEC-014B | 12B | Harness Adapter Manifest and Fake Registry | adapter-manifest-fakes | Pending | P1 | SPEC-014A | SPEC-014C, SPEC-014D | Phase 12B |
@@ -193,11 +224,11 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 **Current roadmap note:** SPEC-001, SPEC-002, SPEC-002A, SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009A, SPEC-009B, SPEC-009C1, SPEC-009C2, SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F, SPEC-010A, SPEC-012A, SPEC-013A, and SPEC-013A1 are complete per the implementation and UAT evidence recorded below. Recent merge evidence includes SPEC-004 PR #22 as `20643d8`, SPEC-005 PR #23 as `851571f`, SPEC-006 PR #21 as `dbb6c75`, SPEC-007 PR #25 as `953f29b`, SPEC-008 PR #26 as `bd9a693`, SPEC-009A PR #28 as `2b78970e`, SPEC-009B PR #30 as `1d5c994c`, SPEC-009C1 PR #34 as `7d544f39`, the SPEC-009C1 post-merge routing fix PR #40 as `e6ee19ee`, SPEC-009C2 PR #43 as `a63afdea`, the SPEC-009C2 post-merge assignee fix PR #46 as `19b2db98`, SPEC-009C3 PR #48 as `ac7760a2`, SPEC-009C4 PR #52 as `ddc709f2`, SPEC-009D PR #54 as `765264b`, SPEC-009E PR #55 as `40507874`, SPEC-009F PR #57 as `d396ed2`, SPEC-012A PR #56 as `a5e3fbec`, SPEC-013A PR #58 as `a3a79250`, SPEC-010A PR #59 as `9be6b544`, and SPEC-013A1 PR #60 as `41e9df68`. SPEC-010A and SPEC-013A post-merge UAT closeout was recorded on 2026-05-22 from merged `main` checkout `028abca9` with disposable local UAT databases, rebuilt standalone browser evidence, flag/process scope checks, no-mutation checks, and cleanup evidence. SPEC-013A1 post-merge HITL UAT was operator-confirmed complete on 2026-05-27 after PR #60 merged, covering automatic GitHub polling enablement, lifecycle/status visibility, disable behavior, manual sync fallback, and duplicate-ingestion safety. SPEC-009F has local implementation verification, fixture UAT, merge evidence, and operator-confirmed target deployment/HITL UAT closeout recorded on 2026-05-22. SPEC-009C4 has target HAL deployment and UAT replay evidence recorded; SPEC-009D has packet UAT, merge, and main CI evidence recorded; SPEC-009E has task evidence surface UAT, merge, and main CI evidence recorded; SPEC-012A has repo knowledge index UAT, merge, visual approval, and main CI evidence recorded.
 
-- **Next unblocked setup:** no active implementation workflow should be treated as in progress on `main` for SPEC-010A, SPEC-013A, or SPEC-013A1. SPEC-013B is now the highest-priority unblocked control-plane setup after SPEC-013A1 acceptance. SPEC-010B is also unblocked by SPEC-010A acceptance but still depends on Product Line B preflight cleanup. SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
+- **Current active setup:** SPEC-013B local implementation is complete on branch `013b-claim-reconciliation` after SPEC-013A1 acceptance, with merge, deployment promotion, and post-merge HITL UAT still pending. No active implementation workflow should be treated as in progress on `main` for SPEC-010A, SPEC-013A, or SPEC-013A1. SPEC-010B is also unblocked by SPEC-010A acceptance but still depends on Product Line B preflight cleanup. SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C1 -> SPEC-009C2 -> SPEC-009C3 -> SPEC-009C4 -> SPEC-009D proves that Mission Control can ingest a Mission Control GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
 - **Scale/doc parallel path:** SPEC-010A is complete after post-merge UAT; SPEC-010B can start now that SPEC-009C4 and SPEC-010A are complete, subject to Product Line B preflight cleanup; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Evidence, routing, and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-009F owns production routing/evidence for non-remediation triage outcomes after the pilot evidence surfaces exist. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
-- **Control-plane path:** SPEC-013A and SPEC-013A1 are complete after post-merge UAT; SPEC-013B is the next claim/reconciliation slice before retry state proceeds. These specs do not launch harnesses.
+- **Control-plane path:** SPEC-013A and SPEC-013A1 are complete after post-merge UAT; SPEC-013B local implementation is ready for review before retry state proceeds. These specs do not launch harnesses.
 - **Runner path:** SPEC-014A -> SPEC-014B establishes sandbox ownership and fake adapter proof first. SPEC-014C and SPEC-014D then run in parallel if they do not touch the same adapter files.
 
 ### Spec-by-Spec HITL UAT Matrix
@@ -266,7 +297,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Implement additive migrations and seed steps M53–M61, including agent scope, workflow-template routing/artifact-policy columns, task lineage, workspace feature flags, disposition/artifact tables, facility workspace seed, and resource policy tables. Sandbox terminology and `ready_for_owner` runtime vocabulary are explicit no-SQL safety gates here and ship as runtime work in later specs. No UI, config, type, or runtime behavior changes ship in SPEC-001.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** N/A — migration-only/no-new-module spec
-- **Autopilot notes:** Treat migrations as the only implementation surface. Verify live schema truth before assuming `agents.workspace_path` or a `tasks.status` CHECK constraint. Preserve null-default / flag-off compatibility and document upstream-divergent fork pressure.
+- **Autopilot notes:** Treat migrations as the only implementation surface. Verify live schema truth before assuming `agents.workspace_path` or a `tasks.status` CHECK constraint. Preserve null-default / flag-off compatibility and document rollback impact before implementation.
 - **Definition of done:** Phase 0 deliverables are implemented, P0 acceptance criteria pass, migrations are idempotent on production-shape data, existing tests pass unchanged, and rollback scripts plus documented manual reverse steps exist for each SQL-changing migration or seed.
 - **Completion evidence:** Complete on PR #15 (`001-foundation-migrations`) after local verification and operator-node UAT acceptance on 2026-04-26. operator-node UAT confirmed M53-M61 migration markers, `PRAGMA quick_check = ok`, the `facility` workspace seed, Aegis/<operator-agent>/Security Guardian `scope='global'` backfill, and unchanged core app flows.
 
@@ -400,7 +431,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Extend Cost Tracker into feature-flagged scheduler enforcement for WIP, blackout/degraded windows, budgets, policy events, operator overrides, and optional runtime-only OpenClaw electricity/infra cost visibility.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `src/lib/resource-governance.ts`, `src/app/api/resource-policies/route.ts`, `src/app/api/resource-policy-events/route.ts`, `src/lib/openclaw-health-costs.ts`
-- **Autopilot notes:** Do not duplicate token/cost telemetry. `FEATURE_RESOURCE_GOVERNANCE=false` preserves legacy scheduler behavior. `FEATURE_OPENCLAW_HEALTH_COSTS` is fork-only optional, runtime-only, absent-safe, and must require no v1 schema migration.
+- **Autopilot notes:** Do not duplicate token/cost telemetry. `FEATURE_RESOURCE_GOVERNANCE=false` preserves legacy scheduler behavior. `FEATURE_OPENCLAW_HEALTH_COSTS` is operator-specific optional, runtime-only, absent-safe, and must require no v1 schema migration.
 - **Definition of done:** Phase 7 deliverables are implemented, P7 acceptance criteria pass for legacy behavior, empty-policy allow, WIP limits, blackout/degraded windows, soft/hard budgets, subscription raw-usage enforcement, OpenClaw absence safety, valid telemetry display, and fail-safe policy evaluation.
 - **Implementation evidence:** Complete on PR #26 after merge to `main` as `bd9a693`. Evidence includes the feature-flagged synchronous resource policy evaluator, observability ingestion/reconciliation pipeline, M65a..m + M66 additive migrations and rollback files, Cost Tracker Governance tab with Policies/Budgets/Windows/Overrides/Diagnostics/System Health subviews, feature-flag matrix harness, axe coverage guard, feature-flag env-leak guard, strict-scope guard, runbooks, observability docs, and SPEC-008 summary/retrospective evidence. Operator-led soak/chaos and selected running-instance e2e checks remain documented as non-merge-blocking follow-up evidence, not blockers for SPEC-009A planning.
 
@@ -591,7 +622,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** —
 - **Scope source:** Phase 7.5 - CrabTrap honeypot adapter
 - **Acceptance criteria source:** Phase 7.5 Acceptance Criteria
-- **Scope summary:** Add a fork-only optional CrabTrap adapter that validates honeypot webhook payloads and writes bounded `activities.kind='security_intrusion_detected'` rows for Mission Control API and sandbox probes.
+- **Scope summary:** Add an operator-specific optional CrabTrap adapter that validates honeypot webhook payloads and writes bounded `activities.kind='security_intrusion_detected'` rows for Mission Control API and sandbox probes.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** `src/lib/crabtrap-adapter.ts` and focused tests. No schema migration, no OpenAPI contract change, no scheduler/task-dispatch dependency.
 - **Autopilot notes:** Runtime adapter only. With `FEATURE_CRABTRAP_HONEYPOT=false`, no CrabTrap path is reachable. Missing binary/config/webhook secret must be absent-safe.
@@ -625,7 +656,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add narrow cleanup-task generation and drift checks after two product lines exist: stale PRD/roadmap/workflow claims, missing evidence, stale feature-flag status, low-value tests, strict-scope drift, and broken source-of-truth links.
 - **Tool count / tool names:** N/A - process/tooling spec
 - **Strict Scope:** guard scripts, cleanup workflow template, docs/checklist updates, and tests over representative stale/fresh fixtures. No runtime product behavior.
-- **Autopilot notes:** This spec converts harness engineering into recurring small Mission Control tasks, not periodic broad rewrites.
+- **Autopilot notes:** This spec converts harness engineering into recurring small Mission Control tasks, not periodic broad rewrites. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC into context and record retrieval evidence in the workflow; do not infer the drift taxonomy from training data.
 - **Definition of done:** A guard can create or recommend one narrow Mission Control cleanup task for each supported drift class, with evidence and owner metadata attached.
 
 ### SPEC-013A: Run-State Persistence Spine
@@ -664,7 +695,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-013B: Claim and Reconciliation Authority
 
-- **Status:** Pending
+- **Status:** In Progress
 - **Priority:** P1
 - **Branch short name:** `claim-reconciliation`
 - **Dependencies:** SPEC-004, SPEC-006, SPEC-008, SPEC-013A1
@@ -674,8 +705,9 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add one coordination path that prevents duplicate dispatch, reconciles task/GitHub/resource state before launch, gates autonomous eligibility on GitHub-linked work, and records release/stop decisions.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** scheduler/task-dispatch claim seam, resource-governance integration, GitHub-linked eligibility, reconciliation checks, and tests for concurrent ticks. No sandbox runner, no harness adapter, no retry UI.
-- **Autopilot notes:** Do not duplicate `advanceTaskChain`; SPEC-004 remains successor-selection authority. Web-created local-only tasks remain visible but not autonomous runner intake.
+- **Autopilot notes:** Do not duplicate `advanceTaskChain`; SPEC-004 remains successor-selection authority. Web-created local-only tasks remain visible but not autonomous runner intake. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC into context; claim/reconciliation semantics must be grounded in the live external contract plus current Mission Control code, not model memory.
 - **Definition of done:** With `FEATURE_TASK_CONTROL_PLANE=true`, concurrent ticks cannot claim the same stage twice, terminal task/GitHub state releases work before dispatch, and governance blocks/deferred states prevent new launches.
+- **Implementation evidence:** Branch `013b-claim-reconciliation` completed local SPEC-013B implementation on 2026-05-27. Evidence includes additive M78 `task_stage_claims` persistence and rollback SQL, a narrow `src/lib/task-claim-reconciliation.ts` claim/reconciliation module, `dispatchAssignedTasks` integration before the legacy launch mutation, read-only `GET /api/tasks/:id/claim-reconciliation`, API index/OpenAPI registration, focused migration/helper/dispatch/route Vitest coverage with 17 passing tests, and a post-merge UAT replay packet. Verification passed under Node v22.22.2 via `direnv exec . pnpm test:all`: strict-scope, lint, typecheck, 304 Vitest files with 3156 passed tests, production build, and 651 Playwright tests. Status remains `In Progress` until implementation PR merge, deployment promotion, and the named post-merge HITL UAT gate record exactly one claim/launch path and terminal/gated release evidence.
 
 ### SPEC-013C: Retry/Backoff and Debug Surfaces
 
@@ -689,7 +721,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add bounded retry/backoff reason codes, operator cancel/retry/release controls, JSON debug surfaces, audit rows, and refresh triggers on top of the SPEC-013B claim authority.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** retry policy, debug API, minimal UI or CLI/MCP exposure if needed, audit integration, and focused tests. No sandbox lifecycle or adapter registry.
-- **Autopilot notes:** Separate normal continuation retries from failure, timeout, stale-state, and operator-release reasons. Do not mutate GitHub issue truth except through the documented sync/reconciliation path.
+- **Autopilot notes:** Separate normal continuation retries from failure, timeout, stale-state, and operator-release reasons. Do not mutate GitHub issue truth except through the documented sync/reconciliation path. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; map retry, reconciliation, and observable-attempt semantics to Mission Control debug controls without importing scheduler or harness behavior.
 - **Definition of done:** Operators can inspect, retry, release, or cancel a claimed stage through one documented surface; every mutation emits bounded state and audit evidence.
 
 ### SPEC-014A: Sandbox Ownership and Lifecycle Contract
@@ -704,7 +736,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Define deterministic, sanitized, product-line-scoped sandbox keys/paths and lifecycle hooks for `mission_control`, `openclaw`, and `external_harness` ownership using fakes only. No real harness launches.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** sandbox path/key helpers, lifecycle hook interface, fake owner implementations, cleanup policy, and tests for path traversal/rollback. No adapter manifest, no token accounting, no real runner.
-- **Autopilot notes:** Sandbox ownership is a user/workflow choice. Mission Control-owned worktrees, OpenClaw-owned sandboxes, and external harness handles must all fit the same lifecycle vocabulary.
+- **Autopilot notes:** Sandbox ownership is a user/workflow choice. Mission Control-owned worktrees, OpenClaw-owned sandboxes, and external harness handles must all fit the same lifecycle vocabulary. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC into context and record how workspace safety, sandbox lifecycle, and context-legibility lessons map to Mission Control.
 - **Definition of done:** Sandbox paths cannot escape the configured root; lifecycle events are inspectable; disabling `FEATURE_AGENT_RUNNER_SANDBOXES` prevents all sandbox create/run paths.
 
 ### SPEC-014B: Harness Adapter Manifest and Fake Registry
@@ -719,7 +751,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Define the typed harness adapter manifest and registry: launch/resume/stop, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, MCP/skills/plugins/memory exposure, provider/account constraints, approval policy, timeout policy, user-input policy, and runtime-inventory state (`visible`, `unassigned`, `assigned`, `eligible`, `blocked`). Prove the contract with at least two fake adapters.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** adapter types, manifest validation, fake registry, capability-resolution packet, runtime-inventory state model, unsupported-capability fail-closed behavior, and tests. No real Codex/Claude/OpenClaw/Hermes execution.
-- **Autopilot notes:** A real adapter cannot land before the fake registry proves Mission Control state is not Codex-specific. Visibility in runtime inventory is not eligibility for work; eligibility requires explicit project-role assignment, selected adapter capability support, product-line runner flag enablement, governance allow, and tracker-linked task eligibility.
+- **Autopilot notes:** A real adapter cannot land before the fake registry proves Mission Control state is not Codex-specific. Visibility in runtime inventory is not eligibility for work; eligibility requires explicit project-role assignment, selected adapter capability support, product-line runner flag enablement, governance allow, and tracker-linked task eligibility. Before Specify or Plan, fetch the current external context and map Symphony SPEC client/workspace/validation requirements into the fake manifest contract.
 - **Definition of done:** Two fake adapters exercise the same contract, runtime inventory can show visible/unassigned entries without making them dispatchable, unsupported capabilities fail the run attempt instead of stalling or silently switching harnesses, and review packets can cite the selected adapter manifest and eligibility evidence.
 
 ### SPEC-014C: First Real Harness Adapter Pilot
@@ -734,7 +766,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Implement one real harness adapter path behind the registry. Prefer Codex app-server if available because structured threads, tool/file requests, approvals, and usage events map cleanly to Mission Control; otherwise choose the smallest locally provable adapter and document the limitation. HAL verification on 2026-05-07 found Codex CLI `0.124.0` installed with the `codex app-server` subcommand available, but not deployed as a Mission Control service.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** one adapter module, one smoke path, token/runtime summaries where available, artifact publication, redaction, and operator-visible run debug. No second real adapter, no OpenClaw-specific behavior unless this spec explicitly selects OpenClaw as the first real pilot.
-- **Autopilot notes:** The adapter executes already-claimed GitHub-linked work only. It does not choose successor templates, create local-only tasks, auto-merge, or bypass Aegis/owner gates.
+- **Autopilot notes:** The adapter executes already-claimed GitHub-linked work only. It does not choose successor templates, create local-only tasks, auto-merge, or bypass Aegis/owner gates. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; the selected real adapter must cite the live external context for launch/resume, workspace cwd, approval/sandbox policy, unsupported-capability behavior, and validation profile decisions.
 - **Definition of done:** One real adapter can launch or continue a claimed stage, publish artifacts, record usage/failure summaries, and fail safely on unsupported tool/user-input events.
 
 ### SPEC-014D: OpenClaw and External Harness Adapter
@@ -746,22 +778,11 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Enables:** Later adapter specs
 - **Scope source:** Phase 12D - OpenClaw and external harness adapter
 - **Acceptance criteria source:** Phase 12D Acceptance Criteria
-- **Scope summary:** Add the fork-only optional adapter boundary for OpenClaw-owned sandboxes and external harness handles. OpenClaw may provide gateway/session messaging, sandbox preparation, process control, plugin harness selection, MCP/skills exposure, memory injection, optional health/cost telemetry, and imported runtime-agent inventory; Mission Control still owns tracker state, project-role assignment, claims, governance, reconciliation, review packets, and handoff artifacts.
+- **Scope summary:** Add the operator-specific optional adapter boundary for OpenClaw-owned sandboxes and external harness handles. OpenClaw may provide gateway/session messaging, sandbox preparation, process control, plugin harness selection, MCP/skills exposure, memory injection, optional health/cost telemetry, and imported runtime-agent inventory; Mission Control still owns tracker state, project-role assignment, claims, governance, reconciliation, review packets, and handoff artifacts.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** adapter module(s), absent-safe config checks, fake/OpenClaw gateway fixtures, external-handle lifecycle tests, runtime-inventory import/refresh labels, and deployment docs. No Mission Control-owned sandbox changes unless required by the shared contract.
-- **Autopilot notes:** OpenClaw is the current application harness choice, not a product requirement. If OpenClaw is absent or disabled, Mission Control must still support Mission-Control-owned or other external-harness paths through the same registry. Imported OpenClaw agents start as visible unassigned inventory; role/domain workspace files should stay generic, and product/task context belongs in Mission Control assignment/run packets.
+- **Autopilot notes:** OpenClaw is the current application harness choice, not a product requirement. If OpenClaw is absent or disabled, Mission Control must still support Mission-Control-owned or other external-harness paths through the same registry. Imported OpenClaw agents start as visible unassigned inventory; role/domain workspace files should stay generic, and product/task context belongs in Mission Control assignment/run packets. Before Specify or Plan, fetch the current external context and document which Harness Engineering/Symphony contracts are implemented, adapted, or explicitly deferred.
 - **Definition of done:** `FEATURE_AGENT_RUNNER_SANDBOXES=false` or missing OpenClaw config leaves no OpenClaw path reachable; enabled adapter imports/refreshes OpenClaw runtime agents as non-dispatchable inventory until explicitly assigned and eligible, runs through the same manifest/lifecycle contract, and records failures without mutating GitHub or task terminal state outside reconciliation.
-
----
-
-## Fork Decision Gates
-
-These are the points where the owner should explicitly decide whether continued upstream compatibility is still the goal or whether a permanent fork is being accepted.
-
-1. **After Phase 0** — additive schema tail starts (`M53–M61`). If this is not acceptable fork pressure, stop and redesign around upstream-safe adapters or upstream contributions before coding farther.
-2. **After Phase 3/4** — workflow/state-machine semantics become upstream-divergent, not just schema-divergent.
-3. **After Phase 6** — artifact/disposition persistence deepens the fork if upstream does not want those tables.
-4. **Phase 7 OpenClaw health costs** — safe to keep fork-only because it is adapter-based and optional; this does **not** by itself justify a permanent fork.
 
 ---
 
@@ -770,10 +791,6 @@ These are the points where the owner should explicitly decide whether continued 
 ### Scope
 
 Foundation migrations/seed steps M53–M61 (nine additive SQL-changing migrations/seed steps) plus two no-SQL safety gates for Sandbox terminology and `ready_for_owner` status vocabulary. Pure schema work. No UI, config, type, or runtime behavior changes.
-
-### Upstream Impact
-
-`upstream-divergent`. Runtime-safe for current installs, but these migrations create schema/state that upstream does not currently have. Phase 0 is the first explicit fork-pressure checkpoint.
 
 ### Deliverables
 
@@ -831,10 +848,6 @@ The live migration runner (`src/lib/migrations.ts:5-9`) is forward-only — `typ
 ### Scope
 
 Introduce the Product Line switcher in the header, wire independent Facility/Product Line scope state, and apply explicit mode-sensitive/Facility-aggregate behavior per D4b. `activeTenant` remains the tenant/facility context and must not be reused as the Product Line switcher. The header must stop labeling tenant context as "Workspace." Gate everything behind `FEATURE_WORKSPACE_SWITCHER`.
-
-### Upstream Impact
-
-`upstream-safe`. This is additive UI/domain work and a plausible upstream candidate if kept generic.
 
 ### UI Mode Transition Contract
 
@@ -927,10 +940,6 @@ Flip `FEATURE_WORKSPACE_SWITCHER` to OFF. Switcher hidden. Zustand field ignored
 
 Add a process/tooling layer that prevents SpecKit artifacts and Playwright screenshots from growing without policy. SPEC-002A evaluates `stn1slv/spec-kit-archive` as the default post-merge archive command, defines which artifacts are durable versus temporary, and adds local/CI guards for committed screenshot evidence before SPEC-003 starts.
 
-### Upstream Impact
-
-`upstream-safe`. This is documentation, workflow, and CI hygiene that can be useful to upstream users without requiring Mission Control runtime behavior.
-
 ### Deliverables
 
 - **Archive extension decision**: validate `spec-kit-archive` against the current SpecKit tooling and document whether Mission Control installs, vendors, forks, or rejects it. Any adoption must pin a tag or commit and preserve MIT license metadata.
@@ -965,10 +974,6 @@ Disable the archive guard and extension hook. Source spec folders and existing e
 ### Scope
 
 Replace the `aegisAgentByWorkspace = new Map<number, ReviewAgentRecord>()` declaration at `src/lib/task-dispatch.ts:394` (used at line 422 for `.get()` and line 435 for `.set()`) with a global Aegis lookup via the new `getAegis(db, workspace_id?)` helper. The function `runAegisReviews` starts at `src/lib/task-dispatch.ts:376`; `resolveGatewayAgentIdForReviewAgent` is at `src/lib/task-dispatch.ts:80`. Preserve a shim for legacy workspace-scoped Aegis rows. Touch the ~60+ references cataloged during Q1 verification.
-
-### Upstream Impact
-
-`upstream-divergent` because this design depends on `agents.scope` from Phase 0.
 
 ### Known Reference Surface (from Q1 verification)
 
@@ -1022,10 +1027,6 @@ Flip `FEATURE_GLOBAL_AEGIS` OFF. `getAegis` reverts to workspace-first resolutio
 ### Scope
 
 Extend the live `workflow_templates` table with routing machinery (per D5). A "task-chain template" is a domain alias over `workflow_templates`, not a new SQL table. Implement schema validation, routing-rule evaluation, and successor-task creation in the scheduler. Ship behind `FEATURE_TASK_PIPELINES`.
-
-### Upstream Impact
-
-`upstream-divergent`. This phase depends on new `workflow_templates` and `tasks` binding/lineage schema and introduces task-chain semantics upstream Mission Control does not currently expose. It also adds a narrow partial unique index on non-null `tasks.parent_task_id` so the fork enforces one successor per parent at the database layer.
 
 ### Deliverables
 
@@ -1120,10 +1121,6 @@ Flip `FEATURE_TASK_PIPELINES` OFF. `advanceTaskChain` becomes a no-op. If schema
 
 Add `ready_for_owner` to the task state progression for PR-producing tasks (D6, D7). Integrate with existing GitHub sync to transition `ready_for_owner` → `done` only when the linked PR is merged. Non-PR issue workflows continue to use `produces_pr=false` templates and do not require a PR.
 
-### Upstream Impact
-
-`upstream-divergent`. This changes the task-state machine and depends on schema/state upstream does not currently carry.
-
 ### Deliverables
 
 - **Kanban UI**: `task-board-panel.tsx` — add `ready_for_owner` column between `quality_review` and `done`. Distinct styling (operator-action-required class).
@@ -1170,10 +1167,6 @@ Flip `FEATURE_TWO_STEP_TERMINAL` OFF. Scheduler transitions direct to `done` as 
 
 Add `area:*` label routing (D8) so that a single monorepo per product line can serve multiple department kanbans. The live sync is currently project-driven, so this phase must also introduce repo-level sync ownership or equivalent dedupe for `(workspace_id, github_repo)`. Behind `FEATURE_AREA_LABEL_ROUTING`.
 
-### Upstream Impact
-
-`upstream-safe`. This is additive sync behavior and a good upstream candidate if implemented generically.
-
 ### Deliverables
 
 - **Repo-level sync ownership/dedupe**: ensure only one owner or dedupe path polls a given `(workspace_id, github_repo)` even when multiple department projects share the repo. The unique `(workspace_id, github_repo, github_issue_number)` constraint is a guardrail, not the main routing strategy.
@@ -1218,10 +1211,6 @@ Flip `FEATURE_AREA_LABEL_ROUTING` OFF. `pullFromGitHub` ignores `area:*` labels;
 ### Scope
 
 Log every triage disposition to `task_dispositions` (D9). Add the shared Mission Control task artifact store (D11) as the durable handoff plane between private agent sandboxes. Extend operator surfaces with disposition views and artifact admin/health controls.
-
-### Upstream Impact
-
-`upstream-divergent`. The UI/admin surfaces may be upstreamable, but the current design depends on new persistence tables and artifact semantics upstream does not have.
 
 ### Deliverables
 
@@ -1275,13 +1264,6 @@ Flip `FEATURE_DISPOSITION_LOGGING` and/or `FEATURE_TASK_ARTIFACTS` OFF. INSERT/p
 
 Extend the existing Cost Tracker from best-effort observability into scheduler-enforced WIP, blackout/degraded-window, and budget governance. This phase must not duplicate token/cost telemetry. It consumes the existing `/api/tokens`, task-cost, provider-subscription, and token-pricing surfaces and adds enforcement decisions around autonomous work.
 
-### Upstream Impact
-
-Mixed:
-
-- Governance core is `upstream-divergent` because the current design depends on `resource_policies` and `resource_policy_events`.
-- OpenClaw health electricity / infra cost ingestion is `fork-only optional` and must remain a runtime adapter with no schema migration in v1.
-
 ### Deliverables
 
 - **Governance evaluator**: `src/lib/resource-governance.ts` with `evaluateResourceGovernance(context)` returning `allow`, `defer`, `block`, or `override_required`. The evaluator MUST be wrapped in a try/catch at every call site; if `evaluateResourceGovernance` throws, the error path returns `defer` (NOT `block`) so the scheduler retries on the next tick rather than wedging the system; the caught error is written as a `resource_policy_events` row with `decision='defer'`, `reason='evaluator_error: <message>'` and an `activities` row of kind `governance_evaluator_error` is created. A scheduler-wide circuit breaker counts consecutive evaluator errors per minute; on >5 errors/minute the breaker opens and `evaluateResourceGovernance` is bypassed (returns `allow`) until manually reset, with an operator notification of class `governance_circuit_breaker_open`. This combination prevents both silent failure (errors not logged) and full DOS (a buggy evaluator wedging dispatch).
@@ -1322,7 +1304,7 @@ Mixed:
 
 ### Rollback
 
-Flip `FEATURE_RESOURCE_GOVERNANCE` OFF. Scheduler returns to legacy behavior. Tables and events remain for auditability. Existing Cost Tracker views continue to work. If needed, also flip `FEATURE_OPENCLAW_HEALTH_COSTS` OFF to remove the fork-only OpenClaw infra adapter without affecting governance core.
+Flip `FEATURE_RESOURCE_GOVERNANCE` OFF. Scheduler returns to legacy behavior. Tables and events remain for auditability. Existing Cost Tracker views continue to work. If needed, also flip `FEATURE_OPENCLAW_HEALTH_COSTS` OFF to remove the optional OpenClaw infra adapter without affecting governance core.
 
 ### Estimated Work
 
@@ -1350,7 +1332,7 @@ This is the critical path for using Mission Control to finish its own roadmap. I
 
 ### Lane B - Optional Security Sidecar
 
-SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-hosting critical path. It must stay disabled by default, absent-safe, schema-free, and fork-only optional.
+SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-hosting critical path. It must stay disabled by default, absent-safe, schema-free, and operator-specific optional.
 
 ### Lane C - Second Product Line Scale
 
@@ -1398,16 +1380,16 @@ Completed through SPEC-008
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8F, Phase 9A, Phase 10A, and Phase 11A-11A1 are complete and remain the substrate for all later work. SPEC-013B is now the next control-plane slice after SPEC-013A1 post-merge acceptance; SPEC-010B is also unblocked by SPEC-010A acceptance but still subject to Product Line B preflight cleanup. SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8F, Phase 9A, Phase 10A, and Phase 11A-11A1 are complete and remain the substrate for all later work. SPEC-013B is now the active control-plane setup after SPEC-013A1 post-merge acceptance; SPEC-010B is also unblocked by SPEC-010A acceptance but still subject to Product Line B preflight cleanup. SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Mission Control-specific path. SPEC-013A-C own run-state, GitHub sync automation, claim/reconciliation, and retry authority. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
 
-SPEC-013A1 implementation, PR #60, retrospective, and operator-confirmed post-merge UAT are complete on `main`. SPEC-013B may start next; SPEC-010B may also start after Product Line B preflight cleanup, while SPEC-012B continues to wait for SPEC-010B.
+SPEC-013A1 implementation, PR #60, retrospective, and operator-confirmed post-merge UAT are complete on `main`. SPEC-013B local implementation is complete on branch `013b-claim-reconciliation` and remains pending merge, deployment promotion, and post-merge HITL UAT; SPEC-010B may also start after Product Line B preflight cleanup, while SPEC-012B continues to wait for SPEC-010B.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
 - SPEC-012A is complete and now feeds SPEC-012B and SPEC-013A as a checked-in repo knowledge substrate.
 - SPEC-010A is complete after PR #59 and 2026-05-22 post-merge UAT; SPEC-010B may start after Product Line B preflight cleanup; SPEC-011 may also start when file ownership stays disjoint.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
-- SPEC-009F, SPEC-013A, and SPEC-013A1 are complete after their recorded merge and UAT gates; SPEC-013B is the next control-plane dependency before retry/debug and sandbox work proceed.
+- SPEC-009F, SPEC-013A, and SPEC-013A1 are complete after their recorded merge and UAT gates; SPEC-013B implementation is the next control-plane dependency awaiting merge and UAT before retry/debug and sandbox work proceed.
 - SPEC-013B runs after SPEC-013A1 acceptance so automatic GitHub sync is explicit before claim/reconciliation relies on scheduler ticks.
 - SPEC-014C and SPEC-014D may run in parallel only after SPEC-014B and only if adapter modules, fixtures, and deployment docs are isolated.
 
@@ -1436,7 +1418,7 @@ Parallel agents may work simultaneously only when they own disjoint primary file
 | SPEC-014A | 1.5-2 | Yes |
 | SPEC-014B | 1.5-2 | Yes |
 | SPEC-014C | 2-3 | Yes for first real adapter |
-| SPEC-014D | 2-3 | Optional/fork parallel after SPEC-014B |
+| SPEC-014D | 2-3 | Optional parallel after SPEC-014B |
 
 First self-hosting proof is roughly 6-9 engineering days after SPEC-008 for one engineer: SPEC-009A through SPEC-009D. The fully observable control-plane path through the first real harness adapter is roughly 18-27 critical-path engineering days, with SPEC-011, SPEC-010A/B, SPEC-012A/B, and SPEC-014D available as parallel work where file ownership is isolated.
 
@@ -1467,8 +1449,8 @@ First self-hosting proof is roughly 6-9 engineering days after SPEC-008 for one 
 | R7 Disposition/artifact store growth | Phase 6 | Quotas, retention, artifact admin maintenance, and revisit partitioning/storage tiering at scale |
 | R8 Feature-flag sprawl | All | Flags default OFF; document in the relevant settings or editor surface |
 | R9 ChatGPT Pro / subscribed-provider cost reads as `$0`, hiding runaway usage | Phase 7 | Separate estimated marginal USD from token/request/session/WIP budgets; raw usage budgets still enforce even when dollar cost is zero |
-| R10 Additive schema changes mistaken for upstream-safe changes | All schema phases | D13 compatibility labeling; roadmap marks schema/state divergence before implementation |
-| R11 OpenClaw health electricity integration leaks OpenClaw-node assumptions upstream | Phase 7 | Fork-only optional adapter, absent-safe runtime checks, and no v1 schema migration for health costs |
+| R10 Additive schema changes mistaken for low-risk changes | All schema phases | Install compatibility labeling; roadmap marks schema/state impact before implementation |
+| R11 OpenClaw health electricity integration leaks OpenClaw-node assumptions into generic paths | Phase 7 | Operator-specific optional adapter, absent-safe runtime checks, and no v1 schema migration for health costs |
 | R12 Global gateway coupling blocks clean multi-facility v2 | V2-001 | Preserve `openclaw_home`/`gateway_port` provisioning data and `owner_gateway` metadata in v1; avoid new process-global gateway assumptions; V2-001 owns tenant-aware gateway registry/resolution before multi-facility operation |
 | R13 Workflow contract drift between Markdown and `workflow_templates` makes agents run stale prompts | Phase 8A, 10B, 12B | SPEC-009A owns export/import parity checks, prompt/schema/routing hashes, and last-known-good behavior for invalid reloads; SPEC-012B guardrails detect later drift |
 | R14 Long-running runner sessions duplicate work after crash/restart | Phase 11B, 12C | Claim state is serialized in Mission Control; dispatch reconciles before launch; restart recovery uses task/GitHub state plus workspace inspection |
@@ -1489,13 +1471,13 @@ Each phase is independently rollback-safe:
 
 No destructive rollback required at any phase.
 
-## Upstream Compat Checklist (every PR)
+## Install Compatibility Checklist (every PR)
 
 - [ ] Does this PR reference `task_templates` as a SQL table? If yes, STOP — live table is `workflow_templates`.
 - [ ] Does this PR insert into `workspaces.display_name`? If yes, STOP — live column is `workspaces.name`.
 - [ ] Does this PR assume `agents.workspace_path` or a `tasks.status` CHECK constraint exists? If yes, first verify the live `.schema` and document the result.
-- [ ] Does this PR rename any column in `workspaces`, `projects`, `tasks`, or `agents`? If yes, STOP unless a compatibility/rollback decision is recorded — DB renames are upstream-divergent and not automatically additive-safe.
-- [ ] Does this PR modify any upstream-owned file (`src/app/layout.tsx`, `src/lib/auth.ts`, etc.) in a way that would create merge conflicts? If yes, isolate the change to a new file or extend via hooks.
+- [ ] Does this PR rename any column in `workspaces`, `projects`, `tasks`, or `agents`? If yes, STOP unless a compatibility/rollback decision is recorded — DB renames are not automatically additive-safe.
+- [ ] Does this PR modify shared shell/authentication files (`src/app/layout.tsx`, `src/lib/auth.ts`, etc.) in a way that would create broad regression risk? If yes, isolate the change to a new file or extend via hooks.
 - [ ] Does this PR add new migrations? If yes, they MUST be additive.
 - [ ] Does this PR change public API shapes (existing endpoints)? If yes, version the endpoint or preserve the old shape.
 - [ ] Does this PR add or touch gateway-facing code (`OPENCLAW_GATEWAY_*`, `config.gatewayHost`, `config.gatewayPort`, `gateways.is_primary`, or gateway health/connect/control routes)? If yes, STOP unless the diff either preserves existing behavior without adding new global gateway assumptions or routes new resolution through a named compatibility helper/adapter with a V2-001 reference.

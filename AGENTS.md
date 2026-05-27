@@ -178,6 +178,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through `src/lib/migrations.ts`; additive migration `076_task_stage_attempts` plus manual rollback `docs/migrations/rollback-M76.sql` (013a-run-state-spine)
 - TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Zustand where the existing GitHub Sync panel needs app state, Tailwind CSS 3, `better-sqlite3`, existing GitHub helper modules, Vitest, Playwright, ESLint, pnpm (013a1-github-sync-automation)
 - SQLite through `better-sqlite3`; additive M77 lifecycle tables through `src/lib/migrations.ts`; existing `github_syncs` remains the compatibility sync-history table (013a1-github-sync-automation)
+- TypeScript 5.7 strict for new SPEC-013B modules on Node.js >=22. + Next.js 16 App Router, React 19, `better-sqlite3`, existing Zustand/Tailwind/Vitest stack, existing `resourcePolicyEvaluator`, existing GitHub sync lifecycle helpers, existing task-stage attempt helpers. No new runtime dependency. (013b-claim-reconciliation)
+- SQLite through `better-sqlite3`; additive forward migration `078_task_stage_claims`; manual rollback at `docs/migrations/rollback-M78.sql`. (013b-claim-reconciliation)
 
 ## Recent Changes
 - Archive extension cleanup run (2026-05-22): `.specify/memory/{spec,plan,changelog}.md` now carries recovery/provenance summaries through SPEC-013A, including SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F, SPEC-010A, SPEC-012A, and SPEC-013A. Cleanup was applied after the clean-worktree gate; active completed folders were removed from `specs/**`, with raw artifact recovery commands recorded in `.specify/memory/changelog.md`.
@@ -198,5 +200,6 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+shell commands, and other important information, read
+`specs/013b-claim-reconciliation/plan.md`.
 <!-- SPECKIT END -->

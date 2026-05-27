@@ -69,7 +69,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 | Principle | Requirement | Verification |
 |-----------|-------------|--------------|
 | I. Zero-Regression Contract | `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy dispatch/runtime behavior unchanged | Flag-off tests prove run-state rows are ignored by scheduler/dispatch paths and existing task flows |
-| II. Upstream Compatibility Discipline | New persisted state is additive and explicit about fork pressure | Plan labels schema as upstream-divergent if new tables are added and keeps runtime opt-in |
+| II. Install Compatibility Discipline | New persisted state is additive and explicit about install impact | Plan labels schema impact if new tables are added and keeps runtime opt-in |
 | IV. Test-First Development | Schema/helper/API/UI behavior begins with failing tests or fixtures | Tasks require RED tests before migration/helper/route/component implementation |
 | V. Feature-Flag Resolution Discipline | Runtime behavior gates through `resolveFlag('FEATURE_TASK_CONTROL_PLANE', ctx)` only | Static guardrails find no inline `process.env.FEATURE_TASK_CONTROL_PLANE` reads |
 | VII. Additive Migration Policy | Any migration is additive, idempotent, rollback-documented, and schema-truth cited | Plan cites `src/lib/migrations.ts` slot, adds rollback SQL, and migration tests cover rerun/rollback semantics |

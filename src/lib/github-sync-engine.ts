@@ -769,8 +769,8 @@ export async function pushTaskToGitHub(
 
     // Mark synced to prevent ping-pong
     db.prepare(`
-      UPDATE tasks SET github_synced_at = ? WHERE id = ?
-    `).run(now, task.id)
+      UPDATE tasks SET github_synced_at = ?, github_issue_state = ? WHERE id = ?
+    `).run(now, state, task.id)
 
     logger.info({ repo, issue: task.github_issue_number }, 'Pushed task update to GitHub')
   } else if (project.github_sync_enabled) {
@@ -786,9 +786,9 @@ export async function pushTaskToGitHub(
     // Store the issue number and repo on the task
     db.prepare(`
       UPDATE tasks
-      SET github_issue_number = ?, github_repo = ?, github_synced_at = ?
+      SET github_issue_number = ?, github_repo = ?, github_synced_at = ?, github_issue_state = ?
       WHERE id = ?
-    `).run(created.number, repo, now, task.id)
+    `).run(created.number, repo, now, 'open', task.id)
 
     logger.info({ repo, issue: created.number, taskId: task.id }, 'Created GitHub issue for task')
   }
@@ -955,6 +955,12 @@ export async function pullFromGitHub(
           },
         })
 
+        db.prepare(`
+          UPDATE tasks
+          SET github_issue_state = ?, github_synced_at = ?
+          WHERE id = ? AND workspace_id = ?
+        `).run(issue.state, now, createResult.taskId, workspaceId)
+
         pulled++
         if (createResult.duplicate) {
           pulled--
@@ -1024,7 +1030,7 @@ export async function pullFromGitHub(
               UPDATE tasks
               SET title = ?, description = ?, status = ?, priority = ?,
                   completed_at = COALESCE(completed_at, ?),
-                  github_synced_at = ?, updated_at = ?
+                  github_synced_at = ?, github_issue_state = ?, updated_at = ?
               WHERE id = ? AND workspace_id = ?
             `).run(
               issue.title,
@@ -1032,7 +1038,7 @@ export async function pullFromGitHub(
               transition.status,
               labelToPriority(labelNames),
               now,
-              now, now,
+              now, issue.state, now,
               existingTask.id, workspaceId,
             )
 
@@ -1076,14 +1082,14 @@ export async function pullFromGitHub(
                   status = CASE WHEN status = 'done' THEN ? ELSE status END,
                   completed_at = CASE WHEN status = 'done' THEN NULL ELSE completed_at END,
                   priority = ?,
-                  github_synced_at = ?, updated_at = ?
+                  github_synced_at = ?, github_issue_state = ?, updated_at = ?
               WHERE id = ? AND workspace_id = ?
             `).run(
               issue.title,
               issue.body || '',
               READY_FOR_OWNER_STATUS,
               labelToPriority(labelNames),
-              now, now,
+              now, issue.state, now,
               existingTask.id, workspaceId,
             )
             pulled++
@@ -1100,14 +1106,14 @@ export async function pullFromGitHub(
         db.prepare(`
           UPDATE tasks
           SET title = ?, description = ?, status = ?, priority = ?,
-              github_synced_at = ?, updated_at = ?
+              github_synced_at = ?, github_issue_state = ?, updated_at = ?
           WHERE id = ? AND workspace_id = ?
         `).run(
           issue.title,
           issue.body || '',
           status,
           priority,
-          now, now,
+          now, issue.state, now,
           existingTask.id, workspaceId
         )
 

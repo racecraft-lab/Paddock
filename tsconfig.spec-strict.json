@@ -91,6 +91,10 @@
     "src/lib/__tests__/github-sync-lifecycle-api.test.ts",
     "src/lib/__tests__/github-sync-lifecycle.test.ts",
     "src/lib/__tests__/github-sync-lifecycle-errors.test.ts",
-    "tests/e2e/fixtures/github-sync-lifecycle.ts"
+    "tests/e2e/fixtures/github-sync-lifecycle.ts",
+    "src/lib/task-claim-reconciliation.ts",
+    "src/lib/__tests__/migrations-M78-task-stage-claims.test.ts",
+    "src/lib/__tests__/task-claim-reconciliation-fixtures.ts",
+    "src/lib/__tests__/task-claim-reconciliation.test.ts"
   ]
 }

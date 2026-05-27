@@ -68,7 +68,7 @@ Before starting any phase, verify alignment with `.specify/memory/constitution.m
 |-----------|-------------|--------------|
 | Zero-regression contract | With `FEATURE_WORKSPACE_SWITCHER=0`, existing single-workspace behavior and snapshots remain unchanged | `pnpm test:all` with flag OFF, or documented focused fallback if sandbox restrictions block full e2e |
 | Feature-flag resolution discipline | New runtime behavior routes through `resolveFlag(name, ctx)` in `src/lib/feature-flags.ts`; inline `process.env.FEATURE_*` checks are forbidden | Grep runtime code for inline feature flag reads and cover `resolveFlag()` behavior with tests |
-| Upstream compatibility discipline | SPEC-002 is `upstream-safe`; additions are opt-in and avoid destructive schema/runtime divergence | No SQL renames, no destructive migration, no unnecessary upstream-owned conflict surface |
+| Install compatibility discipline | SPEC-002 additions are opt-in and avoid destructive schema/runtime changes | No SQL renames, no destructive migration, no unnecessary legacy-core conflict surface |
 | Test-first development | Production code changes follow red-green-refactor | Failing Vitest or Playwright tests are added before implementation for state, API, SSE, and UI behavior |
 | Strict scope ramp | New production modules in strict scope are limited to `workspace-switcher.tsx`, `product-line.ts`, and `feature-flags.ts` unless the plan justifies more; required existing-file edits are allowed only for Phase 1 scope behavior | Plan and tasks list every new TS/TSX production module, update `tsconfig.spec-strict.json` and `eslint.config.mjs` for those modules, and keep unrelated cleanup out |
 | Package manager | Use pnpm for repo verification | Lockfile is `pnpm-lock.yaml`; use `pnpm` commands only |
@@ -538,7 +538,7 @@ $speckit-tasks
 $speckit-analyze
 
 Focus on:
-1. Constitution alignment: feature-flag default OFF, upstream-safe discipline, TDD, strict-scope ramp, and no unauthorized data leaks.
+1. Constitution alignment: feature-flag default OFF, install-compatibility discipline, TDD, strict-scope ramp, and no unauthorized data leaks.
 2. Acceptance coverage: P1-AC1 through P1-AC16 each have implementation or verification tasks.
 3. State consistency: Product Line scope remains independent from `activeTenant`; `setActiveProductLine(productLine | null, options)` owns every transition; Facility/null compatibility semantics are not confused with the real facility workspace row.
 4. API/SSE consistency: every scoped route in the concrete matrix has authorization checks and tests for unauthorized scope, both-params `400`, facility-row-as-product-line `400`, missing SSE scope payloads, EventSource reconnect on scope change, and whitelisted global events.

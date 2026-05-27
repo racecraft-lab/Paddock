@@ -34,7 +34,7 @@ The feature is gated by `FEATURE_AREA_LABEL_ROUTING` (already registered, `activ
 - **No new dedicated routing module.** No `src/lib/github-area-routing.ts` extraction. All logic in existing files.
 - **No re-routing on label changes.** Once a task is ingested with a project_id, subsequent GitHub label changes do NOT move it between MC projects. "No thrash" means stable per-task project_id after initial assignment.
 - **No external secret detector.** Label and slug data is not secret material; SPEC-007 owns the artifact secret detector.
-- **No upstream-divergent schema.** All migrations are additive nullable columns; rollback drops columns or sets flag OFF.
+- **No destructive schema change.** All migrations are additive nullable columns; rollback drops columns or sets flag OFF.
 - **No multi-repo product-line sync.** This spec assumes one repo per product-line workspace (the monorepo case). Multi-repo product lines are a SPEC-009/010 concern.
 - **No per-project rate limit shaping.** GitHub API call volume is governed by the existing sync engine's pacing; this spec does not alter it.
 

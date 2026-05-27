@@ -19,10 +19,9 @@ agents triage issues, execute bounded remediation work, publish evidence, pass
 review gates, and hand a PR to the owner without relying on private terminal
 history or out-of-band context.
 
-Mission Control is allowed to diverge from its historical fork origin. The
-repo remains public and OSS under the existing license, but product decisions
-should optimize for the factory vision and current installation compatibility,
-not for indefinite cherry-pick compatibility with the pre-fork project.
+Mission Control is an independent public OSS control plane under the existing
+license. Product decisions should optimize for the factory vision and current
+installation compatibility.
 
 ## Operating Model
 
@@ -60,7 +59,49 @@ not for indefinite cherry-pick compatibility with the pre-fork project.
 7. Architecture is enforced mechanically through feature flags, workflow
    contract validation, strict-scope checks, migration tests, route contracts,
    visual evidence, and governance gates.
-8. Fork-only adapters remain optional, disabled by default, and absent-safe.
+8. Operator-specific adapters remain optional, disabled by default, and absent-safe.
+9. External reference context must be fetched into the active model context for
+   Symphony-aligned and harness-engineering work. Do not rely on training data,
+   stale summaries, or memory when scoping or planning these product surfaces.
+
+## External Reference Context
+
+The factory vision depends on external references that postdate many model
+training cuts and can change over time. Any GPT-5.5 or later run that scopes,
+specifies, plans, tasks, analyzes, implements, or reviews Symphony-aligned
+control-plane work or harness-engineering work must fetch these sources into
+the current context window during that run:
+
+- OpenAI Harness Engineering:
+  <https://openai.com/index/harness-engineering/>
+- OpenAI Symphony announcement:
+  <https://openai.com/index/open-source-codex-orchestration-symphony/>
+- OpenAI Symphony service specification:
+  <https://github.com/openai/symphony/blob/main/SPEC.md>
+
+The generated design concept, workflow, plan, or review packet must record
+the retrieval date, source URLs, and for GitHub sources the branch/ref or
+commit when available. If the agent cannot fetch the sources, it must stop at
+the phase gate and ask the operator for the current material instead of filling
+gaps from model memory.
+
+The context extraction should preserve these durable lessons:
+
+- Harness Engineering: repository knowledge is the system of record; short
+  maps should point to indexed, mechanically checked sources of truth; UI,
+  logs, metrics, tests, and cleanup loops must be legible to agents.
+- Symphony: tracker work items form the control plane; each active work item
+  receives an isolated workspace; the orchestrator owns dispatch,
+  reconciliation, retry, and observability.
+- Symphony SPEC: workspace safety, tracker refresh, dispatch/reconciliation,
+  retry, app-server/client policy, and validation profiles are conceptual
+  contracts to adapt, not a stack to import wholesale.
+
+Mission Control must adapt these references to its own
+Next.js/React/TypeScript/SQLite stack, GitHub-first tracker model, SpecKit
+task-chain governance, and OpenClaw/Codex/Claude/harness adapter boundaries.
+The external references are source material for product intent and constraints,
+not authority to replace Mission Control's stack or public OSS roadmap.
 
 ## Product Goals
 
@@ -275,7 +316,7 @@ reconciliation.
 - **FR-G4:** Policy decisions are written to governance/audit surfaces with
   enough metadata to explain allow, defer, block, override-required, or
   override outcomes.
-- **FR-G5:** OpenClaw health/electricity cost telemetry is a fork-only optional
+- **FR-G5:** OpenClaw health/electricity cost telemetry is an operator-specific optional
   runtime adapter. Missing files, disabled flags, malformed data, or absent
   config must no-op cleanly.
 
@@ -383,19 +424,19 @@ owning spec and migration artifacts.
 - **NFR-13 Successor side-effect parity:** task-chain successor creation shares
   the normal task creation path rather than maintaining a parallel insert path.
 
-## Compatibility And Fork Stance
+## Compatibility And Product Stance
 
 Mission Control should classify new work by operational impact:
 
 | Class | Meaning |
 | --- | --- |
 | `install-compatible` | Preserves current Mission Control installs through null/default/flag-off behavior. |
-| `factory-core` | Required for the Mission Control factory vision, even when it creates long-term fork divergence. |
+| `factory-core` | Required for the Mission Control factory vision. |
 | `optional-adapter` | Runtime or host-specific integration that is disabled by default and absent-safe. |
 
-The design target is install compatibility plus clear operator rollout, not
-permanent pre-fork parity. "Additive migration" means runtime-safe by default;
-it does not automatically make a feature low-risk or broadly reusable.
+The design target is install compatibility plus clear operator rollout.
+"Additive migration" means runtime-safe by default; it does not automatically
+make a feature low-risk or broadly reusable.
 
 ## Non-Goals
 

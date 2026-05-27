@@ -67,7 +67,7 @@ Before starting any workflow phase, verify alignment with `.specify/memory/const
 | Principle | Requirement | Verification |
 |-----------|-------------|--------------|
 | I. Zero-Regression Contract | Process/tooling changes do not affect runtime behavior | No runtime source, migrations, UI, scheduler, runner, or sync files are changed without a failing scope-guard discussion |
-| II. Upstream Compatibility Discipline | Phase 10A is `upstream-safe` process/tooling | Roadmap and Plan classify output as docs/scripts only |
+| II. Install Compatibility Discipline | Phase 10A is process/tooling only | Roadmap and Plan classify output as docs/scripts only |
 | IV. Test-First Development | Guard/script behavior starts with failing tests or fixtures | Tasks require RED tests for JSON index validation and fresh-agent proxy checks before implementation |
 | XV. Spec Artifact Provenance | Setup artifacts and workflow evidence remain durable | Design concept, workflow, roadmap status, and later generated specs are tracked |
 | XVI. Reviewability And Verification Debt Control | Scope remains reviewable and split decisions are recorded | Reviewability gate result below is preserved; tasks keep file ownership narrow |

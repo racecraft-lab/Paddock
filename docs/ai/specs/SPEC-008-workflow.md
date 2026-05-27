@@ -67,7 +67,7 @@ Mission Control Constitution v1.4.1 — 15 principles + 11 autopilot conventions
 | Principle | Requirement | Verification | Status |
 |-----------|-------------|--------------|--------|
 | I. Zero-Regression Contract | FEATURE_RESOURCE_GOVERNANCE=OFF preserves byte-compat | `pnpm test:all` flag-OFF baseline | ⏳ Phase 0 |
-| II. Upstream Compat | No SQL RENAME, no destructive migration, no upstream-file edits | `git diff` review at G3, G7 | ⏳ ongoing |
+| II. Install Compat | No SQL RENAME, no destructive migration, no broad legacy-core rewrites | `git diff` review at G3, G7 | ⏳ ongoing |
 | III. OpenClaw Adapter Isolation | FEATURE_OPENCLAW_HEALTH_COSTS absent-safe; no v1 schema migration | Integration test with files absent | ⏳ Phase 12 |
 | IV. Test-First (NON-NEGOTIABLE) | TDD red-green every production change | `pnpm test`; PR review | ⏳ ongoing |
 | V. Feature-Flag Resolution | resolveFlag(name, ctx) only — no inline process.env | CI grep gate; FF matrix tests | ⏳ Phase 12C |
@@ -228,7 +228,7 @@ Reference design-concept Q-sections for each FR family:
 - **Sub-25ms p95 admission latency** on Ryzen 5900XT + 64GB RAM.
 - **Single-process Node.js** with better-sqlite3.
 - **Strict scope** enforced via tsconfig.spec-strict.json + ESLint.
-- **Upstream compat** preserved when FEATURE_RESOURCE_GOVERNANCE=false.
+- **Install compatibility** preserved when FEATURE_RESOURCE_GOVERNANCE=false.
 
 ### Out of Scope
 

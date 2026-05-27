@@ -470,7 +470,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 - Adds `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous policy evaluation before autonomous work admission.
 - Migrations M65a..m and M66 add partitioned resource/observability storage, rollback files, and archive partitions under `<MISSION_CONTROL_DATA_DIR>/archives/`.
 - Cost Tracker Governance tab exposes Policies, Budgets, Windows, Overrides, Diagnostics, and System Health.
-- `FEATURE_OPENCLAW_HEALTH_COSTS` is optional/fork-only and requires `FEATURE_RESOURCE_GOVERNANCE`; absent OpenClaw health files are safe when OFF.
+- `FEATURE_OPENCLAW_HEALTH_COSTS` is operator-specific optional and requires `FEATURE_RESOURCE_GOVERNANCE`; absent OpenClaw health files are safe when OFF.
 - Feature-flag matrix, axe coverage, env-leak, and strict-scope guards preserve flag discipline and accessibility coverage.
 
 ## SPEC-009A Plan Summary [Source: specs/009a-workflow-contract-roundtrip]
@@ -586,7 +586,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `FEATURE_TASK_PIPELINES` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-004) |
 | `FEATURE_AREA_LABEL_ROUTING` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-006) |
 | `FEATURE_RESOURCE_GOVERNANCE` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-008) |
-| `FEATURE_OPENCLAW_HEALTH_COSTS` | OFF | Requires `FEATURE_RESOURCE_GOVERNANCE`; optional/fork-only, absent-safe (SPEC-008) |
+| `FEATURE_OPENCLAW_HEALTH_COSTS` | OFF | Requires `FEATURE_RESOURCE_GOVERNANCE`; operator-specific optional, absent-safe (SPEC-008) |
 | `PILOT_MISSION_CONTROL_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
 | `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A debug/read path only; legacy runtime remains table-blind when OFF |
 

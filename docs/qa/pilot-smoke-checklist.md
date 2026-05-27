@@ -367,7 +367,7 @@ alone.
 - Use `notifications` rows for owner-action proof: the existing
   `task_ready_for_owner` notification remains bounded, and duplicate sync must
   not create extra owner-action or reconciliation-required notifications.
-- Use `task_artifacts` rows for upstream readiness proof: the
+- Use `task_artifacts` rows for owner-readiness proof: the
   `spec-009c3.v1` artifacts remain the owner-readiness inputs and are not
   repackaged for SPEC-009D.
 - Use `quality_reviews` rows for review proof: the canonical `aegis` approval
@@ -408,7 +408,7 @@ alone.
   `/private/tmp/mc-spec009d-uat-20260520-uat1`, temp HTTP target
   `http://127.0.0.1:3149`.
 - Seeded evidence: workspace `3`, project `2`, root task `1`, owner task `2`,
-  upstream readiness artifact `1`, resource policy event `1`, and GitHub sync
+  owner-readiness artifact `1`, resource policy event `1`, and GitHub sync
   row `1`. The root task used issue #50; the owner task used PR #51 and status
   `done`.
 - Packet generation: the UAT harness ran the real migrations, loaded stored

@@ -115,7 +115,7 @@ Report-only notes for future specs:
 | Principle | Result | Evidence |
 | --- | --- | --- |
 | I. Zero-Regression Contract | Pass | Flag defaults off; manual sync compatibility fields and fallback are preserved; `pnpm test:all` passed. |
-| II. Upstream Compatibility Discipline | Pass | M77 is additive and rollback SQL is documented; no destructive migration. |
+| II. Install Compatibility Discipline | Pass | M77 is additive and rollback SQL is documented; no destructive migration. |
 | IV. Test-First Development | Pass | Tasks and verify report show failing-test-first coverage across migration, lifecycle, API, scheduler, UI, and e2e surfaces. |
 | V. Feature-Flag Resolution Discipline | Pass | New behavior uses `FEATURE_GITHUB_SYNC_AUTOMATION` through `resolveFlag` and defaults off. |
 | VII. Additive Migration Policy | Pass | M77 adds tables/indexes only and ships `docs/migrations/rollback-M77.sql`. |

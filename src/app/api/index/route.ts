@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const VERSION = '1.3.1'
+const VERSION = '1.3.2'
 export const revalidate = 300
 
 interface Endpoint {
@@ -17,6 +17,7 @@ const endpoints: Endpoint[] = [
   { path: '/api/tasks/:id', methods: ['GET', 'PATCH', 'DELETE'], description: 'Task detail — read, update, delete', tag: 'Tasks', auth: 'viewer/operator/admin' },
   { path: '/api/tasks/:id/evidence', methods: ['GET'], description: 'Read-only task evidence surface', tag: 'Tasks', auth: 'viewer' },
   { path: '/api/tasks/:id/stage-attempts', methods: ['GET'], description: 'Read-only task stage attempts inspection', tag: 'Tasks', auth: 'viewer' },
+  { path: '/api/tasks/:id/claim-reconciliation', methods: ['GET'], description: 'Read-only task claim reconciliation evidence', tag: 'Tasks', auth: 'viewer' },
   { path: '/api/tasks/:id/comments', methods: ['GET', 'POST'], description: 'Task comments — list, add', tag: 'Tasks', auth: 'viewer/operator' },
   { path: '/api/tasks/:id/broadcast', methods: ['POST'], description: 'Broadcast task update via SSE', tag: 'Tasks', auth: 'operator' },
   { path: '/api/tasks/queue', methods: ['GET'], description: 'Task queue — next assignable tasks', tag: 'Tasks', auth: 'viewer' },
