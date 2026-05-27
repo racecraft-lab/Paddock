@@ -78,7 +78,7 @@ roadmap status, and main check-run success are recorded below.
 | Principle | Requirement | Verification |
 |-----------|-------------|--------------|
 | I. Zero-Regression Contract | Flag-off and non-pilot task behavior must not regress existing task detail or artifact admin flows | Focused tests plus existing unit/build gates |
-| II. Upstream Compatibility Discipline | Prefer additive route/component seams and avoid broad upstream-owned rewrites | Diff review and strict scope |
+| II. Install Compatibility Discipline | Prefer additive route/component seams and avoid broad legacy-core rewrites | Diff review and strict scope |
 | IV. Test-First Development | Write RED tests for route response, evidence states, UI rendering, and read-only guardrails before implementation | Vitest/React tests and Playwright where UI changes |
 | V. Feature-Flag Resolution Discipline | If a new runtime flag is used, route it through `resolveFlag`; otherwise document why no new flag is needed for read-only surface | Guardrail grep and Plan rationale |
 | VI. Dependency Supply-Chain Hygiene | No new runtime dependency planned | `pnpm audit:high`, package diff |

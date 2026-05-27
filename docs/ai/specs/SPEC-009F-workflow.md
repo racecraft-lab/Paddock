@@ -77,7 +77,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Principle | Requirement | Verification |
 |-----------|-------------|--------------|
 | I. Zero-Regression Contract | Flag/scope-off behavior must preserve existing Issue Triage, Issue Remediation, task chain, and task Evidence behavior | Focused regression tests plus existing unit/build gates |
-| II. Upstream Compatibility Discipline | Keep the change additive and scoped; prefer existing evidence/artifact seams over schema divergence | Diff review and no-migration evidence |
+| II. Install Compatibility Discipline | Keep the change additive and scoped; prefer existing evidence/artifact seams over schema divergence | Diff review and no-migration evidence |
 | IV. Test-First Development | RED tests define lane payload validation, idempotency, no successor creation, and Evidence rendering before implementation | Vitest/React/Playwright where UI changes |
 | V. Feature-Flag Resolution Discipline | Default to existing `PILOT_MISSION_CONTROL_E2E` product-line scope; any new flag must route through `resolveFlag` | Clarify decision plus guardrail grep |
 | VII. Additive Migration Policy | No schema migration planned; use existing task disposition/artifact/activity tables | Migration diff grep and plan review |

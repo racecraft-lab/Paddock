@@ -174,7 +174,7 @@ Executed during SPEC-009B autopilot startup on 2026-05-07.
 | Package manager | `pnpm`, detected from lockfile. |
 | Project commands | Build `pnpm build`; typecheck `pnpm typecheck`; lint `pnpm lint`; unit `pnpm test`; e2e `pnpm test:e2e`; full verify `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e`. |
 | Presets/extensions | No presets active; extension registry visible; 18 hook events configured. |
-| Constitution startup review | Principles I-VII and related constraints were reviewed before Specify, including zero-regression, upstream compatibility, OpenClaw adapter isolation, test-first behavior, flag discipline, dependency hygiene, and additive migrations. |
+| Constitution startup review | Principles I-VII and related constraints were reviewed before Specify, including zero-regression, install compatibility, OpenClaw adapter isolation, test-first behavior, flag discipline, dependency hygiene, and additive migrations. |
 | Doctor health check | Pass: 0 errors, 0 warnings, 2 expected notes because `009b-mission-control-seed` has no `plan.md` or `tasks.md` until later autopilot phases. |
 
 ---

@@ -159,7 +159,7 @@ As a facility operator, I can enable resource governance so dispatch admission r
 As an operator, I can inspect policies, budgets, windows, overrides, diagnostics, and system health from the Cost Tracker governance surface.
 
 **US3 — Keep OpenClaw Cost Adapter Optional (P2)**
-As an upstream-compatible maintainer, I can leave OpenClaw health-cost integration disabled and absent-safe.
+As an operator, I can leave OpenClaw health-cost integration disabled and absent-safe.
 
 ### SPEC-009A: Workflow Contract Format and Roundtrip [Source: specs/009a-workflow-contract-roundtrip]
 
@@ -414,7 +414,7 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 
 - **SPEC-005 FRs**: Add application-level `ready_for_owner`; block unmerged PR-producing work from `done`; reconcile linked GitHub PR merge through sync; expose owner-action lane, label, and notifications; preserve flag-OFF compatibility.
 - **SPEC-007 FRs**: Persist task dispositions and task artifacts; provide publish/read/admin/health/API/UI surfaces; apply MC Secret Detector v1 redaction/rejection; integrate artifact evidence with dispatch/review handoff; preserve existing task behavior when feature flags are OFF.
-- **SPEC-008 FRs**: Gate scheduler/dispatch/admission paths through resource policy evaluation; persist policy decisions/events; expose governance tabs; support optional OpenClaw health-cost telemetry as absent-safe fork-only adapter; preserve cost tracker byte-compat when `FEATURE_RESOURCE_GOVERNANCE` is OFF.
+- **SPEC-008 FRs**: Gate scheduler/dispatch/admission paths through resource policy evaluation; persist policy decisions/events; expose governance tabs; support optional OpenClaw health-cost telemetry as an absent-safe operator-specific adapter; preserve cost tracker byte-compat when `FEATURE_RESOURCE_GOVERNANCE` is OFF.
 - **SPEC-009A FRs**: Load single-document YAML workflow contracts; validate/canonicalize contracts; dry-run by default and apply transactionally; preserve LKG snapshots; export Markdown/parity hashes; persist generic diagnostics without launching seed/pilot/runner work.
 - **SPEC-009B FRs**: Seed Mission Control Product Line A, departments, assignments, repo ownership, workflow families, pilot flags, and advisory governance rows; fail closed on unsafe residue; reuse SPEC-009A importer; create zero pilot tasks or dispatch side effects.
 - **SPEC-009C1 FRs**: Ingest exactly one eligible GitHub issue or explicit synthetic fallback; reject unsafe/local-only/duplicate candidates; preserve GitHub tracker truth; prove no remediation, claim, dispatch, runner, sandbox, or future run-state side effects.

@@ -80,7 +80,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Principle | Requirement | Verification |
 |-----------|-------------|--------------|
 | I. Zero-Regression Contract | Existing single-workspace and SPEC-009B Mission Control seed behavior must remain unchanged unless invoked through explicit generic config paths | Mission Control parity tests plus `seed:mission-control` wrapper regression |
-| II. Upstream Compatibility Discipline | Keep changes additive and isolated to seed/config tooling; no destructive migration or table rename | Diff review and migration grep |
+| II. Install Compatibility Discipline | Keep changes additive and isolated to seed/config tooling; no destructive migration or table rename | Diff review and migration grep |
 | IV. Test-First Development | RED tests define config parsing, existing-target handling, no-mutation failures, parity, and CLI behavior before implementation | Focused Vitest/CLI tests |
 | V. Feature-Flag Resolution Discipline | Validate configured flags against `FEATURE_FLAG_REGISTRY`; do not inline runtime `process.env.FEATURE_*` checks | Unit tests and guardrail grep |
 | VI. Dependency Supply-Chain Hygiene | No new runtime dependency planned; reuse existing direct `yaml` dependency and current TypeScript stack | `package.json` diff and lockfile review |

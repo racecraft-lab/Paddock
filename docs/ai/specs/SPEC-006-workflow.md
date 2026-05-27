@@ -488,12 +488,12 @@ for (const issue of fetchedIssues) {
 - Strict scope: no new TS/TSX modules. Verified via grep at G7.
 - Flag wiring: `resolveFlag('FEATURE_AREA_LABEL_ROUTING', { workspaceId })` only. No `process.env.FEATURE_AREA_LABEL_ROUTING` reads. Verified via grep.
 - Migration safety: additive nullable columns + indexes + non-destructive backfill. Rollback SQL committed alongside.
-- No upstream-divergent changes: roadmap marks SPEC-006 as `upstream-safe`. Avoid Mission-Control-only patterns where possible.
+- No destructive schema/runtime changes. Keep SPEC-006 additive and avoid Mission-Control-only patterns where possible.
 
 ### Dependencies
 
 - Direct runtime: none new. The migration reuses the existing `addColumnIfMissing` pattern (or equivalent). All HTTP is native `fetch`. No new pinned packages required (unlike SPEC-004's ajv/jsonpath-plus/safe-regex).
-- Internal: `resolveFlag(name, ctx)` from SPEC-002, `workspaces.feature_flags JSON` from SPEC-001, additive-migration pattern from SPEC-001, `getAegis(db, workspace_id)` from SPEC-003 (only as upstream context — SPEC-006 does not call it).
+- Internal: `resolveFlag(name, ctx)` from SPEC-002, `workspaces.feature_flags JSON` from SPEC-001, additive-migration pattern from SPEC-001, `getAegis(db, workspace_id)` from SPEC-003 (only as prior-spec context — SPEC-006 does not call it).
 
 ### Testing strategy
 

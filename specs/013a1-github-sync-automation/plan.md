@@ -26,7 +26,7 @@ Add default-off, Product Line/workspace-scoped GitHub issue sync automation as a
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 - **I. Zero-Regression Contract**: PASS with constraint. Flag OFF and lifecycle controls disabled must preserve manual `POST /api/github/sync`; existing route currently requires `operator` and calls `pullFromGitHub(project, workspaceId)` directly (`src/app/api/github/sync/route.ts:66`, `src/app/api/github/sync/route.ts:96`, `src/app/api/github/sync/route.ts:113`).
-- **II. Upstream Compatibility Discipline**: PASS with upstream-divergent classification. M77 is additive and avoids destructive migration.
+- **II. Install Compatibility Discipline**: PASS. M77 is additive and avoids destructive migration.
 - **IV. Test-First Development**: PASS planned. Tasks must start with failing Vitest migration/lifecycle/route tests and Playwright UI journey tests before implementation.
 - **V. Feature-Flag Resolution Discipline**: PASS planned. `FEATURE_GITHUB_SYNC_AUTOMATION` must be added to `FeatureFlagKey`, `FEATURE_FLAG_KEYS`, and `FEATURE_FLAG_REGISTRY`; runtime checks must use `resolveFlag`, which currently defaults unknown/off values to false (`src/lib/feature-flags.ts:3`, `src/lib/feature-flags.ts:76`, `src/lib/feature-flags.ts:475`, `src/lib/feature-flags.ts:516`).
 - **VII. Additive Migration Policy**: PASS with M77. Live migrations end at `076_task_stage_attempts` (`src/lib/migrations.ts:3387`), so SPEC-013A1 selects `077_github_sync_lifecycle`; rollback file `docs/migrations/rollback-M77.sql` is required.

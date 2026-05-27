@@ -283,7 +283,7 @@ stop_reason: "natural"
 
 **Branch:** Setup status hygiene
 
-**Recommended answer:** A. No, keep SPEC-005 setup focused and only note stale upstream tracking drift.
+**Recommended answer:** A. No, keep SPEC-005 setup focused and only note stale status tracking drift.
 > The recommended answer was narrower, but the user chose to include a preliminary status-hygiene task so SPEC-005 starts from a clean source of truth.
 
 **Alternatives offered:**

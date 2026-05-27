@@ -64,7 +64,7 @@ stop_reason: "natural"
 
 **Alternatives offered:**
 - Reuse the `facility` workspace: simpler, but blurs Facility aggregate vs Product Line scope.
-- Create a new product-line entity/table: cleaner domain model, but out of scope and contrary to upstream-compat constraints.
+- Create a new product-line entity/table: cleaner domain model, but out of scope and contrary to install-compat constraints.
 
 **User's answer:** Option 1 after discussing PRD implications and future FocusEngine/Product Line B behavior.
 

@@ -139,7 +139,7 @@
         "cadence": "per SPEC-012A phase transition",
         "trigger": "when autopilot phase status, implementation progress, or verification evidence changes"
       },
-      "last_verified": "2026-05-21",
+      "last_verified": "2026-05-27",
       "related_specs": ["SPEC-012A"],
       "verification_commands": ["pnpm knowledge:index:check"],
       "required": true,
@@ -169,7 +169,7 @@
         "cadence": "after every pilot UAT or post-merge smoke",
         "trigger": "when a pilot issue, PR, deployment SHA, or cleanup result changes"
       },
-      "last_verified": "2026-05-22",
+      "last_verified": "2026-05-27",
       "related_specs": ["SPEC-009C1", "SPEC-009C2", "SPEC-009C3", "SPEC-009C4", "SPEC-009D", "SPEC-009E", "SPEC-009F"],
       "verification_commands": ["Manual UAT evidence review"],
       "required": true,
@@ -244,7 +244,7 @@
         "cadence": "per SPEC-013A1 artifact change",
         "trigger": "when generated spec requirements, plan, tasks, quickstart, verification notes, or post-implementation reports change"
       },
-      "last_verified": "2026-05-23",
+      "last_verified": "2026-05-27",
       "related_specs": ["SPEC-013A1"],
       "verification_commands": ["Manual check: tasks.md completion plus verify-tasks-report.md and retrospective.md evidence for SPEC-013A1"],
       "required": true,

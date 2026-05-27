@@ -1,29 +1,33 @@
 <!--
 Sync Impact Report
-Version change: 1.4.1 -> 1.5.0
-Modified principles: None
-Added principles: XVI. Reviewability And Verification Debt Control
+Version change: 1.5.0 -> 2.0.0
+Modified principles:
+- Principle II -> II. Install Compatibility And Operational Impact Discipline
+Modified conventions:
+- J. Strict new-module scope wording updated from inherited-file language to legacy/grandfathered files
+Added principles: None
 Added sections: None
-Removed sections: None
+Removed sections:
+- Upstream compatibility classification labels
 Templates requiring updates:
-- .specify/templates/plan-template.md: restored to core default
-- .specify/templates/spec-template.md: restored to core default
-- .specify/templates/tasks-template.md: restored to core default
-- .specify/presets/speckit-pro-reviewability/: added durable setup-managed template overrides
+- .specify/templates/plan-template.md: checked, no update required
+- .specify/templates/spec-template.md: checked, no update required
+- .specify/templates/tasks-template.md: checked, no update required
+- .specify/presets/speckit-pro-reviewability/: checked, no update required
 Other artifacts requiring updates:
-- .github/pull_request_template.md: updated
 - docs/rc-factory-v1-prd.md: updated
 - docs/ai/rc-factory-technical-roadmap.md: updated
+- docs/feature-flags-runbook.md: updated
 Follow-up TODOs: None
 -->
 
 # Mission Control Constitution
 
-Governing principles for the `racecraft-lab/mission-control` fork of
-`builderz-labs/mission-control`. This document is the source of truth for
-architectural discipline, upstream-compatibility commitments, and the
-autopilot conventions that SpecKit consensus agents rely on when
-resolving questions during clarify, checklist, and analyze phases.
+Governing principles for `racecraft-lab/mission-control`. This document is
+the source of truth for architectural discipline, install-compatibility
+commitments, operational-impact classification, and the autopilot conventions
+that SpecKit consensus agents rely on when resolving questions during clarify,
+checklist, and analyze phases.
 
 Companion documents:
 
@@ -52,31 +56,34 @@ Operationalized as:
   the authenticated single-workspace UX produces identical API payloads
   and identical Playwright snapshots.
 
-### II. Upstream Compatibility Discipline (NON-NEGOTIABLE)
+### II. Install Compatibility And Operational Impact Discipline (NON-NEGOTIABLE)
 
-Cherry-picks from `builderz-labs/mission-control` `main` must remain
-viable. Every feature is classified before implementation as:
+Mission Control no longer optimizes for cherry-pick parity with its historical
+project origin. Every feature must preserve existing installs unless a spec
+explicitly ratifies a narrower compatibility story, and every feature is
+classified before implementation as:
 
 | Class | Meaning |
 |---|---|
-| `upstream-safe` | Additive, opt-in, plausible upstream candidate. |
-| `upstream-divergent` | Runtime-safe for current installs, but adds schema/state/API divergence that grows fork pressure. |
-| `fork-only optional` | OpenClaw/local-environment-specific adapter that must be absent-safe and disabled by default. |
+| `install-compatible` | Preserves current Mission Control installs through null/default/flag-off behavior. |
+| `factory-core` | Required for the Mission Control factory vision, even when it creates long-term product divergence. |
+| `optional-adapter` | Runtime or host-specific integration that must be absent-safe and disabled by default. |
 
 Hard prohibitions:
 
 - No SQL RENAME of `workspaces`, `workspace_id` columns, `agents.workspace_path`,
   `quality_reviews.reviewer`, `project_agent_assignments.agent_name`, or
-  any other upstream-owned identifier.
+  any other existing compatibility-sensitive identifier.
 - No destructive migration.
-- No edits to upstream-owned files (`src/app/layout.tsx`, `src/lib/auth.ts`,
-  etc.) that would create merge conflicts — isolate additions to new files
-  or extend via hooks.
+- No broad rewrites to legacy core files (`src/app/layout.tsx`,
+  `src/lib/auth.ts`, etc.) that would break flag-off behavior, compatibility
+  API shapes, rollback, or single-workspace operation. Isolate additions to
+  new files or extend via narrow hooks where possible.
 
 ### III. OpenClaw Adapter Isolation
 
-Features that read OpenClaw artifacts are fork-only adapters. They
-must:
+Features that read OpenClaw artifacts are operator-specific optional adapters.
+They must:
 
 - Be disabled by default and guarded by a dedicated feature flag
   (e.g., `FEATURE_OPENCLAW_HEALTH_COSTS`).
@@ -143,7 +150,7 @@ SQL migrations are append-only and additive:
 - No destructive changes.
 - No column renames unless the live schema is independently verified AND
   paired with a tested rollback SQL file AND the rename is ratified as
-  upstream-divergent in a spec.
+  `factory-core` in a spec.
 - Each migration ships a companion rollback file at
   `docs/migrations/rollback-M<id>.sql` with idempotent reverse SQL.
 - Each migration is listed in the operator runbook at
@@ -555,8 +562,8 @@ Spec `plan.md` files record this explicitly:
 - Add future OpenClaw adapter files explicitly; do not rely on a broad
   `src/lib/openclaw-*` glob that would capture grandfathered code.
 
-Until the post-pilot repo-wide hardening pass lands, existing upstream-owned
-or grandfathered files remain outside this scoped strictness ramp.
+Until the post-pilot repo-wide hardening pass lands, existing legacy or
+grandfathered files remain outside this scoped strictness ramp.
 
 ### K. Archive Sweep startup convention
 
@@ -624,7 +631,7 @@ Amendments require:
 3. A Migration Plan covering any existing code that violates the new
    rule.
 4. Version bump per MAJOR.MINOR.PATCH:
-   - MAJOR — incompatible principle change (e.g., drop upstream compat).
+   - MAJOR — incompatible principle change (e.g., drop install compatibility).
    - MINOR — new principle or new autopilot convention.
    - PATCH — clarification, typo, rewording without semantic change.
 5. Update the `Last Amended` field below.
@@ -643,7 +650,7 @@ Compliance checkpoints:
   also includes the review packet fields required by Principle XVI.
 - Every spec: `/speckit.analyze` produces no CRITICAL findings against
   this constitution.
-- Every migration: rollback file present; upstream-compat checklist
+- Every migration: rollback file present; install-compat checklist
   satisfied.
 
-**Version**: 1.5.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-05-07
+**Version**: 2.0.0 | **Ratified**: 2026-04-24 | **Last Amended**: 2026-05-27

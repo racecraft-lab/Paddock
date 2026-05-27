@@ -12,7 +12,7 @@ admins in the UI.
 - Human admins may change flags through **Settings > Feature Flags**.
 - Agent and API-key identities may read flag state and run preflight checks, but
   they must not mutate production feature flags.
-- Every production-impacting flag must document its upstream impact, risk level,
+- Every production-impacting flag must document its operator impact, risk level,
   dependencies, and rollback path in the registry before it can be enabled.
 - Do not update a PR, merge a PR, or open a follow-up PR with known UI journey
   bugs shown in Playwright, Storybook, or visual regression evidence.
@@ -81,7 +81,7 @@ See `docs/github-sync.md` for the full sync behavior and rollback path.
 1. Confirm the owning spec, task list, and roadmap entry identify the feature as
    ready for guarded rollout.
 2. Open **Settings > Feature Flags** and select the intended workspace.
-3. Review the flag card for risk, upstream impact, dependencies, and evidence.
+3. Review the flag card for risk, operator impact, dependencies, and evidence.
 4. Run the preflight check from the UI before enabling.
 5. Resolve all blockers. Treat warnings as review items that need an explicit
    acceptance reason.
@@ -135,7 +135,7 @@ Before a new flag can ship:
 
 1. Add the flag to `src/lib/feature-flags.ts` with default OFF behavior unless
    the constitution, PRD, and owning spec justify another default.
-2. Declare scope, risk, upstream impact, dependencies, and evidence metadata.
+2. Declare scope, risk, operator impact, dependencies, and evidence metadata.
 3. Add server-side tests for OpenFeature resolution, environment force-off, and
    workspace override behavior.
 4. Add or update the admin UI story in Storybook.

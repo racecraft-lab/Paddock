@@ -45,10 +45,10 @@ stop_reason: "natural"
 **Branch:** Data model and schema ownership
 
 **Recommended answer:** Reuse first. Use typed helpers and read-only debug output over existing run records, and add schema only if Clarify proves `runs` cannot represent task-stage attempt identity, archive state, and flag-off ignore behavior.
-> This was grounded in the roadmap's instruction to reuse or extend `src/lib/runs.ts` and `AgentRun.metadata` where possible before adding schema. It would have minimized fork pressure.
+> This was grounded in the roadmap's instruction to reuse or extend `src/lib/runs.ts` and `AgentRun.metadata` where possible before adding schema. It would have minimized new persistent-state impact.
 
 **Alternatives offered:**
-- New table from the start: clearer modeling at the cost of more fork pressure.
+- New table from the start: clearer modeling at the cost of more persistent-state impact.
 - Metadata only: avoids migration but weakens queryability and archival guarantees.
 
 **User's answer:** B - create a dedicated additive task-stage-attempt table from the start.

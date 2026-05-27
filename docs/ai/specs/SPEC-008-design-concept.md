@@ -47,7 +47,7 @@ Mission Control's `resource_policies` and `resource_policy_events` tables landed
 
 The operator runs all five surfaces on the operator node (Ryzen 5900XT, 64GB RAM, Ubuntu 24.04). v1 operator preference is subscription CLIs (Claude Max 20x, ChatGPT Pro, Ollama Pro, Copilot Pro+, LM Studio local), but telemetry **may include metered API usage** from OpenClaw — SPEC-008 must classify billing mode per event/account, not assume all provider usage is subscription-covered.
 
-The feature is gated by `FEATURE_RESOURCE_GOVERNANCE` (workspace-scoped, default OFF). With the flag OFF, behavior is byte-identical to today including the legacy hard-coded `LIMIT 3`. `FEATURE_OPENCLAW_HEALTH_COSTS` is a fork-only optional second flag for the electricity adapter (no v1 schema migration; absent-safe). `FEATURE_MULTI_SOURCE_INGESTION` is a third flag gating the new ingestion adapters so they ship dark behind the governance flag.
+The feature is gated by `FEATURE_RESOURCE_GOVERNANCE` (workspace-scoped, default OFF). With the flag OFF, behavior is byte-identical to today including the legacy hard-coded `LIMIT 3`. `FEATURE_OPENCLAW_HEALTH_COSTS` is an operator-specific optional second flag for the electricity adapter (no v1 schema migration; absent-safe). `FEATURE_MULTI_SOURCE_INGESTION` is a third flag gating the new ingestion adapters so they ship dark behind the governance flag.
 
 ## Architectural Corrections from Adversarial Review
 
