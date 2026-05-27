@@ -4,7 +4,7 @@ description: "Generate a custom checklist for the current feature based on user 
 compatibility: "Requires spec-kit project structure with .specify/ directory"
 metadata:
   author: "github-spec-kit"
-  source: "templates/commands/checklist.md"
+  source: "templates/commands/checklist.md + preset:codex-ask-questions"
 ---
 
 
@@ -98,8 +98,15 @@ You **MUST** consider the user input before proceeding (if not empty).
       - Scenario class gap (e.g., "No recovery flows detected—are rollback / partial failure paths in scope?")
 
    Question formatting rules:
-   - If presenting options, generate a compact table with columns: Option | Candidate | Why It Matters
-   - Limit to A–E options maximum; omit table if a free-form answer is clearer
+   - If presenting options, use the Codex structured question path instead of a Markdown table:
+     - If the current Codex mode exposes the `request_user_input` tool, use it for up to three independent short questions in one call, or ask sequentially when one answer affects the next question.
+     - For each `request_user_input` question, use a `header` no longer than 12 characters, a stable snake_case `id`, and 2-3 mutually exclusive `options`.
+     - Put the recommended option first when there is a clear recommendation, and suffix its label with `(Recommended)`.
+     - Do not include an "Other" option; Codex adds the free-form escape hatch.
+     - If more than three choices are useful, keep the top three by relevance and make clear that the free-form escape hatch can provide a different short answer.
+   - If `request_user_input` is unavailable, ask concise plain-text questions and wait for the user before generating the checklist. Use compact lettered options instead of Markdown tables.
+   - Never use Claude Code's `AskUserQuestion` tool in Codex.
+   - Limit to A–E candidate options before collapsing to the top three for `request_user_input`; omit options if a free-form answer is clearer
    - Never ask the user to restate what they already said
    - Avoid speculative categories (no hallucination). If uncertain, ask explicitly: "Confirm whether X belongs in scope."
 

@@ -4,7 +4,7 @@ description: "Identify underspecified areas in the current feature spec by askin
 compatibility: "Requires spec-kit project structure with .specify/ directory"
 metadata:
   author: "github-spec-kit"
-  source: "templates/commands/clarify.md"
+  source: "templates/commands/clarify.md + preset:codex-ask-questions"
 ---
 
 
@@ -141,24 +141,21 @@ Execution steps:
           - Common patterns in similar implementations
           - Risk reduction (security, performance, maintainability)
           - Alignment with any explicit project goals or constraints visible in the spec
-       - Present your **recommended option prominently** at the top with clear reasoning (1-2 sentences explaining why this is the best choice).
-       - Format as: `**Recommended:** Option [X] - <reasoning>`
-       - Then render all options as a Markdown table:
-
-       | Option | Description |
-       |--------|-------------|
-       | A | <Option A description> |
-       | B | <Option B description> |
-       | C | <Option C description> (add D/E as needed up to 5) |
-       | Short | Provide a different short answer (<=5 words) (Include only if free-form alternative is appropriate) |
-
-       - After the table, add: `You can reply with the option letter (e.g., "A"), accept the recommendation by saying "yes" or "recommended", or provide your own short answer.`
+       - Use the Codex structured question path instead of a Markdown table:
+          1. If the current Codex mode exposes the `request_user_input` tool, call it with a single question:
+             - `header`: a short label no longer than 12 characters, such as `Clarify`.
+             - `id`: a stable snake_case identifier, such as `retention_scope`.
+             - `question`: prefix the question with `Recommended: <option label> - <1-2 sentence reasoning>.`, then include the question text.
+             - `options`: 2-3 mutually exclusive choices. Put the recommended choice first and suffix its label with `(Recommended)`. Do not include an "Other" option; Codex adds the free-form escape hatch.
+          2. If there are more than three meaningful choices, keep the top three by impact and uncertainty, and make clear that the free-form escape hatch can provide a different short answer.
+          3. If `request_user_input` is unavailable, ask exactly one plain-text question and wait for the reply. Render the recommendation first, then a compact lettered list; do not use a Markdown table.
+       - Never use Claude Code's `AskUserQuestion` tool in Codex.
     - For short‑answer style (no meaningful discrete options):
-       - Provide your **suggested answer** based on best practices and context.
-       - Format as: `**Suggested:** <your proposed answer> - <brief reasoning>`
-       - Then output: `Format: Short answer (<=5 words). You can accept the suggestion by saying "yes" or "suggested", or provide your own answer.`
+       - Determine your **suggested answer** based on best practices and context.
+       - If `request_user_input` is available, ask with two options: `Accept suggestion (Recommended)` and `Custom`. Put the suggested answer and reasoning in the question text, and rely on the free-form escape hatch for the custom answer.
+       - If `request_user_input` is unavailable, output: `**Suggested:** <your proposed answer> - <brief reasoning>` followed by `Format: Short answer (<=5 words). You can accept the suggestion by saying "yes" or "suggested", or provide your own answer.`
     - After the user answers:
-       - If the user replies with "yes", "recommended", or "suggested", use your previously stated recommendation/suggestion as the answer.
+       - If the user accepts the recommendation/suggestion, or replies with "yes", "recommended", or "suggested", use your previously stated recommendation/suggestion as the answer.
        - Otherwise, validate the answer maps to one option or fits the <=5 word constraint.
        - If ambiguous, ask for a quick disambiguation (count still belongs to same question; do not advance).
        - Once satisfactory, record it in working memory (do not yet write to disk) and move to the next queued question.

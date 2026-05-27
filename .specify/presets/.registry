@@ -7,6 +7,23 @@
       "priority": 5,
       "source": "project-local-generated",
       "version": "1.0.0"
+    },
+    "codex-ask-questions": {
+      "agent_scope": "codex",
+      "applied_skills": {
+        "codex": [
+          "speckit-clarify",
+          "speckit-checklist"
+        ]
+      },
+      "enabled": true,
+      "installed_at": "generated-by-codex-parity-upgrade",
+      "manifest_hash": "project-local-generated",
+      "priority": 4,
+      "registered_commands": {},
+      "registered_skills": [],
+      "source": "project-local-generated",
+      "version": "1.0.0"
     }
   },
   "schema_version": "1.0"
