@@ -1,0 +1,34 @@
+schema_version: "1.0"
+
+preset:
+  id: "codex-ask-questions"
+  name: "Codex Ask Questions"
+  version: "1.0.0"
+  description: "Adds Codex-native structured user-input behavior for speckit clarify and checklist without using Claude-only AskUserQuestion."
+  author: "racecraft-lab"
+  repository: "https://github.com/racecraft-lab/mission-control"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.8.0"
+
+provides:
+  templates:
+    - type: "command"
+      name: "speckit.clarify"
+      file: "commands/speckit.clarify.md"
+      strategy: "append"
+      description: "Codex-native interactive question rendering for clarify."
+      replaces: "speckit.clarify"
+    - type: "command"
+      name: "speckit.checklist"
+      file: "commands/speckit.checklist.md"
+      strategy: "append"
+      description: "Codex-native interactive question rendering for checklist."
+      replaces: "speckit.checklist"
+
+tags:
+  - "codex"
+  - "request-user-input"
+  - "clarify"
+  - "checklist"
