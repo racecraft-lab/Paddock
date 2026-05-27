@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013B-workflow.md",
-  "updated_at": "2026-05-27T21:49:15Z",
-  "active_step": "Post: PR Body Generation",
+  "updated_at": "2026-05-27T21:55:47Z",
+  "active_step": "Complete",
   "current_spec_dir": "specs/013b-claim-reconciliation",
   "branch": "013b-claim-reconciliation",
   "plan": [
@@ -83,19 +83,19 @@
     },
     {
       "step": "Post: PR Body Generation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: PR Creation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Review Remediation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Retrospective",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Plugin PR: fix Codex autopilot early-termination failure mode",
@@ -105,6 +105,19 @@
   "plugin_repair": {
     "status": "completed",
     "notes": "Resolved Codex marketplace-name collision by renaming empty auto-discovered ~/.agents/plugins/marketplace.json to racecraft-agents-local-empty, then reinstalled speckit-pro. PR #93 was merged to prevent Codex autopilot from ending before post-phase completion and PR creation. PR #95 is open to fix the reviewability-gate false-block discovered during SPEC-013B packaging."
+  },
+  "pull_request": {
+    "status": "opened",
+    "url": "https://github.com/racecraft-lab/mission-control/pull/62",
+    "number": 62,
+    "base": "main",
+    "head": "013b-claim-reconciliation",
+    "initial_review_remediation": "No PR comments or reviews were present immediately after creation. Checks were still pending; visual Playwright approval was marked missing while the companion visual report job was still in progress."
+  },
+  "retrospective": {
+    "status": "completed",
+    "path": "specs/013b-claim-reconciliation/retrospective.md",
+    "notes": "No spec edits proposed. 57/57 tasks verified. Post-merge HITL UAT remains open by design."
   },
   "preflight": {
     "status": "passed",
