@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "61",
+  "prTitle": "chore(speckit): align codex integration with claude",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/61",
+  "headRef": "codex/speckit-claude-codex-parity",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26486730651",
+      "runAttempt": "1",
+      "runKey": "26486730651-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26486730651",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/61/runs/26486730651-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/61/playwright/latest/?v=26486730651-attempt-1",
+      "headSha": "6fd5abe9ad3daf10cd0cc41acee730de55aa05c0",
+      "headRef": "codex/speckit-claude-codex-parity",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-27T02:25:23.958Z"
+    }
+  ],
+  "updatedAt": "2026-05-27T02:25:23.958Z"
+}

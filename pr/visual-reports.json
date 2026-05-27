@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-23T20:19:33.958Z",
+  "updatedAt": "2026-05-27T02:25:23.958Z",
   "prs": [
+    {
+      "prNumber": "61",
+      "prTitle": "chore(speckit): align codex integration with claude",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/61",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/61/",
+      "headRef": "codex/speckit-claude-codex-parity",
+      "baseRef": "main",
+      "updatedAt": "2026-05-27T02:25:23.958Z",
+      "latest": {
+        "playwright": {
+          "runId": "26486730651",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26486730651",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/61/playwright/latest/?v=26486730651-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/61/runs/26486730651-attempt-1/playwright/",
+          "updatedAt": "2026-05-27T02:25:23.958Z"
+        }
+      }
+    },
     {
       "prNumber": "60",
       "prTitle": "SPEC-013A1: GitHub Sync Automation and Poller Lifecycle",
