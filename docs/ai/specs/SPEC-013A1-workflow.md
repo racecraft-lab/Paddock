@@ -47,12 +47,13 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Post: Code Review | `$speckit-review` | Complete | Review found two lifecycle/manual-sync blockers; both remediated and rerun review passed with no critical or important findings |
 | Post: Integration Suite | Project verification commands | Complete | `direnv exec . pnpm test:all` passed: strict scope, lint, typecheck, 300 Vitest files, build, and 651 Playwright tests |
 | Post: Cleanup | `$speckit-cleanup` | Complete | Report-only cleanup found 0 critical, 1 small evidence-tracking item, 0 medium, and 0 large issues; verification report is retained |
-| Post: Verification and Status Sync | Workflow/roadmap sync | In Progress | Syncing workflow, roadmap, UAT, and status artifacts before PR packaging |
+| Post: Verification and Status Sync | Workflow/roadmap sync | Complete | Workflow, roadmap, autopilot state, task evidence, and repo knowledge status were synced before PR packaging; merged-state hygiene was refreshed after PR #60 and PR #61 landed |
 | Post: Reviewability Diff Gate | `reviewability-gate.sh diff` | Complete | Final diff gate returned `status=exception`, `pass=true`, and `transition_exception=true` under the accepted multi-surface override |
-| Post: PR Body Generation | `generate-pr-body.sh` | Pending | Generate host-template-aware PR body with review packet |
-| Post: PR Creation | `gh pr create` | Pending | Push branch and open PR with generated body |
-| Post: Review Remediation | PR review loop | Pending | Monitor and remediate review feedback through the prescribed loop |
-| Post: Retrospective | `$speckit-retrospective-analyze` | Pending | Final SpecKit Pro post-implementation step |
+| Post: PR Body Generation | `generate-pr-body.sh` | Complete | Generated host-template-aware PR body with review packet |
+| Post: PR Creation | `gh pr create` | Complete | PR #60 opened from `013a1-github-sync-automation` and later merged to `main` |
+| Post: Review Remediation | PR review loop | Complete | Lifecycle lease and manual run-id blockers were remediated; PR checks and visual approvals passed before merge |
+| Post: Retrospective | `$speckit-retrospective-analyze` | Complete | Retrospective retained with 100% task completion, 100% spec adherence, and `uat_blocked=false` |
+| Post: Merged-State UAT Closeout | Operator HITL UAT | Complete | PR #60 merged as `41e9df68`; follow-up PR #61 merged as `5c15f02f`; operator confirmed post-merge HITL UAT complete on 2026-05-27 |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -60,7 +61,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 
 | Gate | Checkpoint | Approval Criteria |
 |------|------------|-------------------|
-| G0 | After setup | Branch is `013a1-github-sync-automation`; design concept and workflow are committed; reviewability preset resolves; roadmap marks SPEC-013A1 `In Progress` on this branch only |
+| G0 | After setup | Branch is `013a1-github-sync-automation`; design concept and workflow are committed; reviewability preset resolves; roadmap initially marks SPEC-013A1 active on this branch only |
 | G1 | After Specify | Requirements cover automatic GitHub issue polling, per Product Line/workspace control, scheduler-owned ticks, manual sync fallback, cursor failure safety, pagination bounds, owner filtering, backoff, leases, observability, and rollback |
 | G2 | After Clarify | State schema/control fields, route/UI placement, lease and retry defaults, partial-run semantics, disabled behavior, and compatibility with manual `/api/github/sync` are resolved with no unresolved markers |
 | G3 | After Plan | Architecture cites live code evidence, keeps implementation default-off and additive, preserves existing manual sync and owner semantics, and does not introduce claim authority or execution behavior |
@@ -206,15 +207,15 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] One Product Line can enable automatic GitHub issue polling.
-- [ ] Operators can observe enabled/disabled state, running state, last run, last success cursor, last error, backoff, skipped owners, counters, and partial-run reason.
-- [ ] Operators can disable automatic polling without losing manual sync.
-- [ ] Failed automatic sync attempts do not advance the last-success cursor.
-- [ ] Pagination is bounded and records partial-run state when bounds stop a tick.
-- [ ] Automatic and manual sync cannot overlap silently.
-- [ ] Owner-based polling prevents duplicate ingestion when multiple projects share one repo.
-- [ ] Automatic polling is default-off and rollback-safe.
-- [ ] No task claim, task dispatch, Issue Remediation execution, harness, sandbox, auto-merge, or automatic triage behavior is introduced.
+- [x] One Product Line can enable automatic GitHub issue polling.
+- [x] Operators can observe enabled/disabled state, running state, last run, last success cursor, last error, backoff, skipped owners, counters, and partial-run reason.
+- [x] Operators can disable automatic polling without losing manual sync.
+- [x] Failed automatic sync attempts do not advance the last-success cursor.
+- [x] Pagination is bounded and records partial-run state when bounds stop a tick.
+- [x] Automatic and manual sync cannot overlap silently.
+- [x] Owner-based polling prevents duplicate ingestion when multiple projects share one repo.
+- [x] Automatic polling is default-off and rollback-safe.
+- [x] No task claim, task dispatch, Issue Remediation execution, harness, sandbox, auto-merge, or automatic triage behavior is introduced.
 
 ---
 
@@ -597,7 +598,7 @@ For each task:
 
 ### Post-Implementation Verification Evidence
 
-**Status (2026-05-23):** Implementation, UAT verification, reviewability diff-gate validation, PR packaging, PR creation, review-remediation polling, and retrospective are complete. PR #60 is open with all checks/statuses green; the remaining gate is human GitHub review approval.
+**Status (2026-05-27):** Implementation, local UAT verification, reviewability diff-gate validation, PR packaging, PR creation, review-remediation polling, retrospective, PR merge, and post-merge HITL UAT are complete. PR #60 merged to `main` as `41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca` on 2026-05-23; follow-up PR #61 merged as `5c15f02f368a2f8db01adf64936c96f3c3173873`.
 
 - Doctor extension: `.specify/extensions/doctor/scripts/bash/doctor.sh --json` -> passed with 0 errors, 0 warnings, 0 notes.
 - Verify implementation extension: no UAT blocker after stale references were corrected from non-existent artifacts to current files (`src/lib/scheduler.ts`, `src/components/panels/github-sync-panel.tsx`).
@@ -607,10 +608,11 @@ For each task:
 - Integration suite: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), build passed, Playwright passed (651 tests).
 - Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; the untracked verification report is retained as durable evidence.
 - Reviewability diff gate: `reviewability-gate.sh diff origin/main...HEAD` -> `status=exception`, `pass=true`, `transition_exception=true`; blockers remain documented as accepted review scope under the SPEC-013A1 multi-surface override.
-- PR creation: PR #60 opened at https://github.com/racecraft-lab/mission-control/pull/60 from `013a1-github-sync-automation`.
+- PR creation/merge: PR #60 opened at https://github.com/racecraft-lab/mission-control/pull/60 from `013a1-github-sync-automation` and merged to `main` as `41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca`.
 - Review remediation: lifecycle lease stale-completion and manual run-id collision blockers were fixed, focused regression passed, and rerun review found no critical or important findings.
-- PR checks and visual approval: CodeQL, quality gate, Docker UI visual report, Storybook visual report, Playwright visual report, and visual approval statuses passed on PR #60 after visual state approval.
-- Retrospective: `specs/013a1-github-sync-automation/retrospective.md` records 100% task completion, 100% spec adherence, 0 critical findings, 1 significant reviewability-scale finding, 1 minor live-provider-UAT scope note, and `uat_blocked=false`; `pr_blocked=true` only because GitHub reports `REVIEW_REQUIRED`.
+- PR checks and visual approval: CodeQL, quality gate, Docker UI visual report, Storybook visual report, Playwright visual report, and visual approval statuses passed on PR #60 before merge.
+- Post-merge UAT: operator confirmed the required HITL UAT complete on 2026-05-27: automatic GitHub issue polling can be enabled for one Product Line, lifecycle status/last-run/error state is inspectable, polling can be disabled, manual sync still works, and shared-repository owner filtering prevents duplicate ingestion.
+- Retrospective: `specs/013a1-github-sync-automation/retrospective.md` records 100% task completion, 100% spec adherence, 0 critical findings, 1 significant reviewability-scale finding, 1 minor live-provider-UAT scope note, and `uat_blocked=false`; the prior branch-closeout PR-blocked note is resolved by the PR #60 merge.
 
 ---
 

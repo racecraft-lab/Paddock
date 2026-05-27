@@ -193,13 +193,13 @@
     {
       "path": "docs/ai/specs/SPEC-013A1-workflow.md",
       "kind": "execution-ledger",
-      "purpose": "Active SPEC-013A1 workflow ledger for GitHub sync automation, lifecycle phase status, UAT evidence, and post-implementation closeout.",
+      "purpose": "Completed SPEC-013A1 workflow ledger for GitHub sync automation, lifecycle phase status, UAT evidence, and post-implementation closeout.",
       "owner": "SpecKit operators",
       "freshness": {
         "cadence": "per SPEC-013A1 phase transition",
         "trigger": "when implementation progress, verification evidence, PR status, or UAT state changes"
       },
-      "last_verified": "2026-05-23",
+      "last_verified": "2026-05-27",
       "related_specs": ["SPEC-013A1"],
       "verification_commands": ["node -e \"JSON.parse(require('node:fs').readFileSync('docs/ai/specs/autopilot-state.json','utf8'))\""],
       "required": true,

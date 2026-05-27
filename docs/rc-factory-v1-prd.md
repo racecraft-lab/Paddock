@@ -149,6 +149,9 @@ reconciliation.
   deferred.
 - **SC-15 V2 gateway readiness:** v1 changes do not deepen assumptions that one
   process-global gateway or primary gateway row serves all future facilities.
+- **SC-16 GitHub sync automation:** one Product Line can enable automatic
+  GitHub issue polling, observe lifecycle state and failures, disable polling,
+  and still use manual sync without duplicate ingestion.
 
 ## Functional Requirements
 
@@ -239,6 +242,10 @@ reconciliation.
 - **FR-E5:** Linked PR merge reconciles PR-producing tasks from
   `ready_for_owner` to done. Closed issues without merged linked PR evidence do
   not silently complete PR-producing tasks.
+- **FR-E6:** GitHub issue polling is automatic only when enabled for a Product
+  Line/workspace. Polling has bounded intervals, leases, pagination, backoff,
+  cursor-safe failures, owner filtering, status diagnostics, disable controls,
+  and manual sync fallback.
 
 ### FR-F Dispositions, Artifacts, And Review Packets
 
@@ -340,6 +347,7 @@ is limited to the entities Mission Control needs:
 - Resource policies and policy events.
 - Workflow-contract diagnostics and last-known-good snapshots.
 - Product Line seed configs and seed verification evidence.
+- GitHub sync lifecycle control state and run history.
 - Run/claim/sandbox state for later runner phases.
 
 Migrations are additive unless a future spec explicitly justifies otherwise.
