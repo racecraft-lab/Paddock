@@ -729,9 +729,9 @@ Post-merge UAT:
 | Reviewability Diff Gate | Passed | `reviewability-gate.sh diff origin/main...HEAD` passed under the recorded transition exception: 6296 reviewable LOC, 17 production files, 41 total files, 6 primary surfaces |
 | Self-Review | Passed | See Self-Review block below |
 | PR Body Generation | Passed | Generated and populated `/private/tmp/speckit-pr-body-013c.md` from the host PR template and SPEC-013C review packet |
-| PR Creation | In Progress | Commit `7cf7d045` created; push and `gh pr create` pending |
-| Review Remediation | Pending | To run after PR creation |
-| Retrospective | Pending | Final post item |
+| PR Creation | Passed | Draft PR #63 created: `https://github.com/racecraft-lab/mission-control/pull/63` |
+| Review Remediation | Completed initial inspection | No review comments or reviews existed immediately after PR creation; checks were still in progress and `visual-review-approval/playwright` was failing pending visual workflow resolution |
+| Retrospective | Passed | `specs/013c-retry-debug-surfaces/retrospective.md` created |
 
 ### Self-Review
 
@@ -739,6 +739,13 @@ Post-merge UAT:
 2. **Edge cases?** Covered by focused tests: auth/rate-limit/missing key no-audit checks in `src/lib/__tests__/task-claim-control-route.test.ts:132`; idempotency replay/mismatch in `src/lib/__tests__/task-claim-control-route.test.ts:164`; idempotency storage rollback in `src/lib/__tests__/task-claim-control-route.test.ts:215`; cancel-block/unblock in `src/lib/__tests__/task-claim-control.test.ts:219`; stale-state no-mutation in `src/lib/__tests__/task-claim-control.test.ts:267`; terminal/non-assigned/local-only/repo-only/GitHub-terminal retry rejection in `src/lib/__tests__/task-claim-control.test.ts:296`; backoff/override/redaction in `src/lib/__tests__/task-claim-control.test.ts:326`; side-effect-free read model and redaction in `src/lib/__tests__/task-claim-reconciliation.test.ts:432`; SPEC-013D read-model fields in `src/lib/__tests__/task-claim-reconciliation.test.ts:469`.
 3. **Requirements matched?** All 75 tasks in `specs/013c-retry-debug-surfaces/tasks.md` are checked and have file/test evidence. FR coverage maps through M79 migration tests, closed contract/domain tests, route tests, read-model tests, OpenAPI/API-index tests, and UAT/PR packet docs. No orphan unchecked task remains.
 4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, `tasks.md`, the workflow, or PR packet. Planned follow-up is explicit: SPEC-013D for operator UX and SPEC-014C after SPEC-013D plus SPEC-014B.
+
+### PR Creation And Review Remediation
+
+- Commit: `8c7ca37e` (`feat: add claim-control retry debug api`).
+- Push: `origin/013c-retry-debug-surfaces`.
+- PR: `https://github.com/racecraft-lab/mission-control/pull/63` (draft).
+- Initial PR inspection: no comments and no reviews were present. `reviewDecision=REVIEW_REQUIRED`; CodeQL, Quality Gate, Mission Control UI E2E, and visual checks were in progress at creation time; `visual-review-approval/playwright` reported failure pending the visual workflow/approval path.
 
 ---
 

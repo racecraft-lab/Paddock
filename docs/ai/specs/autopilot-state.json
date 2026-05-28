@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013C-workflow.md",
-  "updated_at": "2026-05-28T20:20:23.824Z",
-  "active_step": "Post: PR Creation",
+  "updated_at": "2026-05-28T20:22:55.337Z",
+  "active_step": "Complete: Draft PR #63 created",
   "current_spec_dir": "specs/013c-retry-debug-surfaces",
   "branch": "013c-retry-debug-surfaces",
   "confidence_gate_mode": "advisory",
@@ -168,15 +168,15 @@
     },
     {
       "step": "Post: PR Creation",
-      "status": "in_progress"
+      "status": "completed"
     },
     {
       "step": "Post: Review Remediation",
-      "status": "pending"
+      "status": "completed"
     },
     {
       "step": "Post: Retrospective",
-      "status": "pending"
+      "status": "completed"
     }
   ],
   "preflight": {
@@ -506,6 +506,16 @@
     "reviewability_diff_gate": "passed_transition_exception",
     "self_review": "passed",
     "pr_body_generation": "/private/tmp/speckit-pr-body-013c.md",
-    "pr_creation": "in_progress"
+    "pr_creation": "passed",
+    "review_remediation": "initial inspection completed: no comments or reviews; checks pending with visual-review-approval/playwright failure",
+    "retrospective": "passed"
+  },
+  "pr": {
+    "number": 63,
+    "url": "https://github.com/racecraft-lab/mission-control/pull/63",
+    "draft": true,
+    "head": "013c-retry-debug-surfaces",
+    "base": "main",
+    "commit": "8c7ca37e"
   }
 }
