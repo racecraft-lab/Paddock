@@ -246,10 +246,10 @@ Focus on SPEC-014A feature flag, API, and scope boundaries:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Schema and read model | Pending | Pending |
-| 2 | Path and metadata safety | Pending | Pending |
-| 3 | Lifecycle and cleanup | Pending | Pending |
-| 4 | Flag, API, and scope | Pending | Pending |
+| 1 | Schema and read model | 5 | Lifecycle/event columns, required indexes, task-scoped plus task-authorized lifecycle detail reads, nullable attempt/claim evidence links, and safe path evidence fields clarified in `spec.md`. |
+| 2 | Path and metadata safety | 1 | Sandbox key segments must normalize once then pass a narrow printable ASCII allowlist; traversal, absolute syntax, dot/reserved names, unsafe Unicode/control characters, overlong segments, and duplicate normalized values fail closed. |
+| 3 | Lifecycle and cleanup | 2 | Canonical hook transition graph and cleanup/rollback evidence semantics clarified; physical fake artifacts are removable while lifecycle rows/events remain durable. |
+| 4 | Flag, API, and scope | 2 | Flag-off writes insert no rows/events and touch no fake artifacts; reads return disabled-state evidence, use viewer plus workspace/task scoping, and require API index/OpenAPI parity. |
 
 ---
 
