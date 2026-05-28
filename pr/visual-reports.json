@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-28T20:30:47.896Z",
+  "updatedAt": "2026-05-28T20:40:58.687Z",
   "prs": [
     {
       "prNumber": "63",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/63/",
       "headRef": "013c-retry-debug-surfaces",
       "baseRef": "main",
-      "updatedAt": "2026-05-28T20:30:47.896Z",
+      "updatedAt": "2026-05-28T20:40:58.687Z",
       "latest": {
         "playwright": {
-          "runId": "26599989191",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26599989191",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/63/playwright/latest/?v=26599989191-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/63/runs/26599989191-attempt-1/playwright/",
-          "updatedAt": "2026-05-28T20:30:47.896Z"
+          "runId": "26600074601",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26600074601",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/63/playwright/latest/?v=26600074601-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/63/runs/26600074601-attempt-1/playwright/",
+          "updatedAt": "2026-05-28T20:40:58.687Z"
         }
       }
     },
