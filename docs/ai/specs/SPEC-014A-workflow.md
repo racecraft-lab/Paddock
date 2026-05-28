@@ -304,11 +304,11 @@ Manual UAT plan:
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, constitution gates, external-source mapping |
-| `research.md` | Pending | Harness Engineering and Symphony boundary mapping |
-| `data-model.md` | Pending | Lifecycle and event tables |
-| `contracts/` | Pending | `sandbox_lifecycle.v1` API contract |
-| `quickstart.md` | Pending | Fake lifecycle and flag-off UAT |
+| `plan.md` | Complete | Technical context, constitution gates, reviewability split exception, source layout, and external-source mapping recorded. |
+| `research.md` | Complete | Harness Engineering and Symphony boundary mapping recorded; no Symphony runner/client algorithms imported. |
+| `data-model.md` | Complete | M79 lifecycle/event table columns, indexes, event types, and invariants specified. |
+| `contracts/` | Complete | `sandbox_lifecycle.v1` task-authorized read API contract specified. |
+| `quickstart.md` | Complete | Fake lifecycle, read API inspection, cleanup, and flag-off UAT steps specified. |
 
 ---
 
