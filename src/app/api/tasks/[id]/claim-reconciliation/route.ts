@@ -48,6 +48,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const envelope = buildTaskClaimReconciliationReadModel(db, {
       taskId: task.id,
       workspaceId: task.workspace_id,
+      currentRole: auth.user.role,
     })
     return NextResponse.json(envelope)
   } catch (error) {

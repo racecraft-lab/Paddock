@@ -104,7 +104,8 @@ export function openTaskClaimDb(): Database.Database {
       release_reason TEXT CHECK(release_reason IS NULL OR release_reason IN (
         'launch_handoff_completed', 'dispatch_failed', 'task_terminal_done', 'task_terminal_failed',
         'github_issue_terminal', 'github_pr_terminal', 'governance_blocked', 'governance_deferred',
-        'attempt_terminal_reconciled', 'stale_claim_recovered', 'boundary_error_deferred'
+        'attempt_terminal_reconciled', 'stale_claim_recovered', 'boundary_error_deferred',
+        'operator_released', 'operator_cancelled', 'operator_retry_requested'
       )),
       released_at INTEGER,
       released_by_run_id TEXT,
@@ -122,6 +123,26 @@ export function openTaskClaimDb(): Database.Database {
       WHERE claim_state = 'active';
     CREATE UNIQUE INDEX idx_task_stage_claims_attempt_unique
       ON task_stage_claims(task_stage_attempt_id);
+    CREATE TABLE task_claim_control_idempotency_keys (
+      actor_user_id INTEGER NOT NULL CHECK(actor_user_id > 0),
+      workspace_id INTEGER NOT NULL CHECK(workspace_id > 0),
+      task_id INTEGER NOT NULL CHECK(task_id > 0),
+      stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+      idempotency_key_hash TEXT NOT NULL CHECK(length(trim(idempotency_key_hash)) > 0),
+      action TEXT NOT NULL CHECK(action IN ('retry', 'release', 'cancel')),
+      request_body_hash TEXT NOT NULL CHECK(length(trim(request_body_hash)) > 0),
+      response_body_json TEXT NOT NULL,
+      response_status INTEGER NOT NULL CHECK(response_status >= 200 AND response_status <= 299),
+      response_headers_json TEXT,
+      claim_control_activity_id INTEGER,
+      created_at TEXT NOT NULL CHECK(length(trim(created_at)) > 0),
+      expires_at TEXT NOT NULL CHECK(length(trim(expires_at)) > 0),
+      PRIMARY KEY(actor_user_id, workspace_id, task_id, stage_key, idempotency_key_hash)
+    );
+    CREATE INDEX idx_task_claim_control_idempotency_expires_at
+      ON task_claim_control_idempotency_keys(expires_at);
+    CREATE INDEX idx_task_claim_control_idempotency_task
+      ON task_claim_control_idempotency_keys(workspace_id, task_id, stage_key, created_at DESC);
     CREATE TABLE github_sync_lifecycle_controls (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       workspace_id INTEGER NOT NULL,

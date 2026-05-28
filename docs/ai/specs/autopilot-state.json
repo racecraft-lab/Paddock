@@ -1,9 +1,10 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-013B-workflow.md",
-  "updated_at": "2026-05-27T23:05:31Z",
-  "active_step": "Complete",
-  "current_spec_dir": "specs/013b-claim-reconciliation",
-  "branch": "013b-claim-reconciliation",
+  "workflow_file": "docs/ai/specs/SPEC-013C-workflow.md",
+  "updated_at": "2026-05-28T20:20:23.824Z",
+  "active_step": "Post: PR Creation",
+  "current_spec_dir": "specs/013c-retry-debug-surfaces",
+  "branch": "013c-retry-debug-surfaces",
+  "confidence_gate_mode": "advisory",
   "plan": [
     {
       "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
@@ -18,7 +19,43 @@
       "status": "completed"
     },
     {
-      "step": "Phase 2: Clarify - Pending session discovery",
+      "step": "Phase 2: Clarify - Action Eligibility And State Machine",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Action Eligibility And State Machine Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - API Contract, Idempotency, And Races",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - API Contract, Idempotency, And Races Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Authorization, Audit Safety, And Error Surfaces",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Authorization, Audit Safety, And Error Surfaces Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Read Model And SPEC-013D Boundary",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - Read Model And SPEC-013D Boundary Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - API-And-Audit UAT",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 2: Clarify - API-And-Audit UAT Consensus",
       "status": "completed"
     },
     {
@@ -26,7 +63,51 @@
       "status": "completed"
     },
     {
-      "step": "Phase 4: Checklist - Pending domain discovery",
+      "step": "Phase 4: Checklist - scheduler-runtime",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - scheduler-runtime Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - api-contracts",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - api-contracts Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - data-integrity Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - state-management Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - security",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - security Consensus",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - accessibility",
+      "status": "completed"
+    },
+    {
+      "step": "Phase 4: Checklist - accessibility Consensus",
       "status": "completed"
     },
     {
@@ -46,12 +127,12 @@
       "status": "completed"
     },
     {
-      "step": "Phase 7: Implement - Pending task decomposition",
+      "step": "Phase 7: Implement - T001-T075",
       "status": "completed"
     },
     {
       "step": "Post: Doctor Extension Check",
-      "status": "skipped"
+      "status": "completed"
     },
     {
       "step": "Post: Verify Implementation",
@@ -87,62 +168,31 @@
     },
     {
       "step": "Post: PR Creation",
-      "status": "completed"
+      "status": "in_progress"
     },
     {
       "step": "Post: Review Remediation",
-      "status": "completed"
+      "status": "pending"
     },
     {
       "step": "Post: Retrospective",
-      "status": "completed"
-    },
-    {
-      "step": "Plugin PR: fix Codex autopilot early-termination failure mode",
-      "status": "completed"
+      "status": "pending"
     }
   ],
-  "plugin_repair": {
-    "status": "completed",
-    "notes": "Resolved Codex marketplace-name collision by renaming empty auto-discovered ~/.agents/plugins/marketplace.json to racecraft-agents-local-empty, then reinstalled speckit-pro. PR #93 was merged to prevent Codex autopilot from ending before post-phase completion and PR creation. PR #95 is open to fix the reviewability-gate false-block discovered during SPEC-013B packaging."
-  },
-  "pull_request": {
-    "status": "merged",
-    "url": "https://github.com/racecraft-lab/mission-control/pull/62",
-    "number": 62,
-    "base": "main",
-    "head": "013b-claim-reconciliation",
-    "merged_at": "2026-05-27T22:42:30Z",
-    "merge_commit": "5e61d0ffc02f9345b265cd5420660d02bf693016",
-    "initial_review_remediation": "No PR comments or reviews were present immediately after creation. Checks were still pending; visual Playwright approval was marked missing while the companion visual report job was still in progress."
-  },
-  "retrospective": {
-    "status": "completed",
-    "path": "specs/013b-claim-reconciliation/retrospective.md",
-    "notes": "No spec edits proposed. 57/57 tasks verified. PR #62 merge, HAL deployment, and post-merge HITL UAT are complete."
-  },
-  "post_merge_closeout": {
-    "status": "completed",
-    "completed_at": "2026-05-27T23:05:31Z",
-    "hal_worktree": "/home/fredrick-gabelmann/mission-control",
-    "hal_merge_commit": "5e61d0ffc02f9345b265cd5420660d02bf693016",
-    "deployment": "HAL pulled main, ran pnpm install --frozen-lockfile, ran pnpm build, verified .next/standalone/server.js, restarted mission-control.service, served /login with HTTP 200, kept openclaw-gateway.service active, and verified M76/M77/M78 migration markers.",
-    "uat_replay_id": "spec013b-hal-uat-2026-05-27T23-05-31-000Z",
-    "uat_summary": "Target replay proved one claim_acquired path, duplicate_prevented competitor, launch_handoff_completed release, terminal task_terminal_done release, governance_blocked no-claim gate, local-only/repo-only/non-assigned exclusion, read-model evidence, and zero disposable workspace/task residue.",
-    "operational_observation": "Ideaverse runbook lookup surfaced inactive HAL NTP as a 1Password startup reliability follow-up. Initial restart attempts hit transient DNS/IPv6 1Password errors before the service recovered; this did not block SPEC-013B UAT."
-  },
   "preflight": {
     "status": "passed",
-    "checked_at": "2026-05-27T17:14:59Z",
-    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/6b95/racecraft-mission-control/.worktrees/013b-claim-reconciliation",
+    "checked_at": "2026-05-28T00:33:13Z",
+    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/2ed9/racecraft-mission-control/.worktrees/013c-retry-debug-surfaces",
     "prerequisites": {
       "all_pass": true,
-      "branch": "013b-claim-reconciliation",
+      "branch": "013c-retry-debug-surfaces",
       "is_worktree": true,
       "on_feature_branch": false,
-      "speckit_cli": "specify 0.8.13",
-      "codex_entrypoints": "All SpecKit Codex commands/skills installed via .codex/commands, .agents/skills, or ~/.codex/skills",
-      "mcp_servers": "All configured: tavily-mcp context7 RepoPrompt"
+      "speckit_cli": "specify 0.8.16",
+      "codex_entrypoints": "SpecKit skills installed via .agents/skills and dot-form .claude/commands; cached detector patched to recognize current Codex/project layout",
+      "mcp_servers": "Missing tavily-mcp context7 RepoPrompt per script; agents will use built-in fallbacks",
+      "runtime": "direnv exec . node -v => v22.22.2",
+      "confidence_gate_mode": "advisory"
     },
     "project_commands": {
       "BUILD": "pnpm build",
@@ -158,285 +208,304 @@
     "presets": {
       "reviewability_preset": "speckit-pro-reviewability",
       "templates": "spec-template, plan-template, and tasks-template resolve to .specify/presets/speckit-pro-reviewability/templates/"
+    },
+    "validation": {
+      "install": "direnv exec . pnpm install --frozen-lockfile passed after sandbox DNS failure and Node 26 better-sqlite3 failure were corrected",
+      "typecheck": "direnv exec . pnpm typecheck passed",
+      "lint": "direnv exec . pnpm lint passed",
+      "unit_test": "direnv exec . pnpm test passed outside sandbox: 304 files passed, 33 skipped; 3166 tests passed, 3 skipped, 84 todo",
+      "build": "direnv exec . pnpm build passed outside sandbox after known Turbopack sandbox port-binding failure",
+      "diff_check": "git diff --check passed"
     }
   },
   "archive_sweep": {
     "status": "completed",
-    "mode": "dry-run",
-    "checked_at": "2026-05-27T17:14:59Z",
-    "current_target": "specs/013b-claim-reconciliation",
-    "active_specs_discovered": [
-      "specs/013a1-github-sync-automation"
+    "mode": "sweep",
+    "archive_extension": "archive",
+    "archive_extension_version": "1.1.0",
+    "checked_at": "2026-05-28T00:19:16Z",
+    "current_target": "specs/013c-retry-debug-surfaces",
+    "excluded_current_spec": "specs/013c-retry-debug-surfaces",
+    "active_spec_dirs": [
+      "specs/013a1-github-sync-automation",
+      "specs/013b-claim-reconciliation"
     ],
-    "excluded_current_spec": null,
     "eligible_previous_specs": [
       {
         "path": "specs/013a1-github-sync-automation",
-        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/60",
-        "merge_sha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
-        "post_merge_status_sha": "7c6ce2ee",
-        "uat": "Operator-confirmed post-merge HITL UAT complete on 2026-05-27 per roadmap."
+        "eligibleForArchive": true,
+        "archiveAlreadyRecorded": false,
+        "eligibleForCleanup": false,
+        "safeToApplyCleanup": false,
+        "prUrl": "https://github.com/racecraft-lab/mission-control/pull/60",
+        "mergeSha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca"
+      },
+      {
+        "path": "specs/013b-claim-reconciliation",
+        "eligibleForArchive": true,
+        "archiveAlreadyRecorded": false,
+        "eligibleForCleanup": false,
+        "safeToApplyCleanup": false,
+        "prUrl": "https://github.com/racecraft-lab/mission-control/pull/62",
+        "mergeSha": "5e61d0ffc02f9345b265cd5420660d02bf693016"
       }
     ],
-    "archiveAlreadyRecorded": false,
     "safeToApplyCleanup": false,
-    "cleanup_blockers": [
-      "Current branch is 013b-claim-reconciliation, not a safe base branch.",
-      "Worktree is dirty due to this autopilot-state update.",
-      "Dry-run did not apply archival edits or cleanup."
-    ],
-    "notes": "SPEC-013A1 is complete and merged, but cleanup is intentionally deferred from this feature worktree. No .claude files were read or modified."
-  },
-  "external_context": {
-    "status": "fetched",
-    "retrieved_at": "2026-05-27T17:28:00Z",
-    "sources": [
-      {
-        "name": "OpenAI Harness Engineering",
-        "url": "https://openai.com/index/harness-engineering/",
-        "relevance": "Repository-local knowledge as system of record; agent legibility; feedback loops and guardrails."
-      },
-      {
-        "name": "OpenAI Symphony announcement",
-        "url": "https://openai.com/index/open-source-codex-orchestration-symphony/",
-        "relevance": "Codex orchestration pattern: one agent per task/workspace, workflow captured in versioned repository file, app-server integration."
-      },
-      {
-        "name": "OpenAI Symphony SPEC",
-        "url": "https://github.com/openai/symphony/blob/main/SPEC.md",
-        "relevance": "Workflow config contract, dispatch preflight/reconciliation, Codex app-server source-of-truth separation, runtime event/status model."
-      }
-    ],
-    "boundary_note": "Use these sources for context only; SPEC-013B must not import Symphony runner, Linear, sandbox lifecycle, retry UI, harness adapter, or long-running execution behavior."
+    "dryRunProvenanceOnly": true,
+    "filesChanged": [],
+    "cleanupApplied": false,
+    "cleanupBlockers": [
+      "apply-cleanup not requested",
+      "dirty worktree",
+      "active branch is not main",
+      "archive success not recorded for eligible specs"
+    ]
   },
   "phase_results": {
     "specify": {
       "status": "completed",
       "gate": "G1",
       "gate_pass": true,
-      "spec_path": "specs/013b-claim-reconciliation/spec.md",
-      "requirements_checklist": "specs/013b-claim-reconciliation/checklists/requirements.md",
-      "user_stories": 4,
-      "functional_requirements": 19,
-      "acceptance_scenarios": 12,
-      "edge_cases": 10,
-      "success_criteria": 7,
-      "clarification_markers": 0
+      "spec_path": "specs/013c-retry-debug-surfaces/spec.md",
+      "requirements_checklist": "specs/013c-retry-debug-surfaces/checklists/requirements.md",
+      "user_stories": 5,
+      "functional_requirements": 55,
+      "acceptance_scenarios": 14,
+      "success_criteria": 10,
+      "clarification_markers": 0,
+      "notes": "Generated directly by orchestrator after two phase-executor attempts stalled without artifacts."
     },
     "clarify": {
       "status": "completed",
       "gate": "G2",
-      "gate_pass": true,
-      "questions_resolved": 20,
-      "consensus_items": 3,
-      "clarification_markers": 0,
       "sessions": {
-        "claim_schema_and_lease": {
-          "questions": 5,
-          "consensus_resolved": 1
+        "action_eligibility_and_state_machine": {
+          "status": "completed",
+          "questions": 0,
+          "consensus_resolved": 0,
+          "executor": "orchestrator_fallback_after_stalled_clarify_executor",
+          "key_outcomes": [
+            "release/cancel require active or explicitly cancellable stage evidence",
+            "retry can retire an active claim or target failed/stuck/stale/deferred/cancelled evidence",
+            "terminal task and terminal GitHub states are not retry-eligible",
+            "operator_released/operator_cancelled/operator_retry_requested release reasons defined",
+            "closed mutation outcome vocabulary defined"
+          ]
         },
-        "github_and_task_eligibility": {
-          "questions": 5,
-          "consensus_resolved": 1
+        "api_contract_idempotency_and_races": {
+          "status": "completed",
+          "questions": 0,
+          "consensus_resolved": 0,
+          "executor": "orchestrator_direct_with_codebase_consensus_agents_launched",
+          "key_outcomes": [
+            "single mutation route is POST /api/tasks/[id]/claim-control",
+            "Idempotency-Key header is required and scoped to actor, route/action/task/stage target, and canonical parsed request body",
+            "same-key same-body replays return stable original successful responses while same-key different-body requests return idempotency_key_body_mismatch",
+            "activity rows alone are not sufficient durable response replay storage; Plan must add scoped idempotency storage or safely scoped shared storage",
+            "mutations use transactional compare-and-set predicates over visible task, workspace, stage, active claim or latest retry-eligible evidence, expected ids, cancellation state, and backoff requirements",
+            "closed HTTP mapping defined for success/replay, malformed input, auth, feature flag, not found, stale/conflict/not-eligible, semantic validation, rate limit, and sanitized unexpected failure"
+          ]
         },
-        "dispatch_governance_integration": {
-          "questions": 5,
-          "consensus_resolved": 0
+        "authorization_audit_safety_and_error_surfaces": {
+          "status": "completed",
+          "questions": 0,
+          "consensus_resolved": 0,
+          "executor": "orchestrator_direct_from_live_auth_audit_evidence",
+          "key_outcomes": [
+            "mutation authorization uses requireRole(request, 'operator') so operators and admins may mutate while viewers remain read-only",
+            "actor identity comes from authenticated request context and is never accepted from request body fields",
+            "mutation rate limiting runs before parsing or mutation and does not write claim-control task audit rows",
+            "successful mutations and authenticated task-visible semantic rejections write one bounded task-scoped claim-control activity",
+            "positive audit allowlist defined for action/outcome/state/backoff/actor/idempotency hash/correlation/error fields",
+            "raw idempotency keys, request bodies, errors, actor fields, prompts, transcripts, provider payloads, auth headers, GitHub bodies, tokens, and secret-shaped values are forbidden from audit/debug persistence",
+            "closed sanitized error category vocabulary defined"
+          ]
         },
-        "evidence_and_operator_inspection": {
-          "questions": 5,
-          "consensus_resolved": 1
+        "read_model_and_spec_013d_boundary": {
+          "status": "completed",
+          "questions": 0,
+          "consensus_resolved": 0,
+          "executor": "orchestrator_direct_from_design_concept_and_spec_013b_read_model",
+          "key_outcomes": [
+            "existing task_claim_reconciliation.v1 envelope remains the read surface and is extended backward-compatibly with optional claim_control fields",
+            "claim_control exposes authorization, available actions, retry eligibility, backoff, last operator action, last sanitized error, and expected-state predicates",
+            "available-action descriptors explain enabled/disabled retry/release/cancel states without exposing mutation URLs or raw diagnostics",
+            "SPEC-013D must echo expected-state predicates and refresh on stale/conflict rather than recomputing claim state client-side",
+            "extended read model remains side-effect-free and does not acquire/release claims, append attempt events, write activities, trigger GitHub sync, call scheduler/dispatch, or fetch live GitHub state",
+            "PR and UAT wording must state backend API/debug authority only; in-app adoption remains blocked on SPEC-013D and first real harness operation remains blocked on SPEC-013D plus SPEC-014B"
+          ]
+        },
+        "api_and_audit_uat": {
+          "status": "completed",
+          "questions": 0,
+          "consensus_resolved": 0,
+          "executor": "orchestrator_direct_from_design_concept_and_prior_uat_reports",
+          "key_outcomes": [
+            "target UAT uses a disposable workspace or product-line scope with FEATURE_TASK_CONTROL_PLANE enabled only through workspace feature flags",
+            "fixture set covers release, cancel, retry without active backoff, retry with active backoff respected, retry with override, same-key replay, body mismatch, stale/conflict, unauthorized/viewer rejection, feature-flag-off rejection, and read-model reflection",
+            "API/read-model/audit responses are primary evidence; manual database inspection is supporting evidence for row references and cleanup counts",
+            "evidence packet fields include replay identity, target deployment, commit, operator/timestamp, flag scope, identifiers, route/status/outcome, read-model before/after, audit references, idempotency hashes, backoff fields, override reason, sanitized error category, and redaction flags",
+            "cleanup uses unique spec013c-uat markers and records before/after residue counts for disposable workspace, project, task, claim, attempt, idempotency, and activity rows",
+            "rollback is flag-first and migration rollback evidence is required only if Plan adds a migration",
+            "UAT closeout records SPEC-013D as operator UX adoption blocker and SPEC-014C blocked until SPEC-013D plus SPEC-014B"
+          ]
         }
       },
-      "key_outcomes": [
-        "task_stage_claims active-claim model with partial unique active index",
-        "300s default/600s capped launch-critical lease",
-        "stale GitHub truth threshold min(max(2 * interval_seconds, 600), 3600) with lifecycle health gating",
-        "dispatchAssignedTasks per-task integration before legacy launch mutation",
-        "pre-claim governance decision handling",
-        "task_claim_reconciliation.v1 read-only evidence route",
-        "positive-allowlisted claim/reconciliation payloads"
-      ]
+      "consensus_items": 1,
+      "clarification_markers": 0
     },
     "plan": {
       "status": "completed",
       "gate": "G3",
       "gate_pass": true,
+      "executor": "orchestrator_direct_after_stalled_phase_executor",
       "artifacts": [
-        "specs/013b-claim-reconciliation/plan.md",
-        "specs/013b-claim-reconciliation/research.md",
-        "specs/013b-claim-reconciliation/data-model.md",
-        "specs/013b-claim-reconciliation/quickstart.md",
-        "specs/013b-claim-reconciliation/contracts/task-claim-reconciliation-api.md",
-        "specs/013b-claim-reconciliation/contracts/task-claim-reconciliation-module.md"
+        "specs/013c-retry-debug-surfaces/plan.md",
+        "specs/013c-retry-debug-surfaces/research.md",
+        "specs/013c-retry-debug-surfaces/data-model.md",
+        "specs/013c-retry-debug-surfaces/contracts/task-claim-control-api.md",
+        "specs/013c-retry-debug-surfaces/quickstart.md"
       ],
-      "planned_migration": "M78 078_task_stage_claims",
-      "strict_scope_files": 7,
-      "contracts": 2,
-      "reviewability_estimate": {
-        "reviewable_loc": 650,
-        "production_files": 5,
-        "total_files": 14,
-        "primary_surface": "scheduler/runtime claim authority"
-      },
-      "clarification_markers": 0,
-      "gap_markers": 0,
-      "critical_markers": 0
+      "key_decisions": [
+        "single operator/admin mutation route POST /api/tasks/[id]/claim-control",
+        "add M79 release-reason constraint expansion and scoped claim-control idempotency replay table because activities cannot replay successful responses safely and operator reasons must remain claim-history truth",
+        "one narrow claim-control domain module owns retry/release/cancel semantics",
+        "existing task_claim_reconciliation.v1 read model is extended backward-compatibly",
+        "no UI/CLI/MCP/dashboard/sandbox/adapter/harness/GitHub mutation/successor behavior enters SPEC-013C"
+      ]
     },
     "checklist": {
       "status": "completed",
       "gate": "G4",
       "gate_pass": true,
+      "executor": "orchestrator_direct",
       "domains": {
         "scheduler-runtime": {
-          "items": 30,
-          "open_gaps": 0
-        },
-        "data-integrity": {
-          "items": 15,
-          "open_gaps": 0
+          "status": "completed",
+          "items": 12,
+          "open_gaps": 0,
+          "artifact": "specs/013c-retry-debug-surfaces/checklists/scheduler-runtime.md"
         },
         "api-contracts": {
-          "items": 20,
-          "open_gaps": 0
+          "status": "completed",
+          "items": 14,
+          "open_gaps": 0,
+          "artifact": "specs/013c-retry-debug-surfaces/checklists/api-contracts.md"
+        },
+        "data-integrity": {
+          "status": "completed",
+          "items": 13,
+          "open_gaps": 0,
+          "artifact": "specs/013c-retry-debug-surfaces/checklists/data-integrity.md"
         },
         "state-management": {
-          "items": 18,
-          "open_gaps": 0
+          "status": "completed",
+          "items": 13,
+          "open_gaps": 0,
+          "artifact": "specs/013c-retry-debug-surfaces/checklists/state-management.md"
         },
         "security": {
-          "items": 30,
-          "open_gaps": 0
+          "status": "completed",
+          "items": 13,
+          "open_gaps": 0,
+          "artifact": "specs/013c-retry-debug-surfaces/checklists/security.md"
+        },
+        "accessibility": {
+          "status": "completed",
+          "items": 10,
+          "open_gaps": 0,
+          "artifact": "specs/013c-retry-debug-surfaces/checklists/accessibility.md"
         }
-      },
-      "total_items": 113,
-      "marker_counter": {
-        "gaps": 0,
-        "clarifications": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      },
-      "unresolved_consensus": 0
+      }
     },
     "tasks": {
       "status": "completed",
       "gate": "G5",
       "gate_pass": true,
-      "task_file": "specs/013b-claim-reconciliation/tasks.md",
-      "total_tasks": 57,
-      "phases": 7,
-      "parallel_opportunities": 23,
-      "user_stories": 4,
-      "mvp_scope": "User Story 1",
-      "reviewability_gate": {
-        "status": "exception",
-        "pass": true,
-        "transition_exception": true,
-        "reviewable_loc": 2280,
-        "production_files": 19,
-        "total_files": 97,
-        "primary_surface_count": 6,
-        "notes": "Tasks-mode gate uses synthetic task_count * 40 and path extraction from task prose; ratified exception documents that implementation remains constrained to the plan budget of about 650 LOC, 5 production files, and one primary surface."
-      },
-      "marker_counter": {
-        "gaps": 0,
-        "clarifications": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      }
+      "executor": "orchestrator_direct_after_setup_tasks_script_warning",
+      "artifact": "specs/013c-retry-debug-surfaces/tasks.md",
+      "total_tasks": 75,
+      "parallel_tasks": 27,
+      "tdd_red_tasks": 22,
+      "verification_tasks": 17,
+      "key_properties": [
+        "dependency-ordered by setup, foundation, five user stories, and polish verification",
+        "TDD-first tasks precede every behavior-changing implementation task",
+        "M79 release-reason constraint expansion and idempotency storage are foundational blockers",
+        "SPEC-013D UI adoption and SPEC-014C harness adoption blockers remain documented"
+      ]
     },
     "analyze": {
       "status": "completed",
       "gate": "G6",
       "gate_pass": true,
-      "original_findings": {
-        "total": 3,
-        "critical": 1,
-        "high": 2,
-        "medium": 0,
-        "low": 0
-      },
-      "remediated_findings": 3,
-      "remaining_findings": {
-        "total": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      },
-      "unresolved_consensus": 0,
-      "marker_counter": {
-        "gaps": 0,
-        "clarifications": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      },
-      "confidence_emit": {
-        "composite": 0.92,
-        "task_understanding": 0.95,
-        "approach_clarity": 0.91,
-        "requirements_alignment": 0.93,
-        "risk_assessment": 0.89,
-        "completeness": 0.92
+      "executor": "orchestrator_direct_after_stalled_analyze_executor",
+      "findings": [
+        {
+          "id": "A1",
+          "severity": "high",
+          "status": "resolved",
+          "summary": "US3 acceptance scenario conflated same-key replay with new-key already_applied; spec now distinguishes them."
+        },
+        {
+          "id": "A2",
+          "severity": "high",
+          "status": "resolved",
+          "summary": "Spec/workflow/plan drifted on M79 idempotency-only versus release-reason constraint expansion; artifacts now align."
+        }
+      ],
+      "remaining_critical_high": 0,
+      "remaining_medium_low": 0,
+      "coverage": {
+        "functional_requirements": 55,
+        "success_criteria": 10,
+        "task_coverage": "complete"
       }
     },
     "confidence_gate": {
       "status": "completed",
-      "gate_pass": true,
-      "threshold": 0.9,
+      "gate": "G6.5",
       "mode": "advisory",
+      "pass": true,
       "composite": 0.92,
-      "recommended_action": "proceed"
-    },
-    "implement": {
-      "status": "completed",
-      "gate": "G7",
-      "gate_pass": true,
-      "completed_at": "2026-05-27T19:41:58Z",
-      "task_file": "specs/013b-claim-reconciliation/tasks.md",
-      "tasks_completed": 57,
-      "production_files": [
-        "src/lib/task-claim-reconciliation.ts",
-        "src/lib/task-dispatch.ts",
-        "src/lib/migrations.ts",
-        "src/app/api/tasks/[id]/claim-reconciliation/route.ts",
-        "src/app/api/index/route.ts",
-        "openapi.json"
-      ],
-      "test_files": [
-        "src/lib/__tests__/task-claim-reconciliation-fixtures.ts",
-        "src/lib/__tests__/migrations-M78-task-stage-claims.test.ts",
-        "src/lib/__tests__/task-claim-reconciliation.test.ts",
-        "src/lib/__tests__/task-dispatch-claim-reconciliation.test.ts",
-        "src/lib/__tests__/task-claim-reconciliation-route.test.ts"
-      ],
-      "supporting_artifacts": [
-        "docs/migrations/rollback-M78.sql",
-        "specs/013b-claim-reconciliation/quickstart.md",
-        "docs/ai/rc-factory-technical-roadmap.md",
-        "AGENTS.md",
-        "tsconfig.spec-strict.json",
-        "eslint.config.mjs"
-      ],
-      "verification": {
-        "focused_vitest": "passed: 4 files, 27 tests",
-        "pnpm_test": "passed: 304 files, 3167 tests, 33 skipped files, 3 skipped tests, 84 todo",
-        "pnpm_build": "passed outside Codex sandbox; route table includes /api/tasks/[id]/claim-reconciliation",
-        "pnpm_test_e2e": "passed: 651 tests",
-        "pnpm_test_all": "passed: strict-scope, lint, typecheck, unit, build, and e2e",
-        "runtime": "direnv exec . with Node.js v22.22.2"
+      "threshold": 0.9,
+      "criteria": {
+        "task_understanding": 0.94,
+        "approach_clarity": 0.92,
+        "requirements_alignment": 0.94,
+        "risk_assessment": 0.9,
+        "completeness": 0.91
       },
-      "scope_notes": [
-        "No .claude files modified.",
-        "No runner, sandbox lifecycle, harness adapter, retry/cancel/manual-release control, auto-merge, automatic triage, primary dashboard UI, or successor-selection implementation added.",
-        "Post-merge HITL UAT completed on HAL before SPEC-013B moved to Complete on the roadmap."
-      ]
+      "recommended_action": "proceed"
     }
+  },
+  "implementation": {
+    "status": "passed_local_g7",
+    "completed_tasks": 75,
+    "total_tasks": 75,
+    "focused_tests": "6 files / 39 tests passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "api_parity": "passed",
+    "strict_scope": "passed",
+    "unit_test": "passed outside sandbox: 308 files / 3190 tests",
+    "build": "passed outside sandbox",
+    "e2e": "not run: no browser-visible UI changed",
+    "knowledge_index_check": "passed",
+    "diff_check": "passed",
+    "post_review_remediation": "idempotency storage failure now rolls back mutation and audit in one transaction",
+    "target_uat": "post-merge API-and-audit UAT pending"
+  },
+  "post_gates": {
+    "doctor": "passed",
+    "verify_implementation": "passed_direct_fallback",
+    "verify_tasks": "passed_direct_fallback",
+    "code_review": "passed_after_remediation",
+    "integration_suite": "passed",
+    "cleanup": "passed_direct_fallback",
+    "reviewability_diff_gate": "passed_transition_exception",
+    "self_review": "passed",
+    "pr_body_generation": "/private/tmp/speckit-pr-body-013c.md",
+    "pr_creation": "in_progress"
   }
 }
