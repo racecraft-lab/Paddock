@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "63",
+  "prTitle": "feat: add claim-control retry debug API",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/63",
+  "headRef": "013c-retry-debug-surfaces",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26599989191",
+      "runAttempt": "1",
+      "runKey": "26599989191-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26599989191",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/pr/63/runs/26599989191-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/pr/63/playwright/latest/?v=26599989191-attempt-1",
+      "headSha": "8c7ca37eb8ba6dc9816afa94e880e90daffaf8d0",
+      "headRef": "013c-retry-debug-surfaces",
+      "baseRef": "main",
+      "workflowName": "Mission Control UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-05-28T20:30:47.896Z"
+    }
+  ],
+  "updatedAt": "2026-05-28T20:30:47.896Z"
+}
