@@ -19,11 +19,11 @@
 
 **Purpose**: Prepare strict-scope config, fixtures, rollback placeholder, and scope guardrails.
 
-- [ ] T001 Verify reviewability scope against `specs/014a-sandbox-lifecycle-contract/plan.md` and keep the ratified split exception in `specs/014a-sandbox-lifecycle-contract/tasks.md`
-- [ ] T002 [P] Add SPEC-014A planned TS route/helper/test paths to `tsconfig.spec-strict.json`
-- [ ] T003 [P] Add SPEC-014A planned TS route/helper/test/e2e guard paths to `eslint.config.mjs`
-- [ ] T004 [P] Create reusable sandbox lifecycle test fixtures in `src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts`
-- [ ] T005 [P] Add rollback placeholder for M79 in `docs/migrations/rollback-M79.sql`
+- [X] T001 Verify reviewability scope against `specs/014a-sandbox-lifecycle-contract/plan.md` and keep the ratified split exception in `specs/014a-sandbox-lifecycle-contract/tasks.md`
+- [X] T002 [P] Add SPEC-014A strict-compatible helper and test paths to `tsconfig.spec-strict.json`; keep the route and M79 migration test covered by normal app typecheck/Vitest because those imports pull legacy auth/db/migration dependencies outside the strict subproject boundary
+- [X] T003 [P] Add SPEC-014A planned TS route/helper/test/e2e guard paths to `eslint.config.mjs`
+- [X] T004 [P] Create reusable sandbox lifecycle test fixtures in `src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts`
+- [X] T005 [P] Add rollback placeholder for M79 in `docs/migrations/rollback-M79.sql`
 
 ---
 
@@ -31,12 +31,12 @@
 
 **Purpose**: Add additive persistence and the closed contract vocabulary that all user stories depend on.
 
-- [ ] T006 [P] Add failing M79 migration tests for `agent_sandbox_lifecycles` columns, owner/status CHECK constraints, `(workspace_id, sandbox_key)` uniqueness, and rerun idempotency in `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts`
-- [ ] T007 [P] Add failing M79 event-table tests for `agent_sandbox_lifecycle_events` columns, lifecycle FK, append-only ordering indexes, task-order indexes, and rollback idempotency in `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts`
-- [ ] T008 Implement additive migration `079_agent_sandbox_lifecycles` in `src/lib/migrations.ts`
-- [ ] T009 Implement idempotent manual rollback SQL for M79 in `docs/migrations/rollback-M79.sql`
-- [ ] T010 Add `FEATURE_AGENT_RUNNER_SANDBOXES` to the feature-flag type/key registry with hard-default OFF and appropriate dependencies in `src/lib/feature-flags.ts`
-- [ ] T011 Run focused M79 migration tests and capture the command for `specs/014a-sandbox-lifecycle-contract/quickstart.md`
+- [X] T006 [P] Add failing M79 migration tests for `agent_sandbox_lifecycles` columns, owner/status CHECK constraints, `(workspace_id, sandbox_key)` uniqueness, and rerun idempotency in `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts`
+- [X] T007 [P] Add failing M79 event-table tests for `agent_sandbox_lifecycle_events` columns, lifecycle FK, append-only ordering indexes, task-order indexes, and rollback idempotency in `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts`
+- [X] T008 Implement additive migration `079_agent_sandbox_lifecycles` in `src/lib/migrations.ts`
+- [X] T009 Implement idempotent manual rollback SQL for M79 in `docs/migrations/rollback-M79.sql`
+- [X] T010 Add `FEATURE_AGENT_RUNNER_SANDBOXES` to the feature-flag type/key registry with hard-default OFF and appropriate dependencies in `src/lib/feature-flags.ts`
+- [X] T011 Run focused M79 migration tests and capture the command for `specs/014a-sandbox-lifecycle-contract/quickstart.md`
 
 **Checkpoint**: M79 lifecycle persistence and flag registry are ready.
 
@@ -50,16 +50,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T012 [P] [US1] Add failing tests for closed owner enum validation, lifecycle status vocabulary, sandbox key shape, and safe read-model serialization in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T013 [P] [US1] Add failing tests for fake `mission_control`, `openclaw`, and `external_harness` owners exercising create, prepare, mark_running, mark_terminal, and cleanup without real launches in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T014 [P] [US1] Add failing tests proving fake owners do not import or call OpenClaw command runners, Codex/Claude/Hermes/OpenCode launch code, gateway launch, or adapter manifest code in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T012 [P] [US1] Add failing tests for closed owner enum validation, lifecycle status vocabulary, sandbox key shape, and safe read-model serialization in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T013 [P] [US1] Add failing tests for fake `mission_control`, `openclaw`, and `external_harness` owners exercising create, prepare, mark_running, mark_terminal, and cleanup without real launches in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T014 [P] [US1] Add failing tests proving fake owners do not import or call OpenClaw command runners, Codex/Claude/Hermes/OpenCode launch code, gateway launch, or adapter manifest code in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement owner/status/event vocabularies, public types, and safe serialization helpers in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T016 [US1] Implement deterministic sandbox key construction and lifecycle read-model serialization in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T017 [US1] Implement production-code fake owners for `mission_control`, `openclaw`, and `external_harness` behind `FEATURE_AGENT_RUNNER_SANDBOXES` in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T018 [US1] Run focused US1 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T015 [US1] Implement owner/status/event vocabularies, public types, and safe serialization helpers in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T016 [US1] Implement deterministic sandbox key construction and lifecycle read-model serialization in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T017 [US1] Implement production-code fake owners for `mission_control`, `openclaw`, and `external_harness` behind `FEATURE_AGENT_RUNNER_SANDBOXES` in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T018 [US1] Run focused US1 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 **Checkpoint**: User Story 1 is independently testable as the MVP.
 
@@ -73,16 +73,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T019 [P] [US2] Add failing flag-off no-row/no-event tests for create, prepare, mark_running, mark_terminal, cleanup, and rollback in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T020 [P] [US2] Add failing flag-off fake artifact no-touch tests and disabled evidence assertions in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T021 [P] [US2] Add failing read-model tests proving existing authorized lifecycle rows remain readable with disabled-state evidence in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T019 [P] [US2] Add failing flag-off no-row/no-event tests for create, prepare, mark_running, mark_terminal, cleanup, and rollback in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T020 [P] [US2] Add failing flag-off fake artifact no-touch tests and disabled evidence assertions in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T021 [P] [US2] Add failing read-model tests proving existing authorized lifecycle rows remain readable with disabled-state evidence in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Implement feature-flag resolution through `resolveFlag('FEATURE_AGENT_RUNNER_SANDBOXES', ctx)` in every lifecycle mutation path in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T023 [US2] Implement disabled-state mutation results before validation, row insertion, event insertion, or fake artifact work in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T024 [US2] Implement disabled read-model evidence while preserving authorized historical lifecycle rows in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T025 [US2] Run focused US2 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T022 [US2] Implement feature-flag resolution through `resolveFlag('FEATURE_AGENT_RUNNER_SANDBOXES', ctx)` in every lifecycle mutation path in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T023 [US2] Implement disabled-state mutation results before validation, row insertion, event insertion, or fake artifact work in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T024 [US2] Implement disabled read-model evidence while preserving authorized historical lifecycle rows in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T025 [US2] Run focused US2 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 **Checkpoint**: Flag OFF preserves existing installs.
 
@@ -96,16 +96,16 @@
 
 ### Tests for User Story 3
 
-- [ ] T026 [P] [US3] Add failing adversarial corpus tests for traversal, absolute paths, separators, dot segments, symlink-like segments, unsafe Unicode/control characters, reserved names, duplicate normalized values, overlong segments, and root escape in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T027 [P] [US3] Add failing persistence-safety tests proving absolute host paths, raw path fragments, prompts, tokens, auth headers, provider payloads, raw session data, and secret-shaped strings are rejected or redacted in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T028 [P] [US3] Add failing duplicate normalized sandbox key/path conflict tests in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T026 [P] [US3] Add failing adversarial corpus tests for traversal, absolute paths, separators, dot segments, symlink-like segments, unsafe Unicode/control characters, reserved names, duplicate normalized values, overlong segments, and root escape in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T027 [P] [US3] Add failing persistence-safety tests proving absolute host paths, raw path fragments, prompts, tokens, auth headers, provider payloads, raw session data, and secret-shaped strings are rejected or redacted in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T028 [P] [US3] Add failing duplicate normalized sandbox key/path conflict tests in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T029 [US3] Implement printable ASCII segment validation, Unicode/control/reserved-name rejection, segment length limits, and duplicate-normalization detection in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T030 [US3] Implement bounded root resolution for `<MISSION_CONTROL_DATA_DIR>/sandboxes` and reviewed per-workspace roots without persisting absolute paths in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T031 [US3] Implement positive-allowlisted metadata validation and redaction helpers in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T032 [US3] Run focused US3 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T029 [US3] Implement printable ASCII segment validation, Unicode/control/reserved-name rejection, segment length limits, and duplicate-normalization detection in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T030 [US3] Implement bounded root resolution for `<MISSION_CONTROL_DATA_DIR>/sandboxes` and reviewed per-workspace roots without persisting absolute paths in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T031 [US3] Implement positive-allowlisted metadata validation and redaction helpers in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T032 [US3] Run focused US3 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 **Checkpoint**: Path/key safety is independently verified.
 
@@ -119,16 +119,16 @@
 
 ### Tests for User Story 4
 
-- [ ] T033 [P] [US4] Add failing idempotent create and `create_reused` event tests in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T034 [P] [US4] Add failing conflicting owner/root/path duplicate create tests proving no mutation of existing lifecycle in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T035 [P] [US4] Add failing rollback, cleanup success, cleanup failure, stale `cleanup_pending`, and durable-row-retention tests in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T033 [P] [US4] Add failing idempotent create and `create_reused` event tests in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T034 [P] [US4] Add failing conflicting owner/root/path duplicate create tests proving no mutation of existing lifecycle in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T035 [P] [US4] Add failing rollback, cleanup success, cleanup failure, stale `cleanup_pending`, and durable-row-retention tests in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T036 [US4] Implement transactional lifecycle create/reuse/conflict behavior and append-only event writes in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T037 [US4] Implement transition enforcement for create, prepare, mark_running, mark_terminal, cleanup_pending, cleaned_up, rolled_back, and cleanup_failed in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T038 [US4] Implement best-effort fake artifact cleanup/rollback and safe failure evidence in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T039 [US4] Run focused US4 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T036 [US4] Implement transactional lifecycle create/reuse/conflict behavior and append-only event writes in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T037 [US4] Implement transition enforcement for create, prepare, mark_running, mark_terminal, cleanup_pending, cleaned_up, rolled_back, and cleanup_failed in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T038 [US4] Implement best-effort fake artifact cleanup/rollback and safe failure evidence in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T039 [US4] Run focused US4 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 **Checkpoint**: Cleanup and idempotency behavior are reviewable.
 
@@ -142,16 +142,16 @@
 
 ### Tests for User Story 5
 
-- [ ] T040 [P] [US5] Add failing route tests for viewer auth, invalid task ids, workspace scope filtering, cross-workspace rejection, task-scoped lifecycle list, lifecycle filter, and disabled-state evidence in `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
-- [ ] T041 [P] [US5] Add failing route side-effect tests that snapshot row counts before and after GET for lifecycle/event, tasks, attempts, claims, and activities in `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
-- [ ] T042 [P] [US5] Add failing API index and OpenAPI parity assertions for `GET /api/tasks/{id}/sandbox-lifecycles` in `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
+- [X] T040 [P] [US5] Add failing route tests for viewer auth, invalid task ids, workspace scope filtering, cross-workspace rejection, task-scoped lifecycle list, lifecycle filter, and disabled-state evidence in `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
+- [X] T041 [P] [US5] Add failing route side-effect tests that snapshot row counts before and after GET for lifecycle/event, tasks, attempts, claims, and activities in `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
+- [X] T042 [P] [US5] Add failing API index and OpenAPI parity assertions for `GET /api/tasks/{id}/sandbox-lifecycles` in `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T043 [US5] Implement `buildSandboxLifecycleReadModel` with `sandbox_lifecycle.v1`, bounded recent events, disabled-state evidence, and no unsafe payload fields in `src/lib/agent-sandbox-lifecycle.ts`
-- [ ] T044 [US5] Implement read-only `GET /api/tasks/[id]/sandbox-lifecycles` with viewer auth and workspace scope filtering in `src/app/api/tasks/[id]/sandbox-lifecycles/route.ts`
-- [ ] T045 [US5] Register the read-only sandbox lifecycle route in `src/app/api/index/route.ts` and `openapi.json`
-- [ ] T046 [US5] Run focused US5 tests for `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
+- [X] T043 [US5] Implement `buildSandboxLifecycleReadModel` with `sandbox_lifecycle.v1`, bounded recent events, disabled-state evidence, and no unsafe payload fields in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T044 [US5] Implement read-only `GET /api/tasks/[id]/sandbox-lifecycles` with viewer auth and workspace scope filtering in `src/app/api/tasks/[id]/sandbox-lifecycles/route.ts`
+- [X] T045 [US5] Register the read-only sandbox lifecycle route in `src/app/api/index/route.ts` and `openapi.json`
+- [X] T046 [US5] Run focused US5 tests for `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
 
 **Checkpoint**: SPEC-014B has a stable read-only lifecycle source.
 
@@ -161,18 +161,18 @@
 
 **Purpose**: Validate full behavior, guard against scope drift, and prepare UAT evidence.
 
-- [ ] T047 [P] Add static scope guard tests proving SPEC-014A does not add UI, adapter manifests, real launch/resume/stop, OpenClaw command execution, retry/release/cancel/debug controls, successor selection, governance policy changes, token accounting, or auto-merge in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [ ] T048 [P] Update `specs/014a-sandbox-lifecycle-contract/quickstart.md` with exact focused test commands, API curl examples, migration marker checks, and cleanup SQL for disposable UAT rows
-- [ ] T049 [P] Update `docs/migrations/rollback-procedure.md` with the M79 rollback entry and reference `docs/migrations/rollback-M79.sql`
-- [ ] T050 Run focused Vitest commands for M79 migration, lifecycle helper, and lifecycle route tests
-- [ ] T051 Run `pnpm typecheck`
-- [ ] T052 Run `pnpm lint`
-- [ ] T053 Run `pnpm build`
-- [ ] T054 Run `pnpm test`
-- [ ] T055 Run `pnpm test:e2e` only if implementation unexpectedly changes a UI/browser route surface; otherwise record N/A because SPEC-014A adds no UI
-- [ ] T056 Run `pnpm test:all` or record the repository-approved equivalent if Playwright is N/A for this server-only spec
-- [ ] T057 Run `pnpm api:parity` or the existing API parity command from `package.json`
-- [ ] T058 Run manual UAT from `specs/014a-sandbox-lifecycle-contract/quickstart.md` in a disposable workspace and record enabled fake lifecycle plus flag-off read evidence
+- [X] T047 [P] Add static scope guard tests proving SPEC-014A does not add UI, adapter manifests, real launch/resume/stop, OpenClaw command execution, retry/release/cancel/debug controls, successor selection, governance policy changes, token accounting, or auto-merge in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T048 [P] Update `specs/014a-sandbox-lifecycle-contract/quickstart.md` with exact focused test commands, API curl examples, migration marker checks, and cleanup SQL for disposable UAT rows
+- [X] T049 [P] Update `docs/migrations/rollback-procedure.md` with the M79 rollback entry and reference `docs/migrations/rollback-M79.sql`
+- [X] T050 Run focused Vitest commands for M79 migration, lifecycle helper, and lifecycle route tests
+- [X] T051 Run `pnpm typecheck`
+- [X] T052 Run `pnpm lint`
+- [X] T053 Run `pnpm build`
+- [X] T054 Run `pnpm test`
+- [X] T055 Run `pnpm test:e2e` only if implementation unexpectedly changes a UI/browser route surface; otherwise record N/A because SPEC-014A adds no UI
+- [X] T056 Run `pnpm test:all` or record the repository-approved equivalent if Playwright is N/A for this server-only spec
+- [X] T057 Run `pnpm api:parity` or the existing API parity command from `package.json`
+- [X] T058 Run manual UAT from `specs/014a-sandbox-lifecycle-contract/quickstart.md` in a disposable workspace and record enabled fake lifecycle plus flag-off read evidence
 
 ---
 

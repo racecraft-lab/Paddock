@@ -172,6 +172,7 @@ describe('feature flag registry', () => {
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
+      'FEATURE_AGENT_RUNNER_SANDBOXES',
     ])
     expect(Object.keys(FEATURE_FLAG_REGISTRY).sort()).toEqual([...FEATURE_FLAG_KEYS].sort())
   })
@@ -201,6 +202,21 @@ describe('feature flag registry', () => {
       defaultValue: false,
       adminManageable: false,
       implementationStatus: 'not_implemented',
+      enableRequires: ['FEATURE_TASK_CONTROL_PLANE'],
+    })
+  })
+
+  it('registers FEATURE_AGENT_RUNNER_SANDBOXES as the default-off SPEC-014A lifecycle flag', () => {
+    expect(FEATURE_FLAG_REGISTRY.FEATURE_AGENT_RUNNER_SANDBOXES).toMatchObject({
+      key: 'FEATURE_AGENT_RUNNER_SANDBOXES',
+      spec: 'Sandbox Ownership and Lifecycle Contract',
+      phase: 12,
+      upstreamImpact: 'upstream-divergent',
+      activationScope: 'productLineWorkspace',
+      riskTier: 'high',
+      defaultValue: false,
+      adminManageable: false,
+      implementationStatus: 'implemented_unverified',
       enableRequires: ['FEATURE_TASK_CONTROL_PLANE'],
     })
   })
@@ -245,15 +261,18 @@ describe('feature flag registry', () => {
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
+      'FEATURE_AGENT_RUNNER_SANDBOXES',
     ])
     expect(getFeatureFlagCascadeDependents('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
       'FEATURE_OPENCLAW_HEALTH_COSTS',
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
+      'FEATURE_AGENT_RUNNER_SANDBOXES',
     ])
     expect(getFeatureFlagCascadeDependents('FEATURE_TASK_CONTROL_PLANE')).toEqual([
       'FEATURE_GITHUB_SYNC_AUTOMATION',
+      'FEATURE_AGENT_RUNNER_SANDBOXES',
     ])
   })
 

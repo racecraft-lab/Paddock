@@ -95,6 +95,10 @@
     "src/lib/task-claim-reconciliation.ts",
     "src/lib/__tests__/migrations-M78-task-stage-claims.test.ts",
     "src/lib/__tests__/task-claim-reconciliation-fixtures.ts",
-    "src/lib/__tests__/task-claim-reconciliation.test.ts"
+    "src/lib/__tests__/task-claim-reconciliation.test.ts",
+    "src/lib/agent-sandbox-lifecycle.ts",
+    "src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts",
+    "src/lib/__tests__/agent-sandbox-lifecycle.test.ts",
+    "src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts"
   ]
 }

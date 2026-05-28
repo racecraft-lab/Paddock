@@ -3638,6 +3638,87 @@ const migrations: Migration[] = [
       `)
     },
   },
+  {
+    id: '079_agent_sandbox_lifecycles',
+    up(db: Database.Database) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS agent_sandbox_lifecycles (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          sandbox_attempt_key TEXT NOT NULL CHECK(length(trim(sandbox_attempt_key)) > 0),
+          task_stage_attempt_id INTEGER,
+          task_stage_claim_id INTEGER,
+          owner TEXT NOT NULL CHECK(owner IN ('mission_control', 'openclaw', 'external_harness')),
+          sandbox_key TEXT NOT NULL CHECK(length(trim(sandbox_key)) > 0),
+          root_id TEXT NOT NULL CHECK(length(trim(root_id)) > 0),
+          sanitized_relative_path TEXT NOT NULL CHECK(length(trim(sanitized_relative_path)) > 0),
+          handle_id TEXT,
+          status TEXT NOT NULL CHECK(status IN (
+            'created',
+            'prepared',
+            'running',
+            'terminal',
+            'cleanup_pending',
+            'cleaned_up',
+            'rolled_back',
+            'cleanup_failed'
+          )),
+          created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+          updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+          prepared_at TEXT,
+          running_at TEXT,
+          terminal_at TEXT,
+          cleanup_requested_at TEXT,
+          cleaned_up_at TEXT,
+          metadata_json TEXT,
+          UNIQUE(workspace_id, sandbox_key)
+        );
+
+        CREATE TABLE IF NOT EXISTS agent_sandbox_lifecycle_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          lifecycle_id INTEGER NOT NULL,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          sandbox_key TEXT NOT NULL CHECK(length(trim(sandbox_key)) > 0),
+          event_type TEXT NOT NULL CHECK(length(trim(event_type)) > 0),
+          status TEXT CHECK(status IS NULL OR status IN (
+            'created',
+            'prepared',
+            'running',
+            'terminal',
+            'cleanup_pending',
+            'cleaned_up',
+            'rolled_back',
+            'cleanup_failed'
+          )),
+          reason_code TEXT,
+          observed_at TEXT NOT NULL,
+          actor_type TEXT CHECK(actor_type IS NULL OR actor_type IN ('system', 'operator', 'test', 'fake_owner')),
+          actor_id TEXT,
+          metadata_json TEXT,
+          FOREIGN KEY(lifecycle_id) REFERENCES agent_sandbox_lifecycles(id) ON DELETE CASCADE
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycles_task_status
+          ON agent_sandbox_lifecycles(workspace_id, task_id, stage_key, status, updated_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycles_attempt
+          ON agent_sandbox_lifecycles(workspace_id, task_stage_attempt_id)
+          WHERE task_stage_attempt_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycles_claim
+          ON agent_sandbox_lifecycles(workspace_id, task_stage_claim_id)
+          WHERE task_stage_claim_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycle_events_lifecycle_order
+          ON agent_sandbox_lifecycle_events(lifecycle_id, observed_at ASC, id ASC);
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycle_events_task_order
+          ON agent_sandbox_lifecycle_events(workspace_id, task_id, stage_key, observed_at ASC, id ASC);
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycle_events_sandbox_order
+          ON agent_sandbox_lifecycle_events(workspace_id, sandbox_key, observed_at ASC, id ASC);
+      `)
+    },
+  },
 ]
 
 export function runMigrations(db: Database.Database) {
