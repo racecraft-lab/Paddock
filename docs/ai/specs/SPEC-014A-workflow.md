@@ -543,8 +543,17 @@ Verification expectations:
 | Build | Pass: `pnpm build` outside the Codex sandbox. The sandboxed attempt failed because Turbopack could not bind local worker resources. |
 | Full unit suite | Pass: `pnpm test` outside the Codex sandbox returned 307 passed files, 3201 passed tests, 33 skipped files, 3 skipped tests, and 84 todo tests. |
 | Cleanup | Pass: `$speckit-cleanup-run` inspected 58 completed tasks, applied 0 edits, found 0 critical or small auto-fix findings, and validated lint/typecheck/API parity/focused SPEC-014A tests. |
+| Reviewability diff gate | Pass with ratified exception: `reviewability-gate.sh diff origin/main...HEAD` returned `status=exception`, `pass=true`. |
+| PR body generation | Complete: PR review packet generated at `/private/tmp/speckit-pr-body-014a.md` from the host PR template and filled with SPEC-014A scope, traceability, verification, and rollback details. |
 | E2E | N/A: SPEC-014A adds no UI/browser route surface; repository-approved equivalent is full Vitest plus typecheck, lint, build, and API parity. |
 | Manual UAT | Complete through disposable in-memory fake lifecycle and route tests: enabled fake lifecycle, cleanup, flag-off mutation block, and disabled-state read evidence verified. |
+
+### Self-Review
+
+1. **Tests executed**: Yes. Latest post-gate evidence on 2026-05-28 includes focused SPEC-014A Vitest (34 tests), feature-flag/migration guard tests (44 tests), `pnpm typecheck`, `pnpm lint`, `pnpm api:parity`, `pnpm build` outside sandbox, and full `pnpm test` outside sandbox (3201 passed, 3 skipped, 84 todo).
+2. **Edge cases**: Covered by named tests: adversarial path/key/root escapes (`src/lib/__tests__/agent-sandbox-lifecycle.test.ts:62`, `:77`), flag-OFF mutation/artifact no-touch/read evidence (`:99`, `:137`, `:363`), duplicate reuse/conflict/projection drift (`:172`, `:189`, `:204`), unsafe persisted metadata/handles (`:222`), cleanup failure/stale pending/rollback retention (`:270`, `:296`, `:319`, `:337`), route auth/scope/filter/no-write/disabled reads (`src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts:128`, `:179`), and migration/rollback constraints (`src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts:44`, `:89`, `:104`, `:121`).
+3. **Requirements matched**: All 40 FRs map to checked tasks T001-T058; `$speckit-verify-tasks-run` rerun reported 11/11 previously partial tasks verified and 0 flagged items in `specs/014a-sandbox-lifecycle-contract/verify-tasks-report.md`.
+4. **Follow-up markers**: No active `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers remain in SPEC-014A artifacts. Scope deferrals are landed in the roadmap and design concept: SPEC-014B owns first operator-visible runtime-inventory integration for read-only sandbox lifecycle references, while richer controls stay in SPEC-014C/D or a later dedicated UI/control spec.
 
 ---
 

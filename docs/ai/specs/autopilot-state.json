@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014A-workflow.md",
-  "updated_at": "2026-05-28T15:38:00-05:00",
-  "active_step": "Post: Reviewability Diff Gate",
+  "updated_at": "2026-05-28T15:48:00-05:00",
+  "active_step": "Post: PR Creation",
   "current_spec_dir": "specs/014a-sandbox-lifecycle-contract",
   "branch": "014a-sandbox-lifecycle-contract",
   "plan": [
@@ -36,10 +36,10 @@
     { "step": "Post: Code Review", "status": "completed" },
     { "step": "Post: Integration Suite", "status": "completed" },
     { "step": "Post: Cleanup", "status": "completed" },
-    { "step": "Post: Reviewability Diff Gate", "status": "in_progress" },
-    { "step": "Post: Self-Review", "status": "pending" },
-    { "step": "Post: PR Body Generation", "status": "pending" },
-    { "step": "Post: PR Creation", "status": "pending" },
+    { "step": "Post: Reviewability Diff Gate", "status": "completed" },
+    { "step": "Post: Self-Review", "status": "completed" },
+    { "step": "Post: PR Body Generation", "status": "completed" },
+    { "step": "Post: PR Creation", "status": "in_progress" },
     { "step": "Post: Review Remediation", "status": "pending" },
     { "step": "Post: Retrospective", "status": "pending" }
   ],
