@@ -24,7 +24,7 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Archive Sweep | `$speckit-archive-run` | Pending | Discover prior merged-spec cleanup before Phase 0 |
-| Specify | `$speckit-specify` | Pending | Generate `specs/014a-sandbox-lifecycle-contract/spec.md` |
+| Specify | `$speckit-specify` | Complete | Generated `specs/014a-sandbox-lifecycle-contract/spec.md` with checklist |
 | Clarify | `$speckit-clarify` | Pending | Resolve narrow API/schema/path questions |
 | Plan | `$speckit-plan` | Pending | Generate architecture, data model, contracts, quickstart |
 | Checklist | `$speckit-checklist` | Pending | Run recommended domain checklists after Plan |
@@ -175,13 +175,14 @@ Out of scope:
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 40 |
+| User Stories | 5 |
+| Acceptance Criteria | 17 |
 
 ### Files Generated
 
 - `specs/014a-sandbox-lifecycle-contract/spec.md`
+- `specs/014a-sandbox-lifecycle-contract/checklists/requirements.md`
 
 ---
 

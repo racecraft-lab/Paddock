@@ -1,149 +1,62 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-013B-workflow.md",
-  "updated_at": "2026-05-27T23:05:31Z",
-  "active_step": "Complete",
-  "current_spec_dir": "specs/013b-claim-reconciliation",
-  "branch": "013b-claim-reconciliation",
+  "workflow_file": "docs/ai/specs/SPEC-014A-workflow.md",
+  "updated_at": "2026-05-28T13:37:40-05:00",
+  "active_step": "Phase 2: Clarify - Schema and Read Model",
+  "current_spec_dir": "specs/014a-sandbox-lifecycle-contract",
+  "branch": "014a-sandbox-lifecycle-contract",
   "plan": [
-    {
-      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 0: Prerequisites",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 1: Specify",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Pending session discovery",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 3: Plan",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - Pending domain discovery",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 5: Tasks",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6: Analyze",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6: Analyze - Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6.5: Confidence Gate",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Implement - Pending task decomposition",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Doctor Extension Check",
-      "status": "skipped"
-    },
-    {
-      "step": "Post: Verify Implementation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Verify Tasks Phantom Check",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Code Review",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Integration Suite",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Cleanup",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Reviewability Diff Gate",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Self-Review",
-      "status": "completed"
-    },
-    {
-      "step": "Post: PR Body Generation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: PR Creation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Review Remediation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Retrospective",
-      "status": "completed"
-    },
-    {
-      "step": "Plugin PR: fix Codex autopilot early-termination failure mode",
-      "status": "completed"
-    }
+    { "step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed" },
+    { "step": "Phase 0: Prerequisites", "status": "completed" },
+    { "step": "Phase 1: Specify", "status": "completed" },
+    { "step": "Phase 2: Clarify - Schema and Read Model", "status": "in_progress" },
+    { "step": "Phase 2: Clarify - Schema and Read Model Consensus", "status": "pending" },
+    { "step": "Phase 2: Clarify - Path Safety and Metadata Safety", "status": "pending" },
+    { "step": "Phase 2: Clarify - Path Safety and Metadata Safety Consensus", "status": "pending" },
+    { "step": "Phase 2: Clarify - Lifecycle and Cleanup", "status": "pending" },
+    { "step": "Phase 2: Clarify - Lifecycle and Cleanup Consensus", "status": "pending" },
+    { "step": "Phase 2: Clarify - Flag, API, and Scope Deferrals", "status": "pending" },
+    { "step": "Phase 2: Clarify - Flag, API, and Scope Deferrals Consensus", "status": "pending" },
+    { "step": "Phase 3: Plan", "status": "pending" },
+    { "step": "Phase 4: Checklist - Data Integrity", "status": "pending" },
+    { "step": "Phase 4: Checklist - Data Integrity Consensus", "status": "pending" },
+    { "step": "Phase 4: Checklist - Security", "status": "pending" },
+    { "step": "Phase 4: Checklist - Security Consensus", "status": "pending" },
+    { "step": "Phase 4: Checklist - API Contracts", "status": "pending" },
+    { "step": "Phase 4: Checklist - API Contracts Consensus", "status": "pending" },
+    { "step": "Phase 4: Checklist - Error Handling", "status": "pending" },
+    { "step": "Phase 4: Checklist - Error Handling Consensus", "status": "pending" },
+    { "step": "Phase 5: Tasks", "status": "pending" },
+    { "step": "Phase 6: Analyze", "status": "pending" },
+    { "step": "Phase 6: Analyze - Consensus", "status": "pending" },
+    { "step": "Phase 6.5: Confidence Gate", "status": "pending" },
+    { "step": "Phase 7: Implement - Pending task decomposition", "status": "pending" },
+    { "step": "Post: Doctor Extension Check", "status": "pending" },
+    { "step": "Post: Verify Implementation", "status": "pending" },
+    { "step": "Post: Verify Tasks Phantom Check", "status": "pending" },
+    { "step": "Post: Code Review", "status": "pending" },
+    { "step": "Post: Integration Suite", "status": "pending" },
+    { "step": "Post: Cleanup", "status": "pending" },
+    { "step": "Post: Reviewability Diff Gate", "status": "pending" },
+    { "step": "Post: Self-Review", "status": "pending" },
+    { "step": "Post: PR Body Generation", "status": "pending" },
+    { "step": "Post: PR Creation", "status": "pending" },
+    { "step": "Post: Review Remediation", "status": "pending" },
+    { "step": "Post: Retrospective", "status": "pending" }
   ],
-  "plugin_repair": {
-    "status": "completed",
-    "notes": "Resolved Codex marketplace-name collision by renaming empty auto-discovered ~/.agents/plugins/marketplace.json to racecraft-agents-local-empty, then reinstalled speckit-pro. PR #93 was merged to prevent Codex autopilot from ending before post-phase completion and PR creation. PR #95 is open to fix the reviewability-gate false-block discovered during SPEC-013B packaging."
-  },
-  "pull_request": {
-    "status": "merged",
-    "url": "https://github.com/racecraft-lab/mission-control/pull/62",
-    "number": 62,
-    "base": "main",
-    "head": "013b-claim-reconciliation",
-    "merged_at": "2026-05-27T22:42:30Z",
-    "merge_commit": "5e61d0ffc02f9345b265cd5420660d02bf693016",
-    "initial_review_remediation": "No PR comments or reviews were present immediately after creation. Checks were still pending; visual Playwright approval was marked missing while the companion visual report job was still in progress."
-  },
-  "retrospective": {
-    "status": "completed",
-    "path": "specs/013b-claim-reconciliation/retrospective.md",
-    "notes": "No spec edits proposed. 57/57 tasks verified. PR #62 merge, HAL deployment, and post-merge HITL UAT are complete."
-  },
-  "post_merge_closeout": {
-    "status": "completed",
-    "completed_at": "2026-05-27T23:05:31Z",
-    "hal_worktree": "/home/fredrick-gabelmann/mission-control",
-    "hal_merge_commit": "5e61d0ffc02f9345b265cd5420660d02bf693016",
-    "deployment": "HAL pulled main, ran pnpm install --frozen-lockfile, ran pnpm build, verified .next/standalone/server.js, restarted mission-control.service, served /login with HTTP 200, kept openclaw-gateway.service active, and verified M76/M77/M78 migration markers.",
-    "uat_replay_id": "spec013b-hal-uat-2026-05-27T23-05-31-000Z",
-    "uat_summary": "Target replay proved one claim_acquired path, duplicate_prevented competitor, launch_handoff_completed release, terminal task_terminal_done release, governance_blocked no-claim gate, local-only/repo-only/non-assigned exclusion, read-model evidence, and zero disposable workspace/task residue.",
-    "operational_observation": "Ideaverse runbook lookup surfaced inactive HAL NTP as a 1Password startup reliability follow-up. Initial restart attempts hit transient DNS/IPv6 1Password errors before the service recovered; this did not block SPEC-013B UAT."
-  },
   "preflight": {
     "status": "passed",
-    "checked_at": "2026-05-27T17:14:59Z",
-    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/6b95/racecraft-mission-control/.worktrees/013b-claim-reconciliation",
+    "checked_at": "2026-05-28T13:28:17-05:00",
+    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/0466/racecraft-mission-control/.worktrees/014a-sandbox-lifecycle-contract",
     "prerequisites": {
       "all_pass": true,
-      "branch": "013b-claim-reconciliation",
+      "branch": "014a-sandbox-lifecycle-contract",
       "is_worktree": true,
-      "on_feature_branch": false,
-      "speckit_cli": "specify 0.8.13",
-      "codex_entrypoints": "All SpecKit Codex commands/skills installed via .codex/commands, .agents/skills, or ~/.codex/skills",
-      "mcp_servers": "All configured: tavily-mcp context7 RepoPrompt"
+      "on_feature_branch": true,
+      "speckit_cli": "specify 0.8.16",
+      "commands": "All SpecKit commands/skills installed",
+      "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt; agents will use built-in fallbacks"
     },
+    "confidence_gate_mode": "advisory",
     "project_commands": {
       "BUILD": "pnpm build",
       "TYPECHECK": "pnpm typecheck",
@@ -157,286 +70,39 @@
     },
     "presets": {
       "reviewability_preset": "speckit-pro-reviewability",
+      "ask_questions_preset": "codex-ask-questions",
       "templates": "spec-template, plan-template, and tasks-template resolve to .specify/presets/speckit-pro-reviewability/templates/"
     }
   },
   "archive_sweep": {
     "status": "completed",
     "mode": "dry-run",
-    "checked_at": "2026-05-27T17:14:59Z",
-    "current_target": "specs/013b-claim-reconciliation",
+    "checked_at": "2026-05-28T00:00:00-05:00",
+    "current_target": "specs/014a-sandbox-lifecycle-contract",
     "active_specs_discovered": [
-      "specs/013a1-github-sync-automation"
+      "specs/013a1-github-sync-automation",
+      "specs/013b-claim-reconciliation"
     ],
-    "excluded_current_spec": null,
+    "excluded_current_spec": "specs/014a-sandbox-lifecycle-contract",
     "eligible_previous_specs": [
       {
         "path": "specs/013a1-github-sync-automation",
         "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/60",
         "merge_sha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
-        "post_merge_status_sha": "7c6ce2ee",
         "uat": "Operator-confirmed post-merge HITL UAT complete on 2026-05-27 per roadmap."
+      },
+      {
+        "path": "specs/013b-claim-reconciliation",
+        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/62",
+        "merge_sha": "5e61d0ffc02f9345b265cd5420660d02bf693016",
+        "uat": "HAL deployment and post-merge HITL UAT complete on 2026-05-27 per roadmap."
       }
     ],
-    "archiveAlreadyRecorded": false,
     "safeToApplyCleanup": false,
     "cleanup_blockers": [
-      "Current branch is 013b-claim-reconciliation, not a safe base branch.",
-      "Worktree is dirty due to this autopilot-state update.",
-      "Dry-run did not apply archival edits or cleanup."
+      "Current branch is a feature branch, not a safe base branch for active spec cleanup.",
+      "Dry-run did not apply archival edits or remove source spec folders."
     ],
-    "notes": "SPEC-013A1 is complete and merged, but cleanup is intentionally deferred from this feature worktree. No .claude files were read or modified."
-  },
-  "external_context": {
-    "status": "fetched",
-    "retrieved_at": "2026-05-27T17:28:00Z",
-    "sources": [
-      {
-        "name": "OpenAI Harness Engineering",
-        "url": "https://openai.com/index/harness-engineering/",
-        "relevance": "Repository-local knowledge as system of record; agent legibility; feedback loops and guardrails."
-      },
-      {
-        "name": "OpenAI Symphony announcement",
-        "url": "https://openai.com/index/open-source-codex-orchestration-symphony/",
-        "relevance": "Codex orchestration pattern: one agent per task/workspace, workflow captured in versioned repository file, app-server integration."
-      },
-      {
-        "name": "OpenAI Symphony SPEC",
-        "url": "https://github.com/openai/symphony/blob/main/SPEC.md",
-        "relevance": "Workflow config contract, dispatch preflight/reconciliation, Codex app-server source-of-truth separation, runtime event/status model."
-      }
-    ],
-    "boundary_note": "Use these sources for context only; SPEC-013B must not import Symphony runner, Linear, sandbox lifecycle, retry UI, harness adapter, or long-running execution behavior."
-  },
-  "phase_results": {
-    "specify": {
-      "status": "completed",
-      "gate": "G1",
-      "gate_pass": true,
-      "spec_path": "specs/013b-claim-reconciliation/spec.md",
-      "requirements_checklist": "specs/013b-claim-reconciliation/checklists/requirements.md",
-      "user_stories": 4,
-      "functional_requirements": 19,
-      "acceptance_scenarios": 12,
-      "edge_cases": 10,
-      "success_criteria": 7,
-      "clarification_markers": 0
-    },
-    "clarify": {
-      "status": "completed",
-      "gate": "G2",
-      "gate_pass": true,
-      "questions_resolved": 20,
-      "consensus_items": 3,
-      "clarification_markers": 0,
-      "sessions": {
-        "claim_schema_and_lease": {
-          "questions": 5,
-          "consensus_resolved": 1
-        },
-        "github_and_task_eligibility": {
-          "questions": 5,
-          "consensus_resolved": 1
-        },
-        "dispatch_governance_integration": {
-          "questions": 5,
-          "consensus_resolved": 0
-        },
-        "evidence_and_operator_inspection": {
-          "questions": 5,
-          "consensus_resolved": 1
-        }
-      },
-      "key_outcomes": [
-        "task_stage_claims active-claim model with partial unique active index",
-        "300s default/600s capped launch-critical lease",
-        "stale GitHub truth threshold min(max(2 * interval_seconds, 600), 3600) with lifecycle health gating",
-        "dispatchAssignedTasks per-task integration before legacy launch mutation",
-        "pre-claim governance decision handling",
-        "task_claim_reconciliation.v1 read-only evidence route",
-        "positive-allowlisted claim/reconciliation payloads"
-      ]
-    },
-    "plan": {
-      "status": "completed",
-      "gate": "G3",
-      "gate_pass": true,
-      "artifacts": [
-        "specs/013b-claim-reconciliation/plan.md",
-        "specs/013b-claim-reconciliation/research.md",
-        "specs/013b-claim-reconciliation/data-model.md",
-        "specs/013b-claim-reconciliation/quickstart.md",
-        "specs/013b-claim-reconciliation/contracts/task-claim-reconciliation-api.md",
-        "specs/013b-claim-reconciliation/contracts/task-claim-reconciliation-module.md"
-      ],
-      "planned_migration": "M78 078_task_stage_claims",
-      "strict_scope_files": 7,
-      "contracts": 2,
-      "reviewability_estimate": {
-        "reviewable_loc": 650,
-        "production_files": 5,
-        "total_files": 14,
-        "primary_surface": "scheduler/runtime claim authority"
-      },
-      "clarification_markers": 0,
-      "gap_markers": 0,
-      "critical_markers": 0
-    },
-    "checklist": {
-      "status": "completed",
-      "gate": "G4",
-      "gate_pass": true,
-      "domains": {
-        "scheduler-runtime": {
-          "items": 30,
-          "open_gaps": 0
-        },
-        "data-integrity": {
-          "items": 15,
-          "open_gaps": 0
-        },
-        "api-contracts": {
-          "items": 20,
-          "open_gaps": 0
-        },
-        "state-management": {
-          "items": 18,
-          "open_gaps": 0
-        },
-        "security": {
-          "items": 30,
-          "open_gaps": 0
-        }
-      },
-      "total_items": 113,
-      "marker_counter": {
-        "gaps": 0,
-        "clarifications": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      },
-      "unresolved_consensus": 0
-    },
-    "tasks": {
-      "status": "completed",
-      "gate": "G5",
-      "gate_pass": true,
-      "task_file": "specs/013b-claim-reconciliation/tasks.md",
-      "total_tasks": 57,
-      "phases": 7,
-      "parallel_opportunities": 23,
-      "user_stories": 4,
-      "mvp_scope": "User Story 1",
-      "reviewability_gate": {
-        "status": "exception",
-        "pass": true,
-        "transition_exception": true,
-        "reviewable_loc": 2280,
-        "production_files": 19,
-        "total_files": 97,
-        "primary_surface_count": 6,
-        "notes": "Tasks-mode gate uses synthetic task_count * 40 and path extraction from task prose; ratified exception documents that implementation remains constrained to the plan budget of about 650 LOC, 5 production files, and one primary surface."
-      },
-      "marker_counter": {
-        "gaps": 0,
-        "clarifications": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      }
-    },
-    "analyze": {
-      "status": "completed",
-      "gate": "G6",
-      "gate_pass": true,
-      "original_findings": {
-        "total": 3,
-        "critical": 1,
-        "high": 2,
-        "medium": 0,
-        "low": 0
-      },
-      "remediated_findings": 3,
-      "remaining_findings": {
-        "total": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      },
-      "unresolved_consensus": 0,
-      "marker_counter": {
-        "gaps": 0,
-        "clarifications": 0,
-        "critical": 0,
-        "high": 0,
-        "medium": 0,
-        "low": 0
-      },
-      "confidence_emit": {
-        "composite": 0.92,
-        "task_understanding": 0.95,
-        "approach_clarity": 0.91,
-        "requirements_alignment": 0.93,
-        "risk_assessment": 0.89,
-        "completeness": 0.92
-      }
-    },
-    "confidence_gate": {
-      "status": "completed",
-      "gate_pass": true,
-      "threshold": 0.9,
-      "mode": "advisory",
-      "composite": 0.92,
-      "recommended_action": "proceed"
-    },
-    "implement": {
-      "status": "completed",
-      "gate": "G7",
-      "gate_pass": true,
-      "completed_at": "2026-05-27T19:41:58Z",
-      "task_file": "specs/013b-claim-reconciliation/tasks.md",
-      "tasks_completed": 57,
-      "production_files": [
-        "src/lib/task-claim-reconciliation.ts",
-        "src/lib/task-dispatch.ts",
-        "src/lib/migrations.ts",
-        "src/app/api/tasks/[id]/claim-reconciliation/route.ts",
-        "src/app/api/index/route.ts",
-        "openapi.json"
-      ],
-      "test_files": [
-        "src/lib/__tests__/task-claim-reconciliation-fixtures.ts",
-        "src/lib/__tests__/migrations-M78-task-stage-claims.test.ts",
-        "src/lib/__tests__/task-claim-reconciliation.test.ts",
-        "src/lib/__tests__/task-dispatch-claim-reconciliation.test.ts",
-        "src/lib/__tests__/task-claim-reconciliation-route.test.ts"
-      ],
-      "supporting_artifacts": [
-        "docs/migrations/rollback-M78.sql",
-        "specs/013b-claim-reconciliation/quickstart.md",
-        "docs/ai/rc-factory-technical-roadmap.md",
-        "AGENTS.md",
-        "tsconfig.spec-strict.json",
-        "eslint.config.mjs"
-      ],
-      "verification": {
-        "focused_vitest": "passed: 4 files, 27 tests",
-        "pnpm_test": "passed: 304 files, 3167 tests, 33 skipped files, 3 skipped tests, 84 todo",
-        "pnpm_build": "passed outside Codex sandbox; route table includes /api/tasks/[id]/claim-reconciliation",
-        "pnpm_test_e2e": "passed: 651 tests",
-        "pnpm_test_all": "passed: strict-scope, lint, typecheck, unit, build, and e2e",
-        "runtime": "direnv exec . with Node.js v22.22.2"
-      },
-      "scope_notes": [
-        "No .claude files modified.",
-        "No runner, sandbox lifecycle, harness adapter, retry/cancel/manual-release control, auto-merge, automatic triage, primary dashboard UI, or successor-selection implementation added.",
-        "Post-merge HITL UAT completed on HAL before SPEC-013B moved to Complete on the roadmap."
-      ]
-    }
+    "notes": "Archive extension is installed. SPEC-014A is excluded as the current target even though the feature directory will be created by Phase 1."
   }
 }
