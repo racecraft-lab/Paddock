@@ -427,10 +427,12 @@ Any generated task that adds runtime inventory UI, adapter manifest registry, re
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 58 |
+| Phases | 8 |
+| Parallel Opportunities | 8 groups |
+| User Stories Covered | 5 |
+
+Reviewability gate: `reviewability-gate.sh tasks specs/014a-sandbox-lifecycle-contract` returned `status=exception`, `pass=true` based on the ratified lifecycle-safety split exception. No UI, adapter manifest, real execution, or retry/debug scope was added to the task plan.
 
 ---
 
