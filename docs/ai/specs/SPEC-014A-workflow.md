@@ -380,10 +380,10 @@ Focus on SPEC-014A requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| data-integrity | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
-| api-contracts | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
+| data-integrity | 12 | 0 | `spec.md`, `plan.md`, `data-model.md` |
+| security | 12 | 0 | `spec.md`, `plan.md`, `data-model.md`, `contracts/sandbox-lifecycle-api.md` |
+| api-contracts | 10 | 0 | `spec.md`, `plan.md`, `contracts/sandbox-lifecycle-api.md` |
+| error-handling | 10 | 0 | `spec.md`, `plan.md`, `data-model.md`, `quickstart.md` |
 
 ---
 
