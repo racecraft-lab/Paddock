@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-28T20:40:58.687Z",
+  "updatedAt": "2026-05-28T20:55:18.383Z",
   "prs": [
+    {
+      "prNumber": "64",
+      "prTitle": "SPEC-014A sandbox lifecycle contract",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/64",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/64/",
+      "headRef": "014a-sandbox-lifecycle-contract",
+      "baseRef": "main",
+      "updatedAt": "2026-05-28T20:55:18.383Z",
+      "latest": {
+        "playwright": {
+          "runId": "26601283400",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26601283400",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/64/playwright/latest/?v=26601283400-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/64/runs/26601283400-attempt-1/playwright/",
+          "updatedAt": "2026-05-28T20:55:18.383Z"
+        }
+      }
+    },
     {
       "prNumber": "63",
       "prTitle": "feat: add claim-control retry debug API",
