@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-28T20:55:18.383Z",
+  "updatedAt": "2026-05-28T20:58:07.961Z",
   "prs": [
+    {
+      "prNumber": "63",
+      "prTitle": "feat: add claim-control retry debug API",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/63",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/63/",
+      "headRef": "013c-retry-debug-surfaces",
+      "baseRef": "main",
+      "updatedAt": "2026-05-28T20:58:07.961Z",
+      "latest": {
+        "playwright": {
+          "runId": "26601406647",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26601406647",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/63/playwright/latest/?v=26601406647-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/63/runs/26601406647-attempt-1/playwright/",
+          "updatedAt": "2026-05-28T20:58:07.961Z"
+        }
+      }
+    },
     {
       "prNumber": "64",
       "prTitle": "SPEC-014A sandbox lifecycle contract",
@@ -17,24 +35,6 @@
           "latestHref": "https://racecraft-lab.github.io/mission-control/pr/64/playwright/latest/?v=26601283400-attempt-1",
           "reportHref": "https://racecraft-lab.github.io/mission-control/pr/64/runs/26601283400-attempt-1/playwright/",
           "updatedAt": "2026-05-28T20:55:18.383Z"
-        }
-      }
-    },
-    {
-      "prNumber": "63",
-      "prTitle": "feat: add claim-control retry debug API",
-      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/63",
-      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/63/",
-      "headRef": "013c-retry-debug-surfaces",
-      "baseRef": "main",
-      "updatedAt": "2026-05-28T20:40:58.687Z",
-      "latest": {
-        "playwright": {
-          "runId": "26600074601",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26600074601",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/63/playwright/latest/?v=26600074601-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/63/runs/26600074601-attempt-1/playwright/",
-          "updatedAt": "2026-05-28T20:40:58.687Z"
         }
       }
     },
