@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-28T20:59:44.229Z",
+  "updatedAt": "2026-05-29T00:20:10.028Z",
   "prs": [
     {
       "prNumber": "64",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/64/",
       "headRef": "014a-sandbox-lifecycle-contract",
       "baseRef": "main",
-      "updatedAt": "2026-05-28T20:59:44.229Z",
+      "updatedAt": "2026-05-29T00:20:10.028Z",
       "latest": {
         "storybook": {
-          "runId": "26601650973",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26601650973",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/64/storybook/latest/?v=26601650973-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/64/runs/26601650973-attempt-1/storybook/",
-          "updatedAt": "2026-05-28T20:59:44.229Z"
+          "runId": "26610090621",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26610090621",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/64/storybook/latest/?v=26610090621-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/64/runs/26610090621-attempt-1/storybook/",
+          "updatedAt": "2026-05-29T00:20:10.028Z"
         },
         "playwright": {
           "runId": "26601283400",
