@@ -24,7 +24,7 @@ findings:
 
 ## Executive Summary
 
-SPEC-014A implemented the requested sandbox ownership and lifecycle contract with full task completion and no critical or significant spec drift. The implementation adds M79 lifecycle/event persistence, a bounded sandbox key/path helper, feature-flagged fake owners, cleanup/rollback evidence, and the read-only `sandbox_lifecycle.v1` task route while keeping real harness execution, UI controls, adapter manifests, retry/debug controls, successor selection, governance changes, token accounting, and auto-merge out of scope.
+SPEC-014A implemented the requested sandbox ownership and lifecycle contract with full task completion and no critical or significant spec drift. The implementation adds M80 lifecycle/event persistence, a bounded sandbox key/path helper, feature-flagged fake owners, cleanup/rollback evidence, and the read-only `sandbox_lifecycle.v1` task route while keeping real harness execution, UI controls, adapter manifests, retry/debug controls, successor selection, governance changes, token accounting, and auto-merge out of scope.
 
 Spec adherence is 100% by the retrospective formula:
 
@@ -42,14 +42,14 @@ None. No `spec.md` edits are recommended by this retrospective.
 
 The only observed deltas are implementation/process refinements already captured in `tasks.md`, `workflow.md`, or code evidence:
 
-- Strict subproject coverage was narrowed to strict-compatible helper/test files while the route implementation and M79 migration test remain covered by normal app typecheck, ESLint, and Vitest.
+- Strict subproject coverage was narrowed to strict-compatible helper/test files while the route implementation and M80 migration test remain covered by normal app typecheck, ESLint, and Vitest.
 - Verification needed the repo-pinned Node 22 runtime for `better-sqlite3`; direct Node 26 execution was not a valid verification environment.
 
 ## Requirement Coverage Matrix
 
 | Requirement range | Status | Evidence |
 |---|---|---|
-| FR-001..FR-002 lifecycle/event persistence | Implemented | `src/lib/migrations.ts` adds `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events`; `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts` verifies columns, constraints, indexes, rerun, and rollback. |
+| FR-001..FR-002 lifecycle/event persistence | Implemented | `src/lib/migrations.ts` adds `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events`; `src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts` verifies columns, constraints, indexes, rerun, and rollback. |
 | FR-003..FR-006 owner enum and deterministic key | Implemented | `src/lib/agent-sandbox-lifecycle.ts` exports closed owner/status vocabularies and `buildSandboxKey`; helper tests cover valid owners, invalid owners, and key shape. |
 | FR-007..FR-011 bounded roots and safe path evidence | Implemented | `resolveSandboxRoot`, segment validation, safe metadata allowlisting, and tests reject traversal, absolute paths, reserved/unsafe segments, raw payloads, tokens, and host paths. |
 | FR-012..FR-018 lifecycle hooks, statuses, links, and claim boundary | Implemented | Hook functions cover create, prepare, running, terminal, cleanup, rollback, optional attempt/claim links, and do not call claim authority helpers. |
@@ -79,11 +79,11 @@ The only observed deltas are implementation/process refinements already captured
 
 | Planned element | Implemented outcome | Drift |
 |---|---|---|
-| Additive M79 lifecycle/event schema plus rollback | Implemented in `src/lib/migrations.ts`; rollback in `docs/migrations/rollback-M79.sql` and procedure docs | None |
+| Additive M80 lifecycle/event schema plus rollback | Implemented in `src/lib/migrations.ts`; rollback in `docs/migrations/rollback-M80.sql` and procedure docs | None |
 | One narrow lifecycle helper | Implemented as `src/lib/agent-sandbox-lifecycle.ts` | None |
 | Production fake owners only | Implemented in helper; static tests guard against real harness imports/calls | None |
 | Task-authorized read-only API | Implemented at `GET /api/tasks/[id]/sandbox-lifecycles` | None |
-| Strict scope entries for new modules | ESLint covers route/helper/tests; `tsconfig.spec-strict.json` covers strict-compatible helper and tests, excluding route implementation and M79 migration test due legacy imports | Minor planned-to-task refinement |
+| Strict scope entries for new modules | ESLint covers route/helper/tests; `tsconfig.spec-strict.json` covers strict-compatible helper and tests, excluding route implementation and M80 migration test due legacy imports | Minor planned-to-task refinement |
 | No UI, registry, real execution, retry/debug, successor, governance, token, or auto-merge behavior | Scope guard tests and diff review keep these absent | None |
 
 ## Significant Deviations
@@ -94,7 +94,7 @@ None.
 
 ### MINOR-001: Strict-scope implementation was narrower than early plan wording
 
-The plan expected the route/helper/focused tests to enter strict scope. The final task plan narrowed TypeScript strict-subproject inclusion to the strict-compatible helper, fixture, helper test, and route test, while keeping the route implementation and M79 migration test under normal app typecheck/Vitest because they import legacy auth/db/migration surfaces outside the strict subproject boundary.
+The plan expected the route/helper/focused tests to enter strict scope. The final task plan narrowed TypeScript strict-subproject inclusion to the strict-compatible helper, fixture, helper test, and route test, while keeping the route implementation and M80 migration test under normal app typecheck/Vitest because they import legacy auth/db/migration surfaces outside the strict subproject boundary.
 
 Evidence:
 
@@ -139,7 +139,7 @@ Constitution candidate: Possible as a reviewability convention pattern, but not 
 | IV. Test-First Development | PASS | Tasks were TDD-ordered; focused tests, full Vitest, typecheck, lint, build, and API parity passed. |
 | V. Feature-Flag Resolution Discipline | PASS | Runtime gating uses `resolveFlag('FEATURE_AGENT_RUNNER_SANDBOXES', ctx)`; flag registry defaults OFF. |
 | VI. Dependency Supply-Chain Hygiene | PASS | No new runtime dependency for SPEC-014A. |
-| VII. Additive Migration Policy | PASS | M79 is additive and has rollback SQL plus rollback-procedure documentation. |
+| VII. Additive Migration Policy | PASS | M80 is additive and has rollback SQL plus rollback-procedure documentation. |
 | VIII. Successor Side-Effect Parity | PASS | Scope guard prevents `createTask`, `advanceTaskChain`, and successor behavior. |
 | IX. Safe Evaluation Discipline | PASS | No evaluator or dynamic execution path was added. |
 | X. Observability and Auditability | PASS | Lifecycle events are append-only durable evidence and safe reason metadata is preserved. |
@@ -156,7 +156,7 @@ Constitution violations: None.
 
 | Item | Classification | Evidence | Risk |
 |---|---|---|---|
-| `idx_agent_sandbox_lifecycle_events_sandbox_order` | Positive | Additional index in M79 migration | Low; additive and bounded |
+| `idx_agent_sandbox_lifecycle_events_sandbox_order` | Positive | Additional index in M80 migration | Low; additive and bounded |
 | Doctor skill wrapper fallback note | Minor process finding | Workflow notes generated Codex doctor wrapper still points to stale script path, while installed extension script passed | Low; not SPEC-014A runtime behavior |
 
 ## Task Execution Analysis
@@ -164,7 +164,7 @@ Constitution violations: None.
 | Phase | Result |
 |---|---|
 | Setup | T001-T005 complete; strict config, lint scope, fixtures, and rollback placeholder landed. |
-| Foundational | T006-T011 complete; M79 schema, event table, rollback SQL, and feature flag registry verified. |
+| Foundational | T006-T011 complete; M80 schema, event table, rollback SQL, and feature flag registry verified. |
 | US1 | T012-T018 complete; owners, statuses, key shape, fake owners, and no-real-launch proof landed. |
 | US2 | T019-T025 complete; flag-off no-row/no-event/no-artifact behavior and disabled read evidence landed. |
 | US3 | T026-T032 complete; bounded path, key, metadata, and collision validation landed. |
@@ -203,15 +203,15 @@ Latest workflow evidence records:
 
 | File | Role |
 |---|---|
-| `src/lib/migrations.ts` | M79 lifecycle/event schema and indexes. |
-| `docs/migrations/rollback-M79.sql` | Manual rollback for M79. |
+| `src/lib/migrations.ts` | M80 lifecycle/event schema and indexes. |
+| `docs/migrations/rollback-M80.sql` | Manual rollback for M80. |
 | `docs/migrations/rollback-procedure.md` | Operator rollback procedure entry. |
 | `src/lib/feature-flags.ts` | `FEATURE_AGENT_RUNNER_SANDBOXES` registry/default. |
 | `src/lib/agent-sandbox-lifecycle.ts` | Owner/status vocabulary, key/path validation, lifecycle mutations, fake owners, read model, safe metadata. |
 | `src/app/api/tasks/[id]/sandbox-lifecycles/route.ts` | Viewer-authenticated, workspace/task-scoped read-only route. |
 | `src/app/api/index/route.ts` | API index registration. |
 | `openapi.json` | OpenAPI path and response schema for `sandbox_lifecycle.v1`. |
-| `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts` | Schema, index, rerun, and rollback coverage. |
+| `src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts` | Schema, index, rerun, and rollback coverage. |
 | `src/lib/__tests__/agent-sandbox-lifecycle.test.ts` | Helper, fake owner, path, metadata, flag, cleanup, rollback, read-model, and scope guard coverage. |
 | `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts` | Route auth/scope/filter/no-write/API parity coverage. |
 | `tsconfig.spec-strict.json` | Strict-compatible SPEC-014A helper/test scope. |

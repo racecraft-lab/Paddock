@@ -10,10 +10,10 @@
 ## Focused Verification Commands
 
 ```bash
-pnpm exec vitest run src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts
+pnpm exec vitest run src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts
 pnpm exec vitest run src/lib/__tests__/agent-sandbox-lifecycle.test.ts
 pnpm exec vitest run src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts
-pnpm exec vitest run src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts src/lib/__tests__/agent-sandbox-lifecycle.test.ts src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts
+pnpm exec vitest run src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts src/lib/__tests__/agent-sandbox-lifecycle.test.ts src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts
 pnpm typecheck
 pnpm lint
 pnpm api:parity
@@ -95,7 +95,7 @@ Expected top-level response shape:
 Use the disposable database path for `MISSION_CONTROL_DB_PATH`.
 
 ```sql
-SELECT id FROM schema_migrations WHERE id = '079_agent_sandbox_lifecycles';
+SELECT id FROM schema_migrations WHERE id = '080_agent_sandbox_lifecycles';
 SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('agent_sandbox_lifecycles', 'agent_sandbox_lifecycle_events');
 SELECT COUNT(*) AS lifecycle_rows FROM agent_sandbox_lifecycles WHERE workspace_id = :workspace_id;
 SELECT COUNT(*) AS event_rows FROM agent_sandbox_lifecycle_events WHERE workspace_id = :workspace_id;
@@ -123,4 +123,4 @@ WHERE workspace_id = :workspace_id
   AND task_id = :task_id;
 ```
 
-Manual rollback SQL for the full M79 schema lives in `docs/migrations/rollback-M79.sql`.
+Manual rollback SQL for the full M80 schema lives in `docs/migrations/rollback-M80.sql`.

@@ -33,6 +33,124 @@ function addColumnIfMissing(db: Database.Database, table: string, column: string
   db.exec(`ALTER TABLE ${table} ADD COLUMN ${definition}`)
 }
 
+const TASK_STAGE_CLAIM_COLUMNS = [
+  'id',
+  'workspace_id',
+  'task_id',
+  'stage_key',
+  'task_stage_attempt_id',
+  'claim_state',
+  'lease_owner',
+  'claim_run_id',
+  'lease_started_at',
+  'lease_expires_at',
+  'release_reason',
+  'released_at',
+  'released_by_run_id',
+  'stale_recovered_from_claim_id',
+  'metadata_json',
+  'created_at',
+  'updated_at',
+]
+
+const TASK_STAGE_CLAIM_RELEASE_REASONS_M79 = [
+  'launch_handoff_completed',
+  'dispatch_failed',
+  'task_terminal_done',
+  'task_terminal_failed',
+  'github_issue_terminal',
+  'github_pr_terminal',
+  'governance_blocked',
+  'governance_deferred',
+  'attempt_terminal_reconciled',
+  'stale_claim_recovered',
+  'boundary_error_deferred',
+  'operator_released',
+  'operator_cancelled',
+  'operator_retry_requested',
+]
+
+function quotedSqlValues(values: readonly string[]): string {
+  return values.map((value) => `'${value.replaceAll("'", "''")}'`).join(',\n            ')
+}
+
+function taskStageClaimsCreateSql(releaseReasons: readonly string[]): string {
+  return `
+        CREATE TABLE task_stage_claims (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          task_stage_attempt_id INTEGER NOT NULL,
+          claim_state TEXT NOT NULL CHECK(claim_state IN ('active', 'released', 'stale_recovered')),
+          lease_owner TEXT NOT NULL CHECK(length(trim(lease_owner)) > 0),
+          claim_run_id TEXT NOT NULL CHECK(length(trim(claim_run_id)) > 0),
+          lease_started_at INTEGER NOT NULL CHECK(lease_started_at > 0),
+          lease_expires_at INTEGER NOT NULL CHECK(lease_expires_at > lease_started_at),
+          release_reason TEXT CHECK(release_reason IS NULL OR release_reason IN (
+            ${quotedSqlValues(releaseReasons)}
+          )),
+          released_at INTEGER,
+          released_by_run_id TEXT,
+          stale_recovered_from_claim_id INTEGER,
+          metadata_json TEXT,
+          created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          updated_at INTEGER NOT NULL DEFAULT (unixepoch()),
+          FOREIGN KEY(task_stage_attempt_id) REFERENCES task_stage_attempts(id) ON DELETE CASCADE,
+          CHECK((claim_state = 'active' AND release_reason IS NULL AND released_at IS NULL) OR (claim_state <> 'active' AND release_reason IS NOT NULL AND released_at IS NOT NULL)),
+          CHECK((claim_state = 'active' AND released_by_run_id IS NULL) OR (claim_state <> 'active' AND released_by_run_id IS NOT NULL)),
+          CHECK((claim_state = 'stale_recovered') = (release_reason = 'stale_claim_recovered'))
+        );
+  `
+}
+
+function createTaskStageClaimIndexes(db: Database.Database): void {
+  db.exec(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_task_stage_claims_active_unique
+          ON task_stage_claims(workspace_id, task_id, stage_key)
+          WHERE claim_state = 'active';
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_task_stage_claims_attempt_unique
+          ON task_stage_claims(task_stage_attempt_id);
+        CREATE INDEX IF NOT EXISTS idx_task_stage_claims_task_history
+          ON task_stage_claims(workspace_id, task_id, stage_key, id DESC);
+        CREATE INDEX IF NOT EXISTS idx_task_stage_claims_lease
+          ON task_stage_claims(lease_expires_at)
+          WHERE claim_state = 'active';
+        CREATE INDEX IF NOT EXISTS idx_task_stage_claims_state_updated
+          ON task_stage_claims(workspace_id, claim_state, updated_at DESC);
+  `)
+}
+
+function taskStageClaimSqlIncludes(db: Database.Database, token: string): boolean {
+  const row = db.prepare(`
+    SELECT sql
+    FROM sqlite_master
+    WHERE type = 'table' AND name = 'task_stage_claims'
+  `).get() as { sql: string | null } | undefined
+  return row?.sql?.includes(token) === true
+}
+
+function widenTaskStageClaimReleaseReasonsForM79(db: Database.Database): void {
+  if (!tableExists(db, 'task_stage_claims') || taskStageClaimSqlIncludes(db, 'operator_retry_requested')) return
+
+  const columnList = TASK_STAGE_CLAIM_COLUMNS.join(', ')
+  db.exec(`
+        DROP INDEX IF EXISTS idx_task_stage_claims_state_updated;
+        DROP INDEX IF EXISTS idx_task_stage_claims_lease;
+        DROP INDEX IF EXISTS idx_task_stage_claims_task_history;
+        DROP INDEX IF EXISTS idx_task_stage_claims_attempt_unique;
+        DROP INDEX IF EXISTS idx_task_stage_claims_active_unique;
+        DROP TABLE IF EXISTS task_stage_claims_m79_old;
+        ALTER TABLE task_stage_claims RENAME TO task_stage_claims_m79_old;
+        ${taskStageClaimsCreateSql(TASK_STAGE_CLAIM_RELEASE_REASONS_M79)}
+        INSERT INTO task_stage_claims (${columnList})
+        SELECT ${columnList}
+        FROM task_stage_claims_m79_old;
+        DROP TABLE task_stage_claims_m79_old;
+  `)
+  createTaskStageClaimIndexes(db)
+}
+
 const migrations: Migration[] = [
   {
     id: '001_init',
@@ -3639,7 +3757,37 @@ const migrations: Migration[] = [
     },
   },
   {
-    id: '079_agent_sandbox_lifecycles',
+    id: '079_task_claim_control',
+    up(db: Database.Database) {
+      widenTaskStageClaimReleaseReasonsForM79(db)
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS task_claim_control_idempotency_keys (
+          actor_user_id INTEGER NOT NULL CHECK(actor_user_id > 0),
+          workspace_id INTEGER NOT NULL CHECK(workspace_id > 0),
+          task_id INTEGER NOT NULL CHECK(task_id > 0),
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          idempotency_key_hash TEXT NOT NULL CHECK(length(trim(idempotency_key_hash)) > 0),
+          action TEXT NOT NULL CHECK(action IN ('retry', 'release', 'cancel')),
+          request_body_hash TEXT NOT NULL CHECK(length(trim(request_body_hash)) > 0),
+          response_body_json TEXT NOT NULL,
+          response_status INTEGER NOT NULL CHECK(response_status >= 200 AND response_status <= 299),
+          response_headers_json TEXT,
+          claim_control_activity_id INTEGER,
+          created_at TEXT NOT NULL CHECK(length(trim(created_at)) > 0),
+          expires_at TEXT NOT NULL CHECK(length(trim(expires_at)) > 0),
+          PRIMARY KEY(actor_user_id, workspace_id, task_id, stage_key, idempotency_key_hash),
+          FOREIGN KEY(claim_control_activity_id) REFERENCES activities(id) ON DELETE SET NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_task_claim_control_idempotency_expires_at
+          ON task_claim_control_idempotency_keys(expires_at);
+        CREATE INDEX IF NOT EXISTS idx_task_claim_control_idempotency_task
+          ON task_claim_control_idempotency_keys(workspace_id, task_id, stage_key, created_at DESC);
+      `)
+    },
+  },
+  {
+    id: '080_agent_sandbox_lifecycles',
     up(db: Database.Database) {
       db.exec(`
         CREATE TABLE IF NOT EXISTS agent_sandbox_lifecycles (

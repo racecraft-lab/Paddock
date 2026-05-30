@@ -3,8 +3,8 @@ import { join } from 'path'
 import Database from 'better-sqlite3'
 import { afterEach, beforeAll, describe, expect, it } from 'vitest'
 
-const M79_ID = '079_agent_sandbox_lifecycles'
-const ROLLBACK_PATH = join(process.cwd(), 'docs', 'migrations', 'rollback-M79.sql')
+const M80_ID = '080_agent_sandbox_lifecycles'
+const ROLLBACK_PATH = join(process.cwd(), 'docs', 'migrations', 'rollback-M80.sql')
 const openDbs: Database.Database[] = []
 let runMigrations: (db: Database.Database) => void
 
@@ -40,7 +40,7 @@ function indexColumns(db: Database.Database, indexName: string): string[] {
     .filter((name): name is string => name !== null)
 }
 
-describe('M79 agent sandbox lifecycle migration', () => {
+describe('M80 agent sandbox lifecycle migration', () => {
   it('creates lifecycle and event tables idempotently with one migration marker', () => {
     const db = openMigratedDb()
 
@@ -83,7 +83,7 @@ describe('M79 agent sandbox lifecycle migration', () => {
       'actor_id',
       'metadata_json',
     ])
-    expect(db.prepare('SELECT COUNT(*) AS count FROM schema_migrations WHERE id = ?').get(M79_ID)).toEqual({ count: 1 })
+    expect(db.prepare('SELECT COUNT(*) AS count FROM schema_migrations WHERE id = ?').get(M80_ID)).toEqual({ count: 1 })
   })
 
   it('enforces closed owner/status values and unique sandbox keys per workspace', () => {
@@ -117,13 +117,13 @@ describe('M79 agent sandbox lifecycle migration', () => {
   })
 })
 
-describe('M79 rollback SQL', () => {
-  it('is present, removes only M79 state, and is rerun-safe', () => {
+describe('M80 rollback SQL', () => {
+  it('is present, removes only M80 state, and is rerun-safe', () => {
     expect(existsSync(ROLLBACK_PATH)).toBe(true)
     const sql = readFileSync(ROLLBACK_PATH, 'utf8')
     expect(sql).toMatch(/DROP TABLE IF EXISTS agent_sandbox_lifecycle_events/i)
     expect(sql).toMatch(/DROP TABLE IF EXISTS agent_sandbox_lifecycles/i)
-    expect(sql).toMatch(/DELETE FROM schema_migrations\s+WHERE id = '079_agent_sandbox_lifecycles'/i)
+    expect(sql).toMatch(/DELETE FROM schema_migrations\s+WHERE id = '080_agent_sandbox_lifecycles'/i)
 
     const db = openMigratedDb()
     db.prepare("INSERT INTO schema_migrations (id) VALUES ('999_operator_marker')").run()
@@ -131,7 +131,7 @@ describe('M79 rollback SQL', () => {
     db.exec(sql)
 
     expect(db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'agent_sandbox_lifecycles'").get()).toBeUndefined()
-    expect(db.prepare('SELECT id FROM schema_migrations WHERE id = ?').get(M79_ID)).toBeUndefined()
+    expect(db.prepare('SELECT id FROM schema_migrations WHERE id = ?').get(M80_ID)).toBeUndefined()
     expect(db.prepare("SELECT id FROM schema_migrations WHERE id = '999_operator_marker'").get()).toEqual({
       id: '999_operator_marker',
     })

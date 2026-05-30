@@ -21,6 +21,9 @@ export const TASK_STAGE_CLAIM_RELEASE_REASONS = Object.freeze([
   'attempt_terminal_reconciled',
   'stale_claim_recovered',
   'boundary_error_deferred',
+  'operator_released',
+  'operator_cancelled',
+  'operator_retry_requested',
 ] as const)
 
 export type TaskStageClaimReleaseReason =
@@ -174,6 +177,51 @@ export interface TaskClaimReconciliationEnvelope {
   readonly diagnostics: {
     readonly warnings: string[]
   }
+  readonly claim_control?: ClaimControlReadModel | null
+}
+
+export interface ClaimControlReadModel {
+  readonly stage_key: string
+  readonly authorization: {
+    readonly required_role: 'operator'
+    readonly current_role: 'viewer' | 'operator' | 'admin'
+    readonly can_mutate: boolean
+  }
+  readonly available_actions: ClaimControlAvailableAction[]
+  readonly retry_eligibility: {
+    readonly state: 'active_claim' | 'eligible' | 'ineligible'
+    readonly reason: string | null
+    readonly evidence_type: 'claim' | 'attempt' | 'none'
+    readonly evidence_id: string | null
+  }
+  readonly backoff: {
+    readonly state: 'none' | 'active'
+    readonly seconds_remaining: number
+    readonly next_retry_at: number | null
+    readonly reason: string | null
+    readonly override_allowed: boolean
+    readonly override_requires_reason: boolean
+  }
+  readonly expected_state: {
+    readonly claim_id: string | null
+    readonly claim_run_id: string | null
+    readonly attempt_id: string | null
+    readonly attempt_status: string | null
+    readonly operator_action_activity_id: string | null
+  }
+  readonly last_operator_action: unknown
+  readonly last_sanitized_error: unknown
+}
+
+export interface ClaimControlAvailableAction {
+  readonly action: 'retry' | 'release' | 'cancel'
+  readonly enabled: boolean
+  readonly unavailable_reason: string | null
+  readonly requires_confirmation: boolean
+  readonly requires_idempotency_key: true
+  readonly requires_expected_state: true
+  readonly requires_override_reason: boolean
+  readonly backoff_policy: 'respect_backoff' | 'not_applicable'
 }
 
 export interface SerializedClaim {
@@ -511,7 +559,7 @@ export function releaseTaskStageClaim(
   if (task) {
     appendTaskStageAttemptEvent(db, {
       attemptId: row.task_stage_attempt_id,
-      status: input.reason === 'launch_handoff_completed' ? 'released' : 'failed',
+      status: releaseAttemptStatusFor(input.reason),
       actorType: 'system',
       actorId: releasedByRunId,
       message: `Task stage claim released: ${input.reason}`,
@@ -618,7 +666,12 @@ function agentIdForTask(db: Database.Database, task: TaskRow): number | null {
 
 export function buildTaskClaimReconciliationReadModel(
   db: Database.Database,
-  input: { readonly taskId: number; readonly workspaceId: number; readonly historyLimit?: number },
+  input: {
+    readonly taskId: number
+    readonly workspaceId: number
+    readonly historyLimit?: number
+    readonly currentRole?: string | null
+  },
 ): TaskClaimReconciliationEnvelope {
   const task = readTask(db, input.workspaceId, input.taskId)
   const enabled = isTaskControlPlaneEnabled(db, input.workspaceId)
@@ -632,6 +685,7 @@ export function buildTaskClaimReconciliationReadModel(
       claim_history: [],
       activities: [],
       diagnostics: { warnings: [] },
+      claim_control: null,
     }
   }
 
@@ -640,6 +694,7 @@ export function buildTaskClaimReconciliationReadModel(
   const claims = readClaimHistory(db, input.workspaceId, input.taskId, input.historyLimit ?? 25)
   const activities = readClaimActivities(db, input.workspaceId, input.taskId, input.historyLimit ?? 25)
   const active = claims.find((claim) => claim.claim_state === 'active') ?? null
+  const latestAttempt = readLatestAttempt(db, input.workspaceId, input.taskId, stageKey)
   return {
     schema_version: 'task_claim_reconciliation.v1',
     task: {
@@ -666,7 +721,142 @@ export function buildTaskClaimReconciliationReadModel(
       data: safeParseJson(activity.data),
     })),
     diagnostics: { warnings: [] },
+    claim_control: buildClaimControlReadModel({
+      db,
+      task,
+      stageKey,
+      enabled,
+      active,
+      latestAttempt,
+      currentRole: normalizeRole(input.currentRole),
+      eligibilityReason: enabled
+        ? (eligibility.ok ? null : eligibility.reason)
+        : 'feature_flag_off',
+    }),
   }
+}
+
+function buildClaimControlReadModel(input: {
+  readonly db: Database.Database
+  readonly task: TaskRow
+  readonly stageKey: string
+  readonly enabled: boolean
+  readonly active: ClaimRow | null
+  readonly latestAttempt: { readonly id: number; readonly status: string } | null
+  readonly currentRole: 'viewer' | 'operator' | 'admin'
+  readonly eligibilityReason: string | null
+}): ClaimControlReadModel {
+  const canMutate = input.enabled && (input.currentRole === 'operator' || input.currentRole === 'admin')
+  const authorizationUnavailableReason = input.enabled ? (canMutate ? null : 'insufficient_role') : 'feature_flag_off'
+  const retryEligibility = retryEligibilityForReadModel(input.active, input.latestAttempt, input.eligibilityReason)
+  const backoff = readClaimControlBackoff(input.db, input.task, Math.floor(Date.now() / 1000))
+  const activeExpected = input.active === null
+    ? { claim_id: null, claim_run_id: null }
+    : { claim_id: String(input.active.id), claim_run_id: input.active.claim_run_id }
+  const attemptExpected = input.latestAttempt === null
+    ? { attempt_id: null, attempt_status: null }
+    : { attempt_id: String(input.latestAttempt.id), attempt_status: input.latestAttempt.status }
+  return {
+    stage_key: input.stageKey,
+    authorization: {
+      required_role: 'operator',
+      current_role: input.currentRole,
+      can_mutate: canMutate,
+    },
+    available_actions: [
+      actionDescriptor(
+        'retry',
+        canMutate && retryEligibility.state !== 'ineligible',
+        authorizationUnavailableReason ?? retryEligibility.reason,
+        backoff.state === 'active',
+      ),
+      actionDescriptor(
+        'release',
+        canMutate && input.active !== null,
+        authorizationUnavailableReason ?? (input.active === null ? 'no_active_claim' : null),
+        false,
+      ),
+      actionDescriptor(
+        'cancel',
+        canMutate && (input.active !== null || input.latestAttempt?.status === 'running'),
+        authorizationUnavailableReason ?? (input.active === null && input.latestAttempt?.status !== 'running' ? 'not_cancellable' : null),
+        false,
+      ),
+    ],
+    retry_eligibility: retryEligibility,
+    backoff,
+    expected_state: {
+      ...activeExpected,
+      ...attemptExpected,
+      operator_action_activity_id: latestOperatorActivityId(input.db, input.task.workspace_id, input.task.id),
+    },
+    last_operator_action: readLatestOperatorActivity(input.db, input.task.workspace_id, input.task.id),
+    last_sanitized_error: readLatestOperatorError(input.db, input.task.workspace_id, input.task.id),
+  }
+}
+
+function actionDescriptor(
+  action: 'retry' | 'release' | 'cancel',
+  enabled: boolean,
+  reason: string | null,
+  backoffActive: boolean,
+): ClaimControlAvailableAction {
+  return {
+    action,
+    enabled,
+    unavailable_reason: enabled ? null : reason,
+    requires_confirmation: action !== 'release',
+    requires_idempotency_key: true,
+    requires_expected_state: true,
+    requires_override_reason: action === 'retry' && backoffActive,
+    backoff_policy: action === 'retry' ? 'respect_backoff' : 'not_applicable',
+  }
+}
+
+function retryEligibilityForReadModel(
+  active: ClaimRow | null,
+  latestAttempt: { readonly id: number; readonly status: string } | null,
+  eligibilityReason: string | null,
+): ClaimControlReadModel['retry_eligibility'] {
+  if (active) {
+    return { state: 'active_claim', reason: 'active_claim', evidence_type: 'claim', evidence_id: String(active.id) }
+  }
+  if (latestAttempt && ['failed', 'cancelled', 'released'].includes(latestAttempt.status)) {
+    return { state: 'eligible', reason: `${latestAttempt.status}_attempt`, evidence_type: 'attempt', evidence_id: String(latestAttempt.id) }
+  }
+  return { state: 'ineligible', reason: eligibilityReason ?? 'no_retry_eligible_evidence', evidence_type: 'none', evidence_id: null }
+}
+
+function readClaimControlBackoff(
+  db: Database.Database,
+  task: TaskRow,
+  now: number,
+): ClaimControlReadModel['backoff'] {
+  const repo = validateGitHubRepositoryFullName(task.github_repo)
+  const row = repo
+    ? db.prepare(`
+        SELECT next_retry_at, next_retry_reason, backoff_seconds
+        FROM github_sync_lifecycle_controls
+        WHERE workspace_id = ? AND github_repo = ?
+        LIMIT 1
+      `).get(task.workspace_id, repo) as { next_retry_at: number | null; next_retry_reason: string | null; backoff_seconds: number } | undefined
+    : undefined
+  const nextRetryAt = row?.next_retry_at ?? null
+  const secondsRemaining = nextRetryAt !== null && nextRetryAt > now
+    ? nextRetryAt - now
+    : Math.max(0, row?.backoff_seconds ?? 0)
+  return {
+    state: secondsRemaining > 0 ? 'active' : 'none',
+    seconds_remaining: secondsRemaining,
+    next_retry_at: nextRetryAt,
+    reason: secondsRemaining > 0 ? row?.next_retry_reason ?? 'backoff_active' : null,
+    override_allowed: true,
+    override_requires_reason: true,
+  }
+}
+
+function normalizeRole(value: string | null | undefined): 'viewer' | 'operator' | 'admin' {
+  return value === 'admin' || value === 'operator' ? value : 'viewer'
 }
 
 function validateClaimEligibility(
@@ -682,7 +872,32 @@ function validateClaimEligibility(
   if (!hasSyncOwnerProject(db, task.workspace_id, repo, task.project_id)) return { ok: false, reason: 'workspace_repo_owner_missing' }
   const freshness = gitHubTruthFreshness(db, task, repo, now)
   if (!freshness.ok) return { ok: false, reason: freshness.reason, defer: true }
+  if (operatorCancelBlockActive(db, task.workspace_id, task.id)) {
+    return { ok: false, reason: 'operator_cancelled' }
+  }
   return { ok: true }
+}
+
+function releaseAttemptStatusFor(reason: Exclude<TaskStageClaimReleaseReason, 'stale_claim_recovered'>): TaskStageAttemptLifecycleStatus {
+  if (reason === 'operator_cancelled') return 'cancelled'
+  if (reason === 'launch_handoff_completed' || reason === 'operator_released' || reason === 'operator_retry_requested') {
+    return 'released'
+  }
+  return 'failed'
+}
+
+function operatorCancelBlockActive(db: Database.Database, workspaceId: number, taskId: number): boolean {
+  const row = db.prepare(`
+    SELECT type
+    FROM activities
+    WHERE workspace_id = ?
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND type IN ('task_stage_claim_control_cancel', 'task_stage_claim_control_retry')
+    ORDER BY id DESC
+    LIMIT 1
+  `).get(workspaceId, taskId) as { type: string } | undefined
+  return row?.type === 'task_stage_claim_control_cancel'
 }
 
 function notClaimableOrDeferred(
@@ -921,6 +1136,80 @@ function readLatestTerminalAttempt(
     LIMIT 1
   `).get(workspaceId, taskId, stageKey) as { id: number; status: TaskStageAttemptLifecycleStatus } | undefined
   return row && TERMINAL_ATTEMPT_STATUSES.has(row.status) ? row : null
+}
+
+function readLatestAttempt(
+  db: Database.Database,
+  workspaceId: number,
+  taskId: number,
+  stageKey: string,
+): { readonly id: number; readonly status: string } | null {
+  return (db.prepare(`
+    SELECT id, status
+    FROM task_stage_attempts
+    WHERE workspace_id = ? AND task_id = ? AND stage_key = ?
+    ORDER BY id DESC
+    LIMIT 1
+  `).get(workspaceId, taskId, stageKey) as { id: number; status: string } | undefined) ?? null
+}
+
+function latestOperatorActivityId(db: Database.Database, workspaceId: number, taskId: number): string | null {
+  const row = db.prepare(`
+    SELECT id
+    FROM activities
+    WHERE workspace_id = ?
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND type LIKE 'task_stage_claim_control_%'
+    ORDER BY id DESC
+    LIMIT 1
+  `).get(workspaceId, taskId) as { id: number } | undefined
+  return row ? String(row.id) : null
+}
+
+function readLatestOperatorActivity(db: Database.Database, workspaceId: number, taskId: number): unknown {
+  const row = db.prepare(`
+    SELECT id, type, actor, data, created_at
+    FROM activities
+    WHERE workspace_id = ?
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND type LIKE 'task_stage_claim_control_%'
+    ORDER BY id DESC
+    LIMIT 1
+  `).get(workspaceId, taskId) as { id: number; type: string; actor: string; data: string | null; created_at: number | null } | undefined
+  if (!row) return null
+  return {
+    id: String(row.id),
+    type: row.type,
+    actor: row.actor,
+    created_at: row.created_at,
+    data: safeParseJson(row.data),
+  }
+}
+
+function readLatestOperatorError(db: Database.Database, workspaceId: number, taskId: number): unknown {
+  const row = db.prepare(`
+    SELECT id, data, created_at
+    FROM activities
+    WHERE workspace_id = ?
+      AND entity_type = 'task'
+      AND entity_id = ?
+      AND type LIKE 'task_stage_claim_control_%'
+    ORDER BY id DESC
+    LIMIT 1
+  `).get(workspaceId, taskId) as { id: number; data: string | null; created_at: number | null } | undefined
+  const data = row ? safeParseJson(row.data) : null
+  if (!row || typeof data !== 'object' || data === null || !('sanitized_error_category' in data)) return null
+  const sanitizedErrorCategory = (data as { sanitized_error_category?: unknown }).sanitized_error_category
+  if (typeof sanitizedErrorCategory !== 'string' || sanitizedErrorCategory.length === 0) return null
+  return {
+    activity_id: String(row.id),
+    sanitized_error_category: sanitizedErrorCategory,
+    validation_code: (data as { validation_code?: unknown }).validation_code ?? null,
+    redaction_applied: (data as { redaction_applied?: unknown }).redaction_applied ?? null,
+    created_at: row.created_at,
+  }
 }
 
 function releaseMatchingActiveClaims(

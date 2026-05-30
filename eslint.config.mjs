@@ -110,11 +110,20 @@ const specStrictFiles = [
   'src/lib/__tests__/task-claim-reconciliation.test.ts',
   'src/lib/__tests__/task-dispatch-claim-reconciliation.test.ts',
   'src/lib/__tests__/task-claim-reconciliation-route.test.ts',
+  // SPEC-013C retry/backoff and debug API surfaces.
+  'src/lib/task-claim-control-types.ts',
+  'src/lib/task-claim-control-idempotency.ts',
+  'src/lib/task-claim-control.ts',
+  'src/app/api/tasks/[id]/claim-control/route.ts',
+  'src/lib/__tests__/migrations-M79-task-claim-control.test.ts',
+  'src/lib/__tests__/task-claim-control-idempotency.test.ts',
+  'src/lib/__tests__/task-claim-control.test.ts',
+  'src/lib/__tests__/task-claim-control-route.test.ts',
   // SPEC-014A sandbox ownership and lifecycle contract.
   'src/lib/agent-sandbox-lifecycle.ts',
   'src/app/api/tasks/[id]/sandbox-lifecycles/route.ts',
   'src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts',
-  'src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts',
+  'src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts',
   'src/lib/__tests__/agent-sandbox-lifecycle.test.ts',
   'src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts',
 ]

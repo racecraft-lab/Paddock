@@ -15115,6 +15115,35 @@
                         "type": "object"
                       }
                     },
+                    "claim_control": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "description": "Optional SPEC-013C claim-control debug state for eligible callers. This read model is side-effect-free and exposes backend-derived authorization, available actions, retry eligibility, backoff, expected_state predicates, last operator action, and sanitized error state.",
+                      "properties": {
+                        "authorization": {
+                          "type": "object"
+                        },
+                        "available_actions": {
+                          "type": "array",
+                          "items": {
+                            "type": "object"
+                          }
+                        },
+                        "retry_eligibility": {
+                          "type": "object"
+                        },
+                        "backoff": {
+                          "type": "object"
+                        },
+                        "expected_state": {
+                          "type": "object"
+                        },
+                        "last_operator_action": {},
+                        "last_sanitized_error": {}
+                      }
+                    },
                     "diagnostics": {
                       "type": "object"
                     }
@@ -15138,14 +15167,14 @@
         }
       }
     },
-    "/api/tasks/{id}/sandbox-lifecycles": {
-      "get": {
+    "/api/tasks/{id}/claim-control": {
+      "post": {
         "tags": [
           "Tasks"
         ],
-        "summary": "Read task sandbox lifecycle evidence",
-        "description": "Read-only viewer-authenticated task inspection route that returns sandbox_lifecycle.v1 evidence for visible tasks without launching harnesses, mutating lifecycle rows, touching fake artifacts, retrying, claiming, or changing task state.",
-        "operationId": "getTaskSandboxLifecycles",
+        "summary": "Control task stage claims",
+        "description": "Operator-authenticated SPEC-013C mutation endpoint for retry, release, and cancel claim-control actions. Requires Idempotency-Key and expected-state predicates; does not create successor tasks, run harnesses, or mutate GitHub.",
+        "operationId": "postTaskClaimControl",
         "parameters": [
           {
             "name": "id",
@@ -15156,6 +15185,16 @@
             }
           },
           {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 256
+            },
+            "description": "Opaque replay key. Only a SHA-256 hash is persisted or returned."
+          },
+          {
             "name": "workspace_id",
             "in": "query",
             "required": false,
@@ -15163,221 +15202,173 @@
               "type": "integer"
             },
             "description": "Optional explicit workspace scope"
-          },
-          {
-            "name": "workspace_scope",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "enum": [
-                "facility"
-              ]
-            },
-            "description": "Optional facility workspace scope"
-          },
-          {
-            "name": "lifecycle_id",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer"
-            },
-            "description": "Optional lifecycle id filter, still scoped through the task and workspace"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "action",
+                  "stage_key",
+                  "expected"
+                ],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "retry",
+                      "release",
+                      "cancel"
+                    ]
+                  },
+                  "stage_key": {
+                    "type": "string"
+                  },
+                  "expected": {
+                    "type": "object",
+                    "properties": {
+                      "claim_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "claim_run_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "attempt_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "attempt_status": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "operator_action_activity_id": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      }
+                    }
+                  },
+                  "override_backoff": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "override_reason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "reason": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "client_correlation_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Read-only task sandbox lifecycle envelope",
+            "description": "Claim-control result envelope",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "required": [
                     "schema_version",
-                    "feature_flag",
                     "task",
-                    "lifecycles",
+                    "action",
+                    "outcome",
+                    "audit",
+                    "idempotency",
                     "diagnostics"
                   ],
                   "properties": {
                     "schema_version": {
                       "type": "string",
-                      "const": "sandbox_lifecycle.v1"
+                      "const": "task_claim_control.v1"
                     },
-                    "feature_flag": {
-                      "type": "object",
-                      "required": [
-                        "key",
-                        "enabled",
-                        "mutation_state"
-                      ],
-                      "properties": {
-                        "key": {
-                          "type": "string",
-                          "const": "FEATURE_AGENT_RUNNER_SANDBOXES"
-                        },
-                        "enabled": {
-                          "type": "boolean"
-                        },
-                        "mutation_state": {
-                          "type": "string",
-                          "enum": [
-                            "enabled",
-                            "disabled"
-                          ]
-                        }
-                      }
+                    "action": {
+                      "type": "string",
+                      "enum": [
+                        "retry",
+                        "release",
+                        "cancel"
+                      ]
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "retry_ready",
+                        "retry_backoff_active",
+                        "released",
+                        "cancelled",
+                        "already_applied"
+                      ]
                     },
                     "task": {
-                      "type": "object",
-                      "required": [
-                        "id",
-                        "workspace_id",
-                        "stage_key"
-                      ],
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "workspace_id": {
-                          "type": "string"
-                        },
-                        "stage_key": {
-                          "type": [
-                            "string",
-                            "null"
-                          ]
-                        }
-                      }
+                      "type": "object"
                     },
-                    "lifecycles": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "id",
-                          "owner",
-                          "sandbox_key",
-                          "status",
-                          "root_id",
-                          "sanitized_relative_path",
-                          "handle_id",
-                          "task_stage_attempt_id",
-                          "task_stage_claim_id",
-                          "created_at",
-                          "updated_at"
-                        ],
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "owner": {
-                            "type": "string",
-                            "enum": [
-                              "mission_control",
-                              "openclaw",
-                              "external_harness"
-                            ]
-                          },
-                          "sandbox_key": {
-                            "type": "string"
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "created",
-                              "prepared",
-                              "running",
-                              "terminal",
-                              "cleanup_pending",
-                              "cleaned_up",
-                              "rolled_back",
-                              "cleanup_failed"
-                            ]
-                          },
-                          "root_id": {
-                            "type": "string"
-                          },
-                          "sanitized_relative_path": {
-                            "type": "string"
-                          },
-                          "handle_id": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
-                          "task_stage_attempt_id": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
-                          "task_stage_claim_id": {
-                            "type": [
-                              "string",
-                              "null"
-                            ]
-                          },
-                          "created_at": {
-                            "type": "string"
-                          },
-                          "updated_at": {
-                            "type": "string"
-                          },
-                          "events": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "required": [
-                                "id",
-                                "event_type",
-                                "status",
-                                "reason_code",
-                                "observed_at"
-                              ],
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "event_type": {
-                                  "type": "string"
-                                },
-                                "status": {
-                                  "type": [
-                                    "string",
-                                    "null"
-                                  ]
-                                },
-                                "reason_code": {
-                                  "type": [
-                                    "string",
-                                    "null"
-                                  ]
-                                },
-                                "observed_at": {
-                                  "type": "string"
-                                }
-                              }
-                            }
-                          }
+                    "claim": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "attempt": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "backoff": {
+                      "type": "object"
+                    },
+                    "audit": {
+                      "type": "object"
+                    },
+                    "idempotency": {
+                      "type": "object",
+                      "properties": {
+                        "idempotency_key_hash": {
+                          "type": "string"
+                        },
+                        "request_body_hash": {
+                          "type": "string"
+                        },
+                        "replayed": {
+                          "type": "boolean"
+                        },
+                        "expires_at": {
+                          "type": "string",
+                          "format": "date-time"
                         }
                       }
                     },
                     "diagnostics": {
-                      "type": "object",
-                      "required": [
-                        "warnings"
-                      ],
-                      "properties": {
-                        "warnings": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        }
-                      }
+                      "type": "object"
                     }
                   }
                 }
@@ -15385,7 +15376,7 @@
             }
           },
           "400": {
-            "description": "Malformed workspace scope or lifecycle id"
+            "description": "Malformed JSON, workspace scope, or missing idempotency key"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -15395,6 +15386,15 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "description": "Stale, conflicting, or not-eligible claim state"
+          },
+          "422": {
+            "description": "Semantic validation failure or idempotency body mismatch"
+          },
+          "429": {
+            "description": "Mutation rate limited"
           }
         }
       }
@@ -17446,6 +17446,267 @@
           },
           "403": {
             "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/api/tasks/{id}/sandbox-lifecycles": {
+      "get": {
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Read task sandbox lifecycle evidence",
+        "description": "Read-only viewer-authenticated task inspection route that returns sandbox_lifecycle.v1 evidence for visible tasks without launching harnesses, mutating lifecycle rows, touching fake artifacts, retrying, claiming, or changing task state.",
+        "operationId": "getTaskSandboxLifecycles",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Optional explicit workspace scope"
+          },
+          {
+            "name": "workspace_scope",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "facility"
+              ]
+            },
+            "description": "Optional facility workspace scope"
+          },
+          {
+            "name": "lifecycle_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Optional lifecycle id filter, still scoped through the task and workspace"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Read-only task sandbox lifecycle envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "schema_version",
+                    "feature_flag",
+                    "task",
+                    "lifecycles",
+                    "diagnostics"
+                  ],
+                  "properties": {
+                    "schema_version": {
+                      "type": "string",
+                      "const": "sandbox_lifecycle.v1"
+                    },
+                    "feature_flag": {
+                      "type": "object",
+                      "required": [
+                        "key",
+                        "enabled",
+                        "mutation_state"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string",
+                          "const": "FEATURE_AGENT_RUNNER_SANDBOXES"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "mutation_state": {
+                          "type": "string",
+                          "enum": [
+                            "enabled",
+                            "disabled"
+                          ]
+                        }
+                      }
+                    },
+                    "task": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "workspace_id",
+                        "stage_key"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "workspace_id": {
+                          "type": "string"
+                        },
+                        "stage_key": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "lifecycles": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "owner",
+                          "sandbox_key",
+                          "status",
+                          "root_id",
+                          "sanitized_relative_path",
+                          "handle_id",
+                          "task_stage_attempt_id",
+                          "task_stage_claim_id",
+                          "created_at",
+                          "updated_at"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "owner": {
+                            "type": "string",
+                            "enum": [
+                              "mission_control",
+                              "openclaw",
+                              "external_harness"
+                            ]
+                          },
+                          "sandbox_key": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "created",
+                              "prepared",
+                              "running",
+                              "terminal",
+                              "cleanup_pending",
+                              "cleaned_up",
+                              "rolled_back",
+                              "cleanup_failed"
+                            ]
+                          },
+                          "root_id": {
+                            "type": "string"
+                          },
+                          "sanitized_relative_path": {
+                            "type": "string"
+                          },
+                          "handle_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "task_stage_attempt_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "task_stage_claim_id": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          },
+                          "events": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "required": [
+                                "id",
+                                "event_type",
+                                "status",
+                                "reason_code",
+                                "observed_at"
+                              ],
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "event_type": {
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "reason_code": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                },
+                                "observed_at": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "diagnostics": {
+                      "type": "object",
+                      "required": [
+                        "warnings"
+                      ],
+                      "properties": {
+                        "warnings": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed workspace scope or lifecycle id"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           }
         }
       }

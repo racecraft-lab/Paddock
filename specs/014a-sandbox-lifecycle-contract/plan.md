@@ -11,7 +11,7 @@ SPEC-014A adds the minimum durable sandbox-lifecycle contract required before an
 
 **Language/Version**: TypeScript 5.7 strict on Node >=22 in a Next.js 16 App Router / React 19 application  
 **Primary Dependencies**: Existing Next.js/React stack, `better-sqlite3`, existing feature-flag helper, existing auth/workspace-scope helpers; no new runtime dependency  
-**Storage**: SQLite through `src/lib/migrations.ts`; additive M79 `079_agent_sandbox_lifecycles`; rollback SQL at `docs/migrations/rollback-M79.sql`  
+**Storage**: SQLite through `src/lib/migrations.ts`; additive M80 `080_agent_sandbox_lifecycles`; rollback SQL at `docs/migrations/rollback-M80.sql`
 **Testing**: Vitest for migration, helper, route, fake-owner, path-safety, and API parity tests; Playwright not planned because SPEC-014A adds no UI  
 **Target Platform**: Existing Mission Control server/runtime deployment  
 **Project Type**: Web application with server-side lifecycle/read-model modules  
@@ -27,10 +27,10 @@ SPEC-014A adds the minimum durable sandbox-lifecycle contract required before an
 
 - **I. Zero-Regression Contract**: PASS. `FEATURE_AGENT_RUNNER_SANDBOXES` defaults OFF. Disabled mutation attempts return structured disabled evidence before inserting rows/events or touching fake artifacts.
 - **II. Install Compatibility And Operational Impact Discipline**: PASS. The spec is `install-compatible` and `factory-core`: it adds only new tables, new helper/API files, feature-flag registry entries, docs, and tests.
-- **IV. Test-First Development**: PASS. Tasks must start with failing Vitest coverage for M79, bounded path rejection, flag-off no-mutation behavior, fake-owner no-launch behavior, and read route side-effect snapshots.
+- **IV. Test-First Development**: PASS. Tasks must start with failing Vitest coverage for M80, bounded path rejection, flag-off no-mutation behavior, fake-owner no-launch behavior, and read route side-effect snapshots.
 - **V. Feature-Flag Resolution Discipline**: PASS. All runtime behavior must call `resolveFlag('FEATURE_AGENT_RUNNER_SANDBOXES', ctx)`. No inline `process.env.FEATURE_*` checks.
 - **VI. Dependency Supply-Chain Hygiene**: PASS. No new runtime dependency.
-- **VII. Additive Migration Policy**: PASS. Live schema verification shows M78 is the latest migration in `src/lib/migrations.ts`, so Plan selects M79 and requires rollback SQL.
+- **VII. Additive Migration Policy**: PASS. Live schema verification after merging current `main` shows M79 `079_task_claim_control` is the latest migration in `src/lib/migrations.ts`, so Plan selects M80 and requires rollback SQL.
 - **VIII. Successor Side-Effect Parity**: PASS. SPEC-014A must not call `createTask`, `advanceTaskChain`, or mutate successor state.
 - **IX. Safe Evaluation Discipline**: PASS. No evaluator or dynamic execution path is added.
 - **XIV. UI Evidence Policy**: N/A. No UI or Playwright journey is planned.
@@ -66,10 +66,10 @@ src/
     └── __tests__/
         ├── agent-sandbox-lifecycle.test.ts
         ├── agent-sandbox-lifecycle-route.test.ts
-        └── migrations-M79-agent-sandbox-lifecycles.test.ts
+        └── migrations-M80-agent-sandbox-lifecycles.test.ts
 
 docs/
-├── migrations/rollback-M79.sql
+├── migrations/rollback-M80.sql
 └── ai/
     └── rc-factory-technical-roadmap.md
 
@@ -103,8 +103,8 @@ See `research.md` for decisions and rejected alternatives.
 
 ## Implementation Notes
 
-- Migration M79 must be rerun-safe with `CREATE TABLE IF NOT EXISTS` and named indexes.
-- Rollback drops event indexes/table before lifecycle indexes/table, then deletes `079_agent_sandbox_lifecycles` from `schema_migrations`.
+- Migration M80 must be rerun-safe with `CREATE TABLE IF NOT EXISTS` and named indexes.
+- Rollback drops event indexes/table before lifecycle indexes/table, then deletes `080_agent_sandbox_lifecycles` from `schema_migrations`.
 - `agent_sandbox_lifecycle_events` should keep denormalized workspace/task/stage/key fields for scoped read performance, while the lifecycle FK preserves event ownership.
 - The helper should use positive allowlists and structured error codes rather than best-effort repair of unsafe inputs.
 - Fake owners may create/remove fake marker artifacts only under bounded sandbox roots and only when the flag is enabled.
@@ -112,8 +112,8 @@ See `research.md` for decisions and rejected alternatives.
 
 ## Review Packet Source
 
-- **What changed**: M79 lifecycle persistence, lifecycle helper/fakes, read-only API, API docs, strict-scope config, and tests.
+- **What changed**: M80 lifecycle persistence, lifecycle helper/fakes, read-only API, API docs, strict-scope config, and tests.
 - **Why**: Later harness adapters need deterministic sandbox ownership, bounded paths, durable cleanup evidence, and read-only inspectability before any real execution can launch.
 - **Non-goals**: UI, runtime inventory, adapter manifests, real launch/resume/stop, retry controls, tracker truth, successor selection, governance changes, and auto-merge.
 - **Review order**: migration/rollback -> helper/path safety -> fake owners/lifecycle transitions -> read route/API docs -> tests/guardrails.
-- **Rollback/flags**: Disable `FEATURE_AGENT_RUNNER_SANDBOXES` to block all mutations; manual rollback uses `docs/migrations/rollback-M79.sql`.
+- **Rollback/flags**: Disable `FEATURE_AGENT_RUNNER_SANDBOXES` to block all mutations; manual rollback uses `docs/migrations/rollback-M80.sql`.

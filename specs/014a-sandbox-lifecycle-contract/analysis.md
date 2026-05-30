@@ -13,7 +13,7 @@ No blocking findings. Proceed to implementation.
 |------|--------|----------|
 | Design Concept drift | Pass | Spec, plan, and tasks preserve durable SQLite lifecycle state, closed owners, deterministic keys, bounded paths, lifecycle hooks, fake owners, flag-off no-mutation behavior, read API, and UI deferral. |
 | Non-goals | Pass | Tasks include explicit scope guards excluding UI, adapter manifests, real harness execution, retry controls, auto-reaper, claim authority, successor selection, governance changes, token accounting, GitHub mutation, and auto-merge. |
-| Constitution alignment | Pass | Plan covers feature-flag discipline, additive M79 migration plus rollback, no new dependency, TDD tasks, strict scope, and reviewability exception. |
+| Constitution alignment | Pass | Plan covers feature-flag discipline, additive M80 migration plus rollback, no new dependency, TDD tasks, strict scope, and reviewability exception. |
 | Coverage | Pass | Tasks cover migration/rollback, path safety, lifecycle state, fake owners, flag-off behavior, read API, API/OpenAPI parity, strict scope, and manual UAT. |
 | External source boundary | Pass | Harness Engineering and Symphony are cited as lifecycle/safety/context-legibility boundary context only. No runner/client algorithms are imported. |
 | Reviewability | Pass by exception | Reviewability gate returned `status=exception`, `pass=true` due the ratified lifecycle-safety split exception. |

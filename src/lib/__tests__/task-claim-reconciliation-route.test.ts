@@ -147,4 +147,44 @@ describe('GET /api/tasks/[id]/claim-reconciliation', () => {
     })
     expect(after).toEqual(before)
   })
+
+  it('reports caller mutation capability without turning the read route into an action route', async () => {
+    const claimDb = openTaskClaimDb()
+    openDbs.push(claimDb)
+    seedClaimableTask(claimDb)
+    const route = await importRoute(claimDb)
+
+    const viewer = await route.GET(request('/api/tasks/100/claim-reconciliation?workspace_id=1', {
+      headers: { 'x-test-auth': 'viewer' },
+    }), { params: Promise.resolve({ id: '100' }) })
+    expect(viewer.status).toBe(200)
+    await expect(viewer.json()).resolves.toMatchObject({
+      claim_control: {
+        authorization: {
+          current_role: 'viewer',
+          can_mutate: false,
+        },
+        available_actions: [
+          expect.objectContaining({ action: 'retry', enabled: false, unavailable_reason: 'insufficient_role' }),
+          expect.objectContaining({ action: 'release', enabled: false, unavailable_reason: 'insufficient_role' }),
+          expect.objectContaining({ action: 'cancel', enabled: false, unavailable_reason: 'insufficient_role' }),
+        ],
+      },
+    })
+
+    const operator = await route.GET(request('/api/tasks/100/claim-reconciliation?workspace_id=1', {
+      headers: { 'x-test-auth': 'operator' },
+    }), { params: Promise.resolve({ id: '100' }) })
+    expect(operator.status).toBe(200)
+    const payload: unknown = await operator.json()
+    expect(payload).toMatchObject({
+      claim_control: {
+        authorization: {
+          current_role: 'operator',
+          can_mutate: true,
+        },
+      },
+    })
+    expect(JSON.stringify(payload)).not.toContain('/api/tasks/100/claim-control')
+  })
 })

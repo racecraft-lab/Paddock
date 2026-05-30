@@ -18,6 +18,7 @@ const endpoints: Endpoint[] = [
   { path: '/api/tasks/:id/evidence', methods: ['GET'], description: 'Read-only task evidence surface', tag: 'Tasks', auth: 'viewer' },
   { path: '/api/tasks/:id/stage-attempts', methods: ['GET'], description: 'Read-only task stage attempts inspection', tag: 'Tasks', auth: 'viewer' },
   { path: '/api/tasks/:id/claim-reconciliation', methods: ['GET'], description: 'Read-only task claim reconciliation evidence', tag: 'Tasks', auth: 'viewer' },
+  { path: '/api/tasks/:id/claim-control', methods: ['POST'], description: 'Operator task claim retry, release, and cancel control', tag: 'Tasks', auth: 'operator' },
   { path: '/api/tasks/:id/sandbox-lifecycles', methods: ['GET'], description: 'Read-only sandbox lifecycle evidence', tag: 'Tasks', auth: 'viewer' },
   { path: '/api/tasks/:id/comments', methods: ['GET', 'POST'], description: 'Task comments — list, add', tag: 'Tasks', auth: 'viewer/operator' },
   { path: '/api/tasks/:id/broadcast', methods: ['POST'], description: 'Broadcast task update via SSE', tag: 'Tasks', auth: 'operator' },

@@ -6,11 +6,11 @@
 
 ## Schema And Migration
 
-- [x] CHK001 M79 migration id is grounded in live `src/lib/migrations.ts` evidence showing M78 is the latest migration.
+- [x] CHK001 M80 migration id is grounded in live `src/lib/migrations.ts` evidence showing M79 `079_task_claim_control` is the latest migration.
 - [x] CHK002 `agent_sandbox_lifecycles` current-state columns are specified with required linkage, owner, key, root, relative path, status, timestamps, and safe metadata fields.
 - [x] CHK003 `agent_sandbox_lifecycle_events` append-only columns are specified with lifecycle id, denormalized scope fields, event type, status, reason code, observed time, actor fields, and safe metadata.
 - [x] CHK004 Required uniqueness and lookup indexes are specified for sandbox keys, task/status reads, optional attempt/claim lookup, and event ordering.
-- [x] CHK005 Rollback SQL is required and ordered to drop event indexes/tables before lifecycle indexes/tables and remove `079_agent_sandbox_lifecycles`.
+- [x] CHK005 Rollback SQL is required and ordered to drop event indexes/tables before lifecycle indexes/tables and remove `080_agent_sandbox_lifecycles`.
 
 ## Lifecycle Integrity
 

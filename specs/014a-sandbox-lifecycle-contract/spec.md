@@ -210,7 +210,7 @@ As a future runtime-inventory surface, I need a read-only `sandbox_lifecycle.v1`
 - SPEC-013B claim/reconciliation authority is already merged and remains the gate for work eligibility.
 - `FEATURE_AGENT_RUNNER_SANDBOXES` is hard-default OFF and can be enabled only through the repository's existing workspace feature-flag path.
 - The exact lifecycle read route shape is a planning decision, but every route must return `sandbox_lifecycle.v1`, enforce workspace/task scope, and update API documentation parity.
-- The exact migration id is verified during Plan against the live migration file; roadmap setup expects the next id to be M79 unless the live schema has changed.
+- The exact migration id is verified during Plan against the live migration file; roadmap setup expects the next id to be M80 unless the live schema has changed.
 - The bounded path helper may be implemented as production code because later adapter specs need the same contract, but SPEC-014A proves it only through fake owners.
 - Existing dispatch, scheduler, governance, successor selection, tracker truth, GitHub sync, and owner merge behavior remain unchanged by this spec.
 - SPEC-014B will provide first operator-visible runtime inventory integration for read-only sandbox lifecycle references; SPEC-014A provides only the read model and API support.

@@ -30,7 +30,7 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 | Checklist | `$speckit-checklist` | Complete | Completed data integrity, security, API contract, and error-handling checklists |
 | Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered TDD tasks and reconciled implementation groups |
 | Analyze | `$speckit-analyze` | Complete | Accepted lifecycle-boundary reviewability exception with no critical findings |
-| Implement | `$speckit-implement` | Complete | M79 lifecycle persistence, fake owners, read API, docs, and verification complete |
+| Implement | `$speckit-implement` | Complete | M80 lifecycle persistence, fake owners, read API, docs, and verification complete |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -65,7 +65,7 @@ Before every phase, verify these Mission Control constitution constraints:
 |-----------|-------------|--------------|
 | I. Zero-Regression Contract | Flag OFF preserves current dispatch/runtime behavior and creates no sandbox lifecycle rows or events | Tests cover `FEATURE_AGENT_RUNNER_SANDBOXES=false`; legacy dispatch remains unchanged |
 | V. Feature-Flag Resolution Discipline | Runtime checks use `resolveFlag('FEATURE_AGENT_RUNNER_SANDBOXES', ctx)` only | Static grep and focused tests; no inline `process.env.FEATURE_` runtime checks |
-| VII. Additive Migration Policy | Any new lifecycle schema is additive and has rollback SQL | Verify live migrations; expected next id is M79 unless live schema changed |
+| VII. Additive Migration Policy | Any new lifecycle schema is additive and has rollback SQL | Verify live migrations; expected next id is M80 unless live schema changed |
 | X. Observability and Auditability | State-changing sandbox lifecycle transitions emit durable, safe evidence | Event table tests and read-model assertions |
 | XIII. Defensive Boundaries | Path and metadata inputs are validated and errors are structured | Adversarial path corpus and boundary-error tests |
 | XVI. Reviewability | Scope exception is narrow and documented | Workflow and PR packet record split exception and deferrals |
@@ -278,8 +278,8 @@ Plan SPEC-014A from:
 - current OpenAI Harness Engineering and Symphony sources fetched during this phase
 
 Architecture decisions from the Design Concept:
-- Add additive lifecycle persistence as `agent_sandbox_lifecycles` plus `agent_sandbox_lifecycle_events`; verify live migration id before choosing the final number. Expected next id is `079_agent_sandbox_lifecycles` because M78 is `task_stage_claims`.
-- Add manual rollback SQL at `docs/migrations/rollback-M79.sql` unless live migration verification chooses a different id.
+- Add additive lifecycle persistence as `agent_sandbox_lifecycles` plus `agent_sandbox_lifecycle_events`; verify live migration id before choosing the final number. Expected next id is `080_agent_sandbox_lifecycles` because current `main` now has M79 `079_task_claim_control`.
+- Add manual rollback SQL at `docs/migrations/rollback-M80.sql` unless live migration verification chooses a different id.
 - Add one narrow helper module for key/path validation and lifecycle transitions.
 - Add production-code fake owners for `mission_control`, `openclaw`, and `external_harness` behind `FEATURE_AGENT_RUNNER_SANDBOXES`.
 - Add a minimal read-only API returning `sandbox_lifecycle.v1`; choose exact route by matching existing task evidence and task-stage-attempt route patterns.
@@ -306,7 +306,7 @@ Manual UAT plan:
 |----------|--------|-------|
 | `plan.md` | Complete | Technical context, constitution gates, reviewability split exception, source layout, and external-source mapping recorded. |
 | `research.md` | Complete | Harness Engineering and Symphony boundary mapping recorded; no Symphony runner/client algorithms imported. |
-| `data-model.md` | Complete | M79 lifecycle/event table columns, indexes, event types, and invariants specified. |
+| `data-model.md` | Complete | M80 lifecycle/event table columns, indexes, event types, and invariants specified. |
 | `contracts/` | Complete | `sandbox_lifecycle.v1` task-authorized read API contract specified. |
 | `quickstart.md` | Complete | Fake lifecycle, read API inspection, cleanup, and flag-off UAT steps specified. |
 
@@ -409,7 +409,7 @@ Task structure:
 - Add every strict-compatible SPEC-014A TS/TSX module to `tsconfig.spec-strict.json` and every new SPEC-014A module to `eslint.config.mjs` in the same phase that creates it. Route and migration tests remain under normal app typecheck/Vitest when strict-subproject inclusion pulls unrelated legacy dependencies.
 
 Required task coverage:
-- M79 migration and rollback SQL, adjusted if live schema says a different next id is required.
+- M80 migration and rollback SQL, adjusted if live schema says a different next id is required.
 - `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events` current/event persistence.
 - Key/path helper and adversarial path-safety corpus.
 - Lifecycle transition helper with idempotent create, conflict failure, rollback, cleanup, and durable event evidence.
@@ -521,7 +521,7 @@ Verification expectations:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| Foundation | Complete | T001-T011 | M79 lifecycle/event tables, rollback SQL, feature flag, fixtures, and strict-scope entries complete. |
+| Foundation | Complete | T001-T011 | M80 lifecycle/event tables, rollback SQL, feature flag, fixtures, and strict-scope entries complete. |
 | Lifecycle Core | Complete | T012-T039 | Key/path validation, safe metadata handling, idempotent create/reuse/conflict behavior, transitions, cleanup, rollback, and durable event evidence complete. |
 | Fake Owners | Complete | T012-T018 | `mission_control`, `openclaw`, and `external_harness` fake owners exercise lifecycle hooks without real harness launch code. |
 | Read Surface | Complete | T040-T046 | `sandbox_lifecycle.v1` read model, viewer/task/workspace-scoped route, API index, and OpenAPI parity complete. |
@@ -535,7 +535,7 @@ Verification expectations:
 | Verify implementation rerun | Pass: `$speckit-verify-run` rerun cleared prior C1/E1 findings after root/handle normalization, metadata allowlisting, rollback artifact removal, and fake-hook rollback compensation. |
 | Verify tasks phantom check | Pass: `$speckit-verify-tasks-run` rerun verified T002, T019, T020, T021, T026, T027, T028, T034, T035, T040, and T047 with zero remaining flags. Report: `specs/014a-sandbox-lifecycle-contract/verify-tasks-report.md`. |
 | Code review | Pass: focused `$speckit-review-run` rerun cleared prior cleanup, path-validation, and OpenAPI schema findings. Remaining pre-commit reminder is to stage new files before commit. |
-| Focused SPEC-014A Vitest | Pass: `pnpm exec vitest run src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts src/lib/__tests__/agent-sandbox-lifecycle.test.ts src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts --reporter=verbose` returned 34 passed tests. |
+| Focused SPEC-014A Vitest | Pass: `pnpm exec vitest run src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts src/lib/__tests__/agent-sandbox-lifecycle.test.ts src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts --reporter=verbose` returned 34 passed tests. |
 | Feature flag and migration guard tests | Pass: `pnpm exec vitest run src/lib/__tests__/feature-flags.test.ts src/lib/__tests__/feature-flag-service.test.ts src/lib/__tests__/migrations-phase0.test.ts --reporter=verbose` returned 44 passed tests. |
 | TypeScript | Pass: `pnpm typecheck`. |
 | Lint | Pass: `pnpm lint`. |
@@ -554,7 +554,7 @@ Verification expectations:
 ### Self-Review
 
 1. **Tests executed**: Yes. Latest post-gate evidence on 2026-05-28 includes focused SPEC-014A Vitest (34 tests), feature-flag/migration guard tests (44 tests), `pnpm typecheck`, `pnpm lint`, `pnpm api:parity`, `pnpm build` outside sandbox, and full `pnpm test` outside sandbox (3201 passed, 3 skipped, 84 todo).
-2. **Edge cases**: Covered by named tests: adversarial path/key/root escapes (`src/lib/__tests__/agent-sandbox-lifecycle.test.ts:62`, `:77`), flag-OFF mutation/artifact no-touch/read evidence (`:99`, `:137`, `:363`), duplicate reuse/conflict/projection drift (`:172`, `:189`, `:204`), unsafe persisted metadata/handles (`:222`), cleanup failure/stale pending/rollback retention (`:270`, `:296`, `:319`, `:337`), route auth/scope/filter/no-write/disabled reads (`src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts:128`, `:179`), and migration/rollback constraints (`src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts:44`, `:89`, `:104`, `:121`).
+2. **Edge cases**: Covered by named tests: adversarial path/key/root escapes (`src/lib/__tests__/agent-sandbox-lifecycle.test.ts:62`, `:77`), flag-OFF mutation/artifact no-touch/read evidence (`:99`, `:137`, `:363`), duplicate reuse/conflict/projection drift (`:172`, `:189`, `:204`), unsafe persisted metadata/handles (`:222`), cleanup failure/stale pending/rollback retention (`:270`, `:296`, `:319`, `:337`), route auth/scope/filter/no-write/disabled reads (`src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts:128`, `:179`), and migration/rollback constraints (`src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts:44`, `:89`, `:104`, `:121`).
 3. **Requirements matched**: All 40 FRs map to checked tasks T001-T058; `$speckit-verify-tasks-run` rerun reported 11/11 previously partial tasks verified and 0 flagged items in `specs/014a-sandbox-lifecycle-contract/verify-tasks-report.md`.
 4. **Follow-up markers**: No active `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers remain in SPEC-014A artifacts. Scope deferrals are landed in the roadmap and design concept: SPEC-014B owns first operator-visible runtime-inventory integration for read-only sandbox lifecycle references, while richer controls stay in SPEC-014C/D or a later dedicated UI/control spec.
 
@@ -587,7 +587,7 @@ src/lib/
   agent-sandbox-lifecycle*.ts
   __tests__/
 docs/migrations/
-  rollback-M79.sql
+  rollback-M80.sql
 docs/ai/specs/
   SPEC-014A-design-concept.md
   SPEC-014A-workflow.md

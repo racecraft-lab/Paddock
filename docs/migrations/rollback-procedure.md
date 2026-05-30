@@ -4,11 +4,11 @@ SPEC-001 adds forward-only migrations M53 through M61; SPEC-004 adds M62 (`idx_t
 
 ## SPEC-014A (Sandbox Lifecycle) Rollback
 
-SPEC-014A adds M79 `079_agent_sandbox_lifecycles`. To reverse only the sandbox lifecycle schema after stopping Mission Control writers and backing up the database, run:
+SPEC-014A adds M80 `080_agent_sandbox_lifecycles`. To reverse only the sandbox lifecycle schema after stopping Mission Control writers and backing up the database, run:
 
-1. `docs/migrations/rollback-M79.sql`
+1. `docs/migrations/rollback-M80.sql`
 2. `PRAGMA foreign_key_check;`
-3. Verify `schema_migrations` no longer contains `079_agent_sandbox_lifecycles`.
+3. Verify `schema_migrations` no longer contains `080_agent_sandbox_lifecycles`.
 
 This rollback removes `agent_sandbox_lifecycle_events` before `agent_sandbox_lifecycles` and leaves unrelated task, attempt, claim, activity, and workflow data intact.
 

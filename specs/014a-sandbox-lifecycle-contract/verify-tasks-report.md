@@ -18,12 +18,12 @@
 - Changed evidence included branch diff plus working-tree modified and untracked files.
 - Warning: repository reports `git rev-parse --is-shallow-repository` as `true`; diff coverage may be incomplete.
 - Untracked implementation evidence included:
-  - `docs/migrations/rollback-M79.sql`
+  - `docs/migrations/rollback-M80.sql`
   - `src/app/api/tasks/[id]/sandbox-lifecycles/route.ts`
   - `src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts`
   - `src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts`
   - `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-  - `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts`
+  - `src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts`
   - `src/lib/agent-sandbox-lifecycle.ts`
 
 ## Verification Commands
@@ -54,7 +54,7 @@ None.
 
 | Task | Verdict | Summary |
 |---|---|---|
-| T002 | ✅ VERIFIED | `tsconfig.spec-strict.json` includes the strict-compatible SPEC-014A helper, fixture, helper test, and route test paths while leaving the route implementation and M79 migration test out of the strict subproject boundary. |
+| T002 | ✅ VERIFIED | `tsconfig.spec-strict.json` includes the strict-compatible SPEC-014A helper, fixture, helper test, and route test paths while leaving the route implementation and M80 migration test out of the strict subproject boundary. |
 | T019 | ✅ VERIFIED | Flag-off mutation tests cover create, prepare, mark_running, mark_terminal, cleanup, and rollback, with lifecycle/event row counts unchanged. |
 | T020 | ✅ VERIFIED | Flag-off fake-owner test asserts blocked disabled evidence, no sandbox directory creation, and no lifecycle/event rows. |
 | T021 | ✅ VERIFIED | Helper read-model test proves an existing lifecycle row remains readable after the workspace flag is disabled and includes disabled-state evidence. |
@@ -72,7 +72,7 @@ None.
 
 ## Machine Verdict Lines
 
-| T002 | ✅ VERIFIED | Strict-compatible SPEC-014A helper/test paths are present, with route implementation and M79 migration test excluded from strict scope. |
+| T002 | ✅ VERIFIED | Strict-compatible SPEC-014A helper/test paths are present, with route implementation and M80 migration test excluded from strict scope. |
 | T019 | ✅ VERIFIED | Flag-off no-row/no-event mutation coverage is present for all lifecycle mutation hooks. |
 | T020 | ✅ VERIFIED | Flag-off fake artifact no-touch and disabled evidence coverage is present. |
 | T021 | ✅ VERIFIED | Existing authorized lifecycle rows remain readable with disabled-state evidence in the helper test. |

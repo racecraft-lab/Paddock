@@ -1,8 +1,8 @@
 # Research: SPEC-014A - Sandbox Ownership and Lifecycle Contract
 
-## Decision: Add M79 lifecycle persistence as a narrow schema pair
+## Decision: Add M80 lifecycle persistence as a narrow schema pair
 
-**Decision**: Implement `079_agent_sandbox_lifecycles` with `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events`.
+**Decision**: Implement `080_agent_sandbox_lifecycles` with `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events`.
 
 **Rationale**: Live migrations end at `078_task_stage_claims`, and SPEC-014A needs durable audit rows before real harness adapters exist. M76 and M78 show the local pattern: current-state table plus event/history evidence, explicit indexes, and rollback SQL.
 

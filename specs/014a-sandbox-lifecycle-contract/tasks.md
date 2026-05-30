@@ -20,10 +20,10 @@
 **Purpose**: Prepare strict-scope config, fixtures, rollback placeholder, and scope guardrails.
 
 - [X] T001 Verify reviewability scope against `specs/014a-sandbox-lifecycle-contract/plan.md` and keep the ratified split exception in `specs/014a-sandbox-lifecycle-contract/tasks.md`
-- [X] T002 [P] Add SPEC-014A strict-compatible helper and test paths to `tsconfig.spec-strict.json`; keep the route and M79 migration test covered by normal app typecheck/Vitest because those imports pull legacy auth/db/migration dependencies outside the strict subproject boundary
+- [X] T002 [P] Add SPEC-014A strict-compatible helper and test paths to `tsconfig.spec-strict.json`; keep the route and M80 migration test covered by normal app typecheck/Vitest because those imports pull legacy auth/db/migration dependencies outside the strict subproject boundary
 - [X] T003 [P] Add SPEC-014A planned TS route/helper/test/e2e guard paths to `eslint.config.mjs`
 - [X] T004 [P] Create reusable sandbox lifecycle test fixtures in `src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts`
-- [X] T005 [P] Add rollback placeholder for M79 in `docs/migrations/rollback-M79.sql`
+- [X] T005 [P] Add rollback placeholder for M80 in `docs/migrations/rollback-M80.sql`
 
 ---
 
@@ -31,14 +31,14 @@
 
 **Purpose**: Add additive persistence and the closed contract vocabulary that all user stories depend on.
 
-- [X] T006 [P] Add failing M79 migration tests for `agent_sandbox_lifecycles` columns, owner/status CHECK constraints, `(workspace_id, sandbox_key)` uniqueness, and rerun idempotency in `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts`
-- [X] T007 [P] Add failing M79 event-table tests for `agent_sandbox_lifecycle_events` columns, lifecycle FK, append-only ordering indexes, task-order indexes, and rollback idempotency in `src/lib/__tests__/migrations-M79-agent-sandbox-lifecycles.test.ts`
-- [X] T008 Implement additive migration `079_agent_sandbox_lifecycles` in `src/lib/migrations.ts`
-- [X] T009 Implement idempotent manual rollback SQL for M79 in `docs/migrations/rollback-M79.sql`
+- [X] T006 [P] Add failing M80 migration tests for `agent_sandbox_lifecycles` columns, owner/status CHECK constraints, `(workspace_id, sandbox_key)` uniqueness, and rerun idempotency in `src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts`
+- [X] T007 [P] Add failing M80 event-table tests for `agent_sandbox_lifecycle_events` columns, lifecycle FK, append-only ordering indexes, task-order indexes, and rollback idempotency in `src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts`
+- [X] T008 Implement additive migration `080_agent_sandbox_lifecycles` in `src/lib/migrations.ts`
+- [X] T009 Implement idempotent manual rollback SQL for M80 in `docs/migrations/rollback-M80.sql`
 - [X] T010 Add `FEATURE_AGENT_RUNNER_SANDBOXES` to the feature-flag type/key registry with hard-default OFF and appropriate dependencies in `src/lib/feature-flags.ts`
-- [X] T011 Run focused M79 migration tests and capture the command for `specs/014a-sandbox-lifecycle-contract/quickstart.md`
+- [X] T011 Run focused M80 migration tests and capture the command for `specs/014a-sandbox-lifecycle-contract/quickstart.md`
 
-**Checkpoint**: M79 lifecycle persistence and flag registry are ready.
+**Checkpoint**: M80 lifecycle persistence and flag registry are ready.
 
 ---
 
@@ -163,8 +163,8 @@
 
 - [X] T047 [P] Add static scope guard tests proving SPEC-014A does not add UI, adapter manifests, real launch/resume/stop, OpenClaw command execution, retry/release/cancel/debug controls, successor selection, governance policy changes, token accounting, or auto-merge in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 - [X] T048 [P] Update `specs/014a-sandbox-lifecycle-contract/quickstart.md` with exact focused test commands, API curl examples, migration marker checks, and cleanup SQL for disposable UAT rows
-- [X] T049 [P] Update `docs/migrations/rollback-procedure.md` with the M79 rollback entry and reference `docs/migrations/rollback-M79.sql`
-- [X] T050 Run focused Vitest commands for M79 migration, lifecycle helper, and lifecycle route tests
+- [X] T049 [P] Update `docs/migrations/rollback-procedure.md` with the M80 rollback entry and reference `docs/migrations/rollback-M80.sql`
+- [X] T050 Run focused Vitest commands for M80 migration, lifecycle helper, and lifecycle route tests
 - [X] T051 Run `pnpm typecheck`
 - [X] T052 Run `pnpm lint`
 - [X] T053 Run `pnpm build`
@@ -182,7 +182,7 @@
 
 - **Phase 1 Setup**: No dependencies.
 - **Phase 2 Foundational**: Depends on Phase 1 and blocks all stories.
-- **Phase 3 US1**: Depends on M79 and flag registry. MVP.
+- **Phase 3 US1**: Depends on M80 and flag registry. MVP.
 - **Phase 4 US2**: Depends on shared mutation helpers from US1.
 - **Phase 5 US3**: Depends on key/path helper entry points from US1 and flag-off row-count fixtures from US2.
 - **Phase 6 US4**: Depends on transactional create and path safety.
