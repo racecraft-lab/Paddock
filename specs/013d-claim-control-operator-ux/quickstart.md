@@ -32,6 +32,14 @@ PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint
 PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build
 ```
 
+Docker-backed UI evidence path, when Docker is available:
+
+```bash
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build
+docker compose up
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec playwright test tests/e2e/spec-013d-claim-control-operator-ux.spec.ts
+```
+
 Visual evidence path:
 
 ```bash

@@ -184,6 +184,7 @@
 - [ ] T069 Run focused Vitest and Playwright commands from `specs/013d-claim-control-operator-ux/quickstart.md`.
 - [ ] T070 Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build`.
 - [ ] T071 Run reviewability diff gate and record the result in `docs/ai/specs/SPEC-013D-workflow.md`.
+- [ ] T072 Run the Docker-backed Playwright evidence path from `specs/013d-claim-control-operator-ux/quickstart.md` when Docker is available, or record the environment limitation in `docs/ai/specs/SPEC-013D-workflow.md`.
 
 ---
 
