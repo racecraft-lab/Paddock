@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26671580503",
+      "runAttempt": "1",
+      "runKey": "26671580503-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26671580503",
+      "reportKey": "c01d9e44ec826d94fa5916284c51453e5ec339ee",
+      "reportHref": "https://racecraft-lab.github.io/mission-control/storybook/c01d9e44ec826d94fa5916284c51453e5ec339ee/",
+      "latestHref": "https://racecraft-lab.github.io/mission-control/storybook/latest/?v=26671580503-attempt-1",
+      "headSha": "c01d9e44ec826d94fa5916284c51453e5ec339ee",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "014a-sandbox-lifecycle-contract",
+        "headSha": "6dc5f161635fcb3fcbfa4ae6b5fec4a7e1e1dabd",
+        "indexHref": "https://racecraft-lab.github.io/mission-control/pr/64/",
+        "mergeCommitSha": "",
+        "number": "64",
+        "title": "SPEC-014A sandbox lifecycle contract",
+        "url": "https://github.com/racecraft-lab/mission-control/pull/64"
+      },
+      "createdAt": "2026-05-30T02:10:28.991Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26670787822",
       "runAttempt": "1",
@@ -876,5 +903,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-30T01:40:51.292Z"
+  "updatedAt": "2026-05-30T02:10:28.991Z"
 }
