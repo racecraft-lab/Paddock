@@ -37,7 +37,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with zero clarification markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved UI copy, component ownership, fixture shape, accessibility/focus, stale/conflict refresh, idempotency lifecycle, and visual evidence details; G2 passed |
 | Plan | `$speckit-plan` | Complete | Produced task-detail UI architecture, client contract, UI state model, quickstart, strict-scope file list, and no-migration decision; G3 passed |
-| Checklist | `$speckit-checklist` | Pending | Run UX, accessibility, API contracts, state management, and error-handling checklists |
+| Checklist | `$speckit-checklist` | Complete | Generated and passed UX, accessibility, API contracts, state management, and error-handling requirements-quality checklists; G4 passed with zero gap markers |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with real Playwright journey and Storybook visual states |
 | Analyze | `$speckit-analyze` | Pending | Verify no drift into backend semantics, dashboard, scheduler, sandbox, adapter, or harness execution |
 | Implement | `$speckit-implement` | Pending | Build claim-control task-detail section, tests, visual evidence, docs, PR packet, and UAT evidence |
@@ -456,12 +456,12 @@ Focus on SPEC-013D requirements:
 
 | Checklist | Items | Gaps | Spec References |
 |-----------|-------|------|-----------------|
-| ux | Pending | Pending | Pending |
-| accessibility | Pending | Pending | Pending |
-| api-contracts | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| **Total** | Pending | Pending | Pending |
+| ux | 18 | 0 | FR-001, FR-003, FR-004, FR-008, FR-012-FR-017, FR-019, FR-022-FR-023, SC-001-SC-003, SC-007 |
+| accessibility | 16 | 0 | FR-004, FR-008, FR-019, FR-022, FR-024-FR-025, SC-004, SC-008 |
+| api-contracts | 17 | 0 | FR-002, FR-006-FR-011, FR-018, FR-020-FR-021, FR-025, Session 2 clarifications |
+| state-management | 17 | 0 | FR-010, FR-012-FR-016, FR-019, FR-025, edge cases, data model state transitions |
+| error-handling | 16 | 0 | FR-010-FR-011, FR-016-FR-019, FR-024-FR-025, stale/conflict/replay/flag-off/network edge cases |
+| **Total** | 84 | 0 | `validate-gate.sh G4` passed with 0 `[Gap]` markers |
 
 ---
 
