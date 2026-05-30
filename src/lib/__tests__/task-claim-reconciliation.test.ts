@@ -26,6 +26,21 @@ function db() {
   return claimDb
 }
 
+function tableCounts(claimDb: ReturnType<typeof openTaskClaimDb>) {
+  const tables = [
+    'tasks',
+    'task_stage_claims',
+    'task_stage_attempts',
+    'task_stage_attempt_events',
+    'activities',
+    'task_claim_control_idempotency_keys',
+  ] as const
+  return Object.fromEntries(tables.map((table) => [
+    table,
+    (claimDb.prepare(`SELECT COUNT(*) as count FROM ${table}`).get() as { count: number }).count,
+  ])) as Record<(typeof tables)[number], number>
+}
+
 describe('task claim reconciliation helpers', () => {
   it('derives stage keys and normalizes bounded launch leases', () => {
     expect(deriveTaskStageKey({ workflow_template_slug: ' dev ', workflow_template_id: 9 })).toBe('dev')
@@ -449,6 +464,59 @@ describe('task claim reconciliation helpers', () => {
     expect(envelope.claim_history).toHaveLength(1)
     expect(JSON.stringify(envelope)).not.toContain('AKIAIOSFODNN7EXAMPLE')
     expect(before).toEqual(after)
+  })
+
+  it('extends the read model with claim-control eligibility and exact expected state without writes', () => {
+    const claimDb = db()
+    seedClaimableTask(claimDb)
+    const acquired = reconcileAndAcquireTaskStageClaim(claimDb, {
+      taskId: 100,
+      workspaceId: 1,
+      leaseOwner: 'scheduler',
+      claimRunId: 'claim-run-1',
+      now: 1770000000,
+    })
+    const before = tableCounts(claimDb)
+
+    const envelope = buildTaskClaimReconciliationReadModel(claimDb, {
+      taskId: 100,
+      workspaceId: 1,
+      currentRole: 'operator',
+    })
+    const after = tableCounts(claimDb)
+
+    expect(after).toEqual(before)
+    expect(envelope.claim_control).toMatchObject({
+      stage_key: 'dev_implementation',
+      authorization: {
+        required_role: 'operator',
+        current_role: 'operator',
+        can_mutate: true,
+      },
+      expected_state: {
+        claim_id: String(acquired.active_claim_id),
+        claim_run_id: 'claim-run-1',
+        attempt_id: String(acquired.task_stage_attempt_id),
+        attempt_status: 'running',
+      },
+      retry_eligibility: {
+        state: 'active_claim',
+        reason: 'active_claim',
+        evidence_type: 'claim',
+        evidence_id: String(acquired.active_claim_id),
+      },
+    })
+    expect(envelope.claim_control?.available_actions).toEqual(expect.arrayContaining([
+      expect.objectContaining({ action: 'release', enabled: true, requires_idempotency_key: true }),
+      expect.objectContaining({ action: 'cancel', enabled: true, requires_confirmation: true }),
+      expect.objectContaining({ action: 'retry', enabled: true, backoff_policy: 'respect_backoff' }),
+    ]))
+    expect(envelope.claim_control?.backoff).toMatchObject({
+      state: 'none',
+      seconds_remaining: 0,
+      override_allowed: true,
+      override_requires_reason: true,
+    })
   })
 
   it('classifies boundary errors without leaking raw database messages', () => {
