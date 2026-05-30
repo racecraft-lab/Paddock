@@ -33,8 +33,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Pending | Verify branch/worktree, pnpm, SpecKit CLI, reviewability preset, archive extension, and current `origin/main` baseline |
-| Specify | `$speckit-specify` | Pending | Generate `specs/013d-claim-control-operator-ux/spec.md` from roadmap plus design concept |
+| Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch/worktree, SpecKit CLI, Codex agents, pnpm/Node 22, reviewability preset, archive sweep, typecheck, lint, unit-test rerun, build, and knowledge index passed on 2026-05-30 |
+| Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with zero clarification markers |
 | Clarify | `$speckit-clarify` | Pending | Resolve exact UI copy, component API, fixture shape, accessibility, stale/conflict refresh, and visual evidence details |
 | Plan | `$speckit-plan` | Pending | Produce architecture bounded to task detail UI plus SPEC-013C route clients; no migration or new backend semantics |
 | Checklist | `$speckit-checklist` | Pending | Run UX, accessibility, API contracts, state management, and error-handling checklists |
@@ -256,13 +256,14 @@ SPEC-013C added authenticated backend retry, release, cancel, backoff, idempoten
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 23 |
+| User Stories | 5 |
+| Acceptance Criteria | 13 acceptance scenarios, 7 measurable success criteria |
 
 ### Files Generated
 
-- [ ] `specs/013d-claim-control-operator-ux/spec.md`
+- [x] `specs/013d-claim-control-operator-ux/spec.md`
+- [x] `specs/013d-claim-control-operator-ux/checklists/requirements.md`
 
 ---
 
