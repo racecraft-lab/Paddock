@@ -38,7 +38,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Clarify | `$speckit-clarify` | Complete | Resolved UI copy, component ownership, fixture shape, accessibility/focus, stale/conflict refresh, idempotency lifecycle, and visual evidence details; G2 passed |
 | Plan | `$speckit-plan` | Complete | Produced task-detail UI architecture, client contract, UI state model, quickstart, strict-scope file list, and no-migration decision; G3 passed |
 | Checklist | `$speckit-checklist` | Complete | Generated and passed UX, accessibility, API contracts, state management, and error-handling requirements-quality checklists; G4 passed with zero gap markers |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with real Playwright journey and Storybook visual states |
+| Tasks | `$speckit-tasks` | Complete | Generated 71 dependency-ordered TDD tasks across setup, foundation, five user stories, and polish; G5 passed and reviewability gate passed via transition exception for heuristic over-counting |
 | Analyze | `$speckit-analyze` | Pending | Verify no drift into backend semantics, dashboard, scheduler, sandbox, adapter, or harness execution |
 | Implement | `$speckit-implement` | Pending | Build claim-control task-detail section, tests, visual evidence, docs, PR packet, and UAT evidence |
 
@@ -499,10 +499,11 @@ Generate dependency-ordered TDD tasks for SPEC-013D using:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Phases | Pending |
-| Parallel Opportunities | Pending |
-| User Stories Covered | Pending |
+| Total Tasks | 71 |
+| Phases | 8 task phases: setup, foundational, US1, US2, US3, US4, US5, polish |
+| Parallel Opportunities | 29 `[P]` tasks across setup/foundation, story test batches, Storybook/Playwright evidence, and polish docs/guards |
+| User Stories Covered | 5: inspect state, submit actions, override backoff, read-only access, visual review states |
+| Reviewability Gate | Exception/pass: task heuristic reported reviewable LOC 2840, 8 production files, 53 total files, and 5 surfaces because it counts existing route-contract citations, docs, and forbidden-scope guard strings; recorded transition exception, implementation primary surface remains UI |
 
 ---
 
