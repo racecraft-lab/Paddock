@@ -17,6 +17,25 @@
 - Real Playwright evidence must use authenticated app flows, disposable task fixtures, deterministic claim/backoff/idempotency rows, restored feature flags, after-test cleanup, JSON fixture evidence, and before/confirm/after screenshots. Storybook states are supplemental visual review states only.
 - Recovery consensus accepted the same-submission idempotency lifecycle: after a network failure the UI may retry the exact same task, action, stage, expected state, and request body with the same in-memory key; every completed response, changed body, changed expected state, task change, close, cancel, or new operator decision clears the key. Raw keys are never stored, rendered, or written to evidence.
 
+### Session 2 - Route Contracts and State Refresh (2026-05-30)
+
+- The UI consumes only these claim-reconciliation fields for claim-control behavior: `schema_version`, `task.id`, `task.workspace_id`, `task.status`, `task.stage_key`, `feature_flag`, and `claim_control.stage_key`, `authorization`, `available_actions`, `retry_eligibility`, `backoff`, `expected_state`, `last_operator_action`, and `last_sanitized_error`.
+- The UI must treat `claim_control.available_actions[]` as the sole action list and must not synthesize extra retry, release, or cancel availability from evidence, attempts, task status, or local role checks. Local checks may only suppress impossible client submissions such as missing required reason text.
+- Each mutation request uses `POST /api/tasks/[id]/claim-control` with `Idempotency-Key` and a JSON body containing `action`, `stage_key`, `expected`, `override_backoff`, `override_reason`, `reason`, and `client_correlation_id`. The `expected` object is copied from the latest read model for the selected stage.
+- Default request behavior is `override_backoff=false`, `override_reason=null`, and a bounded generated `client_correlation_id`. Retry backoff override sets `override_backoff=true` only after the operator supplies the required override reason. Cancel requires a bounded `reason`; release may send the operator reason or the accepted default reason.
+- After any server response with a bounded claim-control envelope or claim-control error envelope, the task detail refreshes claim reconciliation before updating final availability. Success, already-applied, stale/conflict, not-eligible, feature-flag-off, authorization, validation, and idempotent replay responses also refresh evidence, stage attempts, and task-list item state when those surfaces are currently loaded.
+- Pure client-side validation failures do not call the mutation route and therefore do not refresh server state. Network failures show the same-submission retry option from Session 1 and defer server refresh until the retry succeeds, returns a bounded response, or the operator abandons the attempt.
+
+### Session 3 - Fixtures, Accessibility, and Visual Evidence (2026-05-30)
+
+- The Playwright acceptance journey uses a real authenticated app flow in a serial SPEC-013D suite with disposable fixture markers prefixed `spec013d-claim-control-*`. App/API creation is preferred for tasks; direct database seeding is limited to SPEC-013B/C claim, stage-attempt, idempotency, activity, and workspace feature-flag rows needed to create deterministic backend states.
+- Fixture states are bounded to active claim enabled, disabled or ineligible actions, backoff override required, stale/conflict receipt, viewer read-only, feature-flag off, loading, and backend-error states. Each fixture records cleanup scope, row identifiers, and a non-secret fixture hash in JSON evidence.
+- Required Playwright screenshot artifacts are `spec013d-claim-control-before-active.png`, `spec013d-claim-control-confirm-retry.png`, `spec013d-claim-control-after-retry.png`, `spec013d-claim-control-disabled-reasons.png`, `spec013d-claim-control-backoff-override.png`, `spec013d-claim-control-stale-conflict.png`, `spec013d-claim-control-viewer-read-only.png`, and `spec013d-claim-control-flag-off.png`.
+- The test must restore feature flags and remove disposable tasks, claim rows, stage-attempt rows, idempotency rows, activities, and fixture evidence rows in `afterAll`, then retain cleanup proof in the JSON fixture evidence. Evidence must never include raw idempotency keys, auth headers, raw request bodies, prompts, transcripts, provider payloads, tokens, or GitHub bodies.
+- The Claim control section is exposed as a named region inside the existing Details tab. Loading and success updates use polite status semantics; validation, conflict, and network-failure feedback use alert semantics; keyboard-only flows can open confirmation, reach required reason fields, submit, and land focus on the final receipt.
+- Storybook states are supplemental component review states in `src/components/panels/claim-control-section.stories.tsx` or the nearest established task-detail story location. They cover enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error without backend mutation.
+- Visual evidence uses the existing `captureVisualSnapshot` helper for the primary before/after states and key disabled, backoff, conflict, viewer, and flag-off variants. CI/Argos artifacts are preferred over committed binary screenshots unless the archive policy exception is explicitly recorded.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Inspect Claim-Control State (Priority: P1)
@@ -135,6 +154,8 @@ A maintainer can verify the operator journey through real browser evidence and s
 - **FR-021**: SPEC-013D MUST NOT add a new migration, backend route, dashboard, CLI or MCP action, sandbox lifecycle behavior, adapter registry, harness execution path, direct GitHub mutation, successor selection, scheduler launch, or whole-task terminal mutation.
 - **FR-022**: User-facing UI changes MUST be verified by a real Playwright task-detail journey with screenshots for enabled release/cancel/retry, disabled/ineligible reasons, backoff override reason entry, stale/conflict refresh, viewer read-only state, and feature-flag-off behavior. The journey MUST authenticate through the app, seed deterministic disposable data, restore feature flags, clean up residue, and retain fixture evidence.
 - **FR-023**: Stable Storybook states MUST cover enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error states for the Claim control section.
+- **FR-024**: The Claim control section MUST be exposed as a named region; loading and successful refresh updates MUST be announced through status semantics; validation, conflict, and network-failure feedback MUST be announced through alert semantics; keyboard-only users MUST be able to reach confirmation controls, required reason fields, submission controls, and final receipts.
+- **FR-025**: Playwright fixture evidence MUST record the `spec013d-claim-control-*` fixture marker, disposable task identifiers, seeded SPEC-013B/C row identifiers or counts, feature-flag restoration, cleanup proof, required screenshot artifact names, and visual snapshot manifest entries without recording raw idempotency keys or unsafe diagnostic payloads.
 
 ### Spec Evidence And Archive Policy
 
@@ -154,6 +175,7 @@ A maintainer can verify the operator journey through real browser evidence and s
 - **Outcome Receipt**: Compact operator-facing result after submission, including action, outcome, stage key, refreshed availability, audit or activity reference, replay status, and sanitized error category.
 - **Refresh Set**: The task-detail surfaces that must be refreshed after claim-control outcomes: claim reconciliation, task evidence, stage attempts, and the task list item.
 - **Visual Review State**: A stable review state for the Claim control section, including enabled, disabled, backoff, stale/conflict, flag-off, loading, error, and read-only viewer variants.
+- **Fixture Evidence Manifest**: JSON evidence produced by the Playwright journey that identifies disposable fixture scope, cleanup proof, screenshot names, and visual snapshot entries without exposing secrets or raw backend internals.
 
 ## Success Criteria *(mandatory)*
 
@@ -166,6 +188,7 @@ A maintainer can verify the operator journey through real browser evidence and s
 - **SC-005**: The real browser acceptance journey covers every required operator state: enabled release/cancel/retry, disabled/ineligible reasons, backoff override reason entry, stale/conflict refresh, viewer read-only state, and feature-flag-off behavior.
 - **SC-006**: Stable visual review states cover enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error variants before the feature is considered ready for implementation review.
 - **SC-007**: In flag-off or absent-state tasks, operators see no actionable controls and no noisy empty section unless the backend explicitly provides disabled/debug state.
+- **SC-008**: The Playwright evidence manifest proves fixture cleanup, feature-flag restoration, required screenshot capture, and keyboard/live-region coverage before implementation review begins.
 
 ## Assumptions
 

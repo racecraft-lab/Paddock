@@ -314,14 +314,16 @@ Focus on SPEC-013D verification:
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
 | 1 | UX, copy, and interaction states | 5 | Accepted bounded task-detail section ownership, closed copy-map labels, inline focus/live-region behavior, deterministic Playwright/Storybook evidence, and same-submission idempotency retry lifecycle |
-| 2 | Route contracts and state refresh | Pending | Pending |
-| 3 | Fixtures, accessibility, and visual evidence | Pending | Pending |
+| 2 | Route contracts and state refresh | 6 | Pinned consumed `claim_control` fields, POST body/header construction, expected-state copy rule, reason/override defaults, refresh matrix for bounded server outcomes, and network-failure same-submission retry behavior |
+| 3 | Fixtures, accessibility, and visual evidence | 7 | Pinned real authenticated Playwright fixture scope, `spec013d-claim-control-*` markers, required screenshot names, cleanup/feature-flag restoration proof, accessibility assertions, Storybook states, and visual snapshot manifest expectations |
 
 ### Consensus Resolution Log
 
 | Phase Item | Round | Routed Categories | Outcome | Analysts Used |
 |------------|-------|-------------------|---------|---------------|
 | Phase 2 Session 1 - Idempotency key lifecycle | Recovery | security | Accepted in-memory same-submission retry only; raw key never persisted/rendered; clear key on response, close, cancel, task change, expected-state refresh, changed body, or new decision | Parent session using SPEC-013C spec/data-model/route-test evidence; subagent consensus skipped to avoid session-limit deadlock |
+| Phase 2 Session 2 - Route contracts and refresh | Recovery | api-contracts, state-management | No unresolved items after parent evidence review; accepted backend read model as sole action source, copied expected-state predicate, bounded POST body/header construction, and refresh-after-server-envelope matrix | Parent session using `src/app/api/tasks/[id]/claim-reconciliation/route.ts`, `src/app/api/tasks/[id]/claim-control/route.ts`, `src/lib/task-claim-reconciliation.ts`, and route tests; subagent consensus skipped to avoid session-limit deadlock |
+| Phase 2 Session 3 - Fixtures, accessibility, and visual evidence | Recovery | ux, accessibility, tests | No unresolved items after parent evidence review; accepted authenticated serial Playwright fixture suite, deterministic cleanup proof, required screenshots, keyboard/live-region assertions, Storybook state list, and visual snapshot manifest | Parent session using existing task-detail e2e and visual snapshot helper patterns; subagent consensus skipped to avoid session-limit deadlock |
 
 ---
 
