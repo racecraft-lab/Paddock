@@ -199,11 +199,13 @@ describe('updateWorkspaceFeatureFlag cascade persistence', () => {
       'PILOT_MISSION_CONTROL_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
+      'FEATURE_AGENT_RUNNER_SANDBOXES',
     ])
     expect(flags.FEATURE_WORKSPACE_SWITCHER).toBe(false)
     expect(flags.FEATURE_GLOBAL_AEGIS).toBe(false)
     expect(flags.FEATURE_RESOURCE_GOVERNANCE).toBe(false)
     expect(flags.PILOT_MISSION_CONTROL_E2E).toBe(false)
     expect(flags.FEATURE_TASK_CONTROL_PLANE).toBe(false)
+    expect(flags.FEATURE_AGENT_RUNNER_SANDBOXES).toBe(false)
   })
 })

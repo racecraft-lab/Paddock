@@ -101,6 +101,10 @@
     "src/lib/__tests__/task-claim-reconciliation-fixtures.ts",
     "src/lib/__tests__/task-claim-reconciliation.test.ts",
     "src/lib/__tests__/task-claim-control-idempotency.test.ts",
-    "src/lib/__tests__/task-claim-control.test.ts"
+    "src/lib/__tests__/task-claim-control.test.ts",
+    "src/lib/agent-sandbox-lifecycle.ts",
+    "src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts",
+    "src/lib/__tests__/agent-sandbox-lifecycle.test.ts",
+    "src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts"
   ]
 }

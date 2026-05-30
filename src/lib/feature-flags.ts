@@ -13,6 +13,7 @@ export type FeatureFlagKey =
   | 'PILOT_MISSION_CONTROL_E2E'
   | 'FEATURE_TASK_CONTROL_PLANE'
   | 'FEATURE_GITHUB_SYNC_AUTOMATION'
+  | 'FEATURE_AGENT_RUNNER_SANDBOXES'
 
 export type FeatureFlagActivationScope =
   | 'authWorkspace'
@@ -87,6 +88,7 @@ export const FEATURE_FLAG_KEYS = [
   'PILOT_MISSION_CONTROL_E2E',
   'FEATURE_TASK_CONTROL_PLANE',
   'FEATURE_GITHUB_SYNC_AUTOMATION',
+  'FEATURE_AGENT_RUNNER_SANDBOXES',
 ] as const satisfies readonly FeatureFlagKey[]
 
 const ENV_FORCE_ON_EXCEPTIONS = new Set(['PILOT_MISSION_CONTROL_E2E'])
@@ -365,6 +367,27 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     implementedAfter: ['GitHub Sync Automation and Poller Lifecycle'],
     preflightRequires: ['M77 lifecycle state, manual sync fallback, duplicate-ingestion prevention, and automatic poller controls are verified.'],
     rollbackBehavior: 'Disable to stop automatic GitHub polling while preserving manual sync and lifecycle history.',
+    evidence: {},
+  },
+  FEATURE_AGENT_RUNNER_SANDBOXES: {
+    key: 'FEATURE_AGENT_RUNNER_SANDBOXES',
+    label: 'Agent runner sandboxes',
+    description: 'Sandbox lifecycle persistence, bounded path evidence, fake lifecycle owners, and read-only sandbox lifecycle inspection.',
+    spec: 'Sandbox Ownership and Lifecycle Contract',
+    phase: 12,
+    upstreamImpact: 'upstream-divergent',
+    activationScope: 'productLineWorkspace',
+    riskTier: 'high',
+    defaultValue: false,
+    adminManageable: false,
+    requiresHuman: true,
+    requiresReason: true,
+    requiresPreflight: true,
+    implementationStatus: 'implemented_unverified',
+    enableRequires: ['FEATURE_TASK_CONTROL_PLANE'],
+    implementedAfter: ['Claim and Reconciliation Authority'],
+    preflightRequires: ['SPEC-014A fake lifecycle UAT and bounded path checks pass in a disposable workspace.'],
+    rollbackBehavior: 'Disable to block all sandbox lifecycle mutations while preserving read-only historical lifecycle evidence.',
     evidence: {},
   },
 }

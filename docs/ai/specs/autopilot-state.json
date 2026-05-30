@@ -1,199 +1,62 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-013C-workflow.md",
-  "updated_at": "2026-05-28T20:22:55.337Z",
-  "active_step": "Complete: Draft PR #63 created",
-  "current_spec_dir": "specs/013c-retry-debug-surfaces",
-  "branch": "013c-retry-debug-surfaces",
-  "confidence_gate_mode": "advisory",
+  "workflow_file": "docs/ai/specs/SPEC-014A-workflow.md",
+  "updated_at": "2026-05-28T16:01:00-05:00",
+  "active_step": "Complete",
+  "current_spec_dir": "specs/014a-sandbox-lifecycle-contract",
+  "branch": "014a-sandbox-lifecycle-contract",
   "plan": [
-    {
-      "step": "Archive Sweep: previously merged specs dry-run/apply eligibility",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 0: Prerequisites",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 1: Specify",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Action Eligibility And State Machine",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Action Eligibility And State Machine Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - API Contract, Idempotency, And Races",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - API Contract, Idempotency, And Races Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Authorization, Audit Safety, And Error Surfaces",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Authorization, Audit Safety, And Error Surfaces Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Read Model And SPEC-013D Boundary",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - Read Model And SPEC-013D Boundary Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - API-And-Audit UAT",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 2: Clarify - API-And-Audit UAT Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 3: Plan",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - scheduler-runtime",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - scheduler-runtime Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - api-contracts",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - api-contracts Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - data-integrity",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - data-integrity Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - state-management",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - state-management Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - security",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - security Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - accessibility",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 4: Checklist - accessibility Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 5: Tasks",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6: Analyze",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6: Analyze - Consensus",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 6.5: Confidence Gate",
-      "status": "completed"
-    },
-    {
-      "step": "Phase 7: Implement - T001-T075",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Doctor Extension Check",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Verify Implementation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Verify Tasks Phantom Check",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Code Review",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Integration Suite",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Cleanup",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Reviewability Diff Gate",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Self-Review",
-      "status": "completed"
-    },
-    {
-      "step": "Post: PR Body Generation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: PR Creation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Review Remediation",
-      "status": "completed"
-    },
-    {
-      "step": "Post: Retrospective",
-      "status": "completed"
-    }
+    { "step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed" },
+    { "step": "Phase 0: Prerequisites", "status": "completed" },
+    { "step": "Phase 1: Specify", "status": "completed" },
+    { "step": "Phase 2: Clarify - Schema and Read Model", "status": "completed" },
+    { "step": "Phase 2: Clarify - Schema and Read Model Consensus", "status": "completed" },
+    { "step": "Phase 2: Clarify - Path Safety and Metadata Safety", "status": "completed" },
+    { "step": "Phase 2: Clarify - Path Safety and Metadata Safety Consensus", "status": "completed" },
+    { "step": "Phase 2: Clarify - Lifecycle and Cleanup", "status": "completed" },
+    { "step": "Phase 2: Clarify - Lifecycle and Cleanup Consensus", "status": "completed" },
+    { "step": "Phase 2: Clarify - Flag, API, and Scope Deferrals", "status": "completed" },
+    { "step": "Phase 2: Clarify - Flag, API, and Scope Deferrals Consensus", "status": "completed" },
+    { "step": "Phase 3: Plan", "status": "completed" },
+    { "step": "Phase 4: Checklist - Data Integrity", "status": "completed" },
+    { "step": "Phase 4: Checklist - Data Integrity Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - Security", "status": "completed" },
+    { "step": "Phase 4: Checklist - Security Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - API Contracts", "status": "completed" },
+    { "step": "Phase 4: Checklist - API Contracts Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - Error Handling", "status": "completed" },
+    { "step": "Phase 4: Checklist - Error Handling Consensus", "status": "completed" },
+    { "step": "Phase 5: Tasks", "status": "completed" },
+    { "step": "Phase 6: Analyze", "status": "completed" },
+    { "step": "Phase 6: Analyze - Consensus", "status": "completed" },
+    { "step": "Phase 6.5: Confidence Gate", "status": "completed" },
+    { "step": "Phase 7: Implement - Execute 58 generated tasks", "status": "completed" },
+    { "step": "Post: Doctor Extension Check", "status": "completed" },
+    { "step": "Post: Verify Implementation", "status": "completed" },
+    { "step": "Post: Verify Tasks Phantom Check", "status": "completed" },
+    { "step": "Post: Code Review", "status": "completed" },
+    { "step": "Post: Integration Suite", "status": "completed" },
+    { "step": "Post: Cleanup", "status": "completed" },
+    { "step": "Post: Reviewability Diff Gate", "status": "completed" },
+    { "step": "Post: Self-Review", "status": "completed" },
+    { "step": "Post: PR Body Generation", "status": "completed" },
+    { "step": "Post: PR Creation", "status": "completed" },
+    { "step": "Post: Review Remediation", "status": "completed" },
+    { "step": "Post: Retrospective", "status": "completed" }
   ],
   "preflight": {
     "status": "passed",
-    "checked_at": "2026-05-28T00:33:13Z",
-    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/2ed9/racecraft-mission-control/.worktrees/013c-retry-debug-surfaces",
+    "checked_at": "2026-05-28T13:28:17-05:00",
+    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/0466/racecraft-mission-control/.worktrees/014a-sandbox-lifecycle-contract",
     "prerequisites": {
       "all_pass": true,
-      "branch": "013c-retry-debug-surfaces",
+      "branch": "014a-sandbox-lifecycle-contract",
       "is_worktree": true,
-      "on_feature_branch": false,
+      "on_feature_branch": true,
       "speckit_cli": "specify 0.8.16",
-      "codex_entrypoints": "SpecKit skills installed via .agents/skills and dot-form .claude/commands; cached detector patched to recognize current Codex/project layout",
-      "mcp_servers": "Missing tavily-mcp context7 RepoPrompt per script; agents will use built-in fallbacks",
-      "runtime": "direnv exec . node -v => v22.22.2",
-      "confidence_gate_mode": "advisory"
+      "commands": "All SpecKit commands/skills installed",
+      "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt; agents will use built-in fallbacks"
     },
+    "confidence_gate_mode": "advisory",
     "project_commands": {
       "BUILD": "pnpm build",
       "TYPECHECK": "pnpm typecheck",
@@ -207,315 +70,39 @@
     },
     "presets": {
       "reviewability_preset": "speckit-pro-reviewability",
+      "ask_questions_preset": "codex-ask-questions",
       "templates": "spec-template, plan-template, and tasks-template resolve to .specify/presets/speckit-pro-reviewability/templates/"
-    },
-    "validation": {
-      "install": "direnv exec . pnpm install --frozen-lockfile passed after sandbox DNS failure and Node 26 better-sqlite3 failure were corrected",
-      "typecheck": "direnv exec . pnpm typecheck passed",
-      "lint": "direnv exec . pnpm lint passed",
-      "unit_test": "direnv exec . pnpm test passed outside sandbox: 304 files passed, 33 skipped; 3166 tests passed, 3 skipped, 84 todo",
-      "build": "direnv exec . pnpm build passed outside sandbox after known Turbopack sandbox port-binding failure",
-      "diff_check": "git diff --check passed"
     }
   },
   "archive_sweep": {
     "status": "completed",
-    "mode": "sweep",
-    "archive_extension": "archive",
-    "archive_extension_version": "1.1.0",
-    "checked_at": "2026-05-28T00:19:16Z",
-    "current_target": "specs/013c-retry-debug-surfaces",
-    "excluded_current_spec": "specs/013c-retry-debug-surfaces",
-    "active_spec_dirs": [
+    "mode": "dry-run",
+    "checked_at": "2026-05-28T00:00:00-05:00",
+    "current_target": "specs/014a-sandbox-lifecycle-contract",
+    "active_specs_discovered": [
       "specs/013a1-github-sync-automation",
       "specs/013b-claim-reconciliation"
     ],
+    "excluded_current_spec": "specs/014a-sandbox-lifecycle-contract",
     "eligible_previous_specs": [
       {
         "path": "specs/013a1-github-sync-automation",
-        "eligibleForArchive": true,
-        "archiveAlreadyRecorded": false,
-        "eligibleForCleanup": false,
-        "safeToApplyCleanup": false,
-        "prUrl": "https://github.com/racecraft-lab/mission-control/pull/60",
-        "mergeSha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca"
+        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/60",
+        "merge_sha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
+        "uat": "Operator-confirmed post-merge HITL UAT complete on 2026-05-27 per roadmap."
       },
       {
         "path": "specs/013b-claim-reconciliation",
-        "eligibleForArchive": true,
-        "archiveAlreadyRecorded": false,
-        "eligibleForCleanup": false,
-        "safeToApplyCleanup": false,
-        "prUrl": "https://github.com/racecraft-lab/mission-control/pull/62",
-        "mergeSha": "5e61d0ffc02f9345b265cd5420660d02bf693016"
+        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/62",
+        "merge_sha": "5e61d0ffc02f9345b265cd5420660d02bf693016",
+        "uat": "HAL deployment and post-merge HITL UAT complete on 2026-05-27 per roadmap."
       }
     ],
     "safeToApplyCleanup": false,
-    "dryRunProvenanceOnly": true,
-    "filesChanged": [],
-    "cleanupApplied": false,
-    "cleanupBlockers": [
-      "apply-cleanup not requested",
-      "dirty worktree",
-      "active branch is not main",
-      "archive success not recorded for eligible specs"
-    ]
-  },
-  "phase_results": {
-    "specify": {
-      "status": "completed",
-      "gate": "G1",
-      "gate_pass": true,
-      "spec_path": "specs/013c-retry-debug-surfaces/spec.md",
-      "requirements_checklist": "specs/013c-retry-debug-surfaces/checklists/requirements.md",
-      "user_stories": 5,
-      "functional_requirements": 55,
-      "acceptance_scenarios": 14,
-      "success_criteria": 10,
-      "clarification_markers": 0,
-      "notes": "Generated directly by orchestrator after two phase-executor attempts stalled without artifacts."
-    },
-    "clarify": {
-      "status": "completed",
-      "gate": "G2",
-      "sessions": {
-        "action_eligibility_and_state_machine": {
-          "status": "completed",
-          "questions": 0,
-          "consensus_resolved": 0,
-          "executor": "orchestrator_fallback_after_stalled_clarify_executor",
-          "key_outcomes": [
-            "release/cancel require active or explicitly cancellable stage evidence",
-            "retry can retire an active claim or target failed/stuck/stale/deferred/cancelled evidence",
-            "terminal task and terminal GitHub states are not retry-eligible",
-            "operator_released/operator_cancelled/operator_retry_requested release reasons defined",
-            "closed mutation outcome vocabulary defined"
-          ]
-        },
-        "api_contract_idempotency_and_races": {
-          "status": "completed",
-          "questions": 0,
-          "consensus_resolved": 0,
-          "executor": "orchestrator_direct_with_codebase_consensus_agents_launched",
-          "key_outcomes": [
-            "single mutation route is POST /api/tasks/[id]/claim-control",
-            "Idempotency-Key header is required and scoped to actor, route/action/task/stage target, and canonical parsed request body",
-            "same-key same-body replays return stable original successful responses while same-key different-body requests return idempotency_key_body_mismatch",
-            "activity rows alone are not sufficient durable response replay storage; Plan must add scoped idempotency storage or safely scoped shared storage",
-            "mutations use transactional compare-and-set predicates over visible task, workspace, stage, active claim or latest retry-eligible evidence, expected ids, cancellation state, and backoff requirements",
-            "closed HTTP mapping defined for success/replay, malformed input, auth, feature flag, not found, stale/conflict/not-eligible, semantic validation, rate limit, and sanitized unexpected failure"
-          ]
-        },
-        "authorization_audit_safety_and_error_surfaces": {
-          "status": "completed",
-          "questions": 0,
-          "consensus_resolved": 0,
-          "executor": "orchestrator_direct_from_live_auth_audit_evidence",
-          "key_outcomes": [
-            "mutation authorization uses requireRole(request, 'operator') so operators and admins may mutate while viewers remain read-only",
-            "actor identity comes from authenticated request context and is never accepted from request body fields",
-            "mutation rate limiting runs before parsing or mutation and does not write claim-control task audit rows",
-            "successful mutations and authenticated task-visible semantic rejections write one bounded task-scoped claim-control activity",
-            "positive audit allowlist defined for action/outcome/state/backoff/actor/idempotency hash/correlation/error fields",
-            "raw idempotency keys, request bodies, errors, actor fields, prompts, transcripts, provider payloads, auth headers, GitHub bodies, tokens, and secret-shaped values are forbidden from audit/debug persistence",
-            "closed sanitized error category vocabulary defined"
-          ]
-        },
-        "read_model_and_spec_013d_boundary": {
-          "status": "completed",
-          "questions": 0,
-          "consensus_resolved": 0,
-          "executor": "orchestrator_direct_from_design_concept_and_spec_013b_read_model",
-          "key_outcomes": [
-            "existing task_claim_reconciliation.v1 envelope remains the read surface and is extended backward-compatibly with optional claim_control fields",
-            "claim_control exposes authorization, available actions, retry eligibility, backoff, last operator action, last sanitized error, and expected-state predicates",
-            "available-action descriptors explain enabled/disabled retry/release/cancel states without exposing mutation URLs or raw diagnostics",
-            "SPEC-013D must echo expected-state predicates and refresh on stale/conflict rather than recomputing claim state client-side",
-            "extended read model remains side-effect-free and does not acquire/release claims, append attempt events, write activities, trigger GitHub sync, call scheduler/dispatch, or fetch live GitHub state",
-            "PR and UAT wording must state backend API/debug authority only; in-app adoption remains blocked on SPEC-013D and first real harness operation remains blocked on SPEC-013D plus SPEC-014B"
-          ]
-        },
-        "api_and_audit_uat": {
-          "status": "completed",
-          "questions": 0,
-          "consensus_resolved": 0,
-          "executor": "orchestrator_direct_from_design_concept_and_prior_uat_reports",
-          "key_outcomes": [
-            "target UAT uses a disposable workspace or product-line scope with FEATURE_TASK_CONTROL_PLANE enabled only through workspace feature flags",
-            "fixture set covers release, cancel, retry without active backoff, retry with active backoff respected, retry with override, same-key replay, body mismatch, stale/conflict, unauthorized/viewer rejection, feature-flag-off rejection, and read-model reflection",
-            "API/read-model/audit responses are primary evidence; manual database inspection is supporting evidence for row references and cleanup counts",
-            "evidence packet fields include replay identity, target deployment, commit, operator/timestamp, flag scope, identifiers, route/status/outcome, read-model before/after, audit references, idempotency hashes, backoff fields, override reason, sanitized error category, and redaction flags",
-            "cleanup uses unique spec013c-uat markers and records before/after residue counts for disposable workspace, project, task, claim, attempt, idempotency, and activity rows",
-            "rollback is flag-first and migration rollback evidence is required only if Plan adds a migration",
-            "UAT closeout records SPEC-013D as operator UX adoption blocker and SPEC-014C blocked until SPEC-013D plus SPEC-014B"
-          ]
-        }
-      },
-      "consensus_items": 1,
-      "clarification_markers": 0
-    },
-    "plan": {
-      "status": "completed",
-      "gate": "G3",
-      "gate_pass": true,
-      "executor": "orchestrator_direct_after_stalled_phase_executor",
-      "artifacts": [
-        "specs/013c-retry-debug-surfaces/plan.md",
-        "specs/013c-retry-debug-surfaces/research.md",
-        "specs/013c-retry-debug-surfaces/data-model.md",
-        "specs/013c-retry-debug-surfaces/contracts/task-claim-control-api.md",
-        "specs/013c-retry-debug-surfaces/quickstart.md"
-      ],
-      "key_decisions": [
-        "single operator/admin mutation route POST /api/tasks/[id]/claim-control",
-        "add M79 release-reason constraint expansion and scoped claim-control idempotency replay table because activities cannot replay successful responses safely and operator reasons must remain claim-history truth",
-        "one narrow claim-control domain module owns retry/release/cancel semantics",
-        "existing task_claim_reconciliation.v1 read model is extended backward-compatibly",
-        "no UI/CLI/MCP/dashboard/sandbox/adapter/harness/GitHub mutation/successor behavior enters SPEC-013C"
-      ]
-    },
-    "checklist": {
-      "status": "completed",
-      "gate": "G4",
-      "gate_pass": true,
-      "executor": "orchestrator_direct",
-      "domains": {
-        "scheduler-runtime": {
-          "status": "completed",
-          "items": 12,
-          "open_gaps": 0,
-          "artifact": "specs/013c-retry-debug-surfaces/checklists/scheduler-runtime.md"
-        },
-        "api-contracts": {
-          "status": "completed",
-          "items": 14,
-          "open_gaps": 0,
-          "artifact": "specs/013c-retry-debug-surfaces/checklists/api-contracts.md"
-        },
-        "data-integrity": {
-          "status": "completed",
-          "items": 13,
-          "open_gaps": 0,
-          "artifact": "specs/013c-retry-debug-surfaces/checklists/data-integrity.md"
-        },
-        "state-management": {
-          "status": "completed",
-          "items": 13,
-          "open_gaps": 0,
-          "artifact": "specs/013c-retry-debug-surfaces/checklists/state-management.md"
-        },
-        "security": {
-          "status": "completed",
-          "items": 13,
-          "open_gaps": 0,
-          "artifact": "specs/013c-retry-debug-surfaces/checklists/security.md"
-        },
-        "accessibility": {
-          "status": "completed",
-          "items": 10,
-          "open_gaps": 0,
-          "artifact": "specs/013c-retry-debug-surfaces/checklists/accessibility.md"
-        }
-      }
-    },
-    "tasks": {
-      "status": "completed",
-      "gate": "G5",
-      "gate_pass": true,
-      "executor": "orchestrator_direct_after_setup_tasks_script_warning",
-      "artifact": "specs/013c-retry-debug-surfaces/tasks.md",
-      "total_tasks": 75,
-      "parallel_tasks": 27,
-      "tdd_red_tasks": 22,
-      "verification_tasks": 17,
-      "key_properties": [
-        "dependency-ordered by setup, foundation, five user stories, and polish verification",
-        "TDD-first tasks precede every behavior-changing implementation task",
-        "M79 release-reason constraint expansion and idempotency storage are foundational blockers",
-        "SPEC-013D UI adoption and SPEC-014C harness adoption blockers remain documented"
-      ]
-    },
-    "analyze": {
-      "status": "completed",
-      "gate": "G6",
-      "gate_pass": true,
-      "executor": "orchestrator_direct_after_stalled_analyze_executor",
-      "findings": [
-        {
-          "id": "A1",
-          "severity": "high",
-          "status": "resolved",
-          "summary": "US3 acceptance scenario conflated same-key replay with new-key already_applied; spec now distinguishes them."
-        },
-        {
-          "id": "A2",
-          "severity": "high",
-          "status": "resolved",
-          "summary": "Spec/workflow/plan drifted on M79 idempotency-only versus release-reason constraint expansion; artifacts now align."
-        }
-      ],
-      "remaining_critical_high": 0,
-      "remaining_medium_low": 0,
-      "coverage": {
-        "functional_requirements": 55,
-        "success_criteria": 10,
-        "task_coverage": "complete"
-      }
-    },
-    "confidence_gate": {
-      "status": "completed",
-      "gate": "G6.5",
-      "mode": "advisory",
-      "pass": true,
-      "composite": 0.92,
-      "threshold": 0.9,
-      "criteria": {
-        "task_understanding": 0.94,
-        "approach_clarity": 0.92,
-        "requirements_alignment": 0.94,
-        "risk_assessment": 0.9,
-        "completeness": 0.91
-      },
-      "recommended_action": "proceed"
-    }
-  },
-  "implementation": {
-    "status": "passed_local_g7",
-    "completed_tasks": 75,
-    "total_tasks": 75,
-    "focused_tests": "6 files / 39 tests passed",
-    "typecheck": "passed",
-    "lint": "passed",
-    "api_parity": "passed",
-    "strict_scope": "passed",
-    "unit_test": "passed outside sandbox: 308 files / 3190 tests",
-    "build": "passed outside sandbox",
-    "e2e": "not run: no browser-visible UI changed",
-    "knowledge_index_check": "passed",
-    "diff_check": "passed",
-    "post_review_remediation": "idempotency storage failure now rolls back mutation and audit in one transaction",
-    "target_uat": "post-merge API-and-audit UAT pending"
-  },
-  "post_gates": {
-    "doctor": "passed",
-    "verify_implementation": "passed_direct_fallback",
-    "verify_tasks": "passed_direct_fallback",
-    "code_review": "passed_after_remediation",
-    "integration_suite": "passed",
-    "cleanup": "passed_direct_fallback",
-    "reviewability_diff_gate": "passed_transition_exception",
-    "self_review": "passed",
-    "pr_body_generation": "/private/tmp/speckit-pr-body-013c.md",
-    "pr_creation": "passed",
-    "review_remediation": "initial inspection completed: no comments or reviews; checks pending with visual-review-approval/playwright failure",
-    "retrospective": "passed"
-  },
-  "pr": {
-    "number": 63,
-    "url": "https://github.com/racecraft-lab/mission-control/pull/63",
-    "draft": true,
-    "head": "013c-retry-debug-surfaces",
-    "base": "main",
-    "commit": "8c7ca37e"
+    "cleanup_blockers": [
+      "Current branch is a feature branch, not a safe base branch for active spec cleanup.",
+      "Dry-run did not apply archival edits or remove source spec folders."
+    ],
+    "notes": "Archive extension is installed. SPEC-014A is excluded as the current target even though the feature directory will be created by Phase 1."
   }
 }

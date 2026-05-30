@@ -2,6 +2,16 @@
 
 SPEC-001 adds forward-only migrations M53 through M61; SPEC-004 adds M62 (`idx_tasks_one_successor_per_parent`); SPEC-006 adds M63 (area-label routing schema); SPEC-008 adds M65a..m + M66 (resource governance schema, see SPEC-008 row below). The live migration runner has no `down()` hook, so rollback is an operator-initiated manual SQL procedure.
 
+## SPEC-014A (Sandbox Lifecycle) Rollback
+
+SPEC-014A adds M80 `080_agent_sandbox_lifecycles`. To reverse only the sandbox lifecycle schema after stopping Mission Control writers and backing up the database, run:
+
+1. `docs/migrations/rollback-M80.sql`
+2. `PRAGMA foreign_key_check;`
+3. Verify `schema_migrations` no longer contains `080_agent_sandbox_lifecycles`.
+
+This rollback removes `agent_sandbox_lifecycle_events` before `agent_sandbox_lifecycles` and leaves unrelated task, attempt, claim, activity, and workflow data intact.
+
 ## SPEC-008 (Resource Governance) Reverse Order
 
 Per FR-243 the SPEC-008 rollback files MUST be applied in strict reverse order, M66 → M65m → M65l → ... → M65a → M64. The M64 file is the SPEC-001 tail rollback (M64 was reserved for SPEC-008 pre-rename — the canonical SPEC-008 chain begins at M65a):
