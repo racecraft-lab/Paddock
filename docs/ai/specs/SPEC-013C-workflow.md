@@ -40,7 +40,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Checklist | `$speckit-checklist` | Complete | Required domains passed with 75 items and 0 open gaps |
 | Tasks | `$speckit-tasks` | Complete | Generated 75 dependency-ordered TDD-first tasks bounded to API/debug authority |
 | Analyze | `$speckit-analyze` | Complete | Two high findings remediated; no unresolved scope, coverage, or constitution findings remain |
-| Implement | `$speckit-implement` | In Progress | Execute `tasks.md` in TDD order after confidence gate passed |
+| Implement | `$speckit-implement` | Complete | Implementation, PR #63 merge, HAL deployment, and post-merge API-and-audit UAT complete |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -215,7 +215,7 @@ Forbidden:
 - [x] Every mutation emits bounded allowlisted audit/debug evidence and rejects raw prompts, transcripts, tokens, auth headers, GitHub bodies, provider responses, and secret-shaped payloads.
 - [x] The existing claim-reconciliation read model exposes action eligibility, available actions, backoff, last operator action, and sanitized error state for SPEC-013D.
 - [x] No UI control, CLI/MCP action surface, sandbox lifecycle, adapter registry, harness execution, successor selection, direct GitHub mutation, or new dashboard enters SPEC-013C.
-- [ ] Post-merge HITL UAT proves API-and-audit behavior on the target deployment and records that operator UX adoption remains blocked on SPEC-013D.
+- [x] Post-merge HITL UAT proves API-and-audit behavior on the target deployment and records that operator UX adoption remains blocked on SPEC-013D.
 
 ---
 
@@ -705,7 +705,7 @@ Post-merge UAT:
 | Audit payload safety | Passed | Positive allowlist and secret-shaped value redaction covered in domain tests; static forbidden-authority guard passed |
 | Read-model extension | Passed | `task_claim_reconciliation.v1` exposes optional `claim_control` eligibility, expected state, backoff, last action, and sanitized error fields without writes |
 | SPEC-013D adoption blocker recorded | Passed | Roadmap, quickstart, UAT report, and PR review packet state that operator UX adoption remains blocked on SPEC-013D |
-| API-and-audit UAT | Local scaffold complete | `specs/013c-retry-debug-surfaces/uat-report.md` defines post-merge target UAT matrix; target deployment UAT remains post-merge |
+| API-and-audit UAT | Passed | `specs/013c-retry-debug-surfaces/uat-report.md` records local PR #63 UAT plus post-merge HAL target UAT replay `spec013c-014a-uat-1780110032087` |
 
 ### Implementation Evidence
 
@@ -715,6 +715,15 @@ Post-merge UAT:
 - `direnv exec . pnpm build` passed outside the Codex sandbox after the known Turbopack port-binding sandbox failure.
 - `direnv exec . pnpm knowledge:index:check` and `git diff --check` passed after roadmap/workflow/spec artifact updates.
 - `pnpm test:e2e` was not run because SPEC-013C changed API/debug authority only; no browser-visible operator UI changed.
+
+### Post-Merge Target Deployment And UAT
+
+- PR #63 merged to `main` as `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89` on 2026-05-30T01:33:03Z.
+- HAL target deployment was promoted to `c01d9e44ec826d94fa5916284c51453e5ec339ee` on May 29, 2026 CDT after SPEC-014A also merged.
+- Deployment verification passed: `pnpm install --frozen-lockfile` was a lockfile no-op, `pnpm build` passed under Next.js 16.2.6, `mission-control.service` restarted and logged database migrations applied, `/login` returned HTTP `200`, and `openclaw-gateway.service` remained active.
+- Post-merge UAT replay `spec013c-014a-uat-1780110032087` passed for active release, cancel, retry, failed retry, backoff block, backoff override, idempotency replay, idempotency body mismatch, stale state, unauthenticated and viewer rejection, feature-flag-off rejection, read-model before/after evidence, and M79/M80 migration markers.
+- Cleanup verification passed: row counts returned to baseline, marker residue was `0` for workspaces/projects/tasks/users/sessions/claim-control/lifecycle tables/activities, no `spec013c-014a-uat-*` workspace rows remained, and no `/tmp/spec013c-014a-uat-*-mission-control.db.bak` files remained.
+- UAT report: `specs/013c-retry-debug-surfaces/uat-report.md`.
 
 ### Post-Implementation Gate Evidence
 
@@ -729,8 +738,8 @@ Post-merge UAT:
 | Reviewability Diff Gate | Passed | `reviewability-gate.sh diff origin/main...HEAD` passed under the recorded transition exception: 6296 reviewable LOC, 17 production files, 41 total files, 6 primary surfaces |
 | Self-Review | Passed | See Self-Review block below |
 | PR Body Generation | Passed | Generated and populated `/private/tmp/speckit-pr-body-013c.md` from the host PR template and SPEC-013C review packet |
-| PR Creation | Passed | Draft PR #63 created: `https://github.com/racecraft-lab/mission-control/pull/63` |
-| Review Remediation | Completed initial inspection | No review comments or reviews existed immediately after PR creation; checks were still in progress and `visual-review-approval/playwright` was failing pending visual workflow resolution |
+| PR Creation | Passed | PR #63 created and later merged to `main`: `https://github.com/racecraft-lab/mission-control/pull/63` |
+| Review Remediation | Complete | PR #63 merged as `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89`; post-merge target deployment and API-and-audit UAT passed |
 | Retrospective | Passed | `specs/013c-retry-debug-surfaces/retrospective.md` created |
 
 ### Self-Review
@@ -744,8 +753,8 @@ Post-merge UAT:
 
 - Commit: `8c7ca37e` (`feat: add claim-control retry debug api`).
 - Push: `origin/013c-retry-debug-surfaces`.
-- PR: `https://github.com/racecraft-lab/mission-control/pull/63` (draft).
-- Initial PR inspection: no comments and no reviews were present. `reviewDecision=REVIEW_REQUIRED`; CodeQL, Quality Gate, Mission Control UI E2E, and visual checks were in progress at creation time; `visual-review-approval/playwright` reported failure pending the visual workflow/approval path.
+- PR: `https://github.com/racecraft-lab/mission-control/pull/63`.
+- Merge: PR #63 merged to `main` as `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89` on 2026-05-30T01:33:03Z.
 
 ---
 
@@ -793,4 +802,4 @@ src/lib/task-create.ts                            No task creation changes
 
 ## Next Step
 
-Continue the autopilot post-implementation gates, then push and open the PR when the canonical post items are complete.
+Closeout complete. SPEC-013D is the next required operator UX follow-up before first real harness operation.

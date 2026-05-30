@@ -56,7 +56,7 @@ The only observed deltas are implementation/process refinements already captured
 | FR-019..FR-026 duplicate create, conflict, cleanup, rollback, retention | Implemented | Transactional create/reuse/conflict behavior, `create_reused`, cleanup failure, stale `cleanup_pending`, rollback, and durable row retention are covered in lifecycle tests. |
 | FR-027..FR-032 flag-off behavior and fake owners | Implemented | `FEATURE_AGENT_RUNNER_SANDBOXES` is default-off in `src/lib/feature-flags.ts`; mutation paths resolve through `resolveFlag`; tests prove no rows/events/artifacts and no real harness launch. |
 | FR-033..FR-036 read API and documentation parity | Implemented | `src/app/api/tasks/[id]/sandbox-lifecycles/route.ts`, `src/app/api/index/route.ts`, `openapi.json`, and route tests cover viewer auth, workspace/task scope, filtering, disabled evidence, no-write GET behavior, API index, and OpenAPI parity. |
-| FR-037 manual UAT | Implemented | Workflow post-gate evidence records enabled fake lifecycle, cleanup, flag-off mutation block, and disabled-state read evidence through disposable in-memory fake lifecycle and route tests. |
+| FR-037 manual UAT | Implemented | Workflow and UAT report record enabled fake lifecycle, cleanup, flag-off mutation block, and disabled-state read evidence through disposable in-memory fake lifecycle tests plus post-merge HAL target replay `spec013c-014a-uat-1780110032087`. |
 | FR-038..FR-039 scope deferral and SPEC-014B handoff | Implemented | Scope guard tests cover UI, adapters, real launch, retry/debug, successor, governance, token, and auto-merge exclusions; roadmap preserves SPEC-014B as first runtime-inventory integration. |
 | FR-040 structured boundary failures | Implemented | Validation and lifecycle errors return structured reason codes and safe metadata; tests cover unsafe metadata and route error responses. |
 
@@ -73,7 +73,7 @@ The only observed deltas are implementation/process refinements already captured
 | SC-007 cleanup/rollback removes fake artifacts and keeps rows | Met | Cleanup and rollback tests verify artifact removal with durable lifecycle/event rows. |
 | SC-008 cleanup failure is inspectable | Met | Cleanup failure tests verify `cleanup_failed` plus safe reason metadata. |
 | SC-009 API index/OpenAPI coverage | Met | Route tests assert `/api/tasks/{id}/sandbox-lifecycles` in OpenAPI and `/api/tasks/:id/sandbox-lifecycles` in API index. |
-| SC-010 manual UAT | Met | Workflow records disposable enabled lifecycle, read inspection, cleanup, flag-off mutation block, and disabled read evidence. |
+| SC-010 manual UAT | Met | Workflow and `uat-report.md` record disposable enabled lifecycle, read inspection, cleanup, flag-off mutation block, disabled read evidence, and zero target residue. |
 
 ## Architecture Drift Table
 
@@ -189,8 +189,9 @@ Latest workflow evidence records:
 - `$speckit-review-run`: prior cleanup, path-validation, and OpenAPI findings cleared.
 - `$speckit-cleanup-run`: 58 completed tasks inspected, 0 edits, 0 critical or small auto-fix findings.
 - Reviewability diff gate: pass with ratified exception.
-- PR: https://github.com/racecraft-lab/mission-control/pull/64.
-- PR review state at creation: 0 review comments and 0 reviews; GitHub checks pending.
+- PR: https://github.com/racecraft-lab/mission-control/pull/64, merged as `c01d9e44ec826d94fa5916284c51453e5ec339ee` on 2026-05-30T02:08:31Z.
+- Post-merge HAL deployment: `c01d9e44ec826d94fa5916284c51453e5ec339ee`; `pnpm install --frozen-lockfile`, `pnpm build`, service restart, `/login` HTTP `200`, and OpenClaw gateway status passed.
+- Post-merge HAL UAT: replay `spec013c-014a-uat-1780110032087` passed fake owners `mission_control`, `openclaw`, and `external_harness`, enabled/disabled read evidence, flag-off mutation blocks, safe read payload checks, and zero disposable residue.
 
 ## Lessons Learned And Recommendations
 
@@ -217,6 +218,7 @@ Latest workflow evidence records:
 | `tsconfig.spec-strict.json` | Strict-compatible SPEC-014A helper/test scope. |
 | `eslint.config.mjs` | New SPEC-014A module lint scope. |
 | `specs/014a-sandbox-lifecycle-contract/quickstart.md` | Focused commands and manual UAT procedure. |
+| `specs/014a-sandbox-lifecycle-contract/uat-report.md` | Post-merge HAL target deployment and UAT evidence. |
 | `specs/014a-sandbox-lifecycle-contract/verify-tasks-report.md` | Post-implementation phantom-task verification report. |
 | `docs/ai/specs/SPEC-014A-workflow.md` | Workflow, verification, PR, review, and post-gate evidence. |
 

@@ -30,7 +30,7 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 | Checklist | `$speckit-checklist` | Complete | Completed data integrity, security, API contract, and error-handling checklists |
 | Tasks | `$speckit-tasks` | Complete | Generated dependency-ordered TDD tasks and reconciled implementation groups |
 | Analyze | `$speckit-analyze` | Complete | Accepted lifecycle-boundary reviewability exception with no critical findings |
-| Implement | `$speckit-implement` | Complete | M80 lifecycle persistence, fake owners, read API, docs, and verification complete |
+| Implement | `$speckit-implement` | Complete | M80 lifecycle persistence, fake owners, read API, docs, PR #64 merge, HAL deployment, and post-merge UAT complete |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -525,7 +525,7 @@ Verification expectations:
 | Lifecycle Core | Complete | T012-T039 | Key/path validation, safe metadata handling, idempotent create/reuse/conflict behavior, transitions, cleanup, rollback, and durable event evidence complete. |
 | Fake Owners | Complete | T012-T018 | `mission_control`, `openclaw`, and `external_harness` fake owners exercise lifecycle hooks without real harness launch code. |
 | Read Surface | Complete | T040-T046 | `sandbox_lifecycle.v1` read model, viewer/task/workspace-scoped route, API index, and OpenAPI parity complete. |
-| Verification | Complete | T047-T058 | Focused tests, full Vitest, typecheck, lint, build, API parity, server-only e2e N/A, and disposable in-memory UAT evidence complete. |
+| Verification | Complete | T047-T058 | Focused tests, full Vitest, typecheck, lint, build, API parity, server-only e2e N/A, disposable in-memory UAT, and post-merge HAL target UAT evidence complete. |
 
 ### Verification Evidence
 
@@ -545,15 +545,24 @@ Verification expectations:
 | Cleanup | Pass: `$speckit-cleanup-run` inspected 58 completed tasks, applied 0 edits, found 0 critical or small auto-fix findings, and validated lint/typecheck/API parity/focused SPEC-014A tests. |
 | Reviewability diff gate | Pass with ratified exception: `reviewability-gate.sh diff origin/main...HEAD` returned `status=exception`, `pass=true`. |
 | PR body generation | Complete: PR review packet generated at `/private/tmp/speckit-pr-body-014a.md` from the host PR template and filled with SPEC-014A scope, traceability, verification, and rollback details. |
-| PR creation | Complete: https://github.com/racecraft-lab/mission-control/pull/64 |
-| Review remediation | Complete initial check: PR #64 had 0 review comments and 0 reviews at creation time; GitHub checks were pending. |
+| PR creation | Complete: PR #64 created and later merged to `main`: https://github.com/racecraft-lab/mission-control/pull/64 |
+| Review remediation | Complete: PR #64 merged as `c01d9e44ec826d94fa5916284c51453e5ec339ee`; post-merge target deployment and sandbox lifecycle UAT passed. |
 | Retrospective | Complete: `specs/014a-sandbox-lifecycle-contract/retrospective.md` reports 58/58 tasks complete, 100% spec adherence, 0 critical findings, and 0 significant findings. |
 | E2E | N/A: SPEC-014A adds no UI/browser route surface; repository-approved equivalent is full Vitest plus typecheck, lint, build, and API parity. |
-| Manual UAT | Complete through disposable in-memory fake lifecycle and route tests: enabled fake lifecycle, cleanup, flag-off mutation block, and disabled-state read evidence verified. |
+| Manual UAT | Complete through disposable in-memory fake lifecycle and route tests plus post-merge HAL target replay `spec013c-014a-uat-1780110032087`: enabled fake lifecycle, cleanup, flag-off mutation block, disabled-state read evidence, and zero residue verified. |
+
+### Post-Merge Target Deployment And UAT
+
+- PR #64 merged to `main` as `c01d9e44ec826d94fa5916284c51453e5ec339ee` on 2026-05-30T02:08:31Z.
+- HAL target deployment was promoted to `c01d9e44ec826d94fa5916284c51453e5ec339ee` on May 29, 2026 CDT.
+- Deployment verification passed: `pnpm install --frozen-lockfile` was a lockfile no-op, `pnpm build` passed under Next.js 16.2.6, `mission-control.service` restarted and logged database migrations applied, `/login` returned HTTP `200`, and `openclaw-gateway.service` remained active.
+- Post-merge UAT replay `spec013c-014a-uat-1780110032087` passed for flag-off create block before enable, fake lifecycle completion for `mission_control`, `openclaw`, and `external_harness`, enabled `sandbox_lifecycle.v1` read API with 3 lifecycle rows and no unsafe host path/token payload, flag-off create block after disable, disabled read evidence preserving durable lifecycle rows, and M79/M80 migration markers.
+- Cleanup verification passed: row counts returned to baseline, marker residue was `0` for workspaces/projects/tasks/users/sessions/claim-control/lifecycle tables/activities, no `spec013c-014a-uat-*` workspace rows remained, no fake artifact root remained, and no `/tmp/spec013c-014a-uat-*-mission-control.db.bak` files remained.
+- UAT report: `specs/014a-sandbox-lifecycle-contract/uat-report.md`.
 
 ### Self-Review
 
-1. **Tests executed**: Yes. Latest post-gate evidence on 2026-05-28 includes focused SPEC-014A Vitest (34 tests), feature-flag/migration guard tests (44 tests), `pnpm typecheck`, `pnpm lint`, `pnpm api:parity`, `pnpm build` outside sandbox, and full `pnpm test` outside sandbox (3201 passed, 3 skipped, 84 todo).
+1. **Tests executed**: Yes. Latest post-gate evidence on 2026-05-28 includes focused SPEC-014A Vitest (34 tests), feature-flag/migration guard tests (44 tests), `pnpm typecheck`, `pnpm lint`, `pnpm api:parity`, `pnpm build` outside sandbox, and full `pnpm test` outside sandbox (3201 passed, 3 skipped, 84 todo). Post-merge HAL target UAT passed on May 29, 2026 CDT with replay `spec013c-014a-uat-1780110032087`.
 2. **Edge cases**: Covered by named tests: adversarial path/key/root escapes (`src/lib/__tests__/agent-sandbox-lifecycle.test.ts:62`, `:77`), flag-OFF mutation/artifact no-touch/read evidence (`:99`, `:137`, `:363`), duplicate reuse/conflict/projection drift (`:172`, `:189`, `:204`), unsafe persisted metadata/handles (`:222`), cleanup failure/stale pending/rollback retention (`:270`, `:296`, `:319`, `:337`), route auth/scope/filter/no-write/disabled reads (`src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts:128`, `:179`), and migration/rollback constraints (`src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts:44`, `:89`, `:104`, `:121`).
 3. **Requirements matched**: All 40 FRs map to checked tasks T001-T058; `$speckit-verify-tasks-run` rerun reported 11/11 previously partial tasks verified and 0 flagged items in `specs/014a-sandbox-lifecycle-contract/verify-tasks-report.md`.
 4. **Follow-up markers**: No active `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers remain in SPEC-014A artifacts. Scope deferrals are landed in the roadmap and design concept: SPEC-014B owns first operator-visible runtime-inventory integration for read-only sandbox lifecycle references, while richer controls stay in SPEC-014C/D or a later dedicated UI/control spec.
@@ -573,6 +582,7 @@ Verification expectations:
 - [X] `pnpm lint` passes.
 - [X] Required broad tests pass.
 - [X] Manual API UAT is complete.
+- [X] Post-merge target deployment and HAL UAT evidence is recorded.
 - [X] PR review packet records reviewability exception, deferrals, rollback, flag-off behavior, and UAT evidence.
 
 ---

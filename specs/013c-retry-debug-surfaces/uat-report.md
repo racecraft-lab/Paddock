@@ -2,7 +2,7 @@
 
 ## Status
 
-Local implementation verification is complete. Target-deployment post-merge UAT remains to be executed after the SPEC-013C PR is merged and deployed.
+Complete. PR #63 merged to `main` as `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89` on 2026-05-30T01:33:03Z. HAL target deployment was promoted to `c01d9e44ec826d94fa5916284c51453e5ec339ee` on May 29, 2026 CDT, covering SPEC-013C plus the subsequent SPEC-014A merge, and post-merge API-and-audit UAT passed with zero disposable residue.
 
 SPEC-013C provides backend API/debug authority only. In-app operator adoption remains blocked on SPEC-013D, and first real harness operation remains blocked on SPEC-013D plus SPEC-014B.
 
@@ -62,6 +62,55 @@ Cleanup restored the UAT row-count tables to baseline:
 
 The disposable GitHub lifecycle control rows and viewer session/user were also
 removed during cleanup.
+
+## Post-Merge HAL Target UAT
+
+Target UAT was executed on May 29, 2026 CDT against HAL after deploying merged
+`main` commit `c01d9e44ec826d94fa5916284c51453e5ec339ee`, which contains PR #63
+merge commit `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89`.
+
+- `uat_replay_id`: `spec013c-014a-uat-1780110032087`
+- Target: HAL `mission-control.service`, local HTTP `http://127.0.0.1:3000`
+- Deployment evidence: `pnpm install --frozen-lockfile` no-op from lockfile; `pnpm build` passed under Next.js 16.2.6; `mission-control.service` restarted and logged database migrations applied; `/login` returned HTTP `200`; `openclaw-gateway.service` remained active.
+- Migration markers: `079_task_claim_control`, `080_agent_sandbox_lifecycles`
+- Auth roles used: disposable session admin and disposable session viewer
+- Enabled scope: disposable workspace `16` with `FEATURE_WORKSPACE_SWITCHER=true` and `FEATURE_TASK_CONTROL_PLANE=true`
+- Flag-off scope: disposable workspace `17` with `FEATURE_WORKSPACE_SWITCHER=true` and `FEATURE_TASK_CONTROL_PLANE=false`
+- Stage key: `dev_implementation`
+
+| Fixture | Result |
+|---------|--------|
+| Active claim release | Passed: `200`, outcome `released`, release reason `operator_released`; read model changed from active claim `10` to no active claim |
+| Active claim cancel | Passed: `200`, outcome `cancelled`, release reason `operator_cancelled` |
+| Retry active claim | Passed: `200`, outcome `retry_ready`, release reason `operator_retry_requested` |
+| Retry failed evidence | Passed: `200`, outcome `retry_ready`, backoff decision `not_active` |
+| Retry active backoff | Passed: `200`, outcome `retry_backoff_active`, backoff decision `active` |
+| Retry override | Passed: `200`, outcome `retry_ready`, backoff decision `overridden`, override applied |
+| Same-key replay | Passed: replay request `200` with `idempotency.replayed=true` |
+| Same-key body mismatch | Passed: `422`, sanitized category `idempotency_key_body_mismatch` |
+| Stale/conflict | Passed: `409`, outcome `stale_state` |
+| Unauthorized/viewer | Passed: unauthenticated request returned `401` from the global auth layer; viewer request returned `403` category `forbidden_role` |
+| Feature flag off | Passed: `403`, outcome `flag_off` |
+| Read model before/after | Passed: `task_claim_reconciliation.v1` reflected expected active claim before release and no active claim after release |
+
+Cleanup restored the target UAT row-count tables to baseline and verified zero marker residue:
+
+| Table | Baseline | After cleanup | Residue |
+|-------|----------|---------------|---------|
+| `workspaces` | 3 | 3 | 0 |
+| `projects` | 7 | 7 | 0 |
+| `users` | 1 | 1 | 0 |
+| `user_sessions` | 2 | 2 | 0 |
+| `tasks` | 4 | 4 | 0 |
+| `task_stage_attempts` | 0 | 0 | 0 |
+| `task_stage_attempt_events` | 0 | 0 | 0 |
+| `task_stage_claims` | 0 | 0 | 0 |
+| `task_claim_control_idempotency_keys` | 0 | 0 | 0 |
+| `github_sync_lifecycle_controls` | 0 | 0 | 0 |
+| `resource_policy_events` | 0 | 0 | 0 |
+| `activities` | 410 | 410 | 0 |
+
+The temporary database backup, sandbox test file, and disposable workspace/project/task/user/session rows were removed. A final HAL check returned no `spec013c-014a-uat-*` workspace rows and no `/tmp/spec013c-014a-uat-*-mission-control.db.bak` files.
 
 ## Target UAT Matrix
 
