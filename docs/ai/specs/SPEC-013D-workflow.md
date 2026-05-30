@@ -35,8 +35,8 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 |-------|---------|--------|-------|
 | Prerequisites + Archive Sweep | `$speckit-autopilot` startup | Complete | Branch/worktree, SpecKit CLI, Codex agents, pnpm/Node 22, reviewability preset, archive sweep, typecheck, lint, unit-test rerun, build, and knowledge index passed on 2026-05-30 |
 | Specify | `$speckit-specify` | Complete | Generated `spec.md` and requirements checklist; G1 passed with zero clarification markers |
-| Clarify | `$speckit-clarify` | Pending | Resolve exact UI copy, component API, fixture shape, accessibility, stale/conflict refresh, and visual evidence details |
-| Plan | `$speckit-plan` | Pending | Produce architecture bounded to task detail UI plus SPEC-013C route clients; no migration or new backend semantics |
+| Clarify | `$speckit-clarify` | Complete | Resolved UI copy, component ownership, fixture shape, accessibility/focus, stale/conflict refresh, idempotency lifecycle, and visual evidence details; G2 passed |
+| Plan | `$speckit-plan` | Complete | Produced task-detail UI architecture, client contract, UI state model, quickstart, strict-scope file list, and no-migration decision; G3 passed |
 | Checklist | `$speckit-checklist` | Pending | Run UX, accessibility, API contracts, state management, and error-handling checklists |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with real Playwright journey and Storybook visual states |
 | Analyze | `$speckit-analyze` | Pending | Verify no drift into backend semantics, dashboard, scheduler, sandbox, adapter, or harness execution |
@@ -372,11 +372,11 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context, constitution gates, source layout, and no-migration decision |
-| `research.md` | Pending | If needed for accessibility/visual or component-state decisions |
-| `data-model.md` | Pending | Likely N/A or UI state model only; no database migration |
-| `contracts/` | Pending | Client-consumed read/mutation contract summary if Plan requires it |
-| `quickstart.md` | Pending | Operator UAT and rollback/flag-off verification path |
+| `plan.md` | Complete | Defines task-detail ownership, `ClaimControlSection`, no migration/no new backend semantics, strict-scope targets, refresh behavior, and visual evidence requirements |
+| `research.md` | Complete | Records decisions for modal ownership, bounded component, backend-driven action source, copy map, idempotency lifecycle, Playwright/Storybook evidence, and no new backend state |
+| `data-model.md` | Complete | UI state model only: read model subset, action descriptors, confirmation draft, idempotency attempt, outcome receipt, and fixture manifest |
+| `contracts/` | Complete | `contracts/claim-control-ui-contract.md` pins consumed GET fields, POST body/header construction, refresh matrix, component contract, and evidence manifest |
+| `quickstart.md` | Complete | Focused local verification, visual evidence commands, manual UAT checklist, cleanup expectations, and flag-off rollback path |
 
 ---
 

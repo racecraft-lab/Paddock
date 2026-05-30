@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013D-workflow.md",
-  "updated_at": "2026-05-30T16:36:36Z",
-  "active_step": "Phase 3: Plan",
+  "updated_at": "2026-05-30T17:10:17Z",
+  "active_step": "Phase 4: Checklist - ux",
   "current_spec_dir": "specs/013d-claim-control-operator-ux",
   "branch": "013d-claim-control-operator-ux",
   "plan": [
@@ -14,8 +14,8 @@
     { "step": "Phase 2: Clarify - Route Contracts and State Refresh Consensus", "status": "completed" },
     { "step": "Phase 2: Clarify - Fixtures, Accessibility, and Visual Evidence", "status": "completed" },
     { "step": "Phase 2: Clarify - Fixtures, Accessibility, and Visual Evidence Consensus", "status": "completed" },
-    { "step": "Phase 3: Plan", "status": "in_progress" },
-    { "step": "Phase 4: Checklist - ux", "status": "pending" },
+    { "step": "Phase 3: Plan", "status": "completed" },
+    { "step": "Phase 4: Checklist - ux", "status": "in_progress" },
     { "step": "Phase 4: Checklist - ux Consensus", "status": "pending" },
     { "step": "Phase 4: Checklist - accessibility", "status": "pending" },
     { "step": "Phase 4: Checklist - accessibility Consensus", "status": "pending" },
