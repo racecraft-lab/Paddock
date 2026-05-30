@@ -313,9 +313,15 @@ Focus on SPEC-013D verification:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | UX, copy, and interaction states | Pending | Pending |
+| 1 | UX, copy, and interaction states | 5 | Accepted bounded task-detail section ownership, closed copy-map labels, inline focus/live-region behavior, deterministic Playwright/Storybook evidence, and same-submission idempotency retry lifecycle |
 | 2 | Route contracts and state refresh | Pending | Pending |
 | 3 | Fixtures, accessibility, and visual evidence | Pending | Pending |
+
+### Consensus Resolution Log
+
+| Phase Item | Round | Routed Categories | Outcome | Analysts Used |
+|------------|-------|-------------------|---------|---------------|
+| Phase 2 Session 1 - Idempotency key lifecycle | Recovery | security | Accepted in-memory same-submission retry only; raw key never persisted/rendered; clear key on response, close, cancel, task change, expected-state refresh, changed body, or new decision | Parent session using SPEC-013C spec/data-model/route-test evidence; subagent consensus skipped to avoid session-limit deadlock |
 
 ---
 

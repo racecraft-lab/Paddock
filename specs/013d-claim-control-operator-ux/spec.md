@@ -5,6 +5,18 @@
 **Status**: Draft  
 **Input**: User description: "SPEC-013D makes the SPEC-013C retry, release, cancel, backoff, idempotency, and debug authority usable from the existing task detail experience without changing backend semantics."
 
+## Clarifications
+
+### Session 1 - UX, Copy, and Interaction States (2026-05-30)
+
+- The task detail remains the owner of claim-control loading and refresh orchestration; the `Claim control` surface may be implemented as a small bounded section component, but it must stay inside the existing Details tab rather than becoming a new tab, dashboard, or run-state data-model extension.
+- Operator-facing labels, confirmations, receipts, and errors use a closed local copy map keyed by the SPEC-013C action, outcome, and error vocabularies. UI text shows a human-readable label first and may show a bounded closed code second; it must not humanize arbitrary backend strings or expose raw diagnostics.
+- Action labels use the following accepted nouns and commands unless planning finds an accessibility issue: `Claim control`, `Retry stage`, `Release claim`, `Cancel stage`, `Cancel reason`, `Override reason`, and optional `Release reason`.
+- Inline confirmations move focus to the confirmation heading or first required reason field. Final receipts receive focus after refresh. Loading and success receipts are polite status updates; validation, conflict, and network failures are alert-style messages.
+- Disabled actions remain visible as real disabled controls with associated reason text. They must not appear broken or imply the client recomputed eligibility.
+- Real Playwright evidence must use authenticated app flows, disposable task fixtures, deterministic claim/backoff/idempotency rows, restored feature flags, after-test cleanup, JSON fixture evidence, and before/confirm/after screenshots. Storybook states are supplemental visual review states only.
+- Recovery consensus accepted the same-submission idempotency lifecycle: after a network failure the UI may retry the exact same task, action, stage, expected state, and request body with the same in-memory key; every completed response, changed body, changed expected state, task change, close, cancel, or new operator decision clears the key. Raw keys are never stored, rendered, or written to evidence.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Inspect Claim-Control State (Priority: P1)
@@ -88,9 +100,9 @@ A maintainer can verify the operator journey through real browser evidence and s
 - The claim-control read model is absent for a task that otherwise has evidence and run-state data.
 - The backend returns feature-flag-disabled state with an explicit reason.
 - The operator opens a task with stale claim-control data and the backend rejects the mutation because expected state no longer matches.
-- A network failure happens after the operator confirms a mutation but before the client receives a response.
-- The same failed network submission is retried immediately and must reuse the in-flight idempotency key.
-- A subsequent operator decision must not reuse an earlier idempotency key.
+- A network failure happens after the operator confirms a mutation but before the client receives a response, leaving one same-submission retry path available.
+- The same failed network submission is retried immediately and must reuse the in-flight idempotency key and identical request body.
+- A subsequent operator decision, changed request body, changed expected state, task change, close, cancel, or completed response must clear the prior idempotency key.
 - The backend returns an idempotent replay instead of performing a second mutation.
 - The operator enters an overlong, empty, or otherwise invalid cancel or backoff override reason.
 - The backend returns sanitized error categories without raw request, diagnostics, prompt, transcript, provider, token, auth header, or GitHub body content.
@@ -107,21 +119,21 @@ A maintainer can verify the operator journey through real browser evidence and s
 - **FR-005**: The section MUST show claim-stage context sufficient for an operator to identify the affected stage, current claim state, backoff state where present, last operator action where present, and sanitized error category where present.
 - **FR-006**: The section MUST enable mutation controls only when the backend read model reports that the current user can mutate the stage.
 - **FR-007**: Read-only users MUST be able to inspect backend-provided claim-control state and unavailable reasons without any enabled mutation path.
-- **FR-008**: Retry, release, cancel, and backoff override confirmations MUST use inline confirmation states inside the Claim control section; browser-native confirmations and nested modals are out of scope.
+- **FR-008**: Retry, release, cancel, and backoff override confirmations MUST use inline confirmation states inside the Claim control section; browser-native confirmations and nested modals are out of scope. Confirmation focus MUST move to the confirmation heading or first required reason field.
 - **FR-009**: Claim-control submissions MUST use the existing `POST /api/tasks/[id]/claim-control` backend authority with an idempotency key, backend expected-state predicate, action, stage key, bounded reason fields, and optional backoff override when requested.
-- **FR-010**: A fresh idempotency key MUST be generated for each confirmation attempt, retained only while that request is in flight, and reused only for an immediate retry of the same failed network submission.
+- **FR-010**: A fresh idempotency key MUST be generated for each confirmation attempt, retained only in memory while that request is in flight, and reused only for an immediate retry of the same failed network submission with the same task, action, stage, expected state, and request body.
 - **FR-011**: Raw idempotency keys MUST NOT be displayed, persisted, or included in operator-facing receipts.
 - **FR-012**: Cancel MUST require a bounded operator reason before confirmation can be submitted.
 - **FR-013**: Backoff override MUST require a bounded operator reason before confirmation can be submitted.
 - **FR-014**: Release MUST allow an optional operator reason and MUST provide a short default reason when the operator leaves it blank.
 - **FR-015**: When retry is blocked by active backoff, retry MUST remain disabled by default with the backend-provided backoff time and reason, and an override path MUST be available only when the backend exposes it.
 - **FR-016**: After success, stale/conflict, and idempotent replay outcomes, the task detail MUST refresh claim reconciliation, task evidence, stage attempts, and the task list item before presenting the final refreshed availability.
-- **FR-017**: Each completed submission attempt MUST produce a compact inline receipt that includes action, backend outcome, stage key, refreshed availability, audit or activity reference when present, idempotency replay status when present, and sanitized error category when present.
+- **FR-017**: Each completed submission attempt MUST produce a compact inline receipt that includes action, backend outcome, stage key, refreshed availability, audit or activity reference when present, idempotency replay status when present, and sanitized error category when present. Receipt copy MUST come from the closed action, outcome, and error vocabulary rather than arbitrary backend strings.
 - **FR-018**: Error and conflict feedback MUST remain bounded to operator-safe categories and MUST NOT expose raw request bodies, raw diagnostics, prompts, transcripts, provider payloads, tokens, authorization headers, GitHub bodies, or raw backend internals.
-- **FR-019**: Loading, refresh, network-failure, stale/conflict, feature-flag-off, absent-state, and backend-error states MUST be explicit enough for operators to understand whether an action is pending, blocked, replayed, or unavailable.
+- **FR-019**: Loading, refresh, network-failure, stale/conflict, feature-flag-off, absent-state, and backend-error states MUST be explicit enough for operators to understand whether an action is pending, blocked, replayed, or unavailable. Loading and success messages MUST be perceivable as status updates; validation, conflict, and network-failure messages MUST be perceivable as alerts.
 - **FR-020**: SPEC-013D MUST preserve SPEC-013C backend semantics and MUST NOT add or change retry, release, cancel, backoff, claim, scheduler, idempotency, or debug authority behavior.
 - **FR-021**: SPEC-013D MUST NOT add a new migration, backend route, dashboard, CLI or MCP action, sandbox lifecycle behavior, adapter registry, harness execution path, direct GitHub mutation, successor selection, scheduler launch, or whole-task terminal mutation.
-- **FR-022**: User-facing UI changes MUST be verified by a real Playwright task-detail journey with screenshots for enabled release/cancel/retry, disabled/ineligible reasons, backoff override reason entry, stale/conflict refresh, viewer read-only state, and feature-flag-off behavior.
+- **FR-022**: User-facing UI changes MUST be verified by a real Playwright task-detail journey with screenshots for enabled release/cancel/retry, disabled/ineligible reasons, backoff override reason entry, stale/conflict refresh, viewer read-only state, and feature-flag-off behavior. The journey MUST authenticate through the app, seed deterministic disposable data, restore feature flags, clean up residue, and retain fixture evidence.
 - **FR-023**: Stable Storybook states MUST cover enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error states for the Claim control section.
 
 ### Spec Evidence And Archive Policy
