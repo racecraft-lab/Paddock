@@ -40,7 +40,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Checklist | `$speckit-checklist` | Complete | Generated and passed UX, accessibility, API contracts, state management, and error-handling requirements-quality checklists; G4 passed with zero gap markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 72 dependency-ordered TDD tasks across setup, foundation, five user stories, and polish; G5 passed and reviewability gate passed via transition exception for heuristic over-counting |
 | Analyze | `$speckit-analyze` | Complete | Found and resolved one Docker-backed UI evidence coverage gap; G6 passed with no unresolved CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | Pending | Build claim-control task-detail section, tests, visual evidence, docs, PR packet, and UAT evidence |
+| Implement | `$speckit-implement` | In Progress | Setup/foundation T001-T010 complete; claim-control copy/request helpers, component shell, Storybook/e2e shells, and task-detail route-client integration are in place |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -595,11 +595,17 @@ For each task:
 
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
-| 1 - Foundation/client contract | Pending | 0 | Pending |
-| 2 - Claim control section | Pending | 0 | Pending |
-| 3 - Task detail integration | Pending | 0 | Pending |
+| 1 - Foundation/client contract | Complete | 10 | T001-T010 completed with strict-scope entries, closed copy/request helpers, component prop/draft/receipt model, Storybook/e2e fixture shells, and focused component tests. Initial RED run produced one assertion correction before GREEN. |
+| 2 - Claim control section | In Progress | 0 | Component implementation exists for active, disabled, absent, flag-off, receipt, network retry, backoff override, and viewer/read-only states; story-specific task checkoff remains pending until remaining user-story assertions are reconciled task-by-task. |
+| 3 - Task detail integration | In Progress | 0 | `TaskDetailModal` now fetches claim reconciliation with `appendScopeToPath`, renders `ClaimControlSection`, posts to the existing claim-control route with ephemeral idempotency keys, and refreshes claim/evidence/stage-attempt/task-list state after responses. |
 | 4 - Browser and visual verification | Pending | 0 | Pending |
 | 5 - Docs, guardrails, PR packet, UAT | Pending | 0 | Pending |
+
+### Phase 7 Checkpoint Evidence
+
+- Focused component suite: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec vitest run src/components/panels/__tests__/claim-control-section.test.tsx` passed with 9 tests.
+- Strict TypeScript: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` passed.
+- Lint: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint` passed.
 
 ---
 

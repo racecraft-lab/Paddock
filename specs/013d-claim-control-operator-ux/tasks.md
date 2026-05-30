@@ -15,10 +15,10 @@
 
 **Purpose**: Prepare strict scope and fixture/evidence scaffolding before user-story code.
 
-- [ ] T001 Add planned SPEC-013D strict-scope entries to `tsconfig.spec-strict.json` and `eslint.config.mjs` for the new component, tests, story, and e2e files.
-- [ ] T002 [P] Add a SPEC-013D fixture/evidence constant block to `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts` with marker prefix `spec013d-claim-control-*`, required screenshot names, and fixture export filename.
-- [ ] T003 [P] Add an empty Storybook shell file at `src/components/panels/claim-control-section.stories.tsx` with visual tags `visual` and `spec-013d`.
-- [ ] T004 [P] Add the initial component test file `src/components/panels/__tests__/claim-control-section.test.tsx` with shared mock read-model builders.
+- [X] T001 Add planned SPEC-013D strict-scope entries to `tsconfig.spec-strict.json` and `eslint.config.mjs` for the new component, tests, story, and e2e files.
+- [X] T002 [P] Add a SPEC-013D fixture/evidence constant block to `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts` with marker prefix `spec013d-claim-control-*`, required screenshot names, and fixture export filename.
+- [X] T003 [P] Add an empty Storybook shell file at `src/components/panels/claim-control-section.stories.tsx` with visual tags `visual` and `spec-013d`.
+- [X] T004 [P] Add the initial component test file `src/components/panels/__tests__/claim-control-section.test.tsx` with shared mock read-model builders.
 
 ---
 
@@ -28,12 +28,12 @@
 
 **CRITICAL**: No user story implementation begins until this phase is complete.
 
-- [ ] T005 [P] Write failing closed-copy-map tests for actions, outcomes, sanitized errors, and default reason labels in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T006 [P] Write failing request-shaping tests for expected-state copying, reason defaults, override fields, client correlation id, and raw idempotency redaction in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T007 Implement closed claim-control copy helpers in `src/components/panels/claim-control-copy.ts`.
-- [ ] T008 Create the typed `ClaimControlSection` prop and draft/receipt model in `src/components/panels/claim-control-section.tsx`.
-- [ ] T009 Implement a local request-draft builder in `src/components/panels/claim-control-section.tsx` or `src/components/panels/claim-control-copy.ts` without importing backend mutation authority.
-- [ ] T010 Run the focused component test file and keep expected RED failures documented before story work begins.
+- [X] T005 [P] Write failing closed-copy-map tests for actions, outcomes, sanitized errors, and default reason labels in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T006 [P] Write failing request-shaping tests for expected-state copying, reason defaults, override fields, client correlation id, and raw idempotency redaction in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T007 Implement closed claim-control copy helpers in `src/components/panels/claim-control-copy.ts`.
+- [X] T008 Create the typed `ClaimControlSection` prop and draft/receipt model in `src/components/panels/claim-control-section.tsx`.
+- [X] T009 Implement a local request-draft builder in `src/components/panels/claim-control-section.tsx` or `src/components/panels/claim-control-copy.ts` without importing backend mutation authority.
+- [X] T010 Run the focused component test file and keep expected RED failures documented before story work begins.
 
 **Checkpoint**: Foundation ready when closed copy, component prop types, and request-draft tests fail for missing implementation.
 

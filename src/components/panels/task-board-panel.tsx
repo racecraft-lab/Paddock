@@ -16,9 +16,17 @@ import { MarkdownRenderer } from '@/components/markdown-renderer'
 import { Button } from '@/components/ui/button'
 import { ProjectManagerModal } from '@/components/modals/project-manager-modal'
 import { SessionMessage, shouldShowTimestamp, type SessionTranscriptMessage } from '@/components/chat/session-message'
+import { buildReceipt, type ClaimControlOutcomeReceipt } from '@/components/panels/claim-control-copy'
+import {
+  ClaimControlSection,
+  type ClaimControlDraft,
+  type ClaimControlNetworkRetry,
+  type ClaimControlSubmissionState,
+} from '@/components/panels/claim-control-section'
 import { TaskEvidenceSection } from '@/components/panels/task-evidence-section'
 import { TaskStageAttemptsSection } from '@/components/panels/task-stage-attempts-section'
 import type { TaskEvidenceResponse } from '@/lib/task-evidence'
+import type { TaskClaimReconciliationEnvelope } from '@/lib/task-claim-reconciliation'
 import type { TaskStageAttemptEnvelope } from '@/lib/task-stage-attempts'
 
 const log = createClientLogger('TaskBoard')
@@ -95,6 +103,12 @@ interface MentionOption {
   role?: string
 }
 
+interface ClaimControlIdempotencyAttempt {
+  key: string
+  body: string
+  draft: ClaimControlDraft
+}
+
 const STATUS_COLUMN_KEYS = [
   { key: 'backlog', titleKey: 'colBacklog', color: 'bg-slate-500/20 text-slate-400' },
   { key: 'inbox', titleKey: 'colInbox', color: 'bg-secondary text-foreground' },
@@ -120,6 +134,39 @@ function detectAwaitingOwner(task: Task): boolean {
   if (task.status !== 'assigned' && task.status !== 'in_progress') return false
   const text = `${task.title} ${task.description || ''}`.toLowerCase()
   return AWAITING_OWNER_KEYWORDS.some(kw => text.includes(kw))
+}
+
+function createClaimControlIdempotencyKey(): string {
+  const random = typeof globalThis.crypto?.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+  return `spec013d-${random}`
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value as Record<string, unknown>
+    : null
+}
+
+function receiptFromClaimControlResponse(
+  draft: ClaimControlDraft,
+  responseBody: unknown,
+): ClaimControlOutcomeReceipt {
+  const body = asRecord(responseBody)
+  const task = asRecord(body?.task)
+  const audit = asRecord(body?.audit)
+  const diagnostics = asRecord(body?.diagnostics)
+  const idempotency = asRecord(body?.idempotency)
+
+  return buildReceipt({
+    action: body?.action ?? draft.action,
+    outcome: body?.outcome ?? 'validation_error',
+    stageKey: task?.stage_key ?? draft.stage_key,
+    activityId: audit?.activity_id ?? null,
+    idempotencyReplayed: idempotency?.replayed ?? false,
+    sanitizedErrorCategory: diagnostics?.sanitized_error_category ?? null,
+  })
 }
 
 /** Build a human-readable label for a session key like "agent:operator:telegram-group-123" */
@@ -1267,6 +1314,13 @@ function TaskDetailModal({
   const [taskStageAttempts, setTaskStageAttempts] = useState<TaskStageAttemptEnvelope | null>(null)
   const [taskStageAttemptsLoading, setTaskStageAttemptsLoading] = useState(false)
   const [taskStageAttemptsError, setTaskStageAttemptsError] = useState<string | null>(null)
+  const [claimReconciliation, setClaimReconciliation] = useState<TaskClaimReconciliationEnvelope | null>(null)
+  const [claimControlLoading, setClaimControlLoading] = useState(false)
+  const [claimControlError, setClaimControlError] = useState<string | null>(null)
+  const [claimControlSubmitting, setClaimControlSubmitting] = useState<ClaimControlSubmissionState | null>(null)
+  const [claimControlReceipt, setClaimControlReceipt] = useState<ClaimControlOutcomeReceipt | null>(null)
+  const [claimControlNetworkRetry, setClaimControlNetworkRetry] = useState<ClaimControlNetworkRetry | null>(null)
+  const claimControlAttemptRef = useRef<ClaimControlIdempotencyAttempt | null>(null)
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -1325,6 +1379,22 @@ function TaskDetailModal({
     }
   }, [activeProductLineScope, task.id])
 
+  const fetchClaimReconciliation = useCallback(async () => {
+    try {
+      setClaimControlLoading(true)
+      setClaimControlError(null)
+      const response = await fetch(appendScopeToPath(`/api/tasks/${task.id}/claim-reconciliation`, activeProductLineScope))
+      if (!response.ok) throw new Error('Failed to fetch claim-control state')
+      const data = await response.json()
+      setClaimReconciliation(data as TaskClaimReconciliationEnvelope)
+    } catch {
+      setClaimReconciliation(null)
+      setClaimControlError('Failed to load claim-control state')
+    } finally {
+      setClaimControlLoading(false)
+    }
+  }, [activeProductLineScope, task.id])
+
   useEffect(() => {
     fetchComments()
   }, [fetchComments])
@@ -1337,6 +1407,15 @@ function TaskDetailModal({
   useEffect(() => {
     fetchTaskStageAttempts()
   }, [fetchTaskStageAttempts])
+  useEffect(() => {
+    fetchClaimReconciliation()
+  }, [fetchClaimReconciliation])
+  useEffect(() => {
+    claimControlAttemptRef.current = null
+    setClaimControlReceipt(null)
+    setClaimControlNetworkRetry(null)
+    setClaimControlSubmitting(null)
+  }, [activeProductLineScope, task.id])
   
   useSmartPoll(fetchComments, 15000)
 
@@ -1410,6 +1489,73 @@ function TaskDetailModal({
     }
   }
 
+  const refreshAfterClaimControlResponse = useCallback(async (draft: ClaimControlDraft) => {
+    setClaimControlSubmitting({ action: draft.action, phase: 'refreshing' })
+    await fetchClaimReconciliation()
+    await Promise.allSettled([
+      fetchTaskEvidence(),
+      fetchTaskStageAttempts(),
+    ])
+    onUpdate()
+  }, [fetchClaimReconciliation, fetchTaskEvidence, fetchTaskStageAttempts, onUpdate])
+
+  const handleClaimControlSubmit = useCallback(async (
+    draft: ClaimControlDraft,
+    options: { reuseNetworkAttempt?: boolean } = {},
+  ) => {
+    const body = JSON.stringify(draft)
+    const currentAttempt = claimControlAttemptRef.current
+    const attempt = options.reuseNetworkAttempt === true &&
+      currentAttempt &&
+      currentAttempt.body === body &&
+      currentAttempt.draft.action === draft.action &&
+      currentAttempt.draft.stage_key === draft.stage_key
+      ? currentAttempt
+      : {
+          key: createClaimControlIdempotencyKey(),
+          body,
+          draft,
+        }
+
+    claimControlAttemptRef.current = attempt
+    setClaimControlSubmitting({ action: draft.action, phase: 'submitting' })
+    setClaimControlError(null)
+    setClaimControlNetworkRetry(null)
+
+    try {
+      const response = await fetch(appendScopeToPath(`/api/tasks/${task.id}/claim-control`, activeProductLineScope), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotency-Key': attempt.key,
+        },
+        body,
+      })
+      const responseBody = await response.json().catch(() => null) as unknown
+      await refreshAfterClaimControlResponse(draft)
+      setClaimControlReceipt(receiptFromClaimControlResponse(draft, responseBody))
+      claimControlAttemptRef.current = null
+    } catch {
+      setClaimControlNetworkRetry({
+        draft,
+        message: 'Network failure. Retry the same submission before changing the request.',
+      })
+    } finally {
+      setClaimControlSubmitting(null)
+    }
+  }, [activeProductLineScope, refreshAfterClaimControlResponse, task.id])
+
+  const handleClaimControlNetworkRetry = useCallback((draft: ClaimControlDraft) => {
+    void handleClaimControlSubmit(draft, { reuseNetworkAttempt: true })
+  }, [handleClaimControlSubmit])
+
+  const handleClose = useCallback(() => {
+    claimControlAttemptRef.current = null
+    setClaimControlNetworkRetry(null)
+    setClaimControlSubmitting(null)
+    onClose()
+  }, [onClose])
+
   const parseCommentContent = (raw: string): { text: string; meta?: { model?: string; provider?: string; durationMs?: number; tokens?: number } } => {
     // Strip ANSI escape codes
     const stripped = raw.replace(/\x1b\[[0-9;]*m/g, '').replace(/\[3[0-9]m/g, '').replace(/\[39m/g, '')
@@ -1481,7 +1627,7 @@ function TaskDetailModal({
     )
   }
 
-  const dialogRef = useFocusTrap(onClose)
+  const dialogRef = useFocusTrap(handleClose)
 
   const statusColors: Record<string, string> = {
     inbox: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/25',
@@ -1502,7 +1648,7 @@ function TaskDetailModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={(e) => { if (e.target === e.currentTarget) handleClose() }}>
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="task-detail-title" className="bg-card border border-border rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/30">
         {/* Header */}
         <div className="px-6 pt-5 pb-4 border-b border-border/50">
@@ -1538,7 +1684,7 @@ function TaskDetailModal({
                       const errorData = await res.json().catch(() => ({ error: 'Failed to delete task' }))
                       throw new Error(errorData.error || 'Failed to delete task')
                     }
-                    onClose()
+                    handleClose()
                   } catch (error) {
                     const errorMessage = error instanceof Error ? error.message : 'Failed to delete task'
                     alert(errorMessage)
@@ -1547,7 +1693,7 @@ function TaskDetailModal({
               >
                 <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M3 4h10M5.5 4V3a1 1 0 011-1h3a1 1 0 011 1v1M6.5 7v4M9.5 7v4M4.5 4l.5 9a1 1 0 001 1h4a1 1 0 001-1l.5-9" /></svg>
               </Button>
-              <Button variant="ghost" size="icon-sm" onClick={onClose} aria-label={t('closeTaskDetails')} className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" size="icon-sm" onClick={handleClose} aria-label={t('closeTaskDetails')} className="text-muted-foreground hover:text-foreground">
                 <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
               </Button>
             </div>
@@ -1723,6 +1869,18 @@ function TaskDetailModal({
                   </div>
                 </div>
               )}
+
+              <ClaimControlSection
+                readModel={claimReconciliation}
+                loading={claimControlLoading}
+                error={claimControlError}
+                submitting={claimControlSubmitting}
+                receipt={claimControlReceipt}
+                networkRetry={claimControlNetworkRetry}
+                onSubmit={(draft) => { void handleClaimControlSubmit(draft) }}
+                onRetryNetworkSubmit={handleClaimControlNetworkRetry}
+                onRefresh={() => { void fetchClaimReconciliation() }}
+              />
 
               <TaskEvidenceSection
                 evidence={taskEvidence}
