@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-30T01:53:29.620Z",
+  "updatedAt": "2026-05-31T20:25:37.551Z",
   "prs": [
+    {
+      "prNumber": "65",
+      "prTitle": "SPEC-013D claim-control operator UX",
+      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/65",
+      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/65/",
+      "headRef": "013d-claim-control-operator-ux",
+      "baseRef": "main",
+      "updatedAt": "2026-05-31T20:25:37.551Z",
+      "latest": {
+        "storybook": {
+          "runId": "26723468644",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26723468644",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/65/storybook/latest/?v=26723468644-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/runs/26723468644-attempt-1/storybook/",
+          "updatedAt": "2026-05-31T20:25:37.551Z"
+        }
+      }
+    },
     {
       "prNumber": "64",
       "prTitle": "SPEC-014A sandbox lifecycle contract",

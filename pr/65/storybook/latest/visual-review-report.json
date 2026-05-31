@@ -1,0 +1,114 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/mission-control",
+  "reportMode": "pr",
+  "reportScope": "latest",
+  "surface": "storybook",
+  "surfaceLabel": "Storybook Components",
+  "workflowName": "Visual Storybook Snapshots",
+  "workflowFile": "visual-storybook.yml",
+  "prNumber": "65",
+  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/65",
+  "runId": "26723468644",
+  "runAttempt": "1",
+  "runKey": "26723468644-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26723468644",
+  "headRef": "013d-claim-control-operator-ux",
+  "baseRef": "main",
+  "headSha": "d46a2613e131a67dd9911f6532b864f31788b197",
+  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/storybook/latest/",
+  "latestHref": "https://racecraft-lab.github.io/mission-control/pr/65/storybook/latest/?v=26723468644-attempt-1",
+  "createdAt": "2026-05-31T20:25:37.551Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 9,
+    "open": 9,
+    "passed": 0,
+    "total": 9
+  },
+  "reviewScope": {
+    "domains": [
+      "unknown"
+    ],
+    "filtered": 302
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/mission-control",
+    "prNumber": "65",
+    "surface": "storybook",
+    "surfaceLabel": "Storybook Components",
+    "headSha": "d46a2613e131a67dd9911f6532b864f31788b197",
+    "runKey": "26723468644-attempt-1",
+    "items": [
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--active-operator.png",
+        "itemId": "spec-013d-claim-control-section--active-operator.png",
+        "snapshot": "spec-013d-claim-control-section--active-operator.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--backoff-override.png",
+        "itemId": "spec-013d-claim-control-section--backoff-override.png",
+        "snapshot": "spec-013d-claim-control-section--backoff-override.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--confirmation.png",
+        "itemId": "spec-013d-claim-control-section--confirmation.png",
+        "snapshot": "spec-013d-claim-control-section--confirmation.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--disabled-reasons.png",
+        "itemId": "spec-013d-claim-control-section--disabled-reasons.png",
+        "snapshot": "spec-013d-claim-control-section--disabled-reasons.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--error-state.png",
+        "itemId": "spec-013d-claim-control-section--error-state.png",
+        "snapshot": "spec-013d-claim-control-section--error-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--flag-off.png",
+        "itemId": "spec-013d-claim-control-section--flag-off.png",
+        "snapshot": "spec-013d-claim-control-section--flag-off.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--loading.png",
+        "itemId": "spec-013d-claim-control-section--loading.png",
+        "snapshot": "spec-013d-claim-control-section--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--receipt-conflict.png",
+        "itemId": "spec-013d-claim-control-section--receipt-conflict.png",
+        "snapshot": "spec-013d-claim-control-section--receipt-conflict.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--viewer-read-only.png",
+        "itemId": "spec-013d-claim-control-section--viewer-read-only.png",
+        "snapshot": "spec-013d-claim-control-section--viewer-read-only.png",
+        "variant": "new"
+      }
+    ]
+  }
+}
