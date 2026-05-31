@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013D-workflow.md",
-  "updated_at": "2026-05-31T20:22:19Z",
-  "active_step": "Post: Review Remediation",
+  "updated_at": "2026-05-31T20:26:54Z",
+  "active_step": "Complete",
   "current_spec_dir": "specs/013d-claim-control-operator-ux",
   "branch": "013d-claim-control-operator-ux",
   "plan": [
@@ -46,8 +46,8 @@
     { "step": "Post: Self-Review", "status": "completed" },
     { "step": "Post: PR Body Generation", "status": "completed" },
     { "step": "Post: PR Creation", "status": "completed" },
-    { "step": "Post: Review Remediation", "status": "in_progress" },
-    { "step": "Post: Retrospective", "status": "pending" }
+    { "step": "Post: Review Remediation", "status": "completed" },
+    { "step": "Post: Retrospective", "status": "completed" }
   ],
   "preflight": {
     "status": "passed",

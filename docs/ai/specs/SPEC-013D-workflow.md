@@ -655,8 +655,8 @@ For each task:
 | Self-Review | Complete | Self-review completed on 2026-05-31 with no `[edge-case-gap]`, orphan-FR, orphan-task, or silent deferral findings; implementation evidence is committed in `3e30d9c7`; PR metadata may add a later closeout commit. |
 | PR Body Generation | Complete | Deterministic UAT runbook generated at `specs/013d-claim-control-operator-ux/uat-runbook.md` on 2026-05-31; post-UAT `pnpm typecheck`, `pnpm lint`, and `git diff --check` passed. The PR body was generated in the linked worktree git metadata dir, populated from the host template, and validated to include `speckit-pro-review-packet-source` plus `## UAT Runbook`. |
 | PR Creation | Complete | Branch `013d-claim-control-operator-ux` pushed to `origin` and PR #65 opened on 2026-05-31 with the generated body file: https://github.com/racecraft-lab/mission-control/pull/65. |
-| Review Remediation | In Progress | Checking PR #65 for review comments, check feedback, and immediate remediation items. |
-| Retrospective | Pending | Not yet run. |
+| Review Remediation | Complete | `gh pr view 65` on 2026-05-31 found no PR comments, no reviews, no review threads, and `mergeable=MERGEABLE`; no actionable remediation was available. CodeQL and visual approval checks were queued/in progress at inspection time. |
+| Retrospective | Complete | Parent-side retrospective saved `specs/013d-claim-control-operator-ux/retrospective.md` on 2026-05-31 after the single retrospective worker was closed for non-return. Result: completion 100%, spec adherence 100%, 0 critical/significant/minor drift findings, 3 positive process findings, and no proposed spec changes. |
 
 ## Self-Review
 
