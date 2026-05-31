@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013D-workflow.md",
-  "updated_at": "2026-05-31T20:13:56Z",
-  "active_step": "Post: PR Body Generation",
+  "updated_at": "2026-05-31T20:19:40Z",
+  "active_step": "Post: PR Creation",
   "current_spec_dir": "specs/013d-claim-control-operator-ux",
   "branch": "013d-claim-control-operator-ux",
   "plan": [
@@ -44,8 +44,8 @@
     { "step": "Post: Cleanup", "status": "completed" },
     { "step": "Post: Reviewability Diff Gate", "status": "completed" },
     { "step": "Post: Self-Review", "status": "completed" },
-    { "step": "Post: PR Body Generation", "status": "in_progress" },
-    { "step": "Post: PR Creation", "status": "pending" },
+    { "step": "Post: PR Body Generation", "status": "completed" },
+    { "step": "Post: PR Creation", "status": "in_progress" },
     { "step": "Post: Review Remediation", "status": "pending" },
     { "step": "Post: Retrospective", "status": "pending" }
   ],
