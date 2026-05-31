@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-05-31T20:25:37.551Z",
+  "updatedAt": "2026-05-31T20:29:46.160Z",
   "prs": [
     {
       "prNumber": "65",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/mission-control/pr/65/",
       "headRef": "013d-claim-control-operator-ux",
       "baseRef": "main",
-      "updatedAt": "2026-05-31T20:25:37.551Z",
+      "updatedAt": "2026-05-31T20:29:46.160Z",
       "latest": {
         "storybook": {
-          "runId": "26723468644",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26723468644",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/65/storybook/latest/?v=26723468644-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/runs/26723468644-attempt-1/storybook/",
-          "updatedAt": "2026-05-31T20:25:37.551Z"
+          "runId": "26723484293",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26723484293",
+          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/65/storybook/latest/?v=26723484293-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/runs/26723484293-attempt-1/storybook/",
+          "updatedAt": "2026-05-31T20:29:46.160Z"
         }
       }
     },
