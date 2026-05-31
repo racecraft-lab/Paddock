@@ -654,8 +654,8 @@ For each task:
 | Reviewability Diff Gate | Complete | Post-cleanup reviewability gate passed on 2026-05-31 via `reviewability-gate.sh diff HEAD` before commit (`pass=true`, `reviewable_loc=1792`, `production_files=9`, `total_files=13`, `primary_surface_count=5`) and via `reviewability-gate.sh diff origin/main...HEAD` after commit (`status=exception`, `pass=true`, `reviewable_loc=5647`, `production_files=10`, `total_files=31`, `primary_surface_count=6`); warnings/blockers are covered by the recorded roadmap transition exception and strict-scope guard coverage. |
 | Self-Review | Complete | Self-review completed on 2026-05-31 with no `[edge-case-gap]`, orphan-FR, orphan-task, or silent deferral findings; implementation evidence is committed in `3e30d9c7`; PR metadata may add a later closeout commit. |
 | PR Body Generation | Complete | Deterministic UAT runbook generated at `specs/013d-claim-control-operator-ux/uat-runbook.md` on 2026-05-31; post-UAT `pnpm typecheck`, `pnpm lint`, and `git diff --check` passed. The PR body was generated in the linked worktree git metadata dir, populated from the host template, and validated to include `speckit-pro-review-packet-source` plus `## UAT Runbook`. |
-| PR Creation | In Progress | Pushing `013d-claim-control-operator-ux` and opening the PR with the generated body file. |
-| Review Remediation | Pending | Not yet run. |
+| PR Creation | Complete | Branch `013d-claim-control-operator-ux` pushed to `origin` and PR #65 opened on 2026-05-31 with the generated body file: https://github.com/racecraft-lab/mission-control/pull/65. |
+| Review Remediation | In Progress | Checking PR #65 for review comments, check feedback, and immediate remediation items. |
 | Retrospective | Pending | Not yet run. |
 
 ## Self-Review

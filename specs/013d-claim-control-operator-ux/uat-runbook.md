@@ -4,7 +4,7 @@
 |-------|-------|
 | Spec | 013d-claim-control-operator-ux |
 | Branch | 013d-claim-control-operator-ux |
-| PR | **PR:** <set on PR open> |
+| PR | https://github.com/racecraft-lab/mission-control/pull/65 |
 | Generated from | 2026-05-30T16:36:57Z |
 
 
