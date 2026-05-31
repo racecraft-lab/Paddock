@@ -17,7 +17,7 @@ const MAX_CORRELATION_LENGTH = 128
 const ACTION_LABELS = {
   retry: 'Retry stage',
   release: 'Release claim',
-  cancel: 'Cancel attempt',
+  cancel: 'Cancel stage',
 } as const satisfies Record<ClaimControlAction, string>
 
 const ACTION_DESCRIPTIONS = {
@@ -96,10 +96,20 @@ export interface ClaimControlOutcomeReceipt {
   readonly action: ClaimControlAction
   readonly outcome: ClaimControlOutcome
   readonly stage_key: string
+  readonly refreshed_availability: string
   readonly activity_reference: string | null
   readonly idempotency_replayed: boolean
   readonly sanitized_error_category: ClaimControlSanitizedErrorCategory | null
   readonly tone: ClaimControlTone
+}
+
+export interface ClaimControlRequestInit {
+  readonly method: 'POST'
+  readonly headers: {
+    readonly 'Content-Type': 'application/json'
+    readonly 'Idempotency-Key': string
+  }
+  readonly body: string
 }
 
 export function actionLabel(action: ClaimControlAction): string {
@@ -120,6 +130,17 @@ export function outcomeTone(outcome: ClaimControlOutcome): ClaimControlTone {
 
 export function sanitizedErrorLabel(category: ClaimControlSanitizedErrorCategory | null | undefined): string | null {
   return category ? ERROR_LABELS[category] : null
+}
+
+export function safeSanitizedErrorDisplay(value: unknown): string | null {
+  const category = typeof value === 'string'
+    ? value
+    : value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)['sanitized_error_category']
+      : null
+  return isClaimControlSanitizedErrorCategory(category)
+    ? sanitizedErrorLabel(category)
+    : null
 }
 
 export function defaultReasonForAction(action: ClaimControlAction): string | null {
@@ -198,10 +219,27 @@ export function buildClaimControlDraft(input: ClaimControlDraftInput): ClaimCont
   }
 }
 
+export function buildClaimControlRequestInit(draft: ClaimControlRequestBody, idempotencyKey: string): ClaimControlRequestInit {
+  const boundedKey = boundClaimControlText(idempotencyKey, 256)
+  if (!boundedKey) {
+    throw new Error('Idempotency key is required')
+  }
+
+  return {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Idempotency-Key': boundedKey,
+    },
+    body: JSON.stringify(draft),
+  }
+}
+
 export function buildReceipt(input: {
   readonly action: unknown
   readonly outcome: unknown
   readonly stageKey: unknown
+  readonly availableActions?: unknown
   readonly activityId: unknown
   readonly idempotencyReplayed: unknown
   readonly sanitizedErrorCategory: unknown
@@ -216,9 +254,31 @@ export function buildReceipt(input: {
     action,
     outcome,
     stage_key: boundClaimControlText(typeof input.stageKey === 'string' ? input.stageKey : null, 128) ?? 'unknown-stage',
+    refreshed_availability: summarizeRefreshedAvailability(input.availableActions),
     activity_reference: boundClaimControlText(typeof input.activityId === 'string' ? input.activityId : null, 128),
     idempotency_replayed: input.idempotencyReplayed === true,
     sanitized_error_category: category,
     tone: outcomeTone(outcome),
   }
+}
+
+function summarizeRefreshedAvailability(value: unknown): string {
+  if (!Array.isArray(value)) return 'Availability refresh completed.'
+  const summaries = value
+    .map((item) => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return null
+      const record = item as Record<string, unknown>
+      if (!isClaimControlAction(record['action'])) return null
+      const label = actionLabel(record['action'])
+      if (record['enabled'] === true) return label
+      const reason = boundClaimControlText(
+        typeof record['unavailable_reason'] === 'string' ? record['unavailable_reason'] : null,
+        80,
+      )
+      return reason ? `${label} disabled: ${reason}` : `${label} disabled`
+    })
+    .filter((item): item is string => item !== null)
+  return summaries.length > 0
+    ? `Available after refresh: ${summaries.join('; ')}.`
+    : 'Available after refresh: none.'
 }

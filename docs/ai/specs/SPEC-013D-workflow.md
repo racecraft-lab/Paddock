@@ -40,7 +40,7 @@ Re-read it before each phase if you need to disambiguate a prompt. The Design Co
 | Checklist | `$speckit-checklist` | Complete | Generated and passed UX, accessibility, API contracts, state management, and error-handling requirements-quality checklists; G4 passed with zero gap markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 72 dependency-ordered TDD tasks across setup, foundation, five user stories, and polish; G5 passed and reviewability gate passed via transition exception for heuristic over-counting |
 | Analyze | `$speckit-analyze` | Complete | Found and resolved one Docker-backed UI evidence coverage gap; G6 passed with no unresolved CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | In Progress | Setup/foundation T001-T010 complete; claim-control copy/request helpers, component shell, Storybook/e2e shells, and task-detail route-client integration are in place |
+| Implement | `$speckit-implement` | Complete | T001-T072 complete; focused component tests, local and Docker-backed Playwright, typecheck, lint, build, and reviewability gate passed on 2026-05-31 |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
 
@@ -596,32 +596,76 @@ For each task:
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
 | 1 - Foundation/client contract | Complete | 10 | T001-T010 completed with strict-scope entries, closed copy/request helpers, component prop/draft/receipt model, Storybook/e2e fixture shells, and focused component tests. Initial RED run produced one assertion correction before GREEN. |
-| 2 - Claim control section | In Progress | 0 | Component implementation exists for active, disabled, absent, flag-off, receipt, network retry, backoff override, and viewer/read-only states; story-specific task checkoff remains pending until remaining user-story assertions are reconciled task-by-task. |
-| 3 - Task detail integration | In Progress | 0 | `TaskDetailModal` now fetches claim reconciliation with `appendScopeToPath`, renders `ClaimControlSection`, posts to the existing claim-control route with ephemeral idempotency keys, and refreshes claim/evidence/stage-attempt/task-list state after responses. |
-| 4 - Browser and visual verification | Pending | 0 | Pending |
-| 5 - Docs, guardrails, PR packet, UAT | Pending | 0 | Pending |
+| 2 - Claim control section | Complete | 40 | US1 T011-T022, US2 T023-T036, US3 T037-T044, and US4 T045-T050 completed for read states, inline retry/release/cancel confirmations, required/default reasons, bounded receipts, redaction assertions, same-submission network retry UI, bounded backoff override behavior, and viewer/read-only behavior. |
+| 3 - Task detail integration | Complete | 14 | `TaskDetailModal` fetches claim reconciliation with `appendScopeToPath`, posts to the existing claim-control route with ephemeral idempotency keys, clears same-submission retry state on expected-state refresh, and refreshes claim/evidence/stage-attempt/task-list state after bounded responses. |
+| 4 - Browser and visual verification | Complete | 13 | US5 T051-T063 completed with Storybook states, route-backed Playwright screenshots, DB fixture cleanup proof, visual snapshots, and screenshot review. Disabled-reasons evidence was corrected after visual review found it was initially captured from the active state. |
+| 5 - Docs, guardrails, PR packet, UAT | Complete | 9 | Polish/verification T064-T072 completed with static drift guardrails, quickstart/workflow evidence updates, typecheck, lint, focused Vitest, focused Playwright, production build, reviewability gate, and Docker-backed Playwright evidence. PR packet and deployed UAT remain in the post-implementation checklist. |
 
 ### Phase 7 Checkpoint Evidence
 
-- Focused component suite: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec vitest run src/components/panels/__tests__/claim-control-section.test.tsx` passed with 9 tests.
+- Focused component suite: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec vitest run src/components/panels/__tests__/claim-control-section.test.tsx` passed with 13 tests.
 - Strict TypeScript: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` passed.
 - Lint: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint` passed.
+- Resume verification on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test -- src/components/panels/__tests__/claim-control-section.test.tsx` completed through the repo `pnpm test` script and passed 312 files / 3237 tests; `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` passed.
+- US2 RED/GREEN on 2026-05-31: added expected-state refresh idempotency cleanup coverage; RED failed with one assertion in `ClaimControlSection > clears same-submission retry state when backend expected state refreshes`, then GREEN passed via the focused `pnpm exec vitest run` command above.
+- US2 verification note: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test -- src/components/panels/__tests__/claim-control-section.test.tsx` is not a focused filter in this worktree; it launched the full Vitest suite and failed only unrelated `src/lib/__tests__/mc-provisioner-daemon.test.ts` local socket startup checks.
+- US3 verification on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec vitest run src/components/panels/__tests__/claim-control-section.test.tsx` passed 1 file / 13 tests; `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` passed.
+- US4 verification on 2026-05-31: the focused component suite above includes viewer/read-only disabled-control assertions with no submit emission; the Playwright fixture includes `viewer` mode, `spec013d-claim-control-viewer-read-only.png`, and `claim-control-viewer-read-only` visual snapshot coverage.
+- US5 Playwright evidence on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH MC_VISUAL_SNAPSHOTS=1 MC_VISUAL_OUTPUT_DIR=test-results/visual-current pnpm exec playwright test tests/e2e/spec-013d-claim-control-operator-ux.spec.ts` passed 2 tests and wrote screenshots, visual PNGs, `spec013d-claim-control-fixture-export.json`, and `spec013d-claim-control-db-fixture-export.json` under `test-results/spec-013d-claim-control-operator-ux/`.
+- US5 cleanup evidence on 2026-05-31: DB fixture export recorded cleanup result `{ tasks: 0, claims: 0, stageAttempts: 0, idempotencyRows: 0, activities: 0 }` and feature flag restoration `restored: true`.
+- US5 Storybook evidence on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:visual:storybook` passed 32 files / 162 tests and wrote 162 manifests; `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:visual:manifest` verified 162 Storybook visual manifests.
+- US5 Playwright manifest note on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e:visual-manifest` failed the global repo threshold because the focused SPEC-013D run does not generate the full historical Playwright manifest set; SPEC-013D route-backed screenshots and visual PNGs were generated and inspected directly.
+- Polish verification on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec vitest run src/components/panels/__tests__/claim-control-section.test.tsx` passed 1 file / 13 tests, including static no-drift assertions for no migration/backend route/dashboard/scheduler/sandbox/adapter/harness/direct GitHub/successor/terminal-mutation expansion.
+- Local browser verification on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec playwright test tests/e2e/spec-013d-claim-control-operator-ux.spec.ts` passed 2 tests.
+- Docker-backed browser verification on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH bash scripts/e2e-docker.sh tests/e2e/spec-013d-claim-control-operator-ux.spec.ts` built the current tree, preseeded the SPEC-013D fixture before container restart, and passed 2 tests. The preseed path avoids live host-side SQLite writes while the production app is serving the mounted database, which previously produced `SQLITE_CORRUPT` in preserved debug containers.
+- Cross-cutting checks on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` passed; `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint` passed; `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build` passed outside the sandbox after the sandboxed run hit a Turbopack local helper port-bind denial.
+- Reviewability gate on 2026-05-31: `/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.1/skills/speckit-autopilot/scripts/reviewability-gate.sh diff HEAD` passed as a transition exception with `reviewable_loc=1113`, `production_files=8`, `total_files=12`, `primary_surface_count=5`; warnings/blockers are the expected transition-exception heuristics for docs/process, seed/config, scheduler/runtime strings, and explicit forbidden-scope guard coverage while the implementation primary surface remains UI.
+- Verify-remediation update on 2026-05-31: Post Verify initially failed because the required screenshots were route-mocked, receipts omitted refreshed availability, and cancel copy drifted from `Cancel stage`. Remediation changed cancel copy to `Cancel stage`, renders refreshed availability in receipts from the refreshed claim-reconciliation read model, treats backend backoff override requirements as standard retry disabled plus override action, and changed the Playwright DB fixture to seed separate real-route tasks for retry, release, cancel, stale/conflict, viewer, flag-off, and backoff.
+- Real-route evidence after remediation on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec playwright test tests/e2e/spec-013d-claim-control-operator-ux.spec.ts` passed 2 tests and generated the required `spec013d-claim-control-*.png` screenshots from DB/API-backed states; route-mocked screenshots now use `spec013d-mock-*` names and are supplemental only.
+- Docker evidence after remediation on 2026-05-31: `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH bash scripts/e2e-docker.sh tests/e2e/spec-013d-claim-control-operator-ux.spec.ts` built the image, preseeded 7 SPEC-013D claim-control fixture tasks in the mounted database before restart, and passed 2 tests.
+- Post Integration Suite on 2026-05-31: focused component suite passed 1 file / 14 tests; `pnpm typecheck`, `pnpm lint`, and `pnpm build` passed; focused local Playwright passed 2 tests; Docker-backed Playwright passed 2 tests; full `pnpm test` passed 312 files / 3239 tests with 33 skipped files, 3 skipped tests, and 84 todo tests; targeted `tests/login-flow.spec.ts` passed 5 tests after aligning its request IP header with the suite's trusted-client-IP behavior; full `pnpm test:e2e` passed 653 tests.
 
 ---
 
 ## Post-Implementation Checklist
 
-- [ ] All generated tasks marked complete in `tasks.md`.
-- [ ] Design Concept decisions Q1-Q13 are preserved or explicitly revised with a recorded rationale.
-- [ ] `pnpm typecheck` passes.
-- [ ] `pnpm lint` passes.
-- [ ] Focused Vitest/component tests pass.
-- [ ] Playwright task-detail journey passes with screenshots.
-- [ ] Storybook/visual states are captured where applicable.
-- [ ] `pnpm build` passes.
-- [ ] Full test suite passes or unrelated existing failures are documented with evidence.
+- [X] All generated tasks marked complete in `tasks.md`.
+- [X] Design Concept decisions Q1-Q13 are preserved or explicitly revised with a recorded rationale.
+- [X] `pnpm typecheck` passes.
+- [X] `pnpm lint` passes.
+- [X] Focused Vitest/component tests pass.
+- [X] Playwright task-detail journey passes with screenshots.
+- [X] Storybook/visual states are captured where applicable.
+- [X] `pnpm build` passes.
+- [X] Full test suite passes or unrelated existing failures are documented with evidence.
 - [ ] Roadmap, workflow, UAT report, and PR packet are updated.
 - [ ] Target UAT proves operator claim controls on a deployed build with zero disposable residue.
+
+### Post-Implementation Progress
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| Doctor Extension Check | Complete | `$speckit-doctor` ran `.specify/extensions/doctor/scripts/bash/doctor.sh` on 2026-05-31; project structure, AI agent configuration, feature specifications, scripts, extensions, and git repository checks passed with 5 feature specs checked and 0 failed checks. |
+| Verify Implementation | Complete | `$speckit-verify-run` rerun passed on 2026-05-31 after remediation; 72/72 tasks complete, 25 functional requirements loaded, 3/3 focused remediation checks passed, 10 real-route screenshots plus 8 supplemental mock screenshots found, cleanup proof returned disposable rows to 0, and no findings remained. |
+| Verify Tasks Phantom Check | Complete | `$speckit-verify-tasks`/`$speckit-verify-tasks-run` passed on 2026-05-31; 72 completed tasks checked, 60 referenced task paths checked, 0 missing paths, 0 phantom findings. |
+| Code Review | Complete | `$speckit-review-run` rerun passed on 2026-05-31; prior findings for tracked seed script, feature-flag baseline restoration, sanitized-error rendering, and connection-pool scope drift were all closed with 0 high-confidence findings. |
+| Integration Suite | Complete | Post Integration Suite passed on 2026-05-31: focused component suite 14 tests, `pnpm typecheck`, `pnpm lint`, `pnpm build`, focused local Playwright 2 tests, Docker-backed Playwright 2 tests, full `pnpm test` 312 files / 3239 tests, targeted login-flow 5 tests, and full `pnpm test:e2e` 653 tests. |
+| Cleanup | Complete | Parent-side cleanup passed on 2026-05-31 after the single cleanup worker was closed for non-return: `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` resolved the feature dir, changed files were enumerated, debug/TODO/focus-test scans found no actionable cleanup edits, `git diff --check` passed, and preserved debug containers `mc-e2e-spec013d-debug`/`mc-e2e-spec013d-debug2` plus `/private/tmp/mc-e2e-debug-spec013d*` dirs were removed. Remaining `console.log` is intentional CLI seed-script output; remaining localhost/fake-secret hits are script/test fixtures. |
+| Reviewability Diff Gate | Complete | Post-cleanup reviewability gate passed on 2026-05-31 via `/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.1/skills/speckit-autopilot/scripts/reviewability-gate.sh diff HEAD`: `status=exception`, `pass=true`, `reviewable_loc=1792`, `production_files=9`, `total_files=13`, `primary_surface_count=5`; warnings/blockers are covered by the recorded roadmap transition exception and strict-scope guard coverage. |
+| Self-Review | Complete | Self-review completed on 2026-05-31 with no `[edge-case-gap]`, orphan-FR, orphan-task, or silent deferral findings; final closeout commit hash remains pending until PR artifacts are generated and committed. |
+| PR Body Generation | In Progress | Deterministic UAT runbook generated at `specs/013d-claim-control-operator-ux/uat-runbook.md` on 2026-05-31; post-UAT `pnpm typecheck`, `pnpm lint`, and `git diff --check` passed. Staging/committing closeout artifacts before generating `.git/speckit-pr-body.md`. |
+| PR Creation | Pending | Not yet run. |
+| Review Remediation | Pending | Not yet run. |
+| Retrospective | Pending | Not yet run. |
+
+## Self-Review
+
+**Completed**: 2026-05-31
+
+1. **Tests executed?** Yes. This session actually ran and exited zero for build, typecheck, lint, unit tests, and integration tests: `pnpm build`, `pnpm typecheck`, `pnpm lint`, focused Vitest 14 tests, focused local Playwright 2 tests, Docker-backed Playwright 2 tests, full `pnpm test` 312 files / 3239 tests, targeted `tests/login-flow.spec.ts` 5 tests, and full `pnpm test:e2e` 653 tests. The latest command evidence is recorded in the Phase 7 evidence and Post Integration Suite rows above.
+2. **Edge cases?** No `[edge-case-gap]` findings. Non-happy-path coverage is present for absent/flag-off/loading/error states (`src/components/panels/__tests__/claim-control-section.test.tsx:289`), sanitized backend error categories without raw diagnostic fields (`src/components/panels/__tests__/claim-control-section.test.tsx:356`), stale expected-state conflict (`tests/e2e/spec-013d-claim-control-operator-ux.spec.ts:1096`), viewer/read-only auth failure (`src/components/panels/__tests__/claim-control-section.test.tsx:536`, `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts:1115`), active backoff and override reason (`src/components/panels/__tests__/claim-control-section.test.tsx:455`, `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts:1091`), same-submission idempotency cleanup (`src/components/panels/__tests__/claim-control-section.test.tsx:404`), raw key/request redaction (`src/components/panels/__tests__/claim-control-section.test.tsx:497`, `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts:1013`), fixture cleanup and feature-flag restoration (`tests/e2e/spec-013d-claim-control-operator-ux.spec.ts:1133`, `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts:1153`), and Storybook visual variants (`src/components/panels/claim-control-section.stories.tsx:103`, `src/components/panels/claim-control-section.stories.tsx:119`, `src/components/panels/claim-control-section.stories.tsx:133`, `src/components/panels/claim-control-section.stories.tsx:155`, `src/components/panels/claim-control-section.stories.tsx:178`, `src/components/panels/claim-control-section.stories.tsx:187`, `src/components/panels/claim-control-section.stories.tsx:194`).
+3. **Requirements matched?** No orphan FRs or completed tasks found. FR-001 through FR-008 trace to completed US1 tasks T011-T022; FR-009 through FR-019 trace to completed US2/US3/US4 tasks T023-T050; FR-020 and FR-021 trace to completed static scope guard task T064; FR-022 and FR-025 trace to completed browser/fixture/evidence tasks T052-T063 and T072; FR-023 traces to Storybook tasks T051, T057, and T060; FR-024 traces to component accessibility/status/alert and viewer tasks T023-T029 and T045-T050. All T001-T072 are `[X]` in `tasks.md`; the final closeout commit hash is pending because PR artifacts are generated after this self-review.
+4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, or `tasks.md`. The remaining UAT runbook, PR body, PR creation, review remediation, and retrospective items are tracked as explicit Post items below.
 
 ---
 

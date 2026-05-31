@@ -9,11 +9,12 @@ import {
   defaultReasonForAction,
   outcomeLabel,
   safeClaimControlDisplay,
+  safeSanitizedErrorDisplay,
   sanitizedErrorLabel,
   type ClaimControlOutcomeReceipt,
 } from '@/components/panels/claim-control-copy'
 import type { ClaimControlRequestBody } from '@/lib/task-claim-control-types'
-import type { ClaimControlAvailableAction, TaskClaimReconciliationEnvelope } from '@/lib/task-claim-reconciliation'
+import type { ClaimControlAvailableAction, ClaimControlReadModel, TaskClaimReconciliationEnvelope } from '@/lib/task-claim-reconciliation'
 
 export type ClaimControlDraft = ClaimControlRequestBody
 
@@ -41,6 +42,7 @@ export interface ClaimControlSectionProps {
   readonly networkRetry: ClaimControlNetworkRetry | null
   readonly onSubmit: (draft: ClaimControlDraft) => void
   readonly onRetryNetworkSubmit: (draft: ClaimControlDraft) => void
+  readonly onAbandonNetworkRetry: () => void
   readonly onRefresh: () => void
 }
 
@@ -53,6 +55,7 @@ export function ClaimControlSection({
   networkRetry,
   onSubmit,
   onRetryNetworkSubmit,
+  onAbandonNetworkRetry,
   onRefresh,
 }: ClaimControlSectionProps) {
   const [confirmation, setConfirmation] = useState<ConfirmationState | null>(null)
@@ -129,6 +132,7 @@ export function ClaimControlSection({
   const submitProblem = confirmation && confirmationDescriptor
     ? getSubmitProblem(confirmation, reason, overrideReason)
     : null
+  const lastSanitizedError = safeSanitizedErrorDisplay(control.last_sanitized_error)
 
   const handleSubmit = () => {
     if (!confirmation || !confirmationDescriptor || submitProblem) return
@@ -139,6 +143,9 @@ export function ClaimControlSection({
       overrideBackoff: confirmation.mode === 'override_backoff',
       overrideReason,
     }))
+    setConfirmation(null)
+    setReason('')
+    setOverrideReason('')
   }
 
   return (
@@ -173,16 +180,16 @@ export function ClaimControlSection({
         </ClaimControlBlock>
       </div>
 
-      {control.last_operator_action != null || control.last_sanitized_error != null ? (
+      {control.last_operator_action != null || lastSanitizedError != null ? (
         <div className="grid gap-2 text-xs sm:grid-cols-2">
           {control.last_operator_action != null ? (
             <ClaimControlBlock label="Last operator action">
               <span className="break-words text-foreground/85">{safeClaimControlDisplay(control.last_operator_action)}</span>
             </ClaimControlBlock>
           ) : null}
-          {control.last_sanitized_error != null ? (
+          {lastSanitizedError != null ? (
             <ClaimControlBlock label="Sanitized error">
-              <span className="break-words text-foreground/85">{safeClaimControlDisplay(control.last_sanitized_error)}</span>
+              <span className="break-words text-foreground/85">{lastSanitizedError}</span>
             </ClaimControlBlock>
           ) : null}
         </div>
@@ -210,19 +217,21 @@ export function ClaimControlSection({
                 <button
                   type="button"
                   aria-describedby={reasonId(descriptor)}
-                  disabled={!canStartAction(descriptor, canMutate, submitting)}
+                  disabled={!canStartAction(descriptor, control, canMutate, submitting)}
                   onClick={() => {
+                    onAbandonNetworkRetry()
                     setConfirmation({ action: descriptor.action, mode: 'standard' })
                   }}
                   className="rounded-md border border-border/40 bg-card/60 px-2 py-1 text-xs text-foreground disabled:cursor-not-allowed disabled:opacity-50 hover:bg-secondary"
                 >
                   {activeSubmittingAction === descriptor.action ? 'Submitting...' : actionLabel(descriptor.action)}
                 </button>
-                {descriptor.action === 'retry' && !descriptor.enabled && control.backoff.state === 'active' && control.backoff.override_allowed && (
+                {descriptor.action === 'retry' && descriptor.requires_override_reason && control.backoff.state === 'active' && control.backoff.override_allowed && (
                   <button
                     type="button"
                     disabled={!canMutate || submitting !== null}
                     onClick={() => {
+                      onAbandonNetworkRetry()
                       setConfirmation({ action: 'retry', mode: 'override_backoff' })
                     }}
                     className="rounded-md border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-xs text-amber-100 disabled:cursor-not-allowed disabled:opacity-50 hover:bg-amber-500/20"
@@ -299,6 +308,7 @@ export function ClaimControlSection({
             <button
               type="button"
               onClick={() => {
+                onAbandonNetworkRetry()
                 setConfirmation(null)
               }}
               className="rounded-md border border-border/40 bg-card/60 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
@@ -338,6 +348,7 @@ export function ClaimControlSection({
             {actionLabel(receipt.action)} for {receipt.stage_key}
             {receipt.idempotency_replayed ? ' was replayed from an earlier matching submission.' : ' refreshed claim-control availability.'}
           </p>
+          <p className="mt-1 break-words">{receipt.refreshed_availability}</p>
           {receipt.activity_reference && (
             <p className="mt-1 break-all font-mono text-[10px]">Activity {receipt.activity_reference}</p>
           )}
@@ -377,10 +388,14 @@ function reasonId(descriptor: ClaimControlAvailableAction): string {
 
 function canStartAction(
   descriptor: ClaimControlAvailableAction,
+  control: ClaimControlReadModel,
   canMutate: boolean,
   submitting: ClaimControlSubmissionState | null,
 ): boolean {
-  return canMutate && descriptor.enabled && submitting === null
+  const standardRetryBlockedByBackoff = descriptor.action === 'retry' &&
+    descriptor.requires_override_reason &&
+    control.backoff.state === 'active'
+  return canMutate && descriptor.enabled && !standardRetryBlockedByBackoff && submitting === null
 }
 
 function getSubmitProblem(confirmation: ConfirmationState, reason: string, overrideReason: string): string | null {

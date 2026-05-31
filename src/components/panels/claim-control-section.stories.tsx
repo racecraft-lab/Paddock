@@ -86,6 +86,7 @@ const meta = {
     networkRetry: null,
     onSubmit: () => undefined,
     onRetryNetworkSubmit: () => undefined,
+    onAbandonNetworkRetry: () => undefined,
     onRefresh: () => undefined,
   },
   parameters: {
@@ -180,5 +181,19 @@ export const FlagOff: Story = {
       feature_flag: { key: 'FEATURE_TASK_CONTROL_PLANE', enabled: false },
       claim_control: null,
     }),
+  },
+}
+
+export const Loading: Story = {
+  args: {
+    readModel: null,
+    loading: true,
+  },
+}
+
+export const ErrorState: Story = {
+  args: {
+    readModel: null,
+    error: 'Failed to load claim-control state',
   },
 }

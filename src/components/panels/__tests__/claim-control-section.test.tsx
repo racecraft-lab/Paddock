@@ -1,8 +1,11 @@
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   actionLabel,
   buildClaimControlDraft,
+  buildClaimControlRequestInit,
   buildReceipt,
   defaultReasonForAction,
   outcomeLabel,
@@ -63,7 +66,7 @@ function claimControl(overrides: Partial<ClaimControlReadModel> = {}): ClaimCont
     },
     expected_state: EXPECTED_STATE,
     last_operator_action: { action: 'release', outcome: 'already_applied', activity_id: 'activity-0' },
-    last_sanitized_error: { category: 'backoff_active' },
+    last_sanitized_error: { sanitized_error_category: 'backoff_active' },
     ...overrides,
   }
 }
@@ -108,6 +111,7 @@ afterEach(() => {
 function renderSection(props: Partial<ClaimControlSectionProps> = {}) {
   const onSubmit = vi.fn<(draft: ClaimControlDraft) => void>()
   const onRetryNetworkSubmit = vi.fn<(draft: ClaimControlDraft) => void>()
+  const onAbandonNetworkRetry = vi.fn<() => void>()
   const onRefresh = vi.fn<() => void>()
 
   render(
@@ -120,12 +124,13 @@ function renderSection(props: Partial<ClaimControlSectionProps> = {}) {
       networkRetry={null}
       onSubmit={onSubmit}
       onRetryNetworkSubmit={onRetryNetworkSubmit}
+      onAbandonNetworkRetry={onAbandonNetworkRetry}
       onRefresh={onRefresh}
       {...props}
     />,
   )
 
-  return { onRefresh, onRetryNetworkSubmit, onSubmit }
+  return { onAbandonNetworkRetry, onRefresh, onRetryNetworkSubmit, onSubmit }
 }
 
 function expectPresent(element: Element | null): void {
@@ -144,7 +149,7 @@ describe('claim-control copy and request helpers', () => {
   it('uses closed maps for actions, outcomes, sanitized errors, and release defaults', () => {
     expect(actionLabel('retry')).toBe('Retry stage')
     expect(actionLabel('release')).toBe('Release claim')
-    expect(actionLabel('cancel')).toBe('Cancel attempt')
+    expect(actionLabel('cancel')).toBe('Cancel stage')
     expect(outcomeLabel('stale_state')).toBe('State changed before submit')
     expect(sanitizedErrorLabel('forbidden_role')).toBe('Operator role is required.')
     expect(defaultReasonForAction('release')).toBe('operator_released')
@@ -177,6 +182,21 @@ describe('claim-control copy and request helpers', () => {
     })
     expect(overrideDraft.override_backoff).toBe(true)
     expect(overrideDraft.override_reason).toBe('override because owner approved')
+
+    const request = buildClaimControlRequestInit(overrideDraft, 'idem-key-123')
+    expect(request.method).toBe('POST')
+    expect(request.headers['Content-Type']).toBe('application/json')
+    expect(request.headers['Idempotency-Key']).toBe('idem-key-123')
+    expect(JSON.parse(request.body)).toMatchObject({ action: 'retry', override_backoff: true })
+
+    const boundedOverride = buildClaimControlDraft({
+      readModel: envelope(),
+      action: 'retry',
+      overrideBackoff: true,
+      overrideReason: 'x'.repeat(700),
+      clientCorrelationId: 'client-correlation-4',
+    })
+    expect(boundedOverride.override_reason?.length).toBe(512)
   })
 
   it('bounds receipts to closed outcome and sanitized error labels', () => {
@@ -184,6 +204,10 @@ describe('claim-control copy and request helpers', () => {
       action: 'cancel',
       outcome: 'conflict',
       stageKey: 'mission-control_issue_remediation',
+      availableActions: [
+        { action: 'retry', enabled: true, unavailable_reason: null },
+        { action: 'release', enabled: false, unavailable_reason: 'no_active_claim' },
+      ],
       activityId: '123',
       idempotencyReplayed: true,
       sanitizedErrorCategory: 'conflict',
@@ -192,11 +216,49 @@ describe('claim-control copy and request helpers', () => {
     expect(receipt).toMatchObject({
       action: 'cancel',
       outcome: 'conflict',
+      refreshed_availability: 'Available after refresh: Retry stage; Release claim disabled: no_active_claim.',
       activity_reference: '123',
       idempotency_replayed: true,
       sanitized_error_category: 'conflict',
       tone: 'warning',
     })
+
+    expect(buildReceipt({
+      action: 'retry',
+      outcome: 'retry_ready',
+      stageKey: 'stage-a',
+      availableActions: [],
+      activityId: '200',
+      idempotencyReplayed: false,
+      sanitizedErrorCategory: null,
+    })).toMatchObject({ tone: 'success', refreshed_availability: 'Available after refresh: none.' })
+    expect(buildReceipt({
+      action: 'release',
+      outcome: 'already_applied',
+      stageKey: 'stage-a',
+      availableActions: null,
+      activityId: '201',
+      idempotencyReplayed: true,
+      sanitizedErrorCategory: null,
+    })).toMatchObject({ outcome: 'already_applied', idempotency_replayed: true, refreshed_availability: 'Availability refresh completed.', tone: 'status' })
+    expect(buildReceipt({
+      action: 'retry',
+      outcome: 'stale_state',
+      stageKey: 'stage-a',
+      availableActions: [],
+      activityId: null,
+      idempotencyReplayed: false,
+      sanitizedErrorCategory: 'stale_state',
+    })).toMatchObject({ outcome: 'stale_state', sanitized_error_category: 'stale_state', tone: 'warning' })
+    expect(buildReceipt({
+      action: 'retry',
+      outcome: 'unsafe-raw-outcome',
+      stageKey: 'stage-a',
+      availableActions: [],
+      activityId: null,
+      idempotencyReplayed: false,
+      sanitizedErrorCategory: 'internal_error',
+    })).toMatchObject({ outcome: 'validation_error', sanitized_error_category: 'internal_error', tone: 'error' })
   })
 })
 
@@ -220,7 +282,7 @@ describe('ClaimControlSection', () => {
     expectPresent(within(region).getByText(/latest attempt failed/i))
     expectPresent(within(region).getByText(/owned by another run/i))
     expectPresent(within(region).getByText(/terminal attempt/i))
-    expectPresent(within(region).getByText(/backoff_active/i))
+    expectPresent(within(region).getByText(/retry backoff is active/i))
     expectButtonDisabled(within(region).getByRole('button', { name: 'Release claim' }))
   })
 
@@ -235,6 +297,7 @@ describe('ClaimControlSection', () => {
         networkRetry={null}
         onSubmit={vi.fn()}
         onRetryNetworkSubmit={vi.fn()}
+        onAbandonNetworkRetry={vi.fn()}
         onRefresh={vi.fn()}
       />,
     )
@@ -250,6 +313,7 @@ describe('ClaimControlSection', () => {
         networkRetry={null}
         onSubmit={vi.fn()}
         onRetryNetworkSubmit={vi.fn()}
+        onAbandonNetworkRetry={vi.fn()}
         onRefresh={vi.fn()}
       />,
     )
@@ -265,6 +329,7 @@ describe('ClaimControlSection', () => {
         networkRetry={null}
         onSubmit={vi.fn()}
         onRetryNetworkSubmit={vi.fn()}
+        onAbandonNetworkRetry={vi.fn()}
         onRefresh={vi.fn()}
       />,
     )
@@ -280,11 +345,97 @@ describe('ClaimControlSection', () => {
         networkRetry={null}
         onSubmit={vi.fn()}
         onRetryNetworkSubmit={vi.fn()}
+        onAbandonNetworkRetry={vi.fn()}
         onRefresh={vi.fn()}
       />,
     )
     expectPresent(screen.getByText(/task control plane is off/i))
-    expect(screen.queryByRole('button', { name: /retry stage|release claim|cancel attempt/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /retry stage|release claim|cancel stage/i })).toBeNull()
+  })
+
+  it('renders sanitized error categories without raw diagnostic message fields', () => {
+    renderSection({
+      readModel: envelope({
+        claim_control: claimControl({
+          last_sanitized_error: {
+            sanitized_error_category: 'unsafe_payload',
+            message: 'raw token sk-live-secret should never render',
+            reason: 'provider payload leaked',
+          },
+        }),
+      }),
+    })
+
+    const region = screen.getByRole('region', { name: /claim control/i })
+    expectPresent(within(region).getByText(/request included unsafe content/i))
+    expect(region.textContent).not.toMatch(/sk-live-secret|provider payload leaked|raw token/i)
+  })
+
+  it('keeps task-detail claim-control wiring scoped and adjacent to existing Details sections', () => {
+    const source = readFileSync(path.join(process.cwd(), 'src/components/panels/task-board-panel.tsx'), 'utf8')
+    const fetchIndex = source.indexOf('appendScopeToPath(`/api/tasks/${task.id}/claim-reconciliation`, activeProductLineScope)')
+    const claimIndex = source.indexOf('<ClaimControlSection')
+    const evidenceIndex = source.indexOf('<TaskEvidenceSection')
+    const attemptsIndex = source.indexOf('<TaskStageAttemptsSection')
+
+    expect(fetchIndex).toBeGreaterThan(-1)
+    expect(claimIndex).toBeGreaterThan(-1)
+    expect(evidenceIndex).toBeGreaterThan(claimIndex)
+    expect(attemptsIndex).toBeGreaterThan(evidenceIndex)
+    expect(source.includes("resolveFlag('FEATURE_TASK_CONTROL_PLANE")).toBe(false)
+    expect(source.includes('resolveFlag("FEATURE_TASK_CONTROL_PLANE')).toBe(false)
+  })
+
+  it('refreshes claim reconciliation before adjacent task-detail surfaces after mutation responses', () => {
+    const source = readFileSync(path.join(process.cwd(), 'src/components/panels/task-board-panel.tsx'), 'utf8')
+    const refreshStart = source.indexOf('const refreshAfterClaimControlResponse')
+    const claimRefresh = source.indexOf('await fetchClaimReconciliation()', refreshStart)
+    const evidenceRefresh = source.indexOf('fetchTaskEvidence()', refreshStart)
+    const attemptsRefresh = source.indexOf('fetchTaskStageAttempts()', refreshStart)
+    const listRefresh = source.indexOf('onUpdate()', refreshStart)
+
+    expect(refreshStart).toBeGreaterThan(-1)
+    expect(claimRefresh).toBeGreaterThan(refreshStart)
+    expect(evidenceRefresh).toBeGreaterThan(claimRefresh)
+    expect(attemptsRefresh).toBeGreaterThan(claimRefresh)
+    expect(listRefresh).toBeGreaterThan(claimRefresh)
+  })
+
+  it('clears same-submission retry state when backend expected state refreshes', () => {
+    const source = readFileSync(path.join(process.cwd(), 'src/components/panels/task-board-panel.tsx'), 'utf8')
+    const expectedStateDependency = 'claimReconciliation?.claim_control?.expected_state.operator_action_activity_id'
+    const expectedStateDependencyIndex = source.indexOf(expectedStateDependency)
+    const expectedStateEffectStart = source.lastIndexOf('useEffect(() => {', expectedStateDependencyIndex)
+    const expectedStateEffectEnd = source.indexOf('])', expectedStateDependencyIndex)
+    const expectedStateEffect = source.slice(expectedStateEffectStart, expectedStateEffectEnd)
+
+    expect(expectedStateDependencyIndex).toBeGreaterThan(-1)
+    expect(expectedStateEffectStart).toBeGreaterThan(-1)
+    expect(expectedStateEffect).toContain('claimControlAttemptRef.current = null')
+    expect(expectedStateEffect).toContain('setClaimControlNetworkRetry(null)')
+    expect(expectedStateEffect).toContain(expectedStateDependency)
+  })
+
+  it('keeps SPEC-013D static scope away from backend and runtime drift', () => {
+    const taskBoardSource = readFileSync(path.join(process.cwd(), 'src/components/panels/task-board-panel.tsx'), 'utf8')
+    const claimControlStart = taskBoardSource.indexOf('const [claimReconciliation')
+    const claimControlEnd = taskBoardSource.indexOf('const parseCommentContent', claimControlStart)
+    const claimControlSlice = taskBoardSource.slice(claimControlStart, claimControlEnd)
+    const ownedSources = [
+      claimControlSlice,
+      readFileSync(path.join(process.cwd(), 'src/components/panels/claim-control-copy.ts'), 'utf8'),
+      readFileSync(path.join(process.cwd(), 'src/components/panels/claim-control-section.tsx'), 'utf8'),
+      readFileSync(path.join(process.cwd(), 'src/components/panels/claim-control-section.stories.tsx'), 'utf8'),
+      readFileSync(path.join(process.cwd(), 'tests/e2e/spec-013d-claim-control-operator-ux.spec.ts'), 'utf8'),
+    ].join('\n')
+
+    expect(claimControlStart).toBeGreaterThan(-1)
+    expect(claimControlEnd).toBeGreaterThan(claimControlStart)
+    expect(claimControlSlice).toContain('/api/tasks/${task.id}/claim-reconciliation')
+    expect(claimControlSlice).toContain('/api/tasks/${task.id}/claim-control')
+    expect(claimControlSlice).not.toMatch(/method:\s*['"]PUT['"]|\/api\/spawn|\/api\/gnap/i)
+    expect(ownedSources).not.toMatch(/advanceTaskChain|successor|whole-task terminal|direct GitHub mutation|\/api\/github|runScheduler|dispatchAssignedTasks|task-dispatch|src\/lib\/scheduler|scheduler\.|sandbox|adapter|harness execution|openclaw-gateway/i)
+    expect(readFileSync(path.join(process.cwd(), 'src/lib/migrations.ts'), 'utf8')).not.toMatch(/SPEC-013D|013d|claim-control operator ux/i)
   })
 
   it('emits retry, release, cancel, and backoff override drafts without direct route calls', () => {
@@ -303,7 +454,7 @@ describe('ClaimControlSection', () => {
 
   it('requires cancel and override reasons before submit', () => {
     const cancel = renderSection()
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel attempt' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel stage' }))
     expectElementText(screen.getByRole('alert'), /cancel reason is required/i)
     expectButtonDisabled(screen.getByRole('button', { name: 'Submit' }))
     fireEvent.change(screen.getByLabelText(/cancel reason required/i), { target: { value: 'operator cancelled stuck attempt' } })
@@ -316,7 +467,7 @@ describe('ClaimControlSection', () => {
       readModel: envelope({
         claim_control: claimControl({
           available_actions: [
-            action('retry', { enabled: false, unavailable_reason: 'retry backoff active', requires_override_reason: true, backoff_policy: 'respect_backoff' }),
+            action('retry', { enabled: true, unavailable_reason: null, requires_override_reason: true, backoff_policy: 'respect_backoff' }),
             action('release'),
             action('cancel'),
           ],
@@ -331,6 +482,7 @@ describe('ClaimControlSection', () => {
         }),
       }),
     })
+    expectButtonDisabled(screen.getByRole('button', { name: 'Retry stage' }))
     fireEvent.click(screen.getByRole('button', { name: 'Override backoff' }))
     expectElementText(screen.getByRole('alert'), /override reason is required/i)
     fireEvent.change(screen.getByLabelText(/override reason required/i), { target: { value: 'incident owner approved override' } })
@@ -352,11 +504,15 @@ describe('ClaimControlSection', () => {
       reason: null,
       client_correlation_id: 'client-correlation-3',
     }
-    const { onRetryNetworkSubmit } = renderSection({
+    const { onAbandonNetworkRetry, onRetryNetworkSubmit } = renderSection({
       receipt: buildReceipt({
         action: 'retry',
         outcome: 'retry_ready',
         stageKey: 'mission-control_issue_remediation',
+        availableActions: [
+          { action: 'retry', enabled: true, unavailable_reason: null },
+          { action: 'release', enabled: false, unavailable_reason: 'no_active_claim' },
+        ],
         activityId: '333',
         idempotencyReplayed: false,
         sanitizedErrorCategory: null,
@@ -368,10 +524,13 @@ describe('ClaimControlSection', () => {
     })
 
     expectElementText(screen.getByRole('status'), /retry requested/i)
+    expectPresent(screen.getByText(/available after refresh: retry stage; release claim disabled: no_active_claim/i))
     expectPresent(screen.getByText(/activity 333/i))
     expect(document.body.textContent).not.toMatch(/idempotency-key|raw-request|auth header|bearer|github body/i)
     fireEvent.click(screen.getByRole('button', { name: /retry same submission/i }))
     expect(onRetryNetworkSubmit).toHaveBeenCalledWith(retryDraft)
+    fireEvent.click(screen.getByRole('button', { name: 'Release claim' }))
+    expect(onAbandonNetworkRetry).toHaveBeenCalled()
   })
 
   it('keeps viewer/read-only actions disabled and inert', () => {
@@ -389,7 +548,7 @@ describe('ClaimControlSection', () => {
 
     const region = screen.getByRole('region', { name: /claim control/i })
     expectPresent(within(region).getByText(/operator role is required/i))
-    for (const button of within(region).getAllByRole('button', { name: /retry stage|release claim|cancel attempt/i })) {
+    for (const button of within(region).getAllByRole('button', { name: /retry stage|release claim|cancel stage/i })) {
       expectButtonDisabled(button)
       fireEvent.click(button)
     }

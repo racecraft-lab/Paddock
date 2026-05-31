@@ -100,7 +100,8 @@ run_playwright() {
   local ready_for_owner_preseeded="$3"
   local spec_007_preseeded="$4"
   local spec_008_preseeded="$5"
-  shift 5
+  local spec_013d_preseeded="$6"
+  shift 6
 
   AUTH_USER="$AUTH_USER" \
   AUTH_PASS="$AUTH_PASS" \
@@ -112,6 +113,8 @@ run_playwright() {
   MC_READY_FOR_OWNER_PRESEEDED="$ready_for_owner_preseeded" \
   MC_SPEC_007_PRESEEDED="$spec_007_preseeded" \
   MC_SPEC_008_PRESEEDED="$spec_008_preseeded" \
+  MC_SPEC_013D_PRESEEDED="$spec_013d_preseeded" \
+  MC_SPEC_013D_FIXTURE_FILE="$data_dir/spec-013d-fixture.json" \
   E2E_BASE_URL="http://127.0.0.1:${PORT}" \
   MISSION_CONTROL_DB_PATH="$data_dir/mission-control.db" \
   pnpm exec playwright test -c playwright.docker.config.ts "$@"
@@ -144,6 +147,15 @@ should_seed_spec_008() {
   return 1
 }
 
+should_seed_spec_013d() {
+  for target in "$@"; do
+    if [[ "$target" == *"spec-013d-claim-control-operator-ux.spec.ts"* ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 echo "[e2e-docker] building image ${IMAGE}..."
 docker build -t "$IMAGE" .
 
@@ -155,7 +167,7 @@ if [ "$#" -eq 0 ]; then
 
   echo "[e2e-docker] running clean flag-off regression suite."
   MC_VISUAL_SNAPSHOTS=0 MC_E2E_SCREENSHOTS=0 \
-    run_playwright "$FLAG_OFF_DATA_DIR" 0 0 0 0 tests/workspace-switcher-flag-off.spec.ts
+    run_playwright "$FLAG_OFF_DATA_DIR" 0 0 0 0 0 tests/workspace-switcher-flag-off.spec.ts
 
   docker rm -f "$FLAG_OFF_CONTAINER" >/dev/null
 
@@ -178,7 +190,7 @@ if [ "$#" -eq 0 ]; then
   wait_for_health "$FLAG_ON_CONTAINER"
 
   echo "[e2e-docker] running seeded Product Line, Ready for Owner, SPEC-007, SPEC-008, and SPEC-013A e2e suite."
-  run_playwright "$FLAG_ON_DATA_DIR" 1 1 1 1 \
+  run_playwright "$FLAG_ON_DATA_DIR" 1 1 1 1 0 \
     tests/product-line-switcher-ui.spec.ts \
     tests/feature-flags-admin-ui.spec.ts \
     tests/e2e/ready-for-owner-kanban.spec.ts \
@@ -232,6 +244,14 @@ else
       MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-008.cjs
       SPEC_008_PRESEEDED=1
     fi
+    SPEC_013D_PRESEEDED=0
+    if should_seed_spec_013d "$@"; then
+      echo "[e2e-docker] seeding SPEC-013D claim-control fixture in mounted database..."
+      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" \
+        MC_SPEC_013D_FIXTURE_FILE="$DATA_DIR/spec-013d-fixture.json" \
+        node scripts/seed-e2e-spec-013d.cjs
+      SPEC_013D_PRESEEDED=1
+    fi
     echo "[e2e-docker] restarting container so seeded database state is read at boot..."
     docker restart "$CONTAINER" >/dev/null
     wait_for_health "$CONTAINER"
@@ -241,10 +261,11 @@ else
     READY_FOR_OWNER_PRESEEDED=0
     SPEC_007_PRESEEDED=0
     SPEC_008_PRESEEDED=0
+    SPEC_013D_PRESEEDED=0
   fi
 
   echo "[e2e-docker] container ready; running Playwright."
-  run_playwright "$DATA_DIR" "$PRESEEDED" "$READY_FOR_OWNER_PRESEEDED" "$SPEC_007_PRESEEDED" "$SPEC_008_PRESEEDED" "$@"
+  run_playwright "$DATA_DIR" "$PRESEEDED" "$READY_FOR_OWNER_PRESEEDED" "$SPEC_007_PRESEEDED" "$SPEC_008_PRESEEDED" "$SPEC_013D_PRESEEDED" "$@"
 fi
 
 echo "[e2e-docker] done. Container and data directory will be removed."

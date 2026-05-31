@@ -47,21 +47,21 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Write failing component tests for active claim-control state rendering in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T012 [P] [US1] Write failing component tests for disabled action descriptors and backend-provided unavailable reasons in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T013 [P] [US1] Write failing component tests for absent `claim_control`, feature-flag-off, loading, and read error states in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T014 [P] [US1] Write failing task-detail integration test coverage for fetching `GET /api/tasks/[id]/claim-reconciliation` with product-line scope in `src/components/panels/__tests__/claim-control-section.test.tsx` or the nearest task-board test file.
+- [X] T011 [P] [US1] Write failing component tests for active claim-control state rendering in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T012 [P] [US1] Write failing component tests for disabled action descriptors and backend-provided unavailable reasons in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T013 [P] [US1] Write failing component tests for absent `claim_control`, feature-flag-off, loading, and read error states in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T014 [P] [US1] Write failing task-detail integration test coverage for fetching `GET /api/tasks/[id]/claim-reconciliation` with product-line scope in `src/components/panels/__tests__/claim-control-section.test.tsx` or the nearest task-board test file.
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Implement read-only state rendering in `src/components/panels/claim-control-section.tsx` with stage key, authorization, retry eligibility, backoff, last action, sanitized error, and all backend action descriptors.
-- [ ] T016 [US1] Implement quiet absent-state and compact flag-off/error states in `src/components/panels/claim-control-section.tsx`.
-- [ ] T017 [US1] Add claim-reconciliation fetch state to `TaskDetailModal` in `src/components/panels/task-board-panel.tsx` using `appendScopeToPath`.
-- [ ] T018 [US1] Render `ClaimControlSection` near `TaskEvidenceSection` and `TaskStageAttemptsSection` in `src/components/panels/task-board-panel.tsx`.
-- [ ] T019 [US1] Ensure `TaskDetailModal` refreshes claim reconciliation when the selected task or active product-line scope changes in `src/components/panels/task-board-panel.tsx`.
-- [ ] T020 [US1] Run focused component/integration tests for US1 and update assertions until active, disabled, absent, loading, and flag-off states pass.
-- [ ] T021 [US1] Add a no-regression assertion that absent `claim_control` leaves existing Evidence and Run state sections unchanged in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T022 [US1] Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` after US1 integration.
+- [X] T015 [US1] Implement read-only state rendering in `src/components/panels/claim-control-section.tsx` with stage key, authorization, retry eligibility, backoff, last action, sanitized error, and all backend action descriptors.
+- [X] T016 [US1] Implement quiet absent-state and compact flag-off/error states in `src/components/panels/claim-control-section.tsx`.
+- [X] T017 [US1] Add claim-reconciliation fetch state to `TaskDetailModal` in `src/components/panels/task-board-panel.tsx` using `appendScopeToPath`.
+- [X] T018 [US1] Render `ClaimControlSection` near `TaskEvidenceSection` and `TaskStageAttemptsSection` in `src/components/panels/task-board-panel.tsx`.
+- [X] T019 [US1] Ensure `TaskDetailModal` refreshes claim reconciliation when the selected task or active product-line scope changes in `src/components/panels/task-board-panel.tsx`.
+- [X] T020 [US1] Run focused component/integration tests for US1 and update assertions until active, disabled, absent, loading, and flag-off states pass.
+- [X] T021 [US1] Add a no-regression assertion that absent `claim_control` leaves existing Evidence and Run state sections unchanged in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T022 [US1] Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` after US1 integration.
 
 **Checkpoint**: US1 is independently complete when the Details tab can display backend-provided claim-control state without enabling mutation.
 
@@ -75,23 +75,23 @@
 
 ### Tests for User Story 2
 
-- [ ] T023 [P] [US2] Write failing component tests for inline retry, release, and cancel confirmation states in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T024 [P] [US2] Write failing component tests for cancel reason required, release default reason, submit disabled states, and bounded reason echoing in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T025 [P] [US2] Write failing task-detail tests for `POST /api/tasks/[id]/claim-control` request body construction and `Idempotency-Key` header handling in `src/components/panels/__tests__/claim-control-section.test.tsx` or the nearest task-board test file.
-- [ ] T026 [P] [US2] Write failing refresh sequencing tests proving claim reconciliation refreshes before final availability and evidence/stage-attempt/task-list refreshes are requested after bounded server responses in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T027 [P] [US2] Write failing receipt tests for success, already-applied, idempotent replay, stale/conflict, and sanitized error categories in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T023 [P] [US2] Write failing component tests for inline retry, release, and cancel confirmation states in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T024 [P] [US2] Write failing component tests for cancel reason required, release default reason, submit disabled states, and bounded reason echoing in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T025 [P] [US2] Write failing task-detail tests for `POST /api/tasks/[id]/claim-control` request body construction and `Idempotency-Key` header handling in `src/components/panels/__tests__/claim-control-section.test.tsx` or the nearest task-board test file.
+- [X] T026 [P] [US2] Write failing refresh sequencing tests proving claim reconciliation refreshes before final availability and evidence/stage-attempt/task-list refreshes are requested after bounded server responses in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T027 [P] [US2] Write failing receipt tests for success, already-applied, idempotent replay, stale/conflict, and sanitized error categories in `src/components/panels/__tests__/claim-control-section.test.tsx`.
 
 ### Implementation for User Story 2
 
-- [ ] T028 [US2] Implement inline confirmation state and reason fields in `src/components/panels/claim-control-section.tsx`.
-- [ ] T029 [US2] Implement submit intent emission from `ClaimControlSection` without direct route calls in `src/components/panels/claim-control-section.tsx`.
-- [ ] T030 [US2] Implement mutation request handling in `TaskDetailModal` in `src/components/panels/task-board-panel.tsx` with generated per-confirmation idempotency keys.
-- [ ] T031 [US2] Implement same-submission network retry state in `TaskDetailModal` and clear raw keys on response, close, cancel, task change, expected-state refresh, changed body, or new decision.
-- [ ] T032 [US2] Implement post-response refresh orchestration for claim reconciliation, task evidence, stage attempts, and task-list item state in `src/components/panels/task-board-panel.tsx`.
-- [ ] T033 [US2] Implement bounded outcome receipt rendering in `src/components/panels/claim-control-section.tsx`.
-- [ ] T034 [US2] Add redaction assertions so receipts and test fixtures never render raw idempotency keys, raw request bodies, auth headers, prompts, transcripts, provider payloads, tokens, or GitHub bodies.
-- [ ] T035 [US2] Run focused tests for US2 request construction, idempotency, refresh, and receipt behavior.
-- [ ] T036 [US2] Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint` after US2 integration.
+- [X] T028 [US2] Implement inline confirmation state and reason fields in `src/components/panels/claim-control-section.tsx`.
+- [X] T029 [US2] Implement submit intent emission from `ClaimControlSection` without direct route calls in `src/components/panels/claim-control-section.tsx`.
+- [X] T030 [US2] Implement mutation request handling in `TaskDetailModal` in `src/components/panels/task-board-panel.tsx` with generated per-confirmation idempotency keys.
+- [X] T031 [US2] Implement same-submission network retry state in `TaskDetailModal` and clear raw keys on response, close, cancel, task change, expected-state refresh, changed body, or new decision.
+- [X] T032 [US2] Implement post-response refresh orchestration for claim reconciliation, task evidence, stage attempts, and task-list item state in `src/components/panels/task-board-panel.tsx`.
+- [X] T033 [US2] Implement bounded outcome receipt rendering in `src/components/panels/claim-control-section.tsx`.
+- [X] T034 [US2] Add redaction assertions so receipts and test fixtures never render raw idempotency keys, raw request bodies, auth headers, prompts, transcripts, provider payloads, tokens, or GitHub bodies.
+- [X] T035 [US2] Run focused tests for US2 request construction, idempotency, refresh, and receipt behavior.
+- [X] T036 [US2] Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint` after US2 integration.
 
 **Checkpoint**: US2 is independently complete when retry, release, and cancel submit through the existing route contract and show refreshed bounded receipts.
 
@@ -105,17 +105,17 @@
 
 ### Tests for User Story 3
 
-- [ ] T037 [P] [US3] Write failing component tests for active backoff disabled retry and backend backoff reason display in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T038 [P] [US3] Write failing component tests for override reason required, override submit enablement, and overlong/empty override validation in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T039 [P] [US3] Write failing request-shaping tests for `override_backoff=true` and bounded `override_reason` in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T037 [P] [US3] Write failing component tests for active backoff disabled retry and backend backoff reason display in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T038 [P] [US3] Write failing component tests for override reason required, override submit enablement, and overlong/empty override validation in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T039 [P] [US3] Write failing request-shaping tests for `override_backoff=true` and bounded `override_reason` in `src/components/panels/__tests__/claim-control-section.test.tsx`.
 
 ### Implementation for User Story 3
 
-- [ ] T040 [US3] Implement backoff display and override affordance in `src/components/panels/claim-control-section.tsx`.
-- [ ] T041 [US3] Implement override reason validation and confirmation copy in `src/components/panels/claim-control-section.tsx`.
-- [ ] T042 [US3] Wire override request body fields through `TaskDetailModal` mutation handling in `src/components/panels/task-board-panel.tsx`.
-- [ ] T043 [US3] Run focused backoff override tests and ensure raw reason text remains bounded/sanitized in receipts.
-- [ ] T044 [US3] Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` after US3.
+- [X] T040 [US3] Implement backoff display and override affordance in `src/components/panels/claim-control-section.tsx`.
+- [X] T041 [US3] Implement override reason validation and confirmation copy in `src/components/panels/claim-control-section.tsx`.
+- [X] T042 [US3] Wire override request body fields through `TaskDetailModal` mutation handling in `src/components/panels/task-board-panel.tsx`.
+- [X] T043 [US3] Run focused backoff override tests and ensure raw reason text remains bounded/sanitized in receipts.
+- [X] T044 [US3] Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck` after US3.
 
 **Checkpoint**: US3 is independently complete when backoff override is disabled by default and enabled only with an operator reason.
 
@@ -129,15 +129,15 @@
 
 ### Tests for User Story 4
 
-- [ ] T045 [P] [US4] Write failing component tests for `authorization.can_mutate=false` viewer state and disabled retry/release/cancel controls in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T046 [P] [US4] Write failing tests proving disabled viewer controls do not emit submit intents in `src/components/panels/__tests__/claim-control-section.test.tsx`.
-- [ ] T047 [P] [US4] Add a read-only viewer fixture path to `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
+- [X] T045 [P] [US4] Write failing component tests for `authorization.can_mutate=false` viewer state and disabled retry/release/cancel controls in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T046 [P] [US4] Write failing tests proving disabled viewer controls do not emit submit intents in `src/components/panels/__tests__/claim-control-section.test.tsx`.
+- [X] T047 [P] [US4] Add a read-only viewer fixture path to `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
 
 ### Implementation for User Story 4
 
-- [ ] T048 [US4] Implement viewer/read-only disabled rendering and reason association in `src/components/panels/claim-control-section.tsx`.
-- [ ] T049 [US4] Ensure `TaskDetailModal` does not locally override backend authorization state in `src/components/panels/task-board-panel.tsx`.
-- [ ] T050 [US4] Run focused viewer/read-only tests and ensure mutation callbacks are not called from disabled controls.
+- [X] T048 [US4] Implement viewer/read-only disabled rendering and reason association in `src/components/panels/claim-control-section.tsx`.
+- [X] T049 [US4] Ensure `TaskDetailModal` does not locally override backend authorization state in `src/components/panels/task-board-panel.tsx`.
+- [X] T050 [US4] Run focused viewer/read-only tests and ensure mutation callbacks are not called from disabled controls.
 
 **Checkpoint**: US4 is independently complete when viewers see backend state and cannot submit mutations.
 
@@ -151,22 +151,22 @@
 
 ### Tests and Evidence for User Story 5
 
-- [ ] T051 [P] [US5] Add Storybook states for enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error in `src/components/panels/claim-control-section.stories.tsx`.
-- [ ] T052 [P] [US5] Write Playwright fixture helpers for disposable task creation, SPEC-013B/C row seeding, feature-flag restoration, and cleanup proof in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
-- [ ] T053 [P] [US5] Add Playwright fixture export generation with seeded row ids/counts, cleanup scope, screenshot names, visual manifest names, and redaction assertions in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
-- [ ] T054 [P] [US5] Add Playwright steps for before active, confirm retry, and after retry screenshots in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
-- [ ] T055 [P] [US5] Add Playwright steps for disabled reasons, backoff override, stale/conflict, viewer read-only, and flag-off screenshots in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
-- [ ] T056 [P] [US5] Add `captureVisualSnapshot` calls for primary before/after and key disabled, backoff, conflict, viewer, and flag-off states in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
+- [X] T051 [P] [US5] Add Storybook states for enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error in `src/components/panels/claim-control-section.stories.tsx`.
+- [X] T052 [P] [US5] Write Playwright fixture helpers for disposable task creation, SPEC-013B/C row seeding, feature-flag restoration, and cleanup proof in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
+- [X] T053 [P] [US5] Add Playwright fixture export generation with seeded row ids/counts, cleanup scope, screenshot names, visual manifest names, and redaction assertions in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
+- [X] T054 [P] [US5] Add Playwright steps for before active, confirm retry, and after retry screenshots in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
+- [X] T055 [P] [US5] Add Playwright steps for disabled reasons, backoff override, stale/conflict, viewer read-only, and flag-off screenshots in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
+- [X] T056 [P] [US5] Add `captureVisualSnapshot` calls for primary before/after and key disabled, backoff, conflict, viewer, and flag-off states in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
 
 ### Implementation for User Story 5
 
-- [ ] T057 [US5] Ensure Storybook stories use only component props and do not depend on backend mutation in `src/components/panels/claim-control-section.stories.tsx`.
-- [ ] T058 [US5] Ensure Playwright cleanup removes disposable tasks, claim rows, stage-attempt rows, idempotency rows, activities, fixture evidence rows, and restores feature flags in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
-- [ ] T059 [US5] Run the SPEC-013D Playwright file locally and retain screenshot/fixture evidence under `test-results/`.
-- [ ] T060 [US5] Run Storybook visual test command or document environment limitation in `specs/013d-claim-control-operator-ux/quickstart.md`.
-- [ ] T061 [US5] Run Playwright visual manifest verification or document why visual snapshots were disabled in this environment.
-- [ ] T062 [US5] Add any required visual evidence notes to `docs/ai/specs/SPEC-013D-workflow.md`.
-- [ ] T063 [US5] Review screenshot output for clipped text, overlapping controls, wrong data, inaccessible controls, and unsafe payload exposure before PR work.
+- [X] T057 [US5] Ensure Storybook stories use only component props and do not depend on backend mutation in `src/components/panels/claim-control-section.stories.tsx`.
+- [X] T058 [US5] Ensure Playwright cleanup removes disposable tasks, claim rows, stage-attempt rows, idempotency rows, activities, fixture evidence rows, and restores feature flags in `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`.
+- [X] T059 [US5] Run the SPEC-013D Playwright file locally and retain screenshot/fixture evidence under `test-results/`.
+- [X] T060 [US5] Run Storybook visual test command or document environment limitation in `specs/013d-claim-control-operator-ux/quickstart.md`.
+- [X] T061 [US5] Run Playwright visual manifest verification or document why visual snapshots were disabled in this environment.
+- [X] T062 [US5] Add any required visual evidence notes to `docs/ai/specs/SPEC-013D-workflow.md`.
+- [X] T063 [US5] Review screenshot output for clipped text, overlapping controls, wrong data, inaccessible controls, and unsafe payload exposure before PR work.
 
 **Checkpoint**: US5 is independently complete when real browser evidence and stable component visual states exist for review.
 
@@ -176,15 +176,15 @@
 
 **Purpose**: Final hardening, guardrails, documentation, and closeout prep.
 
-- [ ] T064 [P] Add static no-drift assertions proving SPEC-013D did not add a migration, backend route, dashboard, scheduler behavior, sandbox, adapter, harness execution, direct GitHub mutation, successor selection, or whole-task terminal mutation in `src/components/panels/__tests__/claim-control-section.test.tsx` or a focused guard test.
-- [ ] T065 [P] Update `specs/013d-claim-control-operator-ux/quickstart.md` with actual verification commands and evidence locations after implementation.
-- [ ] T066 [P] Update `docs/ai/specs/SPEC-013D-workflow.md` implementation progress, verification evidence, and known gaps.
-- [ ] T067 Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck`.
-- [ ] T068 Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint`.
-- [ ] T069 Run focused Vitest and Playwright commands from `specs/013d-claim-control-operator-ux/quickstart.md`.
-- [ ] T070 Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build`.
-- [ ] T071 Run reviewability diff gate and record the result in `docs/ai/specs/SPEC-013D-workflow.md`.
-- [ ] T072 Run the Docker-backed Playwright evidence path from `specs/013d-claim-control-operator-ux/quickstart.md` when Docker is available, or record the environment limitation in `docs/ai/specs/SPEC-013D-workflow.md`.
+- [X] T064 [P] Add static no-drift assertions proving SPEC-013D did not add a migration, backend route, dashboard, scheduler behavior, sandbox, adapter, harness execution, direct GitHub mutation, successor selection, or whole-task terminal mutation in `src/components/panels/__tests__/claim-control-section.test.tsx` or a focused guard test.
+- [X] T065 [P] Update `specs/013d-claim-control-operator-ux/quickstart.md` with actual verification commands and evidence locations after implementation.
+- [X] T066 [P] Update `docs/ai/specs/SPEC-013D-workflow.md` implementation progress, verification evidence, and known gaps.
+- [X] T067 Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck`.
+- [X] T068 Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint`.
+- [X] T069 Run focused Vitest and Playwright commands from `specs/013d-claim-control-operator-ux/quickstart.md`.
+- [X] T070 Run `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build`.
+- [X] T071 Run reviewability diff gate and record the result in `docs/ai/specs/SPEC-013D-workflow.md`.
+- [X] T072 Run the Docker-backed Playwright evidence path from `specs/013d-claim-control-operator-ux/quickstart.md` when Docker is available, or record the environment limitation in `docs/ai/specs/SPEC-013D-workflow.md`.
 
 ---
 

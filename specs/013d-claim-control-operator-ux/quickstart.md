@@ -35,10 +35,14 @@ PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build
 Docker-backed UI evidence path, when Docker is available:
 
 ```bash
-PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build
-docker compose up
-PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec playwright test tests/e2e/spec-013d-claim-control-operator-ux.spec.ts
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH bash scripts/e2e-docker.sh tests/e2e/spec-013d-claim-control-operator-ux.spec.ts
 ```
+
+Use the repo wrapper rather than a persistent `docker compose up` session; it
+builds the current tree, runs a disposable production container with a mounted
+SQLite data directory, seeds the workspace switcher plus seven SPEC-013D
+real-route fixture tasks before restarting the container, runs the focused
+Playwright file, and removes the container/data directory on exit.
 
 Visual evidence path:
 
@@ -48,6 +52,14 @@ PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:vi
 PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e:visual-manifest
 PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:visual:manifest
 ```
+
+SPEC-013D focused Playwright visual snapshots are written under
+`test-results/spec-013d-claim-control-operator-ux/`. The repo-wide
+`pnpm test:e2e:visual-manifest` verifier expects the full historical
+Playwright visual suite and is not satisfied by this focused SPEC-013D run
+alone. Record that limitation instead of treating the global threshold failure
+as a SPEC-013D screenshot failure. Storybook manifest verification remains
+applicable to the focused component visual states.
 
 ## Required Browser Evidence
 
@@ -66,8 +78,8 @@ The Playwright journey must authenticate through the app, open the real task det
 The fixture export must show:
 
 - fixture marker prefix `spec013d-claim-control-*`
-- disposable task ids
-- seeded claim, stage-attempt, idempotency, activity, and feature-flag row ids or counts
+- disposable task ids for retry, release, cancel, stale/conflict, viewer, flag-off, and backoff states
+- seeded project, lifecycle-control, claim, stage-attempt, idempotency, activity, viewer-user cleanup, and feature-flag row ids or counts
 - feature-flag before/after restoration
 - cleanup proof for all disposable rows
 - screenshot and visual manifest names
@@ -84,7 +96,7 @@ The fixture export must show:
 7. Open the task as a viewer and confirm mutation controls are disabled while read-only state remains visible.
 8. Turn `FEATURE_TASK_CONTROL_PLANE` off for the disposable workspace and confirm no actionable controls appear.
 9. Inspect screenshots and visual manifests for clipping, overlap, wrong data, inaccessible controls, and unsafe payload exposure.
-10. Confirm cleanup returns disposable tasks, claim rows, stage-attempt rows, idempotency rows, activities, and feature flags to baseline.
+10. Confirm cleanup returns disposable projects, tasks, lifecycle-control rows, claim rows, stage-attempt rows, idempotency rows, activities, and feature flags to baseline.
 
 ## Rollback / Disable Path
 

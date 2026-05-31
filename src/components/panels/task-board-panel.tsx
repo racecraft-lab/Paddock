@@ -16,7 +16,11 @@ import { MarkdownRenderer } from '@/components/markdown-renderer'
 import { Button } from '@/components/ui/button'
 import { ProjectManagerModal } from '@/components/modals/project-manager-modal'
 import { SessionMessage, shouldShowTimestamp, type SessionTranscriptMessage } from '@/components/chat/session-message'
-import { buildReceipt, type ClaimControlOutcomeReceipt } from '@/components/panels/claim-control-copy'
+import {
+  buildClaimControlRequestInit,
+  buildReceipt,
+  type ClaimControlOutcomeReceipt,
+} from '@/components/panels/claim-control-copy'
 import {
   ClaimControlSection,
   type ClaimControlDraft,
@@ -152,6 +156,7 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 function receiptFromClaimControlResponse(
   draft: ClaimControlDraft,
   responseBody: unknown,
+  refreshedReadModel: TaskClaimReconciliationEnvelope | null,
 ): ClaimControlOutcomeReceipt {
   const body = asRecord(responseBody)
   const task = asRecord(body?.task)
@@ -163,6 +168,7 @@ function receiptFromClaimControlResponse(
     action: body?.action ?? draft.action,
     outcome: body?.outcome ?? 'validation_error',
     stageKey: task?.stage_key ?? draft.stage_key,
+    availableActions: refreshedReadModel?.claim_control?.available_actions ?? body?.available_actions ?? null,
     activityId: audit?.activity_id ?? null,
     idempotencyReplayed: idempotency?.replayed ?? false,
     sanitizedErrorCategory: diagnostics?.sanitized_error_category ?? null,
@@ -1379,17 +1385,20 @@ function TaskDetailModal({
     }
   }, [activeProductLineScope, task.id])
 
-  const fetchClaimReconciliation = useCallback(async () => {
+  const fetchClaimReconciliation = useCallback(async (): Promise<TaskClaimReconciliationEnvelope | null> => {
     try {
       setClaimControlLoading(true)
       setClaimControlError(null)
       const response = await fetch(appendScopeToPath(`/api/tasks/${task.id}/claim-reconciliation`, activeProductLineScope))
       if (!response.ok) throw new Error('Failed to fetch claim-control state')
       const data = await response.json()
-      setClaimReconciliation(data as TaskClaimReconciliationEnvelope)
+      const typed = data as TaskClaimReconciliationEnvelope
+      setClaimReconciliation(typed)
+      return typed
     } catch {
       setClaimReconciliation(null)
       setClaimControlError('Failed to load claim-control state')
+      return null
     } finally {
       setClaimControlLoading(false)
     }
@@ -1416,6 +1425,16 @@ function TaskDetailModal({
     setClaimControlNetworkRetry(null)
     setClaimControlSubmitting(null)
   }, [activeProductLineScope, task.id])
+  useEffect(() => {
+    claimControlAttemptRef.current = null
+    setClaimControlNetworkRetry(null)
+  }, [
+    claimReconciliation?.claim_control?.expected_state.claim_id,
+    claimReconciliation?.claim_control?.expected_state.claim_run_id,
+    claimReconciliation?.claim_control?.expected_state.attempt_id,
+    claimReconciliation?.claim_control?.expected_state.attempt_status,
+    claimReconciliation?.claim_control?.expected_state.operator_action_activity_id,
+  ])
   
   useSmartPoll(fetchComments, 15000)
 
@@ -1489,14 +1508,15 @@ function TaskDetailModal({
     }
   }
 
-  const refreshAfterClaimControlResponse = useCallback(async (draft: ClaimControlDraft) => {
+  const refreshAfterClaimControlResponse = useCallback(async (draft: ClaimControlDraft): Promise<TaskClaimReconciliationEnvelope | null> => {
     setClaimControlSubmitting({ action: draft.action, phase: 'refreshing' })
-    await fetchClaimReconciliation()
+    const refreshed = await fetchClaimReconciliation()
     await Promise.allSettled([
       fetchTaskEvidence(),
       fetchTaskStageAttempts(),
     ])
     onUpdate()
+    return refreshed
   }, [fetchClaimReconciliation, fetchTaskEvidence, fetchTaskStageAttempts, onUpdate])
 
   const handleClaimControlSubmit = useCallback(async (
@@ -1523,17 +1543,13 @@ function TaskDetailModal({
     setClaimControlNetworkRetry(null)
 
     try {
-      const response = await fetch(appendScopeToPath(`/api/tasks/${task.id}/claim-control`, activeProductLineScope), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotency-Key': attempt.key,
-        },
-        body,
-      })
+      const response = await fetch(
+        appendScopeToPath(`/api/tasks/${task.id}/claim-control`, activeProductLineScope),
+        buildClaimControlRequestInit(draft, attempt.key),
+      )
       const responseBody = await response.json().catch(() => null) as unknown
-      await refreshAfterClaimControlResponse(draft)
-      setClaimControlReceipt(receiptFromClaimControlResponse(draft, responseBody))
+      const refreshedReadModel = await refreshAfterClaimControlResponse(draft)
+      setClaimControlReceipt(receiptFromClaimControlResponse(draft, responseBody, refreshedReadModel))
       claimControlAttemptRef.current = null
     } catch {
       setClaimControlNetworkRetry({
@@ -1548,6 +1564,11 @@ function TaskDetailModal({
   const handleClaimControlNetworkRetry = useCallback((draft: ClaimControlDraft) => {
     void handleClaimControlSubmit(draft, { reuseNetworkAttempt: true })
   }, [handleClaimControlSubmit])
+
+  const handleClaimControlAbandonNetworkRetry = useCallback(() => {
+    claimControlAttemptRef.current = null
+    setClaimControlNetworkRetry(null)
+  }, [])
 
   const handleClose = useCallback(() => {
     claimControlAttemptRef.current = null
@@ -1879,6 +1900,7 @@ function TaskDetailModal({
                 networkRetry={claimControlNetworkRetry}
                 onSubmit={(draft) => { void handleClaimControlSubmit(draft) }}
                 onRetryNetworkSubmit={handleClaimControlNetworkRetry}
+                onAbandonNetworkRetry={handleClaimControlAbandonNetworkRetry}
                 onRefresh={() => { void fetchClaimReconciliation() }}
               />
 
