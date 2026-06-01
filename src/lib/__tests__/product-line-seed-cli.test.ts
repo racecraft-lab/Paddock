@@ -210,7 +210,7 @@ function snapshotSurfaceCounts(envelope: unknown): Record<string, number> {
 }
 
 describe('generic product-line seed CLI foundation', () => {
-  it('registers the generic pnpm script without replacing the Mission Control compatibility script', () => {
+  it('registers the generic pnpm script without replacing the Paddock compatibility script', () => {
     const packageJson = JSON.parse(readFileSync('package.json', 'utf8')) as {
       scripts: Record<string, string>
     }
@@ -380,7 +380,7 @@ describe('generic product-line seed CLI contracts', () => {
   })
 })
 
-describe('Mission Control seed compatibility wrapper', () => {
+describe('Paddock seed compatibility wrapper', () => {
   it('delegates preflight, apply, verify, refusal, and allow-existing to the canonical generic config behavior', async () => {
     const { runProductLineSeed } = await import('../product-line-seed/seed')
     const { runSeedMissionControlCli } = await import('../../../scripts/seed-mission-control-product-line')

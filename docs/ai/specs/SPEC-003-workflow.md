@@ -163,11 +163,11 @@ $speckit-specify
 
 ## Feature: SPEC-003 Aegis Facility Singleton Refactor
 
-Create a specification for RC Factory Phase 2 in Mission Control.
+Create a specification for RC Factory Phase 2 in Paddock.
 
 ### Problem Statement
 
-Mission Control currently resolves Aegis through workspace-keyed lookup paths even though SPEC-001 backfilled Aegis as a facility-wide global agent (`agents.scope='global'`) and later pipeline specs require Aegis to serve every Product Line consistently. The current `runAegisReviews` path declares `aegisAgentByWorkspace = new Map<number, ReviewAgentRecord>()` and looks up `LOWER(name)='aegis' AND workspace_id=?`, which prevents global-only Aegis rows from serving product-line review flows.
+Paddock currently resolves Aegis through workspace-keyed lookup paths even though SPEC-001 backfilled Aegis as a facility-wide global agent (`agents.scope='global'`) and later pipeline specs require Aegis to serve every Product Line consistently. The current `runAegisReviews` path declares `aegisAgentByWorkspace = new Map<number, ReviewAgentRecord>()` and looks up `LOWER(name)='aegis' AND workspace_id=?`, which prevents global-only Aegis rows from serving product-line review flows.
 
 ### Users
 
@@ -614,7 +614,7 @@ For each task, follow this cycle:
 
 **Argos Fixture Remediation:** PR #20 remediation on 2026-04-28T22:51:33Z stabilized the inherited Product Line visual fixtures by replacing timestamp/randomized Playwright seed names with fixed workspace/project/agent/task data, freezing the Product Line visual browser clock, and resetting only the fixed visual fixture rows before each run. Verification passed `pnpm test:e2e:ui-visual` (11 tests), `pnpm test:e2e:argos-metadata` (11 Playwright screenshot metadata files across 5 tests), `pnpm test:visual:storybook` (10 tests), `pnpm test:visual:argos-metadata` (20 Storybook metadata files across 10 stories), `pnpm typecheck`, and `pnpm lint` with the same 10 pre-existing warnings.
 
-**PR Creation:** PR #20 opened on 2026-04-28T21:43:56Z: <https://github.com/racecraft-lab/mission-control/pull/20>.
+**PR Creation:** PR #20 opened on 2026-04-28T21:43:56Z: <https://github.com/racecraft-lab/Paddock/pull/20>.
 
 **PR Merge:** PR #20 merged to `main` on 2026-04-30 as `85d102f`.
 

@@ -51,7 +51,7 @@ const RUNTIME_META: Record<RuntimeId, RuntimeMeta> = {
     name: 'Hermes Agent',
     description: 'Self-improving AI agent with learning loop, skills, and multi-platform messaging.',
     authRequired: true,
-    authHint: 'Run "hermes setup" or configure via Mission Control.',
+    authHint: 'Run "hermes setup" or configure via Paddock.',
   },
   claude: {
     name: 'Claude Code',
@@ -440,7 +440,7 @@ async function installOpenClawLocal(job: InstallJob): Promise<void> {
   job.output += '> Installing OpenClaw...\n'
   job.status = 'failed'
   job.error = 'Manual installation required'
-  job.output += '> Automatic execution of downloaded shell installers is disabled by Mission Control security policy.\n'
+  job.output += '> Automatic execution of downloaded shell installers is disabled by Paddock security policy.\n'
   job.output += '> Install OpenClaw manually on the host, then run detection again.\n\n'
   job.output += 'Suggested operator steps:\n'
   job.output += '  curl -fsSL https://get.openclaw.dev -o /tmp/openclaw-install.sh\n'
@@ -454,7 +454,7 @@ async function installHermesLocal(job: InstallJob): Promise<void> {
   job.output += '> Installing Hermes Agent via official installer...\n'
   job.status = 'failed'
   job.error = 'Manual installation required'
-  job.output += '> Automatic execution of downloaded shell installers is disabled by Mission Control security policy.\n'
+  job.output += '> Automatic execution of downloaded shell installers is disabled by Paddock security policy.\n'
   job.output += '> Install Hermes Agent manually on the host, then run detection again.\n\n'
   job.output += 'Suggested operator steps:\n'
   job.output += '  curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh -o /tmp/hermes-install.sh\n'
@@ -536,7 +536,7 @@ export function generateDockerSidecar(runtime: RuntimeId): string {
   if (runtime === 'opencode') {
     return `# OpenCode does not provide an official sidecar template yet.
 # Install it locally with Homebrew or your preferred package manager,
-# then let Mission Control discover sessions from ~/.local/share/opencode.`
+# then let Paddock discover sessions from ~/.local/share/opencode.`
   }
 
   return `  # Hermes Agent sidecar

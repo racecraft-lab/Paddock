@@ -1,10 +1,10 @@
 # Orchestration Patterns
 
-This guide covers the task orchestration patterns available in Mission Control, from simple manual assignment to fully automated multi-agent workflows.
+This guide covers the task orchestration patterns available in Paddock, from simple manual assignment to fully automated multi-agent workflows.
 
 ## Task Lifecycle
 
-Every task in Mission Control follows this status flow:
+Every task in Paddock follows this status flow:
 
 ```
 inbox ──► assigned ──► in_progress ──► review ──► done
@@ -253,13 +253,13 @@ Routing rules require an `output_schema`. Static `next_template_slug` chains are
 
 ### Advancement Behavior
 
-On every live transition from a non-`done` status to `done`, Mission Control checks the feature flag, parent task, and workflow template:
+On every live transition from a non-`done` status to `done`, Paddock checks the feature flag, parent task, and workflow template:
 
 1. Unbound tasks and templates with no advancement-driving metadata keep legacy completion behavior.
 2. If `output_schema` is present, `resolution` is validated before routing.
 3. Ordered `routing_rules` run first; `next_template_slug` is used as fallback.
 4. If neither a route nor a static next template resolves, the chain terminates normally with no successor.
-5. If a successor resolves, Mission Control creates one assigned child task with parent/root/chain lineage.
+5. If a successor resolves, Paddock creates one assigned child task with parent/root/chain lineage.
 
 Missing or invalid structured output marks the parent `failed` and creates no successor. Routing expression rejection, routing budget overrun, missing or duplicate target templates, cross-workspace targets, and missing successor assignees preserve the parent as terminal success, write an operator-visible activity, and create no successor.
 

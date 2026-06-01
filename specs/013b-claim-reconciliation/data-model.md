@@ -8,7 +8,7 @@ Fields:
 
 - `id`: Integer primary key.
 - `workspace_id`: Workspace owning the task and claim.
-- `task_id`: Claimed Mission Control task.
+- `task_id`: Claimed Paddock task.
 - `stage_key`: Stable workflow stage key, derived from workflow template slug, workflow template id, or fallback `assigned_dispatch`.
 - `task_stage_attempt_id`: Required link to one `task_stage_attempts` row.
 - `claim_run_id`: Scheduler tick or launch correlation id for the owner attempting dispatch.
@@ -39,8 +39,8 @@ Release reason vocabulary:
 
 - `launch_handoff_completed`: normal release after the protected dispatch boundary reaches launch handoff completion.
 - `dispatch_failed`: release because the existing dispatch handoff failed before successful launch completion.
-- `task_terminal_done`: release because local Mission Control task status became `done`.
-- `task_terminal_failed`: release because local Mission Control task status became `failed`.
+- `task_terminal_done`: release because local Paddock task status became `done`.
+- `task_terminal_failed`: release because local Paddock task status became `failed`.
 - `github_issue_terminal`: release because persisted linked GitHub issue truth is closed.
 - `github_pr_terminal`: release because persisted linked GitHub PR truth is closed or merged.
 - `governance_blocked`: release because governance changed to `block` after an active claim existed.
@@ -51,12 +51,12 @@ Release reason vocabulary:
 
 Local terminal task statuses:
 
-- For active-claim release decisions, Mission Control terminal task statuses are exactly `done` and `failed`.
+- For active-claim release decisions, Paddock terminal task statuses are exactly `done` and `failed`.
 - `awaiting_owner` and `ready_for_owner` are not terminal for SPEC-013B claim release; owner handoff remains non-terminal and guarded by later PR merge evidence.
 
 State transitions:
 
-- `active -> released`: normal launch handoff completion, dispatch failure release, Mission Control terminal state (`done` or `failed`), GitHub issue/PR terminal reconciliation, passive attempt terminal reconciliation (`succeeded`, `failed`, `released`, or `cancelled`), governance block/defer, or boundary-error deferral after a claim was already acquired and must be safely released.
+- `active -> released`: normal launch handoff completion, dispatch failure release, Paddock terminal state (`done` or `failed`), GitHub issue/PR terminal reconciliation, passive attempt terminal reconciliation (`succeeded`, `failed`, `released`, or `cancelled`), governance block/defer, or boundary-error deferral after a claim was already acquired and must be safely released.
 - `active -> stale_recovered`: lease expiry recovered by a later run before replacement claim acquisition, using `release_reason='stale_claim_recovered'`.
 - `released` and `stale_recovered` are terminal for that row.
 

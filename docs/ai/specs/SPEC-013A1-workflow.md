@@ -2,7 +2,7 @@
 
 **Template Version**: 1.0.0
 **Created**: 2026-05-23
-**Purpose**: Prepare RC Factory Phase 11A1 by making GitHub issue sync automatic, observable, and operator-controllable through Mission Control scheduler/control-plane seams while preserving manual sync and execution boundaries.
+**Purpose**: Prepare RC Factory Phase 11A1 by making GitHub issue sync automatic, observable, and operator-controllable through Paddock scheduler/control-plane seams while preserving manual sync and execution boundaries.
 
 ---
 
@@ -190,7 +190,7 @@ Forbidden:
 
 ### Design Concept Decisions
 
-- Q1: Mission Control owns the canonical sync lifecycle; external cron is legacy/operator residue only.
+- Q1: Paddock owns the canonical sync lifecycle; external cron is legacy/operator residue only.
 - Q2: Dedicated Product Line/workspace lifecycle control state owns enablement, interval, backoff, status, cursor, last-run, last-error, and disabled data; `github_syncs` remains run history.
 - Q3: GitHub sync becomes a first-class bounded scheduler task, not a process-wide singleton.
 - Q4: Automatic sync pulls and reconciles GitHub issues only.
@@ -231,10 +231,10 @@ Forbidden:
 ## Feature: SPEC-013A1 - GitHub Sync Automation and Poller Lifecycle
 
 ### Problem Statement
-SPEC-009C1 intentionally left GitHub issue sync operator-triggered or fixture-driven. Before SPEC-013B introduces concurrent scheduler claim/reconciliation work, Mission Control needs explicit automatic GitHub issue polling that operators can enable, observe, disable, and recover without losing manual sync or creating duplicate ingestion for shared repos.
+SPEC-009C1 intentionally left GitHub issue sync operator-triggered or fixture-driven. Before SPEC-013B introduces concurrent scheduler claim/reconciliation work, Paddock needs explicit automatic GitHub issue polling that operators can enable, observe, disable, and recover without losing manual sync or creating duplicate ingestion for shared repos.
 
 ### Users
-- Mission Control operators enabling GitHub issue ingestion for a Product Line/workspace.
+- Paddock operators enabling GitHub issue ingestion for a Product Line/workspace.
 - Human reviewers verifying GitHub sync failures, backoff, and duplicate-ingestion prevention.
 - Future scheduler/control-plane specs that need GitHub-linked tasks to be current before claim decisions.
 
@@ -554,7 +554,7 @@ For each task:
 
 1. RED: Write the focused failing test or fixture.
 2. GREEN: Implement the minimum code needed for the requirement.
-3. REFACTOR: Align with existing Mission Control patterns.
+3. REFACTOR: Align with existing Paddock patterns.
 4. VERIFY: Run the focused test and any phase-required verification.
 
 ## Pre-Implementation Setup
@@ -608,7 +608,7 @@ For each task:
 - Integration suite: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), build passed, Playwright passed (651 tests).
 - Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; the untracked verification report is retained as durable evidence.
 - Reviewability diff gate: `reviewability-gate.sh diff origin/main...HEAD` -> `status=exception`, `pass=true`, `transition_exception=true`; blockers remain documented as accepted review scope under the SPEC-013A1 multi-surface override.
-- PR creation/merge: PR #60 opened at https://github.com/racecraft-lab/mission-control/pull/60 from `013a1-github-sync-automation` and merged to `main` as `41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca`.
+- PR creation/merge: PR #60 opened at https://github.com/racecraft-lab/Paddock/pull/60 from `013a1-github-sync-automation` and merged to `main` as `41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca`.
 - Review remediation: lifecycle lease stale-completion and manual run-id collision blockers were fixed, focused regression passed, and rerun review found no critical or important findings.
 - PR checks and visual approval: CodeQL, quality gate, Docker UI visual report, Storybook visual report, Playwright visual report, and visual approval statuses passed on PR #60 before merge.
 - Post-merge UAT: operator confirmed the required HITL UAT complete on 2026-05-27: automatic GitHub issue polling can be enabled for one Product Line, lifecycle status/last-run/error state is inspectable, polling can be disabled, manual sync still works, and shared-repository owner filtering prevents duplicate ingestion.

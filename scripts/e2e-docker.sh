@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build Mission Control from the current source tree, boot a disposable
+# Build Paddock from the current source tree, boot a disposable
 # production containers with deterministic credentials and host-mounted data
 # directories, then run Playwright against those containers.
 #

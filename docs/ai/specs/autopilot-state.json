@@ -106,24 +106,26 @@
     "eligible_previous_specs": [
       {
         "path": "specs/013a1-github-sync-automation",
-        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/60",
-        "merge_sha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca"
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/60",
+        "merge_sha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
+        "uat": "Operator-confirmed post-merge HITL UAT complete on 2026-05-27 per roadmap."
       },
       {
         "path": "specs/013b-claim-reconciliation",
-        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/62",
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/62",
         "merge_sha": "5e61d0ffc02f9345b265cd5420660d02bf693016",
+        "uat": "HAL deployment and post-merge HITL UAT complete on 2026-05-27 per roadmap.",
         "closeout_sha": "7fb459f1c5d0881f3014875d373b627b41b66bf4"
       },
       {
         "path": "specs/013c-retry-debug-surfaces",
-        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/63",
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/63",
         "merge_sha": "42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89",
         "closeout_sha": "447502b64609ee9047843fc6d504658ac2472888"
       },
       {
         "path": "specs/014a-sandbox-lifecycle-contract",
-        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/64",
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/64",
         "merge_sha": "c01d9e44ec826d94fa5916284c51453e5ec339ee",
         "closeout_sha": "447502b64609ee9047843fc6d504658ac2472888"
       }

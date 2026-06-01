@@ -85,7 +85,7 @@ export function openAgentSandboxLifecycleDb(featureEnabled = true): Database.Dat
     );
   `)
   db.prepare('INSERT INTO workspaces (id, slug, name, feature_flags) VALUES (1, ?, ?, ?)')
-    .run('mission-control', 'Mission Control', featureEnabled ? '{"FEATURE_AGENT_RUNNER_SANDBOXES":true,"FEATURE_TASK_CONTROL_PLANE":true}' : '{"FEATURE_AGENT_RUNNER_SANDBOXES":false}')
+    .run('mission-control', 'Paddock', featureEnabled ? '{"FEATURE_AGENT_RUNNER_SANDBOXES":true,"FEATURE_TASK_CONTROL_PLANE":true}' : '{"FEATURE_AGENT_RUNNER_SANDBOXES":false}')
   db.prepare(`
     INSERT INTO tasks (id, workspace_id, title, status, workflow_template_slug)
     VALUES (100, 1, 'Implement sandbox lifecycle', 'assigned', 'issue_remediation')

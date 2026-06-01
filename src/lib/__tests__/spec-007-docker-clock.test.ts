@@ -14,7 +14,6 @@ describe('SPEC-007 Docker visual clock anchoring', () => {
     const dockerScript = readRepoFile('scripts/e2e-docker.sh')
     const seedScript = readRepoFile('scripts/seed-e2e-spec-007.cjs')
 
-    expect(dockerScript).toContain('SPEC_007_FIXED_NOW_ISO=')
     expect(dockerScript).toContain('SPEC_007_FIXED_NOW_ISO="${MC_SPEC_007_FIXED_NOW:-2026-05-02T12:00:00.000Z}"')
     expect(dockerScript).toContain('-e MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO"')
     expect(dockerScript).toContain('MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" node scripts/seed-e2e-spec-007.cjs')

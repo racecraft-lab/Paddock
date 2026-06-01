@@ -30,7 +30,7 @@ Result: 1 test file passed, 1 test passed. Node runtime: v22.22.2 through `diren
 | `workspace_id` | `1` |
 | `task_id` | `100` |
 | `stage_key` | `dev_implementation` |
-| GitHub repo | `racecraft-lab/mission-control` |
+| GitHub repo | `racecraft-lab/Paddock` |
 | GitHub issue number | `123` |
 | Concurrent scheduler tick ids | `spec-013b-manual-uat-2026-05-27T22-24-30-806Z-scheduler-tick-a`, `spec-013b-manual-uat-2026-05-27T22-24-30-806Z-scheduler-tick-b` |
 | Claim attempt count | `2` |
@@ -60,7 +60,7 @@ Result: 1 test file passed, 1 test passed. Node runtime: v22.22.2 through `diren
 | Check | Result | Evidence |
 |-------|--------|----------|
 | Workspace-scoped feature flag opt-in | Pass | `FEATURE_TASK_CONTROL_PLANE=true` only through workspace JSON |
-| Issue-linked assigned task enters claim intake | Pass | Task `100`, repo `racecraft-lab/mission-control`, issue `123`, stage `dev_implementation` |
+| Issue-linked assigned task enters claim intake | Pass | Task `100`, repo `racecraft-lab/Paddock`, issue `123`, stage `dev_implementation` |
 | Concurrent scheduler tick replay permits one active claim | Pass | First tick acquired claim `1`; second tick returned `duplicate_prevented` |
 | Duplicate tick does not launch | Pass | One duplicate-prevented activity, one acquired claim, one launch-handoff release |
 | Claim releases after launch handoff | Pass | Release reason `launch_handoff_completed`; final active-claim count `0` |
@@ -107,7 +107,7 @@ Result: 1 test file passed, 1 test passed. Node runtime: v22.22.2 through `diren
 **Live DB**: `/home/fredrick-gabelmann/mission-control-data/mission-control.db`
 **Backup before UAT**: `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec013b-target-uat-20260527-175012.bak`
 
-The target replay used the existing Ideaverse Mission Control deployment runbook. HAL pulled PR #62's merge commit, ran `pnpm install --frozen-lockfile`, rebuilt successfully, verified `.next/standalone/server.js`, restarted `mission-control.service`, served `/login` with HTTP 200, kept `openclaw-gateway.service` active, and verified live DB migration markers `076_task_stage_attempts`, `077_github_sync_lifecycle`, and `078_task_stage_claims`.
+The target replay used the existing Ideaverse Paddock deployment runbook. HAL pulled PR #62's merge commit, ran `pnpm install --frozen-lockfile`, rebuilt successfully, verified `.next/standalone/server.js`, restarted `mission-control.service`, served `/login` with HTTP 200, kept `openclaw-gateway.service` active, and verified live DB migration markers `076_task_stage_attempts`, `077_github_sync_lifecycle`, and `078_task_stage_claims`.
 
 The replay used a temporary Vitest harness copied to HAL, run with the service-compatible Node path, and removed after success:
 
@@ -130,7 +130,7 @@ Result: 1 test file passed, 1 test passed. Runtime: Node v24.15.0 / ABI 137, mat
 | Disposable `project_id` | `10` |
 | Primary `task_id` | `44` |
 | Primary `stage_key` | `spec013b-hal-uat-2026-05-27T23-05-31-000Z-dispatch` |
-| GitHub repo | `racecraft-lab/mission-control` |
+| GitHub repo | `racecraft-lab/Paddock` |
 | Primary GitHub issue number | `62` |
 | First scheduler tick outcome | `claim_acquired` |
 | Second scheduler tick outcome | `duplicate_prevented` |
@@ -154,7 +154,7 @@ Result: 1 test file passed, 1 test passed. Runtime: Node v24.15.0 / ABI 137, mat
 |-------|--------|----------|
 | Target deployment promotion | Pass | HAL live worktree at `5e61d0ffc02f9345b265cd5420660d02bf693016`; standalone build exists; `/login` returned HTTP 200 |
 | Workspace-scoped feature flag opt-in | Pass | `FEATURE_TASK_CONTROL_PLANE=true` only through disposable workspace JSON |
-| Issue-linked assigned task enters claim intake | Pass | Task `44`, repo `racecraft-lab/mission-control`, issue `62` |
+| Issue-linked assigned task enters claim intake | Pass | Task `44`, repo `racecraft-lab/Paddock`, issue `62` |
 | Concurrent scheduler tick replay permits one active claim | Pass | First tick acquired claim `2`; second tick returned `duplicate_prevented` for the same claim |
 | Duplicate tick does not launch | Pass | One active claim existed during the critical section; final active-claim count returned to `0` after handoff release |
 | Claim releases after launch handoff | Pass | Release reason `launch_handoff_completed` |
@@ -168,4 +168,4 @@ Result: 1 test file passed, 1 test passed. Runtime: Node v24.15.0 / ABI 137, mat
 
 ## Target Operational Note
 
-The HAL restart initially exposed a host-startup reliability issue before Mission Control reached Next.js: the 1Password CLI secret-resolution step in `mc-start.sh` hit transient resolver/IPv6 errors for `team-gabelmann.1password.com`. The service later recovered and remained active for UAT. The Ideaverse HAL/1Password runbook check also showed `timedatectl` reporting `System clock synchronized: no` and inactive NTP, which is a known host risk for 1Password service-account authentication. That host NTP follow-up is outside SPEC-013B and did not block the recovered deployment or UAT replay.
+The HAL restart initially exposed a host-startup reliability issue before Paddock reached Next.js: the 1Password CLI secret-resolution step in `mc-start.sh` hit transient resolver/IPv6 errors for `team-gabelmann.1password.com`. The service later recovered and remained active for UAT. The Ideaverse HAL/1Password runbook check also showed `timedatectl` reporting `System clock synchronized: no` and inactive NTP, which is a known host risk for 1Password service-account authentication. That host NTP follow-up is outside SPEC-013B and did not block the recovered deployment or UAT replay.

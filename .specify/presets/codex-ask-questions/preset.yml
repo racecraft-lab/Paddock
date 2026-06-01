@@ -6,7 +6,7 @@ preset:
   version: "1.0.0"
   description: "Adds Codex-native structured user-input behavior for speckit clarify and checklist without using Claude-only AskUserQuestion."
   author: "racecraft-lab"
-  repository: "https://github.com/racecraft-lab/mission-control"
+  repository: "https://github.com/racecraft-lab/Paddock"
   license: "MIT"
 
 requires:

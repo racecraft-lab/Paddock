@@ -20,7 +20,7 @@ stop_reason: "natural"
 
 ## Goals
 
-- Execute the Mission Control Issue Remediation chain from remediation planning through dev implementation, review, Aegis approval, and the `ready_for_owner` gate.
+- Execute the Paddock Issue Remediation chain from remediation planning through dev implementation, review, Aegis approval, and the `ready_for_owner` gate.
 - Keep the PR-producing `mission-control_dev_implementation` task as the linked PR owner and final `ready_for_owner` task for SPEC-009C4 reconciliation.
 - Prove review and Aegis gates are meaningful: `fix` and `rejected` outcomes must loop or block before owner/Aegis readiness, not silently advance.
 - Preserve existing workflow slugs for seeded-contract compatibility while fixing labels, prompts, or copy only where nomenclature misleads stage ownership.
@@ -39,7 +39,7 @@ stop_reason: "natural"
 
 ## Design Tree (Q&A log)
 
-### Q1. For `SPEC-009C3`, how should a remediation review result of `fix` behave in the Mission Control workflow chain?
+### Q1. For `SPEC-009C3`, how should a remediation review result of `fix` behave in the Paddock workflow chain?
 
 **Branch:** Review outcome semantics
 

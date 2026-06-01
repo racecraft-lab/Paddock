@@ -51,17 +51,17 @@ describe('task claim reconciliation helpers', () => {
   })
 
   it('validates only canonical owner/repo GitHub names', () => {
-    expect(validateGitHubRepositoryFullName('racecraft-lab/mission-control')).toBe('racecraft-lab/mission-control')
+    expect(validateGitHubRepositoryFullName('racecraft-lab/Paddock')).toBe('racecraft-lab/Paddock')
     for (const value of [
-      'https://github.com/racecraft-lab/mission-control',
-      'git@github.com:racecraft-lab/mission-control',
-      'racecraft-lab/mission-control.git',
+      'https://github.com/racecraft-lab/Paddock',
+      'git@github.com:racecraft-lab/Paddock',
+      'racecraft-lab/Paddock.git',
       'racecraft-lab/mission/control',
       'racecraft-lab/',
       '/mission-control',
       'racecraft-lab/../mission-control',
       'racecraft lab/mission-control',
-      'racecraft-lab/mission-control\n',
+      'racecraft-lab/Paddock\n',
     ]) {
       expect(validateGitHubRepositoryFullName(value)).toBeNull()
     }
@@ -289,7 +289,7 @@ describe('task claim reconciliation helpers', () => {
     claimDb.prepare(`
       UPDATE github_sync_lifecycle_controls
       SET owner_project_id = NULL
-      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/mission-control'
+      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/Paddock'
     `).run()
     expect(reconcileAndAcquireTaskStageClaim(claimDb, {
       taskId: 301,
@@ -301,7 +301,7 @@ describe('task claim reconciliation helpers', () => {
     claimDb.prepare(`
       UPDATE github_sync_lifecycle_controls
       SET owner_project_id = 10, lease_run_id = 'ghsync_stale', lease_expires_at = 1769999999
-      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/mission-control'
+      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/Paddock'
     `).run()
     expect(reconcileAndAcquireTaskStageClaim(claimDb, {
       taskId: 302,
@@ -313,7 +313,7 @@ describe('task claim reconciliation helpers', () => {
     claimDb.prepare(`
       UPDATE github_sync_lifecycle_controls
       SET lease_run_id = NULL, lease_expires_at = NULL, consecutive_failures = 3
-      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/mission-control'
+      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/Paddock'
     `).run()
     expect(reconcileAndAcquireTaskStageClaim(claimDb, {
       taskId: 303,
@@ -325,7 +325,7 @@ describe('task claim reconciliation helpers', () => {
     claimDb.prepare(`
       UPDATE github_sync_lifecycle_controls
       SET consecutive_failures = 0, backoff_seconds = 60, next_retry_at = 1770000060
-      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/mission-control'
+      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/Paddock'
     `).run()
     expect(reconcileAndAcquireTaskStageClaim(claimDb, {
       taskId: 304,

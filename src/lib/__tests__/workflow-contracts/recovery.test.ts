@@ -66,7 +66,7 @@ describe('workflow contract recovery', () => {
         {
           workspace_id: 1,
           slug: 'intake',
-          name: 'Mission Control Intake',
+          name: 'Paddock Intake',
           task_prompt: 'Review {{task.title}} for {{workspace.name}}.',
           model: 'sonnet',
           created_by: 'workflow-contract',
@@ -104,7 +104,7 @@ describe('workflow contract recovery', () => {
         {
           workspace_id: 1,
           slug: 'intake',
-          name: 'Mission Control Intake',
+          name: 'Paddock Intake',
           task_prompt: 'Review {{task.title}} for {{workspace.name}}.',
           model: 'sonnet',
           enabled: 1,

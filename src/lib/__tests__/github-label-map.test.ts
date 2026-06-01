@@ -25,7 +25,7 @@ describe('statusToLabel', () => {
     expect(label).toEqual({
       name: 'mc:ready-for-owner',
       color: '14b8a6',
-      description: 'Mission Control: ready for owner',
+      description: 'Paddock: ready for owner',
     })
   })
 

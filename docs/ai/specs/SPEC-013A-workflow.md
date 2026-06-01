@@ -222,12 +222,12 @@ Forbidden:
 ## Feature: SPEC-013A - Run-State Persistence Spine
 
 ### Problem Statement
-Mission Control can ingest issues, route triage outcomes, produce review packets, and show stored task evidence, but it still lacks a durable task-stage attempt spine. Current `runs` / `AgentRun` records describe agent runtime executions, while later control-plane specs need a task-stage attempt model that can exist before a harness run starts, be inspected by operators, be archived non-destructively, and be ignored safely when `FEATURE_TASK_CONTROL_PLANE=false`.
+Paddock can ingest issues, route triage outcomes, produce review packets, and show stored task evidence, but it still lacks a durable task-stage attempt spine. Current `runs` / `AgentRun` records describe agent runtime executions, while later control-plane specs need a task-stage attempt model that can exist before a harness run starts, be inspected by operators, be archived non-destructively, and be ignored safely when `FEATURE_TASK_CONTROL_PLANE=false`.
 
 ### Users
 - Operators inspecting whether a task-stage attempt exists, what state it is in, whether it is archived, and whether it links to a concrete run.
 - Future SPEC-013A1/SPEC-013B/SPEC-013C implementers who need a persistence substrate for sync automation, claim/reconciliation authority, and retry/debug controls.
-- Reviewers validating that Mission Control did not add claim authority, scheduler launch, retry policy, or harness execution prematurely.
+- Reviewers validating that Paddock did not add claim authority, scheduler launch, retry policy, or harness execution prematurely.
 
 ### Required Behavior
 - Create a dedicated additive task-stage-attempt persistence model. The setup interview selected this over reuse-only `AgentRun.metadata`.
@@ -346,7 +346,7 @@ Focus on inspection surface and strict boundaries:
 ## Tech Stack
 - Backend: Next.js 16 App Router route handlers, TypeScript 5.7 strict, synchronous SQLite through `better-sqlite3`.
 - Frontend: React 19 with existing task detail/evidence panel patterns.
-- Styling: Tailwind CSS 3 using existing Mission Control operational UI density.
+- Styling: Tailwind CSS 3 using existing Paddock operational UI density.
 - State: Existing React/Zustand surfaces only where current task detail patterns require them.
 - Database: SQLite via `src/lib/migrations.ts`; additive migration and rollback SQL required if schema is added.
 - Testing: Vitest for helpers/routes/migrations/components; Playwright only if user-facing task detail/debug UI changes; `pnpm typecheck`, `pnpm lint`, `pnpm build`, and focused guard scripts.
@@ -624,7 +624,7 @@ For each task:
 - [x] Rollback SQL and operator runbook updates exist if migration is added.
 - [x] Roadmap and workflow status are updated on the spec branch.
 - [x] PR review packet records reviewability, verification, flag, rollback, and known-gap evidence.
-- [x] Draft PR opened: https://github.com/racecraft-lab/mission-control/pull/58.
+- [x] Draft PR opened: https://github.com/racecraft-lab/Paddock/pull/58.
 - [x] Review-remediation heartbeat scheduled: `spec-013a-pr-review-remediation`.
 
 ### Post-Merge UAT Evidence - 2026-05-22

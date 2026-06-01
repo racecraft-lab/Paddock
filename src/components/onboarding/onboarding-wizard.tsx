@@ -242,7 +242,7 @@ export function OnboardingWizard() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Mission Control onboarding"
+        aria-label="Paddock onboarding"
         className="relative z-10 my-auto w-full max-w-3xl bg-background border border-border/50 rounded-lg sm:rounded-xl shadow-2xl overflow-hidden flex max-h-[calc(100dvh-1rem)] sm:max-h-[85vh] flex-col"
       >
         {/* Progress bar */}
@@ -325,7 +325,7 @@ function StepWelcome({ isGateway, capabilities, runtimeStatuses, runtimesLoading
         <div className="w-14 h-14 rounded-xl overflow-hidden bg-surface-1 border border-border/50 flex items-center justify-center shadow-lg">
           <Image
             src="/brand/mc-logo-128.png"
-            alt="Mission Control"
+            alt="Paddock"
             width={56}
             height={56}
             className="w-full h-full object-cover"

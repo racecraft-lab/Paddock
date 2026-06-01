@@ -346,7 +346,7 @@ describe('task claim-control domain actions', () => {
       SET next_retry_at = 1770000500,
           next_retry_reason = 'github_rate_limited',
           backoff_seconds = 400
-      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/mission-control'
+      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/Paddock'
     `).run()
 
     const blocked = applyTaskClaimControl(claimDb, operatorInput({
@@ -385,7 +385,7 @@ describe('task claim-control domain actions', () => {
     expect(claimDb.prepare(`
       SELECT next_retry_at, next_retry_reason, backoff_seconds
       FROM github_sync_lifecycle_controls
-      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/mission-control'
+      WHERE workspace_id = 1 AND github_repo = 'racecraft-lab/Paddock'
     `).get()).toEqual({ next_retry_at: null, next_retry_reason: null, backoff_seconds: 0 })
   })
 })

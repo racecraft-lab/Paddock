@@ -244,7 +244,7 @@ export function NavRail() {
           <div className="w-9 h-9 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center shrink-0 hover:border-void-cyan/40 hover:glow-cyan transition-smooth">
             <Image
               src="/brand/mc-logo-128.png"
-              alt="Mission Control logo"
+              alt="Paddock logo"
               width={36}
               height={36}
               className="w-full h-full object-cover"
@@ -252,7 +252,7 @@ export function NavRail() {
           </div>
           {sidebarExpanded && (
             <div className="flex items-baseline gap-2 truncate flex-1 min-w-0">
-              <span className="text-sm font-semibold text-foreground truncate">Mission Control</span>
+              <span className="text-sm font-semibold text-foreground truncate">Paddock</span>
               <span className="text-2xs text-muted-foreground font-mono-tight shrink-0">v{APP_VERSION}</span>
             </div>
           )}

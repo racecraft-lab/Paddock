@@ -86,7 +86,7 @@ The doc adds 11 tables. Estimated growth on the operator's self-hosted node with
 
 ## 4. Operator UX During Incidents
 
-I imagine I'm the operator at 3am. Mission Control says "tasks aren't being dispatched." Walk the diagnostic flow:
+I imagine I'm the operator at 3am. Paddock says "tasks aren't being dispatched." Walk the diagnostic flow:
 
 The doc specifies a Cost Tracker → Governance tab with telemetry health panel showing per-source freshness states. Good. But **the doc does not specify a single integrated "why is dispatch blocked?" view**. The operator needs to determine whether:
 

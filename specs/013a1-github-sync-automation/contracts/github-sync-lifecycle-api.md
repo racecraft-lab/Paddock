@@ -36,7 +36,7 @@ Response 200:
       {
         "scope": {
           "workspace_id": 4,
-          "github_repo": "racecraft-lab/mission-control",
+          "github_repo": "racecraft-lab/Paddock",
           "owner_project_id": 3
         },
         "controls": {
@@ -138,7 +138,7 @@ Response 200:
 
 Diagnostics rules:
 - `health_summary.severity` is `disabled` when the feature flag or scope control is off, `green` when the latest terminal run succeeded and no stale lease/backoff is active, `amber` for active backoff, partial runs, overlap or skipped-ownership increases, or transient failure, and `red` for stale leases, repeated failures, ownership unresolved, or schema unavailable.
-- `health_summary` is derived from M77 lifecycle control/run state and existing local Mission Control diagnostics patterns; this contract does not introduce an external telemetry service.
+- `health_summary` is derived from M77 lifecycle control/run state and existing local Paddock diagnostics patterns; this contract does not introduce an external telemetry service.
 - `failure.category` MUST be one of `transport_timeout`, `transport_network`, `github_rate_limited`, `github_auth_or_scope`, `github_not_found`, `github_http_4xx`, `github_http_5xx`, `github_malformed_json`, `github_unexpected_shape`, `github_issue_schema_invalid`, `database_error`, or `unknown`.
 - `github_malformed_json`, `github_unexpected_shape`, and `github_issue_schema_invalid` MUST be distinguishable in diagnostics so malformed transport payloads are not confused with valid empty pages.
 - `failure.sanitized_message`, `last_error`, run `failure_reason`, diagnostics, activity payloads, and health summaries MUST be constructed from explicit safe-field allowlists and MUST NOT contain `GITHUB_TOKEN`, authorization headers, raw GitHub response bodies, personal access tokens, API keys, credentials, or matched secret substrings.
@@ -179,7 +179,7 @@ Single-project same-scope overlap response 409:
     "run_id": "ghsync_01J...",
     "trigger": "automatic",
     "workspace_id": 4,
-    "github_repo": "racecraft-lab/mission-control",
+    "github_repo": "racecraft-lab/Paddock",
     "started_at": "2026-05-23T00:00:00.000Z",
     "lease_expires_at": "2026-05-23T00:02:00.000Z"
   },
@@ -200,7 +200,7 @@ Rules:
   "conflicts": [
     {
       "workspace_id": 4,
-      "github_repo": "racecraft-lab/mission-control",
+      "github_repo": "racecraft-lab/Paddock",
       "active_run": {
         "run_id": "ghsync_01J...",
         "trigger": "automatic",
@@ -226,7 +226,7 @@ Request enable/update:
 ```json
 {
   "workspace_id": 4,
-  "github_repo": "racecraft-lab/mission-control",
+  "github_repo": "racecraft-lab/Paddock",
   "enabled": true,
   "interval_seconds": 300,
   "max_pages": 10,
@@ -240,7 +240,7 @@ Request disable:
 ```json
 {
   "workspace_id": 4,
-  "github_repo": "racecraft-lab/mission-control",
+  "github_repo": "racecraft-lab/Paddock",
   "enabled": false,
   "disabled_reason": "operator_disabled"
 }
@@ -251,7 +251,7 @@ Request reset backoff:
 ```json
 {
   "workspace_id": 4,
-  "github_repo": "racecraft-lab/mission-control",
+  "github_repo": "racecraft-lab/Paddock",
   "reset_backoff": true
 }
 ```
@@ -263,7 +263,7 @@ Success response 200:
   "ok": true,
   "control": {
     "workspace_id": 4,
-    "github_repo": "racecraft-lab/mission-control",
+    "github_repo": "racecraft-lab/Paddock",
     "enabled": true,
     "interval_seconds": 300,
     "max_pages": 10,
@@ -282,7 +282,7 @@ Disable response 200 while a run is active:
   "ok": true,
   "control": {
     "workspace_id": 4,
-    "github_repo": "racecraft-lab/mission-control",
+    "github_repo": "racecraft-lab/Paddock",
     "enabled": false,
     "disabled_reason": "operator_disabled",
     "next_eligible_at": null,

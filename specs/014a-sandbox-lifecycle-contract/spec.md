@@ -3,7 +3,7 @@
 **Feature Branch**: `014a-sandbox-lifecycle-contract`  
 **Created**: 2026-05-28  
 **Status**: Draft  
-**Input**: User description: "Mission Control has claim/reconciliation authority from SPEC-013B but needs an explicit sandbox ownership and lifecycle contract for execution contexts before any real harness adapter can launch work."
+**Input**: User description: "Paddock has claim/reconciliation authority from SPEC-013B but needs an explicit sandbox ownership and lifecycle contract for execution contexts before any real harness adapter can launch work."
 
 ## External Source Context
 
@@ -36,7 +36,7 @@ The Symphony announcement and repository are used only as boundary context for i
 
 ### User Story 1 - Create Inspectable Sandboxes For Already-Claimed Work (Priority: P1)
 
-As Mission Control, I need every execution context to receive a deterministic sandbox identity, a bounded filesystem location, and durable lifecycle evidence before later adapter specs can attach real execution.
+As Paddock, I need every execution context to receive a deterministic sandbox identity, a bounded filesystem location, and durable lifecycle evidence before later adapter specs can attach real execution.
 
 **Why this priority**: This is the minimum safety boundary for launching any future runner. Without it, work can be claimed but cannot be tied to a reviewable, cleanup-safe execution context.
 
@@ -44,7 +44,7 @@ As Mission Control, I need every execution context to receive a deterministic sa
 
 **Acceptance Scenarios**:
 
-1. **Given** the feature is enabled for a workspace with an eligible task stage, **When** a fake Mission Control owner creates and prepares a sandbox, **Then** the lifecycle is stored with owner `mission_control`, the deterministic sandbox key, sanitized relative path evidence, and `created` then `prepared` events.
+1. **Given** the feature is enabled for a workspace with an eligible task stage, **When** a fake Paddock owner creates and prepares a sandbox, **Then** the lifecycle is stored with owner `mission_control`, the deterministic sandbox key, sanitized relative path evidence, and `created` then `prepared` events.
 2. **Given** the same workspace and task stage, **When** fake OpenClaw and external-harness owners exercise the lifecycle vocabulary, **Then** they use the same statuses and event semantics while retaining their distinct owner values.
 3. **Given** a lifecycle reaches `running` and then `terminal`, **When** the read model is queried, **Then** it returns the current status, owner, safe path evidence, linkage ids, and recent events without exposing host-sensitive absolute paths or raw payloads.
 
@@ -84,7 +84,7 @@ As a reviewer, I need path and key validation to fail closed so future harnesses
 
 ### User Story 4 - Make Duplicate Creates And Cleanup Reviewable (Priority: P2)
 
-As Mission Control, I need retries and cleanup to be deterministic, idempotent where safe, and audit-preserving so partial failures do not leave ambiguous state.
+As Paddock, I need retries and cleanup to be deterministic, idempotent where safe, and audit-preserving so partial failures do not leave ambiguous state.
 
 **Why this priority**: Agent and harness work will be retried. Duplicate creation, rollback, cleanup failure, and retained audit evidence must be understood before real execution can depend on the contract.
 
@@ -184,7 +184,7 @@ As a future runtime-inventory surface, I need a read-only `sandbox_lifecycle.v1`
 
 - **Sandbox Lifecycle**: Durable current-state record for one deterministic sandbox key, owner, workspace/task/stage linkage, optional attempt/claim linkage, status, root identifier, sanitized relative path evidence, and timestamps.
 - **Sandbox Lifecycle Event**: Append-only audit record for lifecycle transitions, validation failures, idempotent reuse, cleanup, rollback, and safe reason metadata.
-- **Sandbox Owner**: Closed ownership value identifying whether Mission Control, OpenClaw, or an external harness owns the execution context.
+- **Sandbox Owner**: Closed ownership value identifying whether Paddock, OpenClaw, or an external harness owns the execution context.
 - **Sandbox Key**: Stable ID-based identity string that ties workspace, product line, task, stage, attempt, and owner together while keeping slugs sanitized and non-authoritative.
 - **Sandbox Path Evidence**: Persisted bounded-root evidence that proves where the sandbox would live without exposing host-sensitive absolute paths or raw path fragments.
 - **Fake Lifecycle Owner**: Production-code fake implementation that exercises lifecycle hooks and artifacts under the feature flag without launching a real harness.

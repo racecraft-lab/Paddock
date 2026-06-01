@@ -1,6 +1,6 @@
 # SpecKit Workflow: SPEC-009F - Production Triage Outcome Routing
 
-**Template Version**: 1.0.0, populated for Mission Control
+**Template Version**: 1.0.0, populated for Paddock
 **Created**: 2026-05-21
 **Purpose**: Prepare and execute RC Factory Phase 8F by routing non-remediation Issue Triage outcomes into production-visible recommendation lanes and task-local evidence without entering Issue Remediation or mutating GitHub automatically.
 
@@ -95,7 +95,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 - Worktree: `.worktrees/009f-production-triage-routing`
 - Package manager: pnpm from `pnpm-lock.yaml`
 - SpecKit CLI: `/Users/fredrickgabelmann/.local/bin/specify`
-- Remote: `origin` (`git@github.com:racecraft-lab/mission-control.git`)
+- Remote: `origin` (`git@github.com:racecraft-lab/Paddock.git`)
 - Reviewability setup gate:
 
 ```json
@@ -196,7 +196,7 @@ Route `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, 
 1. Non-remediation outcomes are recommendation-only in v1. Do not close issues, comment externally, apply labels, assign/dispatch agents, create spec worktrees, or invoke `$speckit-setup`.
 2. `NEEDS_SPEC` creates a SpecKit-ready handoff artifact with source issue, triage rationale, proposed scope, non-goals, evidence links, proposed labels, and deferred setup action.
 3. `NEEDS_HUMAN` creates a clarification-request artifact with blocking questions, target audience, evidence needed, owner-facing next action, proposed labels, and no external message.
-4. `NEEDS_SPECIALIST` creates a specialist recommendation from existing Mission Control metadata when safe, or records an explicit unassigned-specialist state.
+4. `NEEDS_SPECIALIST` creates a specialist recommendation from existing Paddock metadata when safe, or records an explicit unassigned-specialist state.
 5. `DUPLICATE`, `OBSOLETE`, and `INVALID` use a shared closure-recommendation model with outcome-specific required fields.
 6. Routing persists through existing `task_dispositions`, `task_artifacts`, and `activities`; no new migration is planned.
 7. The source Issue Triage task completes with terminal non-remediation evidence and no successor template.
@@ -331,12 +331,12 @@ Expected output: matching rules, fallback state, and rollout decision.
 
 Accepted answers:
 
-- Specialist recommendations may use only deterministic Mission Control workspace metadata: source task/workspace, `projects.area_slug`, normalized `area:*` routing evidence, `project_agent_assignments`, and same-workspace `agents` rows.
+- Specialist recommendations may use only deterministic Paddock workspace metadata: source task/workspace, `projects.area_slug`, normalized `area:*` routing evidence, `project_agent_assignments`, and same-workspace `agents` rows.
 - Do not infer specialist ownership from free-form issue title/body/rationale keywords, raw agent config/soul content, logs, or GitHub body text.
 - Recommend only when exactly one safe lane and exactly one eligible owner assignment resolve; otherwise record `specialist_state: "unassigned"` with `missing_metadata` and `owner_action`.
 - Existing specialist workflow/template metadata may inform recommendation wording, but SPEC-009F must not execute, route to, or create `mission-control_specialist_route` or any other non-remediation successor.
 - `PILOT_MISSION_CONTROL_E2E` remains the v1 rollout gate; no dedicated SPEC-009F feature flag is planned.
-- Routing requires all absence/off gates: pilot flag resolved true, source task template slug `mission-control_issue_triage`, GitHub repo `racecraft-lab/mission-control`, supported disposition, and existing evidence prerequisites. Otherwise no SPEC-009F artifacts, activities, proposed labels, dispatches, or successors are written.
+- Routing requires all absence/off gates: pilot flag resolved true, source task template slug `mission-control_issue_triage`, GitHub repo `racecraft-lab/Paddock`, supported disposition, and existing evidence prerequisites. Otherwise no SPEC-009F artifacts, activities, proposed labels, dispatches, or successors are written.
 
 Consensus: None required; the clarify executor found current repo evidence sufficient.
 
@@ -681,7 +681,7 @@ guard/UAT evidence.
 
 ### Post-Implementation Closeout
 
-- PR: https://github.com/racecraft-lab/mission-control/pull/57
+- PR: https://github.com/racecraft-lab/Paddock/pull/57
 - Implementation evidence commit: `f9a18575`
 - Merge evidence: PR #57 merged to `main` as
   `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22. GitHub merge

@@ -21,7 +21,7 @@
 
 - [x] CHK008 Read API uses authenticated viewer access and existing workspace/task scope filtering.
 - [x] CHK009 Cross-workspace lifecycle data is not returned for unauthorized task ids or lifecycle filters.
-- [x] CHK010 Fake owners cannot launch, resume, stop, message, or switch to real Mission Control/OpenClaw/external harness execution.
+- [x] CHK010 Fake owners cannot launch, resume, stop, message, or switch to real Paddock/OpenClaw/external harness execution.
 - [x] CHK011 Scope guards must prove no UI, adapter manifest, token accounting, runner launch, retry controls, successor selection, governance changes, or auto-merge code enters SPEC-014A.
 - [x] CHK012 External Harness Engineering/Symphony sources are cited only as boundary context and do not introduce runner algorithms.
 

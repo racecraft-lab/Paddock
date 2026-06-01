@@ -218,7 +218,7 @@ describe("callOpenClawGateway", () => {
         client: {
           id: "gateway-client",
           mode: "backend",
-          displayName: "Mission Control",
+          displayName: "Paddock",
         },
         scopes: [
           "operator.admin",

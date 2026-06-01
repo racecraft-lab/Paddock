@@ -147,12 +147,12 @@ See `.env.example` for the full list. Key variables:
 | `PORT` | No | `3005` (direct) / `3000` (Docker) | Server port |
 | `OPENCLAW_HOME` | No | - | Legacy: parent home directory containing `.openclaw/`. Use `OPENCLAW_STATE_DIR` instead (see note below) |
 | `OPENCLAW_STATE_DIR` | No | `~/.openclaw` | Exact path to the OpenClaw state directory. Preferred over `OPENCLAW_HOME` — avoids double-nesting when the path already ends in `.openclaw` |
-| `MISSION_CONTROL_DATA_DIR` | No | `.data/` | Directory for all Mission Control data files (DB, tokens, etc.). Use an absolute path with the standalone server to survive rebuilds. |
+| `MISSION_CONTROL_DATA_DIR` | No | `.data/` | Directory for all Paddock data files (DB, tokens, etc.). Use an absolute path with the standalone server to survive rebuilds. |
 | `MC_ALLOWED_HOSTS` | No | `localhost,127.0.0.1` | Allowed hosts in production |
 
 > **Note — `OPENCLAW_HOME` vs `OPENCLAW_STATE_DIR`**
 >
-> Mission Control supports two env vars for locating OpenClaw:
+> Paddock supports two env vars for locating OpenClaw:
 >
 > - `OPENCLAW_HOME` — treated as the *parent* home directory; `.openclaw` is appended automatically.
 >   Setting `OPENCLAW_HOME=/root/.openclaw` will resolve to `/root/.openclaw/.openclaw` (**double-nesting bug**).
@@ -168,7 +168,7 @@ See `.env.example` for the full list. Key variables:
 
 ## Kubernetes Sidecar Deployment
 
-When running Mission Control alongside a gateway as containers in the same pod (sidecar pattern), agents are not discovered via the filesystem. Instead, use the gateway's agent registration API.
+When running Paddock alongside a gateway as containers in the same pod (sidecar pattern), agents are not discovered via the filesystem. Instead, use the gateway's agent registration API.
 
 ### Architecture
 
@@ -322,7 +322,7 @@ Ensure only one instance is running against the same `.data/` directory. SQLite 
 
 ### "Gateway error: origin not allowed"
 
-Your gateway is rejecting the Mission Control browser origin. Add the Control UI origin
+Your gateway is rejecting the Paddock browser origin. Add the Control UI origin
 to your gateway config allowlist, for example:
 
 ```json
@@ -335,12 +335,12 @@ to your gateway config allowlist, for example:
 }
 ```
 
-Then restart the gateway and reconnect from Mission Control.
+Then restart the gateway and reconnect from Paddock.
 
 ### "Gateway error: device identity required"
 
 Device identity signing uses WebCrypto and requires a secure browser context.
-Open Mission Control over HTTPS (or localhost), then reconnect.
+Open Paddock over HTTPS (or localhost), then reconnect.
 
 ### "Gateway shows offline on VPS deployment"
 
@@ -352,7 +352,7 @@ Quick option:
 NEXT_PUBLIC_GATEWAY_OPTIONAL=true
 ```
 
-This runs Mission Control in standalone mode (core features available, live gateway streams unavailable).
+This runs Paddock in standalone mode (core features available, live gateway streams unavailable).
 
 Production option: reverse-proxy gateway WebSocket over 443.
 
@@ -375,7 +375,7 @@ Then point UI to:
 NEXT_PUBLIC_GATEWAY_URL=wss://your-domain.com/gateway-ws
 ```
 
-Mission Control now retries common reverse-proxy websocket paths (`/gateway-ws`, `/gw`) automatically when root-path handshake fails, but setting `NEXT_PUBLIC_GATEWAY_URL` is still recommended for deterministic production behavior.
+Paddock now retries common reverse-proxy websocket paths (`/gateway-ws`, `/gw`) automatically when root-path handshake fails, but setting `NEXT_PUBLIC_GATEWAY_URL` is still recommended for deterministic production behavior.
 
 ## Next Steps
 

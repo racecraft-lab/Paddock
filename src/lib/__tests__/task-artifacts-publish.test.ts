@@ -961,12 +961,12 @@ describe('publishArtifact: SPEC-009C3 evidence envelope', () => {
       workspace_id: PRODUCT_LINE_WORKSPACE_ID,
       root_issue: {
         task_id: 10,
-        github_repo: 'racecraft-lab/mission-control',
+        github_repo: 'racecraft-lab/Paddock',
         github_issue_number: 99,
       },
       pr_dev_task: {
         task_id: PRODUCER_TASK_ID,
-        github_repo: 'racecraft-lab/mission-control',
+        github_repo: 'racecraft-lab/Paddock',
         github_pr_number: 42,
         pr_identity_source: 'fixture',
       },
@@ -1015,7 +1015,7 @@ describe('publishArtifact: SPEC-009C3 evidence envelope', () => {
         pr_identity_source: 'fixture',
         pr_dev_task: {
           task_id: PRODUCER_TASK_ID,
-          github_repo: 'racecraft-lab/mission-control',
+          github_repo: 'racecraft-lab/Paddock',
           pr_identity_source: 'fixture',
         },
       }),

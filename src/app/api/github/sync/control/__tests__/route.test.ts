@@ -57,7 +57,7 @@ function freshMigratedDb(): Database.Database {
     INSERT OR REPLACE INTO workspaces (id, slug, name, tenant_id, feature_flags, created_at, updated_at)
     VALUES
       (2, 'facility', 'Facility', 1, '{"FEATURE_WORKSPACE_SWITCHER":true}', unixepoch(), unixepoch()),
-      (4, 'mission-control', 'Mission Control', 1, '{"FEATURE_WORKSPACE_SWITCHER":true}', unixepoch(), unixepoch())
+      (4, 'mission-control', 'Paddock', 1, '{"FEATURE_WORKSPACE_SWITCHER":true}', unixepoch(), unixepoch())
   `).run()
   return db
 }

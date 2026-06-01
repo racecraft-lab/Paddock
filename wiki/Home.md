@@ -1,8 +1,8 @@
-# Mission Control Wiki
+# Paddock Wiki
 
 Last reviewed: 2026-03-05
 
-Mission Control is an open-source dashboard for orchestrating AI agents: agents, tasks, costs, workflows, and gateway connectivity in one place.
+Paddock is an open-source dashboard for orchestrating AI agents: agents, tasks, costs, workflows, and gateway connectivity in one place.
 
 ## Start Here
 
@@ -16,8 +16,8 @@ Mission Control is an open-source dashboard for orchestrating AI agents: agents,
 ## Quick Start (5 Minutes)
 
 ```bash
-git clone https://github.com/builderz-labs/mission-control.git
-cd mission-control
+git clone https://github.com/racecraft-lab/Paddock.git
+cd Paddock
 pnpm install
 cp .env.example .env
 pnpm dev
@@ -27,7 +27,7 @@ Then open `http://localhost:3000` and sign in with the seeded `AUTH_USER`/`AUTH_
 
 ## Core Concepts
 
-- Agent: A worker connected to Mission Control that executes tasks and reports status/usage.
+- Agent: A worker connected to Paddock that executes tasks and reports status/usage.
 - Task: A unit of work tracked across workflow columns (`inbox -> done`) with comments and ownership.
 - Gateway: Real-time connection layer (OpenClaw and compatible providers) for session/event streaming.
 - Workspace/Tenant: Isolated environment for multi-client operations, managed via `/api/super/*` endpoints.

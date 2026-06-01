@@ -211,7 +211,7 @@ US1 evidence:
 - Full integration suite/UAT: `direnv exec . pnpm test:all` -> strict scope passed, lint passed, typecheck passed, full Vitest passed (300 files, 3,139 tests passed, 3 skipped, 84 todo), production build passed, and Playwright passed (651 tests, including both SPEC-013A1 GitHub sync automation journeys).
 - Cleanup extension: report-only run found 0 critical, 1 small artifact-tracking item, 0 medium, 0 large; retained the verify-tasks report as durable evidence.
 - Reviewability diff gate: `reviewability-gate.sh diff origin/main...HEAD` -> `status=exception`, `pass=true`, `transition_exception=true`, with documented blockers accepted under the SPEC-013A1 multi-surface override.
-- PR creation/review closeout: PR #60 opened at https://github.com/racecraft-lab/mission-control/pull/60; CodeQL, quality gate, Docker UI visual report, Storybook visual report, Playwright visual report, and visual approval statuses passed after review remediation and visual state approval.
+- PR creation/review closeout: PR #60 opened at https://github.com/racecraft-lab/Paddock/pull/60; CodeQL, quality gate, Docker UI visual report, Storybook visual report, Playwright visual report, and visual approval statuses passed after review remediation and visual state approval.
 - Retrospective: `specs/013a1-github-sync-automation/retrospective.md` records 100% task completion, 100% spec adherence, 0 critical findings, `uat_blocked=false`, and `pr_blocked=true` only for the required human review gate.
 
 ---

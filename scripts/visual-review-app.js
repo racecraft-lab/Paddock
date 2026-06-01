@@ -88,7 +88,7 @@ import {
       description: `Publish visual review state for ${context.repository}`,
       expires_in: '30',
       issues: 'write',
-      name: 'Mission Control visual review',
+      name: 'Paddock visual review',
       pull_requests: 'write',
       statuses: 'write',
     })

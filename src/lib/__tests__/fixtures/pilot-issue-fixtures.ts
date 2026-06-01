@@ -2,7 +2,7 @@ import type Database from 'better-sqlite3'
 import type { GitHubIssue } from '../../github'
 import type { PilotIssueCandidate } from '../../pilot-issue-eligibility'
 
-export const PILOT_REPO = 'racecraft-lab/mission-control'
+export const PILOT_REPO = 'racecraft-lab/Paddock'
 export const SYNTHETIC_TITLE = '[mc-pilot] synthetic e2e issue'
 export const SYNTHETIC_LABELS = ['mc:inbox', 'priority:medium', 'area:dev'] as const
 

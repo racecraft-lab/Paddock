@@ -10,7 +10,7 @@ export function makeContract(overrides: Partial<WorkflowContract> = {}): Workflo
     templates: [
       {
         slug: 'intake',
-        name: 'Mission Control Intake',
+        name: 'Paddock Intake',
         description: 'Create the first implementation task.',
         model: 'sonnet',
         task_prompt: 'Review {{task.title}} for {{workspace.name}}.',
@@ -20,7 +20,7 @@ export function makeContract(overrides: Partial<WorkflowContract> = {}): Workflo
         tracker: {
           type: 'github',
           identity_version: 'v1',
-          repo: 'builderz-labs/mission-control',
+          repo: 'racecraft-lab/Paddock',
           labels: ['mission-control'],
         },
         capabilities: ['codebase-read'],

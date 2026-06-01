@@ -201,11 +201,11 @@ $speckit-specify
 
 ## Feature: SPEC-006 Area-Label GitHub Sync
 
-Create a specification for RC Factory Phase 5 in Mission Control.
+Create a specification for RC Factory Phase 5 in Paddock.
 
 ### Problem Statement
 
-Mission Control's GitHub sync is currently project-driven: every project with `github_sync_enabled=1` polls its own `(workspace_id, github_repo)`. This works when each repo maps to one project, but breaks down when a single product-line monorepo serves multiple department kanbans (Dev, QA, Infra, Docs, etc.). Two independent failures arise:
+Paddock's GitHub sync is currently project-driven: every project with `github_sync_enabled=1` polls its own `(workspace_id, github_repo)`. This works when each repo maps to one project, but breaks down when a single product-line monorepo serves multiple department kanbans (Dev, QA, Infra, Docs, etc.). Two independent failures arise:
 1. Multiple projects polling the same repo can attempt to ingest the same issue, hitting the unique constraint `(workspace_id, github_repo, github_issue_number)` and producing inconsistent ownership.
 2. There is no mechanism for a GitHub issue to declare which department it belongs to, so the project that ingests first claims it regardless of intent.
 

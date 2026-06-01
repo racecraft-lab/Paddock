@@ -27,8 +27,8 @@ Re-read the design concept before each phase if a prompt is ambiguous. The
 Specify and Clarify prompts below were populated directly from the interview.
 
 Do not start downstream specs from this worktree. SPEC-009C1 stops after one
-eligible live or synthetic Mission Control GitHub issue is selected or created,
-ingested through GitHub sync into exactly one GitHub-linked Mission Control
+eligible live or synthetic Paddock GitHub issue is selected or created,
+ingested through GitHub sync into exactly one GitHub-linked Paddock
 pilot root task, and proven eligible while local-only tasks are rejected.
 
 No automatic GitHub sync cron/poller lifecycle wiring, Issue Triage execution,
@@ -44,7 +44,7 @@ Source-of-truth scoping decisions:
 
 - Keep SPEC-009C1 deterministic: operator-triggered sync or fixture-driven sync only.
 - Add future roadmap mini-specs for GitHub sync automation and pilot eligibility/evidence surfaces; do not build those surfaces now.
-- A live pilot candidate must be an open `racecraft-lab/mission-control` issue with `mc:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced Mission Control task, and no linked PR or terminal state.
+- A live pilot candidate must be an open `racecraft-lab/Paddock` issue with `mc:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced Paddock task, and no linked PR or terminal state.
 - Synthetic fallback is an idempotent operator/smoke script path: find an existing open `[mc-pilot] synthetic e2e issue` first, otherwise create it with `mc:inbox`, `priority:medium`, and `area:dev`.
 - Automated tests are fixture-driven. Live GitHub selection/creation is manual/operator-smoke only and requires explicit credentials.
 - Pilot eligibility labels are executable GitHub issue criteria; workflow-contract tracker labels remain template metadata for now.
@@ -180,7 +180,7 @@ sync panel is touched, run the focused Playwright target or `pnpm test:e2e`.
 | Dependencies | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B |
 | Enables | SPEC-009C2 |
 | Priority | P0 |
-| Feature flag scope | `PILOT_MISSION_CONTROL_E2E` for one live or synthetic Mission Control issue |
+| Feature flag scope | `PILOT_MISSION_CONTROL_E2E` for one live or synthetic Paddock issue |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
 | Design Concept | `docs/ai/specs/SPEC-009C1-design-concept.md` |
@@ -190,9 +190,9 @@ sync panel is touched, run the focused Playwright target or `pnpm test:e2e`.
 
 ### Scope Summary
 
-Select one eligible live `racecraft-lab/mission-control` issue or create one
+Select one eligible live `racecraft-lab/Paddock` issue or create one
 synthetic `[mc-pilot] synthetic e2e issue` only when no safe live candidate
-exists. The pilot issue must be ingested/synced into Mission Control as a
+exists. The pilot issue must be ingested/synced into Paddock as a
 GitHub-linked pilot root task. Eligibility must prove GitHub tracker truth,
 expected labels, repo linkage, workspace/project routing, duplicate prevention,
 and rejection of local-only tasks.
@@ -203,7 +203,7 @@ smoke action with credentials and must not run during normal app startup or CI.
 
 ### Success Criteria Summary
 
-- [x] Exactly one pilot issue is represented as one Mission Control task linked to `racecraft-lab/mission-control` and a concrete GitHub issue number.
+- [x] Exactly one pilot issue is represented as one Paddock task linked to `racecraft-lab/Paddock` and a concrete GitHub issue number.
 - [x] Eligible live issue selection requires open state, `mc:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced task, and no linked PR or terminal state.
 - [x] Synthetic fallback is idempotent: reuse an existing open `[mc-pilot] synthetic e2e issue` before creating a new one with `mc:inbox`, `priority:medium`, and `area:dev`.
 - [x] Ingest/sync writes expected repo linkage, issue number, sync timestamp, labels/tags, priority, status, workspace, and routed project evidence.
@@ -226,16 +226,16 @@ $speckit-specify
 
 ## Feature: GitHub Pilot Issue Ingest and Eligibility
 
-Create the SPEC-009C1 specification for the first Mission Control self-hosting
+Create the SPEC-009C1 specification for the first Paddock self-hosting
 pilot ingest slice. The source of truth is the roadmap entry in
 `docs/ai/rc-factory-technical-roadmap.md` and the design concept at
 `docs/ai/specs/SPEC-009C1-design-concept.md`.
 
-The spec must require one eligible `racecraft-lab/mission-control` GitHub issue
-to enter Mission Control as exactly one GitHub-linked pilot root task through
+The spec must require one eligible `racecraft-lab/Paddock` GitHub issue
+to enter Paddock as exactly one GitHub-linked pilot root task through
 GitHub ingest/sync. A live candidate is eligible only when it is open, labeled
 `mc:inbox`, has at least one `priority:*`, has exactly one routable `area:*`,
-has no existing synced Mission Control task, and has no linked PR or terminal
+has no existing synced Paddock task, and has no linked PR or terminal
 state. If no safe live candidate exists, an explicit operator/smoke script may
 create or reuse `[mc-pilot] synthetic e2e issue` with `mc:inbox`,
 `priority:medium`, and `area:dev`.
@@ -258,7 +258,7 @@ Non-goals:
 - Do not run live GitHub mutation from automated tests or normal app runtime.
 
 The specification must cite the relevant PRD constraints: GitHub issues are the
-v1 tracker of record; Mission Control tasks are local projections; local-only
+v1 tracker of record; Paddock tasks are local projections; local-only
 tasks remain supported but are not autonomous runner intake.
 ```
 
@@ -321,7 +321,7 @@ Focus on roadmap alignment and scope boundaries:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Eligibility and fallback | 4 | Live prefilter set to `repo:racecraft-lab/mission-control is:issue is:open label:"mc:inbox" -linked:pr`; routable `area:*` requires existing area routing to resolve `single_match`; synthetic fallback is explicit operator script find-first/create-with-opt-in behavior with smoke-checklist cleanup; tests use mocked/fixture GitHub seams and CI never requires live credentials or live mutation. Q4 security consensus completed. |
+| 1 | Eligibility and fallback | 4 | Live prefilter set to `repo:racecraft-lab/Paddock is:issue is:open label:"mc:inbox" -linked:pr`; routable `area:*` requires existing area routing to resolve `single_match`; synthetic fallback is explicit operator script find-first/create-with-opt-in behavior with smoke-checklist cleanup; tests use mocked/fixture GitHub seams and CI never requires live credentials or live mutation. Q4 security consensus completed. |
 | 2 | State and absence proof | 4 | Current identity proof is exactly one GitHub-linked root `tasks` row by workspace/repo/issue/sync timestamp/`parent_task_id IS NULL`; absence proof uses current `tasks`, `runs`, `task_dispositions`, `task_artifacts`, and `activities` surfaces plus table-if-exists guards for future claim/runner/sandbox tables; `mc:inbox` remains existing inbox status semantics; formal run-state lifecycle checks are deferred to SPEC-013A+ and SPEC-014A+ without placeholder schema. Consensus not required. |
 | 3 | Scope and roadmap alignment | 3 | Automatic GitHub sync polling/cron remains deferred to SPEC-013A1; durable operator-visible eligibility/evidence UI/API remains deferred to SPEC-009E; workflow-contract tracker labels remain metadata unless a future contract spec makes them executable. Consensus not required. |
 
@@ -364,7 +364,7 @@ $speckit-plan
 
 ## Architecture Notes
 - Treat GitHub issue identity as the pilot source of truth.
-- Treat Mission Control task rows as synchronized projections and control-plane enrichment.
+- Treat Paddock task rows as synchronized projections and control-plane enrichment.
 - Keep executable pilot eligibility separate from workflow-contract tracker label metadata.
 - Record roadmap-deferred work in `docs/ai/rc-factory-technical-roadmap.md` but do not implement those future specs here.
 - Preserve zero-regression behavior for existing GitHub sync and local task creation.
@@ -599,7 +599,7 @@ Implementation guardrails:
 | Post-merge routing fix | Merged | PR #40 merged on 2026-05-15 as `e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1` to keep synced pilot issues from auto-routing after ingest |
 | HAL deploy | Passed | `mission-control.service` was redeployed from `main` at `e6ee19ee` and verified active on HAL |
 | Clean synthetic smoke | Passed | Final clean run used synthetic GitHub issue #42, produced exactly one GitHub-linked Inbox root task, preserved the one-task count after resync, rejected the local-only lookalike, and showed no claim, dispatch, remediation, runner, or artifact side effects |
-| Cleanup | Passed | Synthetic GitHub issues #37, #39, #41, and #42 were closed; disposable `[mc-pilot]` Mission Control smoke rows were removed after database backup, and follow-up verification returned zero `[mc-pilot]` task rows |
+| Cleanup | Passed | Synthetic GitHub issues #37, #39, #41, and #42 were closed; disposable `[mc-pilot]` Paddock smoke rows were removed after database backup, and follow-up verification returned zero `[mc-pilot]` task rows |
 
 ---
 
@@ -614,11 +614,11 @@ Implementation guardrails:
 - [x] Manual smoke checklist is ready for operator execution
 - [x] Roadmap/workflow/spec status updated on the spec branch
 - [x] Branch committed and pushed
-- [x] PR #34 opened and merged: https://github.com/racecraft-lab/mission-control/pull/34
-- [x] PR #40 post-merge pilot routing fix opened and merged: https://github.com/racecraft-lab/mission-control/pull/40
+- [x] PR #34 opened and merged: https://github.com/racecraft-lab/Paddock/pull/34
+- [x] PR #40 post-merge pilot routing fix opened and merged: https://github.com/racecraft-lab/Paddock/pull/40
 - [x] HAL deployed and verified on merged `main` at `e6ee19ee`
 - [x] Manual clean-run smoke completed with synthetic issue #42
-- [x] Synthetic smoke issues closed and disposable Mission Control smoke task rows cleaned after backup
+- [x] Synthetic smoke issues closed and disposable Paddock smoke task rows cleaned after backup
 
 ---
 
@@ -627,7 +627,7 @@ Implementation guardrails:
 ```text
 src/lib/github-sync-engine.ts              Existing inbound GitHub sync behavior
 src/lib/github-sync-poller.ts              Existing lazy poller; future automation owner, not SPEC-009C1 implementation
-src/lib/github-label-map.ts                Mission Control status, priority, and area labels
+src/lib/github-label-map.ts                Paddock status, priority, and area labels
 src/lib/task-create.ts                     Shared task creation and GitHub sync dedupe
 src/app/api/github/sync/route.ts           Operator-triggered sync route
 scripts/                                   Candidate home for operator smoke/synthetic fallback scripts

@@ -72,7 +72,7 @@ describe('GET /api/tasks/[id]/evidence', () => {
 
     expect(response.status).toBe(200)
     expect(payload.schema_version).toBe('task_evidence.v1')
-    expect(payload.identity.issue.url).toBe('https://github.com/racecraft-lab/mission-control/issues/50')
+    expect(payload.identity.issue.url).toBe('https://github.com/racecraft-lab/Paddock/issues/50')
     expect(payload.pilot_eligibility.state).toBe('eligible')
     expect(snapshotEvidenceCounts(db)).toEqual(before)
   })

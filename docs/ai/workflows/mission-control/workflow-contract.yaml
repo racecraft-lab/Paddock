@@ -8,11 +8,11 @@ allowed_variable_namespaces:
   - github
 templates:
   - slug: mission-control_issue_triage
-    name: Mission Control Issue Triage
-    description: Classify a synced Mission Control GitHub issue and choose the next route.
+    name: Paddock Issue Triage
+    description: Classify a synced Paddock GitHub issue and choose the next route.
     model: sonnet
     task_prompt: |
-      Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return JSON with disposition and rationale. Use ACTIONABLE_REMEDIATION only when the issue is reproducible and has a bounded Mission Control remediation path; otherwise use DUPLICATE, OBSOLETE, INVALID, NEEDS_HUMAN, NEEDS_SPECIALIST, or NEEDS_SPEC.
+      Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return JSON with disposition and rationale. Use ACTIONABLE_REMEDIATION only when the issue is reproducible and has a bounded Paddock remediation path; otherwise use DUPLICATE, OBSOLETE, INVALID, NEEDS_HUMAN, NEEDS_SPECIALIST, or NEEDS_SPEC.
     timeout_seconds: 300
     agent_role: qa
     tags:
@@ -21,7 +21,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -64,8 +64,8 @@ templates:
         rationale:
           type: string
   - slug: mission-control_specialist_route
-    name: Mission Control Specialist Route
-    description: Route triaged work to the appropriate Mission Control specialist stage.
+    name: Paddock Specialist Route
+    description: Route triaged work to the appropriate Paddock specialist stage.
     model: sonnet
     task_prompt: |
       Route {{task.title}} for {{workspace.name}} using the triage result and repository area labels from {{github.labels}}.
@@ -77,7 +77,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -106,7 +106,7 @@ templates:
         specialist:
           type: string
   - slug: mission-control_close_issue
-    name: Mission Control Close Issue
+    name: Paddock Close Issue
     description: Prepare a close recommendation for issues that require no code path.
     model: sonnet
     task_prompt: |
@@ -119,7 +119,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -147,7 +147,7 @@ templates:
         recommendation:
           type: string
   - slug: mission-control_needs_spec_route
-    name: Mission Control Needs Spec Route
+    name: Paddock Needs Spec Route
     description: Prepare the handoff when triage determines SpecKit work is required.
     model: sonnet
     task_prompt: |
@@ -160,7 +160,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -188,7 +188,7 @@ templates:
         handoff:
           type: string
   - slug: mission-control_remediation_plan
-    name: Mission Control Remediation Plan
+    name: Paddock Remediation Plan
     description: Produce a bounded remediation plan for an issue approved for implementation.
     model: sonnet
     task_prompt: |
@@ -201,7 +201,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -231,8 +231,8 @@ templates:
         plan:
           type: string
   - slug: mission-control_dev_implementation
-    name: Mission Control Dev Implementation
-    description: Implement an approved Mission Control remediation plan.
+    name: Paddock Dev Implementation
+    description: Implement an approved Paddock remediation plan.
     model: sonnet
     task_prompt: |
       Implement {{task.title}} in {{workspace.name}} using the approved remediation plan. Return verification evidence.
@@ -244,7 +244,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -277,7 +277,7 @@ templates:
         result:
           type: string
   - slug: mission-control_review
-    name: Mission Control Review
+    name: Paddock Review
     description: Review implementation evidence before owner approval.
     model: sonnet
     task_prompt: |
@@ -290,7 +290,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -324,7 +324,7 @@ templates:
             - pass
             - fix
   - slug: mission-control_owner_review
-    name: Mission Control Owner Review
+    name: Paddock Owner Review
     description: Hold work at ready_for_owner until the operator approves.
     model: sonnet
     task_prompt: |
@@ -337,7 +337,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:
@@ -366,7 +366,7 @@ templates:
         owner_packet:
           type: string
   - slug: mission-control_aegis
-    name: Mission Control Aegis
+    name: Paddock Aegis
     description: Apply final Aegis quality review after owner review.
     model: sonnet
     task_prompt: |
@@ -379,7 +379,7 @@ templates:
     tracker:
       type: github
       identity_version: v1
-      repo: racecraft-lab/mission-control
+      repo: racecraft-lab/Paddock
       labels:
         - mission-control
     capabilities:

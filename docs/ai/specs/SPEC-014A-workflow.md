@@ -59,7 +59,7 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 
 ### Constitution Validation
 
-Before every phase, verify these Mission Control constitution constraints:
+Before every phase, verify these Paddock constitution constraints:
 
 | Principle | Requirement | Verification |
 |-----------|-------------|--------------|
@@ -121,7 +121,7 @@ Define deterministic, sanitized, product-line-scoped sandbox keys/paths and life
 - Sandbox paths cannot escape the configured root.
 - Lifecycle events are inspectable through durable state and a read API.
 - Disabling `FEATURE_AGENT_RUNNER_SANDBOXES` prevents all sandbox create/run/mutation paths and creates no lifecycle rows or events.
-- Fake Mission Control, OpenClaw, and external-harness lifecycle owners exercise the same vocabulary without launching real harnesses.
+- Fake Paddock, OpenClaw, and external-harness lifecycle owners exercise the same vocabulary without launching real harnesses.
 - SPEC-014B roadmap/spec text owns first operator-visible runtime inventory integration with read-only sandbox lifecycle references; SPEC-014A does not add UI.
 
 ---
@@ -145,7 +145,7 @@ Source artifacts:
 - current OpenAI Symphony README and SPEC
 
 Problem statement:
-Mission Control has claim/reconciliation authority from SPEC-013B but does not yet have an explicit sandbox ownership and lifecycle contract for execution contexts. Before any real harness adapter can launch work, the system needs deterministic sandbox keys, bounded path resolution, durable lifecycle state, fake lifecycle owners, safe cleanup/rollback behavior, and read-only inspectability.
+Paddock has claim/reconciliation authority from SPEC-013B but does not yet have an explicit sandbox ownership and lifecycle contract for execution contexts. Before any real harness adapter can launch work, the system needs deterministic sandbox keys, bounded path resolution, durable lifecycle state, fake lifecycle owners, safe cleanup/rollback behavior, and read-only inspectability.
 
 Specify the requirements for:
 - Durable SQLite lifecycle state using a narrow schema pair: `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events`.
@@ -545,7 +545,7 @@ Verification expectations:
 | Cleanup | Pass: `$speckit-cleanup-run` inspected 58 completed tasks, applied 0 edits, found 0 critical or small auto-fix findings, and validated lint/typecheck/API parity/focused SPEC-014A tests. |
 | Reviewability diff gate | Pass with ratified exception: `reviewability-gate.sh diff origin/main...HEAD` returned `status=exception`, `pass=true`. |
 | PR body generation | Complete: PR review packet generated at `/private/tmp/speckit-pr-body-014a.md` from the host PR template and filled with SPEC-014A scope, traceability, verification, and rollback details. |
-| PR creation | Complete: PR #64 created and later merged to `main`: https://github.com/racecraft-lab/mission-control/pull/64 |
+| PR creation | Complete: PR #64 created and later merged to `main`: https://github.com/racecraft-lab/Paddock/pull/64 |
 | Review remediation | Complete: PR #64 merged as `c01d9e44ec826d94fa5916284c51453e5ec339ee`; post-merge target deployment and sandbox lifecycle UAT passed. |
 | Retrospective | Complete: `specs/014a-sandbox-lifecycle-contract/retrospective.md` reports 58/58 tasks complete, 100% spec adherence, 0 critical findings, and 0 significant findings. |
 | E2E | N/A: SPEC-014A adds no UI/browser route surface; repository-approved equivalent is full Vitest plus typecheck, lint, build, and API parity. |
@@ -610,4 +610,4 @@ specs/014a-sandbox-lifecycle-contract/
   tasks.md
 ```
 
-Template based on SpecKit workflow best practices, populated for Mission Control SPEC-014A.
+Template based on SpecKit workflow best practices, populated for Paddock SPEC-014A.

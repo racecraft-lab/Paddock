@@ -3,13 +3,13 @@
 **Feature Branch**: `013a1-github-sync-automation`
 **Created**: 2026-05-23
 **Status**: Draft
-**Input**: User description: "GitHub issue sync automation and poller lifecycle for Mission Control, default-off and feature-flagged per Product Line/workspace, preserving manual sync while adding bounded automatic polling, durable lifecycle state, overlap control, owner semantics, backoff, pagination bounds, and rollback-safe disablement."
+**Input**: User description: "GitHub issue sync automation and poller lifecycle for Paddock, default-off and feature-flagged per Product Line/workspace, preserving manual sync while adding bounded automatic polling, durable lifecycle state, overlap control, owner semantics, backoff, pagination bounds, and rollback-safe disablement."
 
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Enable and Observe Automatic GitHub Polling (Priority: P1)
 
-As a Mission Control operator, I can enable automatic GitHub issue polling for one Product Line/workspace and see whether it is enabled, running, delayed, disabled, successful, failed, or partially complete.
+As a Paddock operator, I can enable automatic GitHub issue polling for one Product Line/workspace and see whether it is enabled, running, delayed, disabled, successful, failed, or partially complete.
 
 **Why this priority**: Automatic ingestion has no operator value unless it can be enabled safely and observed without relying on external cron state or hidden process behavior.
 
@@ -57,7 +57,7 @@ As a human reviewer, I can verify that failed or partially bounded sync attempts
 
 ### User Story 4 - Avoid Duplicate Ingestion for Shared Repositories (Priority: P4)
 
-As a Mission Control operator managing multiple projects that reference one GitHub repository, I can rely on only the owning Product Line/workspace scope to poll that repository when area routing ownership applies.
+As a Paddock operator managing multiple projects that reference one GitHub repository, I can rely on only the owning Product Line/workspace scope to poll that repository when area routing ownership applies.
 
 **Why this priority**: Shared repositories are common in Product Line setups, and automatic polling must preserve ownership semantics before scheduler claim decisions depend on current GitHub-linked tasks.
 
@@ -125,7 +125,7 @@ As a Mission Control operator managing multiple projects that reference one GitH
 - **FR-037**: System MUST expose a scoped GitHub sync health summary through the existing GitHub Sync diagnostics surface or an existing local health/diagnostic surface, deriving severity from M77 lifecycle state rather than a new telemetry service.
 - **FR-038**: Health summaries MUST include severity, concise reason, lifecycle source timestamp, runbook or recovery affordance references, manual fallback availability, and the active state drivers such as flag disabled, control disabled, active backoff, repeated failure, partial bounded stop, stale lease, ownership unresolved, or schema unavailable.
 - **FR-039**: Lifecycle diagnostics, run detail, activity payloads, and health summary payloads MUST be built from an explicit safe-field allowlist and store or expose sanitized categories/messages only; they MUST NOT include `GITHUB_TOKEN`, authorization headers, raw GitHub response bodies, personal access tokens, API keys, full credentials, or matched secret substrings.
-- **FR-040**: SPEC-013A1 MUST reuse local Mission Control observability surfaces, including lifecycle tables, `github_syncs` compatibility history, activity rows, the GitHub Sync API/UI, and existing diagnostics or health-summary patterns; it MUST NOT add an external telemetry service, hosted log pipeline, or new secret-bearing telemetry sink.
+- **FR-040**: SPEC-013A1 MUST reuse local Paddock observability surfaces, including lifecycle tables, `github_syncs` compatibility history, activity rows, the GitHub Sync API/UI, and existing diagnostics or health-summary patterns; it MUST NOT add an external telemetry service, hosted log pipeline, or new secret-bearing telemetry sink.
 - **FR-041**: System MUST classify GitHub sync boundary failures into stable lifecycle categories before updating lifecycle run state, backoff state, diagnostics, activity evidence, or health summaries. Required categories are `transport_timeout`, `transport_network`, `github_rate_limited`, `github_auth_or_scope`, `github_not_found`, `github_http_4xx`, `github_http_5xx`, `github_malformed_json`, `github_unexpected_shape`, `github_issue_schema_invalid`, `database_error`, and `unknown`. Categories and sanitized messages MUST preserve cursor rules and MUST NOT expose raw GitHub response bodies, authorization headers, tokens, credentials, API keys, or matched secret substrings.
 - **FR-042**: System MUST validate each fetched GitHub issue page before applying issue mutations for that page. Malformed JSON, non-array page bodies, unexpected response shape, or issue records missing required fields MUST NOT advance the last success cursor. If a later page fails after one or more earlier pages have been fully validated and durably safe to resume from, the run MAY end as `partial` with `partial_run_reason='malformed_page'`; otherwise the run MUST end as `failed`.
 - **FR-043**: System MUST derive automatic retry timing from GitHub retry signals in deterministic order: use a valid `Retry-After` value first, else a valid future `X-RateLimit-Reset` value, else bounded exponential backoff. Retry timing MUST be capped by the Product Line/workspace maximum, and lifecycle state MUST expose the selected signal source, capped retry time, retry reason, and whether a cap or fallback was applied.

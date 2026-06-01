@@ -9,7 +9,7 @@ test.describe('OpenAPI Documentation', () => {
     const spec = await res.json()
     expect(spec.openapi).toMatch(/^3\.1/)
     expect(spec.info).toBeDefined()
-    expect(spec.info.title).toBe('Mission Control API')
+    expect(spec.info.title).toBe('Paddock API')
     expect(spec.info.version).toBeDefined()
     expect(spec.paths).toBeDefined()
   })

@@ -81,7 +81,7 @@ interface Spec009fTriageRoutingPayload {
   source_task_id: number
   workspace_id: number
   source_issue: {
-    repo: 'racecraft-lab/mission-control'
+    repo: 'racecraft-lab/Paddock'
     issue_number: number
     url: string
   }
@@ -351,7 +351,7 @@ export function seedEligiblePilotEvidence(db: Database.Database, taskId = 500): 
       id, workspace_id, title, status, github_repo, github_issue_number, github_pr_number,
       github_synced_at, chain_id, chain_stage, created_at, updated_at
     )
-    VALUES (?, 1, ?, 'ready_for_owner', 'racecraft-lab/mission-control', 50, 51,
+    VALUES (?, 1, ?, 'ready_for_owner', 'racecraft-lab/Paddock', 50, 51,
       1779300000, 'spec-009e-uat', 'ready_for_owner', 1779300000, 1779300100)
   `).run(taskId, 'SPEC-009E retained pilot trail')
   db.prepare(`
@@ -379,7 +379,7 @@ export function seedEligiblePilotEvidence(db: Database.Database, taskId = 500): 
   `).run(taskId)
   db.prepare(`
     INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, workspace_id, created_at)
-    VALUES ('racecraft-lab/mission-control', 1779300600, 1, 'inbound', 'success', 1, 1779300600)
+    VALUES ('racecraft-lab/Paddock', 1779300600, 1, 'inbound', 'success', 1, 1779300600)
   `).run()
   return taskId
 }
@@ -395,7 +395,7 @@ export function seedLocalOnlyTask(db: Database.Database, taskId = 600): number {
 export function seedPartialProofTask(db: Database.Database, taskId = 700): number {
   db.prepare(`
     INSERT INTO tasks (id, workspace_id, title, status, github_repo, github_issue_number, github_pr_number, github_synced_at)
-    VALUES (?, 1, 'Partial pilot proof', 'review', 'racecraft-lab/mission-control', 50, NULL, 1779300000)
+    VALUES (?, 1, 'Partial pilot proof', 'review', 'racecraft-lab/Paddock', 50, NULL, 1779300000)
   `).run(taskId)
   db.prepare(`
     INSERT INTO task_artifacts (
@@ -447,7 +447,7 @@ export function seedSpec009fNonRemediationOutcome(
       github_issue_number, github_pr_number, github_synced_at, project_id,
       workflow_template_id, workflow_template_slug, chain_id, chain_stage, created_at, updated_at
     )
-    VALUES (?, 1, ?, ?, 'done', 'medium', 'racecraft-lab/mission-control',
+    VALUES (?, 1, ?, ?, 'done', 'medium', 'racecraft-lab/Paddock',
       ?, NULL, 1779400000, 9900, 9950, 'mission-control_issue_triage',
       'spec-009f-routing', 'issue_triage', 1779400000, 1779400100)
   `).run(taskId, `SPEC-009F ${outcome} fixture`, `Disposable SPEC-009F fixture for ${outcome}.`, issueNumber)
@@ -507,7 +507,7 @@ export function seedSpec009fNonRemediationOutcome(
     workflowTemplateIds: [9950],
     featureFlagChanges: ['FEATURE_TASK_ARTIFACTS=true', 'FEATURE_TRIAGE_ROUTING=true'],
     retainedRepoIdentity: {
-      repo: 'racecraft-lab/mission-control',
+      repo: 'racecraft-lab/Paddock',
       issueNumber,
       pullRequestNumber: null,
     },
@@ -610,7 +610,7 @@ function seedSpec009fSpecialistMetadata(db: Database.Database): void {
       github_sync_enabled, status, created_at, updated_at
     )
     VALUES (9900, 1, 'SPEC-009F QA', 'spec-009f-qa', 'FQA', 'qa',
-      'racecraft-lab/mission-control', 1, 'active', 1779400000, 1779400000)
+      'racecraft-lab/Paddock', 1, 'active', 1779400000, 1779400000)
   `).run()
   db.prepare(`
     INSERT OR IGNORE INTO agents (id, name, role, workspace_id, status, config, created_at, updated_at)
@@ -648,22 +648,22 @@ function spec009fPayload(
     source_task_id: ids.taskId,
     workspace_id: 1,
     source_issue: {
-      repo: 'racecraft-lab/mission-control' as const,
+      repo: 'racecraft-lab/Paddock' as const,
       issue_number: ids.issueNumber,
-      url: `https://github.com/racecraft-lab/mission-control/issues/${String(ids.issueNumber)}`,
+      url: `https://github.com/racecraft-lab/Paddock/issues/${String(ids.issueNumber)}`,
     },
     disposition: outcome,
     routing_status: 'recorded' as const,
     triage_rationale: `Deterministic SPEC-009F fixture rationale for ${outcome}.`,
     recommended_next_action: ids.includeUnsafeContent
-      ? `Review the ${outcome} recommendation in Mission Control. javascript:alert(1)`
-      : `Review the ${outcome} recommendation in Mission Control.`,
+      ? `Review the ${outcome} recommendation in Paddock. javascript:alert(1)`
+      : `Review the ${outcome} recommendation in Paddock.`,
     proposed_labels: [
       { name: 'mc:triage-routing', source: 'triage_routing' as const, action: 'recommend_add' as const, applied: false as const },
       { name: spec009fOutcomeLabel(outcome), source: 'triage_routing' as const, action: 'recommend_add' as const, applied: false as const },
     ],
     evidence_links: [
-      { type: 'github_issue' as const, label: `Issue #${String(ids.issueNumber)}`, url: `https://github.com/racecraft-lab/mission-control/issues/${String(ids.issueNumber)}` },
+      { type: 'github_issue' as const, label: `Issue #${String(ids.issueNumber)}`, url: `https://github.com/racecraft-lab/Paddock/issues/${String(ids.issueNumber)}` },
       { type: 'artifact' as const, label: 'Routing artifact', artifact_id: ids.artifactId },
       { type: 'activity' as const, label: 'Routing activity', activity_id: ids.activityId },
       { type: 'static_doc' as const, label: 'SPEC-009F checklist', url: 'specs/009f-production-triage-routing/checklists/data-integrity.md' },
@@ -711,7 +711,7 @@ function spec009fPayload(
         lane_detail: {
           specialist_state: 'unassigned',
           missing_metadata: ['project.area_slug', 'project_agent_assignments'],
-          owner_action: '<b>Assign</b> a specialist owner in Mission Control before dispatch.',
+          owner_action: '<b>Assign</b> a specialist owner in Paddock before dispatch.',
         },
       }
     }
@@ -737,7 +737,7 @@ function spec009fPayload(
       lane: 'closure_recommendation',
       lane_detail: {
         closure_outcome: 'DUPLICATE',
-        suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+        suspected_duplicate_target: 'https://github.com/racecraft-lab/Paddock/issues/42',
         comparison_rationale: 'The reported behavior matches the retained duplicate target.',
       },
     }
@@ -762,7 +762,7 @@ function spec009fPayload(
     lane: 'closure_recommendation',
     lane_detail: {
       closure_outcome: 'INVALID',
-      invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+      invalidity_reason: 'The report lacks a reproducible Paddock state.',
       validation_evidence: ['Fixture validation did not find the claimed task state.', 'Stored GitHub identity is issue-only.'],
       missing_reproducibility_context: ['Exact workspace scope', 'Observed task id'],
     },

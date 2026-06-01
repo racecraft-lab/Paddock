@@ -2,7 +2,7 @@
 
 **Spec**: 008-resource-governance
 **Branch**: `008-resource-governance`
-**PR**: [#26](https://github.com/racecraft-lab/mission-control/pull/26)
+**PR**: [#26](https://github.com/racecraft-lab/Paddock/pull/26)
 **Date**: 2026-05-03
 **Final state**: 142 commits ahead of `main`; 385/385 tasks ticked; 8/8 SPEC-008
 verification gates GREEN; ~6,500 LOC delta across production + tests + docs +
@@ -181,7 +181,7 @@ The OTLP receiver accepts both `Authorization: Bearer <key>` and
 implementation accepted both and used precedence; an oracle round flagged
 that this is a credential-confusion footgun. Fix (T151) was a 5-line code
 change to reject when both are present, but tracking down which RFC (none —
-this is a Mission Control convention) plus writing the correct rejection
+this is a Paddock convention) plus writing the correct rejection
 test took half a session.
 
 **Lesson**: when the spec says "exactly one of," write the rejection test
@@ -336,14 +336,14 @@ the operator node produces the evidence offline.
 ### 4.2 Full Playwright e2e is skip-guarded on a runtime seed endpoint
 
 **Spec**: T363 `pnpm test:e2e` runs all 14 governance specs against a real
-Mission Control instance.
+Paddock instance.
 
 **Reality**: specs exist (T284-T297) but skip-guard on
 `/api/admin/spec-008/seed-fixture`, which only exists in a running instance.
 CI runs the unit + integration suite; e2e runs against the operator's
 desktop or against the deployed instance.
 
-**Justification**: bringing up a full Mission Control instance inside CI
+**Justification**: bringing up a full Paddock instance inside CI
 would require ~5 min cold start per spec. Skip-guarding lets us land the
 specs as code-on-disk evidence; operators run them against the real server.
 
@@ -387,7 +387,7 @@ What's deferred to the production roll-out PR.
 | ID | Description | Why deferred | Where it runs |
 | --- | --- | --- | --- |
 | T001-T004 | Phase 0 verification spike evidence (claude-code OTel, claude-mcp OTel, codex stdout/rollout parity, copilot events CI) | Requires CLI subprocess + real collector | Operator desktop or deployed instance |
-| T363 | `pnpm test:e2e` (14 governance Playwright specs) | Requires running Mission Control + `/api/admin/spec-008/seed-fixture` | Operator desktop or staging |
+| T363 | `pnpm test:e2e` (14 governance Playwright specs) | Requires running Paddock + `/api/admin/spec-008/seed-fixture` | Operator desktop or staging |
 | T364 | `pnpm test:visual:storybook` with `SPEC_008_AXE_ENABLED=1` + visual regression | Requires visual regression credentials | CI or operator desktop |
 | T365 / T366 | Visual manifest gates | Same | Same |
 | T367 | `pnpm test:soak` (30 min @ 100 admissions/sec) | Long-running benchmark | Operator desktop |
@@ -554,7 +554,7 @@ re-derivation.
 
 Pre-existing baselines exist. Trying to drive vitest to 100% passing on
 every PR means either (a) carrying false-clean baselines or (b) wasting
-sessions on out-of-scope fixes. Mission Control's effective merge gate
+sessions on out-of-scope fixes. Paddock's effective merge gate
 is "no SPEC-008-authored regressions"; codify that as the explicit gate
 rather than relying on per-PR vibe.
 

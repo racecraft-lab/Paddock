@@ -1,8 +1,8 @@
 # SpecKit Workflow: SPEC-010A - Generic Product-Line Seeder
 
-**Template Version**: 1.0.0, populated for Mission Control
+**Template Version**: 1.0.0, populated for Paddock
 **Created**: 2026-05-22
-**Purpose**: Prepare and execute RC Factory Phase 9A by extracting the Mission Control-specific seed path into reusable product-line seed tooling, checked-in YAML config, typed validation, and operator-readable parity evidence.
+**Purpose**: Prepare and execute RC Factory Phase 9A by extracting the Paddock-specific seed path into reusable product-line seed tooling, checked-in YAML config, typed validation, and operator-readable parity evidence.
 
 ---
 
@@ -30,9 +30,9 @@ docs/ai/specs/SPEC-010A-design-concept.md
 The design concept is the source of truth for setup-time scoping decisions:
 
 - Use checked-in YAML product-line seed configs under `docs/ai/product-lines/`.
-- Convert Mission Control into the first reusable config/fixture.
+- Convert Paddock into the first reusable config/fixture.
 - Add a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
-- Keep `seed:mission-control` as a compatibility wrapper around the Mission Control config.
+- Keep `seed:mission-control` as a compatibility wrapper around the Paddock config.
 - Validate configs before write transactions and return structured JSON field/path errors.
 - Existing product-line workspaces require explicit apply/verify handling and preserve history.
 - Config declares workflow contract family/path and required template slugs; import through the existing SPEC-009A workflow-contract library.
@@ -63,11 +63,11 @@ The design concept is the source of truth for setup-time scoping decisions:
 | Gate | Checkpoint | Approval Criteria |
 |------|------------|-------------------|
 | G0 | After setup | Branch is `010a-generic-product-line-seeder`; design concept and workflow exist; reviewability preset resolves; roadmap marks SPEC-010A `In Progress` on this branch only |
-| G1 | After Specify | Requirements cover generic YAML config, Mission Control parity, explicit existing-target apply/verify, fail-closed validation, workflow import, flags, governance, agents, and no Product Line B scope |
+| G1 | After Specify | Requirements cover generic YAML config, Paddock parity, explicit existing-target apply/verify, fail-closed validation, workflow import, flags, governance, agents, and no Product Line B scope |
 | G2 | After Clarify | Config schema fields, validation error codes, existing workspace policy, CLI compatibility wrapper, residue conflict model, and UAT proof are resolved |
 | G3 | After Plan | Architecture reuses existing SPEC-009B seed behavior and SPEC-009A workflow-contract importer; no runtime admin UI, new dependency, migration, GitHub mutation, dispatch, claim, runner, sandbox, or adapter work |
 | G4 | After Checklist | All gaps are remediated or explicitly out of scope without widening into SPEC-010B, SPEC-013A/A1/B/C, or SPEC-014A-D |
-| G5 | After Tasks | Tasks are dependency ordered, TDD-first, and include Mission Control parity, invalid-config no-mutation, CLI wrapper, docs/runbook, and scope guard coverage |
+| G5 | After Tasks | Tasks are dependency ordered, TDD-first, and include Paddock parity, invalid-config no-mutation, CLI wrapper, docs/runbook, and scope guard coverage |
 | G6 | After Analyze | No CRITICAL/HIGH findings remain; downstream artifacts do not drift from Design Concept Q1-Q12 |
 | G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, apply-twice/verify parity evidence, invalid-config no-mutation proof, docs status updates, branch commit, and push are complete |
 
@@ -79,7 +79,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 
 | Principle | Requirement | Verification |
 |-----------|-------------|--------------|
-| I. Zero-Regression Contract | Existing single-workspace and SPEC-009B Mission Control seed behavior must remain unchanged unless invoked through explicit generic config paths | Mission Control parity tests plus `seed:mission-control` wrapper regression |
+| I. Zero-Regression Contract | Existing single-workspace and SPEC-009B Paddock seed behavior must remain unchanged unless invoked through explicit generic config paths | Paddock parity tests plus `seed:mission-control` wrapper regression |
 | II. Install Compatibility Discipline | Keep changes additive and isolated to seed/config tooling; no destructive migration or table rename | Diff review and migration grep |
 | IV. Test-First Development | RED tests define config parsing, existing-target handling, no-mutation failures, parity, and CLI behavior before implementation | Focused Vitest/CLI tests |
 | V. Feature-Flag Resolution Discipline | Validate configured flags against `FEATURE_FLAG_REGISTRY`; do not inline runtime `process.env.FEATURE_*` checks | Unit tests and guardrail grep |
@@ -98,7 +98,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 - Worktree: `.worktrees/010a-generic-product-line-seeder`
 - Package manager: pnpm from `pnpm-lock.yaml`
 - SpecKit CLI: `/Users/fredrickgabelmann/.local/bin/specify`
-- Remote: `origin` (`https://github.com/racecraft-lab/mission-control.git`)
+- Remote: `origin` (`https://github.com/racecraft-lab/Paddock.git`)
 - Current base: `origin/main` at `6bc4f2a79d7af240b75ad22687310a754f1f587a`
 - Reviewability setup gate:
 
@@ -106,7 +106,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 {"mode":"setup","status":"exception","pass":true,"reviewable_loc":8,"production_files":25,"total_files":0,"primary_surface_count":7,"primary_surfaces":["API","harness/adapter","or docs/process","scheduler/runtime","schema/migration","seed/config","UI"],"thresholds":{"warn":{"reviewable_loc":400,"production_files":6,"total_files":15,"primary_surfaces":1},"block":{"reviewable_loc":800,"production_files":8,"total_files":25,"primary_surfaces":1}},"transition_exception":true,"warnings":["production files 25 exceeds warn threshold 6","primary surfaces 7 exceeds warn threshold 1"],"blockers":["production files 25 exceeds block threshold 8","more than one primary surface requires split or exception"]}
 ```
 
-The setup gate passed under the roadmap reviewability waiver. Downstream phases must keep implementation narrower than the roadmap-wide heuristic: generic seed/config tooling, Mission Control parity evidence, and no Product Line B onboarding.
+The setup gate passed under the roadmap reviewability waiver. Downstream phases must keep implementation narrower than the roadmap-wide heuristic: generic seed/config tooling, Paddock parity evidence, and no Product Line B onboarding.
 
 ### Reviewability Preset
 
@@ -164,14 +164,14 @@ Preset `speckit-pro-reviewability` is present. Template resolution verified:
 
 ### Roadmap Scope
 
-Parameterize the Mission Control seed path into a reusable product-line seeder that accepts product-line slug, display name, agent prefix, GitHub repo, workflow family, feature flags, and governance defaults. It does not onboard Product Line B or run a second smoke.
+Parameterize the Paddock seed path into a reusable product-line seeder that accepts product-line slug, display name, agent prefix, GitHub repo, workflow family, feature flags, and governance defaults. It does not onboard Product Line B or run a second smoke.
 
 ### Strict Scope
 
 Allowed:
 
 - Generic product-line seed config schema and typed validation.
-- Canonical Mission Control product-line YAML config under `docs/ai/product-lines/`.
+- Canonical Paddock product-line YAML config under `docs/ai/product-lines/`.
 - Generic seed library/CLI with `preflight`, `apply`, and `verify` modes.
 - Compatibility wrapper preserving `pnpm seed:mission-control`.
 - Reuse of existing SPEC-009A workflow-contract import/apply mechanisms.
@@ -179,7 +179,7 @@ Allowed:
 - Explicit feature-flag enable and disabled/absent validation against `FEATURE_FLAG_REGISTRY`.
 - Existing-target policy requiring explicit apply/verify behavior and preserving task/history rows.
 - Redacted target-config-aware residue/conflict preflight.
-- Mission Control apply-twice/verify parity evidence and invalid-config no-mutation fixtures.
+- Paddock apply-twice/verify parity evidence and invalid-config no-mutation fixtures.
 - Operator docs/runbook updates for the generic CLI.
 
 Forbidden:
@@ -197,7 +197,7 @@ Forbidden:
 ### Success Criteria Summary
 
 - [x] Generic product-line seeder consumes checked-in YAML config and validates required identity, agent, repo, workflow, feature-flag, and governance fields.
-- [x] Mission Control seed can be reproduced from the generic config with apply-twice and verify-mode evidence matching the SPEC-009B invariants.
+- [x] Paddock seed can be reproduced from the generic config with apply-twice and verify-mode evidence matching the SPEC-009B invariants.
 - [x] Incomplete or unsafe configs fail closed before writes and return structured JSON errors with field/path codes.
 - [x] No-mutation tests prove invalid configs do not change workspace, project, assignment, task, workflow-template, or governance rows.
 - [x] Existing product-line workspace handling is explicit, preserves history, and mutates only config-owned fields.
@@ -205,7 +205,7 @@ Forbidden:
 - [x] Feature flags are validated against `FEATURE_FLAG_REGISTRY`; configured disabled/absent flags stay off.
 - [x] Product-line-scoped agent assignments use explicit `agentPrefix`; facility/global agents are not accidentally assigned.
 - [x] Target-config residue preflight blocks ownership conflicts with redacted evidence and no automatic cleanup.
-- [x] `seed:mission-control` remains available as a compatibility wrapper around the Mission Control config.
+- [x] `seed:mission-control` remains available as a compatibility wrapper around the Paddock config.
 - [x] No Product Line B config/smoke, GitHub mutation, scheduler dispatch, claim, runner, sandbox, adapter, or auto-merge behavior is added.
 
 ---
@@ -222,7 +222,7 @@ $speckit-specify
 ## Feature: Generic Product-Line Seeder
 
 ### Problem Statement
-SPEC-009B proved a Mission Control-specific Product Line A seed, but the code path is still Mission-Control-specific. SPEC-010B needs reusable seed tooling before a second product line can be onboarded safely. Build a generic, checked-in product-line seed config and CLI that can reproduce the existing Mission Control seed without launching work or mutating GitHub.
+SPEC-009B proved a Paddock-specific Product Line A seed, but the code path is still Mission-Control-specific. SPEC-010B needs reusable seed tooling before a second product line can be onboarded safely. Build a generic, checked-in product-line seed config and CLI that can reproduce the existing Paddock seed without launching work or mutating GitHub.
 
 ### Source Artifacts
 - Roadmap: `docs/ai/rc-factory-technical-roadmap.md`, SPEC-010A / Phase 9A.
@@ -235,17 +235,17 @@ SPEC-009B proved a Mission Control-specific Product Line A seed, but the code pa
 
 ### Goals
 1. Define a checked-in YAML product-line seed config shape under `docs/ai/product-lines/`.
-2. Convert Mission Control into the first canonical config/fixture.
+2. Convert Paddock into the first canonical config/fixture.
 3. Add a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
-4. Keep `seed:mission-control` working as a compatibility wrapper around the Mission Control config.
+4. Keep `seed:mission-control` working as a compatibility wrapper around the Paddock config.
 5. Validate config identity, workflow contract, GitHub repo ownership, feature flags, agent assignments, governance defaults, and existing-target policy before writes.
 6. Fail closed with structured JSON errors and no mutation for incomplete or unsafe configs.
-7. Reproduce Mission Control seed behavior from config with apply-twice, verify-mode, and stable evidence.
+7. Reproduce Paddock seed behavior from config with apply-twice, verify-mode, and stable evidence.
 
 ### User Stories
 - As an operator, I can review a product-line seed YAML file before applying it.
 - As an operator, I can run generic preflight/apply/verify commands and get structured JSON evidence.
-- As a maintainer, I can prove the generic Mission Control config preserves SPEC-009B behavior.
+- As a maintainer, I can prove the generic Paddock config preserves SPEC-009B behavior.
 - As a future SPEC-010B implementer, I can reuse the seed schema and CLI without changing seeder code for each product line.
 
 ### Constraints
@@ -265,7 +265,7 @@ SPEC-009B proved a Mission Control-specific Product Line A seed, but the code pa
 - External GitHub mutations or autonomous work execution.
 
 ### Acceptance
-Generate requirements that prove Mission Control parity from generic config, fail-closed invalid config behavior, explicit existing-target handling, target-config residue blocking, CLI compatibility, and strict exclusion of Product Line B/onboarding/runtime execution work.
+Generate requirements that prove Paddock parity from generic config, fail-closed invalid config behavior, explicit existing-target handling, target-config residue blocking, CLI compatibility, and strict exclusion of Product Line B/onboarding/runtime execution work.
 ```
 
 ### Specify Gate Checklist
@@ -284,7 +284,7 @@ Generate requirements that prove Mission Control parity from generic config, fai
 | Requirements coverage | 5 user stories; 29 functional requirements after Clarify session 4; 13 success criteria after Clarify session 2; 16/16 requirements checklist items complete |
 | Marker scan | `count-markers.sh all specs/010a-generic-product-line-seeder` returned 0 gaps, 0 clarifications, and 0 findings |
 | G1 gate | Pass: `validate-gate.sh G1 specs/010a-generic-product-line-seeder` returned `pass=true` |
-| Scope result | Mission Control parity, generic config/CLI, existing-target safety, no-mutation evidence, workflow import, flags, governance, agents, and Product Line B/runtime-execution exclusions are represented |
+| Scope result | Paddock parity, generic config/CLI, existing-target safety, no-mutation evidence, workflow import, flags, governance, agents, and Product Line B/runtime-execution exclusions are represented |
 
 ---
 
@@ -300,7 +300,7 @@ Run these sessions in order:
 $speckit-clarify
 
 Focus on product-line seed config schema:
-- Exact YAML path and filename for the Mission Control config under `docs/ai/product-lines/`.
+- Exact YAML path and filename for the Paddock config under `docs/ai/product-lines/`.
 - Required top-level fields, schema/version marker, and typed validator ownership.
 - Representation of product-line identity, departments/projects, agentPrefix/assignments, repo identity, workflow contract, feature flags, governance, and safety policy.
 - Whether JSON Schema, TypeScript validator, or both are required for reviewability and CLI errors.
@@ -380,7 +380,7 @@ $speckit-clarify
 Focus on operator surface and UAT:
 - Generic `seed:product-line` arguments and structured JSON output.
 - Compatibility behavior for `seed:mission-control`.
-- Mission Control apply-twice/verify parity evidence.
+- Paddock apply-twice/verify parity evidence.
 - Invalid-config fixtures and redacted residue/conflict output.
 - Docs/runbook paths that operators should follow.
 ```
@@ -391,7 +391,7 @@ Focus on operator surface and UAT:
 |----------|-----------------|-------------------|
 | Generic CLI contract | `pnpm seed:product-line -- --config <yaml> --db <db> --mode preflight|apply|verify --json [--allow-existing] [--operator-evidence <json>]`; reject unknown flags | Stabilizes operator docs, tests, and CLI contract artifacts without adding a parser dependency |
 | Result envelope and exit codes | Use `schema_version:"product-line-seed-result-v1"` with stable result fields and exit codes `0` success, `2` blocked/refusal, `3` workflow/config contract not ready, `4` verify drift, `5` CLI/unexpected error | Makes CI and UAT machine-readable |
-| Mission Control wrapper existing-target behavior | `seed:mission-control` delegates to generic behavior and requires `--allow-existing` for existing-target apply; verify remains read-only | Compatibility means same command path and equivalent evidence, not a silent bypass |
+| Paddock wrapper existing-target behavior | `seed:mission-control` delegates to generic behavior and requires `--allow-existing` for existing-target apply; verify remains read-only | Compatibility means same command path and equivalent evidence, not a silent bypass |
 | Operator docs/UAT paths | Add generic runbook `docs/runbooks/product-line-seed.md`, update `docs/runbooks/mission-control-seed-predeploy.md`, and keep implementation quickstart under `specs/010a-generic-product-line-seeder/quickstart.md` | Gives durable operator instructions outside spec-only artifacts |
 | Invalid-config/redaction fixtures | Required fixture classes include missing identity, unsupported field, invalid flag, reserved flag enabled, unsupported workflow family, missing workflow slug, unsafe governance, duplicate/conflicting declarations, existing-target refusal, and repo/product-line ownership conflict; failures emit no-mutation snapshots and redacted target evidence | Prevents under-testing unsafe configs and ensures no secrets leak in conflict output |
 
@@ -401,7 +401,7 @@ Focus on operator surface and UAT:
 
 | Item | Round | Routed Categories | Outcome | Analysts Used |
 |------|-------|-------------------|---------|---------------|
-| Mission Control wrapper existing-target authorization | 1 | codebase, spec | Accepted wrapper delegation to generic `--allow-existing` behavior while preserving command name/core flags | codebase-analyst, spec-context-analyst |
+| Paddock wrapper existing-target authorization | 1 | codebase, spec | Accepted wrapper delegation to generic `--allow-existing` behavior while preserving command name/core flags | codebase-analyst, spec-context-analyst |
 | Invalid-config fixture and redaction contract | 1 | security | Accepted required validation-class fixture coverage, no-mutation snapshots, `raw_secret_values_emitted:false`, `redacted_fields`, and no raw secret/token/credential output | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ### Clarify Gate Checklist
@@ -445,7 +445,7 @@ Plan SPEC-010A using:
 - Package manager: pnpm.
 
 ## Architecture Constraints
-1. Reuse the existing Mission Control seed behavior by extracting generic product-line config/application primitives rather than rewriting the seeder from scratch.
+1. Reuse the existing Paddock seed behavior by extracting generic product-line config/application primitives rather than rewriting the seeder from scratch.
 2. Keep `seed:mission-control` as a compatibility wrapper.
 3. Add a generic `seed:product-line` entrypoint that accepts config path, database path, mode, JSON output, and explicit existing-target behavior.
 4. Perform config validation and conflict preflight before opening write transactions.
@@ -462,8 +462,8 @@ Quote Design Concept decisions when they drive architecture:
 - Q3: fail closed with structured field/path errors before writes.
 - Q4: config-declared workflow contract family/path and required slugs.
 - Q5: existing `resource_policies` shape for governance defaults.
-- Q6: generic CLI plus Mission Control compatibility wrapper.
-- Q7/Q8: no Product Line B; Mission Control parity is the UAT proof.
+- Q6: generic CLI plus Paddock compatibility wrapper.
+- Q7/Q8: no Product Line B; Paddock parity is the UAT proof.
 - Q10: explicit `agentPrefix` and product-line-scoped assignments.
 - Q11: feature flag registry validation and disabled/absent future flags.
 - Q12: target-config-aware residue conflicts with redacted evidence and no automatic deletion.
@@ -485,7 +485,7 @@ Plan must list exact files likely touched and explain why each is in scope. If t
 - [x] No migration.
 - [x] No new runtime dependency.
 - [x] No GitHub mutation or autonomous execution path.
-- [x] Existing SPEC-009B Mission Control seed behavior remains covered.
+- [x] Existing SPEC-009B Paddock seed behavior remains covered.
 - [x] Product Line B stays out of scope.
 - [x] UAT/manual verification path is concrete.
 
@@ -527,7 +527,7 @@ Focus on Generic Product-Line Seeder requirements:
 - YAML config maps deterministically to workspace, department, assignment, workflow-template, feature-flag, and governance rows.
 - Existing target apply/verify preserves task/history rows and non-config-owned state.
 - Invalid config and residue conflicts prove no mutation by hash/count evidence.
-- Pay special attention to idempotent apply-twice Mission Control parity.
+- Pay special attention to idempotent apply-twice Paddock parity.
 ```
 
 ```bash
@@ -602,8 +602,8 @@ Task groups should cover:
 1. RED tests for product-line config parsing and required fields.
 2. RED tests for invalid config no-mutation behavior.
 3. RED tests for existing target explicit apply/verify policy.
-4. Generic seed types and validator extraction from Mission Control seed constants.
-5. Mission Control YAML config under `docs/ai/product-lines/`.
+4. Generic seed types and validator extraction from Paddock seed constants.
+5. Paddock YAML config under `docs/ai/product-lines/`.
 6. Generic `seed:product-line` CLI modes and JSON output.
 7. `seed:mission-control` compatibility wrapper.
 8. Workflow contract family/path/required slug validation through existing importer.
@@ -611,7 +611,7 @@ Task groups should cover:
 10. Agent prefix assignment and facility/global separation.
 11. Governance defaults using existing `resource_policies`.
 12. Target-config-aware residue conflict preflight with redacted evidence.
-13. Mission Control apply-twice/verify parity evidence.
+13. Paddock apply-twice/verify parity evidence.
 14. Operator docs/runbook updates.
 15. Static/diff guardrails for no Product Line B, no GitHub mutation, no dispatch/claim/runner/sandbox/adapter/auto-merge drift.
 
@@ -657,7 +657,7 @@ Primary risks:
 2. Any GitHub mutation, task creation, successor creation, claim, scheduler, runner, sandbox, adapter, or auto-merge behavior.
 3. Missing no-mutation proof for invalid configs and blocked preflight.
 4. Existing `seed:mission-control` compatibility breakage.
-5. Mission Control parity weaker than SPEC-009B evidence.
+5. Paddock parity weaker than SPEC-009B evidence.
 6. Feature flag registry validation gaps or accidental future flag activation.
 7. Workflow contract import bypassed by manual template SQL.
 8. Existing target policy ambiguity.
@@ -709,7 +709,7 @@ Do not implement:
 - Automatic cleanup/deletion/unlinking of conflicting residue.
 - `$speckit-setup` invocation or SDD worktree creation.
 
-Verification must prove Mission Control parity, apply-twice idempotency, verify-mode drift detection, invalid-config no-mutation, existing-target safety, structured redacted errors, wrapper compatibility, and strict absence of Product Line B/runtime execution drift.
+Verification must prove Paddock parity, apply-twice idempotency, verify-mode drift detection, invalid-config no-mutation, existing-target safety, structured redacted errors, wrapper compatibility, and strict absence of Product Line B/runtime execution drift.
 ```
 
 ### Implementation Notes
@@ -726,7 +726,7 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 | Setup And Foundations | T001-T018 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, and `direnv exec . pnpm lint` passed |
 | US1 Config Review | T019-T027 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts`, `direnv exec . pnpm typecheck`, and `direnv exec . pnpm lint` passed |
 | US2 Generic Modes | T028-T043 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `direnv exec . pnpm seed:product-line -- --config docs/ai/product-lines/mission-control.yaml --db :memory: --mode preflight --json` passed |
-| US3 Mission Control Parity | T044-T050 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and disposable DB generic apply/apply `--allow-existing`/verify plus wrapper verify commands passed |
+| US3 Paddock Parity | T044-T050 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and disposable DB generic apply/apply `--allow-existing`/verify plus wrapper verify commands passed |
 | US4 Fail-Closed Safety | T051-T060 | Complete | `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts src/lib/__tests__/product-line-seed-cli.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `git diff --check` passed |
 | US5 Reuse Docs And Guards | T061-T065 | Complete | Static guard command, `direnv exec . pnpm test src/lib/__tests__/product-line-seed.test.ts`, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `git diff --check` passed |
 | Polish And Verification | T066-T073 | Complete | Focused tests, CLI parity sequence, static guard, migration/dependency guard, `pnpm typecheck`, `pnpm lint`, `pnpm build` outside sandbox, and `git diff --check` passed; `pnpm test:all` not required by branch policy |
@@ -738,16 +738,16 @@ Verification must prove Mission Control parity, apply-twice idempotency, verify-
 - [x] `pnpm typecheck` passes.
 - [x] `pnpm lint` passes.
 - [x] `pnpm build` passes if production/API files change.
-- [x] Mission Control generic-config apply-twice/verify parity evidence exists.
+- [x] Paddock generic-config apply-twice/verify parity evidence exists.
 - [x] Invalid-config and blocked-preflight no-mutation evidence exists.
 - [x] Roadmap/workflow status synced.
-- [x] PR packet includes review order, traceability, validation, known gaps, and rollback/flag notes in [PR #59](https://github.com/racecraft-lab/mission-control/pull/59).
+- [x] PR packet includes review order, traceability, validation, known gaps, and rollback/flag notes in [PR #59](https://github.com/racecraft-lab/Paddock/pull/59).
 
 ### Post-Merge UAT Evidence - 2026-05-22
 
 - Scope: merged `main` checkout `028abca9` under Node v22.22.2; disposable DB `/private/tmp/mission-control-uat-010a-013a.joRGvX/spec-010a-uat-r2.db` copied from the local `.data` baseline; local `.data/mission-control.db` was not mutated.
 - Generic seeder flow passed: `preflight` returned `READY` with `mutation_status:not_mutated`; first apply returned `SEEDED`; existing-target apply without `--allow-existing` failed with `EXISTING_TARGET_REQUIRES_ALLOW_EXISTING` and stable no-mutation hash; apply `--allow-existing`, generic `verify`, and `seed:mission-control` wrapper verify all passed with stable seeded snapshot hash.
-- Seed shape matched Mission Control config: one workspace, six department projects, six product-line-scoped assignments, nine workflow templates, one config-owned feature flag in the seed evidence snapshot, and three governance defaults. Direct DB inspection confirmed zero Product Line B workspaces, zero tasks, and zero runs.
+- Seed shape matched Paddock config: one workspace, six department projects, six product-line-scoped assignments, nine workflow templates, one config-owned feature flag in the seed evidence snapshot, and three governance defaults. Direct DB inspection confirmed zero Product Line B workspaces, zero tasks, and zero runs.
 - Fail-closed validation passed: invalid reserved-flag config failed before writes with `FEATURE_FLAG_RESERVED_FUTURE_ENABLED`, `FEATURE_FLAG_CONFLICT`, and `CONFIG_CONFLICTING_DECLARATION`; no-mutation comparison passed and `raw_secret_values_emitted:false`.
 - Static scope search found only negative safety-policy/evidence/test references and no Product Line B onboarding, GitHub mutation, dispatch, runner, sandbox, auto-merge, or SpecKit setup/autopilot invocation drift.
 
@@ -777,7 +777,7 @@ specs/010a-generic-product-line-seeder/         # generated SpecKit artifacts
 
 ### What Worked Well
 
-- The generic CLI and compatibility wrapper produced the same Mission Control seed shape from a disposable DB without touching the local runtime database.
+- The generic CLI and compatibility wrapper produced the same Paddock seed shape from a disposable DB without touching the local runtime database.
 
 ### Challenges Encountered
 

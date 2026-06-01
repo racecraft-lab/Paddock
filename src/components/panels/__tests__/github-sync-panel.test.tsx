@@ -423,7 +423,7 @@ function installFetchMock(envelope = lifecycleEnvelope()) {
         projects: [
           {
             id: 101,
-            name: 'Mission Control',
+            name: 'Paddock',
             github_repo: 'racecraft/mission-control',
             github_sync_enabled: true,
           },
@@ -517,7 +517,7 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
       kind: 'productLine',
       tenantId: 1,
       productLineId: 1,
-      productLine: { id: 1, slug: 'mission-control', name: 'Mission Control', tenant_id: 1 },
+      productLine: { id: 1, slug: 'mission-control', name: 'Paddock', tenant_id: 1 },
       version: 1,
       scopeKey: 'tenant:1:product-line:1',
     }
@@ -561,7 +561,7 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
           projects: [
             {
               id: 101,
-              name: 'Mission Control',
+              name: 'Paddock',
               github_repo: 'racecraft/mission-control',
               github_sync_enabled: true,
             },

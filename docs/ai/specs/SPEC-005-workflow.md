@@ -150,7 +150,7 @@ Add feature-flagged `ready_for_owner` runtime behavior for PR-producing template
 - [P4-AC4a] `produces_pr=true` task in `ready_for_owner` with linked issue closed but no merged linked PR -> task remains `ready_for_owner`; reconciliation activity/notification is created.
 - [P4-AC4b] `produces_pr=false` close/disposition task can complete without any PR.
 - [P4-AC5] Kanban column renders between `quality_review` and `done`; operator sees tasks awaiting merge in a dedicated lane.
-- [P4-AC6] `mc:ready-for-owner` label appears on linked GitHub issue when Mission Control task enters that state.
+- [P4-AC6] `mc:ready-for-owner` label appears on linked GitHub issue when Paddock task enters that state.
 
 ## Phase 1: Specify
 
@@ -164,7 +164,7 @@ $speckit-specify
 ## Feature: SPEC-005 ready_for_owner State and Two-Step Terminal Event
 
 ### Problem Statement
-Mission Control currently has `workflow_templates.produces_pr` from SPEC-004, but approved PR-producing tasks can still collapse into ordinary terminal `done` semantics. Product Line A's pilot needs a two-step terminal gate: automated work reaches `ready_for_owner` after Aegis approval, then waits for the linked PR merge before task completion and downstream chain advancement.
+Paddock currently has `workflow_templates.produces_pr` from SPEC-004, but approved PR-producing tasks can still collapse into ordinary terminal `done` semantics. Product Line A's pilot needs a two-step terminal gate: automated work reaches `ready_for_owner` after Aegis approval, then waits for the linked PR merge before task completion and downstream chain advancement.
 
 ### Users
 - Operators who need a clear lane for tasks waiting on PR merge.
@@ -266,7 +266,7 @@ Complete on 2026-05-02. All three sessions completed; no unresolved markers rema
 |---------|------------|-----------|--------------|
 | 1 | Transition Guards and API Contract | 5 | Shared transition guard boundary; static read vocabulary plus workspace-aware write guards; uniform 409 body; all non-merge `done` writes for PR-producing tasks blocked while flag ON; `advanceTaskChain` runs only after verified PR merge writes `done` with a GitHub PR merge trigger. |
 | 2 | GitHub Terminal Event and Reconciliation | 5 | Explicit PR identity is `github_repo` + `github_pr_number`; merge evidence must match linked repo/PR and include `merged=true`, `merged_at`, or `merge_commit_sha` from live GitHub or test-only fixture; closed issue without merged PR leaves task in `ready_for_owner`; reconciliation writes `github_terminal_reconciliation_required` activity, sends `task_ready_for_owner` notification to assignee then creator, and dedupes unchanged task/issue/reason; production `pullFromGitHub` callsites pass no fixture/options. |
-| 3 | UI, Labels, Notifications, and Status Vocabulary | 5 | `ready_for_owner` added to static status vocabulary surfaces with write guards enforcing flag behavior; Kanban lane key `ready_for_owner`, label `Ready for Owner`, teal styling, placed between `quality_review` and `done`; GitHub label `mc:ready-for-owner` color `14b8a6` description `Mission Control: ready for owner`; `task_ready_for_owner` panel/delivery rendering with normal and reconciliation titles; existing nullable `external_terminal_event='github_pr_merged'` used with no migration/table. |
+| 3 | UI, Labels, Notifications, and Status Vocabulary | 5 | `ready_for_owner` added to static status vocabulary surfaces with write guards enforcing flag behavior; Kanban lane key `ready_for_owner`, label `Ready for Owner`, teal styling, placed between `quality_review` and `done`; GitHub label `mc:ready-for-owner` color `14b8a6` description `Paddock: ready for owner`; `task_ready_for_owner` panel/delivery rendering with normal and reconciliation titles; existing nullable `external_terminal_event='github_pr_merged'` used with no migration/table. |
 
 ### Consensus Resolution Log
 

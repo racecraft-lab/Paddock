@@ -96,7 +96,7 @@ export function sanitizeLabelProvisioningError(input: string): string {
 }
 
 /**
- * Idempotently create Mission Control labels on a GitHub repo.
+ * Idempotently create Paddock labels on a GitHub repo.
  *
  * Signatures (FR-053, US1-AC3, P5-AC1, US6-T068):
  *   - `initializeLabels(repo)` — legacy 1-arg call; creates ONLY the

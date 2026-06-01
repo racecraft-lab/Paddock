@@ -21,7 +21,7 @@ stop_reason: "natural"
 ## Goals
 
 - Prevent duplicate scheduler dispatch for the same GitHub-linked task stage when concurrent scheduler ticks run.
-- Add one coordination path that reconciles Mission Control task state, GitHub tracker truth, and resource-governance readiness before launch.
+- Add one coordination path that reconciles Paddock task state, GitHub tracker truth, and resource-governance readiness before launch.
 - Reuse the SPEC-013A task-stage attempt spine as the evidence substrate while adding a narrow active-claim authority that SPEC-013A deliberately deferred.
 - Keep `advanceTaskChain` as successor-selection authority and protect the existing assigned-task dispatch boundary instead of introducing a runner abstraction.
 - Preserve tracker truth by admitting only GitHub issue-linked assigned tasks into autonomous claim intake.
@@ -105,7 +105,7 @@ stop_reason: "natural"
 **Branch:** Release semantics
 
 **Recommended answer:** Terminal or gated state release
-> Release when the task reaches terminal Mission Control status, the linked GitHub issue/PR is closed or merged as appropriate, governance returns block/defer, or the stage attempt reaches `succeeded`, `failed`, `released`, or `cancelled`. This keeps reconciliation authoritative and prevents claims from becoming stale locks.
+> Release when the task reaches terminal Paddock status, the linked GitHub issue/PR is closed or merged as appropriate, governance returns block/defer, or the stage attempt reaches `succeeded`, `failed`, `released`, or `cancelled`. This keeps reconciliation authoritative and prevents claims from becoming stale locks.
 
 **Alternatives offered:**
 - Only attempt terminal states: Cleaner lifecycle coupling but GitHub/governance changes may leave claims stuck.
@@ -190,7 +190,7 @@ stop_reason: "natural"
 
 ---
 
-### Q11. Which Mission Control task state should be eligible for SPEC-013B claim intake?
+### Q11. Which Paddock task state should be eligible for SPEC-013B claim intake?
 
 **Branch:** Task-state eligibility
 

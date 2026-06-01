@@ -1,4 +1,4 @@
-# Mission Control
+# Paddock
 
 Open-source dashboard for AI agent orchestration. Manage agent fleets, track tasks, monitor costs, and orchestrate workflows.
 
@@ -6,8 +6,8 @@ Open-source dashboard for AI agent orchestration. Manage agent fleets, track tas
 
 ## OpenClaw Node Deployment Notes
 
-- These notes apply to operator-managed Mission Control worktrees: `<live-worktree>` (live `main`) and `<dev-worktree>` (dev branch).
-- Mission Control should run from `racecraft-lab/mission-control` `main`.
+- These notes apply to operator-managed Paddock worktrees: `<live-worktree>` (live `main`) and `<dev-worktree>` (dev branch).
+- Paddock should run from `racecraft-lab/Paddock` `main`.
 - Active systemd unit: `mission-control.service`
 - Active startup wrapper: `~/.local/bin/mc-start.sh`
 - The wrapper resolves runtime secrets from the operator's configured secret manager at startup.
@@ -87,12 +87,12 @@ Database path: defaults to `<MISSION_CONTROL_DATA_DIR>/mission-control.db`.
 
 ## Agent Control Interfaces
 
-Mission Control provides three interfaces for autonomous agents:
+Paddock provides three interfaces for autonomous agents:
 
 ### MCP Server (recommended for agents)
 ```bash
 # Add to any Claude Code agent:
-claude mcp add mission-control -- node /path/to/mission-control/scripts/mc-mcp-server.cjs
+claude mcp add paddock -- node /path/to/Paddock/scripts/mc-mcp-server.cjs
 
 # Environment config:
 MC_URL=http://127.0.0.1:3000 MC_API_KEY=<key>

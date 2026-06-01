@@ -71,62 +71,62 @@ describe('AREA_LABEL_MAP (FR-030)', () => {
       'area:qa': {
         name: 'area:qa',
         color: 'a855f7',
-        description: 'Mission Control area: quality assurance',
+        description: 'Paddock area: quality assurance',
       },
       'area:dev': {
         name: 'area:dev',
         color: '3b82f6',
-        description: 'Mission Control area: development',
+        description: 'Paddock area: development',
       },
       'area:design': {
         name: 'area:design',
         color: 'be185d',
-        description: 'Mission Control area: design',
+        description: 'Paddock area: design',
       },
       'area:infra': {
         name: 'area:infra',
         color: '64748b',
-        description: 'Mission Control area: infrastructure',
+        description: 'Paddock area: infrastructure',
       },
       'area:security': {
         name: 'area:security',
         color: 'ef4444',
-        description: 'Mission Control area: security',
+        description: 'Paddock area: security',
       },
       'area:docs': {
         name: 'area:docs',
         color: 'eab308',
-        description: 'Mission Control area: documentation',
+        description: 'Paddock area: documentation',
       },
       'area:ops': {
         name: 'area:ops',
         color: 'f97316',
-        description: 'Mission Control area: operations',
+        description: 'Paddock area: operations',
       },
       'area:frontend': {
         name: 'area:frontend',
         color: '0e7490',
-        description: 'Mission Control area: frontend',
+        description: 'Paddock area: frontend',
       },
       'area:backend': {
         name: 'area:backend',
         color: '6366f1',
-        description: 'Mission Control area: backend',
+        description: 'Paddock area: backend',
       },
       'area:data': {
         name: 'area:data',
         color: '22c55e',
-        description: 'Mission Control area: data',
+        description: 'Paddock area: data',
       },
       'area:ml': {
         name: 'area:ml',
         color: '6d28d9',
-        description: 'Mission Control area: machine learning',
+        description: 'Paddock area: machine learning',
       },
       'area:triage': {
         name: 'area:triage',
         color: '6b7280',
-        description: 'Mission Control area: triage (unresolvable inbound issues)',
+        description: 'Paddock area: triage (unresolvable inbound issues)',
       },
     })
   })
@@ -190,7 +190,7 @@ describe('areaLabelsForWorkspace (FR-032)', () => {
 
     // Synthesized labels carry the workspace-defined description marker
     const marketing = labels.find((l) => l.name === 'area:marketing')!
-    expect(marketing.description).toBe('Mission Control area: marketing (workspace-defined)')
+    expect(marketing.description).toBe('Paddock area: marketing (workspace-defined)')
     expect(typeof marketing.color).toBe('string')
     expect(marketing.color).toMatch(/^[0-9a-f]{6}$/)
   })
@@ -209,7 +209,7 @@ describe('areaLabelsForWorkspace (FR-032)', () => {
 
     // The static area:qa wins (its description is the canonical one)
     const qa = labels.find((l) => l.name === 'area:qa')!
-    expect(qa.description).toBe('Mission Control area: quality assurance')
+    expect(qa.description).toBe('Paddock area: quality assurance')
     expect(qa.color).toBe('a855f7')
 
     // No duplicate names

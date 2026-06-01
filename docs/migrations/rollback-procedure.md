@@ -4,7 +4,7 @@ SPEC-001 adds forward-only migrations M53 through M61; SPEC-004 adds M62 (`idx_t
 
 ## SPEC-014A (Sandbox Lifecycle) Rollback
 
-SPEC-014A adds M80 `080_agent_sandbox_lifecycles`. To reverse only the sandbox lifecycle schema after stopping Mission Control writers and backing up the database, run:
+SPEC-014A adds M80 `080_agent_sandbox_lifecycles`. To reverse only the sandbox lifecycle schema after stopping Paddock writers and backing up the database, run:
 
 1. `docs/migrations/rollback-M80.sql`
 2. `PRAGMA foreign_key_check;`
@@ -36,7 +36,7 @@ After step 2, run `PRAGMA foreign_key_check;` and verify the result is clean. Th
 
 ## Preconditions
 
-1. Stop Mission Control writers.
+1. Stop Paddock writers.
 2. Snapshot the SQLite database file before making changes.
 3. Confirm the database is on the SPEC-001 tail:
 

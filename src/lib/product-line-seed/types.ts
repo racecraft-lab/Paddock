@@ -87,7 +87,7 @@ export const MISSION_CONTROL_DISABLED_OR_ABSENT_FLAGS = [
 ] as const
 
 export const MISSION_CONTROL_DEPARTMENTS = [
-  { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/mission-control', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
+  { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/Paddock', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
   { slug: 'development', name: 'Development', ticket_prefix: 'DEV', area_slug: 'dev', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
   { slug: 'devsecops', name: 'DevSecOps', ticket_prefix: 'SEC', area_slug: 'devsecops', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
   { slug: 'marketing', name: 'Marketing', ticket_prefix: 'MKT', area_slug: 'marketing', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
@@ -145,11 +145,11 @@ export const MISSION_CONTROL_GOVERNANCE_DEFAULTS = [
 
 export const MISSION_CONTROL_SEED_DEFAULTS = {
   productLineSlug: 'mission-control',
-  displayName: 'Mission Control',
+  displayName: 'Paddock',
   agentPrefix: 'mission-control-platform',
   githubOwner: 'racecraft-lab',
   githubRepo: 'mission-control',
-  githubFullName: 'racecraft-lab/mission-control',
+  githubFullName: 'racecraft-lab/Paddock',
   workflowFamily: 'mission-control',
   configPath: 'docs/ai/product-lines/mission-control.yaml',
   workflowContractPath: 'docs/ai/workflows/mission-control/workflow-contract.yaml',

@@ -94,14 +94,14 @@ describe('SPEC-009F triage routing payload foundation', () => {
       normalizeSafeEvidenceReference({
         type: 'github_issue',
         label: ' Reported issue ',
-        url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=secret#frag',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/123?token=secret#frag',
       }),
     ).toEqual({
       ok: true,
       value: {
         type: 'github_issue',
         label: 'Reported issue',
-        url: 'https://github.com/racecraft-lab/mission-control/issues/123',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/123',
       },
     });
 
@@ -128,9 +128,9 @@ describe('SPEC-009F triage routing payload foundation', () => {
       source_task_id: 42,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 123,
-        url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=secret',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/123?token=secret',
         unsafe_extra: 'raw-secret',
       },
       disposition: 'NEEDS_SPEC',
@@ -143,7 +143,7 @@ describe('SPEC-009F triage routing payload foundation', () => {
         {
           type: 'github_issue',
           label: 'Issue 123',
-          url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=secret',
+          url: 'https://github.com/racecraft-lab/Paddock/issues/123?token=secret',
         },
       ],
       deferred_side_effects: [
@@ -179,7 +179,7 @@ describe('SPEC-009F triage routing payload foundation', () => {
         applied: false,
       },
     ]);
-    expect(result.value.evidence_links[0]?.url).toBe('https://github.com/racecraft-lab/mission-control/issues/123');
+    expect(result.value.evidence_links[0]?.url).toBe('https://github.com/racecraft-lab/Paddock/issues/123');
   });
 });
 
@@ -301,7 +301,7 @@ describe('SPEC-009F triage routing text and link security', () => {
       normalizeSafeEvidenceReference({
         type: 'other',
         label: 'External context',
-        url: 'https://github.com/racecraft-lab/mission-control/issues/123',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/123',
       }),
     ).toEqual({
       ok: true,
@@ -326,9 +326,9 @@ describe('SPEC-009F triage routing text and link security', () => {
       source_task_id: 42,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 123,
-        url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=raw-secret',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/123?token=raw-secret',
       },
       disposition: 'ACTIONABLE_REMEDIATION',
       lane: 'speckit_handoff',
@@ -362,9 +362,9 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
       source_task_id: 42,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 123,
-        url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=raw-secret#frag',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/123?token=raw-secret#frag',
       },
       triage_rationale: ' Needs a SpecKit brief\r\nbefore implementation\twork. ',
       recommended_next_action: ' Owner reviews and runs setup manually. ',
@@ -373,7 +373,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
         {
           type: 'github_issue',
           label: ' Issue 123 ',
-          url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=raw-secret',
+          url: 'https://github.com/racecraft-lab/Paddock/issues/123?token=raw-secret',
         },
       ],
       proposed_scope: ' Specify the production routing behavior.\r\nKeep the scope tight. ',
@@ -392,9 +392,9 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
         source_task_id: 42,
         workspace_id: 7,
         source_issue: {
-          repo: 'racecraft-lab/mission-control',
+          repo: 'racecraft-lab/Paddock',
           number: 123,
-          url: 'https://github.com/racecraft-lab/mission-control/issues/123',
+          url: 'https://github.com/racecraft-lab/Paddock/issues/123',
         },
         disposition: 'NEEDS_SPEC',
         lane: 'speckit_handoff',
@@ -419,7 +419,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
           {
             type: 'github_issue',
             label: 'Issue 123',
-            url: 'https://github.com/racecraft-lab/mission-control/issues/123',
+            url: 'https://github.com/racecraft-lab/Paddock/issues/123',
           },
         ],
         deferred_side_effects: [
@@ -452,9 +452,9 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
       source_task_id: 42,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 0,
-        url: 'https://github.com/racecraft-lab/mission-control/issues/123?token=secret',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/123?token=secret',
         unsafe_extra: 'raw-secret',
       },
       disposition: 'NEEDS_SPEC',
@@ -491,7 +491,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
       source_task_id: 42,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 123,
       },
       disposition: 'NEEDS_HUMAN',
@@ -542,7 +542,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
       source_task_id: 42,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 123,
       },
       disposition: 'NEEDS_SPEC',
@@ -588,9 +588,9 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
       source_task_id: 43,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 124,
-        url: 'https://github.com/racecraft-lab/mission-control/issues/124?token=raw-secret#frag',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/124?token=raw-secret#frag',
       },
       triage_rationale: ' Needs owner clarification\r\nbefore routing\twork. ',
       recommended_next_action: ' Owner answers the blocking questions. ',
@@ -607,7 +607,7 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
         {
           type: 'github_issue',
           label: ' Issue 124 ',
-          url: 'https://github.com/racecraft-lab/mission-control/issues/124?token=raw-secret',
+          url: 'https://github.com/racecraft-lab/Paddock/issues/124?token=raw-secret',
         },
       ],
       blocking_questions: [
@@ -627,9 +627,9 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
         source_task_id: 43,
         workspace_id: 7,
         source_issue: {
-          repo: 'racecraft-lab/mission-control',
+          repo: 'racecraft-lab/Paddock',
           number: 124,
-          url: 'https://github.com/racecraft-lab/mission-control/issues/124',
+          url: 'https://github.com/racecraft-lab/Paddock/issues/124',
         },
         disposition: 'NEEDS_HUMAN',
         lane: 'clarification_request',
@@ -654,7 +654,7 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
           {
             type: 'github_issue',
             label: 'Issue 124',
-            url: 'https://github.com/racecraft-lab/mission-control/issues/124',
+            url: 'https://github.com/racecraft-lab/Paddock/issues/124',
           },
         ],
         lane_detail: {
@@ -683,7 +683,7 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
       source_task_id: 43,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 124,
       },
       disposition: 'NEEDS_HUMAN',
@@ -722,7 +722,7 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
       source_task_id: 44,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 125,
       },
       triage_rationale: ' Safe metadata identifies one specialist. ',
@@ -795,7 +795,7 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
       source_task_id: 45,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 126,
       },
       disposition: 'NEEDS_SPECIALIST',
@@ -836,7 +836,7 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
       source_task_id: 44,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 125,
       },
       disposition: 'NEEDS_SPECIALIST',
@@ -876,12 +876,12 @@ describe('SPEC-009F closure recommendation payloads', () => {
     {
       disposition: 'DUPLICATE',
       detail: {
-        suspected_duplicate_target: ' https://github.com/racecraft-lab/mission-control/issues/42 ',
+        suspected_duplicate_target: ' https://github.com/racecraft-lab/Paddock/issues/42 ',
         comparison_rationale: ' The reported behavior matches the retained duplicate target. ',
       },
       expected: {
         closure_outcome: 'DUPLICATE',
-        suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+        suspected_duplicate_target: 'https://github.com/racecraft-lab/Paddock/issues/42',
         comparison_rationale: 'The reported behavior matches the retained duplicate target.',
       },
     },
@@ -900,13 +900,13 @@ describe('SPEC-009F closure recommendation payloads', () => {
     {
       disposition: 'INVALID',
       detail: {
-        invalidity_reason: ' The report lacks a reproducible Mission Control state. ',
+        invalidity_reason: ' The report lacks a reproducible Paddock state. ',
         validation_evidence: [' Fixture validation did not find the claimed task state. '],
         missing_reproducibility_context: [' Exact workspace scope ', ' Observed task id '],
       },
       expected: {
         closure_outcome: 'INVALID',
-        invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+        invalidity_reason: 'The report lacks a reproducible Paddock state.',
         validation_evidence: ['Fixture validation did not find the claimed task state.'],
         missing_reproducibility_context: ['Exact workspace scope', 'Observed task id'],
       },
@@ -916,7 +916,7 @@ describe('SPEC-009F closure recommendation payloads', () => {
       source_task_id: 46,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 127,
       },
       disposition,
@@ -976,7 +976,7 @@ describe('SPEC-009F closure recommendation payloads', () => {
       source_task_id: 46,
       workspace_id: 7,
       source_issue: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/Paddock',
         number: 127,
       },
       disposition: 'INVALID',

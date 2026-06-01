@@ -255,7 +255,7 @@ async function seedRoutingRows(
     const issueNumber = 1_090 + index
     db.prepare(`
       UPDATE tasks
-      SET github_repo = 'racecraft-lab/mission-control',
+      SET github_repo = 'racecraft-lab/Paddock',
           github_issue_number = ?,
           github_pr_number = NULL,
           github_synced_at = ?,
@@ -398,7 +398,7 @@ async function attachFixtureExport(testInfo: TestInfo, screenshotPaths: Record<s
     outcomes: createdTasks.map((task) => ({
       outcome: task.outcome,
       task_id: task.id,
-      github_repo: 'racecraft-lab/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: task.issueNumber,
       artifact_id: task.artifactId,
       activity_id: task.activityId,
@@ -457,7 +457,7 @@ test.describe.serial('SPEC-009F triage routing task Evidence', () => {
       await expect(region.locator('button, form, [role="menu"]')).toHaveCount(0)
 
       const links = await region.getByRole('link').evaluateAll((anchors) => anchors.map((anchor) => (anchor as HTMLAnchorElement).href))
-      expect(links.every((href) => href.startsWith('https://github.com/racecraft-lab/mission-control/'))).toBe(true)
+      expect(links.every((href) => href.startsWith('https://github.com/racecraft-lab/Paddock/'))).toBe(true)
       expect(links.some((href) => /^javascript:|^data:/i.test(href))).toBe(false)
       expect(task.successorCount).toBe(0)
 

@@ -3,7 +3,7 @@ import Database from 'better-sqlite3'
 export const LIFECYCLE_NOW = 1_779_500_000
 export const LIFECYCLE_NOW_ISO = new Date(LIFECYCLE_NOW * 1000).toISOString()
 export const DEFAULT_WORKSPACE_ID = 4
-export const DEFAULT_REPO = 'racecraft-lab/mission-control'
+export const DEFAULT_REPO = 'racecraft-lab/Paddock'
 
 export function createLifecycleTestDb(): Database.Database {
   const db = new Database(':memory:')

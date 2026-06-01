@@ -20,7 +20,7 @@ stop_reason: "natural"
 
 ## Goals
 
-- Define deterministic, sanitized, product-line-scoped sandbox keys and bounded filesystem paths for Mission Control-owned, OpenClaw-owned, and external-harness-owned sandboxes.
+- Define deterministic, sanitized, product-line-scoped sandbox keys and bounded filesystem paths for Paddock-owned, OpenClaw-owned, and external-harness-owned sandboxes.
 - Add a durable, inspectable sandbox lifecycle contract before any real harness adapter can launch work.
 - Use fake owner implementations to prove lifecycle behavior without launching a real runner, adapter, OpenClaw job, or external harness.
 - Keep `FEATURE_AGENT_RUNNER_SANDBOXES` hard-off by default; flag-off mutation attempts must create no lifecycle rows or events.
@@ -133,7 +133,7 @@ stop_reason: "natural"
 **Branch:** Lifecycle vocabulary
 
 **Recommended answer:** Use `create`, `prepare`, `mark_running`, `mark_terminal`, and `cleanup`.
-> This is enough to model fake Mission Control/OpenClaw/external ownership without adding real launch/resume adapter behavior.
+> This is enough to model fake Paddock/OpenClaw/external ownership without adding real launch/resume adapter behavior.
 
 **Alternatives offered:**
 - Only `create` and `cleanup`: Too thin to prove inspectable lifecycle transitions.
@@ -285,7 +285,7 @@ stop_reason: "natural"
 **Branch:** External research boundary
 
 **Recommended answer:** Require Specify and Plan to fetch current external Harness Engineering and Symphony sources.
-> Map only workspace safety, lifecycle vocabulary, and context-legibility lessons into Mission Control. Do not import Symphony runner/client algorithms into SPEC-014A.
+> Map only workspace safety, lifecycle vocabulary, and context-legibility lessons into Paddock. Do not import Symphony runner/client algorithms into SPEC-014A.
 
 **Alternatives offered:**
 - Treat roadmap context as sufficient: Faster, but violates the roadmap requirement.

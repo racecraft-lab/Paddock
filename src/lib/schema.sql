@@ -1,4 +1,4 @@
--- Mission Control Phase 2 Database Schema
+-- Paddock Phase 2 Database Schema
 -- Created: 2026-02-02 for Ralph Wiggum Loop pattern
 
 -- Tasks Table - Core Kanban task management

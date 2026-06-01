@@ -21,9 +21,9 @@ Other artifacts requiring updates:
 Follow-up TODOs: None
 -->
 
-# Mission Control Constitution
+# Paddock Constitution
 
-Governing principles for `racecraft-lab/mission-control`. This document is
+Governing principles for `racecraft-lab/Paddock`. This document is
 the source of truth for architectural discipline, install-compatibility
 commitments, operational-impact classification, and the autopilot conventions
 that SpecKit consensus agents rely on when resolving questions during clarify,
@@ -58,15 +58,15 @@ Operationalized as:
 
 ### II. Install Compatibility And Operational Impact Discipline (NON-NEGOTIABLE)
 
-Mission Control no longer optimizes for cherry-pick parity with its historical
+Paddock no longer optimizes for cherry-pick parity with its historical
 project origin. Every feature must preserve existing installs unless a spec
 explicitly ratifies a narrower compatibility story, and every feature is
 classified before implementation as:
 
 | Class | Meaning |
 |---|---|
-| `install-compatible` | Preserves current Mission Control installs through null/default/flag-off behavior. |
-| `factory-core` | Required for the Mission Control factory vision, even when it creates long-term product divergence. |
+| `install-compatible` | Preserves current Paddock installs through null/default/flag-off behavior. |
+| `factory-core` | Required for the Paddock factory vision, even when it creates long-term product divergence. |
 | `optional-adapter` | Runtime or host-specific integration that must be absent-safe and disabled by default. |
 
 Hard prohibitions:
@@ -382,7 +382,7 @@ Operationalized as:
   reference, CI/Argos provenance when relevant, cleanup mode, safe-to-apply
   cleanup state, and recovery commands such as
   `git show <merge-sha>:specs/<feature>/spec.md`.
-- Mission Control pins the adopted archive extension from the Racecraft fork
+- Paddock pins the adopted archive extension from the Racecraft fork
   in `.specify/extensions/archive`, `.specify/extensions.yml`, and
   `.specify/extensions/.registry`; version changes update the pin evidence.
 - Argos/CI provenance is the durable UI evidence path by default. Generated
@@ -612,7 +612,7 @@ pushed to `origin`; PR merge moves the spec to Complete.
 
 ### OpenClaw deployment note
 
-Mission Control runs on the OpenClaw node from `<live-worktree>` on `main`.
+Paddock runs on the OpenClaw node from `<live-worktree>` on `main`.
 Changes to `.specify/` and `.claude/` reach the running service on next
 pull but are not required by `mc-start.sh` — they are operator-side
 tooling only. If operator-side behavior changes, update the OpenClaw deployment section

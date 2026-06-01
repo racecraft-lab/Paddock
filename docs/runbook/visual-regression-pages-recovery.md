@@ -23,7 +23,7 @@
 - Verify Pages source:
 
   ```bash
-  gh api repos/racecraft-lab/mission-control/pages --jq '.source'
+  gh api repos/racecraft-lab/Paddock/pages --jq '.source'
   ```
 
 - Verify the baseline branch exists:
@@ -43,14 +43,14 @@
 2. Reconfigure Pages to publish from that branch:
 
    ```bash
-   gh api -X PUT repos/racecraft-lab/mission-control/pages \
+   gh api -X PUT repos/racecraft-lab/Paddock/pages \
      -f source.branch=visual-regression-pages \
      -f source.path=/
    ```
 
 3. Re-run the latest `main` visual workflows so `reg-suit` republishes
    Playwright and Storybook baselines.
-4. Re-run the affected PR visual workflows. Mission Control delegates Pages
+4. Re-run the affected PR visual workflows. Paddock delegates Pages
    publishing to the reusable
    `racecraft-lab/visual-review-pages/.github/workflows/visual-review-report.yml`
    workflow, which republishes the Playwright and Storybook PR report pages.
@@ -60,7 +60,7 @@
 - GitHub Pages source is `visual-regression-pages` at `/`.
 - The latest `main` visual workflow publishes without errors.
 - The affected PR has Pages links under
-  `https://racecraft-lab.github.io/mission-control/pr/<PR>/`.
+  `https://racecraft-lab.github.io/Paddock/pr/<PR>/`.
 - Each affected PR report path contains report-local `__reg__` image assets,
   for example `/pr/<PR>/storybook/latest/__reg__/1_actual/`.
 - Each affected PR report path contains:

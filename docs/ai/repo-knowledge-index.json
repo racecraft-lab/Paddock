@@ -6,7 +6,7 @@
       "path": "AGENTS.md",
       "kind": "operator-tooling",
       "purpose": "Root instructions, concise Repo Knowledge Map, and GitNexus operator guidance for fresh agents.",
-      "owner": "Mission Control maintainers",
+      "owner": "Paddock maintainers",
       "freshness": {
         "cadence": "per PR touching repo instructions or GitNexus guidance",
         "trigger": "when setup, verification, or local index-refresh instructions change"
@@ -59,7 +59,7 @@
       "path": "docs/ai/repo-knowledge-index.json",
       "kind": "operator-tooling",
       "purpose": "Canonical machine-readable index of durable repository knowledge, ownership, freshness, and verification commands.",
-      "owner": "Mission Control maintainers",
+      "owner": "Paddock maintainers",
       "freshness": {
         "cadence": "per PR touching indexed paths",
         "trigger": "when a required source-of-truth path, owner, or verification command changes"
@@ -74,7 +74,7 @@
       "path": "docs/ai/repo-knowledge-index.schema.json",
       "kind": "contract",
       "purpose": "JSON Schema describing the index contract for agent and guard consumption.",
-      "owner": "Mission Control maintainers",
+      "owner": "Paddock maintainers",
       "freshness": {
         "cadence": "per schema or guard change",
         "trigger": "when index fields, metadata rules, or guard semantics change"
@@ -178,7 +178,7 @@
     {
       "path": "docs/runbook/migration-rollback.md",
       "kind": "rollback-runbook",
-      "purpose": "Migration and rollback recovery guidance for Mission Control operator changes.",
+      "purpose": "Migration and rollback recovery guidance for Paddock operator changes.",
       "owner": "Operations",
       "freshness": {
         "cadence": "before migrations or deployment-affecting specs",
@@ -358,7 +358,7 @@
     {
       "path": "docs/ai/workflows/mission-control/workflow-contract.yaml",
       "kind": "contract",
-      "purpose": "Mission Control workflow contract imported/exported by SPEC-009A tooling and reused by downstream routing specs.",
+      "purpose": "Paddock workflow contract imported/exported by SPEC-009A tooling and reused by downstream routing specs.",
       "owner": "Workflow maintainers",
       "freshness": {
         "cadence": "per workflow contract change",

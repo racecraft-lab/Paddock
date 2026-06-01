@@ -2,11 +2,11 @@
 
 ## Scope
 
-The generic product-line seeder applies reviewed config-owned Mission Control seed state from YAML. SPEC-010A validates Mission Control parity only. SPEC-010A does not create Product Line B, add live enablement, mutate GitHub, create tasks, dispatch or claim work, launch runners, create sandboxes, add harness adapters, auto-merge, or invoke SpecKit setup/autopilot.
+The generic product-line seeder applies reviewed config-owned Paddock seed state from YAML. SPEC-010A validates Paddock parity only. SPEC-010A does not create Product Line B, add live enablement, mutate GitHub, create tasks, dispatch or claim work, launch runners, create sandboxes, add harness adapters, auto-merge, or invoke SpecKit setup/autopilot.
 
 ## Schema
 
-Canonical Mission Control config path:
+Canonical Paddock config path:
 
 ```text
 docs/ai/product-lines/mission-control.yaml
@@ -74,7 +74,7 @@ Residue handling is detection-only. The cleanup policy is `detection_only_no_aut
 
 Target repository conflicts, product-line conflicts, reserved future flags already enabled on the target, unsafe governance, and other residue conflicts fail closed before writes. Residue blockers use stable codes such as `TARGET_RESIDUE_BLOCKED`, `TARGET_REPO_CONFLICT`, and `TARGET_PRODUCT_LINE_CONFLICT` with redacted evidence. The seeder never deletes, unlinks, disables, or repairs target residue automatically.
 
-## Mission Control Compatibility Wrapper
+## Paddock Compatibility Wrapper
 
 The compatibility wrapper remains available:
 
@@ -91,7 +91,7 @@ The wrapper delegates to the generic seeder with `docs/ai/product-lines/mission-
 
 SPEC-010A does not create Product Line B. It also does not add Product Line B config examples, smoke evidence, live enablement, GitHub mutation, task creation, dispatch, claim, runner, sandbox, harness adapter, auto-merge, or SpecKit setup/autopilot behavior.
 
-Future product lines must be added through a separate reviewed spec and config path. This runbook only documents the reusable schema and command surface proven with the Mission Control config.
+Future product lines must be added through a separate reviewed spec and config path. This runbook only documents the reusable schema and command surface proven with the Paddock config.
 
 ## Rollback By No-Op
 

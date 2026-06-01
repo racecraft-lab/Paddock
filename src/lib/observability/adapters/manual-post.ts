@@ -4,7 +4,7 @@
  * Per FR-076 (source registry; provenance for operator-initiated
  * cost/usage rows).
  *
- * Mission Control already has a `/api/tokens` POST path that lets
+ * Paddock already has a `/api/tokens` POST path that lets
  * operators record token usage out-of-band (manual entry). Pre-SPEC-008
  * those rows landed in the legacy `tokens` table without an audit
  * trail back to the source-registry. This shim adapts each manual

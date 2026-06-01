@@ -1,6 +1,6 @@
 # Security Hardening Guide
 
-Comprehensive security hardening guide for Mission Control and OpenClaw Gateway deployments.
+Comprehensive security hardening guide for Paddock and OpenClaw Gateway deployments.
 
 ## Quick Assessment
 
@@ -22,7 +22,7 @@ The `posture.score` field (0-100) gives a quick posture assessment. The **Securi
 
 ---
 
-## Mission Control Hardening
+## Paddock Hardening
 
 ### 1. Credentials
 
@@ -42,7 +42,7 @@ The installer (`install.sh`) does this automatically. If you set up manually, en
 
 ### 2. Network Access Control
 
-Mission Control uses a host allowlist in production:
+Paddock uses a host allowlist in production:
 
 ```env
 # Only allow connections from these hosts (comma-separated)
@@ -101,7 +101,7 @@ This enables:
 
 ### 6. Security Headers
 
-Mission Control sets these headers automatically:
+Paddock sets these headers automatically:
 
 | Header | Value |
 |--------|-------|
@@ -179,7 +179,7 @@ MC_RETAIN_GATEWAY_SESSIONS_DAYS=90 # Gateway session history
 
 ## OpenClaw Gateway Hardening
 
-Mission Control acts as the mothership for your OpenClaw fleet. The installer automatically checks and repairs common OpenClaw configuration issues.
+Paddock acts as the mothership for your OpenClaw fleet. The installer automatically checks and repairs common OpenClaw configuration issues.
 
 ### 1. Network Security
 
@@ -231,14 +231,14 @@ chmod 600 ~/.openclaw/credentials/*
 ### 5. Tool Security
 
 - Apply the principle of least privilege — only grant tools the agent needs.
-- Audit third-party skills before installing (Mission Control's Skills Hub runs automatic security scans).
+- Audit third-party skills before installing (Paddock's Skills Hub runs automatic security scans).
 - Run agents processing untrusted content in a sandbox with a minimal toolset.
 
 ### 6. Monitoring
 
 - Enable comprehensive logging: `logging.redactSensitive: "tools"`
 - Store logs separately where agents cannot modify them.
-- Use Mission Control's diagnostics API to monitor gateway health.
+- Use Paddock's diagnostics API to monitor gateway health.
 - Have an incident response plan: stop gateway, revoke API keys, review audit logs.
 
 ### 7. Known CVEs
@@ -264,7 +264,7 @@ Internet
   |
 [Reverse Proxy (Caddy/nginx) + TLS]
   |
-[Mission Control :3000] ---- [SQLite .data/]
+[Paddock :3000] ---- [SQLite .data/]
   |
 [OpenClaw Gateway :18789 (localhost only)]
   |
@@ -272,7 +272,7 @@ Internet
 ```
 
 - Reverse proxy handles TLS termination, rate limiting, and access control
-- Mission Control listens on localhost or a private network
+- Paddock listens on localhost or a private network
 - OpenClaw Gateway is bound to loopback only
 - Agent workspaces are isolated per-agent directories
 
@@ -321,7 +321,7 @@ Scoped keys:
 
 ### Monitoring Global Key Usage
 
-Mission Control logs a security event (`global_api_key_used`) every time the global API key is used. Monitor these in the audit log:
+Paddock logs a security event (`global_api_key_used`) every time the global API key is used. Monitor these in the audit log:
 
 ```bash
 pnpm mc raw --method GET --path '/api/security-audit?event_type=global_api_key_used&timeframe=day' --json

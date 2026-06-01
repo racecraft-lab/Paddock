@@ -1,7 +1,7 @@
 {
-  "name": "mission-control",
+  "name": "paddock",
   "version": "2.0.1",
-  "description": "OpenClaw Mission Control — open-source agent orchestration dashboard",
+  "description": "OpenClaw Paddock — open-source agent orchestration dashboard",
   "scripts": {
     "verify:node": "node scripts/check-node-version.mjs",
     "check:strict-scope": "bash scripts/check-strict-scope.sh",
@@ -134,7 +134,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/builderz-labs/mission-control.git"
+    "url": "https://github.com/racecraft-lab/Paddock.git"
   },
   "pnpm": {
     "overrides": {

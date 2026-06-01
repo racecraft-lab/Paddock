@@ -48,4 +48,4 @@ On push to `v*.*.*`, GitHub Actions publishes container images and release artif
 - [ ] Breaking changes called out (if any)
 - [ ] Upgrade notes written
 - [ ] Tag `vX.Y.Z` created and pushed
-- [ ] Container image availability verified (`ghcr.io/builderz-labs/mission-control`)
+- [ ] Container image availability verified (`ghcr.io/racecraft-lab/Paddock`)

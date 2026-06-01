@@ -224,7 +224,7 @@ Add two independent feature-flagged surfaces. (1) `FEATURE_DISPOSITION_LOGGING`:
 ## Feature: SPEC-007 Disposition Logging and Task Artifact Store
 
 ### Problem Statement
-Mission Control needs two pieces of evidence infrastructure to support Product Line A pilot (SPEC-009). First, every triage-template completion must record a structured `disposition` so audit panels and dashboards can show what triaged tasks actually did. Second, agents need a durable, secret-scanned artifact handoff plane between private sandboxes so successors can consume validated outputs without reading another agent's filesystem.
+Paddock needs two pieces of evidence infrastructure to support Product Line A pilot (SPEC-009). First, every triage-template completion must record a structured `disposition` so audit panels and dashboards can show what triaged tasks actually did. Second, agents need a durable, secret-scanned artifact handoff plane between private sandboxes so successors can consume validated outputs without reading another agent's filesystem.
 
 ### Users
 - Operators reviewing what triage agents decided and why, with filters by workspace, disposition, agent, and date.

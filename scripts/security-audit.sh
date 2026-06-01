@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mission Control Security Audit
+# Paddock Security Audit
 # Run: bash scripts/security-audit.sh [--env-file .env]
 
 set -euo pipefail
@@ -23,7 +23,7 @@ if [[ -f "$ENV_FILE" ]]; then
   done < "$ENV_FILE"
 fi
 
-echo "=== Mission Control Security Audit ==="
+echo "=== Paddock Security Audit ==="
 echo ""
 
 # 1. .env file permissions
@@ -142,7 +142,7 @@ if command -v docker &>/dev/null; then
       warn "Container may be running as root"
     fi
   else
-    info "Mission Control container not running"
+    info "Paddock container not running"
   fi
 else
   info "Docker not installed (skipping container checks)"

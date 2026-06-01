@@ -500,7 +500,7 @@ describe('SPEC-001 foundation migrations', () => {
     db.prepare(
       `
         INSERT INTO workspaces (slug, name, tenant_id)
-        VALUES ('mission-control', 'Mission Control', 2)
+        VALUES ('mission-control', 'Paddock', 2)
       `
     ).run()
 

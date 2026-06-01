@@ -1,7 +1,7 @@
 {
   "name": "mission-control-installer",
   "version": "1.0.0",
-  "description": "Install and configure Mission Control — the OpenClaw agent orchestration dashboard",
+  "description": "Install and configure Paddock — the OpenClaw agent orchestration dashboard",
   "author": "Builderz Labs",
   "license": "MIT",
   "tools": ["exec", "fs"],
@@ -10,12 +10,12 @@
       "type": "string",
       "enum": ["docker", "local"],
       "default": "docker",
-      "description": "How to deploy Mission Control"
+      "description": "How to deploy Paddock"
     },
     "port": {
       "type": "number",
       "default": 3000,
-      "description": "Port for the Mission Control dashboard"
+      "description": "Port for the Paddock dashboard"
     },
     "install_dir": {
       "type": "string",

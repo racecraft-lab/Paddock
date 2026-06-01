@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- Mission Control TUI (v2)
+ Paddock TUI (v2)
  - Zero dependencies (ANSI escape codes)
  - Arrow key navigation between agents/tasks
  - Enter to drill into agent detail with sessions
@@ -724,7 +724,7 @@ async function main() {
   const flags = parseArgs(process.argv.slice(2));
 
   if (flags.help) {
-    console.log(`Mission Control TUI
+    console.log(`Paddock TUI
 
 Usage:
   node scripts/mc-tui.cjs [--url <base>] [--api-key <key>] [--profile <name>] [--refresh <ms>]
