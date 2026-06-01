@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "26755865210",
+      "runAttempt": "1",
+      "runKey": "26755865210-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26755865210",
+      "reportKey": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/playwright/29958bdd8b23b642517aeca0fe89ed7e1745e067/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/playwright/latest/?v=26755865210-attempt-1",
+      "headSha": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Paddock UI E2E",
+      "workflowFile": "mission-control-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/rename-paddock",
+        "headSha": "e79f4402bdb9e49ef7cdbc6399d787a5dd8aa064",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/66/",
+        "mergeCommitSha": "",
+        "number": "66",
+        "title": "chore: rename project to Paddock",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/66"
+      },
+      "createdAt": "2026-06-01T12:56:05.316Z"
+    },
+    {
       "surface": "storybook",
       "runId": "26755865162",
       "runAttempt": "1",
@@ -957,5 +984,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-01T12:50:49.688Z"
+  "updatedAt": "2026-06-01T12:56:05.316Z"
 }

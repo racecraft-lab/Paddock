@@ -1,0 +1,1112 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "main",
+  "reportScope": "run",
+  "surface": "playwright",
+  "surfaceLabel": "Playwright UI E2E",
+  "workflowName": "Paddock UI E2E",
+  "workflowFile": "mission-control-ui-e2e.yml",
+  "prNumber": "66",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/66",
+  "runId": "26755865210",
+  "runAttempt": "1",
+  "runKey": "26755865210-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26755865210",
+  "headRef": "main",
+  "baseRef": "main",
+  "headSha": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/playwright/29958bdd8b23b642517aeca0fe89ed7e1745e067/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/playwright/latest/?v=26755865210-attempt-1",
+  "createdAt": "2026-06-01T12:56:05.316Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 151,
+    "open": 151,
+    "passed": 0,
+    "total": 151
+  },
+  "reviewScope": null,
+  "sourcePullRequest": {
+    "baseRef": "main",
+    "headRef": "codex/rename-paddock",
+    "headSha": "e79f4402bdb9e49ef7cdbc6399d787a5dd8aa064",
+    "indexHref": "https://racecraft-lab.github.io/Paddock/pr/66/",
+    "mergeCommitSha": "",
+    "number": "66",
+    "title": "chore: rename project to Paddock",
+    "url": "https://github.com/racecraft-lab/Paddock/pull/66"
+  },
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "66",
+    "surface": "playwright",
+    "surfaceLabel": "Playwright UI E2E",
+    "headSha": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
+    "runKey": "26755865210-attempt-1",
+    "items": [
+      {
+        "group": "feature-flag-admin",
+        "id": "new-feature-flag-admin/feature-flag-admin-default.png",
+        "itemId": "feature-flag-admin/feature-flag-admin-default.png",
+        "snapshot": "feature-flag-admin/feature-flag-admin-default.png",
+        "variant": "new"
+      },
+      {
+        "group": "feature-flag-admin",
+        "id": "new-feature-flag-admin/feature-flag-admin-toggle-on.png",
+        "itemId": "feature-flag-admin/feature-flag-admin-toggle-on.png",
+        "snapshot": "feature-flag-admin/feature-flag-admin-toggle-on.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/alpha-scope-task-board.png",
+        "itemId": "product-line-switcher/alpha-scope-task-board.png",
+        "snapshot": "product-line-switcher/alpha-scope-task-board.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/cross-tab-alpha-scope.png",
+        "itemId": "product-line-switcher/cross-tab-alpha-scope.png",
+        "snapshot": "product-line-switcher/cross-tab-alpha-scope.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/facility-aggregate-task-board-after-switch.png",
+        "itemId": "product-line-switcher/facility-aggregate-task-board-after-switch.png",
+        "snapshot": "product-line-switcher/facility-aggregate-task-board-after-switch.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/facility-task-board-before-switch.png",
+        "itemId": "product-line-switcher/facility-task-board-before-switch.png",
+        "snapshot": "product-line-switcher/facility-task-board-before-switch.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/keyboard-listbox-focus.png",
+        "itemId": "product-line-switcher/keyboard-listbox-focus.png",
+        "snapshot": "product-line-switcher/keyboard-listbox-focus.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/mobile-320-scope-menu.png",
+        "itemId": "product-line-switcher/mobile-320-scope-menu.png",
+        "snapshot": "product-line-switcher/mobile-320-scope-menu.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/mobile-375-scope-menu.png",
+        "itemId": "product-line-switcher/mobile-375-scope-menu.png",
+        "snapshot": "product-line-switcher/mobile-375-scope-menu.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/mobile-390-scope-menu.png",
+        "itemId": "product-line-switcher/mobile-390-scope-menu.png",
+        "snapshot": "product-line-switcher/mobile-390-scope-menu.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-switcher/scope-menu-options.png",
+        "itemId": "product-line-switcher/scope-menu-options.png",
+        "snapshot": "product-line-switcher/scope-menu-options.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/focused-ready-for-owner-card.png",
+        "itemId": "ready-for-owner/focused-ready-for-owner-card.png",
+        "snapshot": "ready-for-owner/focused-ready-for-owner-card.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/kanban-lane-order.png",
+        "itemId": "ready-for-owner/kanban-lane-order.png",
+        "snapshot": "ready-for-owner/kanban-lane-order.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/notification-action-required.png",
+        "itemId": "ready-for-owner/notification-action-required.png",
+        "snapshot": "ready-for-owner/notification-action-required.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/artifact-admin-mixed-state.png",
+        "itemId": "spec-007/artifact-admin-mixed-state.png",
+        "snapshot": "spec-007/artifact-admin-mixed-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/artifact-admin-preview.png",
+        "itemId": "spec-007/artifact-admin-preview.png",
+        "snapshot": "spec-007/artifact-admin-preview.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/artifact-admin-quarantine-action.png",
+        "itemId": "spec-007/artifact-admin-quarantine-action.png",
+        "snapshot": "spec-007/artifact-admin-quarantine-action.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/audit-dispositions-loaded.png",
+        "itemId": "spec-007/audit-dispositions-loaded.png",
+        "snapshot": "spec-007/audit-dispositions-loaded.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/audit-dispositions-validation-filter.png",
+        "itemId": "spec-007/audit-dispositions-validation-filter.png",
+        "snapshot": "spec-007/audit-dispositions-validation-filter.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/dashboard-rollup-widget.png",
+        "itemId": "spec-007/dashboard-rollup-widget.png",
+        "snapshot": "spec-007/dashboard-rollup-widget.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/aegis-starvation.ac-aegis-1.png",
+        "itemId": "spec-008/aegis-starvation.ac-aegis-1.png",
+        "snapshot": "spec-008/aegis-starvation.ac-aegis-1.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/aegis-starvation.ac-aegis-2.png",
+        "itemId": "spec-008/aegis-starvation.ac-aegis-2.png",
+        "snapshot": "spec-008/aegis-starvation.ac-aegis-2.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/aegis-starvation.ac-aegis-3.png",
+        "itemId": "spec-008/aegis-starvation.ac-aegis-3.png",
+        "snapshot": "spec-008/aegis-starvation.ac-aegis-3.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/aegis-starvation.ac-aegis-4.png",
+        "itemId": "spec-008/aegis-starvation.ac-aegis-4.png",
+        "snapshot": "spec-008/aegis-starvation.ac-aegis-4.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/aegis-starvation.ac-aegis-5.png",
+        "itemId": "spec-008/aegis-starvation.ac-aegis-5.png",
+        "snapshot": "spec-008/aegis-starvation.ac-aegis-5.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/aegis-starvation.ac-aegis-6.png",
+        "itemId": "spec-008/aegis-starvation.ac-aegis-6.png",
+        "snapshot": "spec-008/aegis-starvation.ac-aegis-6.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/budget.0pct.png",
+        "itemId": "spec-008/budget.0pct.png",
+        "snapshot": "spec-008/budget.0pct.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/budget.100pct.png",
+        "itemId": "spec-008/budget.100pct.png",
+        "snapshot": "spec-008/budget.100pct.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/budget.50pct.png",
+        "itemId": "spec-008/budget.50pct.png",
+        "snapshot": "spec-008/budget.50pct.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/budget.80pct.png",
+        "itemId": "spec-008/budget.80pct.png",
+        "snapshot": "spec-008/budget.80pct.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/budget.95pct.png",
+        "itemId": "spec-008/budget.95pct.png",
+        "snapshot": "spec-008/budget.95pct.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/budget.flag-off.png",
+        "itemId": "spec-008/budget.flag-off.png",
+        "snapshot": "spec-008/budget.flag-off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.cross-workspace-422.modal.png",
+        "itemId": "spec-008/bulk-promote.cross-workspace-422.modal.png",
+        "snapshot": "spec-008/bulk-promote.cross-workspace-422.modal.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.cross-workspace-422.result.png",
+        "itemId": "spec-008/bulk-promote.cross-workspace-422.result.png",
+        "snapshot": "spec-008/bulk-promote.cross-workspace-422.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.happy.modal.png",
+        "itemId": "spec-008/bulk-promote.happy.modal.png",
+        "snapshot": "spec-008/bulk-promote.happy.modal.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.happy.result.png",
+        "itemId": "spec-008/bulk-promote.happy.result.png",
+        "snapshot": "spec-008/bulk-promote.happy.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.idempotency-replay.modal.png",
+        "itemId": "spec-008/bulk-promote.idempotency-replay.modal.png",
+        "snapshot": "spec-008/bulk-promote.idempotency-replay.modal.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.idempotency-replay.result.png",
+        "itemId": "spec-008/bulk-promote.idempotency-replay.result.png",
+        "snapshot": "spec-008/bulk-promote.idempotency-replay.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.wrong-phrase.modal.png",
+        "itemId": "spec-008/bulk-promote.wrong-phrase.modal.png",
+        "snapshot": "spec-008/bulk-promote.wrong-phrase.modal.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/bulk-promote.wrong-phrase.result.png",
+        "itemId": "spec-008/bulk-promote.wrong-phrase.result.png",
+        "snapshot": "spec-008/bulk-promote.wrong-phrase.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/calibration.auto-repair.png",
+        "itemId": "spec-008/calibration.auto-repair.png",
+        "snapshot": "spec-008/calibration.auto-repair.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/calibration.hard-block.png",
+        "itemId": "spec-008/calibration.hard-block.png",
+        "snapshot": "spec-008/calibration.hard-block.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/calibration.operator-confirmed.png",
+        "itemId": "spec-008/calibration.operator-confirmed.png",
+        "snapshot": "spec-008/calibration.operator-confirmed.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/calibration.post-rebuild-verify.png",
+        "itemId": "spec-008/calibration.post-rebuild-verify.png",
+        "snapshot": "spec-008/calibration.post-rebuild-verify.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/diagnostic-feed.empty.png",
+        "itemId": "spec-008/diagnostic-feed.empty.png",
+        "snapshot": "spec-008/diagnostic-feed.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/diagnostic-feed.initial.png",
+        "itemId": "spec-008/diagnostic-feed.initial.png",
+        "snapshot": "spec-008/diagnostic-feed.initial.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/diagnostic-feed.live-append.png",
+        "itemId": "spec-008/diagnostic-feed.live-append.png",
+        "snapshot": "spec-008/diagnostic-feed.live-append.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/diagnostic-feed.next-page.png",
+        "itemId": "spec-008/diagnostic-feed.next-page.png",
+        "snapshot": "spec-008/diagnostic-feed.next-page.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/dispatch-feed.initial.png",
+        "itemId": "spec-008/dispatch-feed.initial.png",
+        "snapshot": "spec-008/dispatch-feed.initial.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/dispatch-feed.next-page.png",
+        "itemId": "spec-008/dispatch-feed.next-page.png",
+        "snapshot": "spec-008/dispatch-feed.next-page.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/dispatch-feed.sse.png",
+        "itemId": "spec-008/dispatch-feed.sse.png",
+        "snapshot": "spec-008/dispatch-feed.sse.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/etag-conflict-toast.live.png",
+        "itemId": "spec-008/etag-conflict-toast.live.png",
+        "snapshot": "spec-008/etag-conflict-toast.live.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.all-current-on.governance.png",
+        "itemId": "spec-008/flag-matrix.all-current-on.governance.png",
+        "snapshot": "spec-008/flag-matrix.all-current-on.governance.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.all-current-on.settings.png",
+        "itemId": "spec-008/flag-matrix.all-current-on.settings.png",
+        "snapshot": "spec-008/flag-matrix.all-current-on.settings.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.all-off.legacy-parity.png",
+        "itemId": "spec-008/flag-matrix.all-off.legacy-parity.png",
+        "snapshot": "spec-008/flag-matrix.all-off.legacy-parity.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-area-label-routing.off.png",
+        "itemId": "spec-008/flag-matrix.feature-area-label-routing.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-area-label-routing.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-area-label-routing.on.png",
+        "itemId": "spec-008/flag-matrix.feature-area-label-routing.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-area-label-routing.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-disposition-logging.off.png",
+        "itemId": "spec-008/flag-matrix.feature-disposition-logging.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-disposition-logging.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-disposition-logging.on.png",
+        "itemId": "spec-008/flag-matrix.feature-disposition-logging.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-disposition-logging.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-global-aegis.off.png",
+        "itemId": "spec-008/flag-matrix.feature-global-aegis.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-global-aegis.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-global-aegis.on.png",
+        "itemId": "spec-008/flag-matrix.feature-global-aegis.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-global-aegis.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-openclaw-health-costs.off.png",
+        "itemId": "spec-008/flag-matrix.feature-openclaw-health-costs.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-openclaw-health-costs.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-openclaw-health-costs.on.png",
+        "itemId": "spec-008/flag-matrix.feature-openclaw-health-costs.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-openclaw-health-costs.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-resource-governance.off.png",
+        "itemId": "spec-008/flag-matrix.feature-resource-governance.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-resource-governance.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-resource-governance.on.png",
+        "itemId": "spec-008/flag-matrix.feature-resource-governance.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-resource-governance.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-task-artifacts.off.png",
+        "itemId": "spec-008/flag-matrix.feature-task-artifacts.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-task-artifacts.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-task-artifacts.on.png",
+        "itemId": "spec-008/flag-matrix.feature-task-artifacts.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-task-artifacts.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-task-pipelines.off.png",
+        "itemId": "spec-008/flag-matrix.feature-task-pipelines.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-task-pipelines.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-task-pipelines.on.png",
+        "itemId": "spec-008/flag-matrix.feature-task-pipelines.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-task-pipelines.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-two-step-terminal.off.png",
+        "itemId": "spec-008/flag-matrix.feature-two-step-terminal.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-two-step-terminal.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-two-step-terminal.on.png",
+        "itemId": "spec-008/flag-matrix.feature-two-step-terminal.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-two-step-terminal.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-workspace-switcher.off.png",
+        "itemId": "spec-008/flag-matrix.feature-workspace-switcher.off.png",
+        "snapshot": "spec-008/flag-matrix.feature-workspace-switcher.off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-matrix.feature-workspace-switcher.on.png",
+        "itemId": "spec-008/flag-matrix.feature-workspace-switcher.on.png",
+        "snapshot": "spec-008/flag-matrix.feature-workspace-switcher.on.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-off-byte-compat.live.png",
+        "itemId": "spec-008/flag-off-byte-compat.live.png",
+        "snapshot": "spec-008/flag-off-byte-compat.live.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/flag-on-tab-landing.live.png",
+        "itemId": "spec-008/flag-on-tab-landing.live.png",
+        "snapshot": "spec-008/flag-on-tab-landing.live.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/modal-error-summary.live.png",
+        "itemId": "spec-008/modal-error-summary.live.png",
+        "snapshot": "spec-008/modal-error-summary.live.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.concurrent-edit-412.form.png",
+        "itemId": "spec-008/override-grant.concurrent-edit-412.form.png",
+        "snapshot": "spec-008/override-grant.concurrent-edit-412.form.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.concurrent-edit-412.result.png",
+        "itemId": "spec-008/override-grant.concurrent-edit-412.result.png",
+        "snapshot": "spec-008/override-grant.concurrent-edit-412.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.duplicate-409.form.png",
+        "itemId": "spec-008/override-grant.duplicate-409.form.png",
+        "snapshot": "spec-008/override-grant.duplicate-409.form.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.duplicate-409.result.png",
+        "itemId": "spec-008/override-grant.duplicate-409.result.png",
+        "snapshot": "spec-008/override-grant.duplicate-409.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.happy.form.png",
+        "itemId": "spec-008/override-grant.happy.form.png",
+        "snapshot": "spec-008/override-grant.happy.form.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.happy.result.png",
+        "itemId": "spec-008/override-grant.happy.result.png",
+        "snapshot": "spec-008/override-grant.happy.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.invalid-ttl-422.form.png",
+        "itemId": "spec-008/override-grant.invalid-ttl-422.form.png",
+        "snapshot": "spec-008/override-grant.invalid-ttl-422.form.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.invalid-ttl-422.result.png",
+        "itemId": "spec-008/override-grant.invalid-ttl-422.result.png",
+        "snapshot": "spec-008/override-grant.invalid-ttl-422.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.locked-423.form.png",
+        "itemId": "spec-008/override-grant.locked-423.form.png",
+        "snapshot": "spec-008/override-grant.locked-423.form.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/override-grant.locked-423.result.png",
+        "itemId": "spec-008/override-grant.locked-423.result.png",
+        "snapshot": "spec-008/override-grant.locked-423.result.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.audit-chain-verify.disabled-noop.png",
+        "itemId": "spec-008/recovery.audit-chain-verify.disabled-noop.png",
+        "snapshot": "spec-008/recovery.audit-chain-verify.disabled-noop.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.audit-chain-verify.modal-open.png",
+        "itemId": "spec-008/recovery.audit-chain-verify.modal-open.png",
+        "snapshot": "spec-008/recovery.audit-chain-verify.modal-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.breaker-reset.disabled-noop.png",
+        "itemId": "spec-008/recovery.breaker-reset.disabled-noop.png",
+        "snapshot": "spec-008/recovery.breaker-reset.disabled-noop.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.breaker-reset.modal-open.png",
+        "itemId": "spec-008/recovery.breaker-reset.modal-open.png",
+        "snapshot": "spec-008/recovery.breaker-reset.modal-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.collector-rotate-key.disabled-noop.png",
+        "itemId": "spec-008/recovery.collector-rotate-key.disabled-noop.png",
+        "snapshot": "spec-008/recovery.collector-rotate-key.disabled-noop.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.collector-rotate-key.modal-open.png",
+        "itemId": "spec-008/recovery.collector-rotate-key.modal-open.png",
+        "snapshot": "spec-008/recovery.collector-rotate-key.modal-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.counter-rebuild-restart.disabled-noop.png",
+        "itemId": "spec-008/recovery.counter-rebuild-restart.disabled-noop.png",
+        "snapshot": "spec-008/recovery.counter-rebuild-restart.disabled-noop.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.counter-rebuild-restart.modal-open.png",
+        "itemId": "spec-008/recovery.counter-rebuild-restart.modal-open.png",
+        "snapshot": "spec-008/recovery.counter-rebuild-restart.modal-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.reconciler-retry.disabled-noop.png",
+        "itemId": "spec-008/recovery.reconciler-retry.disabled-noop.png",
+        "snapshot": "spec-008/recovery.reconciler-retry.disabled-noop.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.reconciler-retry.modal-open.png",
+        "itemId": "spec-008/recovery.reconciler-retry.modal-open.png",
+        "snapshot": "spec-008/recovery.reconciler-retry.modal-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.reservation-reaper-force-run.disabled-noop.png",
+        "itemId": "spec-008/recovery.reservation-reaper-force-run.disabled-noop.png",
+        "snapshot": "spec-008/recovery.reservation-reaper-force-run.disabled-noop.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/recovery.reservation-reaper-force-run.modal-open.png",
+        "itemId": "spec-008/recovery.reservation-reaper-force-run.modal-open.png",
+        "snapshot": "spec-008/recovery.reservation-reaper-force-run.modal-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/system-health.audit.png",
+        "itemId": "spec-008/system-health.audit.png",
+        "snapshot": "spec-008/system-health.audit.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/system-health.breaker.png",
+        "itemId": "spec-008/system-health.breaker.png",
+        "snapshot": "spec-008/system-health.breaker.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/system-health.collector.png",
+        "itemId": "spec-008/system-health.collector.png",
+        "snapshot": "spec-008/system-health.collector.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/system-health.reaper.png",
+        "itemId": "spec-008/system-health.reaper.png",
+        "snapshot": "spec-008/system-health.reaper.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/system-health.rebuild.png",
+        "itemId": "spec-008/system-health.rebuild.png",
+        "snapshot": "spec-008/system-health.rebuild.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/system-health.reconciler.png",
+        "itemId": "spec-008/system-health.reconciler.png",
+        "snapshot": "spec-008/system-health.reconciler.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.budgets.default.png",
+        "itemId": "spec-008/tab-landing.budgets.default.png",
+        "snapshot": "spec-008/tab-landing.budgets.default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.budgets.dense.png",
+        "itemId": "spec-008/tab-landing.budgets.dense.png",
+        "snapshot": "spec-008/tab-landing.budgets.dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.budgets.empty.png",
+        "itemId": "spec-008/tab-landing.budgets.empty.png",
+        "snapshot": "spec-008/tab-landing.budgets.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.budgets.error.png",
+        "itemId": "spec-008/tab-landing.budgets.error.png",
+        "snapshot": "spec-008/tab-landing.budgets.error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.budgets.loading.png",
+        "itemId": "spec-008/tab-landing.budgets.loading.png",
+        "snapshot": "spec-008/tab-landing.budgets.loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.diagnostics.default.png",
+        "itemId": "spec-008/tab-landing.diagnostics.default.png",
+        "snapshot": "spec-008/tab-landing.diagnostics.default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.diagnostics.dense.png",
+        "itemId": "spec-008/tab-landing.diagnostics.dense.png",
+        "snapshot": "spec-008/tab-landing.diagnostics.dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.diagnostics.empty.png",
+        "itemId": "spec-008/tab-landing.diagnostics.empty.png",
+        "snapshot": "spec-008/tab-landing.diagnostics.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.diagnostics.error.png",
+        "itemId": "spec-008/tab-landing.diagnostics.error.png",
+        "snapshot": "spec-008/tab-landing.diagnostics.error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.diagnostics.loading.png",
+        "itemId": "spec-008/tab-landing.diagnostics.loading.png",
+        "snapshot": "spec-008/tab-landing.diagnostics.loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.kbd.right2.png",
+        "itemId": "spec-008/tab-landing.kbd.right2.png",
+        "snapshot": "spec-008/tab-landing.kbd.right2.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.overrides.default.png",
+        "itemId": "spec-008/tab-landing.overrides.default.png",
+        "snapshot": "spec-008/tab-landing.overrides.default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.overrides.dense.png",
+        "itemId": "spec-008/tab-landing.overrides.dense.png",
+        "snapshot": "spec-008/tab-landing.overrides.dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.overrides.empty.png",
+        "itemId": "spec-008/tab-landing.overrides.empty.png",
+        "snapshot": "spec-008/tab-landing.overrides.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.overrides.error.png",
+        "itemId": "spec-008/tab-landing.overrides.error.png",
+        "snapshot": "spec-008/tab-landing.overrides.error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.overrides.loading.png",
+        "itemId": "spec-008/tab-landing.overrides.loading.png",
+        "snapshot": "spec-008/tab-landing.overrides.loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.policies.default.png",
+        "itemId": "spec-008/tab-landing.policies.default.png",
+        "snapshot": "spec-008/tab-landing.policies.default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.policies.dense.png",
+        "itemId": "spec-008/tab-landing.policies.dense.png",
+        "snapshot": "spec-008/tab-landing.policies.dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.policies.empty.png",
+        "itemId": "spec-008/tab-landing.policies.empty.png",
+        "snapshot": "spec-008/tab-landing.policies.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.policies.error.png",
+        "itemId": "spec-008/tab-landing.policies.error.png",
+        "snapshot": "spec-008/tab-landing.policies.error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.policies.loading.png",
+        "itemId": "spec-008/tab-landing.policies.loading.png",
+        "snapshot": "spec-008/tab-landing.policies.loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.system-health.default.png",
+        "itemId": "spec-008/tab-landing.system-health.default.png",
+        "snapshot": "spec-008/tab-landing.system-health.default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.system-health.dense.png",
+        "itemId": "spec-008/tab-landing.system-health.dense.png",
+        "snapshot": "spec-008/tab-landing.system-health.dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.system-health.empty.png",
+        "itemId": "spec-008/tab-landing.system-health.empty.png",
+        "snapshot": "spec-008/tab-landing.system-health.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.system-health.error.png",
+        "itemId": "spec-008/tab-landing.system-health.error.png",
+        "snapshot": "spec-008/tab-landing.system-health.error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.system-health.loading.png",
+        "itemId": "spec-008/tab-landing.system-health.loading.png",
+        "snapshot": "spec-008/tab-landing.system-health.loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.windows.default.png",
+        "itemId": "spec-008/tab-landing.windows.default.png",
+        "snapshot": "spec-008/tab-landing.windows.default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.windows.dense.png",
+        "itemId": "spec-008/tab-landing.windows.dense.png",
+        "snapshot": "spec-008/tab-landing.windows.dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.windows.empty.png",
+        "itemId": "spec-008/tab-landing.windows.empty.png",
+        "snapshot": "spec-008/tab-landing.windows.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.windows.error.png",
+        "itemId": "spec-008/tab-landing.windows.error.png",
+        "snapshot": "spec-008/tab-landing.windows.error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/tab-landing.windows.loading.png",
+        "itemId": "spec-008/tab-landing.windows.loading.png",
+        "snapshot": "spec-008/tab-landing.windows.loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/telemetry-health.breaker-open.png",
+        "itemId": "spec-008/telemetry-health.breaker-open.png",
+        "snapshot": "spec-008/telemetry-health.breaker-open.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/telemetry-health.drilldown.png",
+        "itemId": "spec-008/telemetry-health.drilldown.png",
+        "snapshot": "spec-008/telemetry-health.drilldown.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/telemetry-health.healthy.png",
+        "itemId": "spec-008/telemetry-health.healthy.png",
+        "snapshot": "spec-008/telemetry-health.healthy.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/windows.in.blackout.23h00m.png",
+        "itemId": "spec-008/windows.in.blackout.23h00m.png",
+        "snapshot": "spec-008/windows.in.blackout.23h00m.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/windows.in.blackout.dst.fold.png",
+        "itemId": "spec-008/windows.in.blackout.dst.fold.png",
+        "snapshot": "spec-008/windows.in.blackout.dst.fold.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/windows.post.blackout.06h01m.png",
+        "itemId": "spec-008/windows.post.blackout.06h01m.png",
+        "snapshot": "spec-008/windows.post.blackout.06h01m.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/windows.pre.blackout.21h59m.png",
+        "itemId": "spec-008/windows.pre.blackout.21h59m.png",
+        "snapshot": "spec-008/windows.pre.blackout.21h59m.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/wip-policy.default.png",
+        "itemId": "spec-008/wip-policy.default.png",
+        "snapshot": "spec-008/wip-policy.default.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/wip-policy.dense.png",
+        "itemId": "spec-008/wip-policy.dense.png",
+        "snapshot": "spec-008/wip-policy.dense.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/wip-policy.diagnostics.loading.png",
+        "itemId": "spec-008/wip-policy.diagnostics.loading.png",
+        "snapshot": "spec-008/wip-policy.diagnostics.loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/wip-policy.editor.filled.png",
+        "itemId": "spec-008/wip-policy.editor.filled.png",
+        "snapshot": "spec-008/wip-policy.editor.filled.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/wip-policy.empty.png",
+        "itemId": "spec-008/wip-policy.empty.png",
+        "snapshot": "spec-008/wip-policy.empty.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/wip-policy.error.png",
+        "itemId": "spec-008/wip-policy.error.png",
+        "snapshot": "spec-008/wip-policy.error.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-008",
+        "id": "new-spec-008/wip-policy.flag-off.png",
+        "itemId": "spec-008/wip-policy.flag-off.png",
+        "snapshot": "spec-008/wip-policy.flag-off.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-013a",
+        "id": "new-spec-013a/task-stage-attempts.png",
+        "itemId": "spec-013a/task-stage-attempts.png",
+        "snapshot": "spec-013a/task-stage-attempts.png",
+        "variant": "new"
+      },
+      {
+        "group": "workflow-contracts",
+        "id": "new-workflow-contracts/contracts-diagnostics-redacted.png",
+        "itemId": "workflow-contracts/contracts-diagnostics-redacted.png",
+        "snapshot": "workflow-contracts/contracts-diagnostics-redacted.png",
+        "variant": "new"
+      }
+    ]
+  }
+}
