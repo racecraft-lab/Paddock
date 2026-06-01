@@ -10,7 +10,7 @@ import {
 } from './test-db'
 
 describe('mission-control product-line seed', () => {
-  it('preserves Facility and creates exactly one Mission Control Product Line workspace', () => {
+  it('preserves Facility and creates exactly one Paddock Product Line workspace', () => {
     const db = makeMissionControlSeedDb()
 
     const result = applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
@@ -20,12 +20,12 @@ describe('mission-control product-line seed', () => {
     expect(db.prepare("SELECT COUNT(*) as count FROM workspaces WHERE slug = 'facility'").get()).toEqual({ count: 1 })
     expect(db.prepare("SELECT id, slug, name FROM workspaces WHERE slug = 'mission-control'").get()).toMatchObject({
       slug: 'mission-control',
-      name: 'Mission Control',
+      name: 'Paddock',
     })
     expect(db.prepare("SELECT COUNT(*) as count FROM workspaces WHERE slug = 'mission-control'").get()).toEqual({ count: 1 })
   })
 
-  it('uses the existing Facility tenant for the Mission Control workspace', () => {
+  it('uses the existing Facility tenant for the Paddock workspace', () => {
     const db = makeMissionControlSeedDb()
     db.prepare("UPDATE workspaces SET tenant_id = 42 WHERE slug = 'facility'").run()
 
@@ -77,7 +77,7 @@ describe('mission-control product-line seed', () => {
         area_slug: 'qa',
         is_triage_project: 1,
         is_repo_sync_owner: 1,
-        github_repo: 'racecraft-lab/mission-control',
+        github_repo: 'racecraft-lab/Paddock',
       }),
     ])
     expect(rows.map((row) => (row as { slug: string }).slug)).not.toEqual(
@@ -108,7 +108,7 @@ describe('mission-control product-line seed', () => {
     )
   })
 
-  it('re-homes existing Mission Control issue intake to QA while preserving GitHub sync metadata', () => {
+  it('re-homes existing Paddock issue intake to QA while preserving GitHub sync metadata', () => {
     const db = makeMissionControlSeedDb()
     db.prepare(`
       INSERT INTO tasks (
@@ -118,7 +118,7 @@ describe('mission-control product-line seed', () => {
         chain_id, chain_stage, dispatch_attempts
       )
       VALUES (
-        'Existing issue', 1, 'racecraft-lab/mission-control', 42, 123456,
+        'Existing issue', 1, 'racecraft-lab/Paddock', 42, 123456,
         'fix/thing', 77, 'open', '{"kept":true}', 'in_progress',
         'mission-control-platform-dev', 'old-template', 9, 9,
         'old-chain', 3, 2
@@ -140,7 +140,7 @@ describe('mission-control product-line seed', () => {
     expect(row).toMatchObject({
       workspace_slug: 'mission-control',
       project_slug: 'qa',
-      github_repo: 'racecraft-lab/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 42,
       github_synced_at: 123456,
       github_branch: 'fix/thing',
@@ -156,7 +156,7 @@ describe('mission-control product-line seed', () => {
       chain_stage: null,
       dispatch_attempts: 0,
     })
-    expect(db.prepare("SELECT COUNT(*) as count FROM tasks WHERE github_repo = 'racecraft-lab/mission-control'").get()).toEqual({ count: 1 })
+    expect(db.prepare("SELECT COUNT(*) as count FROM tasks WHERE github_repo = 'racecraft-lab/Paddock'").get()).toEqual({ count: 1 })
   })
 
   it('requires the corrected repo-owned workflow contract and imports the nine required slugs', () => {

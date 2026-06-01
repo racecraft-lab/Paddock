@@ -8,7 +8,7 @@
 
 ## Design Concept
 
-This workflow file was enriched from a Grill Me interview run during `/speckit-pro:setup` followed by **9 background research agents** (5 stack/provider + 4 deep CLI telemetry), **2 advisor consultations**, **4 oracle adversarial review rounds**, **3 independent peer review rounds** (distributed-systems lens, SRE/operator lens, security/compliance lens), and direct ground-truth reading of `racecraft-lab/openclaw` and `racecraft-lab/mission-control` source on GitHub. **73 design decisions** captured (Q1-Q73) covering: evaluator precedence, window storage, WIP scope, budget shape, Aegis starvation prevention, override reservation atomicity, activity throttling, OpenClaw health adapter, REST API CRUD, UI placement, evaluator hot-path architecture, default seed migration, circuit breaker persistence, test strategy, billing-mode detection, multi-source ingestion architecture, budget ledger separation, raw+canonical two-layer telemetry model, snapshot delta computation, source emission registry, batched reconciler, Copilot schema validation, correction coalescing, precomputed budget counters, migration safety, foreground/background DB connection separation, posted-effect ledger lifecycle, backfill window state machine, incremental freshness, calibration data sufficiency, attach status repair workflow, atomic counter conditional update, drift verification sampling, tiered Copilot validation, reservation accounting across windows, Codex stdout↔rollout dedupe, atomic counter rebuild, input validation + threat model, Aegis soft-by-default, retention partitioning, dispatch diagnostic view, self-observability metrics, soak/DST/concurrent-edit ACs, raw ingest admission control, local health channel, async chunked rebuild, split reservation/release/consumption queries, monthly archive partitioning, Codex timestamp join verification, Aegis soft escalation, dispatch log indexing, soak test infrastructure, bulk policy promotion, M65 dependency-ordered migration, stratified drift sampling, hard enforcement disablement escalation, backup/DR procedure, per-failure runbooks, system health dashboard, retention default-on, provider_accounts soft-delete, threshold guardrails, breaker chronic alerts + reservation reaper.
+This workflow file was enriched from a Grill Me interview run during `/speckit-pro:setup` followed by **9 background research agents** (5 stack/provider + 4 deep CLI telemetry), **2 advisor consultations**, **4 oracle adversarial review rounds**, **3 independent peer review rounds** (distributed-systems lens, SRE/operator lens, security/compliance lens), and direct ground-truth reading of `racecraft-lab/openclaw` and `racecraft-lab/Paddock` source on GitHub. **73 design decisions** captured (Q1-Q73) covering: evaluator precedence, window storage, WIP scope, budget shape, Aegis starvation prevention, override reservation atomicity, activity throttling, OpenClaw health adapter, REST API CRUD, UI placement, evaluator hot-path architecture, default seed migration, circuit breaker persistence, test strategy, billing-mode detection, multi-source ingestion architecture, budget ledger separation, raw+canonical two-layer telemetry model, snapshot delta computation, source emission registry, batched reconciler, Copilot schema validation, correction coalescing, precomputed budget counters, migration safety, foreground/background DB connection separation, posted-effect ledger lifecycle, backfill window state machine, incremental freshness, calibration data sufficiency, attach status repair workflow, atomic counter conditional update, drift verification sampling, tiered Copilot validation, reservation accounting across windows, Codex stdout↔rollout dedupe, atomic counter rebuild, input validation + threat model, Aegis soft-by-default, retention partitioning, dispatch diagnostic view, self-observability metrics, soak/DST/concurrent-edit ACs, raw ingest admission control, local health channel, async chunked rebuild, split reservation/release/consumption queries, monthly archive partitioning, Codex timestamp join verification, Aegis soft escalation, dispatch log indexing, soak test infrastructure, bulk policy promotion, M65 dependency-ordered migration, stratified drift sampling, hard enforcement disablement escalation, backup/DR procedure, per-failure runbooks, system health dashboard, retention default-on, provider_accounts soft-delete, threshold guardrails, breaker chronic alerts + reservation reaper.
 
 The full design concept and Q&A log live at:
 
@@ -62,7 +62,7 @@ Re-read these before each phase. They are the source of truth for any decision c
 
 ### Constitution Validation
 
-Mission Control Constitution v1.4.1 — 15 principles + 11 autopilot conventions. SPEC-008-relevant principles mapped explicitly:
+Paddock Constitution v1.4.1 — 15 principles + 11 autopilot conventions. SPEC-008-relevant principles mapped explicitly:
 
 | Principle | Requirement | Verification | Status |
 |-----------|-------------|--------------|--------|
@@ -167,11 +167,11 @@ Drawn from Phase 7 P7-AC1..AC12 in the roadmap, AUGMENTED with peer-review-deriv
 
 ## Feature: SPEC-008 Resource Governance and Cost Tracker Enforcement
 
-Create a specification for RC Factory Phase 7 in Mission Control. Consume the comprehensive design concept doc at `docs/ai/specs/SPEC-008-design-concept.md` (73 design decisions Q1-Q73) as the authoritative source for design choices. The spec should ENRICH the design concept with formal user stories, functional requirements, and acceptance criteria — NOT duplicate the design rationale. The spec MUST also reflect US9 (test-coverage user story) and FR-296..325 (UI/UX coverage + feature-flag matrix) added on 2026-05-02 to satisfy Constitution Principle XIV (Real UI Journey Quality Gate, NON-NEGOTIABLE) and Principle V (Feature-Flag Resolution Discipline).
+Create a specification for RC Factory Phase 7 in Paddock. Consume the comprehensive design concept doc at `docs/ai/specs/SPEC-008-design-concept.md` (73 design decisions Q1-Q73) as the authoritative source for design choices. The spec should ENRICH the design concept with formal user stories, functional requirements, and acceptance criteria — NOT duplicate the design rationale. The spec MUST also reflect US9 (test-coverage user story) and FR-296..325 (UI/UX coverage + feature-flag matrix) added on 2026-05-02 to satisfy Constitution Principle XIV (Real UI Journey Quality Gate, NON-NEGOTIABLE) and Principle V (Feature-Flag Resolution Discipline).
 
 ### Problem Statement
 
-Mission Control's resource_policies and resource_policy_events tables landed empty in SPEC-001 (M60/M61). Hard-coded LIMIT 3 and "3+ in_progress" capacity checks in the dispatcher are the only enforcement that exists today. Cost Tracker is observability-only with no enforcement. Operators have no way to:
+Paddock's resource_policies and resource_policy_events tables landed empty in SPEC-001 (M60/M61). Hard-coded LIMIT 3 and "3+ in_progress" capacity checks in the dispatcher are the only enforcement that exists today. Cost Tracker is observability-only with no enforcement. Operators have no way to:
 - Set per-agent / per-project / per-workspace WIP limits
 - Set blackout / degraded windows for blocking autonomous dispatch
 - Enforce daily/monthly USD or token budgets
@@ -180,7 +180,7 @@ Mission Control's resource_policies and resource_policy_events tables landed emp
 
 ### Users
 
-- **Solo developer / small team** running Mission Control on a single Linux node
+- **Solo developer / small team** running Paddock on a single Linux node
 - **Operator** who configures policies and grants overrides
 - **Aegis** (autonomous review agent) — subject of governance with starvation prevention
 - **Future regulator / auditor** for compliance trail

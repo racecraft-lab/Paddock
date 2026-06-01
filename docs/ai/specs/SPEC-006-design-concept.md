@@ -15,7 +15,7 @@ authority: Operator (interactive grill-me session)
 
 ## Context
 
-Mission Control's GitHub sync is currently project-driven: every project with `github_sync_enabled=1` polls its own `(workspace_id, github_repo)`. This works when each repo maps to one project, but breaks down when a single product-line monorepo serves multiple department kanbans (e.g., `racecraft/product-line-a` serving Dev, QA, Infra, and Docs projects). SPEC-006 introduces `area:*` label routing so a single repo can fan out to many projects, plus repo-level sync ownership so polling does not duplicate.
+Paddock's GitHub sync is currently project-driven: every project with `github_sync_enabled=1` polls its own `(workspace_id, github_repo)`. This works when each repo maps to one project, but breaks down when a single product-line monorepo serves multiple department kanbans (e.g., `racecraft/product-line-a` serving Dev, QA, Infra, and Docs projects). SPEC-006 introduces `area:*` label routing so a single repo can fan out to many projects, plus repo-level sync ownership so polling does not duplicate.
 
 The feature is gated by `FEATURE_AREA_LABEL_ROUTING` (already registered, `activationScope: 'productLineWorkspace'`, `defaultValue: false`, `requiresPreflight: true`). With the flag OFF, behavior is byte-identical to today.
 

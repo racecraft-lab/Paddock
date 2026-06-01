@@ -4,18 +4,18 @@ const context = {
   baseRef: 'main',
   headRef: '008-resource-governance',
   headSha: 'abcdef1234567890',
-  prIndexHref: 'https://racecraft-lab.github.io/mission-control/pr/26/',
+  prIndexHref: 'https://racecraft-lab.github.io/Paddock/pr/26/',
   prNumber: '26',
   prTitle: 'SPEC-008 governance',
-  prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
+  prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
   regVizHref: './reg-viz.html',
-  repository: 'racecraft-lab/mission-control',
+  repository: 'racecraft-lab/Paddock',
   runId: '123',
   runKey: '123-attempt-1',
-  runUrl: 'https://github.com/racecraft-lab/mission-control/actions/runs/123',
+  runUrl: 'https://github.com/racecraft-lab/Paddock/actions/runs/123',
   surface: 'playwright',
   surfaceLabel: 'Playwright UI E2E',
-  workflowName: 'Mission Control UI E2E',
+  workflowName: 'Paddock UI E2E',
 }
 
 const payload = {
@@ -172,10 +172,10 @@ describe('visual review app guidance', () => {
           status: 200,
         }
       }
-      if (url.endsWith('/repos/racecraft-lab/mission-control/pulls/26/comments')) {
+      if (url.endsWith('/repos/racecraft-lab/Paddock/pulls/26/comments')) {
         return {
           json: async () => ({
-            html_url: 'https://github.com/racecraft-lab/mission-control/pull/26#discussion-diff-1',
+            html_url: 'https://github.com/racecraft-lab/Paddock/pull/26#discussion-diff-1',
             id: 9001,
           }),
           ok: true,
@@ -229,7 +229,7 @@ describe('visual review app guidance', () => {
       context: {
         ...context,
         headSha: '8492e3e000000000000000000000000000000000',
-        reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/playwright/latest/',
+        reportHref: 'https://racecraft-lab.github.io/Paddock/pr/26/playwright/latest/',
       },
       items: [
         { id: 'changed-governance/dashboard.png', group: 'spec-008', raw: 'governance/dashboard.png', variant: 'changed' },
@@ -277,7 +277,7 @@ describe('visual review app guidance', () => {
       context: {
         ...context,
         headSha: prHeadSha,
-        reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/playwright/latest/',
+        reportHref: 'https://racecraft-lab.github.io/Paddock/pr/26/playwright/latest/',
       },
       items: [
         { id: 'changed-governance/dashboard.png', group: 'spec-008', raw: 'governance/dashboard.png', variant: 'changed' },
@@ -349,7 +349,7 @@ describe('visual review app guidance', () => {
     expect(dialog?.textContent).toContain('Create a GitHub token')
     expect(dialog?.textContent).toContain('prefilled GitHub token page')
     expect(dialog?.textContent).toContain('Only select repositories')
-    expect(dialog?.textContent).toContain('racecraft-lab/mission-control')
+    expect(dialog?.textContent).toContain('racecraft-lab/Paddock')
     expect(dialog?.textContent).toContain('set Issues, Pull requests, and Commit statuses to Read and write')
     expect(dialog?.textContent).toMatch(/Issues\s+Read and write/)
     expect(dialog?.textContent).toMatch(/Pull requests\s+Read and write/)

@@ -120,7 +120,7 @@ describe('DELETE /api/agents/[id]', () => {
     expect(deleteStmt.run).toHaveBeenCalledWith(8, 1)
   })
 
-  it('still deletes the Mission Control agent when config cleanup fails', async () => {
+  it('still deletes the Paddock agent when config cleanup fails', async () => {
     const agent = { id: 9, name: 'trinity', role: 'tester', workspace_id: 1, config: JSON.stringify({ openclawId: 'trinity' }) }
     const selectStmt = { get: vi.fn(() => agent) }
     const deleteStmt = { run: vi.fn() }

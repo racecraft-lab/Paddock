@@ -105,7 +105,7 @@ describe('scanOpenCodeSessions', () => {
     if (tempHome) rmSync(tempHome, { recursive: true, force: true })
   })
 
-  it('maps OpenCode SQLite sessions into Mission Control session stats', async () => {
+  it('maps OpenCode SQLite sessions into Paddock session stats', async () => {
     const { scanOpenCodeSessions } = await import('@/lib/opencode-sessions')
     const sessions = scanOpenCodeSessions(10)
     expect(sessions).toHaveLength(1)

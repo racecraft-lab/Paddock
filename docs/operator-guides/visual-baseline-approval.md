@@ -6,14 +6,14 @@ merging the PR must confirm the visual baseline before merge.
 
 ## PR Review
 
-1. Open the `Mission Control UI E2E` and `Visual Storybook Snapshots`
+1. Open the `Paddock UI E2E` and `Visual Storybook Snapshots`
    workflow runs for the PR.
 2. Confirm both manifest gates passed:
    - `pnpm test:e2e:visual-manifest`
    - `pnpm test:visual:manifest`
 3. Open the GitHub Pages PR visual review links posted by the workflows:
-   - `https://racecraft-lab.github.io/mission-control/pr/<PR>/playwright/latest/`
-   - `https://racecraft-lab.github.io/mission-control/pr/<PR>/storybook/latest/`
+   - `https://racecraft-lab.github.io/Paddock/pr/<PR>/playwright/latest/`
+   - `https://racecraft-lab.github.io/Paddock/pr/<PR>/storybook/latest/`
 4. Use the review queue to inspect every changed, new, and removed snapshot.
    Changed snapshots expose baseline/current side-by-side, highlighter,
    overlay, and blink views. `reg-viz.html` remains available in each report
@@ -70,7 +70,7 @@ Commit statuses write access.
 Required repository setting:
 
 ```bash
-gh api -X PUT repos/racecraft-lab/mission-control/pages \
+gh api -X PUT repos/racecraft-lab/Paddock/pages \
   -f source.branch=visual-regression-pages \
   -f source.path=/
 ```

@@ -3,7 +3,7 @@
 **Feature Branch**: `013b-claim-reconciliation`
 **Created**: 2026-05-27
 **Status**: Draft
-**Input**: User description: "Mission Control needs claim and reconciliation authority that prevents duplicate scheduler dispatch for the same GitHub-linked task stage while preserving tracker truth, resource governance, SPEC-013A task-stage attempt evidence, and existing dispatch/successor-selection boundaries."
+**Input**: User description: "Paddock needs claim and reconciliation authority that prevents duplicate scheduler dispatch for the same GitHub-linked task stage while preserving tracker truth, resource governance, SPEC-013A task-stage attempt evidence, and existing dispatch/successor-selection boundaries."
 
 ## Clarifications
 
@@ -15,7 +15,7 @@
 - Q: What exact structural predicate admits a task into autonomous claim intake? → A: The task must be `assigned`, have an assignee, have a valid `github_repo` in canonical `owner/repo` form plus positive `github_issue_number`, and belong to the same workspace as an active sync-enabled repository owner for that GitHub repo; PR linkage may enrich terminal evidence but is not the primary intake key.
 - Q: Which source and threshold define stale or unresolved GitHub truth before claim? → A: Use task-level `github_synced_at` plus SPEC-013A1 lifecycle health for the task's `(workspace_id, github_repo)` scope. Truth is stale when `github_synced_at` is missing or older than `min(max(2 * interval_seconds, 600), 3600)` seconds, using `interval_seconds=300` when no scope-specific value exists; unhealthy, unresolved, disabled, or stale-lease lifecycle state also defers claim.
 - Q: Which GitHub terminal states prevent or release claims? → A: Closed issues and closed linked PRs are non-claimable; merged linked PR evidence releases active claims while allowing existing owner-gated completion paths to remain outside SPEC-013B.
-- Q: Which local Mission Control task states release active claims? → A: The terminal Mission Control task states for SPEC-013B active-claim release are exactly `done` and `failed`. `awaiting_owner` and `ready_for_owner` are not terminal for claim release; owner handoff remains non-terminal, and only `github_pr_merged` terminal evidence can allow a later transition to `done`.
+- Q: Which local Paddock task states release active claims? → A: The terminal Paddock task states for SPEC-013B active-claim release are exactly `done` and `failed`. `awaiting_owner` and `ready_for_owner` are not terminal for claim release; owner handoff remains non-terminal, and only `github_pr_merged` terminal evidence can allow a later transition to `done`.
 - Q: What closed `release_reason` values are persisted on `task_stage_claims`? → A: `launch_handoff_completed`, `dispatch_failed`, `task_terminal_done`, `task_terminal_failed`, `github_issue_terminal`, `github_pr_terminal`, `governance_blocked`, `governance_deferred`, `attempt_terminal_reconciled`, `stale_claim_recovered`, and `boundary_error_deferred`. These values are the only persisted reasons for release or recovery rows; active rows keep `release_reason = null`.
 - Q: Where does dispatch invoke claim/reconciliation authority? → A: `dispatchAssignedTasks` calls the new authority inside its per-task loop before the legacy `in_progress` status mutation or launch handoff; flag-off execution bypasses the authority and preserves the existing flow.
 - Q: How does governance participate in claim eligibility? → A: Evaluate governance before active claim acquisition. `allow` proceeds to claim with decision metadata; `block` and `defer` record reconciliation evidence without acquiring an active claim.
@@ -45,7 +45,7 @@ As an operator, I need concurrent scheduler ticks to produce at most one launch 
 
 ### User Story 2 - Reconcile tracker and governance truth before claim (Priority: P2)
 
-As an operator, I need Mission Control to compare local task state, GitHub tracker truth, workflow stage readiness, and governance readiness before acquiring an active claim so stale or blocked work does not launch.
+As an operator, I need Paddock to compare local task state, GitHub tracker truth, workflow stage readiness, and governance readiness before acquiring an active claim so stale or blocked work does not launch.
 
 **Why this priority**: Tracker truth and governance readiness must remain authoritative; a duplicate-prevention lock alone is not enough if it admits stale or gated work.
 
@@ -53,9 +53,9 @@ As an operator, I need Mission Control to compare local task state, GitHub track
 
 **Acceptance Scenarios**:
 
-1. **Given** an assigned task linked to a closed or otherwise terminal GitHub issue or pull request, **When** scheduler intake runs, **Then** Mission Control does not launch the stage and records terminal reconciliation evidence.
-2. **Given** an assigned task whose GitHub truth is missing, stale, or inconsistent, **When** scheduler intake runs, **Then** Mission Control defers claim acquisition and records that fresh tracker truth is required before launch.
-3. **Given** governance blocks or defers an otherwise eligible task, **When** scheduler intake runs, **Then** Mission Control records the governance decision without leaving an active claim.
+1. **Given** an assigned task linked to a closed or otherwise terminal GitHub issue or pull request, **When** scheduler intake runs, **Then** Paddock does not launch the stage and records terminal reconciliation evidence.
+2. **Given** an assigned task whose GitHub truth is missing, stale, or inconsistent, **When** scheduler intake runs, **Then** Paddock defers claim acquisition and records that fresh tracker truth is required before launch.
+3. **Given** governance blocks or defers an otherwise eligible task, **When** scheduler intake runs, **Then** Paddock records the governance decision without leaving an active claim.
 
 ---
 
@@ -71,7 +71,7 @@ As a reviewer, I need active-claim, release, stale-recovery, and reconciliation-
 
 1. **Given** a scheduler tick acquires a stage claim, **When** the claim is acquired, **Then** the active claim is linked to the task-stage attempt evidence for that stage.
 2. **Given** a launch handoff completes or the task/stage reaches a terminal or gated state, **When** reconciliation runs, **Then** the active claim is released or deferred and the release reason is recorded.
-3. **Given** an active claim expires before launch handoff completes, **When** a later scheduler tick evaluates the same task and stage, **Then** Mission Control performs bounded stale recovery and records recovery evidence before allowing any new launch decision.
+3. **Given** an active claim expires before launch handoff completes, **When** a later scheduler tick evaluates the same task and stage, **Then** Paddock performs bounded stale recovery and records recovery evidence before allowing any new launch decision.
 
 ---
 
@@ -93,10 +93,10 @@ As a future SPEC-013C or SPEC-014 implementer, I need SPEC-013B to protect the e
 
 - Concurrent scheduler ticks evaluate the same GitHub-linked assigned task and stage at the same time.
 - An active claim exists for the same task and stage but belongs to an expired launch handoff.
-- GitHub issue truth is missing, stale, closed, merged, or inconsistent with Mission Control task state.
+- GitHub issue truth is missing, stale, closed, merged, or inconsistent with Paddock task state.
 - Governance changes from allow to block or defer while a task is otherwise eligible.
 - A task becomes terminal before or during the launch handoff.
-- The task is assigned but has no GitHub issue linkage, only repository metadata, or only local Mission Control provenance.
+- The task is assigned but has no GitHub issue linkage, only repository metadata, or only local Paddock provenance.
 - A stage attempt exists in passive lifecycle evidence but no active claim exists.
 - The feature flag is disabled in an environment that already runs legacy dispatch.
 - A same-stage stale claim is recovered while a late stale owner attempts to release or mutate the replacement claim.
@@ -107,26 +107,26 @@ As a future SPEC-013C or SPEC-014 implementer, I need SPEC-013B to protect the e
 
 ### Functional Requirements
 
-- **FR-001**: Mission Control MUST admit only tasks in `assigned` state with an assignee, valid `github_repo`, positive `github_issue_number`, and matching sync-enabled workspace/repository ownership into autonomous claim intake. A valid `github_repo` for SPEC-013B is a canonical GitHub full name in `owner/repo` form: owner matches `[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?`, repo matches `[A-Za-z0-9._-]{1,100}`, the value has exactly one slash, has no scheme/host/query/fragment/`.git` suffix, no whitespace or control characters, and no `.` or `..` path segment.
-- **FR-002**: Mission Control MUST exclude local-only tasks, repository-only tasks, arbitrary non-terminal tasks, and tasks without issue linkage from SPEC-013B claim intake.
-- **FR-003**: Mission Control MUST reconcile local task state, persisted GitHub tracker truth, workflow stage readiness, SPEC-013A1 lifecycle health, and governance readiness before active claim acquisition.
-- **FR-004**: Mission Control MUST perform reconciliation and active claim acquisition as one bounded decision so competing scheduler ticks cannot both pass the same eligibility boundary.
-- **FR-005**: Mission Control MUST enforce at most one active claim for each workspace, task, and workflow stage combination with a SQLite partial unique index over active claim rows.
-- **FR-006**: Mission Control MUST use `task_stage_claims` as database-backed active-claim authority rather than treating passive task-stage attempt status as the active claim lock.
-- **FR-007**: Mission Control MUST link each acquired active claim to the corresponding task-stage attempt evidence.
-- **FR-008**: Mission Control MUST release or defer active claims when the task reaches terminal Mission Control state (`done` or `failed`), linked GitHub issue or PR truth is terminal or stale, governance blocks or defers launch, linked passive task-stage attempt lifecycle reaches `succeeded`, `failed`, `released`, or `cancelled`, or launch handoff completes. `awaiting_owner` and `ready_for_owner` MUST NOT be treated as terminal for active-claim release decisions. Task-stage attempt lifecycle status MUST remain passive evidence and MUST NOT enforce active-claim uniqueness. Release reasons MUST use the closed vocabulary `launch_handoff_completed`, `dispatch_failed`, `task_terminal_done`, `task_terminal_failed`, `github_issue_terminal`, `github_pr_terminal`, `governance_blocked`, `governance_deferred`, `attempt_terminal_reconciled`, `stale_claim_recovered`, and `boundary_error_deferred`.
-- **FR-009**: Mission Control MUST recover stale active claims after a bounded launch-critical-section lease expires, transition stale claims out of `active`, protect replacement claims from late stale-owner release, and record recovery evidence before a new launch decision can proceed.
-- **FR-010**: Mission Control MUST record structured activities for claim acquisition, duplicate-claim prevention, release, stale recovery, governance deferral, terminal reconciliation, stale-truth deferral, boundary-error deferral, and not-claimable intake exclusion using the outcome-specific activity taxonomy defined in Clarifications.
-- **FR-011**: Mission Control MUST record task-stage attempt lifecycle evidence for claim and release decisions that relate to a stage attempt, using existing stage-attempt statuses without making those statuses the active lock.
-- **FR-012**: Mission Control MUST preserve the existing assigned-task dispatch boundary and protect it with claim/reconciliation authority rather than replacing it with a runner or harness abstraction.
-- **FR-013**: Mission Control MUST preserve existing successor-selection authority and MUST NOT duplicate automatic triage, issue remediation execution, auto-merge, or task-chain advancement logic.
-- **FR-014**: Mission Control MUST expose read-only evidence sufficient for operators and reviewers to inspect claim state and reconciliation outcomes through a task-scoped `task_claim_reconciliation.v1` read model without adding manual retry, release, cancel, or primary dashboard controls.
-- **FR-015**: Mission Control MUST keep flag-off behavior equivalent to legacy dispatch behavior for environments where the task control plane is disabled.
-- **FR-016**: Mission Control MUST leave sandbox lifecycle, harness adapters, fake runners, real runners, long-running execution ownership, and external adapter behavior out of SPEC-013B.
+- **FR-001**: Paddock MUST admit only tasks in `assigned` state with an assignee, valid `github_repo`, positive `github_issue_number`, and matching sync-enabled workspace/repository ownership into autonomous claim intake. A valid `github_repo` for SPEC-013B is a canonical GitHub full name in `owner/repo` form: owner matches `[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?`, repo matches `[A-Za-z0-9._-]{1,100}`, the value has exactly one slash, has no scheme/host/query/fragment/`.git` suffix, no whitespace or control characters, and no `.` or `..` path segment.
+- **FR-002**: Paddock MUST exclude local-only tasks, repository-only tasks, arbitrary non-terminal tasks, and tasks without issue linkage from SPEC-013B claim intake.
+- **FR-003**: Paddock MUST reconcile local task state, persisted GitHub tracker truth, workflow stage readiness, SPEC-013A1 lifecycle health, and governance readiness before active claim acquisition.
+- **FR-004**: Paddock MUST perform reconciliation and active claim acquisition as one bounded decision so competing scheduler ticks cannot both pass the same eligibility boundary.
+- **FR-005**: Paddock MUST enforce at most one active claim for each workspace, task, and workflow stage combination with a SQLite partial unique index over active claim rows.
+- **FR-006**: Paddock MUST use `task_stage_claims` as database-backed active-claim authority rather than treating passive task-stage attempt status as the active claim lock.
+- **FR-007**: Paddock MUST link each acquired active claim to the corresponding task-stage attempt evidence.
+- **FR-008**: Paddock MUST release or defer active claims when the task reaches terminal Paddock state (`done` or `failed`), linked GitHub issue or PR truth is terminal or stale, governance blocks or defers launch, linked passive task-stage attempt lifecycle reaches `succeeded`, `failed`, `released`, or `cancelled`, or launch handoff completes. `awaiting_owner` and `ready_for_owner` MUST NOT be treated as terminal for active-claim release decisions. Task-stage attempt lifecycle status MUST remain passive evidence and MUST NOT enforce active-claim uniqueness. Release reasons MUST use the closed vocabulary `launch_handoff_completed`, `dispatch_failed`, `task_terminal_done`, `task_terminal_failed`, `github_issue_terminal`, `github_pr_terminal`, `governance_blocked`, `governance_deferred`, `attempt_terminal_reconciled`, `stale_claim_recovered`, and `boundary_error_deferred`.
+- **FR-009**: Paddock MUST recover stale active claims after a bounded launch-critical-section lease expires, transition stale claims out of `active`, protect replacement claims from late stale-owner release, and record recovery evidence before a new launch decision can proceed.
+- **FR-010**: Paddock MUST record structured activities for claim acquisition, duplicate-claim prevention, release, stale recovery, governance deferral, terminal reconciliation, stale-truth deferral, boundary-error deferral, and not-claimable intake exclusion using the outcome-specific activity taxonomy defined in Clarifications.
+- **FR-011**: Paddock MUST record task-stage attempt lifecycle evidence for claim and release decisions that relate to a stage attempt, using existing stage-attempt statuses without making those statuses the active lock.
+- **FR-012**: Paddock MUST preserve the existing assigned-task dispatch boundary and protect it with claim/reconciliation authority rather than replacing it with a runner or harness abstraction.
+- **FR-013**: Paddock MUST preserve existing successor-selection authority and MUST NOT duplicate automatic triage, issue remediation execution, auto-merge, or task-chain advancement logic.
+- **FR-014**: Paddock MUST expose read-only evidence sufficient for operators and reviewers to inspect claim state and reconciliation outcomes through a task-scoped `task_claim_reconciliation.v1` read model without adding manual retry, release, cancel, or primary dashboard controls.
+- **FR-015**: Paddock MUST keep flag-off behavior equivalent to legacy dispatch behavior for environments where the task control plane is disabled.
+- **FR-016**: Paddock MUST leave sandbox lifecycle, harness adapters, fake runners, real runners, long-running execution ownership, and external adapter behavior out of SPEC-013B.
 - **FR-017**: If planning determines additive active-claim persistence is necessary, the persistence model MUST be rerun-safe and include rollback coverage before implementation is accepted.
-- **FR-018**: Mission Control MUST persist only positive-allowlisted claim/reconciliation evidence fields and MUST reject or redact raw free-form payloads, prompts, credentials, session data, raw provider responses, gateway/session payloads, and secret-shaped values before persistence or read-model exposure.
-- **FR-019**: Mission Control MUST prove flag-off parity with focused tests that assert legacy dispatch status transitions, activities, messages, and absence of claim/reconciliation side effects when `FEATURE_TASK_CONTROL_PLANE=false`.
-- **FR-020**: Mission Control MUST classify claim/reconciliation boundary failures before dispatch proceeds. SQLite constraint races map to duplicate-prevented evidence; stale-owner release retries map to stale-owner-safe no-ops; SQLite busy/database errors, malformed claim inputs, governance evaluator failures, and unknown claim/release exceptions map to fail-closed `boundary_deferred` evidence for that task. These outcomes MUST skip legacy launch, preserve the rest of the scheduler tick, avoid acquiring or releasing active claims unless a compare-and-set already succeeded, avoid bypassing governance, and expose only sanitized categories or hashes.
+- **FR-018**: Paddock MUST persist only positive-allowlisted claim/reconciliation evidence fields and MUST reject or redact raw free-form payloads, prompts, credentials, session data, raw provider responses, gateway/session payloads, and secret-shaped values before persistence or read-model exposure.
+- **FR-019**: Paddock MUST prove flag-off parity with focused tests that assert legacy dispatch status transitions, activities, messages, and absence of claim/reconciliation side effects when `FEATURE_TASK_CONTROL_PLANE=false`.
+- **FR-020**: Paddock MUST classify claim/reconciliation boundary failures before dispatch proceeds. SQLite constraint races map to duplicate-prevented evidence; stale-owner release retries map to stale-owner-safe no-ops; SQLite busy/database errors, malformed claim inputs, governance evaluator failures, and unknown claim/release exceptions map to fail-closed `boundary_deferred` evidence for that task. These outcomes MUST skip legacy launch, preserve the rest of the scheduler tick, avoid acquiring or releasing active claims unless a compare-and-set already succeeded, avoid bypassing governance, and expose only sanitized categories or hashes.
 
 ### Project Constraints
 
@@ -149,7 +149,7 @@ As a future SPEC-013C or SPEC-014 implementer, I need SPEC-013B to protect the e
 
 ### Key Entities *(include if feature involves data)*
 
-- **GitHub issue-linked task**: A Mission Control task whose tracker identity includes a GitHub repository and issue number and whose local state is eligible for assigned-task dispatch.
+- **GitHub issue-linked task**: A Paddock task whose tracker identity includes a GitHub repository and issue number and whose local state is eligible for assigned-task dispatch.
 - **Workflow stage**: The current workflow boundary for a task that can be claimed independently from other stages.
 - **Active claim**: A launch-critical-section coordination record that prevents more than one scheduler tick from launching the same workspace, task, and stage at the same time.
 - **Task stage claim**: The expected `task_stage_claims` persistence row that records active-claim ownership, lease metadata, release/recovery state, and linkage to one task-stage attempt.
@@ -180,7 +180,7 @@ As a future SPEC-013C or SPEC-014 implementer, I need SPEC-013B to protect the e
 - Active claim persistence uses `task_stage_claims`; Plan owns the final migration id, rollback SQL, helper API shape, and exact read-model response fields.
 - Read-only task-scoped API/debug evidence is sufficient for SPEC-013B; dedicated operator controls and primary dashboard changes are reserved for later specs.
 - GitHub tracker truth is authoritative for autonomous intake, and stale tracker truth defers launch rather than terminally failing the task.
-- Mission Control task terminal states for SPEC-013B claim release are the existing task statuses `done` and `failed`; `review`, `quality_review`, `awaiting_owner`, `in_progress`, `assigned`, `inbox`, and `backlog` are non-terminal for claim release.
+- Paddock task terminal states for SPEC-013B claim release are the existing task statuses `done` and `failed`; `review`, `quality_review`, `awaiting_owner`, `in_progress`, `assigned`, `inbox`, and `backlog` are non-terminal for claim release.
 - GitHub truth is fresh for claim intake only when task-level `github_synced_at` is present and no older than `min(max(2 * interval_seconds, 600), 3600)` seconds for the task's `(workspace_id, github_repo)` lifecycle scope, using `interval_seconds=300` when no scope-specific value exists.
 - Red/unresolved lifecycle health, disabled lifecycle state, stale sync lease evidence, ownership-unresolved state, terminal GitHub state, or missing issue projection defers claim acquisition with reconciliation evidence.
 - External Symphony and harness context only informs agent-first orchestration boundaries; it does not add runner, sandbox, Linear, retry UI, or long-running execution behavior to this feature.

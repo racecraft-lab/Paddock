@@ -64,7 +64,7 @@ CI guards:
 ## What was NOT delivered in this branch
 
 - T367 30-minute soak run @ 100 admissions/sec — requires running
-  Mission Control instance + bench harness; deferred to operator.
+  Paddock instance + bench harness; deferred to operator.
 - T368 chaos runs across every runbook's `## Verification` step —
   same: requires running infra; documented as runbook procedure.
 - T363 full Playwright e2e — specs are present (T284-T297, 14 files)

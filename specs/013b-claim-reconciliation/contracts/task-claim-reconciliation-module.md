@@ -93,7 +93,7 @@ Responsibilities:
 - Accept only `TaskStageClaimReleaseReason`.
 - Transition `active -> released` for `launch_handoff_completed`, `dispatch_failed`, `task_terminal_done`, `task_terminal_failed`, `github_issue_terminal`, `github_pr_terminal`, `governance_blocked`, `governance_deferred`, `attempt_terminal_reconciled`, and `boundary_error_deferred`.
 - Transition `active -> stale_recovered` only for `stale_claim_recovered`.
-- Use `task_terminal_done` and `task_terminal_failed` only when local Mission Control task status is `done` or `failed`; `awaiting_owner` and `ready_for_owner` are not terminal for release decisions.
+- Use `task_terminal_done` and `task_terminal_failed` only when local Paddock task status is `done` or `failed`; `awaiting_owner` and `ready_for_owner` are not terminal for release decisions.
 - Use `attempt_terminal_reconciled` only when linked passive task-stage attempt lifecycle reaches `succeeded`, `failed`, `released`, or `cancelled`; attempt status remains evidence and does not enforce active-claim uniqueness.
 - Record release or stale recovery activity.
 - Append task-stage attempt lifecycle evidence when the claim has an attempt id.
@@ -118,7 +118,7 @@ Responsibilities:
 - Stale tracker truth does not acquire a claim.
 - Terminal GitHub/task state releases or prevents active claim.
 - Terminal passive attempt lifecycle state releases the separate active claim with `attempt_terminal_reconciled` without using attempt status as the active lock.
-- `release_reason` is restricted to the closed vocabulary and Mission Control terminal release only uses `done` or `failed`; `awaiting_owner` and `ready_for_owner` do not release claims by themselves.
+- `release_reason` is restricted to the closed vocabulary and Paddock terminal release only uses `done` or `failed`; `awaiting_owner` and `ready_for_owner` do not release claims by themselves.
 - Not-claimable intake exclusions record `task_stage_claim_not_claimable` activity evidence with outcome `not_claimable`, closed linkage/input reason metadata, no active claim row, and no new task-stage attempt lifecycle status.
 - GitHub repository validation rejects URL, scp-like, path traversal, whitespace/control-character, multi-segment, missing-owner, missing-repo, and `.git`-suffix values.
 - Boundary failures produce `boundary_deferred`, do not acquire claims, do not bypass governance, do not crash scheduler dispatch, and redact raw diagnostics.

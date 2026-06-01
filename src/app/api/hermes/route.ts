@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       // Write handler.py
       writeFileSync(/* turbopackIgnore: true */ join(HOOK_DIR, 'handler.py'), HANDLER_PY, 'utf8')
 
-      logger.info('Installed Mission Control hook for Hermes Agent')
+      logger.info('Installed Paddock hook for Hermes Agent')
       return NextResponse.json({ success: true, message: 'Hook installed', hookDir: HOOK_DIR })
     }
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
         rmSync(/* turbopackIgnore: true */ HOOK_DIR, { recursive: true, force: true })
       }
 
-      logger.info('Uninstalled Mission Control hook for Hermes Agent')
+      logger.info('Uninstalled Paddock hook for Hermes Agent')
       return NextResponse.json({ success: true, message: 'Hook uninstalled' })
     }
 
@@ -308,7 +308,7 @@ export async function POST(request: NextRequest) {
 // ---------------------------------------------------------------------------
 
 const HOOK_YAML = `name: mission-control
-description: Reports agent telemetry to Mission Control
+description: Reports agent telemetry to Paddock
 version: "1.0"
 events:
   - agent:start
@@ -317,11 +317,11 @@ events:
 `
 
 const HANDLER_PY = `"""
-Mission Control hook for Hermes Agent.
+Paddock hook for Hermes Agent.
 Reports session telemetry to the MC /api/sessions endpoint.
 
 Configuration (via ~/.hermes/.env or environment):
-  MC_URL      - Mission Control base URL (default: http://localhost:3000)
+  MC_URL      - Paddock base URL (default: http://localhost:3000)
   MC_API_KEY  - API key for authentication (optional)
 """
 

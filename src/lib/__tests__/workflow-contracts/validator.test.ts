@@ -5,7 +5,7 @@ import { validateWorkflowContract } from '@/lib/workflow-contracts/validator'
 import { makeContract } from './test-helpers'
 
 describe('workflow contract validator', () => {
-  it('accepts a valid Mission Control workflow contract', () => {
+  it('accepts a valid Paddock workflow contract', () => {
     const contract = makeContract()
     const result = validateWorkflowContract(contract)
     expect(result.ok).toBe(true)

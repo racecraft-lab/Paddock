@@ -170,7 +170,7 @@ function insertControl(
     )
     .run(
       values.workspace_id ?? 1,
-      values.github_repo ?? 'builderz-labs/mission-control',
+      values.github_repo ?? 'racecraft-lab/Paddock',
       values.enabled ?? 0,
       values.interval_seconds ?? 300,
       values.max_pages ?? 10,
@@ -220,7 +220,7 @@ function insertRun(
     values.run_id ?? 'run-1',
     values.sync_id ?? null,
     values.workspace_id ?? 1,
-    values.github_repo ?? 'builderz-labs/mission-control',
+    values.github_repo ?? 'racecraft-lab/Paddock',
     values.trigger ?? 'automatic',
     values.started_at ?? 1_779_552_000,
     values.result ?? 'running',
@@ -332,7 +332,7 @@ describe('M77 GitHub sync lifecycle migration', () => {
         .prepare(
           `
             INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, workspace_id)
-            VALUES ('builderz-labs/mission-control', 1779552000, 0, 'inbound', 'success', 1)
+            VALUES ('racecraft-lab/Paddock', 1779552000, 0, 'inbound', 'success', 1)
           `,
         )
         .run().lastInsertRowid,
@@ -408,7 +408,7 @@ describe('M77 GitHub sync lifecycle migration', () => {
         .prepare(
           `
             INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, workspace_id)
-            VALUES ('builderz-labs/mission-control', 1779552000, 0, 'inbound', 'success', 1)
+            VALUES ('racecraft-lab/Paddock', 1779552000, 0, 'inbound', 'success', 1)
           `,
         )
         .run().lastInsertRowid,

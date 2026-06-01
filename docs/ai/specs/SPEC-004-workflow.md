@@ -190,17 +190,17 @@ $speckit-specify
 
 ## Feature: SPEC-004 Task Pipeline Engine and Declarative Routing
 
-Create a specification for RC Factory Phase 3 in Mission Control.
+Create a specification for RC Factory Phase 3 in Paddock.
 
 ### Problem Statement
 
-Mission Control can currently create and complete single tasks, but it does not have a native task-chain engine that validates an agent's structured output and declaratively routes to the next workflow template. RC Factory v1 needs feature-flagged multi-stage task pipelines so an intake or triage task can deterministically produce a successor task while preserving existing single-agent task behavior when the flag is OFF or chain metadata is absent.
+Paddock can currently create and complete single tasks, but it does not have a native task-chain engine that validates an agent's structured output and declaratively routes to the next workflow template. RC Factory v1 needs feature-flagged multi-stage task pipelines so an intake or triage task can deterministically produce a successor task while preserving existing single-agent task behavior when the flag is OFF or chain metadata is absent.
 
 SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SPEC-002 added `resolveFlag()`. SPEC-003 made Aegis global enough for later Product Line workflows. SPEC-004 now implements the runtime engine over those existing surfaces.
 
 ### Users
 
-- Existing Mission Control operator: needs current single-step tasks and task completion behavior preserved when `FEATURE_TASK_PIPELINES` is OFF.
+- Existing Paddock operator: needs current single-step tasks and task completion behavior preserved when `FEATURE_TASK_PIPELINES` is OFF.
 - Facility operator: needs workflow templates that can declaratively route from one stage to the next without agents choosing their own successors.
 - Agent/scheduler maintainer: needs validated structured output and deterministic failure behavior when output is malformed or unsafe.
 - Downstream spec executor: needs `produces_pr`, task lineage, `advanceTaskChain`, and shared task creation before SPEC-005, SPEC-007, SPEC-008, and SPEC-009.
@@ -221,7 +221,7 @@ SPEC-001 already added the schema fields on `workflow_templates` and `tasks`. SP
 - Preserve current behavior with the flag ON when tasks are unbound or all chain fields are NULL.
 - Add `src/lib/task-create.ts` exporting a shared `createTask()` helper that performs the existing task creation side effects: INSERT, ticket-counter allocation, activity row, creator subscription, mention/assignee notifications, GitHub push when enabled, and GNAP push when configured. The helper contract must preserve source-specific semantics for API creation, GitHub issue import, GitHub sync import, recurring tasks, and pipeline successors.
 - Migrate direct task INSERT callsites in `src/app/api/tasks/route.ts`, `src/app/api/github/route.ts`, `src/lib/github-sync-engine.ts`, and `src/lib/recurring-tasks.ts` to `createTask()`.
-- Add `src/lib/output-schema-validator.ts` using exact pinned runtime `ajv`; enforce the constrained Mission Control schema profile, every numeric bound from the roadmap, and the AJV safety profile: strict behavior, no data mutation/default insertion, no type coercion, no exhaustive error collection, `validateFormats=false`, `$data=false`, no direct SPEC-004 dependency/import/registration of `ajv-formats`, no custom formats/keywords/async schemas, and no schema `pattern`/`patternProperties` outside the conservative pattern subset.
+- Add `src/lib/output-schema-validator.ts` using exact pinned runtime `ajv`; enforce the constrained Paddock schema profile, every numeric bound from the roadmap, and the AJV safety profile: strict behavior, no data mutation/default insertion, no type coercion, no exhaustive error collection, `validateFormats=false`, `$data=false`, no direct SPEC-004 dependency/import/registration of `ajv-formats`, no custom formats/keywords/async schemas, and no schema `pattern`/`patternProperties` outside the conservative pattern subset.
 - Add `src/lib/routing-rule-evaluator.ts` using exact pinned runtime `jsonpath-plus` with JavaScript execution disabled (`eval: false`, or `preventEval: true` on older supported APIs) and a hand-written parser for the allowlisted grammar. Reject JSONPath filters/script expressions before calling `JSONPath()` and enforce pre-validation caps before synchronous parse/traversal work: `maxRoutingRules=64`, `maxRoutingExpressionBytes=8192`, `maxRoutingTokens=256`, `maxBooleanNestingDepth=16`, `maxJsonPathBytes=512`, `maxJsonPathResults=128`, and `maxLiteralBytes=32768`.
 - Add `advanceTaskChain` behavior at every live non-`done` to `done` transition for pipeline-bound tasks (`runAegisReviews`, `POST /api/quality-review`, bulk `PUT /api/tasks`, and detail `PUT /api/tasks/[id]`) that reads structured output from `tasks.resolution`, validates against `workflow_template.output_schema`, evaluates ordered `routing_rules`, falls back to `next_template_slug`, and terminates normally if neither route resolves. Manual/API completions remain allowed, but no live pipeline-bound `done` path may bypass the shared helper.
 - Missing `tasks.resolution` or invalid structured output under an `output_schema` transitions the parent task to `failed`, records an activity with `data.reason_code='task_pipeline_output_missing'` or `data.reason_code='task_pipeline_output_invalid'`, and creates no successor.
@@ -731,7 +731,7 @@ For each task, follow this cycle:
 
 - Post-verification cleanup and scoped workflow e2e compatibility evidence were committed as `fe63fef` (`test(spec-004): align scoped workflow verification`).
 - Branch `004-task-pipeline-engine` was pushed to `origin`.
-- PR #22 merged to `main` on 2026-05-01 as `20643d8`: https://github.com/racecraft-lab/mission-control/pull/22
+- PR #22 merged to `main` on 2026-05-01 as `20643d8`: https://github.com/racecraft-lab/Paddock/pull/22
 - Immediate review-thread check returned no review threads. Initial GitHub checks were pending at handoff: Analyze (actions), Analyze (javascript-typescript), argos-storybook, docker-ui-e2e, and quality-gate.
 
 ### Doctor Remediation - 2026-05-01
@@ -744,7 +744,7 @@ For each task, follow this cycle:
 
 - Added `src/components/panels/orchestration-bar.task-pipeline.stories.tsx` with Argos-backed stories for editing workflow chain fields and the routing-without-output-schema validation error state.
 - Consolidated Argos metadata verification into `scripts/verify-argos-metadata.mjs` for both Playwright and Storybook while keeping workflow/package aliases mode-specific; visual coverage uses `mission-control-*` labels and domain tags instead of generic `spec-002-*` harness names.
-- Feature Flag Admin Storybook and Playwright coverage now use platform/domain labels; the Feature Flags component/story/e2e surface no longer renders or fixtures SPEC-002 as UI copy. The Docker-backed UI E2E workflow now uses Mission Control reviewer-facing labels and lives at `.github/workflows/mission-control-ui-e2e.yml`.
+- Feature Flag Admin Storybook and Playwright coverage now use platform/domain labels; the Feature Flags component/story/e2e surface no longer renders or fixtures SPEC-002 as UI copy. The Docker-backed UI E2E workflow now uses Paddock reviewer-facing labels and lives at `.github/workflows/mission-control-ui-e2e.yml`.
 - Follow-up guardrail and visual-surface cleanup consolidated Quality Gate onto `pnpm guardrails`, moved task-pipeline and spec-evidence screenshot checks behind `scripts/check-guardrails.mjs`, consolidated Argos metadata verification into `scripts/verify-argos-metadata.mjs`, renamed Product Line and Task Pipeline Storybook files to domain names, and removed SPEC-002/SPEC-004 labels from package/workflow/script/source/test surfaces.
 - Storybook screenshots now write to `screenshots/storybook`, and `pnpm test:visual:argos-metadata` reads that same isolated root so stale ignored screenshots from renamed stories cannot inflate the gate.
 - Re-run evidence: `pnpm test:visual:storybook` passed 12/12 stories, `pnpm test:visual:argos-metadata` verified 24 screenshot metadata files across 12 stories, focused Product Line + Feature Flag Admin Playwright passed 5/5, `pnpm test:e2e:argos-metadata` verified 11 screenshot metadata files across 5 Playwright tests, `pnpm test src/components/panels/orchestration-bar.test.tsx src/lib/__tests__/feature-flags.test.ts` passed 17/17, `pnpm typecheck` passed, and `pnpm lint` passed with 0 errors / 10 pre-existing warnings.
@@ -755,7 +755,7 @@ For each task, follow this cycle:
 - Added the `POST /api/tasks/{id}` OpenAPI operation with the retry request, bounded success response, and 409 retry-conflict response shape.
 - Re-run evidence: `pnpm api:parity` passed with 265 route operations, 256 OpenAPI operations, and 12 ignored entries.
 - GitHub CodeQL flagged the intentionally unsafe nested-quantifier test fixture as an inefficient regular expression; the fixture now builds the same schema pattern from string segments so validator coverage remains while avoiding a static executable vulnerable regex literal.
-- PR closeout evidence: PR #22 has zero unresolved review threads, the latest head `0e8a6126ebd177a3b56dccce41144a116184c3ec` has passing CodeQL, Quality Gate, Mission Control UI E2E, Argos Storybook, Argos Playwright, and Argos summary checks, and roadmap/PRD hygiene now marks SPEC-004 complete for merge.
+- PR closeout evidence: PR #22 has zero unresolved review threads, the latest head `0e8a6126ebd177a3b56dccce41144a116184c3ec` has passing CodeQL, Quality Gate, Paddock UI E2E, Argos Storybook, Argos Playwright, and Argos summary checks, and roadmap/PRD hygiene now marks SPEC-004 complete for merge.
 
 ---
 

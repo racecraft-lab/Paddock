@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Mission Control Phase 3: Agent Heartbeat Script
+# Paddock Phase 3: Agent Heartbeat Script
 # Called by OpenClaw cron every 15 minutes to wake agents and check for work
 #
 # Usage:
@@ -27,10 +27,10 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*" | tee -a "$LOG_FILE"
 }
 
-# Check if Mission Control is running
+# Check if Paddock is running
 check_mission_control() {
     if ! curl -s "$MISSION_CONTROL_URL/api/status" > /dev/null 2>&1; then
-        log "ERROR" "Mission Control not accessible at $MISSION_CONTROL_URL"
+        log "ERROR" "Paddock not accessible at $MISSION_CONTROL_URL"
         return 1
     fi
     return 0
@@ -107,11 +107,11 @@ send_wake_notification() {
     log "INFO" "Sending wake notification to $agent_name (session: $session_key)"
     
     # Format wake message
-    local wake_message="🤖 **Mission Control Heartbeat**\n\n"
+    local wake_message="🤖 **Paddock Heartbeat**\n\n"
     wake_message+="Agent: $agent_name\n"
     wake_message+="Work items found: $work_items_count\n\n"
     wake_message+="🔔 You have notifications or tasks that need attention.\n"
-    wake_message+="Use Mission Control to view details: $MISSION_CONTROL_URL\n\n"
+    wake_message+="Use Paddock to view details: $MISSION_CONTROL_URL\n\n"
     wake_message+="⏰ $(date '+%Y-%m-%d %H:%M:%S')"
     
     # Send via OpenClaw sessions_send
@@ -144,9 +144,9 @@ main() {
     
     log "INFO" "Starting agent heartbeat check (PID: $$)"
     
-    # Check if Mission Control is running
+    # Check if Paddock is running
     if ! check_mission_control; then
-        log "ERROR" "Aborting: Mission Control not accessible"
+        log "ERROR" "Aborting: Paddock not accessible"
         exit 1
     fi
     
@@ -221,7 +221,7 @@ main() {
 # Handle script arguments
 case "${1:-}" in
     --help|-h)
-        echo "Mission Control Agent Heartbeat Script"
+        echo "Paddock Agent Heartbeat Script"
         echo ""
         echo "Usage: $0 [agent_name]"
         echo ""
@@ -230,7 +230,7 @@ case "${1:-}" in
         echo "  --help, -h    Show this help message"
         echo ""
         echo "Environment variables:"
-        echo "  MISSION_CONTROL_URL  Mission Control base URL (default: http://localhost:3005)"
+        echo "  MISSION_CONTROL_URL  Paddock base URL (default: http://localhost:3005)"
         echo ""
         exit 0
         ;;

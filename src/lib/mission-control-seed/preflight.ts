@@ -21,7 +21,7 @@ export function assertWorkflowContractReady(contractPath: string): {
   const slugs = new Set(contract.templates.map((template) => template.slug))
   const missingSlugs = REQUIRED_WORKFLOW_SLUGS.filter((slug) => !slugs.has(slug))
   if (missingSlugs.length > 0) {
-    const error = new Error(`Workflow contract missing required Mission Control slugs: ${missingSlugs.join(', ')}`)
+    const error = new Error(`Workflow contract missing required Paddock slugs: ${missingSlugs.join(', ')}`)
     Object.assign(error, { missingSlugs })
     throw error
   }

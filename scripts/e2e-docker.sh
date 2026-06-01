@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build Mission Control from the current source tree, boot a disposable
+# Build Paddock from the current source tree, boot a disposable
 # production containers with deterministic credentials and host-mounted data
 # directories, then run Playwright against those containers.
 #
@@ -24,7 +24,7 @@ AUTH_USER="${AUTH_USER:-testadmin}"
 AUTH_PASS="${AUTH_PASS:-testpass1234!}"
 AUTH_SECRET="${AUTH_SECRET:-e2e-auth-secret-00000000000000000000000000000000}"
 API_KEY="${API_KEY:-test-api-key-e2e-12345}"
-SPEC_007_FIXED_NOW_ISO="${MC_SPEC_007_FIXED_NOW:-$(node -e 'console.log(new Date().toISOString())')}"
+SPEC_007_FIXED_NOW_ISO="${MC_SPEC_007_FIXED_NOW:-2026-05-02T12:00:00.000Z}"
 CONTAINERS=()
 DATA_DIRS=()
 

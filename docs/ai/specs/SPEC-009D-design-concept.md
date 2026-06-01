@@ -20,8 +20,8 @@ stop_reason: "natural"
 
 ## Goals
 
-- Materialize one compact review packet for the Mission Control self-hosting pilot.
-- Derive the packet from existing Mission Control evidence: tasks, activities, notifications, task artifacts, quality reviews, governance rows, smoke checklist evidence, and linked GitHub issue/PR fields.
+- Materialize one compact review packet for the Paddock self-hosting pilot.
+- Derive the packet from existing Paddock evidence: tasks, activities, notifications, task artifacts, quality reviews, governance rows, smoke checklist evidence, and linked GitHub issue/PR fields.
 - Preserve reviewability by storing the packet as SPEC-007-backed artifacts with source-map pointers rather than creating a new review-packet table.
 - Make unsupported run-state, claim-state, sandbox, adapter, and automatic GitHub polling fields explicit `deferred` or `not_available` values with owning future specs.
 - Produce both a machine-readable JSON packet and a human-readable Markdown summary.
@@ -31,7 +31,7 @@ stop_reason: "natural"
 ## Non-goals
 
 - No new persistent review-packet table or schema migration; use SPEC-007 artifact storage plus source-map pointers instead (Q1).
-- No fresh GitHub API calls are required to assemble the packet; use stored Mission Control evidence first and surface missing/stale evidence explicitly (Q2).
+- No fresh GitHub API calls are required to assemble the packet; use stored Paddock evidence first and surface missing/stale evidence explicitly (Q2).
 - No placeholder schema for future runner, sandbox, adapter, claim, retry, or automatic polling state; deferred fields must name SPEC-013A/A1/B/C or SPEC-014A-D as the owner (Q3).
 - No new evidence dashboard in this spec; an API or small UI seam is allowed only if it fits an existing route/panel pattern, while broader operator evidence surfaces belong to SPEC-009E (Q4).
 - No raw secret or oversized evidence embedding; reuse SPEC-007 redaction, compact previews, hashes, and source pointers (Q5).
@@ -56,12 +56,12 @@ stop_reason: "natural"
 
 ---
 
-### Q2. Should packet assembly refresh GitHub state live, or trust stored Mission Control evidence first?
+### Q2. Should packet assembly refresh GitHub state live, or trust stored Paddock evidence first?
 
 **Branch:** Evidence freshness
 
-**Recommended answer:** Use stored Mission Control evidence first. Do not require fresh GitHub calls to assemble the packet.
-> SPEC-009C4 already proved sync reconciliation and label/status projection. SPEC-009D should review what Mission Control has recorded, not introduce a new external dependency or polling behavior.
+**Recommended answer:** Use stored Paddock evidence first. Do not require fresh GitHub calls to assemble the packet.
+> SPEC-009C4 already proved sync reconciliation and label/status projection. SPEC-009D should review what Paddock has recorded, not introduce a new external dependency or polling behavior.
 
 **Alternatives offered:**
 - Always call GitHub during packet assembly: fresher, but couples review packet generation to credentials, rate limits, and future sync automation.
@@ -136,11 +136,11 @@ stop_reason: "natural"
 **Branch:** Packet identity
 
 **Recommended answer:** Anchor on the GitHub issue plus root task, and include lifecycle descendants and PR evidence.
-> The GitHub issue is the external pilot identity, while the root task and descendants prove the Mission Control lifecycle. Both are required for review.
+> The GitHub issue is the external pilot identity, while the root task and descendants prove the Paddock lifecycle. Both are required for review.
 
 **Alternatives offered:**
 - GitHub issue only: preserves external audit trail, but loses internal task-chain evidence.
-- Root task only: preserves Mission Control lineage, but weakens linkage to issue/PR labels and merge state.
+- Root task only: preserves Paddock lineage, but weakens linkage to issue/PR labels and merge state.
 
 **User's answer:** Option A.
 

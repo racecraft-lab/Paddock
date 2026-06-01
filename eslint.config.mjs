@@ -49,7 +49,7 @@ const specStrictFiles = [
   'src/app/api/admin/workspaces/**/*.ts',
   // SPEC-009A workflow contract roundtrip.
   'src/lib/workflow-contracts/**/*.ts',
-  // SPEC-009B Mission Control product-line seed.
+  // SPEC-009B Paddock product-line seed.
   'src/lib/mission-control-seed/**/*.ts',
   'scripts/seed-mission-control-product-line.ts',
   // SPEC-010A generic product-line seed.

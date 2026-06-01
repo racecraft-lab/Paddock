@@ -21,7 +21,7 @@
 ## Requirement Consistency
 
 - [x] CHK007 Are UI copy requirements consistent with the non-goal boundary that SPEC-013A1 must not imply task claim, task dispatch, remediation execution, harness lifecycle, sandbox lifecycle, auto-merge, or automatic triage behavior? [Gap resolved, Spec §FR-048, Spec §SC-008, Plan §UX Design Constraints]
-- [x] CHK008 Are planned UI affordances consistent with the existing Mission Control pattern of compact status rows, badges/dots, existing button variants, and no new icon-library dependency? [Consistency, Plan §Project Structure, Codebase §src/components/panels/github-sync-panel.tsx]
+- [x] CHK008 Are planned UI affordances consistent with the existing Paddock pattern of compact status rows, badges/dots, existing button variants, and no new icon-library dependency? [Consistency, Plan §Project Structure, Codebase §src/components/panels/github-sync-panel.tsx]
 
 ## Scenario Coverage
 

@@ -19,7 +19,7 @@
       "type": "append_link",
       "path": "AGENTS.md",
       "link": {
-        "target": "[[Mission Control Repo Knowledge]]",
+        "target": "[[Paddock Repo Knowledge]]",
         "required": false,
         "repo_owned": false,
         "description": "Obsidian warning-only fixture link"

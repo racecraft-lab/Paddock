@@ -82,7 +82,7 @@ function openDispatchDb(): Database.Database {
     INSERT INTO tasks (
       id, title, description, status, priority, assigned_to, workspace_id, project_id,
       workflow_template_slug, github_repo, github_issue_number, github_synced_at
-    ) VALUES (100, 'Duplicate launch candidate', 'Dispatch me', 'assigned', 'high', 'builder', 1, 10, 'dev', 'racecraft-lab/mission-control', 123, 1770000000)
+    ) VALUES (100, 'Duplicate launch candidate', 'Dispatch me', 'assigned', 'high', 'builder', 1, 10, 'dev', 'racecraft-lab/Paddock', 123, 1770000000)
   `).run()
   return db
 }

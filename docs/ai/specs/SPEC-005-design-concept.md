@@ -24,7 +24,7 @@ stop_reason: "natural"
 - Preserve the existing flag-off task lifecycle while allowing existing `ready_for_owner` rows to remain visible after rollback.
 - Require explicit merged linked PR evidence before a PR-producing task can reach `done`.
 - Keep `ready_for_owner` distinct from the existing `awaiting_owner` state.
-- Make the waiting-for-merge state visible in Mission Control Kanban, GitHub labels, task activity, and notifications.
+- Make the waiting-for-merge state visible in Paddock Kanban, GitHub labels, task activity, and notifications.
 - Keep SPEC-005 application-level only: no database migration, no DB status CHECK, and no new terminal-event table.
 - Include a Phase 0 status-hygiene prerequisite to repair stale merged-spec tracking for SPEC-004/SPEC-006/autopilot state before SPEC-005 Specify runs.
 
@@ -39,7 +39,7 @@ stop_reason: "natural"
 
 ## Design Tree (Q&A log)
 
-### Q1. When `FEATURE_TWO_STEP_TERMINAL` is OFF, how should Mission Control handle any existing task row whose status is already `ready_for_owner`?
+### Q1. When `FEATURE_TWO_STEP_TERMINAL` is OFF, how should Paddock handle any existing task row whose status is already `ready_for_owner`?
 
 **Branch:** Feature flag rollback and data preservation
 
@@ -69,7 +69,7 @@ stop_reason: "natural"
 
 ---
 
-### Q3. With `FEATURE_TWO_STEP_TERMINAL` ON, should Mission Control block every non-GitHub-merge path from moving a `produces_pr=true` task to `done`?
+### Q3. With `FEATURE_TWO_STEP_TERMINAL` ON, should Paddock block every non-GitHub-merge path from moving a `produces_pr=true` task to `done`?
 
 **Branch:** Terminal-state authority
 
@@ -88,7 +88,7 @@ stop_reason: "natural"
 
 **Branch:** GitHub linkage model
 
-**Recommended answer:** A. Use explicit Mission Control task linkage fields first, especially `tasks.github_pr_number`, `tasks.github_repo`, and related branch/PR metadata.
+**Recommended answer:** A. Use explicit Paddock task linkage fields first, especially `tasks.github_pr_number`, `tasks.github_repo`, and related branch/PR metadata.
 > Explicit linkage is deterministic and testable. A closed issue without explicit merged PR evidence is reconciliation work, not completion.
 
 **Alternatives offered:**
@@ -239,7 +239,7 @@ stop_reason: "natural"
 **Branch:** Merge evidence
 
 **Recommended answer:** A. Require explicit merged-PR evidence: linked PR repo/number matches the task and the PR is closed with `merged=true` or equivalent merged timestamp/commit data.
-> A closed issue alone is never enough because abandoned or closed-without-merge work must not complete the Mission Control task.
+> A closed issue alone is never enough because abandoned or closed-without-merge work must not complete the Paddock task.
 
 **Alternatives offered:**
 - B. Treat any closed linked PR as sufficient, even if merged state is unavailable.

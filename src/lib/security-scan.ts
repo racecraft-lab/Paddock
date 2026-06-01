@@ -707,7 +707,7 @@ function scanOS(): Category {
       name: 'Not running as root',
       status: uid === 0 ? 'fail' : 'pass',
       detail: uid === 0 ? 'Process is running as root (UID 0)' : `Running as UID ${uid}`,
-      fix: uid === 0 ? 'Run Mission Control as a non-root user' : '',
+      fix: uid === 0 ? 'Run Paddock as a non-root user' : '',
       severity: 'critical',
       platform: 'all',
     })

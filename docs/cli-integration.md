@@ -1,6 +1,6 @@
 # Direct CLI Integration
 
-Connect CLI tools (Claude Code, Codex, custom agents) directly to Mission Control without a gateway.
+Connect CLI tools (Claude Code, Codex, custom agents) directly to Paddock without a gateway.
 
 ## Quick Start
 

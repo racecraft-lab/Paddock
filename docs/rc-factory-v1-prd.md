@@ -1,25 +1,25 @@
-# Mission Control AI Software Factory PRD
+# Paddock AI Software Factory PRD
 
-> Product source of truth for the Mission Control factory vision. Keep this
+> Product source of truth for the Paddock factory vision. Keep this
 > document focused on durable why, what, constraints, and success criteria.
 > Execution detail belongs in `docs/ai/rc-factory-technical-roadmap.md`,
 > `specs/*`, workflow contracts, migrations, runbooks, and PR review packets.
 
 ## Purpose
 
-Mission Control is a public OSS control plane for AI software factories. It
+Paddock is a public OSS control plane for AI software factories. It
 turns GitHub issues, workflow contracts, agent runtimes, isolated sandboxes,
 artifacts, review gates, and cost governance into one observable operating
 surface.
 
-The first production proof is Mission Control itself: one Facility, Mission
+The first production proof is Paddock itself: one Facility, Mission
 Control as Product Line A, and Quality Assurance / Development / DevSecOps /
 Marketing / Customer Service / Finance as departments. The product should let
 agents triage issues, execute bounded remediation work, publish evidence, pass
 review gates, and hand a PR to the owner without relying on private terminal
 history or out-of-band context.
 
-Mission Control is an independent public OSS control plane under the existing
+Paddock is an independent public OSS control plane under the existing
 license. Product decisions should optimize for the factory vision and current
 installation compatibility.
 
@@ -35,8 +35,8 @@ installation compatibility.
 | Sandbox | The isolated filesystem/worktree/session space for a run. The existing `agents.workspace_path` column remains a legacy storage name. |
 | Workflow Contract | Repo-owned Markdown/YAML policy that can round-trip with `workflow_templates`. |
 | GitHub Issue | The v1 tracker-of-record work item. |
-| Mission Control Task | The local projection and enrichment layer for tracker-linked work. |
-| Artifact | Durable handoff evidence published through Mission Control, not another agent's sandbox. |
+| Paddock Task | The local projection and enrichment layer for tracker-linked work. |
+| Artifact | Durable handoff evidence published through Paddock, not another agent's sandbox. |
 | Review Packet | Human-readable and agent-readable summary of intent, changes, evidence, risks, and gates. |
 
 ## Design Principles
@@ -44,10 +44,10 @@ installation compatibility.
 1. Repository knowledge is the system of record. PRDs, roadmaps, specs,
    workflow contracts, schemas, runbooks, and evidence live in versioned repo
    artifacts that agents and CI can inspect.
-2. GitHub issues are the v1 intake and terminal-state source. Mission Control
+2. GitHub issues are the v1 intake and terminal-state source. Paddock
    enriches them with workflow policy, assignment, governance, artifacts, run
    state, and review evidence.
-3. Mission Control owns product task truth. Harnesses, CLIs, gateways, agent
+3. Paddock owns product task truth. Harnesses, CLIs, gateways, agent
    sessions, branches, PRs, and worktrees are execution artifacts.
 4. Every active work item has an isolated sandbox/worktree and one serialized
    claim authority.
@@ -97,11 +97,11 @@ The context extraction should preserve these durable lessons:
   retry, app-server/client policy, and validation profiles are conceptual
   contracts to adapt, not a stack to import wholesale.
 
-Mission Control must adapt these references to its own
+Paddock must adapt these references to its own
 Next.js/React/TypeScript/SQLite stack, GitHub-first tracker model, SpecKit
 task-chain governance, and OpenClaw/Codex/Claude/harness adapter boundaries.
 The external references are source material for product intent and constraints,
-not authority to replace Mission Control's stack or public OSS roadmap.
+not authority to replace Paddock's stack or public OSS roadmap.
 
 ## Product Goals
 
@@ -122,12 +122,12 @@ not authority to replace Mission Control's stack or public OSS roadmap.
    autonomous work starts.
 9. Make runtime inventory legible: visible, unassigned, assigned, eligible, and
    blocked states must be distinct in UI/API/review evidence.
-10. Prove the system on Mission Control's own GitHub issues before generalizing
+10. Prove the system on Paddock's own GitHub issues before generalizing
     to a second Product Line.
 
 ## Control-Plane Boundary
 
-Mission Control remains the authority for:
+Paddock remains the authority for:
 
 - Product Line and department configuration.
 - Workflow-template and workflow-contract policy.
@@ -146,7 +146,7 @@ Harness adapters may own:
 - Tool/MCP exposure within the run.
 - Adapter-specific cleanup hooks.
 
-Harness adapters must not bypass Mission Control's claim authority, workflow
+Harness adapters must not bypass Paddock's claim authority, workflow
 policy, artifact handoff, review gates, governance checks, or tracker
 reconciliation.
 
@@ -159,12 +159,12 @@ reconciliation.
   a scope transition.
 - **SC-3 Global review agents:** Aegis and Security Guardian resolve through
   global scope with a compatibility path for legacy local records.
-- **SC-4 GitHub issue pilot:** an eligible Mission Control issue flows from
+- **SC-4 GitHub issue pilot:** an eligible Paddock issue flows from
   ingest through triage, remediation, review, Aegis, `ready_for_owner`, linked
   PR merge, and done.
 - **SC-5 Triage telemetry:** dispositions are queryable by Product Line, agent,
   disposition, and date range for operator briefings.
-- **SC-6 Artifact handoff:** downstream stages consume Mission Control artifact
+- **SC-6 Artifact handoff:** downstream stages consume Paddock artifact
   references instead of reading another agent's sandbox.
 - **SC-7 Resource-governance safety:** policy decisions block, defer, or allow
   dispatch before new autonomous work begins.
@@ -223,10 +223,10 @@ reconciliation.
 - **FR-B3:** Runtime inventory entries distinguish visible, unassigned,
   assigned, eligible, and blocked states.
 - **FR-B4:** Runtime profile files stay role/domain-specific. Product, issue,
-  workflow, and task context is injected by Mission Control at assignment or
+  workflow, and task context is injected by Paddock at assignment or
   run time.
 - **FR-B5:** OpenClaw and other external runtimes may provide identities and
-  sandboxes, but Mission Control owns Product Line membership and task routing.
+  sandboxes, but Paddock owns Product Line membership and task routing.
 
 ### FR-C Product Line UI And API Scope
 
@@ -337,14 +337,14 @@ reconciliation.
   transcript/event, token/runtime, artifact, sandbox, tool/MCP, memory, skill,
   plugin, provider-account, and user-input policies. Unsupported required
   capabilities fail closed.
-- **FR-H6:** Sandbox ownership can be Mission Control, OpenClaw, or a future
+- **FR-H6:** Sandbox ownership can be Paddock, OpenClaw, or a future
   external harness. Ownership is visible before launch and after failure.
 
-### FR-I Mission Control Product Line Pilot
+### FR-I Paddock Product Line Pilot
 
-- **FR-I1:** Seed Mission Control as the first Product Line from a repo-owned
+- **FR-I1:** Seed Paddock as the first Product Line from a repo-owned
   product-line config with department projects, workflow families, flags,
-  governance defaults, and GitHub sync to `racecraft-lab/mission-control`.
+  governance defaults, and GitHub sync to `racecraft-lab/Paddock`.
 - **FR-I2:** Issue Triage is the first workflow family. It classifies issues as
   actionable remediation, duplicate, obsolete, invalid, needs human
   clarification, needs specialist, or needs spec.
@@ -353,7 +353,7 @@ reconciliation.
   Aegis, `ready_for_owner`, owner merge reconciliation.
 - **FR-I4:** SpecKit/SDD remains a later workflow destination for `NEEDS_SPEC`
   issues and must not be conflated with direct remediation.
-- **FR-I5:** Existing synced Mission Control issues are treated as intake. They
+- **FR-I5:** Existing synced Paddock issues are treated as intake. They
   retain GitHub linkage and start through Issue Triage before remediation.
 - **FR-I6:** Product Line seed inputs are checked-in, reviewable config
   artifacts with typed validation, preflight/apply/verify modes, and fail-closed
@@ -361,7 +361,7 @@ reconciliation.
 
 ### FR-J Workflow Contracts And Harness Gardening
 
-- **FR-J1:** The Mission Control workflow family is represented by repo-owned
+- **FR-J1:** The Paddock workflow family is represented by repo-owned
   Markdown/YAML contracts under `docs/ai/workflows/`.
 - **FR-J2:** Contracts round-trip with runtime `workflow_templates` by slug,
   role, prompt version, schema hash, routing hash, terminal event, and feature
@@ -377,7 +377,7 @@ reconciliation.
 ## Data And Migration Policy
 
 The PRD intentionally does not duplicate full DDL. Durable data-model direction
-is limited to the entities Mission Control needs:
+is limited to the entities Paddock needs:
 
 - Agent scope.
 - Product Line feature flags.
@@ -409,7 +409,7 @@ owning spec and migration artifacts.
 - **NFR-6 Performance:** routing, validation, and governance checks are bounded
   and measured against flag-off baselines.
 - **NFR-7 Restart recovery:** process restart reconciles from durable
-  Mission Control state, GitHub state, and sandbox inspection, not in-memory
+  Paddock state, GitHub state, and sandbox inspection, not in-memory
   scheduler assumptions.
 - **NFR-8 Adapter absence safety:** optional adapters no-op cleanly when
   disabled, unconfigured, unavailable, or missing files.
@@ -426,12 +426,12 @@ owning spec and migration artifacts.
 
 ## Compatibility And Product Stance
 
-Mission Control should classify new work by operational impact:
+Paddock should classify new work by operational impact:
 
 | Class | Meaning |
 | --- | --- |
-| `install-compatible` | Preserves current Mission Control installs through null/default/flag-off behavior. |
-| `factory-core` | Required for the Mission Control factory vision. |
+| `install-compatible` | Preserves current Paddock installs through null/default/flag-off behavior. |
+| `factory-core` | Required for the Paddock factory vision. |
 | `optional-adapter` | Runtime or host-specific integration that is disabled by default and absent-safe. |
 
 The design target is install compatibility plus clear operator rollout.
@@ -441,7 +441,7 @@ make a feature low-risk or broadly reusable.
 ## Non-Goals
 
 - Renaming SQL `workspaces`, `workspace_id`, or `agents.workspace_path` in v1.
-- Replacing Mission Control with a CLI-only scheduler or a different runtime
+- Replacing Paddock with a CLI-only scheduler or a different runtime
   stack.
 - Letting agents create or mutate production workflow policy without operator
   review.
@@ -466,7 +466,7 @@ make a feature low-risk or broadly reusable.
 | R6 Disposition/artifact tables grow without bounds | Add retention, archive, health, and admin maintenance surfaces. |
 | R7 Cost appears as zero for subscription providers | Track raw usage separately from estimated marginal USD and enforce raw usage budgets where needed. |
 | R8 Optional adapters become hidden hard dependencies | Require dedicated flags, explicit config, and absence-safety checks. |
-| R9 Runner crash duplicates work | Serialize claims in Mission Control and reconcile tracker/task state before every launch. |
+| R9 Runner crash duplicates work | Serialize claims in Paddock and reconcile tracker/task state before every launch. |
 | R10 Review packets leak secrets | Reuse artifact secret detection/redaction before persisting summaries or previews. |
 | R11 Agents amplify stale docs or low-value tests | Run harness-gardening as targeted recurring work, not broad rewrite campaigns. |
 | R12 Global gateway coupling blocks multi-facility v2 | Preserve tenant-aware gateway seams and avoid adding new process-global gateway assumptions. |

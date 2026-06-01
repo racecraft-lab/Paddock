@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# SPEC-008 — Daily incremental backup of Mission Control state (T203).
+# SPEC-008 — Daily incremental backup of Paddock state (T203).
 #
 # Per FR-090g, FR-090k, FR-261, FR-263, FR-271. Captures:
 #   - SQLite DB (mission-control.db)

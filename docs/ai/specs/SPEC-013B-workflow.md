@@ -260,16 +260,16 @@ SPECIFY_FEATURE_DIRECTORY=specs/013b-claim-reconciliation
 ## Feature: SPEC-013B - Claim and Reconciliation Authority
 
 ### Problem Statement
-Mission Control can sync GitHub issues, route tasks, persist task-stage attempts, and dispatch assigned tasks, but it does not yet have one authoritative coordination path that prevents duplicate scheduler dispatch for the same GitHub-linked task stage. SPEC-013B must add claim and reconciliation authority before retry/debug surfaces and harness execution specs build on top of it.
+Paddock can sync GitHub issues, route tasks, persist task-stage attempts, and dispatch assigned tasks, but it does not yet have one authoritative coordination path that prevents duplicate scheduler dispatch for the same GitHub-linked task stage. SPEC-013B must add claim and reconciliation authority before retry/debug surfaces and harness execution specs build on top of it.
 
 ### Users
 - Operators who need confidence that concurrent scheduler ticks do not launch duplicate autonomous work.
 - Future SPEC-013C and SPEC-014 implementers who need a reliable already-claimed stage boundary.
-- Reviewers validating that Mission Control preserves tracker truth, resource governance, and successor-selection boundaries.
+- Reviewers validating that Paddock preserves tracker truth, resource governance, and successor-selection boundaries.
 
 ### Goals
 - Prevent duplicate launch for the same GitHub-linked task stage under concurrent scheduler ticks.
-- Reconcile Mission Control task state, GitHub truth, workflow stage, and governance readiness before active claim acquisition.
+- Reconcile Paddock task state, GitHub truth, workflow stage, and governance readiness before active claim acquisition.
 - Persist active claim and release evidence linked to SPEC-013A task-stage attempts.
 - Admit only GitHub issue-linked `assigned` tasks into autonomous claim intake.
 - Preserve existing dispatch and successor-selection authority instead of replacing the runner path.
@@ -487,7 +487,7 @@ $speckit-checklist state-management
 Focus on SPEC-013B requirements:
 - Claim lifecycle states, lease expiry, release reasons, and stale recovery are measurable and serializable.
 - Reconciliation deferrals are durable and not silent.
-- Terminal Mission Control and GitHub states release active claims.
+- Terminal Paddock and GitHub states release active claims.
 - Pay special attention to: not extending claim ownership into long-running SPEC-014 harness execution.
 ```
 
@@ -684,7 +684,7 @@ Implementation evidence was recorded on 2026-05-27. `direnv exec . pnpm test:all
 - Integration suite: passed through `direnv exec . pnpm test:all`, including 3167 Vitest tests and 651 Playwright tests.
 - Reviewability diff gate: ratified transition exception for the full SPEC-013B branch diff; patched gate output reports `status=exception`, `pass=true`, 6560 reviewable LOC, 14 production files, 63 total files, and 6 primary surfaces.
 - PR body generation: completed using the host repository PR template plus the SpecKit review packet.
-- PR creation: opened ready-for-review PR #62, `https://github.com/racecraft-lab/mission-control/pull/62`.
+- PR creation: opened ready-for-review PR #62, `https://github.com/racecraft-lab/Paddock/pull/62`.
 - Review remediation: initial PR inspection found no comments or reviews to remediate; GitHub checks were still pending and visual Playwright approval was marked missing while the companion visual report job was still in progress.
 - Retrospective: completed in `specs/013b-claim-reconciliation/retrospective.md`; no spec edits proposed, 57/57 tasks verified, and post-merge HITL UAT is now complete.
 - Manual pre-merge UAT: completed on 2026-05-27 with replay id `spec-013b-manual-uat-2026-05-27T22-24-30-806Z`; evidence is recorded in `specs/013b-claim-reconciliation/uat-report.md`.

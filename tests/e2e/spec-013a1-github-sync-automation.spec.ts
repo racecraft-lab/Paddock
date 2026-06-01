@@ -342,7 +342,7 @@ test.describe('SPEC-013A1 GitHub sync automation journey', () => {
             projects: [
               {
                 id: 101,
-                name: 'Mission Control',
+                name: 'Paddock',
                 github_repo: 'racecraft/mission-control',
                 github_sync_enabled: true,
               },
@@ -366,7 +366,7 @@ test.describe('SPEC-013A1 GitHub sync automation journey', () => {
         await route.fulfill({
           json: {
             workspaces: [
-              { id: 4, slug: 'mission-control', name: 'Mission Control', feature_flags: { FEATURE_GITHUB_SYNC_AUTOMATION: true } },
+              { id: 4, slug: 'mission-control', name: 'Paddock', feature_flags: { FEATURE_GITHUB_SYNC_AUTOMATION: true } },
             ],
           },
         })
@@ -458,7 +458,7 @@ test.describe('SPEC-013A1 GitHub sync automation journey', () => {
         return
       }
       if (url.pathname === '/api/workspaces') {
-        await route.fulfill({ json: { workspaces: [{ id: 4, slug: 'mission-control', name: 'Mission Control', feature_flags: { FEATURE_GITHUB_SYNC_AUTOMATION: true } }] } })
+        await route.fulfill({ json: { workspaces: [{ id: 4, slug: 'mission-control', name: 'Paddock', feature_flags: { FEATURE_GITHUB_SYNC_AUTOMATION: true } }] } })
         return
       }
 

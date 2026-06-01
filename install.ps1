@@ -1,11 +1,11 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Mission Control — Windows Installer
+    Paddock — Windows Installer
     The mothership for your OpenClaw fleet.
 
 .DESCRIPTION
-    Installs Mission Control on Windows via local Node.js deployment.
+    Installs Paddock on Windows via local Node.js deployment.
     Mirrors the behaviour of install.sh for Linux/macOS.
 
 .PARAMETER Mode
@@ -18,7 +18,7 @@
     Custom data directory path (default: .data/ in project root).
 
 .PARAMETER InstallDir
-    Target directory when cloning from GitHub (default: .\mission-control).
+    Target directory when cloning from GitHub (default: .\Paddock).
 
 .PARAMETER SkipOpenClaw
     Skip OpenClaw fleet checks.
@@ -52,9 +52,9 @@ $ErrorActionPreference = "Stop"
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
 if (-not $InstallDir) {
-    $InstallDir = if ($env:MC_INSTALL_DIR) { $env:MC_INSTALL_DIR } else { Join-Path (Get-Location) "mission-control" }
+    $InstallDir = if ($env:MC_INSTALL_DIR) { $env:MC_INSTALL_DIR } else { Join-Path (Get-Location) "Paddock" }
 }
-$RepoUrl = "https://github.com/builderz-labs/mission-control.git"
+$RepoUrl = "https://github.com/racecraft-lab/Paddock.git"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 function Write-MC   { param([string]$Msg) Write-Host "[MC] $Msg" -ForegroundColor Blue }
@@ -157,7 +157,7 @@ function Get-Source {
             Pop-Location
         }
     } else {
-        Write-MC "Cloning Mission Control..."
+        Write-MC "Cloning Paddock..."
         if (-not (Test-Command "git")) {
             Stop-WithError "git is required to clone the repository"
         }
@@ -218,7 +218,7 @@ function Deploy-Docker {
         $env:MC_PORT = $script:Port
         docker compose up -d --build
 
-        Write-MC "Waiting for Mission Control to become healthy..."
+        Write-MC "Waiting for Paddock to become healthy..."
         $retries = 30
         while ($retries -gt 0) {
             try {
@@ -233,7 +233,7 @@ function Deploy-Docker {
             Write-Warn "Timeout waiting for health check - container may still be starting"
             docker compose logs --tail 20
         } else {
-            Write-Ok "Mission Control is running in Docker"
+            Write-Ok "Paddock is running in Docker"
         }
     } finally {
         Pop-Location
@@ -250,7 +250,7 @@ function Deploy-Local {
         if ($LASTEXITCODE -ne 0) { pnpm install }
         Write-Ok "Dependencies installed"
 
-        Write-MC "Building Mission Control..."
+        Write-MC "Building Paddock..."
         pnpm build
         if ($LASTEXITCODE -ne 0) { Stop-WithError "Build failed" }
         Write-Ok "Build complete"
@@ -273,7 +273,7 @@ function Deploy-Local {
         }
         Write-Ok "Static assets copied to standalone directory"
 
-        Write-MC "Starting Mission Control..."
+        Write-MC "Starting Paddock..."
         $env:PORT = $script:Port
         $env:NODE_ENV = "production"
         $env:HOSTNAME = "0.0.0.0"
@@ -292,7 +292,7 @@ function Deploy-Local {
 
         Start-Sleep -Seconds 3
         if (-not $process.HasExited) {
-            Write-Ok "Mission Control running (PID $($process.Id))"
+            Write-Ok "Paddock running (PID $($process.Id))"
         } else {
             Write-Err "Failed to start. Check logs: $logPath"
             exit 1
@@ -335,7 +335,7 @@ function Test-OpenClaw {
             Write-Ok "Config found: $ocConfig"
         } else {
             Write-Warn "No openclaw.json found at $ocConfig"
-            Write-MC "Mission Control will create a default config on first gateway connection"
+            Write-MC "Paddock will create a default config on first gateway connection"
         }
     } else {
         Write-MC "OpenClaw home not found at $ocHome"
@@ -359,7 +359,7 @@ function Test-OpenClaw {
 function Main {
     Write-Host ""
     Write-Host "  +======================================+" -ForegroundColor Magenta
-    Write-Host "  |   Mission Control Installer          |" -ForegroundColor Magenta
+    Write-Host "  |   Paddock Installer                  |" -ForegroundColor Magenta
     Write-Host "  |   The mothership for your fleet      |" -ForegroundColor Magenta
     Write-Host "  +======================================+" -ForegroundColor Magenta
     Write-Host ""
@@ -371,7 +371,7 @@ function Main {
 
     # If running from within an existing clone, use current dir
     $packageJson = Join-Path (Get-Location) "package.json"
-    if ((Test-Path $packageJson) -and (Select-String -Path $packageJson -Pattern '"mission-control"' -Quiet)) {
+    if ((Test-Path $packageJson) -and (Select-String -Path $packageJson -Pattern '"paddock"' -Quiet)) {
         $script:InstallDir = (Get-Location).Path
         Write-MC "Running from existing clone at $($script:InstallDir)"
     } else {

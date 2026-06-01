@@ -33,7 +33,7 @@ Status: `200`
       "workflow_template_slug": "mission-control_issue_remediation"
     },
     "github": {
-      "repo": "racecraft-lab/mission-control",
+      "repo": "racecraft-lab/Paddock",
       "issue_number": 42,
       "pr_number": null,
       "synced_at": "2026-05-27T12:00:00.000Z",

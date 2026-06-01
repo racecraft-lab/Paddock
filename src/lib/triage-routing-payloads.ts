@@ -1410,10 +1410,10 @@ function normalizeEvidenceUrl(type: SafeEvidenceReferenceType, rawUrl: string): 
     parsed.search = '';
     parsed.hash = '';
 
-    if (type === 'github_issue' && isAllowedGithubPath(parsed, /^\/racecraft-lab\/mission-control\/issues\/\d+$/)) {
+    if (type === 'github_issue' && isAllowedGithubPath(parsed, /^\/racecraft-lab\/Paddock\/issues\/\d+$/)) {
       return parsed.toString();
     }
-    if (type === 'github_pr' && isAllowedGithubPath(parsed, /^\/racecraft-lab\/mission-control\/pull\/\d+$/)) {
+    if (type === 'github_pr' && isAllowedGithubPath(parsed, /^\/racecraft-lab\/Paddock\/pull\/\d+$/)) {
       return parsed.toString();
     }
     return undefined;

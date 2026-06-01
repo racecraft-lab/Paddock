@@ -205,7 +205,7 @@ Executed during SPEC-009A autopilot startup on 2026-05-05.
 
 ### Scope Summary
 
-Define the repo-owned Mission Control workflow contract under
+Define the repo-owned Paddock workflow contract under
 `docs/ai/workflows/`, import it into `workflow_templates`, export it back to
 Markdown, and prove fail-closed validation for invalid YAML, template variables,
 tracker identity, capability declarations, concurrency/retry fields, sandbox
@@ -250,7 +250,7 @@ pilot behavior.
 ### Acceptance Criteria
 
 - [P8A-AC1] Contract source files exist under
-  `docs/ai/workflows/mission-control/` and define the minimal Mission Control
+  `docs/ai/workflows/mission-control/` and define the minimal Paddock
   workflow family: intake, planning, implementation, review, owner gate, and
   lifecycle metadata.
 - [P8A-AC2] Import command supports dry-run and explicit apply mode. Dry-run
@@ -288,11 +288,11 @@ $speckit-specify
 
 ## Feature: SPEC-009A Workflow Contract Format and Roundtrip
 
-Create a specification for RC Factory Phase 8A in Mission Control.
+Create a specification for RC Factory Phase 8A in Paddock.
 
 ### Problem Statement
 
-Mission Control stores executable workflow templates in SQLite
+Paddock stores executable workflow templates in SQLite
 `workflow_templates`, but the RC Factory PRD requires workflow policy to be
 repo-owned and reviewable. Operators need a versioned contract under
 `docs/ai/workflows/` that can seed/sync `workflow_templates`, roundtrip back to
@@ -300,7 +300,7 @@ a Markdown review artifact, and fail closed when the contract is invalid.
 
 SPEC-009A is the process-only contract roundtrip slice. It must define the
 contract format, import/export commands, validation rules, parity hashes,
-last-known-good behavior, and diagnostics. It must not run the Mission Control
+last-known-good behavior, and diagnostics. It must not run the Paddock
 self-hosting pilot.
 
 ### Users
@@ -586,7 +586,7 @@ $speckit-tasks
 - Include explicit guardrail tasks for no pilot/runner/claim scope.
 
 ## Required Coverage
-- Valid Mission Control contract fixture.
+- Valid Paddock contract fixture.
 - Invalid YAML fixture.
 - Unknown template variable fixture.
 - Invalid tracker identity fixture.
@@ -706,7 +706,7 @@ For each task:
 | `direnv exec . pnpm test` | PASS with sandbox escalation for daemon socket test; 268 files, 2771 tests |
 | Guardrail grep over SPEC-009A implementation paths | PASS; no pilot seed, dispatch, runner, harness, scheduler, sandbox lifecycle, GitHub sync, or governance evaluator reference |
 | `direnv exec . gitnexus analyze --force --skills --embeddings --skip-agents-md` | PASS with network access for embedding endpoint; clean rebuild completed in 4005.8s with 24,964 nodes, 39,377 edges, 647 clusters, 300 flows, and 20 generated skills; `.gitnexus/` copied to primary repo root |
-| Draft PR | Created [PR #28](https://github.com/racecraft-lab/mission-control/pull/28); CodeQL, quality-gate, docker UI e2e visual report, Storybook visual report, and visual-approval-status checks passed; manual `visual-review-approval` remains pending approval |
+| Draft PR | Created [PR #28](https://github.com/racecraft-lab/Paddock/pull/28); CodeQL, quality-gate, docker UI e2e visual report, Storybook visual report, and visual-approval-status checks passed; manual `visual-review-approval` remains pending approval |
 | Review remediation | No inline review comments; two visual bot comments are baseline artifact notices, not code-change requests |
 | Retrospective | Saved `specs/009a-workflow-contract-roundtrip/retrospective.md`; completion 100%, spec adherence 100%, no critical/significant findings, no proposed spec edits |
 

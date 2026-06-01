@@ -1,4 +1,4 @@
-# Mission Control — Consolidated Feature Specification Memory
+# Paddock — Consolidated Feature Specification Memory
 
 Auto-generated from Archive Sweep on 2026-04-28.
 Revision: Archiving SPEC-001, SPEC-002, SPEC-002A after confirmed PR merges.
@@ -23,7 +23,7 @@ active completed folders from `specs/**`.
 ### SPEC-001: Foundation Migrations [Source: specs/001-foundation-migrations]
 
 **US1 — Apply Phase 0 Schema Safely (P1)**
-As a facility operator, I can apply M53-M61 to an existing production-shape Mission Control database so the install gains Phase 0 schema surfaces without changing current runtime behavior.
+As a facility operator, I can apply M53-M61 to an existing production-shape Paddock database so the install gains Phase 0 schema surfaces without changing current runtime behavior.
 
 **US2 — Re-run Migrations Without Side Effects (P1)**
 As an operator, I can re-run the Phase 0 migration set safely so repeat execution does not duplicate schema objects, seed data, or state changes.
@@ -39,7 +39,7 @@ As a downstream spec executor, I can depend on Phase 0 schema surfaces being pre
 ### SPEC-002: Product Line Switcher [Source: specs/002-product-line-switcher]
 
 **US1 — Preserve Existing Single-Workspace Behavior (P1)**
-As an existing user, I can run Mission Control with the workspace switcher disabled and see the same behavior, baseline test coverage, and snapshots I see today.
+As an existing user, I can run Paddock with the workspace switcher disabled and see the same behavior, baseline test coverage, and snapshots I see today.
 
 **US2 — Switch Between Facility and Product Line Views (P1)**
 As a facility operator or department lead, I can switch between the Facility aggregate view and authorized Product Line workspaces while staying in the same tenant.
@@ -134,7 +134,7 @@ M62 adds only nullable columns and indexes; `rollback-M62.sql` cleanly drops eve
 As an operator, I can let autonomous work reach `ready_for_owner` without allowing it to mark the task `done` before a human merges the linked PR.
 
 **US2 — Reconcile Human Merge Evidence (P1)**
-As a task owner, I can merge the PR on GitHub and have Mission Control sync that evidence into the task lifecycle.
+As a task owner, I can merge the PR on GitHub and have Paddock sync that evidence into the task lifecycle.
 
 **US3 — Make Owner Action Visible (P2)**
 As a reviewer, I can see the ready-for-owner lane, labels, and notifications that identify human-owned merge work.
@@ -148,7 +148,7 @@ As an operator, I can see why a task advanced, exited, or handed off without rec
 As an agent or reviewer, I can publish, read, and inspect task artifacts with bounded previews and metadata.
 
 **US3 — Redact or Reject Secret-Bearing Evidence (P1)**
-As a security reviewer, I can rely on Mission Control to prevent raw secret fixtures from becoming durable artifacts.
+As a security reviewer, I can rely on Paddock to prevent raw secret fixtures from becoming durable artifacts.
 
 ### SPEC-008: Resource Governance and Cost Tracker Enforcement [Source: specs/008-resource-governance]
 
@@ -169,10 +169,10 @@ As an operator, I can keep workflow templates in versioned YAML and import/expor
 **US2 — Fail Closed on Invalid Contracts (P1)**
 As a maintainer, I can reject invalid contract reloads while preserving the last-known-good runtime templates and diagnostics.
 
-### SPEC-009B: Mission Control Product-Line Seed and Flag Activation [Source: specs/009b-mission-control-seed]
+### SPEC-009B: Paddock Product-Line Seed and Flag Activation [Source: specs/009b-mission-control-seed]
 
 **US1 — Seed Product Line A Without Dispatch (P1)**
-As an operator, I can seed Mission Control workspace, departments, assignments, workflow families, flags, and governance rows without launching pilot work.
+As an operator, I can seed Paddock workspace, departments, assignments, workflow families, flags, and governance rows without launching pilot work.
 
 **US2 — Detect Unsafe Preflight Residue (P1)**
 As an operator, I get blocked-preflight evidence before seed mutation if old product-line, GitHub, or automation residue would corrupt the pilot.
@@ -180,7 +180,7 @@ As an operator, I get blocked-preflight evidence before seed mutation if old pro
 ### SPEC-009C1: GitHub Pilot Issue Ingest and Eligibility [Source: specs/009c1-pilot-issue-ingest]
 
 **US1 — Ingest One GitHub-Linked Pilot Issue (P1)**
-As an operator, I can ingest an eligible GitHub issue into Mission Control as the single pilot root task while local-only tasks stay ineligible.
+As an operator, I can ingest an eligible GitHub issue into Paddock as the single pilot root task while local-only tasks stay ineligible.
 
 **US2 — Prove No Dispatch or Runner Side Effects (P1)**
 As a reviewer, I can verify the pilot issue exists without claim, dispatch, remediation, runner, sandbox, or future run-state side effects.
@@ -204,7 +204,7 @@ As an operator, I can route actionable remediation into planning and dev stages 
 As a reviewer, I can require review and Aegis approval before PR-producing work reaches owner handoff.
 
 **US3 — Stop at Ready for Owner (P1)**
-As the owner, I receive a draft PR-producing task in `ready_for_owner` without Mission Control reconciling it to `done` before the PR merge gate.
+As the owner, I receive a draft PR-producing task in `ready_for_owner` without Paddock reconciling it to `done` before the PR merge gate.
 
 ### SPEC-009C4: Owner Merge Reconciliation [Source: specs/009c4-owner-merge-reconciliation]
 
@@ -226,7 +226,7 @@ As an owner, I can inspect a review packet summarizing issue/PR identity, artifa
 As an agent or reviewer, I can read JSON and Markdown packet artifacts through existing artifact storage without a new packet-specific route.
 
 **US3 — Preserve Cleaned UAT Proof Honestly (P2)**
-As an auditor, I can distinguish retained external evidence from cleaned disposable Mission Control rows.
+As an auditor, I can distinguish retained external evidence from cleaned disposable Paddock rows.
 
 ### SPEC-009E: Pilot Eligibility and Evidence Surfaces [Source: specs/009e-pilot-evidence-surfaces]
 
@@ -256,7 +256,7 @@ As an operator, I can see typed `triageRouting` evidence on the task Evidence su
 As an operator, I can review a checked-in product-line YAML config before writes.
 
 **US2 — Preflight, Apply, and Verify a Product Line (P1)**
-As an operator, I can run generic seed preflight/apply/verify modes and reproduce Mission Control Product Line A from config.
+As an operator, I can run generic seed preflight/apply/verify modes and reproduce Paddock Product Line A from config.
 
 **US3 — Fail Closed Without Mutation (P1)**
 As a maintainer, I can prove incomplete, unsafe, or conflicting config rejects before writes with redacted structured evidence.
@@ -272,7 +272,7 @@ As a maintainer, I can run fixture-backed checks that fail when canonical repo-k
 ### SPEC-013A: Run-State Persistence Spine [Source: specs/013a-run-state-spine]
 
 **US1 — Inspect Task-Stage Attempts (P1)**
-As an operator, I can inspect task-stage attempt identity, status, lifecycle summary, archive state, and optional runtime-run link from durable Mission Control evidence.
+As an operator, I can inspect task-stage attempt identity, status, lifecycle summary, archive state, and optional runtime-run link from durable Paddock evidence.
 
 **US2 — Archive Attempts Non-Destructively (P1)**
 As an auditor, I can see archived attempts remain queryable and visibly distinct without physical deletion or archive-table moves.
@@ -416,12 +416,12 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - **SPEC-007 FRs**: Persist task dispositions and task artifacts; provide publish/read/admin/health/API/UI surfaces; apply MC Secret Detector v1 redaction/rejection; integrate artifact evidence with dispatch/review handoff; preserve existing task behavior when feature flags are OFF.
 - **SPEC-008 FRs**: Gate scheduler/dispatch/admission paths through resource policy evaluation; persist policy decisions/events; expose governance tabs; support optional OpenClaw health-cost telemetry as an absent-safe operator-specific adapter; preserve cost tracker byte-compat when `FEATURE_RESOURCE_GOVERNANCE` is OFF.
 - **SPEC-009A FRs**: Load single-document YAML workflow contracts; validate/canonicalize contracts; dry-run by default and apply transactionally; preserve LKG snapshots; export Markdown/parity hashes; persist generic diagnostics without launching seed/pilot/runner work.
-- **SPEC-009B FRs**: Seed Mission Control Product Line A, departments, assignments, repo ownership, workflow families, pilot flags, and advisory governance rows; fail closed on unsafe residue; reuse SPEC-009A importer; create zero pilot tasks or dispatch side effects.
+- **SPEC-009B FRs**: Seed Paddock Product Line A, departments, assignments, repo ownership, workflow families, pilot flags, and advisory governance rows; fail closed on unsafe residue; reuse SPEC-009A importer; create zero pilot tasks or dispatch side effects.
 - **SPEC-009C1 FRs**: Ingest exactly one eligible GitHub issue or explicit synthetic fallback; reject unsafe/local-only/duplicate candidates; preserve GitHub tracker truth; prove no remediation, claim, dispatch, runner, sandbox, or future run-state side effects.
 - **SPEC-009C2 FRs**: Convert `ACTIONABLE_REMEDIATION` triage output into exactly one remediation-planning successor; persist disposition/artifact/activity evidence; keep non-remediation outcomes terminal without remediation successors; handle duplicate retry idempotently; fail closed on invalid output.
 - **SPEC-009C3 FRs**: Drive actionable remediation through planning, dev, review, and Aegis to `ready_for_owner`; persist typed artifacts and readiness evidence; keep merge/done reconciliation, claims, runner state, sandbox, adapter, poller, broad Product Line B cleanup, and dedicated evidence UI out of scope.
 - **SPEC-009C4 FRs**: Reconcile `ready_for_owner` to `done` only from exact merged PR truth for the linked repo/PR; reject closed issue, unmerged PR, mismatched PR, failed sync, and local-only completion evidence; keep duplicate sync idempotent and preserve cleanup evidence.
-- **SPEC-009D FRs**: Derive and publish review packets from stored Mission Control evidence only; include source-map pointers, governance/Aegis/owner gate state, current stage, and explicit SPEC-013/SPEC-014 deferrals; avoid fresh GitHub calls, packet-specific routes, dashboards, pollers, claims, retry controls, sandbox lifecycle, adapters, and real harness execution.
+- **SPEC-009D FRs**: Derive and publish review packets from stored Paddock evidence only; include source-map pointers, governance/Aegis/owner gate state, current stage, and explicit SPEC-013/SPEC-014 deferrals; avoid fresh GitHub calls, packet-specific routes, dashboards, pollers, claims, retry controls, sandbox lifecycle, adapters, and real harness execution.
 - **SPEC-009E FRs**: Add read-only `task_evidence.v1` route/UI evidence for GitHub-linked and pilot-relevant tasks; represent local-only, partial, stale, missing, redacted, cleaned, and deferred evidence states; never mutate tasks, artifacts, activities, GitHub state, packets, dispatch, runner, claim, sandbox, adapter, or harness behavior.
 - **SPEC-009F FRs**: Route six non-remediation Issue Triage outcomes to typed recommendation/evidence lanes; keep them terminal without remediation successors; expose compact task Evidence `triageRouting`; preserve `ACTIONABLE_REMEDIATION` behavior and avoid live GitHub mutation, claim/runner/sandbox/adapter paths, successor templates, and auto-merge behavior.
 - **SPEC-010A FRs**: Define checked-in product-line YAML seed configs; provide generic `seed:product-line` preflight/apply/verify plus `seed:mission-control` wrapper compatibility; validate flags, workflow contracts, governance rows, agents, and existing targets before writes; prove no-mutation failures and no Product Line B onboarding or runtime work.
@@ -514,7 +514,7 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 | Task Artifact | Durable artifact metadata/content preview with redaction status, MIME, producer, and task/workspace chronology |
 | Resource Policy Decision | Synchronous allow/defer/block decision with ledger/event evidence before autonomous work starts |
 | Workflow Contract | Repo-owned YAML contract projected into `workflow_templates` through import/apply/export/recover tooling |
-| Mission Control Product Line Seed | Product Line A workspace, departments, assignments, repo configuration, workflow families, flags, and advisory governance rows |
+| Paddock Product Line Seed | Product Line A workspace, departments, assignments, repo configuration, workflow families, flags, and advisory governance rows |
 | Pilot Issue Root Task | GitHub-linked task identity used for SPEC-009C1/C2 pilot smoke, never a local-only task |
 | Triage Handoff Evidence | `ACTIONABLE_REMEDIATION` disposition, artifact, activity, and one remediation-planning successor |
 | Remediation Readiness Evidence | SPEC-009C3 artifacts, quality reviews, Aegis approval, advisory governance proof, and draft PR identity proving `ready_for_owner` without owner merge |
@@ -565,7 +565,7 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - SPEC-009C2 non-remediation outcomes must not create remediation successors; duplicate actionable retries preserve exactly one successor/disposition/artifact/activity set.
 - SPEC-009C3 `ready_for_owner` evidence is not merge evidence; exact owner merge reconciliation remains SPEC-009C4.
 - SPEC-009C4 closed issue state, supporting `merged_at` fields, or wrong-PR evidence never satisfies the terminal gate without exact merged PR truth.
-- SPEC-009D and SPEC-009E may represent cleaned UAT rows as archived proof only; they must not claim current active Mission Control state from deleted disposable rows.
+- SPEC-009D and SPEC-009E may represent cleaned UAT rows as archived proof only; they must not claim current active Paddock state from deleted disposable rows.
 - SPEC-009F clean-exit triage outcomes remain terminal recommendations; they must not launch remediation, mutate GitHub, claim work, or auto-close issues unless a future spec owns that side effect.
 - SPEC-010A existing-target apply requires explicit `--allow-existing`; unsafe configs and reserved flags reject before writes with stable no-mutation evidence.
 - SPEC-012A docs/process guards must not depend on `.gitnexus/` generated output or broad generated docs rewrites.
@@ -586,7 +586,7 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - SPEC-007: Dispositions, artifacts, redaction, audit/admin/dashboard surfaces, and OpenAPI surfaces implemented; workflow records full verification and known stale checkbox bookkeeping.
 - SPEC-008: Flag-OFF preserves cost-tracker byte-compat (FR-305 / FR-238); flag-ON activates synchronous resource policy evaluator on dispatch admission with append-only ledger, dedupe + canonical telemetry pipeline, OTLP receiver, source-emission-capability registry, drift detector, persistent circuit breaker, reservation reaper, Cost Tracker Governance tab (Policies/Budgets/Windows/Overrides/Diagnostics/System Health). `FEATURE_OPENCLAW_HEALTH_COSTS` adds the OpenClaw health adapter as a source. Constitution V matrix harness (`src/lib/feature-flag-matrix.ts`) covers 9 flags × 4 scenarios. axe-core baked into Playwright fixture (`tests/e2e/spec-008/governance-axe-shim.ts`). CI guards `scripts/spec-008/check-axe-coverage.mjs` + `scripts/spec-008/check-feature-flag-env-leak.mjs`. Strict-scope guard at `tests/integration/strict-scope-guard.test.ts` (331/331 pass). Migrations M65a..m + M66 additive + rerun-safe; rollback files at `docs/migrations/rollback-M65{a..m}.sql` + `docs/migrations/rollback-M66.sql`. Implementation 100% complete; e2e/soak/chaos verification operator-gated per `docs/ai/specs/SPEC-008-verification-evidence.md`.
 - SPEC-009A: Workflow contract import/apply/export/recover tooling, diagnostics, LKG, parity hashes, and read-only UI/API surfaces complete; no pilot/seed/runner scope introduced; 65/65 tasks completed.
-- SPEC-009B: Mission Control Product Line A seed, workflow-family import, feature flags, governance rows, blocked preflight, and non-dispatch guardrails complete; 61/61 tasks completed.
+- SPEC-009B: Paddock Product Line A seed, workflow-family import, feature flags, governance rows, blocked preflight, and non-dispatch guardrails complete; 61/61 tasks completed.
 - SPEC-009C1: Eligible GitHub issue ingest, synthetic fallback, duplicate/local-only rejection, no-side-effect proof, HAL live smoke, and cleanup complete; 36/36 tasks completed.
 - SPEC-009C2: Triage-to-remediation handoff, duplicate idempotency, negative outcome exits, artifact/disposition evidence, PR #46 assignee fix, HAL live smoke, and cleanup complete; 21/21 tasks completed.
 - SPEC-009C3: Remediation chain reaches `ready_for_owner` with artifact, review, Aegis, governance, draft PR, scope-guard, HAL UAT, and cleanup evidence; 70/70 tasks completed.
@@ -594,6 +594,6 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - SPEC-009D: Stored-evidence review packet publishes JSON/Markdown artifacts, survives cleaned UAT row representation, and avoids runner/control-plane scope; 42/42 tasks completed.
 - SPEC-009E: Read-only task Evidence API/UI shows eligibility, stored proof, warnings, deferrals, and cleaned-row rationale; 59/59 tasks completed.
 - SPEC-009F: Six non-remediation triage outcomes route to production evidence lanes without remediation successors or live GitHub mutation; 55/55 tasks completed.
-- SPEC-010A: Generic product-line seeder reproduces Mission Control config from YAML, rejects unsafe configs without mutation, preserves existing history, and avoids Product Line B/runtime drift; 73/73 tasks completed.
+- SPEC-010A: Generic product-line seeder reproduces Paddock config from YAML, rejects unsafe configs without mutation, preserves existing history, and avoids Product Line B/runtime drift; 73/73 tasks completed.
 - SPEC-012A: Repo knowledge index/schema, root AGENTS map, fixtures, fresh-agent smoke, package scripts, and guardrails pass; 32/32 tasks completed.
 - SPEC-013A: Task-stage attempt persistence, read-only inspection, non-destructive archive semantics, rollback, flag-off table-blind guardrails, focused browser UAT, and cleanup evidence pass; 58/58 tasks completed.

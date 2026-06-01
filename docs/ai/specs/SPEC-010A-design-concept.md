@@ -20,12 +20,12 @@ stop_reason: "natural"
 
 ## Goals
 
-- Parameterize the existing Mission Control product-line seed path into a reusable generic product-line seeder.
+- Parameterize the existing Paddock product-line seed path into a reusable generic product-line seeder.
 - Define checked-in, operator-reviewable YAML seed configs under `docs/ai/product-lines/`.
-- Convert Mission Control into the first reusable fixture/config without changing the already-proven SPEC-009B behavior.
+- Convert Paddock into the first reusable fixture/config without changing the already-proven SPEC-009B behavior.
 - Provide a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
-- Keep `seed:mission-control` as a compatibility wrapper around the Mission Control product-line config.
-- Prove Mission Control parity with apply-twice, verify-mode, and invalid-config no-mutation evidence in a disposable or safe target database.
+- Keep `seed:mission-control` as a compatibility wrapper around the Paddock product-line config.
+- Prove Paddock parity with apply-twice, verify-mode, and invalid-config no-mutation evidence in a disposable or safe target database.
 - Preserve product-line history and unrelated state; mutate only config-owned fields through explicit apply/verify paths.
 
 ## Non-goals
@@ -34,14 +34,14 @@ stop_reason: "natural"
 - Adding runtime/admin-authored product-line configuration UI or database authoring surfaces (Q1).
 - Silently taking over existing product lines by slug (Q2).
 - Writing partial product-line state for invalid configs (Q3).
-- Hardcoding Mission Control workflow names into the generic seeder (Q4).
+- Hardcoding Paddock workflow names into the generic seeder (Q4).
 - Adding a new governance DSL or blocking first-intake policy model (Q5).
 - Removing the existing `seed:mission-control` operator entrypoint (Q6).
 - Mutating GitHub, dispatching work, creating tasks, claiming work, launching runners, creating sandboxes, or invoking SpecKit setup/autopilot (Q7, Q8, Q12).
 
 ## Design Tree (Q&A log)
 
-### Q1. Should SPEC-010A define product-line seeding as a checked-in declarative config consumed by a generic seeder, with Mission Control converted to the first fixture?
+### Q1. Should SPEC-010A define product-line seeding as a checked-in declarative config consumed by a generic seeder, with Paddock converted to the first fixture?
 
 **Branch:** Config source of truth
 
@@ -49,7 +49,7 @@ stop_reason: "natural"
 > The roadmap names product-line slug, display name, agent prefix, GitHub repo, workflow family, feature flags, and governance defaults as seeder inputs. A checked-in config keeps those inputs reviewable and directly reusable for SPEC-010B without adding a runtime authoring surface.
 
 **Alternatives offered:**
-- Extraction-only library around existing Mission Control constants: smaller, but Product Line B would still require code edits.
+- Extraction-only library around existing Paddock constants: smaller, but Product Line B would still require code edits.
 - Runtime/admin-authored config: flexible, but much larger than the seed-tooling scope.
 
 **User's answer:** A - checked-in versioned config/schema fixture.
@@ -65,7 +65,7 @@ stop_reason: "natural"
 
 **Alternatives offered:**
 - Always upsert existing rows by slug: simpler, but easier to rewrite live state accidentally.
-- Refuse to run if the workspace exists: safest for accidental mutation, but weakens idempotency and Mission Control fixture verification.
+- Refuse to run if the workspace exists: safest for accidental mutation, but weakens idempotency and Paddock fixture verification.
 
 **User's answer:** A - explicit apply/verify path; mutate only config-owned fields and preserve history.
 
@@ -86,15 +86,15 @@ stop_reason: "natural"
 
 ---
 
-### Q4. Should the generic seeder remain Mission Control workflow-family aware, or should workflow templates be supplied by each product-line config?
+### Q4. Should the generic seeder remain Paddock workflow-family aware, or should workflow templates be supplied by each product-line config?
 
 **Branch:** Workflow contract integration
 
 **Recommended answer:** Product-line config declares the workflow contract family/path plus required template slugs, and the generic seeder imports that contract through the existing SPEC-009A workflow-contract library.
-> SPEC-009A made workflow contracts the repo-owned source of truth. Keeping workflow selection in config avoids Mission Control-specific assumptions while reusing the proven importer.
+> SPEC-009A made workflow contracts the repo-owned source of truth. Keeping workflow selection in config avoids Paddock-specific assumptions while reusing the proven importer.
 
 **Alternatives offered:**
-- Keep Mission Control workflow slugs hardcoded: smaller, but not generic.
+- Keep Paddock workflow slugs hardcoded: smaller, but not generic.
 - Do not import workflow templates in the generic seeder: simpler, but pushes workflow seeding into SPEC-010B.
 
 **User's answer:** A - workflow contract family/path and required slugs are config-owned.
@@ -109,7 +109,7 @@ stop_reason: "natural"
 > This reuses SPEC-009B's conservative governance pattern and avoids inventing a new policy DSL.
 
 **Alternatives offered:**
-- Copy the three Mission Control governance rows exactly for every product line: fast, but not meaningfully generic.
+- Copy the three Paddock governance rows exactly for every product line: fast, but not meaningfully generic.
 - Exclude governance from SPEC-010A: smaller, but contradicts the roadmap's governance-default input list.
 
 **User's answer:** A - reuse existing `resource_policies` shape with first-intake blocking safeguards.
@@ -120,14 +120,14 @@ stop_reason: "natural"
 
 **Branch:** Operator entrypoint
 
-**Recommended answer:** Add a generic `seed:product-line` pnpm script/CLI with `preflight`, `apply`, and `verify` modes, while keeping `seed:mission-control` as a compatibility wrapper around the Mission Control config.
+**Recommended answer:** Add a generic `seed:product-line` pnpm script/CLI with `preflight`, `apply`, and `verify` modes, while keeping `seed:mission-control` as a compatibility wrapper around the Paddock config.
 > This preserves existing operator/runbook muscle memory while giving SPEC-010B a reusable entrypoint.
 
 **Alternatives offered:**
 - Replace `seed:mission-control` entirely: cleaner long term, but disruptive.
 - Keep only library APIs and no new CLI: smaller, but weak process-only UAT.
 
-**User's answer:** A - add generic CLI and keep the Mission Control wrapper.
+**User's answer:** A - add generic CLI and keep the Paddock wrapper.
 
 ---
 
@@ -135,7 +135,7 @@ stop_reason: "natural"
 
 **Branch:** Split with SPEC-010B
 
-**Recommended answer:** Do not create Product Line B's real config, run its smoke, enable it on a live target, or mutate GitHub. Provide only reusable schema/fixture examples and Mission Control parity evidence.
+**Recommended answer:** Do not create Product Line B's real config, run its smoke, enable it on a live target, or mutate GitHub. Provide only reusable schema/fixture examples and Paddock parity evidence.
 > The roadmap makes SPEC-010B the second-product-line onboarding and smoke slice. SPEC-010A should stop at reusable seed tooling.
 
 **Alternatives offered:**
@@ -150,14 +150,14 @@ stop_reason: "natural"
 
 **Branch:** UAT and review evidence
 
-**Recommended answer:** Recreate the existing Mission Control seed from the generic config in a disposable or safe target DB, run apply twice, run verify, and run invalid-config fixtures proving no mutation.
-> The roadmap's required gate is process-only seeder config. Mission Control parity proves reuse without requiring a second product line.
+**Recommended answer:** Recreate the existing Paddock seed from the generic config in a disposable or safe target DB, run apply twice, run verify, and run invalid-config fixtures proving no mutation.
+> The roadmap's required gate is process-only seeder config. Paddock parity proves reuse without requiring a second product line.
 
 **Alternatives offered:**
 - Only unit tests around config parsing and seed functions: faster, but weaker operator evidence.
 - Require a live target deployment apply: realistic, but higher risk and overlaps Product Line B onboarding.
 
-**User's answer:** A - Mission Control parity, apply twice, verify, and invalid-config no-mutation fixtures.
+**User's answer:** A - Paddock parity, apply twice, verify, and invalid-config no-mutation fixtures.
 
 ---
 
@@ -196,7 +196,7 @@ stop_reason: "natural"
 **Branch:** Feature-flag safety
 
 **Recommended answer:** Config must explicitly list flags to enable and flags that must remain disabled/absent, then the seeder validates names against `FEATURE_FLAG_REGISTRY` and preserves unrelated existing flags unless the config owns them.
-> This keeps the Mission Control fixture compatible with SPEC-009B while preventing typo-driven config drift or accidental activation of future runner/sandbox flags.
+> This keeps the Paddock fixture compatible with SPEC-009B while preventing typo-driven config drift or accidental activation of future runner/sandbox flags.
 
 **Alternatives offered:**
 - Raw `feature_flags` JSON written directly: flexible, but weak validation.
@@ -211,10 +211,10 @@ stop_reason: "natural"
 **Branch:** Preflight residue detection
 
 **Recommended answer:** Generalize the SPEC-009B preflight model: block only when residue conflicts with the target config's declared repo/product-line ownership, report structured redacted evidence, and never delete or unlink anything automatically.
-> Generic seeding must be reusable across product lines without hardcoding FocusEngine or Mission Control assumptions. Deletion remains operator-owned.
+> Generic seeding must be reusable across product lines without hardcoding FocusEngine or Paddock assumptions. Deletion remains operator-owned.
 
 **Alternatives offered:**
-- Keep the exact SPEC-009B residue scanner: safer for current Mission Control, but not generic enough.
+- Keep the exact SPEC-009B residue scanner: safer for current Paddock, but not generic enough.
 - Do not scan residue generically: simpler, but risks conflicting GitHub sync state.
 
 **User's answer:** A - target-config-aware residue blocking with redacted evidence and no automatic deletion.
@@ -227,7 +227,7 @@ stop_reason: "natural"
 - **What:** Exact validation codes for unsafe configs.
   **Why deferred:** The interview fixed fail-closed behavior but not the error-code catalog.
   **Suggested next step:** Clarify or Plan should define stable error codes for missing identity, invalid feature flags, conflicting repos, missing workflow slugs, unsafe governance, and existing-target apply policy.
-- **What:** Exact Mission Control config path and compatibility wrapper behavior.
+- **What:** Exact Paddock config path and compatibility wrapper behavior.
   **Why deferred:** Implementation should inspect the current `scripts/seed-mission-control-product-line.ts` and `src/lib/mission-control-seed/*` surfaces before naming final paths.
   **Suggested next step:** Plan should preserve `pnpm seed:mission-control` while adding `pnpm seed:product-line`.
 

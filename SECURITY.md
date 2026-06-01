@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Mission Control, please report it responsibly.
+If you discover a security vulnerability in Paddock, please report it responsibly.
 
 **Do not open a public issue.** Instead, email security@example.com with:
 
@@ -22,7 +22,7 @@ We will acknowledge receipt within 48 hours and aim to provide a fix or mitigati
 
 ## Security Considerations
 
-Mission Control handles authentication credentials and API keys. When deploying:
+Paddock handles authentication credentials and API keys. When deploying:
 
 - Always set strong values for `AUTH_PASS` and `API_KEY`.
 - Use `MC_ALLOWED_HOSTS` to restrict network access in production.

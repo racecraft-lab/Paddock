@@ -86,7 +86,7 @@ test.describe.serial('SPEC-007 disposition and artifact UI journeys', () => {
 
     const workspaceInput = page.getByTestId('dispositions-filter-workspace')
     await workspaceInput.fill(String(fixture.alpha.workspace.id))
-    await page.getByRole('button', { name: /^Refresh$/ }).click()
+    await expect(workspaceInput).toHaveValue(String(fixture.alpha.workspace.id))
 
     await expect(page.getByTestId('dispositions-list')).toBeVisible()
     await expect(page.getByTestId('dispositions-row-disposition').first()).toBeVisible()
@@ -94,7 +94,6 @@ test.describe.serial('SPEC-007 disposition and artifact UI journeys', () => {
     await attachReviewScreenshot(page, testInfo, 'audit-dispositions-loaded')
 
     await page.getByTestId('dispositions-filter-chip-unknown').click()
-    await page.getByRole('button', { name: /^Refresh$/ }).click()
     await expect(page.getByTestId('dispositions-row-disposition').first()).toHaveText(/validation_failed/i)
     await attachReviewScreenshot(page, testInfo, 'audit-dispositions-validation-filter', { fullPage: false })
   })

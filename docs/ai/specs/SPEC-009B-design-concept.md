@@ -1,5 +1,5 @@
 ---
-topic: "Mission Control Product-Line Seed and Flag Activation"
+topic: "Paddock Product-Line Seed and Flag Activation"
 slug: "spec-009b-mission-control-seed"
 date: "2026-05-07"
 mode: "setup"
@@ -11,7 +11,7 @@ question_count: 11
 stop_reason: "natural"
 ---
 
-# Design Concept: Mission Control Product-Line Seed and Flag Activation
+# Design Concept: Paddock Product-Line Seed and Flag Activation
 
 > **Source:** SPEC-009B roadmap entry plus interactive setup interview
 > **Date:** 2026-05-07
@@ -20,12 +20,12 @@ stop_reason: "natural"
 
 ## Goals
 
-- Seed Mission Control itself as Product Line A with a non-facility `mission-control` workspace while preserving `facility` as the Facility/global aggregate support row.
+- Seed Paddock itself as Product Line A with a non-facility `mission-control` workspace while preserving `facility` as the Facility/global aggregate support row.
 - Keep SPEC-009B Mission-Control-specific and reviewable; defer reusable product-line seeding to SPEC-010A.
 - Seed the full PRD department set now: QA, Development, DevSecOps, Marketing, Customer Service, and Finance.
-- Preserve and re-home only existing `racecraft-lab/mission-control` issue sync state; the desired post-cleanup state is that only Mission Control issues are synced.
+- Preserve and re-home only existing `racecraft-lab/Paddock` issue sync state; the desired post-cleanup state is that only Paddock issues are synced.
 - Use the repo-owned SPEC-009A workflow contract mechanism to seed Issue Triage and Issue Remediation workflow families.
-- Enable Phase 1-7 pilot prerequisite flags and `PILOT_MISSION_CONTROL_E2E` only for the Mission Control product-line scope.
+- Enable Phase 1-7 pilot prerequisite flags and `PILOT_MISSION_CONTROL_E2E` only for the Paddock product-line scope.
 - Prove idempotent seed shape, cleanup preflight behavior, and non-dispatch guardrails before SPEC-009C runs a pilot issue.
 
 ## Non-goals
@@ -59,7 +59,7 @@ stop_reason: "natural"
 
 **Branch:** Product-line data model
 
-**Recommended answer:** Upsert a non-facility workspace with slug `mission-control` and display name `Mission Control`, attached to the existing/default tenant, while preserving the seeded Facility workspace as aggregate/global scope.
+**Recommended answer:** Upsert a non-facility workspace with slug `mission-control` and display name `Paddock`, attached to the existing/default tenant, while preserving the seeded Facility workspace as aggregate/global scope.
 > The PRD explicitly maps SQL `workspace` to Product Line and preserves `facility` as a global/facility support row. This keeps Product Line scope distinct from Facility aggregate scope.
 
 **Alternatives offered:**
@@ -70,7 +70,7 @@ stop_reason: "natural"
 
 ---
 
-### Q3. How broad should the initial Mission Control department seed be?
+### Q3. How broad should the initial Paddock department seed be?
 
 **Branch:** Department model
 
@@ -85,18 +85,18 @@ stop_reason: "natural"
 
 ---
 
-### Q4. Should SPEC-009B migrate any existing synced `racecraft-lab/mission-control` issue tasks into the new Mission Control product-line intake?
+### Q4. Should SPEC-009B migrate any existing synced `racecraft-lab/Paddock` issue tasks into the new Paddock product-line intake?
 
 **Branch:** Existing sync continuity
 
-**Recommended answer:** Yes, preserve GitHub linkage/sync metadata and move matching existing synced Mission Control issue tasks into Mission Control triage/intake without dispatching them.
-> FR-K6 requires preserving previously synced Mission Control issue metadata and treating it as unprocessed intake. This gives SPEC-009C realistic intake while preserving the SPEC-009B no-dispatch boundary.
+**Recommended answer:** Yes, preserve GitHub linkage/sync metadata and move matching existing synced Paddock issue tasks into Paddock triage/intake without dispatching them.
+> FR-K6 requires preserving previously synced Paddock issue metadata and treating it as unprocessed intake. This gives SPEC-009C realistic intake while preserving the SPEC-009B no-dispatch boundary.
 
 **Alternatives offered:**
 - Leave existing synced issues untouched: lower risk, but weakens FR-K6 and may create split-brain intake.
 - Ignore old tasks and seed only a synthetic issue later: simplest, but less realistic for the pilot base.
 
-**User's answer:** Preserve Mission Control issues only. Additional live-ops note: a FocusEngine project currently runs on `ssh hall`; its GitHub repo sync, project tickets, OpenClaw/gateway agents, and issue-sync cron need explicit cleanup before deploying SPEC-009B code. That cleanup is not a SPEC-009B code blocker, but the target post-cleanup state is that only Mission Control issues are synced.
+**User's answer:** Preserve Paddock issues only. Additional live-ops note: a FocusEngine project currently runs on `ssh hall`; its GitHub repo sync, project tickets, OpenClaw/gateway agents, and issue-sync cron need explicit cleanup before deploying SPEC-009B code. That cleanup is not a SPEC-009B code blocker, but the target post-cleanup state is that only Paddock issues are synced.
 
 ---
 
@@ -104,12 +104,12 @@ stop_reason: "natural"
 
 **Branch:** Preflight and destructive behavior
 
-**Recommended answer:** Add a seed preflight that detects non-`racecraft-lab/mission-control` synced projects/tasks/cron/gateway residue and reports a blocking operator cleanup message without deleting anything.
+**Recommended answer:** Add a seed preflight that detects non-`racecraft-lab/Paddock` synced projects/tasks/cron/gateway residue and reports a blocking operator cleanup message without deleting anything.
 > A seed script should be idempotent and non-destructive. Deleting another product line's live history belongs in an explicit operator cleanup, not an automatic seed side effect.
 
 **Alternatives offered:**
 - Automatically unlink/delete non-Mission-Control sync state: convenient, but destructive and risky.
-- Ignore non-Mission-Control sync state: fastest, but conflicts with the desired "only Mission Control issues synced" target.
+- Ignore non-Mission-Control sync state: fastest, but conflicts with the desired "only Paddock issues synced" target.
 
 **User's answer:** Option 1.
 
@@ -130,7 +130,7 @@ stop_reason: "natural"
 
 ---
 
-### Q7. Which feature flags should the Mission Control Product Line A seed enable?
+### Q7. Which feature flags should the Paddock Product Line A seed enable?
 
 **Branch:** Feature-flag activation
 
@@ -164,7 +164,7 @@ stop_reason: "natural"
 
 **Branch:** Workflow contract continuity
 
-**Recommended answer:** Use the repo-owned Mission Control workflow contract as the source, apply/import it into `workflow_templates` for the `mission-control` workspace, and verify the seeded slugs for both families.
+**Recommended answer:** Use the repo-owned Paddock workflow contract as the source, apply/import it into `workflow_templates` for the `mission-control` workspace, and verify the seeded slugs for both families.
 > SPEC-009A made repo-owned workflow policy the source of truth. SPEC-009B should reuse that mechanism rather than duplicating parser/import logic or manual SQL inserts.
 
 **Alternatives offered:**
@@ -207,11 +207,11 @@ stop_reason: "natural"
 
 - **What:** Exact live cleanup commands for the FocusEngine project, tickets, OpenClaw/gateway agents, and issue-sync cron on `ssh hall`.
   **Why deferred:** This is operator pre-deploy cleanup, not SPEC-009B seed code.
-  **Suggested next step:** SPEC-009B should produce a pre-deploy runbook/checklist that requires backup/export first, documents the cleanup targets, and verifies that only `racecraft-lab/mission-control` remains configured for sync before deployment.
+  **Suggested next step:** SPEC-009B should produce a pre-deploy runbook/checklist that requires backup/export first, documents the cleanup targets, and verifies that only `racecraft-lab/Paddock` remains configured for sync before deployment.
 - **What:** Exact conservative governance thresholds for Product Line A.
   **Why deferred:** The interview fixed policy intent, but concrete numbers should be selected during Specify/Plan against existing SPEC-008 policy schema and tests.
   **Suggested next step:** Clarify or Plan should choose explicit WIP and budget values and verify they do not block normal pilot intake.
-- **What:** Whether the current SPEC-009A contract already contains all Mission Control Issue Triage and Issue Remediation slugs needed by FR-K2.
+- **What:** Whether the current SPEC-009A contract already contains all Paddock Issue Triage and Issue Remediation slugs needed by FR-K2.
   **Why deferred:** The interview fixed the source-of-truth mechanism, but implementation must inspect the live contract.
   **Suggested next step:** Specify/Plan should require contract-slug verification and narrow contract edits only if the family is incomplete.
 

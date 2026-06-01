@@ -76,7 +76,7 @@ function parseCoordinatorTargetAgents(rawAgents: any[]): CoordinatorTargetAgent[
 }
 
 const categoryLabels: Record<string, { label: string; icon: string; description: string }> = {
-  general: { label: 'General', icon: '⚙', description: 'Core Mission Control settings' },
+  general: { label: 'General', icon: '⚙', description: 'Core Paddock settings' },
   security: { label: 'Security', icon: '🔑', description: 'API key management and security settings' },
   retention: { label: 'Data Retention', icon: '🗄', description: 'How long data is kept before cleanup' },
   chat: { label: 'Chat', icon: '💬', description: 'Coordinator routing and chat behavior settings' },

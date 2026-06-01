@@ -1,6 +1,6 @@
 # Feature Flag Runbook
 
-Mission Control uses feature flags to ship partially complete capabilities safely
+Paddock uses feature flags to ship partially complete capabilities safely
 while keeping production behavior explicit, reversible, and reviewable. Flags are
 server-evaluated through OpenFeature, stored per workspace, and managed by human
 admins in the UI.

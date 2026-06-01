@@ -33,7 +33,7 @@ authority, runner state, sandbox lifecycle, harness adapters, a review packet
 table, or an evidence UI.
 
 The only allowed human intervention inside the pilot flow is `G_PILOT_MERGE`:
-the operator manually merges the fresh synthetic pilot PR, then Mission Control
+the operator manually merges the fresh synthetic pilot PR, then Paddock
 uses the existing manual GitHub sync path to reconcile the linked task.
 
 ---
@@ -186,7 +186,7 @@ Prerequisite discovery on 2026-05-19:
   clean before setup artifact edits.
 - SpecKit CLI found at `/Users/fredrickgabelmann/.local/bin/specify`.
 - Package manager: `pnpm`, detected from `pnpm-lock.yaml`.
-- Remote: `origin` -> `git@github.com:racecraft-lab/mission-control.git`.
+- Remote: `origin` -> `git@github.com:racecraft-lab/Paddock.git`.
 - Reviewability preset detected:
   `speckit-pro-reviewability` for spec, plan, and tasks templates.
 - Current source commit: `13a104f6` from `main` at setup time.
@@ -288,7 +288,7 @@ from the full gate result.
 ### Scope Summary
 
 Record the intentional `G_PILOT_MERGE` human gate, merge the linked pilot PR,
-sync GitHub state back into Mission Control through the existing manual sync
+sync GitHub state back into Paddock through the existing manual sync
 path, and prove `ready_for_owner -> done` reconciliation without duplicate
 launch or local-only terminal completion.
 
@@ -333,11 +333,11 @@ $speckit-specify
 ## Feature: SPEC-009C4 - Owner Merge Gate and Done Reconciliation
 
 ### Problem Statement
-SPEC-009C3 proves that the Mission Control pilot remediation chain can reach
+SPEC-009C3 proves that the Paddock pilot remediation chain can reach
 `ready_for_owner` with a linked PR-producing task. SPEC-009C4 must complete the
 two-step terminal model by recording the owner merge gate, merging a fresh
 synthetic pilot PR only through operator action, syncing GitHub state back into
-Mission Control, and proving the linked task reconciles from `ready_for_owner`
+Paddock, and proving the linked task reconciles from `ready_for_owner`
 to `done`.
 
 ### Goals
@@ -463,7 +463,7 @@ Focus on evidence for the later review packet:
 |---------|------------|-----------|--------------|
 | 1 | Merge gate/manual sync | 5 | `G_PILOT_MERGE` is workflow/checklist evidence only; canonical sync entrypoint is project-scoped `POST /api/github/sync` backed by `pullFromGitHub`; polling/webhook/scheduler remain deferred; `gate-validator` excludes the human merge action; live UAT proof is checklist text evidence with fresh PR identity, task/workspace/project identity, pre/post state, sync result, evidence rows, cleanup status, and explicit non-use of PR #49 |
 | 2 | Exact PR evidence | 5 | Authoritative live merge proof requires explicit merged truth for the exact linked repo/PR, such as `merged === true` or an equivalent merged-state check; `merge_commit_sha`, `merged_at`, issue-closed state, labels, or timeline data are supporting evidence only; accepted identity is scoped to workspace/project, repo, issue, and PR number; insufficient evidence gets typed reconciliation-required reasons; successful reconciliation updates `done` status/labels and evidence; fixtures remain test-only |
-| 3 | Idempotency/duplicate launch | 5 | Duplicate sync leaves task `done`, creates no duplicate launch, and does not advance the chain again; bounded notification evidence reuses existing `task_ready_for_owner` and reconciliation-required rows, with no new terminal-done notification; done label projection through existing label mechanisms is required; local-only status mutation is not evidence; live UAT cleanup preserves GitHub audit trail and removes or documents disposable Mission Control residue after evidence capture |
+| 3 | Idempotency/duplicate launch | 5 | Duplicate sync leaves task `done`, creates no duplicate launch, and does not advance the chain again; bounded notification evidence reuses existing `task_ready_for_owner` and reconciliation-required rows, with no new terminal-done notification; done label projection through existing label mechanisms is required; local-only status mutation is not evidence; live UAT cleanup preserves GitHub audit trail and removes or documents disposable Paddock residue after evidence capture |
 | 4 | SPEC-009D handoff | 5 | SPEC-009D consumes existing source-map evidence from tasks, activities, notifications, task artifacts, quality reviews, labels, and smoke-checklist text; C4 smoke evidence remains checklist text, not YAML/JSON packet schema; C4 references existing C3 artifact/Aegis rows without copying them; runner/claim/poller/sandbox/adapter fields are explicit future-spec deferrals, not placeholder schema; Playwright is required only if UI or rendered evidence surfaces change |
 
 ### Consensus Resolution Log
@@ -669,7 +669,7 @@ Task constraints:
 - Include guardrail tasks proving no new webhook/poller/scheduler path,
   claim/run schema, sandbox lifecycle, harness adapter, review packet table, or
   evidence UI.
-- Include cleanup tasks for synthetic GitHub and Mission Control UAT residue.
+- Include cleanup tasks for synthetic GitHub and Paddock UAT residue.
 - Ensure task ordering preserves red-green-refactor.
 ```
 
@@ -697,7 +697,7 @@ Focus on:
 1. Constitution alignment - verify GitHub tracker truth, two-step terminal
    semantics, test-first order, and archive hygiene.
 2. Coverage gaps - ensure all FRs, user stories, and checklist gaps have tasks.
-3. Consistency between task file paths and actual Mission Control structure.
+3. Consistency between task file paths and actual Paddock structure.
 4. Reviewability - verify the generated implementation remains a small C4
    reconciliation slice.
 5. Scope boundaries - reject new automatic polling, webhook listener,
@@ -780,7 +780,7 @@ Before starting any task:
   `pnpm test`, `pnpm typecheck`, `pnpm lint`, `pnpm build`.
 - [x] Playwright decision recorded.
 - [x] `G_PILOT_MERGE` live UAT recorded in `docs/qa/pilot-smoke-checklist.md`.
-- [x] Synthetic GitHub and Mission Control residue cleaned up or explicitly
+- [x] Synthetic GitHub and Paddock residue cleaned up or explicitly
   documented.
 - [x] Roadmap and workflow status updated.
 - [x] Reviewability gate recorded.
@@ -794,11 +794,11 @@ Before starting any task:
 - **Final verification:** `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and final `pnpm test:all` passed. `pnpm test` reported 275 passed test files, 33 skipped files, 2894 passed tests, 3 skipped tests, and 84 todo tests; `pnpm test:all` included 646 passing Playwright tests.
 - **Playwright decision:** no new targeted UI journey was required because C4 changed library reconciliation behavior, focused Vitest coverage, and Markdown evidence only; the full Playwright suite still ran through `pnpm test:all`.
 - **Live UAT:** temporary branch deployment at `http://127.0.0.1:3134` created issue #50 and PR #51, verified task `1` stayed `ready_for_owner` before `G_PILOT_MERGE`, squash-merged PR #51, then reconciled task `1` to `done` through existing `POST /api/github/sync`.
-- **UAT cleanup:** temporary Mission Control rows were removed after checklist export; related rows went from `1/1/2/0/0/3` to `0/0/0/0/0/0`; GitHub issue #50 and merged PR #51 remain as external audit trail.
+- **UAT cleanup:** temporary Paddock rows were removed after checklist export; related rows went from `1/1/2/0/0/3` to `0/0/0/0/0/0`; GitHub issue #50 and merged PR #51 remain as external audit trail.
 - **Target deployment closeout:** PR #52 merged to `main` as `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`; HAL `/home/fredrick-gabelmann/mission-control` was fast-forwarded to that commit, `pnpm build` passed, `mission-control.service` restarted, `/login` returned 200, and authenticated `/api/status` returned 200. Target replay UAT on workspace `4` / project `3` used disposable task `41` linked to retained issue #50 / PR #51; deployed `POST /api/github/sync` returned `pulled=1`, `pushed=0`, task `41` moved to `done`, duplicate sync returned `pulled=0`, `pushed=0`, no successor child was created, and the disposable task row was removed after evidence capture. Backup: `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec009c4-target-uat-20260520-025827.bak`.
 - **Reviewability:** final diff stayed in the planned C4 slice: existing GitHub sync reconciliation, focused tests, smoke checklist, workflow, roadmap, and autopilot status. No new poller, webhook, scheduler, claim/run schema, sandbox lifecycle, harness adapter, review packet table, evidence UI, migration, or runtime dependency entered the diff.
 - **Roadmap status:** C4 is `Complete` after PR #52 merge and HAL target deployment/UAT closeout.
-- **PR:** [#52](https://github.com/racecraft-lab/mission-control/pull/52) merged from branch `009c4-owner-merge-reconciliation`.
+- **PR:** [#52](https://github.com/racecraft-lab/Paddock/pull/52) merged from branch `009c4-owner-merge-reconciliation`.
 - **Push:** Branch `009c4-owner-merge-reconciliation` pushed to `origin`.
 
 ---
@@ -826,7 +826,7 @@ Before starting any task:
 ### Patterns to Reuse
 
 - For future live UAT gates, record both external GitHub audit trail and local
-  row-count cleanup evidence before deleting disposable Mission Control rows.
+  row-count cleanup evidence before deleting disposable Paddock rows.
 - Keep roadmap status distinct from workflow/G7 status: branch implementation
   can pass before roadmap completion, and completion waits for PR merge plus
   target deployment promotion evidence.

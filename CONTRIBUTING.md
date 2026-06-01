@@ -1,13 +1,13 @@
-# Contributing to Mission Control
+# Contributing to Paddock
 
-Thank you for your interest in contributing to Mission Control.
+Thank you for your interest in contributing to Paddock.
 
 ## Getting Started
 
 ```bash
 # Clone the repo
-git clone https://github.com/builderz-labs/mission-control.git
-cd mission-control
+git clone https://github.com/racecraft-lab/Paddock.git
+cd Paddock
 
 # Install dependencies
 pnpm install

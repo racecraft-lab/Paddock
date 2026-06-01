@@ -20,7 +20,7 @@ implementation_authority: SpecKit autopilot via speckit-pro plugin
 
 ## Context
 
-Mission Control currently stores executable workflow templates in SQLite
+Paddock currently stores executable workflow templates in SQLite
 `workflow_templates`. The RC Factory PRD requires workflow policy to be
 repo-owned instead of database-only: a product line workflow family must be
 importable/exportable as a versioned contract and must preserve parity with the
@@ -30,7 +30,7 @@ SPEC-009A is the process-only contract roundtrip slice. It defines the contract
 format under `docs/ai/workflows/`, imports valid contracts into
 `workflow_templates`, exports the runtime projection back to a Markdown review
 artifact, and proves fail-closed behavior for invalid contracts. It does not
-seed the Mission Control product line, ingest a GitHub issue, claim work, launch
+seed the Paddock product line, ingest a GitHub issue, claim work, launch
 a runner, or run a pilot.
 
 The roadmap already contains later governance and control-plane specs that
@@ -52,7 +52,7 @@ not implement enforcement in a way coupled to SPEC-009A itself.
 
 ## Goals
 
-1. Define a repo-owned Mission Control workflow contract under
+1. Define a repo-owned Paddock workflow contract under
    `docs/ai/workflows/mission-control/`.
 2. Keep YAML as the canonical source file shape, with prompt bodies embedded as
    block scalars and Markdown generated only as a review artifact.
@@ -161,7 +161,7 @@ deterministic and operator-driven; there is no automatic rollback behavior.
 
 ### Q13 - Initial workflow family content
 
-**Decision:** Include a minimal Mission Control workflow family under
+**Decision:** Include a minimal Paddock workflow family under
 `docs/ai/workflows/mission-control/`. It covers intake, planning,
 implementation, review, owner gate, and lifecycle metadata, but does not
 dispatch a pilot.
@@ -220,7 +220,7 @@ family: mission-control
 tracker:
   kind: github_issues
   owner: racecraft-lab
-  repo: mission-control
+  repo: Paddock
   selector_labels:
     - mc:self-hosting
 templates:
@@ -286,4 +286,3 @@ templates:
    single import-run table with JSON columns or normalized run/error tables.
 4. Exact Markdown export path and naming convention.
 5. Exact migration numbering for reusable diagnostics storage.
-

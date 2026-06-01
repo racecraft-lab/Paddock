@@ -10,20 +10,20 @@ async function loadVisualReviewStateModule() {
 }
 
 const context = {
-  repository: 'racecraft-lab/mission-control',
+  repository: 'racecraft-lab/Paddock',
   prNumber: '26',
   prTitle: 'SPEC-008 governance',
-  prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
+  prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
   surface: 'playwright',
   surfaceLabel: 'Playwright UI E2E',
   runId: '123',
   runAttempt: '2',
   runKey: '123-attempt-2',
-  runUrl: 'https://github.com/racecraft-lab/mission-control/actions/runs/123',
+  runUrl: 'https://github.com/racecraft-lab/Paddock/actions/runs/123',
   headRef: '008-resource-governance',
   baseRef: 'main',
   headSha: 'abcdef1234567890',
-  reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/playwright/latest/',
+  reportHref: 'https://racecraft-lab.github.io/Paddock/pr/26/playwright/latest/',
 }
 
 const items = [
@@ -128,7 +128,7 @@ describe('visual review state', () => {
         ...context,
         surface: 'storybook',
         surfaceLabel: 'Storybook Components',
-        reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/storybook/latest/',
+        reportHref: 'https://racecraft-lab.github.io/Paddock/pr/26/storybook/latest/',
       },
       items,
       reviews: {
@@ -168,7 +168,7 @@ describe('visual review state', () => {
         ...context,
         surface: 'storybook',
         surfaceLabel: 'Storybook Components',
-        reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/storybook/latest/',
+        reportHref: 'https://racecraft-lab.github.io/Paddock/pr/26/storybook/latest/',
       },
       items,
       reviews: {

@@ -107,7 +107,7 @@ describe('createTaskSchema', () => {
     const result = createTaskSchema.safeParse({
       title: 'Route this task',
       metadata: {
-        implementation_repo: 'builderz-labs/mission-control',
+        implementation_repo: 'racecraft-lab/Paddock',
         code_location: '/apps/api',
       },
     })

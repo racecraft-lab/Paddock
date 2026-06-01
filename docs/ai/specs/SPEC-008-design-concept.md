@@ -19,9 +19,9 @@ implementation_authority: SpecKit autopilot via speckit-pro plugin (single spec;
 
 ## Context
 
-Mission Control's `resource_policies` and `resource_policy_events` tables landed empty in SPEC-001 (M60/M61). Phase 7 turns the existing best-effort Cost Tracker into a feature-flagged scheduler enforcement layer. Hard-coded `LIMIT 3` and "3+ in_progress" capacity checks in the dispatcher are the only enforcement that exists today.
+Paddock's `resource_policies` and `resource_policy_events` tables landed empty in SPEC-001 (M60/M61). Phase 7 turns the existing best-effort Cost Tracker into a feature-flagged scheduler enforcement layer. Hard-coded `LIMIT 3` and "3+ in_progress" capacity checks in the dispatcher are the only enforcement that exists today.
 
-### Source-of-truth inventory (ground-truthed against `racecraft-lab/openclaw` + `racecraft-lab/mission-control`)
+### Source-of-truth inventory (ground-truthed against `racecraft-lab/openclaw` + `racecraft-lab/Paddock`)
 
 **OpenClaw is three distinct telemetry sources, not one:**
 
@@ -29,7 +29,7 @@ Mission Control's `resource_policies` and `resource_policy_events` tables landed
 - **A2 — Transcript-replay** (`src/infra/session-cost-usage.ts`). Post-hoc parse of CLI rollout/transcript files. 30s cache, 256-entry bound, in-flight request coalescing.
 - **A3 — Provider-quota fetchers** (`src/infra/provider-usage.fetch.{claude,codex,gemini,minimax,zai}.ts`, `extensions/github-copilot/usage.ts`). Coarse `% remaining` windows from each provider's quota endpoint. **OpenClaw's Copilot adapter polls `https://api.github.com/copilot_internal/user` (undocumented `_internal` endpoint with VS-Code-spoofed headers — see Q19 below for why this is advisory-only).**
 
-**Mission Control's existing ingestion is also three:**
+**Paddock's existing ingestion is also three:**
 
 - **B1 — `getAllGatewaySessions()`** (`src/lib/sessions.ts`). Reads ONLY `OPENCLAW_STATE_DIR/agents/<agent>/sessions/sessions.json` — OpenClaw's aggregate session blob. Does NOT read raw rollouts. 30s cache. **Critical caveat (per oracle review): this stream may include API-key-billed (metered) Anthropic/OpenAI traffic if any agent is configured for metered access via OpenClaw — the "no SDK calls in v1" claim is operator preference, NOT enforced by the data path.**
 - **B2 — `/api/tokens` POST** (`src/app/api/tokens/route.ts`). Manual operator-role writes to `tokens.json` + DB `token_usage` table.
@@ -1657,7 +1657,7 @@ CREATE INDEX idx_quarantine_recent ON quarantined_raw_events(rejected_at DESC);
 
 ### Q48 — Local health channel independent of OTel (NEW — round-4 oracle finding #4)
 
-**Decision:** **Mission Control writes its own health events directly to SQLite at `governance_health_events`; UI reads from DB; the OTel collector is observable EVEN WHEN it's down because the local channel doesn't depend on it.**
+**Decision:** **Paddock writes its own health events directly to SQLite at `governance_health_events`; UI reads from DB; the OTel collector is observable EVEN WHEN it's down because the local channel doesn't depend on it.**
 
 ```sql
 CREATE TABLE governance_health_events (
@@ -2282,7 +2282,7 @@ ALTER TABLE workspaces ADD COLUMN governance_capture_content_json TEXT NOT NULL 
 -- }
 ```
 
-When operator sets any to `true`: ALSO requires UI confirmation modal with explicit warning ("This will capture prompt/response text into Mission Control's database. Captured content is visible to anyone with operator access. Confirm by typing 'CAPTURE CONTENT'."). Audit row written. Operator can disable any time; future ingested events go back to redacted.
+When operator sets any to `true`: ALSO requires UI confirmation modal with explicit warning ("This will capture prompt/response text into Paddock's database. Captured content is visible to anyone with operator access. Confirm by typing 'CAPTURE CONTENT'."). Audit row written. Operator can disable any time; future ingested events go back to redacted.
 
 When ANY capture flag is true, the captured fields go into a SEPARATE table:
 
@@ -2540,7 +2540,7 @@ ToS surface flag matrix:
 | ChatGPT `wham/usage` polling | **`disabled`** | Undocumented; OAuth-protected; not third-party | High — explicit workaround |
 | Anthropic plan-usage UI scraping | **`disabled`** | Web scraping; against ToS | High |
 
-When operator enables a surface marked default-disabled, UI shows: "Enabling this surface depends on undocumented or reverse-engineered behavior that may violate provider Terms of Service. Mission Control captures only quota metadata, not content. Continue at your own risk." + typed confirmation field. Acknowledgment recorded in `governance_tos_acknowledgments_json`.
+When operator enables a surface marked default-disabled, UI shows: "Enabling this surface depends on undocumented or reverse-engineered behavior that may violate provider Terms of Service. Paddock captures only quota metadata, not content. Continue at your own risk." + typed confirmation field. Acknowledgment recorded in `governance_tos_acknowledgments_json`.
 
 **Documentation deliverable** (`docs/observability/provider-tos-considerations.md`): per-surface explanation of legality / risk / fallback if surface breaks.
 
@@ -2574,7 +2574,7 @@ Install script:
 ```bash
 # Scans node_modules and package.json for incompatible licenses
 # Rejects: AGPL-*, SSPL-*, Commons Clause variants, Elastic-2.0
-# Warnings on: GPL-* (Mission Control is MIT/Apache-2.0; GPL deps would be incompatible)
+# Warnings on: GPL-* (Paddock is MIT/Apache-2.0; GPL deps would be incompatible)
 # Allowed: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, Unlicense
 ```
 
@@ -2649,7 +2649,7 @@ Items still requiring **`/speckit.clarify`** resolution:
 
 ## References (Research Provenance)
 
-This design concept was enriched by 9 background research agents on 2026-05-02 (5 stack/provider + 4 deep CLI telemetry: Claude Code, Codex CLI, Copilot CLI, cross-source gap analysis) plus 2 advisor consultations + 1 adversarial RepoPrompt oracle review (14 corrections applied) + direct ground-truth reading of `racecraft-lab/openclaw` and `racecraft-lab/mission-control` source on GitHub plus operator node filesystem (OpenClaw health files, ports, services).
+This design concept was enriched by 9 background research agents on 2026-05-02 (5 stack/provider + 4 deep CLI telemetry: Claude Code, Codex CLI, Copilot CLI, cross-source gap analysis) plus 2 advisor consultations + 1 adversarial RepoPrompt oracle review (14 corrections applied) + direct ground-truth reading of `racecraft-lab/openclaw` and `racecraft-lab/Paddock` source on GitHub plus operator node filesystem (OpenClaw health files, ports, services).
 
 **Anthropic / Claude Code:** [Monitoring (OTel)](https://code.claude.com/docs/en/monitoring-usage) · [Cost docs](https://code.claude.com/docs/en/costs) · [Hooks](https://code.claude.com/docs/en/hooks) · [Claude directory](https://code.claude.com/docs/en/claude-directory) · [Claude Code Analytics API](https://platform.claude.com/docs/en/api/claude-code-analytics-api) · [Pro/Max plan](https://support.claude.com/en/articles/11145838-using-claude-code-with-your-pro-or-max-plan) · [Rate limits](https://platform.claude.com/docs/en/api/rate-limits) · [ColeMurray/claude-code-otel](https://github.com/ColeMurray/claude-code-otel) · [Anthropic claude-code-monitoring-guide](https://github.com/anthropics/claude-code-monitoring-guide)
 

@@ -129,7 +129,7 @@ function buildPostRequest(body: Record<string, unknown>, path = '/api/github'): 
 
 function seedFacilityAndProductLine(db: Database.Database): void {
   seedWorkspace(db, 2, 'facility', 'Facility', '{"FEATURE_WORKSPACE_SWITCHER":true}')
-  seedWorkspace(db, 4, 'mission-control', 'Mission Control', '{"FEATURE_WORKSPACE_SWITCHER":true,"FEATURE_AREA_LABEL_ROUTING":true}')
+  seedWorkspace(db, 4, 'mission-control', 'Paddock', '{"FEATURE_WORKSPACE_SWITCHER":true,"FEATURE_AREA_LABEL_ROUTING":true}')
 }
 
 function seedWorkspace(

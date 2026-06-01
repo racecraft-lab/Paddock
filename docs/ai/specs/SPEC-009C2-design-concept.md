@@ -20,8 +20,8 @@ stop_reason: "natural"
 
 ## Goals
 
-- Prove that a SPEC-009C1 eligible GitHub-linked pilot task can complete the Mission Control Issue Triage workflow and hand off to Issue Remediation planning only when the triage disposition is `ACTIONABLE_REMEDIATION`.
-- Keep the handoff policy repo-owned by updating the Mission Control workflow contract so the disposition taxonomy and routing behavior are visible before runtime import.
+- Prove that a SPEC-009C1 eligible GitHub-linked pilot task can complete the Paddock Issue Triage workflow and hand off to Issue Remediation planning only when the triage disposition is `ACTIONABLE_REMEDIATION`.
+- Keep the handoff policy repo-owned by updating the Paddock workflow contract so the disposition taxonomy and routing behavior are visible before runtime import.
 - Persist traceable disposition and artifact evidence for the triage decision using existing SPEC-007 surfaces.
 - Reuse the existing SPEC-004 task-chain engine and `createTask` successor path instead of introducing a new control plane, scheduler, runner, or production operator action.
 - Prove negative outcomes are clean exits: duplicate, obsolete, invalid, needs-human, needs-specialist, and `NEEDS_SPEC` outcomes must not create remediation-planning work in this slice.
@@ -69,7 +69,7 @@ stop_reason: "natural"
 
 ---
 
-### Q3. Should SPEC-009C2 update the repo-owned Mission Control workflow contract so Issue Triage emits the full disposition enum and routes `ACTIONABLE_REMEDIATION` directly to a remediation-planning template?
+### Q3. Should SPEC-009C2 update the repo-owned Paddock workflow contract so Issue Triage emits the full disposition enum and routes `ACTIONABLE_REMEDIATION` directly to a remediation-planning template?
 
 **Branch:** Workflow contract alignment
 
@@ -93,7 +93,7 @@ stop_reason: "natural"
 
 **Alternatives offered:**
 - Use the existing closed/previous synthetic issue as the seed: avoids another GitHub issue, but weakens the clean-state proof.
-- Require a real non-synthetic Mission Control issue: closest to production, but risky for an early handoff smoke.
+- Require a real non-synthetic Paddock issue: closest to production, but risky for an early handoff smoke.
 
 **User's answer:** Option A.
 

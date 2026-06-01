@@ -13,7 +13,7 @@ SPEC-013C adds authenticated backend claim-control authority on top of SPEC-013B
 **Primary Dependencies**: Next.js 16 App Router, React 19, `better-sqlite3`, existing feature-flag/auth/workspace helpers, existing `detectSecrets`, Node `crypto`; no new runtime dependency  
 **Storage**: SQLite through `better-sqlite3`; existing `tasks`, `workspaces`, `task_stage_attempts`, `task_stage_claims`, and `activities`; M79 widens the existing claim release-reason constraint for operator reasons and adds scoped idempotency replay storage with manual rollback SQL  
 **Testing**: Vitest focused unit/route/migration tests, `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`; Playwright only if an existing visible surface changes, which this plan avoids  
-**Target Platform**: Mission Control Next.js backend on Node >=22; HAL target UAT may use service-compatible Node 24 as in SPEC-013B  
+**Target Platform**: Paddock Next.js backend on Node >=22; HAL target UAT may use service-compatible Node 24 as in SPEC-013B
 **Project Type**: Web-service API and backend state module inside an existing Next.js application  
 **Performance Goals**: Single-task mutation/read-model path performs bounded indexed SQLite lookups; no live GitHub/network fetch; no scan over unrelated workspaces/tasks  
 **Constraints**: Default-off behind `resolveFlag('FEATURE_TASK_CONTROL_PLANE', ctx)`; mutation route uses `requireRole(request, 'operator')`; idempotency responses replay without rerunning side effects; all writes happen in one SQLite transaction; audit payloads are positive-allowlisted and secret-scanned; no raw payload persistence  

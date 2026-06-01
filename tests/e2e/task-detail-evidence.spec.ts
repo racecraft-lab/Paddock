@@ -120,7 +120,7 @@ function seedEvidenceRows(tasks: Record<keyof typeof EVIDENCE_TITLES, CreatedTas
     db.prepare(`
       UPDATE tasks
       SET status = 'ready_for_owner',
-          github_repo = 'racecraft-lab/mission-control',
+          github_repo = 'racecraft-lab/Paddock',
           github_issue_number = 50,
           github_pr_number = 51,
           github_synced_at = ?,
@@ -130,7 +130,7 @@ function seedEvidenceRows(tasks: Record<keyof typeof EVIDENCE_TITLES, CreatedTas
     db.prepare(`
       UPDATE tasks
       SET status = 'review',
-          github_repo = 'racecraft-lab/mission-control',
+          github_repo = 'racecraft-lab/Paddock',
           github_issue_number = 52,
           github_pr_number = NULL,
           github_synced_at = ?,
@@ -203,7 +203,7 @@ function seedEvidenceRows(tasks: Record<keyof typeof EVIDENCE_TITLES, CreatedTas
     if (tableExists(db, 'github_syncs')) {
       insertedSyncIds.push(Number(db.prepare(`
         INSERT INTO github_syncs (repo, last_synced_at, issue_count, sync_direction, status, workspace_id, created_at)
-        VALUES ('racecraft-lab/mission-control', ?, 1, 'inbound', 'success', ?, ?)
+        VALUES ('racecraft-lab/Paddock', ?, 1, 'inbound', 'success', ?, ?)
       `).run(FIXTURE_NOW + 50, eligibleWorkspace, FIXTURE_NOW + 50).lastInsertRowid))
     }
 
@@ -311,7 +311,7 @@ async function attachFixtureExport(tasks: Record<keyof typeof EVIDENCE_TITLES, C
     schema_version: 'spec-009e.e2e-export.v1',
     generated_at: new Date().toISOString(),
     retained_github_evidence: {
-      repository: 'racecraft-lab/mission-control',
+      repository: 'racecraft-lab/Paddock',
       issue: 50,
       pull_request: 51,
     },
@@ -367,10 +367,10 @@ test.describe.serial('SPEC-009E task detail evidence', () => {
     const eligibleEvidence = await openTaskEvidence(page, eligible.title)
     await expect(eligibleEvidence.getByText('eligible')).toBeVisible()
     await expect(eligibleEvidence.getByText('ready_for_owner')).toBeVisible()
-    await expect(eligibleEvidence.getByRole('link', { name: /racecraft-lab\/mission-control#50/i }))
-      .toHaveAttribute('href', 'https://github.com/racecraft-lab/mission-control/issues/50')
+    await expect(eligibleEvidence.getByRole('link', { name: /racecraft-lab\/Paddock#50/i }))
+      .toHaveAttribute('href', 'https://github.com/racecraft-lab/Paddock/issues/50')
     await expect(eligibleEvidence.getByRole('link', { name: /PR #51/i }))
-      .toHaveAttribute('href', 'https://github.com/racecraft-lab/mission-control/pull/51')
+      .toHaveAttribute('href', 'https://github.com/racecraft-lab/Paddock/pull/51')
     await expect(eligibleEvidence.getByText(/pilot review packet json/i).first()).toBeVisible()
     await expect(eligibleEvidence.getByText(/docs\/qa\/pilot-smoke-checklist\.md#spec-009e/i).first()).toBeVisible()
     await expect(eligibleEvidence.locator('span').filter({ hasText: /^deferred$/ })).toHaveCount(7)

@@ -37,7 +37,7 @@ const settingDefinitions: Record<string, { category: string; description: string
   },
 
   // General
-  'general.site_name': { category: 'general', description: 'Mission Control display name', default: 'Mission Control' },
+  'general.site_name': { category: 'general', description: 'Paddock display name', default: 'Paddock' },
   'general.auto_cleanup': { category: 'general', description: 'Enable automatic data cleanup', default: 'false' },
   'general.auto_backup': { category: 'general', description: 'Enable automatic daily backups', default: 'false' },
   'general.backup_retention_count': { category: 'general', description: 'Number of backup files to keep', default: '10' },

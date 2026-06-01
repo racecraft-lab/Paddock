@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
  * E2E tests for Ed25519 device identity (Issues #74, #79, #81).
  *
  * These run in a real Chromium browser to exercise Web Crypto Ed25519 and
- * localStorage persistence — the same environment Mission Control uses.
+ * localStorage persistence — the same environment Paddock uses.
  */
 
 test.describe('Device Identity — Ed25519 key management', () => {

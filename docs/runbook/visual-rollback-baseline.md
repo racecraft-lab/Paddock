@@ -15,7 +15,7 @@
 
 ## 3. Diagnose
 
-- Identify the last known-good `main` run for `Mission Control UI E2E`
+- Identify the last known-good `main` run for `Paddock UI E2E`
   or `Visual Storybook Snapshots`.
 - Confirm which baseline path is affected:
   - `test-results/visual-current/playwright`

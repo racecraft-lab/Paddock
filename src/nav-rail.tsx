@@ -93,14 +93,14 @@ export function NavRail() {
           <div className="w-9 h-9 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center shrink-0">
             <Image
               src="/brand/mc-logo-128.png"
-              alt="Mission Control logo"
+              alt="Paddock logo"
               width={36}
               height={36}
               className="w-full h-full object-cover"
             />
           </div>
           {sidebarExpanded && (
-            <span className="text-sm font-semibold text-foreground truncate flex-1">Mission Control</span>
+            <span className="text-sm font-semibold text-foreground truncate flex-1">Paddock</span>
           )}
           <Button
             variant="ghost"

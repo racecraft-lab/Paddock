@@ -2,7 +2,7 @@
  * Adapter API Route Integration Tests
  *
  * Tests the POST /api/adapters dispatcher against all frameworks.
- * Simulates what an external agent would do to connect to Mission Control.
+ * Simulates what an external agent would do to connect to Paddock.
  *
  * This is the "Feynman test" — timing how long it takes a stranger's
  * agent to connect via the HTTP API.

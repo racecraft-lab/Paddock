@@ -1,6 +1,6 @@
 # GitHub Sync
 
-Mission Control syncs tasks bidirectionally with GitHub Issues. The legacy
+Paddock syncs tasks bidirectionally with GitHub Issues. The legacy
 flow is per-project: each project with `github_repo` set polls and pushes
 its own issues. SPEC-006 (`FEATURE_AREA_LABEL_ROUTING`) layers a workspace-aware
 routing model on top — one elected sync owner per `(workspace_id,

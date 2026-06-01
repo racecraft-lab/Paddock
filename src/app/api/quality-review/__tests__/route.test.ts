@@ -106,7 +106,7 @@ function insertC3DevTask(db: Database.Database, id = 102): void {
       github_repo, github_issue_number, github_pr_number
     )
     VALUES (?, 'C3 dev task', 'quality_review', 'builder', 'creator', 1, 12,
-      'racecraft-lab/mission-control', 99, 42)
+      'racecraft-lab/Paddock', 99, 42)
   `).run(id)
 }
 

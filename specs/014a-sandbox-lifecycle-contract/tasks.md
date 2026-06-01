@@ -44,7 +44,7 @@
 
 ## Phase 3: User Story 1 - Create Inspectable Sandboxes For Already-Claimed Work (Priority: P1)
 
-**Goal**: Fake Mission Control, OpenClaw, and external-harness owners create deterministic lifecycle evidence for already-claimed task stages without launching a real harness.
+**Goal**: Fake Paddock, OpenClaw, and external-harness owners create deterministic lifecycle evidence for already-claimed task stages without launching a real harness.
 
 **Independent Test**: Enable the flag in a disposable workspace, create/prepare/run/terminal fake lifecycles for all three owners, and verify owner, key, status, sanitized path evidence, and events.
 

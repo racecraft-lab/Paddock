@@ -12,7 +12,7 @@ function evidence(overrides: Partial<TaskEvidenceResponse> = {}): TaskEvidenceRe
       title: 'SPEC-009E retained pilot trail',
       status: 'ready_for_owner',
       workspace_id: '1',
-      github_repo: 'racecraft-lab/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 50,
       github_pr_number: 51,
     },
@@ -23,15 +23,15 @@ function evidence(overrides: Partial<TaskEvidenceResponse> = {}): TaskEvidenceRe
     },
     identity: {
       state: 'available',
-      repository: 'racecraft-lab/mission-control',
+      repository: 'racecraft-lab/Paddock',
       issue: {
         number: 50,
-        url: 'https://github.com/racecraft-lab/mission-control/issues/50',
-        label: 'racecraft-lab/mission-control#50',
+        url: 'https://github.com/racecraft-lab/Paddock/issues/50',
+        label: 'racecraft-lab/Paddock#50',
       },
       pull_request: {
         number: 51,
-        url: 'https://github.com/racecraft-lab/mission-control/pull/51',
+        url: 'https://github.com/racecraft-lab/Paddock/pull/51',
         label: 'PR #51',
       },
       missing: [],
@@ -104,10 +104,10 @@ describe('TaskEvidenceSection', () => {
     const region = screen.getByRole('region', { name: /task evidence/i })
     expect(within(region).getByText('eligible')).toBeInTheDocument()
     expect(within(region).getByText('ready_for_owner')).toBeInTheDocument()
-    expect(within(region).getByRole('link', { name: /racecraft-lab\/mission-control#50/i }))
-      .toHaveAttribute('href', 'https://github.com/racecraft-lab/mission-control/issues/50')
+    expect(within(region).getByRole('link', { name: /racecraft-lab\/Paddock#50/i }))
+      .toHaveAttribute('href', 'https://github.com/racecraft-lab/Paddock/issues/50')
     expect(within(region).getByRole('link', { name: /PR #51/i }))
-      .toHaveAttribute('href', 'https://github.com/racecraft-lab/mission-control/pull/51')
+      .toHaveAttribute('href', 'https://github.com/racecraft-lab/Paddock/pull/51')
     expect(within(region).getByText(/SPEC-009D packet unsafe/i)).toBeInTheDocument()
     expect(within(region).queryByRole('link', { name: /unsafe/i })).not.toBeInTheDocument()
     expect(within(region).getByText('Triage routing')).toBeInTheDocument()
@@ -132,8 +132,8 @@ describe('TaskEvidenceSection', () => {
         },
         identity: {
           state: 'incomplete',
-          repository: 'racecraft-lab/mission-control',
-          issue: { number: 50, label: 'racecraft-lab/mission-control#50' },
+          repository: 'racecraft-lab/Paddock',
+          issue: { number: 50, label: 'racecraft-lab/Paddock#50' },
           missing: ['missing_github_pr_number'],
         },
       })}

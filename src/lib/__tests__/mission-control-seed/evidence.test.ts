@@ -106,7 +106,7 @@ describe('mission-control seed evidence', () => {
       VALUES (
         'Bad dispatched pilot task', 1, 'in_progress',
         'mission-control-platform-dev', 'SPEC-009B',
-        'racecraft-lab/mission-control', 123
+        'racecraft-lab/Paddock', 123
       )
     `).run()
 

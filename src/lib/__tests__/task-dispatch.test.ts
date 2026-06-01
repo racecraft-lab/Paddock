@@ -194,7 +194,7 @@ function createSpec009C3PipelineDb(): Database.Database {
   }))
   db.prepare(`
     INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix)
-    VALUES (900, 'Mission Control', 'mission-control', 1, 'MC')
+    VALUES (900, 'Paddock', 'mission-control', 1, 'MC')
   `).run()
   db.prepare(`
     INSERT OR IGNORE INTO agents (id, name, role, status, workspace_id)
@@ -251,7 +251,7 @@ function createSpec009FTriageDispatchDb(): Database.Database {
   }))
   db.prepare(`
     INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix, area_slug)
-    VALUES (990, 'Mission Control', 'mission-control', 1, 'MC', 'dev')
+    VALUES (990, 'Paddock', 'mission-control', 1, 'MC', 'dev')
   `).run()
   db.prepare(`
     INSERT INTO workflow_templates (
@@ -277,10 +277,10 @@ function seedSpec009C3Chain(db: Database.Database, reviewVerdict: 'pass' | 'fix'
     )
     VALUES
       (300, 'Root issue', 'GitHub issue', 'done', 'high', '{}', 'triage', 'system',
-        1, 900, NULL, NULL, 'racecraft-lab/mission-control', 99, NULL, NULL,
+        1, 900, NULL, NULL, 'racecraft-lab/Paddock', 99, NULL, NULL,
         300, 'c3-chain', 0),
       (302, 'Dev implementation', 'Dev task', 'done', 'high', '{"result":"done"}', 'builder', 'system',
-        1, 900, 910, 'mission-control_dev_implementation', 'racecraft-lab/mission-control', NULL, 42, 300,
+        1, 900, 910, 'mission-control_dev_implementation', 'racecraft-lab/Paddock', NULL, 42, 300,
         300, 'c3-chain', 2),
       (303, 'Implementation review', 'Review task', 'done', 'high', ?, 'reviewer', 'system',
         1, 900, 911, 'mission-control_review', NULL, NULL, NULL, 302,
@@ -298,12 +298,12 @@ function c3Payload(type: string, extras: Record<string, unknown> = {}): string {
     workspace_id: 1,
     root_issue: {
       task_id: 300,
-      github_repo: 'racecraft-lab/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 99,
     },
     pr_dev_task: {
       task_id: 302,
-      github_repo: 'racecraft-lab/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_pr_number: 42,
       pr_identity_source: 'fixture',
     },
@@ -436,7 +436,7 @@ describe('advanceTaskChain SPEC-009F triage routing', () => {
       VALUES (
         9900, 'SPEC-009F source task', 'Production triage route', 'done', 'medium',
         ?, 'triage-agent', 'system', 1, 990, 990, 'mission-control_issue_triage',
-        'racecraft-lab/mission-control', 1090, 1779400000, 1779400000, 1779400000
+        'racecraft-lab/Paddock', 1090, 1779400000, 1779400000, 1779400000
       )
     `).run(JSON.stringify({
       disposition: 'NEEDS_SPEC',
@@ -491,7 +491,7 @@ describe('advanceTaskChain SPEC-009F triage routing', () => {
       VALUES (
         9901, 'SPEC-009F secret-bearing source task', 'Production triage route', 'done', 'medium',
         ?, 'triage-agent', 'system', 1, 990, 990, 'mission-control_issue_triage',
-        'racecraft-lab/mission-control', 1091, 1779400000, 1779400000, 1779400000
+        'racecraft-lab/Paddock', 1091, 1779400000, 1779400000, 1779400000
       )
     `).run(JSON.stringify({
       disposition: 'NEEDS_SPEC',
@@ -528,7 +528,7 @@ describe('advanceTaskChain SPEC-009F triage routing', () => {
 })
 
 describe('autoRouteInboxTasks pilot hold', () => {
-  it('holds GitHub-linked Mission Control pilot tasks while routing ordinary inbox tasks', async () => {
+  it('holds GitHub-linked Paddock pilot tasks while routing ordinary inbox tasks', async () => {
     dispatchDb = createDispatchDb()
     dispatchDb.prepare(`
       UPDATE workspaces
@@ -547,7 +547,7 @@ describe('autoRouteInboxTasks pilot hold', () => {
       )
       VALUES
         (100, 'Pilot issue', 'Hold for SPEC-009C1 evidence', 'inbox', 'medium', NULL, 1,
-          1, 'racecraft-lab/mission-control', 39, 12345, NULL, 1),
+          1, 'racecraft-lab/Paddock', 39, 12345, NULL, 1),
         (101, 'Ordinary inbox task', 'Can be routed', 'inbox', 'medium', NULL, 1,
           1, NULL, NULL, NULL, NULL, 2)
     `).run()

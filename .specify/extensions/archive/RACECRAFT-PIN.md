@@ -30,7 +30,7 @@ the vendored extension files recorded below.
 | `.specify/extensions/archive/CHANGELOG.md` | `f795322c9e51412cd4da8b4462c12f50232a9bdf894280dbbe2058bff3ea3427` |
 | `.specify/extensions/archive/LICENSE` | `7abc1ff97b2ebeb16bd1b8b5ffc6936c293bc2eef3bb17095aa4e89dd6c2be10` |
 
-## Mission Control Safety Policy
+## Paddock Safety Policy
 
 Archive Sweep runs before requested spec work and excludes the current target
 spec. Cleanup-sensitive behavior remains dry-run-only unless the active branch

@@ -31,7 +31,7 @@ services:
         required: false
     volumes:
       - mc-data:/app/.data
-      # Optional: mount your OpenClaw state directory read-only so Mission Control
+      # Optional: mount your OpenClaw state directory read-only so Paddock
       # can read agent configs and memory. Uncomment and adjust the host path:
       # - ${OPENCLAW_HOME:-~/.openclaw}:/run/openclaw:ro
     # Allow the container to reach an OpenClaw gateway running on the Docker host.

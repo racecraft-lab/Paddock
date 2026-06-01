@@ -1,14 +1,14 @@
 # Quickstart: Your First Agent in 5 Minutes
 
-Get from zero to a working agent loop with nothing but Mission Control and `curl`. No gateway, no OpenClaw, no extra dependencies.
+Get from zero to a working agent loop with nothing but Paddock and `curl`. No gateway, no OpenClaw, no extra dependencies.
 
 ## Prerequisites
 
-- Mission Control running (`pnpm dev` or Docker)
+- Paddock running (`pnpm dev` or Docker)
 - An admin account (visit `/setup` on first run)
 - Your API key (auto-generated on first run, shown in Settings)
 
-## Step 1: Start Mission Control
+## Step 1: Start Paddock
 
 ```bash
 pnpm dev
@@ -25,7 +25,7 @@ export MC_API_KEY=your-api-key
 
 ## Step 2: Register an Agent
 
-Agents can self-register via the API. This is how autonomous agents announce themselves to Mission Control:
+Agents can self-register via the API. This is how autonomous agents announce themselves to Paddock:
 
 ```bash
 curl -s -X POST "$MC_URL/api/agents/register" \
@@ -136,7 +136,7 @@ curl -s -X PUT "$MC_URL/api/tasks/1" \
 
 ## Step 6: Send a Heartbeat
 
-Heartbeats tell Mission Control your agent is alive. Without them, agents are marked offline after 10 minutes:
+Heartbeats tell Paddock your agent is alive. Without them, agents are marked offline after 10 minutes:
 
 ```bash
 curl -s -X POST "$MC_URL/api/agents/1/heartbeat" \
@@ -221,7 +221,7 @@ See [CLI Reference](cli-agent-control.md) for the full command list.
 For agents built with Claude Code, the MCP server is the recommended integration:
 
 ```bash
-claude mcp add mission-control -- node /path/to/mission-control/scripts/mc-mcp-server.cjs
+claude mcp add paddock -- node /path/to/Paddock/scripts/mc-mcp-server.cjs
 ```
 
 Set `MC_URL` and `MC_API_KEY` in your environment. The MCP server exposes 35+ tools for agents, tasks, sessions, memory, and more. See [CLI Integration](cli-integration.md) for details.

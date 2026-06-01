@@ -53,7 +53,7 @@ const readyForOwnerTask = {
   project_name: 'SPEC-005 Ready for Owner',
   project_prefix: 'S005',
   ticket_ref: 'S005-5',
-  github_repo: 'racecraft-lab/mission-control',
+  github_repo: 'racecraft-lab/Paddock',
   github_issue_number: 23,
   github_pr_number: 23,
   github_pr_state: 'open',

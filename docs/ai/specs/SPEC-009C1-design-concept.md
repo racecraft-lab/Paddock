@@ -20,7 +20,7 @@ stop_reason: "natural"
 
 ## Goals
 
-- Prove that one eligible `racecraft-lab/mission-control` GitHub issue can enter Mission Control as exactly one GitHub-linked pilot root task.
+- Prove that one eligible `racecraft-lab/Paddock` GitHub issue can enter Paddock as exactly one GitHub-linked pilot root task.
 - Keep SPEC-009C1 deterministic and reviewable by using operator-triggered sync, fixture-driven tests, and a manual smoke checklist instead of automatic polling or runtime dispatch.
 - Define executable pilot eligibility around GitHub tracker truth: repo identity, issue number, `mc:inbox`, `priority:*`, exactly one routable `area:*`, no duplicate local task, and no terminal/linked-PR state.
 - Provide an idempotent synthetic fallback path for `[mc-pilot] synthetic e2e issue` when no safe live issue exists.
@@ -73,8 +73,8 @@ stop_reason: "natural"
 
 **Branch:** Pilot issue eligibility
 
-**Recommended answer:** Require an open `racecraft-lab/mission-control` issue with `mc:inbox`, at least one `priority:*` label, exactly one routable `area:*` label, no existing synced Mission Control task for that issue, and no linked PR or terminal status.
-> This makes the pilot deterministic and proves the source-of-truth gate cleanly. It also exercises the intended Mission Control label families without making the first pilot depend on ambiguous routing.
+**Recommended answer:** Require an open `racecraft-lab/Paddock` issue with `mc:inbox`, at least one `priority:*` label, exactly one routable `area:*` label, no existing synced Paddock task for that issue, and no linked PR or terminal status.
+> This makes the pilot deterministic and proves the source-of-truth gate cleanly. It also exercises the intended Paddock label families without making the first pilot depend on ambiguous routing.
 
 **Alternatives offered:**
 - Allow missing or ambiguous `area:*` labels and route through triage: exercises more existing behavior, but makes the pilot less deterministic.

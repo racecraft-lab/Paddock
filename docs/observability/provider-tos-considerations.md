@@ -1,7 +1,7 @@
 # Provider ToS Considerations — Observability Adapters
 
 **Status**: SPEC-008 runtime ToS document (`CURRENT_RUNTIME_ACK_VERSION = 1`).
-**Owner**: Mission Control governance subsystem.
+**Owner**: Paddock governance subsystem.
 **Audience**: Operators evaluating which observability adapters they may
 enable for their organisation, and the SPEC-008 ToS lifecycle gate at
 `src/lib/provider-account-tos.ts`.
@@ -9,7 +9,7 @@ enable for their organisation, and the SPEC-008 ToS lifecycle gate at
 Risk / Fallback / Acknowledgment).
 
 This document is the canonical per-adapter ToS surface considered by
-Mission Control's `provider-account-tos` activation gate. Bumping
+Paddock's `provider-account-tos` activation gate. Bumping
 `CURRENT_RUNTIME_ACK_VERSION` requires every operator account to
 re-acknowledge inside the 7-day grace window before the adapter can
 continue ingesting data (FR-146 / FR-147).
@@ -22,13 +22,13 @@ a corresponding H2 here (orphan detection).
 ## claude-code-otel
 
 - **Surface**: Anthropic Claude Code CLI emitting OpenTelemetry frames
-  via `CLAUDE_CODE_ENABLE_TELEMETRY=1`. Mission Control receives OTLP
+  via `CLAUDE_CODE_ENABLE_TELEMETRY=1`. Paddock receives OTLP
   HTTP and parses the metric stream into canonical_usage_events.
 - **Default state**: `restricted` — operator must affirmatively
   acknowledge this surface because it captures CLI invocations
   initiated against an Anthropic-hosted model.
 - **ToS notes**: Anthropic's commercial terms permit telemetry export
-  for the operator's own usage. Mission Control does NOT exfiltrate
+  for the operator's own usage. Paddock does NOT exfiltrate
   prompts or responses — only token-counter metrics and timing.
   Confirm your Anthropic agreement permits self-hosted
   observability before activation.
@@ -50,7 +50,7 @@ a corresponding H2 here (orphan detection).
   CLI to disk; reading them is not a network operation. Confirm your
   Anthropic agreement permits operator-side log scraping. Do NOT
   forward raw transcript content off-host without separate operator
-  authorisation; Mission Control extracts only token counters and
+  authorisation; Paddock extracts only token counters and
   invocation metadata.
 - **Risk**: Medium. Transcripts contain prompt + response payloads;
   the adapter MUST redact body before persistence. Misconfiguration
@@ -135,11 +135,11 @@ a corresponding H2 here (orphan detection).
 ## openclaw-gateway
 
 - **Surface**: OpenClaw on-host gateway service emitting structured
-  invocation events to Mission Control's local channel.
+  invocation events to Paddock's local channel.
 - **Default state**: `allowed` — OpenClaw is an internal Mission
   Control service.
 - **ToS notes**: OpenClaw is operator-controlled and ships under the
-  Mission Control license. No external ToS applies.
+  Paddock license. No external ToS applies.
 - **Risk**: Low.
 - **Fallback**: None required.
 - **Acknowledgment**: Not required at version 1.

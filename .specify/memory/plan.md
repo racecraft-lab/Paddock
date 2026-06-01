@@ -1,4 +1,4 @@
-# Mission Control — Consolidated Implementation Plan Memory
+# Paddock — Consolidated Implementation Plan Memory
 
 Auto-generated from Archive Sweep on 2026-04-28.
 Revision: Archiving SPEC-001, SPEC-002, SPEC-002A after confirmed PR merges.
@@ -486,7 +486,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 **Branch**: `009b-mission-control-seed` | **Merged**: 2026-05-08 | **PR**: #30
 
-- Seeds Mission Control Product Line A, departments, project-agent assignments, GitHub repo routing, workflow families, feature flags, and advisory governance rows.
+- Seeds Paddock Product Line A, departments, project-agent assignments, GitHub repo routing, workflow families, feature flags, and advisory governance rows.
 - Reuses SPEC-009A workflow-contract import/apply; does not duplicate YAML parsing or create pilot work.
 - Preflight blocks unsafe FocusEngine/OpenClaw/GitHub automation residue before mutation and records redacted cleanup guidance.
 - Future task-control-plane and sandbox-runner flags stay OFF.
@@ -529,7 +529,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 **Branch**: `009d-pilot-review-lifecycle` | **Merged**: 2026-05-20 | **PR**: #54
 
-- Adds `src/lib/pilot-review-packet.ts` and packet artifacts that derive from stored Mission Control evidence only.
+- Adds `src/lib/pilot-review-packet.ts` and packet artifacts that derive from stored Paddock evidence only.
 - Publishes JSON and Markdown packet artifacts through existing task artifact storage; no packet-specific route, dashboard, fresh GitHub call, poller, claim authority, retry control, sandbox lifecycle, adapter registry, or real harness execution.
 - UAT used retained issue #50 / PR #51 evidence to produce a proven packet, publish artifacts, inspect them via existing routes, and clean seeded rows after backup.
 
@@ -553,9 +553,9 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 **Branch**: `010a-generic-product-line-seeder` | **Merged**: 2026-05-22 | **PR**: #59
 
-- Generalizes Mission Control seed behavior into checked-in product-line YAML configs and a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
+- Generalizes Paddock seed behavior into checked-in product-line YAML configs and a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
 - Keeps `seed:mission-control` as compatibility wrapper; reuses existing `yaml@2.8.2`, workflow-contract import/apply tooling, feature-flag registry validation, resource policy rows, and existing seed tables with no migration.
-- Post-merge UAT ran against a disposable copied DB and proved preflight/apply/verify/wrapper parity, existing-target refusal and reviewed re-apply, invalid reserved-flag no-mutation, redaction, Mission Control seed shape, zero Product Line B workspaces, zero tasks/runs, and no Product Line B/runtime/GitHub/SpecKit drift.
+- Post-merge UAT ran against a disposable copied DB and proved preflight/apply/verify/wrapper parity, existing-target refusal and reviewed re-apply, invalid reserved-flag no-mutation, redaction, Paddock seed shape, zero Product Line B workspaces, zero tasks/runs, and no Product Line B/runtime/GitHub/SpecKit drift.
 
 ## SPEC-012A Plan Summary [Source: specs/012a-repo-knowledge-index]
 
@@ -682,7 +682,7 @@ From SPEC-013A:
 - **SPEC-008 enableRequires chain**: `FEATURE_OPENCLAW_HEALTH_COSTS` requires `FEATURE_RESOURCE_GOVERNANCE` (registry `enableRequires: ['FEATURE_RESOURCE_GOVERNANCE']`). The matrix harness's `buildScenarioFlags(flag, 'on-isolation')` walks the chain and auto-satisfies prerequisites. `assertEnableRequires` in the harness throws `InvalidFeatureFlagConfigurationError` when a prerequisite is OFF.
 - **SPEC-008 axe-core fixture**: `tests/e2e/spec-008/governance-axe-shim.ts` exposes `axeAssert(page, stateLabel)`. The shim defers `@axe-core/playwright` import behind `SPEC_008_AXE_ENABLED=1` so local runs without the dep installed are no-ops. CI installs the dep and sets the env var. Static-source CI guard `scripts/spec-008/check-axe-coverage.mjs` scans every spec for `axeAssert(` calls and fails closed.
 - **SPEC-008 strict-scope**: every `src/lib/resource-*.ts`, `src/lib/observability/**/*.ts`, `src/lib/feature-flag-matrix.ts`, `src/types/{resource-*,observability,provider-account,governance-api}.ts`, `src/components/governance/**/*.{ts,tsx}`, `src/app/api/{governance,resource-*,otlp}/**/*.ts` MUST appear in BOTH `tsconfig.spec-strict.json` `include` AND `eslint.config.mjs` `specStrictFiles`. Layer-1 family check + Layer-2 file check at `tests/integration/strict-scope-guard.test.ts`. The glob-to-regex translator handles `**/` as `(?:.*/)?` so files DIRECTLY in a globbed directory match.
-- **SPEC-009E cleaned proof**: Retained issue #50 / PR #51 plus packet/source-map and smoke checklist references are durable proof after disposable UI carrier rows are cleaned. Do not present cleaned rows as current active Mission Control state.
+- **SPEC-009E cleaned proof**: Retained issue #50 / PR #51 plus packet/source-map and smoke checklist references are durable proof after disposable UI carrier rows are cleaned. Do not present cleaned rows as current active Paddock state.
 - **SPEC-009F clean exits**: `NEEDS_SPEC`, needs-human, needs-specialist, duplicate, obsolete, and invalid outcomes are terminal recommendation/evidence lanes in v1; they must not create Issue Remediation successors or mutate GitHub automatically.
 - **SPEC-010A existing targets**: Generic apply to an existing target requires explicit `--allow-existing`; unsafe configs must reject before writes and report stable no-mutation evidence.
 - **SPEC-012A pnpm separator**: `pnpm knowledge:index:check -- --fixture ... --json` passes the literal separator through; the guard parser accepts it intentionally.

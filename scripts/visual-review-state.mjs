@@ -178,7 +178,7 @@ export function renderReviewComment(state) {
     '-->',
     '## Visual review state',
     '',
-    'This comment is managed by the Mission Control visual review app.',
+    'This comment is managed by the Paddock visual review app.',
     '',
     `PR: #${normalized.prNumber} ${normalized.prTitle}`,
     `Last updated: ${normalized.updatedAt}`,

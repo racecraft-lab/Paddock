@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Mission Control Server — custom wrapper for Next.js standalone
+ * Paddock Server — custom wrapper for Next.js standalone
  *
  * Wraps the Next.js standalone server.js and adds WebSocket upgrade
  * handling for PTY terminal connections on /ws/pty.
@@ -87,6 +87,6 @@ function shutdown() {
 process.on('SIGTERM', shutdown)
 process.on('SIGINT', shutdown)
 
-console.log(`[mc-server] Mission Control starting on ${HOST}:${PORT}`)
+console.log(`[mc-server] Paddock starting on ${HOST}:${PORT}`)
 console.log('[mc-server] PTY terminal support: enabled')
 console.log('[mc-server] WebSocket upgrade path: /ws/pty')

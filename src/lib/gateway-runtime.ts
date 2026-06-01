@@ -51,7 +51,7 @@ export function registerMcAsDashboard(mcUrl: string): { registered: boolean; alr
 
     // Add MC origin to allowedOrigins only — do NOT touch dangerouslyDisableDeviceAuth.
     // MC authenticates via gateway token, but forcing device auth off is a security
-    // downgrade that the operator should control, not Mission Control.
+    // downgrade that the operator should control, not Paddock.
     origins.push(origin)
     parsed.gateway.controlUi.allowedOrigins = origins
 

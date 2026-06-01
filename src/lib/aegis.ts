@@ -115,7 +115,7 @@ function recordShadowAudit(
   })
 
   // Single-statement insert with NOT EXISTS guard. Atomic under both single- and
-  // multi-process Mission Control deployments (Finding F4) — replaces a prior
+  // multi-process Paddock deployments (Finding F4) — replaces a prior
   // SELECT-then-INSERT pair that could race across concurrent workers sharing
   // the SQLite file.
   db.prepare(`

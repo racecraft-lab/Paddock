@@ -1,48 +1,48 @@
 <div align="center">
 
-# Mission Control
+# Paddock
 
 **Open-source AI software factory control plane.**
 
-Mission Control turns GitHub issues, workflow contracts, agent sandboxes, governance
+Paddock turns GitHub issues, workflow contracts, agent sandboxes, governance
 policies, artifacts, and human review gates into one self-hosted operating system
 for autonomous software work.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org/)
-[![Last commit](https://img.shields.io/github/last-commit/racecraft-lab/mission-control)](https://github.com/racecraft-lab/mission-control/commits/main)
-[![Open issues](https://img.shields.io/github/issues/racecraft-lab/mission-control)](https://github.com/racecraft-lab/mission-control/issues)
+[![Last commit](https://img.shields.io/github/last-commit/racecraft-lab/Paddock)](https://github.com/racecraft-lab/Paddock/commits/main)
+[![Open issues](https://img.shields.io/github/issues/racecraft-lab/Paddock)](https://github.com/racecraft-lab/Paddock/issues)
 
 </div>
 
 ---
 
-> **Alpha software** - Mission Control is under active development. APIs, database
+> **Alpha software** - Paddock is under active development. APIs, database
 > schemas, workflow contracts, and configuration formats may change between
 > releases. Review [SECURITY.md](SECURITY.md) before deploying to any
 > network-accessible environment.
 
 ## Vision
 
-Mission Control is evolving from an agent dashboard into an AI software factory
+Paddock is evolving from an agent dashboard into an AI software factory
 for a **facility -> product line -> department** operating model.
 
 The v1 product vision is defined in [docs/rc-factory-v1-prd.md](docs/rc-factory-v1-prd.md):
 
 - GitHub issues are the source work items for autonomous software work.
-- Mission Control tasks are synchronized projections enriched with assignment,
+- Paddock tasks are synchronized projections enriched with assignment,
   workflow, governance, artifacts, run state, and review metadata.
 - Repo-owned workflow contracts define policy and prompts in versioned Markdown,
   then round-trip into runtime `workflow_templates`.
 - Each active work item runs in an isolated sandbox or git worktree owned by
-  Mission Control, OpenClaw, or another explicit harness adapter.
+  Paddock, OpenClaw, or another explicit harness adapter.
 - Aegis, reviewer, governance, and owner gates make autonomous work legible and
   reviewable before merge.
 - Existing single-workspace deployments remain supported through feature flags,
   null-default schema changes, and compatibility paths.
 
-Mission Control itself is Product Line A for the pilot: its own issues, specs,
+Paddock itself is Product Line A for the pilot: its own issues, specs,
 workflow contracts, validation evidence, and PRs are the proving ground.
 
 ## What It Does Today
@@ -60,12 +60,12 @@ workflow contracts, validation evidence, and PRs are the proving ground.
 
 ## Factory Model
 
-| Concept | Mission Control meaning |
+| Concept | Paddock meaning |
 | --- | --- |
 | Facility | Authenticated operating boundary and aggregate view. |
-| Product Line | A product workspace, such as Mission Control itself. |
+| Product Line | A product workspace, such as Paddock itself. |
 | Department | A project area inside a product line, such as QA or Development. |
-| Work Item | A GitHub issue synchronized into a Mission Control task chain. |
+| Work Item | A GitHub issue synchronized into a Paddock task chain. |
 | Workflow Contract | Repo-owned Markdown/YAML policy that seeds runtime templates. |
 | Run | One isolated harness attempt attached to a tracked work item. |
 | Review Packet | Agent-readable bundle of PR, artifacts, validation, governance, cost, and unresolved human gates. |
@@ -75,8 +75,8 @@ workflow contracts, validation evidence, and PRs are the proving ground.
 ### One-command install
 
 ```bash
-git clone https://github.com/racecraft-lab/mission-control.git
-cd mission-control
+git clone https://github.com/racecraft-lab/Paddock.git
+cd Paddock
 bash install.sh --local     # or: bash install.sh --docker
 ```
 
@@ -92,8 +92,8 @@ For Windows, use `.\install.ps1 -Mode local` in PowerShell.
 ### Manual setup
 
 ```bash
-git clone https://github.com/racecraft-lab/mission-control.git
-cd mission-control
+git clone https://github.com/racecraft-lab/Paddock.git
+cd Paddock
 nvm use 22
 pnpm install
 pnpm dev
@@ -115,7 +115,7 @@ docker compose -f docker-compose.yml -f docker-compose.hardened.yml up -d
 
 ## Agent Control
 
-Mission Control can be driven from the web UI, REST API, CLI, or MCP server.
+Paddock can be driven from the web UI, REST API, CLI, or MCP server.
 
 ```bash
 export MC_URL=http://localhost:3000
@@ -146,7 +146,7 @@ For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 | [Quickstart](docs/quickstart.md) | First local setup, agent registration, and task flow. |
 | [Agent setup](docs/agent-setup.md) | Agent identities, SOUL personalities, config, and heartbeats. |
 | [Orchestration](docs/orchestration.md) | Multi-agent workflows, auto-dispatch, and quality review gates. |
-| [Workflow contract](docs/ai/workflows/mission-control/workflow-contract.yaml) | Repo-owned workflow policy for Mission Control product-line work. |
+| [Workflow contract](docs/ai/workflows/mission-control/workflow-contract.yaml) | Repo-owned workflow policy for Paddock product-line work. |
 | [CLI reference](docs/cli-agent-control.md) | Headless and scripted control commands. |
 | [CLI integration](docs/cli-integration.md) | Connect Codex, Claude Code, or another CLI harness. |
 | [Deployment](docs/deployment.md) | Production deployment, reverse proxy, and VPS guidance. |
@@ -156,7 +156,7 @@ For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 
 ## Architecture
 
-Mission Control remains a TypeScript/Next.js/SQLite application.
+Paddock remains a TypeScript/Next.js/SQLite application.
 
 ```
 mission-control/
@@ -256,5 +256,5 @@ and existing SpecKit workflow records under `docs/ai/specs/`.
 
 ## License
 
-Mission Control is released under the [MIT License](LICENSE). See the license
+Paddock is released under the [MIT License](LICENSE). See the license
 file for the full text and historical copyright notice.

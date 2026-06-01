@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Mission Control are documented in this file.
+All notable changes to Paddock are documented in this file.
 
 <!-- Maintainer note: add entries under [Unreleased] as PRs merge; bump to a version when releasing. -->
 
@@ -10,7 +10,7 @@ All notable changes to Mission Control are documented in this file.
 
 ## [2.0.1] - 2026-03-18
 
-Mission Control 2.0.1 is the first patch release after the v2 launch. It rolls up the full set of fixes and follow-on features that landed after `v2.0.0`, including HTTP/Tailscale login hardening, zero-config onboarding, internationalization, gateway/runtime stability fixes, deeper task-routing automation, and the latest OpenClaw compatibility updates.
+Paddock 2.0.1 is the first patch release after the v2 launch. It rolls up the full set of fixes and follow-on features that landed after `v2.0.0`, including HTTP/Tailscale login hardening, zero-config onboarding, internationalization, gateway/runtime stability fixes, deeper task-routing automation, and the latest OpenClaw compatibility updates.
 
 ### Added
 - First-time setup wizard and zero-config startup flow for fresh installs
@@ -50,7 +50,7 @@ Mission Control 2.0.1 is the first patch release after the v2 launch. It rolls u
 ### Security
 - Removed `unsafe-inline` in favor of nonce-based CSP handling
 - Strengthened skill-registry SSRF and path-traversal detection rules
-- Stopped forcing `dangerouslyDisableDeviceAuth` during Mission Control gateway registration
+- Stopped forcing `dangerouslyDisableDeviceAuth` during Paddock gateway registration
 
 ### Tests
 - Coverage for pure utility modules to keep the Vitest threshold passing in CI
@@ -106,7 +106,7 @@ Mission Control 2.0.1 is the first patch release after the v2 launch. It rolls u
 ### Fixed
 - Agent and workspace deletion now removes OpenClaw config state correctly and refreshes the UI consistently
 - Security scan autofix no longer breaks host access or E2E runtime env state after applying fixes
-- Mission Control builds now isolate build-time SQLite state from runtime SQLite state, eliminating `SQLITE_BUSY` build contention
+- Paddock builds now isolate build-time SQLite state from runtime SQLite state, eliminating `SQLITE_BUSY` build contention
 - Standalone deploy/runtime handling now preserves data directories, static assets, and restart detection more reliably
 - OpenClaw config compatibility issues around malformed `model.primary` payloads, stale keys, and doctor warning classification
 - Local Hermes transcript loading, gateway chat/channel RPC fallbacks, and memory panel regressions from the refactor cycle
@@ -116,8 +116,8 @@ Mission Control 2.0.1 is the first patch release after the v2 launch. It rolls u
 ### Changed
 - Project version advanced to `2.0.0`
 - Node runtime policy standardized on `22.x` across local development, CI, Docker, and standalone deployment
-- README, landing-page handoff, and release documentation refreshed to match the current Mission Control interface and feature set
-- This release captures 189 commits on top of `main` and marks the major refactor branch as the new baseline for Mission Control
+- README, landing-page handoff, and release documentation refreshed to match the current Paddock interface and feature set
+- This release captures 189 commits on top of `main` and marks the major refactor branch as the new baseline for Paddock
 - Navigation, loading, branding, and onboarding flows were redesigned to match the broader v2 operator experience
 
 ### Contributors

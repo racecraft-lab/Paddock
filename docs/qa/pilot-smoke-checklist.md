@@ -10,7 +10,7 @@ outside mocked fixtures.
 - Search GitHub with:
 
   ```text
-  repo:racecraft-lab/mission-control is:issue is:open label:"mc:inbox" -linked:pr
+  repo:racecraft-lab/Paddock is:issue is:open label:"mc:inbox" -linked:pr
   ```
 
 - Confirm the candidate is an issue, not a PR; is open; has `mc:inbox`; has at
@@ -56,7 +56,7 @@ outside mocked fixtures.
   SELECT COUNT(*)
   FROM tasks
   WHERE workspace_id = :workspace_id
-    AND github_repo = 'racecraft-lab/mission-control'
+    AND github_repo = 'racecraft-lab/Paddock'
     AND github_issue_number = :issue_number
     AND github_synced_at IS NOT NULL
     AND parent_task_id IS NULL;
@@ -66,7 +66,7 @@ outside mocked fixtures.
 
 ## SPEC-009C2 Triage Handoff Proof
 
-- Apply or verify the current Mission Control workflow contract before the
+- Apply or verify the current Paddock workflow contract before the
   handoff. `mission-control_issue_triage` must expose disposition values
   `ACTIONABLE_REMEDIATION`, `DUPLICATE`, `OBSOLETE`, `INVALID`,
   `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`; only
@@ -188,7 +188,7 @@ outside mocked fixtures.
   `mission-control_dev_implementation` to `produces_pr=1` and
   `external_terminal_event=github_pr_merged`.
 - Live draft PR: #49
-  (`https://github.com/racecraft-lab/mission-control/pull/49`) was created as
+  (`https://github.com/racecraft-lab/Paddock/pull/49`) was created as
   draft from branch `spec-009c3-draft-pr-smoke-20260519-195459` at
   `b3b08a4326fa455d3b08a8da7118444fd3b1c413`; verification recorded
   `isDraft=true`, `mergedAt=null`, then the PR was closed and the remote branch
@@ -240,7 +240,7 @@ alone.
   Sync panel. Record sync result, resulting task status, `mc:done` label
   projection, stale `mc:ready-for-owner` removal, terminal activity,
   notification evidence, and duplicate sync evidence.
-- T048: Clean disposable Mission Control UAT residue after evidence capture.
+- T048: Clean disposable Paddock UAT residue after evidence capture.
   Record before/after counts, cleanup owner, timestamp, retained GitHub audit
   trail, and retention rationale.
 - T049: If cleanup fails, record failed cleanup step, owner, timestamp,
@@ -256,19 +256,19 @@ alone.
   `/private/tmp/mc-spec009c4-uat-20260520-011455`.
 - GitHub transport: the temporary deployment used a localhost `gh api` proxy
   only to avoid printing or persisting a raw GitHub token; all issue and PR
-  evidence came from real `racecraft-lab/mission-control` GitHub state.
+  evidence came from real `racecraft-lab/Paddock` GitHub state.
 - Fresh synthetic C4 issue: #50
-  (`https://github.com/racecraft-lab/mission-control/issues/50`) created
+  (`https://github.com/racecraft-lab/Paddock/issues/50`) created
   `2026-05-20T01:16:06Z` with labels `area:dev`,
   `priority:medium`, and `mc:ready-for-owner`.
 - Fresh synthetic C4 PR: #51
-  (`https://github.com/racecraft-lab/mission-control/pull/51`) created as a
+  (`https://github.com/racecraft-lab/Paddock/pull/51`) created as a
   draft at `2026-05-20T01:16:28Z` from branch
   `spec-009c4-live-uat-20260520-011455`, head
   `6f92581f9f80f91ff5b280bdda8db999b8588e0c`, base `main`.
 - Linked task before `G_PILOT_MERGE`: workspace `1`, project `1`, task `1`,
   workflow `mission-control_dev_implementation`, repo
-  `racecraft-lab/mission-control`, issue #50, PR #51, status
+  `racecraft-lab/Paddock`, issue #50, PR #51, status
   `ready_for_owner`, `completed_at=null`, and one bounded
   `task_ready_for_owner` notification to `HAL`.
 - Pre-merge manual sync: `POST /api/github/sync` with
@@ -337,7 +337,7 @@ alone.
   another empty PR/merge commit; the fresh-PR `G_PILOT_MERGE` requirement was
   already satisfied by PR #51 in the branch UAT above.
 - Linked target task before sync: disposable task `41`, repo
-  `racecraft-lab/mission-control`, issue #50, PR #51, status
+  `racecraft-lab/Paddock`, issue #50, PR #51, status
   `ready_for_owner`.
 - Target manual sync: deployed `POST /api/github/sync` with
   `{ "action": "trigger", "project_id": 3, "workspace_id": 4 }` returned
@@ -400,7 +400,7 @@ alone.
 
 ### 2026-05-20 SPEC-009D UAT Run Evidence
 
-- Scope: disposable local UAT using stored Mission Control evidence only. No
+- Scope: disposable local UAT using stored Paddock evidence only. No
   fresh GitHub mutation or live GitHub lookup was required; the run reused the
   retained external audit trail issue #50 and merged PR #51 from SPEC-009C4.
 - Target: branch `009d-pilot-review-lifecycle`, commit `8f249fa`, Node
@@ -438,7 +438,7 @@ alone.
   No disposable `[mc-pilot]` task rows remain in the UAT database.
 - Post-merge closeout: PR #54 merged to `main` as
   `765264be667bd31d6266f606602a219312f72f23` on 2026-05-20. Main push
-  CI/CD for that merge commit passed Quality Gate, CodeQL, Mission Control UI
+  CI/CD for that merge commit passed Quality Gate, CodeQL, Paddock UI
   E2E, Visual Storybook Snapshots, Playwright visual approval, and Storybook
   visual approval.
 
@@ -446,7 +446,7 @@ alone.
 
 - Scope: read-only task detail Evidence surface on branch
   `009e-pilot-evidence-surfaces` under Node `v22.22.2`. The run used stored
-  Mission Control rows only; it did not call GitHub, generate packets, execute
+  Paddock rows only; it did not call GitHub, generate packets, execute
   smoke, trigger sync, mutate task evidence through the route, add a dashboard,
   or add migration/runtime dependency changes.
 - Retained external audit trail: GitHub issue #50 and PR #51 from the
@@ -468,7 +468,7 @@ alone.
 - Fixture export: `spec-009e.e2e-export.v1`, generated
   `2026-05-20T22:26:27.864Z`, recorded disposable task ids `1/2/3`, artifact
   rows `1/2/3/4`, activity row `4`, quality-review row `1`, governance row
-  `1`, GitHub sync row `1`, retained repo `racecraft-lab/mission-control`,
+  `1`, GitHub sync row `1`, retained repo `racecraft-lab/Paddock`,
   retained issue `50`, and retained PR `51`.
 - UI assertions: retained pilot carrier showed `eligible`,
   `ready_for_owner`, issue #50, PR #51, review-packet artifact references, the
@@ -493,7 +493,7 @@ alone.
   journey passed again with `direnv exec . pnpm test:e2e --
   tests/e2e/task-detail-evidence.spec.ts` (`1` Chromium test, `6.6s`). The
   fresh fixture export was generated `2026-05-20T23:49:37.908Z`, retained
-  GitHub proof repo `racecraft-lab/mission-control`, issue `50`, and PR `51`,
+  GitHub proof repo `racecraft-lab/Paddock`, issue `50`, and PR `51`,
   and wrote screenshot evidence at
   `test-results/spec-009e-task-evidence/spec-009e-evidence-eligible.png`
   (`622x855`),
@@ -617,7 +617,7 @@ alone.
 
 ## Local-Only Exclusion
 
-- Create or identify a local-only lookalike task through normal Mission Control
+- Create or identify a local-only lookalike task through normal Paddock
   task creation.
 - Verify it does not count as pilot evidence because `github_repo`,
   `github_issue_number`, and `github_synced_at` linkage are absent.
@@ -646,7 +646,7 @@ alone.
   not auto-close synthetic issues from the script, app runtime, CI, or sync path.
 - After evidence is captured, close synthetic GitHub issues manually rather
   than deleting them. Closed issues remain the external audit trail.
-- Do not leave disposable `[mc-pilot]` smoke tasks active in Mission Control.
+- Do not leave disposable `[mc-pilot]` smoke tasks active in Paddock.
   After recording the issue URL, root task id, triage task id, remediation
   successor id if created, workspace id, sync timestamp, duplicate-sync result,
   duplicate-handoff result, and side-effect snapshot, close or remove only the
@@ -660,7 +660,7 @@ alone.
   FROM tasks
   WHERE title LIKE '[mc-pilot]%'
      OR (
-       github_repo = 'racecraft-lab/mission-control'
+       github_repo = 'racecraft-lab/Paddock'
        AND github_issue_number IN (:synthetic_issue_numbers)
      );
   ```

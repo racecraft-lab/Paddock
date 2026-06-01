@@ -113,7 +113,7 @@ describe('workflow contract importer', () => {
     expect(error.details).not.toContain('token')
   })
 
-  it('imports the Mission Control pilot issue triage disposition taxonomy and actionable routing rule', () => {
+  it('imports the Paddock pilot issue triage disposition taxonomy and actionable routing rule', () => {
     const db = makeWorkflowDb()
     const contract = loadWorkflowContractFromFile('docs/ai/workflows/mission-control/workflow-contract.yaml')
     const triage = contract.templates.find(template => template.slug === 'mission-control_issue_triage')

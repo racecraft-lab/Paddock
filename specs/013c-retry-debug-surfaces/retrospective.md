@@ -31,7 +31,7 @@ pr_block_reason: "Draft PR #63 is open; CI/checks and post-merge target API-and-
 
 SPEC-013C completed 75/75 generated tasks and implemented backend API/debug authority for retry, release, and cancel on SPEC-013B claimed stages. The implementation adds M79 operator release reasons and scoped idempotency replay storage, `POST /api/tasks/[id]/claim-control`, an optional `claim_control` read-model extension on `task_claim_reconciliation.v1`, bounded audit evidence, OpenAPI/API index updates, UAT scaffolding, and a PR review packet.
 
-Local verification is green under Node 22.22.2: focused SPEC-013C Vitest passed 6 files / 39 tests, `pnpm typecheck`, `pnpm lint`, `pnpm api:parity`, `pnpm check:strict-scope`, `pnpm knowledge:index:check`, and `git diff --check` passed; full `pnpm test` passed outside the sandbox with 308 files / 3190 tests; `pnpm build` passed outside the sandbox. Draft PR #63 is open at `https://github.com/racecraft-lab/mission-control/pull/63`.
+Local verification is green under Node 22.22.2: focused SPEC-013C Vitest passed 6 files / 39 tests, `pnpm typecheck`, `pnpm lint`, `pnpm api:parity`, `pnpm check:strict-scope`, `pnpm knowledge:index:check`, and `git diff --check` passed; full `pnpm test` passed outside the sandbox with 308 files / 3190 tests; `pnpm build` passed outside the sandbox. Draft PR #63 is open at `https://github.com/racecraft-lab/Paddock/pull/63`.
 
 ## Requirement Coverage Matrix
 

@@ -72,7 +72,7 @@ jobs:
     with:
       surface: storybook
       surface_label: Storybook Components
-      project_name: Mission Control
+      project_name: Paddock
       visual_test_command: >-
         STORYBOOK_DISABLE_TELEMETRY=1
         MC_VISUAL_OUTPUT_DIR=test-results/visual-current
@@ -92,7 +92,7 @@ jobs:
         repo/playwright-report/
       workflow_file: visual-storybook.yml
       pages_branch: visual-regression-pages
-      base_url: https://racecraft-lab.github.io/mission-control
+      base_url: https://racecraft-lab.github.io/Paddock
       package_manager: pnpm
       pnpm_version: '10'
       node_version: '22'

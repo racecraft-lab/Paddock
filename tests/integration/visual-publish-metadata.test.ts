@@ -98,7 +98,7 @@ describe('visual PR Pages publisher metadata', () => {
         '--pages-dir',
         pagesDir,
         '--repository',
-        'racecraft-lab/mission-control',
+        'racecraft-lab/Paddock',
         '--pr-number',
         '26',
         '--head-ref',
@@ -112,7 +112,7 @@ describe('visual PR Pages publisher metadata', () => {
         '--run-attempt',
         '1',
         '--base-url',
-        'https://racecraft-lab.github.io/mission-control',
+        'https://racecraft-lab.github.io/Paddock',
       ], {
         cwd: tempDir,
         encoding: 'utf8',
@@ -186,7 +186,7 @@ describe('visual PR Pages publisher metadata', () => {
         '--pages-dir',
         pagesDir,
         '--repository',
-        'racecraft-lab/mission-control',
+        'racecraft-lab/Paddock',
         '--mode',
         'main',
         '--run-id',
@@ -194,7 +194,7 @@ describe('visual PR Pages publisher metadata', () => {
         '--run-attempt',
         '1',
         '--base-url',
-        'https://racecraft-lab.github.io/mission-control',
+        'https://racecraft-lab.github.io/Paddock',
       ], {
         cwd: tempDir,
         encoding: 'utf8',
@@ -214,10 +214,10 @@ describe('visual PR Pages publisher metadata', () => {
         baseRef: 'main',
         headRef: 'main',
         headSha: 'abcdef1234567890',
-        prIndexHref: 'https://racecraft-lab.github.io/mission-control/pr/26/',
+        prIndexHref: 'https://racecraft-lab.github.io/Paddock/pr/26/',
         prNumber: '26',
         prTitle: 'feat(SPEC-008): Resource Governance + Cost Tracker Enforcement (RC Factory Phase 7)',
-        prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
+        prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
         reportScope: 'latest',
         surface: 'storybook',
       })
@@ -242,8 +242,8 @@ describe('visual PR Pages publisher metadata', () => {
     const approvedState = {
       prNumber: '26',
       prTitle: 'SPEC-008 governance',
-      prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
-      repository: 'racecraft-lab/mission-control',
+      prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
+      repository: 'racecraft-lab/Paddock',
       schema: 'mission-control.visual-review-state.v1',
       surfaces: {
         storybook: {
@@ -261,13 +261,13 @@ describe('visual PR Pages publisher metadata', () => {
           headSha: prHeadSha,
           prNumber: '26',
           prTitle: 'SPEC-008 governance',
-          prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
-          reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/storybook/latest/',
-          repository: 'racecraft-lab/mission-control',
+          prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
+          reportHref: 'https://racecraft-lab.github.io/Paddock/pr/26/storybook/latest/',
+          repository: 'racecraft-lab/Paddock',
           runAttempt: '1',
           runId: '123',
           runKey: '123-attempt-1',
-          runUrl: 'https://github.com/racecraft-lab/mission-control/actions/runs/123',
+          runUrl: 'https://github.com/racecraft-lab/Paddock/actions/runs/123',
           summary: {
             approved: 1,
             open: 0,
@@ -289,7 +289,7 @@ describe('visual PR Pages publisher metadata', () => {
       writeFileSync(path.join(actualDir, snapshot), 'png')
       const pullsResponse = JSON.stringify([{
         head: { sha: prHeadSha },
-        html_url: 'https://github.com/racecraft-lab/mission-control/pull/26',
+        html_url: 'https://github.com/racecraft-lab/Paddock/pull/26',
         merge_commit_sha: mergedSha,
         merged_at: '2026-05-04T23:42:05Z',
         number: 26,
@@ -307,10 +307,10 @@ describe('visual PR Pages publisher metadata', () => {
         `
 globalThis.fetch = async (url) => {
   const value = String(url)
-  if (value.includes('/repos/racecraft-lab/mission-control/commits/${mergedSha}/pulls')) {
+  if (value.includes('/repos/racecraft-lab/Paddock/commits/${mergedSha}/pulls')) {
     return new Response(${JSON.stringify(pullsResponse)}, { status: 200, headers: { 'content-type': 'application/json' } })
   }
-  if (value.includes('/repos/racecraft-lab/mission-control/issues/26/comments')) {
+  if (value.includes('/repos/racecraft-lab/Paddock/issues/26/comments')) {
     return new Response(${JSON.stringify(commentsResponse)}, { status: 200, headers: { 'content-type': 'application/json' } })
   }
   return new Response(JSON.stringify({ message: 'not found' }), { status: 404 })
@@ -340,7 +340,7 @@ globalThis.fetch = async (url) => {
         '--pages-dir',
         pagesDir,
         '--repository',
-        'racecraft-lab/mission-control',
+        'racecraft-lab/Paddock',
         '--mode',
         'main',
         '--run-id',
@@ -348,7 +348,7 @@ globalThis.fetch = async (url) => {
         '--run-attempt',
         '1',
         '--base-url',
-        'https://racecraft-lab.github.io/mission-control',
+        'https://racecraft-lab.github.io/Paddock',
       ], {
         cwd: tempDir,
         encoding: 'utf8',
@@ -397,8 +397,8 @@ globalThis.fetch = async (url) => {
     const approvedState = {
       prNumber: '26',
       prTitle: 'SPEC-008 governance',
-      prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
-      repository: 'racecraft-lab/mission-control',
+      prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
+      repository: 'racecraft-lab/Paddock',
       schema: 'mission-control.visual-review-state.v1',
       surfaces: {
         storybook: {
@@ -416,13 +416,13 @@ globalThis.fetch = async (url) => {
           headSha: prHeadSha,
           prNumber: '26',
           prTitle: 'SPEC-008 governance',
-          prUrl: 'https://github.com/racecraft-lab/mission-control/pull/26',
-          reportHref: 'https://racecraft-lab.github.io/mission-control/pr/26/storybook/latest/',
-          repository: 'racecraft-lab/mission-control',
+          prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
+          reportHref: 'https://racecraft-lab.github.io/Paddock/pr/26/storybook/latest/',
+          repository: 'racecraft-lab/Paddock',
           runAttempt: '1',
           runId: '123',
           runKey: '123-attempt-1',
-          runUrl: 'https://github.com/racecraft-lab/mission-control/actions/runs/123',
+          runUrl: 'https://github.com/racecraft-lab/Paddock/actions/runs/123',
           summary: {
             approved: 1,
             open: 0,
@@ -450,7 +450,7 @@ globalThis.fetch = async (url) => {
       ])
       const pullsResponse = JSON.stringify([{
         head: { sha: prHeadSha },
-        html_url: 'https://github.com/racecraft-lab/mission-control/pull/26',
+        html_url: 'https://github.com/racecraft-lab/Paddock/pull/26',
         merge_commit_sha: mergedSha,
         merged_at: '2026-05-04T23:42:05Z',
         number: 26,
@@ -468,19 +468,19 @@ globalThis.fetch = async (url) => {
         `
 globalThis.fetch = async (url) => {
   const value = String(url)
-  if (value.includes('/repos/racecraft-lab/mission-control/commits?')) {
+  if (value.includes('/repos/racecraft-lab/Paddock/commits?')) {
     return new Response(${JSON.stringify(commitsResponse)}, { status: 200, headers: { 'content-type': 'application/json' } })
   }
-  if (value.includes('/repos/racecraft-lab/mission-control/commits/${currentSha}/pulls')) {
+  if (value.includes('/repos/racecraft-lab/Paddock/commits/${currentSha}/pulls')) {
     return new Response(JSON.stringify([]), { status: 200, headers: { 'content-type': 'application/json' } })
   }
-  if (value.includes('/repos/racecraft-lab/mission-control/commits/${directMainSha}/pulls')) {
+  if (value.includes('/repos/racecraft-lab/Paddock/commits/${directMainSha}/pulls')) {
     return new Response(JSON.stringify([]), { status: 200, headers: { 'content-type': 'application/json' } })
   }
-  if (value.includes('/repos/racecraft-lab/mission-control/commits/${mergedSha}/pulls')) {
+  if (value.includes('/repos/racecraft-lab/Paddock/commits/${mergedSha}/pulls')) {
     return new Response(${JSON.stringify(pullsResponse)}, { status: 200, headers: { 'content-type': 'application/json' } })
   }
-  if (value.includes('/repos/racecraft-lab/mission-control/issues/26/comments')) {
+  if (value.includes('/repos/racecraft-lab/Paddock/issues/26/comments')) {
     return new Response(${JSON.stringify(commentsResponse)}, { status: 200, headers: { 'content-type': 'application/json' } })
   }
   return new Response(JSON.stringify({ message: 'not found' }), { status: 404 })
@@ -510,7 +510,7 @@ globalThis.fetch = async (url) => {
         '--pages-dir',
         pagesDir,
         '--repository',
-        'racecraft-lab/mission-control',
+        'racecraft-lab/Paddock',
         '--mode',
         'main',
         '--run-id',
@@ -518,7 +518,7 @@ globalThis.fetch = async (url) => {
         '--run-attempt',
         '1',
         '--base-url',
-        'https://racecraft-lab.github.io/mission-control',
+        'https://racecraft-lab.github.io/Paddock',
       ], {
         cwd: tempDir,
         encoding: 'utf8',

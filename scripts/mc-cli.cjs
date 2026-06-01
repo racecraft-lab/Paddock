@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- Mission Control CLI (v2)
+ Paddock CLI (v2)
  - Zero heavy dependencies
  - API-key first for agent automation
  - JSON mode + stable exit codes
@@ -42,7 +42,7 @@ function parseArgs(argv) {
 }
 
 function usage() {
-  console.log(`Mission Control CLI
+  console.log(`Paddock CLI
 
 Usage:
   mc <group> <action> [--flags]

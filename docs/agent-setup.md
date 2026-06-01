@@ -1,10 +1,10 @@
 # Agent Setup Guide
 
-This guide covers everything you need to configure agents in Mission Control: registration methods, SOUL personalities, working files, configuration, and liveness monitoring.
+This guide covers everything you need to configure agents in Paddock: registration methods, SOUL personalities, working files, configuration, and liveness monitoring.
 
 ## Agent Registration
 
-There are three ways to register agents with Mission Control.
+There are three ways to register agents with Paddock.
 
 ### Method 1: API Self-Registration (Recommended for Autonomous Agents)
 
@@ -52,7 +52,7 @@ This requires `operator` role and supports additional fields like `soul_content`
 
 ### Method 3: Config Sync (OpenClaw or Local Discovery)
 
-Mission Control can auto-discover agents from:
+Paddock can auto-discover agents from:
 
 **OpenClaw config sync** — Reads agents from your `openclaw.json` file:
 
@@ -157,7 +157,7 @@ You are Iris, a research agent focused on gathering and synthesizing information
 ```markdown
 # Aegis — Quality Reviewer
 
-You are Aegis, the quality gate for all agent work in Mission Control.
+You are Aegis, the quality gate for all agent work in Paddock.
 
 ## Role
 Review completed tasks for correctness, completeness, and quality.
@@ -271,7 +271,7 @@ curl -X PUT http://localhost:3000/api/agents \
 
 ## Heartbeat and Liveness
 
-Mission Control tracks agent health through heartbeats.
+Paddock tracks agent health through heartbeats.
 
 ### How It Works
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Mission Control — One-Command Installer
+# Paddock — One-Command Installer
 # The mothership for your OpenClaw fleet.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/builderz-labs/mission-control/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/racecraft-lab/Paddock/main/install.sh | bash
 #   # or
 #   bash install.sh [--docker|--local] [--port PORT] [--data-dir DIR]
 #
-# Installs Mission Control and optionally repairs/configures OpenClaw.
+# Installs Paddock and optionally repairs/configures OpenClaw.
 
 set -euo pipefail
 
@@ -16,8 +16,8 @@ MC_PORT="${MC_PORT:-3000}"
 MC_DATA_DIR=""
 DEPLOY_MODE=""
 SKIP_OPENCLAW=false
-REPO_URL="https://github.com/builderz-labs/mission-control.git"
-INSTALL_DIR="${MC_INSTALL_DIR:-$(pwd)/mission-control}"
+REPO_URL="https://github.com/racecraft-lab/Paddock.git"
+INSTALL_DIR="${MC_INSTALL_DIR:-$(pwd)/Paddock}"
 
 # ── Parse arguments ───────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -142,7 +142,7 @@ fetch_source() {
       ok "Updated to latest main"
     fi
   else
-    info "Cloning Mission Control..."
+    info "Cloning Paddock..."
     if command_exists git; then
       git clone --depth 1 "$REPO_URL" "$INSTALL_DIR"
       cd "$INSTALL_DIR"
@@ -209,7 +209,7 @@ deploy_docker() {
   docker compose up -d --build
 
   # Wait for healthy
-  info "Waiting for Mission Control to become healthy..."
+  info "Waiting for Paddock to become healthy..."
   local retries=30
   while [[ $retries -gt 0 ]]; do
     if docker compose ps --format json 2>/dev/null | grep -q '"Health":"healthy"'; then
@@ -227,7 +227,7 @@ deploy_docker() {
     warn "Timeout waiting for health check — container may still be starting"
     docker compose logs --tail 20
   else
-    ok "Mission Control is running in Docker"
+    ok "Paddock is running in Docker"
   fi
 }
 
@@ -240,7 +240,7 @@ deploy_local() {
   pnpm rebuild better-sqlite3 2>/dev/null || true
   ok "Dependencies installed"
 
-  info "Building Mission Control..."
+  info "Building Paddock..."
   pnpm build
   ok "Build complete"
 
@@ -249,14 +249,14 @@ deploy_local() {
     setup_systemd
   fi
 
-  info "Starting Mission Control..."
+  info "Starting Paddock..."
   PORT="$MC_PORT" nohup pnpm start > "$INSTALL_DIR/.data/mc.log" 2>&1 &
   local pid=$!
   echo "$pid" > "$INSTALL_DIR/.data/mc.pid"
 
   sleep 3
   if kill -0 "$pid" 2>/dev/null; then
-    ok "Mission Control running (PID $pid)"
+    ok "Paddock running (PID $pid)"
   else
     err "Failed to start. Check logs: $INSTALL_DIR/.data/mc.log"
     exit 1
@@ -279,7 +279,7 @@ setup_systemd() {
 
   cat > /tmp/mission-control.service <<UNIT
 [Unit]
-Description=Mission Control - OpenClaw Agent Dashboard
+Description=Paddock - OpenClaw Agent Dashboard
 After=network.target
 
 [Service]
@@ -346,7 +346,7 @@ check_openclaw() {
       ok "Config found: $oc_config"
     else
       warn "No openclaw.json found at $oc_config"
-      info "Mission Control will create a default config on first gateway connection"
+      info "Paddock will create a default config on first gateway connection"
     fi
 
     # Check for stale PID files
@@ -411,7 +411,7 @@ check_openclaw() {
 main() {
   echo ""
   echo "  ╔══════════════════════════════════════╗"
-  echo "  ║   Mission Control Installer          ║"
+  echo "  ║   Paddock Installer                  ║"
   echo "  ║   The mothership for your fleet      ║"
   echo "  ╚══════════════════════════════════════╝"
   echo ""
@@ -420,7 +420,7 @@ main() {
   check_prerequisites
 
   # If running from within an existing clone, use current dir
-  if [[ -f "$(pwd)/package.json" ]] && grep -q '"mission-control"' "$(pwd)/package.json" 2>/dev/null; then
+  if [[ -f "$(pwd)/package.json" ]] && grep -q '"paddock"' "$(pwd)/package.json" 2>/dev/null; then
     INSTALL_DIR="$(pwd)"
     info "Running from existing clone at $INSTALL_DIR"
   else

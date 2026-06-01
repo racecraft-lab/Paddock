@@ -33,7 +33,7 @@
 
 - Restart the collector: `systemctl --user restart otelcol`.
 - If the unit will not start, fall back to the embedded receiver
-  (`OTLP_USE_EMBEDDED_RECEIVER=1`) and reload Mission Control.
+  (`OTLP_USE_EMBEDDED_RECEIVER=1`) and reload Paddock.
 - Throttle dashboard polling to 30s during the outage.
 
 ## 5. Recover

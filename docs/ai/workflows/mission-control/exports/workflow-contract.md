@@ -8,7 +8,7 @@ Contract Hash: workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd
 
 ## Templates
 
-### Mission Control Aegis
+### Paddock Aegis
 
 - Slug: `mission-control_aegis`
 - Model: `sonnet`
@@ -20,7 +20,7 @@ Contract Hash: workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd
 Perform Aegis review for {{task.title}} in {{workspace.name}} using the owner packet and verification evidence.
 ```
 
-### Mission Control Close Issue
+### Paddock Close Issue
 
 - Slug: `mission-control_close_issue`
 - Model: `sonnet`
@@ -32,7 +32,7 @@ Perform Aegis review for {{task.title}} in {{workspace.name}} using the owner pa
 Prepare a close recommendation for {{task.title}} in {{workspace.name}} without dispatching implementation work.
 ```
 
-### Mission Control Dev Implementation
+### Paddock Dev Implementation
 
 - Slug: `mission-control_dev_implementation`
 - Model: `sonnet`
@@ -44,7 +44,7 @@ Prepare a close recommendation for {{task.title}} in {{workspace.name}} without 
 Implement {{task.title}} in {{workspace.name}} using the approved remediation plan. Return verification evidence.
 ```
 
-### Mission Control Issue Triage
+### Paddock Issue Triage
 
 - Slug: `mission-control_issue_triage`
 - Model: `sonnet`
@@ -56,7 +56,7 @@ Implement {{task.title}} in {{workspace.name}} using the approved remediation pl
 Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return one route: close, needs_spec, or remediation.
 ```
 
-### Mission Control Needs Spec Route
+### Paddock Needs Spec Route
 
 - Slug: `mission-control_needs_spec_route`
 - Model: `sonnet`
@@ -68,7 +68,7 @@ Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from
 Prepare a SpecKit handoff for {{task.title}} in {{workspace.name}}. Do not create the spec or launch autonomous work.
 ```
 
-### Mission Control Owner Review
+### Paddock Owner Review
 
 - Slug: `mission-control_owner_review`
 - Model: `sonnet`
@@ -80,7 +80,7 @@ Prepare a SpecKit handoff for {{task.title}} in {{workspace.name}}. Do not creat
 Summarize {{task.title}} for operator owner review in {{workspace.name}}. Do not merge or close the issue.
 ```
 
-### Mission Control Remediation Plan
+### Paddock Remediation Plan
 
 - Slug: `mission-control_remediation_plan`
 - Model: `sonnet`
@@ -92,7 +92,7 @@ Summarize {{task.title}} for operator owner review in {{workspace.name}}. Do not
 Plan remediation for {{task.title}} in {{workspace.name}} using the linked GitHub issue and repository evidence.
 ```
 
-### Mission Control Review
+### Paddock Review
 
 - Slug: `mission-control_review`
 - Model: `sonnet`
@@ -104,7 +104,7 @@ Plan remediation for {{task.title}} in {{workspace.name}} using the linked GitHu
 Review implementation evidence for {{task.title}} in {{workspace.name}} and return pass or required fixes.
 ```
 
-### Mission Control Specialist Route
+### Paddock Specialist Route
 
 - Slug: `mission-control_specialist_route`
 - Model: `sonnet`

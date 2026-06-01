@@ -1,11 +1,11 @@
-# Mission Control Installer Skill
+# Paddock Installer Skill
 
-Install and configure Mission Control on any Linux or macOS system.
+Install and configure Paddock on any Linux or macOS system.
 
 ## What This Skill Does
 
 1. Detects the target OS and available runtimes (Docker or Node.js 20+)
-2. Clones or updates the Mission Control repository
+2. Clones or updates the Paddock repository
 3. Generates a secure `.env` with random credentials
 4. Starts the dashboard via Docker Compose or local Node.js
 5. Runs an OpenClaw fleet health check (cleans stale PIDs, old logs, validates gateway)
@@ -35,7 +35,7 @@ bash install.sh --skip-openclaw
 Or as a one-liner:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/builderz-labs/mission-control/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/racecraft-lab/Paddock/main/install.sh | bash
 ```
 
 ## Prerequisites

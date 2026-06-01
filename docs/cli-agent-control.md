@@ -1,4 +1,4 @@
-# Mission Control CLI for Agent-Complete Operations (v2)
+# Paddock CLI for Agent-Complete Operations (v2)
 
 This repository includes a first-party CLI at:
 
@@ -14,7 +14,7 @@ Designed for autonomous/headless usage first:
 
 ## Quick start
 
-1) Ensure Mission Control API is running.
+1) Ensure Paddock API is running.
 2) Set environment variables or use profile flags:
 
 - MC_URL=http://127.0.0.1:3000

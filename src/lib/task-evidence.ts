@@ -312,7 +312,7 @@ export const TASK_EVIDENCE_DEFERRALS: readonly DeferralEvidence[] = [
 ]
 
 const OVERSIZED_ARTIFACT_BYTES = 64 * 1024
-const RETAINED_PILOT_REPO = 'racecraft-lab/mission-control'
+const RETAINED_PILOT_REPO = 'racecraft-lab/Paddock'
 const RETAINED_PILOT_ISSUE = 50
 const RETAINED_PILOT_PR = 51
 const STATIC_UAT_REFERENCE = 'docs/qa/pilot-smoke-checklist.md#spec-009e'
