@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/mission-control",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "playwright",
   "surfaceLabel": "Playwright UI E2E",
   "workflowName": "Mission Control UI E2E",
@@ -17,7 +17,7 @@
   "headRef": "013d-claim-control-operator-ux",
   "baseRef": "main",
   "headSha": "df50c128920570763c1616e088a62bf3664740d3",
-  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/playwright/latest/",
+  "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/runs/26731615378-attempt-1/playwright/",
   "latestHref": "https://racecraft-lab.github.io/mission-control/pr/65/playwright/latest/?v=26731615378-attempt-1",
   "createdAt": "2026-06-01T02:22:14.300Z",
   "itemCounts": {
