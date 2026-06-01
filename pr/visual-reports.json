@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-01T04:28:04.903Z",
+  "updatedAt": "2026-06-01T04:43:41.206Z",
   "prs": [
     {
       "prNumber": "66",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/Paddock/pr/66/",
       "headRef": "codex/rename-paddock",
       "baseRef": "main",
-      "updatedAt": "2026-06-01T04:28:04.903Z",
+      "updatedAt": "2026-06-01T04:43:41.206Z",
       "latest": {
         "storybook": {
-          "runId": "26735062285",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26735062285",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/66/storybook/latest/?v=26735062285-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/66/runs/26735062285-attempt-1/storybook/",
-          "updatedAt": "2026-06-01T04:28:04.903Z"
+          "runId": "26735513223",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26735513223",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/66/storybook/latest/?v=26735513223-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/66/runs/26735513223-attempt-1/storybook/",
+          "updatedAt": "2026-06-01T04:43:41.206Z"
         }
       }
     },
