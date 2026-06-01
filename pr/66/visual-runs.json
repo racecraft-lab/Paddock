@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "66",
+  "prTitle": "chore: rename project to Paddock",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/66",
+  "headRef": "codex/rename-paddock",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "26732240928",
+      "runAttempt": "1",
+      "runKey": "26732240928-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26732240928",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/66/runs/26732240928-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/66/storybook/latest/?v=26732240928-attempt-1",
+      "headSha": "85592e15389b6fa7779ed1de46366f9605d02811",
+      "headRef": "codex/rename-paddock",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-01T02:41:18.173Z"
+    }
+  ],
+  "updatedAt": "2026-06-01T02:41:18.173Z"
+}

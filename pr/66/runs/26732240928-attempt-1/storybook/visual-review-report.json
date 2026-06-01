@@ -1,0 +1,58 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "run",
+  "surface": "storybook",
+  "surfaceLabel": "Storybook Components",
+  "workflowName": "Visual Storybook Snapshots",
+  "workflowFile": "visual-storybook.yml",
+  "prNumber": "66",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/66",
+  "runId": "26732240928",
+  "runAttempt": "1",
+  "runKey": "26732240928-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26732240928",
+  "headRef": "codex/rename-paddock",
+  "baseRef": "main",
+  "headSha": "85592e15389b6fa7779ed1de46366f9605d02811",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/66/runs/26732240928-attempt-1/storybook/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/66/storybook/latest/?v=26732240928-attempt-1",
+  "createdAt": "2026-06-01T02:41:18.173Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 1,
+    "open": 1,
+    "passed": 0,
+    "total": 1
+  },
+  "reviewScope": {
+    "domains": [
+      "workflow-contracts"
+    ],
+    "filtered": 300
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "66",
+    "surface": "storybook",
+    "surfaceLabel": "Storybook Components",
+    "headSha": "85592e15389b6fa7779ed1de46366f9605d02811",
+    "runKey": "26732240928-attempt-1",
+    "items": [
+      {
+        "group": "workflow-contracts",
+        "id": "new-workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "itemId": "workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "snapshot": "workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "variant": "new"
+      }
+    ]
+  }
+}
