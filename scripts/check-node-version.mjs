@@ -14,7 +14,7 @@ if (!Number.isFinite(currentMajor)) {
 if (currentMajor < MIN_NODE_MAJOR) {
   console.error(
     [
-      `error: Mission Control requires Node >= ${MIN_NODE_MAJOR}, but found ${current}.`,
+      `error: Paddock requires Node >= ${MIN_NODE_MAJOR}, but found ${current}.`,
       'Any newer Node version is supported. Try `nvm use 22` (recommended LTS) or `nvm install --lts && nvm use --lts`.',
     ].join('\n')
   )

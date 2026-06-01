@@ -1,14 +1,14 @@
-# Canonical reviewed seed config for the Mission Control product line.
+# Canonical reviewed seed config for the Paddock product line.
 # This file declares configuration intent only; apply/verify behavior is owned by the seeder command.
 schema_version: product-line-seed-v1
 product_line:
   slug: mission-control
-  display_name: Mission Control
+  display_name: Paddock
   agent_prefix: mission-control-platform
 github:
   owner: racecraft-lab
-  repo: mission-control
-  full_name: racecraft-lab/mission-control
+  repo: Paddock
+  full_name: racecraft-lab/Paddock
 workflow_contract:
   family: mission-control
   path: docs/ai/workflows/mission-control/workflow-contract.yaml
@@ -27,7 +27,7 @@ departments:
     name: QA
     ticket_prefix: QA
     area_slug: qa
-    github_repo: racecraft-lab/mission-control
+    github_repo: racecraft-lab/Paddock
     github_sync_enabled: true
     is_triage_project: true
     is_repo_sync_owner: true

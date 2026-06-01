@@ -1,4 +1,4 @@
-name: Mission Control UI E2E
+name: Paddock UI E2E
 
 on:
   workflow_dispatch:
@@ -104,7 +104,7 @@ jobs:
     with:
       surface: playwright
       surface_label: Playwright UI E2E
-      project_name: Mission Control
+      project_name: Paddock
       visual_test_command: >-
         MC_VISUAL_SNAPSHOTS=1
         MC_VISUAL_OUTPUT_DIR=test-results/visual-current
@@ -126,7 +126,7 @@ jobs:
         repo/playwright-report/
       workflow_file: mission-control-ui-e2e.yml
       pages_branch: visual-regression-pages
-      base_url: https://racecraft-lab.github.io/mission-control
+      base_url: https://racecraft-lab.github.io/Paddock
       package_manager: pnpm
       pnpm_version: '10'
       node_version: '22'

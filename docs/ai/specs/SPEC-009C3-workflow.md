@@ -181,7 +181,7 @@ Prerequisite discovery on 2026-05-16:
   clean before setup artifact edits.
 - SpecKit CLI found at `/Users/fredrickgabelmann/.local/bin/specify`.
 - Package manager: `pnpm`, detected from `pnpm-lock.yaml`.
-- Remote: `origin` -> `git@github.com:racecraft-lab/mission-control.git`.
+- Remote: `origin` -> `git@github.com:racecraft-lab/Paddock.git`.
 - Reviewability preset detected:
   `speckit-pro-reviewability` for spec, plan, and tasks templates.
 - Archive extension: installed and enabled at version `1.1.0`.
@@ -299,7 +299,7 @@ $speckit-specify
 ## Feature: SPEC-009C3 - Dev/Review/Aegis to Ready for Owner
 
 ### Problem Statement
-SPEC-009C2 proves that an actionable Mission Control pilot issue can be handed
+SPEC-009C2 proves that an actionable Paddock pilot issue can be handed
 from Issue Triage into Issue Remediation planning. SPEC-009C3 must execute the
 next bounded chain stages - remediation planning, dev implementation, review,
 and Aegis - until the linked PR-producing task reaches `ready_for_owner`.
@@ -310,7 +310,7 @@ and Aegis - until the linked PR-producing task reaches `ready_for_owner`.
 - Require review `pass` and Aegis `approved` before readiness.
 - Route or block review `fix` and Aegis `rejected` before readiness.
 - Persist plan, dev verification, review verdict, Aegis approval, and advisory
-  governance evidence using existing Mission Control surfaces.
+  governance evidence using existing Paddock surfaces.
 - Use deterministic fixture PR linkage in automated validation and an explicit
   opt-in live draft PR smoke path.
 - Preserve workflow slugs while allowing targeted label/prompt/copy cleanup
@@ -718,7 +718,7 @@ Implementation constraints:
 
 - **G7:** Passed with all 70 generated tasks complete.
 - **Reviewability diff gate:** `reviewability-gate.sh diff HEAD~1..HEAD` passed under the recorded transition exception; raw `main...HEAD` measurement includes the full SpecKit artifact history and remains over budget, as expected for this transition slice.
-- **PR:** [#48](https://github.com/racecraft-lab/mission-control/pull/48) merged as `ac7760a222a33b4cefe886afae605238f479eaa5`.
+- **PR:** [#48](https://github.com/racecraft-lab/Paddock/pull/48) merged as `ac7760a222a33b4cefe886afae605238f479eaa5`.
 - **Post-merge HAL UAT:** HAL `mission-control.service` promoted to `ac7760a222a33b4cefe886afae605238f479eaa5`; workspace `4` workflow-contract apply run `8` aligned the PR-producing template; draft PR #49 was created, verified as `isDraft=true` and `mergedAt=null`, used to drive synthetic dev task `39` through the live quality-review API to `ready_for_owner`, then closed unmerged with the remote branch removed.
 - **UAT cleanup:** backup `mission-control-data/backups/mission-control.db.spec009c3-uat-20260519-195459.bak` retained; synthetic tasks/artifacts/quality-reviews/notifications/activities removed with counts `4/5/2/1/1 -> 0/0/0/0/0`; temp local smoke worktree and branch removed.
 - **Push:** Branch `009c3-remediation-ready-for-owner` pushed via HTTPS after the configured SSH signing agent failed.

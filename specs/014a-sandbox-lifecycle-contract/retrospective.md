@@ -189,7 +189,7 @@ Latest workflow evidence records:
 - `$speckit-review-run`: prior cleanup, path-validation, and OpenAPI findings cleared.
 - `$speckit-cleanup-run`: 58 completed tasks inspected, 0 edits, 0 critical or small auto-fix findings.
 - Reviewability diff gate: pass with ratified exception.
-- PR: https://github.com/racecraft-lab/mission-control/pull/64, merged as `c01d9e44ec826d94fa5916284c51453e5ec339ee` on 2026-05-30T02:08:31Z.
+- PR: https://github.com/racecraft-lab/Paddock/pull/64, merged as `c01d9e44ec826d94fa5916284c51453e5ec339ee` on 2026-05-30T02:08:31Z.
 - Post-merge HAL deployment: `c01d9e44ec826d94fa5916284c51453e5ec339ee`; `pnpm install --frozen-lockfile`, `pnpm build`, service restart, `/login` HTTP `200`, and OpenClaw gateway status passed.
 - Post-merge HAL UAT: replay `spec013c-014a-uat-1780110032087` passed fake owners `mission_control`, `openclaw`, and `external_harness`, enabled/disabled read evidence, flag-off mutation blocks, safe read payload checks, and zero disposable residue.
 

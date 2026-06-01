@@ -12,7 +12,7 @@ describe('workflow contract exporter', () => {
     const second = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
     expect(first.markdown).toBe(second.markdown)
     expect(first.markdown).toContain('workflow-contract-hash-v1:sha256:')
-    expect(first.markdown).toContain('Mission Control Intake')
+    expect(first.markdown).toContain('Paddock Intake')
   })
 
   it('redacts secret-like values in Markdown review output', () => {

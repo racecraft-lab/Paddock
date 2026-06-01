@@ -227,7 +227,7 @@ try {
       priority: 'high',
       workflowTemplateId,
       workflowTemplateSlug: READY_FOR_OWNER_WORKFLOW_SLUG,
-      githubRepo: 'racecraft-lab/mission-control',
+      githubRepo: 'racecraft-lab/Paddock',
       githubPrNumber: 23,
     })
     const doneId = createTask(db, {

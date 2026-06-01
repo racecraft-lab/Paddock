@@ -1,6 +1,6 @@
 # SpecKit Workflow: SPEC-009E - Pilot Eligibility and Evidence Surfaces
 
-**Template Version**: 1.0.0, populated for Mission Control
+**Template Version**: 1.0.0, populated for Paddock
 **Created**: 2026-05-20
 **Purpose**: Prepare and execute RC Factory Phase 8E by adding a read-only, task-scoped evidence surface for pilot eligibility, stored review packet evidence, smoke state, and future-state deferrals.
 
@@ -31,7 +31,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 
 - Surface lives in the GitHub-linked task context.
 - API route should be generic task evidence, not pilot-only naming.
-- Data source is stored Mission Control evidence only.
+- Data source is stored Paddock evidence only.
 - The surface is read-only.
 - Local-only and partial-proof tasks show explicit incomplete/not-eligible states.
 - UAT must prove the operator-facing UI against retained pilot evidence.
@@ -138,7 +138,7 @@ Read-only API/UI or diagnostics surfaces, evidence derivation from existing task
 ### Design Concept Decisions
 
 1. First surface is task-scoped and tied to GitHub-linked task context.
-2. Use stored Mission Control evidence only; no live GitHub refresh.
+2. Use stored Paddock evidence only; no live GitHub refresh.
 3. Add a generic task evidence route, not a pilot-named route.
 4. Place a compact read-only Evidence section or tab inside existing task detail UI.
 5. Local-only and partial-proof tasks must show explicit not-eligible/incomplete states.
@@ -170,13 +170,13 @@ $speckit-specify
 Operators can now generate and inspect SPEC-009D pilot review packets, but practical review still requires knowing where to look across task artifacts, smoke checklist notes, task/activity rows, GitHub issue/PR identity, and future-state deferrals. SPEC-009E should add the first read-only operator surface that makes this stored evidence visible from the task context without terminal archaeology.
 
 ### Users
-- Mission Control operators reviewing the self-hosting pilot trail after SPEC-009D.
+- Paddock operators reviewing the self-hosting pilot trail after SPEC-009D.
 - Reviewers who need a compact task-local view of eligibility, packet, smoke, GitHub, and deferral evidence.
 - Future SPEC-009F and SPEC-013A implementers who need a stable task evidence contract to build on.
 
 ### Required Behavior
 - Add a generic task evidence concept, with the initial route planned as `GET /api/tasks/[id]/evidence` unless Clarify/Plan proves a smaller existing seam.
-- The route is read-only and derives from stored Mission Control evidence only.
+- The route is read-only and derives from stored Paddock evidence only.
 - The v1 response includes pilot eligibility inputs, GitHub-linked task identity, packet artifact references, smoke checklist evidence, current stage, warnings/missing proof, and future-state deferrals.
 - The task detail UI gets a compact read-only Evidence section or tab for GitHub-linked/pilot-relevant tasks.
 - Local-only and partial-proof tasks show explicit not-eligible or incomplete evidence states with missing proof reasons.
@@ -301,7 +301,7 @@ Focus on post-merge UAT:
 |------|-------|-------------------|---------|---------------|
 | API error behavior for missing task, unauthorized workspace scope, artifact store disabled, and incomplete evidence | 1 | security, codebase, domain | Accepted masked `404 task_not_found` for missing/cross-workspace task, `401/400/403` for auth/scope failures, `200` incomplete/not-eligible domain states, and section-level artifact warning when aggregate evidence can still render | codebase-analyst, spec-context-analyst, domain-researcher |
 | Rendering redacted, quarantined, superseded, oversized, malformed, unsafe, or secret-bearing artifact evidence | 1 | security, codebase, domain | Accepted safe metadata/status/source-map rendering only; redacted previews allowed only when already stored as safe derivatives; quarantined/unsafe/malformed/oversized evidence exposes no raw content, preview, storage URI, object path, signed URL, parser details, or actor identity; superseded remains trace-only; no quarantine override or mutation controls | codebase-analyst, spec-context-analyst, domain-researcher |
-| UAT retained evidence source and cleaned disposable row representation | 1 | spec, codebase | Accepted retained issue #50 / PR #51 plus SPEC-009D packet/source-map and smoke-checklist evidence as canonical proof; disposable SPEC-009E rows may be seeded only as UI carriers; cleaned rows render as archived/UAT proof with cleanup rationale and never as current active Mission Control state | codebase-analyst, spec-context-analyst |
+| UAT retained evidence source and cleaned disposable row representation | 1 | spec, codebase | Accepted retained issue #50 / PR #51 plus SPEC-009D packet/source-map and smoke-checklist evidence as canonical proof; disposable SPEC-009E rows may be seeded only as UI carriers; cleaned rows render as archived/UAT proof with cleanup rationale and never as current active Paddock state | codebase-analyst, spec-context-analyst |
 
 ---
 
@@ -528,7 +528,7 @@ Cross-check `spec.md`, `plan.md`, `tasks.md`, and `docs/ai/specs/SPEC-009E-desig
 Flag drift in these areas:
 1. Route naming: should be generic task evidence, not pilot-only naming unless justified by a documented Clarify decision.
 2. Mutability: no writes, no packet generation action, no GitHub sync action, no smoke execution action.
-3. Evidence source: stored Mission Control evidence only; no live GitHub refresh.
+3. Evidence source: stored Paddock evidence only; no live GitHub refresh.
 4. UI scope: compact task detail Evidence section/tab, not a global dashboard.
 5. Schema/dependency scope: no migration and no runtime dependency unless a ratified exception exists.
 6. Future-spec boundaries: SPEC-009F, SPEC-013A/A1/B/C, and SPEC-014A-D remain deferred.
@@ -619,14 +619,14 @@ Docker CLI was present, but Docker daemon access was unavailable during UAT, so 
 ### UAT Evidence
 
 - UAT ledger: `docs/qa/pilot-smoke-checklist.md`, section `2026-05-20 SPEC-009E Task Evidence Surface UAT`.
-- Canonical retained proof: Mission Control issue #50 and PR #51, plus SPEC-009D packet/source-map and smoke-checklist references.
+- Canonical retained proof: Paddock issue #50 and PR #51, plus SPEC-009D packet/source-map and smoke-checklist references.
 - Browser artifacts:
   - `test-results/spec-009e-task-evidence/spec-009e-evidence-eligible.png`
   - `test-results/spec-009e-task-evidence/spec-009e-evidence-local-only.png`
   - `test-results/spec-009e-task-evidence/spec-009e-evidence-partial-proof.png`
   - `test-results/spec-009e-task-evidence/spec-009e-evidence-fixture-export.json`
 - Final cleanup evidence: `{"disposable_tasks_remaining":0,"matching_evidence_rows_remaining":0}`.
-- Implementation PR merged: https://github.com/racecraft-lab/mission-control/pull/55
+- Implementation PR merged: https://github.com/racecraft-lab/Paddock/pull/55
 - Merge commit: `40507874b012abffe2356a66be36613c6dea5809`.
 - Main check-run closeout: push checks for the merge commit passed on
   2026-05-21 UTC, including `quality-gate`,

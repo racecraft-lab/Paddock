@@ -1,5 +1,5 @@
 /**
- * GitHub API client for Mission Control issue sync.
+ * GitHub API client for Paddock issue sync.
  * Resolves GITHUB_TOKEN from the OpenClaw integration env file first,
  * then falls back to process.env for deployments that export it directly.
  */

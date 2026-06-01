@@ -262,7 +262,7 @@ function configureReadyForOwnerTemplate(workspaceId: number, taskId: number) {
       UPDATE tasks
       SET workflow_template_id = ?,
           workflow_template_slug = ?,
-          github_repo = 'racecraft-lab/mission-control',
+          github_repo = 'racecraft-lab/Paddock',
           github_pr_number = 23,
           updated_at = ?
       WHERE id = ? AND workspace_id = ?

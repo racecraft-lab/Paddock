@@ -139,7 +139,7 @@ function PageLoader({ steps }: { steps?: InitStep[] }) {
             <div className="animate-float" style={{ animationDelay: '2.7s' }}>
               <Image
                 src="/brand/mc-logo-128.png"
-                alt="Mission Control"
+                alt="Paddock"
                 width={56}
                 height={56}
                 priority

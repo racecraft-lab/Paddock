@@ -1,12 +1,12 @@
-# Mission Control Style Guide
+# Paddock Style Guide
 
-> "Mission Control in the Void" — a futuristic command center floating in a digital void.
+> "Paddock in the Void" — a futuristic command center floating in a digital void.
 
 ---
 
 ## 1. Design Philosophy
 
-Mission Control uses a deep-navy void aesthetic with luminous cyan accents. The visual language evokes a space-age command center: dark surfaces, glowing edges, monospace readouts, and subtle grid patterns that anchor UI elements in a digital void.
+Paddock uses a deep-navy void aesthetic with luminous cyan accents. The visual language evokes a space-age command center: dark surfaces, glowing edges, monospace readouts, and subtle grid patterns that anchor UI elements in a digital void.
 
 Key principles:
 - **Dark by default** — app defaults to dark mode (`enableSystem={false}`)

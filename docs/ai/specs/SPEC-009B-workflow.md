@@ -1,8 +1,8 @@
-# SpecKit Workflow: SPEC-009B - Mission Control Product-Line Seed and Flag Activation
+# SpecKit Workflow: SPEC-009B - Paddock Product-Line Seed and Flag Activation
 
 **Template Version**: 1.0.0
 **Created**: 2026-05-07
-**Purpose**: Prepare and execute the RC Factory Phase 8B Mission Control Product Line seed, feature-flag activation, governance seed, and non-dispatch readiness workflow in autopilot.
+**Purpose**: Prepare and execute the RC Factory Phase 8B Paddock Product Line seed, feature-flag activation, governance seed, and non-dispatch readiness workflow in autopilot.
 
 ---
 
@@ -27,7 +27,7 @@ Re-read the design concept before each phase if a prompt is ambiguous. The
 Specify and Clarify prompts below were populated directly from the interview.
 
 Do not start downstream specs from this worktree. SPEC-009B stops after the
-Mission Control Product Line A seed, cleanup preflight, workflow-family import,
+Paddock Product Line A seed, cleanup preflight, workflow-family import,
 feature-flag activation, conservative governance seed, docs/runbook evidence,
 tests, and non-dispatch guardrails are complete.
 
@@ -42,9 +42,9 @@ or harness adapter work belongs in this spec.
 Source-of-truth scoping decisions:
 
 - Keep SPEC-009B Mission-Control-specific; SPEC-010A owns generic product-line seeding.
-- Upsert `workspaces.slug='mission-control'`, `name='Mission Control'` as Product Line A while preserving `facility` as the Facility/global support row.
+- Upsert `workspaces.slug='mission-control'`, `name='Paddock'` as Product Line A while preserving `facility` as the Facility/global support row.
 - Seed full departments: QA, Development, DevSecOps, Marketing, Customer Service, and Finance.
-- Preserve and re-home only existing `racecraft-lab/mission-control` GitHub issue sync state.
+- Preserve and re-home only existing `racecraft-lab/Paddock` GitHub issue sync state.
 - Detect non-Mission-Control sync/project/cron/gateway GitHub automation or product-line binding residue and block with cleanup instructions; do not delete it automatically. OpenClaw runtime agent inventory alone is not residue.
 - Document the live FocusEngine cleanup as a SPEC-009B pre-deploy runbook/checklist before deployment.
 - Enable Phase 1-7 prerequisite flags and `PILOT_MISSION_CONTROL_E2E`; leave future task-control-plane and sandbox-runner flags off.
@@ -151,7 +151,7 @@ Before starting each phase, verify alignment with `.specify/memory/constitution.
 |-----------|-------------|--------------|
 | Existing hierarchy reuse | SQL `workspaces` means Product Line; `projects` means Department; do not add a new product-line table | Spec/plan review and migration guardrails |
 | Facility/Product Line separation | Preserve `facility` for Facility/global support and seed `mission-control` as Product Line A | Seed tests and SQL assertions |
-| GitHub tracker truth | Preserve only `racecraft-lab/mission-control` issue linkage; do not create local-only pilot work | Seed tests and task queries |
+| GitHub tracker truth | Preserve only `racecraft-lab/Paddock` issue linkage; do not create local-only pilot work | Seed tests and task queries |
 | Workflow policy source | Use repo-owned SPEC-009A workflow contract import/apply path for runtime `workflow_templates` | Contract import tests and slug assertions |
 | Feature-flag discipline | Enable only Phase 1-7 pilot prerequisites plus `PILOT_MISSION_CONTROL_E2E`; leave future flags off | Workspace feature flag assertions and static grep |
 | Non-destructive cleanup | Detect non-Mission-Control FocusEngine/sync/gateway GitHub automation or product-line binding residue and block; never delete automatically | Preflight tests and runbook checklist |
@@ -186,7 +186,7 @@ Executed during SPEC-009B autopilot startup on 2026-05-07.
 | Field | Value |
 |-------|-------|
 | Spec | SPEC-009B |
-| Name | Mission Control Product-Line Seed and Flag Activation |
+| Name | Paddock Product-Line Seed and Flag Activation |
 | Branch | `009b-mission-control-seed` |
 | Dependencies | SPEC-009A, SPEC-006, SPEC-008 |
 | Enables | SPEC-009C, SPEC-010A |
@@ -197,17 +197,17 @@ Executed during SPEC-009B autopilot startup on 2026-05-07.
 | Design Concept | `docs/ai/specs/SPEC-009B-design-concept.md` |
 | Runtime projection | `workspaces`, `projects`, `project_agent_assignments`, `workflow_templates`, `resource_policies`, `workspaces.feature_flags` |
 | Workflow source | `docs/ai/workflows/mission-control/workflow-contract.yaml` and SPEC-009A workflow-contract library |
-| Strict Scope | Mission Control seed script/config/docs, preflight cleanup detection, focused tests, and setup evidence |
+| Strict Scope | Paddock seed script/config/docs, preflight cleanup detection, focused tests, and setup evidence |
 
 ### Scope Summary
 
-Seed Mission Control as Product Line A with a `mission-control` workspace,
+Seed Paddock as Product Line A with a `mission-control` workspace,
 full PRD department projects, agent assignments, GitHub repo routing, separate
 Issue Triage and Issue Remediation workflow families imported through the
 SPEC-009A contract mechanism, Phase 1-7 feature flags plus
 `PILOT_MISSION_CONTROL_E2E`, and conservative governance policies. Preserve
-Mission Control GitHub linkage and sync metadata for existing synced
-`racecraft-lab/mission-control` issue tasks by moving them to triage/intake
+Paddock GitHub linkage and sync metadata for existing synced
+`racecraft-lab/Paddock` issue tasks by moving them to triage/intake
 without dispatching work.
 
 Add a non-destructive preflight that detects non-Mission-Control sync/project,
@@ -230,9 +230,9 @@ or generalize the seeder for Product Line B.
   department projects exist under Product Line A; product surfaces remain labels
   or metadata.
 - [x] Agent role assignments exist for researcher, planner, dev, ui,
-  devsecops, and qa using Mission Control platform agent names.
-- [x] The Mission Control workspace repo config points to
-  `racecraft-lab/mission-control` and only Mission Control issue sync state is
+  devsecops, and qa using Paddock platform agent names.
+- [x] The Paddock workspace repo config points to
+  `racecraft-lab/Paddock` and only Paddock issue sync state is
   preserved or re-homed.
 - [x] Issue Triage and Issue Remediation workflow families are imported/applied
   through the SPEC-009A workflow contract mechanism and expected slugs exist.
@@ -258,7 +258,7 @@ or generalize the seeder for Product Line B.
 ```bash
 $speckit-specify
 
-## Feature: Mission Control Product-Line Seed and Flag Activation
+## Feature: Paddock Product-Line Seed and Flag Activation
 
 Create the SPEC-009B seed-only specification for the RC Factory roadmap.
 
@@ -269,13 +269,13 @@ Use these source artifacts:
 - `docs/ai/workflows/mission-control/workflow-contract.yaml`
 
 Scope:
-- Seed Mission Control itself as Product Line A with `workspaces.slug='mission-control'`, `name='Mission Control'`.
+- Seed Paddock itself as Product Line A with `workspaces.slug='mission-control'`, `name='Paddock'`.
 - Preserve `workspaces.slug='facility'` as Facility/global support; do not reuse it as Product Line A.
 - Seed full departments: QA, Development, DevSecOps, Marketing, Customer Service, and Finance.
 - Represent product surfaces like macOS app, UI, website, and docs as task labels/metadata, not projects.
-- Map workflow stage roles to Mission Control platform agents per PRD FR-K3.
-- Set the Product Line A GitHub repo to `racecraft-lab/mission-control`.
-- Preserve and re-home existing synced `racecraft-lab/mission-control` issue tasks to triage/intake without dispatching them.
+- Map workflow stage roles to Paddock platform agents per PRD FR-K3.
+- Set the Product Line A GitHub repo to `racecraft-lab/Paddock`.
+- Preserve and re-home existing synced `racecraft-lab/Paddock` issue tasks to triage/intake without dispatching them.
 - Detect non-Mission-Control sync/project/cron/gateway GitHub automation or product-line binding residue, including the known live FocusEngine cleanup concern, and block with cleanup instructions rather than deleting automatically. OpenClaw runtime agent inventory alone is not a cleanup blocker.
 - Seed Issue Triage and Issue Remediation workflow families by applying/importing the SPEC-009A repo-owned workflow contract into `workflow_templates`.
 - Enable Phase 1-7 prerequisite flags and `PILOT_MISSION_CONTROL_E2E` for Product Line A; keep future runner/sandbox flags off.
@@ -339,7 +339,7 @@ $speckit-clarify Focus on SPEC-009B preflight behavior:
 $speckit-clarify Focus on SPEC-009B seed identity and idempotency:
 - stable slugs/names for Product Line A departments
 - role-to-agent assignment rows and duplicate handling
-- preserving existing `racecraft-lab/mission-control` issue linkage and sync metadata
+- preserving existing `racecraft-lab/Paddock` issue linkage and sync metadata
 - rerun behavior for workspaces, projects, workflow templates, flags, and governance rows
 ```
 
@@ -357,9 +357,9 @@ $speckit-clarify Focus on SPEC-009B governance and workflow-contract import:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Preflight and cleanup boundary | 5 recommended answers; 2 consensus items resolved | Detect the full non-Mission-Control residue set; fail closed before mutation with structured blocked-preflight output and `mutation_status: "not_mutated"`; require backup/export-first cleanup evidence; prove zero deletion with snapshots and guardrails; treat FocusEngine as external cleanup residue inferred from existing Mission Control/OpenClaw GitHub automation or product-line binding/GitHub/operator evidence, not a new table; do not treat OpenClaw runtime agent inventory alone as residue when it is generalized, unassigned, not work-eligible, and free of FocusEngine GitHub automation; redact raw tokens, credentials, secrets, and credential-like payloads from all preflight/checklist/log evidence. |
-| 2 | Seed data and idempotency | 5 recommended answers; 3 consensus items resolved | Seed six department projects by stable slugs/prefixes; use QA as the only triage/inbox and repo sync-owner department; upsert six PRD role assignments through the existing project-scoped assignment contract and require runtime lookup to derive workspace through `projects`; re-home existing Mission Control issue tasks by GitHub identity without creating pilot tasks; use SPEC-009A importer only; canonicalize `PILOT_MISSION_CONTROL_E2E` and treat `PILOT_PRODUCT_LINE_A_E2E` as compatibility drift; seed governance rows with stable spec-owned markers. |
-| 3 | Governance and workflow contract | 5 recommended answers; 2 consensus items resolved | Seed two enabled, non-blocking advisory budget rows and a visible evaluator-inactive WIP template/visibility row; do not seed blackout or degraded-window rows; treat the current workflow contract as incomplete for FR-K2 and require a narrow contract correction with the required Mission Control slugs; reuse SPEC-009A importer library functions directly and override `workspace_id` to the actual seeded `mission-control` workspace id; include canonical `PILOT_MISSION_CONTROL_E2E` registry/runbook/runtime normalization in SPEC-009B tasks. |
+| 1 | Preflight and cleanup boundary | 5 recommended answers; 2 consensus items resolved | Detect the full non-Mission-Control residue set; fail closed before mutation with structured blocked-preflight output and `mutation_status: "not_mutated"`; require backup/export-first cleanup evidence; prove zero deletion with snapshots and guardrails; treat FocusEngine as external cleanup residue inferred from existing Paddock/OpenClaw GitHub automation or product-line binding/GitHub/operator evidence, not a new table; do not treat OpenClaw runtime agent inventory alone as residue when it is generalized, unassigned, not work-eligible, and free of FocusEngine GitHub automation; redact raw tokens, credentials, secrets, and credential-like payloads from all preflight/checklist/log evidence. |
+| 2 | Seed data and idempotency | 5 recommended answers; 3 consensus items resolved | Seed six department projects by stable slugs/prefixes; use QA as the only triage/inbox and repo sync-owner department; upsert six PRD role assignments through the existing project-scoped assignment contract and require runtime lookup to derive workspace through `projects`; re-home existing Paddock issue tasks by GitHub identity without creating pilot tasks; use SPEC-009A importer only; canonicalize `PILOT_MISSION_CONTROL_E2E` and treat `PILOT_PRODUCT_LINE_A_E2E` as compatibility drift; seed governance rows with stable spec-owned markers. |
+| 3 | Governance and workflow contract | 5 recommended answers; 2 consensus items resolved | Seed two enabled, non-blocking advisory budget rows and a visible evaluator-inactive WIP template/visibility row; do not seed blackout or degraded-window rows; treat the current workflow contract as incomplete for FR-K2 and require a narrow contract correction with the required Paddock slugs; reuse SPEC-009A importer library functions directly and override `workspace_id` to the actual seeded `mission-control` workspace id; include canonical `PILOT_MISSION_CONTROL_E2E` registry/runbook/runtime normalization in SPEC-009B tasks. |
 
 **G2 Gate:** Pass. `spec.md` has 0 `[NEEDS CLARIFICATION]`
 markers after Clarify and consensus edits.
@@ -395,16 +395,16 @@ $speckit-plan
 - Do not delete FocusEngine or other non-Mission-Control data.
 - Do not create or ingest synthetic issues.
 - Do not create a separate Triage project; QA is the seeded triage/inbox and
-  repository sync-owner department for Mission Control.
+  repository sync-owner department for Paddock.
 - Do not call scheduler dispatch, claim work, launch harnesses, or add runner/sandbox state.
 - Do not seed evaluator-active WIP, blackout, or degraded-window policies unless
   implementation tests prove they cannot block or defer normal pilot intake.
-- Keep product-line seed specific to Mission Control; SPEC-010A owns generic seeder extraction.
+- Keep product-line seed specific to Paddock; SPEC-010A owns generic seeder extraction.
 - Use existing transaction patterns from `better-sqlite3`.
-- Preserve GitHub linkage/sync metadata for existing `racecraft-lab/mission-control` tasks.
+- Preserve GitHub linkage/sync metadata for existing `racecraft-lab/Paddock` tasks.
 - Add explicit cleanup preflight failure messages for non-Mission-Control sync/gateway residue.
 - Correct `docs/ai/workflows/mission-control/workflow-contract.yaml` narrowly so
-  it contains the FR-K2 Mission Control Issue Triage and Issue Remediation
+  it contains the FR-K2 Paddock Issue Triage and Issue Remediation
   slugs before seed readiness; do not accept stale `intake`/`implementation`
   aliases or manually invent runtime template rows in the seed.
 - Align the feature-flag registry, resolver exception, runbooks, tests, and seed
@@ -412,7 +412,7 @@ $speckit-plan
   `PILOT_PRODUCT_LINE_A_E2E` as legacy compatibility drift, not a second
   persisted workspace flag.
 - Treat FocusEngine live project state as external cleanup residue inferred
-  from existing Mission Control project/task/GitHub sync rows, OpenClaw cron
+  from existing Paddock project/task/GitHub sync rows, OpenClaw cron
   issue-sync jobs, gateway/OpenClaw GitHub automation or product-line binding
   configuration, and operator-supplied `ssh hal` pre-deploy evidence; do not
   add a FocusEngine table or cleanup path. Retained OpenClaw runtime agent
@@ -433,7 +433,7 @@ $speckit-plan
 - Assert stable identity counts for one `mission-control` Product Line, one
   preserved `facility` workspace, six department projects, six PRD role
   assignments, required workflow slugs, canonical flags, governance policies,
-  and preserved Mission Control issue-intake records.
+  and preserved Paddock issue-intake records.
 - Add tests that prove SPEC-009B creates zero new pilot tasks, zero workflow-chain
   successor records, and zero per-agent task fan-out.
 - Add tests that inject FocusEngine/non-Mission-Control residue and assert blocked preflight with zero deletes.
@@ -487,7 +487,7 @@ $speckit-checklist data-integrity
 Focus on SPEC-009B requirements:
 - idempotent Product Line A seed reruns
 - full department and assignment rows
-- preserving Mission Control GitHub linkage/sync metadata
+- preserving Paddock GitHub linkage/sync metadata
 - workflow-template import through repo-owned contract
 - governance row creation without duplicates
 - blocked preflight writes no deletes and no partial destructive mutation
@@ -500,7 +500,7 @@ Focus on SPEC-009B requirements:
 - Facility vs Product Line scope remains distinct
 - workspace feature flags are scoped to Product Line A
 - future runner/sandbox flags remain off
-- only Mission Control issue sync state is active after cleanup
+- only Paddock issue sync state is active after cleanup
 - no claim/dispatch/scheduler/runner state is introduced
 ```
 
@@ -553,7 +553,7 @@ $speckit-tasks
 - Reference `docs/ai/specs/SPEC-009B-design-concept.md` for scope decisions and non-goals.
 - Organize by independently testable stories:
   1. Seed Product Line A and departments idempotently.
-  2. Preserve Mission Control GitHub sync metadata and block non-Mission-Control residue.
+  2. Preserve Paddock GitHub sync metadata and block non-Mission-Control residue.
   3. Import workflow families from the repo-owned contract.
   4. Enable feature flags and conservative governance rows.
   5. Produce operator runbook/checklist and non-dispatch evidence.
@@ -591,7 +591,7 @@ Focus on:
 1. Cross-artifact consistency across spec.md, plan.md, tasks.md, and `docs/ai/specs/SPEC-009B-design-concept.md`.
 2. Coverage for idempotent seed reruns, blocked non-Mission-Control preflight, workflow-contract import, feature flags, governance rows, pre-deploy cleanup docs, and non-dispatch guardrails.
 3. Scope drift into SPEC-009C pilot issue creation, SPEC-010A generic seeding, SPEC-013 task-control-plane state, or SPEC-014 sandbox/harness work.
-4. Data-integrity risks around preserving existing `racecraft-lab/mission-control` GitHub linkage and sync metadata.
+4. Data-integrity risks around preserving existing `racecraft-lab/Paddock` GitHub linkage and sync metadata.
 5. Whether FocusEngine cleanup is documented as operator-owned pre-deploy work and not implemented as destructive seed behavior.
 ```
 
@@ -638,7 +638,7 @@ For each task, follow RED -> GREEN -> REFACTOR -> VERIFY.
   - generalize retained OpenClaw agent labels and workspace files away from FocusEngine/macOS/product-specific text
   - keep retained OpenClaw agents visible but offline or otherwise not work-eligible, with zero project assignments, zero active/assigned tasks, and no GitHub sync/triage cron ownership until SPEC-014B/SPEC-014D add first-class inventory state
   - delete/archive FocusEngine project tasks only after explicit operator confirmation
-  - verify only `racecraft-lab/mission-control` remains configured for sync
+  - verify only `racecraft-lab/Paddock` remains configured for sync
 - Use the SPEC-009A workflow-contract importer/apply path for workflow templates.
 - Verify no synthetic issue creation, dispatch, claim, scheduler launch, runner state, sandbox lifecycle, or auto-merge path exists.
 ```
@@ -648,8 +648,8 @@ For each task, follow RED -> GREEN -> REFACTOR -> VERIFY.
 | Phase | Tasks | Completed | Notes |
 |-------|-------|-----------|-------|
 | Foundation | T001-T009 | Complete | Strict/lint/package entries, fixtures, typed seed/preflight contracts, and redaction helpers |
-| Product Line Seed | T010-T030 | Complete | Mission Control Product Line A, Facility preservation, departments, assignments, QA sync ownership, preserved issue intake, blocked preflight, and CLI modes |
-| Workflow/Flags/Governance | T031-T043 | Complete | Required Mission Control workflow slugs, SPEC-009A import/apply reuse, canonical `PILOT_MISSION_CONTROL_E2E`, future-flag guardrails, and advisory governance rows |
+| Product Line Seed | T010-T030 | Complete | Paddock Product Line A, Facility preservation, departments, assignments, QA sync ownership, preserved issue intake, blocked preflight, and CLI modes |
+| Workflow/Flags/Governance | T031-T043 | Complete | Required Paddock workflow slugs, SPEC-009A import/apply reuse, canonical `PILOT_MISSION_CONTROL_E2E`, future-flag guardrails, and advisory governance rows |
 | Docs/Verification | T044-T061 | Complete | Idempotency/verify evidence, non-dispatch guardrails, runbook, quickstart, roadmap/PRD status, and validation results |
 
 ### Implementation Results
@@ -658,11 +658,11 @@ For each task, follow RED -> GREEN -> REFACTOR -> VERIFY.
 |------|----------|
 | Seed CLI | `scripts/seed-mission-control-product-line.ts` supports `preflight`, `apply`, and `verify` with exit codes `0`, `2`, `3`, `4`, and `5`. |
 | Seed library | `src/lib/mission-control-seed/*` implements typed seed constants, redaction, preflight scans, transactional seed apply, and verification/evidence helpers. |
-| Workflow contract | Mission Control contract contains nine required slugs and exports with hash `workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd9439ea49f60ea54a2f14414a7a287c92`. |
+| Workflow contract | Paddock contract contains nine required slugs and exports with hash `workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd9439ea49f60ea54a2f14414a7a287c92`. |
 | Feature flags | Runtime registry/runbooks/tests use canonical `PILOT_MISSION_CONTROL_E2E`; legacy `PILOT_PRODUCT_LINE_A_E2E` is rejected as persisted workspace drift. |
 | Cleanup docs | `docs/runbooks/mission-control-seed-predeploy.md` documents backup/export-first FocusEngine project/ticket, OpenClaw/gateway GitHub automation or product-line binding, cron, and repo-sync cleanup before deploy, while allowing retained OpenClaw runtime agent inventory only when generalized, unassigned, not work-eligible, and free of FocusEngine GitHub automation. |
 | Non-dispatch | Guardrails assert no synthetic issue, claim, dispatch, scheduler launch, runner state, sandbox lifecycle, generic Product Line B seeder, auto-merge, or reconciliation path. |
-| PR | Draft PR opened at `https://github.com/racecraft-lab/mission-control/pull/30` after branch push. |
+| PR | Draft PR opened at `https://github.com/racecraft-lab/Paddock/pull/30` after branch push. |
 
 ### Verification Results
 
@@ -722,7 +722,7 @@ specs/009b-mission-control-seed/
 
 - Keeping SPEC-009B Mission-Control-specific prevented premature Product Line B abstraction while still leaving SPEC-010A a clean extraction step.
 - Reusing the SPEC-009A workflow-contract importer made workflow-family seeding reviewable and hashable instead of creating ad hoc runtime template rows.
-- Focused preflight and evidence tests captured the risky operator boundary: Mission Control issue sync is preserved, while FocusEngine project/repo sync and GitHub automation cron cleanup remains explicit and backup/export-first. OpenClaw runtime agent inventory alone is allowed.
+- Focused preflight and evidence tests captured the risky operator boundary: Paddock issue sync is preserved, while FocusEngine project/repo sync and GitHub automation cron cleanup remains explicit and backup/export-first. OpenClaw runtime agent inventory alone is allowed.
 
 ### Challenges Encountered
 

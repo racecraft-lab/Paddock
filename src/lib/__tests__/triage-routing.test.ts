@@ -58,7 +58,7 @@ function seedSourceTask(
     `)
     .run(
       taskId,
-      overrides.githubRepo ?? 'racecraft-lab/mission-control',
+      overrides.githubRepo ?? 'racecraft-lab/Paddock',
       overrides.githubIssueNumber ?? 900,
       overrides.projectId ?? null,
       overrides.workflowTemplateSlug ?? 'mission-control_issue_triage',
@@ -118,7 +118,7 @@ function seedSpecialistMetadata(database: Database.Database, overrides: {
       github_sync_enabled, status, created_at, updated_at
     )
     VALUES (?, 1, 'SPEC-009F QA', 'spec-009f-qa', 'FQA', ?,
-      'racecraft-lab/mission-control', 1, 'active', 1779400000, 1779400000)
+      'racecraft-lab/Paddock', 1, 'active', 1779400000, 1779400000)
   `).run(projectId, overrides.areaSlug ?? 'qa')
   database.prepare(`
     INSERT INTO agents (id, name, role, workspace_id, status, config, created_at, updated_at)
@@ -224,7 +224,7 @@ describe('SPEC-009F triage routing source gates', () => {
       source: {
         taskId,
         workflowTemplateSlug: 'mission-control_remediation_plan',
-        githubRepo: 'racecraft-lab/mission-control',
+        githubRepo: 'racecraft-lab/Paddock',
       },
       effects: {
         createSuccessor: false,
@@ -240,7 +240,7 @@ describe('SPEC-009F triage routing source gates', () => {
     expect(after).toEqual(before)
   })
 
-  it('fails closed for source tasks outside racecraft-lab/mission-control and performs no writes', () => {
+  it('fails closed for source tasks outside racecraft-lab/Paddock and performs no writes', () => {
     const database = db()
     enablePilot(database)
     const taskId = seedSourceTask(database, { githubRepo: 'racecraft-lab/other-repo' })
@@ -291,7 +291,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
         taskId,
         workspaceId: 1,
         workflowTemplateSlug: 'mission-control_issue_triage',
-        githubRepo: 'racecraft-lab/mission-control',
+        githubRepo: 'racecraft-lab/Paddock',
         githubIssueNumber: 923,
       },
       route: {
@@ -750,7 +750,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
         taskId,
         workspaceId: 1,
         workflowTemplateSlug: 'mission-control_issue_triage',
-        githubRepo: 'racecraft-lab/mission-control',
+        githubRepo: 'racecraft-lab/Paddock',
       },
       effects: {
         createSuccessor: false,
@@ -954,7 +954,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       source: {
         taskId,
         workflowTemplateSlug: 'mission-control_issue_triage',
-        githubRepo: 'racecraft-lab/mission-control',
+        githubRepo: 'racecraft-lab/Paddock',
       },
       effects: {
         createSuccessor: false,

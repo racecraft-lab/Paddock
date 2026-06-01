@@ -253,7 +253,7 @@ SPECIFY_FEATURE_DIRECTORY=specs/013c-retry-debug-surfaces
 
 ## Feature: SPEC-013C - Retry/Backoff and Debug API Surfaces
 
-Mission Control now has SPEC-013B active claim and reconciliation authority for GitHub-linked assigned task stages. Operators still lack a backend control contract for retrying, releasing, or cancelling a claimed stage when a launch handoff, claim, backoff, or boundary condition needs intervention.
+Paddock now has SPEC-013B active claim and reconciliation authority for GitHub-linked assigned task stages. Operators still lack a backend control contract for retrying, releasing, or cancelling a claimed stage when a launch handoff, claim, backoff, or boundary condition needs intervention.
 
 During setup, the operator identified that API-only controls would leave a real user experience gap. The roadmap was updated before scaffolding continued:
 
@@ -263,7 +263,7 @@ During setup, the operator identified that API-only controls would leave a real 
 
 ### Users
 
-- Mission Control operators/admins who need safe backend controls for claimed-stage recovery.
+- Paddock operators/admins who need safe backend controls for claimed-stage recovery.
 - Reviewers who need bounded audit/debug evidence for retry, release, cancel, backoff, and race behavior.
 - SPEC-013D implementers who need one read model for future task-detail controls.
 - SPEC-014C implementers who need retry/debug authority before first real harness execution.
@@ -738,7 +738,7 @@ Post-merge UAT:
 | Reviewability Diff Gate | Passed | `reviewability-gate.sh diff origin/main...HEAD` passed under the recorded transition exception: 6296 reviewable LOC, 17 production files, 41 total files, 6 primary surfaces |
 | Self-Review | Passed | See Self-Review block below |
 | PR Body Generation | Passed | Generated and populated `/private/tmp/speckit-pr-body-013c.md` from the host PR template and SPEC-013C review packet |
-| PR Creation | Passed | PR #63 created and later merged to `main`: `https://github.com/racecraft-lab/mission-control/pull/63` |
+| PR Creation | Passed | PR #63 created and later merged to `main`: `https://github.com/racecraft-lab/Paddock/pull/63` |
 | Review Remediation | Complete | PR #63 merged as `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89`; post-merge target deployment and API-and-audit UAT passed |
 | Retrospective | Passed | `specs/013c-retry-debug-surfaces/retrospective.md` created |
 
@@ -753,7 +753,7 @@ Post-merge UAT:
 
 - Commit: `8c7ca37e` (`feat: add claim-control retry debug api`).
 - Push: `origin/013c-retry-debug-surfaces`.
-- PR: `https://github.com/racecraft-lab/mission-control/pull/63`.
+- PR: `https://github.com/racecraft-lab/Paddock/pull/63`.
 - Merge: PR #63 merged to `main` as `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89` on 2026-05-30T01:33:03Z.
 
 ---
@@ -793,7 +793,7 @@ src/lib/task-create.ts                            No task creation changes
 - Branch: `013c-retry-debug-surfaces`.
 - SpecKit CLI: `specify 0.8.16`.
 - Package manager: `pnpm` from `pnpm-lock.yaml`.
-- Remote: `origin` at `https://github.com/racecraft-lab/mission-control.git`.
+- Remote: `origin` at `https://github.com/racecraft-lab/Paddock.git`.
 - Reviewability preset: present and resolved for spec, plan, and tasks templates.
 - Roadmap was updated before workflow generation to add `SPEC-013D` and make `SPEC-014C` depend on `SPEC-013D`.
 - External context was fetched on 2026-05-27 from OpenAI Harness Engineering, OpenAI Symphony announcement, and `openai/symphony` SPEC.

@@ -238,7 +238,7 @@ export function makeProductLineSeedTestDb(): Database.Database {
   db.prepare("INSERT INTO workspaces (id, slug, name, feature_flags) VALUES (1, 'facility', 'Facility', '{\"UNRELATED_FLAG\":true}')").run()
   db.prepare("INSERT INTO projects (id, workspace_id, slug, name, ticket_prefix, ticket_counter) VALUES (1, 1, 'manual', 'Manual', 'MAN', 7)").run()
   db.prepare("INSERT INTO workflow_templates (id, workspace_id, slug, name, created_by, use_count) VALUES (1, 1, 'manual-template', 'Manual Template', 'operator', 3)").run()
-  db.prepare("INSERT INTO tasks (id, workspace_id, project_id, title, status, github_repo, github_issue_number, parent_task_id, root_task_id, chain_id) VALUES (1, 1, 1, 'Preserved issue', 'in_progress', 'racecraft-lab/mission-control', 42, 9, 9, 'chain-a')").run()
+  db.prepare("INSERT INTO tasks (id, workspace_id, project_id, title, status, github_repo, github_issue_number, parent_task_id, root_task_id, chain_id) VALUES (1, 1, 1, 'Preserved issue', 'in_progress', 'racecraft-lab/Paddock', 42, 9, 9, 'chain-a')").run()
   db.prepare("INSERT INTO issues (task_id, external_id) VALUES (1, 'issue-42')").run()
   db.prepare("INSERT INTO activities (task_id, action) VALUES (1, 'created')").run()
   db.prepare("INSERT INTO task_histories (task_id, status) VALUES (1, 'in_progress')").run()
@@ -247,7 +247,7 @@ export function makeProductLineSeedTestDb(): Database.Database {
   db.prepare("INSERT INTO task_dispositions (task_id, outcome) VALUES (1, 'needs-human')").run()
   db.prepare("INSERT INTO task_artifacts (task_id, artifact_type, uri) VALUES (1, 'log', 'redacted://artifact')").run()
   db.prepare("INSERT INTO quality_reviews (task_id, reviewer) VALUES (1, 'aegis')").run()
-  db.prepare("INSERT INTO github_sync_state (repo, cursor) VALUES ('racecraft-lab/mission-control', 'cursor-1')").run()
+  db.prepare("INSERT INTO github_sync_state (repo, cursor) VALUES ('racecraft-lab/Paddock', 'cursor-1')").run()
   db.prepare("INSERT INTO resource_policy_events (policy_id, action) VALUES (1, 'observed')").run()
   return db
 }
@@ -259,8 +259,8 @@ export function invalidYamlFixture(body = 'schema_version: product-line-seed-v1\
 export function parsedConfigFixture(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     schema_version: 'product-line-seed-v1',
-    product_line: { slug: 'mission-control', display_name: 'Mission Control', agent_prefix: 'mission-control-platform' },
-    github: { owner: 'racecraft-lab', repo: 'mission-control', full_name: 'racecraft-lab/mission-control' },
+    product_line: { slug: 'mission-control', display_name: 'Paddock', agent_prefix: 'mission-control-platform' },
+    github: { owner: 'racecraft-lab', repo: 'Paddock', full_name: 'racecraft-lab/Paddock' },
     workflow_contract: {
       family: 'mission-control',
       path: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
@@ -414,7 +414,7 @@ describe('generic product-line seed foundation', () => {
     }
   })
 
-  it('exposes generic config/result/snapshot/mutation/residue constants and Mission Control seed defaults', async () => {
+  it('exposes generic config/result/snapshot/mutation/residue constants and Paddock seed defaults', async () => {
     const types = await importTypeModule()
 
     expect(types['PRODUCT_LINE_SEED_SCHEMA_VERSION']).toBe('product-line-seed-v1')
@@ -427,9 +427,9 @@ describe('generic product-line seed foundation', () => {
     expect(types['FR020_PRESERVED_SURFACES']).toEqual([...expectedPreservedSurfaces])
     expect(types['MISSION_CONTROL_SEED_DEFAULTS']).toMatchObject({
       productLineSlug: 'mission-control',
-      displayName: 'Mission Control',
+      displayName: 'Paddock',
       agentPrefix: 'mission-control-platform',
-      githubFullName: 'racecraft-lab/mission-control',
+      githubFullName: 'racecraft-lab/Paddock',
       workflowFamily: 'mission-control',
       configPath: 'docs/ai/product-lines/mission-control.yaml',
       workflowContractPath: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
@@ -483,7 +483,7 @@ describe('generic product-line seed foundation', () => {
     expect(targetResidueFixture()).toMatchObject({ kind: 'project_github_sync', count: 1 })
     expect(preservedOperationalStateFixture()).toMatchObject({ task: { count: 1 } })
 
-    assertNoProductLineSeedScopeDrift('clean-fixture', 'Mission Control seed config only validates reviewed YAML state.')
+    assertNoProductLineSeedScopeDrift('clean-fixture', 'Paddock seed config only validates reviewed YAML state.')
     expect(() => {
       assertNoProductLineSeedScopeDrift('dirty-fixture', 'This would authorize Product Line B dispatch.')
     }).toThrow(/Product Line B/)
@@ -529,8 +529,8 @@ describe('product-line seed config review validation', () => {
 
     const missingAndUnknown = validate({
       schema_version: 'wrong-version',
-      product_line: { slug: 'mission-control', display_name: 'Mission Control', agent_prefix: 'mission-control-platform' },
-      github: { owner: 'racecraft-lab', repo: 'mission-control', full_name: 'racecraft-lab/mission-control' },
+      product_line: { slug: 'mission-control', display_name: 'Paddock', agent_prefix: 'mission-control-platform' },
+      github: { owner: 'racecraft-lab', repo: 'Paddock', full_name: 'racecraft-lab/Paddock' },
       workflow_contract: {
         family: 'mission-control',
         path: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
@@ -557,7 +557,7 @@ describe('product-line seed config review validation', () => {
 
     const duplicates = validate(parsedConfigFixture({
       departments: [
-        { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/mission-control', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
+        { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/Paddock', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
         { slug: 'qa', name: 'Duplicate QA', ticket_prefix: 'QA2', area_slug: 'qa-2', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
       ],
       agent_assignments: {
@@ -604,7 +604,7 @@ describe('product-line seed config review validation', () => {
     expect(() => load(yaml, 'unsafe.yaml')).toThrow(/CONFIG_UNSAFE_YAML_SYNTAX/)
   })
 
-  it('loads the canonical Mission Control config with reviewed identity, ownership, routing, flags, governance, and safety policy', async () => {
+  it('loads the canonical Paddock config with reviewed identity, ownership, routing, flags, governance, and safety policy', async () => {
     const types = await importTypeModule()
     const config = await importConfigModule()
     const load = config['loadProductLineSeedConfigFromFile'] as (path: string) => Record<string, unknown>
@@ -617,13 +617,13 @@ describe('product-line seed config review validation', () => {
       schema_version: 'product-line-seed-v1',
       product_line: {
         slug: 'mission-control',
-        display_name: 'Mission Control',
+        display_name: 'Paddock',
         agent_prefix: 'mission-control-platform',
       },
       github: {
         owner: 'racecraft-lab',
-        repo: 'mission-control',
-        full_name: 'racecraft-lab/mission-control',
+        repo: 'Paddock',
+        full_name: 'racecraft-lab/Paddock',
       },
       workflow_contract: {
         family: 'mission-control',
@@ -725,7 +725,7 @@ describe('product-line seed generic preflight/apply/verify', () => {
 
     expect(result).toMatchObject({ ok: true, status: 'seeded', code: 'SEEDED', mutation_status: 'applied', exit_code: 0 })
     expect(db.prepare("SELECT name, feature_flags FROM workspaces WHERE slug = 'mission-control'").get()).toMatchObject({
-      name: 'Mission Control',
+      name: 'Paddock',
     })
     expect(db.prepare("SELECT COUNT(*) as count FROM projects WHERE workspace_id = (SELECT id FROM workspaces WHERE slug = 'mission-control')").get())
       .toEqual({ count: 6 })
@@ -850,7 +850,7 @@ describe('product-line seed generic preflight/apply/verify', () => {
     })
     expect(updated).toMatchObject({ ok: true, status: 'seeded', mutation_status: 'applied' })
     expect(db.prepare("SELECT name, json_extract(feature_flags, '$.UNRELATED_FLAG') as unrelated, json_extract(feature_flags, '$.FEATURE_WORKSPACE_SWITCHER') as switcher FROM workspaces WHERE slug = 'mission-control'").get())
-      .toEqual({ name: 'Mission Control', unrelated: 1, switcher: 1 })
+      .toEqual({ name: 'Paddock', unrelated: 1, switcher: 1 })
     expect(db.prepare("SELECT role, assigned_at FROM project_agent_assignments WHERE agent_name = 'mission-control-platform-qa'").get())
       .toEqual({ role: 'qa', assigned_at: 123 })
     expect({
@@ -873,8 +873,8 @@ describe('product-line seed generic preflight/apply/verify', () => {
   })
 })
 
-describe('Mission Control product-line seed parity', () => {
-  it('matches Mission Control identity, ownership, departments, workflows, flags, governance, and non-dispatch safety boundaries', async () => {
+describe('Paddock product-line seed parity', () => {
+  it('matches Paddock identity, ownership, departments, workflows, flags, governance, and non-dispatch safety boundaries', async () => {
     const types = await importTypeModule()
     const config = await importConfigModule()
     const load = config['loadProductLineSeedConfigFromFile'] as (path: string) => Record<string, unknown>
@@ -883,13 +883,13 @@ describe('Mission Control product-line seed parity', () => {
     expect(canonical).toMatchObject({
       product_line: {
         slug: 'mission-control',
-        display_name: 'Mission Control',
+        display_name: 'Paddock',
         agent_prefix: 'mission-control-platform',
       },
       github: {
         owner: 'racecraft-lab',
-        repo: 'mission-control',
-        full_name: 'racecraft-lab/mission-control',
+        repo: 'Paddock',
+        full_name: 'racecraft-lab/Paddock',
       },
       workflow_contract: {
         family: 'mission-control',
@@ -1029,7 +1029,7 @@ describe('Mission Control product-line seed parity', () => {
     db.close()
   })
 
-  it('snapshots current Mission Control operational tables without assuming legacy task_id columns', async () => {
+  it('snapshots current Paddock operational tables without assuming legacy task_id columns', async () => {
     const evidence = await importEvidenceModule()
     const collectSnapshot = evidence['collectProductLineSeedSnapshot'] as (db: Database.Database) => {
       preserved_operational_state: {
@@ -1088,10 +1088,10 @@ describe('product-line seed fail-closed validation', () => {
     const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
 
     const errors = validate(parsedConfigFixture({
-      product_line: { display_name: 42, agent_prefix: 'Mission Control Platform' },
+      product_line: { display_name: 42, agent_prefix: 'Paddock Platform' },
       github: { owner: 'racecraft-lab', repo: 42, full_name: 'racecraft-lab/not-mission-control', unsupported: true },
       departments: [
-        { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/mission-control', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
+        { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/Paddock', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
         { slug: 'qa', name: 'Duplicate QA', ticket_prefix: 'QA', area_slug: 'qa-2', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
       ],
       feature_flags: {
@@ -1120,7 +1120,7 @@ describe('product-line seed fail-closed validation', () => {
     const run = seed['runProductLineSeed'] as (options: Record<string, unknown>) => Record<string, unknown>
     const brokenContract = writeSeedConfigFixture({ family: 'mission-control', templates: '[' }, 'broken-workflow.yaml')
     const repoMismatchContract = writeSeedConfigFixture({}, 'repo-mismatch-workflow.yaml')
-    writeFileSync(repoMismatchContract, source('docs/ai/workflows/mission-control/workflow-contract.yaml').replaceAll('repo: racecraft-lab/mission-control', 'repo: other-owner/other-repo'))
+    writeFileSync(repoMismatchContract, source('docs/ai/workflows/mission-control/workflow-contract.yaml').replaceAll('repo: racecraft-lab/Paddock', 'repo: other-owner/other-repo'))
 
     expect(validate(parsedConfigFixture({ workflow_contract: { family: 'not-supported', path: 'docs/ai/workflows/mission-control/workflow-contract.yaml', required_slugs: ['mission-control_issue_triage'] } })))
       .toEqual(expect.arrayContaining([expect.objectContaining({ code: 'UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', path: '$.workflow_contract.family' })]))
@@ -1137,7 +1137,7 @@ describe('product-line seed fail-closed validation', () => {
       .toEqual(expect.arrayContaining([expect.objectContaining({ code: 'WORKFLOW_CONTRACT_REPO_MISMATCH', path: '$.workflow_contract.path' })]))
 
     const db = makeProductLineSeedTestDb()
-    db.prepare("INSERT INTO workspaces (slug, name, feature_flags) VALUES ('mission-control', 'Mission Control', '{}')").run()
+    db.prepare("INSERT INTO workspaces (slug, name, feature_flags) VALUES ('mission-control', 'Paddock', '{}')").run()
     db.prepare("INSERT INTO workflow_templates (workspace_id, slug, name, created_by) VALUES ((SELECT id FROM workspaces WHERE slug = 'mission-control'), 'mission-control_issue_triage', 'Manual collision', 'operator')").run()
     const ownershipConflict = run({
       entrypoint: 'seed:product-line',
@@ -1224,7 +1224,7 @@ describe('product-line seed fail-closed validation', () => {
     const config = await importConfigModule()
     const validate = config['validateProductLineSeedConfig'] as (value: unknown) => { code: string, path: string, message: string }[]
     const errors = validate(parsedConfigFixture({
-      product_line: { slug: 'mission-control', display_name: 'Mission Control', agent_prefix: 'Mission Control' },
+      product_line: { slug: 'mission-control', display_name: 'Paddock', agent_prefix: 'Paddock' },
       departments: [
         { slug: '', name: '', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'other-owner/other-repo', github_sync_enabled: 'yes', is_triage_project: true, is_repo_sync_owner: true },
       ],
@@ -1330,7 +1330,7 @@ describe('product-line seed fail-closed validation', () => {
     repoConflictDb.close()
 
     const productLineConflictDb = makeProductLineSeedTestDb()
-    productLineConflictDb.prepare("INSERT INTO workspaces (slug, name, feature_flags) VALUES ('mission-control', 'Not Mission Control', '{}')").run()
+    productLineConflictDb.prepare("INSERT INTO workspaces (slug, name, feature_flags) VALUES ('mission-control', 'Not Paddock', '{}')").run()
     const productLineConflict = run({
       entrypoint: 'seed:product-line',
       configPath: 'docs/ai/product-lines/mission-control.yaml',
@@ -1467,7 +1467,7 @@ describe('product-line seed reuse docs and static guards', () => {
     expect(runbook).toEqual(expect.stringContaining('## Residue Blocking Policy'))
     expect(runbook).toEqual(expect.stringContaining('detection_only_no_automatic_deletion_or_unlinking'))
     expect(runbook).toEqual(expect.stringContaining('TARGET_RESIDUE_BLOCKED'))
-    expect(runbook).toEqual(expect.stringContaining('## Mission Control Compatibility Wrapper'))
+    expect(runbook).toEqual(expect.stringContaining('## Paddock Compatibility Wrapper'))
     expect(runbook).toEqual(expect.stringContaining('pnpm seed:mission-control'))
     expect(runbook).toEqual(expect.stringContaining('docs/ai/product-lines/mission-control.yaml'))
     expect(runbook).toEqual(expect.stringContaining('## Product Line B Exclusion'))

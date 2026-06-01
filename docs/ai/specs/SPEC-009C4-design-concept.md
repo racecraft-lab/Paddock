@@ -20,7 +20,7 @@ stop_reason: "natural"
 
 ## Goals
 
-- Record the intentional `G_PILOT_MERGE` human gate for the Mission Control pilot issue.
+- Record the intentional `G_PILOT_MERGE` human gate for the Paddock pilot issue.
 - Merge a fresh synthetic pilot PR only at the operator-approved merge gate.
 - Reconcile the linked PR-producing task from `ready_for_owner` to `done` through the existing manual GitHub sync path.
 - Prove exact PR matching, label/status sync, reconciliation activities, and duplicate-sync idempotency.

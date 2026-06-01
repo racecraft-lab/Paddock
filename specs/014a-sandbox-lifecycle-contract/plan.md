@@ -13,7 +13,7 @@ SPEC-014A adds the minimum durable sandbox-lifecycle contract required before an
 **Primary Dependencies**: Existing Next.js/React stack, `better-sqlite3`, existing feature-flag helper, existing auth/workspace-scope helpers; no new runtime dependency  
 **Storage**: SQLite through `src/lib/migrations.ts`; additive M80 `080_agent_sandbox_lifecycles`; rollback SQL at `docs/migrations/rollback-M80.sql`
 **Testing**: Vitest for migration, helper, route, fake-owner, path-safety, and API parity tests; Playwright not planned because SPEC-014A adds no UI  
-**Target Platform**: Existing Mission Control server/runtime deployment  
+**Target Platform**: Existing Paddock server/runtime deployment
 **Project Type**: Web application with server-side lifecycle/read-model modules  
 **Performance Goals**: Lifecycle create/read helpers complete with single-task scoped queries; read API returns recent events with bounded limits and no table-wide scans  
 **Constraints**: Flag OFF creates no lifecycle rows/events and touches no fake artifacts; lifecycle rows are not active claim locks; persisted path evidence never includes absolute host paths or raw fragments; UI is deferred to SPEC-014B  
@@ -90,7 +90,7 @@ eslint.config.mjs
 
 - Harness Engineering maps to repository-local knowledge, direct runtime legibility, per-worktree isolation, and mechanical guardrails. SPEC-014A implements that lesson as durable lifecycle evidence and explicit path invariants, not as UI or runner behavior.
 - Symphony maps to deterministic per-work-item workspaces, lifecycle hooks, and operator-readable evidence. SPEC-014A imports only lifecycle vocabulary and safety posture, not Symphony's scheduler, Linear assumptions, runner client, or token/accounting behavior.
-- Existing Mission Control patterns favor task-scoped read APIs with `requireRole(request, 'viewer')`, `resolveWorkspaceScopeFromRequest`, `workspaceScopePredicate`, side-effect-free builders, and API index/OpenAPI parity.
+- Existing Paddock patterns favor task-scoped read APIs with `requireRole(request, 'viewer')`, `resolveWorkspaceScopeFromRequest`, `workspaceScopePredicate`, side-effect-free builders, and API index/OpenAPI parity.
 - M76 `task_stage_attempts` and M78 `task_stage_claims` provide the closest migration/index examples. SPEC-014A must keep sandbox lifecycle rows separate from active claims.
 
 See `research.md` for decisions and rejected alternatives.

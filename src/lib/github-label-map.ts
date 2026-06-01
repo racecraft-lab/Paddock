@@ -1,8 +1,8 @@
 /**
- * Bidirectional mapping between Mission Control statuses/priorities and GitHub labels.
+ * Bidirectional mapping between Paddock statuses/priorities and GitHub labels.
  *
  * Three label families are defined here:
- *   - `mc:*`        — Mission Control task statuses (mc:backlog, mc:in-progress, ...)
+ *   - `mc:*`        — Paddock task statuses (mc:backlog, mc:in-progress, ...)
  *   - `priority:*`  — task priorities (priority:low/medium/high/critical)
  *   - `area:*`      — SPEC-006 product-line / department routing
  *                     (area:qa, area:dev, area:triage, ...)
@@ -27,16 +27,16 @@ interface LabelDef {
 // ── Status ↔ Label mapping ──────────────────────────────────────
 
 const STATUS_LABEL_MAP: Record<TaskStatus, LabelDef> = {
-  backlog:        { name: 'mc:backlog',        color: '94a3b8', description: 'Mission Control: backlog' },
-  inbox:          { name: 'mc:inbox',          color: '6b7280', description: 'Mission Control: inbox' },
-  assigned:       { name: 'mc:assigned',       color: '3b82f6', description: 'Mission Control: assigned' },
-  in_progress:    { name: 'mc:in-progress',    color: 'eab308', description: 'Mission Control: in progress' },
-  review:         { name: 'mc:review',         color: 'a855f7', description: 'Mission Control: review' },
-  quality_review: { name: 'mc:quality-review', color: '6366f1', description: 'Mission Control: quality review' },
-  ready_for_owner: { name: 'mc:ready-for-owner', color: '14b8a6', description: 'Mission Control: ready for owner' },
-  done:           { name: 'mc:done',           color: '22c55e', description: 'Mission Control: done' },
-  awaiting_owner: { name: 'mc:awaiting-owner', color: 'f97316', description: 'Mission Control: awaiting owner' },
-  failed:         { name: 'mc:failed',          color: 'ef4444', description: 'Mission Control: failed' },
+  backlog:        { name: 'mc:backlog',        color: '94a3b8', description: 'Paddock: backlog' },
+  inbox:          { name: 'mc:inbox',          color: '6b7280', description: 'Paddock: inbox' },
+  assigned:       { name: 'mc:assigned',       color: '3b82f6', description: 'Paddock: assigned' },
+  in_progress:    { name: 'mc:in-progress',    color: 'eab308', description: 'Paddock: in progress' },
+  review:         { name: 'mc:review',         color: 'a855f7', description: 'Paddock: review' },
+  quality_review: { name: 'mc:quality-review', color: '6366f1', description: 'Paddock: quality review' },
+  ready_for_owner: { name: 'mc:ready-for-owner', color: '14b8a6', description: 'Paddock: ready for owner' },
+  done:           { name: 'mc:done',           color: '22c55e', description: 'Paddock: done' },
+  awaiting_owner: { name: 'mc:awaiting-owner', color: 'f97316', description: 'Paddock: awaiting owner' },
+  failed:         { name: 'mc:failed',          color: 'ef4444', description: 'Paddock: failed' },
 }
 
 const LABEL_STATUS_MAP: Record<string, TaskStatus> = Object.fromEntries(
@@ -88,7 +88,7 @@ export const ALL_PRIORITY_LABEL_NAMES = Object.values(PRIORITY_LABEL_MAP).map(l 
 
 // ── Area ↔ Label mapping (SPEC-006 / FR-030..FR-032) ────────────
 //
-// Static catalog of the 12 canonical Mission Control "area" labels. These are
+// Static catalog of the 12 canonical Paddock "area" labels. These are
 // the well-known department / function buckets that ship with every workspace
 // when `FEATURE_AREA_LABEL_ROUTING` is enabled. Workspaces may also define
 // their own free-form `projects.area_slug` values — `areaLabelsForWorkspace`
@@ -100,18 +100,18 @@ export const ALL_PRIORITY_LABEL_NAMES = Object.values(PRIORITY_LABEL_MAP).map(l 
 // matching test update.
 
 export const AREA_LABEL_MAP: Record<string, LabelDef> = {
-  'area:qa':       { name: 'area:qa',       color: 'a855f7', description: 'Mission Control area: quality assurance' },
-  'area:dev':      { name: 'area:dev',      color: '3b82f6', description: 'Mission Control area: development' },
-  'area:design':   { name: 'area:design',   color: 'be185d', description: 'Mission Control area: design' },
-  'area:infra':    { name: 'area:infra',    color: '64748b', description: 'Mission Control area: infrastructure' },
-  'area:security': { name: 'area:security', color: 'ef4444', description: 'Mission Control area: security' },
-  'area:docs':     { name: 'area:docs',     color: 'eab308', description: 'Mission Control area: documentation' },
-  'area:ops':      { name: 'area:ops',      color: 'f97316', description: 'Mission Control area: operations' },
-  'area:frontend': { name: 'area:frontend', color: '0e7490', description: 'Mission Control area: frontend' },
-  'area:backend':  { name: 'area:backend',  color: '6366f1', description: 'Mission Control area: backend' },
-  'area:data':     { name: 'area:data',     color: '22c55e', description: 'Mission Control area: data' },
-  'area:ml':       { name: 'area:ml',       color: '6d28d9', description: 'Mission Control area: machine learning' },
-  'area:triage':   { name: 'area:triage',   color: '6b7280', description: 'Mission Control area: triage (unresolvable inbound issues)' },
+  'area:qa':       { name: 'area:qa',       color: 'a855f7', description: 'Paddock area: quality assurance' },
+  'area:dev':      { name: 'area:dev',      color: '3b82f6', description: 'Paddock area: development' },
+  'area:design':   { name: 'area:design',   color: 'be185d', description: 'Paddock area: design' },
+  'area:infra':    { name: 'area:infra',    color: '64748b', description: 'Paddock area: infrastructure' },
+  'area:security': { name: 'area:security', color: 'ef4444', description: 'Paddock area: security' },
+  'area:docs':     { name: 'area:docs',     color: 'eab308', description: 'Paddock area: documentation' },
+  'area:ops':      { name: 'area:ops',      color: 'f97316', description: 'Paddock area: operations' },
+  'area:frontend': { name: 'area:frontend', color: '0e7490', description: 'Paddock area: frontend' },
+  'area:backend':  { name: 'area:backend',  color: '6366f1', description: 'Paddock area: backend' },
+  'area:data':     { name: 'area:data',     color: '22c55e', description: 'Paddock area: data' },
+  'area:ml':       { name: 'area:ml',       color: '6d28d9', description: 'Paddock area: machine learning' },
+  'area:triage':   { name: 'area:triage',   color: '6b7280', description: 'Paddock area: triage (unresolvable inbound issues)' },
 }
 
 export const ALL_AREA_LABEL_NAMES = Object.values(AREA_LABEL_MAP).map(l => l.name)
@@ -157,7 +157,7 @@ export function areaLabelsForWorkspace(
     labels.push({
       name,
       color: SYNTHESIZED_AREA_LABEL_COLOR,
-      description: `Mission Control area: ${area_slug} (workspace-defined)`,
+      description: `Paddock area: ${area_slug} (workspace-defined)`,
     })
   }
 

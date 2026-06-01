@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 
-export const PILOT_MISSION_CONTROL_REPO = 'racecraft-lab/mission-control'
+export const PILOT_MISSION_CONTROL_REPO = 'racecraft-lab/Paddock'
 
 const PILOT_PRIORITY_LABELS = ['priority:low', 'priority:medium', 'priority:high', 'priority:critical']
 const GITHUB_TOKEN_PATTERN = /\b(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)\b/g

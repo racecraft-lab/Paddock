@@ -21,7 +21,7 @@ stop_reason: "natural"
 ## Goals
 
 - Make GitHub issue sync automatic, observable, and operator-controllable before SPEC-013B relies on concurrent scheduler ticks.
-- Replace or retire the lazy `startSyncPoller()` singleton shape with a first-class Mission Control scheduler task that runs bounded GitHub pull/reconcile ticks.
+- Replace or retire the lazy `startSyncPoller()` singleton shape with a first-class Paddock scheduler task that runs bounded GitHub pull/reconcile ticks.
 - Add dedicated Product Line/workspace-scoped lifecycle control state for enablement, interval, backoff, running status, last run, last successful cursor, last error, disabled reason, and manual-sync conflict state.
 - Preserve existing manual `/api/github/sync` behavior as an independent operator fallback.
 - Preserve SPEC-006 owner semantics so automatic polling avoids duplicate ingestion when multiple projects share one repo.
@@ -29,7 +29,7 @@ stop_reason: "natural"
 
 ## Non-goals
 
-- External OpenClaw cron as the canonical lifecycle. External cron may remain legacy/operator residue, but Mission Control owns the product behavior.
+- External OpenClaw cron as the canonical lifecycle. External cron may remain legacy/operator residue, but Paddock owns the product behavior.
 - Launching work, claiming tasks, dispatching agents, executing Issue Remediation, driving a sandbox or harness adapter, auto-merging, or automatically triaging issues.
 - Treating `github_syncs` as the single lifecycle control record. It remains run history unless Plan proves a narrower safe alternative.
 - Advancing a last-success cursor after a failed GitHub sync.
@@ -52,9 +52,9 @@ These setup findings should be re-verified during Specify and Plan from the curr
 
 **Branch:** Runtime ownership
 
-**Recommended answer:** Mission Control's internal scheduler/poller lifecycle owns the behavior. External cron can remain an operator deployment detail, but it must not be the product contract.
+**Recommended answer:** Paddock's internal scheduler/poller lifecycle owns the behavior. External cron can remain an operator deployment detail, but it must not be the product contract.
 
-**User's answer:** A - use Mission Control's internal scheduler/poller lifecycle as canonical.
+**User's answer:** A - use Paddock's internal scheduler/poller lifecycle as canonical.
 
 ---
 
@@ -72,7 +72,7 @@ These setup findings should be re-verified during Specify and Plan from the curr
 
 **Branch:** Scheduler integration
 
-**Recommended answer:** Make GitHub sync a first-class Mission Control scheduler task with bounded ticks instead of relying on a process-wide `startSyncPoller()` singleton.
+**Recommended answer:** Make GitHub sync a first-class Paddock scheduler task with bounded ticks instead of relying on a process-wide `startSyncPoller()` singleton.
 
 **User's answer:** A - built-in scheduler task with bounded ticks.
 

@@ -149,11 +149,11 @@ $speckit-specify
 
 ## Feature: SPEC-002 Product-Line Switcher and activeWorkspace Scoping
 
-Create a specification for RC Factory Phase 1 in Mission Control.
+Create a specification for RC Factory Phase 1 in Paddock.
 
 ### Problem Statement
 
-Mission Control needs a Product Line context that is independent from tenant/facility administration. Operators must be able to switch between a Facility aggregate view and specific product-line workspaces without leaking unauthorized workspace data, changing `activeTenant`, or breaking existing single-workspace deployments. SPEC-001 already created the `workspaces.feature_flags` storage column; SPEC-002 introduces the runtime `resolveFlag()` helper and the first flag-gated behavior that consumes it.
+Paddock needs a Product Line context that is independent from tenant/facility administration. Operators must be able to switch between a Facility aggregate view and specific product-line workspaces without leaking unauthorized workspace data, changing `activeTenant`, or breaking existing single-workspace deployments. SPEC-001 already created the `workspaces.feature_flags` storage column; SPEC-002 introduces the runtime `resolveFlag()` helper and the first flag-gated behavior that consumes it.
 
 ### Users
 
@@ -164,7 +164,7 @@ Mission Control needs a Product Line context that is independent from tenant/fac
 
 ### User Stories
 
-- US1: As an existing user, I can run Mission Control with `FEATURE_WORKSPACE_SWITCHER=0` and observe no behavior or snapshot changes.
+- US1: As an existing user, I can run Paddock with `FEATURE_WORKSPACE_SWITCHER=0` and observe no behavior or snapshot changes.
 - US2: As a facility operator, I can select Facility and see the authorized aggregate view while global agents remain visible.
 - US3: As a department or product-line operator, I can select a Product Line workspace and see scoped tasks, agents, projects, quality-review, and DB chat data for that Product Line.
 - US4: As a multi-tab operator, I can switch product-line context in one tab and see other tabs update or reload into the same selection.
@@ -744,7 +744,7 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 - [x] `docs/ai/rc-factory-technical-roadmap.md` records SPEC-002 implementation-complete verification evidence and preserves the PR-merge status caveat.
 - [x] `docs/rc-factory-v1-prd.md` reflects SPEC-002 implementation completion after verification.
 - [x] Branch is pushed for review.
-- Draft PR: https://github.com/racecraft-lab/mission-control/pull/16
+- Draft PR: https://github.com/racecraft-lab/Paddock/pull/16
 
 ### Final Verification Evidence
 
@@ -761,7 +761,7 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 - Code review remediation preserved Facility/global agent visibility inside Product Line views, distinguished workspace-load failure from true empty Product Line state, and enforced JSON body scope carriers plus query/body conflicts through `resolveWorkspaceScopeFromRequest`.
 - Post-review UI hardening added a CI-runnable Docker e2e harness, real Product Line UI journey tests, screenshot artifact publication, and remediation for standalone asset serving, task-board aria labeling, mobile header overflow, accessible header controls, banner action wrapping, and Docker seed sequencing.
 - Argos Playwright visual coverage now uploads the Docker-backed SPEC-002 journey's named screenshots and traces to Argos visual builds on pull requests and `main` pushes, while Storybook remains the focused component/shell visual baseline path.
-- The Mission Control UI workflow now fails if Argos Playwright screenshot metadata is missing test identity, source location, or the `@product-line-switcher` test tag; the clean flag-off regression run is also prevented from uploading an empty Argos build.
+- The Paddock UI workflow now fails if Argos Playwright screenshot metadata is missing test identity, source location, or the `@product-line-switcher` test tag; the clean flag-off regression run is also prevented from uploading an empty Argos build.
 - The Argos Storybook workflow now fails if Argos Storybook screenshot metadata is missing story/test identity, source location, or the `spec-002` and `visual` story tags.
 - Argos docs crawl covered Playwright SDK, Storybook SDK, Storybook Vitest/Test Runner quickstarts, baseline builds, GitHub integration, build splitting, subset builds, responsive viewports, screenshot metadata, and Tests Dashboard guidance; the evidence gate now treats Argos `Builds` as the PR first-review surface and treats an empty Argos `Tests` tab after accepted `main` reference history exists as an observability defect.
 - Guardrail greps found no inline runtime `FEATURE_*` reads outside `src/lib/feature-flags.ts`; gateway and deferred-boundary matches in the implementation diff are documentation guardrails, not new runtime coupling.
@@ -769,7 +769,7 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 
 ### Post Review Remediation Evidence
 
-- Draft PR #16 opened at https://github.com/racecraft-lab/mission-control/pull/16.
+- Draft PR #16 opened at https://github.com/racecraft-lab/Paddock/pull/16.
 - Initial PR review check found no human comments and no review threads.
 - Legacy screenshot-drift and visual-diff workflows were replaced by Argos Storybook review plus short-lived Playwright artifacts.
 - Argos Playwright reporter integration was added for the Docker UI e2e path so SPEC-002 has Argos visual-build evidence for the real user journey, not only Storybook snapshots. The workflows now also verify Argos Playwright and Storybook metadata locally before CI can pass, and accepted `main` reference builds are required to produce Argos `Tests` rows for SPEC-002.

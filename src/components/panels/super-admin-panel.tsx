@@ -170,7 +170,7 @@ export function SuperAdminPanel() {
           tenantRows = [{
             id: -1,
             slug: 'local-system',
-            display_name: 'Local Mission Control',
+            display_name: 'Local Paddock',
             linux_user: currentUser?.username || 'local',
             created_by: 'local',
             owner_gateway: primaryGateway?.name || 'local',
@@ -214,7 +214,7 @@ export function SuperAdminPanel() {
               id,
               tenant_id: -1,
               tenant_slug: 'local-system',
-              tenant_display_name: 'Local Mission Control',
+              tenant_display_name: 'Local Paddock',
               job_type: 'automation',
               status,
               dry_run: 1,

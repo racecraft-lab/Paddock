@@ -695,7 +695,7 @@ function generatePrIndex({ meta, baseUrl }) {
     <header>
       <div class="wrap">
         <nav class="crumbs" aria-label="Breadcrumb">
-          <a href="${escapeHtml(baseUrl)}/">Mission Control visual reviews</a>
+          <a href="${escapeHtml(baseUrl)}/">Paddock visual reviews</a>
           <span>/</span>
           <a href="${escapeHtml(baseUrl)}/pr/">PR reports</a>
         </nav>
@@ -759,7 +759,7 @@ function generateRegistryIndex(registry, baseUrl) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mission Control PR Visual Reports</title>
+    <title>Paddock PR Visual Reports</title>
     <style>
       :root { color-scheme: light; --bg: #f7f8fb; --panel: #fff; --text: #17202f; --muted: #5b6678; --line: #d9dee8; --accent: #0a7f86; }
       * { box-sizing: border-box; }
@@ -781,7 +781,7 @@ function generateRegistryIndex(registry, baseUrl) {
   <body>
     <header>
       <div class="wrap">
-        <nav class="crumbs"><a href="${escapeHtml(baseUrl)}/">Mission Control visual reviews</a> / PR reports</nav>
+        <nav class="crumbs"><a href="${escapeHtml(baseUrl)}/">Paddock visual reviews</a> / PR reports</nav>
         <h1>Pull Request Visual Reports</h1>
         <p>Latest PR visual comparison reports published from CI. Use these Pages links to review baseline, current, and diff images without downloading Actions artifacts.</p>
       </div>
@@ -909,7 +909,7 @@ function generateMainIndex(meta, baseUrl) {
     <header>
       <div class="wrap">
         <nav class="crumbs" aria-label="Breadcrumb">
-          <a href="${escapeHtml(baseUrl)}/">Mission Control visual reviews</a>
+          <a href="${escapeHtml(baseUrl)}/">Paddock visual reviews</a>
           <span>/</span>
           <a href="${escapeHtml(baseUrl)}/pr/">PR reports</a>
         </nav>

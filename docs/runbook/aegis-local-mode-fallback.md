@@ -131,7 +131,7 @@ matches `governance.json.aegis.local_model_id` (default
 
 ### C. Wrong base URL
 
-Set `LM_STUDIO_BASE_URL` in `.env` and restart the Mission Control
+Set `LM_STUDIO_BASE_URL` in `.env` and restart the Paddock
 process:
 
 ```bash

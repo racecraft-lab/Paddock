@@ -4,7 +4,7 @@
 **HEAD**: 1690ead
 
 Runs the SPEC-008 verification suite that is runnable without a
-live Mission Control instance. Soak (T367) and chaos (T368 verification
+live Paddock instance. Soak (T367) and chaos (T368 verification
 steps) are intentionally skipped — they require running infra and are
 operator-gated.
 

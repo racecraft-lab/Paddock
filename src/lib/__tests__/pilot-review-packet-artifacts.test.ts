@@ -168,8 +168,8 @@ describe('SPEC-009D packet artifact publication', () => {
     expect(markdown).not.toContain('javascript:alert(1)')
     expect(markdown).not.toContain('data:text/html')
     expect(markdown).not.toContain('vbscript:msgbox')
-    expect(markdown).toContain('https://github.com/racecraft-lab/mission-control/issues/52')
-    expect(markdown).toContain('https://github.com/racecraft-lab/mission-control/pull/52')
+    expect(markdown).toContain('https://github.com/racecraft-lab/Paddock/issues/52')
+    expect(markdown).toContain('https://github.com/racecraft-lab/Paddock/pull/52')
   })
 
   it('safely publishes incomplete partial-proof packets without claiming pilot completion', () => {

@@ -57,7 +57,7 @@ direnv exec . <command>
    ```bash
    curl -X PATCH http://localhost:3000/api/github/sync/control \
      -H 'Content-Type: application/json' \
-     -d '{"workspace_id":4,"github_repo":"racecraft-lab/mission-control","enabled":true,"interval_seconds":300,"max_pages":10,"max_issues":1000,"max_duration_seconds":45}'
+     -d '{"workspace_id":4,"github_repo":"racecraft-lab/Paddock","enabled":true,"interval_seconds":300,"max_pages":10,"max_issues":1000,"max_duration_seconds":45}'
    ```
 
 7. Observe one scheduler-owned tick:
@@ -94,7 +94,7 @@ direnv exec . <command>
    ```bash
    curl -X PATCH http://localhost:3000/api/github/sync/control \
      -H 'Content-Type: application/json' \
-     -d '{"workspace_id":4,"github_repo":"racecraft-lab/mission-control","enabled":false,"disabled_reason":"operator_disabled"}'
+     -d '{"workspace_id":4,"github_repo":"racecraft-lab/Paddock","enabled":false,"disabled_reason":"operator_disabled"}'
    ```
 
    Confirm the PATCH response is 200 even if a run is active, no future automatic tick starts, any active run remains visible until it finishes or is recovered, and manual sync remains usable after disablement.

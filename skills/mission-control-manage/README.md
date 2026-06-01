@@ -1,6 +1,6 @@
-# Mission Control Management Skill
+# Paddock Management Skill
 
-Manage a running Mission Control instance programmatically.
+Manage a running Paddock instance programmatically.
 
 ## API Endpoints
 
@@ -91,7 +91,7 @@ Checks: Docker health, port availability, disk space, DB integrity, backup age.
 # Check health and alert if unhealthy
 STATUS=$(curl -sf -H "x-api-key: $API_KEY" http://localhost:3000/api/status?action=health | jq -r '.status')
 if [ "$STATUS" != "healthy" ]; then
-  echo "ALERT: Mission Control is $STATUS"
+  echo "ALERT: Paddock is $STATUS"
 fi
 ```
 

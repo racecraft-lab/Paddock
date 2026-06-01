@@ -65,7 +65,7 @@ function installLocalStorage() {
   })
 }
 
-describe('Mission Control Product Line scope slice', () => {
+describe('Paddock Product Line scope slice', () => {
   beforeEach(() => {
     installLocalStorage()
     localStorage.clear()

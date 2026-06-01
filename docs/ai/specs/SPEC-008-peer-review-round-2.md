@@ -114,7 +114,7 @@ Operator at 3am: "Is governance working in workspace facility?" There should be 
 
 **Reservation reaper.** State transitions in Q6: `active` → `expired` happens via "scheduler tick after `expires_at` passes." But what if the scheduler tick is itself blocked (long migration, breaker open, deterministic-mode-defer)? Reservations sit `active` past `expires_at`. Q35's priority order has admission as P1 but reservation expiry is not in the list. Recommend: "reservation expiry sweep" added as P3 (above reconciliation) so it's not starved.
 
-**Breaker `restart_count`.** Q21 explicitly says "restart does NOT clear it. `restart_count` increments so operator can see 'this breaker has survived N restarts'." Yes — but **there is no alert threshold**. If `restart_count` reaches 50, the operator should be paged. Recommend: alert at `restart_count >= 5` (one work week of MC restarts is normal for Mission Control development; >5 indicates the breaker is the actual bug).
+**Breaker `restart_count`.** Q21 explicitly says "restart does NOT clear it. `restart_count` increments so operator can see 'this breaker has survived N restarts'." Yes — but **there is no alert threshold**. If `restart_count` reaches 50, the operator should be paged. Recommend: alert at `restart_count >= 5` (one work week of MC restarts is normal for Paddock development; >5 indicates the breaker is the actual bug).
 
 **Workspace `feature_flags` JSON growth.** Each new flag adds a key. If `feature_flags` accumulates dead keys from removed features, no cleanup is documented. Low priority but worth noting.
 

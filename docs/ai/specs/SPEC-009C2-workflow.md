@@ -44,7 +44,7 @@ Source-of-truth scoping decisions:
 
 - Reuse the existing workflow-template output schema, routing rules,
   `task_dispositions`, `task_artifacts`, and `advanceTaskChain` surfaces.
-- Correct the repo-owned Mission Control workflow contract so Issue Triage can
+- Correct the repo-owned Paddock workflow contract so Issue Triage can
   emit the full pilot disposition taxonomy and route
   `ACTIONABLE_REMEDIATION` to Issue Remediation planning.
 - Create an actual remediation-planning successor only through the existing
@@ -259,7 +259,7 @@ or SDD handoff, but it must not start that lane in this spec.
 - [x] Issue Triage schema exposes a canonical pilot disposition taxonomy:
   `ACTIONABLE_REMEDIATION`, `DUPLICATE`, `OBSOLETE`, `INVALID`,
   `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`.
-- [x] The repo-owned Mission Control workflow contract imports/exports with
+- [x] The repo-owned Paddock workflow contract imports/exports with
   stable hashes and routes `ACTIONABLE_REMEDIATION` to
   `mission-control_remediation_plan`.
 - [x] `ACTIONABLE_REMEDIATION` creates exactly one remediation-planning
@@ -288,7 +288,7 @@ $speckit-specify
 
 ## Feature: Triage-to-Remediation Plan Handoff
 
-Create the SPEC-009C2 specification for the Mission Control self-hosting pilot
+Create the SPEC-009C2 specification for the Paddock self-hosting pilot
 handoff from Issue Triage to Issue Remediation planning. The source of truth is
 the roadmap entry in `docs/ai/rc-factory-technical-roadmap.md`, the PRD in
 `docs/rc-factory-v1-prd.md`, and the design concept at
@@ -305,7 +305,7 @@ Goals:
 - Make Issue Triage output typed enough to distinguish actionable remediation
   from duplicate, obsolete, invalid, needs-human, needs-specialist, and
   `NEEDS_SPEC` outcomes.
-- Correct the repo-owned Mission Control workflow contract so
+- Correct the repo-owned Paddock workflow contract so
   `ACTIONABLE_REMEDIATION` routes to `mission-control_remediation_plan`.
 - Reuse existing task-chain validation and successor creation; do not create a
   bespoke pilot handoff path.
@@ -496,7 +496,7 @@ $speckit-plan
 - Keep `ACTIONABLE_REMEDIATION` as the only remediation-planning entry in this
   spec.
 - Keep non-remediation outcomes as clean exits with durable evidence.
-- Preserve import/apply/export parity for Mission Control workflow contracts.
+- Preserve import/apply/export parity for Paddock workflow contracts.
 - Record roadmap-deferred work in `docs/ai/rc-factory-technical-roadmap.md`
   but do not implement those future specs here.
 ```
@@ -713,7 +713,7 @@ Approach:
    helpers readable and consistent with local patterns.
 4. VERIFY: run focused tests first, then typecheck/lint/build as scope requires.
 5. SMOKE: use a fresh SPEC-009C2 synthetic issue for manual UAT, then clean up
-   GitHub and Mission Control test state.
+   GitHub and Paddock test state.
 
 Implementation guardrails:
 - Stay on branch `009c2-triage-remediation-handoff`.
@@ -738,7 +738,7 @@ Implementation guardrails:
 | Foundation | T001-T007 | 7/7 | RED tests added for contract taxonomy/routing, actionable handoff, duplicate prevention, negative dispositions, invalid output, artifact publish failure, and SPEC-007 compatibility |
 | Triage handoff | T008-T012 | 5/5 | Workflow contract now emits pilot disposition taxonomy; dispatcher accepts pilot taxonomy, records task-scoped disposition/artifact/activity evidence, and avoids duplicate evidence |
 | Negative outcomes | T004-T006, T011 | 4/4 | Negative dispositions terminate without remediation successors while preserving evidence; artifact publish failures record task-scoped failure activity |
-| Smoke evidence | T013, T021 | 2/2 | Fresh SPEC-009C2 synthetic issue #47 drove the post-PR46 live smoke; cleanup removed disposable Mission Control rows and UAT fixtures |
+| Smoke evidence | T013, T021 | 2/2 | Fresh SPEC-009C2 synthetic issue #47 drove the post-PR46 live smoke; cleanup removed disposable Paddock rows and UAT fixtures |
 | Guardrails and verification | T014-T020 | 7/7 | Roadmap/workflow updated; focused tests, full unit suite, typecheck, lint, build, G7 gate, and reviewability evidence recorded |
 
 ### Verification Evidence
@@ -771,7 +771,7 @@ Implementation guardrails:
 - [X] `pnpm lint` passes or any existing warnings are documented
 - [X] `pnpm build` passes if production code changed
 - [X] Manual smoke checklist uses a fresh SPEC-009C2 synthetic issue
-- [X] Post-merge live synthetic smoke and cleanup were completed; disposable Mission Control rows and UAT fixtures were removed
+- [X] Post-merge live synthetic smoke and cleanup were completed; disposable Paddock rows and UAT fixtures were removed
 - [X] Roadmap/workflow/spec status updated on the spec branch
 - [X] Branch committed and pushed
 
@@ -780,7 +780,7 @@ Implementation guardrails:
 ## Project Structure Reference
 
 ```text
-docs/ai/workflows/mission-control/workflow-contract.yaml   Repo-owned Mission Control workflow contract
+docs/ai/workflows/mission-control/workflow-contract.yaml   Repo-owned Paddock workflow contract
 src/lib/workflow-contracts/                                Contract import/apply/export and hash parity surfaces
 src/lib/task-dispatch.ts                                   Existing task-chain output validation, routing, successor creation, disposition insert
 src/lib/task-artifacts.ts                                  Existing task artifact publish/read/admin behavior

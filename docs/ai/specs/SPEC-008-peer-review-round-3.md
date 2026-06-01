@@ -14,7 +14,7 @@ verdict: BLOCK until 3 P0s addressed inline; P1s should-fix before Plan phase
 
 ## Frame
 
-Mission Control is open-source, runs single-node, and SPEC-008 wires *billing-relevant* numbers (USD spend, token counts, override grants) into a synchronous admission-control path. The prior four oracle rounds plus two peer reviews drove the engineering correctness very hard. They did **not** push on "what would I be uncomfortable explaining to a regulator, an auditor, or a security team reading this on GitHub before deciding to deploy it." That is this review's only angle.
+Paddock is open-source, runs single-node, and SPEC-008 wires *billing-relevant* numbers (USD spend, token counts, override grants) into a synchronous admission-control path. The prior four oracle rounds plus two peer reviews drove the engineering correctness very hard. They did **not** push on "what would I be uncomfortable explaining to a regulator, an auditor, or a security team reading this on GitHub before deciding to deploy it." That is this review's only angle.
 
 Items already covered by prior reviewers are intentionally NOT re-flagged here: threat-model categorization (Q41), ingest rate limiting (Q47), retention growth (Q43), DR/backup (Peer #2), distributed correctness (rounds 2/3).
 

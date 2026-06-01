@@ -1,6 +1,6 @@
 # E2E Tests
 
-Playwright end-to-end specs for Mission Control API and UI.
+Playwright end-to-end specs for Paddock API and UI.
 
 ## Running
 
@@ -26,7 +26,7 @@ Tests require `.env.local` with:
 
 ## OpenClaw Offline Harness
 
-The harness runs Mission Control against fixture data and mock binaries/gateway:
+The harness runs Paddock against fixture data and mock binaries/gateway:
 - fixtures: `tests/fixtures/openclaw/`
 - mock CLI: `scripts/e2e-openclaw/bin/{openclaw,clawdbot}`
 - mock gateway: `scripts/e2e-openclaw/mock-gateway.mjs`

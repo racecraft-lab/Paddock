@@ -42,7 +42,7 @@ function freshMigratedDb(): Database.Database {
   runMigrations(db)
   db.prepare(`
     INSERT OR REPLACE INTO workspaces (id, slug, name, tenant_id, feature_flags, created_at, updated_at)
-    VALUES (1, 'mission-control', 'Mission Control', 1, ?, unixepoch(), unixepoch())
+    VALUES (1, 'mission-control', 'Paddock', 1, ?, unixepoch(), unixepoch())
   `).run(JSON.stringify({ FEATURE_GITHUB_SYNC_AUTOMATION: true }))
   return db
 }

@@ -1,8 +1,8 @@
-# Mission Control — Landing Page Handoff
+# Paddock — Landing Page Handoff
 
 > Last updated: 2026-03-07 | Version: 1.3.0 | Branch: `fix/refactor` (bb5029e)
 
-This document contains all copy, stats, features, and structure needed to build or update the Mission Control landing page. Everything below reflects the current state of the shipped product.
+This document contains all copy, stats, features, and structure needed to build or update the Paddock landing page. Everything below reflects the current state of the shipped product.
 
 ---
 
@@ -186,8 +186,8 @@ mission-control/
 ## Quick Start Section
 
 ```bash
-git clone https://github.com/builderz-labs/mission-control.git
-cd mission-control
+git clone https://github.com/racecraft-lab/Paddock.git
+cd Paddock
 pnpm install
 cp .env.example .env    # edit with your values
 pnpm dev                # http://localhost:3000
@@ -245,4 +245,4 @@ Initial login seeded from `AUTH_USER` / `AUTH_PASS` on first run.
 ## Footer
 
 MIT License | 2026 Builderz Labs
-GitHub: github.com/builderz-labs/mission-control
+GitHub: github.com/racecraft-lab/Paddock

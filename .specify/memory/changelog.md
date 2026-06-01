@@ -9,7 +9,7 @@ Auto-generated from Archive Sweep on 2026-04-28.
 - **Feature**: RC Factory Phase 0 schema tail (M53-M61)
 - **Branch**: `001-foundation-migrations`
 - **Spec Path**: `specs/001-foundation-migrations/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/15
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/15
 - **Merge Commit**: `85baf27c218617f412a4a74f9feae13948fc26cd`
 - **Tree Reference**: `git show 85baf27c218617f412a4a74f9feae13948fc26cd:specs/001-foundation-migrations/spec.md`
 - **CI URL**: N/A (local operator-node UAT accepted 2026-04-26)
@@ -31,7 +31,7 @@ git show 85baf27c218617f412a4a74f9feae13948fc26cd:specs/001-foundation-migration
 - **Feature**: RC Factory Phase 1 — feature-flagged workspace switcher
 - **Branch**: `002-product-line-switcher`
 - **Spec Path**: `specs/002-product-line-switcher/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/16
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/16
 - **Merge Commit**: `65f2e7ce0f99991760f0236e605c7daf8f44d770`
 - **Tree Reference**: `git show 65f2e7ce0f99991760f0236e605c7daf8f44d770:specs/002-product-line-switcher/spec.md`
 - **CI URL**: N/A (local verification)
@@ -54,8 +54,8 @@ git show 65f2e7ce0f99991760f0236e605c7daf8f44d770:specs/002-product-line-switche
 - **Branch**: `002a-spec-archive-evidence`
 - **Spec Path**: `specs/002a-spec-archive-evidence/`
 - **PR URLs**:
-  - https://github.com/racecraft-lab/mission-control/pull/18 (Merge: `daab0c11f8896b31c2d24ed0a53419814671c3b1`)
-  - https://github.com/racecraft-lab/mission-control/pull/19 (Merge: `e161a70ed9d415afaec3d0c5fb6d7fb682e6d884`)
+  - https://github.com/racecraft-lab/Paddock/pull/18 (Merge: `daab0c11f8896b31c2d24ed0a53419814671c3b1`)
+  - https://github.com/racecraft-lab/Paddock/pull/19 (Merge: `e161a70ed9d415afaec3d0c5fb6d7fb682e6d884`)
 - **Merge Commit**: `e161a70ed9d415afaec3d0c5fb6d7fb682e6d884` (latest)
 - **Tree Reference**: `git show e161a70ed9d415afaec3d0c5fb6d7fb682e6d884:specs/002a-spec-archive-evidence/spec.md`
 - **CI URL**: N/A
@@ -77,7 +77,7 @@ git show e161a70ed9d415afaec3d0c5fb6d7fb682e6d884:specs/002a-spec-archive-eviden
 - **Feature**: RC Factory Phase 2 — feature-flagged global Aegis resolver
 - **Branch**: `003-global-aegis`
 - **Spec Path**: `specs/003-global-aegis/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/20
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/20
 - **Merge Commit**: `85d102f0e4941cc51d20534fa1d0fec787c8ad56`
 - **Tree Reference**: `git show 85d102f0e4941cc51d20534fa1d0fec787c8ad56:specs/003-global-aegis/spec.md`
 - **CI URL**: N/A (local verification — Vitest, Playwright, Argos metadata, typecheck, lint, build all green per retrospective)
@@ -107,7 +107,7 @@ git show 85d102f0e4941cc51d20534fa1d0fec787c8ad56:specs/003-global-aegis/tasks.m
 - **Feature**: RC Factory Phase 3 — feature-flagged declarative task chains
 - **Branch**: `004-task-pipeline-engine`
 - **Spec Path**: `specs/004-task-pipeline-engine/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/22
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/22
 - **Merge Commit**: `20643d81fc76b66fb6227300e178622066ac268e`
 - **Tree Reference**: `git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine/spec.md`
 - **CI URL**: N/A (local verification — Vitest, Playwright, typecheck, lint, build, audit baseline cleared)
@@ -129,7 +129,7 @@ git show 20643d81fc76b66fb6227300e178622066ac268e:specs/004-task-pipeline-engine
 - **Feature**: RC Factory Phase 5 — `area:*` GitHub label routing + repo-level sync ownership for shared monorepos
 - **Branch**: `006-area-label-github-sync`
 - **Spec Path**: `specs/006-area-label-github-sync/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/21
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/21
 - **Merge Commit**: `dbb6c758f7f2796b06659fc70b52d16b13efee30`
 - **Tree Reference**: `git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sync/spec.md`
 - **CI URL**: N/A (local verification — focused Vitest, Playwright running-app journeys, typecheck, lint, build all green per workflow file Phase 7)
@@ -180,7 +180,7 @@ git show dbb6c758f7f2796b06659fc70b52d16b13efee30:specs/006-area-label-github-sy
 - **Feature**: RC Factory Phase 4 — PR-producing work stops at `ready_for_owner` until human merge evidence arrives
 - **Branch**: `005-ready-for-owner`
 - **Spec Path**: `specs/005-ready-for-owner/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/23
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/23
 - **Merge Commit**: `851571fe6bac29563e6bef8cb124d0b108791c73`
 - **Tree Reference**: `git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/005-ready-for-owner/spec.md`
 - **CI URL**: N/A (local verification recorded in workflow)
@@ -202,7 +202,7 @@ git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/005-ready-for-owner/task
 - **Feature**: RC Factory Phase 6 — durable dispositions, artifacts, redaction, and review evidence
 - **Branch**: `007-disposition-artifacts`
 - **Spec Path**: `specs/007-disposition-artifacts/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/25
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/25
 - **Merge Commit**: `953f29bee7432450002dac00a4f88e7bb1fdd38a`
 - **Tree Reference**: `git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/007-disposition-artifacts/spec.md`
 - **CI URL**: N/A (local verification recorded in workflow)
@@ -224,7 +224,7 @@ git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/007-disposition-artifact
 - **Feature**: RC Factory Phase 7 — feature-flagged resource policy evaluator and observability pipeline
 - **Branch**: `008-resource-governance`
 - **Spec Path**: `specs/008-resource-governance/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/26
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/26
 - **Merge Commit**: `bd9a693937f9572fd8532484c084646e4fe8ff73`
 - **Tree Reference**: `git show 6215d94677b35b5811d5de7205b3f5f7cd458ee9:specs/008-resource-governance/spec.md`
 - **CI URL**: N/A (local verification and follow-up evidence recorded in workflow)
@@ -246,7 +246,7 @@ git show 6215d94677b35b5811d5de7205b3f5f7cd458ee9:specs/008-resource-governance/
 - **Feature**: RC Factory Phase 8A — repo-owned workflow contracts with import/apply/export/recover tooling
 - **Branch**: `009a-workflow-contract-roundtrip`
 - **Spec Path**: `specs/009a-workflow-contract-roundtrip/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/28
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/28
 - **Merge Commit**: `2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f`
 - **Tree Reference**: `git show 2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f:specs/009a-workflow-contract-roundtrip/spec.md`
 - **CI URL**: N/A (workflow records local and PR checks)
@@ -263,12 +263,12 @@ git show 2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f:specs/009a-workflow-contract-r
 
 ---
 
-## SPEC-009B: Mission Control Product-Line Seed and Flag Activation
+## SPEC-009B: Paddock Product-Line Seed and Flag Activation
 
-- **Feature**: RC Factory Phase 8B — seed Mission Control as Product Line A without dispatching work
+- **Feature**: RC Factory Phase 8B — seed Paddock as Product Line A without dispatching work
 - **Branch**: `009b-mission-control-seed`
 - **Spec Path**: `specs/009b-mission-control-seed/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/30
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/30
 - **Merge Commit**: `1d5c994c1e6e41e44cf16f39c0829d3e46bce004`
 - **Tree Reference**: `git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/spec.md`
 - **CI URL**: N/A (workflow records focused suites, build, e2e, and daemon-socket caveat)
@@ -287,10 +287,10 @@ git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-see
 
 ## SPEC-009C1: GitHub Pilot Issue Ingest and Eligibility
 
-- **Feature**: RC Factory Phase 8C1 — one GitHub issue enters the pilot as an eligible Mission Control task
+- **Feature**: RC Factory Phase 8C1 — one GitHub issue enters the pilot as an eligible Paddock task
 - **Branch**: `009c1-pilot-issue-ingest`
 - **Spec Path**: `specs/009c1-pilot-issue-ingest/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/34
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/34
 - **Merge Commit**: `7d544f3975d5d7e7241f83ecee629509760c064c`
 - **Tree Reference**: `git show 7d544f3975d5d7e7241f83ecee629509760c064c:specs/009c1-pilot-issue-ingest/spec.md`
 - **CI URL**: N/A (workflow records local and HAL smoke evidence)
@@ -313,8 +313,8 @@ git show 7d544f3975d5d7e7241f83ecee629509760c064c:specs/009c1-pilot-issue-ingest
 - **Branch**: `009c2-triage-remediation-handoff`
 - **Spec Path**: `specs/009c2-triage-remediation-handoff/`
 - **PR URLs**:
-  - https://github.com/racecraft-lab/mission-control/pull/43 (Merge: `a63afdead9e4b58c6be7cfcda782a3f567538756`)
-  - https://github.com/racecraft-lab/mission-control/pull/46 (post-merge fix, Merge: `19b2db9891fd4c4ca1286f952f10e190424e9c5c`)
+  - https://github.com/racecraft-lab/Paddock/pull/43 (Merge: `a63afdead9e4b58c6be7cfcda782a3f567538756`)
+  - https://github.com/racecraft-lab/Paddock/pull/46 (post-merge fix, Merge: `19b2db9891fd4c4ca1286f952f10e190424e9c5c`)
 - **Merge Commit**: `a63afdead9e4b58c6be7cfcda782a3f567538756` (implementation), post-merge fix `19b2db9891fd4c4ca1286f952f10e190424e9c5c`
 - **Tree Reference**: `git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation-handoff/spec.md`
 - **CI URL**: N/A (workflow records focused/full unit, typecheck, lint, build, and HAL smoke)
@@ -342,7 +342,7 @@ git show a63afdead9e4b58c6be7cfcda782a3f567538756:specs/009c2-triage-remediation
 - **Feature**: RC Factory Phase 8C3 — remediation chain reaches `ready_for_owner`
 - **Branch**: `009c3-remediation-ready-for-owner`
 - **Spec Path**: `specs/009c3-remediation-ready-for-owner/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/48
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/48
 - **Merge Commit**: `ac7760a222a33b4cefe886afae605238f479eaa5`
 - **Post-Merge Evidence Commit**: `13a104f658199bad24c5ea50ad9cbef85cf9e65b`
 - **Tree Reference**: `git show ac7760a222a33b4cefe886afae605238f479eaa5:specs/009c3-remediation-ready-for-owner/spec.md`
@@ -365,7 +365,7 @@ git show ac7760a222a33b4cefe886afae605238f479eaa5:specs/009c3-remediation-ready-
 - **Feature**: RC Factory Phase 8C4 — human merge gate reconciles `ready_for_owner` to `done`
 - **Branch**: `009c4-owner-merge-reconciliation`
 - **Spec Path**: `specs/009c4-owner-merge-reconciliation/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/52
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/52
 - **Merge Commit**: `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`
 - **Post-Merge Evidence Commit**: `539b14b40e2664799b7b187e7302e8ff005e96fa`
 - **Tree Reference**: `git show ddc709f2f200a4ee4df51398d39ef42d85bd6e54:specs/009c4-owner-merge-reconciliation/spec.md`
@@ -388,7 +388,7 @@ git show ddc709f2f200a4ee4df51398d39ef42d85bd6e54:specs/009c4-owner-merge-reconc
 - **Feature**: RC Factory Phase 8D — stored-evidence pilot review packet and lifecycle snapshot
 - **Branch**: `009d-pilot-review-lifecycle`
 - **Spec Path**: `specs/009d-pilot-review-lifecycle/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/54
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/54
 - **Merge Commit**: `765264be667bd31d6266f606602a219312f72f23`
 - **Tree Reference**: `git show 765264be667bd31d6266f606602a219312f72f23:specs/009d-pilot-review-lifecycle/spec.md`
 - **CI URL**: N/A (workflow records main CI/CD checks and local verification)
@@ -410,7 +410,7 @@ git show 765264be667bd31d6266f606602a219312f72f23:specs/009d-pilot-review-lifecy
 - **Feature**: RC Factory Phase 8E — read-only task-scoped pilot eligibility and evidence surfaces
 - **Branch**: `009e-pilot-evidence-surfaces`
 - **Spec Path**: `specs/009e-pilot-evidence-surfaces/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/55
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/55
 - **Merge Commit**: `40507874b012abffe2356a66be36613c6dea5809`
 - **Post-Merge Evidence Commit**: `f4921b852d1ea9e6fbc220f2838f957a9d1ef0d8`
 - **Tree Reference**: `git show 40507874b012abffe2356a66be36613c6dea5809:specs/009e-pilot-evidence-surfaces/spec.md`
@@ -433,7 +433,7 @@ git show 40507874b012abffe2356a66be36613c6dea5809:specs/009e-pilot-evidence-surf
 - **Feature**: RC Factory Phase 10A — canonical repo knowledge index and root AGENTS map
 - **Branch**: `012a-repo-knowledge-index`
 - **Spec Path**: `specs/012a-repo-knowledge-index/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/56
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/56
 - **Merge Commit**: `a5e3fbece82fddec548b70763a703893ba409813`
 - **Tree Reference**: `git show a5e3fbece82fddec548b70763a703893ba409813:specs/012a-repo-knowledge-index/spec.md`
 - **CI URL**: N/A (workflow records Quality Gate and visual approval checks)
@@ -455,7 +455,7 @@ git show a5e3fbece82fddec548b70763a703893ba409813:specs/012a-repo-knowledge-inde
 - **Feature**: RC Factory Phase 8F — production routing for non-remediation triage outcomes
 - **Branch**: `009f-production-triage-routing`
 - **Spec Path**: `specs/009f-production-triage-routing/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/57
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/57
 - **Merge Commit**: `d396ed205b281d10a2b5cb95542209e816ebd95a`
 - **Post-Merge Evidence Commit**: `6bc4f2a79d7af240b75ad22687310a754f1f587a`
 - **Tree Reference**: `git show d396ed205b281d10a2b5cb95542209e816ebd95a:specs/009f-production-triage-routing/spec.md`
@@ -478,7 +478,7 @@ git show d396ed205b281d10a2b5cb95542209e816ebd95a:specs/009f-production-triage-r
 - **Feature**: RC Factory Phase 9A — reusable product-line seed tooling
 - **Branch**: `010a-generic-product-line-seeder`
 - **Spec Path**: `specs/010a-generic-product-line-seeder/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/59
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/59
 - **Merge Commit**: `9be6b544b6006bd5de2524d22bc8059a21eed41c`
 - **Post-Merge Evidence Commit**: `05fe404ab43ce026734b51ccc3d0e39830fac05f`
 - **Tree Reference**: `git show 9be6b544b6006bd5de2524d22bc8059a21eed41c:specs/010a-generic-product-line-seeder/spec.md`
@@ -501,7 +501,7 @@ git show 9be6b544b6006bd5de2524d22bc8059a21eed41c:specs/010a-generic-product-lin
 - **Feature**: RC Factory Phase 11A — durable task-stage attempt inspection spine
 - **Branch**: `013a-run-state-spine`
 - **Spec Path**: `specs/013a-run-state-spine/`
-- **PR URL**: https://github.com/racecraft-lab/mission-control/pull/58
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/58
 - **Merge Commit**: `a3a79250bc0fa8ac79d36a787f8119d1add62678`
 - **Post-Merge Evidence Commit**: `05fe404ab43ce026734b51ccc3d0e39830fac05f`
 - **Tree Reference**: `git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/spec.md`

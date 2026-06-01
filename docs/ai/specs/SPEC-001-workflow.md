@@ -133,7 +133,7 @@ $speckit-specify
 
 ## Feature: SPEC-001 Foundation Migrations
 
-Create a migration-only specification for RC Factory Phase 0 in Mission Control.
+Create a migration-only specification for RC Factory Phase 0 in Paddock.
 
 ### Problem Statement
 
@@ -141,13 +141,13 @@ RC Factory v1 requires a compatibility-preserving schema tail before runtime spe
 
 ### Users
 
-- Facility operator: needs the existing Mission Control install to migrate without downtime or runtime behavior changes.
+- Facility operator: needs the existing Paddock install to migrate without downtime or runtime behavior changes.
 - Future SpecKit specs: need stable schema surfaces before feature-flagged runtime behavior is implemented.
 - Maintainer/operator: needs manual rollback SQL and a procedure for production-shape SQLite databases.
 
 ### User Stories
 
-- US1: As an operator, I can apply M53-M61 to an existing production-shape database without breaking existing Mission Control behavior.
+- US1: As an operator, I can apply M53-M61 to an existing production-shape database without breaking existing Paddock behavior.
 - US2: As an operator, I can re-run migrations safely and observe no additional changes.
 - US3: As a maintainer, I can manually roll back each SQL-changing M53-M61 migration using checked-in reverse SQL and the runbook.
 - US4: As a downstream spec executor, I can rely on the new schema surfaces while all runtime feature flags remain OFF or unimplemented.

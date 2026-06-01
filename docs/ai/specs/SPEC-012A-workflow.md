@@ -203,10 +203,10 @@ Forbidden:
 ## Feature: SPEC-012A - Repo Knowledge Index and AGENTS Map
 
 ### Problem Statement
-Fresh agents need to discover Mission Control repo truth from checked-in artifacts instead of hidden operator context, memory, or a huge instruction file. The repo already has a PRD, technical roadmap, SpecKit workflow ledgers, QA checklist, rollback/runbook docs, and GitNexus instructions, but there is no canonical machine-readable map with ownership/freshness metadata and a guard that proves the map is current.
+Fresh agents need to discover Paddock repo truth from checked-in artifacts instead of hidden operator context, memory, or a huge instruction file. The repo already has a PRD, technical roadmap, SpecKit workflow ledgers, QA checklist, rollback/runbook docs, and GitNexus instructions, but there is no canonical machine-readable map with ownership/freshness metadata and a guard that proves the map is current.
 
 ### Users
-- Autonomous coding agents starting a new Mission Control spec or maintenance task.
+- Autonomous coding agents starting a new Paddock spec or maintenance task.
 - Human operators reviewing whether docs are current enough to drive autonomous work.
 - Future SPEC-012B/SPEC-013 agents that need repo/process truth before building drift guards and run-state persistence.
 
@@ -602,7 +602,7 @@ Post-implementation code review also corrected the live status-pointer guard pat
 - [x] `git diff --check` passes.
 - [x] Roadmap/workflow/status docs are updated in the spec branch.
 - [x] Full `pnpm test` suite is green during UAT.
-- [x] PR #56 merged to `main` as `a5e3fbece82fddec548b70763a703893ba409813` on 2026-05-21: https://github.com/racecraft-lab/mission-control/pull/56
+- [x] PR #56 merged to `main` as `a5e3fbece82fddec548b70763a703893ba409813` on 2026-05-21: https://github.com/racecraft-lab/Paddock/pull/56
 
 ### Post-Implementation Reviewability Evidence
 
@@ -616,7 +616,7 @@ It returned `status=block` with `transition_exception=false` even though the dif
 
 ### PR Check Evidence
 
-PR #56 merged at https://github.com/racecraft-lab/mission-control/pull/56 as `a5e3fbece82fddec548b70763a703893ba409813` on 2026-05-21. The final remote check state passed CodeQL, `quality-gate`, `docker-ui-e2e / visual-review-report`, `visual-storybook / visual-review-report`, `visual-review-approval/playwright`, and `visual-review-approval/storybook`. The Quality Gate run passed guardrails, dependency audit, lint, typecheck, unit tests, build, and e2e in GitHub Actions. SPEC-012A changed docs/process/script/package surfaces only; no UI, Storybook, Docker, visual baseline, or e2e test files changed.
+PR #56 merged at https://github.com/racecraft-lab/Paddock/pull/56 as `a5e3fbece82fddec548b70763a703893ba409813` on 2026-05-21. The final remote check state passed CodeQL, `quality-gate`, `docker-ui-e2e / visual-review-report`, `visual-storybook / visual-review-report`, `visual-review-approval/playwright`, and `visual-review-approval/storybook`. The Quality Gate run passed guardrails, dependency audit, lint, typecheck, unit tests, build, and e2e in GitHub Actions. SPEC-012A changed docs/process/script/package surfaces only; no UI, Storybook, Docker, visual baseline, or e2e test files changed.
 
 ---
 
@@ -663,4 +663,4 @@ specs/
 ### Patterns to Reuse
 
 - Keep future repo-discovery docs in `docs/ai/repo-knowledge-index.json` first, then expose only a short pointer map in `AGENTS.md`.
-- Use `direnv exec .` for Mission Control validation in linked worktrees so native dependencies and GitNexus-related environment settings resolve through the repo-local toolchain.
+- Use `direnv exec .` for Paddock validation in linked worktrees so native dependencies and GitNexus-related environment settings resolve through the repo-local toolchain.

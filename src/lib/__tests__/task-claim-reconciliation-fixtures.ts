@@ -250,7 +250,7 @@ export function openTaskClaimDb(): Database.Database {
     .run('alpha', 'Alpha', '{"FEATURE_TASK_CONTROL_PLANE":true}')
   db.prepare(`
     INSERT INTO projects (id, workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner)
-    VALUES (10, 1, 'Mission Control', 'mission-control', 'MC', 'racecraft-lab/mission-control', 1, 1)
+    VALUES (10, 1, 'Paddock', 'mission-control', 'MC', 'racecraft-lab/Paddock', 1, 1)
   `).run()
   db.prepare(`
     INSERT INTO agents (id, name, workspace_id, status, role)
@@ -261,14 +261,14 @@ export function openTaskClaimDb(): Database.Database {
       workspace_id, github_repo, enabled, interval_seconds, owner_project_id,
       last_completed_at, total_successes
     )
-    VALUES (1, 'racecraft-lab/mission-control', 1, 300, 10, 1770000000, 1)
+    VALUES (1, 'racecraft-lab/Paddock', 1, 300, 10, 1770000000, 1)
   `).run()
   db.prepare(`
     INSERT INTO github_sync_lifecycle_runs (
       run_id, workspace_id, github_repo, project_id, started_at, completed_at, result,
       issues_pulled
     )
-    VALUES ('ghsync_success', 1, 'racecraft-lab/mission-control', 10, 1769999900, 1770000000, 'success', 1)
+    VALUES ('ghsync_success', 1, 'racecraft-lab/Paddock', 10, 1769999900, 1770000000, 'success', 1)
   `).run()
   db.prepare(`
     INSERT INTO resource_decision_audit (
@@ -303,7 +303,7 @@ export function seedClaimableTask(
     id,
     values.status ?? 'assigned',
     values.assigned_to === undefined ? 'builder' : values.assigned_to,
-    values.github_repo === undefined ? 'racecraft-lab/mission-control' : values.github_repo,
+    values.github_repo === undefined ? 'racecraft-lab/Paddock' : values.github_repo,
     values.github_issue_number === undefined ? 123 : values.github_issue_number,
     values.github_synced_at === undefined ? 1770000000 : values.github_synced_at,
     values.github_issue_state ?? null,

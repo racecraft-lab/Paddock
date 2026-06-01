@@ -216,7 +216,7 @@ export async function callOpenClawGatewayViaWebSocket<T = unknown>(
               maxProtocol: PROTOCOL_VERSION,
               client: {
                 id: DEFAULT_GATEWAY_CLIENT_ID,
-                displayName: "Mission Control",
+                displayName: "Paddock",
                 version: APP_VERSION,
                 platform: "node",
                 mode: "backend",

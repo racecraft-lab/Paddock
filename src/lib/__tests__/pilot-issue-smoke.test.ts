@@ -90,7 +90,7 @@ describe('SPEC-009C1 pilot issue smoke script contract', () => {
       headers: {
         get: (name: string) => (
           name.toLowerCase() === 'link' && new URL(url).searchParams.get('page') === '1'
-            ? '<https://api.github.com/repos/racecraft-lab/mission-control/issues?state=open&per_page=100&page=2>; rel="next"'
+            ? '<https://api.github.com/repos/racecraft-lab/Paddock/issues?state=open&per_page=100&page=2>; rel="next"'
             : null
         ),
       },

@@ -13,7 +13,7 @@ SPEC-013B adds a default-off, database-backed claim/reconciliation authority aro
 **Primary Dependencies**: Next.js 16 App Router, React 19, `better-sqlite3`, existing Zustand/Tailwind/Vitest stack, existing `resourcePolicyEvaluator`, existing GitHub sync lifecycle helpers, existing task-stage attempt helpers. No new runtime dependency.
 **Storage**: SQLite through `better-sqlite3`; additive forward migration `078_task_stage_claims`; manual rollback at `docs/migrations/rollback-M78.sql`.
 **Testing**: Vitest for migration idempotency, claim helper concurrency/deferral/release paths, dispatch integration, and read-only API route; Playwright only if implementation later changes a user-facing UI journey. Full `pnpm test:all` gate before PR packaging.
-**Target Platform**: Next.js server runtime and scheduler in Mission Control deployments.
+**Target Platform**: Next.js server runtime and scheduler in Paddock deployments.
 **Project Type**: Web application with server-side scheduler, SQLite persistence, REST API, and local operator evidence.
 **Performance Goals**: Claim/reconciliation transaction remains bounded to local SQLite reads/writes only, no live GitHub fetches, and no expansion of the current `dispatchAssignedTasks` batch size of 3 tasks per tick. Resource governance preserves its synchronous evaluator envelope (`p50<5ms / p95<15ms / p99<25ms`) as documented in `src/lib/resource-evaluator.ts`.
 **Constraints**: `FEATURE_TASK_CONTROL_PLANE` resolves only through `resolveFlag('FEATURE_TASK_CONTROL_PLANE', ctx)`; flag off preserves legacy dispatch side effects; active claim TTL defaults to 300 seconds and is capped at 600 seconds; `task_stage_attempts.status` is never used as the active lock; the claim module never imports or calls `advanceTaskChain` or `createTask`; claim evidence is positive-allowlisted and redacts/rejects secret-shaped values; claim/release boundary errors fail closed for one task and do not crash the scheduler tick or bypass governance.
@@ -199,7 +199,7 @@ Claim intake uses only persisted local truth:
 
 ### Local Terminal Task Statuses
 
-For SPEC-013B active-claim release decisions, the terminal Mission Control task statuses are exactly `done` and `failed` from the canonical task status vocabulary. `awaiting_owner` and `ready_for_owner` are not terminal; owner handoff remains non-terminal and does not release a claim by itself. If later PR merge evidence allows the task to transition to `done`, the release reason is `task_terminal_done`.
+For SPEC-013B active-claim release decisions, the terminal Paddock task statuses are exactly `done` and `failed` from the canonical task status vocabulary. `awaiting_owner` and `ready_for_owner` are not terminal; owner handoff remains non-terminal and does not release a claim by itself. If later PR merge evidence allows the task to transition to `done`, the release reason is `task_terminal_done`.
 
 ### Task-Stage Attempt Terminal Release
 

@@ -2,7 +2,7 @@
 
 **Template Version**: 1.0.0
 **Created**: 2026-05-20
-**Purpose**: Prepare and execute RC Factory Phase 8D by materializing a compact pilot review packet and lifecycle snapshot from existing Mission Control evidence.
+**Purpose**: Prepare and execute RC Factory Phase 8D by materializing a compact pilot review packet and lifecycle snapshot from existing Paddock evidence.
 
 ---
 
@@ -37,7 +37,7 @@ Source-of-truth scoping decisions:
 
 - Persist the pilot review packet through SPEC-007 task artifacts with source
   pointers, not through a new table.
-- Assemble from stored Mission Control evidence first; do not require fresh
+- Assemble from stored Paddock evidence first; do not require fresh
   GitHub API calls.
 - Include explicit `deferred` or `not_available` fields for SPEC-013A/A1/B/C
   and SPEC-014A-D future state.
@@ -242,14 +242,14 @@ $speckit-specify
 ## Feature: Pilot Review Packet and Lifecycle Snapshot
 
 ### Problem Statement
-Mission Control has now proven the self-hosting pilot through issue ingest,
+Paddock has now proven the self-hosting pilot through issue ingest,
 triage handoff, remediation-to-owner, owner merge, and done reconciliation.
 Operators still need one reviewable packet that summarizes the current pilot
 lifecycle without terminal archaeology and without inventing future run-state,
 claim-state, sandbox, adapter, or poller data.
 
 ### Users
-- Mission Control operators reviewing the self-hosting pilot.
+- Paddock operators reviewing the self-hosting pilot.
 - PR reviewers who need a compact evidence packet.
 - Future SPEC-009E and SPEC-013A implementers who need a baseline for evidence
   surfaces and durable run-state.
@@ -269,7 +269,7 @@ claim-state, sandbox, adapter, or poller data.
 ### Constraints
 - Use SPEC-007 task artifacts for persistence; do not add a review-packet table
   or schema migration.
-- Use stored Mission Control evidence first; do not require fresh GitHub API
+- Use stored Paddock evidence first; do not require fresh GitHub API
   calls for packet assembly.
 - Publish JSON and Markdown packet artifacts with source-map pointers.
 - Reuse SPEC-007 redaction and compact evidence behavior for secrets,
@@ -494,7 +494,7 @@ Focus on SPEC-009D requirements:
 $speckit-checklist state-management
 
 Focus on SPEC-009D requirements:
-- Deterministic current-stage derivation from stored Mission Control records.
+- Deterministic current-stage derivation from stored Paddock records.
 - Stored evidence first, no required fresh GitHub call.
 - Explicit deferred/not_available states for SPEC-013A/A1/B/C and SPEC-014A-D.
 - Stable behavior when sync rows are retained but disposable UAT tasks are cleaned.
@@ -597,7 +597,7 @@ Focus on:
    adapter, or dashboard work.
 4. Coverage gaps for JSON and Markdown artifacts, source maps, redaction,
    missing/stale evidence, local-only exclusion, and deferred future fields.
-5. Task file paths against the actual Mission Control project structure.
+5. Task file paths against the actual Paddock project structure.
 ```
 
 ### Analysis Results
@@ -661,16 +661,16 @@ To fill during implementation:
 
 ### Implementation Results
 
-- Packet derivation lives in `src/lib/pilot-review-packet.ts` and uses stored Mission Control evidence only.
+- Packet derivation lives in `src/lib/pilot-review-packet.ts` and uses stored Paddock evidence only.
 - JSON and Markdown packet artifacts publish through existing SPEC-007 task artifact behavior with `schema_version="spec-009d.packet.v1"`.
 - No packet-specific route, dashboard, runtime dependency, migration, fresh GitHub call, polling, claim authority, retry control, sandbox lifecycle, adapter registry, or real harness execution was added.
 - Build blockers resolved during verification: removed network-dependent Google font fetches, moved route test reset helpers out of a Next route module, regenerated the lockfile against patched Next 16.2.6, rebuilt `better-sqlite3`, and regenerated standalone output with the native binding present.
 - Verification passed under Node 22.22.2: focused packet/artifact/disposition tests (20 tests), existing task-artifact seam tests (38 tests), `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm guardrails`, `pnpm audit:high`, `pnpm test` (2920 passing tests), and `pnpm test:e2e` (646 passing tests).
-- UAT passed on 2026-05-20: a disposable Mission Control database in `/private/tmp/mc-spec009d-uat-20260520-uat1` was seeded from retained issue #50 / PR #51 evidence, packet generation produced `candidate.state="proven"` and `current_stage="done"` with 15 source-map pointers, JSON artifact `2` and Markdown artifact `3` were published through real `publishArtifact()`, both artifacts were inspected through existing `/api/task-artifacts` HTTP routes, and seeded rows were removed after backup.
-- Implementation PR merged: https://github.com/racecraft-lab/mission-control/pull/54
+- UAT passed on 2026-05-20: a disposable Paddock database in `/private/tmp/mc-spec009d-uat-20260520-uat1` was seeded from retained issue #50 / PR #51 evidence, packet generation produced `candidate.state="proven"` and `current_stage="done"` with 15 source-map pointers, JSON artifact `2` and Markdown artifact `3` were published through real `publishArtifact()`, both artifacts were inspected through existing `/api/task-artifacts` HTTP routes, and seeded rows were removed after backup.
+- Implementation PR merged: https://github.com/racecraft-lab/Paddock/pull/54
 - Merge commit: `765264be667bd31d6266f606602a219312f72f23`.
 - Main CI/CD closeout: PR and push checks for the merge commit passed on
-  2026-05-20, including Quality Gate, CodeQL, Mission Control UI E2E, Visual
+  2026-05-20, including Quality Gate, CodeQL, Paddock UI E2E, Visual
   Storybook Snapshots, Playwright visual approval, and Storybook visual
   approval.
 

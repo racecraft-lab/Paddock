@@ -45,7 +45,7 @@ Add default-off, Product Line/workspace-scoped GitHub issue sync automation as a
 - UI copy MUST translate lifecycle result codes into concise operator-readable labels for disabled, running, success, failed/backoff, partial bounded stop, skipped overlap, rejected overlap, skipped owner, skipped non-owner, ownership unresolved, and stale recovered states.
 - GitHub Sync lifecycle labels MUST describe GitHub issue polling, cursor, backoff, ownership, skipped diagnostics, health, and manual fallback only; labels MUST NOT imply task claim, task dispatch, remediation execution, harness lifecycle, sandbox lifecycle, auto-merge, or automatic triage.
 - Status updates for success, waiting/running state, progress, errors, backoff, overlap, skipped ownership, disablement, and recovery MUST follow the existing app accessibility pattern for programmatically determinable status text or live status regions when updates occur without a page-level context change.
-- Reuse existing Mission Control UI conventions: compact panels, tables or rows, inline colored status dots or badges, text labels, existing `Button` variants/sizes, and inline SVG or text glyphs. Do not add a new icon dependency for this feature unless a later implementation artifact separately justifies the supply-chain surface.
+- Reuse existing Paddock UI conventions: compact panels, tables or rows, inline colored status dots or badges, text labels, existing `Button` variants/sizes, and inline SVG or text glyphs. Do not add a new icon dependency for this feature unless a later implementation artifact separately justifies the supply-chain surface.
 
 ## Project Structure
 
@@ -90,7 +90,7 @@ tests/
 └── e2e/spec-013a1-github-sync-automation.spec.ts
 ```
 
-**Structure Decision**: Use existing Mission Control web-app layout. The GitHub Sync route and panel are the operator-facing surfaces, scheduler runtime owns automatic ticks, and new lifecycle helpers isolate M77 state/lease/cursor logic from the existing sync engine.
+**Structure Decision**: Use existing Paddock web-app layout. The GitHub Sync route and panel are the operator-facing surfaces, scheduler runtime owns automatic ticks, and new lifecycle helpers isolate M77 state/lease/cursor logic from the existing sync engine.
 
 ## Complexity Tracking
 
@@ -156,7 +156,7 @@ See `data-model.md`, `contracts/github-sync-lifecycle-api.md`, and `quickstart.m
 - Owner-facing evidence chain: success, failure, backoff, partial, skipped owner/non-owner, overlap, manual fallback, disablement, and stale recovery MUST be reviewable through lifecycle runs, lifecycle controls, activity rows, the GitHub Sync API/UI, and `github_syncs` rows whenever the existing sync engine is reached.
 - GitHub Sync panel lifecycle UX: The panel MUST map lifecycle envelope state into operator-readable status and control summaries, keep manual fallback controls separate from automatic lifecycle controls, expose conflict/overlap active-run context and retry guidance, and provide accessible status updates for dynamic lifecycle messages.
 - Skipped owner, skipped non-owner, and ownership-unresolved transitions MUST write lifecycle run detail, lifecycle control summary or counter updates, and activity evidence even when no GitHub pull occurs and no compatibility `github_syncs` row is created.
-- No new telemetry service: Observability remains local to SQLite-backed lifecycle state, compatibility sync history, activity rows, and existing Mission Control diagnostics/UI surfaces.
+- No new telemetry service: Observability remains local to SQLite-backed lifecycle state, compatibility sync history, activity rows, and existing Paddock diagnostics/UI surfaces.
 
 ## Verification Plan
 

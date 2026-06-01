@@ -45,7 +45,7 @@ describe('SPEC-009D pilot review packet contract', () => {
 
     expect(packet.candidate).toMatchObject({
       state: 'proven',
-      github_repo: 'racecraft-lab/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 52,
       github_pr_number: 52,
       github_synced_at: '2026-05-19T22:10:00.000Z',
@@ -54,7 +54,7 @@ describe('SPEC-009D pilot review packet contract', () => {
     expect(packet.packet_identity).toMatchObject({
       root_task_id: 900,
       artifact_owner_task_id: 901,
-      github_repo: 'racecraft-lab/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 52,
       github_pr_number: 52,
     })

@@ -20,7 +20,7 @@ import type Database from 'better-sqlite3'
 
 const PILOT_FLAG = 'PILOT_MISSION_CONTROL_E2E'
 const SOURCE_TEMPLATE_SLUG = 'mission-control_issue_triage'
-const SOURCE_REPO = 'racecraft-lab/mission-control'
+const SOURCE_REPO = 'racecraft-lab/Paddock'
 const ACTIONABLE_REMEDIATION = 'ACTIONABLE_REMEDIATION'
 const NEEDS_SPEC = 'NEEDS_SPEC'
 const NEEDS_HUMAN = 'NEEDS_HUMAN'
@@ -180,7 +180,7 @@ export function routeTriageDisposition(
     return failure('pilot_flag_disabled', undefined, {
       code: 'pilot_flag_disabled',
       path: PILOT_FLAG,
-      message: 'Mission Control pilot routing is disabled for this workspace.',
+      message: 'Paddock pilot routing is disabled for this workspace.',
     })
   }
 
@@ -197,7 +197,7 @@ export function routeTriageDisposition(
     return failure('unsupported_source_template', source, {
       code: 'unsupported_source_template',
       path: 'task.workflow_template_slug',
-      message: 'Only Mission Control issue triage source tasks can enter SPEC-009F routing.',
+      message: 'Only Paddock issue triage source tasks can enter SPEC-009F routing.',
     })
   }
 
@@ -205,7 +205,7 @@ export function routeTriageDisposition(
     return failure('unsupported_source_repo', source, {
       code: 'unsupported_source_repo',
       path: 'task.github_repo',
-      message: 'Only racecraft-lab/mission-control issue triage tasks can enter SPEC-009F routing.',
+      message: 'Only racecraft-lab/Paddock issue triage tasks can enter SPEC-009F routing.',
     })
   }
 
@@ -627,7 +627,7 @@ function buildNeedsHumanPayload(source: TriageRoutingSource, input: RouteTriageD
     workspace_id: source.workspaceId,
     source_issue: sourceIssue(source),
     triage_rationale: input.rationale ?? 'Issue triage needs owner clarification before routing can continue.',
-    recommended_next_action: 'Owner answers the blocking questions in Mission Control.',
+    recommended_next_action: 'Owner answers the blocking questions in Paddock.',
     proposed_labels: ['mc:triage-routing', 'mc:needs-human'],
     evidence_links: sourceEvidenceLinks(source),
     blocking_questions: [
@@ -657,7 +657,7 @@ function buildNeedsSpecialistPayload(
     source_issue: sourceIssue(source),
     triage_rationale: input.rationale ?? 'Issue triage needs a specialist recommendation.',
     recommended_next_action: resolution.specialist_state === 'recommended'
-      ? 'Owner reviews the specialist recommendation in Mission Control.'
+      ? 'Owner reviews the specialist recommendation in Paddock.'
       : resolution.owner_action,
     proposed_labels: resolution.specialist_state === 'recommended'
       ? ['mc:triage-routing', 'mc:needs-specialist', `area:${resolution.recommended_lane.replace(/-specialist$/, '')}`]
@@ -681,7 +681,7 @@ function buildClosurePayload(source: TriageRoutingSource, input: RouteTriageDisp
     source_issue: sourceIssue(source),
     disposition: input.disposition,
     triage_rationale: input.rationale ?? `Issue triage recommends ${input.disposition} closure handling.`,
-    recommended_next_action: `Owner reviews the ${input.disposition} closure recommendation in Mission Control.`,
+    recommended_next_action: `Owner reviews the ${input.disposition} closure recommendation in Paddock.`,
     proposed_labels: ['mc:triage-routing', `mc:${input.disposition.toLowerCase()}`],
     evidence_links: sourceEvidenceLinks(source),
     ...detail,

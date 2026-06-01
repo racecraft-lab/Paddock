@@ -68,7 +68,7 @@
 
 ### User Story 1 - Inspect Claim Control Eligibility (Priority: P1)
 
-As a Mission Control operator, I need to inspect a GitHub-linked assigned stage and understand whether retry, release, or cancel is currently available before I mutate scheduler state.
+As a Paddock operator, I need to inspect a GitHub-linked assigned stage and understand whether retry, release, or cancel is currently available before I mutate scheduler state.
 
 **Why this priority**: Operators cannot safely intervene in claimed-stage recovery unless the system exposes current eligibility, backoff, last action, and sanitized error state from one authoritative source.
 
@@ -84,7 +84,7 @@ As a Mission Control operator, I need to inspect a GitHub-linked assigned stage 
 
 ### User Story 2 - Retry A Recoverable Stage (Priority: P1)
 
-As a Mission Control operator, I need to explicitly retry a failed, stuck, deferred, or cancelled stage so work can become eligible for a new scheduler attempt after the cause has been addressed.
+As a Paddock operator, I need to explicitly retry a failed, stuck, deferred, or cancelled stage so work can become eligible for a new scheduler attempt after the cause has been addressed.
 
 **Why this priority**: Retry is the primary recovery path for failed or intentionally stopped work. It must be distinct from release and cancel so audit evidence and scheduler behavior remain clear.
 
@@ -100,7 +100,7 @@ As a Mission Control operator, I need to explicitly retry a failed, stuck, defer
 
 ### User Story 3 - Release Or Cancel An Active Claim (Priority: P1)
 
-As a Mission Control operator, I need to release or cancel an active claimed stage without marking the whole task done or failed, so I can unblock ownership or intentionally stop automatic pickup at the stage level.
+As a Paddock operator, I need to release or cancel an active claimed stage without marking the whole task done or failed, so I can unblock ownership or intentionally stop automatic pickup at the stage level.
 
 **Why this priority**: SPEC-013B introduced active claims but not operator recovery controls. Release and cancel must let operators recover ownership state without bypassing tracker truth, task-chain successor rules, or governance.
 

@@ -23,7 +23,7 @@ stop_reason: "user-ended"
 - Add backend retry, release, and cancel authority on top of SPEC-013B active claim/reconciliation state.
 - Keep `SPEC-013C` API-first after discovering that the operator UI is a separate roadmap gap.
 - Split claim-control operator UX into `SPEC-013D` before treating retry/release/cancel as operationally adopted.
-- Preserve existing Mission Control tracker truth, task-chain successor rules, GitHub sync/reconciliation path, and resource governance.
+- Preserve existing Paddock tracker truth, task-chain successor rules, GitHub sync/reconciliation path, and resource governance.
 - Emit bounded, allowlisted audit and debug evidence for every mutation.
 - Give `SPEC-013D` a single read model for action eligibility, backoff, errors, and last operator action.
 
@@ -48,7 +48,7 @@ stop_reason: "user-ended"
 
 **Alternatives offered:**
 - UI first: More usable immediately, but larger UI/browser scope.
-- CLI/script only: Lower product scope, but less visible inside Mission Control.
+- CLI/script only: Lower product scope, but less visible inside Paddock.
 
 **User's answer:** Other: "I would agree with #1 but only if there is not a future spec to implement this UI."
 
@@ -137,7 +137,7 @@ stop_reason: "user-ended"
 
 ---
 
-### Q7. When an operator cancels a claimed stage, what should happen to the Mission Control task?
+### Q7. When an operator cancels a claimed stage, what should happen to the Paddock task?
 
 **Branch:** Cancel semantics
 

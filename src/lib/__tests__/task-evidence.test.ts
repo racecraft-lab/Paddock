@@ -83,7 +83,7 @@ describe('SPEC-009E task evidence helper', () => {
     ])
   })
 
-  it('derives an eligible retained pilot trail from stored Mission Control rows only', () => {
+  it('derives an eligible retained pilot trail from stored Paddock rows only', () => {
     const database = db()
     const taskId = seedEligiblePilotEvidence(database)
 
@@ -94,7 +94,7 @@ describe('SPEC-009E task evidence helper', () => {
       task: {
         state: 'available',
         id: String(taskId),
-        github_repo: 'racecraft-lab/mission-control',
+        github_repo: 'racecraft-lab/Paddock',
         github_issue_number: 50,
         github_pr_number: 51,
       },
@@ -104,14 +104,14 @@ describe('SPEC-009E task evidence helper', () => {
       },
       identity: {
         state: 'available',
-        repository: 'racecraft-lab/mission-control',
+        repository: 'racecraft-lab/Paddock',
         issue: {
           number: 50,
-          url: 'https://github.com/racecraft-lab/mission-control/issues/50',
+          url: 'https://github.com/racecraft-lab/Paddock/issues/50',
         },
         pull_request: {
           number: 51,
-          url: 'https://github.com/racecraft-lab/mission-control/pull/51',
+          url: 'https://github.com/racecraft-lab/Paddock/pull/51',
         },
       },
       packet_artifacts: {
@@ -262,7 +262,7 @@ describe('SPEC-009F task evidence triage routing', () => {
       },
       activity_reference: `activity:${String(seed.activityId)}`,
       idempotency_key: `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_SPEC`,
-      recommended_next_action: 'Review the NEEDS_SPEC recommendation in Mission Control.',
+      recommended_next_action: 'Review the NEEDS_SPEC recommendation in Paddock.',
       proposed_labels: [
         {
           name: 'mc:triage-routing',
@@ -350,7 +350,7 @@ describe('SPEC-009F task evidence triage routing', () => {
       ...seed.payload,
       idempotency_key: idempotencyKey,
       triage_rationale: 'Updated deterministic SPEC-009F fixture rationale.',
-      recommended_next_action: 'Review the newest NEEDS_SPEC route in Mission Control.',
+      recommended_next_action: 'Review the newest NEEDS_SPEC route in Paddock.',
       produced_at: '2026-05-21T14:00:00.000Z',
     }
     const payloadJson = JSON.stringify(nextPayload)
@@ -390,7 +390,7 @@ describe('SPEC-009F task evidence triage routing', () => {
         artifact_id: String(newArtifactId),
       },
       activity_reference: `activity:${String(newActivityId)}`,
-      recommended_next_action: 'Review the newest NEEDS_SPEC route in Mission Control.',
+      recommended_next_action: 'Review the newest NEEDS_SPEC route in Paddock.',
       superseded_artifacts: [
         expect.objectContaining({
           state: 'superseded',
@@ -494,7 +494,7 @@ describe('SPEC-009F task evidence triage routing', () => {
       },
       activity_reference: `activity:${String(seed.activityId)}`,
       idempotency_key: `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_HUMAN`,
-      recommended_next_action: 'Review the NEEDS_HUMAN recommendation in Mission Control.',
+      recommended_next_action: 'Review the NEEDS_HUMAN recommendation in Paddock.',
       proposed_labels: [
         {
           name: 'mc:triage-routing',
@@ -566,7 +566,7 @@ describe('SPEC-009F task evidence triage routing', () => {
       },
       activity_reference: `activity:${String(seed.activityId)}`,
       idempotency_key: `spec-009f.triage_routing.v1:1:${String(seed.taskId)}:NEEDS_SPECIALIST`,
-      recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Mission Control.',
+      recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Paddock.',
       proposed_labels: [
         {
           name: 'mc:triage-routing',
@@ -622,7 +622,7 @@ describe('SPEC-009F task evidence triage routing', () => {
         schema_version: 'spec-009f.triage_routing.v1',
       },
       activity_reference: `activity:${String(seed.activityId)}`,
-      recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Mission Control.',
+      recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Paddock.',
       proposed_labels: [
         {
           name: 'mc:triage-routing',
@@ -640,7 +640,7 @@ describe('SPEC-009F task evidence triage routing', () => {
       lane_detail: {
         specialist_state: 'unassigned',
         missing_metadata: ['project.area_slug', 'project_agent_assignments'],
-        owner_action: 'Assign a specialist owner in Mission Control before dispatch.',
+        owner_action: 'Assign a specialist owner in Paddock before dispatch.',
       },
       missing: [],
       warnings: [],
@@ -663,7 +663,7 @@ describe('SPEC-009F task evidence triage routing', () => {
       disposition: 'DUPLICATE',
       expectedDetail: {
         closure_outcome: 'DUPLICATE',
-        suspected_duplicate_target: 'https://github.com/racecraft-lab/mission-control/issues/42',
+        suspected_duplicate_target: 'https://github.com/racecraft-lab/Paddock/issues/42',
         comparison_rationale: 'The reported behavior matches the retained duplicate target.',
       },
     },
@@ -683,7 +683,7 @@ describe('SPEC-009F task evidence triage routing', () => {
       disposition: 'INVALID',
       expectedDetail: {
         closure_outcome: 'INVALID',
-        invalidity_reason: 'The report lacks a reproducible Mission Control state.',
+        invalidity_reason: 'The report lacks a reproducible Paddock state.',
         validation_evidence: ['Fixture validation did not find the claimed task state.', 'Stored GitHub identity is issue-only.'],
         missing_reproducibility_context: ['Exact workspace scope', 'Observed task id'],
       },
@@ -710,7 +710,7 @@ describe('SPEC-009F task evidence triage routing', () => {
         schema_version: 'spec-009f.triage_routing.v1',
       },
       activity_reference: `activity:${String(seed.activityId)}`,
-      recommended_next_action: `Review the ${disposition} recommendation in Mission Control.`,
+      recommended_next_action: `Review the ${disposition} recommendation in Paddock.`,
       lane_detail: expectedDetail,
       missing: [],
       warnings: [],

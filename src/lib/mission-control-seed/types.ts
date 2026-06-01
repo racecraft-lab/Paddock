@@ -1,9 +1,9 @@
 import type Database from 'better-sqlite3'
 
 export const MISSION_CONTROL_WORKSPACE_SLUG = 'mission-control'
-export const MISSION_CONTROL_WORKSPACE_NAME = 'Mission Control'
+export const MISSION_CONTROL_WORKSPACE_NAME = 'Paddock'
 export const FACILITY_WORKSPACE_SLUG = 'facility'
-export const MISSION_CONTROL_REPO = 'racecraft-lab/mission-control'
+export const MISSION_CONTROL_REPO = 'racecraft-lab/Paddock'
 export const CLEANUP_CHECKLIST_PATH = 'docs/runbooks/mission-control-seed-predeploy.md'
 
 export const REQUIRED_WORKFLOW_SLUGS = [

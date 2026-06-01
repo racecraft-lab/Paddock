@@ -22,7 +22,7 @@
 ## Release Reasons And Terminal States
 
 - [x] CHK008 Is `release_reason` defined as a closed vocabulary for normal handoff, terminal reconciliation, governance release, dispatch failure, task terminal release, and stale recovery? [Clarity, Spec §Clarifications; Data Model §Task Stage Claim; Plan §Implementation Notes > Migration M78]
-- [x] CHK009 Are terminal Mission Control task states enumerated for active-claim release decisions instead of referenced generically? [Clarity, Spec §FR-008; Data Model §Task Stage Claim; Plan §Local Terminal Task Statuses]
+- [x] CHK009 Are terminal Paddock task states enumerated for active-claim release decisions instead of referenced generically? [Clarity, Spec §FR-008; Data Model §Task Stage Claim; Plan §Local Terminal Task Statuses]
 - [x] CHK010 Are linked GitHub issue and PR terminal states defined consistently between prevention and active-claim release requirements? [Consistency, Spec §FR-008]
 - [x] CHK011 Are release evidence fields sufficient to serialize who released the claim, when it was released, why it was released, and which run performed the release? [Completeness, Data Model §Reconciliation Decision]
 
@@ -45,5 +45,5 @@
 ## Notes
 
 - CHK008 closed by adding the persisted `release_reason` vocabulary to the spec clarifications, data model, migration plan, and module contract.
-- CHK009 closed by enumerating `done` and `failed` as the only local terminal Mission Control statuses for claim release and by excluding `awaiting_owner` and `ready_for_owner` as terminal release states.
+- CHK009 closed by enumerating `done` and `failed` as the only local terminal Paddock statuses for claim release and by excluding `awaiting_owner` and `ready_for_owner` as terminal release states.
 - Re-run 2026-05-27: State-management checklist re-evaluated after remediation; no new requirement-writing gaps were found.

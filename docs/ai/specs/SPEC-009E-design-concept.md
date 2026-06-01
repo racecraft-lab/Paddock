@@ -59,7 +59,7 @@ stop_reason: "natural"
 
 **Branch:** Evidence authority
 
-**Recommended answer:** Stored Mission Control evidence only.
+**Recommended answer:** Stored Paddock evidence only.
 > Derive from SPEC-009C eligibility rows, SPEC-009D packet artifacts, task/activity/artifact/governance/review rows, and smoke checklist references. Missing or stale state should be explicit instead of hidden behind a live refresh.
 
 **Alternatives offered:**

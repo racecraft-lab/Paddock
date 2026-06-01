@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://racecraft-lab.github.io/mission-control/schemas/repo-knowledge-index.schema.json",
-  "title": "Mission Control Repo Knowledge Index",
+  "$id": "https://racecraft-lab.github.io/Paddock/schemas/repo-knowledge-index.schema.json",
+  "title": "Paddock Repo Knowledge Index",
   "type": "object",
   "additionalProperties": false,
   "required": ["version", "last_verified", "entries"],

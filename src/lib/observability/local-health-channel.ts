@@ -8,7 +8,7 @@
  *
  * The collector and gateway emit OTel via the standard pipeline
  * (raw_usage_events with `source_id ∈ {native_otel, gateway_otel,
- * cli_stdout_json, ...}`). When the collector is offline, Mission Control
+ * cli_stdout_json, ...}`). When the collector is offline, Paddock
  * still needs a record of agent activity for triage and freshness
  * computation. `emitLocalHealth()` writes to the same `raw_usage_events`
  * table but with `source_id='local-health'` and

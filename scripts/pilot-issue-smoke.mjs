@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-export const PILOT_REPO = 'racecraft-lab/mission-control'
+export const PILOT_REPO = 'racecraft-lab/Paddock'
 export const SYNTHETIC_TITLE = '[mc-pilot] synthetic e2e issue'
 export const SYNTHETIC_LABELS = ['mc:inbox', 'priority:medium', 'area:dev']
 

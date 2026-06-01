@@ -88,13 +88,13 @@
     "eligible_previous_specs": [
       {
         "path": "specs/013a1-github-sync-automation",
-        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/60",
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/60",
         "merge_sha": "41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca",
         "uat": "Operator-confirmed post-merge HITL UAT complete on 2026-05-27 per roadmap."
       },
       {
         "path": "specs/013b-claim-reconciliation",
-        "merge_pr": "https://github.com/racecraft-lab/mission-control/pull/62",
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/62",
         "merge_sha": "5e61d0ffc02f9345b265cd5420660d02bf693016",
         "uat": "HAL deployment and post-merge HITL UAT complete on 2026-05-27 per roadmap."
       }

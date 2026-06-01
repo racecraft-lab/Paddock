@@ -25,12 +25,12 @@ describe('mission-control seed redaction', () => {
 
   it('preserves cleanup-safe operator identifiers', () => {
     const redacted = redactString(
-      'ssh hall has openclaw service openclaw-gateway.service for racecraft-lab/mission-control issue 123 project 14',
+      'ssh hall has openclaw service openclaw-gateway.service for racecraft-lab/Paddock issue 123 project 14',
     )
 
     expect(redacted).toContain('ssh hall')
     expect(redacted).toContain('openclaw-gateway.service')
-    expect(redacted).toContain('racecraft-lab/mission-control')
+    expect(redacted).toContain('racecraft-lab/Paddock')
     expect(redacted).toContain('issue 123')
     expect(redacted).toContain('project 14')
   })

@@ -6,7 +6,7 @@
 -- first per docs/migrations/migration-id-reservations.md (first-to-merge rule).
 --
 -- IMPORTANT — SQLite ALTER TABLE DROP COLUMN caveat:
---   SQLite has supported DROP COLUMN since 3.35 (March 2021). Mission Control's
+--   SQLite has supported DROP COLUMN since 3.35 (March 2021). Paddock's
 --   minimum SQLite version (better-sqlite3 v12) bundles 3.45+, so DROP COLUMN
 --   works in production. However, the operation is NOT instant — for very large
 --   tasks/projects tables, schedule rollback during a maintenance window.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mission Control Station Doctor
+# Paddock Station Doctor
 # Local diagnostics — no auth required, runs on the host.
 #
 # Usage: bash scripts/station-doctor.sh [--port PORT]
@@ -26,7 +26,7 @@ warn() { echo "  [WARN] $1"; ((WARN++)); }
 fail() { echo "  [FAIL] $1"; ((FAIL++)); }
 info() { echo "  [INFO] $1"; }
 
-echo "=== Mission Control Station Doctor ==="
+echo "=== Paddock Station Doctor ==="
 echo ""
 
 # ── 1. Process / Container check ─────────────────────────────────────────────
@@ -49,9 +49,9 @@ fi
 
 if ! $RUNNING_IN_DOCKER; then
   if pgrep -f "node.*server.js" &>/dev/null || pgrep -f "next-server" &>/dev/null; then
-    pass "Mission Control process is running"
+    pass "Paddock process is running"
   else
-    fail "Mission Control process not found"
+    fail "Paddock process not found"
   fi
 fi
 

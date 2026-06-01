@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Mission Control Phase 3: Notification Delivery Daemon
+# Paddock Phase 3: Notification Delivery Daemon
 # Polls undelivered notifications and sends them to agent sessions via OpenClaw
 #
 # Usage:
@@ -40,10 +40,10 @@ log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [$level] $*" | tee -a "$LOG_FILE"
 }
 
-# Check if Mission Control is running
+# Check if Paddock is running
 check_mission_control() {
     if ! curl -s "$MISSION_CONTROL_URL/api/status" > /dev/null 2>&1; then
-        log "ERROR" "Mission Control not accessible at $MISSION_CONTROL_URL"
+        log "ERROR" "Paddock not accessible at $MISSION_CONTROL_URL"
         return 1
     fi
     return 0
@@ -184,7 +184,7 @@ run_daemon() {
     # Main daemon loop
     while true; do
         if ! check_mission_control; then
-            log "WARN" "Mission Control not accessible, sleeping $INTERVAL seconds"
+            log "WARN" "Paddock not accessible, sleeping $INTERVAL seconds"
             sleep "$INTERVAL"
             continue
         fi
@@ -263,7 +263,7 @@ parse_args() {
 # Show help
 show_help() {
     cat << 'EOF'
-Mission Control Notification Delivery Daemon
+Paddock Notification Delivery Daemon
 
 Usage: notification-daemon.sh [options]
 
@@ -297,7 +297,7 @@ Examples:
   ./notification-daemon.sh --stop
 
 Environment variables:
-  MISSION_CONTROL_URL    Mission Control base URL (default: http://localhost:3005)
+  MISSION_CONTROL_URL    Paddock base URL (default: http://localhost:3005)
 
 Log files:
   $LOG_DIR/notification-daemon-YYYY-MM-DD.log
@@ -329,7 +329,7 @@ main() {
         log "INFO" "Starting single notification delivery run"
         
         if ! check_mission_control; then
-            log "ERROR" "Aborting: Mission Control not accessible"
+            log "ERROR" "Aborting: Paddock not accessible"
             exit 1
         fi
         

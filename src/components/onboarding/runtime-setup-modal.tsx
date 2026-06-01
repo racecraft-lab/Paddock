@@ -40,8 +40,8 @@ function OpenCodeSetup({ onClose, onComplete }: { onClose: () => void; onComplet
         </button>
       </div>
       <div className="p-4 rounded-lg border border-border/30 bg-secondary/20 text-sm text-muted-foreground space-y-2">
-        <p>Mission Control reads OpenCode runtime status from the installed <code>opencode</code> CLI and scans session history from <code>~/.local/share/opencode/*.db</code>.</p>
-        <p>Restart OpenCode or create a new OpenCode session if you want Mission Control to pick up fresh session activity immediately.</p>
+        <p>Paddock reads OpenCode runtime status from the installed <code>opencode</code> CLI and scans session history from <code>~/.local/share/opencode/*.db</code>.</p>
+        <p>Restart OpenCode or create a new OpenCode session if you want Paddock to pick up fresh session activity immediately.</p>
       </div>
       <div className="flex justify-end mt-4">
         <Button size="sm" onClick={onComplete}>Done</Button>
@@ -335,7 +335,7 @@ function HermesSetup({ onClose, onComplete }: { onClose: () => void; onComplete:
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold">Set Up Hermes</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Connect Hermes agent to Mission Control</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Connect Hermes agent to Paddock</p>
         </div>
         <button type="button" onClick={onClose} className="text-muted-foreground hover:text-foreground">
           <svg className="w-5 h-5" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
@@ -371,17 +371,17 @@ function HermesSetup({ onClose, onComplete }: { onClose: () => void; onComplete:
       {step === 'hook' && (
         <div className="space-y-4">
           <div className="p-4 rounded-lg border border-border/30 bg-secondary/20 space-y-3">
-            <p className="text-sm font-medium">Install Mission Control Hook</p>
+            <p className="text-sm font-medium">Install Paddock Hook</p>
             <p className="text-xs text-muted-foreground">
               This installs a hook in <code className="text-[11px] bg-black/20 px-1 rounded">~/.hermes/hooks/mission-control/</code> that
-              reports agent activity, session events, and status updates to Mission Control.
+              reports agent activity, session events, and status updates to Paddock.
             </p>
             <div className="text-xs text-muted-foreground/60 space-y-1">
               <p>The hook will:</p>
               <ul className="list-disc list-inside pl-2 space-y-0.5">
                 <li>Register Hermes agents automatically on start</li>
                 <li>Report session lifecycle events</li>
-                <li>Enable task dispatching from Mission Control</li>
+                <li>Enable task dispatching from Paddock</li>
               </ul>
             </div>
           </div>

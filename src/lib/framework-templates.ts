@@ -171,7 +171,7 @@ MC_URL = "http://localhost:3000"
 HEADERS = {"Content-Type": "application/json", "x-api-key": "YOUR_API_KEY"}
 
 def register_crew_agent(agent: Agent):
-    """Register a CrewAI agent with Mission Control."""
+    """Register a CrewAI agent with Paddock."""
     requests.post(f"{MC_URL}/api/adapters", headers=HEADERS, json={
         "framework": "crewai",
         "action": "register",
@@ -187,7 +187,7 @@ def register_crew_agent(agent: Agent):
     })
 
 def report_task_complete(agent_id: str, task_id: str, output: str):
-    """Report task completion to Mission Control."""
+    """Report task completion to Paddock."""
     requests.post(f"{MC_URL}/api/adapters", headers=HEADERS, json={
         "framework": "crewai",
         "action": "report",
@@ -222,7 +222,7 @@ MC_URL = "http://localhost:3000"
 HEADERS = {"Content-Type": "application/json", "x-api-key": "YOUR_API_KEY"}
 
 def register_autogen_agent(agent_name: str, system_message: str):
-    """Register an AutoGen agent with Mission Control."""
+    """Register an AutoGen agent with Paddock."""
     requests.post(f"{MC_URL}/api/adapters", headers=HEADERS, json={
         "framework": "autogen",
         "action": "register",

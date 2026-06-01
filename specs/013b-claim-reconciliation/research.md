@@ -55,7 +55,7 @@
 
 ## Decision: Use closed release reasons and terminal task states
 
-**Rationale**: `release_reason` must be reviewable and queryable without free-form strings. The existing Mission Control task status type defines `done` and `failed` as terminal outcomes for this release boundary; `awaiting_owner` and review states remain non-terminal handoff states. M78 therefore constrains release reasons to `launch_handoff_completed`, `dispatch_failed`, `task_terminal_done`, `task_terminal_failed`, `github_issue_terminal`, `github_pr_terminal`, `governance_blocked`, `governance_deferred`, `stale_claim_recovered`, and `boundary_error_deferred`.
+**Rationale**: `release_reason` must be reviewable and queryable without free-form strings. The existing Paddock task status type defines `done` and `failed` as terminal outcomes for this release boundary; `awaiting_owner` and review states remain non-terminal handoff states. M78 therefore constrains release reasons to `launch_handoff_completed`, `dispatch_failed`, `task_terminal_done`, `task_terminal_failed`, `github_issue_terminal`, `github_pr_terminal`, `governance_blocked`, `governance_deferred`, `stale_claim_recovered`, and `boundary_error_deferred`.
 
 **Alternatives considered**:
 

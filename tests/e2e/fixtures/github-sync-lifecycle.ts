@@ -30,7 +30,7 @@ export function seedGitHubSyncLifecycleForE2E(state: GitHubSyncLifecycleE2EState
     ensureTables(db)
     const now = new Date().toISOString()
     const workspaceId = state.workspaceId ?? 1
-    const githubRepo = state.githubRepo ?? 'racecraft-lab/mission-control'
+    const githubRepo = state.githubRepo ?? 'racecraft-lab/Paddock'
     const projectId = state.projectId ?? 1
     const runId = state.runId ?? 'e2e-github-sync-lifecycle-run'
 

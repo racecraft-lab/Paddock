@@ -21,7 +21,7 @@ stop_reason: "natural"
 ## Goals
 
 - Route every non-remediation Issue Triage outcome into a production-visible lane without entering Issue Remediation.
-- Preserve GitHub as tracker truth while making Mission Control's stored evidence sufficient for operator review.
+- Preserve GitHub as tracker truth while making Paddock's stored evidence sufficient for operator review.
 - Produce recommendation-only next actions in v1, with no automatic close, reject, comment, label, assign, claim, dispatch, SpecKit setup, runner, sandbox, adapter, or auto-merge side effects.
 - Extend the existing task-local Evidence route and section from SPEC-009E instead of creating a separate routing surface.
 - Persist typed, validated lane artifacts through existing disposition, artifact, and activity storage.
@@ -38,7 +38,7 @@ stop_reason: "natural"
 
 ## Design Tree (Q&A log)
 
-### Q1. For SPEC-009F, should non-remediation outcomes create only Mission Control routing/evidence recommendations first, or should any outcome perform live GitHub/task-closing side effects in v1?
+### Q1. For SPEC-009F, should non-remediation outcomes create only Paddock routing/evidence recommendations first, or should any outcome perform live GitHub/task-closing side effects in v1?
 
 **Branch:** Side-effect boundary
 
@@ -83,7 +83,7 @@ stop_reason: "natural"
 
 ---
 
-### Q4. For `NEEDS_SPECIALIST`, should SPEC-009F assign a specialist lane using existing Mission Control agent/project metadata, or leave it as an unassigned recommendation?
+### Q4. For `NEEDS_SPECIALIST`, should SPEC-009F assign a specialist lane using existing Paddock agent/project metadata, or leave it as an unassigned recommendation?
 
 **Branch:** Specialist routing
 
@@ -128,12 +128,12 @@ stop_reason: "natural"
 
 ---
 
-### Q7. Should SPEC-009F require a new feature flag, or should it run under the existing pilot/product-line scope used by the Mission Control workflow family?
+### Q7. Should SPEC-009F require a new feature flag, or should it run under the existing pilot/product-line scope used by the Paddock workflow family?
 
 **Branch:** Rollout scope
 
 **Recommended answer:** Use the existing `PILOT_MISSION_CONTROL_E2E` product-line scope for v1.
-> The behavior is recommendation-only and belongs to the Mission Control workflow family. Avoiding a new flag reduces flag lifecycle overhead unless Clarify proves a separate flag is needed.
+> The behavior is recommendation-only and belongs to the Paddock workflow family. Avoiding a new flag reduces flag lifecycle overhead unless Clarify proves a separate flag is needed.
 
 **Alternatives offered:**
 - Add a dedicated flag such as `FEATURE_PRODUCTION_TRIAGE_ROUTING`.

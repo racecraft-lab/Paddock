@@ -34,7 +34,7 @@ test.describe('CLI Integration', () => {
   test('--help shows usage and exits 0', async () => {
     const { stdout, exitCode } = await mc('--help')
     expect(exitCode).toBe(0)
-    expect(stdout).toContain('Mission Control CLI')
+    expect(stdout).toContain('Paddock CLI')
     expect(stdout).toContain('agents')
     expect(stdout).toContain('tasks')
   })
