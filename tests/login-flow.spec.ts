@@ -39,7 +39,7 @@ test.describe('Login Flow', () => {
   test('login API returns session cookie on success', async ({ request }) => {
     const res = await request.post('/api/auth/login', {
       data: { username: TEST_USER, password: TEST_PASS },
-      headers: { 'x-forwarded-for': '10.88.88.1' }
+      headers: { 'x-real-ip': '10.88.88.1' }
     })
     expect(res.status()).toBe(200)
 
@@ -51,7 +51,7 @@ test.describe('Login Flow', () => {
   test('login API rejects wrong password', async ({ request }) => {
     const res = await request.post('/api/auth/login', {
       data: { username: TEST_USER, password: 'wrongpassword' },
-      headers: { 'x-forwarded-for': '10.77.77.77' }
+      headers: { 'x-real-ip': '10.77.77.77' }
     })
     expect(res.status()).toBe(401)
   })
@@ -60,7 +60,7 @@ test.describe('Login Flow', () => {
     // Login to get a session
     const loginRes = await request.post('/api/auth/login', {
       data: { username: TEST_USER, password: TEST_PASS },
-      headers: { 'x-forwarded-for': '10.88.88.2' }
+      headers: { 'x-real-ip': '10.88.88.2' }
     })
     expect(loginRes.status()).toBe(200)
 
@@ -72,7 +72,7 @@ test.describe('Login Flow', () => {
 
     // Use the same cookie name/value returned by login
     const meRes = await request.get('/api/auth/me', {
-      headers: { 'cookie': sessionCookiePair, 'x-forwarded-for': '10.88.88.2' }
+      headers: { 'cookie': sessionCookiePair, 'x-real-ip': '10.88.88.2' }
     })
     expect(meRes.status()).toBe(200)
 

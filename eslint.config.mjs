@@ -119,6 +119,12 @@ const specStrictFiles = [
   'src/lib/__tests__/task-claim-control-idempotency.test.ts',
   'src/lib/__tests__/task-claim-control.test.ts',
   'src/lib/__tests__/task-claim-control-route.test.ts',
+  // SPEC-013D claim-control operator UX.
+  'src/components/panels/claim-control-copy.ts',
+  'src/components/panels/claim-control-section.tsx',
+  'src/components/panels/claim-control-section.stories.tsx',
+  'src/components/panels/__tests__/claim-control-section.test.tsx',
+  'tests/e2e/spec-013d-claim-control-operator-ux.spec.ts',
   // SPEC-014A sandbox ownership and lifecycle contract.
   'src/lib/agent-sandbox-lifecycle.ts',
   'src/app/api/tasks/[id]/sandbox-lifecycles/route.ts',

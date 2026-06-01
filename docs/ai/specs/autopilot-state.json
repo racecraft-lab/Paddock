@@ -1,35 +1,41 @@
 {
-  "workflow_file": "docs/ai/specs/SPEC-014A-workflow.md",
-  "updated_at": "2026-05-29T22:05:00-05:00",
+  "workflow_file": "docs/ai/specs/SPEC-013D-workflow.md",
+  "updated_at": "2026-05-31T20:26:54Z",
   "active_step": "Complete",
-  "current_spec_dir": "specs/014a-sandbox-lifecycle-contract",
-  "branch": "014a-sandbox-lifecycle-contract",
+  "current_spec_dir": "specs/013d-claim-control-operator-ux",
+  "branch": "013d-claim-control-operator-ux",
   "plan": [
     { "step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed" },
     { "step": "Phase 0: Prerequisites", "status": "completed" },
     { "step": "Phase 1: Specify", "status": "completed" },
-    { "step": "Phase 2: Clarify - Schema and Read Model", "status": "completed" },
-    { "step": "Phase 2: Clarify - Schema and Read Model Consensus", "status": "completed" },
-    { "step": "Phase 2: Clarify - Path Safety and Metadata Safety", "status": "completed" },
-    { "step": "Phase 2: Clarify - Path Safety and Metadata Safety Consensus", "status": "completed" },
-    { "step": "Phase 2: Clarify - Lifecycle and Cleanup", "status": "completed" },
-    { "step": "Phase 2: Clarify - Lifecycle and Cleanup Consensus", "status": "completed" },
-    { "step": "Phase 2: Clarify - Flag, API, and Scope Deferrals", "status": "completed" },
-    { "step": "Phase 2: Clarify - Flag, API, and Scope Deferrals Consensus", "status": "completed" },
+    { "step": "Phase 2: Clarify - UX, Copy, and Interaction States", "status": "completed" },
+    { "step": "Phase 2: Clarify - UX, Copy, and Interaction States Consensus", "status": "completed" },
+    { "step": "Phase 2: Clarify - Route Contracts and State Refresh", "status": "completed" },
+    { "step": "Phase 2: Clarify - Route Contracts and State Refresh Consensus", "status": "completed" },
+    { "step": "Phase 2: Clarify - Fixtures, Accessibility, and Visual Evidence", "status": "completed" },
+    { "step": "Phase 2: Clarify - Fixtures, Accessibility, and Visual Evidence Consensus", "status": "completed" },
     { "step": "Phase 3: Plan", "status": "completed" },
-    { "step": "Phase 4: Checklist - Data Integrity", "status": "completed" },
-    { "step": "Phase 4: Checklist - Data Integrity Consensus", "status": "completed" },
-    { "step": "Phase 4: Checklist - Security", "status": "completed" },
-    { "step": "Phase 4: Checklist - Security Consensus", "status": "completed" },
-    { "step": "Phase 4: Checklist - API Contracts", "status": "completed" },
-    { "step": "Phase 4: Checklist - API Contracts Consensus", "status": "completed" },
-    { "step": "Phase 4: Checklist - Error Handling", "status": "completed" },
-    { "step": "Phase 4: Checklist - Error Handling Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - ux", "status": "completed" },
+    { "step": "Phase 4: Checklist - ux Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - accessibility", "status": "completed" },
+    { "step": "Phase 4: Checklist - accessibility Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - api-contracts", "status": "completed" },
+    { "step": "Phase 4: Checklist - api-contracts Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - state-management", "status": "completed" },
+    { "step": "Phase 4: Checklist - state-management Consensus", "status": "completed" },
+    { "step": "Phase 4: Checklist - error-handling", "status": "completed" },
+    { "step": "Phase 4: Checklist - error-handling Consensus", "status": "completed" },
     { "step": "Phase 5: Tasks", "status": "completed" },
     { "step": "Phase 6: Analyze", "status": "completed" },
     { "step": "Phase 6: Analyze - Consensus", "status": "completed" },
     { "step": "Phase 6.5: Confidence Gate", "status": "completed" },
-    { "step": "Phase 7: Implement - Execute 58 generated tasks", "status": "completed" },
+    { "step": "Phase 7: Implement Setup/Foundation (T001-T010)", "status": "completed" },
+    { "step": "Phase 7: Implement US1 Inspect Claim-Control State (T011-T022)", "status": "completed" },
+    { "step": "Phase 7: Implement US2 Submit Eligible Actions (T023-T036)", "status": "completed" },
+    { "step": "Phase 7: Implement US3 Backoff Override (T037-T044)", "status": "completed" },
+    { "step": "Phase 7: Implement US4 Read-Only Access (T045-T050)", "status": "completed" },
+    { "step": "Phase 7: Implement US5 Visual Evidence (T051-T063)", "status": "completed" },
+    { "step": "Phase 7: Implement Polish/Verification (T064-T072)", "status": "completed" },
     { "step": "Post: Doctor Extension Check", "status": "completed" },
     { "step": "Post: Verify Implementation", "status": "completed" },
     { "step": "Post: Verify Tasks Phantom Check", "status": "completed" },
@@ -41,16 +47,20 @@
     { "step": "Post: PR Body Generation", "status": "completed" },
     { "step": "Post: PR Creation", "status": "completed" },
     { "step": "Post: Review Remediation", "status": "completed" },
-    { "step": "Post: Retrospective", "status": "completed" },
-    { "step": "Post-Merge: HAL target deployment and UAT closeout", "status": "completed" }
+    { "step": "Post: Retrospective", "status": "completed" }
   ],
   "preflight": {
     "status": "passed",
-    "checked_at": "2026-05-28T13:28:17-05:00",
-    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/0466/racecraft-mission-control/.worktrees/014a-sandbox-lifecycle-contract",
+    "checked_at": "2026-05-30T13:45:11Z",
+    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/38b5/racecraft-mission-control/.worktrees/013d-claim-control-operator-ux",
+    "model_policy": {
+      "required_parent_model": "highest available Codex tier, prefer gpt-5.5",
+      "parent_session_note": "Parent session has spawn_agent access and continued as main orchestrator; runtime does not expose direct self-introspection for parent model name.",
+      "custom_agents": "Required SpecKit Pro custom agents installed in /Users/fredrickgabelmann/.codex/agents with model gpt-5.5 and model_reasoning_effort xhigh; autopilot-fast-helper installed on gpt-5.3-codex-spark."
+    },
     "prerequisites": {
       "all_pass": true,
-      "branch": "014a-sandbox-lifecycle-contract",
+      "branch": "013d-claim-control-operator-ux",
       "is_worktree": true,
       "on_feature_branch": true,
       "speckit_cli": "specify 0.8.16",
@@ -59,32 +69,40 @@
     },
     "confidence_gate_mode": "advisory",
     "project_commands": {
-      "BUILD": "pnpm build",
-      "TYPECHECK": "pnpm typecheck",
-      "LINT": "pnpm lint",
+      "BUILD": "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build",
+      "TYPECHECK": "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck",
+      "LINT": "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint",
       "LINT_FIX": "N/A",
-      "UNIT_TEST": "pnpm test",
-      "INTEGRATION_TEST": "pnpm test:e2e",
-      "SINGLE_FILE_TEST": "pnpm test",
+      "UNIT_TEST": "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test",
+      "INTEGRATION_TEST": "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e",
+      "SINGLE_FILE_TEST": "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test",
       "SINGLE_FILE_INTEGRATION": "N/A",
-      "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
+      "FULL_VERIFY": "PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm build && PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck && PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint && PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test && PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test:e2e"
+    },
+    "baseline_checks": {
+      "node_runtime": "v22.22.2 via /Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin",
+      "install": "passed after rerun under Node 22; initial Node 26 install failed to build better-sqlite3",
+      "typecheck": "passed",
+      "lint": "passed",
+      "unit_test": "passed on full rerun: 311 files passed, 33 skipped; 3225 tests passed, 3 skipped, 84 todo",
+      "unit_test_note": "First full run had one order-sensitive failure in task-chain-advancement.routing.test.ts; the targeted test passed and the full rerun passed.",
+      "build": "passed outside sandbox after a sandboxed Turbopack port-bind panic",
+      "knowledge_index_check": "passed with 0 warnings",
+      "reviewability_setup_gate": "passed as transition exception: status exception, reviewable_loc 8, production_files 25, primary_surface_count 7"
     },
     "presets": {
       "reviewability_preset": "speckit-pro-reviewability",
       "ask_questions_preset": "codex-ask-questions",
-      "templates": "spec-template, plan-template, and tasks-template resolve to .specify/presets/speckit-pro-reviewability/templates/"
+      "templates": "spec, plan, and tasks templates resolve to .specify/presets/speckit-pro-reviewability/templates/"
     }
   },
   "archive_sweep": {
     "status": "completed",
-    "mode": "dry-run",
-    "checked_at": "2026-05-28T00:00:00-05:00",
-    "current_target": "specs/014a-sandbox-lifecycle-contract",
-    "active_specs_discovered": [
-      "specs/013a1-github-sync-automation",
-      "specs/013b-claim-reconciliation"
-    ],
-    "excluded_current_spec": "specs/014a-sandbox-lifecycle-contract",
+    "mode": "sweep",
+    "checked_at": "2026-05-30T13:35:14Z",
+    "archive_extension_installed": true,
+    "current_target": "specs/013d-claim-control-operator-ux",
+    "excluded_current_spec": "specs/013d-claim-control-operator-ux",
     "eligible_previous_specs": [
       {
         "path": "specs/013a1-github-sync-automation",
@@ -96,14 +114,30 @@
         "path": "specs/013b-claim-reconciliation",
         "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/62",
         "merge_sha": "5e61d0ffc02f9345b265cd5420660d02bf693016",
-        "uat": "HAL deployment and post-merge HITL UAT complete on 2026-05-27 per roadmap."
+        "uat": "HAL deployment and post-merge HITL UAT complete on 2026-05-27 per roadmap.",
+        "closeout_sha": "7fb459f1c5d0881f3014875d373b627b41b66bf4"
+      },
+      {
+        "path": "specs/013c-retry-debug-surfaces",
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/63",
+        "merge_sha": "42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89",
+        "closeout_sha": "447502b64609ee9047843fc6d504658ac2472888"
+      },
+      {
+        "path": "specs/014a-sandbox-lifecycle-contract",
+        "merge_pr": "https://github.com/racecraft-lab/Paddock/pull/64",
+        "merge_sha": "c01d9e44ec826d94fa5916284c51453e5ec339ee",
+        "closeout_sha": "447502b64609ee9047843fc6d504658ac2472888"
       }
     ],
     "safeToApplyCleanup": false,
+    "dryRunProvenanceOnly": true,
     "cleanup_blockers": [
-      "Current branch is a feature branch, not a safe base branch for active spec cleanup.",
-      "Dry-run did not apply archival edits or remove source spec folders."
+      "--apply-cleanup was not supplied",
+      "Current branch is 013d-claim-control-operator-ux, not safe cleanup base branch main",
+      "Worktree is dirty because docs/ai/specs/autopilot-state.json is being updated for SPEC-013D",
+      "Archive success is not recorded for the eligible previous specs in this run or changelog"
     ],
-    "notes": "Archive extension is installed. SPEC-014A is excluded as the current target even though the feature directory will be created by Phase 1."
+    "files_changed_by_sweep": []
   }
 }

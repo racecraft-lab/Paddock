@@ -203,5 +203,5 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/013c-retry-debug-surfaces/plan.md`.
+`specs/013d-claim-control-operator-ux/plan.md`.
 <!-- SPECKIT END -->
