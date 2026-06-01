@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26755865162",
+      "runAttempt": "1",
+      "runKey": "26755865162-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26755865162",
+      "reportKey": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/29958bdd8b23b642517aeca0fe89ed7e1745e067/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=26755865162-attempt-1",
+      "headSha": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/rename-paddock",
+        "headSha": "e79f4402bdb9e49ef7cdbc6399d787a5dd8aa064",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/66/",
+        "mergeCommitSha": "",
+        "number": "66",
+        "title": "chore: rename project to Paddock",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/66"
+      },
+      "createdAt": "2026-06-01T12:50:49.688Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26671580494",
       "runAttempt": "1",
@@ -930,5 +957,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-05-30T02:15:03.024Z"
+  "updatedAt": "2026-06-01T12:50:49.688Z"
 }
