@@ -1,0 +1,115 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "run",
+  "surface": "playwright",
+  "surfaceLabel": "Playwright UI E2E",
+  "workflowName": "Paddock UI E2E",
+  "workflowFile": "mission-control-ui-e2e.yml",
+  "prNumber": "66",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/66",
+  "runId": "26735513260",
+  "runAttempt": "1",
+  "runKey": "26735513260-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26735513260",
+  "headRef": "codex/rename-paddock",
+  "baseRef": "main",
+  "headSha": "e79f4402bdb9e49ef7cdbc6399d787a5dd8aa064",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/66/runs/26735513260-attempt-1/playwright/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/66/playwright/latest/?v=26735513260-attempt-1",
+  "createdAt": "2026-06-01T04:49:11.575Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 9,
+    "open": 9,
+    "passed": 0,
+    "total": 9
+  },
+  "reviewScope": {
+    "domains": [
+      "ready-for-owner",
+      "spec-007"
+    ],
+    "filtered": 143
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "66",
+    "surface": "playwright",
+    "surfaceLabel": "Playwright UI E2E",
+    "headSha": "e79f4402bdb9e49ef7cdbc6399d787a5dd8aa064",
+    "runKey": "26735513260-attempt-1",
+    "items": [
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/focused-ready-for-owner-card.png",
+        "itemId": "ready-for-owner/focused-ready-for-owner-card.png",
+        "snapshot": "ready-for-owner/focused-ready-for-owner-card.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/kanban-lane-order.png",
+        "itemId": "ready-for-owner/kanban-lane-order.png",
+        "snapshot": "ready-for-owner/kanban-lane-order.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/notification-action-required.png",
+        "itemId": "ready-for-owner/notification-action-required.png",
+        "snapshot": "ready-for-owner/notification-action-required.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/artifact-admin-mixed-state.png",
+        "itemId": "spec-007/artifact-admin-mixed-state.png",
+        "snapshot": "spec-007/artifact-admin-mixed-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/artifact-admin-preview.png",
+        "itemId": "spec-007/artifact-admin-preview.png",
+        "snapshot": "spec-007/artifact-admin-preview.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/artifact-admin-quarantine-action.png",
+        "itemId": "spec-007/artifact-admin-quarantine-action.png",
+        "snapshot": "spec-007/artifact-admin-quarantine-action.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/audit-dispositions-loaded.png",
+        "itemId": "spec-007/audit-dispositions-loaded.png",
+        "snapshot": "spec-007/audit-dispositions-loaded.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/audit-dispositions-validation-filter.png",
+        "itemId": "spec-007/audit-dispositions-validation-filter.png",
+        "snapshot": "spec-007/audit-dispositions-validation-filter.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-007",
+        "id": "new-spec-007/dashboard-rollup-widget.png",
+        "itemId": "spec-007/dashboard-rollup-widget.png",
+        "snapshot": "spec-007/dashboard-rollup-widget.png",
+        "variant": "new"
+      }
+    ]
+  }
+}
