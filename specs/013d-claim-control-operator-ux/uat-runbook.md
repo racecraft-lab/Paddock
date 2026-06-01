@@ -28,27 +28,27 @@ Run these from the repository root before walking the acceptance tests.
 <a id="us-1"></a>
 ### User Story 1 - Inspect Claim-Control State (Priority: P1)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-2"></a>
 ### User Story 2 - Confirm And Submit Eligible Actions (Priority: P2)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-3"></a>
 ### User Story 3 - Override Retry Backoff With Reason (Priority: P3)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-4"></a>
 ### User Story 4 - Understand Read-Only Access (Priority: P4)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-5"></a>
 ### User Story 5 - Review Stable Visual States (Priority: P5)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 
 
@@ -77,6 +77,20 @@ Run these from the repository root before walking the acceptance tests.
 - The backend returns sanitized error categories without raw request, diagnostics, prompt, transcript, provider, token, auth header, or GitHub body content.
 - Refresh after mutation succeeds for some task-detail surfaces before others.
 
+## Manual UAT Evidence
+
+**Completed**: 2026-05-31 CDT
+
+Manual UAT was performed through the browser against a disposable local runtime at `http://127.0.0.1:3005` with SPEC-013D fixture tasks seeded by `scripts/seed-e2e-spec-013d.cjs`.
+
+- US1 state inspection: opened the active claim-control task and confirmed the Claim Control region showed `assigned_dispatch`, active-claim retry eligibility, no active backoff, and enabled `Retry stage`, `Release claim`, and `Cancel stage` actions.
+- US2 operator mutations: submitted `Retry stage`, `Release claim`, and `Cancel stage` through the confirmation UI. Receipts showed `Retry requested`, `Claim released`, and `Attempt cancelled`, with refreshed availability after each mutation.
+- US3 backoff override: opened the backoff fixture, confirmed standard retry was blocked by active backoff, submitted `Override backoff` with a reason, and observed the `Retry requested` receipt with backoff cleared.
+- Negative stale-state path: opened the stale fixture, started a retry confirmation, performed a concurrent session-backed release, then submitted the stale confirmation. The UI showed `State changed before submit` and sanitized error text `Expected state is stale`.
+- Negative feature-flag path: disabled `FEATURE_TASK_CONTROL_PLANE` in the disposable workspace, opened the flag-off fixture, and confirmed retry/release/cancel were disabled with `feature_flag_off`; the flag was restored afterward.
+- Read-only access: temporarily set the disposable `testadmin` session user role to `viewer`, opened the viewer fixture, and confirmed `viewer read-only` authorization plus `insufficient_role` disabled reasons; the user role was restored to `admin`.
+- Redaction check: observed Claim Control regions did not expose `idempotency-key`, auth headers, bearer tokens, raw request bodies, or GitHub body content during the manual pass.
+
 ## Self-Review Findings
 
 **Completed**: 2026-05-31
@@ -90,9 +104,9 @@ Run these from the repository root before walking the acceptance tests.
 
 Advisory only — these checkboxes block nothing.
 
-- [ ] Reviewer walked every Per-Story Acceptance Test above.
-- [ ] Reviewer confirmed the Negative-Path Tests behave as described.
-- [ ] Reviewer is satisfied the PR delivers the behavior the spec promised.
+- [x] Reviewer walked every Per-Story Acceptance Test above.
+- [x] Reviewer confirmed the Negative-Path Tests behave as described.
+- [x] Reviewer is satisfied the PR delivers the behavior the spec promised.
 
 ## Rollback
 
