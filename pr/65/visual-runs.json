@@ -2,10 +2,26 @@
   "version": 1,
   "prNumber": "65",
   "prTitle": "SPEC-013D claim-control operator UX",
-  "prUrl": "https://github.com/racecraft-lab/mission-control/pull/65",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/65",
   "headRef": "013d-claim-control-operator-ux",
   "baseRef": "main",
   "reports": [
+    {
+      "surface": "storybook",
+      "runId": "26756495222",
+      "runAttempt": "1",
+      "runKey": "26756495222-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26756495222",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/65/runs/26756495222-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/65/storybook/latest/?v=26756495222-attempt-1",
+      "headSha": "8521851b608758567dff0673a0960169370dc5f3",
+      "headRef": "013d-claim-control-operator-ux",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-01T13:03:35.287Z"
+    },
     {
       "surface": "playwright",
       "runId": "26731615378",
@@ -119,5 +135,5 @@
       "createdAt": "2026-05-31T20:25:37.551Z"
     }
   ],
-  "updatedAt": "2026-06-01T02:22:14.300Z"
+  "updatedAt": "2026-06-01T13:03:35.287Z"
 }

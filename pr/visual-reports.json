@@ -1,7 +1,32 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-01T04:49:11.575Z",
+  "updatedAt": "2026-06-01T13:03:35.287Z",
   "prs": [
+    {
+      "prNumber": "65",
+      "prTitle": "SPEC-013D claim-control operator UX",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/65",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/65/",
+      "headRef": "013d-claim-control-operator-ux",
+      "baseRef": "main",
+      "updatedAt": "2026-06-01T13:03:35.287Z",
+      "latest": {
+        "storybook": {
+          "runId": "26756495222",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26756495222",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/65/storybook/latest/?v=26756495222-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/65/runs/26756495222-attempt-1/storybook/",
+          "updatedAt": "2026-06-01T13:03:35.287Z"
+        },
+        "playwright": {
+          "runId": "26731615378",
+          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26731615378",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/65/playwright/latest/?v=26731615378-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/runs/26731615378-attempt-1/playwright/",
+          "updatedAt": "2026-06-01T02:22:14.300Z"
+        }
+      }
+    },
     {
       "prNumber": "66",
       "prTitle": "chore: rename project to Paddock",
@@ -24,31 +49,6 @@
           "latestHref": "https://racecraft-lab.github.io/Paddock/pr/66/storybook/latest/?v=26735513223-attempt-1",
           "reportHref": "https://racecraft-lab.github.io/Paddock/pr/66/runs/26735513223-attempt-1/storybook/",
           "updatedAt": "2026-06-01T04:43:41.206Z"
-        }
-      }
-    },
-    {
-      "prNumber": "65",
-      "prTitle": "SPEC-013D claim-control operator UX",
-      "prUrl": "https://github.com/racecraft-lab/mission-control/pull/65",
-      "indexHref": "https://racecraft-lab.github.io/mission-control/pr/65/",
-      "headRef": "013d-claim-control-operator-ux",
-      "baseRef": "main",
-      "updatedAt": "2026-06-01T02:22:14.300Z",
-      "latest": {
-        "playwright": {
-          "runId": "26731615378",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26731615378",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/65/playwright/latest/?v=26731615378-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/runs/26731615378-attempt-1/playwright/",
-          "updatedAt": "2026-06-01T02:22:14.300Z"
-        },
-        "storybook": {
-          "runId": "26731615406",
-          "runUrl": "https://github.com/racecraft-lab/mission-control/actions/runs/26731615406",
-          "latestHref": "https://racecraft-lab.github.io/mission-control/pr/65/storybook/latest/?v=26731615406-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/mission-control/pr/65/runs/26731615406-attempt-1/storybook/",
-          "updatedAt": "2026-06-01T02:17:03.989Z"
         }
       }
     },
