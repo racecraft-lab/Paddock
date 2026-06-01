@@ -8,6 +8,22 @@
   "reports": [
     {
       "surface": "storybook",
+      "runId": "26735062285",
+      "runAttempt": "1",
+      "runKey": "26735062285-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26735062285",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/66/runs/26735062285-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/66/storybook/latest/?v=26735062285-attempt-1",
+      "headSha": "2b1ea161a157d8251d46fd8512a53e94392d0d7d",
+      "headRef": "codex/rename-paddock",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-01T04:28:04.903Z"
+    },
+    {
+      "surface": "storybook",
       "runId": "26732240928",
       "runAttempt": "1",
       "runKey": "26732240928-attempt-1",
@@ -23,5 +39,5 @@
       "createdAt": "2026-06-01T02:41:18.173Z"
     }
   ],
-  "updatedAt": "2026-06-01T02:41:18.173Z"
+  "updatedAt": "2026-06-01T04:28:04.903Z"
 }
