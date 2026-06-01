@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/Paddock",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "playwright",
   "surfaceLabel": "Playwright UI E2E",
   "workflowName": "Paddock UI E2E",
@@ -17,7 +17,7 @@
   "headRef": "013d-claim-control-operator-ux",
   "baseRef": "main",
   "headSha": "8521851b608758567dff0673a0960169370dc5f3",
-  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/65/playwright/latest/",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/65/runs/26756495149-attempt-1/playwright/",
   "latestHref": "https://racecraft-lab.github.io/Paddock/pr/65/playwright/latest/?v=26756495149-attempt-1",
   "createdAt": "2026-06-01T13:08:33.793Z",
   "itemCounts": {
