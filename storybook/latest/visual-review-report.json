@@ -8,47 +8,47 @@
   "surfaceLabel": "Storybook Components",
   "workflowName": "Visual Storybook Snapshots",
   "workflowFile": "visual-storybook.yml",
-  "prNumber": "66",
-  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/66",
-  "runId": "26755865162",
+  "prNumber": "65",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/65",
+  "runId": "26761190550",
   "runAttempt": "1",
-  "runKey": "26755865162-attempt-1",
-  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26755865162",
+  "runKey": "26761190550-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26761190550",
   "headRef": "main",
   "baseRef": "main",
-  "headSha": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
+  "headSha": "50bf05e573f15b5aab5e53367444bef1d0b7baaf",
   "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/",
-  "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=26755865162-attempt-1",
-  "createdAt": "2026-06-01T12:50:49.688Z",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=26761190550-attempt-1",
+  "createdAt": "2026-06-01T14:29:49.726Z",
   "itemCounts": {
     "baselineApproved": 0,
     "changed": 0,
     "deleted": 0,
-    "new": 153,
-    "open": 153,
+    "new": 162,
+    "open": 162,
     "passed": 0,
-    "total": 153
+    "total": 162
   },
   "reviewScope": null,
   "sourcePullRequest": {
     "baseRef": "main",
-    "headRef": "codex/rename-paddock",
-    "headSha": "e79f4402bdb9e49ef7cdbc6399d787a5dd8aa064",
-    "indexHref": "https://racecraft-lab.github.io/Paddock/pr/66/",
+    "headRef": "013d-claim-control-operator-ux",
+    "headSha": "8521851b608758567dff0673a0960169370dc5f3",
+    "indexHref": "https://racecraft-lab.github.io/Paddock/pr/65/",
     "mergeCommitSha": "",
-    "number": "66",
-    "title": "chore: rename project to Paddock",
-    "url": "https://github.com/racecraft-lab/Paddock/pull/66"
+    "number": "65",
+    "title": "SPEC-013D claim-control operator UX",
+    "url": "https://github.com/racecraft-lab/Paddock/pull/65"
   },
   "initialReviewState": null,
   "canonicalReviewState": {
     "schema": "visual-review-pages.visual-review-state.v1",
     "repository": "racecraft-lab/Paddock",
-    "prNumber": "66",
+    "prNumber": "65",
     "surface": "storybook",
     "surfaceLabel": "Storybook Components",
-    "headSha": "29958bdd8b23b642517aeca0fe89ed7e1745e067",
-    "runKey": "26755865162-attempt-1",
+    "headSha": "50bf05e573f15b5aab5e53367444bef1d0b7baaf",
+    "runKey": "26761190550-attempt-1",
     "items": [
       {
         "group": "spec-008",
@@ -1098,6 +1098,69 @@
         "id": "new-spec-007-disposition-artifacts-ux--dashboard-rollup-widget.png",
         "itemId": "spec-007-disposition-artifacts-ux--dashboard-rollup-widget.png",
         "snapshot": "spec-007-disposition-artifacts-ux--dashboard-rollup-widget.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--active-operator.png",
+        "itemId": "spec-013d-claim-control-section--active-operator.png",
+        "snapshot": "spec-013d-claim-control-section--active-operator.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--backoff-override.png",
+        "itemId": "spec-013d-claim-control-section--backoff-override.png",
+        "snapshot": "spec-013d-claim-control-section--backoff-override.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--confirmation.png",
+        "itemId": "spec-013d-claim-control-section--confirmation.png",
+        "snapshot": "spec-013d-claim-control-section--confirmation.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--disabled-reasons.png",
+        "itemId": "spec-013d-claim-control-section--disabled-reasons.png",
+        "snapshot": "spec-013d-claim-control-section--disabled-reasons.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--error-state.png",
+        "itemId": "spec-013d-claim-control-section--error-state.png",
+        "snapshot": "spec-013d-claim-control-section--error-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--flag-off.png",
+        "itemId": "spec-013d-claim-control-section--flag-off.png",
+        "snapshot": "spec-013d-claim-control-section--flag-off.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--loading.png",
+        "itemId": "spec-013d-claim-control-section--loading.png",
+        "snapshot": "spec-013d-claim-control-section--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--receipt-conflict.png",
+        "itemId": "spec-013d-claim-control-section--receipt-conflict.png",
+        "snapshot": "spec-013d-claim-control-section--receipt-conflict.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--viewer-read-only.png",
+        "itemId": "spec-013d-claim-control-section--viewer-read-only.png",
+        "snapshot": "spec-013d-claim-control-section--viewer-read-only.png",
         "variant": "new"
       },
       {
