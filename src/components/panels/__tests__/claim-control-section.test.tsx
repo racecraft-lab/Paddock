@@ -441,6 +441,7 @@ describe('ClaimControlSection', () => {
   it('emits retry, release, cancel, and backoff override drafts without direct route calls', () => {
     const retry = renderSection()
     fireEvent.click(screen.getByRole('button', { name: 'Retry stage' }))
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: /confirm retry stage/i }))
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
     expect(retry.onSubmit).toHaveBeenCalledWith(expect.objectContaining({ action: 'retry', expected: EXPECTED_STATE }))
 
@@ -455,6 +456,7 @@ describe('ClaimControlSection', () => {
   it('requires cancel and override reasons before submit', () => {
     const cancel = renderSection()
     fireEvent.click(screen.getByRole('button', { name: 'Cancel stage' }))
+    expect(document.activeElement).toBe(screen.getByLabelText(/cancel reason required/i))
     expectElementText(screen.getByRole('alert'), /cancel reason is required/i)
     expectButtonDisabled(screen.getByRole('button', { name: 'Submit' }))
     fireEvent.change(screen.getByLabelText(/cancel reason required/i), { target: { value: 'operator cancelled stuck attempt' } })
@@ -484,6 +486,7 @@ describe('ClaimControlSection', () => {
     })
     expectButtonDisabled(screen.getByRole('button', { name: 'Retry stage' }))
     fireEvent.click(screen.getByRole('button', { name: 'Override backoff' }))
+    expect(document.activeElement).toBe(screen.getByLabelText(/override reason required/i))
     expectElementText(screen.getByRole('alert'), /override reason is required/i)
     fireEvent.change(screen.getByLabelText(/override reason required/i), { target: { value: 'incident owner approved override' } })
     fireEvent.click(screen.getByRole('button', { name: 'Submit' }))

@@ -135,7 +135,11 @@ export const BackoffOverride: Story = {
     readModel: model({
       claim_control: control({
         available_actions: [
-          action('retry', false, 'retry backoff active'),
+          {
+            ...action('retry', false, 'retry backoff active'),
+            requires_override_reason: true,
+            backoff_policy: 'respect_backoff',
+          },
           action('release'),
           action('cancel'),
         ],

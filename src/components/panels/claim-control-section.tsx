@@ -61,7 +61,9 @@ export function ClaimControlSection({
   const [confirmation, setConfirmation] = useState<ConfirmationState | null>(null)
   const [reason, setReason] = useState('')
   const [overrideReason, setOverrideReason] = useState('')
-  const confirmationRef = useRef<HTMLDivElement | null>(null)
+  const confirmationHeadingRef = useRef<HTMLHeadingElement | null>(null)
+  const reasonInputRef = useRef<HTMLTextAreaElement | null>(null)
+  const overrideReasonInputRef = useRef<HTMLTextAreaElement | null>(null)
   const receiptRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -71,9 +73,16 @@ export function ClaimControlSection({
   }, [readModel?.task?.id, readModel?.claim_control?.expected_state.operator_action_activity_id])
 
   useEffect(() => {
-    if (confirmation) {
-      confirmationRef.current?.focus()
+    if (!confirmation) return
+    if (confirmation.action === 'cancel') {
+      reasonInputRef.current?.focus()
+      return
     }
+    if (confirmation.mode === 'override_backoff') {
+      overrideReasonInputRef.current?.focus()
+      return
+    }
+    confirmationHeadingRef.current?.focus()
   }, [confirmation])
 
   useEffect(() => {
@@ -247,11 +256,9 @@ export function ClaimControlSection({
 
       {confirmation && confirmationDescriptor && (
         <div
-          ref={confirmationRef}
-          tabIndex={-1}
           className="rounded-md border border-primary/30 bg-primary/10 px-3 py-3 text-xs outline-none"
         >
-          <h5 className="text-sm font-medium text-foreground">
+          <h5 ref={confirmationHeadingRef} tabIndex={-1} className="text-sm font-medium text-foreground outline-none">
             Confirm {confirmation.mode === 'override_backoff' ? 'backoff override' : actionLabel(confirmation.action).toLowerCase()}
           </h5>
           <p className="mt-1 break-words text-muted-foreground">
@@ -264,6 +271,7 @@ export function ClaimControlSection({
                 {confirmation.action === 'release' ? 'Reason' : 'Cancel reason required'}
               </span>
               <textarea
+                ref={reasonInputRef}
                 value={reason}
                 onChange={(event) => {
                   setReason(event.target.value)
@@ -280,6 +288,7 @@ export function ClaimControlSection({
             <label className="mt-3 block">
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground/70">Override reason required</span>
               <textarea
+                ref={overrideReasonInputRef}
                 value={overrideReason}
                 onChange={(event) => {
                   setOverrideReason(event.target.value)
