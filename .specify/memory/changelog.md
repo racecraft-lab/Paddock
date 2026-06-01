@@ -516,3 +516,29 @@ git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/spe
 git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/plan.md
 git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/tasks.md
 ```
+
+---
+
+## SPEC-013D: Claim-Control Operator UX
+
+- **Feature**: RC Factory Phase 11D — task-detail claim-control operator UX
+- **Branch**: `013d-claim-control-operator-ux`
+- **Spec Path**: `specs/013d-claim-control-operator-ux/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/65
+- **Merge Commit**: `50bf05e573f15b5aab5e53367444bef1d0b7baaf`
+- **Tree Reference**: `git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/spec.md`
+- **CI URL**: N/A (workflow records quality gate, Docker-backed Playwright, Storybook/Playwright visual review, and PR review remediation evidence)
+- **Argos URL**: N/A (visual review used PR Pages Storybook/Playwright reports and approval gates)
+- **Metadata Gates**: manual local UAT=pass; route-backed Playwright=pass; Docker-backed Playwright=pass; Storybook visual review=pass; Playwright visual review=pass; retrospective=pass
+- **Task Completion**: 72/72
+- **Summary**: Added the existing-task-detail `Claim control` section, bounded operator copy, SPEC-013C route-client integration, retry/release/cancel confirmations, release/cancel/backoff-override reason handling, in-memory same-submission idempotency retry after network failure, bounded success/error receipts, evidence/stage-attempt/task-list refreshes, Storybook states, route-backed Playwright fixture evidence, Docker-backed visual verification, and cleanup proof. No migration, backend retry/release/cancel semantics, scheduler launch, dashboard, sandbox lifecycle, adapter registry, direct GitHub mutation, successor selection, whole-task terminal mutation, or harness execution was added.
+- **Archive Note**: Source spec cleanup was not applied during the 2026-06-01 post-merge hygiene branch because the cleanup gate requires explicit `--apply-cleanup` on a safe base branch. Recovery commands below preserve raw artifact access from the merge commit.
+
+**Recovery Commands**:
+```text
+git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/spec.md
+git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/plan.md
+git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/tasks.md
+git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/uat-runbook.md
+git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/retrospective.md
+```

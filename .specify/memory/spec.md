@@ -15,6 +15,10 @@ Revision 2026-05-22: Archived completed active specs SPEC-009C3, SPEC-009C4,
 SPEC-009D, SPEC-009E, SPEC-009F, SPEC-010A, SPEC-012A, and SPEC-013A into
 project memory. Cleanup was then applied after a clean-worktree gate, removing
 active completed folders from `specs/**`.
+Revision 2026-06-01: Archived SPEC-013D after PR #65 merged to `main`, preserving
+claim-control operator UX requirements and provenance. Source spec cleanup was
+not applied in this post-merge hygiene branch because the cleanup gate requires
+an explicit safe-base cleanup run.
 
 ---
 
@@ -280,6 +284,23 @@ As an auditor, I can see archived attempts remain queryable and visibly distinct
 **US3 — Keep Runtime Ignorant When Flagged Off (P1)**
 As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy dispatch/runtime paths table-blind while debug inspection remains available.
 
+### SPEC-013D: Claim-Control Operator UX [Source: specs/013d-claim-control-operator-ux]
+
+**US1 — Inspect Claim-Control State (P1)**
+As an operator, I can open an existing task detail and see authoritative claimed-stage state, available and unavailable actions, backoff, last operator action, and sanitized error context without terminal or API knowledge.
+
+**US2 — Confirm And Submit Eligible Actions (P2)**
+As an operator, I can retry, release, or cancel an eligible claimed stage from the existing task detail through inline confirmation and then inspect bounded receipts plus refreshed evidence.
+
+**US3 — Override Backoff With Reason (P2)**
+As an operator, I can override retry backoff only after supplying a bounded reason, while ordinary retries preserve backend-provided backoff limits.
+
+**US4 — Preserve Read-Only And Flag-Off Behavior (P2)**
+As a viewer or flag-off workspace user, I can inspect safe state without any enabled mutation affordance or leaked diagnostic payload.
+
+**US5 — Preserve Visual And Cleanup Evidence (P2)**
+As a reviewer, I can trace route-backed screenshots, Storybook states, fixture cleanup proof, feature-flag restoration, and visual review provenance for the operator UX.
+
 ---
 
 ## Functional Requirements
@@ -427,6 +448,7 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - **SPEC-010A FRs**: Define checked-in product-line YAML seed configs; provide generic `seed:product-line` preflight/apply/verify plus `seed:mission-control` wrapper compatibility; validate flags, workflow contracts, governance rows, agents, and existing targets before writes; prove no-mutation failures and no Product Line B onboarding or runtime work.
 - **SPEC-012A FRs**: Maintain canonical `docs/ai/repo-knowledge-index.json` and schema; map root repo knowledge in `AGENTS.md`; add fixture-backed validation, fresh-agent smoke, package scripts, and guardrails; avoid runtime behavior, migrations, UI, scheduler/runner work, GitHub sync automation, sandbox lifecycle, adapters, generated `.gitnexus/`, broad docs rewrites, or nested AGENTS rollout.
 - **SPEC-013A FRs**: Add additive M76 task-stage attempt tables and rollback; expose typed helper/model behavior and read-only task-scoped API/UI inspection; represent lifecycle, projection drift, archive state, and optional run links; keep flag-off runtime paths table-blind and defer claim authority, scheduler launch, retry policy, GitHub reconciliation, sandbox lifecycle, adapters, and auto-merge.
+- **SPEC-013D FRs**: Render the SPEC-013C `claim_control` read model in the existing task detail; use backend-provided `available_actions`, expected state, retry eligibility, backoff, last action, and sanitized errors as authoritative; submit retry/release/cancel through the existing SPEC-013C route with bounded reason/override fields and same-submission idempotency retry only after network failure; refresh claim, evidence, stage-attempt, and task-list state after bounded responses; expose accessible confirmations, disabled reasons, receipts, and visual states; never add migrations, backend semantics, scheduler launch, dashboard, sandbox lifecycle, adapter registry, direct GitHub mutation, successor selection, harness execution, raw idempotency keys, or raw diagnostics.
 
 ---
 
@@ -525,6 +547,12 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 | Product-Line Seed Config | Checked-in YAML document defining workspace, departments, assignments, workflow family, feature flags, and governance defaults for generic seeding |
 | Repo Knowledge Index | Checked-in JSON and schema linking durable repo knowledge, status pointers, runbooks, workflow contracts, and guard scripts |
 | Task Stage Attempt | Durable task-stage attempt row with lifecycle events, current projection, archive evidence, optional run link, and read-only operator inspection |
+| Claim Control State | Task-detail read model for a claimed stage, including authorization, available actions, retry eligibility, backoff, expected state, last operator action, and sanitized error context |
+| Claim Control Action Descriptor | Backend-provided retry, release, or cancel action entry with enabled/disabled state and bounded unavailable reason text |
+| Expected State Predicate | Snapshot copied from the latest read model into mutation requests to let the backend detect stale or conflicting operator submissions |
+| Operator Reason | Bounded release, cancel, or backoff-override explanation captured by UI validation before submission |
+| Idempotency Attempt | In-memory same-submission retry token reused only after network failure for the exact same task/action/stage/body and never rendered or persisted |
+| Outcome Receipt | Bounded task-detail status message summarizing the action, backend outcome, replay/conflict state, and linked audit/activity reference when present |
 
 ---
 
@@ -571,6 +599,10 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - SPEC-012A docs/process guards must not depend on `.gitnexus/` generated output or broad generated docs rewrites.
 - SPEC-013A archived task-stage attempts remain in the database and queryable; archive means `status='archived'`, `archived_at`, and lifecycle evidence, not physical export/delete/move.
 - SPEC-013A read-only debug inspection remains available when `FEATURE_TASK_CONTROL_PLANE=false`, but runtime scheduler/dispatch paths must remain table-blind.
+- SPEC-013D must consume `claim_control.available_actions[]` as the sole action list; the client may validate required local form fields but must not synthesize retry/release/cancel eligibility from evidence, attempts, task status, or role guesses.
+- SPEC-013D same-submission idempotency keys are cleared on any completed response, changed body, changed expected state, task change, close, cancel, or new operator decision, and raw keys are never stored, rendered, or written to evidence.
+- SPEC-013D stale/conflict, not-eligible, authorization, feature-flag-off, validation, replay, and network-failure states must be bounded user-facing receipts without raw request bodies or unsafe diagnostic payloads.
+- SPEC-013D flag-off and viewer/read-only paths may show safe state but must leave mutation controls disabled or absent.
 
 ---
 
@@ -597,3 +629,4 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - SPEC-010A: Generic product-line seeder reproduces Paddock config from YAML, rejects unsafe configs without mutation, preserves existing history, and avoids Product Line B/runtime drift; 73/73 tasks completed.
 - SPEC-012A: Repo knowledge index/schema, root AGENTS map, fixtures, fresh-agent smoke, package scripts, and guardrails pass; 32/32 tasks completed.
 - SPEC-013A: Task-stage attempt persistence, read-only inspection, non-destructive archive semantics, rollback, flag-off table-blind guardrails, focused browser UAT, and cleanup evidence pass; 58/58 tasks completed.
+- SPEC-013D: Existing task detail exposes authoritative claim-control state, disabled reasons, confirmations, retry/release/cancel submissions, bounded receipts, refresh behavior, read-only/flag-off protections, route-backed Playwright and Storybook visual evidence, cleanup proof, and archive provenance; 72/72 tasks completed and PR #65 merged.

@@ -193,17 +193,17 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] With no `claim_control` data, the existing task detail `Details` tab renders without actionable claim controls and without user-visible regressions.
-- [ ] With `FEATURE_TASK_CONTROL_PLANE=false`, the task detail UI shows no actionable claim-control mutations and displays only backend-provided disabled/debug state when available.
-- [ ] Authorized operators can discover an active claimed stage, see enabled release/cancel/retry actions, open inline confirmation, submit the action, and inspect an inline receipt plus refreshed evidence/run state.
-- [ ] Viewers or insufficient-role users can see disabled actions and backend reasons but cannot submit retry, release, or cancel.
-- [ ] Retry with active backoff shows backoff timing/reason and requires an override reason before allowing override submission.
-- [ ] Cancel requires a bounded operator reason; release may use an optional/default reason; all user-entered strings are bounded and sanitized before display.
-- [ ] Client submissions echo backend expected-state fields and generate per-confirmation idempotency keys without persisting or displaying raw keys.
-- [ ] Stale/conflict/idempotent replay outcomes produce bounded inline feedback and trigger the same refresh path as successful actions.
-- [ ] Playwright covers enabled release/cancel/retry, disabled/ineligible reasons, backoff override, stale/conflict refresh, viewer read-only state, and feature-flag-off behavior against the running app with screenshots.
-- [ ] Storybook covers enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error component states.
-- [ ] No new backend mutation semantics, scheduler behavior, dashboard, sandbox lifecycle, adapter registry, harness execution, direct GitHub mutation, successor selection, or whole-task terminal mutation enters SPEC-013D.
+- [x] With no `claim_control` data, the existing task detail `Details` tab renders without actionable claim controls and without user-visible regressions.
+- [x] With `FEATURE_TASK_CONTROL_PLANE=false`, the task detail UI shows no actionable claim-control mutations and displays only backend-provided disabled/debug state when available.
+- [x] Authorized operators can discover an active claimed stage, see enabled release/cancel/retry actions, open inline confirmation, submit the action, and inspect an inline receipt plus refreshed evidence/run state.
+- [x] Viewers or insufficient-role users can see disabled actions and backend reasons but cannot submit retry, release, or cancel.
+- [x] Retry with active backoff shows backoff timing/reason and requires an override reason before allowing override submission.
+- [x] Cancel requires a bounded operator reason; release may use an optional/default reason; all user-entered strings are bounded and sanitized before display.
+- [x] Client submissions echo backend expected-state fields and generate per-confirmation idempotency keys without persisting or displaying raw keys.
+- [x] Stale/conflict/idempotent replay outcomes produce bounded inline feedback and trigger the same refresh path as successful actions.
+- [x] Playwright covers enabled release/cancel/retry, disabled/ineligible reasons, backoff override, stale/conflict refresh, viewer read-only state, and feature-flag-off behavior against the running app with screenshots.
+- [x] Storybook covers enabled active claim, disabled viewer, backoff override required, stale/conflict receipt, flag-off, loading, and error component states.
+- [x] No new backend mutation semantics, scheduler behavior, dashboard, sandbox lifecycle, adapter registry, harness execution, direct GitHub mutation, successor selection, or whole-task terminal mutation enters SPEC-013D.
 
 ---
 
@@ -640,7 +640,8 @@ For each task:
 - [X] Full test suite passes or unrelated existing failures are documented with evidence.
 - [X] Roadmap, workflow, UAT report, and PR packet are updated.
 - [X] Manual local UAT proves operator claim controls in a disposable runtime with setup state restored.
-- [ ] Target UAT proves operator claim controls on a deployed build with zero disposable residue.
+- Target UAT on a deployed build with zero disposable residue is not yet recorded; roadmap status remains `UAT Pending` until that evidence is added.
+- [X] Post-merge archive/status hygiene records PR #65 merge provenance and leaves deployed target UAT as the only unrecorded follow-up.
 
 ### Post-Implementation Progress
 
@@ -655,9 +656,10 @@ For each task:
 | Reviewability Diff Gate | Complete | Post-cleanup reviewability gate passed on 2026-05-31 via `reviewability-gate.sh diff HEAD` before commit (`pass=true`, `reviewable_loc=1792`, `production_files=9`, `total_files=13`, `primary_surface_count=5`) and via `reviewability-gate.sh diff origin/main...HEAD` after commit (`status=exception`, `pass=true`, `reviewable_loc=5647`, `production_files=10`, `total_files=31`, `primary_surface_count=6`); warnings/blockers are covered by the recorded roadmap transition exception and strict-scope guard coverage. |
 | Self-Review | Complete | Self-review completed on 2026-05-31 with no `[edge-case-gap]`, orphan-FR, orphan-task, or silent deferral findings; implementation evidence is committed in `3e30d9c7`; PR metadata may add a later closeout commit. |
 | PR Body Generation | Complete | Deterministic UAT runbook generated at `specs/013d-claim-control-operator-ux/uat-runbook.md` on 2026-05-31 and updated with manual browser UAT evidence for retry, release, cancel, backoff override, stale conflict, feature-flag-off, and viewer read-only states. Earlier post-UAT `pnpm typecheck`, `pnpm lint`, and `git diff --check` passed. The PR body was generated in the linked worktree git metadata dir, populated from the host template, and validated to include `speckit-pro-review-packet-source` plus `## UAT Runbook`. |
-| PR Creation | Complete | Branch `013d-claim-control-operator-ux` pushed to `origin` and PR #65 opened on 2026-05-31 with the generated body file: https://github.com/racecraft-lab/mission-control/pull/65. |
-| Review Remediation | Complete | `gh pr checks 65` on 2026-05-31 found the Docker UI visual report failing because SPEC-007 Docker preseed defaulted to the run date while the visual test froze the browser at `2026-05-02T12:00:00.000Z`, leaving dispositions outside the UI date filter. Remediation anchored the Docker default clock to the SPEC-007 fixed clock and added a guard assertion; focused Docker visual verification passed locally. Subsequent Copilot findings for the BackoffOverride Storybook state and confirmation focus target were fixed with component/story/test coverage. Visual review approval remains the only PR Pages review gate after the updated commit is pushed. |
+| PR Creation | Complete | Branch `013d-claim-control-operator-ux` pushed to `origin` and PR #65 opened on 2026-05-31 with the generated body file: https://github.com/racecraft-lab/Paddock/pull/65. |
+| Review Remediation | Complete | `gh pr checks 65` on 2026-05-31 found the Docker UI visual report failing because SPEC-007 Docker preseed defaulted to the run date while the visual test froze the browser at `2026-05-02T12:00:00.000Z`, leaving dispositions outside the UI date filter. Remediation anchored the Docker default clock to the SPEC-007 fixed clock and added a guard assertion; focused Docker visual verification passed locally. Subsequent Copilot findings for the BackoffOverride Storybook state and confirmation focus target were fixed with component/story/test coverage. PR #65 later merged on 2026-06-01. |
 | Retrospective | Complete | Parent-side retrospective saved `specs/013d-claim-control-operator-ux/retrospective.md` on 2026-05-31 after the single retrospective worker was closed for non-return. Result: completion 100%, spec adherence 100%, 0 critical/significant/minor drift findings, 3 positive process findings, and no proposed spec changes. |
+| Post-Merge Archive And Status Hygiene | Complete | PR #65 merged to `main` as `50bf05e573f15b5aab5e53367444bef1d0b7baaf` on 2026-06-01T14:27:30Z. Archive/status hygiene updated `.specify/memory/{spec,plan,changelog}.md`, `AGENTS.md`, the roadmap, this workflow ledger, `autopilot-state.json`, and the SPEC-013D runbook/spec status. `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` rejected this post-merge branch because it is not a numeric feature branch, so cleanup removal of `specs/**` was not applied in this run. Deployed target UAT remains the only unrecorded SPEC-013D follow-up. |
 
 ## Self-Review
 

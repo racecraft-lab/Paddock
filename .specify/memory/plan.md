@@ -14,6 +14,9 @@ Revision 2026-05-22: Ran archive extension workflow manually from `main` for
 completed active specs SPEC-009C3, SPEC-009C4, SPEC-009D, SPEC-009E, SPEC-009F,
 SPEC-010A, SPEC-012A, and SPEC-013A. Memory updated and cleanup applied after a
 clean-worktree gate; active completed folders were removed from `specs/**`.
+Revision 2026-06-01: Archived SPEC-013D after PR #65 merged to `main`; memory,
+roadmap, workflow, and agent status were updated. Active source spec cleanup was
+not applied from the post-merge hygiene branch.
 
 ---
 
@@ -110,6 +113,7 @@ specs/
 # - 010a-generic-product-line-seeder       (SPEC-010A, PR #59, post-merge UAT — cleanup applied 2026-05-22)
 # - 012a-repo-knowledge-index              (SPEC-012A, PR #56, knowledge-index UAT — cleanup applied 2026-05-22)
 # - 013a-run-state-spine                   (SPEC-013A, PR #58, post-merge UAT — cleanup applied 2026-05-22)
+# - 013d-claim-control-operator-ux         (SPEC-013D, PR #65, archived 2026-06-01 — cleanup not applied from post-merge hygiene branch)
 ```
 
 ---
@@ -575,9 +579,19 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 ---
 
+## SPEC-013D Plan Summary [Source: specs/013d-claim-control-operator-ux]
+
+**Branch**: `013d-claim-control-operator-ux` | **Merged**: 2026-06-01 | **PR**: #65
+
+- Adds an existing-task-detail `Claim control` section, closed copy map, SPEC-013C route client integration, inline confirmations, bounded release/cancel/override reasons, same-submission idempotency retry after network failure, success/error receipts, refreshed evidence/stage-attempt/task-list state, and Storybook plus route-backed Playwright visual coverage.
+- Scope is UI/client-only over the existing SPEC-013C backend authority: no migration, backend retry/release/cancel semantics, scheduler launch, new dashboard, sandbox lifecycle, adapter registry, direct GitHub mutation, successor selection, whole-task terminal mutation, or harness execution.
+- Verification evidence includes focused ClaimControlSection Vitest coverage, `pnpm typecheck`, `pnpm lint`, `pnpm build`, full `pnpm test`, full `pnpm test:e2e`, local manual browser UAT, Docker-backed Playwright, Storybook visual states, visual-review approval evidence, cleanup proof, and retrospective evidence recorded in the SPEC-013D workflow and UAT runbook.
+
+---
+
 ## Configuration and Routing
 
-### Feature Flags (as of SPEC-013A)
+### Feature Flags (as of SPEC-013D)
 
 | Flag | Default | Resolution |
 |------|---------|------------|
@@ -588,7 +602,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `FEATURE_RESOURCE_GOVERNANCE` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-008) |
 | `FEATURE_OPENCLAW_HEALTH_COSTS` | OFF | Requires `FEATURE_RESOURCE_GOVERNANCE`; operator-specific optional, absent-safe (SPEC-008) |
 | `PILOT_MISSION_CONTROL_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
-| `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A debug/read path only; legacy runtime remains table-blind when OFF |
+| `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A-D run-state, GitHub sync automation, claim/reconciliation, retry/debug API, and task-detail operator UX surfaces; legacy runtime remains table-blind when OFF |
 
 ### Verification Commands
 
@@ -656,6 +670,15 @@ From SPEC-013A:
 - `src/components/panels/task-stage-attempts-section.tsx`
 - `scripts/spec-013a/check-run-state-scope-guards.mjs`
 
+From SPEC-013D:
+- `src/components/panels/claim-control-section.tsx`
+- `src/components/panels/claim-control-copy.ts`
+- `src/components/panels/claim-control-section.stories.tsx`
+- `src/components/panels/__tests__/claim-control-section.test.tsx`
+- `src/components/panels/task-board-panel.tsx`
+- `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`
+- `scripts/seed-e2e-spec-013d.cjs`
+
 ---
 
 ## Gotchas
@@ -687,4 +710,7 @@ From SPEC-013A:
 - **SPEC-010A existing targets**: Generic apply to an existing target requires explicit `--allow-existing`; unsafe configs must reject before writes and report stable no-mutation evidence.
 - **SPEC-012A pnpm separator**: `pnpm knowledge:index:check -- --fixture ... --json` passes the literal separator through; the guard parser accepts it intentionally.
 - **SPEC-013A runtime boundary**: `FEATURE_TASK_CONTROL_PLANE=false` keeps scheduler/dispatch/task-pipeline runtime table-blind. The task-stage attempt route/UI remains read-only debug inspection and exposes no claim/retry/release/cancel/launch controls.
+- **SPEC-013D authority boundary**: The task-detail UI consumes SPEC-013C `claim_control.available_actions[]` and expected state as authoritative. It must not recompute eligibility from task evidence, attempts, task status, or local role guesses.
+- **SPEC-013D idempotency lifecycle**: Same-submission idempotency retry is in-memory only after a network failure for the exact same task/action/stage/expected state/body. Clear it on response, body change, expected-state change, task change, close, cancel, or any new operator decision. Never render or persist raw keys.
+- **SPEC-013D Docker fixture path**: Docker-backed Playwright pre-seeds SPEC-013D fixture rows before container restart. Avoid live host-side SQLite writes while the production app serves a mounted database.
 - **Archive extension on main**: `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` still rejects `main` as not a feature branch even though archive cleanup policy can allow reviewed main cleanups. The 2026-05-22 archive run therefore followed the vendored command contract manually and did not apply cleanup.

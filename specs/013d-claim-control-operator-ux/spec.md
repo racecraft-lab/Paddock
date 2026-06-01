@@ -2,7 +2,7 @@
 
 **Feature Branch**: `013d-claim-control-operator-ux`  
 **Created**: 2026-05-30  
-**Status**: Draft  
+**Status**: Completed
 **Input**: User description: "SPEC-013D makes the SPEC-013C retry, release, cancel, backoff, idempotency, and debug authority usable from the existing task detail experience without changing backend semantics."
 
 ## Clarifications

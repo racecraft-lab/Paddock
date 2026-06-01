@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013D-workflow.md",
-  "updated_at": "2026-05-31T20:26:54Z",
-  "active_step": "Complete",
+  "updated_at": "2026-06-01T14:36:08Z",
+  "active_step": "UAT Pending",
   "current_spec_dir": "specs/013d-claim-control-operator-ux",
   "branch": "013d-claim-control-operator-ux",
   "plan": [
@@ -47,7 +47,9 @@
     { "step": "Post: PR Body Generation", "status": "completed" },
     { "step": "Post: PR Creation", "status": "completed" },
     { "step": "Post: Review Remediation", "status": "completed" },
-    { "step": "Post: Retrospective", "status": "completed" }
+    { "step": "Post: Retrospective", "status": "completed" },
+    { "step": "Post: Merge Confirmation", "status": "completed" },
+    { "step": "Post: Archive And Status Hygiene", "status": "completed" }
   ],
   "preflight": {
     "status": "passed",
@@ -139,5 +141,33 @@
       "Archive success is not recorded for the eligible previous specs in this run or changelog"
     ],
     "files_changed_by_sweep": []
+  },
+  "post_merge_closeout": {
+    "status": "archive_recorded_uat_pending",
+    "checked_at": "2026-06-01T14:36:08Z",
+    "pr_url": "https://github.com/racecraft-lab/Paddock/pull/65",
+    "merged_at": "2026-06-01T14:27:30Z",
+    "merge_sha": "50bf05e573f15b5aab5e53367444bef1d0b7baaf",
+    "archive_memory_updated": [
+      ".specify/memory/spec.md",
+      ".specify/memory/plan.md",
+      ".specify/memory/changelog.md",
+      "AGENTS.md"
+    ],
+    "status_artifacts_updated": [
+      "docs/ai/rc-factory-technical-roadmap.md",
+      "docs/ai/specs/SPEC-013D-workflow.md",
+      "specs/013d-claim-control-operator-ux/spec.md",
+      "specs/013d-claim-control-operator-ux/uat-runbook.md"
+    ],
+    "cleanup_applied": false,
+    "cleanup_blockers": [
+      "--apply-cleanup was not supplied",
+      "Post-merge hygiene branch codex/spec-013d-post-merge-hygiene is not the safe base branch main",
+      ".specify/scripts/bash/check-prerequisites.sh --json --paths-only rejects non-feature post-merge branches"
+    ],
+    "remaining_follow_up": [
+      "Deployed target UAT for SPEC-013D is not separately recorded"
+    ]
   }
 }

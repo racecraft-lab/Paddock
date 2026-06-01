@@ -4,7 +4,7 @@
 |-------|-------|
 | Spec | 013d-claim-control-operator-ux |
 | Branch | 013d-claim-control-operator-ux |
-| PR | https://github.com/racecraft-lab/mission-control/pull/65 |
+| PR | https://github.com/racecraft-lab/Paddock/pull/65 |
 | Generated from | 2026-05-30T16:36:57Z |
 
 
@@ -82,6 +82,8 @@ Run these from the repository root before walking the acceptance tests.
 **Completed**: 2026-05-31 CDT
 
 Manual UAT was performed through the browser against a disposable local runtime at `http://127.0.0.1:3005` with SPEC-013D fixture tasks seeded by `scripts/seed-e2e-spec-013d.cjs`.
+
+Post-merge closeout was recorded on 2026-06-01 after PR #65 merged to `main` as `50bf05e573f15b5aab5e53367444bef1d0b7baaf`. This runbook records local manual browser UAT and PR visual/check evidence; deployed target UAT for SPEC-013D is not separately recorded here.
 
 - US1 state inspection: opened the active claim-control task and confirmed the Claim Control region showed `assigned_dispatch`, active-claim retry eligibility, no active backoff, and enabled `Retry stage`, `Release claim`, and `Cancel stage` actions.
 - US2 operator mutations: submitted `Retry stage`, `Release claim`, and `Cancel stage` through the confirmation UI. Receipts showed `Retry requested`, `Claim released`, and `Attempt cancelled`, with refreshed availability after each mutation.
