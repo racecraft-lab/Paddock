@@ -11,7 +11,7 @@ type Story = StoryObj<typeof SystemHealthCard>;
 
 export const Green: Story = { args: { title: 'Evaluator', severity: 'green', summary: 'Within budget', metric: '120 ms p95' } };
 export const Amber: Story = { args: { title: 'Reconciler', severity: 'amber', summary: 'Catching up', metric: 'lag 4m' } };
-export const Red: Story = { args: { title: 'Breaker', severity: 'red', summary: 'Open', runbookHref: '/runbook/breaker-stuck-open' } };
+export const Red: Story = { args: { title: 'Breaker', severity: 'red', summary: 'Open', runbookHref: '/docs/runbook/breaker-stuck-open.md' } };
 export const Loading: Story = { args: { title: 'Loading source', severity: 'loading', summary: '...' } };
 export const Error: Story = { args: { title: 'Source unreachable', severity: 'error', summary: 'Connection refused' } };
 export const DisabledByFlag: Story = { args: { title: 'Disabled', severity: 'green', disabled: true } };
@@ -30,7 +30,6 @@ export const BackupStale: Story = {
     severity: 'amber',
     summary: 'Last backup 14 hours ago',
     backupVariant: 'backup-stale',
-    runbookHref: '/runbook/backup-stale',
   },
 };
 export const BackupNoOffnodeWarning: Story = {
@@ -47,6 +46,5 @@ export const BackupFailed: Story = {
     severity: 'red',
     summary: 'Last backup attempt failed: pg_dump exit 1',
     backupVariant: 'backup-failed',
-    runbookHref: '/runbook/backup-failed',
   },
 };

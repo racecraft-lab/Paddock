@@ -26,6 +26,10 @@ const ROOT = process.cwd();
 const RUNBOOK_DIR = join(ROOT, 'docs/runbook');
 const SEARCH_ROOTS = [
   join(ROOT, 'specs/008-resource-governance'),
+  join(ROOT, 'docs/ai'),
+  join(ROOT, 'docs/observability'),
+  join(ROOT, 'docs/operator-guides'),
+  join(ROOT, 'docs/orchestration.md'),
   join(ROOT, 'src'),
   join(ROOT, 'tests'),
   join(ROOT, 'scripts'),

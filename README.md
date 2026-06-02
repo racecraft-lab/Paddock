@@ -152,7 +152,7 @@ For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 | [Deployment](docs/deployment.md) | Production deployment, reverse proxy, and VPS guidance. |
 | [Security hardening](docs/SECURITY-HARDENING.md) | Docker hardening, CSP, and network isolation. |
 | [Resource governance](docs/feature-flags-runbook.md) | WIP, budget, blackout/degraded windows, and matrix-test conventions. |
-| [OpenAPI](openapi.json) | REST API contract. Scalar UI is available at `/api-docs` when running. |
+| [OpenAPI](openapi.json) | REST API contract. Scalar UI is available at `/docs` when running; raw JSON is served from `/api/docs`. |
 
 ## Architecture
 

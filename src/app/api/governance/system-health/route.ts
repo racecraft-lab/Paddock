@@ -47,7 +47,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         title: 'Evaluator',
         severity: breaker?.state === 'open' ? 'red' : breaker?.state === 'half_open' ? 'amber' : 'green',
         summary: breaker?.state ?? 'closed',
-        runbook_link: '/runbook/breaker-stuck-open',
+        runbook_link: '/docs/runbook/breaker-stuck-open.md',
       },
       {
         title: 'Reconciler',
@@ -63,9 +63,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       cards,
       runbook_links: [
-        { id: 'breaker', href: '/runbook/breaker-stuck-open.md' },
-        { id: 'counter', href: '/runbook/counter-drift.md' },
-        { id: 'backup', href: '/runbook/backup-stale.md' },
+        { id: 'breaker', href: '/docs/runbook/breaker-stuck-open.md' },
+        { id: 'counter', href: '/docs/runbook/counter-drift.md' },
+        { id: 'collector', href: '/docs/runbook/collector-outage.md' },
       ],
       recovery_affordances: [
         { id: 'breaker_reset', label: 'Reset breaker', endpoint: '/api/governance/breaker/reset' },

@@ -13,7 +13,9 @@ This guide walks operators through:
 - `governance.json` present at `<PADDOCK_DATA_DIR>/governance.json`.
   The default is auto-seeded from
   `src/lib/observability/governance.json.template`.
-- Migrations M65a..m + M66 complete (run `pnpm migrate` if unsure).
+- Migrations M65a..m + M66 complete. Paddock runs
+  `src/lib/migrations.ts` during database initialization; verify the
+  `schema_migrations` table if you need to confirm a running database.
 - `resource_governance_breaker` row present (the breaker writer
   initializes it on first evaluator call).
 
@@ -36,7 +38,7 @@ curl "$MC_URL/api/feature-flags?workspace_id=<id>" \
 
 ## OTLP receiver
 
-The OTLP receiver lives at `POST /api/otlp/v1/{traces|metrics|logs}`.
+The OTLP receiver lives at `POST /api/otlp/v1/{traces|metrics}`.
 
 Auth: bearer-token check against `agent_api_keys` rows scoped
 `role='collector'`. Body cap: 4 MiB per request.
@@ -52,7 +54,9 @@ curl -X POST "$MC_URL/api/otlp/v1/metrics" \
 
 Expect `204 No Content` on success.
 
-For full receiver semantics see `docs/observability/otlp-receiver.md`.
+For receiver implementation details, inspect
+`src/lib/observability/otlp-receiver.ts` and the route handlers under
+`src/app/api/otlp/v1/`.
 
 ## Source adapter activation
 
@@ -60,27 +64,20 @@ Each adapter writes `source_emission_capability` rows on first run.
 Adapters live under `src/lib/observability/adapters/`. To activate
 a source:
 
-| Source | How to start |
+| Source | Current repo evidence |
 | --- | --- |
 | `claude_code` (native OTel) | `CLAUDE_CODE_ENABLE_TELEMETRY=1 claude -p ...` |
 | `claude_code.transcript_replay` | enabled when `claude mcp serve` is the child process |
 | `cli_stdout_json` (Codex) | streams via the dispatcher's session writer |
 | `copilot.events_jsonl` | `events.jsonl` shipped under `~/.copilot/` |
-| `gateway_otel` (OpenClaw) | gateway forwards OTel frames to `/api/otlp` |
-| `manual_post` | `POST /api/governance/usage-events` (operator-curated) |
-| `provider_quota` | nightly pull from provider billing API |
+| `openclaw_gateway` | reads `~/.openclaw/health/` artifacts when `FEATURE_OPENCLAW_HEALTH_COSTS` is enabled |
+| `manual_post` | adapts the existing `POST /api/tokens` path into `raw_usage_events` provenance |
+| `provider_quota` | registered advisory source id; no operator-facing fetch route is checked in |
 
-Operator setup notes per CLI:
-
-- **Claude Code** (`docs/observability/setup-claude-code.md`).
-- **Codex CLI** (`docs/observability/setup-codex-cli.md`).
-- **Copilot** (`docs/observability/setup-copilot.md`).
-- **Ollama** (`docs/observability/setup-ollama.md`).
-- **LM Studio** (`docs/observability/setup-lm-studio.md`).
-- **OpenClaw gateway** (`docs/observability/setup-openclaw.md`).
-
-Each per-CLI guide lives in this directory and is referenced by the
-quickstart.
+No per-CLI setup guides are currently checked in. Use this file, the adapter
+source under `src/lib/observability/adapters/`, and
+`docs/observability/provider-tos-considerations.md` until a future spec adds
+dedicated setup pages.
 
 ## Verify canonical events
 

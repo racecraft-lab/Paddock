@@ -76,8 +76,8 @@ processors:
 
 **Drilldown**: the rebuilder is preparing a counter-rebuild job. Wait
 for the progress bar to advance through "post-rebuild verify" and ack
-the operator-confirmed dialog. See
-`docs/runbook/drift-detected-budget.md`.
+the operator-confirmed dialog. Use
+`docs/runbook/counter-drift.md` for the rebuild recovery path.
 
 ## OpenClaw health card shows degraded
 
@@ -89,5 +89,5 @@ the operator-confirmed dialog. See
 2. SSH to the operator node; verify `openclaw-gateway.service` is
    running (`systemctl --user status --no-pager openclaw-gateway.service`).
 3. Inspect the gateway log for OTel-export failures.
-4. For prolonged degradation see
-   `docs/runbook/openclaw-gateway-down.md`.
+4. For prolonged degradation, keep `FEATURE_OPENCLAW_HEALTH_COSTS` disabled
+   and use `docs/runbook/collector-outage.md` for collector-side recovery.
