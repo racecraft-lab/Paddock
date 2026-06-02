@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-02T03:30:38.999Z",
+  "updatedAt": "2026-06-02T03:35:55.896Z",
   "prs": [
     {
       "prNumber": "68",
@@ -9,8 +9,15 @@
       "indexHref": "https://racecraft-lab.github.io/Paddock/pr/68/",
       "headRef": "codex/paddock-hard-rename",
       "baseRef": "main",
-      "updatedAt": "2026-06-02T03:30:38.999Z",
+      "updatedAt": "2026-06-02T03:35:55.896Z",
       "latest": {
+        "playwright": {
+          "runId": "26796452197",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26796452197",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/68/playwright/latest/?v=26796452197-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/68/runs/26796452197-attempt-1/playwright/",
+          "updatedAt": "2026-06-02T03:35:55.896Z"
+        },
         "storybook": {
           "runId": "26796452134",
           "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26796452134",

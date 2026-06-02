@@ -1,0 +1,80 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "latest",
+  "surface": "playwright",
+  "surfaceLabel": "Playwright UI E2E",
+  "workflowName": "Paddock UI E2E",
+  "workflowFile": "paddock-ui-e2e.yml",
+  "prNumber": "68",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/68",
+  "runId": "26796452197",
+  "runAttempt": "1",
+  "runKey": "26796452197-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26796452197",
+  "headRef": "codex/paddock-hard-rename",
+  "baseRef": "main",
+  "headSha": "46a7868faec165217000a8914a2c6522a7d99e01",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/68/playwright/latest/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/68/playwright/latest/?v=26796452197-attempt-1",
+  "createdAt": "2026-06-02T03:35:55.896Z",
+  "itemCounts": {
+    "baselineApproved": 1,
+    "changed": 0,
+    "deleted": 0,
+    "new": 3,
+    "open": 3,
+    "passed": 1,
+    "total": 4
+  },
+  "reviewScope": {
+    "domains": [
+      "ready-for-owner",
+      "spec-013a"
+    ],
+    "filtered": 151
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "68",
+    "surface": "playwright",
+    "surfaceLabel": "Playwright UI E2E",
+    "headSha": "46a7868faec165217000a8914a2c6522a7d99e01",
+    "runKey": "26796452197-attempt-1",
+    "items": [
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/focused-ready-for-owner-card.png",
+        "itemId": "ready-for-owner/focused-ready-for-owner-card.png",
+        "snapshot": "ready-for-owner/focused-ready-for-owner-card.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "new-ready-for-owner/notification-action-required.png",
+        "itemId": "ready-for-owner/notification-action-required.png",
+        "snapshot": "ready-for-owner/notification-action-required.png",
+        "variant": "new"
+      },
+      {
+        "group": "spec-013a",
+        "id": "new-spec-013a/task-stage-attempts.png",
+        "itemId": "spec-013a/task-stage-attempts.png",
+        "snapshot": "spec-013a/task-stage-attempts.png",
+        "variant": "new"
+      },
+      {
+        "group": "ready-for-owner",
+        "id": "passed-ready-for-owner/kanban-lane-order.png",
+        "itemId": "ready-for-owner/kanban-lane-order.png",
+        "snapshot": "ready-for-owner/kanban-lane-order.png",
+        "variant": "passed"
+      }
+    ]
+  }
+}
