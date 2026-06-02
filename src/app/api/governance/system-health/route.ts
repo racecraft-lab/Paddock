@@ -65,7 +65,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       runbook_links: [
         { id: 'breaker', href: '/runbook/breaker-stuck-open.md' },
         { id: 'counter', href: '/runbook/counter-drift.md' },
-        { id: 'backup', href: '/runbook/backup-stale.md' },
+        { id: 'backup', href: '/runbook/retention-sweep-failure.md' },
       ],
       recovery_affordances: [
         { id: 'breaker_reset', label: 'Reset breaker', endpoint: '/api/governance/breaker/reset' },

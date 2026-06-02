@@ -771,7 +771,7 @@ src/lib/task-stage-attempts.ts                    Attempt evidence integration o
 src/lib/migrations.ts                             M79 release-reason expansion and idempotency replay storage
 docs/migrations/rollback-M79.sql                 Guarded rollback for M79
 openapi.json                                      API contract update
-docs/ai/api-index.md                              API index update
+src/app/api/index/route.ts                        API index update
 specs/013c-retry-debug-surfaces/                  Generated SpecKit artifacts
 ```
 

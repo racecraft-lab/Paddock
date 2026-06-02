@@ -52,7 +52,9 @@ curl -X POST "$MC_URL/api/otlp/v1/metrics" \
 
 Expect `204 No Content` on success.
 
-For full receiver semantics see `docs/observability/otlp-receiver.md`.
+The receiver implementation lives in
+`src/lib/observability/otlp-receiver.ts`, with decode and admission
+coverage in `tests/integration/governance-otlp-receiver*.test.ts`.
 
 ## Source adapter activation
 
@@ -70,17 +72,9 @@ a source:
 | `manual_post` | `POST /api/governance/usage-events` (operator-curated) |
 | `provider_quota` | nightly pull from provider billing API |
 
-Operator setup notes per CLI:
-
-- **Claude Code** (`docs/observability/setup-claude-code.md`).
-- **Codex CLI** (`docs/observability/setup-codex-cli.md`).
-- **Copilot** (`docs/observability/setup-copilot.md`).
-- **Ollama** (`docs/observability/setup-ollama.md`).
-- **LM Studio** (`docs/observability/setup-lm-studio.md`).
-- **OpenClaw gateway** (`docs/observability/setup-openclaw.md`).
-
-Each per-CLI guide lives in this directory and is referenced by the
-quickstart.
+Adapter ToS and acknowledgement details are summarized in
+`docs/observability/provider-tos-considerations.md`; adapter code lives
+under `src/lib/observability/adapters/`.
 
 ## Verify canonical events
 

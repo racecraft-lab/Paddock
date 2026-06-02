@@ -3,8 +3,7 @@
  *
  * Per FR-090m / FR-274. Every runbook page MUST be referenced from
  * at least one of:
- *   - the spec file (specs/008-resource-governance/spec.md)
- *   - tasks.md
+ *   - archived SPEC-008 workflow or verification evidence
  *   - source code (src/**)
  *   - alert routing (governance route handlers)
  *
@@ -25,11 +24,19 @@ import { join, relative } from 'node:path';
 const ROOT = process.cwd();
 const RUNBOOK_DIR = join(ROOT, 'docs/runbook');
 const SEARCH_ROOTS = [
-  join(ROOT, 'specs/008-resource-governance'),
+  join(ROOT, 'docs/ai/specs/SPEC-008-workflow.md'),
+  join(ROOT, 'docs/ai/specs/SPEC-008-summary.md'),
+  join(ROOT, 'docs/ai/specs/SPEC-008-verification-evidence.md'),
+  join(ROOT, 'docs/ai/specs/SPEC-008-retrospective.md'),
   join(ROOT, 'src'),
   join(ROOT, 'tests'),
   join(ROOT, 'scripts'),
+  join(ROOT, 'docs/observability'),
+  join(ROOT, 'docs/operator-guides'),
+  join(ROOT, 'docs/orchestration.md'),
 ];
+
+const RUNBOOK_LINK_RE = /(?:docs\/runbook\/|\/runbook\/)([A-Za-z0-9_.-]+?)(?:\.md)?(?:#[A-Za-z0-9_.-]+)?(?=[`'")\s,}\]]|$)/g;
 
 function listRunbookPages(): string[] {
   return readdirSync(RUNBOOK_DIR)
@@ -69,8 +76,22 @@ function loadAllSourceText(): string {
     .join('\n---FILE-BOUNDARY---\n');
 }
 
+function findDeadRunbookLinks(haystack: string, pages: Set<string>): string[] {
+  const dead = new Set<string>();
+  for (const match of haystack.matchAll(RUNBOOK_LINK_RE)) {
+    const rawName = match[1];
+    if (!rawName || rawName.startsWith('docs/')) continue;
+    const pageName = rawName.replace(/\.md$/, '');
+    if (!pages.has(pageName)) {
+      dead.add(match[0]);
+    }
+  }
+  return [...dead].sort();
+}
+
 function main(): void {
   const pages = listRunbookPages();
+  const pageSet = new Set(pages);
   const haystack = loadAllSourceText();
   const orphans: string[] = [];
   for (const p of pages) {
@@ -80,10 +101,18 @@ function main(): void {
       orphans.push(p);
     }
   }
-  if (orphans.length > 0) {
-    process.stderr.write(
-      `runbook orphans (no source/spec reference):\n  - ${orphans.join('\n  - ')}\n`,
-    );
+  const deadLinks = findDeadRunbookLinks(haystack, pageSet);
+  if (orphans.length > 0 || deadLinks.length > 0) {
+    if (deadLinks.length > 0) {
+      process.stderr.write(
+        `runbook dead links:\n  - ${deadLinks.join('\n  - ')}\n`,
+      );
+    }
+    if (orphans.length > 0) {
+      process.stderr.write(
+        `runbook orphans (no source/spec reference):\n  - ${orphans.join('\n  - ')}\n`,
+      );
+    }
     process.exit(1);
   }
   process.stdout.write(

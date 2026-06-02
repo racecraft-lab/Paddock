@@ -9,8 +9,8 @@ ships to any operator it must NOT be renumbered.
 
 - Migration ids are zero-padded 3-digit (`055_*`, `061_*`, …) followed by a
   descriptive snake_case slug.
-- Rollback files follow `docs/migrations/rollback-MNN.sql` (where `MNN` is
-  the bare migration number — e.g., M62, M63).
+- Rollback files live under `docs/migrations/` and use the bare migration
+  number in the filename, such as `rollback-M62.sql` or `rollback-M63.sql`.
 - The migration body and behavior MUST be unchanged regardless of final id.
   Specs reserve a "logical" position; the actual number is assigned at merge
   time.

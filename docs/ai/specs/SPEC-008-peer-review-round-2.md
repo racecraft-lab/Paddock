@@ -22,11 +22,11 @@ I do not re-litigate items addressed by Q39–Q46. Where the doc covers somethin
 
 ## 1. Runbook Content for the Major Failure Modes
 
-The doc enumerates the failure modes — collector down (Q19), breaker open (Q21), `schema_broken` (Q25), `schema_malicious` (Q41), `drift_detected` (Q40), Aegis exhausted (Q20), backfill stuck (Q31). It commits to `docs/observability/collector-failure-runbook.md`. That is the *only* runbook explicitly named.
+The doc enumerates the failure modes — collector down (Q19), breaker open (Q21), `schema_broken` (Q25), `schema_malicious` (Q41), `drift_detected` (Q40), Aegis exhausted (Q20), backfill stuck (Q31). The shipped current equivalents are under `docs/runbook/`, with collector outage anchored at `docs/runbook/collector-outage.md`.
 
 What an on-call operator needs is a per-failure runbook entry anchored to the activity event that fires, naming diagnostic command, recovery command, and verification step. Of the seven failure modes, only collector-failure has a named runbook. The other six emit notifications but no runbook page is cited.
 
-The most dangerous gap: **`deferred_no_fallback` (Q20 Mechanism 2) has no runbook entry**. Aegis enters this when frontier budget is exhausted *and* LM Studio is unavailable. The doc says "operator must install LM Studio, increase emergency reserve, or use break-glass." That is correct — and 3am is the literal worst time to install LM Studio for the first time. The runbook needs to pre-stage: confirm LM Studio installed first, fall back to a 60-min break-glass while installing per `docs/observability/lmstudio-setup.md`. That setup doc is not in deliverables either.
+The most dangerous gap: **`deferred_no_fallback` (Q20 Mechanism 2) has no runbook entry**. Aegis enters this when frontier budget is exhausted *and* LM Studio is unavailable. The doc says "operator must install LM Studio, increase emergency reserve, or use break-glass." That is correct — and 3am is the literal worst time to install LM Studio for the first time. The shipped current equivalents are `docs/runbook/aegis-deferred-no-fallback.md`, `docs/runbook/aegis-local-mode-fallback.md`, and `docs/runbook/aegis-emergency-reserve-depletion.md`.
 
 `schema_malicious` (Q41) declares "source disabled until operator confirms" with no documented confirm procedure — SQL UPDATE? REST call? UI button? Unspecified.
 
@@ -34,7 +34,7 @@ The most dangerous gap: **`deferred_no_fallback` (Q20 Mechanism 2) has no runboo
 
 - Name a runbook `.md` for each of the seven failure modes (in `docs/observability/runbooks/`).
 - Document the explicit re-enable path for `schema_broken` and `schema_malicious` (Q37 only describes the auto-disable side).
-- Add `docs/observability/lmstudio-setup.md` to deliverables. Aegis fallback depends on LM Studio being pre-installed.
+- Add a concrete LM Studio preflight to the Aegis fallback runbooks. Aegis fallback depends on LM Studio being pre-installed.
 
 ---
 
