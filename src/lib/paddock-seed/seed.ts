@@ -1,46 +1,46 @@
 
 import { importWorkflowContract } from '@/lib/workflow-contracts/importer'
 import { loadWorkflowContractFromFile } from '@/lib/workflow-contracts/yaml-loader'
-import { buildMissionControlSeedEvidence } from './evidence'
-import { assertWorkflowContractReady, runMissionControlPreflight } from './preflight'
+import { buildPaddockSeedEvidence } from './evidence'
+import { assertWorkflowContractReady, runPaddockPreflight } from './preflight'
 import {
   DEPARTMENTS,
   DISABLED_OR_ABSENT_FLAGS,
-  ENABLED_MISSION_CONTROL_FLAGS,
+  ENABLED_PADDOCK_FLAGS,
   FACILITY_WORKSPACE_SLUG,
   GOVERNANCE_POLICIES,
-  MISSION_CONTROL_REPO,
-  MISSION_CONTROL_WORKSPACE_NAME,
-  MISSION_CONTROL_WORKSPACE_SLUG,
+  PADDOCK_REPO,
+  PADDOCK_WORKSPACE_NAME,
+  PADDOCK_WORKSPACE_SLUG,
   ROLE_ASSIGNMENTS,
   type ApplySeedResult,
-  type MissionControlSeedOptions,
+  type PaddockSeedOptions,
   type SeedResult,
 } from './types'
 import type Database from 'better-sqlite3'
 
 export { assertWorkflowContractReady }
 
-export function applyMissionControlSeed(
+export function applyPaddockSeed(
   db: Database.Database,
-  options: MissionControlSeedOptions,
+  options: PaddockSeedOptions,
 ): SeedResult {
-  const preflight = runMissionControlPreflight(db, options, 'apply')
+  const preflight = runPaddockPreflight(db, options, 'apply')
   if (!preflight.ok) return preflight
 
   const workspaceId = db.transaction(() => {
     const tenantId = resolveSeedTenantId(db)
     ensureFacilityWorkspace(db, tenantId)
-    const missionControlWorkspaceId = upsertMissionControlWorkspace(db, tenantId)
-    const projectIds = upsertDepartments(db, missionControlWorkspaceId)
+    const paddockWorkspaceId = upsertPaddockWorkspace(db, tenantId)
+    const projectIds = upsertDepartments(db, paddockWorkspaceId)
     upsertRoleAssignments(db, projectIds)
     const qaProjectId = projectIds['qa']
     if (qaProjectId === undefined) throw new Error('Missing QA project after department seed')
-    rehomeMissionControlIssueIntake(db, missionControlWorkspaceId, qaProjectId)
-    upsertFeatureFlags(db, missionControlWorkspaceId)
-    importWorkflows(db, missionControlWorkspaceId, options.contractPath)
-    upsertGovernancePolicies(db, missionControlWorkspaceId)
-    return missionControlWorkspaceId
+    rehomePaddockIssueIntake(db, paddockWorkspaceId, qaProjectId)
+    upsertFeatureFlags(db, paddockWorkspaceId)
+    importWorkflows(db, paddockWorkspaceId, options.contractPath)
+    upsertGovernancePolicies(db, paddockWorkspaceId)
+    return paddockWorkspaceId
   })()
 
   return {
@@ -48,8 +48,8 @@ export function applyMissionControlSeed(
     mode: 'apply',
     status: 'seeded',
     mutation_status: 'applied',
-    workspace: { slug: MISSION_CONTROL_WORKSPACE_SLUG, id: workspaceId },
-    ...buildMissionControlSeedEvidence(db, options),
+    workspace: { slug: PADDOCK_WORKSPACE_SLUG, id: workspaceId },
+    ...buildPaddockSeedEvidence(db, options),
   } satisfies ApplySeedResult
 }
 
@@ -60,19 +60,19 @@ function ensureFacilityWorkspace(db: Database.Database, tenantId: number): void 
   `).run(FACILITY_WORKSPACE_SLUG, tenantId)
 }
 
-function upsertMissionControlWorkspace(db: Database.Database, tenantId: number): number {
-  const existing = db.prepare('SELECT id FROM workspaces WHERE slug = ?').get(MISSION_CONTROL_WORKSPACE_SLUG) as
+function upsertPaddockWorkspace(db: Database.Database, tenantId: number): number {
+  const existing = db.prepare('SELECT id FROM workspaces WHERE slug = ?').get(PADDOCK_WORKSPACE_SLUG) as
     | { id: number }
     | undefined
   if (existing) {
     db.prepare('UPDATE workspaces SET name = ?, tenant_id = ?, updated_at = unixepoch() WHERE id = ?')
-      .run(MISSION_CONTROL_WORKSPACE_NAME, tenantId, existing.id)
+      .run(PADDOCK_WORKSPACE_NAME, tenantId, existing.id)
     return existing.id
   }
   const result = db.prepare(`
     INSERT INTO workspaces (slug, name, tenant_id, created_at, updated_at)
     VALUES (?, ?, ?, unixepoch(), unixepoch())
-  `).run(MISSION_CONTROL_WORKSPACE_SLUG, MISSION_CONTROL_WORKSPACE_NAME, tenantId)
+  `).run(PADDOCK_WORKSPACE_SLUG, PADDOCK_WORKSPACE_NAME, tenantId)
   return Number(result.lastInsertRowid)
 }
 
@@ -114,10 +114,10 @@ function upsertDepartments(db: Database.Database, workspaceId: number): Record<s
       department.ticketPrefix,
       department.areaSlug,
       department.githubRepo,
-      department.githubRepo === MISSION_CONTROL_REPO ? 1 : 0,
+      department.githubRepo === PADDOCK_REPO ? 1 : 0,
       department.triage ? 1 : 0,
       department.repoSyncOwner ? 1 : 0,
-      JSON.stringify({ spec: 'SPEC-009B', product_line: MISSION_CONTROL_WORKSPACE_SLUG }),
+      JSON.stringify({ spec: 'SPEC-009B', product_line: PADDOCK_WORKSPACE_SLUG }),
     ]
     if (existing) {
       db.prepare(`
@@ -141,10 +141,10 @@ function upsertDepartments(db: Database.Database, workspaceId: number): Record<s
         department.ticketPrefix,
         department.areaSlug,
         department.githubRepo,
-        department.githubRepo === MISSION_CONTROL_REPO ? 1 : 0,
+        department.githubRepo === PADDOCK_REPO ? 1 : 0,
         department.triage ? 1 : 0,
         department.repoSyncOwner ? 1 : 0,
-        JSON.stringify({ spec: 'SPEC-009B', product_line: MISSION_CONTROL_WORKSPACE_SLUG }),
+        JSON.stringify({ spec: 'SPEC-009B', product_line: PADDOCK_WORKSPACE_SLUG }),
       )
       projectIds[department.slug] = Number(result.lastInsertRowid)
     }
@@ -168,7 +168,7 @@ function upsertRoleAssignments(db: Database.Database, projectIds: Record<string,
   }
 }
 
-function rehomeMissionControlIssueIntake(db: Database.Database, workspaceId: number, qaProjectId: number): void {
+function rehomePaddockIssueIntake(db: Database.Database, workspaceId: number, qaProjectId: number): void {
   db.prepare(`
     UPDATE tasks
     SET workspace_id = ?, project_id = ?, status = 'inbox', assigned_to = NULL,
@@ -176,7 +176,7 @@ function rehomeMissionControlIssueIntake(db: Database.Database, workspaceId: num
       parent_task_id = NULL, root_task_id = NULL, chain_id = NULL,
       chain_stage = NULL, dispatch_attempts = 0, updated_at = unixepoch()
     WHERE github_repo = ? AND github_issue_number IS NOT NULL
-  `).run(workspaceId, qaProjectId, MISSION_CONTROL_REPO)
+  `).run(workspaceId, qaProjectId, PADDOCK_REPO)
 }
 
 function upsertFeatureFlags(db: Database.Database, workspaceId: number): void {
@@ -186,7 +186,7 @@ function upsertFeatureFlags(db: Database.Database, workspaceId: number): void {
   for (const [key, value] of Object.entries(parseFlags(row.feature_flags))) {
     if (!disabledOrAbsent.has(key)) flags[key] = value
   }
-  for (const key of ENABLED_MISSION_CONTROL_FLAGS) flags[key] = true
+  for (const key of ENABLED_PADDOCK_FLAGS) flags[key] = true
   db.prepare('UPDATE workspaces SET feature_flags = ?, updated_at = unixepoch() WHERE id = ?')
     .run(JSON.stringify(flags), workspaceId)
 }

@@ -306,7 +306,7 @@ export default function LoginPage() {
               priority
             />
           </div>
-          <h1 className="text-xl font-semibold text-foreground">{t('missionControl')}</h1>
+          <h1 className="text-xl font-semibold text-foreground">{t('paddock')}</h1>
           <p className="text-sm text-muted-foreground mt-1">{t('signInToContinue')}</p>
         </div>
 

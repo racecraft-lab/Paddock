@@ -273,7 +273,7 @@ export async function POST(request: NextRequest) {
         id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         timestamp: Date.now(),
         level: level || 'info',
-        source: customSource || 'mission-control',
+        source: customSource || 'paddock',
         session,
         message,
         data: null,

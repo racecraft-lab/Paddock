@@ -164,7 +164,7 @@ Pipeline orchestration with workflow templates. Start, monitor, and manage multi
 ## Architecture Diagram (simplified)
 
 ```
-mission-control/
+paddock/
   src/
     app/api/          98 REST API routes
     components/

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { appendScopeToPath } from '@/types/product-line'
 
@@ -55,7 +55,7 @@ const typeIcons: Record<string, string> = {
 
 export function AgentHistoryPanel() {
   const t = useTranslations('agentHistory')
-  const { agents, activeProductLineScope } = useMissionControl()
+  const { agents, activeProductLineScope } = usePaddock()
   const [selectedAgent, setSelectedAgent] = useState<string>('')
   const [activities, setActivities] = useState<AgentActivity[]>([])
   const [sessions, setSessions] = useState<SessionInfo[]>([])

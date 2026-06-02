@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import Database from 'better-sqlite3'
-import { MISSION_CONTROL_SEED_DEFAULTS } from '../src/lib/product-line-seed/types.ts'
+import { PADDOCK_SEED_DEFAULTS } from '../src/lib/product-line-seed/types.ts'
 import {
   runSeedProductLineCliWithDefaults,
   type GenericSeedCliResult,
@@ -14,17 +14,17 @@ export interface CliHarness extends Pick<GenericSeedCliDefaults, 'db'> {
   contractPath?: string
 }
 
-export function runSeedMissionControlCli(args: string[], harness: CliHarness = {}): GenericSeedCliResult {
-  return runSeedMissionControlCliInternal(args, harness, false)
+export function runSeedPaddockCli(args: string[], harness: CliHarness = {}): GenericSeedCliResult {
+  return runSeedPaddockCliInternal(args, harness, false)
 }
 
 const currentUrl = pathToFileURL(process.argv[1] ?? '').href
 if (import.meta.url === currentUrl) {
-  const result = runSeedMissionControlCliInternal(process.argv.slice(2), {}, true)
+  const result = runSeedPaddockCliInternal(process.argv.slice(2), {}, true)
   process.exitCode = result.exitCode
 }
 
-function runSeedMissionControlCliInternal(
+function runSeedPaddockCliInternal(
   args: string[],
   harness: CliHarness,
   writeOutput: boolean,
@@ -43,8 +43,8 @@ function runSeedMissionControlCliInternal(
       }
     }
     return runSeedProductLineCliWithDefaults(argsWithDb, {
-      entrypoint: 'seed:mission-control',
-      configPath: MISSION_CONTROL_SEED_DEFAULTS.configPath,
+      entrypoint: 'seed:paddock',
+      configPath: PADDOCK_SEED_DEFAULTS.configPath,
       ...(db === undefined ? {} : { db }),
     }, writeOutput)
   } catch (error) {

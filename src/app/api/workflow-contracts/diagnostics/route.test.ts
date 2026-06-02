@@ -35,7 +35,7 @@ describe('/api/workflow-contracts/diagnostics', () => {
     expect(response.status).toBe(200)
     expect(body.runs).toHaveLength(1)
     expect(body.runs[0]).toMatchObject({
-      family: 'mission-control',
+      family: 'paddock',
       workspace_id: 1,
       mode: 'import_apply',
       mutation_status: 'applied',

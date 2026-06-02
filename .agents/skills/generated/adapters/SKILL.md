@@ -1,6 +1,6 @@
 ---
 name: adapters
-description: "Skill for the Adapters area of mission-control. 108 symbols across 22 files."
+description: "Skill for the Adapters area of paddock. 108 symbols across 22 files."
 ---
 
 # Adapters

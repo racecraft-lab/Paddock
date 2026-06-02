@@ -356,7 +356,7 @@
       "repo_owned": true
     },
     {
-      "path": "docs/ai/workflows/mission-control/workflow-contract.yaml",
+      "path": "docs/ai/workflows/paddock/workflow-contract.yaml",
       "kind": "contract",
       "purpose": "Paddock workflow contract imported/exported by SPEC-009A tooling and reused by downstream routing specs.",
       "owner": "Workflow maintainers",
@@ -366,7 +366,7 @@
       },
       "last_verified": "2026-05-21",
       "related_specs": ["SPEC-009A", "SPEC-012A"],
-      "verification_commands": ["pnpm workflow-contract export -- --source db --out docs/ai/workflows/mission-control/workflow-contract.yaml"],
+      "verification_commands": ["pnpm workflow-contract export -- --source db --out docs/ai/workflows/paddock/workflow-contract.yaml"],
       "required": true,
       "repo_owned": true
     }

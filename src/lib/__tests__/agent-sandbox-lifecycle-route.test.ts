@@ -159,7 +159,7 @@ describe('GET /api/tasks/[id]/sandbox-lifecycles', () => {
     })
     expect(unfiltered.status).toBe(200)
     await expect(unfiltered.json()).resolves.toMatchObject({
-      lifecycles: [{ id: created.lifecycle.id, owner: 'mission_control' }],
+      lifecycles: [{ id: created.lifecycle.id, owner: 'paddock' }],
     })
 
     const response = await route.GET(request(`/api/tasks/100/sandbox-lifecycles?workspace_id=1&lifecycle_id=${created.lifecycle.id}`), {
@@ -171,7 +171,7 @@ describe('GET /api/tasks/[id]/sandbox-lifecycles', () => {
       schema_version: 'sandbox_lifecycle.v1',
       task: { id: '100', workspace_id: '1' },
       feature_flag: { key: 'FEATURE_AGENT_RUNNER_SANDBOXES', enabled: true },
-      lifecycles: [{ id: created.lifecycle.id, owner: 'mission_control' }],
+      lifecycles: [{ id: created.lifecycle.id, owner: 'paddock' }],
     })
     expect(after).toEqual(before)
   })

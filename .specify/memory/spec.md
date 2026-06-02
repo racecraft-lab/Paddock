@@ -169,7 +169,7 @@ As an operator, I can keep workflow templates in versioned YAML and import/expor
 **US2 — Fail Closed on Invalid Contracts (P1)**
 As a maintainer, I can reject invalid contract reloads while preserving the last-known-good runtime templates and diagnostics.
 
-### SPEC-009B: Paddock Product-Line Seed and Flag Activation [Source: specs/009b-mission-control-seed]
+### SPEC-009B: Paddock Product-Line Seed and Flag Activation [Source: specs/009b-paddock-seed]
 
 **US1 — Seed Product Line A Without Dispatch (P1)**
 As an operator, I can seed Paddock workspace, departments, assignments, workflow families, flags, and governance rows without launching pilot work.
@@ -424,7 +424,7 @@ As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy di
 - **SPEC-009D FRs**: Derive and publish review packets from stored Paddock evidence only; include source-map pointers, governance/Aegis/owner gate state, current stage, and explicit SPEC-013/SPEC-014 deferrals; avoid fresh GitHub calls, packet-specific routes, dashboards, pollers, claims, retry controls, sandbox lifecycle, adapters, and real harness execution.
 - **SPEC-009E FRs**: Add read-only `task_evidence.v1` route/UI evidence for GitHub-linked and pilot-relevant tasks; represent local-only, partial, stale, missing, redacted, cleaned, and deferred evidence states; never mutate tasks, artifacts, activities, GitHub state, packets, dispatch, runner, claim, sandbox, adapter, or harness behavior.
 - **SPEC-009F FRs**: Route six non-remediation Issue Triage outcomes to typed recommendation/evidence lanes; keep them terminal without remediation successors; expose compact task Evidence `triageRouting`; preserve `ACTIONABLE_REMEDIATION` behavior and avoid live GitHub mutation, claim/runner/sandbox/adapter paths, successor templates, and auto-merge behavior.
-- **SPEC-010A FRs**: Define checked-in product-line YAML seed configs; provide generic `seed:product-line` preflight/apply/verify plus `seed:mission-control` wrapper compatibility; validate flags, workflow contracts, governance rows, agents, and existing targets before writes; prove no-mutation failures and no Product Line B onboarding or runtime work.
+- **SPEC-010A FRs**: Define checked-in product-line YAML seed configs; provide generic `seed:product-line` preflight/apply/verify plus `seed:paddock` wrapper compatibility; validate flags, workflow contracts, governance rows, agents, and existing targets before writes; prove no-mutation failures and no Product Line B onboarding or runtime work.
 - **SPEC-012A FRs**: Maintain canonical `docs/ai/repo-knowledge-index.json` and schema; map root repo knowledge in `AGENTS.md`; add fixture-backed validation, fresh-agent smoke, package scripts, and guardrails; avoid runtime behavior, migrations, UI, scheduler/runner work, GitHub sync automation, sandbox lifecycle, adapters, generated `.gitnexus/`, broad docs rewrites, or nested AGENTS rollout.
 - **SPEC-013A FRs**: Add additive M76 task-stage attempt tables and rollback; expose typed helper/model behavior and read-only task-scoped API/UI inspection; represent lifecycle, projection drift, archive state, and optional run links; keep flag-off runtime paths table-blind and defer claim authority, scheduler launch, retry policy, GitHub reconciliation, sandbox lifecycle, adapters, and auto-merge.
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { GraphCanvas, GraphCanvasRef, type Theme, type GraphNode as ReagraphNode, type GraphEdge as ReagraphEdge, type InternalGraphNode } from 'reagraph'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 // --- Data interfaces (match API response) ---
 
@@ -100,7 +100,7 @@ const obsidianTheme: Theme = {
 
 export function MemoryGraph() {
   const t = useTranslations('memoryGraph')
-  const { memoryGraphAgents, setMemoryGraphAgents } = useMissionControl()
+  const { memoryGraphAgents, setMemoryGraphAgents } = usePaddock()
   const agents = useMemo(() => memoryGraphAgents || [], [memoryGraphAgents])
   const [selectedAgent, setSelectedAgent] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(memoryGraphAgents === null)

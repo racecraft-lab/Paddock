@@ -2,26 +2,26 @@
 # This file declares configuration intent only; apply/verify behavior is owned by the seeder command.
 schema_version: product-line-seed-v1
 product_line:
-  slug: mission-control
+  slug: paddock
   display_name: Paddock
-  agent_prefix: mission-control-platform
+  agent_prefix: paddock-platform
 github:
   owner: racecraft-lab
   repo: Paddock
   full_name: racecraft-lab/Paddock
 workflow_contract:
-  family: mission-control
-  path: docs/ai/workflows/mission-control/workflow-contract.yaml
+  family: paddock
+  path: docs/ai/workflows/paddock/workflow-contract.yaml
   required_slugs:
-    - mission-control_issue_triage
-    - mission-control_specialist_route
-    - mission-control_close_issue
-    - mission-control_needs_spec_route
-    - mission-control_remediation_plan
-    - mission-control_dev_implementation
-    - mission-control_review
-    - mission-control_owner_review
-    - mission-control_aegis
+    - paddock_issue_triage
+    - paddock_specialist_route
+    - paddock_close_issue
+    - paddock_needs_spec_route
+    - paddock_remediation_plan
+    - paddock_dev_implementation
+    - paddock_review
+    - paddock_owner_review
+    - paddock_aegis
 departments:
   - slug: qa
     name: QA
@@ -102,14 +102,14 @@ feature_flags:
     - FEATURE_TASK_ARTIFACTS
     - FEATURE_RESOURCE_GOVERNANCE
     - FEATURE_OPENCLAW_HEALTH_COSTS
-    - PILOT_MISSION_CONTROL_E2E
+    - PILOT_PADDOCK_E2E
   disabled_or_absent:
     - PILOT_PRODUCT_LINE_A_E2E
     - FEATURE_TASK_CONTROL_PLANE
     - FEATURE_AGENT_RUNNER_SANDBOXES
 governance_defaults:
   - identity: daily-token-budget
-    notes: SPEC-009B:mission-control:daily-token-budget
+    notes: SPEC-009B:paddock:daily-token-budget
     policy_type: budget
     limit_kind: token
     limit_value: 1000000
@@ -119,7 +119,7 @@ governance_defaults:
     enabled: true
     default_template: false
   - identity: daily-usd-budget
-    notes: SPEC-009B:mission-control:daily-usd-budget
+    notes: SPEC-009B:paddock:daily-usd-budget
     policy_type: budget
     limit_kind: usd
     limit_value: 10
@@ -129,7 +129,7 @@ governance_defaults:
     enabled: true
     default_template: false
   - identity: wip-visibility-template
-    notes: SPEC-009B:mission-control:wip-visibility-template
+    notes: SPEC-009B:paddock:wip-visibility-template
     policy_type: wip_limit
     limit_kind: concurrent_tasks
     limit_value: 2

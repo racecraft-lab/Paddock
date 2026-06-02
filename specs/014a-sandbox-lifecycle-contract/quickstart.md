@@ -29,7 +29,7 @@ pnpm api:parity
 ## 2. Enable In Disposable Workspace
 
 1. Add `{ "FEATURE_AGENT_RUNNER_SANDBOXES": true }` to the disposable workspace feature flags.
-2. Create fake lifecycles for owners `mission_control`, `openclaw`, and `external_harness`.
+2. Create fake lifecycles for owners `paddock`, `openclaw`, and `external_harness`.
 3. Verify every lifecycle key matches:
 
 ```text
@@ -92,7 +92,7 @@ Expected top-level response shape:
 
 ## 6. Migration Marker Checks
 
-Use the disposable database path for `MISSION_CONTROL_DB_PATH`.
+Use the disposable database path for `PADDOCK_DB_PATH`.
 
 ```sql
 SELECT id FROM schema_migrations WHERE id = '080_agent_sandbox_lifecycles';

@@ -55,9 +55,9 @@ let tempDataDir: string
 let originalDataDir: string | undefined
 
 beforeEach(() => {
-  originalDataDir = process.env.MISSION_CONTROL_DATA_DIR
+  originalDataDir = process.env.PADDOCK_DATA_DIR
   tempDataDir = mkdtempSync(join(tmpdir(), 'mc-spec007-us6-'))
-  process.env.MISSION_CONTROL_DATA_DIR = tempDataDir
+  process.env.PADDOCK_DATA_DIR = tempDataDir
 })
 
 afterEach(() => {
@@ -65,9 +65,9 @@ afterEach(() => {
     openDbs.pop()?.close()
   }
   if (originalDataDir === undefined) {
-    delete process.env.MISSION_CONTROL_DATA_DIR
+    delete process.env.PADDOCK_DATA_DIR
   } else {
-    process.env.MISSION_CONTROL_DATA_DIR = originalDataDir
+    process.env.PADDOCK_DATA_DIR = originalDataDir
   }
   try {
     rmSync(tempDataDir, { recursive: true, force: true })

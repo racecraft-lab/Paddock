@@ -3,7 +3,7 @@
 **Date**: 2026-05-27
 **Replay type**: local/manual pre-merge UAT replay
 **Branch**: `013b-claim-reconciliation`
-**Worktree**: `/Users/fredrickgabelmann/.codex/worktrees/6b95/racecraft-mission-control/.worktrees/013b-claim-reconciliation`
+**Worktree**: `/Users/fredrickgabelmann/.codex/worktrees/6b95/racecraft-paddock/.worktrees/013b-claim-reconciliation`
 
 ## Scope
 
@@ -103,18 +103,18 @@ Result: 1 test file passed, 1 test passed. Node runtime: v22.22.2 through `diren
 **Date**: 2026-05-27
 **Replay type**: target post-merge HITL UAT replay on HAL
 **Merge commit**: `5e61d0ffc02f9345b265cd5420660d02bf693016`
-**Live worktree**: `/home/fredrick-gabelmann/mission-control`
-**Live DB**: `/home/fredrick-gabelmann/mission-control-data/mission-control.db`
-**Backup before UAT**: `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec013b-target-uat-20260527-175012.bak`
+**Live worktree**: `/home/fredrick-gabelmann/paddock`
+**Live DB**: `/home/fredrick-gabelmann/paddock-data/paddock.db`
+**Backup before UAT**: `/home/fredrick-gabelmann/paddock-data/backups/paddock.db.spec013b-target-uat-20260527-175012.bak`
 
-The target replay used the existing Ideaverse Paddock deployment runbook. HAL pulled PR #62's merge commit, ran `pnpm install --frozen-lockfile`, rebuilt successfully, verified `.next/standalone/server.js`, restarted `mission-control.service`, served `/login` with HTTP 200, kept `openclaw-gateway.service` active, and verified live DB migration markers `076_task_stage_attempts`, `077_github_sync_lifecycle`, and `078_task_stage_claims`.
+The target replay used the existing Ideaverse Paddock deployment runbook. HAL pulled PR #62's merge commit, ran `pnpm install --frozen-lockfile`, rebuilt successfully, verified `.next/standalone/server.js`, restarted `paddock.service`, served `/login` with HTTP 200, kept `openclaw-gateway.service` active, and verified live DB migration markers `076_task_stage_attempts`, `077_github_sync_lifecycle`, and `078_task_stage_claims`.
 
 The replay used a temporary Vitest harness copied to HAL, run with the service-compatible Node path, and removed after success:
 
 ```bash
-SPEC013B_UAT_DB=/home/fredrick-gabelmann/mission-control-data/mission-control.db \
+SPEC013B_UAT_DB=/home/fredrick-gabelmann/paddock-data/paddock.db \
 PATH=/usr/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/bin \
-/home/linuxbrew/.linuxbrew/bin/pnpm --dir /home/fredrick-gabelmann/mission-control \
+/home/linuxbrew/.linuxbrew/bin/pnpm --dir /home/fredrick-gabelmann/paddock \
   exec vitest run src/lib/__tests__/spec-013b-hal-uat.test.ts --reporter=verbose
 ```
 

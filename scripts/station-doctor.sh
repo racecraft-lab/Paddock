@@ -34,9 +34,9 @@ echo "--- Service Status ---"
 
 RUNNING_IN_DOCKER=false
 if command -v docker &>/dev/null; then
-  if docker ps --filter name=mission-control --format '{{.Names}}' 2>/dev/null | grep -q mission-control; then
+  if docker ps --filter name=paddock --format '{{.Names}}' 2>/dev/null | grep -q paddock; then
     RUNNING_IN_DOCKER=true
-    health=$(docker inspect mission-control --format '{{.State.Health.Status}}' 2>/dev/null || echo "none")
+    health=$(docker inspect paddock --format '{{.State.Health.Status}}' 2>/dev/null || echo "none")
     if [[ "$health" == "healthy" ]]; then
       pass "Docker container is healthy"
     elif [[ "$health" == "starting" ]]; then
@@ -97,7 +97,7 @@ fi
 echo ""
 echo "--- Database ---"
 
-DB_PATH="$PROJECT_ROOT/.data/mission-control.db"
+DB_PATH="$PROJECT_ROOT/.data/paddock.db"
 if [[ -f "$DB_PATH" ]]; then
   db_size=$(du -h "$DB_PATH" 2>/dev/null | cut -f1)
   pass "Database exists ($db_size)"

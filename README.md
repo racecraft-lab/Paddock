@@ -146,7 +146,7 @@ For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 | [Quickstart](docs/quickstart.md) | First local setup, agent registration, and task flow. |
 | [Agent setup](docs/agent-setup.md) | Agent identities, SOUL personalities, config, and heartbeats. |
 | [Orchestration](docs/orchestration.md) | Multi-agent workflows, auto-dispatch, and quality review gates. |
-| [Workflow contract](docs/ai/workflows/mission-control/workflow-contract.yaml) | Repo-owned workflow policy for Paddock product-line work. |
+| [Workflow contract](docs/ai/workflows/paddock/workflow-contract.yaml) | Repo-owned workflow policy for Paddock product-line work. |
 | [CLI reference](docs/cli-agent-control.md) | Headless and scripted control commands. |
 | [CLI integration](docs/cli-integration.md) | Connect Codex, Claude Code, or another CLI harness. |
 | [Deployment](docs/deployment.md) | Production deployment, reverse proxy, and VPS guidance. |
@@ -159,7 +159,7 @@ For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 Paddock remains a TypeScript/Next.js/SQLite application.
 
 ```
-mission-control/
+paddock/
 ├── src/
 │   ├── app/                  # App Router pages and API routes
 │   ├── components/           # SPA shell, panels, chat, layout, dashboards
@@ -212,7 +212,7 @@ See [.env.example](.env.example) for the full environment reference.
 | --- | --- |
 | `AUTH_USER` / `AUTH_PASS` | Optional initial admin credentials. |
 | `API_KEY` | Optional headless API key. |
-| `MISSION_CONTROL_DATA_DIR` | Runtime database and state directory. |
+| `PADDOCK_DATA_DIR` | Runtime database and state directory. |
 | `MC_ALLOWED_HOSTS` | Production host allowlist. |
 | `NEXT_PUBLIC_GATEWAY_OPTIONAL` | Run without a gateway connection. |
 | `OPENCLAW_CONFIG_PATH` | Optional OpenClaw gateway configuration path. |

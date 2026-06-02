@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { startTransition, useCallback, useEffect } from 'react'
 import { startNavigationTiming } from '@/lib/navigation-metrics'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 export function panelHref(panel: string): string {
   return panel === 'overview' ? '/' : `/${panel}`
@@ -29,7 +29,7 @@ function safePrefetch(router: ReturnType<typeof useRouter>, href: string) {
 export function useNavigateToPanel() {
   const router = useRouter()
   const pathname = usePathname()
-  const { setActiveTab, setChatPanelOpen } = useMissionControl()
+  const { setActiveTab, setChatPanelOpen } = usePaddock()
 
   useEffect(() => {
     for (const panel of DEFAULT_PREFETCH_PANELS) {

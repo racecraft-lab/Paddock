@@ -171,7 +171,7 @@ Add two independent feature-flagged surfaces. (1) `FEATURE_DISPOSITION_LOGGING`:
 - Triage template detection by `output_schema` requiring a typed `disposition` field; no new column or migration. (Q4)
 - Disposition insert pattern: `advanceTaskChain` commits the task transition; the disposition INSERT runs in its own try/catch outside the transaction; failure → activity row `kind='disposition_insert_failed'` throttled 1 per `(task_id, kind)` per 60s. (Q5)
 - Disposition source: triage agent's validated `output_schema` payload. `triaged_by_agent_id` is the completing task's `agent_id`. (Q6)
-- File storage layout: `<MISSION_CONTROL_DATA_DIR>/artifacts/<workspace_id>/<yyyy>/<mm>/<sha256>.<ext>`. `storage_uri` is RELATIVE to `DATA_DIR`. (Q8)
+- File storage layout: `<PADDOCK_DATA_DIR>/artifacts/<workspace_id>/<yyyy>/<mm>/<sha256>.<ext>`. `storage_uri` is RELATIVE to `DATA_DIR`. (Q8)
 - Inline-vs-file threshold: 64 KiB after UTF-8 encoding; agent cannot override. (Q9)
 - File size cap: 25 MiB hard limit. Allowlisted MIMEs: `text/plain`, `text/markdown`, `application/json`, `application/x-yaml`, `application/pdf`, `image/png`, `image/jpeg`, `image/svg+xml`, `application/zip`. (Q10)
 - Binary redaction: redact-and-store applies ONLY to text-like MIMEs (`text/*`, `application/json`, `application/x-yaml`). Binaries with findings always reject with 422 + `security_violation` activity. (Q11)
@@ -737,7 +737,7 @@ For each task:
 ## Project Structure Reference
 
 ```
-mission-control/
+paddock/
 ├── src/
 │   ├── app/api/
 │   │   ├── dispositions/route.ts          # NEW (GET)

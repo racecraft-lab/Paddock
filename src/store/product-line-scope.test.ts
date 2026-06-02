@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useMissionControl, type Agent, type Project, type Task } from '@/store'
+import { usePaddock, type Agent, type Project, type Task } from '@/store'
 import { ACTIVE_WORKSPACE_STORAGE_KEY, parsePersistedProductLineScope, type ProductLine } from '@/types/product-line'
 
 const productLine: ProductLine = {
@@ -69,7 +69,7 @@ describe('Paddock Product Line scope slice', () => {
   beforeEach(() => {
     installLocalStorage()
     localStorage.clear()
-    useMissionControl.setState({
+    usePaddock.setState({
       workspaceSwitcherEnabled: true,
       currentUser: {
         id: 99,
@@ -95,9 +95,9 @@ describe('Paddock Product Line scope slice', () => {
   })
 
   it('sets and persists an authorized Product Line scope while clearing incompatible state', () => {
-    useMissionControl.getState().setActiveProductLine(productLine, { source: 'user', broadcast: false, version: 123 })
+    usePaddock.getState().setActiveProductLine(productLine, { source: 'user', broadcast: false, version: 123 })
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.activeProductLine?.id).toBe(42)
     expect(state.activeProductLineScope).toMatchObject({
       kind: 'productLine',
@@ -123,14 +123,14 @@ describe('Paddock Product Line scope slice', () => {
   })
 
   it('rejects a real facility row as a Product Line selection', () => {
-    useMissionControl.getState().setActiveProductLine({
+    usePaddock.getState().setActiveProductLine({
       id: 3,
       slug: 'facility',
       name: 'Facility',
       tenant_id: 7,
     }, { source: 'user', broadcast: false })
 
-    expect(useMissionControl.getState().activeProductLine).toBeNull()
-    expect(useMissionControl.getState().workspaceScopeNotice).toBe('unauthorized-selection')
+    expect(usePaddock.getState().activeProductLine).toBeNull()
+    expect(usePaddock.getState().workspaceScopeNotice).toBe('unauthorized-selection')
   })
 })

@@ -141,7 +141,7 @@ load_env() {
 }
 
 migrate_runtime_data_dir() {
-  local target_data_dir="${MISSION_CONTROL_DATA_DIR:-$SOURCE_DATA_DIR}"
+  local target_data_dir="${PADDOCK_DATA_DIR:-$SOURCE_DATA_DIR}"
 
   if [[ "$target_data_dir" == "$SOURCE_DATA_DIR" ]]; then
     return
@@ -149,8 +149,8 @@ migrate_runtime_data_dir() {
 
   mkdir -p "$target_data_dir"
 
-  local source_db="$SOURCE_DATA_DIR/mission-control.db"
-  local target_db="$target_data_dir/mission-control.db"
+  local source_db="$SOURCE_DATA_DIR/paddock.db"
+  local target_db="$target_data_dir/paddock.db"
 
   if [[ -s "$target_db" || ! -s "$source_db" ]]; then
     return
@@ -163,16 +163,16 @@ migrate_runtime_data_dir() {
     sqlite3 "$source_db" ".backup '$target_db_tmp'"
     mv "$target_db_tmp" "$target_db"
 
-    if [[ -f "$SOURCE_DATA_DIR/mission-control-tokens.json" ]]; then
-      cp "$SOURCE_DATA_DIR/mission-control-tokens.json" "$target_data_dir/mission-control-tokens.json"
+    if [[ -f "$SOURCE_DATA_DIR/paddock-tokens.json" ]]; then
+      cp "$SOURCE_DATA_DIR/paddock-tokens.json" "$target_data_dir/paddock-tokens.json"
     fi
     if [[ -d "$SOURCE_DATA_DIR/backups" ]]; then
       rsync -a "$SOURCE_DATA_DIR/backups"/ "$target_data_dir/backups"/
     fi
   else
     rsync -a \
-      --exclude 'mission-control.db-shm' \
-      --exclude 'mission-control.db-wal' \
+      --exclude 'paddock.db-shm' \
+      --exclude 'paddock.db-wal' \
       --exclude '*.db-shm' \
       --exclude '*.db-wal' \
       "$SOURCE_DATA_DIR"/ "$target_data_dir"/
@@ -198,9 +198,9 @@ pnpm install --frozen-lockfile
 echo "==> rebuilding standalone bundle"
 rm -rf .next
 mkdir -p "$BUILD_DATA_DIR"
-MISSION_CONTROL_DATA_DIR="$BUILD_DATA_DIR" \
-MISSION_CONTROL_DB_PATH="$BUILD_DATA_DIR/mission-control.db" \
-MISSION_CONTROL_TOKENS_PATH="$BUILD_DATA_DIR/mission-control-tokens.json" \
+PADDOCK_DATA_DIR="$BUILD_DATA_DIR" \
+PADDOCK_DB_PATH="$BUILD_DATA_DIR/paddock.db" \
+PADDOCK_TOKENS_PATH="$BUILD_DATA_DIR/paddock-tokens.json" \
 pnpm build
 
 echo "==> starting standalone server"

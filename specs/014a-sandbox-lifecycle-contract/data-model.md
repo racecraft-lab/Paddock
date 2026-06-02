@@ -13,7 +13,7 @@ Current-state projection for one deterministic sandbox key.
 | `sandbox_attempt_key` | TEXT | Yes | Required key segment for `attempt/<attempt_id>`; may mirror `task_stage_attempt_id` when present. |
 | `task_stage_attempt_id` | INTEGER | No | Passive evidence link to M76 attempts. Not a lock. |
 | `task_stage_claim_id` | INTEGER | No | Evidence link to M78 claims. Not a lock. |
-| `owner` | TEXT | Yes | Closed enum: `mission_control`, `openclaw`, `external_harness`. |
+| `owner` | TEXT | Yes | Closed enum: `paddock`, `openclaw`, `external_harness`. |
 | `sandbox_key` | TEXT | Yes | Deterministic stable key. Unique within workspace. |
 | `root_id` | TEXT | Yes | Logical root identifier, not an absolute path. |
 | `sanitized_relative_path` | TEXT | Yes | Safe bounded relative path evidence. |

@@ -56,7 +56,7 @@ vi.mock('next-intl', () => ({
 }))
 
 vi.mock('@/store', () => ({
-  useMissionControl: () => ({ activeProductLineScope: storeMocks.activeProductLineScope }),
+  usePaddock: () => ({ activeProductLineScope: storeMocks.activeProductLineScope }),
 }))
 
 function lifecycleEnvelope(overrides: Record<string, unknown> = {}) {
@@ -71,7 +71,7 @@ function lifecycleEnvelope(overrides: Record<string, unknown> = {}) {
     },
     scopes: [
       {
-        scope: { workspace_id: 1, github_repo: 'racecraft/mission-control', owner_project_id: 101 },
+        scope: { workspace_id: 1, github_repo: 'racecraft-lab/Paddock', owner_project_id: 101 },
         controls: {
           enabled: true,
           interval_seconds: 300,
@@ -424,7 +424,7 @@ function installFetchMock(envelope = lifecycleEnvelope()) {
           {
             id: 101,
             name: 'Paddock',
-            github_repo: 'racecraft/mission-control',
+            github_repo: 'racecraft-lab/Paddock',
             github_sync_enabled: true,
           },
         ],
@@ -517,7 +517,7 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
       kind: 'productLine',
       tenantId: 1,
       productLineId: 1,
-      productLine: { id: 1, slug: 'mission-control', name: 'Paddock', tenant_id: 1 },
+      productLine: { id: 1, slug: 'paddock', name: 'Paddock', tenant_id: 1 },
       version: 1,
       scopeKey: 'tenant:1:product-line:1',
     }
@@ -540,7 +540,7 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
             run_id: 'ghsync_active_1',
             trigger: 'automatic',
             workspace_id: 1,
-            github_repo: 'racecraft/mission-control',
+            github_repo: 'racecraft-lab/Paddock',
             started_at: '2026-05-23T04:00:00.000Z',
             lease_expires_at: '2026-05-23T04:01:00.000Z',
           },
@@ -562,7 +562,7 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
             {
               id: 101,
               name: 'Paddock',
-              github_repo: 'racecraft/mission-control',
+              github_repo: 'racecraft-lab/Paddock',
               github_sync_enabled: true,
             },
           ],
@@ -589,7 +589,7 @@ describe('GitHubSyncPanel automatic lifecycle', () => {
     expect(screen.getByText(/ghsync_active_1/)).toBeInTheDocument()
     expect(screen.getByText(/automatic/)).toBeInTheDocument()
     expect(screen.getByText(/Try again in 45 seconds/)).toBeInTheDocument()
-    expect(screen.queryByText(/Enable automation for racecraft\/mission-control/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Enable automation for racecraft\/paddock/)).not.toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: 'Sync all' }))
     await waitFor(() => {

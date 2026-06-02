@@ -1,6 +1,6 @@
 ---
 name: onboarding
-description: "Skill for the Onboarding area of mission-control. 41 symbols across 7 files."
+description: "Skill for the Onboarding area of paddock. 41 symbols across 7 files."
 ---
 
 # Onboarding

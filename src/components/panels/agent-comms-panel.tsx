@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
-import { useMissionControl, type LogEntry, type Session } from '@/store'
+import { usePaddock, type LogEntry, type Session } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 
 import type { AggregateEvent } from '@/app/api/sessions/transcript/aggregate/route'
@@ -219,7 +219,7 @@ export function AgentCommsPanel() {
     connection,
     currentUser,
     activeProductLineScope,
-  } = useMissionControl()
+  } = usePaddock()
 
   // Fetch DB-backed comms messages
   const fetchComms = useCallback(async () => {

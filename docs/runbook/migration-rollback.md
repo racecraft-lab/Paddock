@@ -42,7 +42,7 @@
 SPEC-013A1 rollback SQL:
 
 ```bash
-sqlite3 "$MISSION_CONTROL_DATA_DIR/mission-control.db" < docs/migrations/rollback-M77.sql
+sqlite3 "$PADDOCK_DATA_DIR/paddock.db" < docs/migrations/rollback-M77.sql
 ```
 
 `rollback-M77.sql` drops only the GitHub sync lifecycle tables and leaves

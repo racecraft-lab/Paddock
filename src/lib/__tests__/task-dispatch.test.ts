@@ -194,7 +194,7 @@ function createSpec009C3PipelineDb(): Database.Database {
   }))
   db.prepare(`
     INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix)
-    VALUES (900, 'Paddock', 'mission-control', 1, 'MC')
+    VALUES (900, 'Paddock', 'paddock', 1, 'MC')
   `).run()
   db.prepare(`
     INSERT OR IGNORE INTO agents (id, name, role, status, workspace_id)
@@ -208,13 +208,13 @@ function createSpec009C3PipelineDb(): Database.Database {
       external_terminal_event, created_by
     )
     VALUES
-      (910, 1, 'mission-control_dev_implementation', 'Dev', 'Implement', 'sonnet', 'dev',
-        NULL, '[]', 'mission-control_review', 1, 'github_pr_merged', 'workflow-contract'),
-      (911, 1, 'mission-control_review', 'Review', 'Review', 'sonnet', 'qa',
+      (910, 1, 'paddock_dev_implementation', 'Dev', 'Implement', 'sonnet', 'dev',
+        NULL, '[]', 'paddock_review', 1, 'github_pr_merged', 'workflow-contract'),
+      (911, 1, 'paddock_review', 'Review', 'Review', 'sonnet', 'qa',
         '{"type":"object","required":["verdict"],"properties":{"verdict":{"type":"string","enum":["pass","fix"]}},"additionalProperties":false}',
-        '[]', 'mission-control_owner_review', 0, NULL, 'workflow-contract'),
-      (912, 1, 'mission-control_owner_review', 'Owner Review', 'Owner', 'sonnet', 'qa',
-        NULL, '[]', 'mission-control_aegis', 0, NULL, 'workflow-contract')
+        '[]', 'paddock_owner_review', 0, NULL, 'workflow-contract'),
+      (912, 1, 'paddock_owner_review', 'Owner Review', 'Owner', 'sonnet', 'qa',
+        NULL, '[]', 'paddock_aegis', 0, NULL, 'workflow-contract')
   `).run()
   return db
 }
@@ -247,11 +247,11 @@ function createSpec009FTriageDispatchDb(): Database.Database {
     FEATURE_TASK_PIPELINES: true,
     FEATURE_TASK_ARTIFACTS: true,
     FEATURE_DISPOSITION_LOGGING: true,
-    PILOT_MISSION_CONTROL_E2E: true,
+    PILOT_PADDOCK_E2E: true,
   }))
   db.prepare(`
     INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix, area_slug)
-    VALUES (990, 'Paddock', 'mission-control', 1, 'MC', 'dev')
+    VALUES (990, 'Paddock', 'paddock', 1, 'MC', 'dev')
   `).run()
   db.prepare(`
     INSERT INTO workflow_templates (
@@ -260,7 +260,7 @@ function createSpec009FTriageDispatchDb(): Database.Database {
       external_terminal_event, created_by
     )
     VALUES (
-      990, 1, 'mission-control_issue_triage', 'Issue Triage', 'Triage issue',
+      990, 1, 'paddock_issue_triage', 'Issue Triage', 'Triage issue',
       'sonnet', 'triage', ?, '[]', NULL, 0, NULL, 'workflow-contract'
     )
   `).run(SPEC_009F_TRIAGE_OUTPUT_SCHEMA)
@@ -280,10 +280,10 @@ function seedSpec009C3Chain(db: Database.Database, reviewVerdict: 'pass' | 'fix'
         1, 900, NULL, NULL, 'racecraft-lab/Paddock', 99, NULL, NULL,
         300, 'c3-chain', 0),
       (302, 'Dev implementation', 'Dev task', 'done', 'high', '{"result":"done"}', 'builder', 'system',
-        1, 900, 910, 'mission-control_dev_implementation', 'racecraft-lab/Paddock', NULL, 42, 300,
+        1, 900, 910, 'paddock_dev_implementation', 'racecraft-lab/Paddock', NULL, 42, 300,
         300, 'c3-chain', 2),
       (303, 'Implementation review', 'Review task', 'done', 'high', ?, 'reviewer', 'system',
-        1, 900, 911, 'mission-control_review', NULL, NULL, NULL, 302,
+        1, 900, 911, 'paddock_review', NULL, NULL, NULL, 302,
         300, 'c3-chain', 3)
   `).run(JSON.stringify({ verdict: reviewVerdict }))
 }
@@ -435,7 +435,7 @@ describe('advanceTaskChain SPEC-009F triage routing', () => {
       )
       VALUES (
         9900, 'SPEC-009F source task', 'Production triage route', 'done', 'medium',
-        ?, 'triage-agent', 'system', 1, 990, 990, 'mission-control_issue_triage',
+        ?, 'triage-agent', 'system', 1, 990, 990, 'paddock_issue_triage',
         'racecraft-lab/Paddock', 1090, 1779400000, 1779400000, 1779400000
       )
     `).run(JSON.stringify({
@@ -490,7 +490,7 @@ describe('advanceTaskChain SPEC-009F triage routing', () => {
       )
       VALUES (
         9901, 'SPEC-009F secret-bearing source task', 'Production triage route', 'done', 'medium',
-        ?, 'triage-agent', 'system', 1, 990, 990, 'mission-control_issue_triage',
+        ?, 'triage-agent', 'system', 1, 990, 990, 'paddock_issue_triage',
         'racecraft-lab/Paddock', 1091, 1779400000, 1779400000, 1779400000
       )
     `).run(JSON.stringify({
@@ -534,7 +534,7 @@ describe('autoRouteInboxTasks pilot hold', () => {
       UPDATE workspaces
       SET feature_flags = ?
       WHERE id = 1
-    `).run(JSON.stringify({ PILOT_MISSION_CONTROL_E2E: true }))
+    `).run(JSON.stringify({ PILOT_PADDOCK_E2E: true }))
     dispatchDb.prepare(`
       INSERT INTO agents (id, name, workspace_id, scope, role, status, config)
       VALUES (10, 'HAL', 1, 'workspace', 'agent', 'idle', NULL)

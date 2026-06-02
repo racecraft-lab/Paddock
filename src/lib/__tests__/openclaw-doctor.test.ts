@@ -161,7 +161,7 @@ Run "openclaw doctor --fix" to apply changes.
 - Found 1 session lock file.
 - ~/.openclaw/agents/main/sessions/test.jsonl.lock pid=123 (alive) age=11s stale=no
 ◇  Other gateway-like services detected
-- mission-control.service (user)
+- paddock.service (user)
 - openclaw-watchdog.service (user)
 ◇  Cleanup hints
 - systemctl --user disable --now openclaw-gateway.service
@@ -188,7 +188,7 @@ Run "openclaw doctor --fix" to apply changes.
 ◇  State integrity
 - Found 100 orphan transcript files in ~/.openclaw/agents/main/sessions.
 ◇  Other gateway-like services detected
-- mission-control.service (user)
+- paddock.service (user)
 Run "openclaw doctor --fix" to apply changes.
 `, 0)
 

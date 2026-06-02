@@ -14,7 +14,7 @@ const REQUIRED_PATHS = [
   'docs/ai/specs/autopilot-state.json',
   'docs/qa/pilot-smoke-checklist.md',
   'docs/runbook/migration-rollback.md',
-  'docs/ai/workflows/mission-control/workflow-contract.yaml',
+  'docs/ai/workflows/paddock/workflow-contract.yaml',
 ]
 const GITNEXUS_MARKERS = [
   'direnv exec . gitnexus analyze --embeddings --skip-agents-md',

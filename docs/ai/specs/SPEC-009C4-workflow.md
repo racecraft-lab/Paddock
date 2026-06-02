@@ -277,12 +277,12 @@ from the full gate result.
 | Enables | SPEC-009D, SPEC-010B |
 | Priority | P0 |
 | Tool surface | None; tools list is empty |
-| Feature flag scope | `PILOT_MISSION_CONTROL_E2E` plus existing two-step terminal and GitHub sync behavior where required |
+| Feature flag scope | `PILOT_PADDOCK_E2E` plus existing two-step terminal and GitHub sync behavior where required |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
 | Design Concept | `docs/ai/specs/SPEC-009C4-design-concept.md` |
 | Runtime projection | Existing GitHub sync engine, ready-for-owner terminal event, task-chain advancement, task status labels, activities, notifications, and pilot smoke checklist |
-| Existing surfaces | `src/lib/github-sync-engine.ts`, `src/lib/__tests__/github-sync-ready-for-owner.test.ts`, `src/lib/github-label-map.ts`, `docs/qa/pilot-smoke-checklist.md`, `docs/ai/workflows/mission-control/workflow-contract.yaml` |
+| Existing surfaces | `src/lib/github-sync-engine.ts`, `src/lib/__tests__/github-sync-ready-for-owner.test.ts`, `src/lib/github-label-map.ts`, `docs/qa/pilot-smoke-checklist.md`, `docs/ai/workflows/paddock/workflow-contract.yaml` |
 | Strict Scope | Merge-gate checklist evidence, GitHub closed/merged PR fixture, reconciliation activity assertions, label/status sync, and no new claim/runner/sandbox model |
 
 ### Scope Summary
@@ -368,7 +368,7 @@ to `done`.
 - `src/lib/__tests__/github-sync-ready-for-owner.test.ts`
 - `src/lib/github-label-map.ts`
 - `docs/qa/pilot-smoke-checklist.md`
-- `docs/ai/workflows/mission-control/workflow-contract.yaml`
+- `docs/ai/workflows/paddock/workflow-contract.yaml`
 
 ### Required design-source alignment
 Use `docs/ai/specs/SPEC-009C4-design-concept.md` as the source of truth for
@@ -495,7 +495,7 @@ $speckit-plan
   pnpm.
 - GitHub integration: existing GitHub sync engine and native `fetch` paths.
 - Workflow policy: repo-owned YAML contract in
-  `docs/ai/workflows/mission-control/workflow-contract.yaml`.
+  `docs/ai/workflows/paddock/workflow-contract.yaml`.
 
 ## Architecture Constraints
 - Reuse existing `pullFromGitHub` and GitHub sync reconciliation logic.
@@ -795,7 +795,7 @@ Before starting any task:
 - **Playwright decision:** no new targeted UI journey was required because C4 changed library reconciliation behavior, focused Vitest coverage, and Markdown evidence only; the full Playwright suite still ran through `pnpm test:all`.
 - **Live UAT:** temporary branch deployment at `http://127.0.0.1:3134` created issue #50 and PR #51, verified task `1` stayed `ready_for_owner` before `G_PILOT_MERGE`, squash-merged PR #51, then reconciled task `1` to `done` through existing `POST /api/github/sync`.
 - **UAT cleanup:** temporary Paddock rows were removed after checklist export; related rows went from `1/1/2/0/0/3` to `0/0/0/0/0/0`; GitHub issue #50 and merged PR #51 remain as external audit trail.
-- **Target deployment closeout:** PR #52 merged to `main` as `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`; HAL `/home/fredrick-gabelmann/mission-control` was fast-forwarded to that commit, `pnpm build` passed, `mission-control.service` restarted, `/login` returned 200, and authenticated `/api/status` returned 200. Target replay UAT on workspace `4` / project `3` used disposable task `41` linked to retained issue #50 / PR #51; deployed `POST /api/github/sync` returned `pulled=1`, `pushed=0`, task `41` moved to `done`, duplicate sync returned `pulled=0`, `pushed=0`, no successor child was created, and the disposable task row was removed after evidence capture. Backup: `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec009c4-target-uat-20260520-025827.bak`.
+- **Target deployment closeout:** PR #52 merged to `main` as `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`; HAL `/home/fredrick-gabelmann/paddock` was fast-forwarded to that commit, `pnpm build` passed, `paddock.service` restarted, `/login` returned 200, and authenticated `/api/status` returned 200. Target replay UAT on workspace `4` / project `3` used disposable task `41` linked to retained issue #50 / PR #51; deployed `POST /api/github/sync` returned `pulled=1`, `pushed=0`, task `41` moved to `done`, duplicate sync returned `pulled=0`, `pushed=0`, no successor child was created, and the disposable task row was removed after evidence capture. Backup: `/home/fredrick-gabelmann/paddock-data/backups/paddock.db.spec009c4-target-uat-20260520-025827.bak`.
 - **Reviewability:** final diff stayed in the planned C4 slice: existing GitHub sync reconciliation, focused tests, smoke checklist, workflow, roadmap, and autopilot status. No new poller, webhook, scheduler, claim/run schema, sandbox lifecycle, harness adapter, review packet table, evidence UI, migration, or runtime dependency entered the diff.
 - **Roadmap status:** C4 is `Complete` after PR #52 merge and HAL target deployment/UAT closeout.
 - **PR:** [#52](https://github.com/racecraft-lab/Paddock/pull/52) merged from branch `009c4-owner-merge-reconciliation`.
@@ -836,13 +836,13 @@ Before starting any task:
 ## Project Structure Reference
 
 ```text
-mission-control/
+paddock/
 ├── src/app/                         # Next.js pages and API routes
 ├── src/components/                  # UI panels and shared components
 ├── src/lib/                         # Core logic, database, GitHub sync, utilities
 ├── src/lib/__tests__/               # Vitest unit/integration tests
 ├── docs/ai/specs/                   # SpecKit workflow/design artifacts
-├── docs/ai/workflows/mission-control/ # Repo-owned workflow contract
+├── docs/ai/workflows/paddock/ # Repo-owned workflow contract
 ├── docs/qa/                         # Pilot smoke checklist and UAT evidence
 ├── specs/                           # Generated SpecKit specs/plans/tasks
 └── scripts/                         # Install, deploy, diagnostics, spec scripts

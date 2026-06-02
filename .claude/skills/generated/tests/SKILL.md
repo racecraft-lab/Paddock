@@ -1,6 +1,6 @@
 ---
 name: tests
-description: "Skill for the Tests area of mission-control. 44 symbols across 6 files."
+description: "Skill for the Tests area of paddock. 44 symbols across 6 files."
 ---
 
 # Tests

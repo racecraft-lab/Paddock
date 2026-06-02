@@ -10,7 +10,7 @@ describe('workflow contract diagnostics', () => {
       mode: 'dry-run',
       sourcePath: 'bad.yaml',
     })
-    const diagnostics = getWorkflowContractDiagnostics(db, { family: 'mission-control', workspaceId: 1 })
+    const diagnostics = getWorkflowContractDiagnostics(db, { family: 'paddock', workspaceId: 1 })
     const error = diagnostics.runs[0]?.errors[0] as { details?: string } | undefined
     expect(diagnostics.runs).toHaveLength(1)
     expect(error?.details).not.toContain('token')
@@ -31,7 +31,7 @@ describe('workflow contract diagnostics', () => {
       sourcePath: 'bad.yaml',
     })
 
-    const diagnostics = getWorkflowContractDiagnostics(db, { family: 'mission-control', workspaceId: 1 })
+    const diagnostics = getWorkflowContractDiagnostics(db, { family: 'paddock', workspaceId: 1 })
 
     expect(diagnostics.last_known_good_available).toBe(true)
     expect(diagnostics.last_successful_apply).toMatchObject({

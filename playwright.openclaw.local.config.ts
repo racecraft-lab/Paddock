@@ -9,6 +9,7 @@ export default defineConfig({
   },
   fullyParallel: false,
   workers: 1,
+  outputDir: 'test-results/playwright-artifacts/openclaw-local',
   reporter: [['list']],
   use: {
     baseURL: 'http://127.0.0.1:3005',

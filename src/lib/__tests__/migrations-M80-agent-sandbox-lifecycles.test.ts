@@ -92,10 +92,10 @@ describe('M80 agent sandbox lifecycle migration', () => {
       INSERT INTO agent_sandbox_lifecycles (
         workspace_id, task_id, stage_key, sandbox_attempt_key, owner, sandbox_key,
         root_id, sanitized_relative_path, status
-      ) VALUES (1, 100, 'stage', '1', ?, ?, 'mission_control_data_sandboxes', 'workspace/1/task/100', ?)
+      ) VALUES (1, 100, 'stage', '1', ?, ?, 'paddock_data_sandboxes', 'workspace/1/task/100', ?)
     `)
 
-    insert.run('mission_control', 'key-1', 'created')
+    insert.run('paddock', 'key-1', 'created')
     expect(() => insert.run('codex', 'key-2', 'created')).toThrow()
     expect(() => insert.run('openclaw', 'key-3', 'launching')).toThrow()
     expect(() => insert.run('external_harness', 'key-1', 'created')).toThrow()

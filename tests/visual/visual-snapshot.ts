@@ -78,7 +78,7 @@ export async function captureVisualSnapshot(
   const reviewTitle = options.title || `${humanize(domain)} / ${humanize(name)}`
   const manifest = {
     version: 1,
-    tool: 'mission-control-visual',
+    tool: 'paddock-visual',
     kind: 'playwright',
     domain,
     name,

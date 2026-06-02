@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
 import { clampWizardStep, getWizardSteps, stepIdAt } from '@/lib/onboarding-flow'
 import { SecurityScanCard } from '@/components/onboarding/security-scan-card'
@@ -65,7 +65,7 @@ function modeColors(isGateway: boolean) {
 }
 
 export function OnboardingWizard() {
-  const { showOnboarding, setShowOnboarding, dashboardMode, gatewayAvailable, activeProductLineScope } = useMissionControl()
+  const { showOnboarding, setShowOnboarding, dashboardMode, gatewayAvailable, activeProductLineScope } = usePaddock()
   const navigateToPanel = useNavigateToPanel()
   const t = useTranslations('onboarding')
   const [step, setStep] = useState(0)
@@ -451,7 +451,7 @@ function StepInterfaceMode({ isGateway, onNext, onBack }: {
   const mc = modeColors(isGateway)
   const t = useTranslations('onboarding.interfaceMode')
   const tc = useTranslations('common')
-  const { interfaceMode, setInterfaceMode } = useMissionControl()
+  const { interfaceMode, setInterfaceMode } = usePaddock()
   const [selected, setSelected] = useState<'essential' | 'full'>(interfaceMode)
 
   const handleSelect = async (mode: 'essential' | 'full') => {

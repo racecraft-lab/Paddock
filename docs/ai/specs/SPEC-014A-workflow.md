@@ -114,7 +114,7 @@ Use these sources only for workspace safety, lifecycle vocabulary, context legib
 
 ### Roadmap Scope
 
-Define deterministic, sanitized, product-line-scoped sandbox keys/paths and lifecycle hooks for `mission_control`, `openclaw`, and `external_harness` ownership using fakes only. No real harness launches.
+Define deterministic, sanitized, product-line-scoped sandbox keys/paths and lifecycle hooks for `paddock`, `openclaw`, and `external_harness` ownership using fakes only. No real harness launches.
 
 ### Success Criteria Summary
 
@@ -149,10 +149,10 @@ Paddock has claim/reconciliation authority from SPEC-013B but does not yet have 
 
 Specify the requirements for:
 - Durable SQLite lifecycle state using a narrow schema pair: `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events`.
-- Closed owner enum: `mission_control`, `openclaw`, `external_harness`.
+- Closed owner enum: `paddock`, `openclaw`, `external_harness`.
 - Stable ID-based sandbox key shape with sanitized readability slugs:
   `workspace/<workspace_id>/product-line/<product_line_slug>/task/<task_id>/stage/<stage_key>/attempt/<attempt_id>/owner/<owner>`.
-- Default filesystem root `<MISSION_CONTROL_DATA_DIR>/sandboxes` with optional reviewed per-workspace config.
+- Default filesystem root `<PADDOCK_DATA_DIR>/sandboxes` with optional reviewed per-workspace config.
 - Bounded path helper that rejects traversal, absolute paths, symlink-like segments, unsafe Unicode/control characters, reserved names, duplicate normalized keys, overlong segments, and root escape after normalization.
 - Lifecycle hooks: `create`, `prepare`, `mark_running`, `mark_terminal`, and `cleanup`.
 - Closed coarse lifecycle statuses: `created`, `prepared`, `running`, `terminal`, `cleanup_pending`, `cleaned_up`, `rolled_back`, `cleanup_failed`.
@@ -281,7 +281,7 @@ Architecture decisions from the Design Concept:
 - Add additive lifecycle persistence as `agent_sandbox_lifecycles` plus `agent_sandbox_lifecycle_events`; verify live migration id before choosing the final number. Expected next id is `080_agent_sandbox_lifecycles` because current `main` now has M79 `079_task_claim_control`.
 - Add manual rollback SQL at `docs/migrations/rollback-M80.sql` unless live migration verification chooses a different id.
 - Add one narrow helper module for key/path validation and lifecycle transitions.
-- Add production-code fake owners for `mission_control`, `openclaw`, and `external_harness` behind `FEATURE_AGENT_RUNNER_SANDBOXES`.
+- Add production-code fake owners for `paddock`, `openclaw`, and `external_harness` behind `FEATURE_AGENT_RUNNER_SANDBOXES`.
 - Add a minimal read-only API returning `sandbox_lifecycle.v1`; choose exact route by matching existing task evidence and task-stage-attempt route patterns.
 - Update API index and OpenAPI docs for the route.
 - Add new TS/TSX modules to `tsconfig.spec-strict.json` and `eslint.config.mjs`.
@@ -339,7 +339,7 @@ Why this domain: Sandbox keys and paths are boundary-sensitive and may reference
 $speckit-checklist security
 
 Focus on SPEC-014A requirements:
-- Bounded path resolution under `<MISSION_CONTROL_DATA_DIR>/sandboxes` or reviewed per-workspace root.
+- Bounded path resolution under `<PADDOCK_DATA_DIR>/sandboxes` or reviewed per-workspace root.
 - Rejection of traversal, absolute paths, symlink-like segments, unsafe Unicode/control characters, reserved names, duplicate normalized keys, overlong segments, and root escape.
 - Metadata redaction rules for raw paths, prompts, tokens, auth headers, provider/session payloads, and secret-shaped strings.
 - Authenticated workspace/task-scoped read API with no cross-workspace leakage.
@@ -413,7 +413,7 @@ Required task coverage:
 - `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events` current/event persistence.
 - Key/path helper and adversarial path-safety corpus.
 - Lifecycle transition helper with idempotent create, conflict failure, rollback, cleanup, and durable event evidence.
-- Production fake owner implementations for `mission_control`, `openclaw`, and `external_harness`, with tests proving no real launch.
+- Production fake owner implementations for `paddock`, `openclaw`, and `external_harness`, with tests proving no real launch.
 - Feature flag gating through `resolveFlag` and flag-off no-row/no-event tests.
 - Read-only `sandbox_lifecycle.v1` API, auth/workspace scope tests, API index/OpenAPI parity.
 - Scope guards proving no UI, adapter manifest, token accounting, real runner, OpenClaw launch, retry/release/cancel, successor selection, claim authority, or auto-merge enters SPEC-014A.
@@ -523,7 +523,7 @@ Verification expectations:
 |-------|-------|-----------|-------|
 | Foundation | Complete | T001-T011 | M80 lifecycle/event tables, rollback SQL, feature flag, fixtures, and strict-scope entries complete. |
 | Lifecycle Core | Complete | T012-T039 | Key/path validation, safe metadata handling, idempotent create/reuse/conflict behavior, transitions, cleanup, rollback, and durable event evidence complete. |
-| Fake Owners | Complete | T012-T018 | `mission_control`, `openclaw`, and `external_harness` fake owners exercise lifecycle hooks without real harness launch code. |
+| Fake Owners | Complete | T012-T018 | `paddock`, `openclaw`, and `external_harness` fake owners exercise lifecycle hooks without real harness launch code. |
 | Read Surface | Complete | T040-T046 | `sandbox_lifecycle.v1` read model, viewer/task/workspace-scoped route, API index, and OpenAPI parity complete. |
 | Verification | Complete | T047-T058 | Focused tests, full Vitest, typecheck, lint, build, API parity, server-only e2e N/A, disposable in-memory UAT, and post-merge HAL target UAT evidence complete. |
 
@@ -555,9 +555,9 @@ Verification expectations:
 
 - PR #64 merged to `main` as `c01d9e44ec826d94fa5916284c51453e5ec339ee` on 2026-05-30T02:08:31Z.
 - HAL target deployment was promoted to `c01d9e44ec826d94fa5916284c51453e5ec339ee` on May 29, 2026 CDT.
-- Deployment verification passed: `pnpm install --frozen-lockfile` was a lockfile no-op, `pnpm build` passed under Next.js 16.2.6, `mission-control.service` restarted and logged database migrations applied, `/login` returned HTTP `200`, and `openclaw-gateway.service` remained active.
-- Post-merge UAT replay `spec013c-014a-uat-1780110032087` passed for flag-off create block before enable, fake lifecycle completion for `mission_control`, `openclaw`, and `external_harness`, enabled `sandbox_lifecycle.v1` read API with 3 lifecycle rows and no unsafe host path/token payload, flag-off create block after disable, disabled read evidence preserving durable lifecycle rows, and M79/M80 migration markers.
-- Cleanup verification passed: row counts returned to baseline, marker residue was `0` for workspaces/projects/tasks/users/sessions/claim-control/lifecycle tables/activities, no `spec013c-014a-uat-*` workspace rows remained, no fake artifact root remained, and no `/tmp/spec013c-014a-uat-*-mission-control.db.bak` files remained.
+- Deployment verification passed: `pnpm install --frozen-lockfile` was a lockfile no-op, `pnpm build` passed under Next.js 16.2.6, `paddock.service` restarted and logged database migrations applied, `/login` returned HTTP `200`, and `openclaw-gateway.service` remained active.
+- Post-merge UAT replay `spec013c-014a-uat-1780110032087` passed for flag-off create block before enable, fake lifecycle completion for `paddock`, `openclaw`, and `external_harness`, enabled `sandbox_lifecycle.v1` read API with 3 lifecycle rows and no unsafe host path/token payload, flag-off create block after disable, disabled read evidence preserving durable lifecycle rows, and M79/M80 migration markers.
+- Cleanup verification passed: row counts returned to baseline, marker residue was `0` for workspaces/projects/tasks/users/sessions/claim-control/lifecycle tables/activities, no `spec013c-014a-uat-*` workspace rows remained, no fake artifact root remained, and no `/tmp/spec013c-014a-uat-*-paddock.db.bak` files remained.
 - UAT report: `specs/014a-sandbox-lifecycle-contract/uat-report.md`.
 
 ### Self-Review

@@ -10,7 +10,7 @@ export type FeatureFlagKey =
   | 'FEATURE_TASK_ARTIFACTS'
   | 'FEATURE_RESOURCE_GOVERNANCE'
   | 'FEATURE_OPENCLAW_HEALTH_COSTS'
-  | 'PILOT_MISSION_CONTROL_E2E'
+  | 'PILOT_PADDOCK_E2E'
   | 'FEATURE_TASK_CONTROL_PLANE'
   | 'FEATURE_GITHUB_SYNC_AUTOMATION'
   | 'FEATURE_AGENT_RUNNER_SANDBOXES'
@@ -85,13 +85,13 @@ export const FEATURE_FLAG_KEYS = [
   'FEATURE_TASK_ARTIFACTS',
   'FEATURE_RESOURCE_GOVERNANCE',
   'FEATURE_OPENCLAW_HEALTH_COSTS',
-  'PILOT_MISSION_CONTROL_E2E',
+  'PILOT_PADDOCK_E2E',
   'FEATURE_TASK_CONTROL_PLANE',
   'FEATURE_GITHUB_SYNC_AUTOMATION',
   'FEATURE_AGENT_RUNNER_SANDBOXES',
 ] as const satisfies readonly FeatureFlagKey[]
 
-const ENV_FORCE_ON_EXCEPTIONS = new Set(['PILOT_MISSION_CONTROL_E2E'])
+const ENV_FORCE_ON_EXCEPTIONS = new Set(['PILOT_PADDOCK_E2E'])
 
 export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition> = {
   FEATURE_WORKSPACE_SWITCHER: {
@@ -125,7 +125,7 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
         'src/components/layout/product-line-visual.stories.tsx',
         'src/components/settings/feature-flags-section.stories.tsx',
       ],
-      visual: ['mission-control-storybook', 'mission-control-playwright'],
+      visual: ['paddock-storybook', 'paddock-playwright'],
     },
   },
   FEATURE_GLOBAL_AEGIS: {
@@ -296,8 +296,8 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     rollbackBehavior: 'Disable to remove OpenClaw infra/electricity data from Cost Tracker without affecting governance core.',
     evidence: {},
   },
-  PILOT_MISSION_CONTROL_E2E: {
-    key: 'PILOT_MISSION_CONTROL_E2E',
+  PILOT_PADDOCK_E2E: {
+    key: 'PILOT_PADDOCK_E2E',
     label: 'Paddock pilot',
     description: 'End-to-end Paddock smoke through triage, plan, dev, review, Aegis, ready_for_owner, and merge.',
     spec: 'Paddock pilot',
@@ -342,7 +342,7 @@ export const FEATURE_FLAG_REGISTRY: Record<FeatureFlagKey, FeatureFlagDefinition
     requiresReason: true,
     requiresPreflight: true,
     implementationStatus: 'not_implemented',
-    enableRequires: ['PILOT_MISSION_CONTROL_E2E'],
+    enableRequires: ['PILOT_PADDOCK_E2E'],
     implementedAfter: ['Run-State Persistence Spine'],
     preflightRequires: ['Task control-plane persistence, replay, and operator rollback behavior are verified.'],
     rollbackBehavior: 'Disable to keep task control-plane persistence inactive while preserving existing runtime state rows.',

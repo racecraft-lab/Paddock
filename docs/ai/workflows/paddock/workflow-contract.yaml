@@ -1,4 +1,4 @@
-family: mission-control
+family: paddock
 version: workflow-contract-v1
 workspace_id: 1
 allowed_variable_namespaces:
@@ -7,7 +7,7 @@ allowed_variable_namespaces:
   - operator
   - github
 templates:
-  - slug: mission-control_issue_triage
+  - slug: paddock_issue_triage
     name: Paddock Issue Triage
     description: Classify a synced Paddock GitHub issue and choose the next route.
     model: sonnet
@@ -16,14 +16,14 @@ templates:
     timeout_seconds: 300
     agent_role: qa
     tags:
-      - mission-control
+      - paddock
       - issue-triage
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - codebase-read
       - issue-triage
@@ -43,7 +43,7 @@ templates:
     prompt_version: v1
     routing_rules:
       - when: $.disposition == "ACTIONABLE_REMEDIATION"
-        next_template_slug: mission-control_remediation_plan
+        next_template_slug: paddock_remediation_plan
     output_schema:
       type: object
       additionalProperties: false
@@ -63,7 +63,7 @@ templates:
             - NEEDS_SPEC
         rationale:
           type: string
-  - slug: mission-control_specialist_route
+  - slug: paddock_specialist_route
     name: Paddock Specialist Route
     description: Route triaged work to the appropriate Paddock specialist stage.
     model: sonnet
@@ -72,14 +72,14 @@ templates:
     timeout_seconds: 300
     agent_role: planner
     tags:
-      - mission-control
+      - paddock
       - specialist-route
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - codebase-read
     adapter_requirements:
@@ -105,7 +105,7 @@ templates:
       properties:
         specialist:
           type: string
-  - slug: mission-control_close_issue
+  - slug: paddock_close_issue
     name: Paddock Close Issue
     description: Prepare a close recommendation for issues that require no code path.
     model: sonnet
@@ -114,14 +114,14 @@ templates:
     timeout_seconds: 300
     agent_role: qa
     tags:
-      - mission-control
+      - paddock
       - close-issue
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - issue-comment
     adapter_requirements:
@@ -146,7 +146,7 @@ templates:
       properties:
         recommendation:
           type: string
-  - slug: mission-control_needs_spec_route
+  - slug: paddock_needs_spec_route
     name: Paddock Needs Spec Route
     description: Prepare the handoff when triage determines SpecKit work is required.
     model: sonnet
@@ -155,14 +155,14 @@ templates:
     timeout_seconds: 300
     agent_role: planner
     tags:
-      - mission-control
+      - paddock
       - needs-spec
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - codebase-read
     adapter_requirements:
@@ -187,7 +187,7 @@ templates:
       properties:
         handoff:
           type: string
-  - slug: mission-control_remediation_plan
+  - slug: paddock_remediation_plan
     name: Paddock Remediation Plan
     description: Produce a bounded remediation plan for an issue approved for implementation.
     model: sonnet
@@ -196,14 +196,14 @@ templates:
     timeout_seconds: 600
     agent_role: planner
     tags:
-      - mission-control
+      - paddock
       - remediation
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - codebase-read
     adapter_requirements:
@@ -220,7 +220,7 @@ templates:
     sandbox:
       mode: read-only
     prompt_version: v1
-    next_template_slug: mission-control_dev_implementation
+    next_template_slug: paddock_dev_implementation
     routing_rules: []
     output_schema:
       type: object
@@ -230,7 +230,7 @@ templates:
       properties:
         plan:
           type: string
-  - slug: mission-control_dev_implementation
+  - slug: paddock_dev_implementation
     name: Paddock Dev Implementation
     description: Implement an approved Paddock remediation plan.
     model: sonnet
@@ -239,14 +239,14 @@ templates:
     timeout_seconds: 1200
     agent_role: dev
     tags:
-      - mission-control
+      - paddock
       - implementation
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - code-edit
       - test-run
@@ -264,7 +264,7 @@ templates:
     sandbox:
       mode: workspace-write
     prompt_version: v1
-    next_template_slug: mission-control_review
+    next_template_slug: paddock_review
     produces_pr: true
     external_terminal_event: github_pr_merged
     routing_rules: []
@@ -276,7 +276,7 @@ templates:
       properties:
         result:
           type: string
-  - slug: mission-control_review
+  - slug: paddock_review
     name: Paddock Review
     description: Review implementation evidence before owner approval.
     model: sonnet
@@ -285,14 +285,14 @@ templates:
     timeout_seconds: 600
     agent_role: qa
     tags:
-      - mission-control
+      - paddock
       - review
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - codebase-read
       - test-run
@@ -310,7 +310,7 @@ templates:
     sandbox:
       mode: read-only
     prompt_version: v1
-    next_template_slug: mission-control_owner_review
+    next_template_slug: paddock_owner_review
     routing_rules: []
     output_schema:
       type: object
@@ -323,7 +323,7 @@ templates:
           enum:
             - pass
             - fix
-  - slug: mission-control_owner_review
+  - slug: paddock_owner_review
     name: Paddock Owner Review
     description: Hold work at ready_for_owner until the operator approves.
     model: sonnet
@@ -332,14 +332,14 @@ templates:
     timeout_seconds: 300
     agent_role: qa
     tags:
-      - mission-control
+      - paddock
       - owner-review
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - codebase-read
     adapter_requirements:
@@ -355,7 +355,7 @@ templates:
     sandbox:
       mode: read-only
     prompt_version: v1
-    next_template_slug: mission-control_aegis
+    next_template_slug: paddock_aegis
     routing_rules: []
     output_schema:
       type: object
@@ -365,7 +365,7 @@ templates:
       properties:
         owner_packet:
           type: string
-  - slug: mission-control_aegis
+  - slug: paddock_aegis
     name: Paddock Aegis
     description: Apply final Aegis quality review after owner review.
     model: sonnet
@@ -374,14 +374,14 @@ templates:
     timeout_seconds: 600
     agent_role: qa
     tags:
-      - mission-control
+      - paddock
       - aegis
     tracker:
       type: github
       identity_version: v1
       repo: racecraft-lab/Paddock
       labels:
-        - mission-control
+        - paddock
     capabilities:
       - codebase-read
       - quality-review

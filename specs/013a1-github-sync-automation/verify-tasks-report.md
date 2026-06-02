@@ -2,7 +2,7 @@
 
 **Date**: 2026-05-23
 **Scope**: branch (`origin/main...HEAD`)
-**Feature directory**: `/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-mission-control/.worktrees/013a1-github-sync-automation/specs/013a1-github-sync-automation`
+**Feature directory**: `/Users/fredrickgabelmann/Documents/Business_Documents/RSE_Documents/Projects/racecraft-paddock/.worktrees/013a1-github-sync-automation/specs/013a1-github-sync-automation`
 **Tasks evaluated**: 72 completed tasks
 
 > FRESH SESSION ADVISORY: For maximum reliability, run `/speckit.verify-tasks`

@@ -743,8 +743,8 @@ For each task, follow this cycle:
 ### Storybook/Argos Remediation - 2026-05-01
 
 - Added `src/components/panels/orchestration-bar.task-pipeline.stories.tsx` with Argos-backed stories for editing workflow chain fields and the routing-without-output-schema validation error state.
-- Consolidated Argos metadata verification into `scripts/verify-argos-metadata.mjs` for both Playwright and Storybook while keeping workflow/package aliases mode-specific; visual coverage uses `mission-control-*` labels and domain tags instead of generic `spec-002-*` harness names.
-- Feature Flag Admin Storybook and Playwright coverage now use platform/domain labels; the Feature Flags component/story/e2e surface no longer renders or fixtures SPEC-002 as UI copy. The Docker-backed UI E2E workflow now uses Paddock reviewer-facing labels and lives at `.github/workflows/mission-control-ui-e2e.yml`.
+- Consolidated Argos metadata verification into `scripts/verify-argos-metadata.mjs` for both Playwright and Storybook while keeping workflow/package aliases mode-specific; visual coverage uses `paddock-*` labels and domain tags instead of generic `spec-002-*` harness names.
+- Feature Flag Admin Storybook and Playwright coverage now use platform/domain labels; the Feature Flags component/story/e2e surface no longer renders or fixtures SPEC-002 as UI copy. The Docker-backed UI E2E workflow now uses Paddock reviewer-facing labels and lives at `.github/workflows/paddock-ui-e2e.yml`.
 - Follow-up guardrail and visual-surface cleanup consolidated Quality Gate onto `pnpm guardrails`, moved task-pipeline and spec-evidence screenshot checks behind `scripts/check-guardrails.mjs`, consolidated Argos metadata verification into `scripts/verify-argos-metadata.mjs`, renamed Product Line and Task Pipeline Storybook files to domain names, and removed SPEC-002/SPEC-004 labels from package/workflow/script/source/test surfaces.
 - Storybook screenshots now write to `screenshots/storybook`, and `pnpm test:visual:argos-metadata` reads that same isolated root so stale ignored screenshots from renamed stories cannot inflate the gate.
 - Re-run evidence: `pnpm test:visual:storybook` passed 12/12 stories, `pnpm test:visual:argos-metadata` verified 24 screenshot metadata files across 12 stories, focused Product Line + Feature Flag Admin Playwright passed 5/5, `pnpm test:e2e:argos-metadata` verified 11 screenshot metadata files across 5 Playwright tests, `pnpm test src/components/panels/orchestration-bar.test.tsx src/lib/__tests__/feature-flags.test.ts` passed 17/17, `pnpm typecheck` passed, and `pnpm lint` passed with 0 errors / 10 pre-existing warnings.
@@ -814,7 +814,7 @@ For each task, follow this cycle:
 ## Project Structure Reference
 
 ```text
-racecraft-mission-control/
+racecraft-paddock/
 |-- src/lib/task-create.ts                  # New SPEC-004 shared task creation helper
 |-- src/lib/output-schema-validator.ts      # New constrained JSON Schema validator
 |-- src/lib/routing-rule-evaluator.ts       # New safe routing expression evaluator

@@ -440,7 +440,7 @@ function verifyConfig(db: ProductLineSeedDatabase, config: ProductLineSeedConfig
   for (const slug of config.workflow_contract.required_slugs) {
     if (!workflowSlugs.has(slug)) errors.push(drift(`$.target.workflow_templates.${slug}`, `Required workflow template is missing: ${slug}.`))
   }
-  const governanceCount = db.prepare("SELECT COUNT(*) as count FROM resource_policies WHERE workspace_id = ? AND notes LIKE 'SPEC-009B:mission-control:%'")
+  const governanceCount = db.prepare("SELECT COUNT(*) as count FROM resource_policies WHERE workspace_id = ? AND notes LIKE 'SPEC-009B:paddock:%'")
     .get(workspace.id) as { count: number }
   if (governanceCount.count !== config.governance_defaults.length) {
     errors.push(drift('$.target.governance_defaults', 'Governance defaults are missing or drifted.'))

@@ -4,7 +4,7 @@
  * Tears down a per-test workspace seeded by POST `/seed-fixture`.
  * Idempotent: if the workspace was already deleted, returns 204.
  *
- * Gated behind `MISSION_CONTROL_TEST_MODE=1` AND admin auth.
+ * Gated behind `PADDOCK_TEST_MODE=1` AND admin auth.
  */
 
 import { NextResponse, type NextRequest } from 'next/server';

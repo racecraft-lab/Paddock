@@ -3,10 +3,10 @@ import { loadWorkflowContractFromFile } from '@/lib/workflow-contracts/yaml-load
 import { collectRedactedFieldNames, redactEvidenceValue } from './redaction'
 import {
   CLEANUP_CHECKLIST_PATH,
-  MISSION_CONTROL_REPO,
+  PADDOCK_REPO,
   REQUIRED_WORKFLOW_SLUGS,
   type ContractNotReadyResult,
-  type MissionControlSeedOptions,
+  type PaddockSeedOptions,
   type PreflightResult,
   type RedactionProof,
   type ResidueSummary,
@@ -25,7 +25,7 @@ export function assertWorkflowContractReady(contractPath: string): {
     Object.assign(error, { missingSlugs })
     throw error
   }
-  const staleRepo = contract.templates.find((template) => template.tracker?.repo && template.tracker.repo !== MISSION_CONTROL_REPO)
+  const staleRepo = contract.templates.find((template) => template.tracker?.repo && template.tracker.repo !== PADDOCK_REPO)
   if (staleRepo) {
     const error = new Error(`Workflow contract has stale tracker repo ${staleRepo.tracker?.repo ?? 'unknown'}`)
     Object.assign(error, { missingSlugs: [] })
@@ -34,9 +34,9 @@ export function assertWorkflowContractReady(contractPath: string): {
   return { requiredSlugsPresent: true, missingSlugs: [] }
 }
 
-export function runMissionControlPreflight(
+export function runPaddockPreflight(
   db: Database.Database,
-  options: MissionControlSeedOptions,
+  options: PaddockSeedOptions,
   mode: 'preflight' | 'apply' = 'preflight',
 ): PreflightResult {
   try {
@@ -56,7 +56,7 @@ export function runMissionControlPreflight(
       ok: false,
       mode,
       status: 'blocked_preflight',
-      code: 'NON_MISSION_CONTROL_RESIDUE',
+      code: 'NON_PADDOCK_RESIDUE',
       mutation_status: 'not_mutated',
       residue,
       cleanup_checklist: CLEANUP_CHECKLIST_PATH,
@@ -101,7 +101,7 @@ function scanProjectResidue(db: Database.Database): ResidueSummary[] {
       AND github_repo <> ?
       AND COALESCE(github_sync_enabled, 0) = 1
     ORDER BY github_repo ASC, id ASC
-  `).all(MISSION_CONTROL_REPO) as { id: number; github_repo: string }[]
+  `).all(PADDOCK_REPO) as { id: number; github_repo: string }[]
   return groupRepoRows(rows, 'project_github_sync', 'project_ids')
 }
 
@@ -113,7 +113,7 @@ function scanTaskResidue(db: Database.Database): ResidueSummary[] {
       AND github_repo <> ?
       AND github_issue_number IS NOT NULL
     ORDER BY github_repo ASC, id ASC
-  `).all(MISSION_CONTROL_REPO) as { id: number; github_repo: string }[]
+  `).all(PADDOCK_REPO) as { id: number; github_repo: string }[]
   return groupRepoRows(rows, 'task_github_sync', 'task_ids')
 }
 

@@ -8,7 +8,7 @@
 
 - Audit-chain verifier reports a tamper signature
   (row_hash mismatch on rows we trust were not touched).
-- Filesystem detects unexpected mtime on `mission-control.db`.
+- Filesystem detects unexpected mtime on `paddock.db`.
 
 ## 2. Impact
 

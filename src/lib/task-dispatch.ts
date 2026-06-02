@@ -5,7 +5,7 @@ import { eventBus } from './event-bus'
 import { logger } from './logger'
 import { config } from './config'
 import { syncTaskOutbound } from './github-sync-engine'
-import { PILOT_MISSION_CONTROL_REPO } from './pilot-issue-eligibility'
+import { PILOT_PADDOCK_REPO } from './pilot-issue-eligibility'
 import { getAegis } from './aegis'
 import { createTask, type CreateTaskInput, type CreateTaskResult } from './task-create'
 import { resolveFlag } from './feature-flags'
@@ -149,7 +149,7 @@ function selectDispositionRow(db: any, parentTaskId: number, workspaceId: number
 }
 
 function isPilotIssueTriageProfile(parent: PilotTriageEvidenceParent, profile: TriageTemplateProfile): boolean {
-  return profile.pilot && parent.workflow_template_slug === 'mission-control_issue_triage'
+  return profile.pilot && parent.workflow_template_slug === 'paddock_issue_triage'
 }
 
 function successorContextFor(
@@ -804,8 +804,8 @@ function isTaskArtifactsEnabled(db: any, workspaceId: number): boolean {
   })
 }
 
-const SPEC_009C3_DEV_TEMPLATE_SLUG = 'mission-control_dev_implementation'
-const SPEC_009C3_REVIEW_TEMPLATE_SLUG = 'mission-control_review'
+const SPEC_009C3_DEV_TEMPLATE_SLUG = 'paddock_dev_implementation'
+const SPEC_009C3_REVIEW_TEMPLATE_SLUG = 'paddock_review'
 
 type Spec009C3ReadinessTask = {
   id: number
@@ -2875,7 +2875,7 @@ function shouldHoldPilotGitHubTaskFromAutoRouting(
   },
 ): boolean {
   if (
-    task.github_repo !== PILOT_MISSION_CONTROL_REPO
+    task.github_repo !== PILOT_PADDOCK_REPO
     || task.github_issue_number == null
     || task.github_synced_at == null
     || task.parent_task_id !== null
@@ -2885,7 +2885,7 @@ function shouldHoldPilotGitHubTaskFromAutoRouting(
 
   const row = db.prepare('SELECT feature_flags FROM workspaces WHERE id = ?')
     .get(task.workspace_id) as { feature_flags: string | null } | undefined
-  return resolveFlag('PILOT_MISSION_CONTROL_E2E', {
+  return resolveFlag('PILOT_PADDOCK_E2E', {
     workspaceFlags: row?.feature_flags ?? null,
   })
 }

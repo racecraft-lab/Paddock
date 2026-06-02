@@ -59,11 +59,11 @@ remote CodeQL annotations reported on the pushed PR head:
 
 ```
 
-> mission-control@2.0.1 typecheck <repo>/.worktrees/008-resource-governance
+> paddock@2.0.1 typecheck <repo>/.worktrees/008-resource-governance
 > pnpm run verify:node && tsc -b --pretty false
 
 
-> mission-control@2.0.1 verify:node <repo>/.worktrees/008-resource-governance
+> paddock@2.0.1 verify:node <repo>/.worktrees/008-resource-governance
 > node scripts/check-node-version.mjs
 
 ```
@@ -74,11 +74,11 @@ remote CodeQL annotations reported on the pushed PR head:
 
 ```
 
-> mission-control@2.0.1 lint <repo>/.worktrees/008-resource-governance
+> paddock@2.0.1 lint <repo>/.worktrees/008-resource-governance
 > pnpm run verify:node && eslint .
 
 
-> mission-control@2.0.1 verify:node <repo>/.worktrees/008-resource-governance
+> paddock@2.0.1 verify:node <repo>/.worktrees/008-resource-governance
 > node scripts/check-node-version.mjs
 
 

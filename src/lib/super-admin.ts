@@ -359,7 +359,7 @@ export function createTenantAndBootstrapJob(request: TenantBootstrapRequest, act
     throw new Error('Missing OpenClaw template config. Set MC_SUPER_TEMPLATE_OPENCLAW_JSON to an openclaw.json to seed new tenants.')
   }
 
-  const repoRoot = String(process.env.MISSION_CONTROL_REPO_ROOT || process.cwd()).trim() || process.cwd()
+  const repoRoot = String(process.env.PADDOCK_REPO_ROOT || process.cwd()).trim() || process.cwd()
   const gatewaySystemdTemplatePath = path.join(repoRoot, 'ops', 'templates', 'openclaw-gateway@.service')
 
   const slug = normalizeSlug(request.slug)

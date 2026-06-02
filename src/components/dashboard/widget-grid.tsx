@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { getDefaultLayout, getAvailableWidgets, getWidgetById } from '@/lib/dashboard-widgets'
 import { Button } from '@/components/ui/button'
 import type { DashboardData } from './widget-primitives'
@@ -49,7 +49,7 @@ const SIZE_CLASSES: Record<string, string> = {
 }
 
 export function WidgetGrid({ data }: { data: DashboardData }) {
-  const { dashboardLayout, setDashboardLayout, dashboardMode } = useMissionControl()
+  const { dashboardLayout, setDashboardLayout, dashboardMode } = usePaddock()
   const mode = dashboardMode === 'local' ? 'local' : 'full'
   const [customizing, setCustomizing] = useState(false)
   const [dragId, setDragId] = useState<string | null>(null)

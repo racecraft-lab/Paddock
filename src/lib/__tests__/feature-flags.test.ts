@@ -117,7 +117,7 @@ describe('resolveFlag', () => {
     expect(workspaceFlags.FEATURE_WORKSPACE_SWITCHER).toBe(false)
     expect(workspaceFlags.FEATURE_GLOBAL_AEGIS).toBe(false)
     expect(workspaceFlags.FEATURE_RESOURCE_GOVERNANCE).toBe(false)
-    expect(workspaceFlags.PILOT_MISSION_CONTROL_E2E).toBe(false)
+    expect(workspaceFlags.PILOT_PADDOCK_E2E).toBe(false)
   })
 
   it('lets env 0 kill-switch FEATURE_GLOBAL_AEGIS even when workspace flags enable it', () => {
@@ -139,8 +139,8 @@ describe('resolveFlag', () => {
   })
 
   it('preserves the pilot env-force-on exception', () => {
-    expect(resolveFlag('PILOT_MISSION_CONTROL_E2E', {
-      env: { PILOT_MISSION_CONTROL_E2E: '1' },
+    expect(resolveFlag('PILOT_PADDOCK_E2E', {
+      env: { PILOT_PADDOCK_E2E: '1' },
       workspaceFlags: null,
     })).toBe(true)
   })
@@ -169,7 +169,7 @@ describe('feature flag registry', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
-      'PILOT_MISSION_CONTROL_E2E',
+      'PILOT_PADDOCK_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
       'FEATURE_AGENT_RUNNER_SANDBOXES',
@@ -226,8 +226,8 @@ describe('feature flag registry', () => {
     expect(FEATURE_FLAG_REGISTRY.FEATURE_TASK_PIPELINES.enableRequires).toEqual(['FEATURE_GLOBAL_AEGIS'])
     expect(FEATURE_FLAG_REGISTRY.FEATURE_TWO_STEP_TERMINAL.enableRequires).toEqual(['FEATURE_TASK_PIPELINES'])
     expect(FEATURE_FLAG_REGISTRY.FEATURE_AREA_LABEL_ROUTING.enableRequires).toEqual(['FEATURE_WORKSPACE_SWITCHER'])
-    expect(FEATURE_FLAG_REGISTRY.PILOT_MISSION_CONTROL_E2E.enableRequires).toContain('FEATURE_OPENCLAW_HEALTH_COSTS')
-    expect(FEATURE_FLAG_REGISTRY.PILOT_MISSION_CONTROL_E2E.enableRequires).toHaveLength(9)
+    expect(FEATURE_FLAG_REGISTRY.PILOT_PADDOCK_E2E.enableRequires).toContain('FEATURE_OPENCLAW_HEALTH_COSTS')
+    expect(FEATURE_FLAG_REGISTRY.PILOT_PADDOCK_E2E.enableRequires).toHaveLength(9)
   })
 
   it('derives additive cascade prerequisites from roadmap phase order', () => {
@@ -258,14 +258,14 @@ describe('feature flag registry', () => {
       'FEATURE_TASK_ARTIFACTS',
       'FEATURE_RESOURCE_GOVERNANCE',
       'FEATURE_OPENCLAW_HEALTH_COSTS',
-      'PILOT_MISSION_CONTROL_E2E',
+      'PILOT_PADDOCK_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
       'FEATURE_AGENT_RUNNER_SANDBOXES',
     ])
     expect(getFeatureFlagCascadeDependents('FEATURE_RESOURCE_GOVERNANCE')).toEqual([
       'FEATURE_OPENCLAW_HEALTH_COSTS',
-      'PILOT_MISSION_CONTROL_E2E',
+      'PILOT_PADDOCK_E2E',
       'FEATURE_TASK_CONTROL_PLANE',
       'FEATURE_GITHUB_SYNC_AUTOMATION',
       'FEATURE_AGENT_RUNNER_SANDBOXES',

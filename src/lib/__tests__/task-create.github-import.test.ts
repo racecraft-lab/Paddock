@@ -90,13 +90,13 @@ describe('createTask github_import source profile', () => {
       workspace_id: 1,
       tags: ['bug'],
       metadata: {
-        github_repo: 'racecraft/mission-control',
+        github_repo: 'racecraft-lab/Paddock',
         github_issue_number: 42,
-        github_issue_url: 'https://github.com/racecraft/mission-control/issues/42',
+        github_issue_url: 'https://github.com/racecraft-lab/Paddock/issues/42',
       },
       activity: {
-        description: 'Imported from GitHub: racecraft/mission-control#42',
-        data: { github_issue: 42, github_repo: 'racecraft/mission-control' },
+        description: 'Imported from GitHub: racecraft-lab/Paddock#42',
+        data: { github_issue: 42, github_repo: 'racecraft-lab/Paddock' },
       },
     } as any)
 
@@ -108,7 +108,7 @@ describe('createTask github_import source profile', () => {
       subscriptionRecipients: [],
       outboundSync: { githubQueued: false, gatewayQueued: false },
     })
-    expect(result.task.metadata).toMatchObject({ github_repo: 'racecraft/mission-control', github_issue_number: 42 })
+    expect(result.task.metadata).toMatchObject({ github_repo: 'racecraft-lab/Paddock', github_issue_number: 42 })
     expect(db.prepare('SELECT COUNT(*) AS count FROM notifications').get()).toEqual({ count: 0 })
     expect(db.prepare('SELECT COUNT(*) AS count FROM task_subscriptions').get()).toEqual({ count: 0 })
     expect(pushTaskToGitHub).not.toHaveBeenCalled()
@@ -121,7 +121,7 @@ describe('createTask github_import source profile', () => {
     db.prepare(`
       INSERT INTO tasks (id, title, description, status, priority, created_by, created_at, updated_at, tags, metadata, workspace_id)
       VALUES (7, 'Existing', '', 'inbox', 'medium', 'operator', 1, 1, '[]', ?, 1)
-    `).run(JSON.stringify({ github_repo: 'racecraft/mission-control', github_issue_number: 42 }))
+    `).run(JSON.stringify({ github_repo: 'racecraft-lab/Paddock', github_issue_number: 42 }))
     const { createTask, runtime } = await importCreateTask(db)
 
     const result: any = createTask({
@@ -130,7 +130,7 @@ describe('createTask github_import source profile', () => {
       runtime,
       title: 'Imported issue',
       workspace_id: 1,
-      metadata: { github_repo: 'racecraft/mission-control', github_issue_number: 42 },
+      metadata: { github_repo: 'racecraft-lab/Paddock', github_issue_number: 42 },
     } as any)
 
     expect(result).toMatchObject({ taskId: 7, duplicate: true, activityIds: [], notificationIds: [] })

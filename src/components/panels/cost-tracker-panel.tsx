@@ -24,7 +24,7 @@ import { WindowsSubview, type WindowSummary } from '@/components/governance/wind
 import { WipIndicatorPanel } from '@/components/governance/wip-indicator-panel'
 import { Loader } from '@/components/ui/loader'
 import { resolveFlag } from '@/lib/feature-flags'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 import { createClientLogger } from '@/lib/client-logger'
 import {
@@ -117,7 +117,7 @@ const VALID_SUBVIEWS: readonly SubviewId[] = [
 
 export function CostTrackerPanel() {
   const t = useTranslations('costTracker')
-  const { activeProductLineScope, sessions, workspaceSwitcherEnabled } = useMissionControl()
+  const { activeProductLineScope, sessions, workspaceSwitcherEnabled } = usePaddock()
 
   // SPEC-008 — FEATURE_RESOURCE_GOVERNANCE-gated extension. When the
   // flag is OFF for the caller's workspace the governance tab is

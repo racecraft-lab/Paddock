@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 type SuperTab = 'tenants' | 'jobs' | 'events'
 
@@ -84,7 +84,7 @@ const JOB_PAGE_SIZE = 8
 
 export function SuperAdminPanel() {
   const t = useTranslations('superAdmin')
-  const { currentUser, dashboardMode } = useMissionControl()
+  const { currentUser, dashboardMode } = usePaddock()
   const isLocal = dashboardMode === 'local'
 
   const [tenants, setTenants] = useState<TenantRow[]>([])

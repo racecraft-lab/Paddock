@@ -84,15 +84,15 @@ docker compose --profile standalone up   # without gateway (standalone mode)
 Or build and run manually:
 
 ```bash
-docker build -t mission-control .
+docker build -t paddock .
 docker run -p 3000:3000 \
-  -v mission-control-data:/app/.data \
+  -v paddock-data:/app/.data \
   -e AUTH_USER=admin \
   -e AUTH_PASS=your-secure-password \
   -e API_KEY=your-api-key \
   -e OPENCLAW_GATEWAY_HOST=host.docker.internal \
   --add-host=host.docker.internal:host-gateway \
-  mission-control
+  paddock
 ```
 
 The Docker image:
@@ -147,7 +147,7 @@ See `.env.example` for the full list. Key variables:
 | `PORT` | No | `3005` (direct) / `3000` (Docker) | Server port |
 | `OPENCLAW_HOME` | No | - | Legacy: parent home directory containing `.openclaw/`. Use `OPENCLAW_STATE_DIR` instead (see note below) |
 | `OPENCLAW_STATE_DIR` | No | `~/.openclaw` | Exact path to the OpenClaw state directory. Preferred over `OPENCLAW_HOME` — avoids double-nesting when the path already ends in `.openclaw` |
-| `MISSION_CONTROL_DATA_DIR` | No | `.data/` | Directory for all Paddock data files (DB, tokens, etc.). Use an absolute path with the standalone server to survive rebuilds. |
+| `PADDOCK_DATA_DIR` | No | `.data/` | Directory for all Paddock data files (DB, tokens, etc.). Use an absolute path with the standalone server to survive rebuilds. |
 | `MC_ALLOWED_HOSTS` | No | `localhost,127.0.0.1` | Allowed hosts in production |
 
 > **Note — `OPENCLAW_HOME` vs `OPENCLAW_STATE_DIR`**
@@ -161,9 +161,9 @@ See `.env.example` for the full list. Key variables:
 > **Recommended `.env` for a standard install:**
 > ```env
 > OPENCLAW_STATE_DIR=/root/.openclaw
-> MISSION_CONTROL_DATA_DIR=/absolute/path/to/.data
+> PADDOCK_DATA_DIR=/absolute/path/to/.data
 > ```
-> Using an absolute path for `MISSION_CONTROL_DATA_DIR` ensures your
+> Using an absolute path for `PADDOCK_DATA_DIR` ensures your
 > database and data survive `npm run build` / standalone server rebuilds.
 
 ## Kubernetes Sidecar Deployment
@@ -270,12 +270,12 @@ pnpm install
 
 1. Verify the gateway is reachable from inside the container:
    ```bash
-   docker exec mission-control curl -s http://host.docker.internal:18789
+   docker exec paddock curl -s http://host.docker.internal:18789
    ```
 
 2. Check env vars are set:
    ```bash
-   docker exec mission-control env | grep -i gateway
+   docker exec paddock env | grep -i gateway
    ```
    You should see `OPENCLAW_GATEWAY_HOST=host.docker.internal`.
 

@@ -1,6 +1,6 @@
 ---
 name: sessions
-description: "Skill for the Sessions area of mission-control. 50 symbols across 13 files."
+description: "Skill for the Sessions area of paddock. 50 symbols across 13 files."
 ---
 
 # Sessions

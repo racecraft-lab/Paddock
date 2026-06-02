@@ -147,8 +147,8 @@ export interface Spec007E2EFixture {
 
 function getE2EDbPath(): string {
   return (
-    process.env.MISSION_CONTROL_DB_PATH ||
-    path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+    process.env.PADDOCK_DB_PATH ||
+    path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
   )
 }
 

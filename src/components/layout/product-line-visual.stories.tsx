@@ -3,7 +3,7 @@ import { expect, userEvent, within } from 'storybook/test'
 import { HeaderBar } from '@/components/layout/header-bar'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { TaskBoardPanel } from '@/components/panels/task-board-panel'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import {
   createFacilityScope,
   createProductLineScope,
@@ -182,13 +182,13 @@ function configureProductLineState(scenario: Scenario) {
       : 'ready'
   const workspaceScopeNotice = scenario === 'error' ? 'workspace-list-failure' : null
 
-  useMissionControl.setState({
+  usePaddock.setState({
     activeTenant: {
       id: 1,
       slug: 'racecraft-facility',
       display_name: 'Racecraft Facility',
       status: 'active',
-      linux_user: 'mission-control',
+      linux_user: 'paddock',
     },
     workspaces,
     workspaceSwitcherEnabled: true,
@@ -237,13 +237,13 @@ function configureProductLineState(scenario: Scenario) {
     fetchWorkspaces: async () => {
       if (scenario === 'loading') return
       if (scenario === 'error') {
-        useMissionControl.setState({
+        usePaddock.setState({
           workspaceListStatus: 'error',
           workspaceScopeNotice: 'workspace-list-failure',
         })
         return
       }
-      useMissionControl.setState({
+      usePaddock.setState({
         workspaces,
         workspaceSwitcherEnabled: true,
         workspaceListStatus: 'ready',

@@ -77,7 +77,7 @@ grep -r "LM_STUDIO_BASE_URL" .env* 2>/dev/null
 node -e "console.log(process.env.LM_STUDIO_BASE_URL || '(default 127.0.0.1:1234/v1)')"
 
 # 4.3 — Check the breaker state.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT scope_kind, state, consecutive_errors, opened_at, reset_at,
        updated_at
   FROM resource_governance_breaker
@@ -85,7 +85,7 @@ SELECT scope_kind, state, consecutive_errors, opened_at, reset_at,
 SQL
 
 # 4.4 — Check recent heartbeat health events.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT state, metric_json, captured_at
   FROM governance_health_events
  WHERE component = 'lm_studio'
@@ -145,7 +145,7 @@ Force the breaker closed (the next heartbeat will re-tick error if
 LM Studio is still down):
 
 ```bash
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 UPDATE resource_governance_breaker
    SET state='closed', consecutive_errors=0,
        opened_at=NULL, reset_at=CURRENT_TIMESTAMP,
@@ -177,7 +177,7 @@ curl --max-time 1 http://127.0.0.1:1234/v1/models | jq '.data[0].id'
 node -e "
   (async () => {
     const Database = require('better-sqlite3');
-    const db = new Database('.data/mission-control.db');
+    const db = new Database('.data/paddock.db');
     const { lmStudioHeartbeat } = require('./dist/lib/observability/lm-studio-probe');
     const r = await lmStudioHeartbeat({ db });
     console.log(JSON.stringify(r, null, 2));
@@ -186,7 +186,7 @@ node -e "
 # Expected: { healthy: true, capabilities: { reachable: true, ... } }
 
 # 6.3 — Breaker must be closed.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT state, consecutive_errors FROM resource_governance_breaker
  WHERE scope_kind = 'lm-studio-source';
 SQL

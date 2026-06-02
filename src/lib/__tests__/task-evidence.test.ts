@@ -235,7 +235,7 @@ describe('SPEC-009F task evidence triage routing', () => {
   ): number {
     const info = database.prepare(`
       INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-      VALUES (?, 'task', ?, 'mission-control', 'SPEC-009F problem activity', ?, 1, ?)
+      VALUES (?, 'task', ?, 'paddock', 'SPEC-009F problem activity', ?, 1, ?)
     `).run(type, taskId, JSON.stringify(data), createdAt)
     return Number(info.lastInsertRowid)
   }
@@ -363,13 +363,13 @@ describe('SPEC-009F task evidence triage routing', () => {
         artifact_type, schema_version, storage_kind, content_json, mime_type, byte_size,
         sha256, preview_text, redaction_status, security_scan_status, supersedes_artifact_id, created_at
       )
-      VALUES (?, ?, 1, 9900, 9901, 'mission-control_issue_triage',
+      VALUES (?, ?, 1, 9900, 9901, 'paddock_issue_triage',
         'triage_speckit_handoff', 'spec-009f.triage_routing.v1', 'inline_json', ?, 'application/json',
         ?, ?, 'Updated routing artifact', 'clean', 'scanned_clean', ?, 1779400800)
     `).run(newArtifactId, seed.taskId, payloadJson, Buffer.byteLength(payloadJson, 'utf8'), 'f'.repeat(64), seed.artifactId)
     database.prepare(`
       INSERT INTO activities (id, type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-      VALUES (?, 'triage_routing_recorded', 'task', ?, 'mission-control', 'Recorded terminal triage routing for NEEDS_SPEC', ?, 1, 1779400810)
+      VALUES (?, 'triage_routing_recorded', 'task', ?, 'paddock', 'Recorded terminal triage routing for NEEDS_SPEC', ?, 1, 1779400810)
     `).run(newActivityId, seed.taskId, JSON.stringify({
       source_task_id: seed.taskId,
       workspace_id: 1,

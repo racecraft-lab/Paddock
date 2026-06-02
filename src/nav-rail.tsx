@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { Button } from '@/components/ui/button'
 
 interface NavItem {
@@ -66,7 +66,7 @@ const navGroups: NavGroup[] = [
 const allNavItems = navGroups.flatMap(g => g.items)
 
 export function NavRail() {
-  const { activeTab, setActiveTab, connection, sidebarExpanded, collapsedGroups, toggleSidebar, toggleGroup } = useMissionControl()
+  const { activeTab, setActiveTab, connection, sidebarExpanded, collapsedGroups, toggleSidebar, toggleGroup } = usePaddock()
 
   // Keyboard shortcut: [ to toggle sidebar
   useEffect(() => {

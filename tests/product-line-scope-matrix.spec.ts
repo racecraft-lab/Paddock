@@ -25,7 +25,7 @@ const scopedGetRoutes = [
 ] as const
 
 function withScope(path: string, scope: Record<string, string | number>) {
-  const url = new URL(path, 'http://mission-control.test')
+  const url = new URL(path, 'http://paddock.test')
   for (const [key, value] of Object.entries(scope)) {
     url.searchParams.set(key, String(value))
   }

@@ -30,7 +30,7 @@
     "moreIssues": "+ {count} 个更多问题"
   },
   "auth": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "signInToContinue": "登录以继续",
     "username": "用户名",
     "password": "密码",
@@ -145,7 +145,7 @@
     "resetting": "重置中..."
   },
   "boot": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "agentOrchestration": "智能体编排",
     "authenticatingOperator": "正在验证操作员身份",
     "detectingStationMode": "正在检测站点模式",

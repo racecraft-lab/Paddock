@@ -55,19 +55,19 @@ export const BLOCKED_SIDE_EFFECTS = [
   'speckit_setup_or_autopilot',
 ] as const
 
-export const MISSION_CONTROL_REQUIRED_WORKFLOW_SLUGS = [
-  'mission-control_issue_triage',
-  'mission-control_specialist_route',
-  'mission-control_close_issue',
-  'mission-control_needs_spec_route',
-  'mission-control_remediation_plan',
-  'mission-control_dev_implementation',
-  'mission-control_review',
-  'mission-control_owner_review',
-  'mission-control_aegis',
+export const PADDOCK_REQUIRED_WORKFLOW_SLUGS = [
+  'paddock_issue_triage',
+  'paddock_specialist_route',
+  'paddock_close_issue',
+  'paddock_needs_spec_route',
+  'paddock_remediation_plan',
+  'paddock_dev_implementation',
+  'paddock_review',
+  'paddock_owner_review',
+  'paddock_aegis',
 ] as const
 
-export const MISSION_CONTROL_ENABLED_FLAGS = [
+export const PADDOCK_ENABLED_FLAGS = [
   'FEATURE_WORKSPACE_SWITCHER',
   'FEATURE_GLOBAL_AEGIS',
   'FEATURE_TASK_PIPELINES',
@@ -77,16 +77,16 @@ export const MISSION_CONTROL_ENABLED_FLAGS = [
   'FEATURE_TASK_ARTIFACTS',
   'FEATURE_RESOURCE_GOVERNANCE',
   'FEATURE_OPENCLAW_HEALTH_COSTS',
-  'PILOT_MISSION_CONTROL_E2E',
+  'PILOT_PADDOCK_E2E',
 ] as const
 
-export const MISSION_CONTROL_DISABLED_OR_ABSENT_FLAGS = [
+export const PADDOCK_DISABLED_OR_ABSENT_FLAGS = [
   'PILOT_PRODUCT_LINE_A_E2E',
   'FEATURE_TASK_CONTROL_PLANE',
   'FEATURE_AGENT_RUNNER_SANDBOXES',
 ] as const
 
-export const MISSION_CONTROL_DEPARTMENTS = [
+export const PADDOCK_DEPARTMENTS = [
   { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/Paddock', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
   { slug: 'development', name: 'Development', ticket_prefix: 'DEV', area_slug: 'dev', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
   { slug: 'devsecops', name: 'DevSecOps', ticket_prefix: 'SEC', area_slug: 'devsecops', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
@@ -95,7 +95,7 @@ export const MISSION_CONTROL_DEPARTMENTS = [
   { slug: 'finance', name: 'Finance', ticket_prefix: 'FIN', area_slug: 'finance', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },
 ] as const
 
-export const MISSION_CONTROL_ROLE_ASSIGNMENTS = [
+export const PADDOCK_ROLE_ASSIGNMENTS = [
   { agent_key: 'research', role: 'researcher', department_slug: 'qa' },
   { agent_key: 'planner', role: 'planner', department_slug: 'qa' },
   { agent_key: 'dev', role: 'dev', department_slug: 'development' },
@@ -104,10 +104,10 @@ export const MISSION_CONTROL_ROLE_ASSIGNMENTS = [
   { agent_key: 'qa', role: 'qa', department_slug: 'qa' },
 ] as const
 
-export const MISSION_CONTROL_GOVERNANCE_DEFAULTS = [
+export const PADDOCK_GOVERNANCE_DEFAULTS = [
   {
     identity: 'daily-token-budget',
-    notes: 'SPEC-009B:mission-control:daily-token-budget',
+    notes: 'SPEC-009B:paddock:daily-token-budget',
     policy_type: 'budget',
     limit_kind: 'token',
     limit_value: 1_000_000,
@@ -119,7 +119,7 @@ export const MISSION_CONTROL_GOVERNANCE_DEFAULTS = [
   },
   {
     identity: 'daily-usd-budget',
-    notes: 'SPEC-009B:mission-control:daily-usd-budget',
+    notes: 'SPEC-009B:paddock:daily-usd-budget',
     policy_type: 'budget',
     limit_kind: 'usd',
     limit_value: 10,
@@ -131,7 +131,7 @@ export const MISSION_CONTROL_GOVERNANCE_DEFAULTS = [
   },
   {
     identity: 'wip-visibility-template',
-    notes: 'SPEC-009B:mission-control:wip-visibility-template',
+    notes: 'SPEC-009B:paddock:wip-visibility-template',
     policy_type: 'wip_limit',
     limit_kind: 'concurrent_tasks',
     limit_value: 2,
@@ -143,22 +143,22 @@ export const MISSION_CONTROL_GOVERNANCE_DEFAULTS = [
   },
 ] as const
 
-export const MISSION_CONTROL_SEED_DEFAULTS = {
-  productLineSlug: 'mission-control',
+export const PADDOCK_SEED_DEFAULTS = {
+  productLineSlug: 'paddock',
   displayName: 'Paddock',
-  agentPrefix: 'mission-control-platform',
+  agentPrefix: 'paddock-platform',
   githubOwner: 'racecraft-lab',
-  githubRepo: 'mission-control',
+  githubRepo: 'paddock',
   githubFullName: 'racecraft-lab/Paddock',
-  workflowFamily: 'mission-control',
-  configPath: 'docs/ai/product-lines/mission-control.yaml',
-  workflowContractPath: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
-  requiredWorkflowSlugs: MISSION_CONTROL_REQUIRED_WORKFLOW_SLUGS,
-  enabledFlags: MISSION_CONTROL_ENABLED_FLAGS,
-  disabledOrAbsentFlags: MISSION_CONTROL_DISABLED_OR_ABSENT_FLAGS,
-  departments: MISSION_CONTROL_DEPARTMENTS,
-  roleAssignments: MISSION_CONTROL_ROLE_ASSIGNMENTS,
-  governanceDefaults: MISSION_CONTROL_GOVERNANCE_DEFAULTS,
+  workflowFamily: 'paddock',
+  configPath: 'docs/ai/product-lines/paddock.yaml',
+  workflowContractPath: 'docs/ai/workflows/paddock/workflow-contract.yaml',
+  requiredWorkflowSlugs: PADDOCK_REQUIRED_WORKFLOW_SLUGS,
+  enabledFlags: PADDOCK_ENABLED_FLAGS,
+  disabledOrAbsentFlags: PADDOCK_DISABLED_OR_ABSENT_FLAGS,
+  departments: PADDOCK_DEPARTMENTS,
+  roleAssignments: PADDOCK_ROLE_ASSIGNMENTS,
+  governanceDefaults: PADDOCK_GOVERNANCE_DEFAULTS,
   configOwnedSurfaces: CONFIG_OWNED_SURFACES,
   preservedSurfaces: FR020_PRESERVED_SURFACES,
   blockedSideEffects: BLOCKED_SIDE_EFFECTS,
@@ -368,7 +368,7 @@ export interface ProductLineSeedSnapshot {
 export interface ProductLineSeedResultEnvelope {
   schema_version: typeof PRODUCT_LINE_SEED_RESULT_SCHEMA_VERSION
   ok: boolean
-  entrypoint: 'seed:product-line' | 'seed:mission-control'
+  entrypoint: 'seed:product-line' | 'seed:paddock'
   mode: ProductLineSeedMode | 'unknown'
   status: ProductLineSeedStatus
   code: ProductLineSeedErrorCode
@@ -389,7 +389,7 @@ export interface ProductLineSeedResultEnvelope {
 }
 
 export interface ProductLineSeedRunOptions {
-  entrypoint: 'seed:product-line' | 'seed:mission-control'
+  entrypoint: 'seed:product-line' | 'seed:paddock'
   configPath: string
   dbPath?: string
   db?: ProductLineSeedDatabase

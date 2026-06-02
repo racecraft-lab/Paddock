@@ -6,7 +6,7 @@ This repository includes a first-party CLI at:
 
 Designed for autonomous/headless usage first:
 - API key auth support
-- Profile persistence (~/.mission-control/profiles/*.json)
+- Profile persistence (~/.paddock/profiles/*.json)
 - Stable JSON mode (`--json`) with NDJSON for streaming
 - Deterministic exit code categories
 - SSE streaming for real-time event watching

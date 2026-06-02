@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
 import { createClientLogger } from '@/lib/client-logger'
 import Link from 'next/link'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 
 const log = createClientLogger('AgentDetailTabs')
@@ -83,7 +83,7 @@ export function OverviewTab({
   onPerformHeartbeat: () => Promise<void>
 }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [messageFrom, setMessageFrom] = useState('system')
   const [directMessage, setDirectMessage] = useState('')
   const [messageStatus, setMessageStatus] = useState<string | null>(null)
@@ -603,7 +603,7 @@ export function MemoryTab({
 // Tasks Tab Component
 export function TasksTab({ agent }: { agent: Agent }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [tasks, setTasks] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -701,7 +701,7 @@ export function TasksTab({ agent }: { agent: Agent }) {
 // Activity Tab Component
 export function ActivityTab({ agent }: { agent: Agent }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [activities, setActivities] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -821,7 +821,7 @@ export function CreateAgentModal({
   onCreated: () => void
 }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [step, setStep] = useState<1 | 2 | 3>(1)
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [availableModels, setAvailableModels] = useState<string[]>([])
@@ -1371,7 +1371,7 @@ export function ConfigTab({
   onSave: () => void
 }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [config, setConfig] = useState<any>(agent.config || {})
   const [editing, setEditing] = useState(false)
   const [showJson, setShowJson] = useState(false)
@@ -2149,7 +2149,7 @@ interface FileEntry {
 
 export function FilesTab({ agent }: { agent: Agent }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [files, setFiles] = useState<FileEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -2321,7 +2321,7 @@ export function FilesTab({ agent }: { agent: Agent }) {
 
 export function ToolsTab({ agent }: { agent: Agent }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const agentConfig = (agent as any).config || {}
   const tools = agentConfig.tools || {}
   const toolAllow = Array.isArray(tools.allow) ? tools.allow : []
@@ -2759,7 +2759,7 @@ export function CronTab({ agent }: { agent: Agent }) {
 
 export function ModelsTab({ agent }: { agent: Agent }) {
   const t = useTranslations('agentDetail')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const agentConfig = (agent as any).config || {}
   const modelCfg = agentConfig.model || {}
   const modelPrimary = typeof modelCfg === 'string' ? modelCfg : (modelCfg.primary || '')

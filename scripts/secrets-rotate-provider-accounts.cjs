@@ -30,8 +30,8 @@
  *     rows decrypt under this key; rows without a fallback path are
  *     reported as `failed` so the operator can investigate per the
  *     runbook.
- *   - MISSION_CONTROL_DATA_DIR — optional, defaults to `.data/`.
- *   - MISSION_CONTROL_DB_PATH — optional, overrides default DB path.
+ *   - PADDOCK_DATA_DIR — optional, defaults to `.data/`.
+ *   - PADDOCK_DB_PATH — optional, overrides default DB path.
  *
  * Output: a JSON summary on stdout describing
  *   { rotated, grace_decrypted, already_rotated, failed,
@@ -140,11 +140,11 @@ function encrypt(plaintext, key) {
 }
 
 function resolveDbPath() {
-  if (process.env.MISSION_CONTROL_DB_PATH) {
-    return process.env.MISSION_CONTROL_DB_PATH;
+  if (process.env.PADDOCK_DB_PATH) {
+    return process.env.PADDOCK_DB_PATH;
   }
-  const dataDir = process.env.MISSION_CONTROL_DATA_DIR || path.join(process.cwd(), '.data');
-  return path.join(dataDir, 'mission-control.db');
+  const dataDir = process.env.PADDOCK_DATA_DIR || path.join(process.cwd(), '.data');
+  return path.join(dataDir, 'paddock.db');
 }
 
 function rotate(db, newKey, previousKey) {

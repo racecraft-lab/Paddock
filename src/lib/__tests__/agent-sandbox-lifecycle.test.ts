@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
-import { join } from 'path'
+import { dirname, join } from 'path'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   AGENT_SANDBOX_LIFECYCLE_STATUSES,
@@ -40,7 +40,7 @@ function lifecycleId(result: ReturnType<typeof createSandboxLifecycle>): number 
 
 describe('agent sandbox lifecycle vocabulary and keys', () => {
   it('exports closed owner and lifecycle status vocabularies', () => {
-    expect(AGENT_SANDBOX_OWNERS).toEqual(['mission_control', 'openclaw', 'external_harness'])
+    expect(AGENT_SANDBOX_OWNERS).toEqual(['paddock', 'openclaw', 'external_harness'])
     expect(AGENT_SANDBOX_LIFECYCLE_STATUSES).toEqual([
       'created',
       'prepared',
@@ -55,7 +55,7 @@ describe('agent sandbox lifecycle vocabulary and keys', () => {
 
   it('builds the deterministic sandbox key from sanitized ID segments', () => {
     expect(buildSandboxKey(sandboxLifecycleInput())).toBe(
-      'workspace/1/product-line/mission-control/task/100/stage/issue_remediation/attempt/456/owner/mission_control',
+      'workspace/1/product-line/paddock/task/100/stage/issue_remediation/attempt/456/owner/paddock',
     )
   })
 
@@ -204,7 +204,7 @@ describe('agent sandbox lifecycle mutations', () => {
   it('rejects existing duplicate rows with conflicting owner or path projections', () => {
     for (const projectionUpdate of [
       "owner = 'openclaw'",
-      "sanitized_relative_path = 'workspace/1/product-line/mission-control/task/100/stage/issue_remediation/attempt/456/owner/openclaw'",
+      "sanitized_relative_path = 'workspace/1/product-line/paddock/task/100/stage/issue_remediation/attempt/456/owner/openclaw'",
     ]) {
       const db = openAgentSandboxLifecycleDb(true)
       const first = createSandboxLifecycle(db, sandboxLifecycleInput())
@@ -296,21 +296,31 @@ describe('agent sandbox lifecycle mutations', () => {
   it('records cleanup_failed when real filesystem removal fails', () => {
     const db = openAgentSandboxLifecycleDb(true)
     const dataDir = tempDataDir()
-    const sandboxRoot = join(dataDir, 'not-a-directory')
-    writeFileSync(sandboxRoot, 'blocks nested cleanup', 'utf8')
+    const sandboxRoot = join(dataDir, 'sandbox-root')
     const created = createSandboxLifecycle(db, {
       ...sandboxLifecycleInput({ dataDir }),
       sandboxRoot,
     })
+    const root = resolveSandboxRoot({
+      sandboxRoot,
+      sanitizedRelativePath: created.lifecycle?.sanitized_relative_path ?? '',
+    })
+    mkdirSync(root.absolutePath, { recursive: true })
+    const lockedParent = dirname(root.absolutePath)
+    chmodSync(lockedParent, 0o500)
     const id = lifecycleId(created)
     expect(prepareSandboxLifecycle(db, id)).toMatchObject({ ok: true })
     expect(markSandboxLifecycleTerminal(db, id)).toMatchObject({ ok: true })
 
-    expect(cleanupSandboxLifecycle(db, id, { sandboxRoot })).toMatchObject({
-      ok: false,
-      reason: 'cleanup_failed',
-      lifecycle: { status: 'cleanup_failed' },
-    })
+    try {
+      expect(cleanupSandboxLifecycle(db, id, { sandboxRoot })).toMatchObject({
+        ok: false,
+        reason: 'cleanup_failed',
+        lifecycle: { status: 'cleanup_failed' },
+      })
+    } finally {
+      chmodSync(lockedParent, 0o700)
+    }
     const model = buildSandboxLifecycleReadModel(db, { workspaceId: 1, taskId: 100 })
     expect(model.lifecycles[0]).toMatchObject({ status: 'cleanup_failed' })
     expect(tableCount(db, 'agent_sandbox_lifecycle_events')).toBeGreaterThanOrEqual(5)
@@ -345,7 +355,7 @@ describe('agent sandbox lifecycle mutations', () => {
       created.lifecycle?.sanitized_relative_path ?? '',
     )
     mkdirSync(root, { recursive: true })
-    writeFileSync(join(root, 'fake-owner.json'), '{"owner":"mission_control"}', 'utf8')
+    writeFileSync(join(root, 'fake-owner.json'), '{"owner":"paddock"}', 'utf8')
 
     expect(existsSync(root)).toBe(true)
     expect(rollbackSandboxLifecycle(db, id, { dataDir })).toMatchObject({
@@ -385,8 +395,8 @@ describe('agent sandbox lifecycle read model', () => {
     })
     expect(model.lifecycles).toHaveLength(1)
     expect(model.lifecycles[0]).toMatchObject({
-      owner: 'mission_control',
-      root_id: 'mission_control_data_sandboxes',
+      owner: 'paddock',
+      root_id: 'paddock_data_sandboxes',
       task_stage_attempt_id: '456',
       task_stage_claim_id: '789',
     })

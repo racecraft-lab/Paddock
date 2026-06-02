@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { appendScopeToPath } from '@/types/product-line'
 
@@ -215,7 +215,7 @@ function TimelineRow({ activity }: { activity: Activity }) {
 // ── Main Component ──────────────────────────────
 export function ActivityFeedPanel() {
   const t = useTranslations('activityFeed')
-  const { agents, activeProductLineScope } = useMissionControl()
+  const { agents, activeProductLineScope } = usePaddock()
 
   const [activities, setActivities] = useState<Activity[]>([])
   const [sessions, setSessions] = useState<SessionInfo[]>([])

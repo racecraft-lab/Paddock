@@ -40,14 +40,14 @@ let auditDb: Database.Database | null = null;
 
 /**
  * Resolve the SQLite database path at the moment of connection creation.
- * Lazy resolution allows tests to set MISSION_CONTROL_DB_PATH per-test
+ * Lazy resolution allows tests to set PADDOCK_DB_PATH per-test
  * and reset state via closeAllConnections().
  */
 function resolveDbPath(): string {
-  const explicit = process.env['MISSION_CONTROL_DB_PATH'];
+  const explicit = process.env['PADDOCK_DB_PATH'];
   if (explicit) return explicit;
-  const dataDir = process.env['MISSION_CONTROL_DATA_DIR'] ?? '.data';
-  return `${dataDir}/mission-control.db`;
+  const dataDir = process.env['PADDOCK_DATA_DIR'] ?? '.data';
+  return `${dataDir}/paddock.db`;
 }
 
 /**

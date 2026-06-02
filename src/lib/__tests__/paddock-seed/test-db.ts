@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3'
 
-export function makeMissionControlSeedDb(): Database.Database {
+export function makePaddockSeedDb(): Database.Database {
   const db = new Database(':memory:')
   db.pragma('foreign_keys = ON')
   db.exec(`
@@ -207,10 +207,10 @@ export function tableColumns(db: Database.Database, table: string): string[] {
   return (db.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>).map((row) => row.name)
 }
 
-export function missionControlContractPath(): string {
-  return 'docs/ai/workflows/mission-control/workflow-contract.yaml'
+export function paddockContractPath(): string {
+  return 'docs/ai/workflows/paddock/workflow-contract.yaml'
 }
 
 export function operatorEvidenceFixturePath(): string {
-  return 'src/lib/__tests__/mission-control-seed/fixtures/operator-evidence.json'
+  return 'src/lib/__tests__/paddock-seed/fixtures/operator-evidence.json'
 }

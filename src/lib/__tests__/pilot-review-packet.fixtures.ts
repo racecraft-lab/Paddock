@@ -59,7 +59,7 @@ export function pilotActivity(overrides: Partial<PilotActivityRecord> = {}): Pil
     workspace_id: SPEC009D_WORKSPACE_ID,
     type: 'task_ready_for_owner',
     description: 'PR #52 entered ready for owner',
-    actor: 'mission-control',
+    actor: 'paddock',
     data: { stage: 'ready_for_owner' },
     created_at: '2026-05-19T22:20:00.000Z',
     ...overrides,

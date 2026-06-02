@@ -6,19 +6,61 @@ import os from 'node:os'
 import path from 'node:path'
 
 const PROVISIONER_PATH = path.join(process.cwd(), 'ops', 'mc-provisioner-daemon.js')
+const SOCKET_TMP_ROOT = process.platform === 'darwin' ? '/private/tmp' : os.tmpdir()
 
-async function waitForSocket(socketPath: string, timeoutMs = 3000): Promise<void> {
+type ProvisionerChild = ReturnType<typeof spawn> & {
+  __logs?: string[]
+}
+
+function childLogs(child: ProvisionerChild | null): string {
+  return child?.__logs?.join('') ?? ''
+}
+
+async function waitForSocket(socketPath: string, child: ProvisionerChild, timeoutMs = 3000): Promise<void> {
   const start = Date.now()
   while (true) {
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(
+        `Provisioner exited before socket was ready: code=${String(child.exitCode)} signal=${String(child.signalCode)}\n${childLogs(child)}`,
+      )
+    }
     try {
       await fs.access(socketPath)
       return
     } catch {
       if (Date.now() - start > timeoutMs) {
-        throw new Error(`Timed out waiting for socket: ${socketPath}`)
+        throw new Error(`Timed out waiting for socket: ${socketPath}\n${childLogs(child)}`)
       }
       await new Promise((resolve) => setTimeout(resolve, 25))
     }
+  }
+}
+
+function startProvisioner(socketPath: string, env: Record<string, string>): ProvisionerChild {
+  const child = spawn(process.execPath, [PROVISIONER_PATH], {
+    env: {
+      ...process.env,
+      ...env,
+      MC_PROVISIONER_SOCKET: socketPath,
+    },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }) as ProvisionerChild
+  child.__logs = []
+  child.stdout?.on('data', (chunk) => child.__logs?.push(chunk.toString('utf8')))
+  child.stderr?.on('data', (chunk) => child.__logs?.push(chunk.toString('utf8')))
+  return child
+}
+
+async function stopProvisioner(child: ProvisionerChild | null): Promise<void> {
+  if (!child || child.exitCode !== null || child.signalCode !== null) return
+  child.kill('SIGTERM')
+  await Promise.race([
+    new Promise((resolve) => child.once('exit', () => resolve(undefined))),
+    new Promise((resolve) => setTimeout(resolve, 2000)),
+  ])
+  if (child.exitCode === null && child.signalCode === null) {
+    child.kill('SIGKILL')
+    await new Promise((resolve) => child.once('exit', () => resolve(undefined)))
   }
 }
 
@@ -51,15 +93,12 @@ function sendJsonLine(socketPath: string, payload: unknown): Promise<Record<stri
 }
 
 describe('mc-provisioner-daemon input limits', () => {
-  let child: ReturnType<typeof spawn> | null = null
+  let child: ProvisionerChild | null = null
   let tmpDir = ''
 
   afterEach(async () => {
-    if (child) {
-      child.kill('SIGTERM')
-      await new Promise((resolve) => child?.once('exit', () => resolve(undefined)))
-      child = null
-    }
+    await stopProvisioner(child)
+    child = null
     if (tmpDir) {
       await fs.rm(tmpDir, { recursive: true, force: true })
       tmpDir = ''
@@ -67,20 +106,15 @@ describe('mc-provisioner-daemon input limits', () => {
   })
 
   it('rejects over-size request payloads before processing', async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mc-provisioner-test-'))
+    tmpDir = await fs.mkdtemp(path.join(SOCKET_TMP_ROOT, 'mc-provisioner-test-'))
     const socketPath = path.join(tmpDir, 'provisioner.sock')
 
-    child = spawn(process.execPath, [PROVISIONER_PATH], {
-      env: {
-        ...process.env,
-        MC_PROVISIONER_TOKEN: 'test-token',
-        MC_PROVISIONER_SOCKET: socketPath,
-        MC_PROVISIONER_MAX_INPUT_BYTES: '1024',
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
+    child = startProvisioner(socketPath, {
+      MC_PROVISIONER_TOKEN: 'test-token',
+      MC_PROVISIONER_MAX_INPUT_BYTES: '1024',
     })
 
-    await waitForSocket(socketPath)
+    await waitForSocket(socketPath, child)
 
     const response = await sendJsonLine(socketPath, {
       token: 'test-token',
@@ -95,19 +129,14 @@ describe('mc-provisioner-daemon input limits', () => {
   }, 15000)
 
   it('rejects command timeouts outside the bounded execution window', async () => {
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mc-provisioner-test-'))
+    tmpDir = await fs.mkdtemp(path.join(SOCKET_TMP_ROOT, 'mc-provisioner-test-'))
     const socketPath = path.join(tmpDir, 'provisioner.sock')
 
-    child = spawn(process.execPath, [PROVISIONER_PATH], {
-      env: {
-        ...process.env,
-        MC_PROVISIONER_TOKEN: 'test-token',
-        MC_PROVISIONER_SOCKET: socketPath,
-      },
-      stdio: ['ignore', 'pipe', 'pipe'],
+    child = startProvisioner(socketPath, {
+      MC_PROVISIONER_TOKEN: 'test-token',
     })
 
-    await waitForSocket(socketPath)
+    await waitForSocket(socketPath, child)
 
     const response = await sendJsonLine(socketPath, {
       token: 'test-token',

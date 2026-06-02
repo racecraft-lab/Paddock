@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { createFacilityScope, createProductLineScope, type ProductLine } from '@/types/product-line'
 
 vi.mock('next-intl', () => ({
@@ -43,7 +43,7 @@ const paint: ProductLine = {
 
 describe('WorkspaceSwitcher', () => {
   beforeEach(() => {
-    useMissionControl.setState({
+    usePaddock.setState({
       workspaceSwitcherEnabled: true,
       workspaceListStatus: 'ready',
       workspaceScopeNotice: null,
@@ -53,7 +53,7 @@ describe('WorkspaceSwitcher', () => {
       scopeKey: 'tenant:7:facility',
       fetchWorkspaces: vi.fn(async () => undefined),
       setActiveProductLine: vi.fn((productLine: ProductLine | null) => {
-        useMissionControl.setState({
+        usePaddock.setState({
           activeProductLine: productLine,
           activeProductLineScope: productLine ? createProductLineScope(productLine, 2) : createFacilityScope(7, 2),
           scopeKey: productLine ? `tenant:7:product-line:${productLine.id}` : 'tenant:7:facility',
@@ -77,7 +77,7 @@ describe('WorkspaceSwitcher', () => {
   })
 
   it('marks the selected option and applies listbox option semantics', () => {
-    useMissionControl.setState({
+    usePaddock.setState({
       activeProductLine: assembly,
       activeProductLineScope: createProductLineScope(assembly, 3),
       scopeKey: 'tenant:7:product-line:42',
@@ -96,7 +96,7 @@ describe('WorkspaceSwitcher', () => {
   })
 
   it('keeps loading, empty, and error rows outside the selectable option set', () => {
-    useMissionControl.setState({
+    usePaddock.setState({
       workspaces: [facilityRow],
       workspaceListStatus: 'ready',
       workspaceScopeNotice: 'workspace-list-failure',

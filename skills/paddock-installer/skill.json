@@ -1,5 +1,5 @@
 {
-  "name": "mission-control-installer",
+  "name": "paddock-installer",
   "version": "1.0.0",
   "description": "Install and configure Paddock — the OpenClaw agent orchestration dashboard",
   "author": "Builderz Labs",
@@ -20,8 +20,8 @@
     "install_dir": {
       "type": "string",
       "default": "",
-      "description": "Installation directory (defaults to ./mission-control)"
+      "description": "Installation directory (defaults to ./paddock)"
     }
   },
-  "tags": ["mission-control", "dashboard", "installer", "docker"]
+  "tags": ["paddock", "dashboard", "installer", "docker"]
 }

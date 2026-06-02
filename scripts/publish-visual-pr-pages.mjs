@@ -18,7 +18,7 @@ import {
 const SURFACES = {
   playwright: {
     label: 'Playwright UI E2E',
-    workflowFile: 'mission-control-ui-e2e.yml',
+    workflowFile: 'paddock-ui-e2e.yml',
   },
   storybook: {
     label: 'Storybook Components',

@@ -29,8 +29,8 @@ type SeededProject = {
   name: string
 }
 
-const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ||
-  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const E2E_DB_PATH = process.env.PADDOCK_DB_PATH ||
+  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 const FACILITY_SCOPE_QUERY = 'workspace_scope=facility'
 const READY_FOR_OWNER_RECIPIENT = 'owner-e2e-ready-for-owner-visual'
 const READY_FOR_OWNER_VISUAL_TAGS = ['ready-for-owner']

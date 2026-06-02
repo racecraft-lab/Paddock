@@ -69,7 +69,7 @@
 ```bash
 # 4.1 — Confirm the reserve is actually empty for the workspace
 #       (replace 42 with the affected id).
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT workspace_id, usd_remaining, tokens_remaining, usd_seed,
        tokens_seed, last_replenished_at, depleted_at, updated_at
   FROM aegis_emergency_reserves
@@ -78,7 +78,7 @@ SQL
 
 # 4.2 — Inspect recent reserve allocations to confirm they actually
 #       fired (not a phantom alert).
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT decision_id, reasons_json, created_at
   FROM dispatch_decision_log
  WHERE workspace_id = 42
@@ -90,7 +90,7 @@ SQL
 
 # 4.3 — Confirm the replenishment cadence by checking the previous
 #       replenished_at against the policy window length.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT (julianday('now') - julianday(last_replenished_at)) * 24 * 60 AS minutes_since_replenish
   FROM aegis_emergency_reserves
  WHERE workspace_id = 42;
@@ -99,7 +99,7 @@ SQL
 # higher, the replenishment job is not running.
 
 # 4.4 — Check the depletion alert was emitted (and de-duped).
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT step, hour_bucket, payload_json, created_at
   FROM aegis_fallback_activity
  WHERE workspace_id = 42
@@ -118,7 +118,7 @@ SQL
 ```bash
 node -e "
   const Database = require('better-sqlite3');
-  const db = new Database('.data/mission-control.db');
+  const db = new Database('.data/paddock.db');
   const { replenishReserve, getEmergencyReserve } = require('./dist/lib/resource-aegis-reserve');
   replenishReserve(42, db);
   console.log(JSON.stringify(getEmergencyReserve(42, db), null, 2));
@@ -128,7 +128,7 @@ node -e "
 Or via raw SQL (preserves audit because the helper is idempotent):
 
 ```bash
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 UPDATE aegis_emergency_reserves
    SET usd_remaining = usd_seed,
        tokens_remaining = tokens_seed,
@@ -146,7 +146,7 @@ production workspace running 100+ Aegis reviews/hour cannot survive
 on a $5.00 reserve), raise the seed:
 
 ```bash
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 UPDATE aegis_emergency_reserves
    SET usd_seed = 25.00,
        tokens_seed = 5000000,
@@ -170,7 +170,7 @@ correctly so the reserve does not appear drained while in fact
 holding stale reservations:
 
 ```bash
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT state, COUNT(*) FROM resource_reservations
  WHERE expires_at < datetime('now')
    AND state = 'active'
@@ -185,7 +185,7 @@ SQL
 
 ```bash
 # 6.1 — Confirm reserve is back to seed.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT workspace_id, usd_remaining, tokens_remaining, depleted_at
   FROM aegis_emergency_reserves
  WHERE workspace_id = 42;
@@ -201,7 +201,7 @@ pnpm mc tasks queue --agent Aegis --max-capacity 1 --json
 
 # 6.3 — Confirm depletion alert no longer fires within the next hour
 #       (de-dup hour_bucket should not include a fresh emission).
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT created_at, hour_bucket, payload_json
   FROM aegis_fallback_activity
  WHERE workspace_id = 42

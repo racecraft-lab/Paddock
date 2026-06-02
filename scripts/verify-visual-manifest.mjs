@@ -144,7 +144,7 @@ async function verifyScreenshotHash(manifest, filePath, failures) {
 function validateCommonManifest(manifest, filePath, expectedKind) {
   const failures = []
   if (manifest.version !== 1) failures.push('version must be 1')
-  if (manifest.tool !== 'mission-control-visual') failures.push('tool must be mission-control-visual')
+  if (manifest.tool !== 'paddock-visual') failures.push('tool must be paddock-visual')
   if (manifest.kind !== expectedKind) failures.push(`kind must be ${expectedKind}`)
   if (typeof manifest.domain !== 'string' || manifest.domain.length === 0) failures.push('missing domain')
   if (!Array.isArray(manifest.tags)) failures.push('tags must be an array')

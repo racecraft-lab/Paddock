@@ -1,6 +1,6 @@
 ---
 name: panels
-description: "Skill for the Panels area of mission-control. 727 symbols across 76 files."
+description: "Skill for the Panels area of paddock. 727 symbols across 76 files."
 ---
 
 # Panels

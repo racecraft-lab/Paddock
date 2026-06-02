@@ -35,7 +35,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 - `NEEDS_SPECIALIST` recommends an owner/lane from existing metadata when safe, otherwise records an unassigned specialist state.
 - Duplicate, obsolete, and invalid share a closure-recommendation model with outcome-specific required fields.
 - The existing task Evidence route/section gains API field `triage_routing` and UI block `Triage routing`.
-- The existing `PILOT_MISSION_CONTROL_E2E` product-line scope is the default rollout boundary unless Clarify proves a dedicated flag is required.
+- The existing `PILOT_PADDOCK_E2E` product-line scope is the default rollout boundary unless Clarify proves a dedicated flag is required.
 - Existing `task_dispositions`, `task_artifacts`, and `activities` persist typed lane payloads. No migration is planned.
 - Non-remediation outcomes are terminal Issue Triage outcomes with evidence only; no successor templates are added.
 
@@ -79,7 +79,7 @@ The design concept is the source of truth for setup-time scoping decisions:
 | I. Zero-Regression Contract | Flag/scope-off behavior must preserve existing Issue Triage, Issue Remediation, task chain, and task Evidence behavior | Focused regression tests plus existing unit/build gates |
 | II. Install Compatibility Discipline | Keep the change additive and scoped; prefer existing evidence/artifact seams over schema divergence | Diff review and no-migration evidence |
 | IV. Test-First Development | RED tests define lane payload validation, idempotency, no successor creation, and Evidence rendering before implementation | Vitest/React/Playwright where UI changes |
-| V. Feature-Flag Resolution Discipline | Default to existing `PILOT_MISSION_CONTROL_E2E` product-line scope; any new flag must route through `resolveFlag` | Clarify decision plus guardrail grep |
+| V. Feature-Flag Resolution Discipline | Default to existing `PILOT_PADDOCK_E2E` product-line scope; any new flag must route through `resolveFlag` | Clarify decision plus guardrail grep |
 | VII. Additive Migration Policy | No schema migration planned; use existing task disposition/artifact/activity tables | Migration diff grep and plan review |
 | VIII. Successor Side-Effect Parity | Do not create follow-up tasks for non-remediation outcomes in v1; if any task creation appears, it must be explicitly out of scope or go through `createTask()` | Guardrail grep and task-chain tests |
 | X. Observability and Auditability | Every lane must preserve rationale, source task, recommended next action, and deferred side effects visibly | Artifact/activity assertions and task Evidence route/UI tests |
@@ -189,7 +189,7 @@ Route `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, 
 - Roadmap: `docs/ai/rc-factory-technical-roadmap.md`, SPEC-009F / Phase 8F.
 - Design Concept: `docs/ai/specs/SPEC-009F-design-concept.md`.
 - Prior workflow evidence: `docs/ai/specs/SPEC-009C2-workflow.md` and `docs/ai/specs/SPEC-009E-workflow.md`.
-- Workflow contract: `docs/ai/workflows/mission-control/workflow-contract.yaml`.
+- Workflow contract: `docs/ai/workflows/paddock/workflow-contract.yaml`.
 - Existing evidence seam: `src/lib/task-evidence.ts` and `GET /api/tasks/[id]/evidence`.
 
 ### Required Behavior
@@ -202,7 +202,7 @@ Route `NEEDS_SPEC`, `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, `DUPLICATE`, `OBSOLETE`, 
 7. The source Issue Triage task completes with terminal non-remediation evidence and no successor template.
 8. Repeated routing is idempotent by outcome and source triage task, updating or superseding existing evidence without duplicates.
 9. Task Evidence exposes compact API field `triage_routing` and UI block `Triage routing` with lane, status, artifact references, recommended next action, proposed labels, deferred side effects, and missing/unassigned states.
-10. Existing `PILOT_MISSION_CONTROL_E2E` product-line scope is the default rollout boundary unless Clarify proves a dedicated flag is required.
+10. Existing `PILOT_PADDOCK_E2E` product-line scope is the default rollout boundary unless Clarify proves a dedicated flag is required.
 
 ### Non-goals
 - Issue Remediation execution or remediation successor creation.
@@ -322,8 +322,8 @@ Questions to resolve:
 
 - Which existing metadata can safely recommend a specialist owner/lane.
 - Minimum confidence for a specialist recommendation versus unassigned-specialist state.
-- Whether `PILOT_MISSION_CONTROL_E2E` is sufficient or a dedicated feature flag is required.
-- How behavior remains absent/off for non-Mission-Control workflows.
+- Whether `PILOT_PADDOCK_E2E` is sufficient or a dedicated feature flag is required.
+- How behavior remains absent/off for non-Paddock workflows.
 
 Expected output: matching rules, fallback state, and rollout decision.
 
@@ -334,9 +334,9 @@ Accepted answers:
 - Specialist recommendations may use only deterministic Paddock workspace metadata: source task/workspace, `projects.area_slug`, normalized `area:*` routing evidence, `project_agent_assignments`, and same-workspace `agents` rows.
 - Do not infer specialist ownership from free-form issue title/body/rationale keywords, raw agent config/soul content, logs, or GitHub body text.
 - Recommend only when exactly one safe lane and exactly one eligible owner assignment resolve; otherwise record `specialist_state: "unassigned"` with `missing_metadata` and `owner_action`.
-- Existing specialist workflow/template metadata may inform recommendation wording, but SPEC-009F must not execute, route to, or create `mission-control_specialist_route` or any other non-remediation successor.
-- `PILOT_MISSION_CONTROL_E2E` remains the v1 rollout gate; no dedicated SPEC-009F feature flag is planned.
-- Routing requires all absence/off gates: pilot flag resolved true, source task template slug `mission-control_issue_triage`, GitHub repo `racecraft-lab/Paddock`, supported disposition, and existing evidence prerequisites. Otherwise no SPEC-009F artifacts, activities, proposed labels, dispatches, or successors are written.
+- Existing specialist workflow/template metadata may inform recommendation wording, but SPEC-009F must not execute, route to, or create `paddock_specialist_route` or any other non-remediation successor.
+- `PILOT_PADDOCK_E2E` remains the v1 rollout gate; no dedicated SPEC-009F feature flag is planned.
+- Routing requires all absence/off gates: pilot flag resolved true, source task template slug `paddock_issue_triage`, GitHub repo `racecraft-lab/Paddock`, supported disposition, and existing evidence prerequisites. Otherwise no SPEC-009F artifacts, activities, proposed labels, dispatches, or successors are written.
 
 Consensus: None required; the clarify executor found current repo evidence sufficient.
 
@@ -378,7 +378,7 @@ Consensus: None required; the clarify executor found current repo evidence suffi
 | Lane Payload Contracts | 5 | Added common payload envelope, lane-specific fields, proposed-label metadata, safe evidence references, and payload validation ownership |
 | Terminal State And Idempotency | 5 | Added `done` source-task state, `triage_routing_recorded`, idempotency key, supersession, conflict, and partial failure semantics |
 | Evidence API/UI Shape | 5 | Added `triage_routing` API shape, Evidence state vocabulary, server helper ownership, active artifact selection, and UI copy/accessibility contract |
-| Specialist Matching And Rollout Scope | 5 | Added deterministic matching inputs, unassigned fallback, no specialist successor, `PILOT_MISSION_CONTROL_E2E` rollout, and non-Mission-Control absence gates |
+| Specialist Matching And Rollout Scope | 5 | Added deterministic matching inputs, unassigned fallback, no specialist successor, `PILOT_PADDOCK_E2E` rollout, and non-Paddock absence gates |
 | UAT And Regression Boundaries | 5 | Added six-outcome fixture matrix, Playwright Evidence journey, fixture cleanup, static/diff guards, and pilot smoke checklist UAT ledger |
 
 ---
@@ -397,7 +397,7 @@ Plan SPEC-009F using:
 - `docs/ai/specs/SPEC-009F-design-concept.md`
 - `docs/ai/specs/SPEC-009F-workflow.md`
 - `specs/009f-production-triage-routing/spec.md`
-- `docs/ai/workflows/mission-control/workflow-contract.yaml`
+- `docs/ai/workflows/paddock/workflow-contract.yaml`
 - Prior implementation evidence in `docs/ai/specs/SPEC-009C2-workflow.md` and `docs/ai/specs/SPEC-009E-workflow.md`
 - Constitution principles I, II, IV, V, VII, VIII, X, XIV, and XVI
 
@@ -420,7 +420,7 @@ Quote Design Concept decisions when they drive architecture:
 - Q4: metadata-based specialist recommendation with unassigned fallback.
 - Q5: shared closure-recommendation model with outcome-specific fields.
 - Q6: task Evidence route/section extension.
-- Q7: default existing `PILOT_MISSION_CONTROL_E2E` scope unless Clarify proves otherwise.
+- Q7: default existing `PILOT_PADDOCK_E2E` scope unless Clarify proves otherwise.
 - Q8: existing dispositions/artifacts/activities, no migration.
 - Q9/Q15: terminal Issue Triage outcomes, no successors.
 - Q10: fixture-driven UAT plus operator-readable Evidence inspection.
@@ -687,7 +687,7 @@ guard/UAT evidence.
   `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22. GitHub merge
   checks passed for CodeQL, Quality Gate, and visual approval contexts.
 - Current closeout status: `Complete`. Operator closeout on 2026-05-22
-  confirmed target deployment promotion, `PILOT_MISSION_CONTROL_E2E`
+  confirmed target deployment promotion, `PILOT_PADDOCK_E2E`
   target-scope validation, and HITL replay of the six non-remediation outcomes
   with no reported UAT defects.
 - Review remediation: no review comments or reviews existed when checked;

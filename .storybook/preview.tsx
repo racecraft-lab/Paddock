@@ -24,7 +24,7 @@ const viewports = {
   },
 }
 
-function MissionControlPreview({ children }: { children: ReactNode }) {
+function PaddockPreview({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.classList.add('dark')
     document.documentElement.lang = 'en'
@@ -64,9 +64,9 @@ const preview: Preview = {
   },
   decorators: [
     (Story) => (
-      <MissionControlPreview>
+      <PaddockPreview>
         <Story />
-      </MissionControlPreview>
+      </PaddockPreview>
     ),
   ],
 }

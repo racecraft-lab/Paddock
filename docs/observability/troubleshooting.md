@@ -56,7 +56,7 @@ red after activation.
 ```yaml
 exporters:
   otlphttp:
-    endpoint: https://mission-control.example.org/api/otlp/v1
+    endpoint: https://paddock.example.org/api/otlp/v1
     sending_queue:
       enabled: true
       num_consumers: 4

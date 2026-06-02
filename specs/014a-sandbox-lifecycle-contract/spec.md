@@ -40,11 +40,11 @@ As Paddock, I need every execution context to receive a deterministic sandbox id
 
 **Why this priority**: This is the minimum safety boundary for launching any future runner. Without it, work can be claimed but cannot be tied to a reviewable, cleanup-safe execution context.
 
-**Independent Test**: Enable the sandbox feature for a disposable workspace, create fake `mission_control`, `openclaw`, and `external_harness` lifecycles for already-claimed task stages, and verify each lifecycle has the expected key shape, owner, sanitized path evidence, current status, and append-only events without launching a real harness.
+**Independent Test**: Enable the sandbox feature for a disposable workspace, create fake `paddock`, `openclaw`, and `external_harness` lifecycles for already-claimed task stages, and verify each lifecycle has the expected key shape, owner, sanitized path evidence, current status, and append-only events without launching a real harness.
 
 **Acceptance Scenarios**:
 
-1. **Given** the feature is enabled for a workspace with an eligible task stage, **When** a fake Paddock owner creates and prepares a sandbox, **Then** the lifecycle is stored with owner `mission_control`, the deterministic sandbox key, sanitized relative path evidence, and `created` then `prepared` events.
+1. **Given** the feature is enabled for a workspace with an eligible task stage, **When** a fake Paddock owner creates and prepares a sandbox, **Then** the lifecycle is stored with owner `paddock`, the deterministic sandbox key, sanitized relative path evidence, and `created` then `prepared` events.
 2. **Given** the same workspace and task stage, **When** fake OpenClaw and external-harness owners exercise the lifecycle vocabulary, **Then** they use the same statuses and event semantics while retaining their distinct owner values.
 3. **Given** a lifecycle reaches `running` and then `terminal`, **When** the read model is queried, **Then** it returns the current status, owner, safe path evidence, linkage ids, and recent events without exposing host-sensitive absolute paths or raw payloads.
 
@@ -133,11 +133,11 @@ As a future runtime-inventory surface, I need a read-only `sandbox_lifecycle.v1`
 
 - **FR-001**: System MUST add durable lifecycle state for sandbox ownership using the narrow schema pair `agent_sandbox_lifecycles` and `agent_sandbox_lifecycle_events`.
 - **FR-002**: System MUST treat `agent_sandbox_lifecycles` as the current lifecycle-state record and `agent_sandbox_lifecycle_events` as append-only lifecycle audit evidence.
-- **FR-003**: System MUST restrict sandbox owners to the closed enum `mission_control`, `openclaw`, and `external_harness`.
+- **FR-003**: System MUST restrict sandbox owners to the closed enum `paddock`, `openclaw`, and `external_harness`.
 - **FR-004**: System MUST reject any owner value outside the closed owner enum with validation evidence.
 - **FR-005**: System MUST construct sandbox keys using the stable ID-based shape `workspace/<workspace_id>/product-line/<product_line_slug>/task/<task_id>/stage/<stage_key>/attempt/<attempt_id>/owner/<owner>`.
 - **FR-006**: System MUST treat IDs in the sandbox key as authoritative and product-line/stage readability text as sanitized readability only.
-- **FR-007**: System MUST default sandbox filesystem roots to `<MISSION_CONTROL_DATA_DIR>/sandboxes`.
+- **FR-007**: System MUST default sandbox filesystem roots to `<PADDOCK_DATA_DIR>/sandboxes`.
 - **FR-008**: System MAY support reviewed per-workspace sandbox root configuration, but only through the same bounded path validation rules.
 - **FR-009**: System MUST provide a bounded path helper that rejects traversal segments, absolute paths, symlink-like segments, unsafe Unicode, control characters, reserved names, duplicate normalized keys, overlong segments, and root escape after normalization.
 - **FR-010**: System MUST persist only safe path evidence: sandbox key, owner, root identifier, sanitized relative path, lifecycle ids, linkage ids, timestamps, handle id when present, and redacted reason codes.
@@ -194,7 +194,7 @@ As a future runtime-inventory surface, I need a read-only `sandbox_lifecycle.v1`
 
 ### Measurable Outcomes
 
-- **SC-001**: 100% of valid fake lifecycle creates for `mission_control`, `openclaw`, and `external_harness` produce deterministic sandbox keys matching the specified shape.
+- **SC-001**: 100% of valid fake lifecycle creates for `paddock`, `openclaw`, and `external_harness` produce deterministic sandbox keys matching the specified shape.
 - **SC-002**: 100% of adversarial path cases in the required corpus fail closed with no lifecycle row, no lifecycle event, and field-level validation evidence.
 - **SC-003**: 100% of flag-OFF mutation attempts across create, prepare, running, terminal, and cleanup paths create zero lifecycle rows and zero lifecycle events.
 - **SC-004**: 100% of lifecycle read responses omit host-sensitive absolute paths, raw user path fragments, raw prompts, tokens, provider payloads, and session payloads.

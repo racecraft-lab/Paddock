@@ -6,7 +6,7 @@
 
 ## Path And Key Safety
 
-- [x] CHK001 Sandbox root defaults to `<MISSION_CONTROL_DATA_DIR>/sandboxes` and any per-workspace root must pass the same bounded resolver.
+- [x] CHK001 Sandbox root defaults to `<PADDOCK_DATA_DIR>/sandboxes` and any per-workspace root must pass the same bounded resolver.
 - [x] CHK002 Traversal, absolute paths, separator injection, dot segments, symlink-like segments, unsafe Unicode, control characters, reserved names, overlong segments, duplicate normalized values, and root escape fail closed.
 - [x] CHK003 Key segments normalize once and then pass a printable ASCII allowlist instead of being silently repaired into a different value.
 - [x] CHK004 Collision handling rejects duplicate normalized keys or path evidence instead of overwriting or reusing the wrong lifecycle.

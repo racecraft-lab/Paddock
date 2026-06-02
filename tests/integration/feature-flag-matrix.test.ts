@@ -172,7 +172,7 @@ describe('SPEC-008 T320..T353 — feature-flag matrix coverage', () => {
       }
     }
     // At least 9 flags × 4 scenarios = 36 cells (plus the
-    // PILOT_MISSION_CONTROL_E2E flag's 4 cells = 40 total; both are
+    // PILOT_PADDOCK_E2E flag's 4 cells = 40 total; both are
     // acceptable, but we assert ≥36 to lock SPEC-008 coverage).
     expect(results.length).toBeGreaterThanOrEqual(36)
   })

@@ -30,7 +30,7 @@
     "moreIssues": "+ {count} more issue{count, plural, one {} other {s}}"
   },
   "auth": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "signInToContinue": "Sign in to continue",
     "username": "Username",
     "password": "Password",
@@ -145,7 +145,7 @@
     "resetting": "Resetting..."
   },
   "boot": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "agentOrchestration": "Agent Orchestration",
     "authenticatingOperator": "Authenticating operator",
     "detectingStationMode": "Detecting station mode",

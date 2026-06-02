@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { expect, fireEvent, userEvent, within } from 'storybook/test'
 
 import { OrchestrationBar } from '@/components/panels/orchestration-bar'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { createProductLineScope, type ProductLine } from '@/types/product-line'
 
 const productLineAlpha: ProductLine = {
@@ -135,13 +135,13 @@ function configureTaskPipelineState() {
   installTaskPipelineFetchMock()
   const activeProductLineScope = createProductLineScope(productLineAlpha, 4)
 
-  useMissionControl.setState({
+  usePaddock.setState({
     activeTenant: {
       id: 1,
       slug: 'racecraft-facility',
       display_name: 'Racecraft Facility',
       status: 'active',
-      linux_user: 'mission-control',
+      linux_user: 'paddock',
     },
     workspaces: [productLineAlpha],
     workspaceSwitcherEnabled: true,

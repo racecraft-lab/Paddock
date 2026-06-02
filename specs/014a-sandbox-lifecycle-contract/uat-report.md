@@ -25,8 +25,8 @@ Target UAT was executed on May 29, 2026 CDT against HAL after deploying merged
 `main` commit `c01d9e44ec826d94fa5916284c51453e5ec339ee`.
 
 - `uat_replay_id`: `spec013c-014a-uat-1780110032087`
-- Target: HAL `mission-control.service`, local HTTP `http://127.0.0.1:3000`
-- Deployment evidence: `pnpm install --frozen-lockfile` no-op from lockfile; `pnpm build` passed under Next.js 16.2.6; `mission-control.service` restarted and logged database migrations applied; `/login` returned HTTP `200`; `openclaw-gateway.service` remained active.
+- Target: HAL `paddock.service`, local HTTP `http://127.0.0.1:3000`
+- Deployment evidence: `pnpm install --frozen-lockfile` no-op from lockfile; `pnpm build` passed under Next.js 16.2.6; `paddock.service` restarted and logged database migrations applied; `/login` returned HTTP `200`; `openclaw-gateway.service` remained active.
 - Migration markers: `079_task_claim_control`, `080_agent_sandbox_lifecycles`
 - Auth role used: disposable session admin
 - Sandbox UAT scope: disposable workspace `18`
@@ -37,7 +37,7 @@ Target UAT was executed on May 29, 2026 CDT against HAL after deploying merged
 | Fixture | Result |
 |---------|--------|
 | Flag off before enable | Passed: `createSandboxLifecycle` returned `feature_flag_off`; lifecycle row count stayed `0` |
-| Fake lifecycle owner `mission_control` | Passed: fake lifecycle completed with durable status `cleaned_up` |
+| Fake lifecycle owner `paddock` | Passed: fake lifecycle completed with durable status `cleaned_up` |
 | Fake lifecycle owner `openclaw` | Passed: fake lifecycle completed with durable status `cleaned_up` |
 | Fake lifecycle owner `external_harness` | Passed: fake lifecycle completed with durable status `cleaned_up` |
 | Enabled read API | Passed: `GET /api/tasks/{id}/sandbox-lifecycles` returned `sandbox_lifecycle.v1`, mutation state `enabled`, and 3 lifecycle rows |
@@ -63,7 +63,7 @@ Cleanup restored the target UAT row-count tables to baseline and verified zero m
 | `resource_policy_events` | 0 | 0 | 0 |
 | `activities` | 410 | 410 | 0 |
 
-The temporary database backup, sandbox test file, fake artifact root, and disposable workspace/project/task/user/session rows were removed. A final HAL check returned no `spec013c-014a-uat-*` workspace rows and no `/tmp/spec013c-014a-uat-*-mission-control.db.bak` files.
+The temporary database backup, sandbox test file, fake artifact root, and disposable workspace/project/task/user/session rows were removed. A final HAL check returned no `spec013c-014a-uat-*` workspace rows and no `/tmp/spec013c-014a-uat-*-paddock.db.bak` files.
 
 ## Follow-Up Boundary
 

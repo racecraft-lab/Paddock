@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 import { expect, userEvent, within } from 'storybook/test'
 import { FeatureFlagsSection } from '@/components/settings/feature-flags-section'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 type Scenario = 'default' | 'enabled'
 
@@ -61,7 +61,7 @@ function flagDefinition(key: string, overrides: Record<string, unknown> = {}) {
         ? ['tests/feature-flags-admin-ui.spec.ts']
         : [],
       visual: key === 'FEATURE_WORKSPACE_SWITCHER'
-        ? ['mission-control-playwright', 'mission-control-storybook']
+        ? ['paddock-playwright', 'paddock-storybook']
         : [],
       storybook: key === 'FEATURE_WORKSPACE_SWITCHER'
         ? ['src/components/settings/feature-flags-section.stories.tsx']
@@ -120,7 +120,7 @@ function featureFlagPayload(workspaceSwitcherEnabled: boolean) {
 function installFeatureFlagFetchMock(scenario: Scenario) {
   let workspaceSwitcherEnabled = scenario === 'enabled'
 
-  useMissionControl.setState({
+  usePaddock.setState({
     fetchWorkspaces: async () => undefined,
   })
 

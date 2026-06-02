@@ -18,8 +18,8 @@ import {
 } from './triage-routing-payloads'
 import type Database from 'better-sqlite3'
 
-const PILOT_FLAG = 'PILOT_MISSION_CONTROL_E2E'
-const SOURCE_TEMPLATE_SLUG = 'mission-control_issue_triage'
+const PILOT_FLAG = 'PILOT_PADDOCK_E2E'
+const SOURCE_TEMPLATE_SLUG = 'paddock_issue_triage'
 const SOURCE_REPO = 'racecraft-lab/Paddock'
 const ACTIONABLE_REMEDIATION = 'ACTIONABLE_REMEDIATION'
 const NEEDS_SPEC = 'NEEDS_SPEC'
@@ -422,7 +422,7 @@ function insertRecordedRoutingActivity(
   const activityInfo = db
     .prepare(`
       INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-      VALUES ('triage_routing_recorded', 'task', ?, 'mission-control', ?, ?, ?, ?)
+      VALUES ('triage_routing_recorded', 'task', ?, 'paddock', ?, ?, ?, ?)
     `)
     .run(
       source.taskId,
@@ -552,7 +552,7 @@ function recordRoutingFailureActivity(
 ): void {
   db.prepare(`
     INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-    VALUES (?, 'task', ?, 'mission-control', ?, ?, ?, ?)
+    VALUES (?, 'task', ?, 'paddock', ?, ?, ?, ?)
   `).run(
     type,
     source.taskId,

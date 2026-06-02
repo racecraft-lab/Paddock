@@ -66,17 +66,17 @@ import { __resetRollupCacheForTests } from '@/lib/disposition-rollup-cache'
 import { GET } from '../rollup/route'
 
 const openDbs: Database.Database[] = []
-const ORIGINAL_MISSION_CONTROL_TEST_MODE = process.env.MISSION_CONTROL_TEST_MODE
+const ORIGINAL_PADDOCK_TEST_MODE = process.env.PADDOCK_TEST_MODE
 const ORIGINAL_MC_SPEC_007_FIXED_NOW = process.env.MC_SPEC_007_FIXED_NOW
 
 afterEach(() => {
   while (openDbs.length > 0) {
     openDbs.pop()?.close()
   }
-  if (ORIGINAL_MISSION_CONTROL_TEST_MODE === undefined) {
-    delete process.env.MISSION_CONTROL_TEST_MODE
+  if (ORIGINAL_PADDOCK_TEST_MODE === undefined) {
+    delete process.env.PADDOCK_TEST_MODE
   } else {
-    process.env.MISSION_CONTROL_TEST_MODE = ORIGINAL_MISSION_CONTROL_TEST_MODE
+    process.env.PADDOCK_TEST_MODE = ORIGINAL_PADDOCK_TEST_MODE
   }
   if (ORIGINAL_MC_SPEC_007_FIXED_NOW === undefined) {
     delete process.env.MC_SPEC_007_FIXED_NOW
@@ -275,7 +275,7 @@ describe('SPEC-007 / US4 — GET /api/dispositions/rollup (FR-070, FR-071, FR-07
   })
 
   it('uses the test-mode fixed clock for deterministic e2e rollup windows', async () => {
-    process.env.MISSION_CONTROL_TEST_MODE = '1'
+    process.env.PADDOCK_TEST_MODE = '1'
     process.env.MC_SPEC_007_FIXED_NOW = '2026-05-02T12:00:00.000Z'
 
     const db = freshMigratedDb()
