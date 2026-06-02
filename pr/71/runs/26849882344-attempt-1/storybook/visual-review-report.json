@@ -1,0 +1,49 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "run",
+  "surface": "storybook",
+  "surfaceLabel": "Storybook Components",
+  "workflowName": "Visual Storybook Snapshots",
+  "workflowFile": "visual-storybook.yml",
+  "prNumber": "71",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/71",
+  "runId": "26849882344",
+  "runAttempt": "1",
+  "runKey": "26849882344-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26849882344",
+  "headRef": "codex/docs-prune-audit",
+  "baseRef": "main",
+  "headSha": "2094404b6ba571813f9b30625a1e4c51506fbf7a",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/71/runs/26849882344-attempt-1/storybook/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/71/storybook/latest/?v=26849882344-attempt-1",
+  "createdAt": "2026-06-02T21:47:08.312Z",
+  "itemCounts": {
+    "baselineApproved": 0,
+    "changed": 0,
+    "deleted": 0,
+    "new": 0,
+    "open": 0,
+    "passed": 0,
+    "total": 0
+  },
+  "reviewScope": {
+    "domains": [],
+    "filtered": 162,
+    "reason": "changed-files-no-review-domain"
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "71",
+    "surface": "storybook",
+    "surfaceLabel": "Storybook Components",
+    "headSha": "2094404b6ba571813f9b30625a1e4c51506fbf7a",
+    "runKey": "26849882344-attempt-1",
+    "items": []
+  }
+}
