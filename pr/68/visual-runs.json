@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "68",
+  "prTitle": "Hard rename Mission Control to Paddock",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/68",
+  "headRef": "codex/paddock-hard-rename",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "26796452134",
+      "runAttempt": "1",
+      "runKey": "26796452134-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26796452134",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/68/runs/26796452134-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/68/storybook/latest/?v=26796452134-attempt-1",
+      "headSha": "46a7868faec165217000a8914a2c6522a7d99e01",
+      "headRef": "codex/paddock-hard-rename",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-02T03:30:38.999Z"
+    }
+  ],
+  "updatedAt": "2026-06-02T03:30:38.999Z"
+}

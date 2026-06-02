@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-01T13:08:33.793Z",
+  "updatedAt": "2026-06-02T03:30:38.999Z",
   "prs": [
+    {
+      "prNumber": "68",
+      "prTitle": "Hard rename Mission Control to Paddock",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/68",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/68/",
+      "headRef": "codex/paddock-hard-rename",
+      "baseRef": "main",
+      "updatedAt": "2026-06-02T03:30:38.999Z",
+      "latest": {
+        "storybook": {
+          "runId": "26796452134",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26796452134",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/68/storybook/latest/?v=26796452134-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/68/runs/26796452134-attempt-1/storybook/",
+          "updatedAt": "2026-06-02T03:30:38.999Z"
+        }
+      }
+    },
     {
       "prNumber": "65",
       "prTitle": "SPEC-013D claim-control operator UX",

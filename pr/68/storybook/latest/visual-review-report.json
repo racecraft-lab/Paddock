@@ -1,0 +1,179 @@
+{
+  "schema": "visual-review-pages.visual-review-report.v1",
+  "version": 1,
+  "repository": "racecraft-lab/Paddock",
+  "reportMode": "pr",
+  "reportScope": "latest",
+  "surface": "storybook",
+  "surfaceLabel": "Storybook Components",
+  "workflowName": "Visual Storybook Snapshots",
+  "workflowFile": "visual-storybook.yml",
+  "prNumber": "68",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/68",
+  "runId": "26796452134",
+  "runAttempt": "1",
+  "runKey": "26796452134-attempt-1",
+  "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26796452134",
+  "headRef": "codex/paddock-hard-rename",
+  "baseRef": "main",
+  "headSha": "46a7868faec165217000a8914a2c6522a7d99e01",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/68/storybook/latest/",
+  "latestHref": "https://racecraft-lab.github.io/Paddock/pr/68/storybook/latest/?v=26796452134-attempt-1",
+  "createdAt": "2026-06-02T03:30:38.999Z",
+  "itemCounts": {
+    "baselineApproved": 5,
+    "changed": 0,
+    "deleted": 0,
+    "new": 13,
+    "open": 13,
+    "passed": 5,
+    "total": 18
+  },
+  "reviewScope": {
+    "domains": [
+      "product-line-switcher",
+      "unknown",
+      "workflow-contracts"
+    ],
+    "filtered": 288
+  },
+  "sourcePullRequest": null,
+  "initialReviewState": null,
+  "canonicalReviewState": {
+    "schema": "visual-review-pages.visual-review-state.v1",
+    "repository": "racecraft-lab/Paddock",
+    "prNumber": "68",
+    "surface": "storybook",
+    "surfaceLabel": "Storybook Components",
+    "headSha": "46a7868faec165217000a8914a2c6522a7d99e01",
+    "runKey": "26796452134-attempt-1",
+    "items": [
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--header-desktop-facility.png",
+        "itemId": "product-line-visual-states--header-desktop-facility.png",
+        "snapshot": "product-line-visual-states--header-desktop-facility.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--header-mobile-scope-menu.png",
+        "itemId": "product-line-visual-states--header-mobile-scope-menu.png",
+        "snapshot": "product-line-visual-states--header-mobile-scope-menu.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "new-product-line-visual-states--task-board-facility-scope.png",
+        "itemId": "product-line-visual-states--task-board-facility-scope.png",
+        "snapshot": "product-line-visual-states--task-board-facility-scope.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--active-operator.png",
+        "itemId": "spec-013d-claim-control-section--active-operator.png",
+        "snapshot": "spec-013d-claim-control-section--active-operator.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--backoff-override.png",
+        "itemId": "spec-013d-claim-control-section--backoff-override.png",
+        "snapshot": "spec-013d-claim-control-section--backoff-override.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--confirmation.png",
+        "itemId": "spec-013d-claim-control-section--confirmation.png",
+        "snapshot": "spec-013d-claim-control-section--confirmation.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--disabled-reasons.png",
+        "itemId": "spec-013d-claim-control-section--disabled-reasons.png",
+        "snapshot": "spec-013d-claim-control-section--disabled-reasons.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--error-state.png",
+        "itemId": "spec-013d-claim-control-section--error-state.png",
+        "snapshot": "spec-013d-claim-control-section--error-state.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--flag-off.png",
+        "itemId": "spec-013d-claim-control-section--flag-off.png",
+        "snapshot": "spec-013d-claim-control-section--flag-off.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--loading.png",
+        "itemId": "spec-013d-claim-control-section--loading.png",
+        "snapshot": "spec-013d-claim-control-section--loading.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--receipt-conflict.png",
+        "itemId": "spec-013d-claim-control-section--receipt-conflict.png",
+        "snapshot": "spec-013d-claim-control-section--receipt-conflict.png",
+        "variant": "new"
+      },
+      {
+        "group": "unknown",
+        "id": "new-spec-013d-claim-control-section--viewer-read-only.png",
+        "itemId": "spec-013d-claim-control-section--viewer-read-only.png",
+        "snapshot": "spec-013d-claim-control-section--viewer-read-only.png",
+        "variant": "new"
+      },
+      {
+        "group": "workflow-contracts",
+        "id": "new-workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "itemId": "workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "snapshot": "workflow-contracts-diagnostics-ui--read-only-redacted-diagnostics.png",
+        "variant": "new"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "passed-product-line-visual-states--task-board-alpha-scope.png",
+        "itemId": "product-line-visual-states--task-board-alpha-scope.png",
+        "snapshot": "product-line-visual-states--task-board-alpha-scope.png",
+        "variant": "passed"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "passed-product-line-visual-states--workspace-switcher-error.png",
+        "itemId": "product-line-visual-states--workspace-switcher-error.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-error.png",
+        "variant": "passed"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "passed-product-line-visual-states--workspace-switcher-facility.png",
+        "itemId": "product-line-visual-states--workspace-switcher-facility.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-facility.png",
+        "variant": "passed"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "passed-product-line-visual-states--workspace-switcher-loading.png",
+        "itemId": "product-line-visual-states--workspace-switcher-loading.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-loading.png",
+        "variant": "passed"
+      },
+      {
+        "group": "product-line-switcher",
+        "id": "passed-product-line-visual-states--workspace-switcher-menu-open.png",
+        "itemId": "product-line-visual-states--workspace-switcher-menu-open.png",
+        "snapshot": "product-line-visual-states--workspace-switcher-menu-open.png",
+        "variant": "passed"
+      }
+    ]
+  }
+}
