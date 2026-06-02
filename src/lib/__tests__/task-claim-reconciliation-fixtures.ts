@@ -250,7 +250,7 @@ export function openTaskClaimDb(): Database.Database {
     .run('alpha', 'Alpha', '{"FEATURE_TASK_CONTROL_PLANE":true}')
   db.prepare(`
     INSERT INTO projects (id, workspace_id, name, slug, ticket_prefix, github_repo, github_sync_enabled, is_repo_sync_owner)
-    VALUES (10, 1, 'Paddock', 'paddock', 'MC', 'racecraft-lab/Paddock', 1, 1)
+    VALUES (10, 1, 'Paddock', 'paddock', 'PD', 'racecraft-lab/Paddock', 1, 1)
   `).run()
   db.prepare(`
     INSERT INTO agents (id, name, workspace_id, status, role)

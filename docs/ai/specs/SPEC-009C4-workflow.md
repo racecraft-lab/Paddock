@@ -310,7 +310,7 @@ idempotency, activity/label sync, or duplicate-launch prevention.
   duplicate launch, no duplicate terminal activity flood, no duplicate
   notification flood, and no local-only completion.
 - [x] Label/status sync proves the task reaches `done` with expected
-  `mc:done`/status behavior and does not keep stale ready-for-owner projection.
+  `pd:done`/status behavior and does not keep stale ready-for-owner projection.
 - [x] `docs/qa/pilot-smoke-checklist.md` records live UAT evidence for a fresh
   synthetic pilot PR merged at `G_PILOT_MERGE`.
 - [x] SPEC-009D can trace issue/PR state, task status, labels, activities,
@@ -474,7 +474,7 @@ Focus on evidence for the later review packet:
 | Clarify Session 1 | Minimum live UAT proof for `G_PILOT_MERGE` | 1 | spec | Accepted checklist text evidence with fresh PR, task, workspace/project, pre/post state, manual merge, sync result, evidence rows, cleanup status, and explicit non-use of PR #49; no new manifest, packet schema, API, dashboard, or UI | spec-context-analyst |
 | Clarify Session 2 | Authoritative merged PR proof | 2 | codebase, domain, spec | Accepted stricter C4 requirement: explicit merged truth for the exact linked PR is authoritative; current code accepts `merged_at`/`merge_commit_sha` alone, so implementation must use RED tests before tightening behavior | codebase-analyst, domain-researcher, spec-context-analyst |
 | Clarify Session 3 | Bounded notification evidence | 1 | codebase, spec | Accepted reuse of existing owner-ready/reconciliation notification rows; successful merge reconciliation is proven by exact PR merge evidence, task status, done label projection, terminal activity, sync result, and traceable existing notifications; no new terminal-done notification type | codebase-analyst, spec-context-analyst |
-| Clarify Session 3 | Done label projection after inbound merge reconciliation | 1 | codebase, spec | Accepted that `mc:done` projection and stale `mc:ready-for-owner` removal are required C4 behavior; current inbound path appears local-only, so RED tests must prove and drive any hardening | codebase-analyst, spec-context-analyst |
+| Clarify Session 3 | Done label projection after inbound merge reconciliation | 1 | codebase, spec | Accepted that `pd:done` projection and stale `pd:ready-for-owner` removal are required C4 behavior; current inbound path appears local-only, so RED tests must prove and drive any hardening | codebase-analyst, spec-context-analyst |
 
 ---
 

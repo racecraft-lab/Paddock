@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// ── Sync: import GitHub issues as MC tasks ──────────────────────
+// ── Sync: import GitHub issues as Paddock tasks ──────────────────────
 
 async function handleSync(
   body: { repo?: string; labels?: string; state?: 'open' | 'closed' | 'all'; assignAgent?: string },
@@ -436,7 +436,7 @@ async function handleGitHubStats() {
   })
 }
 
-// ── Init Labels: create MC labels on repo ────────────────────────
+// ── Init Labels: create Paddock labels on repo ────────────────────────
 
 async function handleInitLabels(
   body: { repo?: string },

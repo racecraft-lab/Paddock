@@ -4,7 +4,7 @@ import type { PilotIssueCandidate } from '../../pilot-issue-eligibility'
 
 export const PILOT_REPO = 'racecraft-lab/Paddock'
 export const SYNTHETIC_TITLE = '[mc-pilot] synthetic e2e issue'
-export const SYNTHETIC_LABELS = ['mc:inbox', 'priority:medium', 'area:dev'] as const
+export const SYNTHETIC_LABELS = ['pd:inbox', 'priority:medium', 'area:dev'] as const
 
 export function makePilotCandidate(overrides: Partial<PilotIssueCandidate> = {}): PilotIssueCandidate {
   return {
@@ -14,7 +14,7 @@ export function makePilotCandidate(overrides: Partial<PilotIssueCandidate> = {})
     state: 'open',
     isPullRequest: false,
     linkedPullRequest: false,
-    labels: ['mc:inbox', 'priority:high', 'area:dev'],
+    labels: ['pd:inbox', 'priority:high', 'area:dev'],
     ...overrides,
   }
 }
@@ -33,7 +33,7 @@ export function makeGitHubIssue(overrides: {
     title: overrides.title ?? 'Pilot issue',
     body: overrides.body ?? 'Fixture issue body',
     state: overrides.state ?? 'open',
-    labels: (overrides.labels ?? ['mc:inbox', 'priority:high', 'area:dev']).map((name) => ({ name })),
+    labels: (overrides.labels ?? ['pd:inbox', 'priority:high', 'area:dev']).map((name) => ({ name })),
     assignee: null,
     html_url: `https://github.com/${PILOT_REPO}/issues/${number}`,
     created_at: overrides.updatedAt ?? '2026-05-14T12:00:00Z',

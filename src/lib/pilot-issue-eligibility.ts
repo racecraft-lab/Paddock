@@ -134,10 +134,10 @@ export function evaluatePilotIssueEligibility(
   if (candidate.value.linkedPullRequest) {
     return ineligible(candidate.value, 'linked_pr', baseEvidence)
   }
-  if (!normalizedLabels.includes('mc:inbox')) {
+  if (!normalizedLabels.includes('pd:inbox')) {
     return ineligible(candidate.value, 'missing_mc_inbox', baseEvidence)
   }
-  if (normalizedLabels.some((label) => label === 'mc:done' || label === 'mc:failed')) {
+  if (normalizedLabels.some((label) => label === 'pd:done' || label === 'pd:failed')) {
     return ineligible(candidate.value, 'terminal_status', baseEvidence)
   }
 

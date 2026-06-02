@@ -23,7 +23,7 @@ The feature is gated by `FEATURE_AREA_LABEL_ROUTING` (already registered, `activ
 
 1. **One owner per repo.** When 2+ projects share `(workspace_id, github_repo)`, only one polls — eliminating duplicate ingestion and unique-constraint thrash.
 2. **Inbound area routing.** Issues with exactly one resolvable `area:<slug>` label route to the corresponding project; ambiguous or unresolvable issues route to the workspace's triage project (or sync-owner project if no triage project is designated).
-3. **Outbound area emission.** Tasks in projects with `area_slug` set push their `area:<slug>` label alongside `mc:*` and `priority:*`.
+3. **Outbound area emission.** Tasks in projects with `area_slug` set push their `area:<slug>` label alongside `pd:*` and `priority:*`.
 4. **Idempotent label provisioning.** `area:*` labels are created on the GitHub repo on connect, on `area_slug` change, and on first sync after flag-on, without overwriting existing label color/description.
 5. **Safe migration.** Existing tasks already synced under the legacy per-project model are re-evaluated by an automatic per-workspace backfill on first flag-on, with per-task transactions and a completion marker.
 6. **No new top-level modules.** All logic lives in `src/lib/github-sync-engine.ts`, `src/lib/github-label-map.ts`, and `src/lib/migrations.ts`. Strict scope stays N/A.
@@ -32,7 +32,7 @@ The feature is gated by `FEATURE_AREA_LABEL_ROUTING` (already registered, `activ
 
 - **No new admin panel.** Editing `area_slug`, `is_triage_project`, and `is_repo_sync_owner` happens via the existing project settings panel and `PUT /api/projects/[id]`. No `area-routing-admin-panel.tsx` module.
 - **No new dedicated routing module.** No `src/lib/github-area-routing.ts` extraction. All logic in existing files.
-- **No re-routing on label changes.** Once a task is ingested with a project_id, subsequent GitHub label changes do NOT move it between MC projects. "No thrash" means stable per-task project_id after initial assignment.
+- **No re-routing on label changes.** Once a task is ingested with a project_id, subsequent GitHub label changes do NOT move it between Paddock projects. "No thrash" means stable per-task project_id after initial assignment.
 - **No external secret detector.** Label and slug data is not secret material; SPEC-007 owns the artifact secret detector.
 - **No destructive schema change.** All migrations are additive nullable columns; rollback drops columns or sets flag OFF.
 - **No multi-repo product-line sync.** This spec assumes one repo per product-line workspace (the monorepo case). Multi-repo product lines are a SPEC-009/010 concern.
@@ -82,11 +82,11 @@ Add `projects.is_triage_project BOOLEAN DEFAULT 0` with partial unique index `(w
 
 ### Q5. Re-route semantics (anti-thrash)
 
-**Question:** Once a task has `project_id`, do later GitHub label changes move it between MC projects? P5-AC5: 'do not thrash between departments.'
+**Question:** Once a task has `project_id`, do later GitHub label changes move it between Paddock projects? P5-AC5: 'do not thrash between departments.'
 
 **Decision:** **Route on initial ingest only.**
 
-`project_id` is set on first ingest based on `area:*` at that moment. Subsequent label changes on GitHub do NOT move the task between MC projects. Operator can manually re-assign via task detail UI. Strongest "no thrash" interpretation, simplest activity story.
+`project_id` is set on first ingest based on `area:*` at that moment. Subsequent label changes on GitHub do NOT move the task between Paddock projects. Operator can manually re-assign via task detail UI. Strongest "no thrash" interpretation, simplest activity story.
 
 **Implication for plan:** Inbound routing logic distinguishes "first ingest" (no existing task for `(workspace_id, github_repo, github_issue_number)`) from "subsequent sync" (task exists). Subsequent syncs update title/body/labels but never change `project_id`. Add explicit assertion in test: "task already exists ⇒ project_id unchanged regardless of area:* labels."
 
@@ -239,7 +239,7 @@ No new modules. Strict scope stays N/A.
 
 **Decision:** **Unit + integration + e2e for project settings UI.**
 
-- **Unit tests** in `src/lib/__tests__/github-sync-engine.test.ts` (extended) and `src/lib/__tests__/github-label-map.test.ts` (new or extended) covering: label parsing (`area:*` + `mc:*` + `priority:*` mixed), area resolution paths (single match, multi label, no label, no match in lookup), `is_repo_sync_owner` gating in poller selection query, outbound emission with/without `area_slug`, backfill logic with idempotency check, per-sync cache correctness across multiple issues.
+- **Unit tests** in `src/lib/__tests__/github-sync-engine.test.ts` (extended) and `src/lib/__tests__/github-label-map.test.ts` (new or extended) covering: label parsing (`area:*` + `pd:*` + `priority:*` mixed), area resolution paths (single match, multi label, no label, no match in lookup), `is_repo_sync_owner` gating in poller selection query, outbound emission with/without `area_slug`, backfill logic with idempotency check, per-sync cache correctness across multiple issues.
 - **Integration tests** with mocked GitHub client: full `pullFromGitHub` cycle with mixed-label issue set; full `pushTaskToGitHub` cycle for a task in an `area_slug='qa'` project; `initializeLabels` with workspace context; auto-backfill on first flag-on.
 - **Playwright e2e** verifying `area_slug`, `is_triage_project`, `is_repo_sync_owner` editable in the project settings panel with validation feedback for collisions.
 
@@ -276,7 +276,7 @@ The grill-me interview surfaced these questions that need either consensus resol
 
 5. **`initializeLabels` rate-limit recovery.** Q13 says failures are caught and logged with sync proceeding. Should the sync engine record an `area_routing_unresolved` activity with `reason='label_provisioning_failed'` to make the failure visible? Recommend yes.
 
-6. **Outbound `area:*` for tasks already in a project without `area_slug` set when flag is ON.** Tasks in projects that have NULL `area_slug` and `FEATURE_AREA_LABEL_ROUTING` ON: do they emit no `area:*` (current Q6 decision) or fall back to `mc:no-area`? Recommend Q6 decision (no `area:*` emitted) — keeping the design symmetric.
+6. **Outbound `area:*` for tasks already in a project without `area_slug` set when flag is ON.** Tasks in projects that have NULL `area_slug` and `FEATURE_AREA_LABEL_ROUTING` ON: do they emit no `area:*` (current Q6 decision) or fall back to `pd:no-area`? Recommend Q6 decision (no `area:*` emitted) — keeping the design symmetric.
 
 7. **Migration ordering with SPEC-004.** SPEC-004 (Task Pipeline Engine) is in flight. Its migration number may collide with SPEC-006's M62. Need to confirm M62 → M63 reservation per merge order. Defer to autopilot rebase.
 

@@ -1,11 +1,11 @@
 ---
 name: paddock
-description: "Interact with Paddock — AI agent orchestration dashboard. Use when registering agents, managing tasks, syncing skills, or querying agent/task status via MC APIs."
+description: "Interact with Paddock — AI agent orchestration dashboard. Use when registering agents, managing tasks, syncing skills, or querying agent/task status via Paddock APIs."
 ---
 
 # Paddock Agent Skill
 
-Paddock (MC) is an AI agent orchestration dashboard with real-time SSE/WebSocket, a skill registry, framework adapters, and RBAC. This skill teaches agents how to interact with MC APIs programmatically.
+Paddock is an AI agent orchestration dashboard with real-time SSE/WebSocket, a skill registry, framework adapters, and RBAC. This skill teaches agents how to interact with Paddock APIs programmatically.
 
 ## Quick Start
 
@@ -39,7 +39,7 @@ curl -X POST http://localhost:3000/api/adapters \
 
 ## Authentication
 
-MC supports two auth methods:
+Paddock supports two auth methods:
 
 | Method | Header | Use Case |
 |--------|--------|----------|
@@ -269,7 +269,7 @@ All adapters implement the same `FrameworkAdapter` interface — choose the one 
 
 ## Real-Time Events
 
-MC broadcasts events via SSE (`/api/events`) and WebSocket. Key event types:
+Paddock broadcasts events via SSE (`/api/events`) and WebSocket. Key event types:
 
 - `agent.created`, `agent.updated`, `agent.status_changed`
 - `task.created`, `task.updated`, `task.status_changed`

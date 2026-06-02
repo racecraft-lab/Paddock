@@ -3652,7 +3652,7 @@ const migrations: Migration[] = [
   {
     // SPEC-009B follow-up — add workspaces.disabled_at column for soft-disabling
     // workspaces, per the Rollout doc Phase 9 rollback pattern. Used immediately
-    // to retire the legacy `default` workspace from upstream MC pre-Product-Line
+    // to retire the legacy `default` workspace from upstream Paddock pre-Product-Line
     // model. The row remains in the DB for upstream-compat invariants (auth.ts
     // hardcoded fallback to workspace_id=1, rate-limit.ts default workspace),
     // but it is excluded from the Product Line switcher via the

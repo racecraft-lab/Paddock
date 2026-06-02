@@ -11,7 +11,7 @@ secondary_feature_flags:
 question_count: 73
 status: draft
 created_at: 2026-05-02
-authority: Operator (interactive grill-me session) + research-augmented (9 background research agents) + advisor-validated (2 advisor calls) + ground-truthed against OpenClaw + MC source on GitHub + 4 RepoPrompt oracle adversarial review rounds + 3 independent peer reviews (distributed-systems, SRE/operator, security/compliance lenses) + 60+ correctness corrections applied across all rounds
+authority: Operator (interactive grill-me session) + research-augmented (9 background research agents) + advisor-validated (2 advisor calls) + ground-truthed against OpenClaw + Paddock source on GitHub + 4 RepoPrompt oracle adversarial review rounds + 3 independent peer reviews (distributed-systems, SRE/operator, security/compliance lenses) + 60+ correctness corrections applied across all rounds
 implementation_authority: SpecKit autopilot via speckit-pro plugin (single spec; LLM-agent execution; not human-engineering days)
 ---
 
@@ -40,7 +40,7 @@ Paddock's `resource_policies` and `resource_policy_events` tables landed empty i
 | CLI | Native OTel? | Rollout/log file | Per-turn fidelity | Cost USD on flat-rate? |
 |---|---|---|---|---|
 | **Claude Code** (Claude Max 20x) | ✅ `CLAUDE_CODE_ENABLE_TELEMETRY=1` emits 8 metrics + 13+ event types in `claude_code.*` namespace | `~/.claude/projects/<urlenc-cwd>/sessions/<uuid>.jsonl` (per-turn `assistant.message.usage`) | ✅ events stream is per-API-request with `request_id` + `prompt.id` | ✅ `claude_code.cost.usage` emitted (Anthropic-priced × tokens) — same number on Max 20x and metered API |
-| **OpenAI Codex** (ChatGPT Pro) | ✅ logs+traces (token counts on spans); ❌ NO metrics in `codex exec` or `codex mcp-server` (only interactive `codex` wires metrics) | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` (`token_count` events with `total_token_usage` + `last_token_usage` + `rate_limits.plan_type`) | ✅ `codex exec --json` emits `turn.completed.usage` to stdout in real time | ❌ Codex doesn't emit USD; MC must compute from price catalog |
+| **OpenAI Codex** (ChatGPT Pro) | ✅ logs+traces (token counts on spans); ❌ NO metrics in `codex exec` or `codex mcp-server` (only interactive `codex` wires metrics) | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` (`token_count` events with `total_token_usage` + `last_token_usage` + `rate_limits.plan_type`) | ✅ `codex exec --json` emits `turn.completed.usage` to stdout in real time | ❌ Codex doesn't emit USD; Paddock must compute from price catalog |
 | **GitHub Copilot CLI** (Copilot Pro+) | ❌ NO native OTel (issues #2471, #1911 open) | `~/.copilot/session-state/<sid>/events.jsonl` `session.shutdown.modelMetrics.*` (reverse-engineered schema; `J-Bax/copilot-token-tracker` is canonical reference) | ◐ events.jsonl flushed at session shutdown (not per-turn). `copilot -p --format json` does NOT include token data (issues #1152, #2052 open) | ❌ Premium-request units, switching to "AI Credits" 2026-06-01 |
 | Ollama Cloud | ❌ no OTel (issue #9254 PoC) | `~/.ollama/logs/server.log` (no token counts in logs) | Token counts in HTTP response body (`prompt_eval_count`, `eval_count`) | n/a |
 | LM Studio (local GPU) | ❌ no OTel | Logs at `~/.lmstudio/` (Linux post-0.3.6) or `~/.cache/lm-studio/server-logs/` (pre-0.3.6) | OpenAI-compat `/v1/chat/completions` returns `usage:{prompt_tokens, completion_tokens, total_tokens}`; v0 REST adds tokens/sec + TTFT; `lms log stream --json --stats` is NDJSON firehose | Local energy cost only (via OpenClaw health adapter) |
@@ -228,7 +228,7 @@ const result = reserveBudgetTx.immediate(grant);
 ```
 
 **SQLite settings required:**
-- `PRAGMA journal_mode=WAL` (already enabled in MC)
+- `PRAGMA journal_mode=WAL` (already enabled in Paddock)
 - `PRAGMA busy_timeout=5000` (5s — bounded retry for `SQLITE_BUSY` while another writer holds the lock)
 - `PRAGMA synchronous=NORMAL` (default in better-sqlite3 distributions; preserves WAL durability while allowing OS-page-cache buffering)
 
@@ -367,21 +367,21 @@ Usage events reference `provider_account_id` when known (resolved via `(provider
 
 ### Q16 — Stack adoption strategy + multi-source ingestion (REVISED — see Q17, Q18, Q19)
 
-**Decision:** **Multi-source defense-in-depth ingestion against MC's own SQLite, with explicit separation between (a) the synchronous budget ledger, (b) raw_usage_events per source, and (c) canonical_usage_events.** No heavy off-the-shelf stack. No `@traceloop/node-server-sdk` in v1.
+**Decision:** **Multi-source defense-in-depth ingestion against Paddock's own SQLite, with explicit separation between (a) the synchronous budget ledger, (b) raw_usage_events per source, and (c) canonical_usage_events.** No heavy off-the-shelf stack. No `@traceloop/node-server-sdk` in v1.
 
 See Q17 (ledger), Q18 (raw + canonical), Q19 (snapshots + collector health) for the structural pieces.
 
 **v1 inbound channels** (all six normalize via the per-source adapter into `raw_usage_events` rows, then the reconciler promotes to `canonical_usage_events` and emits ledger corrections):
 
-1. **`otelcol-contrib`** as a `--user` systemd unit on the operator node. Receives OTLP/HTTP (protobuf) on `127.0.0.1:4318`. `filestorage` extension provides on-disk WAL. `batch` + `attributes` processors. Forwards to MC's OTLP receiver.
-2. **MC OTLP receiver** at `src/app/api/otlp/v1/{traces,metrics}/route.ts`. Decodes `application/x-protobuf` via `@opentelemetry/otlp-transformer`. Auth via API_KEY header. Writes `raw_usage_events` rows with `source='gateway_otel'` or `source='native_otel'` based on resource attrs.
-3. **Codex stdout `--json` parser** (`src/lib/observability/codex-stdout-tail.ts`) when MC spawns `codex exec --json`. Captures `turn.completed.usage` events. Sub-second RT. Source: `cli_stdout_json`.
+1. **`otelcol-contrib`** as a `--user` systemd unit on the operator node. Receives OTLP/HTTP (protobuf) on `127.0.0.1:4318`. `filestorage` extension provides on-disk WAL. `batch` + `attributes` processors. Forwards to Paddock's OTLP receiver.
+2. **Paddock OTLP receiver** at `src/app/api/otlp/v1/{traces,metrics}/route.ts`. Decodes `application/x-protobuf` via `@opentelemetry/otlp-transformer`. Auth via API_KEY header. Writes `raw_usage_events` rows with `source='gateway_otel'` or `source='native_otel'` based on resource attrs.
+3. **Codex stdout `--json` parser** (`src/lib/observability/codex-stdout-tail.ts`) when Paddock spawns `codex exec --json`. Captures `turn.completed.usage` events. Sub-second RT. Source: `cli_stdout_json`.
 4. **Codex rollout JSONL tail** — `inotify` on `~/.codex/sessions/YYYY/MM/DD/`. Parses `event_msg.payload.type='token_count'` events. **`cached_input_tokens` is a SUBSET of `input_tokens` (don't add); `reasoning_output_tokens` is a SUBSET of `output_tokens` (don't add); `total_token_usage` is CUMULATIVE → see Q19 snapshot model**. Source: `transcript_replay`.
 5. **Claude Code transcript replay** — fs.watch on `~/.claude/projects/<urlenc-cwd>/sessions/`. Parses assistant records with `message.usage.{input_tokens, output_tokens, cache_read_input_tokens, cache_creation.{ephemeral_5m_input_tokens, ephemeral_1h_input_tokens}}`. Source: `transcript_replay`.
 6. **GitHub Copilot CLI events.jsonl ingester** — fs.watch on `~/.copilot/session-state/*/events.jsonl`. Parses `session.shutdown.modelMetrics.*`. Schema reverse-engineered (`J-Bax/copilot-token-tracker` reference). Pin against `@github/copilot >= 0.0.422`. Source: `transcript_replay`.
 7. **Copilot CLI sessionEnd hook** — `~/.copilot/hooks/sessionEnd.json` POSTs session-id to `/api/observe/copilot-session-end`; route re-reads `events.jsonl` for that session.
-8. **Provider-quota fetchers** — MC's `openclaw-quota-bridge.ts` calls OpenClaw's gateway HTTP API for `% remaining` snapshots. Used as **pre-flight ceiling check** (refuse to dispatch new work if remaining < threshold). Source: `provider_quota`.
-9. **Ollama HTTP-response capture** (only if MC ever calls Ollama directly — flag-gated). Source: `cli_stdout_json` (response-derived).
+8. **Provider-quota fetchers** — Paddock's `openclaw-quota-bridge.ts` calls OpenClaw's gateway HTTP API for `% remaining` snapshots. Used as **pre-flight ceiling check** (refuse to dispatch new work if remaining < threshold). Source: `provider_quota`.
+9. **Ollama HTTP-response capture** (only if Paddock ever calls Ollama directly — flag-gated). Source: `cli_stdout_json` (response-derived).
 10. **LM Studio log stream** — `lms log stream --json --stats` child process, NDJSON parse. Source: `cli_stdout_json`.
 11. **OpenClaw health adapter** — already in original scope per Q8.
 12. **Manual POST `/api/tokens`** preserved. Source: `manual_post`.
@@ -542,7 +542,7 @@ The authoritative source's tokens become the canonical totals. Non-authoritative
 
 **`UPDATE` is idempotent**: re-running the reconciler on the same raw rows produces identical canonical totals. The `ON CONFLICT(raw_event_id) DO NOTHING` guard in `canonical_usage_sources` prevents double-attachment.
 
-**Cost USD provenance order**: native `claude_code.cost.usage` > `openclaw.cost.usd` (A1) > MC `price-catalog.ts` calc. Per-row `cost_provenance` recorded.
+**Cost USD provenance order**: native `claude_code.cost.usage` > `openclaw.cost.usd` (A1) > Paddock `price-catalog.ts` calc. Per-row `cost_provenance` recorded.
 
 **Per-source drift thresholds** (replaces invented 5% global):
 
@@ -570,7 +570,7 @@ CREATE TABLE usage_snapshots (
   model TEXT NOT NULL,
   snapshot_seq INTEGER,                           -- explicit sequence if source provides
   provider_timestamp INTEGER,                     -- source-claimed event time
-  observed_at INTEGER NOT NULL,                   -- when MC saw it
+  observed_at INTEGER NOT NULL,                   -- when Paddock saw it
   input_tokens_total INTEGER NOT NULL,
   output_tokens_total INTEGER NOT NULL,
   cache_read_total INTEGER NOT NULL DEFAULT 0,
@@ -717,12 +717,12 @@ State transitions:
 
 **Deterministic-mode behavior** during DB-lock/migration scenarios:
 
-When MC detects an active migration (`migrations.in_progress=1`) OR receives `SQLITE_BUSY`/`SQLITE_LOCKED` 3x within 100ms, governance enters one of two deterministic modes (operator-configured global default in `workspace.feature_flags.governance_deterministic_mode`):
+When Paddock detects an active migration (`migrations.in_progress=1`) OR receives `SQLITE_BUSY`/`SQLITE_LOCKED` 3x within 100ms, governance enters one of two deterministic modes (operator-configured global default in `workspace.feature_flags.governance_deterministic_mode`):
 
 - **`shadow_global`** (default): all evaluator calls return `allow` with `reason='deterministic_shadow_during_migration'`. Activity rows still written. Pure observability mode.
 - **`defer_global`**: all evaluator calls return `defer`. Scheduler retries on next tick. Safer but stops dispatch entirely during long migrations.
 
-**Restart safety**: on MC startup, the breaker state is read from DB. If `state='open'`, breaker stays open until `half_open` window passes naturally — restart does NOT clear it. `restart_count` increments so operator can see "this breaker has survived N restarts" and investigate root cause.
+**Restart safety**: on Paddock startup, the breaker state is read from DB. If `state='open'`, breaker stays open until `half_open` window passes naturally — restart does NOT clear it. `restart_count` increments so operator can see "this breaker has survived N restarts" and investigate root cause.
 
 ## Strict Scope (Updated for v1)
 
@@ -837,7 +837,7 @@ ALTER TABLE raw_usage_events ADD COLUMN reconcile_last_error TEXT;
 CREATE INDEX idx_raw_reconcile_pending ON raw_usage_events(reconcile_status, reconcile_after) WHERE reconcile_status = 'pending';
 ```
 
-**Worker loop** (runs every 5s in MC's existing scheduler):
+**Worker loop** (runs every 5s in Paddock's existing scheduler):
 
 ```ts
 const batch = db.prepare(`
@@ -1009,7 +1009,7 @@ CREATE INDEX idx_counters_admission_lookup ON resource_budget_counters(workspace
 - M64 (8 new tables: `provider_accounts`, `provider_entitlements`, `resource_overrides`, `resource_budget_ledger`, `resource_budget_counters`, `raw_usage_events`, `canonical_usage_events`, `canonical_usage_sources`, `usage_snapshots`, `telemetry_source_freshness`, `resource_governance_breaker`) — actually 11 tables — is split into 11 individual migration steps M64a..M64k each idempotent.
 - No backfill of existing `token_usage` rows in M64 — backfill happens lazily on first read OR via a separate one-shot script (`scripts/backfill-canonical-usage-events.ts`) operator runs after migration.
 
-**Half-failure AC**: simulate `SQLITE_FULL` mid-M64h (the canonical_usage_events table creation); MC startup detects partial state, refuses to proceed, logs explicit `migration_half_failed` activity, operator manually inspects `migrations_log` table and either retries or rolls back. Rollback SQL files at `docs/migrations/rollback-M63.sql`, `rollback-M64a.sql` ... `rollback-M64k.sql` each only drop what their respective migration created.
+**Half-failure AC**: simulate `SQLITE_FULL` mid-M64h (the canonical_usage_events table creation); Paddock startup detects partial state, refuses to proceed, logs explicit `migration_half_failed` activity, operator manually inspects `migrations_log` table and either retries or rolls back. Rollback SQL files at `docs/migrations/rollback-M63.sql`, `rollback-M64a.sql` ... `rollback-M64k.sql` each only drop what their respective migration created.
 
 **Reapply AC**: after a partial M64 + rollback, re-running M64 must succeed without errors. Verified by integration test that injects a fault, runs rollback, then re-runs M64.
 
@@ -2044,7 +2044,7 @@ gzip "$DEST"
 
 **Acceptance criteria**:
 
-- AC-DR-1: simulate disk failure (`rm paddock.db`); verify restore procedure produces functional MC within RTO.
+- AC-DR-1: simulate disk failure (`rm paddock.db`); verify restore procedure produces functional Paddock within RTO.
 - AC-DR-2: simulate backup corruption; verify weekly verification detects it; verify operator notified.
 - AC-DR-3: post-restore: verify counters reconciled correctly via Q49 rebuild; verify in-flight reservations handled correctly.
 - AC-DR-4: SQLite file >5GB: verify backup completes in <5min on operator-node-class hardware.
@@ -2127,7 +2127,7 @@ REST: `GET /api/governance/system-health?workspace_id=X` returns the same JSON f
 
 ### Q63 — Retention sweep default-ON (REVISED — peer #2 P1 #1)
 
-**Decision:** **Retention sweep is ENABLED BY DEFAULT on first MC startup after SPEC-008 lands; operator must explicitly opt-out via config.**
+**Decision:** **Retention sweep is ENABLED BY DEFAULT on first Paddock startup after SPEC-008 lands; operator must explicitly opt-out via config.**
 
 Default config (in `PADDOCK_DATA_DIR/.config/governance.json`, auto-created on first run):
 
@@ -2240,7 +2240,7 @@ const SAFE_ATTRIBUTE_KEYS = new Set<string>([
   // Codex namespace
   'codex.api_request', 'codex.tool_call', 'codex.tool_result',
   'auth.env_openai_api_key_present',  // boolean only
-  // MC custom
+  // Paddock custom
   'mc.billing.mode', 'mc.billing.subscription', 'mc.billing.provider',
   'mc.workspace_id', 'mc.task_id', 'mc.agent_id',
 ]);
@@ -2477,7 +2477,7 @@ When `canonical_usage_events` row is about to be dropped (retention sweep), the 
 
 ### Q70 — Secret encryption at rest in `provider_accounts.config_json` (NEW — peer #3 P1 #1)
 
-**Decision:** **Sensitive fields in `config_json` encrypted with libsodium secretbox; encryption key derived from MC's existing `AUTH_SECRET`; REST responses redact encrypted fields by default.**
+**Decision:** **Sensitive fields in `config_json` encrypted with libsodium secretbox; encryption key derived from Paddock's existing `AUTH_SECRET`; REST responses redact encrypted fields by default.**
 
 ```sql
 -- provider_accounts.config_json structure now distinguishes encrypted vs cleartext:
@@ -2584,7 +2584,7 @@ CI workflow `.github/workflows/license-check.yml` runs on every PR; fails if inc
 |---|---|---|
 | @opentelemetry/otlp-transformer | Apache-2.0 | Yes |
 | tweetnacl + tweetnacl-util | MIT | Yes |
-| All existing MC deps | MIT/Apache-2.0/BSD | Yes |
+| All existing Paddock deps | MIT/Apache-2.0/BSD | Yes |
 | `J-Bax/copilot-token-tracker` | MIT (per repo) | Reference-only; not a runtime dep |
 | `otelcol-contrib` | Apache-2.0 | Operator-managed binary; not in node_modules |
 
@@ -2636,7 +2636,7 @@ Items still requiring **`/speckit.clarify`** resolution:
 2. **Ollama proxy port**: 11435 currently free on the operator node (ground-truthed). Plan must check at install.
 3. **OpenClaw gateway HTTP API for the quota bridge**: Plan reads `racecraft-lab/openclaw:src/gateway/server-methods/usage.ts` to determine the HTTP method/path/auth.
 4. **otelcol-contrib version pinning**: `v0.108.x` minimum for `filestorage` extension. Mirror `.specify/extensions/archive/RACECRAFT-PIN.md`.
-5. **MC API key provisioning for collector → MC OTLP receiver**: per CLAUDE.md, secrets resolved from 1Password at startup. Plan documents rotation.
+5. **Paddock API key provisioning for collector → Paddock OTLP receiver**: per CLAUDE.md, secrets resolved from 1Password at startup. Plan documents rotation.
 6. **Subscription tier renewal detection**: Periodic re-detection cron? Subscription expiry trigger?
 7. **GitHub Copilot 2026-06-01 billing change** (premium-request units → "AI Credits"): Plan adds schema-version field + version-pinned parse logic.
 
@@ -2657,7 +2657,7 @@ This design concept was enriched by 9 background research agents on 2026-05-02 (
 
 **GitHub Copilot CLI:** [github/copilot-cli](https://github.com/github/copilot-cli) · [GA 2026-02-25](https://github.blog/changelog/2026-02-25-github-copilot-cli-is-now-generally-available/) · [Config dir](https://docs.github.com/en/copilot/reference/copilot-cli-reference/cli-config-dir-reference) · [Hooks reference](https://docs.github.com/en/copilot/reference/hooks-configuration) · [Issue #2471 OTel](https://github.com/github/copilot-cli/issues/2471) · [J-Bax/copilot-token-tracker](https://github.com/J-Bax/copilot-token-tracker) · [AI Credits 2026-06-01](https://github.blog/news-insights/company-news/github-copilot-is-moving-to-usage-based-billing/)
 
-**OpenClaw + MC source:** [racecraft-lab/openclaw — usage-tracking](https://github.com/racecraft-lab/openclaw/blob/main/docs/concepts/usage-tracking.md) · [api-usage-costs](https://github.com/racecraft-lab/openclaw/blob/main/docs/reference/api-usage-costs.md) · [opentelemetry export](https://github.com/racecraft-lab/openclaw/blob/main/docs/gateway/opentelemetry.md) · [server-methods/usage.ts](https://github.com/racecraft-lab/openclaw/blob/main/src/gateway/server-methods/usage.ts) · [provider-usage.fetch.claude.ts](https://github.com/racecraft-lab/openclaw/blob/main/src/infra/provider-usage.fetch.claude.ts) · [provider-usage.fetch.codex.ts](https://github.com/racecraft-lab/openclaw/blob/main/src/infra/provider-usage.fetch.codex.ts) · [extensions/github-copilot/usage.ts](https://github.com/racecraft-lab/openclaw/blob/main/extensions/github-copilot/usage.ts)
+**OpenClaw + Paddock source:** [racecraft-lab/openclaw — usage-tracking](https://github.com/racecraft-lab/openclaw/blob/main/docs/concepts/usage-tracking.md) · [api-usage-costs](https://github.com/racecraft-lab/openclaw/blob/main/docs/reference/api-usage-costs.md) · [opentelemetry export](https://github.com/racecraft-lab/openclaw/blob/main/docs/gateway/opentelemetry.md) · [server-methods/usage.ts](https://github.com/racecraft-lab/openclaw/blob/main/src/gateway/server-methods/usage.ts) · [provider-usage.fetch.claude.ts](https://github.com/racecraft-lab/openclaw/blob/main/src/infra/provider-usage.fetch.claude.ts) · [provider-usage.fetch.codex.ts](https://github.com/racecraft-lab/openclaw/blob/main/src/infra/provider-usage.fetch.codex.ts) · [extensions/github-copilot/usage.ts](https://github.com/racecraft-lab/openclaw/blob/main/extensions/github-copilot/usage.ts)
 
 **OpenTelemetry GenAI:** [Attribute registry](https://opentelemetry.io/docs/specs/semconv/registry/attributes/gen-ai/) · [Metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) · [Collector](https://opentelemetry.io/docs/collector/) · [filestorage extension](https://pkg.go.dev/github.com/open-telemetry/opentelemetry-collector-contrib/extension/storage/filestorage)
 

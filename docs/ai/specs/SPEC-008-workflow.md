@@ -235,7 +235,7 @@ Reference design-concept Q-sections for each FR family:
 - Tenant-aware gateway isolation (V2-001).
 - Off-the-shelf observability stacks (Langfuse, Helicone, Phoenix, Lunary).
 - LiteLLM Proxy for SDK-call enforcement (deferred to v2).
-- @traceloop/node-server-sdk OpenLLMetry-JS auto-instrumentation (deferred to v2 when MC makes SDK calls).
+- @traceloop/node-server-sdk OpenLLMetry-JS auto-instrumentation (deferred to v2 when Paddock makes SDK calls).
 - Web-UI scraping of provider quota dashboards.
 - Retroactive task cancellation when budget exceeds mid-execution.
 - Multi-region / multi-node deployment.
@@ -303,7 +303,7 @@ Use `[Q<n>]` markers in spec.md to cross-reference design concept (e.g., `[Q17]`
 ```bash
 /speckit.clarify Focus on trust boundaries:
 - otelcol-contrib version pinning + integrity checksum [Open Q4]
-- MC API key provisioning for collector auth [Open Q5]
+- Paddock API key provisioning for collector auth [Open Q5]
 - Codex `provider_timestamp_ms` parity assumption: spike script (Q52) results inform whether Q39 stays high-confidence or downgrades to medium [Q39, Q52]
 - Copilot 2026-06-01 AI Credits transition: schema-version field design, parser version-pinning strategy [Open Q7]
 - Ingest admission control thresholds: per-source rate limits, burst limits, disk-free guardrail values [Q47]
@@ -347,7 +347,7 @@ Use `[Q<n>]` markers in spec.md to cross-reference design concept (e.g., `[Q17]`
 | Session 3 / Q2 | Collector API key | Direct (executor) | [codebase, security] | (executor; security-flagged but evidence strong) | Applied: FR-090c dedicated agent_api_keys row + 1Password | high |
 | Session 3 / Q3 | Copilot AI Credits parser | Direct (executor) | [domain, codebase] | (executor; pre-cutover speculative) | Applied: FR-090d config-version-first + payload-shape verify + parser_version column | medium |
 | Session 3 / Q4 | Q47 numerics ladder | Direct (executor) | [domain, codebase] | (executor) | Applied: FR-090e amber/red ladder + bytes/sec + env override | high |
-| Session 3 / Q5 | Collector bootstrap/config | Direct (executor) | [codebase, domain] | (executor) | Applied: FR-090f/g MC-managed config + audit trail + filestorage WAL backup | high |
+| Session 3 / Q5 | Collector bootstrap/config | Direct (executor) | [codebase, domain] | (executor) | Applied: FR-090f/g Paddock-managed config + audit trail + filestorage WAL backup | high |
 | Session 4 / Q1 | Bulk-promote phrases + workspace scope | Direct (executor) | [spec, security] | (executor) | Applied: FR-090h `PROMOTE TO SOFT/HARD` exact + single-workspace + cross-ws 422 | high |
 | Session 4 / Q2 | System Health gesture matrix | Direct (executor) | [spec, ambiguous] | (executor) | Applied: FR-090i per-affordance gesture matrix (typed for irreversible) | medium |
 | Session 4 / Q3 | Dispatch feed pagination | Direct (executor) | [spec] | (executor) | Applied: FR-090j cursor pagination + SSE live-append + 7-90d retention range | high |
@@ -367,7 +367,7 @@ Use `[Q<n>]` markers in spec.md to cross-reference design concept (e.g., `[Q17]`
 - Next.js 16 App Router; Route Handlers for /api/otlp/v1/{traces,metrics}, /api/resource-{policies,policy-events,overrides}, /api/governance/{system-health,diagnostic,ingest/<source>/resume,system-health/rebuild,...}
 - React 19 + Tailwind 3 for Cost Tracker → Governance tab + System Health dashboard
 - better-sqlite3 (single-process synchronous transactions); separate Database connections per workload class (Q29: foreground/background/audit)
-- @opentelemetry/otlp-transformer for OTLP/HTTP protobuf decode in MC OTLP receiver
+- @opentelemetry/otlp-transformer for OTLP/HTTP protobuf decode in Paddock OTLP receiver
 - Zod for REST request validation (Q41)
 - Native Node fs.watch + inotify for file-based ingestion adapters (Codex rollout, Claude Code transcript, Copilot events.jsonl, OpenClaw health)
 - Vitest for unit + integration + benchmark + chaos tests

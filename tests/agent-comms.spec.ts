@@ -46,7 +46,7 @@ test.describe('Agent Comms Feed', () => {
         metadata: {
           event: 'tool_call',
           toolName: 'search_web',
-          input: '{"query":"mission control agent comms"}',
+          input: '{"query":"paddock agent comms"}',
           output: '{"results":3}',
           status: 'ok',
         },

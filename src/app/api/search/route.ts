@@ -16,7 +16,7 @@ interface SearchResult {
 
 /**
  * GET /api/search?q=<query>&type=<optional type filter>&limit=<optional>
- * Global search across all MC entities.
+ * Global search across all Paddock entities.
  */
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')

@@ -276,7 +276,7 @@ reconciliation.
   later tracker adapter owns them.
 - **FR-E2:** Repo-level sync ownership prevents duplicate ingestion when
   several departments share one monorepo.
-- **FR-E3:** `area:*`, `mc:*`, and `priority:*` labels route issues to the
+- **FR-E3:** `area:*`, `pd:*`, and `priority:*` labels route issues to the
   correct Product Line, department, status, and priority.
 - **FR-E4:** Ambiguous or missing area labels route to triage with an activity
   explaining the ambiguity.

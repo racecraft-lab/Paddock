@@ -44,7 +44,7 @@ Per component:
 
 **Reconciler**: the doc covers schema_broken, low_confidence_review. Missing: **what if `processGroup` itself throws** mid-batch? The transaction rolls back, raw rows stay `pending`, `reconcile_attempts` increments — but the failure mode for a "permanently un-reconcilable" raw event is not spec'd. After N attempts, does it move to a poison queue? Recommend adding `reconcile_status='reconciliation_poisoned'` after `reconcile_attempts >= 5` with operator-visible activity.
 
-**OTel collector**: the doc covers `otelcol-contrib` failure → `state='failed'` → backfill on restart. Missing: **what if the collector restarts with corrupt `filestorage` WAL?** The OTel collector contrib filestorage extension is robust but not bulletproof; the doc should state that on filestorage corruption the collector will lose pre-corruption events, MC will discover this via observed_at gap, and should fire `governance_telemetry_gap_detected`.
+**OTel collector**: the doc covers `otelcol-contrib` failure → `state='failed'` → backfill on restart. Missing: **what if the collector restarts with corrupt `filestorage` WAL?** The OTel collector contrib filestorage extension is robust but not bulletproof; the doc should state that on filestorage corruption the collector will lose pre-corruption events, Paddock will discover this via observed_at gap, and should fire `governance_telemetry_gap_detected`.
 
 **Per-source adapters**: covered well in Q23 + Q25 for Copilot. But **Codex stdout adapter**: what if the child process crashes mid-stream? The stdout-tail process accumulates a partial JSON record; the doc doesn't say whether partial records are rejected (good) or speculatively parsed (bad).
 
@@ -111,7 +111,7 @@ The CLI also needs `pnpm mc governance status --json` returning the same. Withou
 Q28 covers preflight + idempotent CREATE + half-failure AC + reapply AC. This is good. But:
 
 - **In-progress task semantics during M64a..M64k are not addressed.** The doc says "migration runner wraps each migration in `db.transaction.immediate()`." That serializes writes for the duration of each step. If the operator has tasks running through `dispatch`, those API calls return 423 (`busy_timeout` exhaustion) for the duration. The doc does not say:
-  - whether MC pauses the scheduler during migration,
+  - whether Paddock pauses the scheduler during migration,
   - whether the Next.js routes return 503 vs 423 vs hang,
   - whether existing in-flight tasks (already dispatched, not yet reported) "race" the migration in the sense of writing `token_usage` rows.
 - **`token_usage` reads during M64**: the doc says no backfill in M64; lazy on first read. But the existing `token_usage` table and the new `canonical_usage_events` table coexist post-migration. The Q4 `/api/tokens` route extension is mentioned but the read path during the migration window itself is unaddressed: does the route return stale reads, error, or wait?
@@ -140,7 +140,7 @@ The doc's "180-250 tests" target covers the explicit ACs. Gaps I see:
 
 ## 7. Observability of the Governance System Itself
 
-Q19 covers source freshness. Q21 covers breaker state. But **MC's evaluator and reconciler themselves emit no metrics.** The operator can see:
+Q19 covers source freshness. Q21 covers breaker state. But **Paddock's evaluator and reconciler themselves emit no metrics.** The operator can see:
 
 - `resource_policy_events` (decisions) — yes
 - `governance_drift_observed` activities — yes
@@ -169,7 +169,7 @@ The doc covers concurrent override grants (Q6 AC) but not these scenarios:
 - **Two operators editing the same policy** — no optimistic concurrency control specified. Last-writer-wins silently is the de facto behavior. Recommend: `policy.version` integer, increment on update, 409 on stale write.
 - **Operator promoting WIP policy to `hard` while another operator grants an override against the prior `soft` interpretation** — the override is granted under one regime, the policy changes regime mid-flight. The doc has no consistency story. Recommend: override grants include `policy_version_at_grant`; promotion to `hard` does not invalidate prior overrides (they grandfather under `soft` until expiry), but new overrides must be re-evaluated under `hard`.
 - **Operator manually canceling a reservation while auto-expiry is firing** — Q6 state machine has both `cancelled` and `expired` transitions but the race is unspecified. With `IMMEDIATE` only one wins; the loser's UPDATE is a no-op against an already-non-`active` row. Recommend: explicit AC + idempotent UPDATE returning "already-terminal" without error.
-- **Operator break-glass during deterministic_mode** — Q21 puts MC in `shadow_global` or `defer_global`. Q20 break-glass requires operator session token. During `defer_global`, scheduler defers everything; operator break-glass should still work because override grant is *its own* code path, but: does break-glass *clear* deterministic mode for that workspace? The doc doesn't say. Recommend: break-glass during deterministic_mode is allowed but does NOT clear deterministic_mode; it grants for its window only.
+- **Operator break-glass during deterministic_mode** — Q21 puts Paddock in `shadow_global` or `defer_global`. Q20 break-glass requires operator session token. During `defer_global`, scheduler defers everything; operator break-glass should still work because override grant is *its own* code path, but: does break-glass *clear* deterministic mode for that workspace? The doc doesn't say. Recommend: break-glass during deterministic_mode is allowed but does NOT clear deterministic_mode; it grants for its window only.
 
 **Remediation**: add a "Concurrent operator actions" subsection to Q6 or new Q30 covering these four cases.
 
@@ -210,7 +210,7 @@ This is not addressed in the doc and it should be.
 
 - **`reason` text in override grants is stored verbatim** and later rendered in UI activity feeds. **Is it sanitized?** The doc shows `reason TEXT NOT NULL` — no validation, no length limit. An operator can paste `<script>` and the Cost Tracker UI must escape it. Recommend: enforce 1KB max length + UTF-8 validation; UI must render via React's default text-escaping.
 - **`provider_accounts.config_json TEXT NOT NULL DEFAULT '{}'`**: the doc says nothing about validating this is parseable JSON before INSERT. SQLite does not enforce JSON validity in TEXT columns. Recommend: app-layer schema validation, OR `CHECK (json_valid(config_json))` constraint.
-- **`~/.copilot/config.json` parse**: if the file is malicious (deeply nested, billion-laughs), the JSON parser may DoS MC. Recommend: `JSON.parse` inside a try/catch with input size cap (e.g., 1MB), and a depth limit (custom reviver).
+- **`~/.copilot/config.json` parse**: if the file is malicious (deeply nested, billion-laughs), the JSON parser may DoS Paddock. Recommend: `JSON.parse` inside a try/catch with input size cap (e.g., 1MB), and a depth limit (custom reviver).
 - **OTLP receiver auth** is described as "API_KEY header" but the doc does not specify what happens on auth failure rate-limiting (an attacker spamming bad keys can fill logs). Recommend: 401 on bad auth + per-IP rate limit (already a Next.js middleware concern, but call it out).
 - **Schema-broken vs schema-malicious**: Q25 handles "schema_broken" (missing required fields). It does NOT handle "schema-malicious" (well-formed JSON Schema-conformant payload, but with adversarial values: `tokens.input = -2147483648` to overflow, or `requests.cost = Infinity`). Q25's JSON schema has `minimum: 0` for input/output — good — but `requests.cost` has `minimum: 0` and no `maximum`, so a `Number.MAX_SAFE_INTEGER` cost is valid-per-schema but breaks every downstream calculation. Recommend: add `maximum` constraints, and reject NaN/Infinity at the JSON parse layer.
 - **`canonical_usage_sources` JSON arrays of `contributing_raw_event_ids`**: stored as TEXT, rendered in audit drilldown. If an attacker can write arbitrary `raw_attributes_json` (via the manual POST `/api/tokens` route), can they inject content that breaks the audit UI? The manual POST is operator-role gated (good), but the threat model assumes operator is honest; if the operator's session token leaks, this is a vector.

@@ -163,7 +163,7 @@ describe('TaskEvidenceSection', () => {
           idempotency_key: 'spec-009f.triage_routing.v1:1:9502:NEEDS_SPECIALIST',
           recommended_next_action: 'Review [unsafe](javascript:alert(1)) specialist recommendation.',
           proposed_labels: [
-            { name: 'mc:needs-specialist', source: 'triage_routing', action: 'recommend_add', applied: false },
+            { name: 'pd:needs-specialist', source: 'triage_routing', action: 'recommend_add', applied: false },
           ],
           deferred_side_effects: [
             { side_effect: 'agent_dispatch', deferred: true, reason: 'No agent is dispatched.' },
@@ -185,7 +185,7 @@ describe('TaskEvidenceSection', () => {
     const region = screen.getByRole('region', { name: /task evidence/i })
     expect(within(region).getByText('Routing recorded')).toBeInTheDocument()
     expect(within(region).getByText('Specialist unassigned')).toBeInTheDocument()
-    expect(within(region).getByText(/mc:needs-specialist applied: false/i)).toBeInTheDocument()
+    expect(within(region).getByText(/pd:needs-specialist applied: false/i)).toBeInTheDocument()
     expect(within(region).getByText(/Deferred side effects/i)).toBeInTheDocument()
     expect(within(region).getByText(/Review unsafe specialist recommendation/i)).toBeInTheDocument()
     expect(within(region).queryByRole('link', { name: /unsafe/i })).not.toBeInTheDocument()

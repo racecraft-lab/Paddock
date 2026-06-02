@@ -282,7 +282,7 @@ function checkOpAvailable(): boolean {
 
 /**
  * Build env for op CLI. The OP_SERVICE_ACCOUNT_TOKEN may live in the
- * OpenClaw .env (not the MC .env that systemd loads). Read it at
+ * OpenClaw .env (not the Paddock .env that systemd loads). Read it at
  * runtime so the op CLI can authenticate.
  */
 async function getOpEnv(): Promise<NodeJS.ProcessEnv> {

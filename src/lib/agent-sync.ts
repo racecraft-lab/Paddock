@@ -1,7 +1,7 @@
 /**
  * Agent Config Sync
  *
- * Reads agents from openclaw.json and upserts them into the MC database.
+ * Reads agents from openclaw.json and upserts them into the Paddock database.
  * Used by both the /api/agents/sync endpoint and the startup scheduler.
  */
 
@@ -59,10 +59,10 @@ export interface SyncResult {
 
 export interface SyncDiff {
   inConfig: number
-  inMC: number
+  inPaddock: number
   newAgents: string[]
   updatedAgents: string[]
-  onlyInMC: string[]
+  onlyInPaddock: string[]
 }
 
 function parseIdentityFromFile(content: string): { name?: string; theme?: string; emoji?: string; content?: string } {
@@ -268,8 +268,8 @@ function resolveConfigSyncWorkspaceId(db: Database.Database, workspaceId?: numbe
   return 1
 }
 
-/** Extract MC-friendly fields from an OpenClaw agent config */
-function mapAgentToMC(agent: OpenClawAgent): {
+/** Extract Paddock-friendly fields from an OpenClaw agent config */
+function mapAgentToPaddock(agent: OpenClawAgent): {
   name: string
   role: string
   session_key: string | null
@@ -299,7 +299,7 @@ function mapAgentToMC(agent: OpenClawAgent): {
   return { name, role, session_key, config: configData, soul_content }
 }
 
-/** Sync agents from openclaw.json into the MC database */
+/** Sync agents from openclaw.json into the Paddock database */
 export async function syncAgentsFromConfig(actor: string = 'system', workspaceId?: number): Promise<SyncResult> {
   let agents: OpenClawAgent[]
   try {
@@ -331,7 +331,7 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
 
   db.transaction(() => {
     for (const agent of agents) {
-      const mapped = mapAgentToMC(agent)
+      const mapped = mapAgentToPaddock(agent)
       const configJson = JSON.stringify(mapped.config)
       const existing =
         (mapped.session_key ? (findBySessionKey.get(mapped.session_key) as any) : undefined) ||
@@ -383,25 +383,25 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
   return { synced, created, updated, agents: results }
 }
 
-/** Preview the diff between openclaw.json and MC database without writing */
+/** Preview the diff between openclaw.json and Paddock database without writing */
 export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
   let agents: OpenClawAgent[]
   try {
     agents = await readOpenClawAgents()
   } catch {
-    return { inConfig: 0, inMC: 0, newAgents: [], updatedAgents: [], onlyInMC: [] }
+    return { inConfig: 0, inPaddock: 0, newAgents: [], updatedAgents: [], onlyInPaddock: [] }
   }
 
   const db = getDatabase()
   const syncWorkspaceId = resolveConfigSyncWorkspaceId(db, workspaceId)
-  const scopedMCAgents = db.prepare('SELECT name, role, session_key, config, workspace_id FROM agents WHERE workspace_id = ?').all(syncWorkspaceId) as Array<{
+  const scopedPaddockAgents = db.prepare('SELECT name, role, session_key, config, workspace_id FROM agents WHERE workspace_id = ?').all(syncWorkspaceId) as Array<{
     name: string
     role: string
     session_key: string | null
     config: string
     workspace_id: number
   }>
-  const sessionKeyMCAgents = db.prepare('SELECT name, role, session_key, config, workspace_id FROM agents WHERE session_key IS NOT NULL').all() as Array<{
+  const sessionKeyPaddockAgents = db.prepare('SELECT name, role, session_key, config, workspace_id FROM agents WHERE session_key IS NOT NULL').all() as Array<{
     name: string
     role: string
     session_key: string | null
@@ -414,11 +414,11 @@ export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
   const matchedNames = new Set<string>()
 
   for (const agent of agents) {
-    const mapped = mapAgentToMC(agent)
+    const mapped = mapAgentToPaddock(agent)
     const existingBySessionKey = mapped.session_key
-      ? sessionKeyMCAgents.find((a) => a.session_key === mapped.session_key)
+      ? sessionKeyPaddockAgents.find((a) => a.session_key === mapped.session_key)
       : undefined
-    const existingByName = scopedMCAgents.find((a) => a.name === mapped.name)
+    const existingByName = scopedPaddockAgents.find((a) => a.name === mapped.name)
     const existing = existingBySessionKey || existingByName
     if (!existing) {
       newAgents.push(mapped.name)
@@ -433,16 +433,16 @@ export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
     }
   }
 
-  const onlyInMC = scopedMCAgents
+  const onlyInPaddock = scopedPaddockAgents
     .map(a => a.name)
     .filter(name => !matchedNames.has(name))
 
   return {
     inConfig: agents.length,
-    inMC: scopedMCAgents.length,
+    inPaddock: scopedPaddockAgents.length,
     newAgents,
     updatedAgents,
-    onlyInMC,
+    onlyInPaddock,
   }
 }
 

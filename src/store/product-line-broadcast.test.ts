@@ -112,7 +112,7 @@ describe('Product Line scope BroadcastChannel sync', () => {
   it('publishes scope changes and accepts newer same-tenant updates from another tab', async () => {
     const usePaddock = await loadStore()
     const channel = MockBroadcastChannel.instances[0]
-    expect(channel?.name).toBe('mc:active-workspace')
+    expect(channel?.name).toBe('pd:active-workspace')
 
     usePaddock.getState().setActiveProductLine(productLine, {
       source: 'user',

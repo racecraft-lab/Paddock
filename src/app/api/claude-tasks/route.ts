@@ -4,7 +4,7 @@ import { getClaudeCodeTasks } from '@/lib/claude-tasks'
 
 /**
  * GET /api/claude-tasks — Returns Claude Code teams and tasks
- * Read-only bridge: MC reads from ~/.claude/tasks/ and ~/.claude/teams/
+ * Read-only bridge: Paddock reads from ~/.claude/tasks/ and ~/.claude/teams/
  */
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')

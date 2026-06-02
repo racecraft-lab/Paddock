@@ -243,7 +243,7 @@ export function NavRail() {
         <div className={`flex items-center shrink-0 ${sidebarExpanded ? 'px-3 py-3 gap-2.5' : 'flex-col py-3 gap-2'}`}>
           <div className="w-9 h-9 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center shrink-0 hover:border-void-cyan/40 hover:glow-cyan transition-smooth">
             <Image
-              src="/brand/mc-logo-128.png"
+              src="/brand/paddock-logo-128.png"
               alt="Paddock logo"
               width={36}
               height={36}

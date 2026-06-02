@@ -4,7 +4,7 @@ import { getHermesMemory } from '@/lib/hermes-memory'
 
 /**
  * GET /api/hermes/memory — Returns Hermes memory file contents
- * Read-only bridge: MC reads from ~/.hermes/memories/
+ * Read-only bridge: Paddock reads from ~/.hermes/memories/
  */
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')

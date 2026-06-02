@@ -4,7 +4,7 @@ import {
   labelToStatus,
   priorityToLabel,
   labelToPriority,
-  ALL_MC_LABELS,
+  ALL_PADDOCK_LABELS,
   ALL_STATUS_LABEL_NAMES,
   ALL_PRIORITY_LABEL_NAMES,
   type TaskStatus,
@@ -12,18 +12,18 @@ import {
 
 describe('statusToLabel', () => {
   it('returns correct label for each status', () => {
-    expect(statusToLabel('inbox').name).toBe('mc:inbox')
-    expect(statusToLabel('assigned').name).toBe('mc:assigned')
-    expect(statusToLabel('in_progress').name).toBe('mc:in-progress')
-    expect(statusToLabel('review').name).toBe('mc:review')
-    expect(statusToLabel('quality_review').name).toBe('mc:quality-review')
-    expect(statusToLabel('done').name).toBe('mc:done')
+    expect(statusToLabel('inbox').name).toBe('pd:inbox')
+    expect(statusToLabel('assigned').name).toBe('pd:assigned')
+    expect(statusToLabel('in_progress').name).toBe('pd:in-progress')
+    expect(statusToLabel('review').name).toBe('pd:review')
+    expect(statusToLabel('quality_review').name).toBe('pd:quality-review')
+    expect(statusToLabel('done').name).toBe('pd:done')
   })
 
   it('returns the ready-for-owner status label contract', () => {
     const label = statusToLabel('ready_for_owner')
     expect(label).toEqual({
-      name: 'mc:ready-for-owner',
+      name: 'pd:ready-for-owner',
       color: '14b8a6',
       description: 'Paddock: ready for owner',
     })
@@ -38,16 +38,16 @@ describe('statusToLabel', () => {
 
 describe('labelToStatus', () => {
   it('maps mc labels back to status', () => {
-    expect(labelToStatus('mc:inbox')).toBe('inbox')
-    expect(labelToStatus('mc:assigned')).toBe('assigned')
-    expect(labelToStatus('mc:in-progress')).toBe('in_progress')
-    expect(labelToStatus('mc:review')).toBe('review')
-    expect(labelToStatus('mc:quality-review')).toBe('quality_review')
-    expect(labelToStatus('mc:done')).toBe('done')
+    expect(labelToStatus('pd:inbox')).toBe('inbox')
+    expect(labelToStatus('pd:assigned')).toBe('assigned')
+    expect(labelToStatus('pd:in-progress')).toBe('in_progress')
+    expect(labelToStatus('pd:review')).toBe('review')
+    expect(labelToStatus('pd:quality-review')).toBe('quality_review')
+    expect(labelToStatus('pd:done')).toBe('done')
   })
 
-  it('maps mc:ready-for-owner back to ready_for_owner', () => {
-    expect(labelToStatus('mc:ready-for-owner')).toBe('ready_for_owner')
+  it('maps pd:ready-for-owner back to ready_for_owner', () => {
+    expect(labelToStatus('pd:ready-for-owner')).toBe('ready_for_owner')
   })
 
   it('returns null for unknown labels', () => {
@@ -88,7 +88,7 @@ describe('labelToPriority', () => {
 
   it('returns medium as default when no priority label', () => {
     expect(labelToPriority([])).toBe('medium')
-    expect(labelToPriority(['mc:inbox', 'bug'])).toBe('medium')
+    expect(labelToPriority(['pd:inbox', 'bug'])).toBe('medium')
   })
 
   it('picks first matching priority label', () => {
@@ -96,21 +96,21 @@ describe('labelToPriority', () => {
   })
 
   it('ignores non-priority labels', () => {
-    expect(labelToPriority(['mc:done', 'priority:critical', 'wontfix'])).toBe('critical')
+    expect(labelToPriority(['pd:done', 'priority:critical', 'wontfix'])).toBe('critical')
   })
 })
 
-describe('ALL_MC_LABELS', () => {
+describe('ALL_PADDOCK_LABELS', () => {
   it('contains all status and priority labels', () => {
-    expect(ALL_MC_LABELS.length).toBe(14) // 10 statuses + 4 priorities
-    const names = ALL_MC_LABELS.map(l => l.name)
-    expect(names).toContain('mc:inbox')
-    expect(names).toContain('mc:ready-for-owner')
+    expect(ALL_PADDOCK_LABELS.length).toBe(14) // 10 statuses + 4 priorities
+    const names = ALL_PADDOCK_LABELS.map(l => l.name)
+    expect(names).toContain('pd:inbox')
+    expect(names).toContain('pd:ready-for-owner')
     expect(names).toContain('priority:critical')
   })
 
   it('each label has name, color, and description', () => {
-    for (const label of ALL_MC_LABELS) {
+    for (const label of ALL_PADDOCK_LABELS) {
       expect(label.name).toBeTruthy()
       expect(label.color).toMatch(/^[0-9a-f]{6}$/i)
     }
@@ -120,19 +120,19 @@ describe('ALL_MC_LABELS', () => {
 describe('ALL_STATUS_LABEL_NAMES', () => {
   it('contains all 10 status label names', () => {
     expect(ALL_STATUS_LABEL_NAMES).toHaveLength(10)
-    expect(ALL_STATUS_LABEL_NAMES).toContain('mc:inbox')
-    expect(ALL_STATUS_LABEL_NAMES).toContain('mc:ready-for-owner')
-    expect(ALL_STATUS_LABEL_NAMES).toContain('mc:done')
+    expect(ALL_STATUS_LABEL_NAMES).toContain('pd:inbox')
+    expect(ALL_STATUS_LABEL_NAMES).toContain('pd:ready-for-owner')
+    expect(ALL_STATUS_LABEL_NAMES).toContain('pd:done')
   })
 
-  it('supports replacing prior mc:* status labels with mc:ready-for-owner', () => {
-    const existing = ['mc:review', 'mc:quality-review', 'priority:high', 'customer:keep']
+  it('supports replacing prior pd:* status labels with pd:ready-for-owner', () => {
+    const existing = ['pd:review', 'pd:quality-review', 'priority:high', 'customer:keep']
     const replacement = [
       ...existing.filter((name) => !ALL_STATUS_LABEL_NAMES.includes(name)),
       statusToLabel('ready_for_owner').name,
     ]
 
-    expect(replacement).toEqual(['priority:high', 'customer:keep', 'mc:ready-for-owner'])
+    expect(replacement).toEqual(['priority:high', 'customer:keep', 'pd:ready-for-owner'])
   })
 })
 

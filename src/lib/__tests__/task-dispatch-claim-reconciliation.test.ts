@@ -77,7 +77,7 @@ function openDispatchDb(): Database.Database {
     );
   `)
   db.prepare('INSERT INTO agents (id, name, workspace_id, status, role) VALUES (1, ?, 1, ?, ?)').run('builder', 'idle', 'dev')
-  db.prepare('INSERT INTO projects (id, workspace_id, ticket_prefix) VALUES (10, 1, ?)').run('MC')
+  db.prepare('INSERT INTO projects (id, workspace_id, ticket_prefix) VALUES (10, 1, ?)').run('PD')
   db.prepare(`
     INSERT INTO tasks (
       id, title, description, status, priority, assigned_to, workspace_id, project_id,

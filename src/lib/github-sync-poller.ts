@@ -1,5 +1,5 @@
 /**
- * Background poller for GitHub ↔ MC task sync.
+ * Background poller for GitHub ↔ Paddock task sync.
  * Lazy singleton — call startSyncPoller() to begin.
  */
 

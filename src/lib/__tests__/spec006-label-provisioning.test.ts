@@ -135,7 +135,7 @@ describe('SPEC-006 / T071 — initializeLabels failure isolation (FR-025/026/027
 
     // Five labels: three succeed, two fail with different error classes.
     // We simulate by routing on label name. The label set used by initializeLabels
-    // is the union of mc:* + priority:* + areaLabelsForWorkspace; we don't seed
+    // is the union of pd:* + priority:* + areaLabelsForWorkspace; we don't seed
     // any extra area_slug, so the area set is just the static AREA_LABEL_MAP (12).
     // We pick two specific area label names to fail and let the rest succeed.
     const failingNames = new Set([ALL_AREA_LABEL_NAMES[0], ALL_AREA_LABEL_NAMES[1]])

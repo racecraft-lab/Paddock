@@ -2,7 +2,7 @@
  * SPEC-007 secret-detector v1 rule set (FR-031).
  *
  * Closed, bounded list of 17 rule families sourced from gitleaks v8.18.0
- * patterns plus MC additions. NO transitive gitleaks pulls — the v1 ruleset
+ * patterns plus Paddock additions. NO transitive gitleaks pulls — the v1 ruleset
  * is exactly the families enumerated in FR-031 (1..17). New families MUST
  * land in a future v2 spec.
  *

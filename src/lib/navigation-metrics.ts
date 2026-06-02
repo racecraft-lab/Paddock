@@ -18,7 +18,7 @@ let pendingNavigation: PendingNavigation | null = null
 let samples: NavigationSample[] = []
 
 const MAX_SAMPLES = 50
-const METRIC_EVENT = 'mc:navigation-metric'
+const METRIC_EVENT = 'pd:navigation-metric'
 
 function emitSample(sample: NavigationSample) {
   if (typeof window === 'undefined') return

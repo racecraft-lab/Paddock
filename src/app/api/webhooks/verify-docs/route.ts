@@ -11,12 +11,12 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     algorithm: 'HMAC-SHA256',
-    header: 'X-MC-Signature',
+    header: 'X-PD-Signature',
     format: 'sha256=<hex-digest>',
-    description: 'Paddock signs webhook payloads using HMAC-SHA256. The signature is sent in the X-MC-Signature header.',
+    description: 'Paddock signs webhook payloads using HMAC-SHA256. The signature is sent in the X-PD-Signature header.',
     verification_steps: [
       '1. Extract the raw request body as a UTF-8 string (do NOT parse JSON first).',
-      '2. Read the X-MC-Signature header value.',
+      '2. Read the X-PD-Signature header value.',
       '3. Compute HMAC-SHA256 of the raw body using your webhook secret.',
       '4. Format the expected value as: sha256=<hex-digest>',
       '5. Compare the computed value with the header using a constant-time comparison.',
@@ -34,7 +34,7 @@ function verifySignature(secret, rawBody, signatureHeader) {
 }
 
 // In your Express/Fastify handler:
-// const isValid = verifySignature(MY_SECRET, req.rawBody, req.headers['x-mc-signature']);
+// const isValid = verifySignature(MY_SECRET, req.rawBody, req.headers['x-pd-signature']);
 `.trim(),
   })
 }
