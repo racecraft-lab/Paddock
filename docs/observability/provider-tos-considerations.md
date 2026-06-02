@@ -136,8 +136,8 @@ a corresponding H2 here (orphan detection).
 
 - **Surface**: OpenClaw on-host gateway service emitting structured
   invocation events to Paddock's local channel.
-- **Default state**: `allowed` — OpenClaw is an internal Mission
-  Control service.
+- **Default state**: `allowed` — OpenClaw is an internal Paddock
+  service.
 - **ToS notes**: OpenClaw is operator-controlled and ships under the
   Paddock license. No external ToS applies.
 - **Risk**: Low.

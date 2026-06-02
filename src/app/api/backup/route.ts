@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Default: MC SQLite backup
+  // Default: Paddock SQLite backup
   ensureDirExists(BACKUP_DIR)
 
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19)

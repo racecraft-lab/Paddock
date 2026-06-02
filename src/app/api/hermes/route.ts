@@ -318,7 +318,7 @@ events:
 
 const HANDLER_PY = `"""
 Paddock hook for Hermes Agent.
-Reports session telemetry to the MC /api/sessions endpoint.
+Reports session telemetry to the Paddock /api/sessions endpoint.
 
 Configuration (via ~/.hermes/.env or environment):
   MC_URL      - Paddock base URL (default: http://localhost:3000)
@@ -350,7 +350,7 @@ async def handle(event_name: str, payload: dict) -> None:
     try:
         import httpx
     except ImportError:
-        logger.debug("httpx not available, skipping MC telemetry")
+        logger.debug("httpx not available, skipping Paddock telemetry")
         return
 
     try:
@@ -361,7 +361,7 @@ async def handle(event_name: str, payload: dict) -> None:
         elif event_name == "session:start":
             await _report_session_start(payload)
     except Exception as exc:
-        logger.debug("MC hook error (%s): %s", event_name, exc)
+        logger.debug("Paddock hook error (%s): %s", event_name, exc)
 
 
 async def _report_agent_start(payload: dict) -> None:

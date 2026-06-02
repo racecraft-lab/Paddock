@@ -21,7 +21,7 @@ export const WIDGET_CATALOG: DashboardWidget[] = [
   {
     id: 'activity-timeline',
     label: 'Activity Timeline',
-    description: 'Real-time mission log — agent events, task updates, errors',
+    description: 'Real-time activity log — agent events, task updates, errors',
     category: 'events',
     modes: ['local', 'full'],
     defaultSize: 'md',
@@ -66,7 +66,7 @@ export const WIDGET_CATALOG: DashboardWidget[] = [
   {
     id: 'runtime-health',
     label: 'Runtime Health',
-    description: 'Local OS, Claude, Codex, and MC core health',
+    description: 'Local OS, Claude, Codex, and Paddock core health',
     category: 'health',
     modes: ['local'],
     defaultSize: 'md',

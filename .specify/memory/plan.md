@@ -464,7 +464,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 - Reuses SPEC-001 tables `task_dispositions` and `task_artifacts`; no new migrations.
 - Adds task disposition rollups, artifact publish/read/admin/health surfaces, and artifact-driven dispatch handoff.
-- MC Secret Detector v1 centralizes redaction/rejection for AWS/GitHub/Google/Slack/Stripe/PEM/JWT/Bearer/OpenAI/Anthropic/generic secret patterns.
+- Paddock Secret Detector v1 centralizes redaction/rejection for AWS/GitHub/Google/Slack/Stripe/PEM/JWT/Bearer/OpenAI/Anthropic/generic secret patterns.
 - Adds dashboard, audit, admin, OpenAPI, Storybook/visual metadata, and e2e seed support; retained checkbox drift in `tasks.md` is historical bookkeeping, not the completion authority.
 
 ## SPEC-008 Plan Summary [Source: specs/008-resource-governance]

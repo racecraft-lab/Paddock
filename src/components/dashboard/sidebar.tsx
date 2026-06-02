@@ -87,7 +87,7 @@ export function Sidebar() {
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center">
             <Image
-              src="/brand/mc-logo-128.png"
+              src="/brand/paddock-logo-128.png"
               alt="Paddock logo"
               width={32}
               height={32}

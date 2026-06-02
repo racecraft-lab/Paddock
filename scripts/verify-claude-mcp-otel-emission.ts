@@ -37,7 +37,7 @@
  *      `cli_mcp_serve` source-registry row will be seeded with
  *      `enforcement_eligibility='soft'` AND a
  *      `governance_claude_mcp_telemetry_absent` activity row will fire at
- *      MC startup (T083 / T094-T095 implementation).
+ *      Paddock startup (T083 / T094-T095 implementation).
  *
  * Evidence Schema (FR-090a) — same shape as T001 with additional
  *   transcript-replay observations.

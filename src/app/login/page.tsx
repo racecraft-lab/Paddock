@@ -298,7 +298,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center mb-8">
           <div className="w-12 h-12 rounded-lg overflow-hidden bg-background border border-border/50 flex items-center justify-center mb-3">
             <Image
-              src="/brand/mc-logo-128.png"
+              src="/brand/paddock-logo-128.png"
               alt="Paddock logo"
               width={48}
               height={48}

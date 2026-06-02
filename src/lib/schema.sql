@@ -102,7 +102,7 @@ CREATE TABLE IF NOT EXISTS quality_reviews (
 );
 
 
--- Gateway health logs (captured each time MC probes a gateway)
+-- Gateway health logs (captured each time Paddock probes a gateway)
 CREATE TABLE IF NOT EXISTS gateway_health_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     gateway_id INTEGER NOT NULL,

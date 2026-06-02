@@ -49,7 +49,7 @@ export async function GET(
 }
 
 /**
- * PUT /api/agents/[id] - Update agent config with unified MC + gateway save
+ * PUT /api/agents/[id] - Update agent config with unified Paddock + gateway save
  *
  * Body: {
  *   role?: string

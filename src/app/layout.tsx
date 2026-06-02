@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/icon.png', type: 'image/png', sizes: '256x256' },
-      { url: '/brand/mc-logo-128.png', type: 'image/png', sizes: '128x128' },
+      { url: '/brand/paddock-logo-128.png', type: 'image/png', sizes: '128x128' },
     ],
     apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
     shortcut: ['/icon.png'],
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Paddock — AI Agent Orchestration Dashboard',
     description: 'Open-source dashboard for AI agent orchestration. Manage agent fleets, dispatch tasks, track costs, and coordinate multi-agent workflows.',
-    images: [{ url: '/brand/mc-logo-512.png', width: 512, height: 512, alt: 'Paddock — open-source AI agent orchestration dashboard' }],
+    images: [{ url: '/brand/paddock-logo-512.png', width: 512, height: 512, alt: 'Paddock — open-source AI agent orchestration dashboard' }],
     type: 'website',
     siteName: 'Paddock',
   },
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Paddock — AI Agent Orchestration Dashboard',
     description: 'Open-source dashboard for AI agent orchestration. Manage agent fleets, dispatch tasks, track costs, and coordinate multi-agent workflows.',
-    images: ['/brand/mc-logo-512.png'],
+    images: ['/brand/paddock-logo-512.png'],
   },
   appleWebApp: {
     capable: true,

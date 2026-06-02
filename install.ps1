@@ -57,7 +57,7 @@ if (-not $InstallDir) {
 $RepoUrl = "https://github.com/racecraft-lab/Paddock.git"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-function Write-MC   { param([string]$Msg) Write-Host "[MC] $Msg" -ForegroundColor Blue }
+function Write-Paddock   { param([string]$Msg) Write-Host "[Paddock] $Msg" -ForegroundColor Blue }
 function Write-Ok   { param([string]$Msg) Write-Host "[OK] $Msg" -ForegroundColor Green }
 function Write-Warn { param([string]$Msg) Write-Host "[!!] $Msg" -ForegroundColor Yellow }
 function Write-Err  { param([string]$Msg) Write-Host "[ERR] $Msg" -ForegroundColor Red }
@@ -116,10 +116,10 @@ function Test-Prerequisites {
     if (-not $script:Mode) {
         if ($hasDocker) {
             $script:Mode = "docker"
-            Write-MC "Auto-selected Docker deployment (use -Mode local to override)"
+            Write-Paddock "Auto-selected Docker deployment (use -Mode local to override)"
         } else {
             $script:Mode = "local"
-            Write-MC "Auto-selected local deployment (Docker not available)"
+            Write-Paddock "Auto-selected local deployment (Docker not available)"
         }
     }
 
@@ -131,7 +131,7 @@ function Test-Prerequisites {
         Stop-WithError "Local deployment requested but Node.js 22+ is not available"
     }
     if ($script:Mode -eq "local" -and -not (Test-Command "pnpm")) {
-        Write-MC "Installing pnpm via corepack..."
+        Write-Paddock "Installing pnpm via corepack..."
         corepack enable
         corepack prepare pnpm@latest --activate
         Write-Ok "pnpm installed"
@@ -141,7 +141,7 @@ function Test-Prerequisites {
 # ── Clone or update repo ─────────────────────────────────────────────────────
 function Get-Source {
     if (Test-Path (Join-Path $script:InstallDir ".git")) {
-        Write-MC "Updating existing installation at $($script:InstallDir)..."
+        Write-Paddock "Updating existing installation at $($script:InstallDir)..."
         Push-Location $script:InstallDir
         try {
             git fetch --tags
@@ -157,7 +157,7 @@ function Get-Source {
             Pop-Location
         }
     } else {
-        Write-MC "Cloning Paddock..."
+        Write-Paddock "Cloning Paddock..."
         if (-not (Test-Command "git")) {
             Stop-WithError "git is required to clone the repository"
         }
@@ -172,7 +172,7 @@ function New-EnvFile {
     $examplePath = Join-Path $script:InstallDir ".env.example"
 
     if (Test-Path $envPath) {
-        Write-MC "Existing .env found - keeping current configuration"
+        Write-Paddock "Existing .env found - keeping current configuration"
         return
     }
 
@@ -180,7 +180,7 @@ function New-EnvFile {
         Stop-WithError ".env.example not found at $examplePath"
     }
 
-    Write-MC "Generating secure .env configuration..."
+    Write-Paddock "Generating secure .env configuration..."
 
     $authPass = Get-RandomPassword 24
     $apiKey = Get-RandomHex 32
@@ -211,14 +211,14 @@ function New-EnvFile {
 
 # ── Docker deployment ─────────────────────────────────────────────────────────
 function Deploy-Docker {
-    Write-MC "Starting Docker deployment..."
+    Write-Paddock "Starting Docker deployment..."
 
     Push-Location $script:InstallDir
     try {
         $env:MC_PORT = $script:Port
         docker compose up -d --build
 
-        Write-MC "Waiting for Paddock to become healthy..."
+        Write-Paddock "Waiting for Paddock to become healthy..."
         $retries = 30
         while ($retries -gt 0) {
             try {
@@ -242,7 +242,7 @@ function Deploy-Docker {
 
 # ── Local deployment ──────────────────────────────────────────────────────────
 function Deploy-Local {
-    Write-MC "Starting local deployment..."
+    Write-Paddock "Starting local deployment..."
 
     Push-Location $script:InstallDir
     try {
@@ -250,7 +250,7 @@ function Deploy-Local {
         if ($LASTEXITCODE -ne 0) { pnpm install }
         Write-Ok "Dependencies installed"
 
-        Write-MC "Building Paddock..."
+        Write-Paddock "Building Paddock..."
         pnpm build
         if ($LASTEXITCODE -ne 0) { Stop-WithError "Build failed" }
         Write-Ok "Build complete"
@@ -273,7 +273,7 @@ function Deploy-Local {
         }
         Write-Ok "Static assets copied to standalone directory"
 
-        Write-MC "Starting Paddock..."
+        Write-Paddock "Starting Paddock..."
         $env:PORT = $script:Port
         $env:NODE_ENV = "production"
         $env:HOSTNAME = "0.0.0.0"
@@ -305,12 +305,12 @@ function Deploy-Local {
 # ── OpenClaw fleet check ─────────────────────────────────────────────────────
 function Test-OpenClaw {
     if ($SkipOpenClaw) {
-        Write-MC "Skipping OpenClaw checks (-SkipOpenClaw)"
+        Write-Paddock "Skipping OpenClaw checks (-SkipOpenClaw)"
         return
     }
 
     Write-Host ""
-    Write-MC "=== OpenClaw Fleet Check ==="
+    Write-Paddock "=== OpenClaw Fleet Check ==="
 
     if (Test-Command "openclaw") {
         $ocVersion = try { openclaw --version 2>$null } catch { "unknown" }
@@ -320,8 +320,8 @@ function Test-OpenClaw {
         Write-Ok "ClawdBot binary found: $cbVersion (legacy)"
         Write-Warn "Consider upgrading to openclaw CLI"
     } else {
-        Write-MC "OpenClaw CLI not found - install it to enable agent orchestration"
-        Write-MC "  See: https://github.com/builderz-labs/openclaw"
+        Write-Paddock "OpenClaw CLI not found - install it to enable agent orchestration"
+        Write-Paddock "  See: https://github.com/builderz-labs/openclaw"
         return
     }
 
@@ -335,11 +335,11 @@ function Test-OpenClaw {
             Write-Ok "Config found: $ocConfig"
         } else {
             Write-Warn "No openclaw.json found at $ocConfig"
-            Write-MC "Paddock will create a default config on first gateway connection"
+            Write-Paddock "Paddock will create a default config on first gateway connection"
         }
     } else {
-        Write-MC "OpenClaw home not found at $ocHome"
-        Write-MC "Set OPENCLAW_HOME in .env to point to your OpenClaw state directory"
+        Write-Paddock "OpenClaw home not found at $ocHome"
+        Write-Paddock "Set OPENCLAW_HOME in .env to point to your OpenClaw state directory"
     }
 
     # Check gateway port
@@ -351,7 +351,7 @@ function Test-OpenClaw {
         $tcp.Close()
         Write-Ok "Gateway reachable at ${gwHost}:${gwPort}"
     } catch {
-        Write-MC "Gateway not reachable at ${gwHost}:${gwPort} (start it with: openclaw gateway start)"
+        Write-Paddock "Gateway not reachable at ${gwHost}:${gwPort} (start it with: openclaw gateway start)"
     }
 }
 
@@ -373,7 +373,7 @@ function Main {
     $packageJson = Join-Path (Get-Location) "package.json"
     if ((Test-Path $packageJson) -and (Select-String -Path $packageJson -Pattern '"paddock"' -Quiet)) {
         $script:InstallDir = (Get-Location).Path
-        Write-MC "Running from existing clone at $($script:InstallDir)"
+        Write-Paddock "Running from existing clone at $($script:InstallDir)"
     } else {
         Get-Source
     }
@@ -400,25 +400,25 @@ function Main {
     Write-Host "  |   Installation Complete               |" -ForegroundColor Green
     Write-Host "  +======================================+" -ForegroundColor Green
     Write-Host ""
-    Write-MC "Dashboard:  http://localhost:$Port"
-    Write-MC "Mode:       $Mode"
-    Write-MC "Data:       $(Join-Path $script:InstallDir '.data')"
+    Write-Paddock "Dashboard:  http://localhost:$Port"
+    Write-Paddock "Mode:       $Mode"
+    Write-Paddock "Data:       $(Join-Path $script:InstallDir '.data')"
     Write-Host ""
-    Write-MC "Credentials are in: $(Join-Path $script:InstallDir '.env')"
+    Write-Paddock "Credentials are in: $(Join-Path $script:InstallDir '.env')"
     Write-Host ""
 
     if ($Mode -eq "docker") {
-        Write-MC "Manage:"
-        Write-MC "  docker compose logs -f        # view logs"
-        Write-MC "  docker compose restart         # restart"
-        Write-MC "  docker compose down            # stop"
+        Write-Paddock "Manage:"
+        Write-Paddock "  docker compose logs -f        # view logs"
+        Write-Paddock "  docker compose restart         # restart"
+        Write-Paddock "  docker compose down            # stop"
     } else {
         $mcDataPath = Join-Path $script:InstallDir ".data"
         $pidPath = Join-Path $mcDataPath "mc.pid"
         $logPath = Join-Path $mcDataPath "mc.log"
-        Write-MC "Manage:"
-        Write-MC "  Get-Content '$logPath' -Tail 50   # view logs"
-        Write-MC "  Stop-Process -Id (Get-Content '$pidPath')  # stop"
+        Write-Paddock "Manage:"
+        Write-Paddock "  Get-Content '$logPath' -Tail 50   # view logs"
+        Write-Paddock "  Stop-Process -Id (Get-Content '$pidPath')  # stop"
     }
     Write-Host ""
 }

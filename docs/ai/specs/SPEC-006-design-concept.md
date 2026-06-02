@@ -32,7 +32,7 @@ The feature is gated by `FEATURE_AREA_LABEL_ROUTING` (already registered, `activ
 
 - **No new admin panel.** Editing `area_slug`, `is_triage_project`, and `is_repo_sync_owner` happens via the existing project settings panel and `PUT /api/projects/[id]`. No `area-routing-admin-panel.tsx` module.
 - **No new dedicated routing module.** No `src/lib/github-area-routing.ts` extraction. All logic in existing files.
-- **No re-routing on label changes.** Once a task is ingested with a project_id, subsequent GitHub label changes do NOT move it between MC projects. "No thrash" means stable per-task project_id after initial assignment.
+- **No re-routing on label changes.** Once a task is ingested with a project_id, subsequent GitHub label changes do NOT move it between Paddock projects. "No thrash" means stable per-task project_id after initial assignment.
 - **No external secret detector.** Label and slug data is not secret material; SPEC-007 owns the artifact secret detector.
 - **No destructive schema change.** All migrations are additive nullable columns; rollback drops columns or sets flag OFF.
 - **No multi-repo product-line sync.** This spec assumes one repo per product-line workspace (the monorepo case). Multi-repo product lines are a SPEC-009/010 concern.
@@ -82,11 +82,11 @@ Add `projects.is_triage_project BOOLEAN DEFAULT 0` with partial unique index `(w
 
 ### Q5. Re-route semantics (anti-thrash)
 
-**Question:** Once a task has `project_id`, do later GitHub label changes move it between MC projects? P5-AC5: 'do not thrash between departments.'
+**Question:** Once a task has `project_id`, do later GitHub label changes move it between Paddock projects? P5-AC5: 'do not thrash between departments.'
 
 **Decision:** **Route on initial ingest only.**
 
-`project_id` is set on first ingest based on `area:*` at that moment. Subsequent label changes on GitHub do NOT move the task between MC projects. Operator can manually re-assign via task detail UI. Strongest "no thrash" interpretation, simplest activity story.
+`project_id` is set on first ingest based on `area:*` at that moment. Subsequent label changes on GitHub do NOT move the task between Paddock projects. Operator can manually re-assign via task detail UI. Strongest "no thrash" interpretation, simplest activity story.
 
 **Implication for plan:** Inbound routing logic distinguishes "first ingest" (no existing task for `(workspace_id, github_repo, github_issue_number)`) from "subsequent sync" (task exists). Subsequent syncs update title/body/labels but never change `project_id`. Add explicit assertion in test: "task already exists ⇒ project_id unchanged regardless of area:* labels."
 

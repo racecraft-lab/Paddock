@@ -68,7 +68,7 @@ export function SystemHealthWidget({ data }: { data: DashboardData }) {
         {uptimeStr && <span>Uptime <span className="font-mono-tight text-foreground/70">{uptimeStr}</span></span>}
 
         <span className="inline-flex items-center gap-1">
-          MC
+          Paddock
           <span className={`w-1.5 h-1.5 rounded-full ${errorCount > 0 ? 'bg-amber-500' : 'bg-green-500'}`} />
           <span className="font-mono-tight text-foreground/70">{errorCount > 0 ? `${errorCount} err` : 'OK'}</span>
         </span>
@@ -85,12 +85,12 @@ export function SystemHealthWidget({ data }: { data: DashboardData }) {
               <HealthRow label="Claude Runtime" value={claudeHealth.value} status={claudeHealth.status} />
               <HealthRow label="Codex Runtime" value={codexHealth.value} status={codexHealth.status} />
               <HealthRow label="Hermes Runtime" value={hermesHealth.value} status={hermesHealth.status} />
-              <HealthRow label="MC Core" value={mcHealth.value} status={mcHealth.status} />
+              <HealthRow label="Paddock Core" value={mcHealth.value} status={mcHealth.status} />
             </>
           ) : (
             <>
               <HealthRow label="Gateway" value={connection.isConnected ? 'Connected' : 'Disconnected'} status={gatewayHealthStatus} />
-              <HealthRow label="MC Core" value={mcHealth.value} status={mcHealth.status} />
+              <HealthRow label="Paddock Core" value={mcHealth.value} status={mcHealth.status} />
             </>
           )}
           {memPct != null && (

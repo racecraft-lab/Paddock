@@ -491,9 +491,9 @@ export function SettingsPanel() {
                   const res = await fetch('/api/backup', { method: 'POST' })
                   const data = await res.json()
                   if (res.ok) {
-                    showFeedback(true, `MC backup created (${(data.backup?.size / 1024).toFixed(0)} KB)`)
+                    showFeedback(true, `Paddock backup created (${(data.backup?.size / 1024).toFixed(0)} KB)`)
                   } else {
-                    showFeedback(false, data.error || 'MC backup failed')
+                    showFeedback(false, data.error || 'Paddock backup failed')
                   }
                 } catch {
                   showFeedback(false, 'Network error')
@@ -599,8 +599,8 @@ export function SettingsPanel() {
                   </div>
                   <p className="text-2xs text-muted-foreground mt-0.5">
                     {hermesStatus.hookInstalled
-                      ? 'MC hook installed — receiving telemetry from hermes-agent'
-                      : 'Install the MC hook for richer telemetry (agent status, session events)'}
+                      ? 'Paddock hook installed — receiving telemetry from hermes-agent'
+                      : 'Install the Paddock hook for richer telemetry (agent status, session events)'}
                   </p>
                 </div>
                 <Button
@@ -635,7 +635,7 @@ export function SettingsPanel() {
                     ? 'Working...'
                     : hermesStatus.hookInstalled
                       ? 'Uninstall Hook'
-                      : 'Install MC Hook'}
+                      : 'Install Paddock Hook'}
                 </Button>
               </div>
             </div>

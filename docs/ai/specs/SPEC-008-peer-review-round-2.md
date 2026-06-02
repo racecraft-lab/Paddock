@@ -108,13 +108,13 @@ Operator at 3am: "Is governance working in workspace facility?" There should be 
 
 ## 7. Time-Bombs and Accumulating Debt
 
-**Retention sweep default-on?** Q43 lists per-table retention defaults but does not say whether the daily `scripts/retention-sweep.ts` job runs by default or requires operator opt-in. Reading the implication: it's a script, not a scheduled job in the MC scheduler. The doc must explicitly state: (a) is it added to MC's scheduler? (b) what flag controls it? (c) what is the default? **If the operator never configures retention, do tables grow unbounded?** Today's answer reads as "yes," which is a 2-year time-bomb for the on-call operator. Make it default-on, with a flag to disable.
+**Retention sweep default-on?** Q43 lists per-table retention defaults but does not say whether the daily `scripts/retention-sweep.ts` job runs by default or requires operator opt-in. Reading the implication: it's a script, not a scheduled job in the Paddock scheduler. The doc must explicitly state: (a) is it added to Paddock's scheduler? (b) what flag controls it? (c) what is the default? **If the operator never configures retention, do tables grow unbounded?** Today's answer reads as "yes," which is a 2-year time-bomb for the on-call operator. Make it default-on, with a flag to disable.
 
 **Backfill stuck.** Q31 has `status='failed'` for backfill windows but no documented recovery procedure. What if a backfill remains in `running` for 7 days because the source is permanently broken? Is there a max-time after which it auto-transitions to `failed`? The doc does not say. Recommend: backfill window has `max_duration_seconds` (e.g., 24h); past that → auto-`failed`; operator gets escalation per Q37 pattern.
 
 **Reservation reaper.** State transitions in Q6: `active` → `expired` happens via "scheduler tick after `expires_at` passes." But what if the scheduler tick is itself blocked (long migration, breaker open, deterministic-mode-defer)? Reservations sit `active` past `expires_at`. Q35's priority order has admission as P1 but reservation expiry is not in the list. Recommend: "reservation expiry sweep" added as P3 (above reconciliation) so it's not starved.
 
-**Breaker `restart_count`.** Q21 explicitly says "restart does NOT clear it. `restart_count` increments so operator can see 'this breaker has survived N restarts'." Yes — but **there is no alert threshold**. If `restart_count` reaches 50, the operator should be paged. Recommend: alert at `restart_count >= 5` (one work week of MC restarts is normal for Paddock development; >5 indicates the breaker is the actual bug).
+**Breaker `restart_count`.** Q21 explicitly says "restart does NOT clear it. `restart_count` increments so operator can see 'this breaker has survived N restarts'." Yes — but **there is no alert threshold**. If `restart_count` reaches 50, the operator should be paged. Recommend: alert at `restart_count >= 5` (one work week of Paddock restarts is normal for Paddock development; >5 indicates the breaker is the actual bug).
 
 **Workspace `feature_flags` JSON growth.** Each new flag adds a key. If `feature_flags` accumulates dead keys from removed features, no cleanup is documented. Low priority but worth noting.
 
@@ -172,7 +172,7 @@ The concern is not synthetic: better-sqlite3 indexed lookups stay sub-10µs even
 **Action items:**
 
 - Q11 benchmark CI gate must include an "aged DB" variant (seed 300K + replay 90 days of synthetic traffic). Run weekly, not per-PR.
-- Add `PRAGMA optimize` or scheduled `ANALYZE` to MC startup OR to the daily retention sweep.
+- Add `PRAGMA optimize` or scheduled `ANALYZE` to Paddock startup OR to the daily retention sweep.
 - Capture `mc.governance.admission.duration_ms` p95 (Q45) over a rolling 24h window as an SLO target; alert if SLO budget exhausted.
 
 ---
@@ -183,7 +183,7 @@ Several major operational concerns are not addressed at all by the spec:
 
 - **Backup / restore / DR (§4 above).** Largest gap.
 - **SQLite WAL corruption recovery.** What does the operator do if `paddock.db-wal` is corrupted on disk? `.recover` procedure documented?
-- **Single-node-failure recovery.** The operator node is one machine. If the operator node dies, MC is down. Out of scope, but the doc could explicitly note "recovery is restore-from-backup; ~RTO 30min depending on backup size."
+- **Single-node-failure recovery.** The operator node is one machine. If the operator node dies, Paddock is down. Out of scope, but the doc could explicitly note "recovery is restore-from-backup; ~RTO 30min depending on backup size."
 - **Audit-log retention requirements for compliance.** Q43 keeps ledger 5 years. Is that contractually required? Operationally chosen? Either way, it should be tied to a stated requirement so v2 doesn't accidentally shorten it.
 - **Rate limiting on REST endpoints.** `/api/resource-overrides`, `/api/resource-policies` — no rate limit declared. Single operator means low actual exposure; but if the API key leaks, an attacker can DoS via thousands of invalid POSTs that all return 422. Doc should declare per-IP-per-route rate limits (or "deferred to gateway-layer rate limiting" with a pointer).
 - **Hash-chained ledger for tamper-evidence (§8 above).**
@@ -215,7 +215,7 @@ The remaining gaps are operational, not architectural. I cannot be on call confi
 
 ## P1 Should-Fix (plan-phase resolvable)
 
-1. **Retention sweep default-on guarantee (§7).** State explicitly: retention sweep is registered with MC scheduler at flag-on; default ENABLED; opt-out via `workspace.feature_flags.governance_retention_disabled=true`. Operator-never-configures-retention must NOT result in unbounded growth.
+1. **Retention sweep default-on guarantee (§7).** State explicitly: retention sweep is registered with Paddock scheduler at flag-on; default ENABLED; opt-out via `workspace.feature_flags.governance_retention_disabled=true`. Operator-never-configures-retention must NOT result in unbounded growth.
 2. **`provider_accounts` soft-delete semantics (§8).** Add `deleted_at INTEGER` column; UI prevents hard-delete; `ON DELETE` semantics for child tables explicitly stated as `NO ACTION` (deletion blocked while children exist).
 3. **Hard policy `threshold=0` sanity guardrail (§8).** REST validator rejects `enforce_mode='hard' AND threshold=0`. Promotion-to-hard UI also blocks it.
 4. **Breaker `restart_count` alert threshold (§7).** Add notification rule: `restart_count >= 5` emits `governance_breaker_persistent` at warning level; >= 20 escalates to critical.

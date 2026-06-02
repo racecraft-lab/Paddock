@@ -199,7 +199,7 @@ Response:
 
 The `source` field tells you where the SOUL was loaded from:
 - `workspace` — Read from the agent's workspace `soul.md` file on disk
-- `database` — Read from the MC database (no workspace file found)
+- `database` — Read from the Paddock database (no workspace file found)
 - `none` — No SOUL content set
 
 **Update** a SOUL:
@@ -276,7 +276,7 @@ Paddock tracks agent health through heartbeats.
 ### How It Works
 
 1. Agent sends `POST /api/agents/{id}/heartbeat` every 30 seconds
-2. MC updates `status` to `idle` and refreshes `last_seen`
+2. Paddock updates `status` to `idle` and refreshes `last_seen`
 3. If no heartbeat for 10 minutes (configurable), agent is marked `offline`
 4. Stale tasks (in_progress for 10+ min with offline agent) are requeued
 

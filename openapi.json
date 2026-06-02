@@ -13688,7 +13688,7 @@
       },
       "post": {
         "summary": "Publish a task artifact (SPEC-007 FR-020..029)",
-        "description": "Inline JSON, inline Markdown, or file-backed artifact publishing through the MC artifact store. Detector runs before any storage write (FR-035a no-bypass discipline). Atomic fs.link write protocol (FR-022). Returns 503 when FEATURE_TASK_ARTIFACTS is OFF.",
+        "description": "Inline JSON, inline Markdown, or file-backed artifact publishing through the Paddock artifact store. Detector runs before any storage write (FR-035a no-bypass discipline). Atomic fs.link write protocol (FR-022). Returns 503 when FEATURE_TASK_ARTIFACTS is OFF.",
         "tags": [
           "spec-007-task-artifacts"
         ],

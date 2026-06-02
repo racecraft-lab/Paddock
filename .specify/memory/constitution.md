@@ -500,7 +500,7 @@ the PR is merged.
 Reserved directories for autopilot-authored test fixtures:
 
 - `src/lib/__tests__/fixtures/secrets/` — positive and negative fixtures
-  for every rule in `src/lib/secret-detector.rules.ts` (MC Secret
+  for every rule in `src/lib/secret-detector.rules.ts` (Paddock Secret
   Detector v1). CI fails if any rule lacks at least one positive AND
   one negative fixture.
 - `src/lib/__tests__/fixtures/routing/` — adversarial fixtures for the

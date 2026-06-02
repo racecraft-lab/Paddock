@@ -27,7 +27,7 @@ afterEach(() => {
 })
 
 describe('status mapping', () => {
-  it('maps MC statuses to GNAP states', () => {
+  it('maps Paddock statuses to GNAP states', () => {
     expect(mcStatusToGnap('backlog')).toBe('backlog')
     expect(mcStatusToGnap('pending')).toBe('backlog')
     expect(mcStatusToGnap('inbox')).toBe('backlog')
@@ -38,7 +38,7 @@ describe('status mapping', () => {
     expect(mcStatusToGnap('cancelled')).toBe('cancelled')
   })
 
-  it('maps GNAP states back to MC statuses', () => {
+  it('maps GNAP states back to Paddock statuses', () => {
     expect(gnapStatusToMc('backlog')).toBe('backlog')
     expect(gnapStatusToMc('in_progress')).toBe('in_progress')
     expect(gnapStatusToMc('done')).toBe('done')
@@ -52,7 +52,7 @@ describe('status mapping', () => {
 })
 
 describe('priority mapping', () => {
-  it('maps MC priorities to GNAP priorities', () => {
+  it('maps Paddock priorities to GNAP priorities', () => {
     expect(mcPriorityToGnap('low')).toBe('low')
     expect(mcPriorityToGnap('medium')).toBe('medium')
     expect(mcPriorityToGnap('high')).toBe('high')

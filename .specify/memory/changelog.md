@@ -208,7 +208,7 @@ git show b21d9f94f19d53813e3c1c5acc1ebd2b45b081c4:specs/005-ready-for-owner/task
 - **CI URL**: N/A (local verification recorded in workflow)
 - **Argos URL**: N/A
 - **Task Completion**: workflow records 1502/1502 project tests passing; retained `tasks.md` checkbox state is known stale branch bookkeeping
-- **Summary**: Added disposition rollups, task artifact publish/read/admin/health surfaces, MC Secret Detector v1 redaction/rejection rules, dashboard/audit/admin UI surfaces, dispatch input artifact integration, OpenAPI updates, visual-review metadata support, and SPEC-007 e2e seed support.
+- **Summary**: Added disposition rollups, task artifact publish/read/admin/health surfaces, Paddock Secret Detector v1 redaction/rejection rules, dashboard/audit/admin UI surfaces, dispatch input artifact integration, OpenAPI updates, visual-review metadata support, and SPEC-007 e2e seed support.
 
 **Recovery Commands**:
 ```text

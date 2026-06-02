@@ -1,6 +1,6 @@
 /**
  * Local Agent Sync — Discovers agent definitions from local directories
- * and syncs them bidirectionally with the MC database.
+ * and syncs them bidirectionally with the Paddock database.
  *
  * Scans:
  *   ~/.agents/         — top-level dirs with agent config files
@@ -301,7 +301,7 @@ export async function syncLocalAgents(workspaceId = 1): Promise<{ ok: boolean; m
 
 /**
  * Write agent soul content back to disk (UI → Disk direction).
- * Called when a user edits a local agent's soul in the MC UI.
+ * Called when a user edits a local agent's soul in the Paddock UI.
  */
 export function writeLocalAgentSoul(agentDir: string, soulContent: string): void {
   // Prefer soul.md, fall back to AGENT.md

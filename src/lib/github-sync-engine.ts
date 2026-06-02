@@ -1,5 +1,5 @@
 /**
- * GitHub Sync Engine — bidirectional sync between MC tasks and GitHub issues.
+ * GitHub Sync Engine — bidirectional sync between Paddock tasks and GitHub issues.
  * Uses proper DB columns (github_repo, github_issue_number, github_synced_at)
  * instead of metadata JSON for matching.
  */
@@ -672,7 +672,7 @@ export function resolveAreaRouting(
 }
 
 /**
- * Push a single MC task to GitHub (create or update issue).
+ * Push a single Paddock task to GitHub (create or update issue).
  */
 export async function pushTaskToGitHub(
   task: {
@@ -741,7 +741,7 @@ export async function pushTaskToGitHub(
       return
     }
 
-    // Keep non-MC labels, replace MC labels with current values.
+    // Keep non-Paddock labels, replace Paddock labels with current values.
     // Drop any pre-existing area:* labels so the project's current
     // area_slug is the sole source of truth (FR-016).
     const nonMcLabels = existingIssue.labels
@@ -795,7 +795,7 @@ export async function pushTaskToGitHub(
 }
 
 /**
- * Pull issues from GitHub and sync into MC tasks for a project.
+ * Pull issues from GitHub and sync into Paddock tasks for a project.
  */
 export async function pullFromGitHub(
   project: {
@@ -903,7 +903,7 @@ export async function pullFromGitHub(
       const labelNames = issue.labels.map(l => l.name)
 
       if (!existingTask) {
-        // New issue — create MC task
+        // New issue — create Paddock task
         const status = issue.state === 'closed' ? 'done' : (labelToStatus(
           labelNames.find(l => ALL_STATUS_LABEL_NAMES.includes(l)) || ''
         ) || 'backlog')

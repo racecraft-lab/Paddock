@@ -409,8 +409,8 @@ $speckit-clarify
 Focus on live manual smoke:
 - Fresh SPEC-009C2 synthetic issue title, labels, and reuse/create rules.
 - Operator-triggered sync and handoff steps.
-- Cleanup expectations for synthetic GitHub issues and disposable Mission
-  Control rows so tests do not leave dirt behind.
+- Cleanup expectations for synthetic GitHub issues and disposable Paddock
+  rows so tests do not leave dirt behind.
 ```
 
 #### Session 5: Future Production Routing Boundary

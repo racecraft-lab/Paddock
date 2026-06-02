@@ -417,7 +417,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Scope summary:** Add feature-flagged triage disposition inserts, Paddock-owned task artifact publishing/consumption, disposition audit view, artifact admin/health surface, dashboard rollups, and documented morning-briefing query integration.
 - **Tool count / tool names:** N/A — not a tool-surface spec
 - **Strict Scope:** `src/lib/task-artifacts.ts`, `src/app/api/task-artifacts/route.ts`, `src/app/api/task-artifacts/[id]/route.ts`, `src/components/panels/artifact-admin-panel.tsx`, `src/app/api/dispositions/route.ts`
-- **Autopilot notes:** Insert one disposition row per triage template completion when enabled, but never block task advancement on insert failure. Successor dispatch should consume MC artifact references/previews rather than another agent’s private sandbox.
+- **Autopilot notes:** Insert one disposition row per triage template completion when enabled, but never block task advancement on insert failure. Successor dispatch should consume Paddock artifact references/previews rather than another agent’s private sandbox.
 - **Definition of done:** Phase 6 deliverables are implemented, P6 acceptance criteria pass for disposition logging, failure isolation, filters, rollups, artifact publish/consume, secret handling, storage health metrics, and admin maintenance actions.
 - **Implementation evidence:** Complete on PR #25 after merge to `main` as `953f29b`. Evidence includes `task_dispositions` rollups and API routes, Paddock-owned `task_artifacts` publish/read/admin/health surfaces, secret detection and redaction fixtures, dashboard/audit/admin UI surfaces, dispatch input artifact integration, openapi updates, Storybook/Argos metadata support, SPEC-007 e2e seed support, and retrospective evidence noting implementation complete with remaining operator-led verification/polish caveats.
 
@@ -1171,7 +1171,7 @@ Add `ready_for_owner` to the task state progression for PR-producing tasks (D6, 
 - [P4-AC4a] `produces_pr=true` task in `ready_for_owner` with linked issue closed but no merged linked PR → task remains `ready_for_owner`; reconciliation activity/alert is created.
 - [P4-AC4b] `produces_pr=false` close/disposition task can complete without any PR.
 - [P4-AC5] Kanban column renders; operator sees tasks awaiting merge in a dedicated lane.
-- [P4-AC6] `mc:ready-for-owner` label appears on linked GitHub issue when MC task enters that state.
+- [P4-AC6] `mc:ready-for-owner` label appears on linked GitHub issue when a Paddock task enters that state.
 
 ### Rollback
 
@@ -1206,7 +1206,7 @@ Add `area:*` label routing (D8) so that a single monorepo per product line can s
 
 - `src/lib/github-label-map.ts` — ~15 lines added
 - `src/lib/github-sync-engine.ts` — inbound routing (~40 lines), outbound label emission (~10 lines)
-- Migration (optional): add `projects.area_slug TEXT NULL` if slug mismatch between MC project and GitHub label is a concern; else reuse `projects.slug`.
+- Migration (optional): add `projects.area_slug TEXT NULL` if slug mismatch between Paddock project and GitHub label is a concern; else reuse `projects.slug`.
 
 ### Acceptance Criteria
 
@@ -1237,11 +1237,11 @@ Log every triage disposition to `task_dispositions` (D9). Add the shared Paddock
 ### Deliverables
 
 - **Insert hook**: in `advanceTaskChain` (Phase 3), after routing resolution, insert a `task_dispositions` row. Fires for every triage template completion regardless of outcome.
-- **Artifact publish path**: `src/lib/task-artifacts.ts` imports inline JSON/Markdown or file-backed outputs from an agent sandbox into MC-controlled artifact storage. Writes provenance, hashes, MIME type, preview text, redaction status, scan status, and audit activity.
-- **Secret detector contract**: `src/lib/secret-detector.ts` is the single redaction/rejection gate. It exports `detectSecrets(content: string | Buffer, mime: string)` returning `{ findings: SecretFinding[], redacted: string | Buffer }`. The detector ships **MC Secret Detector v1**, a curated rule set sourced from gitleaks v8.x default rules (https://github.com/gitleaks/gitleaks/blob/v8.18.0/config/gitleaks.toml) plus Paddock additions. Rule families included in v1: AWS access key id (`AKIA[0-9A-Z]{16}`), AWS secret access key (40-char base64-ish heuristic plus AWS context), GitHub PAT (`gh[pousr]_[A-Za-z0-9_]{36,}`), GitHub fine-grained PAT, GitHub OAuth (`gho_…`), Google API key (`AIza[0-9A-Za-z_-]{35}`), Slack token, Stripe key (`sk_live_…`, `pk_live_…`), generic `BEGIN PRIVATE KEY` / `BEGIN RSA PRIVATE KEY` PEM blocks, generic `password=`, `api_key=`, `token=`, `secret=` assignments in `.env`-style lines, JWT (`eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+`), generic Bearer header, and Anthropic / OpenAI key patterns (`sk-ant-…`, `sk-…`). The exact regex set is checked into `src/lib/secret-detector.rules.ts` and snapshot-tested with positive/negative fixtures.
+- **Artifact publish path**: `src/lib/task-artifacts.ts` imports inline JSON/Markdown or file-backed outputs from an agent sandbox into Paddock-controlled artifact storage. Writes provenance, hashes, MIME type, preview text, redaction status, scan status, and audit activity.
+- **Secret detector contract**: `src/lib/secret-detector.ts` is the single redaction/rejection gate. It exports `detectSecrets(content: string | Buffer, mime: string)` returning `{ findings: SecretFinding[], redacted: string | Buffer }`. The detector ships **Paddock Secret Detector v1**, a curated rule set sourced from gitleaks v8.x default rules (https://github.com/gitleaks/gitleaks/blob/v8.18.0/config/gitleaks.toml) plus Paddock additions. Rule families included in v1: AWS access key id (`AKIA[0-9A-Z]{16}`), AWS secret access key (40-char base64-ish heuristic plus AWS context), GitHub PAT (`gh[pousr]_[A-Za-z0-9_]{36,}`), GitHub fine-grained PAT, GitHub OAuth (`gho_…`), Google API key (`AIza[0-9A-Za-z_-]{35}`), Slack token, Stripe key (`sk_live_…`, `pk_live_…`), generic `BEGIN PRIVATE KEY` / `BEGIN RSA PRIVATE KEY` PEM blocks, generic `password=`, `api_key=`, `token=`, `secret=` assignments in `.env`-style lines, JWT (`eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+`), generic Bearer header, and Anthropic / OpenAI key patterns (`sk-ant-…`, `sk-…`). The exact regex set is checked into `src/lib/secret-detector.rules.ts` and snapshot-tested with positive/negative fixtures.
 - **Redaction policy**: when `detectSecrets` returns ≥1 finding, the artifact publish is REJECTED by default; the producer task gains an `activities` row (kind=`security_violation`) and the publish API returns 422 with the redacted preview. Operator may explicitly opt the workflow template into "redact-and-store" mode (`workflow_templates.allow_redacted_artifacts = 1`, added by M54); in that mode the redacted content is stored and the original is discarded.
 - **Secret detector tests** are mandatory: every rule has a positive and negative fixture in `src/lib/__tests__/secret-detector.test.ts`. CI fails if a rule has zero fixtures.
-- **Artifact consume path**: successor task dispatch includes artifact references and safe previews. Raw file content is available only through MC-controlled artifact-read APIs.
+- **Artifact consume path**: successor task dispatch includes artifact references and safe previews. Raw file content is available only through Paddock-controlled artifact-read APIs.
 - **Audit panel**: new tab "Dispositions" in `audit-trail-panel.tsx` with filters on `disposition`, `workspace_id`, date range. Pagination for large result sets.
 - **Artifact admin panel**: list/search artifacts, inspect metadata, quarantine unsafe artifacts, delete/archive by policy, repair orphan records, verify hashes, rebuild previews/indexes, and view storage health.
 - **Dashboard widget**: simple cards in `dashboard.tsx` showing "Last 7d triage totals" and artifact-store health per workspace.
@@ -1251,7 +1251,7 @@ Log every triage disposition to `task_dispositions` (D9). Add the shared Paddock
 
 - `src/lib/task-dispatch.ts` — add INSERT in `advanceTaskChain` (~10 lines)
 - `src/lib/task-artifacts.ts` — publish/read/quarantine/retention helpers
-- `src/app/api/task-artifacts/route.ts` and `src/app/api/task-artifacts/[id]/route.ts` — MC-controlled artifact APIs
+- `src/app/api/task-artifacts/route.ts` and `src/app/api/task-artifacts/[id]/route.ts` — Paddock-controlled artifact APIs
 - `src/components/panels/audit-trail-panel.tsx` — new tab (~80 lines)
 - `src/components/panels/artifact-admin-panel.tsx` — artifact admin/health surface
 - `src/components/dashboard/dashboard.tsx` — new widgets (~50 lines)
@@ -1264,7 +1264,7 @@ Log every triage disposition to `task_dispositions` (D9). Add the shared Paddock
 - [P6-AC3] Insert failure does not block task advancement (logged to `activities`).
 - [P6-AC4] Audit panel renders dispositions with working filters and pagination.
 - [P6-AC5] Dashboard widget shows accurate 7-day rollup by disposition.
-- [P6-AC6] Agent output can publish inline JSON, Markdown, and file-backed artifacts from a private sandbox into MC artifact storage.
+- [P6-AC6] Agent output can publish inline JSON, Markdown, and file-backed artifacts from a private sandbox into Paddock artifact storage.
 - [P6-AC7] Successor task dispatch includes artifact references and safe previews; no successor reads another agent's private sandbox directly.
 - [P6-AC8] Secret-like content in an artifact publish is rejected (or redacted, when the template opts into `allow_redacted_artifacts`) and produces a `security_violation` activity row. Vitest covers every rule family in `secret-detector.rules.ts` with at least one positive fixture (planted secret) and one negative fixture (lookalike that must not match). CI fails on `safe-regex` rejection of any rule. The detector achieves ≥ 95% recall on the curated test fixture set located at `src/lib/__tests__/fixtures/secrets/`.
 - [P6-AC9] Artifact admin panel shows counts, bytes, failed publishes/scans/reads, orphan count, storage free space, and p95 publish/read latency. p95 latency is measured server-side over a rolling 1-hour window with at least 100 observations; the Vitest p95 budget is 200 ms for inline artifacts and 1000 ms for ≤ 5 MB file artifacts on the test rig (CI flags slower-than-budget runs as a warning, not a failure, since hardware varies).

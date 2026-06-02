@@ -179,7 +179,7 @@ Implement RC Factory Phase 5:
 - [ ] P5-AC1: With `FEATURE_AREA_LABEL_ROUTING` OFF, GitHub sync behaves byte-identical to today: every project with `github_sync_enabled=1` polls its own repo, no `area:*` parsing on inbound, no `area:*` emission on outbound, no `is_repo_sync_owner` filter applied. New columns are nullable and irrelevant to runtime behavior.
 - [ ] P5-AC2: With the flag ON, two or more projects sharing the same `(workspace_id, github_repo)` do not duplicate-poll or duplicate-ingest the same GitHub issue. Only the project with `is_repo_sync_owner=1` polls; other projects in the group passively receive routed tasks.
 - [ ] P5-AC3: With the flag ON, new issues with exactly one resolvable `area:*` label route to the corresponding project. `area:qa` → project with `area_slug='qa'`; `area:dev` → project with `area_slug='dev'`; etc. An `area_routing_resolved` activity is recorded with `source='ingest'`.
-- [ ] P5-AC4: With the flag ON, new issues with no `area:*` label route to the workspace's `is_triage_project=1` project (or sync-owner project if absent) with an `area_routing_unresolved` activity, `reason='no_label'`, and an `area:triage` tag tracked in MC. The activity is recorded with `source='ingest'`.
+- [ ] P5-AC4: With the flag ON, new issues with no `area:*` label route to the workspace's `is_triage_project=1` project (or sync-owner project if absent) with an `area_routing_unresolved` activity, `reason='no_label'`, and an `area:triage` tag tracked in Paddock. The activity is recorded with `source='ingest'`.
 - [ ] P5-AC5: With the flag ON, new issues with multiple `area:*` labels route to triage (or sync-owner fallback) with an `area_routing_unresolved` activity, `reason='multi_label'`. Subsequent label changes on GitHub do NOT re-route the task between projects (no thrash). The decision is sticky to the initial ingest.
 - [ ] P5-AC6: With the flag ON, `pushTaskToGitHub` emits `area:<projects.area_slug>` alongside `mc:*` and `priority:*` only when `area_slug` is non-NULL. Triage project (if `area_slug='triage'`) emits `area:triage`. Projects with NULL `area_slug` do not emit any `area:*` label.
 - [ ] P5-AC7: `initializeLabels(repo, workspaceId)` is idempotent — repeated invocations on the same repo do not overwrite existing label color/description and do not duplicate labels. Rate-limit / network failures are caught, logged, and do not abort the calling sync. Re-invocation creates only missing labels.
@@ -295,7 +295,7 @@ SPEC-001 added the workspace `feature_flags JSON` storage, the additive-migratio
 - Operator-facing analytics dashboards for routing decisions (the activity log is the surface).
 - Automatic ownership transfer on owner project deletion — operator must reassign explicitly. (Clarify session 2 may revisit this.)
 - Re-routing tasks on subsequent GitHub label changes (route on initial ingest only).
-- Backfill of repos that were never polled before flag-on (the existing constraint scopes backfill to tasks already in MC).
+- Backfill of repos that were never polled before flag-on (the existing constraint scopes backfill to tasks already in Paddock).
 ```
 
 ### Specify Results

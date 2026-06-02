@@ -76,7 +76,7 @@ export function labelToPriority(labels: string[]): TaskPriority {
   return 'medium'
 }
 
-// ── All MC labels (for initialization) ──────────────────────────
+// ── All Paddock labels (for initialization) ──────────────────────────
 
 export const ALL_MC_LABELS: LabelDef[] = [
   ...Object.values(STATUS_LABEL_MAP),

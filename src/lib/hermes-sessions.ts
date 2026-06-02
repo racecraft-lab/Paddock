@@ -1,6 +1,6 @@
 /**
  * Hermes Agent Session Scanner — reads ~/.hermes/state.db (SQLite)
- * to discover hermes-agent sessions and map them to MC's unified session format.
+ * to discover hermes-agent sessions and map them to Paddock's unified session format.
  *
  * Opens the database read-only to avoid locking conflicts with a running agent.
  */

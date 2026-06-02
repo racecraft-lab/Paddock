@@ -1,7 +1,7 @@
 /**
  * Agent Config Sync
  *
- * Reads agents from openclaw.json and upserts them into the MC database.
+ * Reads agents from openclaw.json and upserts them into the Paddock database.
  * Used by both the /api/agents/sync endpoint and the startup scheduler.
  */
 
@@ -268,7 +268,7 @@ function resolveConfigSyncWorkspaceId(db: Database.Database, workspaceId?: numbe
   return 1
 }
 
-/** Extract MC-friendly fields from an OpenClaw agent config */
+/** Extract Paddock-friendly fields from an OpenClaw agent config */
 function mapAgentToMC(agent: OpenClawAgent): {
   name: string
   role: string
@@ -299,7 +299,7 @@ function mapAgentToMC(agent: OpenClawAgent): {
   return { name, role, session_key, config: configData, soul_content }
 }
 
-/** Sync agents from openclaw.json into the MC database */
+/** Sync agents from openclaw.json into the Paddock database */
 export async function syncAgentsFromConfig(actor: string = 'system', workspaceId?: number): Promise<SyncResult> {
   let agents: OpenClawAgent[]
   try {
@@ -383,7 +383,7 @@ export async function syncAgentsFromConfig(actor: string = 'system', workspaceId
   return { synced, created, updated, agents: results }
 }
 
-/** Preview the diff between openclaw.json and MC database without writing */
+/** Preview the diff between openclaw.json and Paddock database without writing */
 export async function previewSyncDiff(workspaceId?: number): Promise<SyncDiff> {
   let agents: OpenClawAgent[]
   try {
