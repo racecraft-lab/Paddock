@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26850353772",
+      "runAttempt": "1",
+      "runKey": "26850353772-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26850353772",
+      "reportKey": "cb2be467eac0903c7e5bdbc6d5c38b257f387f82",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/cb2be467eac0903c7e5bdbc6d5c38b257f387f82/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=26850353772-attempt-1",
+      "headSha": "cb2be467eac0903c7e5bdbc6d5c38b257f387f82",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/docs-prune-audit",
+        "headSha": "2094404b6ba571813f9b30625a1e4c51506fbf7a",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/71/",
+        "mergeCommitSha": "",
+        "number": "71",
+        "title": "docs: prune stale docs and repair runbook links",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/71"
+      },
+      "createdAt": "2026-06-02T21:57:53.428Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26830764075",
       "runAttempt": "1",
@@ -1146,5 +1173,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-02T15:47:35.700Z"
+  "updatedAt": "2026-06-02T21:57:53.428Z"
 }
