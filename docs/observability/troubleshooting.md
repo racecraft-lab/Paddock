@@ -77,7 +77,7 @@ processors:
 **Drilldown**: the rebuilder is preparing a counter-rebuild job. Wait
 for the progress bar to advance through "post-rebuild verify" and ack
 the operator-confirmed dialog. See
-`docs/runbook/drift-detected-budget.md`.
+`docs/runbook/counter-drift.md`.
 
 ## OpenClaw health card shows degraded
 
@@ -89,5 +89,6 @@ the operator-confirmed dialog. See
 2. SSH to the operator node; verify `openclaw-gateway.service` is
    running (`systemctl --user status --no-pager openclaw-gateway.service`).
 3. Inspect the gateway log for OTel-export failures.
-4. For prolonged degradation see
-   `docs/runbook/openclaw-gateway-down.md`.
+4. For gateway deployment and connectivity recovery, see
+   `docs/deployment.md#docker-gateway-unreachable--websocket-not-connecting`
+   and the OpenClaw node notes in `AGENTS.md`.

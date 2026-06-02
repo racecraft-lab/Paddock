@@ -30,7 +30,7 @@ export const BackupStale: Story = {
     severity: 'amber',
     summary: 'Last backup 14 hours ago',
     backupVariant: 'backup-stale',
-    runbookHref: '/runbook/backup-stale',
+    runbookHref: '/runbook/retention-sweep-failure',
   },
 };
 export const BackupNoOffnodeWarning: Story = {
@@ -47,6 +47,6 @@ export const BackupFailed: Story = {
     severity: 'red',
     summary: 'Last backup attempt failed: pg_dump exit 1',
     backupVariant: 'backup-failed',
-    runbookHref: '/runbook/backup-failed',
+    runbookHref: '/runbook/retention-sweep-failure',
   },
 };

@@ -354,7 +354,7 @@ Focus on SPEC-007 schema and detector boundaries:
 - Confirm the exact app-level constants for `redaction_status` and `security_scan_status` enums (six values each per Design Concept Q12, Q21, Q23, Q24, Q31), including the snapshot test location and the assertion that no DB CHECK is added.
 - Confirm the exact rule list and source pin for Paddock Secret Detector v1 (per Design Concept; gitleaks v8.18.0 baseline + Paddock additions). Identify which rules ship in `src/lib/secret-detector.rules.ts` vs. deferred to v2.
 - Confirm strict-scope expansion: `src/lib/secret-detector.ts`, `src/lib/secret-detector.rules.ts`, `src/lib/__tests__/secret-detector.test.ts` added to `tsconfig.spec-strict.json` and `eslint.config.mjs`. Confirm exact symbols added to `src/lib/aegis-review.ts` and that the Aegis hook is added to strict scope (Design Concept Open Question 1).
-- Confirm migration-ID drift in roadmap is corrected on this branch only (M54→M054, M58→M057, M59→M058) per Design Concept Q1 / Open Question 8 — and whether any rollback SQL filenames need editing (likely none, since `docs/migrations/rollback-M054.sql`, `docs/migrations/rollback-M057.sql`, `docs/migrations/rollback-M058.sql` may already use the triple-digit form).
+- Confirm migration-ID drift in roadmap is corrected on this branch only (M54→M054, M58→M057, M59→M058) per Design Concept Q1 / Open Question 8 — and whether any rollback SQL filenames need editing. The shipped rollback files use the non-padded names `docs/migrations/rollback-M54.sql`, `docs/migrations/rollback-M57.sql`, and `docs/migrations/rollback-M58.sql`.
 - Confirm whether `'unknown'` disposition rows count in the dashboard rollup (Design Concept Open Question 2). Recommended: yes, in a distinct red color; never blocks.
 ```
 
@@ -600,7 +600,7 @@ Focus on SPEC-007 regression safety:
 10. US9 (Successor dispatch + read API): input_artifacts shape under flag ON; flag-OFF byte-compatibility golden; GET /api/task-artifacts/[id] with 423 quarantine and admin override.
 11. US10 (Artifact admin panel): list/search; admin actions; per-action audit; health metrics; p95 panel readout.
 12. US11 (Aegis hook): security_violation FAIL; disposition='unknown' FAIL; non-triage no-op proof.
-13. Polish + verification: docs (e.g., docs/artifacts.md, docs/dispositions.md, docs/secret-detector.md), openapi.json snapshot for new routes, strict-scope grep, FULL_VERIFY pass.
+13. Polish + verification: OpenAPI/API-index updates, task-artifact/disposition route coverage, secret-detector fixture coverage, strict-scope grep, FULL_VERIFY pass.
 
 ## Constraints
 - All tests for each user story marked [T-RED] are written and asserted to FAIL before any implementation task in that story runs.

@@ -421,7 +421,7 @@ export class CircuitBreaker {
       scope_kind: this.scopeKind,
       opened_at: row.opened_at,
       duration_ms: nowMs - openedAtMs,
-      runbook: 'docs/runbook/circuit-breaker.md#chronic-open',
+      runbook: 'docs/runbook/breaker-stuck-open.md',
     });
     return { emitted: true };
   }

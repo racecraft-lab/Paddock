@@ -534,7 +534,7 @@ Focus on:
 
 | ID | Severity | Issue | Resolution |
 |----|----------|-------|------------|
-| AN-001 | Medium | T001 referenced `docs/ai/specs/013a1-github-sync-automation-workflow.md`, which does not exist for this workflow. | Updated T001 to reference canonical `docs/ai/specs/SPEC-013A1-workflow.md`. |
+| AN-001 | Medium | T001 referenced an obsolete lowercase SPEC-013A1 workflow filename that does not exist for this workflow. | Updated T001 to reference canonical `docs/ai/specs/SPEC-013A1-workflow.md`. |
 | AN-002 | Medium | API parity work cited OpenAPI updates but omitted the repository API index route and `pnpm api:parity` verification. | Added `src/app/api/index/route.ts` and `pnpm api:parity` to plan/tasks verification. |
 
 ---

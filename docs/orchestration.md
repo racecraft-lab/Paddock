@@ -202,7 +202,7 @@ Schedule tasks to be created automatically on a recurring basis using natural la
 ### CLI
 
 ```bash
-node scripts/mc-cli.cjs cron create --body '{
+pnpm mc cron create --body '{
   "name": "daily-standup-report",
   "schedule": "0 9 * * 1-5",
   "task_template": {
@@ -366,7 +366,7 @@ Monitor orchestration in real time with SSE:
 
 ```bash
 # Watch all task and agent events
-node scripts/mc-cli.cjs events watch --types task,agent --json
+pnpm mc events watch --types task,agent --json
 ```
 
 Or via API:
