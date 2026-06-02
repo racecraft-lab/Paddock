@@ -4,7 +4,7 @@ import { startTransition, useState, useCallback, useEffect, useMemo, useRef } fr
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import {
   Area,
@@ -318,7 +318,7 @@ function TimelineTooltipContent({
 
 export function SecurityAuditPanel() {
   const t = useTranslations('securityAudit')
-  const { setSecurityPosture } = useMissionControl()
+  const { setSecurityPosture } = usePaddock()
 
   const [selectedTimeframe, setSelectedTimeframe] = useState<Timeframe>('day')
   const [activeSeries, setActiveSeries] = useState<TimelineSeriesKey | null>(null)

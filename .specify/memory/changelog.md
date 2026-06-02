@@ -266,21 +266,21 @@ git show 2b78970e78a9dcfaa6847ef683ad6ce570f0ce5f:specs/009a-workflow-contract-r
 ## SPEC-009B: Paddock Product-Line Seed and Flag Activation
 
 - **Feature**: RC Factory Phase 8B — seed Paddock as Product Line A without dispatching work
-- **Branch**: `009b-mission-control-seed`
-- **Spec Path**: `specs/009b-mission-control-seed/`
+- **Branch**: `009b-paddock-seed`
+- **Spec Path**: `specs/009b-paddock-seed/`
 - **PR URL**: https://github.com/racecraft-lab/Paddock/pull/30
 - **Merge Commit**: `1d5c994c1e6e41e44cf16f39c0829d3e46bce004`
-- **Tree Reference**: `git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/spec.md`
+- **Tree Reference**: `git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-paddock-seed/spec.md`
 - **CI URL**: N/A (workflow records focused suites, build, e2e, and daemon-socket caveat)
 - **Argos URL**: N/A
 - **Task Completion**: 61/61
-- **Summary**: Added Mission-Control-specific seed tooling and constants, Product Line A workspace/departments/assignments/repo routing, SPEC-009A workflow-contract import reuse, canonical `PILOT_MISSION_CONTROL_E2E` flag activation, advisory governance rows, blocked-preflight cleanup detection, redacted evidence, and zero-dispatch guardrails.
+- **Summary**: Added Paddock-specific seed tooling and constants, Product Line A workspace/departments/assignments/repo routing, SPEC-009A workflow-contract import reuse, canonical `PILOT_PADDOCK_E2E` flag activation, advisory governance rows, blocked-preflight cleanup detection, redacted evidence, and zero-dispatch guardrails.
 
 **Recovery Commands**:
 ```text
-git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/spec.md
-git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/plan.md
-git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-mission-control-seed/tasks.md
+git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-paddock-seed/spec.md
+git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-paddock-seed/plan.md
+git show 1d5c994c1e6e41e44cf16f39c0829d3e46bce004:specs/009b-paddock-seed/tasks.md
 ```
 
 ---
@@ -485,7 +485,7 @@ git show d396ed205b281d10a2b5cb95542209e816ebd95a:specs/009f-production-triage-r
 - **CI URL**: N/A (workflow records local verification and post-merge UAT)
 - **Argos URL**: N/A
 - **Task Completion**: 73/73
-- **Summary**: Added checked-in product-line YAML config support, generic `seed:product-line` preflight/apply/verify modes, `seed:mission-control` wrapper compatibility, fail-closed config validation, existing-target refusal and reviewed re-apply semantics, workflow-contract import reuse, feature-flag registry validation, advisory governance defaults, product-line-scoped assignments, redacted structured evidence, no-mutation failure proof, and static guards proving no Product Line B onboarding, GitHub mutation, dispatch, runner, sandbox, auto-merge, or SpecKit invocation drift.
+- **Summary**: Added checked-in product-line YAML config support, generic `seed:product-line` preflight/apply/verify modes, `seed:paddock` wrapper compatibility, fail-closed config validation, existing-target refusal and reviewed re-apply semantics, workflow-contract import reuse, feature-flag registry validation, advisory governance defaults, product-line-scoped assignments, redacted structured evidence, no-mutation failure proof, and static guards proving no Product Line B onboarding, GitHub mutation, dispatch, runner, sandbox, auto-merge, or SpecKit invocation drift.
 
 **Recovery Commands**:
 ```text

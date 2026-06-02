@@ -191,7 +191,7 @@ Latest workflow evidence records:
 - Reviewability diff gate: pass with ratified exception.
 - PR: https://github.com/racecraft-lab/Paddock/pull/64, merged as `c01d9e44ec826d94fa5916284c51453e5ec339ee` on 2026-05-30T02:08:31Z.
 - Post-merge HAL deployment: `c01d9e44ec826d94fa5916284c51453e5ec339ee`; `pnpm install --frozen-lockfile`, `pnpm build`, service restart, `/login` HTTP `200`, and OpenClaw gateway status passed.
-- Post-merge HAL UAT: replay `spec013c-014a-uat-1780110032087` passed fake owners `mission_control`, `openclaw`, and `external_harness`, enabled/disabled read evidence, flag-off mutation blocks, safe read payload checks, and zero disposable residue.
+- Post-merge HAL UAT: replay `spec013c-014a-uat-1780110032087` passed fake owners `paddock`, `openclaw`, and `external_harness`, enabled/disabled read evidence, flag-off mutation blocks, safe read payload checks, and zero disposable residue.
 
 ## Lessons Learned And Recommendations
 

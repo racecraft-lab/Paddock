@@ -35,7 +35,7 @@ function parseArgs(argv) {
 }
 
 function loadProfile(name) {
-  const p = path.join(os.homedir(), '.mission-control', 'profiles', `${name}.json`);
+  const p = path.join(os.homedir(), '.paddock', 'profiles', `${name}.json`);
   try {
     const parsed = JSON.parse(fs.readFileSync(p, 'utf8'));
     return {

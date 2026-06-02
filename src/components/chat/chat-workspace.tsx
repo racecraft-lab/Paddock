@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useCallback, useState, useRef } from 'react'
-import { useMissionControl, type Conversation, type ChatAttachment } from '@/store'
+import { usePaddock, type Conversation, type ChatAttachment } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { createClientLogger } from '@/lib/client-logger'
 import { appendScopeToPath } from '@/types/product-line'
@@ -45,7 +45,7 @@ export function ChatWorkspace({ mode = 'embedded', onClose }: ChatWorkspaceProps
     removeSplitPane,
     clearSplitPanes,
     activeProductLineScope,
-  } = useMissionControl()
+  } = usePaddock()
 
   const pendingIdRef = useRef(-1)
 
@@ -552,7 +552,7 @@ function SessionConversationView({
   const [colorDraft, setColorDraft] = useState(session.colorTag || '')
   const [prefBusy, setPrefBusy] = useState(false)
   const [prefError, setPrefError] = useState<string | null>(null)
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const hasPrefChanges =
     nameDraft.trim() !== (session.displayName || '').trim() ||
     colorDraft !== (session.colorTag || '')

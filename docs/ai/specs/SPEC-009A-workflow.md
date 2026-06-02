@@ -198,7 +198,7 @@ Executed during SPEC-009A autopilot startup on 2026-05-05.
 | Feature flag | None for SPEC-009A runtime; operator import/export tooling only |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
-| Primary source directory | `docs/ai/workflows/mission-control/` |
+| Primary source directory | `docs/ai/workflows/paddock/` |
 | Runtime projection | `workflow_templates` |
 | Generated review artifact | Markdown export produced by tooling |
 | Strict Scope | Contract files under `docs/ai/workflows/`, import/export tooling, focused parity tests, small validation helper, reusable diagnostics persistence/UI if required |
@@ -250,7 +250,7 @@ pilot behavior.
 ### Acceptance Criteria
 
 - [P8A-AC1] Contract source files exist under
-  `docs/ai/workflows/mission-control/` and define the minimal Paddock
+  `docs/ai/workflows/paddock/` and define the minimal Paddock
   workflow family: intake, planning, implementation, review, owner gate, and
   lifecycle metadata.
 - [P8A-AC2] Import command supports dry-run and explicit apply mode. Dry-run
@@ -334,7 +334,7 @@ self-hosting pilot.
 ### Requirements
 
 - Canonical source files are YAML manifests under
-  `docs/ai/workflows/mission-control/`.
+  `docs/ai/workflows/paddock/`.
 - Prompt bodies are YAML block scalars.
 - Markdown export is generated review output, not canonical source.
 - Use a direct pinned YAML parser for syntax/loading if Plan confirms package
@@ -351,7 +351,7 @@ self-hosting pilot.
 
 ### Out of Scope
 
-- Product-line seed and `PILOT_MISSION_CONTROL_E2E` activation.
+- Product-line seed and `PILOT_PADDOCK_E2E` activation.
 - GitHub issue ingestion, claim/reconciliation, dispatch, retry/backoff,
   auto-merge, runner launch, sandbox lifecycle, or harness adapter work.
 - Visual workflow editor.
@@ -470,7 +470,7 @@ $speckit-plan
   second schema validator for contract validation.
 
 ## Architecture Notes
-- Keep canonical source under `docs/ai/workflows/mission-control/`.
+- Keep canonical source under `docs/ai/workflows/paddock/`.
 - Parse YAML -> typed model -> schema validation -> canonical hash -> dry-run
   diff/apply/export.
 - Make import apply transactional and preserve last-known-good.
@@ -685,7 +685,7 @@ For each task:
 |-------|-------|-----------|-------|
 | Foundation | T001-T018 | Complete | Exact `yaml@2.8.2`, canonical fixture, M71/rollback-M71, strict workflow-contract library scope, parser/validator/hash/diff/diagnostics primitives |
 | Import/apply | T019-T031 | Complete | Dry-run persists diagnostics without runtime mutation; explicit apply transactionally upserts owned templates, preserves unrelated rows, and writes LKG snapshot/recovery command |
-| Export/parity | T032-T037 | Complete | Markdown review export generated at `docs/ai/workflows/mission-control/exports/workflow-contract.md`; import/export hash parity is `workflow-contract-hash-v1:sha256:2f0e9ef6e21ca80039c49bc6398bf8f7bd1493be454ff5d7e381391b4b8884da` |
+| Export/parity | T032-T037 | Complete | Markdown review export generated at `docs/ai/workflows/paddock/exports/workflow-contract.md`; import/export hash parity is `workflow-contract-hash-v1:sha256:2f0e9ef6e21ca80039c49bc6398bf8f7bd1493be454ff5d7e381391b4b8884da` |
 | Diagnostics | T045-T051 | Complete | Read-only diagnostics API and Workflows `Contracts` tab show run status, diffs, hashes, source, recovery, and redacted errors without apply/edit/dispatch/governance controls |
 | Polish/docs/status | T052-T065 | Complete | Future governance/concurrency/retry/sandbox declarations are inert data; roadmap/AGENTS/workflow updated; guardrail search clean |
 
@@ -693,9 +693,9 @@ For each task:
 
 | Check | Result |
 |-------|--------|
-| `direnv exec . pnpm workflow-contract import --file docs/ai/workflows/mission-control/workflow-contract.yaml --dry-run` | PASS; no template mutation, diagnostics run persisted |
-| `direnv exec . pnpm workflow-contract import --file docs/ai/workflows/mission-control/workflow-contract.yaml --apply` | PASS; LKG snapshot and deterministic recovery command recorded |
-| `direnv exec . pnpm workflow-contract export --workspace-id 1` | PASS; generated `docs/ai/workflows/mission-control/exports/workflow-contract.md` with stable parity hash |
+| `direnv exec . pnpm workflow-contract import --file docs/ai/workflows/paddock/workflow-contract.yaml --dry-run` | PASS; no template mutation, diagnostics run persisted |
+| `direnv exec . pnpm workflow-contract import --file docs/ai/workflows/paddock/workflow-contract.yaml --apply` | PASS; LKG snapshot and deterministic recovery command recorded |
+| `direnv exec . pnpm workflow-contract export --workspace-id 1` | PASS; generated `docs/ai/workflows/paddock/exports/workflow-contract.md` with stable parity hash |
 | `direnv exec . pnpm workflow-contract recover --workspace-id 1 --dry-run` | PASS; LKG recovery dry-run reports `mutation_status: dry_run` |
 | `direnv exec . pnpm exec vitest run src/lib/__tests__/workflow-contracts src/lib/__tests__/migrations-009a.test.ts src/app/api/workflow-contracts/diagnostics/route.test.ts src/components/panels/orchestration-bar.test.tsx` | PASS; 13 files, 47 tests |
 | `direnv exec . pnpm test:e2e -- tests/e2e/workflow-contract-diagnostics.spec.ts` | PASS; 1 Chromium test |
@@ -730,7 +730,7 @@ For each task:
 ## Project Structure Reference
 
 ```text
-docs/ai/workflows/mission-control/        # Canonical SPEC-009A contract files
+docs/ai/workflows/paddock/        # Canonical SPEC-009A contract files
 docs/ai/specs/SPEC-009A-design-concept.md # Setup Q&A and design decisions
 docs/ai/specs/SPEC-009A-workflow.md       # This workflow
 specs/009a-workflow-contract-roundtrip/   # Generated SpecKit artifacts

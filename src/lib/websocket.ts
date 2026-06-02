@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { normalizeModel } from '@/lib/utils'
 import { buildGatewayPathFallbackUrls, buildGatewayWebSocketUrl } from '@/lib/gateway-url'
 import {
@@ -79,7 +79,7 @@ export function useWebSocket() {
     updateAgent,
     addExecApproval,
     updateExecApproval,
-  } = useMissionControl()
+  } = usePaddock()
 
   const isNonRetryableGatewayError = useCallback((message: string, error?: GatewayFrame['error']): boolean => {
     // Prefer structured error code when available (newer gateways)

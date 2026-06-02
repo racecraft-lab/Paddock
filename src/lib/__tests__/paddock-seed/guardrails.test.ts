@@ -1,17 +1,17 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
-import { buildMissionControlSeedEvidence } from '@/lib/mission-control-seed/evidence'
-import { applyMissionControlSeed } from '@/lib/mission-control-seed/seed'
-import { makeMissionControlSeedDb, missionControlContractPath } from './test-db'
+import { buildPaddockSeedEvidence } from '@/lib/paddock-seed/evidence'
+import { applyPaddockSeed } from '@/lib/paddock-seed/seed'
+import { makePaddockSeedDb, paddockContractPath } from './test-db'
 
-describe('mission-control seed guardrails', () => {
+describe('paddock seed guardrails', () => {
   it('keeps future task-control-plane, runner, sandbox, harness, and auto-merge flags disabled or absent', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
-    const evidence = buildMissionControlSeedEvidence(db, { contractPath: missionControlContractPath() })
+    const evidence = buildPaddockSeedEvidence(db, { contractPath: paddockContractPath() })
     expect(evidence.flags.disabled_or_absent).toEqual(
       expect.arrayContaining([
         'FEATURE_TASK_CONTROL_PLANE',
@@ -24,11 +24,11 @@ describe('mission-control seed guardrails', () => {
   })
 
   it('creates no pilot tasks, successor records, per-agent seed tasks, claims, dispatches, runner rows, or sandbox rows', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
-    expect(buildMissionControlSeedEvidence(db, { contractPath: missionControlContractPath() }).non_dispatch).toEqual({
+    expect(buildPaddockSeedEvidence(db, { contractPath: paddockContractPath() }).non_dispatch).toEqual({
       new_pilot_tasks: 0,
       new_successor_records: 0,
       new_per_agent_seed_tasks: 0,
@@ -41,7 +41,7 @@ describe('mission-control seed guardrails', () => {
   })
 
   it('does not misreport pre-existing execution rows as SPEC-009B side effects', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
     db.exec(`
       CREATE TABLE task_claims (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -60,9 +60,9 @@ describe('mission-control seed guardrails', () => {
     `).run()
     db.prepare('INSERT INTO task_claims (task_id) VALUES (?)').run(Number(task.lastInsertRowid))
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
-    expect(buildMissionControlSeedEvidence(db, { contractPath: missionControlContractPath() }).non_dispatch).toEqual({
+    expect(buildPaddockSeedEvidence(db, { contractPath: paddockContractPath() }).non_dispatch).toEqual({
       new_pilot_tasks: 0,
       new_successor_records: 0,
       new_per_agent_seed_tasks: 0,
@@ -76,10 +76,10 @@ describe('mission-control seed guardrails', () => {
 
   it('keeps SPEC-009B source free of synthetic issue, scheduler, runner, sandbox, generic Product Line B, and auto-merge paths', () => {
     const source = [
-      'src/lib/mission-control-seed/seed.ts',
-      'src/lib/mission-control-seed/preflight.ts',
-      'src/lib/mission-control-seed/evidence.ts',
-      'scripts/seed-mission-control-product-line.ts',
+      'src/lib/paddock-seed/seed.ts',
+      'src/lib/paddock-seed/preflight.ts',
+      'src/lib/paddock-seed/evidence.ts',
+      'scripts/seed-paddock-product-line.ts',
     ].map((path) => readFileSync(path, 'utf8')).join('\n')
 
     expect(source).not.toMatch(/github\s+issue\s+create|createSyntheticIssue|createTask\(/i)

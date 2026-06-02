@@ -19,7 +19,7 @@ set -euo pipefail
 
 PORT="${MC_E2E_DOCKER_PORT:-3301}"
 CONTAINER_PREFIX="mc-e2e-$$"
-IMAGE="${MC_E2E_IMAGE:-mission-control:e2e}"
+IMAGE="${MC_E2E_IMAGE:-paddock:e2e}"
 AUTH_USER="${AUTH_USER:-testadmin}"
 AUTH_PASS="${AUTH_PASS:-testpass1234!}"
 AUTH_SECRET="${AUTH_SECRET:-e2e-auth-secret-00000000000000000000000000000000}"
@@ -79,7 +79,8 @@ start_container() {
     -e AUTH_PASS="$AUTH_PASS" \
     -e AUTH_SECRET="$AUTH_SECRET" \
     -e API_KEY="$API_KEY" \
-    -e MISSION_CONTROL_TEST_MODE=1 \
+    -e PADDOCK_TEST_MODE=1 \
+    -e PADDOCK_SQLITE_JOURNAL_MODE=DELETE \
     -e MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" \
     -e MC_DISABLE_RATE_LIMIT=1 \
     -e MC_WORKLOAD_QUEUE_DEPTH_THROTTLE=1000 \
@@ -116,7 +117,7 @@ run_playwright() {
   MC_SPEC_013D_PRESEEDED="$spec_013d_preseeded" \
   MC_SPEC_013D_FIXTURE_FILE="$data_dir/spec-013d-fixture.json" \
   E2E_BASE_URL="http://127.0.0.1:${PORT}" \
-  MISSION_CONTROL_DB_PATH="$data_dir/mission-control.db" \
+  PADDOCK_DB_PATH="$data_dir/paddock.db" \
   pnpm exec playwright test -c playwright.docker.config.ts "$@"
 }
 
@@ -177,25 +178,28 @@ if [ "$#" -eq 0 ]; then
   start_container "$FLAG_ON_CONTAINER" "$FLAG_ON_DATA_DIR"
 
   echo "[e2e-docker] seeding workspace-switcher flag in mounted database..."
-  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-workspace-switcher.cjs
+  PADDOCK_DB_PATH="$FLAG_ON_DATA_DIR/paddock.db" node scripts/seed-e2e-workspace-switcher.cjs
   echo "[e2e-docker] seeding SPEC-005 ready-for-owner fixture in mounted database..."
-  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-ready-for-owner.cjs
+  PADDOCK_DB_PATH="$FLAG_ON_DATA_DIR/paddock.db" node scripts/seed-e2e-ready-for-owner.cjs
   echo "[e2e-docker] seeding SPEC-007 disposition/artifact fixture in mounted database..."
-  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" node scripts/seed-e2e-spec-007.cjs
+  PADDOCK_DB_PATH="$FLAG_ON_DATA_DIR/paddock.db" MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" node scripts/seed-e2e-spec-007.cjs
   echo "[e2e-docker] seeding SPEC-008 governance fixture in mounted database..."
-  MISSION_CONTROL_DB_PATH="$FLAG_ON_DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-008.cjs
+  PADDOCK_DB_PATH="$FLAG_ON_DATA_DIR/paddock.db" node scripts/seed-e2e-spec-008.cjs
 
   echo "[e2e-docker] restarting container so seeded database state is read at boot..."
   docker restart "$FLAG_ON_CONTAINER" >/dev/null
   wait_for_health "$FLAG_ON_CONTAINER"
 
-  echo "[e2e-docker] running seeded Product Line, Ready for Owner, SPEC-007, SPEC-008, and SPEC-013A e2e suite."
+  echo "[e2e-docker] running seeded SPEC-013A direct database fixture suite."
+  run_playwright "$FLAG_ON_DATA_DIR" 1 1 1 1 0 \
+    tests/e2e/spec-013a-task-stage-attempts.spec.ts
+
+  echo "[e2e-docker] running seeded Product Line, Ready for Owner, SPEC-007, and SPEC-008 e2e suite."
   run_playwright "$FLAG_ON_DATA_DIR" 1 1 1 1 0 \
     tests/product-line-switcher-ui.spec.ts \
     tests/feature-flags-admin-ui.spec.ts \
     tests/e2e/ready-for-owner-kanban.spec.ts \
     tests/e2e/spec-007-ui-visual.spec.ts \
-    tests/e2e/spec-013a-task-stage-attempts.spec.ts \
     tests/e2e/workflow-contract-diagnostics.spec.ts \
     tests/product-line-scope-api.spec.ts \
     tests/product-line-scope-matrix.spec.ts \
@@ -225,29 +229,29 @@ else
 
   if [ "${MC_E2E_DOCKER_PRESEED:-1}" = "1" ]; then
     echo "[e2e-docker] seeding workspace-switcher flag in mounted database..."
-    MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-workspace-switcher.cjs
+    PADDOCK_DB_PATH="$DATA_DIR/paddock.db" node scripts/seed-e2e-workspace-switcher.cjs
     READY_FOR_OWNER_PRESEEDED=0
     if should_seed_ready_for_owner "$@"; then
       echo "[e2e-docker] seeding SPEC-005 ready-for-owner fixture in mounted database..."
-      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-ready-for-owner.cjs
+      PADDOCK_DB_PATH="$DATA_DIR/paddock.db" node scripts/seed-e2e-ready-for-owner.cjs
       READY_FOR_OWNER_PRESEEDED=1
     fi
     SPEC_007_PRESEEDED=0
     if should_seed_spec_007 "$@"; then
       echo "[e2e-docker] seeding SPEC-007 disposition/artifact fixture in mounted database..."
-      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" node scripts/seed-e2e-spec-007.cjs
+      PADDOCK_DB_PATH="$DATA_DIR/paddock.db" MC_SPEC_007_FIXED_NOW="$SPEC_007_FIXED_NOW_ISO" node scripts/seed-e2e-spec-007.cjs
       SPEC_007_PRESEEDED=1
     fi
     SPEC_008_PRESEEDED=0
     if should_seed_spec_008 "$@"; then
       echo "[e2e-docker] seeding SPEC-008 governance fixture in mounted database..."
-      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" node scripts/seed-e2e-spec-008.cjs
+      PADDOCK_DB_PATH="$DATA_DIR/paddock.db" node scripts/seed-e2e-spec-008.cjs
       SPEC_008_PRESEEDED=1
     fi
     SPEC_013D_PRESEEDED=0
     if should_seed_spec_013d "$@"; then
       echo "[e2e-docker] seeding SPEC-013D claim-control fixture in mounted database..."
-      MISSION_CONTROL_DB_PATH="$DATA_DIR/mission-control.db" \
+      PADDOCK_DB_PATH="$DATA_DIR/paddock.db" \
         MC_SPEC_013D_FIXTURE_FILE="$DATA_DIR/spec-013d-fixture.json" \
         node scripts/seed-e2e-spec-013d.cjs
       SPEC_013D_PRESEEDED=1

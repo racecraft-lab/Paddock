@@ -26,9 +26,9 @@ const NOW_MS = 1_900_000_000_000; // Stable test clock.
 
 beforeEach(async () => {
   tempDir = mkdtempSync(join(tmpdir(), 'spec-008-aegis-starvation-'));
-  process.env['MISSION_CONTROL_DATA_DIR'] = tempDir;
-  process.env['MISSION_CONTROL_DB_PATH'] = join(tempDir, 'mission-control.db');
-  db = new Database(process.env['MISSION_CONTROL_DB_PATH']);
+  process.env['PADDOCK_DATA_DIR'] = tempDir;
+  process.env['PADDOCK_DB_PATH'] = join(tempDir, 'paddock.db');
+  db = new Database(process.env['PADDOCK_DB_PATH']);
   db.pragma('journal_mode = WAL');
   db.pragma('synchronous = 1');
   db.pragma('busy_timeout = 50');

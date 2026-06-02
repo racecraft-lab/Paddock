@@ -1,6 +1,6 @@
 ---
 name: key
-description: "Skill for the [key] area of mission-control. 25 symbols across 5 files."
+description: "Skill for the [key] area of paddock. 25 symbols across 5 files."
 ---
 
 # [key]

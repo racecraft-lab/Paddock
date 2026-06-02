@@ -1,4 +1,4 @@
-export function buildMissionControlCsp(input: { nonce: string; googleEnabled: boolean }): string {
+export function buildPaddockCsp(input: { nonce: string; googleEnabled: boolean }): string {
   const { nonce, googleEnabled } = input
 
   return [
@@ -24,7 +24,7 @@ export function buildNonceRequestHeaders(input: {
   googleEnabled: boolean
 }): Headers {
   const requestHeaders = new Headers(input.headers)
-  const csp = buildMissionControlCsp({ nonce: input.nonce, googleEnabled: input.googleEnabled })
+  const csp = buildPaddockCsp({ nonce: input.nonce, googleEnabled: input.googleEnabled })
 
   requestHeaders.set('x-nonce', input.nonce)
   requestHeaders.set('Content-Security-Policy', csp)

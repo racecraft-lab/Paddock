@@ -2,13 +2,13 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { Button } from '@/components/ui/button'
 
 type UpdateState = 'idle' | 'updating' | 'restarting' | 'error'
 
 export function UpdateBanner() {
-  const { updateAvailable, updateDismissedVersion, dismissUpdate } = useMissionControl()
+  const { updateAvailable, updateDismissedVersion, dismissUpdate } = usePaddock()
   const t = useTranslations('updateBanner')
   const tc = useTranslations('common')
   const [state, setState] = useState<UpdateState>('idle')

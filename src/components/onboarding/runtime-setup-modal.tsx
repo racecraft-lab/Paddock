@@ -373,7 +373,7 @@ function HermesSetup({ onClose, onComplete }: { onClose: () => void; onComplete:
           <div className="p-4 rounded-lg border border-border/30 bg-secondary/20 space-y-3">
             <p className="text-sm font-medium">Install Paddock Hook</p>
             <p className="text-xs text-muted-foreground">
-              This installs a hook in <code className="text-[11px] bg-black/20 px-1 rounded">~/.hermes/hooks/mission-control/</code> that
+              This installs a hook in <code className="text-[11px] bg-black/20 px-1 rounded">~/.hermes/hooks/paddock/</code> that
               reports agent activity, session events, and status updates to Paddock.
             </p>
             <div className="text-xs text-muted-foreground/60 space-y-1">

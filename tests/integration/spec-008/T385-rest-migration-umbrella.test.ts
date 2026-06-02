@@ -64,9 +64,9 @@ let db: Database.Database;
 
 beforeEach(async () => {
   tempDir = mkdtempSync(join(tmpdir(), 'spec-008-T385-'));
-  process.env['MISSION_CONTROL_DATA_DIR'] = tempDir;
-  process.env['MISSION_CONTROL_DB_PATH'] = join(tempDir, 'mission-control.db');
-  db = new Database(process.env['MISSION_CONTROL_DB_PATH']);
+  process.env['PADDOCK_DATA_DIR'] = tempDir;
+  process.env['PADDOCK_DB_PATH'] = join(tempDir, 'paddock.db');
+  db = new Database(process.env['PADDOCK_DB_PATH']);
   db.pragma('journal_mode = WAL');
   db.pragma('synchronous = 1');
   db.pragma('busy_timeout = 50');
@@ -81,8 +81,8 @@ afterEach(() => {
   } catch {
     // ignore
   }
-  delete process.env['MISSION_CONTROL_DATA_DIR'];
-  delete process.env['MISSION_CONTROL_DB_PATH'];
+  delete process.env['PADDOCK_DATA_DIR'];
+  delete process.env['PADDOCK_DB_PATH'];
   rmSync(tempDir, { recursive: true, force: true });
 });
 

@@ -63,12 +63,12 @@ describe('createTask github_sync source profile', () => {
       workspace_id: 1,
       project_id: 99,
       tags: ['external'],
-      github_repo: 'racecraft/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 8,
       github_synced_at: 123,
       activity: {
-        description: 'Synced from GitHub: racecraft/mission-control#8',
-        data: { github_issue: 8, github_repo: 'racecraft/mission-control' },
+        description: 'Synced from GitHub: racecraft-lab/Paddock#8',
+        data: { github_issue: 8, github_repo: 'racecraft-lab/Paddock' },
       },
     } as any)
 
@@ -80,7 +80,7 @@ describe('createTask github_sync source profile', () => {
       outboundSync: { githubQueued: false, gatewayQueued: false },
     })
     expect(db.prepare('SELECT github_repo, github_issue_number, github_synced_at, project_ticket_no FROM tasks WHERE id = 1').get()).toEqual({
-      github_repo: 'racecraft/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 8,
       github_synced_at: 123,
       project_ticket_no: null,
@@ -93,7 +93,7 @@ describe('createTask github_sync source profile', () => {
     const db = createDb()
     db.prepare(`
       INSERT INTO tasks (id, title, status, priority, created_by, created_at, updated_at, tags, metadata, workspace_id, github_repo, github_issue_number)
-      VALUES (3, 'Existing sync', 'backlog', 'medium', 'github-sync', 1, 1, '[]', '{}', 1, 'racecraft/mission-control', 8)
+      VALUES (3, 'Existing sync', 'backlog', 'medium', 'github-sync', 1, 1, '[]', '{}', 1, 'racecraft-lab/Paddock', 8)
     `).run()
     const { createTask, runtime } = await importCreateTask(db)
 
@@ -103,7 +103,7 @@ describe('createTask github_sync source profile', () => {
       runtime,
       title: 'Synced issue',
       workspace_id: 1,
-      github_repo: 'racecraft/mission-control',
+      github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 8,
     } as any)
 

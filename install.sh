@@ -265,7 +265,7 @@ deploy_local() {
 
 # ── Systemd service ──────────────────────────────────────────────────────────
 setup_systemd() {
-  local service_file="/etc/systemd/system/mission-control.service"
+  local service_file="/etc/systemd/system/paddock.service"
   if [[ -f "$service_file" ]]; then
     info "Systemd service already exists"
     return
@@ -277,7 +277,7 @@ setup_systemd() {
   local node_path
   node_path="$(which node)"
 
-  cat > /tmp/mission-control.service <<UNIT
+  cat > /tmp/paddock.service <<UNIT
 [Unit]
 Description=Paddock - OpenClaw Agent Dashboard
 After=network.target
@@ -298,14 +298,14 @@ WantedBy=multi-user.target
 UNIT
 
   if [[ "$(id -u)" -eq 0 ]]; then
-    mv /tmp/mission-control.service "$service_file"
+    mv /tmp/paddock.service "$service_file"
     systemctl daemon-reload
-    systemctl enable mission-control
+    systemctl enable paddock
     ok "Systemd service installed and enabled"
   else
     info "Run as root to install systemd service:"
-    info "  sudo mv /tmp/mission-control.service $service_file"
-    info "  sudo systemctl daemon-reload && sudo systemctl enable --now mission-control"
+    info "  sudo mv /tmp/paddock.service $service_file"
+    info "  sudo systemctl daemon-reload && sudo systemctl enable --now paddock"
   fi
 }
 

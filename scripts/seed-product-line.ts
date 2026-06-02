@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { runProductLineSeed } from '../src/lib/product-line-seed/seed.ts'
 import {
-  MISSION_CONTROL_SEED_DEFAULTS,
+  PADDOCK_SEED_DEFAULTS,
   PRODUCT_LINE_SEED_MODES,
   PRODUCT_LINE_SEED_RESULT_SCHEMA_VERSION,
   type ProductLineSeedMode,
@@ -15,7 +15,7 @@ export interface GenericSeedCliResult {
 }
 
 export interface GenericSeedCliDefaults {
-  entrypoint?: 'seed:product-line' | 'seed:mission-control'
+  entrypoint?: 'seed:product-line' | 'seed:paddock'
   configPath?: string
   db?: Parameters<typeof runProductLineSeed>[0]['db']
 }
@@ -97,7 +97,7 @@ function cliErrorEnvelope(message: string, defaults: GenericSeedCliDefaults): Pr
     code: 'CLI_USAGE_ERROR',
     mutation_status: 'not_mutated',
     config: {
-      path: defaults.configPath ?? MISSION_CONTROL_SEED_DEFAULTS.configPath,
+      path: defaults.configPath ?? PADDOCK_SEED_DEFAULTS.configPath,
       schema_version: null,
       product_line_slug: null,
     },

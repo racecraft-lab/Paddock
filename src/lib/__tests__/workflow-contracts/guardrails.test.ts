@@ -14,6 +14,6 @@ describe('workflow contract guardrails', () => {
     const root = path.join(process.cwd(), 'src/lib/workflow-contracts')
     const source = filesUnder(root).map(file => readFileSync(file, 'utf8')).join('\n')
     expect(source).not.toMatch(/from ['"][^'"]*(resource-governance|github-sync|task-dispatch|scheduler|harness|spawn)/)
-    expect(source).not.toContain('PILOT_MISSION_CONTROL_E2E')
+    expect(source).not.toContain('PILOT_PADDOCK_E2E')
   })
 })

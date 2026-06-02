@@ -148,7 +148,7 @@ export async function snapshotState(
  * fixture before the page navigates. The implementation calls the
  * admin REST surface `/api/admin/workspaces/{id}/feature-flags`.
  *
- * In CI test mode (`MISSION_CONTROL_TEST_MODE=1`) the gateway accepts
+ * In CI test mode (`PADDOCK_TEST_MODE=1`) the gateway accepts
  * test API key; in local mode the operator must pass `apiKey`.
  *
  * IMPORTANT: We always write the flags to BOTH the per-test seeded

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
 
 interface ChecklistItem {
@@ -13,7 +13,7 @@ interface ChecklistItem {
 }
 
 export function OnboardingChecklistWidget() {
-  const { agents, tasks, securityPosture, dashboardMode } = useMissionControl()
+  const { agents, tasks, securityPosture, dashboardMode } = usePaddock()
   const navigateToPanel = useNavigateToPanel()
   const [visible, setVisible] = useState(false)
   const [dismissing, setDismissing] = useState(false)

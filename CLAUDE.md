@@ -8,13 +8,13 @@ Open-source dashboard for AI agent orchestration. Manage agent fleets, track tas
 
 - These notes apply to operator-managed Paddock worktrees: `<live-worktree>` (live `main`) and `<dev-worktree>` (dev branch).
 - Paddock should run from `racecraft-lab/Paddock` `main`.
-- Active systemd unit: `mission-control.service`
+- Active systemd unit: `paddock.service`
 - Active startup wrapper: `~/.local/bin/mc-start.sh`
 - The wrapper resolves runtime secrets from the operator's configured secret manager at startup.
 - Active service worktree: `<live-worktree>` on `main`; `<dev-worktree>` is the development worktree on the active feature branch.
 - OpenClaw is a separate deploy surface on the operator node. The gateway should run from `<openclaw-release-symlink>`, which should point at the clean tagged release tree, not from a Homebrew global package path.
 - If you change startup assumptions, verify both:
-  - `systemctl --user status --no-pager mission-control.service`
+  - `systemctl --user status --no-pager paddock.service`
   - `systemctl --user status --no-pager openclaw-gateway.service`
 
 ## Prerequisites
@@ -74,8 +74,8 @@ Path alias: `@/*` maps to `./src/*`
 
 ## Data Directory
 
-Set `MISSION_CONTROL_DATA_DIR` env var to change the data location (defaults to `.data/`).
-Database path: defaults to `<MISSION_CONTROL_DATA_DIR>/mission-control.db`.
+Set `PADDOCK_DATA_DIR` env var to change the data location (defaults to `.data/`).
+Database path: defaults to `<PADDOCK_DATA_DIR>/paddock.db`.
 
 ## Conventions
 
@@ -155,7 +155,7 @@ Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator 
 - TypeScript 5.7 strict (existing project tsconfig) + Next.js 16 App Router, React 19, `better-sqlite3`, Zustand, Tailwind 3, native `fetch`. Pre-existing strict-mode deps from SPEC-004 (`ajv@8.18.0`, `jsonpath-plus@10.4.0`, `safe-regex@2.1.1`) are reused for output-schema validation in the disposition validator. **No new runtime dependencies.** (007-disposition-artifacts)
 - SQLite via `better-sqlite3`. Single-process synchronous transactions through `db.transaction(() => { ... })()`. No new migrations — relies on pre-existing M054, M057, M058. WAL mode preserves snapshot-isolated reads during the supersede transaction. (007-disposition-artifacts)
 - TypeScript 5.7 strict (existing `tsconfig.json`) + new entries in `tsconfig.spec-strict.json` for every SPEC-008-owned module (Constitution Convention J). (008-resource-governance)
-- SQLite via `better-sqlite3`, single-process, append-only ledger semantics; monthly partition tables; archive partitions written to `<MISSION_CONTROL_DATA_DIR>/archives/`. (008-resource-governance)
+- SQLite via `better-sqlite3`, single-process, append-only ledger semantics; monthly partition tables; archive partitions written to `<PADDOCK_DATA_DIR>/archives/`. (008-resource-governance)
 
 ## GitNexus
 

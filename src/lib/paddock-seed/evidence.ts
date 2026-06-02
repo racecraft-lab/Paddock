@@ -1,28 +1,28 @@
 import { createHash } from 'node:crypto'
 import {
   DISABLED_OR_ABSENT_FLAGS,
-  ENABLED_MISSION_CONTROL_FLAGS,
+  ENABLED_PADDOCK_FLAGS,
   FACILITY_WORKSPACE_SLUG,
   GOVERNANCE_POLICIES,
-  MISSION_CONTROL_REPO,
-  MISSION_CONTROL_WORKSPACE_SLUG,
+  PADDOCK_REPO,
+  PADDOCK_WORKSPACE_SLUG,
   REQUIRED_WORKFLOW_SLUGS,
   ROLE_ASSIGNMENTS,
-  type MissionControlSeedEvidence,
-  type MissionControlSeedOptions,
+  type PaddockSeedEvidence,
+  type PaddockSeedOptions,
   type VerifyFailureResult,
   type VerifySeedResult,
 } from './types'
 import type Database from 'better-sqlite3'
 
 
-export function buildMissionControlSeedEvidence(
+export function buildPaddockSeedEvidence(
   db: Database.Database,
-  options: MissionControlSeedOptions,
-): MissionControlSeedEvidence {
-  const workspace = missionControlWorkspace(db)
+  options: PaddockSeedOptions,
+): PaddockSeedEvidence {
+  const workspace = paddockWorkspace(db)
   const counts = {
-    mission_control_product_lines: count(db, `SELECT COUNT(*) FROM workspaces WHERE slug = ?`, MISSION_CONTROL_WORKSPACE_SLUG),
+    paddock_product_lines: count(db, `SELECT COUNT(*) FROM workspaces WHERE slug = ?`, PADDOCK_WORKSPACE_SLUG),
     facility_workspaces: count(db, `SELECT COUNT(*) FROM workspaces WHERE slug = ?`, FACILITY_WORKSPACE_SLUG),
     department_projects: workspace ? count(db, `SELECT COUNT(*) FROM projects WHERE workspace_id = ?`, workspace.id) : 0,
     required_role_assignments: workspace ? countRequiredRoleAssignments(db, workspace.id) : 0,
@@ -32,12 +32,12 @@ export function buildMissionControlSeedEvidence(
     `, workspace.id) : 0,
     governance_policies: workspace ? count(db, `
       SELECT COUNT(*) FROM resource_policies
-      WHERE workspace_id = ? AND notes LIKE 'SPEC-009B:mission-control:%'
+      WHERE workspace_id = ? AND notes LIKE 'SPEC-009B:paddock:%'
     `, workspace.id) : 0,
     preserved_issue_intake: workspace ? count(db, `
       SELECT COUNT(*) FROM tasks
       WHERE workspace_id = ? AND github_repo = ? AND github_issue_number IS NOT NULL
-    `, workspace.id, MISSION_CONTROL_REPO) : 0,
+    `, workspace.id, PADDOCK_REPO) : 0,
     new_pilot_tasks: countNewPilotTasks(db),
     new_successor_records: count(db, `
       SELECT COUNT(*) FROM tasks
@@ -50,19 +50,19 @@ export function buildMissionControlSeedEvidence(
     `),
   }
   const flags = workspace ? parseFlags(workspace.feature_flags) : {}
-  const enabled = ENABLED_MISSION_CONTROL_FLAGS.filter((key) => flags[key] === true)
+  const enabled = ENABLED_PADDOCK_FLAGS.filter((key) => flags[key] === true)
   const disabled_or_absent = DISABLED_OR_ABSENT_FLAGS.filter((key) => flags[key] !== true)
   const latestRun = workspace ? db.prepare(`
     SELECT id, contract_hash
     FROM workflow_contract_runs
-    WHERE workspace_id = ? AND family = 'mission-control'
+    WHERE workspace_id = ? AND family = 'paddock'
     ORDER BY id DESC
     LIMIT 1
   `).get(workspace.id) as { id: number; contract_hash: string | null } | undefined : undefined
   const governanceIdentities = workspace ? db.prepare(`
     SELECT notes
     FROM resource_policies
-    WHERE workspace_id = ? AND notes LIKE 'SPEC-009B:mission-control:%'
+    WHERE workspace_id = ? AND notes LIKE 'SPEC-009B:paddock:%'
     ORDER BY notes ASC
   `).all(workspace.id).map((row) => (row as { notes: string }).notes) : []
   const nonDispatch = {
@@ -113,19 +113,19 @@ export function buildMissionControlSeedEvidence(
   }
 }
 
-export function verifyMissionControlSeed(
+export function verifyPaddockSeed(
   db: Database.Database,
-  options: MissionControlSeedOptions,
+  options: PaddockSeedOptions,
 ): VerifySeedResult | VerifyFailureResult {
-  const evidence = buildMissionControlSeedEvidence(db, options)
+  const evidence = buildPaddockSeedEvidence(db, options)
   const errors: string[] = []
-  if (evidence.counts.mission_control_product_lines !== 1) errors.push('mission-control workspace count is not 1')
+  if (evidence.counts.paddock_product_lines !== 1) errors.push('paddock workspace count is not 1')
   if (evidence.counts.facility_workspaces !== 1) errors.push('facility workspace count is not 1')
   if (evidence.counts.department_projects !== 6) errors.push('department project count is not 6')
   if (evidence.counts.required_role_assignments !== ROLE_ASSIGNMENTS.length) errors.push('required role assignment count mismatch')
   if (evidence.counts.workflow_templates !== REQUIRED_WORKFLOW_SLUGS.length) errors.push('workflow template count mismatch')
   if (evidence.counts.governance_policies !== GOVERNANCE_POLICIES.length) errors.push('governance policy count mismatch')
-  for (const flag of ENABLED_MISSION_CONTROL_FLAGS) {
+  for (const flag of ENABLED_PADDOCK_FLAGS) {
     if (!evidence.flags.enabled.includes(flag)) errors.push(`required feature flag is not enabled: ${flag}`)
   }
   for (const flag of DISABLED_OR_ABSENT_FLAGS) {
@@ -161,19 +161,19 @@ export function makeResidueSnapshotHash(db: Database.Database): string {
       FROM projects
       WHERE github_repo IS NOT NULL AND github_repo <> ?
       ORDER BY id ASC
-    `).all(MISSION_CONTROL_REPO),
+    `).all(PADDOCK_REPO),
     tasks: db.prepare(`
       SELECT id, workspace_id, project_id, github_repo, github_issue_number, github_synced_at
       FROM tasks
       WHERE github_repo IS NOT NULL AND github_repo <> ?
       ORDER BY id ASC
-    `).all(MISSION_CONTROL_REPO),
+    `).all(PADDOCK_REPO),
   }
   return stableHash(payload)
 }
 
-function missionControlWorkspace(db: Database.Database): { id: number; feature_flags: string | null } | undefined {
-  return db.prepare('SELECT id, feature_flags FROM workspaces WHERE slug = ?').get(MISSION_CONTROL_WORKSPACE_SLUG) as
+function paddockWorkspace(db: Database.Database): { id: number; feature_flags: string | null } | undefined {
+  return db.prepare('SELECT id, feature_flags FROM workspaces WHERE slug = ?').get(PADDOCK_WORKSPACE_SLUG) as
     | { id: number; feature_flags: string | null }
     | undefined
 }

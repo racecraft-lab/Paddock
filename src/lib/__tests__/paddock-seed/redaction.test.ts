@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { redactEvidenceValue, redactString } from '@/lib/mission-control-seed/redaction'
+import { redactEvidenceValue, redactString } from '@/lib/paddock-seed/redaction'
 
-describe('mission-control seed redaction', () => {
+describe('paddock seed redaction', () => {
   it('redacts secrets, tokens, authorization headers, api keys, and credential substrings', () => {
     const source = {
       authorization: 'Bearer openclaw-operator-secret',

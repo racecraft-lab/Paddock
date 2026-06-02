@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 
-export const PILOT_MISSION_CONTROL_REPO = 'racecraft-lab/Paddock'
+export const PILOT_PADDOCK_REPO = 'racecraft-lab/Paddock'
 
 const PILOT_PRIORITY_LABELS = ['priority:low', 'priority:medium', 'priority:high', 'priority:critical']
 const GITHUB_TOKEN_PATTERN = /\b(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)\b/g
@@ -40,7 +40,7 @@ export interface PilotIssueCandidate {
 export type PilotEligibilityResult =
   | {
       eligible: true
-      repository: typeof PILOT_MISSION_CONTROL_REPO
+      repository: typeof PILOT_PADDOCK_REPO
       issueNumber: number
       priorityLabels: string[]
       areaSlug: string
@@ -125,7 +125,7 @@ export function evaluatePilotIssueEligibility(
     labels: normalizedLabels,
   }
 
-  if (candidate.value.repository !== PILOT_MISSION_CONTROL_REPO) {
+  if (candidate.value.repository !== PILOT_PADDOCK_REPO) {
     return ineligible(candidate.value, 'wrong_repository', baseEvidence)
   }
   if (candidate.value.isPullRequest || candidate.value.state !== 'open') {
@@ -173,7 +173,7 @@ export function evaluatePilotIssueEligibility(
 
   return {
     eligible: true,
-    repository: PILOT_MISSION_CONTROL_REPO,
+    repository: PILOT_PADDOCK_REPO,
     issueNumber: candidate.value.issueNumber,
     priorityLabels,
     areaSlug: areaLabels[0] ?? '',

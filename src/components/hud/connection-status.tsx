@@ -1,6 +1,6 @@
 'use client'
 
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { Button } from '@/components/ui/button'
 
 interface ConnectionStatusProps {
@@ -16,7 +16,7 @@ export function ConnectionStatus({
   onDisconnect, 
   onReconnect 
 }: ConnectionStatusProps) {
-  const { connection } = useMissionControl()
+  const { connection } = usePaddock()
   const displayUrl = connection.url || 'ws://<gateway-host>:<gateway-port>'
   const isGatewayOptional = process.env.NEXT_PUBLIC_GATEWAY_OPTIONAL === 'true'
 

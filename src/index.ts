@@ -263,7 +263,7 @@ export interface ConnectionStatus {
   sseConnected?: boolean
 }
 
-interface MissionControlStore {
+interface PaddockStore {
   // WebSocket & Connection
   connection: ConnectionStatus
   lastMessage: any
@@ -399,7 +399,7 @@ interface MissionControlStore {
   toggleLiveFeed: () => void
 }
 
-export const useMissionControl = create<MissionControlStore>()(
+export const usePaddock = create<PaddockStore>()(
   subscribeWithSelector((set, get) => ({
     // Connection state
     connection: {

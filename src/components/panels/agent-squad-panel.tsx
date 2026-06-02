@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
 import { createClientLogger } from '@/lib/client-logger'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 
 const log = createClientLogger('AgentSquadPanel')
@@ -47,7 +47,7 @@ const statusIcons: Record<string, string> = {
 
 export function AgentSquadPanel() {
   const t = useTranslations('agentSquad')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -349,7 +349,7 @@ function AgentDetailModal({
   onStatusUpdate: (name: string, status: Agent['status'], activity?: string) => Promise<void>
 }) {
   const t = useTranslations('agentSquad')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [editing, setEditing] = useState(false)
   const [formData, setFormData] = useState({
     role: agent.role,
@@ -535,7 +535,7 @@ function CreateAgentModal({
   onCreated: () => void
 }) {
   const t = useTranslations('agentSquad')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [formData, setFormData] = useState({
     name: '',
     role: '',

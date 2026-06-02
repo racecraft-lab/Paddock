@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 interface SmartPollOptions {
   /** Pause polling when WebSocket is connected (data comes via WS anyway) */
@@ -47,7 +47,7 @@ export function useSmartPoll(
   const isVisibleRef = useRef(true)
   const initialFiredRef = useRef(false)
 
-  const { connection } = useMissionControl()
+  const { connection } = usePaddock()
 
   // Keep callback ref current without re-triggering the effect
   useEffect(() => {

@@ -187,7 +187,7 @@ async function deliverWebhook(
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'User-Agent': 'MissionControl-Webhook/1.0',
+    'User-Agent': 'Paddock-Webhook/1.0',
     'X-MC-Event': eventType,
   }
 

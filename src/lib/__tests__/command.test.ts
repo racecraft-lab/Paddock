@@ -12,7 +12,7 @@ describe('runCommand security boundaries', () => {
   })
 
   it('rejects executables outside the command allowlist', () => {
-    expect(() => runCommand('rm', ['-rf', '/tmp/mission-control-test'])).toThrow(
+    expect(() => runCommand('rm', ['-rf', '/tmp/paddock-test'])).toThrow(
       'Executable is not allowlisted: rm'
     )
   })

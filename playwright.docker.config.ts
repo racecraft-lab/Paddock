@@ -10,6 +10,7 @@ export default defineConfig({
   },
   fullyParallel: false,
   workers: 1,
+  outputDir: 'test-results/playwright-artifacts/docker',
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: 'playwright-report/docker' }],

@@ -53,7 +53,7 @@ not implement enforcement in a way coupled to SPEC-009A itself.
 ## Goals
 
 1. Define a repo-owned Paddock workflow contract under
-   `docs/ai/workflows/mission-control/`.
+   `docs/ai/workflows/paddock/`.
 2. Keep YAML as the canonical source file shape, with prompt bodies embedded as
    block scalars and Markdown generated only as a review artifact.
 3. Parse contract YAML into a typed canonical object model, validate with the
@@ -72,7 +72,7 @@ not implement enforcement in a way coupled to SPEC-009A itself.
 
 ## Non-Goals
 
-- No product-line seed and no `PILOT_MISSION_CONTROL_E2E` activation.
+- No product-line seed and no `PILOT_PADDOCK_E2E` activation.
 - No GitHub issue ingestion, task claim, dispatch, autonomous runner launch, or
   live pilot run.
 - No new harness adapter and no mandatory provider binding for OpenClaw, Codex,
@@ -162,7 +162,7 @@ deterministic and operator-driven; there is no automatic rollback behavior.
 ### Q13 - Initial workflow family content
 
 **Decision:** Include a minimal Paddock workflow family under
-`docs/ai/workflows/mission-control/`. It covers intake, planning,
+`docs/ai/workflows/paddock/`. It covers intake, planning,
 implementation, review, owner gate, and lifecycle metadata, but does not
 dispatch a pilot.
 
@@ -216,7 +216,7 @@ The final schema is owned by Specify/Plan, but setup establishes this direction:
 ```yaml
 contract_version: 1
 schema_version: 1
-family: mission-control
+family: paddock
 tracker:
   kind: github_issues
   owner: racecraft-lab
@@ -257,7 +257,7 @@ templates:
 
 ## Acceptance Criteria Draft
 
-- Contract source files live under `docs/ai/workflows/mission-control/`.
+- Contract source files live under `docs/ai/workflows/paddock/`.
 - Import command supports dry-run and explicit apply mode.
 - Apply mode is transactional and preserves unrelated workflow templates.
 - Invalid YAML fixtures fail before mutation.

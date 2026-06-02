@@ -27,7 +27,7 @@ Re-read the design concept before each phase if a prompt is ambiguous. The
 Specify and Clarify prompts below were populated directly from the interview.
 
 Do not start downstream specs from this worktree. SPEC-009C3 stops when the
-PR-producing `mission-control_dev_implementation` task is linked to a PR,
+PR-producing `paddock_dev_implementation` task is linked to a PR,
 has passed review and Aegis gates, has the required artifact/governance
 evidence, and reaches `ready_for_owner`.
 
@@ -43,7 +43,7 @@ named in `docs/ai/rc-factory-technical-roadmap.md`.
 
 Source-of-truth scoping decisions:
 
-- The `mission-control_dev_implementation` task is the PR owner and the task
+- The `paddock_dev_implementation` task is the PR owner and the task
   that becomes `ready_for_owner`.
 - Preserve existing workflow slugs; adjust labels, prompts, and copy only when
   nomenclature misleads ownership.
@@ -238,12 +238,12 @@ target or `pnpm test:e2e`.
 | Dependencies | SPEC-009C2 |
 | Enables | SPEC-009C4 |
 | Priority | P0 |
-| Feature flag scope | `PILOT_MISSION_CONTROL_E2E` plus existing task-chain, artifact, ready-for-owner, Aegis, and governance flags where required |
+| Feature flag scope | `PILOT_PADDOCK_E2E` plus existing task-chain, artifact, ready-for-owner, Aegis, and governance flags where required |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
 | Design Concept | `docs/ai/specs/SPEC-009C3-design-concept.md` |
 | Runtime projection | Existing workflow-template task chain, PR-producing dev task, ready-for-owner transition guard, quality review/Aegis gate, task artifacts, activities, and advisory governance evidence |
-| Existing surfaces | `docs/ai/workflows/mission-control/workflow-contract.yaml`, `src/lib/task-dispatch.ts`, `src/lib/task-artifacts.ts`, `src/lib/task-create.ts`, `src/app/api/quality-review/route.ts`, `src/lib/task-status.ts`, `docs/qa/pilot-smoke-checklist.md` |
+| Existing surfaces | `docs/ai/workflows/paddock/workflow-contract.yaml`, `src/lib/task-dispatch.ts`, `src/lib/task-artifacts.ts`, `src/lib/task-create.ts`, `src/app/api/quality-review/route.ts`, `src/lib/task-status.ts`, `docs/qa/pilot-smoke-checklist.md` |
 | Strict Scope | Issue Remediation chain execution, review/Aegis loop behavior, artifact handoff, advisory governance evidence, Aegis approval, PR linkage, and `ready_for_owner` state |
 
 ### Scope Summary
@@ -252,7 +252,7 @@ Execute the pilot remediation chain after SPEC-009C2 has created a bounded
 Issue Remediation planning successor. The chain must produce a remediation
 plan, implementation verification evidence, review verdict, Aegis approval,
 and advisory governance evidence. The PR-producing
-`mission-control_dev_implementation` task must own the linked PR and reach
+`paddock_dev_implementation` task must own the linked PR and reach
 `ready_for_owner` only after review and Aegis gates pass.
 
 Review `fix` and Aegis `rejected` outcomes must loop or block before owner
@@ -305,7 +305,7 @@ next bounded chain stages - remediation planning, dev implementation, review,
 and Aegis - until the linked PR-producing task reaches `ready_for_owner`.
 
 ### Goals
-- Keep the PR-producing `mission-control_dev_implementation` task as the linked
+- Keep the PR-producing `paddock_dev_implementation` task as the linked
   PR owner and final `ready_for_owner` task.
 - Require review `pass` and Aegis `approved` before readiness.
 - Route or block review `fix` and Aegis `rejected` before readiness.
@@ -327,7 +327,7 @@ and Aegis - until the linked PR-producing task reaches `ready_for_owner`.
 - No broad workflow slug migration.
 
 ### Existing surfaces to reuse
-- `docs/ai/workflows/mission-control/workflow-contract.yaml`
+- `docs/ai/workflows/paddock/workflow-contract.yaml`
 - `src/lib/task-dispatch.ts`
 - `src/lib/task-create.ts`
 - `src/lib/task-artifacts.ts`
@@ -383,7 +383,7 @@ Focus on review and Aegis state transitions for SPEC-009C3:
 $speckit-clarify
 
 Focus on PR ownership and terminology:
-- The `mission-control_dev_implementation` task owns `github_repo` and `github_pr_number`.
+- The `paddock_dev_implementation` task owns `github_repo` and `github_pr_number`.
 - That same PR-producing task becomes `ready_for_owner` after review and Aegis approval.
 - Existing slugs remain stable; only labels/prompts/copy that mislead ownership may change.
 - The root GitHub issue and downstream stage tasks remain traceable without conflating tracker truth.
@@ -429,9 +429,9 @@ Focus on validation and operator surfaces:
 
 | Date | Phase | Item | Round | Routed Categories | Outcome | Analysts Used |
 |------|-------|------|-------|-------------------|---------|---------------|
-| 2026-05-16 | Clarify Session 1 | Should review `pass` route directly to Aegis and leave `mission-control_owner_review` out of the C3 happy path? | 1 | codebase, spec | High-confidence agreement: route `pass` directly toward Aegis for the PR-producing dev task; preserve `mission-control_owner_review` slug but keep it out of the C3 happy path | codebase-analyst, spec-context-analyst |
+| 2026-05-16 | Clarify Session 1 | Should review `pass` route directly to Aegis and leave `paddock_owner_review` out of the C3 happy path? | 1 | codebase, spec | High-confidence agreement: route `pass` directly toward Aegis for the PR-producing dev task; preserve `paddock_owner_review` slug but keep it out of the C3 happy path | codebase-analyst, spec-context-analyst |
 | 2026-05-16 | Clarify Session 2 | Should missing PR linkage hard-block shared `ready_for_owner` or fail only the C3 pilot success gate? | 1 -> 2 | codebase, spec -> domain | Round 2 majority: do not change shared SPEC-005 transition semantics; missing dev-task PR linkage fails SPEC-009C3 happy-path/fixture/live-smoke success closed | codebase-analyst, spec-context-analyst, domain-researcher |
-| 2026-05-16 | Clarify Session 2 | Should `mission-control_dev_implementation` declare `external_terminal_event: github_pr_merged` now? | 1 | codebase, spec | High-confidence agreement: implementation must add the explicit terminal event beside `produces_pr: true` in the repo-owned workflow contract | codebase-analyst, spec-context-analyst |
+| 2026-05-16 | Clarify Session 2 | Should `paddock_dev_implementation` declare `external_terminal_event: github_pr_merged` now? | 1 | codebase, spec | High-confidence agreement: implementation must add the explicit terminal event beside `produces_pr: true` in the repo-owned workflow contract | codebase-analyst, spec-context-analyst |
 | 2026-05-16 | Clarify Session 2 | Should review/Aegis gating evidence target the PR-producing dev task despite downstream helper slugs? | 1 | codebase, spec | High-confidence agreement: all readiness-gating review/Aegis evidence targets the dev task; helper slugs may remain but must not own PR or readiness | codebase-analyst, spec-context-analyst |
 | 2026-05-16 | Clarify Session 3 | Where should required stage artifacts attach while remaining traceable to the root issue and dev task? | 1 | codebase, spec, security/domain | High-confidence agreement: canonical readiness evidence is attached to or linked/superseded onto the PR-producing dev task; payloads carry root issue and dev PR cross-links | codebase-analyst, spec-context-analyst, domain-researcher |
 | 2026-05-16 | Clarify Session 3 | What minimum JSON schema should C3 require for required artifacts? | 1 | codebase, spec, security/domain | Agreement: use compact inline JSON `spec-009c3.v1` envelopes with bounded stage-specific fields, no raw logs/secrets, and Aegis artifacts referencing canonical quality-review rows | codebase-analyst, spec-context-analyst, domain-researcher |
@@ -453,7 +453,7 @@ $speckit-plan
 - State/UI: Zustand where existing panels need it, Tailwind CSS 3.
 - Data: SQLite through `better-sqlite3`, synchronous transactions.
 - Tests: Vitest, Playwright only if existing UI/smoke surfaces change, ESLint, pnpm.
-- Workflow policy: repo-owned YAML contract in `docs/ai/workflows/mission-control/workflow-contract.yaml`.
+- Workflow policy: repo-owned YAML contract in `docs/ai/workflows/paddock/workflow-contract.yaml`.
 
 ## Architecture Constraints
 - Reuse existing workflow-template task chain and `advanceTaskChain`; do not add a bespoke remediation runner.
@@ -719,8 +719,8 @@ Implementation constraints:
 - **G7:** Passed with all 70 generated tasks complete.
 - **Reviewability diff gate:** `reviewability-gate.sh diff HEAD~1..HEAD` passed under the recorded transition exception; raw `main...HEAD` measurement includes the full SpecKit artifact history and remains over budget, as expected for this transition slice.
 - **PR:** [#48](https://github.com/racecraft-lab/Paddock/pull/48) merged as `ac7760a222a33b4cefe886afae605238f479eaa5`.
-- **Post-merge HAL UAT:** HAL `mission-control.service` promoted to `ac7760a222a33b4cefe886afae605238f479eaa5`; workspace `4` workflow-contract apply run `8` aligned the PR-producing template; draft PR #49 was created, verified as `isDraft=true` and `mergedAt=null`, used to drive synthetic dev task `39` through the live quality-review API to `ready_for_owner`, then closed unmerged with the remote branch removed.
-- **UAT cleanup:** backup `mission-control-data/backups/mission-control.db.spec009c3-uat-20260519-195459.bak` retained; synthetic tasks/artifacts/quality-reviews/notifications/activities removed with counts `4/5/2/1/1 -> 0/0/0/0/0`; temp local smoke worktree and branch removed.
+- **Post-merge HAL UAT:** HAL `paddock.service` promoted to `ac7760a222a33b4cefe886afae605238f479eaa5`; workspace `4` workflow-contract apply run `8` aligned the PR-producing template; draft PR #49 was created, verified as `isDraft=true` and `mergedAt=null`, used to drive synthetic dev task `39` through the live quality-review API to `ready_for_owner`, then closed unmerged with the remote branch removed.
+- **UAT cleanup:** backup `paddock-data/backups/paddock.db.spec009c3-uat-20260519-195459.bak` retained; synthetic tasks/artifacts/quality-reviews/notifications/activities removed with counts `4/5/2/1/1 -> 0/0/0/0/0`; temp local smoke worktree and branch removed.
 - **Push:** Branch `009c3-remediation-ready-for-owner` pushed via HTTPS after the configured SSH signing agent failed.
 
 ---
@@ -731,7 +731,7 @@ Implementation constraints:
 docs/ai/rc-factory-technical-roadmap.md
 docs/ai/specs/SPEC-009C3-design-concept.md
 docs/ai/specs/SPEC-009C3-workflow.md
-docs/ai/workflows/mission-control/workflow-contract.yaml
+docs/ai/workflows/paddock/workflow-contract.yaml
 docs/qa/pilot-smoke-checklist.md
 specs/009c3-remediation-ready-for-owner/
 src/app/api/quality-review/

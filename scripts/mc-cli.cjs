@@ -90,7 +90,7 @@ Examples:
 }
 
 function profilePath(name) {
-  return path.join(os.homedir(), '.mission-control', 'profiles', `${name}.json`);
+  return path.join(os.homedir(), '.paddock', 'profiles', `${name}.json`);
 }
 
 function ensureParentDir(filePath) {

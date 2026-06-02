@@ -90,7 +90,7 @@ function createDb(): Database.Database {
     INSERT INTO workflow_templates (id, workspace_id, slug, produces_pr, external_terminal_event)
     VALUES (10, 1, 'pr-template', 1, 'github_pr_merged'),
            (11, 1, 'non-pr-template', 0, NULL),
-           (12, 1, 'mission-control_dev_implementation', 1, 'github_pr_merged')
+           (12, 1, 'paddock_dev_implementation', 1, 'github_pr_merged')
   `).run()
   db.prepare(`
     INSERT INTO tasks (id, title, status, assigned_to, created_by, workspace_id, workflow_template_id)

@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { selectableProductLines, type ProductLine } from '@/types/product-line'
 
 type SwitcherOption =
@@ -21,7 +21,7 @@ export function WorkspaceSwitcher() {
     workspaceScopeNotice,
     workspaceSwitcherEnabled,
     workspaces,
-  } = useMissionControl()
+  } = usePaddock()
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(0)
   const rootRef = useRef<HTMLDivElement>(null)

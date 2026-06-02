@@ -488,7 +488,7 @@ for (const issue of fetchedIssues) {
 - Strict scope: no new TS/TSX modules. Verified via grep at G7.
 - Flag wiring: `resolveFlag('FEATURE_AREA_LABEL_ROUTING', { workspaceId })` only. No `process.env.FEATURE_AREA_LABEL_ROUTING` reads. Verified via grep.
 - Migration safety: additive nullable columns + indexes + non-destructive backfill. Rollback SQL committed alongside.
-- No destructive schema/runtime changes. Keep SPEC-006 additive and avoid Mission-Control-only patterns where possible.
+- No destructive schema/runtime changes. Keep SPEC-006 additive and avoid Paddock-only patterns where possible.
 
 ### Dependencies
 
@@ -848,7 +848,7 @@ Complete. Phase 0 status hygiene for SPEC-005 recorded this post-merge state on 
 ## Project Structure Reference
 
 ```
-mission-control/
+paddock/
 ├── src/
 │   ├── app/
 │   │   ├── api/

@@ -82,7 +82,7 @@ pnpm mc events watch --types governance --since "10m" \
 
 # 4.2 — Inspect recent decisions for the workspace (replace 42 with the
 #       actual workspace id).
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT decision_id, decision, reasons_json, created_at
   FROM dispatch_decision_log
  WHERE workspace_id = 42
@@ -93,7 +93,7 @@ SELECT decision_id, decision, reasons_json, created_at
 SQL
 
 # 4.3 — Check the emergency reserve balance for the workspace.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT workspace_id, usd_remaining, tokens_remaining,
        last_replenished_at, depleted_at
   FROM aegis_emergency_reserves
@@ -105,14 +105,14 @@ curl --max-time 1 http://127.0.0.1:1234/v1/models
 # Should return JSON with at least one model. If the curl fails or
 # returns no models, LM Studio is unreachable.
 
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT scope_kind, state, consecutive_errors, opened_at, reset_at
   FROM resource_governance_breaker
  WHERE scope_kind = 'lm-studio-source';
 SQL
 
 # 4.5 — Check fallback step de-dup table to understand chain history.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT step, hour_bucket, payload_json, created_at
   FROM aegis_fallback_activity
  WHERE workspace_id = 42
@@ -135,7 +135,7 @@ Pick the **first** matching branch.
 Replenish the reserve from the seeded amounts:
 
 ```bash
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 INSERT OR REPLACE INTO aegis_emergency_reserves
   (workspace_id, usd_remaining, tokens_remaining, usd_seed, tokens_seed,
    last_replenished_at, depleted_at)
@@ -149,7 +149,7 @@ SQL
 # Use the SPEC-008 replenishment helper (programmatic; preserves audit).
 node -e "
   const Database = require('better-sqlite3');
-  const db = new Database('.data/mission-control.db');
+  const db = new Database('.data/paddock.db');
   const { replenishReserve } = require('./dist/lib/resource-aegis-reserve');
   replenishReserve(42, db);
   console.log('reserve replenished for workspace 42');
@@ -162,7 +162,7 @@ node -e "
 # 1. Restart LM Studio on the host.
 # 2. Verify the breaker auto-recovers (60s half-open auto-transition).
 # 3. If the breaker is permanently stuck open, force-close it:
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 UPDATE resource_governance_breaker
    SET state='closed', consecutive_errors=0,
        opened_at=NULL, reset_at=CURRENT_TIMESTAMP
@@ -183,7 +183,7 @@ If the workspace can tolerate the FR-155 soft-alert behavior, switch
 the governance mode:
 
 ```bash
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 UPDATE workspaces SET aegis_governance_mode='soft_alert' WHERE id=42;
 SQL
 ```
@@ -203,7 +203,7 @@ with a soft-alert annotation.
 pnpm mc tasks queue --agent Aegis --max-capacity 1 --json
 
 # 6.2 — Confirm the terminal reason is no longer being emitted.
-sqlite3 .data/mission-control.db <<'SQL'
+sqlite3 .data/paddock.db <<'SQL'
 SELECT COUNT(*) AS terminal_count
   FROM dispatch_decision_log
  WHERE workspace_id = 42

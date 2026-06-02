@@ -233,7 +233,7 @@ async function githubFetch(token, path, init = {}, fetchImpl = fetch) {
     headers: {
       Accept: 'application/vnd.github+json',
       Authorization: `Bearer ${token}`,
-      'User-Agent': 'MissionControlPilotSmoke/1.0',
+      'User-Agent': 'PaddockPilotSmoke/1.0',
       ...(init.headers ?? {}),
     },
   })

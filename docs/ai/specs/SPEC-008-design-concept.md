@@ -1695,7 +1695,7 @@ if (backlog > 10_000) insertHealthEvent('ingest', 'degraded', `Ingest backlog: $
 - Shows ALL active health events (resolved_at IS NULL) grouped by component
 - Each row: component, state, detail, detected ago, [Acknowledge] / [Resolve] buttons
 - Persistent banner at top of UI when ANY component is `failed` or 3+ are `degraded`
-- Stderr/journal logging mirrors all health events — operator can `journalctl -u mission-control.service` to see them WITHOUT the UI
+- Stderr/journal logging mirrors all health events — operator can `journalctl -u paddock.service` to see them WITHOUT the UI
 
 **Critical property**: this health channel uses ONLY SQLite + Node stderr. It works even when:
 - OTel collector is down
@@ -1777,7 +1777,7 @@ Each path checks `result.changes === 1`; failure means either counter not found 
 
 **Decision:** **Partition `raw_usage_events` by month using monthly attached SQLite databases; whole-partition drop is O(1); the 10K-row sweep model is rejected as untenable.**
 
-**Approach**: store recent (current + last 2 months) raw events in the main `mc.db` file's `raw_usage_events` table. Older events are migrated to monthly archive files at `<MISSION_CONTROL_DATA_DIR>/archives/raw-events-<YYYY-MM>.db`. Each archive file is structurally identical (same schema, attached via `ATTACH DATABASE`). Reconciliation worker reads across both via `UNION ALL`.
+**Approach**: store recent (current + last 2 months) raw events in the main `mc.db` file's `raw_usage_events` table. Older events are migrated to monthly archive files at `<PADDOCK_DATA_DIR>/archives/raw-events-<YYYY-MM>.db`. Each archive file is structurally identical (same schema, attached via `ATTACH DATABASE`). Reconciliation worker reads across both via `UNION ALL`.
 
 ```ts
 // scripts/raw-events-monthly-rollover.ts (runs first day of each month, low traffic UTC)
@@ -2006,9 +2006,9 @@ The 7d auto-resume to conservative mode prevents indefinite silent abandonment. 
 
 ```bash
 # scripts/backup-mc-db.sh (runs from cron daily, configurable; default 03:00 UTC)
-DEST="${MISSION_CONTROL_BACKUP_DIR:-/var/backups/mission-control}/mc-$(date -u +%Y%m%d-%H%M%S).db"
+DEST="${PADDOCK_BACKUP_DIR:-/var/backups/paddock}/mc-$(date -u +%Y%m%d-%H%M%S).db"
 mkdir -p "$(dirname "$DEST")"
-sqlite3 "${MISSION_CONTROL_DATA_DIR}/mission-control.db" ".backup '$DEST'"
+sqlite3 "${PADDOCK_DATA_DIR}/paddock.db" ".backup '$DEST'"
 gzip "$DEST"
 # Retain 30 daily, 12 monthly, 5 yearly (operator-tunable)
 # Mirror to off-node storage if MC_BACKUP_REMOTE_RSYNC_PATH set
@@ -2017,19 +2017,19 @@ gzip "$DEST"
 `sqlite3 .backup` properly checkpoints WAL before snapshot — `cp` of the .db file alone is corrupt-prone if writers are active.
 
 **Backup includes**:
-- `mission-control.db` (the main file)
+- `paddock.db` (the main file)
 - `archives/raw-events-*.db` (Q51 monthly archives)
 
 **Backup excludes**:
-- `mission-control.db-wal` and `mission-control.db-shm` — these are checkpointed into the main file by `.backup` command
+- `paddock.db-wal` and `paddock.db-shm` — these are checkpointed into the main file by `.backup` command
 
 **Restore procedure** (`docs/runbook/disaster-recovery.md`):
 
-1. Stop `mission-control.service` (`systemctl --user stop mission-control.service`).
-2. Move existing `mission-control.db` to `mission-control.db.broken` (do not delete; for forensic if needed).
-3. Decompress backup: `gunzip -c <backup>.gz > mission-control.db`.
-4. Verify integrity: `sqlite3 mission-control.db "PRAGMA integrity_check;"` → must return `ok`.
-5. Start `mission-control.service`.
+1. Stop `paddock.service` (`systemctl --user stop paddock.service`).
+2. Move existing `paddock.db` to `paddock.db.broken` (do not delete; for forensic if needed).
+3. Decompress backup: `gunzip -c <backup>.gz > paddock.db`.
+4. Verify integrity: `sqlite3 paddock.db "PRAGMA integrity_check;"` → must return `ok`.
+5. Start `paddock.service`.
 6. **Post-restore counter rebuild**: governance enters `recovering_from_backup` state automatically (detected by checking `(now - max(updated_at) from resource_budget_counters) > 60s`). Triggers full counter rebuild via Q49 async job.
 7. **In-flight reservations** (`state='active'` rows in `resource_overrides` from before backup): these are preserved by the backup; if their `expires_at` has now passed (because backup is hours/days old), the next scheduler tick auto-expires them.
 8. **Telemetry gap**: any events ingested AFTER the backup snapshot are lost; operator can replay from filestorage WAL of `otelcol-contrib` (per Q31 backfill protocol).
@@ -2044,7 +2044,7 @@ gzip "$DEST"
 
 **Acceptance criteria**:
 
-- AC-DR-1: simulate disk failure (`rm mission-control.db`); verify restore procedure produces functional MC within RTO.
+- AC-DR-1: simulate disk failure (`rm paddock.db`); verify restore procedure produces functional MC within RTO.
 - AC-DR-2: simulate backup corruption; verify weekly verification detects it; verify operator notified.
 - AC-DR-3: post-restore: verify counters reconciled correctly via Q49 rebuild; verify in-flight reservations handled correctly.
 - AC-DR-4: SQLite file >5GB: verify backup completes in <5min on operator-node-class hardware.
@@ -2129,7 +2129,7 @@ REST: `GET /api/governance/system-health?workspace_id=X` returns the same JSON f
 
 **Decision:** **Retention sweep is ENABLED BY DEFAULT on first MC startup after SPEC-008 lands; operator must explicitly opt-out via config.**
 
-Default config (in `MISSION_CONTROL_DATA_DIR/.config/governance.json`, auto-created on first run):
+Default config (in `PADDOCK_DATA_DIR/.config/governance.json`, auto-created on first run):
 
 ```json
 {

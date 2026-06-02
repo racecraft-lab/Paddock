@@ -14,7 +14,7 @@ verdict: BLOCK until 3 P0s addressed inline; P1s should-fix before Plan phase
 
 ## Frame
 
-Paddock is open-source, runs single-node, and SPEC-008 wires *billing-relevant* numbers (USD spend, token counts, override grants) into a synchronous admission-control path. The prior four oracle rounds plus two peer reviews drove the engineering correctness very hard. They did **not** push on "what would I be uncomfortable explaining to a regulator, an auditor, or a security team reading this on GitHub before deciding to deploy it." That is this review's only angle.
+Paddock is open-source, runs single-node, and SPEC-008 wires *billing-relevant* numbers (USD spend, token counts, override grants) into a synchronous adpaddock path. The prior four oracle rounds plus two peer reviews drove the engineering correctness very hard. They did **not** push on "what would I be uncomfortable explaining to a regulator, an auditor, or a security team reading this on GitHub before deciding to deploy it." That is this review's only angle.
 
 Items already covered by prior reviewers are intentionally NOT re-flagged here: threat-model categorization (Q41), ingest rate limiting (Q47), retention growth (Q43), DR/backup (Peer #2), distributed correctness (rounds 2/3).
 
@@ -47,7 +47,7 @@ Items already covered by prior reviewers are intentionally NOT re-flagged here: 
 - Claude Code's native OTel emits `claude_code.user_prompt` events when `OTEL_LOG_USER_PROMPTS=1`; the operator-facing setup doc (`docs/observability/claude-code-telemetry-setup.md` per Q-strict-scope) is what the operator will read, and there is no current language warning that this flag exfiltrates conversation content into MC's SQLite.
 - Anthropic GenAI semconv (`gen_ai.client.operation.duration`, `gen_ai.prompt`, `gen_ai.completion`) is enumerated in the OTel attribute registry. If the operator's collector forwards `gen_ai.prompt` events, they land in `raw_attributes_json` as plaintext.
 - Q47's `quarantined_raw_events.payload_excerpt` literally documents storing "first 1KB of rejected payload" — exactly the case where a parser failed and the payload may contain *anything*, including unredacted prompt text. This is then surfaced to operators in the UI per Q47.
-- Q48 says "Stderr/journal logging mirrors all health events — operator can `journalctl -u mission-control.service`". Health events include "schema_broken" details which today read raw payload fragments.
+- Q48 says "Stderr/journal logging mirrors all health events — operator can `journalctl -u paddock.service`". Health events include "schema_broken" details which today read raw payload fragments.
 
 **Why this is P0, not P1.** Prompt content is the single most sensitive thing an LLM agent platform ever touches. An operator who ships SPEC-008 unchanged, then enables `OTEL_LOG_USER_PROMPTS=1`, ends up with prompt text in `raw_attributes_json`, `payload_excerpt`, `journalctl`, and any third-party log shipper. Regulator-explainability nightmare.
 

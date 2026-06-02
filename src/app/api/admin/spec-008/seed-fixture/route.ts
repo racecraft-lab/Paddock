@@ -7,7 +7,7 @@
  * Body: `{ slug: string; flagOn: boolean }`
  * Returns: `{ workspaceId: number; agentIds: number[] }`
  *
- * Gated behind `MISSION_CONTROL_TEST_MODE=1` AND admin auth — see
+ * Gated behind `PADDOCK_TEST_MODE=1` AND admin auth — see
  * `_shared/auth-gate.ts`.
  *
  * Tear-down lives at `seed-fixture/[id]/route.ts` (DELETE).

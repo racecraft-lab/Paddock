@@ -447,7 +447,7 @@ describe('SPEC-001 foundation migrations', () => {
     const sqlSources = `${migrationsSource}\n${schemaSource}`
 
     const statusCheckMatches = [...sqlSources.matchAll(/CHECK\s*\(\s*status/gi)]
-    expect(statusCheckMatches).toHaveLength(4)
+    expect(statusCheckMatches).toHaveLength(6)
     for (const match of statusCheckMatches) {
       const context = sqlSources.slice(Math.max(0, (match.index ?? 0) - 1200), (match.index ?? 0) + 160)
       expect(context).toMatch(/task_stage_attempts|task_stage_attempt_events|agent_sandbox_lifecycles|agent_sandbox_lifecycle_events/)
@@ -500,7 +500,7 @@ describe('SPEC-001 foundation migrations', () => {
     db.prepare(
       `
         INSERT INTO workspaces (slug, name, tenant_id)
-        VALUES ('mission-control', 'Paddock', 2)
+        VALUES ('paddock', 'Paddock', 2)
       `
     ).run()
 

@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { createClientLogger } from '@/lib/client-logger'
 
@@ -25,7 +25,7 @@ export function SessionDetailsPanel() {
     setSelectedSession,
     setSessions,
     availableModels
-  } = useMissionControl()
+  } = usePaddock()
 
   // Smart polling for sessions (60s, visibility-aware)
   const loadSessions = useCallback(async () => {

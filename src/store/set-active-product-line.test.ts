@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useMissionControl, type CurrentUser, type Project, type Task } from '@/store'
+import { usePaddock, type CurrentUser, type Project, type Task } from '@/store'
 import { ACTIVE_WORKSPACE_STORAGE_KEY, parsePersistedProductLineScope, type ProductLine } from '@/types/product-line'
 
 const currentUser: CurrentUser = {
@@ -69,7 +69,7 @@ describe('setActiveProductLine', () => {
   beforeEach(() => {
     installLocalStorage()
     localStorage.clear()
-    useMissionControl.setState({
+    usePaddock.setState({
       currentUser,
       activeTenant: {
         id: 7,
@@ -95,15 +95,15 @@ describe('setActiveProductLine', () => {
   })
 
   it('applies an authorized Product Line scope without mutating activeTenant', () => {
-    const activeTenant = useMissionControl.getState().activeTenant
+    const activeTenant = usePaddock.getState().activeTenant
 
-    useMissionControl.getState().setActiveProductLine(productLine, {
+    usePaddock.getState().setActiveProductLine(productLine, {
       source: 'user',
       version: 200,
       broadcast: false,
     })
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.activeTenant).toBe(activeTenant)
     expect(state.activeProductLine).toEqual(productLine)
     expect(state.activeProductLineScope).toMatchObject({
@@ -122,13 +122,13 @@ describe('setActiveProductLine', () => {
   })
 
   it('clears incompatible scoped state on Facility/Product Line transition', () => {
-    useMissionControl.getState().setActiveProductLine(productLine, {
+    usePaddock.getState().setActiveProductLine(productLine, {
       source: 'user',
       version: 201,
       broadcast: false,
     })
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.activeProject).toBeNull()
     expect(state.selectedTask).toBeNull()
     expect(state.selectedAgent).toBeNull()
@@ -154,9 +154,9 @@ describe('setActiveProductLine', () => {
       headers: { 'Content-Type': 'application/json' },
     })))
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.workspaceScopeNotice).toBe('unauthorized-selection')
     expect(state.activeProductLine).toBeNull()
     expect(state.activeProductLineScope?.kind).toBe('facility')

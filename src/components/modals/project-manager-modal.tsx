@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useFocusTrap } from '@/lib/use-focus-trap'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 import { resolveFlag } from '@/lib/feature-flags'
 
@@ -113,7 +113,7 @@ export function ProjectManagerModal({
   const [ownerConflict, setOwnerConflict] = useState<OwnerConflictState | null>(null)
   const [triageConflict, setTriageConflict] = useState<TriageConflictState | null>(null)
   const [areaSlugConflict, setAreaSlugConflict] = useState<AreaSlugConflictState | null>(null)
-  const { activeProductLineScope, activeProductLine } = useMissionControl()
+  const { activeProductLineScope, activeProductLine } = usePaddock()
 
   // SPEC-006 / FR-040b — banner visibility derived client-side from the
   // active workspace's `feature_flags` blob. We deliberately mirror the

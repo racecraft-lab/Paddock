@@ -2,9 +2,9 @@
 
 const Database = require('better-sqlite3')
 
-const dbPath = process.env.MISSION_CONTROL_DB_PATH
+const dbPath = process.env.PADDOCK_DB_PATH
 if (!dbPath) {
-  console.error('MISSION_CONTROL_DB_PATH is required')
+  console.error('PADDOCK_DB_PATH is required')
   process.exit(1)
 }
 

@@ -1,6 +1,6 @@
 ---
 name: dashboard
-description: "Skill for the Dashboard area of mission-control. 80 symbols across 16 files."
+description: "Skill for the Dashboard area of paddock. 80 symbols across 16 files."
 ---
 
 # Dashboard

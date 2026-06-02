@@ -30,7 +30,7 @@
     "moreIssues": "+ {count, plural, one {مشكلة إضافية واحدة} two {مشكلتان إضافيتان} few {{count} مشاكل إضافية} other {{count} مشكلة إضافية}}"
   },
   "auth": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "signInToContinue": "سجّل الدخول للمتابعة",
     "username": "اسم المستخدم",
     "password": "كلمة المرور",
@@ -145,7 +145,7 @@
     "resetting": "جارٍ إعادة التعيين..."
   },
   "boot": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "agentOrchestration": "تنسيق الوكلاء",
     "authenticatingOperator": "جارٍ مصادقة المشغّل",
     "detectingStationMode": "جارٍ كشف وضع المحطة",

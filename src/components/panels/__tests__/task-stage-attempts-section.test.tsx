@@ -35,7 +35,7 @@ function attempt(overrides: Partial<SerializedTaskStageAttempt> = {}): Serialize
     completed_at: null,
     archived_at: null,
     workflow_template_id: 7,
-    workflow_template_slug: 'mission-control_issue_remediation',
+    workflow_template_slug: 'paddock_issue_remediation',
     run_id: 'run-123',
     run_link: { state: 'linked', run_id: 'run-123' },
     run_summary: {
@@ -44,7 +44,7 @@ function attempt(overrides: Partial<SerializedTaskStageAttempt> = {}): Serialize
       started_at: '2026-05-22T12:01:00.000Z',
       ended_at: null,
       agent_name: 'aegis',
-      runtime: 'mission-control',
+      runtime: 'paddock',
       git_branch: '013a-run-state-spine',
       git_commit: 'abc123',
       error: null,

@@ -18,7 +18,7 @@ describe('openclaw node fallback helpers', () => {
       JSON.stringify({
         mcp: {
           servers: {
-            'mission-control': {
+            'paddock': {
               env: {
                 MC_URL: 'http://127.0.0.1:3000',
                 MC_API_KEY: { source: 'exec', provider: 'op', id: 'value' },
@@ -43,7 +43,7 @@ describe('openclaw node fallback helpers', () => {
       JSON.stringify({
         mcp: {
           servers: {
-            'mission-control': {
+            'paddock': {
               env: {
                 MC_URL: 'http://127.0.0.1:3000',
                 FEATURE_FLAGS: { enabled: true },
@@ -55,10 +55,10 @@ describe('openclaw node fallback helpers', () => {
     )
 
     expect(detectUnsupportedMcpEnvEntries(configPath)).toEqual([
-      'mcp.servers.mission-control.env.FEATURE_FLAGS',
+      'mcp.servers.paddock.env.FEATURE_FLAGS',
     ])
     expect(formatUnsupportedMcpEnvWarning([
-      'mcp.servers.mission-control.env.FEATURE_FLAGS',
+      'mcp.servers.paddock.env.FEATURE_FLAGS',
     ])).toContain('FEATURE_FLAGS')
 
     fs.rmSync(tempDir, { recursive: true, force: true })

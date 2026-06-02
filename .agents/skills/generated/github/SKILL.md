@@ -1,6 +1,6 @@
 ---
 name: github
-description: "Skill for the Github area of mission-control. 23 symbols across 5 files."
+description: "Skill for the Github area of paddock. 23 symbols across 5 files."
 ---
 
 # Github

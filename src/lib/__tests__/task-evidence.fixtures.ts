@@ -367,7 +367,7 @@ export function seedEligiblePilotEvidence(db: Database.Database, taskId = 500): 
   `).run(taskId, 'a'.repeat(64), taskId, 'b'.repeat(64))
   db.prepare(`
     INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-    VALUES ('task_ready_for_owner', 'task', ?, 'mission-control', 'Ready for owner after retained pilot smoke', ?, 1, 1779300300)
+    VALUES ('task_ready_for_owner', 'task', ?, 'paddock', 'Ready for owner after retained pilot smoke', ?, 1, 1779300300)
   `).run(taskId, JSON.stringify({ smoke_checklist: true, github_pr_number: 51 }))
   db.prepare(`
     INSERT INTO quality_reviews (task_id, workspace_id, reviewer, status, notes, created_at)
@@ -448,7 +448,7 @@ export function seedSpec009fNonRemediationOutcome(
       workflow_template_id, workflow_template_slug, chain_id, chain_stage, created_at, updated_at
     )
     VALUES (?, 1, ?, ?, 'done', 'medium', 'racecraft-lab/Paddock',
-      ?, NULL, 1779400000, 9900, 9950, 'mission-control_issue_triage',
+      ?, NULL, 1779400000, 9900, 9950, 'paddock_issue_triage',
       'spec-009f-routing', 'issue_triage', 1779400000, 1779400100)
   `).run(taskId, `SPEC-009F ${outcome} fixture`, `Disposable SPEC-009F fixture for ${outcome}.`, issueNumber)
 
@@ -458,7 +458,7 @@ export function seedSpec009fNonRemediationOutcome(
       artifact_type, schema_version, storage_kind, content_json, mime_type, byte_size,
       sha256, preview_text, redaction_status, security_scan_status, created_at
     )
-    VALUES (?, ?, 1, 9900, 9901, 'mission-control_issue_triage',
+    VALUES (?, ?, 1, 9900, 9901, 'paddock_issue_triage',
       ?, 'spec-009f.triage_routing.v1', 'inline_json', ?, 'application/json',
       ?, ?, ?, 'clean', 'scanned_clean', 1779400200)
   `).run(
@@ -478,7 +478,7 @@ export function seedSpec009fNonRemediationOutcome(
 
   db.prepare(`
     INSERT INTO activities (id, type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-    VALUES (?, 'triage_routing_recorded', 'task', ?, 'mission-control', ?, ?, 1, 1779400400)
+    VALUES (?, 'triage_routing_recorded', 'task', ?, 'paddock', ?, ?, 1, 1779400400)
   `).run(
     activityId,
     taskId,
@@ -626,7 +626,7 @@ function seedSpec009fSpecialistMetadata(db: Database.Database): void {
       routing_rules, next_template_slug, enabled, created_by, created_at, updated_at
     )
     VALUES (9950, 'Issue Triage', 'Classify the issue without mutating GitHub.',
-      1, 'mission-control_issue_triage', 'qa-specialist', '{}', '{}', NULL, 1,
+      1, 'paddock_issue_triage', 'qa-specialist', '{}', '{}', NULL, 1,
       'spec-009f-fixture', 1779400000, 1779400000)
   `).run()
 }

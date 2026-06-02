@@ -1,6 +1,6 @@
 # Workflow Contract Export
 
-Family: mission-control
+Family: paddock
 Workspace: 1
 Validation Status: latest successful canonical snapshot
 Template Count: 9
@@ -10,7 +10,7 @@ Contract Hash: workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd
 
 ### Paddock Aegis
 
-- Slug: `mission-control_aegis`
+- Slug: `paddock_aegis`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -22,7 +22,7 @@ Perform Aegis review for {{task.title}} in {{workspace.name}} using the owner pa
 
 ### Paddock Close Issue
 
-- Slug: `mission-control_close_issue`
+- Slug: `paddock_close_issue`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -34,7 +34,7 @@ Prepare a close recommendation for {{task.title}} in {{workspace.name}} without 
 
 ### Paddock Dev Implementation
 
-- Slug: `mission-control_dev_implementation`
+- Slug: `paddock_dev_implementation`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -46,7 +46,7 @@ Implement {{task.title}} in {{workspace.name}} using the approved remediation pl
 
 ### Paddock Issue Triage
 
-- Slug: `mission-control_issue_triage`
+- Slug: `paddock_issue_triage`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -58,7 +58,7 @@ Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from
 
 ### Paddock Needs Spec Route
 
-- Slug: `mission-control_needs_spec_route`
+- Slug: `paddock_needs_spec_route`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -70,7 +70,7 @@ Prepare a SpecKit handoff for {{task.title}} in {{workspace.name}}. Do not creat
 
 ### Paddock Owner Review
 
-- Slug: `mission-control_owner_review`
+- Slug: `paddock_owner_review`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -82,7 +82,7 @@ Summarize {{task.title}} for operator owner review in {{workspace.name}}. Do not
 
 ### Paddock Remediation Plan
 
-- Slug: `mission-control_remediation_plan`
+- Slug: `paddock_remediation_plan`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -94,7 +94,7 @@ Plan remediation for {{task.title}} in {{workspace.name}} using the linked GitHu
 
 ### Paddock Review
 
-- Slug: `mission-control_review`
+- Slug: `paddock_review`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
@@ -106,7 +106,7 @@ Review implementation evidence for {{task.title}} in {{workspace.name}} and retu
 
 ### Paddock Specialist Route
 
-- Slug: `mission-control_specialist_route`
+- Slug: `paddock_specialist_route`
 - Model: `sonnet`
 - Prompt Version: `v1`
 - Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`

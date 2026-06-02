@@ -1,6 +1,6 @@
 ---
 name: health
-description: "Skill for the Health area of mission-control. 28 symbols across 6 files."
+description: "Skill for the Health area of paddock. 28 symbols across 6 files."
 ---
 
 # Health

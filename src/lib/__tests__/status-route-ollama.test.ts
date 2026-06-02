@@ -18,7 +18,7 @@ vi.mock('@/lib/config', () => ({
   config: {
     gatewayHost: '127.0.0.1',
     gatewayPort: 8080,
-    dbPath: '/tmp/mission-control.db',
+    dbPath: '/tmp/paddock.db',
     dataDir: '/tmp',
   },
 }))

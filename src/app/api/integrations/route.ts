@@ -674,7 +674,7 @@ async function handleTest(
         const token = getEffectiveEnvValue(envMap, 'GITHUB_TOKEN')
         if (!token) return NextResponse.json({ ok: false, detail: 'Token not set' })
         const res = await fetch('https://api.github.com/user', {
-          headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'MissionControl/1.0' },
+          headers: { Authorization: `Bearer ${token}`, 'User-Agent': 'Paddock/1.0' },
           signal: AbortSignal.timeout(5000),
         })
         if (res.ok) {

@@ -101,7 +101,7 @@ function resolveImportFileFlag(flags: Record<string, string | boolean>): string 
     const sourcePath = String(source)
     return /\.ya?ml$/i.test(sourcePath) ? sourcePath : join(sourcePath, 'workflow-contract.yaml')
   }
-  return 'docs/ai/workflows/mission-control/workflow-contract.yaml'
+  return 'docs/ai/workflows/paddock/workflow-contract.yaml'
 }
 
 async function main(): Promise<number> {
@@ -149,11 +149,11 @@ function openWorkflowContractDatabase(): Database.Database {
 }
 
 function resolveDatabasePath(): string {
-  if (process.env.MISSION_CONTROL_DB_PATH) return resolve(process.env.MISSION_CONTROL_DB_PATH)
-  const dataDir = process.env.MISSION_CONTROL_DATA_DIR
-    ? resolve(process.env.MISSION_CONTROL_DATA_DIR)
+  if (process.env.PADDOCK_DB_PATH) return resolve(process.env.PADDOCK_DB_PATH)
+  const dataDir = process.env.PADDOCK_DATA_DIR
+    ? resolve(process.env.PADDOCK_DATA_DIR)
     : resolve(process.cwd(), '.data')
-  return join(dataDir, 'mission-control.db')
+  return join(dataDir, 'paddock.db')
 }
 
 function ensureWorkflowContractCliSchema(db: Database.Database): void {

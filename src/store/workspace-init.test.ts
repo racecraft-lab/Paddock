@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useMissionControl, type CurrentUser } from '@/store'
+import { usePaddock, type CurrentUser } from '@/store'
 import { ACTIVE_WORKSPACE_STORAGE_KEY } from '@/types/product-line'
 
 const currentUser: CurrentUser = {
@@ -50,7 +50,7 @@ function installLocalStorage() {
 
 function resetWorkspaceState() {
   localStorage.clear()
-  useMissionControl.setState({
+  usePaddock.setState({
     currentUser,
     workspaces: [],
     workspaceListStatus: 'idle',
@@ -88,9 +88,9 @@ describe('workspace bootstrap flag resolution', () => {
       workspaces: [assemblyWorkspace],
     })
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.workspaceSwitcherEnabled).toBe(true)
     expect(state.activeProductLineScope).toMatchObject({
       kind: 'facility',
@@ -110,9 +110,9 @@ describe('workspace bootstrap flag resolution', () => {
       }],
     })
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.workspaceSwitcherEnabled).toBe(false)
     expect(state.activeProductLineScope).toBeNull()
     expect(localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY)).toBeNull()
@@ -133,9 +133,9 @@ describe('workspace bootstrap flag resolution', () => {
       workspaces: [assemblyWorkspace],
     })
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.workspaceSwitcherEnabled).toBe(true)
     expect(state.workspaces).toEqual([assemblyWorkspace])
     expect(state.activeProductLineScope).toMatchObject({

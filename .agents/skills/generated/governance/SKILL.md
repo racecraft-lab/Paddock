@@ -1,6 +1,6 @@
 ---
 name: governance
-description: "Skill for the Governance area of mission-control. 28 symbols across 23 files."
+description: "Skill for the Governance area of paddock. 28 symbols across 23 files."
 ---
 
 # Governance

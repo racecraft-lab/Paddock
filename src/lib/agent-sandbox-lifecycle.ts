@@ -4,7 +4,7 @@ import { resolveFlag } from './feature-flags'
 import type Database from 'better-sqlite3'
 
 export const AGENT_SANDBOX_OWNERS = [
-  'mission_control',
+  'paddock',
   'openclaw',
   'external_harness',
 ] as const
@@ -260,7 +260,7 @@ export function resolveSandboxRoot(input: {
     throw new Error('invalid_relative_path_escape')
   }
   return {
-    rootId: input.sandboxRoot ? 'workspace_configured_sandboxes' : 'mission_control_data_sandboxes',
+    rootId: input.sandboxRoot ? 'workspace_configured_sandboxes' : 'paddock_data_sandboxes',
     rootPath,
     absolutePath,
   }

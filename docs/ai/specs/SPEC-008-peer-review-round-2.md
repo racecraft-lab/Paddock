@@ -182,7 +182,7 @@ The concern is not synthetic: better-sqlite3 indexed lookups stay sub-10µs even
 Several major operational concerns are not addressed at all by the spec:
 
 - **Backup / restore / DR (§4 above).** Largest gap.
-- **SQLite WAL corruption recovery.** What does the operator do if `mission-control.db-wal` is corrupted on disk? `.recover` procedure documented?
+- **SQLite WAL corruption recovery.** What does the operator do if `paddock.db-wal` is corrupted on disk? `.recover` procedure documented?
 - **Single-node-failure recovery.** The operator node is one machine. If the operator node dies, MC is down. Out of scope, but the doc could explicitly note "recovery is restore-from-backup; ~RTO 30min depending on backup size."
 - **Audit-log retention requirements for compliance.** Q43 keeps ledger 5 years. Is that contractually required? Operationally chosen? Either way, it should be tied to a stated requirement so v2 doesn't accidentally shorten it.
 - **Rate limiting on REST endpoints.** `/api/resource-overrides`, `/api/resource-policies` — no rate limit declared. Single operator means low actual exposure; but if the API key leaks, an attacker can DoS via thousands of invalid POSTs that all return 422. Doc should declare per-IP-per-route rate limits (or "deferred to gateway-layer rate limiting" with a pointer).

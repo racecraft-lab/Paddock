@@ -11,8 +11,8 @@ import {
 } from '../helpers'
 import { captureVisualSnapshot } from '../visual/visual-snapshot'
 
-const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ??
-  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const E2E_DB_PATH = process.env.PADDOCK_DB_PATH ??
+  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 const OUTPUT_DIR = path.join(process.cwd(), 'test-results', 'spec-013a-task-stage-attempts')
 const FIXTURE_MARKER = 'seeded by SPEC-013A task stage attempts e2e'
 
@@ -105,7 +105,7 @@ function insertAttempt(
     values.completedAt ?? null,
     values.archivedAt ?? null,
     values.runId ?? null,
-    values.workflowTemplateSlug ?? 'mission-control_issue_remediation',
+    values.workflowTemplateSlug ?? 'paddock_issue_remediation',
     JSON.stringify({ fixture: 'spec-013a-e2e' }),
   )
   const attemptId = Number(result.lastInsertRowid)
@@ -175,7 +175,7 @@ function seedStageAttemptRows(task: CreatedTask): void {
       'aegis',
       'gpt-5.5',
       'openai',
-      'mission-control',
+      'paddock',
       'task_stage_attempt',
       String(task.id),
       'running',
@@ -193,7 +193,7 @@ function seedStageAttemptRows(task: CreatedTask): void {
       observedAt: '2026-05-22T13:00:00.000Z',
       startedAt: '2026-05-22T13:00:00.000Z',
       runId: 'spec-013a-linked-run',
-      workflowTemplateSlug: 'mission-control_issue_analysis',
+      workflowTemplateSlug: 'paddock_issue_analysis',
       message: 'analysis running',
     })
 
@@ -215,7 +215,7 @@ function seedStageAttemptRows(task: CreatedTask): void {
       completedAt: '2026-05-22T13:12:00.000Z',
       archivedAt: '2026-05-22T13:20:00.000Z',
       runId: null,
-      workflowTemplateSlug: 'mission-control_issue_validation',
+      workflowTemplateSlug: 'paddock_issue_validation',
       message: 'validation archived',
     })
     for (let index = 0; index < 12; index += 1) {
@@ -240,7 +240,7 @@ function seedStageAttemptRows(task: CreatedTask): void {
       startedAt: null,
       completedAt: null,
       runId: null,
-      workflowTemplateSlug: 'mission-control_issue_projection',
+      workflowTemplateSlug: 'paddock_issue_projection',
       message: 'projection initially running',
     })
     insertAttemptEvent(
@@ -357,7 +357,7 @@ test.describe.serial('SPEC-013A task detail stage attempts', () => {
     await expect(region.getByRole('status').filter({ hasText: /attempt analysis #1 is running/i })).toBeVisible()
     await expect(region.getByText(/linked run \(read-only reference\): spec-013a-linked-run/i)).toBeVisible()
     await expect(region.getByText(/agent aegis/i)).toBeVisible()
-    await expect(region.getByText(/runtime mission-control/i)).toBeVisible()
+    await expect(region.getByText(/runtime paddock/i)).toBeVisible()
     await expect(region.getByText(/state running/i)).toBeVisible()
 
     await expect(region.getByText(/run missing or unavailable: spec-013a-missing-run/i)).toBeVisible()

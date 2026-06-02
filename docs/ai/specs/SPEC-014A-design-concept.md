@@ -57,14 +57,14 @@ stop_reason: "natural"
 
 **Branch:** Ownership model
 
-**Recommended answer:** Yes, closed enum: `mission_control`, `openclaw`, `external_harness`.
+**Recommended answer:** Yes, closed enum: `paddock`, `openclaw`, `external_harness`.
 > This matches the roadmap, keeps fake implementations bounded, and lets later adapter specs extend intentionally.
 
 **Alternatives offered:**
 - Allow arbitrary owner strings: More flexible for future adapters, but weaker for validation.
 - Closed enum plus `unknown`: Easier import path for messy external data, but less fail-closed.
 
-**User's answer:** A, closed enum: `mission_control`, `openclaw`, `external_harness`.
+**User's answer:** A, closed enum: `paddock`, `openclaw`, `external_harness`.
 
 ---
 
@@ -117,14 +117,14 @@ stop_reason: "natural"
 
 **Branch:** Filesystem boundary
 
-**Recommended answer:** Default to `<MISSION_CONTROL_DATA_DIR>/sandboxes` with optional reviewed per-workspace configuration.
+**Recommended answer:** Default to `<PADDOCK_DATA_DIR>/sandboxes` with optional reviewed per-workspace configuration.
 > Every sandbox path must resolve through a bounded helper that rejects traversal, unsafe segments, and root escape.
 
 **Alternatives offered:**
 - Require explicit per-workspace root configuration: Safer for operators, but heavier setup.
 - Store only logical handles in v1: Smaller, but weakens bounded-path acceptance.
 
-**User's answer:** A, default `<MISSION_CONTROL_DATA_DIR>/sandboxes` with optional reviewed per-workspace config and bounded path resolver.
+**User's answer:** A, default `<PADDOCK_DATA_DIR>/sandboxes` with optional reviewed per-workspace config and bounded path resolver.
 
 ---
 

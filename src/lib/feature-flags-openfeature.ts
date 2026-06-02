@@ -8,8 +8,8 @@ import {
 } from '@openfeature/server-sdk'
 import { evaluateFeatureFlagCore, type FeatureFlagContext } from '@/lib/feature-flags'
 
-const PROVIDER_NAME = 'mission-control-workspace-flags'
-const CLIENT_NAME = 'mission-control'
+const PROVIDER_NAME = 'paddock-workspace-flags'
+const CLIENT_NAME = 'paddock'
 
 let providerRegistered = false
 
@@ -22,7 +22,7 @@ function contextToFeatureFlagContext(context: EvaluationContext = {}): FeatureFl
   }
 }
 
-export class MissionControlFeatureFlagProvider implements Provider {
+export class PaddockFeatureFlagProvider implements Provider {
   readonly runsOn = 'server'
   readonly metadata = { name: PROVIDER_NAME }
 
@@ -70,9 +70,9 @@ export class MissionControlFeatureFlagProvider implements Provider {
   }
 }
 
-export function getMissionControlOpenFeatureClient() {
+export function getPaddockOpenFeatureClient() {
   if (!providerRegistered) {
-    OpenFeature.setProvider(new MissionControlFeatureFlagProvider())
+    OpenFeature.setProvider(new PaddockFeatureFlagProvider())
     providerRegistered = true
   }
   return OpenFeature.getClient(CLIENT_NAME)
@@ -82,7 +82,7 @@ export async function evaluateFeatureFlagWithOpenFeature(
   flagKey: string,
   context: FeatureFlagContext
 ): Promise<boolean> {
-  const client = getMissionControlOpenFeatureClient()
+  const client = getPaddockOpenFeatureClient()
   return client.getBooleanValue(flagKey, false, {
     workspaceFlags: typeof context.workspaceFlags === 'string'
       ? context.workspaceFlags

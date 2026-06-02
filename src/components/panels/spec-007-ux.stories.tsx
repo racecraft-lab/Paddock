@@ -4,7 +4,7 @@ import { expect, userEvent, within } from 'storybook/test'
 import { Last7dTriageTotalsWidget } from '@/components/dashboard/dashboard'
 import { AuditTrailPanel } from '@/components/panels/audit-trail-panel'
 import ArtifactAdminPanel from '@/components/panels/artifact-admin-panel'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 const storyWorkspace = {
   id: 707,
@@ -152,7 +152,7 @@ function jsonResponse(payload: unknown, status = 200): Response {
 }
 
 function installSpec007FetchMock() {
-  useMissionControl.setState({
+  usePaddock.setState({
     currentUser,
     workspaces: [storyWorkspace],
     workspaceSwitcherEnabled: true,

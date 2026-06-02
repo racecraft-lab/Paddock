@@ -19,7 +19,7 @@ const assembly: ProductLine = {
 }
 
 vi.mock('@/store', () => ({
-  useMissionControl: () => ({
+  usePaddock: () => ({
     activeProductLineScope: createProductLineScope(assembly, 1),
   }),
 }))
@@ -69,7 +69,7 @@ function mockFetch(saveResponse?: { ok: boolean; body: unknown }) {
           mode: 'import_dry_run',
           status: 'validation_failed',
           mutation_status: 'not_mutated',
-          source_path: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+          source_path: 'docs/ai/workflows/paddock/workflow-contract.yaml',
           export_path: null,
           contract_hash: 'workflow-contract-hash-v1:sha256:abc',
           template_counts: { create: 1, update: 0, disable: 0, unchanged: 0 },

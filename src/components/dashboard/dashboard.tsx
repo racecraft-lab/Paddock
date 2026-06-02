@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useMemo } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { getLocalOsStatus, getProviderHealth, getMcHealth } from './widget-primitives'
@@ -242,7 +242,7 @@ export function Dashboard() {
     tasks,
     setActiveConversation,
     activeProductLineScope,
-  } = useMissionControl()
+  } = usePaddock()
 
   // SPEC-007 US4: pass workspace_id only when scope is a Product Line. Facility
   // scope intentionally omits the param so the rollup route fans out across

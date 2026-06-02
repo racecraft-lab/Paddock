@@ -1,6 +1,6 @@
 ---
 name: layout
-description: "Skill for the Layout area of mission-control. 55 symbols across 15 files."
+description: "Skill for the Layout area of paddock. 55 symbols across 15 files."
 ---
 
 # Layout

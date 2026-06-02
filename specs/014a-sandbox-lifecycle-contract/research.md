@@ -43,7 +43,7 @@
 
 ## Decision: Use production-code fakes behind `FEATURE_AGENT_RUNNER_SANDBOXES`
 
-**Decision**: Implement fake lifecycle owners for `mission_control`, `openclaw`, and `external_harness` as production code guarded by `resolveFlag`.
+**Decision**: Implement fake lifecycle owners for `paddock`, `openclaw`, and `external_harness` as production code guarded by `resolveFlag`.
 
 **Rationale**: Later adapter specs need a stable fake contract. Tests must prove fake owners cannot launch, resume, stop, or contact real harnesses.
 

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   if ('error' in auth) return NextResponse.json({ error: auth.error }, { status: auth.status })
 
   try {
-    const family = request.nextUrl.searchParams.get('family') || 'mission-control'
+    const family = request.nextUrl.searchParams.get('family') || 'paddock'
     const workspaceId = parseWorkspaceId(request.nextUrl.searchParams.get('workspace_id'))
     if (workspaceId == null) {
       return NextResponse.json({ error: 'workspace_id must be a positive integer' }, { status: 400 })

@@ -4,7 +4,7 @@
  - Zero dependencies (Node.js built-ins only)
  - JSON-RPC 2.0 over stdin/stdout
  - Wraps Paddock REST API as MCP tools
- - Add with: claude mcp add mission-control -- node /path/to/mc-mcp-server.cjs
+ - Add with: claude mcp add paddock -- node /path/to/mc-mcp-server.cjs
 
  Environment:
    MC_URL       Base URL (default: http://127.0.0.1:3000)
@@ -22,7 +22,7 @@ const os = require('node:os');
 
 function loadConfig() {
   // Try profile first, then env vars
-  const profilePath = path.join(os.homedir(), '.mission-control', 'profiles', 'default.json');
+  const profilePath = path.join(os.homedir(), '.paddock', 'profiles', 'default.json');
   let profile = {};
   try {
     profile = JSON.parse(fs.readFileSync(profilePath, 'utf8'));
@@ -731,7 +731,7 @@ for (const tool of TOOLS) {
 // ---------------------------------------------------------------------------
 
 const SERVER_INFO = {
-  name: 'mission-control',
+  name: 'paddock',
   version: '2.0.1',
 };
 

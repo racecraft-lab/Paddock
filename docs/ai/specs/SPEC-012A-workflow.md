@@ -632,7 +632,7 @@ docs/
       SPEC-012A-design-concept.md
       SPEC-012A-workflow.md
     workflows/
-      mission-control/
+      paddock/
   qa/
     pilot-smoke-checklist.md
   runbook/

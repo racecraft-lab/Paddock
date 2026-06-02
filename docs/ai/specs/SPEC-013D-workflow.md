@@ -222,7 +222,7 @@ $speckit-specify
 SPEC-013C added authenticated backend retry, release, cancel, backoff, idempotency, and debug authority, but operators still need terminal/API knowledge to use it. SPEC-013D must make those controls discoverable in the existing task detail experience without changing backend semantics.
 
 ### Users
-- Mission Control operators/admins recovering claimed stages.
+- Paddock operators/admins recovering claimed stages.
 - Viewer/read-only users who need to understand why actions are unavailable.
 - Future SPEC-014C implementers who need the operator UX gate complete before first real harness operation.
 
@@ -698,4 +698,4 @@ tests/e2e/
 
 ---
 
-Template based on SpecKit best practices and populated for Mission Control SPEC-013D.
+Template based on SpecKit best practices and populated for Paddock SPEC-013D.

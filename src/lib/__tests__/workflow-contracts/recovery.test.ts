@@ -6,7 +6,7 @@ import { makeContract, makeWorkflowDb } from './test-helpers'
 describe('workflow contract recovery', () => {
   it('reports no snapshot without mutating templates', () => {
     const db = makeWorkflowDb()
-    const result = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'dry-run' })
+    const result = recoverLastKnownGood(db, { family: 'paddock', workspaceId: 1, mode: 'dry-run' })
     expect(result.ok).toBe(false)
     expect(result.code).toBe('NO_LAST_KNOWN_GOOD')
     expect(db.prepare('SELECT COUNT(*) as count FROM workflow_templates').get()).toEqual({ count: 0 })
@@ -16,10 +16,10 @@ describe('workflow contract recovery', () => {
     const db = makeWorkflowDb()
     importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
     db.prepare('DELETE FROM workflow_templates WHERE workspace_id = 1').run()
-    const dryRun = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'dry-run' })
+    const dryRun = recoverLastKnownGood(db, { family: 'paddock', workspaceId: 1, mode: 'dry-run' })
     expect(dryRun.ok).toBe(true)
     expect(db.prepare('SELECT COUNT(*) as count FROM workflow_templates').get()).toEqual({ count: 0 })
-    const apply = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'apply' })
+    const apply = recoverLastKnownGood(db, { family: 'paddock', workspaceId: 1, mode: 'apply' })
     expect(apply.ok).toBe(true)
     expect(db.prepare('SELECT COUNT(*) as count FROM workflow_templates').get()).toEqual({ count: 1 })
   })
@@ -29,7 +29,7 @@ describe('workflow contract recovery', () => {
     db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('manual', 'Manual Template', 'manual prompt', 'sonnet', 'system')
     importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
     db.prepare('DELETE FROM workflow_templates WHERE workspace_id = 1').run()
-    const apply = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'apply' })
+    const apply = recoverLastKnownGood(db, { family: 'paddock', workspaceId: 1, mode: 'apply' })
     expect(apply.ok).toBe(true)
     expect(db.prepare('SELECT slug FROM workflow_templates ORDER BY slug ASC').all()).toEqual([{ slug: 'intake' }])
   })
@@ -43,7 +43,7 @@ describe('workflow contract recovery', () => {
     expect(db.prepare('SELECT enabled FROM workflow_templates WHERE slug = ?').get('removed')).toEqual({ enabled: 0 })
 
     db.prepare('DELETE FROM workflow_templates WHERE workspace_id = 1').run()
-    const apply = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'apply' })
+    const apply = recoverLastKnownGood(db, { family: 'paddock', workspaceId: 1, mode: 'apply' })
 
     expect(apply.ok).toBe(true)
     expect(db.prepare('SELECT slug, enabled FROM workflow_templates ORDER BY slug ASC').all()).toEqual([
@@ -58,7 +58,7 @@ describe('workflow contract recovery', () => {
       INSERT INTO workflow_contract_snapshots (family, workspace_id, contract_hash, canonical_json, runtime_templates_json, recovery_command)
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(
-      'mission-control',
+      'paddock',
       1,
       'workflow-contract-hash-v1:sha256:legacy',
       JSON.stringify(contract),
@@ -83,7 +83,7 @@ describe('workflow contract recovery', () => {
       'pnpm workflow-contract recover --workspace-id 1 --apply'
     )
 
-    const apply = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'apply' })
+    const apply = recoverLastKnownGood(db, { family: 'paddock', workspaceId: 1, mode: 'apply' })
 
     expect(apply.ok).toBe(true)
     expect(db.prepare('SELECT slug FROM workflow_templates ORDER BY slug ASC').all()).toEqual([{ slug: 'intake' }])
@@ -96,7 +96,7 @@ describe('workflow contract recovery', () => {
       INSERT INTO workflow_contract_snapshots (family, workspace_id, contract_hash, canonical_json, runtime_templates_json, recovery_command)
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(
-      'mission-control',
+      'paddock',
       1,
       'workflow-contract-hash-v1:sha256:legacy-disabled',
       JSON.stringify(contract),
@@ -123,7 +123,7 @@ describe('workflow contract recovery', () => {
       'pnpm workflow-contract recover --workspace-id 1 --apply'
     )
 
-    const apply = recoverLastKnownGood(db, { family: 'mission-control', workspaceId: 1, mode: 'apply' })
+    const apply = recoverLastKnownGood(db, { family: 'paddock', workspaceId: 1, mode: 'apply' })
 
     expect(apply.ok).toBe(true)
     expect(db.prepare('SELECT slug FROM workflow_templates ORDER BY slug ASC').all()).toEqual([{ slug: 'intake' }])

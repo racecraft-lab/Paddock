@@ -39,8 +39,8 @@ export const FEATURE_FLAG_ADMIN_VISUAL_WORKSPACE = {
 } as const
 
 function getE2EDbPath() {
-  return process.env.MISSION_CONTROL_DB_PATH ||
-    path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+  return process.env.PADDOCK_DB_PATH ||
+    path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 }
 
 export function setDefaultWorkspaceSwitcherFlag(enabled: boolean): () => void {

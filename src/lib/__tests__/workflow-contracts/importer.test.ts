@@ -115,21 +115,21 @@ describe('workflow contract importer', () => {
 
   it('imports the Paddock pilot issue triage disposition taxonomy and actionable routing rule', () => {
     const db = makeWorkflowDb()
-    const contract = loadWorkflowContractFromFile('docs/ai/workflows/mission-control/workflow-contract.yaml')
-    const triage = contract.templates.find(template => template.slug === 'mission-control_issue_triage')
-    const devImplementation = contract.templates.find(template => template.slug === 'mission-control_dev_implementation')
+    const contract = loadWorkflowContractFromFile('docs/ai/workflows/paddock/workflow-contract.yaml')
+    const triage = contract.templates.find(template => template.slug === 'paddock_issue_triage')
+    const devImplementation = contract.templates.find(template => template.slug === 'paddock_dev_implementation')
 
     expect(triage).toBeDefined()
     expect(devImplementation).toMatchObject({
       produces_pr: true,
       external_terminal_event: 'github_pr_merged',
-      next_template_slug: 'mission-control_review',
+      next_template_slug: 'paddock_review',
     })
     expect(triage!.next_template_slug ?? null).toBeNull()
     expect(triage!.routing_rules).toEqual([
       {
         when: '$.disposition == "ACTIONABLE_REMEDIATION"',
-        next_template_slug: 'mission-control_remediation_plan',
+        next_template_slug: 'paddock_remediation_plan',
       },
     ])
     expect(triage!.output_schema).toMatchObject({
@@ -153,14 +153,14 @@ describe('workflow contract importer', () => {
 
     const result = importWorkflowContract(db, contract, {
       mode: 'apply',
-      sourcePath: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+      sourcePath: 'docs/ai/workflows/paddock/workflow-contract.yaml',
     })
 
     expect(result.ok).toBe(true)
     const runtime = db.prepare(`
       SELECT output_schema, routing_rules, next_template_slug
       FROM workflow_templates
-      WHERE workspace_id = 1 AND slug = 'mission-control_issue_triage'
+      WHERE workspace_id = 1 AND slug = 'paddock_issue_triage'
     `).get() as { output_schema: string; routing_rules: string; next_template_slug: string | null }
     expect(JSON.parse(runtime.output_schema).properties.disposition.enum).toContain('ACTIONABLE_REMEDIATION')
     expect(JSON.parse(runtime.routing_rules)).toEqual(triage!.routing_rules)
@@ -169,12 +169,12 @@ describe('workflow contract importer', () => {
     const devRuntime = db.prepare(`
       SELECT produces_pr, external_terminal_event, next_template_slug
       FROM workflow_templates
-      WHERE workspace_id = 1 AND slug = 'mission-control_dev_implementation'
+      WHERE workspace_id = 1 AND slug = 'paddock_dev_implementation'
     `).get()
     expect(devRuntime).toEqual({
       produces_pr: 1,
       external_terminal_event: 'github_pr_merged',
-      next_template_slug: 'mission-control_review',
+      next_template_slug: 'paddock_review',
     })
   })
 })

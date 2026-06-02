@@ -256,15 +256,15 @@ describe('advanceTaskChain routing', () => {
     const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
     addTemplate(db, {
       id: 1,
-      slug: 'mission-control_issue_triage',
+      slug: 'paddock_issue_triage',
       name: 'Paddock Issue Triage',
       outputSchema: PILOT_TRIAGE_SCHEMA,
       routingRules: [
-        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
       ],
     })
-    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Paddock Remediation Plan' })
-    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+    addTemplate(db, { id: 2, slug: 'paddock_remediation_plan', name: 'Paddock Remediation Plan' })
+    const parentId = addParent(db, 1, 'paddock_issue_triage', {
       disposition: 'ACTIONABLE_REMEDIATION',
       rationale: 'The issue is reproducible and has a bounded fix path.',
     })
@@ -279,7 +279,7 @@ describe('advanceTaskChain routing', () => {
         title: 'Paddock Remediation Plan',
         assigned_to: 'builder',
         workflow_template_id: 2,
-        workflow_template_slug: 'mission-control_remediation_plan',
+        workflow_template_slug: 'paddock_remediation_plan',
         parent_task_id: parentId,
       },
     ])
@@ -297,7 +297,7 @@ describe('advanceTaskChain routing', () => {
     expect(JSON.parse(artifact.content_json)).toMatchObject({
       disposition: 'ACTIONABLE_REMEDIATION',
       successor_task_id: result.successorTaskId,
-      target_template_slug: 'mission-control_remediation_plan',
+      target_template_slug: 'paddock_remediation_plan',
     })
     const activity = db.prepare(`
       SELECT entity_type, entity_id, data
@@ -317,14 +317,14 @@ describe('advanceTaskChain routing', () => {
     const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
     addTemplate(db, {
       id: 1,
-      slug: 'mission-control_issue_triage',
+      slug: 'paddock_issue_triage',
       outputSchema: PILOT_TRIAGE_SCHEMA,
       routingRules: [
-        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
       ],
     })
-    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Paddock Remediation Plan' })
-    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+    addTemplate(db, { id: 2, slug: 'paddock_remediation_plan', name: 'Paddock Remediation Plan' })
+    const parentId = addParent(db, 1, 'paddock_issue_triage', {
       disposition: 'ACTIONABLE_REMEDIATION',
       rationale: 'First handoff wins.',
     })
@@ -345,13 +345,13 @@ describe('advanceTaskChain routing', () => {
     const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
     addTemplate(db, {
       id: 1,
-      slug: 'mission-control_issue_triage',
+      slug: 'paddock_issue_triage',
       outputSchema: PILOT_TRIAGE_SCHEMA,
       routingRules: [
-        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
       ],
     })
-    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+    const parentId = addParent(db, 1, 'paddock_issue_triage', {
       disposition: 'ACTIONABLE_REMEDIATION',
       rationale: 'Target template is temporarily missing.',
     })
@@ -367,7 +367,7 @@ describe('advanceTaskChain routing', () => {
     expect(db.prepare("SELECT COUNT(*) AS count FROM task_artifacts WHERE task_id = ? AND artifact_type = 'triage_outcome'").get(parentId)).toEqual({ count: 0 })
     expect(db.prepare("SELECT COUNT(*) AS count FROM activities WHERE entity_type = 'task' AND entity_id = ? AND type = 'pilot_triage_outcome_recorded'").get(parentId)).toEqual({ count: 0 })
 
-    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Paddock Remediation Plan' })
+    addTemplate(db, { id: 2, slug: 'paddock_remediation_plan', name: 'Paddock Remediation Plan' })
     const recovered = advanceTaskChain({ taskId: parentId, workspaceId: 1, previousStatus: 'review', trigger: 'retry_chain_advancement' })
 
     expect(recovered).toMatchObject({ advanced: true, reason: 'successor_created', successorTaskId: expect.any(Number) })
@@ -380,7 +380,7 @@ describe('advanceTaskChain routing', () => {
     expect(JSON.parse(artifact.content_json)).toMatchObject({
       disposition: 'ACTIONABLE_REMEDIATION',
       successor_task_id: recovered.successorTaskId,
-      target_template_slug: 'mission-control_remediation_plan',
+      target_template_slug: 'paddock_remediation_plan',
     })
     const activity = db.prepare("SELECT data FROM activities WHERE type = 'pilot_triage_outcome_recorded' AND entity_type = 'task' AND entity_id = ?").get(parentId) as { data: string }
     expect(JSON.parse(activity.data)).toMatchObject({
@@ -393,14 +393,14 @@ describe('advanceTaskChain routing', () => {
     const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
     addTemplate(db, {
       id: 1,
-      slug: 'mission-control_issue_triage',
+      slug: 'paddock_issue_triage',
       outputSchema: PILOT_TRIAGE_SCHEMA,
       routingRules: [
-        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
       ],
     })
-    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Paddock Remediation Plan' })
-    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+    addTemplate(db, { id: 2, slug: 'paddock_remediation_plan', name: 'Paddock Remediation Plan' })
+    const parentId = addParent(db, 1, 'paddock_issue_triage', {
       disposition: 'NOT_A_REAL_DISPOSITION',
       rationale: 'The first output is invalid.',
     })
@@ -442,14 +442,14 @@ describe('advanceTaskChain routing', () => {
     const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
     addTemplate(db, {
       id: 1,
-      slug: 'mission-control_issue_triage',
+      slug: 'paddock_issue_triage',
       outputSchema: PILOT_TRIAGE_SCHEMA,
       routingRules: [
-        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
       ],
     })
-    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Paddock Remediation Plan' })
-    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+    addTemplate(db, { id: 2, slug: 'paddock_remediation_plan', name: 'Paddock Remediation Plan' })
+    const parentId = addParent(db, 1, 'paddock_issue_triage', {
       disposition: 'ACTIONABLE_REMEDIATION',
       rationale: 'Artifact table is temporarily unavailable.',
     })
@@ -485,14 +485,14 @@ describe('advanceTaskChain routing', () => {
     const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
     addTemplate(db, {
       id: 1,
-      slug: 'mission-control_issue_triage',
+      slug: 'paddock_issue_triage',
       outputSchema: PILOT_TRIAGE_SCHEMA,
       routingRules: [
-        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
       ],
     })
-    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Paddock Remediation Plan' })
-    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+    addTemplate(db, { id: 2, slug: 'paddock_remediation_plan', name: 'Paddock Remediation Plan' })
+    const parentId = addParent(db, 1, 'paddock_issue_triage', {
       disposition,
       rationale: `${disposition} does not route to remediation.`,
     })
@@ -519,14 +519,14 @@ describe('advanceTaskChain routing', () => {
     const db = createChainDb({ flagDispositionLogging: true, flagTaskArtifacts: true })
     addTemplate(db, {
       id: 1,
-      slug: 'mission-control_issue_triage',
+      slug: 'paddock_issue_triage',
       outputSchema: PILOT_TRIAGE_SCHEMA,
       routingRules: [
-        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+        { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
       ],
     })
-    addTemplate(db, { id: 2, slug: 'mission-control_remediation_plan', name: 'Paddock Remediation Plan' })
-    const parentId = addParent(db, 1, 'mission-control_issue_triage', {
+    addTemplate(db, { id: 2, slug: 'paddock_remediation_plan', name: 'Paddock Remediation Plan' })
+    const parentId = addParent(db, 1, 'paddock_issue_triage', {
       disposition: 'ACTIONABLE_REMEDIATION',
       rationale: 'Artifact publish is forced to fail.',
     })

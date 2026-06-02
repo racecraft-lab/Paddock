@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useMissionControl, type CurrentUser, type Project, type Task } from '@/store'
+import { usePaddock, type CurrentUser, type Project, type Task } from '@/store'
 import { appendScopeToPath, createFacilityScope, createProductLineScope, type ProductLine } from '@/types/product-line'
 
 const currentUser: CurrentUser = {
@@ -68,7 +68,7 @@ function installLocalStorage() {
 describe('Product Line cache and URL ownership', () => {
   beforeEach(() => {
     installLocalStorage()
-    useMissionControl.setState({
+    usePaddock.setState({
       currentUser,
       workspaces: [productLine],
       workspaceSwitcherEnabled: true,
@@ -106,26 +106,26 @@ describe('Product Line cache and URL ownership', () => {
       headers: { 'Content-Type': 'application/json' },
     }))
     vi.stubGlobal('fetch', fetchMock)
-    useMissionControl.setState({
+    usePaddock.setState({
       activeProductLineScope: scoped,
       scopeKey: scoped.scopeKey,
       projects: [],
     })
 
-    await useMissionControl.getState().fetchProjects()
+    await usePaddock.getState().fetchProjects()
 
     expect(fetchMock).toHaveBeenCalledWith('/api/projects?workspace_id=42', { cache: 'no-store' })
-    expect(useMissionControl.getState().projects).toEqual([project])
+    expect(usePaddock.getState().projects).toEqual([project])
   })
 
   it('resets unowned entity state and scoped cache state when the scope changes', () => {
-    useMissionControl.getState().setActiveProductLine(productLine, {
+    usePaddock.getState().setActiveProductLine(productLine, {
       source: 'user',
       version: 500,
       broadcast: false,
     })
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.scopeKey).toBe('tenant:7:product-line:42')
     expect(state.activeProject).toBeNull()
     expect(state.selectedTask).toBeNull()

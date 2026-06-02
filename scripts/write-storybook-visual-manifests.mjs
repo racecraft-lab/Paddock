@@ -194,7 +194,7 @@ async function main() {
     const tags = metadata?.tags || []
     const manifest = {
       version: 1,
-      tool: 'mission-control-visual',
+      tool: 'paddock-visual',
       kind: 'storybook',
       domain,
       name: storyId,

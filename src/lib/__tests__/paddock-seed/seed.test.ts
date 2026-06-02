@@ -1,41 +1,41 @@
 import { describe, expect, it } from 'vitest'
 
 import { resolveFlag } from '@/lib/feature-flags'
-import { REQUIRED_WORKFLOW_SLUGS, ROLE_ASSIGNMENTS } from '@/lib/mission-control-seed/types'
-import { applyMissionControlSeed, assertWorkflowContractReady } from '@/lib/mission-control-seed/seed'
+import { REQUIRED_WORKFLOW_SLUGS, ROLE_ASSIGNMENTS } from '@/lib/paddock-seed/types'
+import { applyPaddockSeed, assertWorkflowContractReady } from '@/lib/paddock-seed/seed'
 import {
-  makeMissionControlSeedDb,
-  missionControlContractPath,
+  makePaddockSeedDb,
+  paddockContractPath,
   tableColumns,
 } from './test-db'
 
-describe('mission-control product-line seed', () => {
+describe('paddock product-line seed', () => {
   it('preserves Facility and creates exactly one Paddock Product Line workspace', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    const result = applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const result = applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     expect(result.ok).toBe(true)
     expect(result.mutation_status).toBe('applied')
     expect(db.prepare("SELECT COUNT(*) as count FROM workspaces WHERE slug = 'facility'").get()).toEqual({ count: 1 })
-    expect(db.prepare("SELECT id, slug, name FROM workspaces WHERE slug = 'mission-control'").get()).toMatchObject({
-      slug: 'mission-control',
+    expect(db.prepare("SELECT id, slug, name FROM workspaces WHERE slug = 'paddock'").get()).toMatchObject({
+      slug: 'paddock',
       name: 'Paddock',
     })
-    expect(db.prepare("SELECT COUNT(*) as count FROM workspaces WHERE slug = 'mission-control'").get()).toEqual({ count: 1 })
+    expect(db.prepare("SELECT COUNT(*) as count FROM workspaces WHERE slug = 'paddock'").get()).toEqual({ count: 1 })
   })
 
   it('uses the existing Facility tenant for the Paddock workspace', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
     db.prepare("UPDATE workspaces SET tenant_id = 42 WHERE slug = 'facility'").run()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
-    expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'mission-control'").get()).toEqual({ tenant_id: 42 })
+    expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'paddock'").get()).toEqual({ tenant_id: 42 })
   })
 
   it('creates a missing Facility workspace under the first active tenant', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
     db.prepare("DELETE FROM workspaces WHERE slug = 'facility'").run()
     db.prepare('DELETE FROM tenants').run()
     db.prepare(`
@@ -47,22 +47,22 @@ describe('mission-control product-line seed', () => {
       VALUES (7, 'active', 'Active', 'active', 'active', '/tmp/openclaw-active', '/tmp/workspaces-active')
     `).run()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'facility'").get()).toEqual({ tenant_id: 7 })
-    expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'mission-control'").get()).toEqual({ tenant_id: 7 })
+    expect(db.prepare("SELECT tenant_id FROM workspaces WHERE slug = 'paddock'").get()).toEqual({ tenant_id: 7 })
   })
 
   it('creates the six required departments and excludes product surfaces as departments', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     const rows = db.prepare(`
       SELECT p.slug, p.name, p.ticket_prefix, p.area_slug, p.is_triage_project, p.is_repo_sync_owner, p.github_repo
       FROM projects p
       JOIN workspaces w ON w.id = p.workspace_id
-      WHERE w.slug = 'mission-control'
+      WHERE w.slug = 'paddock'
       ORDER BY p.slug
     `).all()
     expect(rows).toEqual([
@@ -88,9 +88,9 @@ describe('mission-control product-line seed', () => {
   })
 
   it('creates required project-scoped role assignments without a workspace_id dependency', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     expect(tableColumns(db, 'project_agent_assignments')).not.toContain('workspace_id')
     const assignments = db.prepare(`
@@ -98,7 +98,7 @@ describe('mission-control product-line seed', () => {
       FROM project_agent_assignments paa
       JOIN projects p ON p.id = paa.project_id
       JOIN workspaces w ON w.id = p.workspace_id
-      WHERE w.slug = 'mission-control'
+      WHERE w.slug = 'paddock'
       ORDER BY paa.role
     `).all()
     expect(assignments).toEqual(
@@ -109,7 +109,7 @@ describe('mission-control product-line seed', () => {
   })
 
   it('re-homes existing Paddock issue intake to QA while preserving GitHub sync metadata', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
     db.prepare(`
       INSERT INTO tasks (
         title, workspace_id, github_repo, github_issue_number, github_synced_at,
@@ -120,12 +120,12 @@ describe('mission-control product-line seed', () => {
       VALUES (
         'Existing issue', 1, 'racecraft-lab/Paddock', 42, 123456,
         'fix/thing', 77, 'open', '{"kept":true}', 'in_progress',
-        'mission-control-platform-dev', 'old-template', 9, 9,
+        'paddock-platform-dev', 'old-template', 9, 9,
         'old-chain', 3, 2
       )
     `).run()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     const row = db.prepare(`
       SELECT t.workspace_id, t.project_id, t.github_repo, t.github_issue_number, t.github_synced_at,
@@ -138,7 +138,7 @@ describe('mission-control product-line seed', () => {
       WHERE t.github_issue_number = 42
     `).get()
     expect(row).toMatchObject({
-      workspace_slug: 'mission-control',
+      workspace_slug: 'paddock',
       project_slug: 'qa',
       github_repo: 'racecraft-lab/Paddock',
       github_issue_number: 42,
@@ -160,31 +160,31 @@ describe('mission-control product-line seed', () => {
   })
 
   it('requires the corrected repo-owned workflow contract and imports the nine required slugs', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    expect(assertWorkflowContractReady(missionControlContractPath()).requiredSlugsPresent).toBe(true)
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    expect(assertWorkflowContractReady(paddockContractPath()).requiredSlugsPresent).toBe(true)
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     const slugs = db.prepare(`
       SELECT wt.slug
       FROM workflow_templates wt
       JOIN workspaces w ON w.id = wt.workspace_id
-      WHERE w.slug = 'mission-control' AND wt.created_by = 'workflow-contract' AND wt.enabled = 1
+      WHERE w.slug = 'paddock' AND wt.created_by = 'workflow-contract' AND wt.enabled = 1
       ORDER BY wt.slug
     `).all().map((row) => (row as { slug: string }).slug)
     expect(slugs).toEqual([...REQUIRED_WORKFLOW_SLUGS].sort())
   })
 
   it('seeds canonical pilot flags and rejects persisted legacy pilot drift', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
 
-    const row = db.prepare("SELECT feature_flags FROM workspaces WHERE slug = 'mission-control'").get() as { feature_flags: string }
+    const row = db.prepare("SELECT feature_flags FROM workspaces WHERE slug = 'paddock'").get() as { feature_flags: string }
     const flags = JSON.parse(row.feature_flags) as Record<string, boolean>
-    expect(flags.PILOT_MISSION_CONTROL_E2E).toBe(true)
+    expect(flags.PILOT_PADDOCK_E2E).toBe(true)
     expect(flags.PILOT_PRODUCT_LINE_A_E2E).toBeUndefined()
-    expect(resolveFlag('PILOT_MISSION_CONTROL_E2E', { env: {}, workspaceFlags: flags })).toBe(true)
+    expect(resolveFlag('PILOT_PADDOCK_E2E', { env: {}, workspaceFlags: flags })).toBe(true)
     expect(resolveFlag('PILOT_PRODUCT_LINE_A_E2E', {
       env: { PILOT_PRODUCT_LINE_A_E2E: '1' },
       workspaceFlags: flags,

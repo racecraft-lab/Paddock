@@ -2,7 +2,7 @@
  * SPEC-008 — Archive partition file format (T207).
  *
  * Per FR-252. Partition files written under
- * `<MISSION_CONTROL_DATA_DIR>/archives/<chain>/<YYYY-MM>.json` carry
+ * `<PADDOCK_DATA_DIR>/archives/<chain>/<YYYY-MM>.json` carry
  * a fixed header so the verifier (T147 archive cross-check) can
  * recognize and validate them.
  *

@@ -51,7 +51,7 @@ export function openAgentSandboxLifecycleDb(featureEnabled = true): Database.Dat
       sandbox_attempt_key TEXT NOT NULL CHECK(length(trim(sandbox_attempt_key)) > 0),
       task_stage_attempt_id INTEGER,
       task_stage_claim_id INTEGER,
-      owner TEXT NOT NULL CHECK(owner IN ('mission_control', 'openclaw', 'external_harness')),
+      owner TEXT NOT NULL CHECK(owner IN ('paddock', 'openclaw', 'external_harness')),
       sandbox_key TEXT NOT NULL CHECK(length(trim(sandbox_key)) > 0),
       root_id TEXT NOT NULL CHECK(length(trim(root_id)) > 0),
       sanitized_relative_path TEXT NOT NULL CHECK(length(trim(sanitized_relative_path)) > 0),
@@ -85,7 +85,7 @@ export function openAgentSandboxLifecycleDb(featureEnabled = true): Database.Dat
     );
   `)
   db.prepare('INSERT INTO workspaces (id, slug, name, feature_flags) VALUES (1, ?, ?, ?)')
-    .run('mission-control', 'Paddock', featureEnabled ? '{"FEATURE_AGENT_RUNNER_SANDBOXES":true,"FEATURE_TASK_CONTROL_PLANE":true}' : '{"FEATURE_AGENT_RUNNER_SANDBOXES":false}')
+    .run('paddock', 'Paddock', featureEnabled ? '{"FEATURE_AGENT_RUNNER_SANDBOXES":true,"FEATURE_TASK_CONTROL_PLANE":true}' : '{"FEATURE_AGENT_RUNNER_SANDBOXES":false}')
   db.prepare(`
     INSERT INTO tasks (id, workspace_id, title, status, workflow_template_slug)
     VALUES (100, 1, 'Implement sandbox lifecycle', 'assigned', 'issue_remediation')
@@ -102,7 +102,7 @@ export function openAgentSandboxLifecycleDb(featureEnabled = true): Database.Dat
 }
 
 export function sandboxLifecycleInput(overrides: Partial<{
-  owner: 'mission_control' | 'openclaw' | 'external_harness'
+  owner: 'paddock' | 'openclaw' | 'external_harness'
   stageKey: string
   productLineSlug: string
   attemptId: string | number
@@ -110,13 +110,13 @@ export function sandboxLifecycleInput(overrides: Partial<{
 }> = {}) {
   return {
     workspaceId: 1,
-    productLineSlug: overrides.productLineSlug ?? 'mission-control',
+    productLineSlug: overrides.productLineSlug ?? 'paddock',
     taskId: 100,
     stageKey: overrides.stageKey ?? 'issue_remediation',
     attemptId: overrides.attemptId ?? 456,
     taskStageAttemptId: 456,
     taskStageClaimId: 789,
-    owner: overrides.owner ?? 'mission_control',
+    owner: overrides.owner ?? 'paddock',
     dataDir: overrides.dataDir,
     now: '2026-05-28T00:00:00.000Z',
   } as const

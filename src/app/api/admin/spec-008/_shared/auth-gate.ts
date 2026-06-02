@@ -9,7 +9,7 @@
  * unreachable in a production deployment. We achieve that by
  * requiring BOTH:
  *
- *   1. `MISSION_CONTROL_TEST_MODE=1` — only set in the e2e
+ *   1. `PADDOCK_TEST_MODE=1` — only set in the e2e
  *      Docker container. Refused otherwise.
  *   2. A valid admin `x-api-key` (or session) — the existing
  *      `requireRole(req, 'admin')` helper covers every shape.
@@ -42,16 +42,16 @@ export interface AdminGateDenied {
 export type AdminGateResult = AdminGateOk | AdminGateDenied;
 
 /**
- * Gate: refuses unless MISSION_CONTROL_TEST_MODE=1 AND the caller
+ * Gate: refuses unless PADDOCK_TEST_MODE=1 AND the caller
  * passes admin auth. Returns either `{ ok: true }` (caller proceeds)
  * or `{ ok: false, response }` (caller returns the response verbatim).
  */
 export function adminTestModeGate(request: Request): AdminGateResult {
-  if (process.env['MISSION_CONTROL_TEST_MODE'] !== '1') {
+  if (process.env['PADDOCK_TEST_MODE'] !== '1') {
     return {
       ok: false,
       response: NextResponse.json(
-        { code: 'forbidden', detail: 'spec-008 admin endpoints require MISSION_CONTROL_TEST_MODE=1' },
+        { code: 'forbidden', detail: 'spec-008 admin endpoints require PADDOCK_TEST_MODE=1' },
         { status: 403 },
       ),
     };

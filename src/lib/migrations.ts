@@ -74,6 +74,224 @@ function quotedSqlValues(values: readonly string[]): string {
   return values.map((value) => `'${value.replaceAll("'", "''")}'`).join(',\n            ')
 }
 
+function quotedIdentifier(value: string): string {
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(value)) throw new Error(`unsafe_sql_identifier:${value}`)
+  return `"${value}"`
+}
+
+const TEXT_LIKE_SQL_TYPES = ['TEXT', 'CHAR', 'CLOB', 'JSON', 'VARCHAR'] as const
+const LEGACY_IDENTITY_PARTS = ['mission', 'control'] as const
+const LEGACY_IDENTITY_TITLE_PARTS = ['Mission', 'Control'] as const
+const LEGACY_IDENTITY_KEBAB = LEGACY_IDENTITY_PARTS.join('-')
+const LEGACY_IDENTITY_SNAKE = LEGACY_IDENTITY_PARTS.join('_')
+const LEGACY_IDENTITY_ENV = LEGACY_IDENTITY_PARTS.map((part) => part.toUpperCase()).join('_')
+const LEGACY_IDENTITY_TITLE = LEGACY_IDENTITY_TITLE_PARTS.join(' ')
+const LEGACY_IDENTITY_PASCAL = LEGACY_IDENTITY_TITLE_PARTS.join('')
+
+const PADDOCK_RENAME_TEXT_REPLACEMENTS = [
+  [`racecraft-lab/${LEGACY_IDENTITY_KEBAB}`, 'racecraft-lab/Paddock'],
+  [`torreypjones/${LEGACY_IDENTITY_KEBAB}`, 'racecraft-lab/Paddock'],
+  [`racecraft/${LEGACY_IDENTITY_KEBAB}`, 'racecraft-lab/Paddock'],
+  [LEGACY_IDENTITY_PASCAL, 'Paddock'],
+  [LEGACY_IDENTITY_ENV, 'PADDOCK'],
+  [LEGACY_IDENTITY_TITLE, 'Paddock'],
+  [LEGACY_IDENTITY_SNAKE, 'paddock'],
+  [LEGACY_IDENTITY_KEBAB, 'paddock'],
+] as const
+
+function rewritePaddockIdentityTextValues(db: Database.Database): void {
+  const tables = db.prepare(`
+    SELECT name
+    FROM sqlite_master
+    WHERE type = 'table'
+      AND name NOT LIKE 'sqlite_%'
+      AND name <> 'schema_migrations'
+  `).all() as Array<{ name: string }>
+
+  for (const { name: table } of tables) {
+    const columns = db.prepare(`PRAGMA table_info(${quotedIdentifier(table)})`).all() as Array<{ name: string; type: string }>
+    const textColumns = columns.filter((column) => {
+      const type = column.type.toUpperCase()
+      return TEXT_LIKE_SQL_TYPES.some((textType) => type.includes(textType))
+    })
+    for (const column of textColumns) {
+      const tableName = quotedIdentifier(table)
+      const columnName = quotedIdentifier(column.name)
+      const statement = db.prepare(`UPDATE ${tableName} SET ${columnName} = replace(${columnName}, ?, ?) WHERE ${columnName} LIKE ?`)
+      for (const [oldValue, newValue] of PADDOCK_RENAME_TEXT_REPLACEMENTS) {
+        statement.run(oldValue, newValue, `%${oldValue}%`)
+      }
+    }
+  }
+}
+
+const AGENT_SANDBOX_LIFECYCLE_COLUMNS = [
+  'id',
+  'workspace_id',
+  'task_id',
+  'stage_key',
+  'sandbox_attempt_key',
+  'task_stage_attempt_id',
+  'task_stage_claim_id',
+  'owner',
+  'sandbox_key',
+  'root_id',
+  'sanitized_relative_path',
+  'handle_id',
+  'status',
+  'created_at',
+  'updated_at',
+  'prepared_at',
+  'running_at',
+  'terminal_at',
+  'cleanup_requested_at',
+  'cleaned_up_at',
+  'metadata_json',
+] as const
+
+const AGENT_SANDBOX_LIFECYCLE_EVENT_COLUMNS = [
+  'id',
+  'lifecycle_id',
+  'workspace_id',
+  'task_id',
+  'stage_key',
+  'sandbox_key',
+  'event_type',
+  'status',
+  'reason_code',
+  'observed_at',
+  'actor_type',
+  'actor_id',
+  'metadata_json',
+] as const
+
+function createAgentSandboxLifecycleTablesSql(): string {
+  return `
+        CREATE TABLE agent_sandbox_lifecycles (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          sandbox_attempt_key TEXT NOT NULL CHECK(length(trim(sandbox_attempt_key)) > 0),
+          task_stage_attempt_id INTEGER,
+          task_stage_claim_id INTEGER,
+          owner TEXT NOT NULL CHECK(owner IN ('paddock', 'openclaw', 'external_harness')),
+          sandbox_key TEXT NOT NULL CHECK(length(trim(sandbox_key)) > 0),
+          root_id TEXT NOT NULL CHECK(length(trim(root_id)) > 0),
+          sanitized_relative_path TEXT NOT NULL CHECK(length(trim(sanitized_relative_path)) > 0),
+          handle_id TEXT,
+          status TEXT NOT NULL CHECK(status IN (
+            'created',
+            'prepared',
+            'running',
+            'terminal',
+            'cleanup_pending',
+            'cleaned_up',
+            'rolled_back',
+            'cleanup_failed'
+          )),
+          created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+          updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+          prepared_at TEXT,
+          running_at TEXT,
+          terminal_at TEXT,
+          cleanup_requested_at TEXT,
+          cleaned_up_at TEXT,
+          metadata_json TEXT,
+          UNIQUE(workspace_id, sandbox_key)
+        );
+
+        CREATE TABLE agent_sandbox_lifecycle_events (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          lifecycle_id INTEGER NOT NULL,
+          workspace_id INTEGER NOT NULL,
+          task_id INTEGER NOT NULL,
+          stage_key TEXT NOT NULL CHECK(length(trim(stage_key)) > 0),
+          sandbox_key TEXT NOT NULL CHECK(length(trim(sandbox_key)) > 0),
+          event_type TEXT NOT NULL CHECK(length(trim(event_type)) > 0),
+          status TEXT CHECK(status IS NULL OR status IN (
+            'created',
+            'prepared',
+            'running',
+            'terminal',
+            'cleanup_pending',
+            'cleaned_up',
+            'rolled_back',
+            'cleanup_failed'
+          )),
+          reason_code TEXT,
+          observed_at TEXT NOT NULL,
+          actor_type TEXT CHECK(actor_type IS NULL OR actor_type IN ('system', 'operator', 'test', 'fake_owner')),
+          actor_id TEXT,
+          metadata_json TEXT,
+          FOREIGN KEY(lifecycle_id) REFERENCES agent_sandbox_lifecycles(id) ON DELETE CASCADE
+        );
+  `
+}
+
+function createAgentSandboxLifecycleIndexes(db: Database.Database): void {
+  db.exec(`
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycles_task_status
+          ON agent_sandbox_lifecycles(workspace_id, task_id, stage_key, status, updated_at DESC);
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycles_attempt
+          ON agent_sandbox_lifecycles(workspace_id, task_stage_attempt_id)
+          WHERE task_stage_attempt_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycles_claim
+          ON agent_sandbox_lifecycles(workspace_id, task_stage_claim_id)
+          WHERE task_stage_claim_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycle_events_lifecycle_order
+          ON agent_sandbox_lifecycle_events(lifecycle_id, observed_at ASC, id ASC);
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycle_events_task_order
+          ON agent_sandbox_lifecycle_events(workspace_id, task_id, stage_key, observed_at ASC, id ASC);
+        CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycle_events_sandbox_order
+          ON agent_sandbox_lifecycle_events(workspace_id, sandbox_key, observed_at ASC, id ASC);
+  `)
+}
+
+function agentSandboxLifecyclesSqlIncludes(db: Database.Database, token: string): boolean {
+  const row = db.prepare(`
+    SELECT sql
+    FROM sqlite_master
+    WHERE type = 'table' AND name = 'agent_sandbox_lifecycles'
+  `).get() as { sql: string | null } | undefined
+  return row?.sql?.includes(token) === true
+}
+
+function rebuildLegacyAgentSandboxOwnerConstraintForPaddock(db: Database.Database): void {
+  if (!tableExists(db, 'agent_sandbox_lifecycles') || !agentSandboxLifecyclesSqlIncludes(db, LEGACY_IDENTITY_SNAKE)) return
+
+  const lifecycleColumns = AGENT_SANDBOX_LIFECYCLE_COLUMNS.join(', ')
+  const lifecycleSelectColumns = AGENT_SANDBOX_LIFECYCLE_COLUMNS
+    .map((column) => column === 'owner'
+      ? `CASE owner WHEN '${LEGACY_IDENTITY_SNAKE}' THEN 'paddock' ELSE owner END AS owner`
+      : column)
+    .join(', ')
+  const eventColumns = AGENT_SANDBOX_LIFECYCLE_EVENT_COLUMNS.join(', ')
+
+  db.exec(`
+        DROP INDEX IF EXISTS idx_agent_sandbox_lifecycle_events_sandbox_order;
+        DROP INDEX IF EXISTS idx_agent_sandbox_lifecycle_events_task_order;
+        DROP INDEX IF EXISTS idx_agent_sandbox_lifecycle_events_lifecycle_order;
+        DROP INDEX IF EXISTS idx_agent_sandbox_lifecycles_claim;
+        DROP INDEX IF EXISTS idx_agent_sandbox_lifecycles_attempt;
+        DROP INDEX IF EXISTS idx_agent_sandbox_lifecycles_task_status;
+        DROP TABLE IF EXISTS agent_sandbox_lifecycle_events_m81_old;
+        DROP TABLE IF EXISTS agent_sandbox_lifecycles_m81_old;
+        ALTER TABLE agent_sandbox_lifecycle_events RENAME TO agent_sandbox_lifecycle_events_m81_old;
+        ALTER TABLE agent_sandbox_lifecycles RENAME TO agent_sandbox_lifecycles_m81_old;
+        ${createAgentSandboxLifecycleTablesSql()}
+        INSERT INTO agent_sandbox_lifecycles (${lifecycleColumns})
+        SELECT ${lifecycleSelectColumns}
+        FROM agent_sandbox_lifecycles_m81_old;
+        INSERT INTO agent_sandbox_lifecycle_events (${eventColumns})
+        SELECT ${eventColumns}
+        FROM agent_sandbox_lifecycle_events_m81_old;
+        DROP TABLE agent_sandbox_lifecycle_events_m81_old;
+        DROP TABLE agent_sandbox_lifecycles_m81_old;
+  `)
+  createAgentSandboxLifecycleIndexes(db)
+}
+
 function taskStageClaimsCreateSql(releaseReasons: readonly string[]): string {
   return `
         CREATE TABLE task_stage_claims (
@@ -1468,7 +1686,7 @@ const migrations: Migration[] = [
           agent_name TEXT,
           model TEXT,
           provider TEXT,
-          runtime TEXT DEFAULT 'mission-control',
+          runtime TEXT DEFAULT 'paddock',
           runtime_version TEXT,
           trigger_type TEXT,
           parent_run_id TEXT,
@@ -3363,8 +3581,8 @@ const migrations: Migration[] = [
   },
   {
     // SPEC-009B follow-up — the seed/importer code references workflow_templates.enabled
-    // (see src/lib/mission-control-seed/evidence.ts and src/lib/workflow-contracts/importer.ts),
-    // but no prior migration added it. Test fixtures (src/lib/__tests__/mission-control-seed/test-db.ts)
+    // (see src/lib/paddock-seed/evidence.ts and src/lib/workflow-contracts/importer.ts),
+    // but no prior migration added it. Test fixtures (src/lib/__tests__/paddock-seed/test-db.ts)
     // include the column directly, so unit tests pass while live DBs upgrading from pre-PR-30
     // fail seed apply with "no such column: enabled". Surfaced 2026-05-12 during HAL deploy.
     id: '072_workflow_templates_enabled',
@@ -3798,7 +4016,7 @@ const migrations: Migration[] = [
           sandbox_attempt_key TEXT NOT NULL CHECK(length(trim(sandbox_attempt_key)) > 0),
           task_stage_attempt_id INTEGER,
           task_stage_claim_id INTEGER,
-          owner TEXT NOT NULL CHECK(owner IN ('mission_control', 'openclaw', 'external_harness')),
+          owner TEXT NOT NULL CHECK(owner IN ('paddock', 'openclaw', 'external_harness')),
           sandbox_key TEXT NOT NULL CHECK(length(trim(sandbox_key)) > 0),
           root_id TEXT NOT NULL CHECK(length(trim(root_id)) > 0),
           sanitized_relative_path TEXT NOT NULL CHECK(length(trim(sanitized_relative_path)) > 0),
@@ -3865,6 +4083,13 @@ const migrations: Migration[] = [
         CREATE INDEX IF NOT EXISTS idx_agent_sandbox_lifecycle_events_sandbox_order
           ON agent_sandbox_lifecycle_events(workspace_id, sandbox_key, observed_at ASC, id ASC);
       `)
+    },
+  },
+  {
+    id: '081_paddock_hard_rename',
+    up(db: Database.Database) {
+      rebuildLegacyAgentSandboxOwnerConstraintForPaddock(db)
+      rewritePaddockIdentityTextValues(db)
     },
   },
 ]

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { useMissionControl, type ExecApprovalRequest } from '@/store'
+import { usePaddock, type ExecApprovalRequest } from '@/store'
 import { useWebSocket } from '@/lib/websocket'
 import { matchesGlobPattern } from '@/lib/exec-approval-utils'
 
@@ -38,7 +38,7 @@ function timeAgo(timestamp: number): string {
 
 export function ExecApprovalPanel() {
   const t = useTranslations('execApproval')
-  const { execApprovals, updateExecApproval } = useMissionControl()
+  const { execApprovals, updateExecApproval } = usePaddock()
   const { sendMessage } = useWebSocket()
   const [filter, setFilter] = useState<FilterTab>('pending')
   const [view, setView] = useState<PanelView>('approvals')

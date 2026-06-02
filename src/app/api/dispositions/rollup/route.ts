@@ -37,7 +37,7 @@ import {
 
 function nowSeconds(): number {
   const fixedNow =
-    process.env.MISSION_CONTROL_TEST_MODE === '1'
+    process.env.PADDOCK_TEST_MODE === '1'
       ? process.env.MC_SPEC_007_FIXED_NOW
       : undefined
   if (fixedNow) {

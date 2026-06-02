@@ -9,7 +9,7 @@ The generic product-line seeder applies reviewed config-owned Paddock seed state
 Canonical Paddock config path:
 
 ```text
-docs/ai/product-lines/mission-control.yaml
+docs/ai/product-lines/paddock.yaml
 ```
 
 The config must use this schema marker:
@@ -28,8 +28,8 @@ Preflight validates the config and target without writes:
 
 ```bash
 pnpm seed:product-line -- \
-  --config docs/ai/product-lines/mission-control.yaml \
-  --db .data/mission-control.db \
+  --config docs/ai/product-lines/paddock.yaml \
+  --db .data/paddock.db \
   --mode preflight \
   --json
 ```
@@ -38,8 +38,8 @@ Apply writes config-owned state only after preflight succeeds:
 
 ```bash
 pnpm seed:product-line -- \
-  --config docs/ai/product-lines/mission-control.yaml \
-  --db .data/mission-control.db \
+  --config docs/ai/product-lines/paddock.yaml \
+  --db .data/paddock.db \
   --mode apply \
   --json
 ```
@@ -48,8 +48,8 @@ Verify compares target state to config without writes:
 
 ```bash
 pnpm seed:product-line -- \
-  --config docs/ai/product-lines/mission-control.yaml \
-  --db .data/mission-control.db \
+  --config docs/ai/product-lines/paddock.yaml \
+  --db .data/paddock.db \
   --mode verify \
   --json
 ```
@@ -79,13 +79,13 @@ Target repository conflicts, product-line conflicts, reserved future flags alrea
 The compatibility wrapper remains available:
 
 ```bash
-pnpm seed:mission-control -- \
-  --db .data/mission-control.db \
+pnpm seed:paddock -- \
+  --db .data/paddock.db \
   --mode verify \
   --json
 ```
 
-The wrapper delegates to the generic seeder with `docs/ai/product-lines/mission-control.yaml`. Wrapper output keeps `entrypoint:"seed:mission-control"` while preserving the same schema, modes, evidence categories, existing-target policy, snapshot shape, residue blocking policy, and no-mutation proof model as `pnpm seed:product-line`.
+The wrapper delegates to the generic seeder with `docs/ai/product-lines/paddock.yaml`. Wrapper output keeps `entrypoint:"seed:paddock"` while preserving the same schema, modes, evidence categories, existing-target policy, snapshot shape, residue blocking policy, and no-mutation proof model as `pnpm seed:product-line`.
 
 ## Product Line B Exclusion
 
@@ -114,7 +114,7 @@ Static scope guard:
 
 ```bash
 rg -n "Product Line B|product-line-b|focusengine|createTask\\(|INSERT INTO tasks|gh issue|github.*(create|comment|close|label)|runner|sandbox|auto.?merge|speckit-setup|speckit-autopilot" \
-  docs/ai/product-lines scripts/seed-product-line.ts scripts/seed-mission-control-product-line.ts src/lib/product-line-seed src/lib/__tests__/product-line-seed*.test.ts
+  docs/ai/product-lines scripts/seed-product-line.ts scripts/seed-paddock-product-line.ts src/lib/product-line-seed src/lib/__tests__/product-line-seed*.test.ts
 ```
 
 Expected matches are limited to negative assertions, blocked-side-effect declarations, preserved-state evidence reads, and docs describing excluded surfaces.

@@ -45,7 +45,7 @@ Codex sandbox note: repository guidance says `pnpm test` should run outside the 
 
 ## Implementation Evidence Packet
 
-Captured on `013b-claim-reconciliation` from `/Users/fredrickgabelmann/.codex/worktrees/6b95/racecraft-mission-control/.worktrees/013b-claim-reconciliation`.
+Captured on `013b-claim-reconciliation` from `/Users/fredrickgabelmann/.codex/worktrees/6b95/racecraft-paddock/.worktrees/013b-claim-reconciliation`.
 
 ### Scope Evidence
 

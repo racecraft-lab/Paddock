@@ -19,7 +19,7 @@ export interface CliRunResult {
 }
 
 export function buildPnpmSeedInvocation(
-  scriptName: 'seed:product-line' | 'seed:mission-control',
+  scriptName: 'seed:product-line' | 'seed:paddock',
   args: string[],
   cwd = process.cwd(),
 ): PnpmSeedInvocation {
@@ -31,7 +31,7 @@ export function buildPnpmSeedInvocation(
 }
 
 export function invokePnpmSeedScript(
-  scriptName: 'seed:product-line' | 'seed:mission-control',
+  scriptName: 'seed:product-line' | 'seed:paddock',
   args: string[],
   cwd = process.cwd(),
 ): CliRunResult {
@@ -215,7 +215,7 @@ describe('generic product-line seed CLI foundation', () => {
       scripts: Record<string, string>
     }
 
-    expect(packageJson.scripts['seed:mission-control']).toContain('scripts/seed-mission-control-product-line.ts')
+    expect(packageJson.scripts['seed:paddock']).toContain('scripts/seed-paddock-product-line.ts')
     expect(packageJson.scripts['seed:product-line']).toBe(
       'pnpm run verify:node && node --experimental-strip-types scripts/seed-product-line.ts',
     )
@@ -225,7 +225,7 @@ describe('generic product-line seed CLI foundation', () => {
   it('builds pnpm script invocations with the argument separator preserved', () => {
     expect(buildPnpmSeedInvocation('seed:product-line', [
       '--config',
-      'docs/ai/product-lines/mission-control.yaml',
+      'docs/ai/product-lines/paddock.yaml',
       '--db',
       '.data/spec-010a-safe.db',
       '--mode',
@@ -237,7 +237,7 @@ describe('generic product-line seed CLI foundation', () => {
         'seed:product-line',
         '--',
         '--config',
-        'docs/ai/product-lines/mission-control.yaml',
+        'docs/ai/product-lines/paddock.yaml',
         '--db',
         '.data/spec-010a-safe.db',
         '--mode',
@@ -280,7 +280,7 @@ describe('generic product-line seed CLI contracts', () => {
     for (const mode of ['preflight', 'apply', 'verify']) {
       const result = runCli([
         '--config',
-        'docs/ai/product-lines/mission-control.yaml',
+        'docs/ai/product-lines/paddock.yaml',
         '--db',
         ':memory:',
         '--mode',
@@ -294,7 +294,7 @@ describe('generic product-line seed CLI contracts', () => {
       expect(parsed).toMatchObject({
         entrypoint: 'seed:product-line',
         mode,
-        config: { path: 'docs/ai/product-lines/mission-control.yaml' },
+        config: { path: 'docs/ai/product-lines/paddock.yaml' },
       })
     }
   })
@@ -305,7 +305,7 @@ describe('generic product-line seed CLI contracts', () => {
     const result = runCli([
       '--',
       '--config',
-      'docs/ai/product-lines/mission-control.yaml',
+      'docs/ai/product-lines/paddock.yaml',
       '--db',
       ':memory:',
       '--mode',
@@ -327,9 +327,9 @@ describe('generic product-line seed CLI contracts', () => {
 
     for (const args of [
       ['--db', ':memory:', '--mode', 'preflight', '--json'],
-      ['--config', 'docs/ai/product-lines/mission-control.yaml', '--mode', 'preflight', '--json'],
-      ['--config', 'docs/ai/product-lines/mission-control.yaml', '--db', ':memory:', '--mode', 'plan', '--json'],
-      ['--config', 'docs/ai/product-lines/mission-control.yaml', '--db', ':memory:', '--mode', 'preflight', '--unknown'],
+      ['--config', 'docs/ai/product-lines/paddock.yaml', '--mode', 'preflight', '--json'],
+      ['--config', 'docs/ai/product-lines/paddock.yaml', '--db', ':memory:', '--mode', 'plan', '--json'],
+      ['--config', 'docs/ai/product-lines/paddock.yaml', '--db', ':memory:', '--mode', 'preflight', '--unknown'],
     ]) {
       const result = runCli(args)
       const parsed = parseProductLineSeedJsonOutput(result)
@@ -357,7 +357,7 @@ describe('generic product-line seed CLI contracts', () => {
 
     const result = runCli([
       '--config',
-      'docs/ai/product-lines/mission-control.yaml',
+      'docs/ai/product-lines/paddock.yaml',
       '--db',
       ':memory:',
       '--mode',
@@ -383,9 +383,9 @@ describe('generic product-line seed CLI contracts', () => {
 describe('Paddock seed compatibility wrapper', () => {
   it('delegates preflight, apply, verify, refusal, and allow-existing to the canonical generic config behavior', async () => {
     const { runProductLineSeed } = await import('../product-line-seed/seed')
-    const { runSeedMissionControlCli } = await import('../../../scripts/seed-mission-control-product-line')
+    const { runSeedPaddockCli } = await import('../../../scripts/seed-paddock-product-line')
     const canonicalArgs = {
-      configPath: 'docs/ai/product-lines/mission-control.yaml',
+      configPath: 'docs/ai/product-lines/paddock.yaml',
       dbPath: ':memory:',
       json: true,
     }
@@ -396,7 +396,7 @@ describe('Paddock seed compatibility wrapper', () => {
       mode: 'preflight',
       allowExisting: false,
     })
-    const wrapperPreflight = parseProductLineSeedJsonOutput(runSeedMissionControlCli([
+    const wrapperPreflight = parseProductLineSeedJsonOutput(runSeedPaddockCli([
       '--db',
       ':memory:',
       '--mode',
@@ -404,21 +404,21 @@ describe('Paddock seed compatibility wrapper', () => {
       '--json',
     ], { db: makeWrapperParityDb() }))
     const wrapperDb = makeWrapperParityDb()
-    const wrapperApply = parseProductLineSeedJsonOutput(runSeedMissionControlCli([
+    const wrapperApply = parseProductLineSeedJsonOutput(runSeedPaddockCli([
       '--db',
       ':memory:',
       '--mode',
       'apply',
       '--json',
     ], { db: wrapperDb }))
-    const wrapperRefusal = parseProductLineSeedJsonOutput(runSeedMissionControlCli([
+    const wrapperRefusal = parseProductLineSeedJsonOutput(runSeedPaddockCli([
       '--db',
       ':memory:',
       '--mode',
       'apply',
       '--json',
     ], { db: wrapperDb }))
-    const wrapperAllowExisting = parseProductLineSeedJsonOutput(runSeedMissionControlCli([
+    const wrapperAllowExisting = parseProductLineSeedJsonOutput(runSeedPaddockCli([
       '--db',
       ':memory:',
       '--mode',
@@ -426,7 +426,7 @@ describe('Paddock seed compatibility wrapper', () => {
       '--allow-existing',
       '--json',
     ], { db: wrapperDb }))
-    const wrapperVerify = parseProductLineSeedJsonOutput(runSeedMissionControlCli([
+    const wrapperVerify = parseProductLineSeedJsonOutput(runSeedPaddockCli([
       '--db',
       ':memory:',
       '--mode',
@@ -437,25 +437,25 @@ describe('Paddock seed compatibility wrapper', () => {
     expect(wrapperPreflight).toMatchObject({
       schema_version: 'product-line-seed-result-v1',
       ok: true,
-      entrypoint: 'seed:mission-control',
+      entrypoint: 'seed:paddock',
       mode: 'preflight',
       status: 'ready',
       mutation_status: 'not_mutated',
-      config: { path: 'docs/ai/product-lines/mission-control.yaml', product_line_slug: 'mission-control' },
+      config: { path: 'docs/ai/product-lines/paddock.yaml', product_line_slug: 'paddock' },
     })
     expect(evidenceCategoryKeys(wrapperPreflight)).toEqual(evidenceCategoryKeys(genericPreflight))
     expect(snapshotSurfaceCounts(wrapperPreflight)).toEqual(snapshotSurfaceCounts(genericPreflight))
     expect(wrapperApply).toMatchObject({
       ok: true,
-      entrypoint: 'seed:mission-control',
+      entrypoint: 'seed:paddock',
       mode: 'apply',
       status: 'seeded',
       mutation_status: 'applied',
-      config: { path: 'docs/ai/product-lines/mission-control.yaml', product_line_slug: 'mission-control' },
+      config: { path: 'docs/ai/product-lines/paddock.yaml', product_line_slug: 'paddock' },
     })
     expect(wrapperRefusal).toMatchObject({
       ok: false,
-      entrypoint: 'seed:mission-control',
+      entrypoint: 'seed:paddock',
       mode: 'apply',
       status: 'existing_target_refused',
       code: 'EXISTING_TARGET_REQUIRES_ALLOW_EXISTING',
@@ -463,15 +463,15 @@ describe('Paddock seed compatibility wrapper', () => {
     })
     expect(wrapperAllowExisting).toMatchObject({
       ok: true,
-      entrypoint: 'seed:mission-control',
+      entrypoint: 'seed:paddock',
       mode: 'apply',
       status: 'seeded',
       mutation_status: 'applied',
-      config: { path: 'docs/ai/product-lines/mission-control.yaml', product_line_slug: 'mission-control' },
+      config: { path: 'docs/ai/product-lines/paddock.yaml', product_line_slug: 'paddock' },
     })
     expect(wrapperVerify).toMatchObject({
       ok: true,
-      entrypoint: 'seed:mission-control',
+      entrypoint: 'seed:paddock',
       mode: 'verify',
       status: 'verified',
       mutation_status: 'verified',

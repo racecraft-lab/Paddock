@@ -1,7 +1,7 @@
 import { act, render, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useServerEvents } from '@/lib/use-server-events'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { createFacilityScope, createProductLineScope, type ProductLine } from '@/types/product-line'
 
 const productLine: ProductLine = {
@@ -45,7 +45,7 @@ describe('useServerEvents', () => {
   beforeEach(() => {
     FakeEventSource.instances = []
     vi.stubGlobal('EventSource', FakeEventSource)
-    useMissionControl.setState({
+    usePaddock.setState({
       workspaceSwitcherEnabled: true,
       activeProductLineScope: createFacilityScope(7, 1),
     })
@@ -63,7 +63,7 @@ describe('useServerEvents', () => {
     expect(facilityStream.url).toBe('/api/events?workspace_scope=facility')
 
     act(() => {
-      useMissionControl.setState({
+      usePaddock.setState({
         activeProductLineScope: createProductLineScope(productLine, 2),
       })
     })

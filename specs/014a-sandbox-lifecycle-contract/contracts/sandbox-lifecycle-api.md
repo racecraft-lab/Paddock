@@ -36,11 +36,11 @@ Plan may choose a nested detail route if it better matches the App Router layout
   "lifecycles": [
     {
       "id": "9",
-      "owner": "mission_control",
-      "sandbox_key": "workspace/1/product-line/mission-control/task/123/stage/issue_remediation/attempt/456/owner/mission_control",
+      "owner": "paddock",
+      "sandbox_key": "workspace/1/product-line/paddock/task/123/stage/issue_remediation/attempt/456/owner/paddock",
       "status": "cleaned_up",
-      "root_id": "mission_control_data_sandboxes",
-      "sanitized_relative_path": "workspace/1/product-line/mission-control/task/123/stage/issue_remediation/attempt/456/owner/mission_control",
+      "root_id": "paddock_data_sandboxes",
+      "sanitized_relative_path": "workspace/1/product-line/paddock/task/123/stage/issue_remediation/attempt/456/owner/paddock",
       "handle_id": null,
       "task_stage_attempt_id": "456",
       "task_stage_claim_id": "789",

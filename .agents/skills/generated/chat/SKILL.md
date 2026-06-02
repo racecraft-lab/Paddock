@@ -1,6 +1,6 @@
 ---
 name: chat
-description: "Skill for the Chat area of mission-control. 62 symbols across 10 files."
+description: "Skill for the Chat area of paddock. 62 symbols across 10 files."
 ---
 
 # Chat

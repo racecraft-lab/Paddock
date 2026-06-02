@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { useMissionControl, type ExecApprovalRequest } from '@/store'
+import { usePaddock, type ExecApprovalRequest } from '@/store'
 import { useWebSocket } from '@/lib/websocket'
 
 const RISK_BORDER: Record<ExecApprovalRequest['risk'], string> = {
@@ -40,7 +40,7 @@ function MetaRow({ label, value }: { label: string; value?: string | null }) {
 }
 
 export function ExecApprovalOverlay() {
-  const { execApprovals, updateExecApproval } = useMissionControl()
+  const { execApprovals, updateExecApproval } = usePaddock()
   const { sendMessage } = useWebSocket()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)

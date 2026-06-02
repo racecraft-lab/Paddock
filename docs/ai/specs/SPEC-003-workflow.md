@@ -678,7 +678,7 @@ For each task, follow this cycle:
 ## Project Structure Reference
 
 ```text
-racecraft-mission-control/
+racecraft-paddock/
 |-- src/lib/aegis.ts                         # New SPEC-003 Aegis resolver
 |-- src/lib/task-dispatch.ts                 # Scheduler review dispatch integration
 |-- src/lib/scheduler.ts                     # Existing aegis_review cron task

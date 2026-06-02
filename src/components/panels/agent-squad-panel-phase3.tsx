@@ -22,7 +22,7 @@ import {
   CreateAgentModal
 } from './agent-detail-tabs'
 import { formatModelName, buildTaskStatParts } from '@/lib/agent-card-helpers'
-import { useMissionControl, type Agent } from '@/store'
+import { usePaddock, type Agent } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 
 const log = createClientLogger('AgentSquadPhase3')
@@ -95,7 +95,7 @@ export function AgentSquadPanelPhase3() {
     activeProductLineScope,
     workspaceListStatus,
     workspaceSwitcherEnabled,
-  } = useMissionControl()
+  } = usePaddock()
   const [loading, setLoading] = useState(agents.length === 0)
   const [error, setError] = useState<string | null>(null)
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
@@ -624,7 +624,7 @@ function AgentDetailModalPhase3({
   const [showDeleteMenu, setShowDeleteMenu] = useState(false)
   const [saveBusy, setSaveBusy] = useState(false)
   const deleteMenuRef = useRef<HTMLDivElement>(null)
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {

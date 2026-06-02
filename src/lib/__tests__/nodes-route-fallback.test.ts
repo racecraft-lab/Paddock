@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server'
 const requireRoleMock = vi.fn(() => ({ user: { role: 'viewer', workspace_id: 1 } }))
 const callOpenClawGatewayMock = vi.fn()
 const loggerWarnMock = vi.fn()
-const detectUnsupportedMcpEnvEntriesMock = vi.fn(() => ['mcp.servers.mission-control.env.FEATURE_FLAGS'])
+const detectUnsupportedMcpEnvEntriesMock = vi.fn(() => ['mcp.servers.paddock.env.FEATURE_FLAGS'])
 const formatUnsupportedMcpEnvWarningMock = vi.fn((offenders: string[]) => (
   offenders.length > 0 ? `unsupported: ${offenders[0]}` : null
 ))

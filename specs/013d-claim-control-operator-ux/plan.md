@@ -15,7 +15,7 @@ The technical approach is to keep loading and refresh orchestration in `TaskDeta
 **Primary Dependencies**: Existing Next.js, React, Zustand where already used, Tailwind CSS 3, `better-sqlite3`, Vitest, Playwright, Storybook 10; no new runtime dependency  
 **Storage**: Existing SQLite tables only through `better-sqlite3`; no migration and no new persisted UI state  
 **Testing**: Vitest component/unit tests, real Playwright e2e against the running app, Storybook visual states, `pnpm typecheck`, `pnpm lint`, `pnpm build`  
-**Target Platform**: Mission Control web app task detail modal in supported desktop browser viewports; existing responsive modal constraints apply  
+**Target Platform**: Paddock web app task detail modal in supported desktop browser viewports; existing responsive modal constraints apply
 **Project Type**: Next.js web application  
 **Performance Goals**: Claim-control read fetch and refresh should not block existing evidence/run-state rendering; mutation completion refreshes the bounded read set with stable loading and receipt states rather than layout-shifting controls  
 **Constraints**: Preserve SPEC-013B/C backend authority; derive action availability only from `claim_control.available_actions[]`; keep raw idempotency keys and unsafe diagnostics out of UI, storage, screenshots, and manifests; no new feature flag, migration, route, dashboard, scheduler, sandbox, adapter, harness execution, direct GitHub mutation, or successor selection  

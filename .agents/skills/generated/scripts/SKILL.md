@@ -1,6 +1,6 @@
 ---
 name: scripts
-description: "Skill for the Scripts area of mission-control. 486 symbols across 34 files."
+description: "Skill for the Scripts area of paddock. 486 symbols across 34 files."
 ---
 
 # Scripts

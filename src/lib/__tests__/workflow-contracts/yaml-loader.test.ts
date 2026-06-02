@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { loadWorkflowContractFromString } from '@/lib/workflow-contracts/yaml-loader'
 
 const validYaml = `
-family: mission-control
+family: paddock
 version: workflow-contract-v1
 workspace_id: 1
 allowed_variable_namespaces:
@@ -28,8 +28,8 @@ describe('workflow contract YAML loader', () => {
     ['non-mapping roots', '- one\n- two\n'],
     ['duplicate keys', 'family: one\nfamily: two\n'],
     ['custom tags', 'family: !unsafe value\n'],
-    ['anchors', 'family: &family mission-control\nversion: *family\n'],
-    ['merge keys', 'base: &base\n  family: mission-control\n<<: *base\n'],
+    ['anchors', 'family: &family paddock\nversion: *family\n'],
+    ['merge keys', 'base: &base\n  family: paddock\n<<: *base\n'],
     ['folded prompt scalars', validYaml.replace('task_prompt: |', 'task_prompt: >')],
   ])('rejects %s before canonical model construction', (_label, source) => {
     expect(() => loadWorkflowContractFromString(source, 'bad.yaml')).toThrow(/YAML|contract|prompt|anchor|duplicate|mapping|document/i)
@@ -37,7 +37,7 @@ describe('workflow contract YAML loader', () => {
 
   it('passes malformed template items through for structured validation', () => {
     const contract = loadWorkflowContractFromString(`
-family: mission-control
+family: paddock
 version: workflow-contract-v1
 workspace_id: 1
 allowed_variable_namespaces:

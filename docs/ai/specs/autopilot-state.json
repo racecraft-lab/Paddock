@@ -54,7 +54,7 @@
   "preflight": {
     "status": "passed",
     "checked_at": "2026-05-30T13:45:11Z",
-    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/38b5/racecraft-mission-control/.worktrees/013d-claim-control-operator-ux",
+    "worktree": "/Users/fredrickgabelmann/.codex/worktrees/38b5/racecraft-paddock/.worktrees/013d-claim-control-operator-ux",
     "model_policy": {
       "required_parent_model": "highest available Codex tier, prefer gpt-5.5",
       "parent_session_note": "Parent session has spawn_agent access and continued as main orchestrator; runtime does not expose direct self-introspection for parent model name.",

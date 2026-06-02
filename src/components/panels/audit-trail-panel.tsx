@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import ArtifactAdminPanel from './artifact-admin-panel'
 
 interface AuditEvent {
@@ -549,7 +549,7 @@ function DispositionsTab() {
   // by Product Line state. Operators filter workspace_id explicitly via the
   // panel's input. The /api/dispositions route enforces non-Facility callers
   // server-side (returning 400 workspace_id_required if needed).
-  const { currentUser } = useMissionControl()
+  const { currentUser } = usePaddock()
 
   const [filters, setFilters] = useState<DispositionFilters>(INITIAL_DISPOSITION_FILTERS)
   const [rows, setRows] = useState<DispositionRow[]>([])

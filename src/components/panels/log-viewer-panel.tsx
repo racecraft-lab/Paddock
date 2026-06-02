@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { createClientLogger } from '@/lib/client-logger'
 
@@ -31,7 +31,7 @@ function downloadFile(content: string, filename: string, mime: string) {
 
 export function LogViewerPanel() {
   const t = useTranslations('logViewer')
-  const { logs, logFilters, setLogFilters, clearLogs, addLog } = useMissionControl()
+  const { logs, logFilters, setLogFilters, clearLogs, addLog } = usePaddock()
   const [isAutoScroll, setIsAutoScroll] = useState(true)
   const [availableSources, setAvailableSources] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)

@@ -25,7 +25,7 @@ type GatewayFrame = {
 }
 
 const PROTOCOL_VERSION = 4
-const DEFAULT_GATEWAY_CLIENT_ID = process.env.MISSION_CONTROL_GATEWAY_CLIENT_ID || "gateway-client"
+const DEFAULT_GATEWAY_CLIENT_ID = process.env.PADDOCK_GATEWAY_CLIENT_ID || "gateway-client"
 const DEFAULT_GATEWAY_ROLE = "operator"
 const DEFAULT_GATEWAY_SCOPES = [
   "operator.admin",

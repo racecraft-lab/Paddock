@@ -19,7 +19,7 @@ function action(actionName: ClaimControlDraft['action'], enabled = true, unavail
 
 function control(overrides: Partial<ClaimControlReadModel> = {}): ClaimControlReadModel {
   return {
-    stage_key: 'mission-control_issue_remediation',
+    stage_key: 'paddock_issue_remediation',
     authorization: { required_role: 'operator', current_role: 'operator', can_mutate: true },
     available_actions: [action('retry'), action('release'), action('cancel')],
     retry_eligibility: { state: 'eligible', reason: 'latest attempt failed', evidence_type: 'attempt', evidence_id: '22' },
@@ -51,8 +51,8 @@ function model(overrides: Partial<TaskClaimReconciliationEnvelope> = {}): TaskCl
       id: '2200',
       workspace_id: '1',
       status: 'in_progress',
-      stage_key: 'mission-control_issue_remediation',
-      github: { repo: 'racecraft-lab/mission-control', issue_number: 72, pr_number: null },
+      stage_key: 'paddock_issue_remediation',
+      github: { repo: 'racecraft-lab/paddock', issue_number: 72, pr_number: null },
     },
     feature_flag: { key: 'FEATURE_TASK_CONTROL_PLANE', enabled: true },
     eligibility: { state: 'eligible', reason: null },
@@ -171,7 +171,7 @@ export const ReceiptConflict: Story = {
     receipt: buildReceipt({
       action: 'retry',
       outcome: 'stale_state',
-      stageKey: 'mission-control_issue_remediation',
+      stageKey: 'paddock_issue_remediation',
       activityId: null,
       idempotencyReplayed: false,
       sanitizedErrorCategory: 'stale_state',

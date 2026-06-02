@@ -68,7 +68,7 @@ export function createRateLimiter(options: RateLimiterOptions) {
   return function checkRateLimit(request: Request): NextResponse | null {
     // Allow disabling non-critical rate limiting for E2E tests
     // In CI, standalone server runs with NODE_ENV=production but needs rate limit bypass
-    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && (process.env.NODE_ENV !== 'production' || process.env.MISSION_CONTROL_TEST_MODE === '1')) return null
+    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && (process.env.NODE_ENV !== 'production' || process.env.PADDOCK_TEST_MODE === '1')) return null
     const ip = extractClientIp(request)
     const now = Date.now()
     const entry = store.get(ip)
@@ -139,7 +139,7 @@ export function createAgentRateLimiter(options: RateLimiterOptions) {
   if (cleanupInterval.unref) cleanupInterval.unref()
 
   return function checkAgentRateLimit(request: Request): NextResponse | null {
-    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && (process.env.NODE_ENV !== 'production' || process.env.MISSION_CONTROL_TEST_MODE === '1')) return null
+    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && (process.env.NODE_ENV !== 'production' || process.env.PADDOCK_TEST_MODE === '1')) return null
 
     const agentName = (request.headers.get('x-agent-name') || '').trim()
     const key = agentName || `ip:${extractClientIp(request)}`
@@ -205,7 +205,7 @@ export function createKeyedRateLimiter(options: RateLimiterOptions) {
   if (cleanupInterval.unref) cleanupInterval.unref()
 
   return function checkKeyedRateLimit(key: string): NextResponse | null {
-    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && (process.env.NODE_ENV !== 'production' || process.env.MISSION_CONTROL_TEST_MODE === '1')) return null
+    if (process.env.MC_DISABLE_RATE_LIMIT === '1' && !options.critical && (process.env.NODE_ENV !== 'production' || process.env.PADDOCK_TEST_MODE === '1')) return null
 
     const now = Date.now()
     const entry = store.get(key)

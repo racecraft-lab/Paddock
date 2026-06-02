@@ -244,7 +244,7 @@ describe('visual PR Pages publisher metadata', () => {
       prTitle: 'SPEC-008 governance',
       prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
       repository: 'racecraft-lab/Paddock',
-      schema: 'mission-control.visual-review-state.v1',
+      schema: 'paddock.visual-review-state.v1',
       surfaces: {
         storybook: {
           baseRef: 'main',
@@ -296,7 +296,7 @@ describe('visual PR Pages publisher metadata', () => {
         title: 'SPEC-008 governance',
       }])
       const commentsResponse = JSON.stringify([{
-        body: `<!-- mission-control-visual-review-state:v1\n${JSON.stringify(approvedState, null, 2)}\n-->`,
+        body: `<!-- paddock-visual-review-state:v1\n${JSON.stringify(approvedState, null, 2)}\n-->`,
         created_at: '2026-05-04T20:00:00Z',
         id: 2600,
         updated_at: '2026-05-04T20:00:00Z',
@@ -399,7 +399,7 @@ globalThis.fetch = async (url) => {
       prTitle: 'SPEC-008 governance',
       prUrl: 'https://github.com/racecraft-lab/Paddock/pull/26',
       repository: 'racecraft-lab/Paddock',
-      schema: 'mission-control.visual-review-state.v1',
+      schema: 'paddock.visual-review-state.v1',
       surfaces: {
         storybook: {
           baseRef: 'main',
@@ -457,7 +457,7 @@ globalThis.fetch = async (url) => {
         title: 'SPEC-008 governance',
       }])
       const commentsResponse = JSON.stringify([{
-        body: `<!-- mission-control-visual-review-state:v1\n${JSON.stringify(approvedState, null, 2)}\n-->`,
+        body: `<!-- paddock-visual-review-state:v1\n${JSON.stringify(approvedState, null, 2)}\n-->`,
         created_at: '2026-05-04T20:00:00Z',
         id: 2600,
         updated_at: '2026-05-04T20:00:00Z',

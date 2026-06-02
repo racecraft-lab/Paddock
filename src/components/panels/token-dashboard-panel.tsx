@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { createClientLogger } from '@/lib/client-logger'
 import { detectProvider } from '@/lib/token-utils'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
@@ -63,7 +63,7 @@ const TIMEZONE_OPTIONS: TimezoneOption[] = [
 const deriveProvider = detectProvider
 
 export function TokenDashboardPanel() {
-  const { sessions } = useMissionControl()
+  const { sessions } = usePaddock()
   const t = useTranslations('tokenDashboard')
 
   const [selectedTimeframe, setSelectedTimeframe] = useState<'hour' | 'day' | 'week' | 'month'>('day')

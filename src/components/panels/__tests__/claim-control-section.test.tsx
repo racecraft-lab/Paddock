@@ -43,7 +43,7 @@ function action(actionName: ClaimControlAction, overrides: Partial<ClaimControlA
 
 function claimControl(overrides: Partial<ClaimControlReadModel> = {}): ClaimControlReadModel {
   return {
-    stage_key: 'mission-control_issue_remediation',
+    stage_key: 'paddock_issue_remediation',
     authorization: {
       required_role: 'operator',
       current_role: 'operator',
@@ -78,9 +78,9 @@ function envelope(overrides: Partial<TaskClaimReconciliationEnvelope> = {}): Tas
       id: '500',
       workspace_id: '1',
       status: 'in_progress',
-      stage_key: 'mission-control_issue_remediation',
+      stage_key: 'paddock_issue_remediation',
       github: {
-        repo: 'racecraft-lab/mission-control',
+        repo: 'racecraft-lab/paddock',
         issue_number: 55,
         pr_number: null,
       },
@@ -164,7 +164,7 @@ describe('claim-control copy and request helpers', () => {
 
     expect(draft).toEqual({
       action: 'release',
-      stage_key: 'mission-control_issue_remediation',
+      stage_key: 'paddock_issue_remediation',
       expected: EXPECTED_STATE,
       override_backoff: false,
       override_reason: null,
@@ -203,7 +203,7 @@ describe('claim-control copy and request helpers', () => {
     const receipt = buildReceipt({
       action: 'cancel',
       outcome: 'conflict',
-      stageKey: 'mission-control_issue_remediation',
+      stageKey: 'paddock_issue_remediation',
       availableActions: [
         { action: 'retry', enabled: true, unavailable_reason: null },
         { action: 'release', enabled: false, unavailable_reason: 'no_active_claim' },
@@ -277,7 +277,7 @@ describe('ClaimControlSection', () => {
     })
 
     const region = screen.getByRole('region', { name: /claim control/i })
-    expectPresent(within(region).getByText('mission-control_issue_remediation'))
+    expectPresent(within(region).getByText('paddock_issue_remediation'))
     expectPresent(within(region).getByText(/operator can mutate/i))
     expectPresent(within(region).getByText(/latest attempt failed/i))
     expectPresent(within(region).getByText(/owned by another run/i))
@@ -500,7 +500,7 @@ describe('ClaimControlSection', () => {
   it('renders receipts and network retry without raw idempotency key text', () => {
     const retryDraft: ClaimControlDraft = {
       action: 'retry',
-      stage_key: 'mission-control_issue_remediation',
+      stage_key: 'paddock_issue_remediation',
       expected: EXPECTED_STATE,
       override_backoff: false,
       override_reason: null,
@@ -511,7 +511,7 @@ describe('ClaimControlSection', () => {
       receipt: buildReceipt({
         action: 'retry',
         outcome: 'retry_ready',
-        stageKey: 'mission-control_issue_remediation',
+        stageKey: 'paddock_issue_remediation',
         availableActions: [
           { action: 'retry', enabled: true, unavailable_reason: null },
           { action: 'release', enabled: false, unavailable_reason: 'no_active_claim' },

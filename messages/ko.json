@@ -30,7 +30,7 @@
     "moreIssues": "+ {count}개 더 많은 문제"
   },
   "auth": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "signInToContinue": "계속하려면 로그인하세요",
     "username": "사용자 이름",
     "password": "비밀번호",
@@ -145,7 +145,7 @@
     "resetting": "초기화 중..."
   },
   "boot": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "agentOrchestration": "에이전트 오케스트레이션",
     "authenticatingOperator": "운영자 인증 중",
     "detectingStationMode": "스테이션 모드 감지 중",

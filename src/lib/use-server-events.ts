@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { createClientLogger } from '@/lib/client-logger'
 
 const log = createClientLogger('SSE')
@@ -40,7 +40,7 @@ export function useServerEvents() {
     addActivity,
     activeProductLineScope,
     workspaceSwitcherEnabled,
-  } = useMissionControl()
+  } = usePaddock()
 
   useEffect(() => {
     if (workspaceSwitcherEnabled && !activeProductLineScope) return

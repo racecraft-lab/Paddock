@@ -9,7 +9,7 @@ const committedReviewArtifactPattern = /^test-results\/spec-009f-triage-routing\
 
 const forbiddenChangedPathPatterns = [
   {
-    pattern: /^docs\/ai\/workflows\/mission-control\/workflow-contract\.ya?ml$/,
+    pattern: /^docs\/ai\/workflows\/paddock\/workflow-contract\.ya?ml$/,
     reason: 'workflow contract successor/template changes are out of SPEC-009F guard scope',
   },
   {
@@ -70,12 +70,12 @@ const forbiddenContentPatterns = [
   },
   {
     pattern:
-      /\bcreateTask\s*\([\s\S]{0,240}\bmission-control_(?:remediation_plan|specialist_route|close_issue|needs_spec_route)\b/i,
+      /\bcreateTask\s*\([\s\S]{0,240}\bpaddock_(?:remediation_plan|specialist_route|close_issue|needs_spec_route)\b/i,
     reason: 'remediation or non-remediation successor task creation',
   },
   {
     pattern:
-      /\b(?:successor_template_slug|next_template_slug|successorSlug)\s*[:=]\s*['"]mission-control_(?:remediation_plan|specialist_route|close_issue|needs_spec_route)['"]/i,
+      /\b(?:successor_template_slug|next_template_slug|successorSlug)\s*[:=]\s*['"]paddock_(?:remediation_plan|specialist_route|close_issue|needs_spec_route)['"]/i,
     reason: 'remediation or non-remediation successor template wiring',
   },
   {

@@ -1,5 +1,5 @@
 {
-  "$comment": "SPEC-008 default governance configuration template. Operator copies to <MISSION_CONTROL_DATA_DIR>/governance.json on first deploy. All values are FR-NORMATIVE defaults — operators MAY tune within the documented ranges; reducing values below the min OR raising above the max is a spec deviation and MUST be banner-warned in System Health. See specs/008-resource-governance/spec.md and src/lib/observability/governance-config-schema.ts for source-of-truth.",
+  "$comment": "SPEC-008 default governance configuration template. Operator copies to <PADDOCK_DATA_DIR>/governance.json on first deploy. All values are FR-NORMATIVE defaults — operators MAY tune within the documented ranges; reducing values below the min OR raising above the max is a spec deviation and MUST be banner-warned in System Health. See specs/008-resource-governance/spec.md and src/lib/observability/governance-config-schema.ts for source-of-truth.",
   "schema_version": 1,
   "audit_chain_verify_period_seconds": 900,
   "audit": {
@@ -52,7 +52,7 @@
     "$comment": "FR-362 LM Studio model resolution + FR-152/FR-153 emergency-reserve seeds."
   },
   "tos_surfaces": {
-    "$comment": "FR-219y. Per-surface UA override; default is 'MissionControl/<version> (+governance-telemetry)'.",
+    "$comment": "FR-219y. Per-surface UA override; default is 'Paddock/<version> (+governance-telemetry)'.",
     "default": {
       "user_agent": null
     }
@@ -95,7 +95,7 @@
     "encrypt_gpg_recipient_env_var": "MC_BACKUP_GPG_RECIPIENT",
     "file_mode": "0600",
     "rotation_keep_days": 30,
-    "$comment": "FR-090k / FR-261 / FR-263 / FR-271. Default destination is <MISSION_CONTROL_DATA_DIR>/backups (file mode 0600). Off-node mirror is opt-in via MC_BACKUP_REMOTE_RSYNC_PATH; encryption-at-rest opt-in via MC_BACKUP_GPG_RECIPIENT."
+    "$comment": "FR-090k / FR-261 / FR-263 / FR-271. Default destination is <PADDOCK_DATA_DIR>/backups (file mode 0600). Off-node mirror is opt-in via MC_BACKUP_REMOTE_RSYNC_PATH; encryption-at-rest opt-in via MC_BACKUP_GPG_RECIPIENT."
   },
   "entitlement_detection": {
     "daily_cron_utc": "00:15",

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 interface UserRecord {
   id: number
@@ -44,7 +44,7 @@ const roleColors: Record<string, string> = {
 
 export function UserManagementPanel() {
   const t = useTranslations('userManagement')
-  const { currentUser } = useMissionControl()
+  const { currentUser } = usePaddock()
   const [users, setUsers] = useState<UserRecord[]>([])
   const [requests, setRequests] = useState<AccessRequest[]>([])
   const [loading, setLoading] = useState(true)

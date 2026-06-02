@@ -123,7 +123,7 @@ All new runtime behavior routes through the single helper
 - **Env kill-switch.** `process.env.FEATURE_X === '0'` forces OFF
   regardless of JSON state. `process.env.FEATURE_X === '1'` does NOT
   force ON — only JSON can opt a workspace in.
-- **Exception:** `PILOT_MISSION_CONTROL_E2E` may be flipped via env (operator-
+- **Exception:** `PILOT_PADDOCK_E2E` may be flipped via env (operator-
   temporary pilot switch).
 - **Forbidden.** Inline `process.env.FEATURE_*` checks anywhere in
   runtime code. CI greps and fails on match.

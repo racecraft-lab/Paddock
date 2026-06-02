@@ -19,7 +19,7 @@ const HERMES_HOME = existsSync(/* turbopackIgnore: true */ dataHermesHome)
   : userHermesHome && existsSync(/* turbopackIgnore: true */ userHermesHome)
     ? userHermesHome
     : dataHermesHome // default to dataDir for new installs
-const HOOK_DIR = join(HERMES_HOME, 'hooks', 'mission-control')
+const HOOK_DIR = join(HERMES_HOME, 'hooks', 'paddock')
 
 export async function GET(request: NextRequest) {
   const auth = requireRole(request, 'viewer')
@@ -307,7 +307,7 @@ export async function POST(request: NextRequest) {
 // Hook file contents
 // ---------------------------------------------------------------------------
 
-const HOOK_YAML = `name: mission-control
+const HOOK_YAML = `name: paddock
 description: Reports agent telemetry to Paddock
 version: "1.0"
 events:
@@ -329,7 +329,7 @@ import os
 import logging
 from datetime import datetime, timezone
 
-logger = logging.getLogger("hooks.mission-control")
+logger = logging.getLogger("hooks.paddock")
 
 MC_URL = os.environ.get("MC_URL", "http://localhost:3000")
 MC_API_KEY = os.environ.get("MC_API_KEY", "")

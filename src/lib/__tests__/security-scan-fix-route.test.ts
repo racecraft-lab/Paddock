@@ -58,7 +58,7 @@ describe('security-scan fix route env mutation', () => {
   })
 
   it('preserves runtime env overrides in test mode while updating env files', async () => {
-    process.env.MISSION_CONTROL_TEST_MODE = '1'
+    process.env.PADDOCK_TEST_MODE = '1'
     process.env.MC_DISABLE_RATE_LIMIT = '1'
 
     const { POST } = await import('@/app/api/security-scan/fix/route')
@@ -75,7 +75,7 @@ describe('security-scan fix route env mutation', () => {
   })
 
   it('mutates runtime env outside test mode so fixes apply immediately', async () => {
-    delete process.env.MISSION_CONTROL_TEST_MODE
+    delete process.env.PADDOCK_TEST_MODE
     process.env.MC_DISABLE_RATE_LIMIT = '1'
 
     const { POST } = await import('@/app/api/security-scan/fix/route')

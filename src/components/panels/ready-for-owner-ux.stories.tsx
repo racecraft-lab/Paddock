@@ -3,7 +3,7 @@ import { expect, within } from 'storybook/test'
 
 import { NotificationsPanel } from '@/components/panels/notifications-panel'
 import { TaskBoardPanel } from '@/components/panels/task-board-panel'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { createFacilityScope, type ProductLine } from '@/types/product-line'
 
 type Surface = 'task-board' | 'notifications'
@@ -193,13 +193,13 @@ function configureReadyForOwnerState() {
     window.localStorage.setItem('mc.notifications.recipient', READY_FOR_OWNER_RECIPIENT)
   }
 
-  useMissionControl.setState({
+  usePaddock.setState({
     activeTenant: {
       id: 1,
       slug: 'racecraft-facility',
       display_name: 'Racecraft Facility',
       status: 'active',
-      linux_user: 'mission-control',
+      linux_user: 'paddock',
     },
     workspaces,
     workspaceSwitcherEnabled: true,

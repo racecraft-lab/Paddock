@@ -544,7 +544,7 @@ export function generateDockerSidecar(runtime: RuntimeId): string {
     image: ghcr.io/nousresearch/hermes-agent:latest
     container_name: hermes-agent
     environment:
-      - MC_URL=http://mission-control:\${PORT:-3000}
+      - MC_URL=http://paddock:\${PORT:-3000}
       - MC_API_KEY=\${API_KEY:-}
     volumes:
       - hermes-data:/root/.hermes

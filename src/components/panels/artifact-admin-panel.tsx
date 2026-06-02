@@ -11,13 +11,13 @@
  *
  * The panel is admin-only on the server side (every action endpoint enforces
  * `requireRole('admin')`). The UI also gates destructive controls on
- * `useMissionControl().user.role === 'admin'` for affordance, but the auth
+ * `usePaddock().user.role === 'admin'` for affordance, but the auth
  * boundary is the API.
  */
 
 import type * as React from 'react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 
 interface ArtifactRow {
@@ -119,7 +119,7 @@ function isDownloadable(row: ArtifactRow): boolean {
 }
 
 export default function ArtifactAdminPanel(): React.JSX.Element {
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [rows, setRows] = useState<ArtifactRow[]>([])
   const [loadingList, setLoadingList] = useState(false)
   const [listError, setListError] = useState<string | null>(null)

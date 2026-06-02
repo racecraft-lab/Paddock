@@ -13,7 +13,7 @@
     "workflow-contract": "pnpm run verify:node && node --experimental-strip-types scripts/workflow-contracts/workflow-contract-cli.ts",
     "knowledge:index:check": "pnpm run verify:node && node scripts/spec-012a/verify-repo-knowledge-index.mjs",
     "knowledge:index:smoke": "pnpm run verify:node && node scripts/spec-012a/fresh-agent-proxy.mjs",
-    "seed:mission-control": "pnpm run verify:node && node --experimental-strip-types scripts/seed-mission-control-product-line.ts",
+    "seed:paddock": "pnpm run verify:node && node --experimental-strip-types scripts/seed-paddock-product-line.ts",
     "seed:product-line": "pnpm run verify:node && node --experimental-strip-types scripts/seed-product-line.ts",
     "dev": "pnpm run verify:node && next dev --hostname 127.0.0.1 --port ${PORT:-3000}",
     "build": "pnpm run verify:node && next build",
@@ -103,9 +103,9 @@
     "@types/react-dom": "^19.0.3",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/browser": "^4.1.5",
-    "@vitest/browser-playwright": "^4.1.5",
-    "@vitest/coverage-v8": "^4.1.5",
+    "@vitest/browser": "^4.1.6",
+    "@vitest/browser-playwright": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.6",
     "axe-playwright": "^1.2.3",
     "eslint-import-resolver-typescript": "3.10.1",
     "eslint-plugin-import": "2.32.0",
@@ -118,7 +118,7 @@
     "typescript-eslint": "8.54.0",
     "vite": "^7.3.2",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.6"
   },
   "engines": {
     "node": ">=22"

@@ -1,6 +1,6 @@
 ---
 name: workflow-contracts
-description: "Skill for the Workflow-contracts area of mission-control. 51 symbols across 11 files."
+description: "Skill for the Workflow-contracts area of paddock. 51 symbols across 11 files."
 ---
 
 # Workflow-contracts

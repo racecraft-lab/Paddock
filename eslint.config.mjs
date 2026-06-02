@@ -50,8 +50,8 @@ const specStrictFiles = [
   // SPEC-009A workflow contract roundtrip.
   'src/lib/workflow-contracts/**/*.ts',
   // SPEC-009B Paddock product-line seed.
-  'src/lib/mission-control-seed/**/*.ts',
-  'scripts/seed-mission-control-product-line.ts',
+  'src/lib/paddock-seed/**/*.ts',
+  'scripts/seed-paddock-product-line.ts',
   // SPEC-010A generic product-line seed.
   'src/lib/product-line-seed/types.ts',
   'src/lib/product-line-seed/schema.ts',
@@ -142,6 +142,7 @@ const config = tseslint.config(
       'ops/**',
       'test-results/**',
       'playwright-report/**',
+      'storybook-static/**',
       '.tmp/**',
       '.playwright-mcp/**',
       '.tsbuild/**',

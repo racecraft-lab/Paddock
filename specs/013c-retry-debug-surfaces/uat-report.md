@@ -70,8 +70,8 @@ Target UAT was executed on May 29, 2026 CDT against HAL after deploying merged
 merge commit `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89`.
 
 - `uat_replay_id`: `spec013c-014a-uat-1780110032087`
-- Target: HAL `mission-control.service`, local HTTP `http://127.0.0.1:3000`
-- Deployment evidence: `pnpm install --frozen-lockfile` no-op from lockfile; `pnpm build` passed under Next.js 16.2.6; `mission-control.service` restarted and logged database migrations applied; `/login` returned HTTP `200`; `openclaw-gateway.service` remained active.
+- Target: HAL `paddock.service`, local HTTP `http://127.0.0.1:3000`
+- Deployment evidence: `pnpm install --frozen-lockfile` no-op from lockfile; `pnpm build` passed under Next.js 16.2.6; `paddock.service` restarted and logged database migrations applied; `/login` returned HTTP `200`; `openclaw-gateway.service` remained active.
 - Migration markers: `079_task_claim_control`, `080_agent_sandbox_lifecycles`
 - Auth roles used: disposable session admin and disposable session viewer
 - Enabled scope: disposable workspace `16` with `FEATURE_WORKSPACE_SWITCHER=true` and `FEATURE_TASK_CONTROL_PLANE=true`
@@ -110,7 +110,7 @@ Cleanup restored the target UAT row-count tables to baseline and verified zero m
 | `resource_policy_events` | 0 | 0 | 0 |
 | `activities` | 410 | 410 | 0 |
 
-The temporary database backup, sandbox test file, and disposable workspace/project/task/user/session rows were removed. A final HAL check returned no `spec013c-014a-uat-*` workspace rows and no `/tmp/spec013c-014a-uat-*-mission-control.db.bak` files.
+The temporary database backup, sandbox test file, and disposable workspace/project/task/user/session rows were removed. A final HAL check returned no `spec013c-014a-uat-*` workspace rows and no `/tmp/spec013c-014a-uat-*-paddock.db.bak` files.
 
 ## Target UAT Matrix
 

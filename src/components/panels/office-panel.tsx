@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
-import { useMissionControl, Agent } from '@/store'
+import { usePaddock, Agent } from '@/store'
 import { buildOfficeLayout } from '@/lib/office-layout'
 import { appendScopeToPath } from '@/types/product-line'
 
@@ -463,7 +463,7 @@ function pointAlongPath(path: Array<{ x: number; y: number }>, pathLengths: numb
 
 export function OfficePanel() {
   const t = useTranslations('office')
-  const { agents, dashboardMode, currentUser, activeProductLineScope } = useMissionControl()
+  const { agents, dashboardMode, currentUser, activeProductLineScope } = usePaddock()
   const isLocalMode = dashboardMode === 'local'
   const [localAgents, setLocalAgents] = useState<Agent[]>([])
   const [sessionAgents, setSessionAgents] = useState<Agent[]>([])

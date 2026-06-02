@@ -192,7 +192,7 @@ test.describe('Tasks CRUD', () => {
       headers: API_KEY_HEADER,
       data: {
         metadata: {
-          implementation_repo: 'torreypjones/mission-control',
+          implementation_repo: 'racecraft-lab/Paddock',
           code_location: '/src/app/api/tasks',
         },
       },
@@ -202,7 +202,7 @@ test.describe('Tasks CRUD', () => {
     const readRes = await request.get(`/api/tasks/${id}`, { headers: API_KEY_HEADER })
     expect(readRes.status()).toBe(200)
     const readBody = await readRes.json()
-    expect(readBody.task.metadata.implementation_repo).toBe('torreypjones/mission-control')
+    expect(readBody.task.metadata.implementation_repo).toBe('racecraft-lab/Paddock')
     expect(readBody.task.metadata.code_location).toBe('/src/app/api/tasks')
   })
 
