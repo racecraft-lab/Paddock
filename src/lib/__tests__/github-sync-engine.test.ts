@@ -702,7 +702,7 @@ describe('SPEC-006 / T040 — anti-thrash on subsequent sync', () => {
 
 // ── T041 — Outbound area:* emission (FR-016, FR-017) ─────────────────
 describe('SPEC-006 / T041 — outbound area:* emission', () => {
-  it('flag ON + project.area_slug=qa → outbound labels include area:qa with mc:* and priority:*', async () => {
+  it('flag ON + project.area_slug=qa → outbound labels include area:qa with pd:* and priority:*', async () => {
     const db = freshMigratedDb()
     setWorkspaceFlag(db, 1, true)
     const projectId = seedProject(db, {
@@ -743,7 +743,7 @@ describe('SPEC-006 / T041 — outbound area:* emission', () => {
     const labels = call?.[2]?.labels as string[]
     expect(labels).toContain('area:qa')
     expect(labels).toContain('custom-label')
-    expect(labels.some((l) => l.startsWith('mc:'))).toBe(true)
+    expect(labels.some((l) => l.startsWith('pd:'))).toBe(true)
     expect(labels.some((l) => l.startsWith('priority:'))).toBe(true)
   })
 

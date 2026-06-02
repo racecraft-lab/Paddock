@@ -174,7 +174,7 @@ describe('SPEC-009C1 pilot issue smoke script contract', () => {
 
   it('fails closed on existing fallback label mismatch without auto-repairing it', async () => {
     const client = {
-      findOpenIssueByTitle: vi.fn(async () => syntheticIssue({ labels: ['mc:inbox', 'area:dev'] })),
+      findOpenIssueByTitle: vi.fn(async () => syntheticIssue({ labels: ['pd:inbox', 'area:dev'] })),
       createIssue: vi.fn(),
     }
 

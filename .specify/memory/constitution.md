@@ -433,8 +433,8 @@ Operationalized as:
 - better-sqlite3 (SQLite) for persistence; forward-only migration runner
   at `src/lib/migrations.ts`.
 - Zustand for client state. The `activeWorkspace` slice only uses
-  `zustand/middleware`'s `persist` (key `mc:active-workspace:v1`,
-  `localStorage`) plus a `BroadcastChannel('mc:active-workspace')`
+  `zustand/middleware`'s `persist` (key `pd:active-workspace:v1`,
+  `localStorage`) plus a `BroadcastChannel('pd:active-workspace')`
   listener. Other slices keep current persistence semantics.
 - pnpm is the only package manager. No npm/yarn.
 - Node ≥22 (LTS recommended).

@@ -17,7 +17,7 @@ import {
   type GitHubIssue,
 } from '@/lib/github'
 import {
-  ALL_MC_LABELS,
+  ALL_PADDOCK_LABELS,
   ALL_STATUS_LABEL_NAMES,
   ALL_PRIORITY_LABEL_NAMES,
   ALL_AREA_LABEL_NAMES,
@@ -100,7 +100,7 @@ export function sanitizeLabelProvisioningError(input: string): string {
  *
  * Signatures (FR-053, US1-AC3, P5-AC1, US6-T068):
  *   - `initializeLabels(repo)` — legacy 1-arg call; creates ONLY the
- *     mc:* status and priority:* labels.
+ *     pd:* status and priority:* labels.
  *   - `initializeLabels(repo, workspaceId)` — 2-arg call. With
  *     `FEATURE_AREA_LABEL_ROUTING` OFF for the workspace, behavior is
  *     identical to the 1-arg call. The ON-branch behavior — provisioning
@@ -155,7 +155,7 @@ export async function initializeLabels(
   // Flag-OFF path: byte-identical to legacy (FR-053). No new behavior, no
   // new logs, no activity rows.
   if (!flagOn) {
-    await ensureLabels(repo, ALL_MC_LABELS)
+    await ensureLabels(repo, ALL_PADDOCK_LABELS)
     logger.info({ repo }, 'GitHub labels initialized')
     return
   }
@@ -165,7 +165,7 @@ export async function initializeLabels(
   // (FR-027). Idempotency (FR-026) is provided by `createLabel`'s 422-OK
   // semantics; existing labels with different color/description are NOT
   // modified here.
-  const fullSet = [...ALL_MC_LABELS, ...extraAreaLabels]
+  const fullSet = [...ALL_PADDOCK_LABELS, ...extraAreaLabels]
   const failures: Array<{ name: string; err: unknown }> = []
   for (const label of fullSet) {
     try {
@@ -706,7 +706,7 @@ export async function pushTaskToGitHub(
   // SPEC-006 / FR-016, FR-017 — outbound area:<slug> emission.
   // Resolve the workspace's area-routing flag and the project's
   // `area_slug` from the DB. When flag is ON and area_slug is non-NULL,
-  // append `area:<slug>` alongside mc:* and priority:* labels. When flag
+  // append `area:<slug>` alongside pd:* and priority:* labels. When flag
   // is OFF or area_slug IS NULL, no area:* label is emitted (byte-exact
   // legacy behavior).
   let areaLabel: string | null = null

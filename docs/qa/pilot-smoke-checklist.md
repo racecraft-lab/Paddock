@@ -10,12 +10,12 @@ outside mocked fixtures.
 - Search GitHub with:
 
   ```text
-  repo:racecraft-lab/Paddock is:issue is:open label:"mc:inbox" -linked:pr
+  repo:racecraft-lab/Paddock is:issue is:open label:"pd:inbox" -linked:pr
   ```
 
-- Confirm the candidate is an issue, not a PR; is open; has `mc:inbox`; has at
+- Confirm the candidate is an issue, not a PR; is open; has `pd:inbox`; has at
   least one `priority:*`; has exactly one routable `area:*`; has no linked PR;
-  and has no terminal/conflicting status label such as `mc:done` or `mc:failed`.
+  and has no terminal/conflicting status label such as `pd:done` or `pd:failed`.
 - If no safe candidate exists, run the synthetic fallback script only with an
   explicit mutation opt-in. It must reuse an existing open
   `[mc-pilot] synthetic e2e issue` before creating one.
@@ -29,7 +29,7 @@ outside mocked fixtures.
   [mc-pilot] SPEC-009C2 synthetic e2e issue YYYY-MM-DD clean run
   ```
 
-- The SPEC-009C2 issue must have `mc:inbox`, exactly one `priority:*` label,
+- The SPEC-009C2 issue must have `pd:inbox`, exactly one `priority:*` label,
   and exactly one routable `area:*` label. Do not reuse a closed SPEC-009C1
   clean-run issue.
 - Command shape:
@@ -39,7 +39,7 @@ outside mocked fixtures.
   ```
 
 - The created or reused fallback must have exactly the required pilot labels:
-  `mc:inbox`, `priority:medium`, and `area:dev`.
+  `pd:inbox`, `priority:medium`, and `area:dev`.
 - Do not auto-close, auto-delete, or auto-repair the synthetic issue. If labels
   are wrong, fix or close it manually in GitHub, then rerun the smoke path.
 
@@ -208,14 +208,14 @@ outside mocked fixtures.
   target repo, workspace id, project id, linked PR-producing task id, cleanup
   owner, and creation timestamp before any merge action.
 - Before `G_PILOT_MERGE`, record the pre-merge `ready_for_owner` state for the
-  linked task and verify no `done` status, `mc:done` label projection, terminal
+  linked task and verify no `done` status, `pd:done` label projection, terminal
   `github_pr_merged` activity, or task-chain advancement has occurred.
 - At `G_PILOT_MERGE`, the operator manually merges the fresh synthetic C4 PR.
   Record merge timestamp, operator, target deployment URL/commit, PR number,
   and exact linked task id.
 - After the manual merge, trigger existing manual GitHub sync through
   `POST /api/github/sync` or the GitHub Sync panel. Record sync result,
-  resulting task status, `mc:done` label projection, stale `mc:ready-for-owner`
+  resulting task status, `pd:done` label projection, stale `pd:ready-for-owner`
   removal, terminal activity id/type, bounded notification evidence, duplicate
   sync result, and cleanup or retention rationale.
 - SPEC-009C3 PR #49 must not be reused or treated as SPEC-009C4 merge proof.
@@ -237,8 +237,8 @@ alone.
   merge timestamp, operator, target deployment URL/commit, PR number, linked
   task id, and explicit non-use of SPEC-009C3 PR #49.
 - T047: Run manual GitHub sync through `POST /api/github/sync` or the GitHub
-  Sync panel. Record sync result, resulting task status, `mc:done` label
-  projection, stale `mc:ready-for-owner` removal, terminal activity,
+  Sync panel. Record sync result, resulting task status, `pd:done` label
+  projection, stale `pd:ready-for-owner` removal, terminal activity,
   notification evidence, and duplicate sync evidence.
 - T048: Clean disposable Paddock UAT residue after evidence capture.
   Record before/after counts, cleanup owner, timestamp, retained GitHub audit
@@ -260,7 +260,7 @@ alone.
 - Fresh synthetic C4 issue: #50
   (`https://github.com/racecraft-lab/Paddock/issues/50`) created
   `2026-05-20T01:16:06Z` with labels `area:dev`,
-  `priority:medium`, and `mc:ready-for-owner`.
+  `priority:medium`, and `pd:ready-for-owner`.
 - Fresh synthetic C4 PR: #51
   (`https://github.com/racecraft-lab/Paddock/pull/51`) created as a
   draft at `2026-05-20T01:16:28Z` from branch
@@ -287,7 +287,7 @@ alone.
   `github_synced_at=1779240143`, and terminal activity `12` recorded
   `github_pr_number=51` with `terminal_event=github_pr_merged`.
 - GitHub label projection: issue #50 ended closed with labels `area:dev`,
-  `priority:medium`, and `mc:done`; stale `mc:ready-for-owner` was absent.
+  `priority:medium`, and `pd:done`; stale `pd:ready-for-owner` was absent.
 - Duplicate sync: a repeated manual sync returned `pulled=0`, `pushed=0`;
   task `1` stayed `done`, notification count stayed `1`, terminal activity
   count stayed bounded, and no successor child task was observed for task `1`.
@@ -344,7 +344,7 @@ alone.
   `pulled=1`, `pushed=0`; task `41` moved to `done` with
   `completed_at=1779246054` and `github_synced_at=1779246054`.
 - GitHub audit state after target replay: issue #50 remained closed with
-  labels `area:dev`, `priority:medium`, and `mc:done`; PR #51 remained merged
+  labels `area:dev`, `priority:medium`, and `pd:done`; PR #51 remained merged
   at `2026-05-20T01:21:58Z` with merge commit
   `fc80b9f234e110e962f52b49595604474a9842b2`.
 - Duplicate sync: a repeated deployed sync returned `pulled=0`, `pushed=0`;
@@ -372,8 +372,8 @@ alone.
   repackaged for SPEC-009D.
 - Use `quality_reviews` rows for review proof: the canonical `aegis` approval
   row remains the source for owner readiness.
-- Use GitHub labels for external sync proof: `mc:done` must be projected and
-  stale `mc:ready-for-owner` must be absent after successful reconciliation.
+- Use GitHub labels for external sync proof: `pd:done` must be projected and
+  stale `pd:ready-for-owner` must be absent after successful reconciliation.
 - Use smoke checklist text for operator proof: record the fresh synthetic C4 PR
   identity, manual `G_PILOT_MERGE`, duplicate-sync result, cleanup or retention
   rationale, and explicit non-use of SPEC-009C3 PR #49.

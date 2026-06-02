@@ -10,20 +10,20 @@ test.describe('Product Line scope cross-tab browser contract', () => {
     await pageB.goto('/login')
 
     await pageB.evaluate(() => {
-      localStorage.setItem('mc:active-workspace:v1', JSON.stringify({
+      localStorage.setItem('pd:active-workspace:v1', JSON.stringify({
         payloadVersion: 1,
         tenantId: 7,
         productLineId: null,
         scopeVersion: 1,
       }))
 
-      const channel = new BroadcastChannel('mc:active-workspace')
+      const channel = new BroadcastChannel('pd:active-workspace')
       channel.onmessage = (event) => {
-        const current = JSON.parse(localStorage.getItem('mc:active-workspace:v1') || '{"scopeVersion":0}')
+        const current = JSON.parse(localStorage.getItem('pd:active-workspace:v1') || '{"scopeVersion":0}')
         const message = event.data
         if (message.tenantId !== 7) return
         if (message.scopeVersion <= current.scopeVersion) return
-        localStorage.setItem('mc:active-workspace:v1', JSON.stringify({
+        localStorage.setItem('pd:active-workspace:v1', JSON.stringify({
           payloadVersion: 1,
           tenantId: message.tenantId,
           productLineId: message.productLineId,
@@ -33,7 +33,7 @@ test.describe('Product Line scope cross-tab browser contract', () => {
     })
 
     await pageA.evaluate(() => {
-      const channel = new BroadcastChannel('mc:active-workspace')
+      const channel = new BroadcastChannel('pd:active-workspace')
       channel.postMessage({
         payloadVersion: 1,
         tenantId: 7,
@@ -43,10 +43,10 @@ test.describe('Product Line scope cross-tab browser contract', () => {
       })
     })
 
-    await expect.poll(async () => pageB.evaluate(() => localStorage.getItem('mc:active-workspace:v1'))).toContain('"productLineId":42')
+    await expect.poll(async () => pageB.evaluate(() => localStorage.getItem('pd:active-workspace:v1'))).toContain('"productLineId":42')
 
     await pageA.evaluate(() => {
-      const channel = new BroadcastChannel('mc:active-workspace')
+      const channel = new BroadcastChannel('pd:active-workspace')
       channel.postMessage({
         payloadVersion: 1,
         tenantId: 7,
@@ -56,7 +56,7 @@ test.describe('Product Line scope cross-tab browser contract', () => {
       })
     })
 
-    await expect.poll(async () => pageB.evaluate(() => localStorage.getItem('mc:active-workspace:v1'))).toContain('"productLineId":42')
+    await expect.poll(async () => pageB.evaluate(() => localStorage.getItem('pd:active-workspace:v1'))).toContain('"productLineId":42')
     await context.close()
   })
 })

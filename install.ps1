@@ -413,9 +413,9 @@ function Main {
         Write-Paddock "  docker compose restart         # restart"
         Write-Paddock "  docker compose down            # stop"
     } else {
-        $mcDataPath = Join-Path $script:InstallDir ".data"
-        $pidPath = Join-Path $mcDataPath "mc.pid"
-        $logPath = Join-Path $mcDataPath "mc.log"
+        $dataPath = Join-Path $script:InstallDir ".data"
+        $pidPath = Join-Path $dataPath "mc.pid"
+        $logPath = Join-Path $dataPath "mc.log"
         Write-Paddock "Manage:"
         Write-Paddock "  Get-Content '$logPath' -Tail 50   # view logs"
         Write-Paddock "  Stop-Process -Id (Get-Content '$pidPath')  # stop"

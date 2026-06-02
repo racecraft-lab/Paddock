@@ -294,7 +294,7 @@ describe('syncAgentsFromConfig', () => {
     const preview = await previewSyncDiff()
     expect(preview.newAgents).toEqual([])
     expect(preview.updatedAgents).toEqual(['Product Line A Platform Dev'])
-    expect(preview.onlyInMC).toEqual([])
+    expect(preview.onlyInPaddock).toEqual([])
 
     const result = await syncAgentsFromConfig('tester')
     expect(result.created).toBe(0)
@@ -500,7 +500,7 @@ describe('syncAgentsFromConfig', () => {
     const preview = await previewSyncDiff()
     expect(preview.newAgents).toEqual([])
     expect(preview.updatedAgents).toEqual(['FocusEngine macOS Dev'])
-    expect(preview.onlyInMC).toEqual([])
+    expect(preview.onlyInPaddock).toEqual([])
 
     const result = await syncAgentsFromConfig('startup')
 

@@ -9,21 +9,11 @@
     "explicit_legacy_identity_variants": "zero tracked matches after edits",
     "broad_legacy_phrase_variants": "zero tracked matches after edits",
     "public_brand_asset_paths": "renamed to paddock path stems",
-    "retained_compatibility_surface_count": 10
+    "retained_compatibility_surface_count": 0,
+    "inspected_binary_asset_count": 7
   },
-  "retained_compatibility_surfaces": [
-    {
-      "path": "src/app/api/webhooks/verify-docs/route.ts",
-      "reason": "webhook header compatibility"
-    },
-    {
-      "path": "src/lib/webhooks.ts",
-      "reason": "webhook header compatibility"
-    },
-    {
-      "path": "src/lib/__tests__/triage-routing-payloads.test.ts",
-      "reason": "uppercase label-prefix normalization fixture"
-    },
+  "retained_compatibility_surfaces": [],
+  "inspected_binary_assets": [
     {
       "path": "public/paddock.png",
       "reason": "binary asset inspected; no visible old text"

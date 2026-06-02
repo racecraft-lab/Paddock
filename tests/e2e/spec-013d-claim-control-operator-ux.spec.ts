@@ -868,7 +868,7 @@ function escapeRegExp(value: string): string {
 async function openDbFixtureTask(page: Page, task: DbFixtureTask): Promise<void> {
   await page.goto('/tasks')
   await page.evaluate(({ tenantId, workspaceId }) => {
-    window.localStorage.setItem('mc:active-workspace:v1', JSON.stringify({
+    window.localStorage.setItem('pd:active-workspace:v1', JSON.stringify({
       payloadVersion: 1,
       tenantId,
       productLineId: workspaceId,

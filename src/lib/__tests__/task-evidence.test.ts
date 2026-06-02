@@ -265,13 +265,13 @@ describe('SPEC-009F task evidence triage routing', () => {
       recommended_next_action: 'Review the NEEDS_SPEC recommendation in Paddock.',
       proposed_labels: [
         {
-          name: 'mc:triage-routing',
+          name: 'pd:triage-routing',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
         },
         {
-          name: 'mc:needs-spec',
+          name: 'pd:needs-spec',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
@@ -497,13 +497,13 @@ describe('SPEC-009F task evidence triage routing', () => {
       recommended_next_action: 'Review the NEEDS_HUMAN recommendation in Paddock.',
       proposed_labels: [
         {
-          name: 'mc:triage-routing',
+          name: 'pd:triage-routing',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
         },
         {
-          name: 'mc:needs-human',
+          name: 'pd:needs-human',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
@@ -569,13 +569,13 @@ describe('SPEC-009F task evidence triage routing', () => {
       recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Paddock.',
       proposed_labels: [
         {
-          name: 'mc:triage-routing',
+          name: 'pd:triage-routing',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
         },
         {
-          name: 'mc:needs-specialist',
+          name: 'pd:needs-specialist',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
@@ -625,13 +625,13 @@ describe('SPEC-009F task evidence triage routing', () => {
       recommended_next_action: 'Review the NEEDS_SPECIALIST recommendation in Paddock.',
       proposed_labels: [
         {
-          name: 'mc:triage-routing',
+          name: 'pd:triage-routing',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
         },
         {
-          name: 'mc:needs-specialist',
+          name: 'pd:needs-specialist',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,

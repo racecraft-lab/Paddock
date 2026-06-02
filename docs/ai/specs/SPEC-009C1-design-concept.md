@@ -22,7 +22,7 @@ stop_reason: "natural"
 
 - Prove that one eligible `racecraft-lab/Paddock` GitHub issue can enter Paddock as exactly one GitHub-linked pilot root task.
 - Keep SPEC-009C1 deterministic and reviewable by using operator-triggered sync, fixture-driven tests, and a manual smoke checklist instead of automatic polling or runtime dispatch.
-- Define executable pilot eligibility around GitHub tracker truth: repo identity, issue number, `mc:inbox`, `priority:*`, exactly one routable `area:*`, no duplicate local task, and no terminal/linked-PR state.
+- Define executable pilot eligibility around GitHub tracker truth: repo identity, issue number, `pd:inbox`, `priority:*`, exactly one routable `area:*`, no duplicate local task, and no terminal/linked-PR state.
 - Provide an idempotent synthetic fallback path for `[mc-pilot] synthetic e2e issue` when no safe live issue exists.
 - Prove local-only tasks created through `/api/tasks` or the task board cannot enter the pilot lane.
 - Prove current-schema absence of claim, dispatch, remediation, runner, and successor side effects without inventing future run-state tables.
@@ -73,7 +73,7 @@ stop_reason: "natural"
 
 **Branch:** Pilot issue eligibility
 
-**Recommended answer:** Require an open `racecraft-lab/Paddock` issue with `mc:inbox`, at least one `priority:*` label, exactly one routable `area:*` label, no existing synced Paddock task for that issue, and no linked PR or terminal status.
+**Recommended answer:** Require an open `racecraft-lab/Paddock` issue with `pd:inbox`, at least one `priority:*` label, exactly one routable `area:*` label, no existing synced Paddock task for that issue, and no linked PR or terminal status.
 > This makes the pilot deterministic and proves the source-of-truth gate cleanly. It also exercises the intended Paddock label families without making the first pilot depend on ambiguous routing.
 
 **Alternatives offered:**
@@ -88,7 +88,7 @@ stop_reason: "natural"
 
 **Branch:** Synthetic issue fallback
 
-**Recommended answer:** Add an idempotent operator script or command path for setup/smoke use: find an existing open `[mc-pilot] synthetic e2e issue` first, otherwise create it with `mc:inbox`, `priority:medium`, and `area:dev`; do not auto-close it from the script, app runtime, CI, or sync path, but require manual cleanup instructions in the pilot smoke checklist after evidence is captured.
+**Recommended answer:** Add an idempotent operator script or command path for setup/smoke use: find an existing open `[mc-pilot] synthetic e2e issue` first, otherwise create it with `pd:inbox`, `priority:medium`, and `area:dev`; do not auto-close it from the script, app runtime, CI, or sync path, but require manual cleanup instructions in the pilot smoke checklist after evidence is captured.
 > This avoids hidden live GitHub mutation during normal app runtime while keeping the pilot reproducible when no safe live issue exists.
 
 **Alternatives offered:**
@@ -134,10 +134,10 @@ stop_reason: "natural"
 **Branch:** Workflow contract semantics
 
 **Recommended answer:** Keep them separate in SPEC-009C1, but document the distinction.
-> Pilot eligibility uses executable GitHub issue labels `mc:*`, `priority:*`, and `area:*`. Workflow-contract tracker labels remain template metadata unless a later contract spec defines them as executable eligibility filters.
+> Pilot eligibility uses executable GitHub issue labels `pd:*`, `priority:*`, and `area:*`. Workflow-contract tracker labels remain template metadata unless a later contract spec defines them as executable eligibility filters.
 
 **Alternatives offered:**
-- Update the workflow contract with `mc:inbox`, `priority:*`, and `area:*` filters: looks aligned, but may imply unsupported wildcard semantics.
+- Update the workflow contract with `pd:inbox`, `priority:*`, and `area:*` filters: looks aligned, but may imply unsupported wildcard semantics.
 - Stop setup until contract semantics are redesigned: safest semantically, but too heavy for this setup.
 
 **User's answer:** Option A.

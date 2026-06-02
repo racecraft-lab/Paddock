@@ -134,7 +134,7 @@ Add feature-flagged `ready_for_owner` runtime behavior for PR-producing template
 - With the flag ON, a `produces_pr=true` task reaches `done` only through explicit merged linked PR evidence from `pullFromGitHub` or the test-only webhook fixture seam.
 - Explicit task PR linkage fields are authoritative; do not infer PRs from issue timeline references.
 - Closed issue without merged linked PR leaves the task in `ready_for_owner`, writes activity, and notifies assignee then creator fallback.
-- Entering `ready_for_owner` pushes `mc:ready-for-owner` immediately and idempotently.
+- Entering `ready_for_owner` pushes `pd:ready-for-owner` immediately and idempotently.
 - Kanban lane order is `quality_review` -> `ready_for_owner` -> `done`; `awaiting_owner` stays near early/manual-blocked work.
 - `advanceTaskChain` waits until verified PR merge transitions the task to `done`.
 - `FEATURE_TWO_STEP_TERMINAL` resolves per workspace at every transition site.
@@ -150,7 +150,7 @@ Add feature-flagged `ready_for_owner` runtime behavior for PR-producing template
 - [P4-AC4a] `produces_pr=true` task in `ready_for_owner` with linked issue closed but no merged linked PR -> task remains `ready_for_owner`; reconciliation activity/notification is created.
 - [P4-AC4b] `produces_pr=false` close/disposition task can complete without any PR.
 - [P4-AC5] Kanban column renders between `quality_review` and `done`; operator sees tasks awaiting merge in a dedicated lane.
-- [P4-AC6] `mc:ready-for-owner` label appears on linked GitHub issue when Paddock task enters that state.
+- [P4-AC6] `pd:ready-for-owner` label appears on linked GitHub issue when Paddock task enters that state.
 
 ## Phase 1: Specify
 
@@ -180,7 +180,7 @@ Paddock currently has `workflow_templates.produces_pr` from SPEC-004, but approv
 - Use explicit task PR linkage fields (`github_repo`, `github_pr_number`, branch/PR metadata) as the terminal-event link. Do not infer PRs from issue timelines.
 - `pullFromGitHub` transitions `ready_for_owner -> done` only when explicit linked PR evidence is merged (`merged=true` or equivalent merged timestamp/commit data).
 - Closed linked issue without merged linked PR leaves task in `ready_for_owner`, writes reconciliation activity, and notifies assignee or creator fallback.
-- Entering `ready_for_owner` pushes `mc:ready-for-owner` status label idempotently.
+- Entering `ready_for_owner` pushes `pd:ready-for-owner` status label idempotently.
 - Add a distinct `task_ready_for_owner` notification type and render/deliver action-required wording.
 - Render `ready_for_owner` Kanban lane between `quality_review` and `done`; keep existing `awaiting_owner` semantics unchanged.
 - `advanceTaskChain` from SPEC-004 runs only when verified PR merge moves task to `done`, not when the task enters `ready_for_owner`.
@@ -253,7 +253,7 @@ $speckit-clarify
 Focus on SPEC-005 operator-facing surfaces:
 - Confirm `ready_for_owner` and `awaiting_owner` remain distinct.
 - Confirm Kanban lane order: `quality_review`, `ready_for_owner`, `done`; existing `awaiting_owner` position remains unchanged.
-- Confirm `mc:ready-for-owner` label definition, color/description, provisioning, outbound application timing, and idempotency.
+- Confirm `pd:ready-for-owner` label definition, color/description, provisioning, outbound application timing, and idempotency.
 - Confirm distinct `task_ready_for_owner` notification type, copy, panel rendering, and delivery formatting.
 - Confirm no DB migration and no new terminal-event table.
 ```
@@ -266,7 +266,7 @@ Complete on 2026-05-02. All three sessions completed; no unresolved markers rema
 |---------|------------|-----------|--------------|
 | 1 | Transition Guards and API Contract | 5 | Shared transition guard boundary; static read vocabulary plus workspace-aware write guards; uniform 409 body; all non-merge `done` writes for PR-producing tasks blocked while flag ON; `advanceTaskChain` runs only after verified PR merge writes `done` with a GitHub PR merge trigger. |
 | 2 | GitHub Terminal Event and Reconciliation | 5 | Explicit PR identity is `github_repo` + `github_pr_number`; merge evidence must match linked repo/PR and include `merged=true`, `merged_at`, or `merge_commit_sha` from live GitHub or test-only fixture; closed issue without merged PR leaves task in `ready_for_owner`; reconciliation writes `github_terminal_reconciliation_required` activity, sends `task_ready_for_owner` notification to assignee then creator, and dedupes unchanged task/issue/reason; production `pullFromGitHub` callsites pass no fixture/options. |
-| 3 | UI, Labels, Notifications, and Status Vocabulary | 5 | `ready_for_owner` added to static status vocabulary surfaces with write guards enforcing flag behavior; Kanban lane key `ready_for_owner`, label `Ready for Owner`, teal styling, placed between `quality_review` and `done`; GitHub label `mc:ready-for-owner` color `14b8a6` description `Paddock: ready for owner`; `task_ready_for_owner` panel/delivery rendering with normal and reconciliation titles; existing nullable `external_terminal_event='github_pr_merged'` used with no migration/table. |
+| 3 | UI, Labels, Notifications, and Status Vocabulary | 5 | `ready_for_owner` added to static status vocabulary surfaces with write guards enforcing flag behavior; Kanban lane key `ready_for_owner`, label `Ready for Owner`, teal styling, placed between `quality_review` and `done`; GitHub label `pd:ready-for-owner` color `14b8a6` description `Paddock: ready for owner`; `task_ready_for_owner` panel/delivery rendering with normal and reconciliation titles; existing nullable `external_terminal_event='github_pr_merged'` used with no migration/table. |
 
 ### Consensus Resolution Log
 
@@ -394,7 +394,7 @@ Task generation requirements:
 - Include tests for flag OFF, flag ON with `produces_pr=false`, flag ON with `produces_pr=true`, missing PR linkage, merged PR, closed issue without merged PR, and blocked completion `409`.
 - Include tests proving `advanceTaskChain` does not run at `ready_for_owner` and does run after verified PR merge moves the task to `done`.
 - Include tests proving existing `ready_for_owner` rows remain visible with flag OFF but new writes are blocked.
-- Include tests for `mc:ready-for-owner` label provisioning/application and `task_ready_for_owner` notification routing/rendering.
+- Include tests for `pd:ready-for-owner` label provisioning/application and `task_ready_for_owner` notification routing/rendering.
 - Explicitly exclude DB migrations, issue timeline inference, operator override policy, SPEC-007 artifacts, SPEC-008 governance, SPEC-009 pilot seed behavior, SPEC-010 onboarding, and SPEC-011 CrabTrap.
 ```
 
@@ -508,7 +508,7 @@ In progress. Update after each implementation group.
 | 1 - Status vocabulary and validation | T006-T014 | Complete | Shared status vocabulary, transition conflict body, terminal transition guard, validation exports, store/API status unions, and focused tests complete; 47 focused tests, focused ESLint, typecheck, and diff check passed |
 | 2 - Transition guards | T015-T033 | Complete | Flag-off rollback behavior, flag-on Aegis/quality-review owner routing, missing-linkage evidence, outbound sync, and no chain advancement at `ready_for_owner` verified |
 | 3 - GitHub terminal event | T034-T049 | Complete | Optional fixture seam, explicit merged PR evidence, side-effect-free blocked conflicts, reconciliation dedupe, and `github_pr_merged` chain advancement verified |
-| 4 - Labels and Kanban | T050-T059 | Complete | `mc:ready-for-owner` mapping/application, lane order, existing row visibility, localized copy, and accessibility verified |
+| 4 - Labels and Kanban | T050-T059 | Complete | `pd:ready-for-owner` mapping/application, lane order, existing row visibility, localized copy, and accessibility verified |
 | 5 - Owner notifications | T060-T070 | Complete | `task_ready_for_owner` helper routing, assignee/creator fallback, reconciliation dedupe, panel rendering, delivery formatting, and notification accessibility verified |
 | 6 - Verification and docs | T071-T079 | Complete | Guardrail evidence, acceptance coverage, full verification matrix, status sync, and branch push evidence recorded |
 
@@ -555,7 +555,7 @@ Final command evidence:
 - [x] Explicit merged linked PR evidence moves `ready_for_owner -> done`.
 - [x] Closed issue without merged linked PR leaves task in `ready_for_owner` and creates reconciliation activity/notification.
 - [x] `advanceTaskChain` waits until verified `done`.
-- [x] `mc:ready-for-owner` is provisioned and applied idempotently.
+- [x] `pd:ready-for-owner` is provisioned and applied idempotently.
 - [x] `task_ready_for_owner` notification is created, rendered, and delivered.
 - [x] Kanban lane order places `ready_for_owner` between `quality_review` and `done`.
 - [x] `awaiting_owner` behavior remains unchanged.

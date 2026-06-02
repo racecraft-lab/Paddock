@@ -95,7 +95,7 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
     const { ownerProjectId, devProjectId } = seedPilotRouting(db)
     getDatabaseMock.mockReturnValue(db)
     fetchIssuesMock.mockResolvedValue([
-      makeGitHubIssue({ number: 501, labels: ['mc:inbox', 'priority:high', 'area:dev'] }),
+      makeGitHubIssue({ number: 501, labels: ['pd:inbox', 'priority:high', 'area:dev'] }),
     ])
 
     const decision = evaluatePilotIssueEligibility(db, 1, makePilotCandidate({ issueNumber: 501 }))
@@ -129,7 +129,7 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
     const { ownerProjectId } = seedPilotRouting(db)
     getDatabaseMock.mockReturnValue(db)
     fetchIssuesMock.mockResolvedValue([
-      makeGitHubIssue({ number: 502, labels: ['mc:inbox', 'priority:medium', 'area:dev'] }),
+      makeGitHubIssue({ number: 502, labels: ['pd:inbox', 'priority:medium', 'area:dev'] }),
     ])
 
     await pullFromGitHub({ id: ownerProjectId, github_repo: PILOT_REPO, github_sync_enabled: 1 }, 1)
@@ -163,7 +163,7 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
       ) VALUES (?, '', 'inbox', 'high', 1, 'github-sync', 1, 1, ?, '{}', ?, ?, ?, 1)
     `).run(
       'Synced child',
-      JSON.stringify(['mc:inbox', 'priority:high', 'area:dev']),
+      JSON.stringify(['pd:inbox', 'priority:high', 'area:dev']),
       Number(parentInfo.lastInsertRowid),
       PILOT_REPO,
       507,
@@ -187,7 +187,7 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
       ) VALUES (?, '', 'inbox', 'high', 1, 'operator', 1, 1, ?, ?)
     `).run(
       'Pilot issue',
-      JSON.stringify(['mc:inbox', 'priority:high', 'area:dev']),
+      JSON.stringify(['pd:inbox', 'priority:high', 'area:dev']),
       JSON.stringify({ github_repo: PILOT_REPO, github_issue_number: 503 }),
     )
 
@@ -202,7 +202,7 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
     const { ownerProjectId } = seedPilotRouting(db)
     getDatabaseMock.mockReturnValue(db)
     fetchIssuesMock.mockResolvedValue([
-      makeGitHubIssue({ number: 504, labels: ['mc:inbox', 'priority:medium', 'area:dev'] }),
+      makeGitHubIssue({ number: 504, labels: ['pd:inbox', 'priority:medium', 'area:dev'] }),
     ])
 
     await pullFromGitHub({ id: ownerProjectId, github_repo: PILOT_REPO, github_sync_enabled: 1 }, 1)
@@ -228,7 +228,7 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
     const { ownerProjectId } = seedPilotRouting(db)
     getDatabaseMock.mockReturnValue(db)
     fetchIssuesMock.mockResolvedValue([
-      makeGitHubIssue({ number: 508, labels: ['mc:inbox', 'priority:medium', 'area:dev'] }),
+      makeGitHubIssue({ number: 508, labels: ['pd:inbox', 'priority:medium', 'area:dev'] }),
     ])
 
     await pullFromGitHub({ id: ownerProjectId, github_repo: PILOT_REPO, github_sync_enabled: 1 }, 1)
@@ -245,12 +245,12 @@ describe('SPEC-009C1 pilot issue eligibility', () => {
 
   it.each([
     ['missing_mc_inbox', makePilotCandidate({ labels: ['priority:high', 'area:dev'] })],
-    ['missing_priority', makePilotCandidate({ labels: ['mc:inbox', 'area:dev'] })],
-    ['missing_area', makePilotCandidate({ labels: ['mc:inbox', 'priority:high'] })],
-    ['multiple_areas', makePilotCandidate({ labels: ['mc:inbox', 'priority:high', 'area:dev', 'area:qa'] })],
-    ['area_not_routable', makePilotCandidate({ labels: ['mc:inbox', 'priority:high', 'area:unknown'] })],
+    ['missing_priority', makePilotCandidate({ labels: ['pd:inbox', 'area:dev'] })],
+    ['missing_area', makePilotCandidate({ labels: ['pd:inbox', 'priority:high'] })],
+    ['multiple_areas', makePilotCandidate({ labels: ['pd:inbox', 'priority:high', 'area:dev', 'area:qa'] })],
+    ['area_not_routable', makePilotCandidate({ labels: ['pd:inbox', 'priority:high', 'area:unknown'] })],
     ['linked_pr', makePilotCandidate({ linkedPullRequest: true })],
-    ['terminal_status', makePilotCandidate({ labels: ['mc:inbox', 'priority:high', 'area:dev', 'mc:done'] })],
+    ['terminal_status', makePilotCandidate({ labels: ['pd:inbox', 'priority:high', 'area:dev', 'pd:done'] })],
     ['terminal_status', makePilotCandidate({ state: 'closed' })],
     ['wrong_repository', makePilotCandidate({ repository: 'other/repo' })],
   ])('rejects unsafe candidate with reason %s', (reason, candidate) => {

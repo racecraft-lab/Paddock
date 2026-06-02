@@ -223,7 +223,7 @@ stop_reason: "natural"
 **Branch:** GitHub label recommendations
 
 **Recommended answer:** Include proposed label changes as recommendation metadata only.
-> Suggested labels such as `mc:needs-spec`, `mc:needs-human`, `mc:needs-specialist`, `mc:duplicate`, `mc:obsolete`, or `mc:invalid` help operators execute next actions manually without the system mutating GitHub.
+> Suggested labels such as `pd:needs-spec`, `pd:needs-human`, `pd:needs-specialist`, `pd:duplicate`, `pd:obsolete`, or `pd:invalid` help operators execute next actions manually without the system mutating GitHub.
 
 **Alternatives offered:**
 - No labels in v1.

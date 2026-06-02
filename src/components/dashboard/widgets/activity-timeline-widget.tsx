@@ -13,11 +13,12 @@ function timeAgo(timestamp: number): string {
 }
 
 function getSourceLabel(source: string): string {
-  if (source.includes('claude')) return 'Claude'
-  if (source.includes('codex')) return 'Codex'
-  if (source.includes('hermes')) return 'Hermes'
-  if (source.includes('gateway')) return 'Gateway'
-  if (source.includes('paddock') || source.includes('mc')) return 'Paddock'
+  const tokens = source.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean)
+  if (tokens.includes('claude')) return 'Claude'
+  if (tokens.includes('codex')) return 'Codex'
+  if (tokens.includes('hermes')) return 'Hermes'
+  if (tokens.includes('gateway')) return 'Gateway'
+  if (tokens.includes('paddock') || tokens.includes('pd')) return 'Paddock'
   return source.length > 10 ? source.slice(0, 10) : source
 }
 

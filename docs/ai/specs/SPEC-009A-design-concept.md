@@ -222,7 +222,7 @@ tracker:
   owner: racecraft-lab
   repo: Paddock
   selector_labels:
-    - mc:self-hosting
+    - pd:self-hosting
 templates:
   - slug: intake
     version: 1

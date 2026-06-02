@@ -44,8 +44,8 @@ Source-of-truth scoping decisions:
 
 - Keep SPEC-009C1 deterministic: operator-triggered sync or fixture-driven sync only.
 - Add future roadmap mini-specs for GitHub sync automation and pilot eligibility/evidence surfaces; do not build those surfaces now.
-- A live pilot candidate must be an open `racecraft-lab/Paddock` issue with `mc:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced Paddock task, and no linked PR or terminal state.
-- Synthetic fallback is an idempotent operator/smoke script path: find an existing open `[mc-pilot] synthetic e2e issue` first, otherwise create it with `mc:inbox`, `priority:medium`, and `area:dev`.
+- A live pilot candidate must be an open `racecraft-lab/Paddock` issue with `pd:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced Paddock task, and no linked PR or terminal state.
+- Synthetic fallback is an idempotent operator/smoke script path: find an existing open `[mc-pilot] synthetic e2e issue` first, otherwise create it with `pd:inbox`, `priority:medium`, and `area:dev`.
 - Automated tests are fixture-driven. Live GitHub selection/creation is manual/operator-smoke only and requires explicit credentials.
 - Pilot eligibility labels are executable GitHub issue criteria; workflow-contract tracker labels remain template metadata for now.
 - No new production UI or API surface is required for SPEC-009C1.
@@ -204,8 +204,8 @@ smoke action with credentials and must not run during normal app startup or CI.
 ### Success Criteria Summary
 
 - [x] Exactly one pilot issue is represented as one Paddock task linked to `racecraft-lab/Paddock` and a concrete GitHub issue number.
-- [x] Eligible live issue selection requires open state, `mc:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced task, and no linked PR or terminal state.
-- [x] Synthetic fallback is idempotent: reuse an existing open `[mc-pilot] synthetic e2e issue` before creating a new one with `mc:inbox`, `priority:medium`, and `area:dev`.
+- [x] Eligible live issue selection requires open state, `pd:inbox`, at least one `priority:*`, exactly one routable `area:*`, no existing synced task, and no linked PR or terminal state.
+- [x] Synthetic fallback is idempotent: reuse an existing open `[mc-pilot] synthetic e2e issue` before creating a new one with `pd:inbox`, `priority:medium`, and `area:dev`.
 - [x] Ingest/sync writes expected repo linkage, issue number, sync timestamp, labels/tags, priority, status, workspace, and routed project evidence.
 - [x] Re-running ingest/sync does not create a duplicate task.
 - [x] Local-only tasks created through `/api/tasks` or the task board cannot satisfy pilot eligibility.
@@ -234,10 +234,10 @@ pilot ingest slice. The source of truth is the roadmap entry in
 The spec must require one eligible `racecraft-lab/Paddock` GitHub issue
 to enter Paddock as exactly one GitHub-linked pilot root task through
 GitHub ingest/sync. A live candidate is eligible only when it is open, labeled
-`mc:inbox`, has at least one `priority:*`, has exactly one routable `area:*`,
+`pd:inbox`, has at least one `priority:*`, has exactly one routable `area:*`,
 has no existing synced Paddock task, and has no linked PR or terminal
 state. If no safe live candidate exists, an explicit operator/smoke script may
-create or reuse `[mc-pilot] synthetic e2e issue` with `mc:inbox`,
+create or reuse `[mc-pilot] synthetic e2e issue` with `pd:inbox`,
 `priority:medium`, and `area:dev`.
 
 Goals:
@@ -321,8 +321,8 @@ Focus on roadmap alignment and scope boundaries:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Eligibility and fallback | 4 | Live prefilter set to `repo:racecraft-lab/Paddock is:issue is:open label:"mc:inbox" -linked:pr`; routable `area:*` requires existing area routing to resolve `single_match`; synthetic fallback is explicit operator script find-first/create-with-opt-in behavior with smoke-checklist cleanup; tests use mocked/fixture GitHub seams and CI never requires live credentials or live mutation. Q4 security consensus completed. |
-| 2 | State and absence proof | 4 | Current identity proof is exactly one GitHub-linked root `tasks` row by workspace/repo/issue/sync timestamp/`parent_task_id IS NULL`; absence proof uses current `tasks`, `runs`, `task_dispositions`, `task_artifacts`, and `activities` surfaces plus table-if-exists guards for future claim/runner/sandbox tables; `mc:inbox` remains existing inbox status semantics; formal run-state lifecycle checks are deferred to SPEC-013A+ and SPEC-014A+ without placeholder schema. Consensus not required. |
+| 1 | Eligibility and fallback | 4 | Live prefilter set to `repo:racecraft-lab/Paddock is:issue is:open label:"pd:inbox" -linked:pr`; routable `area:*` requires existing area routing to resolve `single_match`; synthetic fallback is explicit operator script find-first/create-with-opt-in behavior with smoke-checklist cleanup; tests use mocked/fixture GitHub seams and CI never requires live credentials or live mutation. Q4 security consensus completed. |
+| 2 | State and absence proof | 4 | Current identity proof is exactly one GitHub-linked root `tasks` row by workspace/repo/issue/sync timestamp/`parent_task_id IS NULL`; absence proof uses current `tasks`, `runs`, `task_dispositions`, `task_artifacts`, and `activities` surfaces plus table-if-exists guards for future claim/runner/sandbox tables; `pd:inbox` remains existing inbox status semantics; formal run-state lifecycle checks are deferred to SPEC-013A+ and SPEC-014A+ without placeholder schema. Consensus not required. |
 | 3 | Scope and roadmap alignment | 3 | Automatic GitHub sync polling/cron remains deferred to SPEC-013A1; durable operator-visible eligibility/evidence UI/API remains deferred to SPEC-009E; workflow-contract tracker labels remain metadata unless a future contract spec makes them executable. Consensus not required. |
 
 ---
@@ -347,7 +347,7 @@ $speckit-plan
 
 ## Existing Surfaces To Reuse
 - `src/lib/github-sync-engine.ts` for inbound issue sync and fixture/test seams.
-- `src/lib/github-label-map.ts` for `mc:*`, `priority:*`, and `area:*` labels.
+- `src/lib/github-label-map.ts` for `pd:*`, `priority:*`, and `area:*` labels.
 - `src/lib/task-create.ts` for duplicate prevention and task creation side effects.
 - `src/app/api/github/sync/route.ts` for operator-triggered sync.
 - `docs/github-sync.md` for existing sync behavior.
