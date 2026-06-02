@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26830762012",
+      "runAttempt": "1",
+      "runKey": "26830762012-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26830762012",
+      "reportKey": "3ed79e26a19e6d78033ca0e13fdab01bb8aca01a",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/3ed79e26a19e6d78033ca0e13fdab01bb8aca01a/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=26830762012-attempt-1",
+      "headSha": "3ed79e26a19e6d78033ca0e13fdab01bb8aca01a",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/paddock-straggler-sweep",
+        "headSha": "f51a803dfec2d48f27cee65bdc8c2cfebd12aac3",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/69/",
+        "mergeCommitSha": "",
+        "number": "69",
+        "title": "chore: finish paddock identity sweep",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/69"
+      },
+      "createdAt": "2026-06-02T15:42:29.601Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26823277065",
       "runAttempt": "1",
@@ -1092,5 +1119,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-02T13:42:15.507Z"
+  "updatedAt": "2026-06-02T15:42:29.601Z"
 }
