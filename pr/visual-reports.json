@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-02T03:46:16.808Z",
+  "updatedAt": "2026-06-02T13:57:33.677Z",
   "prs": [
+    {
+      "prNumber": "69",
+      "prTitle": "chore: finish paddock identity sweep",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/69",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/69/",
+      "headRef": "codex/paddock-straggler-sweep",
+      "baseRef": "main",
+      "updatedAt": "2026-06-02T13:57:33.677Z",
+      "latest": {
+        "storybook": {
+          "runId": "26824458429",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26824458429",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/69/storybook/latest/?v=26824458429-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/69/runs/26824458429-attempt-1/storybook/",
+          "updatedAt": "2026-06-02T13:57:33.677Z"
+        }
+      }
+    },
     {
       "prNumber": "68",
       "prTitle": "Hard rename Mission Control to Paddock",
