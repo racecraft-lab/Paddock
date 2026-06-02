@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/brand/paddock-logo-liquid-glass.png" alt="Paddock logo" width="128" />
+
 # Paddock
 
 **Open-source AI software factory control plane.**
@@ -13,6 +15,8 @@ for autonomous software work.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![Last commit](https://img.shields.io/github/last-commit/racecraft-lab/Paddock)](https://github.com/racecraft-lab/Paddock/commits/main)
 [![Open issues](https://img.shields.io/github/issues/racecraft-lab/Paddock)](https://github.com/racecraft-lab/Paddock/issues)
+
+<img src="docs/brand/paddock-hero-liquid-glass-v2.png" alt="Paddock AI software factory control plane" style="width: 100%; height: auto;" />
 
 </div>
 
