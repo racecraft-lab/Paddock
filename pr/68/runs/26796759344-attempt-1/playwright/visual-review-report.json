@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/Paddock",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "playwright",
   "surfaceLabel": "Playwright UI E2E",
   "workflowName": "Paddock UI E2E",
@@ -17,7 +17,7 @@
   "headRef": "codex/paddock-hard-rename",
   "baseRef": "main",
   "headSha": "4d453fda5b5cd20398a0ce82eb99d1e3c9f2b5ef",
-  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/68/playwright/latest/",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/68/runs/26796759344-attempt-1/playwright/",
   "latestHref": "https://racecraft-lab.github.io/Paddock/pr/68/playwright/latest/?v=26796759344-attempt-1",
   "createdAt": "2026-06-02T03:46:16.808Z",
   "itemCounts": {
