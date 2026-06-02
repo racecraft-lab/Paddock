@@ -8,7 +8,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync, openSync } from 'no
 import { join } from 'node:path'
 import { spawn } from 'node:child_process'
 
-/** True when MC is running inside a Docker container without systemd. */
+/** True when Paddock is running inside a Docker container without systemd. */
 function isDockerEnvironment(): boolean {
   return existsSync('/.dockerenv')
 }
@@ -43,10 +43,10 @@ function startHermesGatewayDetached(hermesBin: string, homeDir: string): { pid: 
       return { pid: null, error: 'spawn returned no PID' }
     }
 
-    // Write PID file so the rest of MC can detect the process
+    // Write PID file so the rest of Paddock can detect the process
     writeFileSync(pidPath, String(child.pid), 'utf8')
 
-    // Detach so MC exiting doesn't kill the gateway
+    // Detach so Paddock exiting doesn't kill the gateway
     child.unref()
 
     return { pid: child.pid }

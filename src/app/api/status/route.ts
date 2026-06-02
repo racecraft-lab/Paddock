@@ -706,7 +706,7 @@ async function getCapabilities(request?: NextRequest) {
     } catch { /* ignore */ }
   }
 
-  // Auto-register MC as default dashboard when gateway + openclaw home detected
+  // Auto-register Paddock as default dashboard when gateway + openclaw home detected
   let dashboardRegistration: { registered: boolean; alreadySet: boolean } | null = null
   if (gateway && openclawHome) {
     try {

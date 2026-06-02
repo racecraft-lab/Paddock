@@ -188,13 +188,13 @@ async function deliverWebhook(
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'User-Agent': 'Paddock-Webhook/1.0',
-    'X-MC-Event': eventType,
+    'X-PD-Event': eventType,
   }
 
   // HMAC signature if secret is configured
   if (webhook.secret) {
     const sig = createHmac('sha256', webhook.secret).update(body).digest('hex')
-    headers['X-MC-Signature'] = `sha256=${sig}`
+    headers['X-PD-Signature'] = `sha256=${sig}`
   }
 
   const start = Date.now()

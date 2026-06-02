@@ -70,11 +70,11 @@ describe('SPEC-009F triage routing payload foundation', () => {
   });
 
   it('normalizes proposed labels as recommendation metadata only', () => {
-    expect(normalizeProposedLabels([' MC:Needs-Spec ', 'mc:needs-spec', 'Area:UI'])).toEqual({
+    expect(normalizeProposedLabels([' PD:Needs-Spec ', 'pd:needs-spec', 'Area:UI'])).toEqual({
       ok: true,
       value: [
         {
-          name: 'mc:needs-spec',
+          name: 'pd:needs-spec',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
@@ -138,7 +138,7 @@ describe('SPEC-009F triage routing payload foundation', () => {
       routing_status: 'recorded',
       triage_rationale: '  Needs a spec\r\nbefore implementation\twork.  ',
       recommended_next_action: '  Draft the SpecKit brief.  ',
-      proposed_labels: [' MC:Needs-Spec ', 'mc:needs-spec'],
+      proposed_labels: [' PD:Needs-Spec ', 'pd:needs-spec'],
       evidence_links: [
         {
           type: 'github_issue',
@@ -173,7 +173,7 @@ describe('SPEC-009F triage routing payload foundation', () => {
     if (!result.ok) throw new Error('expected common envelope validation to pass');
     expect(result.value.proposed_labels).toEqual([
       {
-        name: 'mc:needs-spec',
+        name: 'pd:needs-spec',
         source: 'triage_routing',
         action: 'recommend_add',
         applied: false,
@@ -335,7 +335,7 @@ describe('SPEC-009F triage routing text and link security', () => {
       routing_status: 'recorded',
       triage_rationale: `raw-secret:${'x'.repeat(2001)}`,
       recommended_next_action: 'line one\nline two',
-      proposed_labels: ['mc:needs-spec'],
+      proposed_labels: ['pd:needs-spec'],
       evidence_links: [],
       deferred_side_effects: [],
       produced_at: 'not-a-date',
@@ -368,7 +368,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
       },
       triage_rationale: ' Needs a SpecKit brief\r\nbefore implementation\twork. ',
       recommended_next_action: ' Owner reviews and runs setup manually. ',
-      proposed_labels: [' MC:Needs-Spec ', 'mc:needs-spec', ' Area:Routing '],
+      proposed_labels: [' PD:Needs-Spec ', 'pd:needs-spec', ' Area:Routing '],
       evidence_links: [
         {
           type: 'github_issue',
@@ -403,7 +403,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
         recommended_next_action: 'Owner reviews and runs setup manually.',
         proposed_labels: [
           {
-            name: 'mc:needs-spec',
+            name: 'pd:needs-spec',
             source: 'triage_routing',
             action: 'recommend_add',
             applied: false,
@@ -462,7 +462,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
       routing_status: 'recorded',
       triage_rationale: 'Needs a SpecKit brief before implementation.',
       recommended_next_action: 'Owner reviews and runs setup manually.',
-      proposed_labels: ['mc:needs-spec'],
+      proposed_labels: ['pd:needs-spec'],
       evidence_links: [],
       deferred_side_effects: [
         {
@@ -550,7 +550,7 @@ describe('SPEC-009F NEEDS_SPEC handoff payloads', () => {
       routing_status: 'recorded',
       triage_rationale: 'Needs a spec before implementation.',
       recommended_next_action: 'Owner reviews and runs setup manually.',
-      proposed_labels: ['mc:needs-spec'],
+      proposed_labels: ['pd:needs-spec'],
       evidence_links: [],
       deferred_side_effects: [
         {
@@ -596,7 +596,7 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
       recommended_next_action: ' Owner answers the blocking questions. ',
       proposed_labels: [
         {
-          name: ' MC:Needs-Human ',
+          name: ' PD:Needs-Human ',
           source: 'triage_routing',
           action: 'recommend_add',
           applied: false,
@@ -638,7 +638,7 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
         recommended_next_action: 'Owner answers the blocking questions.',
         proposed_labels: [
           {
-            name: 'mc:needs-human',
+            name: 'pd:needs-human',
             source: 'triage_routing',
             action: 'recommend_add',
             applied: false,
@@ -691,7 +691,7 @@ describe('SPEC-009F NEEDS_HUMAN clarification payloads', () => {
       routing_status: 'recorded',
       triage_rationale: 'raw-secret needs human',
       recommended_next_action: 'Owner answers the blocking questions.',
-      proposed_labels: ['mc:needs-human'],
+      proposed_labels: ['pd:needs-human'],
       evidence_links: [],
       deferred_side_effects: [],
       lane_detail: {
@@ -727,7 +727,7 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
       },
       triage_rationale: ' Safe metadata identifies one specialist. ',
       recommended_next_action: ' Owner reviews the specialist recommendation. ',
-      proposed_labels: [' MC:Needs-Specialist ', ' Area:QA '],
+      proposed_labels: [' PD:Needs-Specialist ', ' Area:QA '],
       evidence_links: [],
       specialist_state: 'recommended',
       recommended_lane: ' qa-specialist ',
@@ -752,7 +752,7 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
         recommended_next_action: 'Owner reviews the specialist recommendation.',
         proposed_labels: [
           {
-            name: 'mc:needs-specialist',
+            name: 'pd:needs-specialist',
             source: 'triage_routing',
             action: 'recommend_add',
             applied: false,
@@ -803,7 +803,7 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
       routing_status: 'recorded',
       triage_rationale: 'No safe specialist metadata is available.',
       recommended_next_action: 'Owner supplies specialist context.',
-      proposed_labels: ['mc:needs-specialist'],
+      proposed_labels: ['pd:needs-specialist'],
       evidence_links: [],
       deferred_side_effects: [],
       lane_detail: {
@@ -844,7 +844,7 @@ describe('SPEC-009F NEEDS_SPECIALIST recommendation payloads', () => {
       routing_status: 'recorded',
       triage_rationale: 'raw-secret needs specialist',
       recommended_next_action: 'Owner reviews the specialist recommendation.',
-      proposed_labels: ['mc:needs-specialist'],
+      proposed_labels: ['pd:needs-specialist'],
       evidence_links: [],
       deferred_side_effects: [],
       lane_detail: {
@@ -922,7 +922,7 @@ describe('SPEC-009F closure recommendation payloads', () => {
       disposition,
       triage_rationale: ' Closure outcome is recommendation-only. ',
       recommended_next_action: ' Owner reviews the closure recommendation. ',
-      proposed_labels: [' MC:Triage-Routing ', ` MC:${disposition.toLowerCase()} `],
+      proposed_labels: [' PD:Triage-Routing ', ` PD:${disposition.toLowerCase()} `],
       evidence_links: [],
       ...detail,
       produced_at: '2026-05-21T12:00:00.000Z',
@@ -942,13 +942,13 @@ describe('SPEC-009F closure recommendation payloads', () => {
         recommended_next_action: 'Owner reviews the closure recommendation.',
         proposed_labels: [
           {
-            name: 'mc:triage-routing',
+            name: 'pd:triage-routing',
             source: 'triage_routing',
             action: 'recommend_add',
             applied: false,
           },
           {
-            name: `mc:${disposition.toLowerCase()}`,
+            name: `pd:${disposition.toLowerCase()}`,
             source: 'triage_routing',
             action: 'recommend_add',
             applied: false,
@@ -984,7 +984,7 @@ describe('SPEC-009F closure recommendation payloads', () => {
       routing_status: 'recorded',
       triage_rationale: 'raw-secret invalid',
       recommended_next_action: 'Owner reviews the closure recommendation.',
-      proposed_labels: ['mc:invalid'],
+      proposed_labels: ['pd:invalid'],
       evidence_links: [],
       deferred_side_effects: [],
       lane_detail: {

@@ -2,7 +2,7 @@
  * SPEC-008 — Constant-time comparison helper (T149).
  *
  * Per FR-219z: constant-time comparison MUST be used for:
- *   (a) MC API-key validation (extends `extractApiKeyFromHeaders`)
+ *   (a) Paddock API-key validation (extends `extractApiKeyFromHeaders`)
  *   (b) CSRF-token comparison
  *   (c) Idempotency-Key cache lookup hash compare
  *   (d) `row_hash` chain-walk equality

@@ -1,10 +1,10 @@
 /**
- * GNAP Sync Engine — push MC tasks to a Git-Native Agent Protocol repo.
+ * GNAP Sync Engine — push Paddock tasks to a Git-Native Agent Protocol repo.
  *
  * SQLite remains the primary store. The GNAP repo is an optional sync target
  * following the same pattern as `github-sync-engine.ts`.
  *
- * Phase 1: MC → GNAP only (push). Pull/bidirectional sync is Phase 2.
+ * Phase 1: Paddock → GNAP only (push). Pull/bidirectional sync is Phase 2.
  */
 
 import { execFileSync } from 'node:child_process'

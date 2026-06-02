@@ -20,7 +20,7 @@ export interface OsUser {
   has_codex: boolean
   /** Whether openclaw is installed for this user */
   has_openclaw: boolean
-  /** Whether this OS user is the one running the MC process (i.e. "Default" org) */
+  /** Whether this OS user is the one running the Paddock process (i.e. "Default" org) */
   is_process_owner: boolean
 }
 
@@ -67,7 +67,7 @@ function installToolForUser(
 ): { success: boolean; error?: string } {
   try {
     if (tool === 'openclaw') {
-      // openclaw is managed by MC — create dir structure + install latest from npm
+      // openclaw is managed by Paddock — create dir structure + install latest from npm
       const openclawDir = path.join(homeDir, '.openclaw')
       const workspaceDir = path.join(homeDir, 'workspace')
       for (const dir of [openclawDir, workspaceDir]) {
@@ -222,7 +222,7 @@ export async function GET(request: NextRequest) {
 
   const users = discoverOsUsers()
 
-  // Mark the OS user that owns the MC process (represented by "Default" org)
+  // Mark the OS user that owns the Paddock process (represented by "Default" org)
   const processHomeDir = os.homedir()
   for (const user of users) {
     if (user.home_dir === processHomeDir) {
@@ -350,7 +350,7 @@ export async function POST(request: NextRequest) {
           logger.error({ err: e }, 'Failed to create Linux user')
           return NextResponse.json({
             error: `Failed to create OS user: ${msg}`,
-            hint: 'Ensure the MC process user has passwordless sudo for useradd.',
+            hint: 'Ensure the Paddock process user has passwordless sudo for useradd.',
           }, { status: 500 })
         }
 

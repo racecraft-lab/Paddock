@@ -104,14 +104,14 @@ The Docker image:
 
 ### Gateway Connectivity from Docker
 
-MC inside Docker needs to reach the gateway running on the host. There are **two** connections:
+Paddock inside Docker needs to reach the gateway running on the host. There are **two** connections:
 
-1. **Server-side** (MC backend → gateway): Set `OPENCLAW_GATEWAY_HOST=host.docker.internal`.
+1. **Server-side** (Paddock backend → gateway): Set `OPENCLAW_GATEWAY_HOST=host.docker.internal`.
    Docker Desktop (macOS/Windows) resolves this automatically. On Linux, `docker-compose.yml`
    maps it via `extra_hosts`.
 
 2. **Browser-side** (user's browser → gateway WebSocket): When the gateway host is a
-   Docker-internal name (like `host.docker.internal`), MC automatically rewrites the WebSocket
+   Docker-internal name (like `host.docker.internal`), Paddock automatically rewrites the WebSocket
    URL to the browser's own hostname. No extra config needed for local Docker usage.
    For remote access, set `NEXT_PUBLIC_GATEWAY_HOST` to the public hostname.
 
@@ -175,7 +175,7 @@ When running Paddock alongside a gateway as containers in the same pod (sidecar 
 ```
 ┌──────────────── Pod ────────────────┐
 │  ┌─────────┐     ┌───────────────┐  │
-│  │   MC    │◄───►│   Gateway     │  │
+│  │ Paddock │◄───►│   Gateway     │  │
 │  │ :3000   │     │   :18789      │  │
 │  └─────────┘     └───────────────┘  │
 │       ▲                  ▲          │
@@ -186,7 +186,7 @@ When running Paddock alongside a gateway as containers in the same pod (sidecar 
 
 ### Required Configuration
 
-**Environment variables** for the MC container:
+**Environment variables** for the Paddock container:
 
 ```bash
 AUTH_USER=admin
@@ -198,7 +198,7 @@ NEXT_PUBLIC_GATEWAY_PORT=18789
 
 ### Agent Registration
 
-The gateway must register its agents with MC on startup. Include the `agents` array in the gateway registration request:
+The gateway must register its agents with Paddock on startup. Include the `agents` array in the gateway registration request:
 
 ```bash
 curl -X POST http://localhost:3000/api/gateways \
@@ -284,7 +284,7 @@ pnpm install
    container. Environment variables take precedence over `openclaw.json`, so set
    `OPENCLAW_GATEWAY_HOST=host.docker.internal` in your `.env` or docker-compose.
 
-4. **Browser WebSocket**: MC automatically rewrites Docker-internal hostnames
+4. **Browser WebSocket**: Paddock automatically rewrites Docker-internal hostnames
    (`host.docker.internal`, `host-gateway`) to the browser's hostname. If the browser
    still can't connect, set `NEXT_PUBLIC_GATEWAY_HOST` to a hostname your browser can reach.
 

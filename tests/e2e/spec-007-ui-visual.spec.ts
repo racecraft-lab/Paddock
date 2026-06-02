@@ -43,7 +43,7 @@ async function prepareAuthenticatedSpec007Page(
   await page.context().addInitScript(({ workspaceId }) => {
     sessionStorage.setItem('mc-onboarding-dismissed', '1')
     sessionStorage.removeItem('mc-onboarding-replay')
-    localStorage.setItem('mc:active-workspace:v1', JSON.stringify({
+    localStorage.setItem('pd:active-workspace:v1', JSON.stringify({
       payloadVersion: 1,
       tenantId: 1,
       productLineId: workspaceId,

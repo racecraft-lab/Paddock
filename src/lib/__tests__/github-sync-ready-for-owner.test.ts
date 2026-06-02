@@ -195,7 +195,7 @@ function makeIssue(
     title: 'Ready task',
     body: 'Waiting for merge',
     state,
-    labels: [{ name: 'mc:ready-for-owner' }],
+    labels: [{ name: 'pd:ready-for-owner' }],
     assignee: null,
     html_url: 'https://github.com/owner/repo/issues/90',
     created_at: '2030-01-01T00:00:00Z',
@@ -265,8 +265,8 @@ function expectNoTerminalSideEffects(db: Database.Database, taskId = 500) {
     FROM tasks
     WHERE id = ?
   `).get(taskId)).toEqual({ status: 'ready_for_owner', completed_at: null })
-  expect(projectedLabelSets().some((labels) => labels.includes('mc:done'))).toBe(false)
-  expect(projectedLabelSets().some((labels) => !labels.includes('mc:ready-for-owner'))).toBe(false)
+  expect(projectedLabelSets().some((labels) => labels.includes('pd:done'))).toBe(false)
+  expect(projectedLabelSets().some((labels) => !labels.includes('pd:ready-for-owner'))).toBe(false)
   expect(activityRows(db).filter((row: any) => {
     if (row.type !== 'task_updated' || typeof row.data !== 'string') return false
     return row.data.includes('"terminal_event":"github_pr_merged"')
@@ -298,8 +298,8 @@ function expectSuccessfulTerminalEvidence(db: Database.Database, options: {
     github_pr_number: prNumber,
     github_synced_at: expect.any(Number),
   })
-  expect(projectedLabelSets()).toContainEqual(expect.arrayContaining(['mc:done']))
-  expect(projectedLabelSets().some((labels) => labels.includes('mc:ready-for-owner'))).toBe(false)
+  expect(projectedLabelSets()).toContainEqual(expect.arrayContaining(['pd:done']))
+  expect(projectedLabelSets().some((labels) => labels.includes('pd:ready-for-owner'))).toBe(false)
   expect(activityRows(db)).toContainEqual(expect.objectContaining({
     type: 'task_updated',
     entity_type: 'task',
@@ -420,14 +420,14 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
     expectSuccessfulTerminalEvidence(db)
   })
 
-  it('projects mc:done and removes stale mc:ready-for-owner after successful reconciliation', async () => {
+  it('projects pd:done and removes stale pd:ready-for-owner after successful reconciliation', async () => {
     const db = freshDb()
     const projectId = seedProject(db)
     seedReadyForOwnerTask(db, projectId)
     fetchIssuesMock.mockResolvedValue([makeIssue('closed', {
       labels: [
         { name: 'customer:keep' },
-        { name: 'mc:ready-for-owner' },
+        { name: 'pd:ready-for-owner' },
         { name: 'priority:high' },
       ],
     })])
@@ -440,8 +440,8 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
       },
     })
 
-    expect(projectedLabelSets()).toContainEqual(['customer:keep', 'mc:done', 'priority:high'])
-    expect(projectedLabelSets().some((labels) => labels.includes('mc:ready-for-owner'))).toBe(false)
+    expect(projectedLabelSets()).toContainEqual(['customer:keep', 'pd:done', 'priority:high'])
+    expect(projectedLabelSets().some((labels) => labels.includes('pd:ready-for-owner'))).toBe(false)
   })
 
   it('records terminal github_pr_merged activity and keeps notification evidence bounded', async () => {
@@ -655,7 +655,7 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
     seedReadyForOwnerTask(db, projectId, { status: 'done' })
     db.prepare('UPDATE tasks SET completed_at = ?, updated_at = ? WHERE id = 500').run(2, 1)
     fetchIssuesMock.mockResolvedValue([makeIssue('closed', {
-      labels: [{ name: 'mc:done' }, { name: 'priority:high' }],
+      labels: [{ name: 'pd:done' }, { name: 'priority:high' }],
     })])
     fetchPullRequestMock.mockResolvedValue({ number: 12, state: 'closed', merged: false })
 
@@ -776,7 +776,7 @@ describe('SPEC-009C4 RED harness for owner merge reconciliation', () => {
     expect(checklist).toMatch(/notifications[\s\S]*task_ready_for_owner/i)
     expect(checklist).toMatch(/task_artifacts[\s\S]*spec-009c3\.v1/i)
     expect(checklist).toMatch(/quality_reviews.*aegis/i)
-    expect(checklist).toMatch(/GitHub labels[\s\S]*mc:done[\s\S]*mc:ready-for-owner/i)
+    expect(checklist).toMatch(/GitHub labels[\s\S]*pd:done[\s\S]*pd:ready-for-owner/i)
     expect(checklist).toMatch(/smoke checklist text[\s\S]*fresh synthetic C4 PR/i)
     expect(checklist).not.toMatch(/packet\.ya?ml|packet JSON|owner packet API|owner packet dashboard|owner packet UI/i)
   })
@@ -1004,14 +1004,14 @@ describe('SPEC-005 GitHub ready_for_owner terminal reconciliation', () => {
 })
 
 describe('SPEC-005 GitHub ready_for_owner label application', () => {
-  it('replaces prior mc:* status labels with mc:ready-for-owner when updating a linked issue', async () => {
+  it('replaces prior pd:* status labels with pd:ready-for-owner when updating a linked issue', async () => {
     const db = freshDb()
     const projectId = seedProject(db)
     fetchIssueMock.mockResolvedValue({
       ...makeIssue('open'),
       labels: [
-        { name: 'mc:review' },
-        { name: 'mc:quality-review' },
+        { name: 'pd:review' },
+        { name: 'pd:quality-review' },
         { name: 'priority:medium' },
         { name: 'customer:keep' },
       ],
@@ -1037,16 +1037,16 @@ describe('SPEC-005 GitHub ready_for_owner label application', () => {
       title: 'Ready task',
       body: 'Ready for owner merge',
       state: 'open',
-      labels: ['customer:keep', 'mc:ready-for-owner', 'priority:high'],
+      labels: ['customer:keep', 'pd:ready-for-owner', 'priority:high'],
     })
   })
 
-  it('applies mc:ready-for-owner through syncTaskOutbound without duplicating ready-owner notifications', async () => {
+  it('applies pd:ready-for-owner through syncTaskOutbound without duplicating ready-owner notifications', async () => {
     const db = freshDb()
     const projectId = seedProject(db)
     fetchIssueMock.mockResolvedValue({
       ...makeIssue('open'),
-      labels: [{ name: 'mc:quality-review' }, { name: 'owner:keep' }],
+      labels: [{ name: 'pd:quality-review' }, { name: 'owner:keep' }],
     })
     updateIssueMock.mockResolvedValue(undefined)
 
@@ -1065,7 +1065,7 @@ describe('SPEC-005 GitHub ready_for_owner label application', () => {
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(updateIssueMock).toHaveBeenCalledWith('owner/repo', 90, expect.objectContaining({
-      labels: ['owner:keep', 'mc:ready-for-owner', 'priority:high'],
+      labels: ['owner:keep', 'pd:ready-for-owner', 'priority:high'],
     }))
     expect(createNotificationMock).not.toHaveBeenCalled()
   })

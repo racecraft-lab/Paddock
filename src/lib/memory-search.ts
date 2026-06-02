@@ -6,7 +6,7 @@
  * substring matching with proper BM25-ranked results, snippet extraction,
  * prefix queries, and boolean operators.
  *
- * The index is stored in the main MC database alongside other tables.
+ * The index is stored in the main Paddock database alongside other tables.
  * Files are indexed on-demand (first search or explicit rebuild).
  */
 

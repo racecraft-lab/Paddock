@@ -167,7 +167,7 @@ specs/
 
 - `resolveFlag` reads `workspaces.feature_flags JSON`; `process.env.FEATURE_X='0'` forces OFF; env '1' does NOT force ON (workspace JSON only)
 - `PILOT_PRODUCT_LINE_A_E2E` exception: may be flipped via env
-- Zustand key: `mc:active-workspace:v1` (Product Line scope only)
+- Zustand key: `pd:active-workspace:v1` (Product Line scope only)
 - `scopeKey` = tenant + Facility/PL mode; stale in-flight responses ignored when scopeKey changes
 - REST: `workspace_scope=facility` for Facility; `workspace_id=<id>` for PL; omitted is flag-OFF legacy
 - 400 for both params; 403 for unauthorized workspace; 400 for real facility row as PL id
@@ -455,7 +455,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 - Adds application-level `ready_for_owner` task status and shared terminal transition guard; no DB-level CHECK or migration.
 - PR-producing workflow templates stop at owner action required; non-merge `done` attempts are side-effect-free until GitHub merge evidence is synced.
-- `pullFromGitHub` reconciles linked merged PRs to `done`, applies `mc:ready-for-owner` labels, and emits notifications without duplicate side effects.
+- `pullFromGitHub` reconciles linked merged PRs to `done`, applies `pd:ready-for-owner` labels, and emits notifications without duplicate side effects.
 - UI adds a Kanban lane between quality review and done; flag-OFF paths block new writes while preserving read compatibility.
 
 ## SPEC-007 Plan Summary [Source: specs/007-disposition-artifacts]
@@ -464,7 +464,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 - Reuses SPEC-001 tables `task_dispositions` and `task_artifacts`; no new migrations.
 - Adds task disposition rollups, artifact publish/read/admin/health surfaces, and artifact-driven dispatch handoff.
-- MC Secret Detector v1 centralizes redaction/rejection for AWS/GitHub/Google/Slack/Stripe/PEM/JWT/Bearer/OpenAI/Anthropic/generic secret patterns.
+- Paddock Secret Detector v1 centralizes redaction/rejection for AWS/GitHub/Google/Slack/Stripe/PEM/JWT/Bearer/OpenAI/Anthropic/generic secret patterns.
 - Adds dashboard, audit, admin, OpenAPI, Storybook/visual metadata, and e2e seed support; retained checkbox drift in `tasks.md` is historical bookkeeping, not the completion authority.
 
 ## SPEC-008 Plan Summary [Source: specs/008-resource-governance]

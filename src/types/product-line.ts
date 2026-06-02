@@ -1,4 +1,4 @@
-export const ACTIVE_WORKSPACE_STORAGE_KEY = 'mc:active-workspace:v1'
+export const ACTIVE_WORKSPACE_STORAGE_KEY = 'pd:active-workspace:v1'
 export const ACTIVE_WORKSPACE_PAYLOAD_VERSION = 1
 
 export interface ProductLine {

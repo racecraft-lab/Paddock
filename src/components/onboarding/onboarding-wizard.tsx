@@ -324,7 +324,7 @@ function StepWelcome({ isGateway, capabilities, runtimeStatuses, runtimesLoading
       <div className="flex-1 flex flex-col items-center justify-center text-center gap-4">
         <div className="w-14 h-14 rounded-xl overflow-hidden bg-surface-1 border border-border/50 flex items-center justify-center shadow-lg">
           <Image
-            src="/brand/mc-logo-128.png"
+            src="/brand/paddock-logo-128.png"
             alt="Paddock"
             width={56}
             height={56}

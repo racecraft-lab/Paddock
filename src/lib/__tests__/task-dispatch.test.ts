@@ -194,7 +194,7 @@ function createSpec009C3PipelineDb(): Database.Database {
   }))
   db.prepare(`
     INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix)
-    VALUES (900, 'Paddock', 'paddock', 1, 'MC')
+    VALUES (900, 'Paddock', 'paddock', 1, 'PD')
   `).run()
   db.prepare(`
     INSERT OR IGNORE INTO agents (id, name, role, status, workspace_id)
@@ -251,7 +251,7 @@ function createSpec009FTriageDispatchDb(): Database.Database {
   }))
   db.prepare(`
     INSERT INTO projects (id, name, slug, workspace_id, ticket_prefix, area_slug)
-    VALUES (990, 'Paddock', 'paddock', 1, 'MC', 'dev')
+    VALUES (990, 'Paddock', 'paddock', 1, 'PD', 'dev')
   `).run()
   db.prepare(`
     INSERT INTO workflow_templates (

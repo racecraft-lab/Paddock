@@ -605,7 +605,7 @@ function buildNeedsSpecPayload(source: TriageRoutingSource, input: RouteTriageDi
     source_issue: sourceIssue(source),
     triage_rationale: input.rationale ?? 'Issue triage determined this needs a SpecKit specification before implementation.',
     recommended_next_action: 'Owner reviews this handoff and decides whether to start SpecKit setup manually.',
-    proposed_labels: ['mc:triage-routing', 'mc:needs-spec'],
+    proposed_labels: ['pd:triage-routing', 'pd:needs-spec'],
     evidence_links: sourceEvidenceLinks(source),
     proposed_scope: 'Specify the production behavior change from the retained triage evidence.',
     non_goals: ['Do not create a spec worktree automatically.', 'Do not enter Issue Remediation.'],
@@ -628,7 +628,7 @@ function buildNeedsHumanPayload(source: TriageRoutingSource, input: RouteTriageD
     source_issue: sourceIssue(source),
     triage_rationale: input.rationale ?? 'Issue triage needs owner clarification before routing can continue.',
     recommended_next_action: 'Owner answers the blocking questions in Paddock.',
-    proposed_labels: ['mc:triage-routing', 'mc:needs-human'],
+    proposed_labels: ['pd:triage-routing', 'pd:needs-human'],
     evidence_links: sourceEvidenceLinks(source),
     blocking_questions: [
       'What user-visible behavior should change?',
@@ -660,8 +660,8 @@ function buildNeedsSpecialistPayload(
       ? 'Owner reviews the specialist recommendation in Paddock.'
       : resolution.owner_action,
     proposed_labels: resolution.specialist_state === 'recommended'
-      ? ['mc:triage-routing', 'mc:needs-specialist', `area:${resolution.recommended_lane.replace(/-specialist$/, '')}`]
-      : ['mc:triage-routing', 'mc:needs-specialist'],
+      ? ['pd:triage-routing', 'pd:needs-specialist', `area:${resolution.recommended_lane.replace(/-specialist$/, '')}`]
+      : ['pd:triage-routing', 'pd:needs-specialist'],
     evidence_links: sourceEvidenceLinks(source),
     ...resolution,
     produced_at: new Date().toISOString(),
@@ -682,7 +682,7 @@ function buildClosurePayload(source: TriageRoutingSource, input: RouteTriageDisp
     disposition: input.disposition,
     triage_rationale: input.rationale ?? `Issue triage recommends ${input.disposition} closure handling.`,
     recommended_next_action: `Owner reviews the ${input.disposition} closure recommendation in Paddock.`,
-    proposed_labels: ['mc:triage-routing', `mc:${input.disposition.toLowerCase()}`],
+    proposed_labels: ['pd:triage-routing', `pd:${input.disposition.toLowerCase()}`],
     evidence_links: sourceEvidenceLinks(source),
     ...detail,
     produced_at: new Date().toISOString(),

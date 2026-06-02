@@ -355,7 +355,7 @@ export async function POST(request: NextRequest) {
         logger.error({ err: gwErr }, 'Gateway write-back failed');
         return NextResponse.json({ 
           agent: parsedAgent,
-          warning: `Agent created in MC but gateway write failed: ${gwErr.message}`
+          warning: `Agent created in Paddock but gateway write failed: ${gwErr.message}`
         }, { status: 201 });
       }
     }

@@ -34,7 +34,7 @@ Items already covered by prior reviewers are intentionally NOT re-flagged here: 
 | **P1-2** | Provider Terms-of-Service posture | New Q62 (or Q15 subsection) | Per-provider ToS table for each reverse-engineered or undocumented surface (`copilot_internal/user`, VS-Code-spoofed headers, rollout-JSONL parsing). Default disabled for any surface flagged "ToS unclear"; operator must opt-in with acknowledgement. |
 | **P1-3** | Supply-chain pinning + provenance | Open Question #4 + new Q63 | Pin `otelcol-contrib` by version + checksum + signing-key; SBOM for new deps; document `J-Bax/copilot-token-tracker` as **schema reference only — no code copy** with license evidence. |
 | **P1-4** | Logging / journal redaction | Q47 + Q48 | All log paths (`payload_excerpt`, schema-broken parse failures, reconciler errors, health events) MUST run a content-redacting filter before write. |
-| **P1-5** | License compatibility for MC public release | New Q64 (one-paragraph) | Confirm MC's own license, then validate `@opentelemetry/otlp-transformer` (Apache-2.0), `better-sqlite3` (MIT), Node (MIT), `racecraft-lab/openclaw` (verify), and `J-Bax/copilot-token-tracker` (verify). Block any AGPL ingestion. |
+| **P1-5** | License compatibility for Paddock public release | New Q64 (one-paragraph) | Confirm Paddock's own license, then validate `@opentelemetry/otlp-transformer` (Apache-2.0), `better-sqlite3` (MIT), Node (MIT), `racecraft-lab/openclaw` (verify), and `J-Bax/copilot-token-tracker` (verify). Block any AGPL ingestion. |
 
 ---
 
@@ -44,7 +44,7 @@ Items already covered by prior reviewers are intentionally NOT re-flagged here: 
 
 **Where the doc is silent.** `raw_usage_events.raw_attributes_json` (Q18) is "verbatim per-source payload." The ingestion adapters listed in Q16 cover Claude Code native OTel, Codex stdout, Copilot `events.jsonl`, OpenClaw gateway OTel — every one of which can carry **content** depending on the operator's collector configuration. Specifically:
 
-- Claude Code's native OTel emits `claude_code.user_prompt` events when `OTEL_LOG_USER_PROMPTS=1`; the operator-facing setup doc (`docs/observability/claude-code-telemetry-setup.md` per Q-strict-scope) is what the operator will read, and there is no current language warning that this flag exfiltrates conversation content into MC's SQLite.
+- Claude Code's native OTel emits `claude_code.user_prompt` events when `OTEL_LOG_USER_PROMPTS=1`; the operator-facing setup doc (`docs/observability/claude-code-telemetry-setup.md` per Q-strict-scope) is what the operator will read, and there is no current language warning that this flag exfiltrates conversation content into Paddock's SQLite.
 - Anthropic GenAI semconv (`gen_ai.client.operation.duration`, `gen_ai.prompt`, `gen_ai.completion`) is enumerated in the OTel attribute registry. If the operator's collector forwards `gen_ai.prompt` events, they land in `raw_attributes_json` as plaintext.
 - Q47's `quarantined_raw_events.payload_excerpt` literally documents storing "first 1KB of rejected payload" — exactly the case where a parser failed and the payload may contain *anything*, including unredacted prompt text. This is then surfaced to operators in the UI per Q47.
 - Q48 says "Stderr/journal logging mirrors all health events — operator can `journalctl -u paddock.service`". Health events include "schema_broken" details which today read raw payload fragments.
@@ -57,7 +57,7 @@ Items already covered by prior reviewers are intentionally NOT re-flagged here: 
 2. Operator opt-in to widen the allowlist is a per-workspace feature flag `governance_capture_content` (default OFF) plus an explicit click-through warning in the setup doc.
 3. `quarantined_raw_events.payload_excerpt` is replaced by `payload_redaction_metadata` that records *byte length, parser error, schema version expected* — never the bytes themselves. If the operator needs the bytes for debugging, they must rerun ingest with `governance_capture_content=true`.
 4. `governance_health_events.detail` and `metric_json` (Q48) get the same treatment. Stderr/journal mirror runs through the same redactor.
-5. Acceptance criterion: a ChatGPT-Pro session that sends a prompt containing the literal string "SSN 123-45-6789" must result in **zero rows** in any MC table where that string appears, with `governance_capture_content=false`. Verified by integration test.
+5. Acceptance criterion: a ChatGPT-Pro session that sends a prompt containing the literal string "SSN 123-45-6789" must result in **zero rows** in any Paddock table where that string appears, with `governance_capture_content=false`. Verified by integration test.
 
 Mechanical to add (single redaction module + allowlist + opt-in flag); essential for any data-handling audit conversation.
 
@@ -162,7 +162,7 @@ The doc cites Anthropic's "OpenClaw-style Claude CLI usage allowed" line for Cla
 | Copilot `copilot_internal/user` poll | undocumented endpoint + spoofed headers | **disabled** | `governance_copilot_internal_poll=true` + ack |
 | OpenAI `wham/usage` web-UI scrape | already a Non-Goal | n/a | n/a |
 
-Makes operator consent explicit and gives MC clear footing in any provider conversation.
+Makes operator consent explicit and gives Paddock clear footing in any provider conversation.
 
 ---
 
@@ -170,7 +170,7 @@ Makes operator consent explicit and gives MC clear footing in any provider conve
 
 Open Question #4 ("otelcol-contrib v0.108.x minimum") is a floor, not a pin. For a `--user` systemd binary, spec needs: exact version + SHA-256 checksum + signing-key fingerprint + signature-verify curl example + Plan-phase SBOM task (syft) with quarterly CVE check.
 
-`J-Bax/copilot-token-tracker` is referenced as canonical schema source. Doc must state: schema reference only (no vendored code); license verified (likely MIT — confirm); pinned commit SHA so future repo changes don't silently shift MC's interpretation.
+`J-Bax/copilot-token-tracker` is referenced as canonical schema source. Doc must state: schema reference only (no vendored code); license verified (likely MIT — confirm); pinned commit SHA so future repo changes don't silently shift Paddock's interpretation.
 
 **Required fix — new Q63 + amend Open Question #4.**
 
@@ -186,9 +186,9 @@ Bundles with P0-1 but separate because surfaces are operator-facing not DB-resid
 
 ### P1-5 — License compatibility (Lens 6)
 
-The design concept doesn't name MC's own license. Spec inherits from `racecraft-lab/openclaw` (verify), depends on `@opentelemetry/otlp-transformer` (Apache-2.0), `better-sqlite3` (MIT), Node (MIT), references `J-Bax/copilot-token-tracker` (verify). If any dep flips AGPL — Langfuse v3 (rejected stack) is AGPL — MC would be forced into AGPL.
+The design concept doesn't name Paddock's own license. Spec inherits from `racecraft-lab/openclaw` (verify), depends on `@opentelemetry/otlp-transformer` (Apache-2.0), `better-sqlite3` (MIT), Node (MIT), references `J-Bax/copilot-token-tracker` (verify). If any dep flips AGPL — Langfuse v3 (rejected stack) is AGPL — Paddock would be forced into AGPL.
 
-**Required fix — new Q64:** confirm MC LICENSE; Plan adds `license-checker` CI gate failing on AGPL/SSPL; document J-Bax + OpenClaw reference posture.
+**Required fix — new Q64:** confirm Paddock LICENSE; Plan adds `license-checker` CI gate failing on AGPL/SSPL; document J-Bax + OpenClaw reference posture.
 
 ---
 

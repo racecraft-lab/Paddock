@@ -55,7 +55,7 @@ curl "$MC_URL/api/tasks/queue?agent=scout" \
 
 ## Pattern 2: Queue-Based Dispatch
 
-Agents poll the queue and MC assigns the highest-priority available task. No human triage needed.
+Agents poll the queue and Paddock assigns the highest-priority available task. No human triage needed.
 
 ### Setup
 
@@ -71,7 +71,7 @@ curl -X POST "$MC_URL/api/tasks" \
   }'
 ```
 
-2. Agents poll the queue. MC atomically claims the best task:
+2. Agents poll the queue. Paddock atomically claims the best task:
 
 ```bash
 # Agent "scout" asks for work
@@ -112,7 +112,7 @@ The scheduler automatically dispatches `assigned` tasks to agents through the Op
 
 1. Tasks are created with `assigned_to` set
 2. The scheduler's `dispatchAssignedTasks` job runs periodically
-3. For each task, MC:
+3. For each task, Paddock:
    - Marks it `in_progress`
    - Classifies the task complexity to select a model
    - Sends the task prompt to the agent via the gateway
@@ -121,7 +121,7 @@ The scheduler automatically dispatches `assigned` tasks to agents through the Op
 
 ### Model Routing
 
-MC automatically selects a model based on task content:
+Paddock automatically selects a model based on task content:
 
 | Tier | Model | Signals |
 |------|-------|---------|
@@ -150,7 +150,7 @@ curl -X PUT "$MC_URL/api/agents" \
 
 ## Pattern 4: Quality Review (Aegis)
 
-Aegis is MC's built-in quality gate. When a task reaches `review` status, the scheduler sends it to the Aegis reviewer agent for sign-off.
+Aegis is Paddock's built-in quality gate. When a task reaches `review` status, the scheduler sends it to the Aegis reviewer agent for sign-off.
 
 ### Flow
 
@@ -335,7 +335,7 @@ curl -X POST "$MC_URL/api/tasks" \
 
 ## Pattern 8: Stale Task Recovery
 
-MC automatically recovers from stuck agents. The `requeueStaleTasks` scheduler job:
+Paddock automatically recovers from stuck agents. The `requeueStaleTasks` scheduler job:
 
 1. Finds tasks stuck in `in_progress` for 10+ minutes with an offline agent
 2. Reverts them to `assigned` with a comment explaining the stall

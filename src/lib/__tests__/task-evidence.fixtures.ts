@@ -659,7 +659,7 @@ function spec009fPayload(
       ? `Review the ${outcome} recommendation in Paddock. javascript:alert(1)`
       : `Review the ${outcome} recommendation in Paddock.`,
     proposed_labels: [
-      { name: 'mc:triage-routing', source: 'triage_routing' as const, action: 'recommend_add' as const, applied: false as const },
+      { name: 'pd:triage-routing', source: 'triage_routing' as const, action: 'recommend_add' as const, applied: false as const },
       { name: spec009fOutcomeLabel(outcome), source: 'triage_routing' as const, action: 'recommend_add' as const, applied: false as const },
     ],
     evidence_links: [
@@ -801,7 +801,7 @@ function spec009fDeferredSideEffects(outcome: Spec009fNonRemediationOutcome): Sp
 }
 
 function spec009fOutcomeLabel(outcome: Spec009fNonRemediationOutcome): string {
-  return `mc:${outcome.toLowerCase().replaceAll('_', '-')}`
+  return `pd:${outcome.toLowerCase().replaceAll('_', '-')}`
 }
 
 function spec009fIdempotencyKey(taskId: number, outcome: Spec009fNonRemediationOutcome): string {

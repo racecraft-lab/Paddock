@@ -3,7 +3,7 @@
  *
  * Asserts:
  *   (T009 / FR-002, FR-017, US1-AC2) `pushTaskToGitHub` for a flag-OFF
- *     workspace emits ONLY `mc:*` and `priority:*` labels, even when the
+ *     workspace emits ONLY `pd:*` and `priority:*` labels, even when the
  *     task's project has `area_slug='qa'` set.
  *   (T011 / FR-002, FR-044, US1-AC4, SC-010) After a full poll cycle in a
  *     flag-OFF workspace, the activities table contains zero rows of
@@ -115,7 +115,7 @@ function seedProject(
 // ── T009 — flag-OFF outbound emission ──────────────
 
 describe('SPEC-006 / T009 — pushTaskToGitHub flag-OFF emission (FR-002, FR-017, US1-AC2)', () => {
-  it('emits ONLY mc:* and priority:* labels even when project.area_slug is set', async () => {
+  it('emits ONLY pd:* and priority:* labels even when project.area_slug is set', async () => {
     const db = freshMigratedDb()
     const projectId = seedProject(db, {
       workspaceId: 1,
@@ -148,7 +148,7 @@ describe('SPEC-006 / T009 — pushTaskToGitHub flag-OFF emission (FR-002, FR-017
     expect(createIssueMock).toHaveBeenCalledTimes(1)
     const callArgs = createIssueMock.mock.calls[0]
     const issueArg = callArgs[1] as { labels: string[] }
-    expect(issueArg.labels).toEqual(['mc:inbox', 'priority:medium'])
+    expect(issueArg.labels).toEqual(['pd:inbox', 'priority:medium'])
 
     for (const label of issueArg.labels) {
       expect(label.startsWith('area:')).toBe(false)

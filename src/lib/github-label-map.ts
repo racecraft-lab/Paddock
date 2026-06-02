@@ -2,14 +2,14 @@
  * Bidirectional mapping between Paddock statuses/priorities and GitHub labels.
  *
  * Three label families are defined here:
- *   - `mc:*`        — Paddock task statuses (mc:backlog, mc:in-progress, ...)
+ *   - `pd:*`        — Paddock task statuses (pd:backlog, pd:in-progress, ...)
  *   - `priority:*`  — task priorities (priority:low/medium/high/critical)
  *   - `area:*`      — SPEC-006 product-line / department routing
  *                     (area:qa, area:dev, area:triage, ...)
  *
- * The `mc:` prefix on the status family is intentional, to avoid collisions
+ * The `pd:` prefix on the status family is intentional, to avoid collisions
  * with existing repo labels; `priority:*` and `area:*` are conventional GitHub
- * label namespaces and do not use a `mc:` prefix because they are already
+ * label namespaces and do not use a `pd:` prefix because they are already
  * domain-specific enough not to collide.
  */
 
@@ -27,16 +27,16 @@ interface LabelDef {
 // ── Status ↔ Label mapping ──────────────────────────────────────
 
 const STATUS_LABEL_MAP: Record<TaskStatus, LabelDef> = {
-  backlog:        { name: 'mc:backlog',        color: '94a3b8', description: 'Paddock: backlog' },
-  inbox:          { name: 'mc:inbox',          color: '6b7280', description: 'Paddock: inbox' },
-  assigned:       { name: 'mc:assigned',       color: '3b82f6', description: 'Paddock: assigned' },
-  in_progress:    { name: 'mc:in-progress',    color: 'eab308', description: 'Paddock: in progress' },
-  review:         { name: 'mc:review',         color: 'a855f7', description: 'Paddock: review' },
-  quality_review: { name: 'mc:quality-review', color: '6366f1', description: 'Paddock: quality review' },
-  ready_for_owner: { name: 'mc:ready-for-owner', color: '14b8a6', description: 'Paddock: ready for owner' },
-  done:           { name: 'mc:done',           color: '22c55e', description: 'Paddock: done' },
-  awaiting_owner: { name: 'mc:awaiting-owner', color: 'f97316', description: 'Paddock: awaiting owner' },
-  failed:         { name: 'mc:failed',          color: 'ef4444', description: 'Paddock: failed' },
+  backlog:        { name: 'pd:backlog',        color: '94a3b8', description: 'Paddock: backlog' },
+  inbox:          { name: 'pd:inbox',          color: '6b7280', description: 'Paddock: inbox' },
+  assigned:       { name: 'pd:assigned',       color: '3b82f6', description: 'Paddock: assigned' },
+  in_progress:    { name: 'pd:in-progress',    color: 'eab308', description: 'Paddock: in progress' },
+  review:         { name: 'pd:review',         color: 'a855f7', description: 'Paddock: review' },
+  quality_review: { name: 'pd:quality-review', color: '6366f1', description: 'Paddock: quality review' },
+  ready_for_owner: { name: 'pd:ready-for-owner', color: '14b8a6', description: 'Paddock: ready for owner' },
+  done:           { name: 'pd:done',           color: '22c55e', description: 'Paddock: done' },
+  awaiting_owner: { name: 'pd:awaiting-owner', color: 'f97316', description: 'Paddock: awaiting owner' },
+  failed:         { name: 'pd:failed',          color: 'ef4444', description: 'Paddock: failed' },
 }
 
 const LABEL_STATUS_MAP: Record<string, TaskStatus> = Object.fromEntries(
@@ -76,9 +76,9 @@ export function labelToPriority(labels: string[]): TaskPriority {
   return 'medium'
 }
 
-// ── All MC labels (for initialization) ──────────────────────────
+// ── All Paddock labels (for initialization) ──────────────────────────
 
-export const ALL_MC_LABELS: LabelDef[] = [
+export const ALL_PADDOCK_LABELS: LabelDef[] = [
   ...Object.values(STATUS_LABEL_MAP),
   ...Object.values(PRIORITY_LABEL_MAP),
 ]

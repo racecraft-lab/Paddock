@@ -49,14 +49,14 @@ export function registerMcAsDashboard(mcUrl: string): { registered: boolean; alr
       return { registered: false, alreadySet: true }
     }
 
-    // Add MC origin to allowedOrigins only — do NOT touch dangerouslyDisableDeviceAuth.
-    // MC authenticates via gateway token, but forcing device auth off is a security
+    // Add Paddock origin to allowedOrigins only — do NOT touch dangerouslyDisableDeviceAuth.
+    // Paddock authenticates via gateway token, but forcing device auth off is a security
     // downgrade that the operator should control, not Paddock.
     origins.push(origin)
     parsed.gateway.controlUi.allowedOrigins = origins
 
     fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2) + '\n')
-    logger.info({ origin }, 'Registered MC origin in gateway config')
+    logger.info({ origin }, 'Registered Paddock origin in gateway config')
     return { registered: true, alreadySet: false }
   } catch (err: any) {
     // Read-only filesystem (e.g. Docker read_only: true, or intentional mount) —
@@ -64,13 +64,13 @@ export function registerMcAsDashboard(mcUrl: string): { registered: boolean; alr
     if (err?.code === 'EROFS' || err?.code === 'EACCES' || err?.code === 'EPERM') {
       logger.warn(
         { err, configPath },
-        'Gateway config is read-only — skipping MC origin registration. ' +
+        'Gateway config is read-only — skipping Paddock origin registration. ' +
         'To enable auto-registration, mount openclaw.json with write access or ' +
-        'add the MC origin to gateway.controlUi.allowedOrigins manually.',
+        'add the Paddock origin to gateway.controlUi.allowedOrigins manually.',
       )
       return { registered: false, alreadySet: false }
     }
-    logger.error({ err }, 'Failed to register MC in gateway config')
+    logger.error({ err }, 'Failed to register Paddock in gateway config')
     return { registered: false, alreadySet: false }
   }
 }

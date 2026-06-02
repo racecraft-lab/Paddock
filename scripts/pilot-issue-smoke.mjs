@@ -2,7 +2,7 @@
 
 export const PILOT_REPO = 'racecraft-lab/Paddock'
 export const SYNTHETIC_TITLE = '[mc-pilot] synthetic e2e issue'
-export const SYNTHETIC_LABELS = ['mc:inbox', 'priority:medium', 'area:dev']
+export const SYNTHETIC_LABELS = ['pd:inbox', 'priority:medium', 'area:dev']
 
 const GITHUB_TOKEN_PATTERN = /\b(?:gh[pousr]_[A-Za-z0-9_]+|github_pat_[A-Za-z0-9_]+)\b/g
 

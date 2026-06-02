@@ -34,7 +34,7 @@ interface SetActiveProductLineOptions {
 }
 
 const EMPTY_SCOPE_KEY = 'uninitialized'
-const WORKSPACE_SCOPE_CHANNEL = 'mc:active-workspace'
+const WORKSPACE_SCOPE_CHANNEL = 'pd:active-workspace'
 let scopeChannelInitialized = false
 let scopeChannel: BroadcastChannel | null = null
 let originTabId: string | null = null

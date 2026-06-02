@@ -56,7 +56,7 @@ describe('task claim reconciliation helpers', () => {
       'https://github.com/racecraft-lab/Paddock',
       'git@github.com:racecraft-lab/Paddock',
       'racecraft-lab/Paddock.git',
-      'racecraft-lab/mission/control',
+      'racecraft-lab/invalid/nested',
       'racecraft-lab/',
       '/paddock',
       'racecraft-lab/../paddock',

@@ -16,7 +16,7 @@ import { AGENT_TEMPLATES, type AgentTemplate } from './agent-templates'
 // ─── Framework Connection Config ────────────────────────────────────────────
 
 export interface FrameworkConnectionConfig {
-  /** How the agent connects to MC (webhook, polling, websocket) */
+  /** How the agent connects to Paddock (webhook, polling, websocket) */
   connectionMode: 'webhook' | 'polling' | 'websocket'
   /** Default heartbeat interval in seconds */
   heartbeatInterval: number
@@ -112,9 +112,9 @@ curl -X POST http://localhost:3000/api/adapters \\
       connectionMode: 'webhook',
       heartbeatInterval: 30,
       setupHints: [
-        'Wrap your LangGraph graph with the MC adapter client',
+        'Wrap your LangGraph graph with the Paddock adapter client',
         'Register nodes as capabilities for task routing',
-        'Use checkpointers for durable state across MC task assignments',
+        'Use checkpointers for durable state across Paddock task assignments',
       ],
       exampleSnippet: `import requests
 
@@ -160,9 +160,9 @@ requests.post(f"{MC_URL}/api/adapters", headers=HEADERS, json={
       connectionMode: 'webhook',
       heartbeatInterval: 30,
       setupHints: [
-        'Register each CrewAI agent role as a separate MC agent',
-        'Map Crew tasks to MC task assignments',
-        'Use callbacks to report progress back to MC',
+        'Register each CrewAI agent role as a separate Paddock agent',
+        'Map Crew tasks to Paddock task assignments',
+        'Use callbacks to report progress back to Paddock',
       ],
       exampleSnippet: `from crewai import Agent, Task, Crew
 import requests
@@ -210,9 +210,9 @@ def report_task_complete(agent_id: str, task_id: str, output: str):
       connectionMode: 'webhook',
       heartbeatInterval: 30,
       setupHints: [
-        'Register each AutoGen AssistantAgent with MC',
+        'Register each AutoGen AssistantAgent with Paddock',
         'Use message hooks to report conversation progress',
-        'Map GroupChat rounds to MC task progress updates',
+        'Map GroupChat rounds to Paddock task progress updates',
       ],
       exampleSnippet: `import requests
 # AutoGen v0.4+ (ag2)
@@ -251,8 +251,8 @@ register_autogen_agent("Reviewer", "You review code for bugs...")`,
       heartbeatInterval: 30,
       setupHints: [
         'Register your Claude Agent SDK agent after initialization',
-        'Use tool callbacks to report progress to MC',
-        'Map agent turns to MC task progress updates',
+        'Use tool callbacks to report progress to Paddock',
+        'Map agent turns to Paddock task progress updates',
       ],
       exampleSnippet: `import Anthropic from "@anthropic-ai/sdk";
 

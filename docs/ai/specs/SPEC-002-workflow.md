@@ -108,8 +108,8 @@ Implement the RC Factory Phase 1 Product Line switcher:
 - Add `src/components/layout/workspace-switcher.tsx` and integrate it into `header-bar.tsx`.
 - Stop labeling tenant context as "Workspace" in the header.
 - Treat the switcher's synthetic "Facility" option as Facility aggregate scope (`activeWorkspace = null` compatibility state), not direct selection of the real `workspaces.slug='facility'` row.
-- Persist Product Line scope with Zustand `persist` under key `mc:active-workspace:v1`.
-- Add guarded `BroadcastChannel('mc:active-workspace')` cross-tab synchronization, with graceful fallback when unavailable.
+- Persist Product Line scope with Zustand `persist` under key `pd:active-workspace:v1`.
+- Add guarded `BroadcastChannel('pd:active-workspace')` cross-tab synchronization, with graceful fallback when unavailable.
 - Add `src/types/product-line.ts` with `type ProductLine = Workspace`.
 - Add explicit REST scoping: `workspace_id=<id>` for Product Line, `workspace_scope=facility` for Facility, both params return `400`, unauthorized ids return `403`, the real `workspaces.slug='facility'` row is rejected as a Product Line `workspace_id`, and omitted scope is legacy-only with the flag OFF.
 - Add SSE scoping for `/api/events` with authorized Product Line and Facility aggregate modes, including EventSource reconnect when Facility/Product Line scope changes.
@@ -180,8 +180,8 @@ Paddock needs a Product Line context that is independent from tenant/facility ad
 - Resolve `FEATURE_WORKSPACE_SWITCHER` for the switcher chrome from the authenticated tenant/facility flag context returned with `/api/workspaces`; selected Facility scope (`activeWorkspace = null`) is not passed as a no-workspace resolver context for this flag.
 - Add a typed Product Line scope slice backed by `activeWorkspace: Workspace | null` compatibility state independent from `activeTenant`.
 - Export and use `setActiveProductLine(productLine | null, options)` as the only public transition path; it backs user selection, persisted hydrate, URL scope adoption, invalid-scope reset, and BroadcastChannel acceptance.
-- Persist Product Line scope to localStorage key `mc:active-workspace:v1`.
-- Add BroadcastChannel synchronization using `BroadcastChannel('mc:active-workspace')` messages shaped as `{ tenantId, userId/sessionId, productLineId|null, version, originTabId }`, with no-op fallback when unavailable.
+- Persist Product Line scope to localStorage key `pd:active-workspace:v1`.
+- Add BroadcastChannel synchronization using `BroadcastChannel('pd:active-workspace')` messages shaped as `{ tenantId, userId/sessionId, productLineId|null, version, originTabId }`, with no-op fallback when unavailable.
 - Add `src/components/layout/workspace-switcher.tsx` and integrate it into `src/components/layout/header-bar.tsx`.
 - Header tenant/facility context must no longer be labeled "Workspace."
 - The switcher must list exactly one synthetic Facility aggregate entry plus authorized non-Facility Product Line workspaces.
@@ -397,7 +397,7 @@ Focus on SPEC-002 requirements:
 - Product Line scope is independent from `activeTenant`.
 - Runtime scope is discriminated as Facility or Product Line; `activeWorkspace = null` is only compatibility state after initialization.
 - `setActiveProductLine(productLine | null, options)` is the only public transition path.
-- Zustand persistence uses key `mc:active-workspace:v1` for the Product Line scope slice only.
+- Zustand persistence uses key `pd:active-workspace:v1` for the Product Line scope slice only.
 - `scopeKey` is used for mode-sensitive request/cache ownership.
 - BroadcastChannel sync updates other tabs within 1s, includes tenant/session guards, rejects stale versions, and falls back gracefully when unavailable.
 - Scope changes clear incompatible `activeProject`, selected task/agent/project/conversation state, scoped modals, filters, and drafts unless keyed by `scopeKey`.

@@ -211,9 +211,9 @@ The "M58 = task_dispositions / M59 = task_artifacts" framing came from a setup-t
 
 **Branch:** Successor consumption contract
 
-**Recommended answer:** A. Dispatch payload includes `input_artifacts: Array<{id, type, sha256, preview_text, storage_kind, byte_size}>`; raw content only via MC artifact-read API.
+**Recommended answer:** A. Dispatch payload includes `input_artifacts: Array<{id, type, sha256, preview_text, storage_kind, byte_size}>`; raw content only via Paddock artifact-read API.
 
-**Decision:** A. `input_artifacts` array with safe metadata; raw content only via MC API.
+**Decision:** A. `input_artifacts` array with safe metadata; raw content only via Paddock API.
 
 **Rationale:** Successor agents never read another agent's private sandbox. `preview_text` (≤4 KiB; see Q30) avoids a roundtrip in common cases. Indexed via `task_artifacts.task_id` at dispatch time using the producer task_id.
 

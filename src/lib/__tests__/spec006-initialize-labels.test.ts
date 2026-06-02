@@ -2,10 +2,10 @@
  * SPEC-006 — initializeLabels signature compat (T010 / T017, FR-053, US1-AC3, P5-AC1)
  *
  * Asserts:
- *   (a) 1-arg call `initializeLabels(repo)` creates ONLY mc:* and priority:*
+ *   (a) 1-arg call `initializeLabels(repo)` creates ONLY pd:* and priority:*
  *       labels — independent of any workspace flag state. (Legacy contract.)
  *   (b) 2-arg call `initializeLabels(repo, workspaceId)` with the flag OFF
- *       behaves identically to the 1-arg call (only mc:* and priority:*).
+ *       behaves identically to the 1-arg call (only pd:* and priority:*).
  *
  * The ON-branch behavior — provisioning area:* labels — is delivered in T074
  * (US7); this test ONLY pins the OFF / no-workspaceId path.
@@ -49,7 +49,7 @@ afterEach(() => {
 })
 
 describe('SPEC-006 / T010 — initializeLabels(repo) 1-arg legacy signature', () => {
-  it('creates ONLY the legacy mc:* and priority:* set (no area:* labels)', async () => {
+  it('creates ONLY the legacy pd:* and priority:* set (no area:* labels)', async () => {
     await initializeLabels('org/repo')
 
     expect(ensureLabelsMock).toHaveBeenCalledTimes(1)

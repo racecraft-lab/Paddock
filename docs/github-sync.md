@@ -26,7 +26,7 @@ stop polling.
 
 `initializeLabels(repo, workspaceId?, { trigger? })` (FR-025) provisions:
 
-- `mc:*` status labels (legacy, always)
+- `pd:*` status labels (legacy, always)
 - `priority:*` labels (legacy, always)
 - `area:*` labels (NEW, when flag ON for the workspace) — derived from
   `AREA_LABEL_MAP` plus any non-NULL `projects.area_slug` values via
@@ -96,11 +96,11 @@ with `area_slug='triage'` resolves `area:triage`-labeled issues as
 When pushing a task to GitHub via `pushTaskToGitHub`, the outbound label
 set is:
 
-- Always: `mc:<status>`, `priority:<priority>`
+- Always: `pd:<status>`, `priority:<priority>`
 - When flag ON AND `projects.area_slug` is non-NULL: append
   `area:<area_slug>` (FR-016, FR-017)
 
-Flag OFF emits the legacy `mc:*` + `priority:*` set unchanged regardless
+Flag OFF emits the legacy `pd:*` + `priority:*` set unchanged regardless
 of `area_slug` (US1-AC2).
 
 ## Sync Owner Election And Transfer

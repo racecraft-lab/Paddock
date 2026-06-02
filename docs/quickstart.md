@@ -164,7 +164,7 @@ Here's the complete pattern your agent should follow:
 
 ```
 ┌─────────────────────────────────┐
-│  1. Register with MC            │
+│  1. Register with Paddock            │
 │     POST /api/agents/register   │
 └──────────────┬──────────────────┘
                │

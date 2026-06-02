@@ -114,11 +114,11 @@ stop_reason: "natural"
 
 ---
 
-### Q6. Should entering `ready_for_owner` push the `mc:ready-for-owner` GitHub status label immediately?
+### Q6. Should entering `ready_for_owner` push the `pd:ready-for-owner` GitHub status label immediately?
 
 **Branch:** GitHub label behavior
 
-**Recommended answer:** A. Yes, push `mc:ready-for-owner` as part of the same outbound sync behavior used for other status labels, and make it idempotent.
+**Recommended answer:** A. Yes, push `pd:ready-for-owner` as part of the same outbound sync behavior used for other status labels, and make it idempotent.
 > The roadmap acceptance criterion expects the label on the linked issue, and existing label provisioning centralizes status labels.
 
 **Alternatives offered:**

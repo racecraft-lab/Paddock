@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET /api/agents/sync - Preview diff between openclaw.json and MC
+ * GET /api/agents/sync - Preview diff between openclaw.json and Paddock
  * Shows what would change without writing.
  */
 export async function GET(request: NextRequest) {

@@ -11,7 +11,7 @@ const MEMORY_PATH = config.memoryDir
  * Processing pipeline endpoint — runs knowledge maintenance operations.
  * Actions: reflect, reweave, generate-moc
  *
- * These mirror Ars Contexta's 6 Rs processing pipeline, adapted for MC:
+ * These mirror Ars Contexta's 6 Rs processing pipeline, adapted for Paddock:
  * - reflect: Find connection opportunities between files
  * - reweave: Identify stale files needing updates from newer linked files
  * - generate-moc: Auto-generate Maps of Content from file clusters
