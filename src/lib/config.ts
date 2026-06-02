@@ -10,32 +10,32 @@ function clampInt(value: number, min: number, max: number, fallback: number): nu
 
 const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 const defaultDataDir = path.join(process.cwd(), '.data')
-const configuredDataDir = process.env.MISSION_CONTROL_DATA_DIR || defaultDataDir
+const configuredDataDir = process.env.PADDOCK_DATA_DIR || defaultDataDir
 const buildScratchRoot =
-  process.env.MISSION_CONTROL_BUILD_DATA_DIR ||
-  path.join(os.tmpdir(), 'mission-control-build')
+  process.env.PADDOCK_BUILD_DATA_DIR ||
+  path.join(os.tmpdir(), 'paddock-build')
 const resolvedDataDir = isBuildPhase
   ? path.join(buildScratchRoot, `worker-${process.pid}`)
   : configuredDataDir
 const resolvedDbPath = isBuildPhase
-  ? (process.env.MISSION_CONTROL_BUILD_DB_PATH ||
-      path.join(resolvedDataDir, 'mission-control.db'))
-  : (process.env.MISSION_CONTROL_DB_PATH ||
-      path.join(resolvedDataDir, 'mission-control.db'))
+  ? (process.env.PADDOCK_BUILD_DB_PATH ||
+      path.join(resolvedDataDir, 'paddock.db'))
+  : (process.env.PADDOCK_DB_PATH ||
+      path.join(resolvedDataDir, 'paddock.db'))
 const resolvedTokensPath = isBuildPhase
-  ? (process.env.MISSION_CONTROL_BUILD_TOKENS_PATH ||
-      path.join(resolvedDataDir, 'mission-control-tokens.json'))
-  : (process.env.MISSION_CONTROL_TOKENS_PATH ||
-      path.join(resolvedDataDir, 'mission-control-tokens.json'))
+  ? (process.env.PADDOCK_BUILD_TOKENS_PATH ||
+      path.join(resolvedDataDir, 'paddock-tokens.json'))
+  : (process.env.PADDOCK_TOKENS_PATH ||
+      path.join(resolvedDataDir, 'paddock-tokens.json'))
 const defaultOpenClawStateDir = path.join(os.homedir(), '.openclaw')
 const explicitOpenClawConfigPath =
   process.env.OPENCLAW_CONFIG_PATH ||
-  process.env.MISSION_CONTROL_OPENCLAW_CONFIG_PATH ||
+  process.env.PADDOCK_OPENCLAW_CONFIG_PATH ||
   ''
 const legacyOpenClawHome =
   process.env.OPENCLAW_HOME ||
   process.env.CLAWDBOT_HOME ||
-  process.env.MISSION_CONTROL_OPENCLAW_HOME ||
+  process.env.PADDOCK_OPENCLAW_HOME ||
   ''
 const openclawStateDir =
   process.env.OPENCLAW_STATE_DIR ||
@@ -47,7 +47,7 @@ const openclawConfigPath =
   path.join(openclawStateDir, 'openclaw.json')
 const openclawWorkspaceDir =
   process.env.OPENCLAW_WORKSPACE_DIR ||
-  process.env.MISSION_CONTROL_WORKSPACE_DIR ||
+  process.env.PADDOCK_WORKSPACE_DIR ||
   (openclawStateDir ? path.join(openclawStateDir, 'workspace') : '')
 const defaultMemoryDir = (() => {
   if (process.env.OPENCLAW_MEMORY_DIR) return process.env.OPENCLAW_MEMORY_DIR

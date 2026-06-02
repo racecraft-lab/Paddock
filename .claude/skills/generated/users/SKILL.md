@@ -1,6 +1,6 @@
 ---
 name: users
-description: "Skill for the Users area of mission-control. 45 symbols across 12 files."
+description: "Skill for the Users area of paddock. 45 symbols across 12 files."
 ---
 
 # Users

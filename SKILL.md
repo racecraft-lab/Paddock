@@ -1,5 +1,5 @@
 ---
-name: mission-control
+name: paddock
 description: "Interact with Paddock — AI agent orchestration dashboard. Use when registering agents, managing tasks, syncing skills, or querying agent/task status via MC APIs."
 ---
 

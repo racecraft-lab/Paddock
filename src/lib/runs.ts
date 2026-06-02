@@ -162,7 +162,7 @@ export function createRun(run: AgentRun, workspaceId?: number): AgentRun {
     )
   `).run(
     id, run.agent_id, run.agent_name ?? null, run.model ?? null, run.provider ?? null,
-    run.runtime ?? 'mission-control', run.runtime_version ?? null,
+    run.runtime ?? 'paddock', run.runtime_version ?? null,
     run.trigger ?? null, run.parent_run_id ?? null, run.task_id ?? null,
     run.status, run.outcome ?? null,
     run.started_at || now, run.ended_at ?? null, run.duration_ms ?? null,

@@ -26,13 +26,13 @@ function db(): Database.Database {
 function enablePilot(database: Database.Database): void {
   database
     .prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
-    .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: true, PILOT_MISSION_CONTROL_E2E: true }))
+    .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: true, PILOT_PADDOCK_E2E: true }))
 }
 
 function enablePilotWithoutArtifacts(database: Database.Database): void {
   database
     .prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
-    .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: false, PILOT_MISSION_CONTROL_E2E: true }))
+    .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: false, PILOT_PADDOCK_E2E: true }))
 }
 
 function seedSourceTask(
@@ -61,7 +61,7 @@ function seedSourceTask(
       overrides.githubRepo ?? 'racecraft-lab/Paddock',
       overrides.githubIssueNumber ?? 900,
       overrides.projectId ?? null,
-      overrides.workflowTemplateSlug ?? 'mission-control_issue_triage',
+      overrides.workflowTemplateSlug ?? 'paddock_issue_triage',
     )
   return taskId
 }
@@ -155,7 +155,7 @@ function artifactRow(database: Database.Database, artifactId: number): {
 }
 
 describe('SPEC-009F triage routing source gates', () => {
-  it('fails closed when PILOT_MISSION_CONTROL_E2E is not enabled and performs no writes', () => {
+  it('fails closed when PILOT_PADDOCK_E2E is not enabled and performs no writes', () => {
     const database = db()
     const taskId = seedSourceTask(database)
     const before = snapshotSpec009fDisposableCounts(database)
@@ -174,21 +174,21 @@ describe('SPEC-009F triage routing source gates', () => {
       issues: [
         {
           code: 'pilot_flag_disabled',
-          path: 'PILOT_MISSION_CONTROL_E2E',
+          path: 'PILOT_PADDOCK_E2E',
         },
       ],
     })
     expect(after).toEqual(before)
   })
 
-  it('honors the PILOT_MISSION_CONTROL_E2E env force-on exception', () => {
-    const original = process.env['PILOT_MISSION_CONTROL_E2E']
-    process.env['PILOT_MISSION_CONTROL_E2E'] = '1'
+  it('honors the PILOT_PADDOCK_E2E env force-on exception', () => {
+    const original = process.env['PILOT_PADDOCK_E2E']
+    process.env['PILOT_PADDOCK_E2E'] = '1'
     try {
       const database = db()
       database
         .prepare('UPDATE workspaces SET feature_flags = ? WHERE id = 1')
-        .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: true, PILOT_MISSION_CONTROL_E2E: false }))
+        .run(JSON.stringify({ FEATURE_TASK_ARTIFACTS: true, PILOT_PADDOCK_E2E: false }))
       const taskId = seedSourceTask(database)
 
       const result = route(database, taskId, 'NEEDS_SPEC')
@@ -201,17 +201,17 @@ describe('SPEC-009F triage routing source gates', () => {
       expect(latestActivity(database, taskId).type).toBe('triage_routing_recorded')
     } finally {
       if (original === undefined) {
-        delete process.env['PILOT_MISSION_CONTROL_E2E']
+        delete process.env['PILOT_PADDOCK_E2E']
       } else {
-        process.env['PILOT_MISSION_CONTROL_E2E'] = original
+        process.env['PILOT_PADDOCK_E2E'] = original
       }
     }
   })
 
-  it('fails closed for source tasks outside mission-control_issue_triage and performs no writes', () => {
+  it('fails closed for source tasks outside paddock_issue_triage and performs no writes', () => {
     const database = db()
     enablePilot(database)
-    const taskId = seedSourceTask(database, { workflowTemplateSlug: 'mission-control_remediation_plan' })
+    const taskId = seedSourceTask(database, { workflowTemplateSlug: 'paddock_remediation_plan' })
     const before = snapshotSpec009fDisposableCounts(database)
 
     const result = route(database, taskId, 'NEEDS_HUMAN')
@@ -223,7 +223,7 @@ describe('SPEC-009F triage routing source gates', () => {
       reason: 'unsupported_source_template',
       source: {
         taskId,
-        workflowTemplateSlug: 'mission-control_remediation_plan',
+        workflowTemplateSlug: 'paddock_remediation_plan',
         githubRepo: 'racecraft-lab/Paddock',
       },
       effects: {
@@ -255,7 +255,7 @@ describe('SPEC-009F triage routing source gates', () => {
       reason: 'unsupported_source_repo',
       source: {
         taskId,
-        workflowTemplateSlug: 'mission-control_issue_triage',
+        workflowTemplateSlug: 'paddock_issue_triage',
         githubRepo: 'racecraft-lab/other-repo',
       },
       effects: {
@@ -290,7 +290,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       source: {
         taskId,
         workspaceId: 1,
-        workflowTemplateSlug: 'mission-control_issue_triage',
+        workflowTemplateSlug: 'paddock_issue_triage',
         githubRepo: 'racecraft-lab/Paddock',
         githubIssueNumber: 923,
       },
@@ -322,7 +322,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
     })
     expect(readTask(database, taskId)).toEqual({
       status: 'done',
-      workflow_template_slug: 'mission-control_issue_triage',
+      workflow_template_slug: 'paddock_issue_triage',
       github_synced_at: 1779400000,
       assigned_to: null,
     })
@@ -364,7 +364,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
     expect(artifact).toMatchObject({
       task_id: taskId,
       workspace_id: 1,
-      workflow_template_slug: 'mission-control_issue_triage',
+      workflow_template_slug: 'paddock_issue_triage',
       artifact_type: 'triage_speckit_handoff',
       schema_version: 'spec-009f.triage_routing.v1',
       storage_kind: 'inline_json',
@@ -406,7 +406,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       type: 'triage_routing_recorded',
       entity_type: 'task',
       entity_id: taskId,
-      actor: 'mission-control',
+      actor: 'paddock',
     })
     expect(JSON.parse(activity.data)).toMatchObject({
       source_task_id: taskId,
@@ -459,7 +459,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
     expect(countRows(database, 'notifications')).toBe(notificationCountBefore)
     expect(readTask(database, taskId)).toEqual({
       status: 'done',
-      workflow_template_slug: 'mission-control_issue_triage',
+      workflow_template_slug: 'paddock_issue_triage',
       github_synced_at: 1779400000,
       assigned_to: null,
     })
@@ -706,10 +706,10 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
     enablePilotWithoutArtifacts(database)
     const taskId = seedSourceTask(database, { taskId: 9600 })
     const before = snapshotSpec009fDisposableCounts(database)
-    const previousPilotFlag = process.env['PILOT_MISSION_CONTROL_E2E']
+    const previousPilotFlag = process.env['PILOT_PADDOCK_E2E']
 
     try {
-      process.env['PILOT_MISSION_CONTROL_E2E'] = '1'
+      process.env['PILOT_PADDOCK_E2E'] = '1'
       const result = route(database, taskId, 'NEEDS_SPEC')
       const after = snapshotSpec009fDisposableCounts(database)
 
@@ -726,8 +726,8 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       })
       expect(after).toEqual(before)
     } finally {
-      if (previousPilotFlag === undefined) delete process.env['PILOT_MISSION_CONTROL_E2E']
-      else process.env['PILOT_MISSION_CONTROL_E2E'] = previousPilotFlag
+      if (previousPilotFlag === undefined) delete process.env['PILOT_PADDOCK_E2E']
+      else process.env['PILOT_PADDOCK_E2E'] = previousPilotFlag
     }
   })
 
@@ -749,7 +749,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       source: {
         taskId,
         workspaceId: 1,
-        workflowTemplateSlug: 'mission-control_issue_triage',
+        workflowTemplateSlug: 'paddock_issue_triage',
         githubRepo: 'racecraft-lab/Paddock',
       },
       effects: {
@@ -953,7 +953,7 @@ describe('SPEC-009F triage routing disposition dispatch', () => {
       reason: 'unsupported_disposition',
       source: {
         taskId,
-        workflowTemplateSlug: 'mission-control_issue_triage',
+        workflowTemplateSlug: 'paddock_issue_triage',
         githubRepo: 'racecraft-lab/Paddock',
       },
       effects: {

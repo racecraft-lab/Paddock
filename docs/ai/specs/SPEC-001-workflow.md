@@ -565,7 +565,7 @@ Run the smallest reliable subset first, then broader checks if time permits:
 ## Project Structure Reference
 
 ```text
-racecraft-mission-control/
+racecraft-paddock/
 |-- src/lib/migrations.ts                 # Authoritative migration runner
 |-- src/lib/schema.sql                    # Initial schema reference
 |-- src/lib/__tests__/                    # Vitest tests and migration-adjacent tests

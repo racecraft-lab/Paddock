@@ -3,7 +3,7 @@ import type { WorkflowContract } from '@/lib/workflow-contracts/types'
 
 export function makeContract(overrides: Partial<WorkflowContract> = {}): WorkflowContract {
   return {
-    family: 'mission-control',
+    family: 'paddock',
     version: 'workflow-contract-v1',
     workspace_id: 1,
     allowed_variable_namespaces: ['workspace', 'task', 'operator', 'github'],
@@ -16,12 +16,12 @@ export function makeContract(overrides: Partial<WorkflowContract> = {}): Workflo
         task_prompt: 'Review {{task.title}} for {{workspace.name}}.',
         timeout_seconds: 300,
         agent_role: 'planner',
-        tags: ['mission-control'],
+        tags: ['paddock'],
         tracker: {
           type: 'github',
           identity_version: 'v1',
           repo: 'racecraft-lab/Paddock',
-          labels: ['mission-control'],
+          labels: ['paddock'],
         },
         capabilities: ['codebase-read'],
         adapter_requirements: ['codex-cli'],

@@ -1,28 +1,28 @@
 import Database from 'better-sqlite3'
 import path from 'node:path'
 
-const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ||
-  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const E2E_DB_PATH = process.env.PADDOCK_DB_PATH ||
+  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 
 export function seedWorkflowContractDiagnosticsForE2E() {
   const db = new Database(E2E_DB_PATH)
   try {
     ensureTables(db)
     db.transaction(() => {
-      db.prepare("DELETE FROM workflow_contract_run_errors WHERE run_id IN (SELECT id FROM workflow_contract_runs WHERE family = 'mission-control' AND workspace_id = 1)").run()
-      db.prepare("DELETE FROM workflow_contract_runs WHERE family = 'mission-control' AND workspace_id = 1").run()
+      db.prepare("DELETE FROM workflow_contract_run_errors WHERE run_id IN (SELECT id FROM workflow_contract_runs WHERE family = 'paddock' AND workspace_id = 1)").run()
+      db.prepare("DELETE FROM workflow_contract_runs WHERE family = 'paddock' AND workspace_id = 1").run()
       const result = db.prepare(`
         INSERT INTO workflow_contract_runs (
           family, workspace_id, mode, status, mutation_status, source_path, contract_hash,
           diff_json, template_counts_json, error_count, recovery_command, completed_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `).run(
-        'mission-control',
+        'paddock',
         1,
         'import_dry_run',
         'validation_failed',
         'not_mutated',
-        'docs/ai/workflows/mission-control/workflow-contract.yaml',
+        'docs/ai/workflows/paddock/workflow-contract.yaml',
         'workflow-contract-hash-v1:sha256:e2e',
         JSON.stringify({ create: [{ slug: 'intake' }], update: [], disable: [], unchanged: [] }),
         JSON.stringify({ create: 1, update: 0, disable: 0, unchanged: 0 }),
@@ -37,7 +37,7 @@ export function seedWorkflowContractDiagnosticsForE2E() {
       `).run(
         Number(result.lastInsertRowid),
         'UNKNOWN_TEMPLATE_VARIABLE',
-        'docs/ai/workflows/mission-control/workflow-contract.yaml',
+        'docs/ai/workflows/paddock/workflow-contract.yaml',
         'templates[0].task_prompt',
         'intake',
         'Template variable namespace is not allowed',

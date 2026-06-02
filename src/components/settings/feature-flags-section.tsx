@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 interface FeatureFlagWorkspaceOption {
   id: number
@@ -78,7 +78,7 @@ function riskClass(risk: string): string {
 }
 
 export function FeatureFlagsSection({ showFeedback }: { showFeedback: (ok: boolean, text: string) => void }) {
-  const { fetchWorkspaces } = useMissionControl()
+  const { fetchWorkspaces } = usePaddock()
   const [data, setData] = useState<FeatureFlagResponse | null>(null)
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)

@@ -153,7 +153,7 @@ function PageLoader({ steps }: { steps?: InitStep[] }) {
         {/* Title */}
         <div className="flex flex-col items-center gap-1">
           <h1 className="font-mono text-sm tracking-[0.2em] uppercase text-foreground font-medium">
-            {t('missionControl')}
+            {t('paddock')}
           </h1>
           <p className="text-2xs text-muted-foreground/60">
             {t('agentOrchestration')}

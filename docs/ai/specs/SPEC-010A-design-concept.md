@@ -24,7 +24,7 @@ stop_reason: "natural"
 - Define checked-in, operator-reviewable YAML seed configs under `docs/ai/product-lines/`.
 - Convert Paddock into the first reusable fixture/config without changing the already-proven SPEC-009B behavior.
 - Provide a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
-- Keep `seed:mission-control` as a compatibility wrapper around the Paddock product-line config.
+- Keep `seed:paddock` as a compatibility wrapper around the Paddock product-line config.
 - Prove Paddock parity with apply-twice, verify-mode, and invalid-config no-mutation evidence in a disposable or safe target database.
 - Preserve product-line history and unrelated state; mutate only config-owned fields through explicit apply/verify paths.
 
@@ -36,7 +36,7 @@ stop_reason: "natural"
 - Writing partial product-line state for invalid configs (Q3).
 - Hardcoding Paddock workflow names into the generic seeder (Q4).
 - Adding a new governance DSL or blocking first-intake policy model (Q5).
-- Removing the existing `seed:mission-control` operator entrypoint (Q6).
+- Removing the existing `seed:paddock` operator entrypoint (Q6).
 - Mutating GitHub, dispatching work, creating tasks, claiming work, launching runners, creating sandboxes, or invoking SpecKit setup/autopilot (Q7, Q8, Q12).
 
 ## Design Tree (Q&A log)
@@ -120,11 +120,11 @@ stop_reason: "natural"
 
 **Branch:** Operator entrypoint
 
-**Recommended answer:** Add a generic `seed:product-line` pnpm script/CLI with `preflight`, `apply`, and `verify` modes, while keeping `seed:mission-control` as a compatibility wrapper around the Paddock config.
+**Recommended answer:** Add a generic `seed:product-line` pnpm script/CLI with `preflight`, `apply`, and `verify` modes, while keeping `seed:paddock` as a compatibility wrapper around the Paddock config.
 > This preserves existing operator/runbook muscle memory while giving SPEC-010B a reusable entrypoint.
 
 **Alternatives offered:**
-- Replace `seed:mission-control` entirely: cleaner long term, but disruptive.
+- Replace `seed:paddock` entirely: cleaner long term, but disruptive.
 - Keep only library APIs and no new CLI: smaller, but weak process-only UAT.
 
 **User's answer:** A - add generic CLI and keep the Paddock wrapper.
@@ -228,8 +228,8 @@ stop_reason: "natural"
   **Why deferred:** The interview fixed fail-closed behavior but not the error-code catalog.
   **Suggested next step:** Clarify or Plan should define stable error codes for missing identity, invalid feature flags, conflicting repos, missing workflow slugs, unsafe governance, and existing-target apply policy.
 - **What:** Exact Paddock config path and compatibility wrapper behavior.
-  **Why deferred:** Implementation should inspect the current `scripts/seed-mission-control-product-line.ts` and `src/lib/mission-control-seed/*` surfaces before naming final paths.
-  **Suggested next step:** Plan should preserve `pnpm seed:mission-control` while adding `pnpm seed:product-line`.
+  **Why deferred:** Implementation should inspect the current `scripts/seed-paddock-product-line.ts` and `src/lib/paddock-seed/*` surfaces before naming final paths.
+  **Suggested next step:** Plan should preserve `pnpm seed:paddock` while adding `pnpm seed:product-line`.
 
 ## Recommended Next Step
 

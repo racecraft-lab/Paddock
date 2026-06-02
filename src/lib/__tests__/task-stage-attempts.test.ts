@@ -113,7 +113,7 @@ function openDb(): Database.Database {
   `)
   db.prepare(`
     INSERT INTO tasks (id, workspace_id, title, status, workflow_template_id, workflow_template_slug)
-    VALUES (101, 7, 'Remediate issue', 'in_progress', 22, 'mission-control_issue_remediation')
+    VALUES (101, 7, 'Remediate issue', 'in_progress', 22, 'paddock_issue_remediation')
   `).run()
   return db
 }
@@ -186,7 +186,7 @@ describe('SPEC-013A task stage attempt helpers', () => {
       updated_at: '2026-05-22T12:00:00.000Z',
       run_id: 'run-123',
       workflow_template_id: 22,
-      workflow_template_slug: 'mission-control_issue_remediation',
+      workflow_template_slug: 'paddock_issue_remediation',
     })
 
     const attemptRows = rows<AttemptDbRow>(db, 'SELECT * FROM task_stage_attempts')
@@ -388,7 +388,7 @@ describe('SPEC-013A task stage attempt helpers', () => {
       '2026-05-22T12:01:00.000Z',
       null,
       'aegis',
-      'mission-control',
+      'paddock',
       '013a-run-state-spine',
       'abc123',
       null,
@@ -433,7 +433,7 @@ describe('SPEC-013A task stage attempt helpers', () => {
       started_at: '2026-05-22T12:01:00.000Z',
       ended_at: null,
       agent_name: 'aegis',
-      runtime: 'mission-control',
+      runtime: 'paddock',
       git_branch: '013a-run-state-spine',
       git_commit: 'abc123',
       error: null,

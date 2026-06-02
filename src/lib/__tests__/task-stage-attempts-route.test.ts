@@ -187,7 +187,7 @@ function openRouteDb(): Database.Database {
   db.prepare(`
     INSERT INTO tasks (id, workspace_id, title, status, workflow_template_id, workflow_template_slug)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(101, 7, 'Remediate issue', 'in_progress', 22, 'mission-control_issue_remediation')
+  `).run(101, 7, 'Remediate issue', 'in_progress', 22, 'paddock_issue_remediation')
   db.prepare(`
     INSERT INTO tasks (id, workspace_id, title, status, workflow_template_id, workflow_template_slug)
     VALUES (?, ?, ?, ?, ?, ?)
@@ -250,7 +250,7 @@ function insertRun(db: Database.Database, runId: string) {
       id, workspace_id, status, started_at, ended_at, agent_name,
       runtime, git_branch, git_commit, error
     ) VALUES (?, 7, 'running', '2026-05-22T12:01:00.000Z', NULL, 'aegis',
-      'mission-control', '013a-run-state-spine', 'abc123', NULL)
+      'paddock', '013a-run-state-spine', 'abc123', NULL)
   `).run(runId)
 }
 
@@ -474,7 +474,7 @@ describe('GET /api/tasks/[id]/stage-attempts route', () => {
       ) VALUES (
         7, 101, 'zz_invalid', 1, 'paused',
         '2026-05-22T12:20:00.000Z', '2026-05-22T12:20:00.000Z',
-        NULL, NULL, NULL, NULL, 22, 'mission-control_issue_remediation', NULL
+        NULL, NULL, NULL, NULL, 22, 'paddock_issue_remediation', NULL
       )
     `).run().lastInsertRowid
 
@@ -498,7 +498,7 @@ describe('GET /api/tasks/[id]/stage-attempts route', () => {
         id: 'run-linked',
         status: 'running',
         agent_name: 'aegis',
-        runtime: 'mission-control',
+        runtime: 'paddock',
       },
     })
     expect(attempts[2]).toMatchObject({
@@ -530,7 +530,7 @@ describe('GET /api/tasks/[id]/stage-attempts route', () => {
       ) VALUES (
         7, 101, 'remediation', 1, 'running',
         '2026-05-22T12:00:00.000Z', '2026-05-22T12:00:30.000Z',
-        NULL, NULL, NULL, NULL, 22, 'mission-control_issue_remediation', NULL
+        NULL, NULL, NULL, NULL, 22, 'paddock_issue_remediation', NULL
       )
     `).run()
     const attemptId = Number(result.lastInsertRowid)

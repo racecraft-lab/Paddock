@@ -2,7 +2,7 @@
  * SPEC-008 — auth-gate unit tests for the per-test admin endpoints.
  *
  * Asserts every admin route refuses with 403 unless BOTH:
- *   1. MISSION_CONTROL_TEST_MODE=1 is set in the environment
+ *   1. PADDOCK_TEST_MODE=1 is set in the environment
  *   2. requireRole(req, 'admin') succeeds
  *
  * Verifies that the gate is enforced at the route entry point so the
@@ -83,8 +83,8 @@ afterEach(() => {
 describe('SPEC-008 admin endpoints — test-mode + admin auth gating', () => {
   for (const route of ROUTES) {
     describe(`${route.method} ${route.url}`, () => {
-      it('refuses with 403 when MISSION_CONTROL_TEST_MODE != 1', async () => {
-        delete process.env['MISSION_CONTROL_TEST_MODE']
+      it('refuses with 403 when PADDOCK_TEST_MODE != 1', async () => {
+        delete process.env['PADDOCK_TEST_MODE']
         requireRoleMock.mockReturnValue({ user: { role: 'admin' } })
         const res = await callRoute(route, makeRequest(route.url, route.method))
         expect(res.status).toBe(403)
@@ -93,7 +93,7 @@ describe('SPEC-008 admin endpoints — test-mode + admin auth gating', () => {
       })
 
       it('refuses with 403 when admin auth fails (test-mode is set)', async () => {
-        process.env['MISSION_CONTROL_TEST_MODE'] = '1'
+        process.env['PADDOCK_TEST_MODE'] = '1'
         requireRoleMock.mockReturnValue({ error: 'Authentication required', status: 401 })
         const res = await callRoute(route, makeRequest(route.url, route.method))
         expect(res.status).toBe(403)

@@ -421,7 +421,7 @@ export interface ExecApprovalRequest {
   status: 'pending' | 'approved' | 'denied' | 'expired'
 }
 
-interface MissionControlStore {
+interface PaddockStore {
   // Dashboard Mode (local vs full gateway)
   dashboardMode: 'full' | 'local'
   gatewayAvailable: boolean
@@ -669,7 +669,7 @@ interface MissionControlStore {
   setHeaderDensity: (mode: 'focus' | 'compact') => void
 }
 
-function deriveTenantId(state: MissionControlStore, explicitTenantId?: number): number {
+function deriveTenantId(state: PaddockStore, explicitTenantId?: number): number {
   return explicitTenantId ??
     state.currentUser?.tenant_id ??
     state.activeTenant?.id ??
@@ -677,7 +677,7 @@ function deriveTenantId(state: MissionControlStore, explicitTenantId?: number): 
     1
 }
 
-function nextScopeVersion(state: MissionControlStore, explicitVersion?: number): number {
+function nextScopeVersion(state: PaddockStore, explicitVersion?: number): number {
   if (typeof explicitVersion === 'number' && Number.isFinite(explicitVersion)) return explicitVersion
   return Math.max(Date.now(), (state.activeProductLineScope?.version ?? 0) + 1)
 }
@@ -686,7 +686,7 @@ function persistScope(scope: ActiveProductLineScope): void {
   setStorageItem(ACTIVE_WORKSPACE_STORAGE_KEY, serializeProductLineScope(scope))
 }
 
-function broadcastScope(state: MissionControlStore, scope: ActiveProductLineScope): void {
+function broadcastScope(state: PaddockStore, scope: ActiveProductLineScope): void {
   if (typeof window === 'undefined' || !scopeChannel) return
   const message: ProductLineScopeMessage = {
     payloadVersion: 1,
@@ -700,8 +700,8 @@ function broadcastScope(state: MissionControlStore, scope: ActiveProductLineScop
 }
 
 function initializeScopeChannel(
-  set: (partial: Partial<MissionControlStore>) => void,
-  get: () => MissionControlStore
+  set: (partial: Partial<PaddockStore>) => void,
+  get: () => PaddockStore
 ): void {
   if (scopeChannelInitialized || typeof window === 'undefined' || !('BroadcastChannel' in window)) return
   scopeChannelInitialized = true
@@ -746,7 +746,7 @@ function initializeScopeChannel(
   }
 }
 
-export const useMissionControl = create<MissionControlStore>()(
+export const usePaddock = create<PaddockStore>()(
   subscribeWithSelector((set, get) => ({
     // Dashboard Mode
     dashboardMode: 'local' as const,

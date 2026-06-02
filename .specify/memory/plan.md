@@ -102,7 +102,7 @@ specs/
 # - 007-disposition-artifacts    (SPEC-007, archived after PR #25 merge — landed on main 2026-05-02)
 # - 008-resource-governance      (SPEC-008, archived after PR #26 merge — cleanup applied 2026-05-16)
 # - 009a-workflow-contract-roundtrip (SPEC-009A, archived after PR #28 merge — cleanup applied 2026-05-16)
-# - 009b-mission-control-seed    (SPEC-009B, archived after PR #30 merge — cleanup applied 2026-05-16)
+# - 009b-paddock-seed    (SPEC-009B, archived after PR #30 merge — cleanup applied 2026-05-16)
 # - 009c1-pilot-issue-ingest     (SPEC-009C1, archived after PR #34/#40 merge — cleanup applied 2026-05-16)
 # - 009c2-triage-remediation-handoff (SPEC-009C2, archived after PR #43/#46 merge — cleanup applied 2026-05-16)
 # - 009c3-remediation-ready-for-owner      (SPEC-009C3, PR #48, post-merge UAT — cleanup applied 2026-05-22)
@@ -472,7 +472,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 **Branch**: `008-resource-governance` | **Merged**: 2026-05-04 | **PR**: #26
 
 - Adds `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous policy evaluation before autonomous work admission.
-- Migrations M65a..m and M66 add partitioned resource/observability storage, rollback files, and archive partitions under `<MISSION_CONTROL_DATA_DIR>/archives/`.
+- Migrations M65a..m and M66 add partitioned resource/observability storage, rollback files, and archive partitions under `<PADDOCK_DATA_DIR>/archives/`.
 - Cost Tracker Governance tab exposes Policies, Budgets, Windows, Overrides, Diagnostics, and System Health.
 - `FEATURE_OPENCLAW_HEALTH_COSTS` is operator-specific optional and requires `FEATURE_RESOURCE_GOVERNANCE`; absent OpenClaw health files are safe when OFF.
 - Feature-flag matrix, axe coverage, env-leak, and strict-scope guards preserve flag discipline and accessibility coverage.
@@ -481,14 +481,14 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 **Branch**: `009a-workflow-contract-roundtrip` | **Merged**: 2026-05-07 | **PR**: #28
 
-- Introduces repo-owned workflow contract YAML under `docs/ai/workflows/mission-control/`.
+- Introduces repo-owned workflow contract YAML under `docs/ai/workflows/paddock/`.
 - `pnpm workflow-contract` supports import dry-run/apply, export, and recover through Node built-in TypeScript stripping with exact `yaml@2.8.2`.
 - Migration M71 adds generic workflow-contract diagnostics and LKG snapshots; invalid reloads fail closed.
 - Workflows diagnostics UI/API are read-only; governance/concurrency/retry/sandbox fields remain inert declarations for later specs.
 
-## SPEC-009B Plan Summary [Source: specs/009b-mission-control-seed]
+## SPEC-009B Plan Summary [Source: specs/009b-paddock-seed]
 
-**Branch**: `009b-mission-control-seed` | **Merged**: 2026-05-08 | **PR**: #30
+**Branch**: `009b-paddock-seed` | **Merged**: 2026-05-08 | **PR**: #30
 
 - Seeds Paddock Product Line A, departments, project-agent assignments, GitHub repo routing, workflow families, feature flags, and advisory governance rows.
 - Reuses SPEC-009A workflow-contract import/apply; does not duplicate YAML parsing or create pilot work.
@@ -558,7 +558,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 **Branch**: `010a-generic-product-line-seeder` | **Merged**: 2026-05-22 | **PR**: #59
 
 - Generalizes Paddock seed behavior into checked-in product-line YAML configs and a generic `seed:product-line` CLI with `preflight`, `apply`, and `verify` modes.
-- Keeps `seed:mission-control` as compatibility wrapper; reuses existing `yaml@2.8.2`, workflow-contract import/apply tooling, feature-flag registry validation, resource policy rows, and existing seed tables with no migration.
+- Keeps `seed:paddock` as compatibility wrapper; reuses existing `yaml@2.8.2`, workflow-contract import/apply tooling, feature-flag registry validation, resource policy rows, and existing seed tables with no migration.
 - Post-merge UAT ran against a disposable copied DB and proved preflight/apply/verify/wrapper parity, existing-target refusal and reviewed re-apply, invalid reserved-flag no-mutation, redaction, Paddock seed shape, zero Product Line B workspaces, zero tasks/runs, and no Product Line B/runtime/GitHub/SpecKit drift.
 
 ## SPEC-012A Plan Summary [Source: specs/012a-repo-knowledge-index]
@@ -601,7 +601,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `FEATURE_AREA_LABEL_ROUTING` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-006) |
 | `FEATURE_RESOURCE_GOVERNANCE` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-008) |
 | `FEATURE_OPENCLAW_HEALTH_COSTS` | OFF | Requires `FEATURE_RESOURCE_GOVERNANCE`; operator-specific optional, absent-safe (SPEC-008) |
-| `PILOT_MISSION_CONTROL_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
+| `PILOT_PADDOCK_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
 | `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A-D run-state, GitHub sync automation, claim/reconciliation, retry/debug API, and task-detail operator UX surfaces; legacy runtime remains table-blind when OFF |
 
 ### Verification Commands
@@ -642,8 +642,8 @@ From SPEC-009A:
 - `scripts/workflow-contracts/workflow-contract-cli.ts`
 
 From SPEC-009B:
-- `src/lib/mission-control-seed/`
-- `scripts/seed-mission-control-product-line.ts`
+- `src/lib/paddock-seed/`
+- `scripts/seed-paddock-product-line.ts`
 
 From SPEC-009E:
 - `src/lib/task-evidence.ts`
@@ -657,7 +657,7 @@ From SPEC-009F:
 From SPEC-010A:
 - `src/lib/product-line-seed/`
 - `scripts/seed-product-line.ts`
-- `scripts/seed-mission-control-product-line.ts`
+- `scripts/seed-paddock-product-line.ts`
 
 From SPEC-012A:
 - `docs/ai/repo-knowledge-index.json`

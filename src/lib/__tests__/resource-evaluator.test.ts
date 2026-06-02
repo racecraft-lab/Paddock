@@ -40,9 +40,9 @@ const governanceOn = expandFeatureFlagCascade('FEATURE_RESOURCE_GOVERNANCE', tru
 
 beforeEach(async () => {
   tempDir = mkdtempSync(join(tmpdir(), 'spec-008-resource-evaluator-'));
-  process.env.MISSION_CONTROL_DATA_DIR = tempDir;
-  process.env.MISSION_CONTROL_DB_PATH = join(tempDir, 'mission-control.db');
-  db = new Database(process.env.MISSION_CONTROL_DB_PATH);
+  process.env.PADDOCK_DATA_DIR = tempDir;
+  process.env.PADDOCK_DB_PATH = join(tempDir, 'paddock.db');
+  db = new Database(process.env.PADDOCK_DB_PATH);
   db.pragma('journal_mode = WAL');
   db.pragma('synchronous = 1');
   db.pragma('busy_timeout = 50');
@@ -71,8 +71,8 @@ afterEach(async () => {
   } catch {
     // ignore
   }
-  delete process.env.MISSION_CONTROL_DATA_DIR;
-  delete process.env.MISSION_CONTROL_DB_PATH;
+  delete process.env.PADDOCK_DATA_DIR;
+  delete process.env.PADDOCK_DB_PATH;
   delete process.env.FEATURE_RESOURCE_GOVERNANCE;
   rmSync(tempDir, { recursive: true, force: true });
 });
@@ -291,7 +291,7 @@ describe('SPEC-008 resource-evaluator — FR-005a fail-safe', () => {
     // FR-005a: NEVER block on internal exception.
     expect(result.decision).not.toBe('block');
     // Re-open db so afterEach close doesn't double-throw.
-    db = new Database(process.env.MISSION_CONTROL_DB_PATH ?? '');
+    db = new Database(process.env.PADDOCK_DB_PATH ?? '');
   });
 });
 

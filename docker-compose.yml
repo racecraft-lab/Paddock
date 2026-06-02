@@ -1,7 +1,7 @@
 services:
-  mission-control:
+  paddock:
     build: .
-    container_name: mission-control
+    container_name: paddock
     ports:
       - "${MC_PORT:-3000}:${PORT:-3000}"
     environment:
@@ -61,10 +61,10 @@ services:
 
   # Standalone mode — no gateway required. Start with:
   #   docker compose --profile standalone up
-  mission-control-standalone:
+  paddock-standalone:
     extends:
-      service: mission-control
-    container_name: mission-control-standalone
+      service: paddock
+    container_name: paddock-standalone
     profiles:
       - standalone
     environment:

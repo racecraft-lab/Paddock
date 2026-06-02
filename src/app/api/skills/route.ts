@@ -90,7 +90,7 @@ function getSkillRoots(): SkillRoot[] {
   roots.push({ source: 'openclaw', path: openclawSkills })
 
   // Add OpenClaw workspace-local skills (takes precedence when names conflict)
-  const workspaceDir = process.env.OPENCLAW_WORKSPACE_DIR || process.env.MISSION_CONTROL_WORKSPACE_DIR || join(openclawState, 'workspace')
+  const workspaceDir = process.env.OPENCLAW_WORKSPACE_DIR || process.env.PADDOCK_WORKSPACE_DIR || join(openclawState, 'workspace')
   const workspaceSkills = resolveSkillRoot('MC_SKILLS_WORKSPACE_DIR', join(workspaceDir, 'skills'))
   roots.push({ source: 'workspace', path: workspaceSkills })
 

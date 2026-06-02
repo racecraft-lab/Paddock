@@ -18,7 +18,7 @@ export interface FixResult {
 }
 
 function shouldMutateRuntimeEnv() {
-  return process.env.MISSION_CONTROL_TEST_MODE !== '1'
+  return process.env.PADDOCK_TEST_MODE !== '1'
 }
 
 function normalizeHostname(raw: string): string {

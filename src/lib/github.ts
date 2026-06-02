@@ -137,7 +137,7 @@ export async function githubFetch(
   const headers: Record<string, string> = {
     Authorization: `Bearer ${token}`,
     Accept: 'application/vnd.github.v3+json',
-    'User-Agent': 'MissionControl/1.0',
+    'User-Agent': 'Paddock/1.0',
     ...(options.headers as Record<string, string> || {}),
   }
 

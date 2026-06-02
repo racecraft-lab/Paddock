@@ -22,7 +22,7 @@ stop_reason: "natural"
 
 - Add two independent feature flags — `FEATURE_DISPOSITION_LOGGING` and `FEATURE_TASK_ARTIFACTS` — both default OFF, both resolved through `resolveFlag(name, ctx)` so they roll forward and back independently.
 - When `FEATURE_DISPOSITION_LOGGING` is ON, every triage-template completion writes exactly one row into `task_dispositions` (M057), recording disposition (closed enum), reason, triaged_by_agent_id, triaged_at, and workspace_id.
-- When `FEATURE_TASK_ARTIFACTS` is ON, agents can publish inline JSON, inline Markdown, or file-backed outputs to a Paddock–controlled artifact store backed by `task_artifacts` (M058) and the local filesystem under `<MISSION_CONTROL_DATA_DIR>/artifacts/<workspace_id>/<yyyy>/<mm>/<sha256>.<ext>`.
+- When `FEATURE_TASK_ARTIFACTS` is ON, agents can publish inline JSON, inline Markdown, or file-backed outputs to a Paddock–controlled artifact store backed by `task_artifacts` (M058) and the local filesystem under `<PADDOCK_DATA_DIR>/artifacts/<workspace_id>/<yyyy>/<mm>/<sha256>.<ext>`.
 - Ship `src/lib/secret-detector.ts` as the single redaction/rejection gate before any artifact reaches storage. Reject by default; allow redact-and-store only for text-like MIMEs when the producer template opts in via `workflow_templates.allow_redacted_artifacts = 1` (M054).
 - Surface dispositions and artifacts to operators through the audit trail panel ("Dispositions" tab), the artifact admin panel, and a dashboard widget showing 7-day triage rollups.
 - Preserve byte-compatible behavior of `advanceTaskChain` and successor dispatch when both flags are OFF; provide a clean rollback path that does not lose previously stored evidence.
@@ -143,7 +143,7 @@ The "M58 = task_dispositions / M59 = task_artifacts" framing came from a setup-t
 
 **Decision:** A. Local FS sharded by workspace + year-month + sha256.
 
-**Rationale:** Reuses `MISSION_CONTROL_DATA_DIR` (defaults to `.data/`); works with Docker volumes; portable backup/restore because `storage_uri` is relative. Free-space metric for AC9 reads `df` on `DATA_DIR`. Workspace isolation is enforced on disk in addition to in DB.
+**Rationale:** Reuses `PADDOCK_DATA_DIR` (defaults to `.data/`); works with Docker volumes; portable backup/restore because `storage_uri` is relative. Free-space metric for AC9 reads `df` on `DATA_DIR`. Workspace isolation is enforced on disk in addition to in DB.
 
 ---
 

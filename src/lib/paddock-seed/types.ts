@@ -1,26 +1,26 @@
 import type Database from 'better-sqlite3'
 
-export const MISSION_CONTROL_WORKSPACE_SLUG = 'mission-control'
-export const MISSION_CONTROL_WORKSPACE_NAME = 'Paddock'
+export const PADDOCK_WORKSPACE_SLUG = 'paddock'
+export const PADDOCK_WORKSPACE_NAME = 'Paddock'
 export const FACILITY_WORKSPACE_SLUG = 'facility'
-export const MISSION_CONTROL_REPO = 'racecraft-lab/Paddock'
-export const CLEANUP_CHECKLIST_PATH = 'docs/runbooks/mission-control-seed-predeploy.md'
+export const PADDOCK_REPO = 'racecraft-lab/Paddock'
+export const CLEANUP_CHECKLIST_PATH = 'docs/runbooks/paddock-seed-predeploy.md'
 
 export const REQUIRED_WORKFLOW_SLUGS = [
-  'mission-control_issue_triage',
-  'mission-control_specialist_route',
-  'mission-control_close_issue',
-  'mission-control_needs_spec_route',
-  'mission-control_remediation_plan',
-  'mission-control_dev_implementation',
-  'mission-control_review',
-  'mission-control_owner_review',
-  'mission-control_aegis',
+  'paddock_issue_triage',
+  'paddock_specialist_route',
+  'paddock_close_issue',
+  'paddock_needs_spec_route',
+  'paddock_remediation_plan',
+  'paddock_dev_implementation',
+  'paddock_review',
+  'paddock_owner_review',
+  'paddock_aegis',
 ] as const
 
 const AREA_LABEL_ROUTING_FLAG = ['FEATURE_AREA', 'LABEL_ROUTING'].join('_')
 
-export const ENABLED_MISSION_CONTROL_FLAGS = [
+export const ENABLED_PADDOCK_FLAGS = [
   'FEATURE_WORKSPACE_SWITCHER',
   'FEATURE_GLOBAL_AEGIS',
   'FEATURE_TASK_PIPELINES',
@@ -30,7 +30,7 @@ export const ENABLED_MISSION_CONTROL_FLAGS = [
   'FEATURE_TASK_ARTIFACTS',
   'FEATURE_RESOURCE_GOVERNANCE',
   'FEATURE_OPENCLAW_HEALTH_COSTS',
-  'PILOT_MISSION_CONTROL_E2E',
+  'PILOT_PADDOCK_E2E',
 ] as const
 
 export const DISABLED_OR_ABSENT_FLAGS = [
@@ -43,7 +43,7 @@ export const DISABLED_OR_ABSENT_FLAGS = [
 ] as const
 
 export const DEPARTMENTS = [
-  { slug: 'qa', name: 'QA', ticketPrefix: 'QA', areaSlug: 'qa', triage: true, repoSyncOwner: true, githubRepo: MISSION_CONTROL_REPO },
+  { slug: 'qa', name: 'QA', ticketPrefix: 'QA', areaSlug: 'qa', triage: true, repoSyncOwner: true, githubRepo: PADDOCK_REPO },
   { slug: 'development', name: 'Development', ticketPrefix: 'DEV', areaSlug: 'dev', triage: false, repoSyncOwner: false, githubRepo: null },
   { slug: 'devsecops', name: 'DevSecOps', ticketPrefix: 'SEC', areaSlug: 'devsecops', triage: false, repoSyncOwner: false, githubRepo: null },
   { slug: 'marketing', name: 'Marketing', ticketPrefix: 'MKT', areaSlug: 'marketing', triage: false, repoSyncOwner: false, githubRepo: null },
@@ -52,17 +52,17 @@ export const DEPARTMENTS = [
 ] as const
 
 export const ROLE_ASSIGNMENTS = [
-  { role: 'researcher', agentName: 'mission-control-platform-research', departmentSlug: 'qa' },
-  { role: 'planner', agentName: 'mission-control-platform-planner', departmentSlug: 'qa' },
-  { role: 'dev', agentName: 'mission-control-platform-dev', departmentSlug: 'development' },
-  { role: 'ui', agentName: 'mission-control-platform-ui', departmentSlug: 'development' },
-  { role: 'devsecops', agentName: 'mission-control-platform-devsecops', departmentSlug: 'devsecops' },
-  { role: 'qa', agentName: 'mission-control-platform-qa', departmentSlug: 'qa' },
+  { role: 'researcher', agentName: 'paddock-platform-research', departmentSlug: 'qa' },
+  { role: 'planner', agentName: 'paddock-platform-planner', departmentSlug: 'qa' },
+  { role: 'dev', agentName: 'paddock-platform-dev', departmentSlug: 'development' },
+  { role: 'ui', agentName: 'paddock-platform-ui', departmentSlug: 'development' },
+  { role: 'devsecops', agentName: 'paddock-platform-devsecops', departmentSlug: 'devsecops' },
+  { role: 'qa', agentName: 'paddock-platform-qa', departmentSlug: 'qa' },
 ] as const
 
 export const GOVERNANCE_POLICIES = [
   {
-    notes: 'SPEC-009B:mission-control:daily-token-budget',
+    notes: 'SPEC-009B:paddock:daily-token-budget',
     policy_type: 'budget',
     limit_kind: 'token',
     limit_value: 1_000_000,
@@ -73,7 +73,7 @@ export const GOVERNANCE_POLICIES = [
     default_template: 0,
   },
   {
-    notes: 'SPEC-009B:mission-control:daily-usd-budget',
+    notes: 'SPEC-009B:paddock:daily-usd-budget',
     policy_type: 'budget',
     limit_kind: 'usd',
     limit_value: 10,
@@ -84,7 +84,7 @@ export const GOVERNANCE_POLICIES = [
     default_template: 0,
   },
   {
-    notes: 'SPEC-009B:mission-control:wip-visibility-template',
+    notes: 'SPEC-009B:paddock:wip-visibility-template',
     policy_type: 'wip_limit',
     limit_kind: 'concurrent_tasks',
     limit_value: 2,
@@ -105,7 +105,7 @@ export type ResidueKind =
   | 'openclaw_github_automation'
   | 'focusengine_operator_residue'
 
-export interface MissionControlSeedOptions {
+export interface PaddockSeedOptions {
   contractPath: string
   operatorEvidencePath?: string
 }
@@ -128,7 +128,7 @@ export interface BlockedPreflightResult {
   ok: false
   mode: 'preflight' | 'apply'
   status: 'blocked_preflight'
-  code: 'NON_MISSION_CONTROL_RESIDUE'
+  code: 'NON_PADDOCK_RESIDUE'
   mutation_status: 'not_mutated'
   residue: ResidueSummary[]
   cleanup_checklist: string
@@ -157,7 +157,7 @@ export interface PreflightSuccessResult {
 export type PreflightResult = PreflightSuccessResult | BlockedPreflightResult | ContractNotReadyResult
 
 export interface SeedEvidenceCounts {
-  mission_control_product_lines: number
+  paddock_product_lines: number
   facility_workspaces: number
   department_projects: number
   required_role_assignments: number
@@ -169,7 +169,7 @@ export interface SeedEvidenceCounts {
   new_per_agent_seed_tasks: number
 }
 
-export interface MissionControlSeedEvidence {
+export interface PaddockSeedEvidence {
   counts: SeedEvidenceCounts
   workflow_contract: {
     source_path: string
@@ -198,18 +198,18 @@ export interface MissionControlSeedEvidence {
   identity_hash: string
 }
 
-export interface ApplySeedResult extends MissionControlSeedEvidence {
+export interface ApplySeedResult extends PaddockSeedEvidence {
   ok: true
   mode: 'apply'
   status: 'seeded'
   mutation_status: 'applied'
   workspace: {
-    slug: typeof MISSION_CONTROL_WORKSPACE_SLUG
+    slug: typeof PADDOCK_WORKSPACE_SLUG
     id: number
   }
 }
 
-export interface VerifySeedResult extends MissionControlSeedEvidence {
+export interface VerifySeedResult extends PaddockSeedEvidence {
   ok: true
   mode: 'verify'
   status: 'verified'

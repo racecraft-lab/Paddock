@@ -17147,7 +17147,7 @@
             "in": "query",
             "schema": {
               "type": "string",
-              "default": "mission-control"
+              "default": "paddock"
             }
           },
           {
@@ -17587,7 +17587,7 @@
                           "owner": {
                             "type": "string",
                             "enum": [
-                              "mission_control",
+                              "paddock",
                               "openclaw",
                               "external_harness"
                             ]

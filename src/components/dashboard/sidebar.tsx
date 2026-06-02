@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
 import { createClientLogger } from '@/lib/client-logger'
 import { Button } from '@/components/ui/button'
@@ -64,7 +64,7 @@ const menuItems: MenuItem[] = [
 ]
 
 export function Sidebar() {
-  const { activeTab, connection, sessions } = useMissionControl()
+  const { activeTab, connection, sessions } = usePaddock()
   const navigateToPanel = useNavigateToPanel()
   const [systemStats, setSystemStats] = useState<SystemStats | null>(null)
 

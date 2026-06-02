@@ -1,6 +1,6 @@
 ---
 name: integrations
-description: "Skill for the Integrations area of mission-control. 25 symbols across 2 files."
+description: "Skill for the Integrations area of paddock. 25 symbols across 2 files."
 ---
 
 # Integrations

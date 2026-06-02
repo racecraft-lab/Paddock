@@ -9,13 +9,13 @@ import {
   loginAsE2EAdmin,
 } from '../helpers'
 
-const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ??
-  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const E2E_DB_PATH = process.env.PADDOCK_DB_PATH ??
+  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 const OUTPUT_DIR = path.join(process.cwd(), 'test-results', 'spec-009f-triage-routing')
 const FIXTURE_MARKER = 'seeded by SPEC-009F triage routing e2e'
 const FIXTURE_NOW = 1_779_500_000
 const WORKSPACE_ID = 1
-const ISSUE_TRIAGE_TEMPLATE_SLUG = 'mission-control_issue_triage'
+const ISSUE_TRIAGE_TEMPLATE_SLUG = 'paddock_issue_triage'
 const OUTCOMES = [
   'NEEDS_SPEC',
   'NEEDS_HUMAN',
@@ -106,7 +106,7 @@ function enableSpec009fFlags(db: Database.Database, workspaceId: number): void {
       FEATURE_TASK_PIPELINES: true,
       FEATURE_TASK_ARTIFACTS: true,
       FEATURE_DISPOSITION_LOGGING: true,
-      PILOT_MISSION_CONTROL_E2E: true,
+      PILOT_PADDOCK_E2E: true,
     }),
     workspaceId,
   )

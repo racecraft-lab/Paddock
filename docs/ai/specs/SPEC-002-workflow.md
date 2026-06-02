@@ -351,7 +351,7 @@ $speckit-plan
 
 ## Architecture Notes
 
-- `src/store/index.ts` is the live store path; there is no `src/store/mission-control-store.ts`.
+- `src/store/index.ts` is the live store path; there is no `src/store/paddock-store.ts`.
 - The roadmap says no existing `persist` middleware and no existing `BroadcastChannel` listener are present. Implement cross-tab sync from scratch for the Product Line scope slice only.
 - `resolveFlag()` reads `workspaces.feature_flags JSON` per workspace; hard-default OFF; env value `0` forces OFF; env value `1` does not force ON except for roadmap-approved `PILOT_PRODUCT_LINE_A_E2E`.
 - `setActiveProductLine(productLine | null, options)` is the stable transition API and owns persistence, validation reset, URL cleanup, BroadcastChannel acceptance, cache invalidation, and stale-response guards.
@@ -688,7 +688,7 @@ Every remaining step must follow the Open File Hygiene guard above: use bounded 
 | D - REST route matrix, route discovery, and SSE contracts | T035-T036, T041 | Complete | `pnpm exec playwright test tests/product-line-scope-matrix.spec.ts tests/product-line-route-discovery.spec.ts tests/product-line-events.spec.ts` passed 4 tests |
 | E - Panel wiring and Facility/global boundaries | T042-T043 | Complete | `pnpm test -- src/components/panels/product-line-panels.test.ts src/components/panels/facility-global-boundaries.test.ts` passed 106 files / 1035 tests; post-code-review `pnpm test` passed 106 files / 1037 tests |
 | F - Final G7 validation and status sync | Complete | No generated task ids | All `tasks.md` tasks checked, G7 evidence ledger rows pass, PRD/roadmap status updated, full verification rerun, and helper cleanup check recorded |
-| G - Real UI e2e, Docker seed data, screenshots, and defect gate | T051-T054 | In Progress | `tests/product-line-switcher-ui.spec.ts`, `scripts/e2e-docker.sh`, `playwright.docker.config.ts`, `.github/workflows/mission-control-ui-e2e.yml`, focused/Docker Playwright results, screenshot review, and remediation evidence |
+| G - Real UI e2e, Docker seed data, screenshots, and defect gate | T051-T054 | In Progress | `tests/product-line-switcher-ui.spec.ts`, `scripts/e2e-docker.sh`, `playwright.docker.config.ts`, `.github/workflows/paddock-ui-e2e.yml`, focused/Docker Playwright results, screenshot review, and remediation evidence |
 
 ---
 
@@ -710,11 +710,11 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 | P1-AC10 | `/api/events` tests cover Product Line, Facility, missing/mismatched `workspace_id`, EventSource reconnect, and whitelisted global events | Pass | `tests/product-line-events.spec.ts`; `src/lib/use-server-events.test.tsx` |
 | P1-AC11 | Store tests cover persistence key, serialization, hydrate validation, guarded BroadcastChannel, and fallback behavior | Pass | `src/types/product-line.test.ts`; `src/store/product-line-scope.test.ts`; `src/store/product-line-persistence.test.ts`; `src/store/product-line-broadcast.test.ts` |
 | P1-AC12 | Traceability/grep evidence proves Facility/Product Line/tenant terminology and no multi-facility tenant modeling | Pass | `spec.md`, `plan.md`, `quickstart.md`, PRD, and roadmap traceability sections |
-| P1-AC13 | Playwright/a11y/component tests prove 320/375/390 px layout, truncation, preserved header controls, localized labels, listbox semantics, and focus return | Pass, real UI e2e hardening in progress | `src/components/layout/workspace-switcher.test.tsx`; `tests/workspace-switcher-a11y.spec.ts`; `tests/workspace-switcher-responsive.spec.ts`; `tests/product-line-switcher-ui.spec.ts`; `pnpm test:e2e:docker`; `mission-control-ui-e2e-artifacts` |
+| P1-AC13 | Playwright/a11y/component tests prove 320/375/390 px layout, truncation, preserved header controls, localized labels, listbox semantics, and focus return | Pass, real UI e2e hardening in progress | `src/components/layout/workspace-switcher.test.tsx`; `tests/workspace-switcher-a11y.spec.ts`; `tests/workspace-switcher-responsive.spec.ts`; `tests/product-line-switcher-ui.spec.ts`; `pnpm test:e2e:docker`; `paddock-ui-e2e-artifacts` |
 | P1-AC14 | Cache/request tests prove `scopeKey`, scoped invalidation, stale in-flight response rejection, and stale mutation completion rejection | Pass | `src/store/product-line-cache-url.test.ts`; `src/store/product-line-scope.test.ts`; `src/components/panels/product-line-panels.test.ts` |
 | P1-AC15 | URL tests prove valid scope adoption, invalid scope reset, and unowned entity param stripping | Pass | `src/store/product-line-cache-url.test.ts`; `tests/product-line-route-discovery.spec.ts`; `tests/product-line-scope-matrix.spec.ts` |
 | P1-AC16 | Deferred-boundary and SC-15/V2-001 grep/tests prove no product-line skill ownership, session/transcript mapping, tenant-routed gateway selection, or multi-facility modeling | Pass | `src/components/panels/facility-global-boundaries.test.ts`; diff grep found no new runtime gateway globals or downstream-boundary implementations |
-| SC-018 | Argos Playwright and Storybook screenshots include metadata with test/story identity, source location, and Product Line tags; flag-OFF e2e does not upload an empty Argos build | Pass | `tests/product-line-switcher-ui.spec.ts`; `src/components/layout/product-line-visual.stories.tsx`; `scripts/verify-argos-metadata.mjs`; `scripts/e2e-docker.sh`; `.github/workflows/mission-control-ui-e2e.yml`; `.github/workflows/argos-storybook.yml`; `pnpm test:e2e:argos-metadata`; `pnpm test:visual:argos-metadata` |
+| SC-018 | Argos Playwright and Storybook screenshots include metadata with test/story identity, source location, and Product Line tags; flag-OFF e2e does not upload an empty Argos build | Pass | `tests/product-line-switcher-ui.spec.ts`; `src/components/layout/product-line-visual.stories.tsx`; `scripts/verify-argos-metadata.mjs`; `scripts/e2e-docker.sh`; `.github/workflows/paddock-ui-e2e.yml`; `.github/workflows/argos-storybook.yml`; `pnpm test:e2e:argos-metadata`; `pnpm test:visual:argos-metadata` |
 
 ---
 
@@ -800,7 +800,7 @@ Populate this ledger before G7 is marked complete. Every row must cite the comma
 ## Project Structure Reference
 
 ```text
-racecraft-mission-control/
+racecraft-paddock/
 |-- src/lib/feature-flags.ts                 # New SPEC-002 feature flag helper
 |-- src/types/product-line.ts                # New ProductLine alias/type surface
 |-- src/store/index.ts                       # Product Line scope slice, validation, cache/URL transition, and cross-tab sync

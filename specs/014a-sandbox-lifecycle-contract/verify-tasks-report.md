@@ -12,7 +12,7 @@
 ## Scope Evidence
 
 - Prerequisites command: `.specify/scripts/bash/check-prerequisites.sh --json`
-- Feature directory: `/Users/fredrickgabelmann/.codex/worktrees/0466/racecraft-mission-control/.worktrees/014a-sandbox-lifecycle-contract/specs/014a-sandbox-lifecycle-contract`
+- Feature directory: `/Users/fredrickgabelmann/.codex/worktrees/0466/racecraft-paddock/.worktrees/014a-sandbox-lifecycle-contract/specs/014a-sandbox-lifecycle-contract`
 - Base ref used for branch evidence: `origin/main`
 - Branch: `014a-sandbox-lifecycle-contract`
 - Changed evidence included branch diff plus working-tree modified and untracked files.

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcherSelect } from '@/components/ui/language-switcher'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useNavigateToPanel } from '@/lib/navigation'
 import { SecurityScanCard } from '@/components/onboarding/security-scan-card'
 import { AgentRuntimesSection } from '@/components/settings/agent-runtimes-section'
@@ -109,7 +109,7 @@ const subscriptionDropdowns: Record<string, { label: string; value: string }[]> 
 
 export function SettingsPanel() {
   const t = useTranslations('settings')
-  const { currentUser, setShowOnboarding, activeProductLineScope } = useMissionControl()
+  const { currentUser, setShowOnboarding, activeProductLineScope } = usePaddock()
   const navigateToPanel = useNavigateToPanel()
   const [settings, setSettings] = useState<Setting[]>([])
   const [grouped, setGrouped] = useState<Record<string, Setting[]>>({})
@@ -1012,7 +1012,7 @@ export function SettingsPanel() {
 }
 
 function InterfaceModeSelector() {
-  const { interfaceMode, setInterfaceMode } = useMissionControl()
+  const { interfaceMode, setInterfaceMode } = usePaddock()
   const [saving, setSaving] = useState(false)
   const navigateToPanel = useNavigateToPanel()
 
@@ -1028,7 +1028,7 @@ function InterfaceModeSelector() {
       // If switching to essential and on a hidden panel, redirect
       if (mode === 'essential') {
         const essentialIds = new Set(['overview', 'agents', 'tasks', 'chat', 'activity', 'logs', 'settings'])
-        const store = useMissionControl.getState()
+        const store = usePaddock.getState()
         if (!essentialIds.has(store.activeTab)) {
           navigateToPanel('overview')
         }
@@ -1104,7 +1104,7 @@ function formatLabel(key: string): string {
 // ---------------------------------------------------------------------------
 
 function AccountOAuthSection() {
-  const { currentUser } = useMissionControl()
+  const { currentUser } = usePaddock()
   const [disconnecting, setDisconnecting] = useState(false)
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null)
 

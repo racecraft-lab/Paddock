@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useMissionControl, type CurrentUser } from '@/store'
+import { usePaddock, type CurrentUser } from '@/store'
 import { ACTIVE_WORKSPACE_STORAGE_KEY, parsePersistedProductLineScope, type ProductLine } from '@/types/product-line'
 
 const currentUser: CurrentUser = {
@@ -57,7 +57,7 @@ function installLocalStorage() {
 }
 
 function resetStore() {
-  useMissionControl.setState({
+  usePaddock.setState({
     currentUser,
     workspaces: [],
     workspaceListStatus: 'idle',
@@ -100,9 +100,9 @@ describe('Product Line scope persistence and hydration', () => {
       scopeVersion: 300,
     }))
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.activeProductLine).toMatchObject({ id: 42, slug: 'assembly' })
     expect(state.activeProductLineScope).toMatchObject({
       kind: 'productLine',
@@ -119,11 +119,11 @@ describe('Product Line scope persistence and hydration', () => {
       scopeVersion: 301,
     }))
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
     const persisted = parsePersistedProductLineScope(localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY))
-    expect(useMissionControl.getState().activeProductLine).toBeNull()
-    expect(useMissionControl.getState().activeProductLineScope?.kind).toBe('facility')
+    expect(usePaddock.getState().activeProductLine).toBeNull()
+    expect(usePaddock.getState().activeProductLineScope?.kind).toBe('facility')
     expect(persisted?.tenantId).toBe(7)
     expect(persisted?.productLineId).toBeNull()
   })
@@ -131,11 +131,11 @@ describe('Product Line scope persistence and hydration', () => {
   it('rejects malformed persisted scope and falls back to Facility', async () => {
     localStorage.setItem(ACTIVE_WORKSPACE_STORAGE_KEY, '{"bad"')
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
     const persisted = parsePersistedProductLineScope(localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY))
-    expect(useMissionControl.getState().activeProductLine).toBeNull()
-    expect(useMissionControl.getState().activeProductLineScope?.kind).toBe('facility')
+    expect(usePaddock.getState().activeProductLine).toBeNull()
+    expect(usePaddock.getState().activeProductLineScope?.kind).toBe('facility')
     expect(persisted?.productLineId).toBeNull()
   })
 
@@ -147,12 +147,12 @@ describe('Product Line scope persistence and hydration', () => {
       scopeVersion: 302,
     }))
 
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
     const persisted = parsePersistedProductLineScope(localStorage.getItem(ACTIVE_WORKSPACE_STORAGE_KEY))
-    expect(useMissionControl.getState().workspaceScopeNotice).toBe('unauthorized-selection')
-    expect(useMissionControl.getState().activeProductLine).toBeNull()
-    expect(useMissionControl.getState().activeProductLineScope?.kind).toBe('facility')
+    expect(usePaddock.getState().workspaceScopeNotice).toBe('unauthorized-selection')
+    expect(usePaddock.getState().activeProductLine).toBeNull()
+    expect(usePaddock.getState().activeProductLineScope?.kind).toBe('facility')
     expect(persisted?.productLineId).toBeNull()
   })
 })

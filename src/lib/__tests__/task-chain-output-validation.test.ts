@@ -85,7 +85,7 @@ function createPilotDb(resolution: string | null): Database.Database {
   db.prepare('INSERT INTO workspaces (id, feature_flags) VALUES (1, ?)').run(JSON.stringify({ FEATURE_TASK_PIPELINES: true }))
   db.prepare(`
     INSERT INTO workflow_templates (id, name, task_prompt, workspace_id, slug, output_schema, routing_rules, next_template_slug)
-    VALUES (1, 'pilot triage', 'Prompt', 1, 'mission-control_issue_triage', ?, ?, NULL)
+    VALUES (1, 'pilot triage', 'Prompt', 1, 'paddock_issue_triage', ?, ?, NULL)
   `).run(
     JSON.stringify({
       type: 'object',
@@ -108,12 +108,12 @@ function createPilotDb(resolution: string | null): Database.Database {
       },
     }),
     JSON.stringify([
-      { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'mission-control_remediation_plan' },
+      { when: '$.disposition == "ACTIONABLE_REMEDIATION"', next_template_slug: 'paddock_remediation_plan' },
     ]),
   )
   db.prepare(`
     INSERT INTO tasks (title, status, priority, resolution, workspace_id, workflow_template_id, workflow_template_slug)
-    VALUES ('Pilot parent', 'done', 'high', ?, 1, 1, 'mission-control_issue_triage')
+    VALUES ('Pilot parent', 'done', 'high', ?, 1, 1, 'paddock_issue_triage')
   `).run(resolution)
   return db
 }

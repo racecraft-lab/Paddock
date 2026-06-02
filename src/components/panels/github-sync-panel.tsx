@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath, type ActiveProductLineScope } from '@/types/product-line'
 import type { LifecycleEnvelope, LifecycleRunResult, LifecycleScopeStatus } from '@/lib/github-sync-lifecycle-types'
 
@@ -119,7 +119,7 @@ function syncScopeBody(scope: ActiveProductLineScope | null) {
 
 export function GitHubSyncPanel() {
   const t = useTranslations('githubSync')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   // Connection status
   const [tokenStatus, setTokenStatus] = useState<{ connected: boolean; user?: string } | null>(null)
 

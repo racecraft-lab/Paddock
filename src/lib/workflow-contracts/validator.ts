@@ -23,7 +23,7 @@ export function validateWorkflowContract(contract: WorkflowContract): WorkflowCo
       errors.push(workflowContractError('UNKNOWN_FIELD', `Unknown contract field ${key}`, { canonical_model_path: key }))
     }
   }
-  if (record['family'] !== 'mission-control') errors.push(workflowContractError('INVALID_FAMILY', 'Contract family must be mission-control', { canonical_model_path: 'family' }))
+  if (record['family'] !== 'paddock') errors.push(workflowContractError('INVALID_FAMILY', 'Contract family must be paddock', { canonical_model_path: 'family' }))
   if (record['version'] !== 'workflow-contract-v1') errors.push(workflowContractError('INVALID_VERSION', 'Contract version must be workflow-contract-v1', { canonical_model_path: 'version' }))
   if (!Number.isInteger(record['workspace_id']) || Number(record['workspace_id']) <= 0) errors.push(workflowContractError('INVALID_WORKSPACE', 'workspace_id must be a positive integer', { canonical_model_path: 'workspace_id' }))
   if (!Array.isArray(record['allowed_variable_namespaces'])) errors.push(workflowContractError('INVALID_VARIABLE_NAMESPACES', 'allowed_variable_namespaces must be an array', { canonical_model_path: 'allowed_variable_namespaces' }))

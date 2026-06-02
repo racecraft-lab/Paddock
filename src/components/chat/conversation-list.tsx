@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { useMissionControl, Conversation } from '@/store'
+import { usePaddock, Conversation } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { createClientLogger } from '@/lib/client-logger'
 import { SessionKindAvatar, SessionKindPill } from './session-kind-brand'
@@ -134,7 +134,7 @@ export function ConversationList({ onNewConversation: _onNewConversation }: Conv
     markConversationRead,
     sessionAttention,
     setSessionAttention,
-  } = useMissionControl()
+  } = usePaddock()
   const [search, setSearch] = useState('')
   const [initialLoading, setInitialLoading] = useState(conversations.length === 0)
 

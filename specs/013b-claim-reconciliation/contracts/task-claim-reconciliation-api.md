@@ -28,9 +28,9 @@ Status: `200`
     "status": "assigned",
     "assigned_to": "codex",
     "stage": {
-      "stage_key": "mission-control_issue_remediation",
+      "stage_key": "paddock_issue_remediation",
       "workflow_template_id": 17,
-      "workflow_template_slug": "mission-control_issue_remediation"
+      "workflow_template_slug": "paddock_issue_remediation"
     },
     "github": {
       "repo": "racecraft-lab/Paddock",

@@ -3,7 +3,7 @@
  *
  * Per FR-177. When the verifier detects a chain break, write a
  * timestamped JSON snapshot under
- * `<MISSION_CONTROL_DATA_DIR>/forensics/<ts>-<chain>-mismatch.json`
+ * `<PADDOCK_DATA_DIR>/forensics/<ts>-<chain>-mismatch.json`
  * for legal review.
  *
  * @see specs/008-resource-governance/tasks.md T238
@@ -20,7 +20,7 @@ export interface ForensicsSnapshotInput {
 
 export function writeForensicsSnapshot(
   input: ForensicsSnapshotInput,
-  dataDir: string = process.env['MISSION_CONTROL_DATA_DIR'] ?? './.data',
+  dataDir: string = process.env['PADDOCK_DATA_DIR'] ?? './.data',
 ): string {
   const dir = join(dataDir, 'forensics');
   mkdirSync(dir, { recursive: true });

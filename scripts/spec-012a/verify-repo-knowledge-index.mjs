@@ -17,7 +17,7 @@ const REQUIRED_PATHS = [
   STATE_PATH,
   'docs/qa/pilot-smoke-checklist.md',
   'docs/runbook/migration-rollback.md',
-  'docs/ai/workflows/mission-control/workflow-contract.yaml',
+  'docs/ai/workflows/paddock/workflow-contract.yaml',
 ]
 const REQUIRED_ENTRY_FIELDS = [
   'path',

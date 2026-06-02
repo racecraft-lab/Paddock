@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 
 import { createClientLogger } from '@/lib/client-logger'
@@ -394,7 +394,7 @@ type DunkPhase = 'idle' | 'success' | 'error' | 'dismissing'
 
 function DunkItButton({ taskId, onDunked }: { taskId: number; onDunked: (id: number) => void }) {
   const t = useTranslations('taskBoard')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [phase, setPhase] = useState<DunkPhase>('idle')
 
   const handleClick = async (e: React.MouseEvent) => {
@@ -452,7 +452,7 @@ interface SpawnFormData {
 export function TaskBoardPanel() {
   const t = useTranslations('taskBoard')
   const statusColumns = STATUS_COLUMN_KEYS.map(col => ({ ...col, title: t(col.titleKey as any) }))
-  const { tasks: storeTasks, setTasks: storeSetTasks, selectedTask, setSelectedTask, activeProject, availableModels, spawnRequests, addSpawnRequest, updateSpawnRequest, dashboardMode, activeProductLineScope } = useMissionControl()
+  const { tasks: storeTasks, setTasks: storeSetTasks, selectedTask, setSelectedTask, activeProject, availableModels, spawnRequests, addSpawnRequest, updateSpawnRequest, dashboardMode, activeProductLineScope } = usePaddock()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -508,7 +508,7 @@ export function TaskBoardPanel() {
   const fetchData = useCallback(async () => {
     const requestScopeKey = activeProductLineScope?.scopeKey ?? 'legacy'
     const isCurrentScope = () =>
-      (useMissionControl.getState().activeProductLineScope?.scopeKey ?? 'legacy') === requestScopeKey
+      (usePaddock.getState().activeProductLineScope?.scopeKey ?? 'legacy') === requestScopeKey
 
     try {
       setError(null)
@@ -664,7 +664,7 @@ export function TaskBoardPanel() {
     e.preventDefault()
   }
 
-  const { updateTask } = useMissionControl()
+  const { updateTask } = usePaddock()
 
   const handleDrop = async (e: React.DragEvent, newStatus: string) => {
     e.preventDefault()
@@ -1296,7 +1296,7 @@ function TaskDetailModal({
   onDelete: () => void
 }) {
   const t = useTranslations('taskBoard')
-  const { currentUser, activeProductLineScope } = useMissionControl()
+  const { currentUser, activeProductLineScope } = usePaddock()
   const commentAuthor = currentUser?.username || 'system'
   const resolvedProjectName =
     task.project_name ||
@@ -2335,7 +2335,7 @@ function CreateTaskModal({
     target_session: '',
   })
   const t = useTranslations('taskBoard')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const agentSessions = useAgentSessions(formData.assigned_to || undefined)
   const [isRecurring, setIsRecurring] = useState(false)
   const [scheduleInput, setScheduleInput] = useState('')
@@ -2593,7 +2593,7 @@ function EditTaskModal({
   onUpdated: () => void
 }) {
   const t = useTranslations('taskBoard')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [formData, setFormData] = useState({
     title: task.title,
     description: task.description || '',

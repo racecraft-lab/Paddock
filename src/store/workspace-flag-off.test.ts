@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useMissionControl, type CurrentUser } from '@/store'
+import { usePaddock, type CurrentUser } from '@/store'
 import { ACTIVE_WORKSPACE_STORAGE_KEY, appendScopeToPath } from '@/types/product-line'
 
 const currentUser: CurrentUser = {
@@ -51,7 +51,7 @@ function installLocalStorage() {
 function resetWorkspaceState() {
   localStorage.clear()
   localStorage.setItem(ACTIVE_WORKSPACE_STORAGE_KEY, '{"payloadVersion":1,"tenantId":7,"productLineId":10,"scopeVersion":1}')
-  useMissionControl.setState({
+  usePaddock.setState({
     currentUser,
     workspaces: [],
     workspaceListStatus: 'idle',
@@ -84,9 +84,9 @@ describe('workspace switcher flag-off path', () => {
   })
 
   it('keeps legacy single-workspace behavior when FEATURE_WORKSPACE_SWITCHER is 0', async () => {
-    await useMissionControl.getState().fetchWorkspaces()
+    await usePaddock.getState().fetchWorkspaces()
 
-    const state = useMissionControl.getState()
+    const state = usePaddock.getState()
     expect(state.workspaceSwitcherEnabled).toBe(false)
     expect(state.activeProductLineScope).toBeNull()
     expect(state.activeProductLine).toBeNull()

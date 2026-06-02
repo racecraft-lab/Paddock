@@ -31,7 +31,7 @@ function createDb(): Database.Database {
     CREATE TABLE notifications (id INTEGER PRIMARY KEY AUTOINCREMENT, recipient TEXT, type TEXT, title TEXT, message TEXT, source_type TEXT, source_id INTEGER, workspace_id INTEGER);
     CREATE TABLE task_subscriptions (task_id INTEGER, agent_name TEXT, UNIQUE(task_id, agent_name));
   `)
-  db.prepare('INSERT INTO projects (id, workspace_id, ticket_prefix, ticket_counter, github_repo, github_sync_enabled) VALUES (10, 1, ?, 9, ?, 1)').run('OPS', 'racecraft/mission-control')
+  db.prepare('INSERT INTO projects (id, workspace_id, ticket_prefix, ticket_counter, github_repo, github_sync_enabled) VALUES (10, 1, ?, 9, ?, 1)').run('OPS', 'racecraft-lab/Paddock')
   db.prepare(`
     INSERT INTO tasks (id, title, status, priority, project_id, project_ticket_no, created_by, created_at, updated_at, tags, metadata, workspace_id, workflow_template_id, workflow_template_slug, root_task_id, chain_id, chain_stage)
     VALUES (100, 'Parent', 'done', 'high', 10, 9, 'operator', 1, 1, '[]', '{}', 1, 1, 'intake', 100, 'chain-1', 0)

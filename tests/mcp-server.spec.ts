@@ -76,7 +76,7 @@ test.describe('MCP Server Integration', () => {
       { jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05', clientInfo: { name: 'test', version: '1.0' }, capabilities: {} } },
     ])
     expect(responses).toHaveLength(1)
-    expect(responses[0].result.serverInfo.name).toBe('mission-control')
+    expect(responses[0].result.serverInfo.name).toBe('paddock')
     expect(responses[0].result.capabilities.tools).toBeDefined()
   })
 

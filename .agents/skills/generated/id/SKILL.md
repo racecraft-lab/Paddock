@@ -1,6 +1,6 @@
 ---
 name: id
-description: "Skill for the [id] area of mission-control. 497 symbols across 165 files."
+description: "Skill for the [id] area of paddock. 497 symbols across 165 files."
 ---
 
 # [id]

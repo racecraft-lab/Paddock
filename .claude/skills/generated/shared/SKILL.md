@@ -1,6 +1,6 @@
 ---
 name: shared
-description: "Skill for the _shared area of mission-control. 33 symbols across 6 files."
+description: "Skill for the _shared area of paddock. 33 symbols across 6 files."
 ---
 
 # _shared

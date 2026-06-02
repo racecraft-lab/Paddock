@@ -16,8 +16,8 @@
 set -e
 
 # Configuration
-MISSION_CONTROL_URL="${MISSION_CONTROL_URL:-http://localhost:3000}"
-LOG_DIR="${LOG_DIR:-$HOME/.mission-control/logs}"
+PADDOCK_URL="${PADDOCK_URL:-http://localhost:3000}"
+LOG_DIR="${LOG_DIR:-$HOME/.paddock/logs}"
 LOG_FILE="$LOG_DIR/notification-daemon-$(date +%Y-%m-%d).log"
 PID_FILE="/tmp/notification-daemon.pid"
 DEFAULT_INTERVAL=60
@@ -41,9 +41,9 @@ log() {
 }
 
 # Check if Paddock is running
-check_mission_control() {
-    if ! curl -s "$MISSION_CONTROL_URL/api/status" > /dev/null 2>&1; then
-        log "ERROR" "Paddock not accessible at $MISSION_CONTROL_URL"
+check_paddock() {
+    if ! curl -s "$PADDOCK_URL/api/status" > /dev/null 2>&1; then
+        log "ERROR" "Paddock not accessible at $PADDOCK_URL"
         return 1
     fi
     return 0
@@ -70,7 +70,7 @@ deliver_notifications() {
         -X POST \
         -H "Content-Type: application/json" \
         -d "$api_payload" \
-        "$MISSION_CONTROL_URL/api/notifications/deliver" 2>/dev/null)
+        "$PADDOCK_URL/api/notifications/deliver" 2>/dev/null)
     
     local http_code
     http_code=$(echo "$response" | grep -o "HTTP_STATUS:[0-9]*" | cut -d: -f2)
@@ -118,7 +118,7 @@ deliver_notifications() {
 
 # Get delivery statistics
 get_delivery_stats() {
-    local stats_url="$MISSION_CONTROL_URL/api/notifications/deliver"
+    local stats_url="$PADDOCK_URL/api/notifications/deliver"
     
     local response
     local curl_ok=false
@@ -183,7 +183,7 @@ run_daemon() {
     
     # Main daemon loop
     while true; do
-        if ! check_mission_control; then
+        if ! check_paddock; then
             log "WARN" "Paddock not accessible, sleeping $INTERVAL seconds"
             sleep "$INTERVAL"
             continue
@@ -297,7 +297,7 @@ Examples:
   ./notification-daemon.sh --stop
 
 Environment variables:
-  MISSION_CONTROL_URL    Paddock base URL (default: http://localhost:3005)
+  PADDOCK_URL    Paddock base URL (default: http://localhost:3005)
 
 Log files:
   $LOG_DIR/notification-daemon-YYYY-MM-DD.log
@@ -328,7 +328,7 @@ main() {
         # Single run mode
         log "INFO" "Starting single notification delivery run"
         
-        if ! check_mission_control; then
+        if ! check_paddock; then
             log "ERROR" "Aborting: Paddock not accessible"
             exit 1
         fi

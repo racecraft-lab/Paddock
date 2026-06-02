@@ -30,7 +30,7 @@
     "moreIssues": "+ {count} 件の問題"
   },
   "auth": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "signInToContinue": "続行するにはサインインしてください",
     "username": "ユーザー名",
     "password": "パスワード",
@@ -145,7 +145,7 @@
     "resetting": "リセット中..."
   },
   "boot": {
-    "missionControl": "Paddock",
+    "paddock": "Paddock",
     "agentOrchestration": "エージェントオーケストレーション",
     "authenticatingOperator": "オペレーターを認証中",
     "detectingStationMode": "ステーションモードを検出中",

@@ -3,21 +3,21 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { buildMissionControlSeedEvidence, verifyMissionControlSeed } from '@/lib/mission-control-seed/evidence'
-import { applyMissionControlSeed } from '@/lib/mission-control-seed/seed'
-import { DISABLED_OR_ABSENT_FLAGS, ENABLED_MISSION_CONTROL_FLAGS } from '@/lib/mission-control-seed/types'
-import { runSeedMissionControlCli } from '../../../../scripts/seed-mission-control-product-line'
-import { makeMissionControlSeedDb, missionControlContractPath } from './test-db'
+import { buildPaddockSeedEvidence, verifyPaddockSeed } from '@/lib/paddock-seed/evidence'
+import { applyPaddockSeed } from '@/lib/paddock-seed/seed'
+import { DISABLED_OR_ABSENT_FLAGS, ENABLED_PADDOCK_FLAGS } from '@/lib/paddock-seed/types'
+import { runSeedPaddockCli } from '../../../../scripts/seed-paddock-product-line'
+import { makePaddockSeedDb, paddockContractPath } from './test-db'
 
-describe('mission-control seed evidence', () => {
+describe('paddock seed evidence', () => {
   it('emits counts, workflow, flag, governance, and non-dispatch evidence after apply', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
-    const evidence = buildMissionControlSeedEvidence(db, { contractPath: missionControlContractPath() })
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
+    const evidence = buildPaddockSeedEvidence(db, { contractPath: paddockContractPath() })
 
     expect(evidence.counts).toMatchObject({
-      mission_control_product_lines: 1,
+      paddock_product_lines: 1,
       facility_workspaces: 1,
       department_projects: 6,
       required_role_assignments: 6,
@@ -27,12 +27,12 @@ describe('mission-control seed evidence', () => {
       new_successor_records: 0,
       new_per_agent_seed_tasks: 0,
     })
-    expect(evidence.flags.enabled.sort()).toEqual([...ENABLED_MISSION_CONTROL_FLAGS].sort())
+    expect(evidence.flags.enabled.sort()).toEqual([...ENABLED_PADDOCK_FLAGS].sort())
     expect(evidence.flags.disabled_or_absent.sort()).toEqual([...DISABLED_OR_ABSENT_FLAGS].sort())
     expect(evidence.governance.identities.sort()).toEqual([
-      'SPEC-009B:mission-control:daily-token-budget',
-      'SPEC-009B:mission-control:daily-usd-budget',
-      'SPEC-009B:mission-control:wip-visibility-template',
+      'SPEC-009B:paddock:daily-token-budget',
+      'SPEC-009B:paddock:daily-usd-budget',
+      'SPEC-009B:paddock:wip-visibility-template',
     ].sort())
     expect(evidence.governance.normal_intake_decision).toBe('allow')
     expect(evidence.non_dispatch).toMatchObject({
@@ -45,13 +45,13 @@ describe('mission-control seed evidence', () => {
   })
 
   it('is idempotent across two apply runs and verify mode succeeds on the stable target', () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    const first = applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
-    const firstEvidence = buildMissionControlSeedEvidence(db, { contractPath: missionControlContractPath() })
-    const second = applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
-    const secondEvidence = buildMissionControlSeedEvidence(db, { contractPath: missionControlContractPath() })
-    const verified = verifyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const first = applyPaddockSeed(db, { contractPath: paddockContractPath() })
+    const firstEvidence = buildPaddockSeedEvidence(db, { contractPath: paddockContractPath() })
+    const second = applyPaddockSeed(db, { contractPath: paddockContractPath() })
+    const secondEvidence = buildPaddockSeedEvidence(db, { contractPath: paddockContractPath() })
+    const verified = verifyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     expect(first.ok).toBe(true)
     expect(second.ok).toBe(true)
@@ -61,9 +61,9 @@ describe('mission-control seed evidence', () => {
   })
 
   it('fails verify mode when any required feature flag is missing', () => {
-    const db = makeMissionControlSeedDb()
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
-    const row = db.prepare("SELECT id, feature_flags FROM workspaces WHERE slug = 'mission-control'").get() as {
+    const db = makePaddockSeedDb()
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
+    const row = db.prepare("SELECT id, feature_flags FROM workspaces WHERE slug = 'paddock'").get() as {
       id: number
       feature_flags: string
     }
@@ -71,7 +71,7 @@ describe('mission-control seed evidence', () => {
     delete flags.FEATURE_GLOBAL_AEGIS
     db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?').run(JSON.stringify(flags), row.id)
 
-    const result = verifyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const result = verifyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     expect(result.ok).toBe(false)
     if (!result.ok) {
@@ -80,9 +80,9 @@ describe('mission-control seed evidence', () => {
   })
 
   it('fails verify mode when any disallowed feature flag is enabled', () => {
-    const db = makeMissionControlSeedDb()
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
-    const row = db.prepare("SELECT id, feature_flags FROM workspaces WHERE slug = 'mission-control'").get() as {
+    const db = makePaddockSeedDb()
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
+    const row = db.prepare("SELECT id, feature_flags FROM workspaces WHERE slug = 'paddock'").get() as {
       id: number
       feature_flags: string
     }
@@ -90,7 +90,7 @@ describe('mission-control seed evidence', () => {
     flags.FEATURE_AUTO_MERGE = true
     db.prepare('UPDATE workspaces SET feature_flags = ? WHERE id = ?').run(JSON.stringify(flags), row.id)
 
-    const result = verifyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const result = verifyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     expect(result.ok).toBe(false)
     if (!result.ok) {
@@ -99,18 +99,18 @@ describe('mission-control seed evidence', () => {
   })
 
   it('fails verify mode with exit code 4 on invariant failure and redacts output', () => {
-    const db = makeMissionControlSeedDb()
-    applyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const db = makePaddockSeedDb()
+    applyPaddockSeed(db, { contractPath: paddockContractPath() })
     db.prepare(`
       INSERT INTO tasks (title, workspace_id, status, assigned_to, created_by, github_repo, github_issue_number)
       VALUES (
         'Bad dispatched pilot task', 1, 'in_progress',
-        'mission-control-platform-dev', 'SPEC-009B',
+        'paddock-platform-dev', 'SPEC-009B',
         'racecraft-lab/Paddock', 123
       )
     `).run()
 
-    const result = verifyMissionControlSeed(db, { contractPath: missionControlContractPath() })
+    const result = verifyPaddockSeed(db, { contractPath: paddockContractPath() })
 
     expect(result.ok).toBe(false)
     expect(result.exit_code).toBe(4)
@@ -118,7 +118,7 @@ describe('mission-control seed evidence', () => {
   })
 
   it('documents backup/export-first cleanup, explicit confirmation, destructive warnings, and post-cleanup verification', () => {
-    const runbook = readFileSync('docs/runbooks/mission-control-seed-predeploy.md', 'utf8')
+    const runbook = readFileSync('docs/runbooks/paddock-seed-predeploy.md', 'utf8')
 
     expect(runbook).toContain('backup/export first')
     expect(runbook).toContain('explicit operator confirmation')
@@ -128,12 +128,12 @@ describe('mission-control seed evidence', () => {
   })
 
   it('exposes CLI mode exit code mapping for preflight, apply, verify, and unexpected errors', async () => {
-    const db = makeMissionControlSeedDb()
+    const db = makePaddockSeedDb()
 
-    const preflight = await runSeedMissionControlCli(['--mode', 'preflight', '--json'], { db, contractPath: missionControlContractPath() })
-    const apply = await runSeedMissionControlCli(['--mode', 'apply', '--json'], { db, contractPath: missionControlContractPath() })
-    const verify = await runSeedMissionControlCli(['--mode', 'verify', '--json'], { db, contractPath: missionControlContractPath() })
-    const unexpected = await runSeedMissionControlCli(['--mode', 'bad-mode', '--json'], { db, contractPath: missionControlContractPath() })
+    const preflight = await runSeedPaddockCli(['--mode', 'preflight', '--json'], { db, contractPath: paddockContractPath() })
+    const apply = await runSeedPaddockCli(['--mode', 'apply', '--json'], { db, contractPath: paddockContractPath() })
+    const verify = await runSeedPaddockCli(['--mode', 'verify', '--json'], { db, contractPath: paddockContractPath() })
+    const unexpected = await runSeedPaddockCli(['--mode', 'bad-mode', '--json'], { db, contractPath: paddockContractPath() })
 
     expect(preflight.exitCode).toBe(0)
     expect(apply.exitCode).toBe(0)
@@ -148,22 +148,22 @@ describe('mission-control seed evidence', () => {
     const emptyDbPath = join(dir, 'empty.db')
     writeFileSync(emptyDbPath, '')
 
-    const missing = await runSeedMissionControlCli([
+    const missing = await runSeedPaddockCli([
       '--mode',
       'preflight',
       '--db',
       missingDbPath,
       '--contract',
-      missionControlContractPath(),
+      paddockContractPath(),
       '--json',
     ])
-    const empty = await runSeedMissionControlCli([
+    const empty = await runSeedPaddockCli([
       '--mode',
       'preflight',
       '--db',
       emptyDbPath,
       '--contract',
-      missionControlContractPath(),
+      paddockContractPath(),
       '--json',
     ])
 

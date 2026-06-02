@@ -15,7 +15,7 @@ GET /api/gateways/control
 POST /api/gateways/control
 GET /api/mcp-audit/verify
 POST /api/hermes/events
-# SPEC-008 test-mode-only fixture endpoints — gated behind MISSION_CONTROL_TEST_MODE=1
+# SPEC-008 test-mode-only fixture endpoints — gated behind PADDOCK_TEST_MODE=1
 # AND admin auth, unreachable in prod, intentionally omitted from openapi.json.
 DELETE /api/admin/spec-008/seed-fixture/{id}
 POST /api/admin/spec-008/aegis-state

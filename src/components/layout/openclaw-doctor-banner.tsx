@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 interface OpenClawDoctorStatus {
   level: 'healthy' | 'warning' | 'error'
@@ -27,8 +27,8 @@ export function OpenClawDoctorBanner() {
   const tc = useTranslations('common')
   const [doctor, setDoctor] = useState<OpenClawDoctorStatus | null>(null)
   const [loading, setLoading] = useState(true)
-  const doctorDismissedAt = useMissionControl(s => s.doctorDismissedAt)
-  const dismissDoctor = useMissionControl(s => s.dismissDoctor)
+  const doctorDismissedAt = usePaddock(s => s.doctorDismissedAt)
+  const dismissDoctor = usePaddock(s => s.dismissDoctor)
   const [state, setState] = useState<BannerState>('idle')
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showDetails, setShowDetails] = useState(false)

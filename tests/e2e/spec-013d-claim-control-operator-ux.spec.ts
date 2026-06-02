@@ -5,8 +5,8 @@ import { expect, test, type APIRequestContext, type Page, type TestInfo } from '
 import Database from 'better-sqlite3'
 
 const OUTPUT_DIR = path.join(process.cwd(), 'test-results', 'spec-013d-claim-control-operator-ux')
-const E2E_DB_PATH = process.env['MISSION_CONTROL_DB_PATH'] ??
-  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const E2E_DB_PATH = process.env['PADDOCK_DB_PATH'] ??
+  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 const E2E_ADMIN_USER = process.env['AUTH_USER'] ?? 'testadmin'
 const E2E_ADMIN_PASS = process.env['AUTH_PASS'] ?? 'testpass1234!'
 const FIXTURE_MARKER_PREFIX = 'spec013d-claim-control'
@@ -696,8 +696,8 @@ function reconciliationEnvelope(mode: ClaimControlFixtureMode) {
       id: '500',
       workspace_id: '1',
       status: 'in_progress',
-      stage_key: 'mission-control_issue_remediation',
-      github: { repo: 'racecraft-lab/mission-control', issue_number: 72, pr_number: null },
+      stage_key: 'paddock_issue_remediation',
+      github: { repo: 'racecraft-lab/paddock', issue_number: 72, pr_number: null },
     },
     feature_flag: { key: 'FEATURE_TASK_CONTROL_PLANE', enabled: !flagOff },
     eligibility: { state: 'eligible', reason: null },
@@ -706,7 +706,7 @@ function reconciliationEnvelope(mode: ClaimControlFixtureMode) {
     activities: [],
     diagnostics: { warnings: [] },
     claim_control: flagOff ? null : {
-      stage_key: 'mission-control_issue_remediation',
+      stage_key: 'paddock_issue_remediation',
       authorization: { required_role: 'operator', current_role: viewer ? 'viewer' : 'operator', can_mutate: !viewer },
       available_actions: backoff
         ? [
@@ -733,7 +733,7 @@ function reconciliationEnvelope(mode: ClaimControlFixtureMode) {
 function claimControlResponse(outcome: ClaimControlPostOutcome) {
   return {
     schema_version: 'task_claim_control.v1',
-    task: { id: '500', workspace_id: '1', status: 'in_progress', stage_key: 'mission-control_issue_remediation' },
+    task: { id: '500', workspace_id: '1', status: 'in_progress', stage_key: 'paddock_issue_remediation' },
     action: 'retry',
     outcome,
     claim: null,
@@ -915,8 +915,8 @@ test.describe('SPEC-013D claim-control operator UX', () => {
           active_workspace_id: 1,
           workspaces: [{
             id: 1,
-            slug: 'mission-control',
-            name: 'Mission Control',
+            slug: 'paddock',
+            name: 'Paddock',
             tenant_id: 1,
             feature_flags: { FEATURE_TASK_CONTROL_PLANE: true },
           }],
@@ -974,7 +974,7 @@ test.describe('SPEC-013D claim-control operator UX', () => {
     expect(observedIdempotencyHeaders.at(-1)).toMatch(/^spec013d-/)
     expect(observedPostBodies.at(-1)).toMatchObject({
       action: 'retry',
-      stage_key: 'mission-control_issue_remediation',
+      stage_key: 'paddock_issue_remediation',
       override_backoff: false,
     })
     screenshotPaths[MOCK_SCREENSHOT_NAMES[2] ?? SCREENSHOT_NAMES[2]] = await attachClaimControlScreenshot(page, testInfo, MOCK_SCREENSHOT_NAMES[2] ?? SCREENSHOT_NAMES[2])

@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { PipelineTab } from './pipeline-tab'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 import type { JsonObject, WorkflowRoutingRule } from '@/types/workflow-template'
 
@@ -111,7 +111,7 @@ function parseJsonField<T>(value: string, emptyValue: T, fieldName: string): T {
 
 export function OrchestrationBar() {
   const t = useTranslations('orchestration')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const [agents, setAgents] = useState<Agent[]>([])
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([])
   const [contractRuns, setContractRuns] = useState<WorkflowContractRun[]>([])
@@ -138,7 +138,7 @@ export function OrchestrationBar() {
     const [agentRes, templateRes, diagnosticsRes] = await Promise.all([
       fetch(appendScopeToPath('/api/agents', activeProductLineScope)).then(r => r.json()).catch(() => ({ agents: [] })),
       fetch(appendScopeToPath('/api/workflows', activeProductLineScope)).then(r => r.json()).catch(() => ({ templates: [] })),
-      fetch(appendScopeToPath('/api/workflow-contracts/diagnostics?family=mission-control', activeProductLineScope)).then(r => r.json()).catch(() => ({ runs: [] })),
+      fetch(appendScopeToPath('/api/workflow-contracts/diagnostics?family=paddock', activeProductLineScope)).then(r => r.json()).catch(() => ({ runs: [] })),
     ])
     setAgents(agentRes.agents || [])
     setTemplates(templateRes.templates || [])

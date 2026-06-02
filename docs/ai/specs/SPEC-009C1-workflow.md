@@ -144,7 +144,7 @@ Before starting each phase, verify alignment with `.specify/memory/constitution.
 |-----------|-------------|--------------|
 | GitHub tracker truth | Pilot intake must originate from GitHub issue ingest/sync, not local task creation | Spec/plan requirements and tests |
 | Zero-regression | Existing GitHub sync and local task behavior remain unchanged outside the pilot evidence path | Focused regression tests |
-| Feature-flag discipline | Resolve `PILOT_MISSION_CONTROL_E2E` and prerequisite flags through `resolveFlag`; no inline runtime env checks | Static grep and tests |
+| Feature-flag discipline | Resolve `PILOT_PADDOCK_E2E` and prerequisite flags through `resolveFlag`; no inline runtime env checks | Static grep and tests |
 | Successor side-effect parity | Any task creation or sync import must use existing `createTask`/GitHub sync paths | Code review and unit tests |
 | Test-first development | RED tests define eligibility, duplicate prevention, local-only rejection, and absence assertions before implementation | Task order and test logs |
 | No destructive mutation | Synthetic fallback is explicit operator action; tests do not mutate live GitHub | Script contract and smoke checklist |
@@ -180,7 +180,7 @@ sync panel is touched, run the focused Playwright target or `pnpm test:e2e`.
 | Dependencies | SPEC-003, SPEC-004, SPEC-005, SPEC-006, SPEC-007, SPEC-008, SPEC-009B |
 | Enables | SPEC-009C2 |
 | Priority | P0 |
-| Feature flag scope | `PILOT_MISSION_CONTROL_E2E` for one live or synthetic Paddock issue |
+| Feature flag scope | `PILOT_PADDOCK_E2E` for one live or synthetic Paddock issue |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
 | Design Concept | `docs/ai/specs/SPEC-009C1-design-concept.md` |
@@ -351,8 +351,8 @@ $speckit-plan
 - `src/lib/task-create.ts` for duplicate prevention and task creation side effects.
 - `src/app/api/github/sync/route.ts` for operator-triggered sync.
 - `docs/github-sync.md` for existing sync behavior.
-- `docs/ai/workflows/mission-control/workflow-contract.yaml` for workflow-template metadata, not executable pilot eligibility.
-- `scripts/seed-mission-control-product-line.ts` and adjacent SPEC-009B tests for operator-script style.
+- `docs/ai/workflows/paddock/workflow-contract.yaml` for workflow-template metadata, not executable pilot eligibility.
+- `scripts/seed-paddock-product-line.ts` and adjacent SPEC-009B tests for operator-script style.
 
 ## Constraints
 - No schema migration in SPEC-009C1. If implementation proves an unavoidable current-schema blocker, stop and update the SpecKit artifacts or open follow-up work instead of adding a migration in this slice.
@@ -597,7 +597,7 @@ Implementation guardrails:
 |-------|--------|----------|
 | Implementation PR | Merged | PR #34 merged on 2026-05-14 as `7d544f3975d5d7e7241f83ecee629509760c064c` |
 | Post-merge routing fix | Merged | PR #40 merged on 2026-05-15 as `e6ee19eee7f004e6b97f5ee1fb50dfaeb8efcbb1` to keep synced pilot issues from auto-routing after ingest |
-| HAL deploy | Passed | `mission-control.service` was redeployed from `main` at `e6ee19ee` and verified active on HAL |
+| HAL deploy | Passed | `paddock.service` was redeployed from `main` at `e6ee19ee` and verified active on HAL |
 | Clean synthetic smoke | Passed | Final clean run used synthetic GitHub issue #42, produced exactly one GitHub-linked Inbox root task, preserved the one-task count after resync, rejected the local-only lookalike, and showed no claim, dispatch, remediation, runner, or artifact side effects |
 | Cleanup | Passed | Synthetic GitHub issues #37, #39, #41, and #42 were closed; disposable `[mc-pilot]` Paddock smoke rows were removed after database backup, and follow-up verification returned zero `[mc-pilot]` task rows |
 

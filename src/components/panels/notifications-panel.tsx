@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
 import { useSmartPoll } from '@/lib/use-smart-poll'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { appendScopeToPath, createFacilityScope } from '@/types/product-line'
 
 interface Notification {
@@ -23,7 +23,7 @@ interface Notification {
 
 export function NotificationsPanel() {
   const t = useTranslations('notifications')
-  const { activeProductLineScope } = useMissionControl()
+  const { activeProductLineScope } = usePaddock()
   const notificationScope = useMemo(() => activeProductLineScope
     ? createFacilityScope(activeProductLineScope.tenantId, activeProductLineScope.version)
     : null, [activeProductLineScope])

@@ -58,9 +58,9 @@ describe('task claim reconciliation helpers', () => {
       'racecraft-lab/Paddock.git',
       'racecraft-lab/mission/control',
       'racecraft-lab/',
-      '/mission-control',
-      'racecraft-lab/../mission-control',
-      'racecraft lab/mission-control',
+      '/paddock',
+      'racecraft-lab/../paddock',
+      'racecraft lab/paddock',
       'racecraft-lab/Paddock\n',
     ]) {
       expect(validateGitHubRepositoryFullName(value)).toBeNull()

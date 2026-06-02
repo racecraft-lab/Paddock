@@ -51,14 +51,14 @@
 ### Tests for User Story 1
 
 - [X] T012 [P] [US1] Add failing tests for closed owner enum validation, lifecycle status vocabulary, sandbox key shape, and safe read-model serialization in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
-- [X] T013 [P] [US1] Add failing tests for fake `mission_control`, `openclaw`, and `external_harness` owners exercising create, prepare, mark_running, mark_terminal, and cleanup without real launches in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
+- [X] T013 [P] [US1] Add failing tests for fake `paddock`, `openclaw`, and `external_harness` owners exercising create, prepare, mark_running, mark_terminal, and cleanup without real launches in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 - [X] T014 [P] [US1] Add failing tests proving fake owners do not import or call OpenClaw command runners, Codex/Claude/Hermes/OpenCode launch code, gateway launch, or adapter manifest code in `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 ### Implementation for User Story 1
 
 - [X] T015 [US1] Implement owner/status/event vocabularies, public types, and safe serialization helpers in `src/lib/agent-sandbox-lifecycle.ts`
 - [X] T016 [US1] Implement deterministic sandbox key construction and lifecycle read-model serialization in `src/lib/agent-sandbox-lifecycle.ts`
-- [X] T017 [US1] Implement production-code fake owners for `mission_control`, `openclaw`, and `external_harness` behind `FEATURE_AGENT_RUNNER_SANDBOXES` in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T017 [US1] Implement production-code fake owners for `paddock`, `openclaw`, and `external_harness` behind `FEATURE_AGENT_RUNNER_SANDBOXES` in `src/lib/agent-sandbox-lifecycle.ts`
 - [X] T018 [US1] Run focused US1 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 
 **Checkpoint**: User Story 1 is independently testable as the MVP.
@@ -103,7 +103,7 @@
 ### Implementation for User Story 3
 
 - [X] T029 [US3] Implement printable ASCII segment validation, Unicode/control/reserved-name rejection, segment length limits, and duplicate-normalization detection in `src/lib/agent-sandbox-lifecycle.ts`
-- [X] T030 [US3] Implement bounded root resolution for `<MISSION_CONTROL_DATA_DIR>/sandboxes` and reviewed per-workspace roots without persisting absolute paths in `src/lib/agent-sandbox-lifecycle.ts`
+- [X] T030 [US3] Implement bounded root resolution for `<PADDOCK_DATA_DIR>/sandboxes` and reviewed per-workspace roots without persisting absolute paths in `src/lib/agent-sandbox-lifecycle.ts`
 - [X] T031 [US3] Implement positive-allowlisted metadata validation and redaction helpers in `src/lib/agent-sandbox-lifecycle.ts`
 - [X] T032 [US3] Run focused US3 tests for `src/lib/__tests__/agent-sandbox-lifecycle.test.ts`
 

@@ -19,7 +19,7 @@
  *   earliest `prev_hash` matches the most-recently archived `curr_hash`
  *   and verifies the SHA-256 of the partition's row-content against the
  *   archive checksum. The retention/archive subsystem is not yet
- *   implemented (no `<MISSION_CONTROL_DATA_DIR>/archives/` writer ships
+ *   implemented (no `<PADDOCK_DATA_DIR>/archives/` writer ships
  *   today); the cross-check is wired as a graceful no-op that surfaces
  *   `archive_cross_check: 'no_archives'` rather than synthesizing a
  *   pass. Callers can still adopt the verifier safely; the archive arm
@@ -365,7 +365,7 @@ export function verifyChain(
  * lands, no archives exist on disk; we return `no_archives` so the
  * verifier surface is honest about coverage. Once the partition writer
  * ships, replace this body with the SHA-256 read of
- * `<MISSION_CONTROL_DATA_DIR>/archives/<partition>.checksum` and the
+ * `<PADDOCK_DATA_DIR>/archives/<partition>.checksum` and the
  * earliest-prev_hash assertion against the most-recent archived
  * curr_hash.
  *

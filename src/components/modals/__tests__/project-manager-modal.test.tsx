@@ -17,7 +17,7 @@
  *
  * Uses `@testing-library/react` against jsdom (vitest config). Network is
  * stubbed via `vi.stubGlobal('fetch', ...)`. The modal pulls workspace and
- * scope state from `useMissionControl` so we drive the test by setting store
+ * scope state from `usePaddock` so we drive the test by setting store
  * state directly. The banner condition is derived client-side via
  * `resolveFlag('FEATURE_AREA_LABEL_ROUTING', ...)` against the active
  * workspace's `feature_flags` blob.
@@ -25,7 +25,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ProjectManagerModal } from '../project-manager-modal'
-import { useMissionControl } from '../../../store'
+import { usePaddock } from '../../../store'
 import {
   createFacilityScope,
   createProductLineScope,
@@ -66,7 +66,7 @@ function setupStore(workspace: ProductLine): void {
   // The modal sources its `projects` array from a per-mount fetch, so we only
   // need workspace + scope state in the store. The fetch stub supplies the
   // project list verbatim.
-  useMissionControl.setState({
+  usePaddock.setState({
     workspaceSwitcherEnabled: true,
     workspaceListStatus: 'ready',
     workspaceScopeNotice: null,
@@ -105,7 +105,7 @@ const BANNER_TEXT =
 
 beforeEach(() => {
   // Reset store to a known empty baseline.
-  useMissionControl.setState({
+  usePaddock.setState({
     workspaceSwitcherEnabled: false,
     workspaceListStatus: 'idle',
     workspaceScopeNotice: null,

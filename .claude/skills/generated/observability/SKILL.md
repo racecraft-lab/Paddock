@@ -1,6 +1,6 @@
 ---
 name: observability
-description: "Skill for the Observability area of mission-control. 105 symbols across 26 files."
+description: "Skill for the Observability area of paddock. 105 symbols across 26 files."
 ---
 
 # Observability

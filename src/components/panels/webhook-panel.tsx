@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { useSmartPoll } from '@/lib/use-smart-poll'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 
 interface Webhook {
   id: number
@@ -62,7 +62,7 @@ const AVAILABLE_EVENTS = [
 
 export function WebhookPanel() {
   const t = useTranslations('webhooks')
-  const { dashboardMode } = useMissionControl()
+  const { dashboardMode } = usePaddock()
   const isLocalMode = dashboardMode === 'local'
   const [webhooks, setWebhooks] = useState<Webhook[]>([])
   const [webhookAutomations, setWebhookAutomations] = useState<SchedulerTask[]>([])

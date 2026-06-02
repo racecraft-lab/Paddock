@@ -1,5 +1,5 @@
 {
-  "name": "mission-control-manage",
+  "name": "paddock-manage",
   "version": "1.0.0",
   "description": "Manage a running Paddock instance — health checks, diagnostics, upgrades, backups",
   "author": "Builderz Labs",
@@ -16,5 +16,5 @@
       "description": "API key for authentication (x-api-key header)"
     }
   },
-  "tags": ["mission-control", "management", "health", "upgrade", "backup"]
+  "tags": ["paddock", "management", "health", "upgrade", "backup"]
 }

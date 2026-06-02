@@ -67,10 +67,10 @@ outside mocked fixtures.
 ## SPEC-009C2 Triage Handoff Proof
 
 - Apply or verify the current Paddock workflow contract before the
-  handoff. `mission-control_issue_triage` must expose disposition values
+  handoff. `paddock_issue_triage` must expose disposition values
   `ACTIONABLE_REMEDIATION`, `DUPLICATE`, `OBSOLETE`, `INVALID`,
   `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`; only
-  `ACTIONABLE_REMEDIATION` may route to `mission-control_remediation_plan`.
+  `ACTIONABLE_REMEDIATION` may route to `paddock_remediation_plan`.
 - For the fresh SPEC-009C2 synthetic issue, complete Issue Triage with:
 
   ```json
@@ -87,7 +87,7 @@ outside mocked fixtures.
   FROM tasks
   WHERE workspace_id = :workspace_id
     AND parent_task_id = :triage_task_id
-    AND workflow_template_slug = 'mission-control_remediation_plan';
+    AND workflow_template_slug = 'paddock_remediation_plan';
   ```
 
 - Verify durable task-scoped evidence exists:
@@ -131,7 +131,7 @@ outside mocked fixtures.
 ## SPEC-009C3 Ready For Owner Proof
 
 - Deterministic fixture validation is the required automated path. It must use
-  fixture PR identity on the PR-producing `mission-control_dev_implementation`
+  fixture PR identity on the PR-producing `paddock_dev_implementation`
   task and must not create, update, merge, or reconcile a real GitHub PR.
 - Verify the dev task owns `github_repo` and `github_pr_number`; root issue
   identity remains on the GitHub issue/root task evidence and is not duplicated
@@ -180,12 +180,12 @@ outside mocked fixtures.
 
 ### 2026-05-19 SPEC-009C3 UAT Run Evidence
 
-- Target: HAL `mission-control.service`, workspace `4`, deployed commit
+- Target: HAL `paddock.service`, workspace `4`, deployed commit
   `ac7760a222a33b4cefe886afae605238f479eaa5`; service remained `active`.
   Backup before smoke:
-  `mission-control-data/backups/mission-control.db.spec009c3-uat-20260519-195459.bak`.
+  `paddock-data/backups/paddock.db.spec009c3-uat-20260519-195459.bak`.
 - Contract: workspace `4` workflow-contract import/apply run `8` set
-  `mission-control_dev_implementation` to `produces_pr=1` and
+  `paddock_dev_implementation` to `produces_pr=1` and
   `external_terminal_event=github_pr_merged`.
 - Live draft PR: #49
   (`https://github.com/racecraft-lab/Paddock/pull/49`) was created as
@@ -267,7 +267,7 @@ alone.
   `spec-009c4-live-uat-20260520-011455`, head
   `6f92581f9f80f91ff5b280bdda8db999b8588e0c`, base `main`.
 - Linked task before `G_PILOT_MERGE`: workspace `1`, project `1`, task `1`,
-  workflow `mission-control_dev_implementation`, repo
+  workflow `paddock_dev_implementation`, repo
   `racecraft-lab/Paddock`, issue #50, PR #51, status
   `ready_for_owner`, `completed_at=null`, and one bounded
   `task_ready_for_owner` notification to `HAL`.
@@ -293,7 +293,7 @@ alone.
   count stayed bounded, and no successor child task was observed for task `1`.
 - Cleanup/export: pre-cleanup evidence was exported into this checklist before
   deletion. A temp DB file copy was retained at
-  `/private/tmp/mc-spec009c4-uat-20260520-011455/backups/mission-control.db.spec009c4-uat-20260520-011455.bak`;
+  `/private/tmp/mc-spec009c4-uat-20260520-011455/backups/paddock.db.spec009c4-uat-20260520-011455.bak`;
   row-count evidence was taken from the live temp DB connection before cleanup.
 - Cleanup result: temporary workspace residue was removed after evidence
   capture. Related rows went from tasks/notifications/activities/artifacts/
@@ -320,18 +320,18 @@ alone.
 
 ### 2026-05-20 SPEC-009C4 Target Deployment Closeout
 
-- Promotion: HAL `/home/fredrick-gabelmann/mission-control` fast-forwarded
+- Promotion: HAL `/home/fredrick-gabelmann/paddock` fast-forwarded
   `main` from SPEC-009C3 commit `ac7760a222a33b4cefe886afae605238f479eaa5`
   to SPEC-009C4 merge commit
   `ddc709f2f200a4ee4df51398d39ef42d85bd6e54`.
-- Build/restart: `pnpm build` passed on HAL, `mission-control.service`
+- Build/restart: `pnpm build` passed on HAL, `paddock.service`
   restarted successfully at `2026-05-20T02:54:14Z`, `/login` returned 200,
   unauthenticated `/api/status` returned 401, and authenticated `/api/status`
   returned 200 without printing or persisting the API key.
 - Backup before target replay:
-  `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec009c4-target-uat-20260520-025827.bak`.
-- Target replay scope: workspace `4` (`mission-control`), project `3` (`QA`),
-  workflow template `6` (`mission-control_dev_implementation`,
+  `/home/fredrick-gabelmann/paddock-data/backups/paddock.db.spec009c4-target-uat-20260520-025827.bak`.
+- Target replay scope: workspace `4` (`paddock`), project `3` (`QA`),
+  workflow template `6` (`paddock_dev_implementation`,
   `produces_pr=1`, `external_terminal_event=github_pr_merged`). The replay
   used retained external audit trail issue #50 / PR #51 instead of creating
   another empty PR/merge commit; the fresh-PR `G_PILOT_MERGE` requirement was
@@ -431,7 +431,7 @@ alone.
   15 source-map pointers, and all SPEC-013/SPEC-014 deferrals. The Markdown
   read named JSON artifact `#2` and linked issue #50 / PR #51.
 - Backup before cleanup:
-  `/private/tmp/mc-spec009d-uat-20260520-uat1/backups/mission-control.db.spec009d-uat-20260520-uat1.bak`.
+  `/private/tmp/mc-spec009d-uat-20260520-uat1/backups/paddock.db.spec009d-uat-20260520-uat1.bak`.
 - Cleanup result: disposable rows for tasks/artifacts/activities/
   notifications/quality-reviews/resource-policy-events/github-syncs/projects/
   workspaces went from `2/3/3/1/1/1/1/1/1` to `0/0/0/0/0/0/0/0/0`.
@@ -536,7 +536,7 @@ alone.
   `e63672bf`, final review hardening commit `f9295524`.
 - Post-merge closeout: PR #57 merged to `main` as
   `d396ed205b281d10a2b5cb95542209e816ebd95a` on 2026-05-22. Operator closeout
-  confirmed target deployment promotion, `PILOT_MISSION_CONTROL_E2E`
+  confirmed target deployment promotion, `PILOT_PADDOCK_E2E`
   target-scope validation, and HITL replay of the six non-remediation outcomes
   with no reported UAT defects.
 - UAT command:
@@ -593,18 +593,18 @@ alone.
 - Status: post-merge target UAT captured on HAL on 2026-05-27.
 - Merge and deployment: PR #62 merged to `main` as
   `5e61d0ffc02f9345b265cd5420660d02bf693016`; HAL live worktree
-  `/home/fredrick-gabelmann/mission-control` was fast-forwarded to that commit,
+  `/home/fredrick-gabelmann/paddock` was fast-forwarded to that commit,
   `pnpm install --frozen-lockfile` and `pnpm build` passed, standalone output
-  existed, `mission-control.service` restarted, `/login` returned HTTP 200, and
+  existed, `paddock.service` restarted, `/login` returned HTTP 200, and
   `openclaw-gateway.service` stayed active.
 - Live DB migration smoke: target DB
-  `/home/fredrick-gabelmann/mission-control-data/mission-control.db` contained
+  `/home/fredrick-gabelmann/paddock-data/paddock.db` contained
   `076_task_stage_attempts`, `077_github_sync_lifecycle`, and
   `078_task_stage_claims`; backup
-  `/home/fredrick-gabelmann/mission-control-data/backups/mission-control.db.spec013b-target-uat-20260527-175012.bak`
+  `/home/fredrick-gabelmann/paddock-data/backups/paddock.db.spec013b-target-uat-20260527-175012.bak`
   was created before replay.
 - UAT command used a temporary HAL Vitest harness under service-compatible Node:
-  `SPEC013B_UAT_DB=/home/fredrick-gabelmann/mission-control-data/mission-control.db PATH=/usr/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/bin /home/linuxbrew/.linuxbrew/bin/pnpm --dir /home/fredrick-gabelmann/mission-control exec vitest run src/lib/__tests__/spec-013b-hal-uat.test.ts --reporter=verbose`.
+  `SPEC013B_UAT_DB=/home/fredrick-gabelmann/paddock-data/paddock.db PATH=/usr/bin:/home/linuxbrew/.linuxbrew/bin:/usr/local/bin:/bin /home/linuxbrew/.linuxbrew/bin/pnpm --dir /home/fredrick-gabelmann/paddock exec vitest run src/lib/__tests__/spec-013b-hal-uat.test.ts --reporter=verbose`.
 - Replay id: `spec013b-hal-uat-2026-05-27T23-05-31-000Z`.
 - Acceptance evidence: first scheduler tick returned `claim_acquired`, second
   returned `duplicate_prevented`, launch handoff released with final active

@@ -13,7 +13,7 @@
  * Playwright restore the auth workspace without opening Docker-mounted
  * SQLite files from the host.
  *
- * Gated behind `MISSION_CONTROL_TEST_MODE=1` AND admin auth — this is
+ * Gated behind `PADDOCK_TEST_MODE=1` AND admin auth — this is
  * NOT a production-reachable surface.
  */
 

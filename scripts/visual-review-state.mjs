@@ -1,5 +1,5 @@
-export const VISUAL_REVIEW_SCHEMA = 'mission-control.visual-review-state.v1'
-export const VISUAL_REVIEW_COMMENT_MARKER = 'mission-control-visual-review-state:v1'
+export const VISUAL_REVIEW_SCHEMA = 'paddock.visual-review-state.v1'
+export const VISUAL_REVIEW_COMMENT_MARKER = 'paddock-visual-review-state:v1'
 export const VISUAL_REVIEW_STATUS_CONTEXT = 'visual-review-approval'
 export const DEFAULT_REQUIRED_VISUAL_SURFACES = ['playwright', 'storybook']
 export const DEFAULT_VISUAL_REVIEW_PATHS = [

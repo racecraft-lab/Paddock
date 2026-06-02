@@ -16,9 +16,9 @@ describe('workflow contract CLI arguments', () => {
   })
 
   it('accepts documented source and workspace aliases and rejects unknown flags', () => {
-    expect(parseWorkflowContractCliArgs(['import', '--source', 'docs/ai/workflows/mission-control', '--workspace', '2'])).toMatchObject({
+    expect(parseWorkflowContractCliArgs(['import', '--source', 'docs/ai/workflows/paddock', '--workspace', '2'])).toMatchObject({
       command: 'import',
-      file: 'docs/ai/workflows/mission-control/workflow-contract.yaml',
+      file: 'docs/ai/workflows/paddock/workflow-contract.yaml',
       workspaceId: 2,
     })
     expect(parseWorkflowContractCliArgs(['import', '--source', 'contract.yaml', '--workspace', '3', '--json'])).toMatchObject({
@@ -26,7 +26,7 @@ describe('workflow contract CLI arguments', () => {
       file: 'contract.yaml',
       workspaceId: 3,
     })
-    expect(parseWorkflowContractCliArgs(['recover', '--workspace', '1', '--family', 'mission-control', '--snapshot', 'latest'])).toMatchObject({
+    expect(parseWorkflowContractCliArgs(['recover', '--workspace', '1', '--family', 'paddock', '--snapshot', 'latest'])).toMatchObject({
       command: 'recover',
       workspaceId: 1,
     })

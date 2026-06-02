@@ -11,8 +11,8 @@
 set -e
 
 # Configuration
-MISSION_CONTROL_URL="${MISSION_CONTROL_URL:-http://localhost:3000}"
-LOG_DIR="${LOG_DIR:-$HOME/.mission-control/logs}"
+PADDOCK_URL="${PADDOCK_URL:-http://localhost:3000}"
+LOG_DIR="${LOG_DIR:-$HOME/.paddock/logs}"
 LOG_FILE="$LOG_DIR/agent-heartbeat-$(date +%Y-%m-%d).log"
 MAX_CONCURRENT=3  # Max agents to check concurrently
 OPENCLAW_CMD="${OPENCLAW_CMD:-openclaw}"
@@ -28,9 +28,9 @@ log() {
 }
 
 # Check if Paddock is running
-check_mission_control() {
-    if ! curl -s "$MISSION_CONTROL_URL/api/status" > /dev/null 2>&1; then
-        log "ERROR" "Paddock not accessible at $MISSION_CONTROL_URL"
+check_paddock() {
+    if ! curl -s "$PADDOCK_URL/api/status" > /dev/null 2>&1; then
+        log "ERROR" "Paddock not accessible at $PADDOCK_URL"
         return 1
     fi
     return 0
@@ -45,7 +45,7 @@ check_agent_heartbeat() {
     
     # Call heartbeat endpoint
     local response
-    response=$(curl -s -w "HTTP_STATUS:%{http_code}" "$MISSION_CONTROL_URL/api/agents/$agent_id/heartbeat" 2>/dev/null)
+    response=$(curl -s -w "HTTP_STATUS:%{http_code}" "$PADDOCK_URL/api/agents/$agent_id/heartbeat" 2>/dev/null)
     
     local http_code
     http_code=$(echo "$response" | grep -o "HTTP_STATUS:[0-9]*" | cut -d: -f2)
@@ -92,7 +92,7 @@ get_agent_session_key() {
     
     # Query agents API to get session key
     local agent_data
-    agent_data=$(curl -s "$MISSION_CONTROL_URL/api/agents?limit=100" 2>/dev/null | jq -r --arg name "$agent_name" '.agents[] | select(.name == $name) | .session_key' 2>/dev/null || echo "")
+    agent_data=$(curl -s "$PADDOCK_URL/api/agents?limit=100" 2>/dev/null | jq -r --arg name "$agent_name" '.agents[] | select(.name == $name) | .session_key' 2>/dev/null || echo "")
     
     echo "$agent_data"
 }
@@ -111,7 +111,7 @@ send_wake_notification() {
     wake_message+="Agent: $agent_name\n"
     wake_message+="Work items found: $work_items_count\n\n"
     wake_message+="🔔 You have notifications or tasks that need attention.\n"
-    wake_message+="Use Paddock to view details: $MISSION_CONTROL_URL\n\n"
+    wake_message+="Use Paddock to view details: $PADDOCK_URL\n\n"
     wake_message+="⏰ $(date '+%Y-%m-%d %H:%M:%S')"
     
     # Send via OpenClaw sessions_send
@@ -133,7 +133,7 @@ get_agents_to_check() {
     fi
     
     # Get all agents with session keys
-    curl -s "$MISSION_CONTROL_URL/api/agents?limit=100" 2>/dev/null | \
+    curl -s "$PADDOCK_URL/api/agents?limit=100" 2>/dev/null | \
         jq -r '.agents[] | select(.session_key != null and .session_key != "") | .name' 2>/dev/null || \
         echo ""
 }
@@ -145,7 +145,7 @@ main() {
     log "INFO" "Starting agent heartbeat check (PID: $$)"
     
     # Check if Paddock is running
-    if ! check_mission_control; then
+    if ! check_paddock; then
         log "ERROR" "Aborting: Paddock not accessible"
         exit 1
     fi
@@ -230,7 +230,7 @@ case "${1:-}" in
         echo "  --help, -h    Show this help message"
         echo ""
         echo "Environment variables:"
-        echo "  MISSION_CONTROL_URL  Paddock base URL (default: http://localhost:3005)"
+        echo "  PADDOCK_URL  Paddock base URL (default: http://localhost:3005)"
         echo ""
         exit 0
         ;;

@@ -3,7 +3,7 @@
 # SPEC-008 — Daily incremental backup of Paddock state (T203).
 #
 # Per FR-090g, FR-090k, FR-261, FR-263, FR-271. Captures:
-#   - SQLite DB (mission-control.db)
+#   - SQLite DB (paddock.db)
 #   - Archive partitions under <DATA_DIR>/archives
 #   - Filestorage WAL (FR-090g)
 #   - Encrypted secret material (encrypted-at-rest, key id captured)
@@ -14,14 +14,14 @@
 #   bash scripts/backup-mc-db.sh
 #
 # Env:
-#   MISSION_CONTROL_DATA_DIR   default: ./.data
+#   PADDOCK_DATA_DIR   default: ./.data
 #   MC_BACKUP_DEST             default: ./.backups
 #   MC_BACKUP_REMOTE_RSYNC_PATH (optional) — rsync target like
 #       host:/srv/mc-backups/
 #
 set -euo pipefail
 
-DATA_DIR="${MISSION_CONTROL_DATA_DIR:-./.data}"
+DATA_DIR="${PADDOCK_DATA_DIR:-./.data}"
 DEST="${MC_BACKUP_DEST:-./.backups}"
 TS="$(date -u +%Y%m%dT%H%M%SZ)"
 TARGET="${DEST}/${TS}"
@@ -34,12 +34,12 @@ fi
 mkdir -p "${TARGET}"
 
 # 1. SQLite DB — use sqlite3 .backup so the WAL is consistent.
-if [ -f "${DATA_DIR}/mission-control.db" ]; then
+if [ -f "${DATA_DIR}/paddock.db" ]; then
   if command -v sqlite3 >/dev/null 2>&1; then
-    sqlite3 "${DATA_DIR}/mission-control.db" \
-      ".backup '${TARGET}/mission-control.db'"
+    sqlite3 "${DATA_DIR}/paddock.db" \
+      ".backup '${TARGET}/paddock.db'"
   else
-    cp "${DATA_DIR}/mission-control.db" "${TARGET}/mission-control.db"
+    cp "${DATA_DIR}/paddock.db" "${TARGET}/paddock.db"
   fi
 fi
 
@@ -66,7 +66,7 @@ cat > "${TARGET}/manifest.json" <<JSON
   "timestamp": "${TS}",
   "data_dir": "${DATA_DIR}",
   "components": [
-    "mission-control.db",
+    "paddock.db",
     "archives",
     "filestorage",
     "secrets"

@@ -7,7 +7,7 @@ import { getDatabase, db_helpers } from '@/lib/db'
 /**
  * POST /api/hermes/events — Receive events from the Hermes Agent hook.
  *
- * The MC hook (installed at ~/.hermes/hooks/mission-control/) posts events
+ * The MC hook (installed at ~/.hermes/hooks/paddock/) posts events
  * here for: session:start, session:end, agent:start, agent:end.
  */
 export async function POST(request: NextRequest) {

@@ -389,7 +389,7 @@ Use `[Q<n>]` markers in spec.md to cross-reference design concept (e.g., `[Q17]`
 Re-read `docs/ai/specs/SPEC-008-design-concept.md` Q1-Q66 for design rationale.
 
 Key architectural separations:
-- Synchronous budget ledger (resource_budget_ledger + resource_budget_counters) is admission-control source-of-truth (Q17, Q27, Q35)
+- Synchronous budget ledger (resource_budget_ledger + resource_budget_counters) is adpaddock source-of-truth (Q17, Q27, Q35)
 - Eventually-consistent telemetry pipeline (raw_usage_events → canonical_usage_events via batched reconciler) writes correction entries to ledger (Q18, Q24, Q30)
 - Posted-effect tracking (canonical_budget_effects) ensures dedup/repair lifecycle without ledger history rewrites (Q30)
 - Foreground (50ms busy_timeout) / background (5s) / audit (30s) DB connections (Q29)

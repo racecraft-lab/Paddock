@@ -1,6 +1,6 @@
 export const WORKFLOW_CONTRACT_HASH_VERSION = 'workflow-contract-hash-v1'
-export const DEFAULT_WORKFLOW_CONTRACT_FAMILY = 'mission-control'
-export const DEFAULT_WORKFLOW_CONTRACT_EXPORT_PATH = 'docs/ai/workflows/mission-control/exports/workflow-contract.md'
+export const DEFAULT_WORKFLOW_CONTRACT_FAMILY = 'paddock'
+export const DEFAULT_WORKFLOW_CONTRACT_EXPORT_PATH = 'docs/ai/workflows/paddock/exports/workflow-contract.md'
 
 export type WorkflowContractMode = 'dry-run' | 'apply'
 export type WorkflowContractRunMode = 'import_dry_run' | 'import_apply' | 'export' | 'recover_dry_run' | 'recover_apply'

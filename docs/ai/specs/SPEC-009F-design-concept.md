@@ -132,14 +132,14 @@ stop_reason: "natural"
 
 **Branch:** Rollout scope
 
-**Recommended answer:** Use the existing `PILOT_MISSION_CONTROL_E2E` product-line scope for v1.
+**Recommended answer:** Use the existing `PILOT_PADDOCK_E2E` product-line scope for v1.
 > The behavior is recommendation-only and belongs to the Paddock workflow family. Avoiding a new flag reduces flag lifecycle overhead unless Clarify proves a separate flag is needed.
 
 **Alternatives offered:**
 - Add a dedicated flag such as `FEATURE_PRODUCTION_TRIAGE_ROUTING`.
 - No flag: enable recommendation lanes for all Issue Triage workflows once merged.
 
-**User's answer:** A - Use existing `PILOT_MISSION_CONTROL_E2E` product-line scope for v1.
+**User's answer:** A - Use existing `PILOT_PADDOCK_E2E` product-line scope for v1.
 
 ---
 
@@ -269,7 +269,7 @@ stop_reason: "natural"
 - **What:** Exact v1 response shape for `triage_routing` inside task evidence.
   **Why deferred:** Q6 chose the existing Evidence route/section, but field naming should align with SPEC-009E implementation details.
   **Suggested next step:** Resolve during Plan using `src/lib/task-evidence.ts` and `GET /api/tasks/[id]/evidence`.
-- **What:** Whether `PILOT_MISSION_CONTROL_E2E` alone is sufficient or a dedicated flag is needed.
+- **What:** Whether `PILOT_PADDOCK_E2E` alone is sufficient or a dedicated flag is needed.
   **Why deferred:** Q7 defaults to the existing pilot/product-line scope, but Clarify should verify operator rollout expectations.
   **Suggested next step:** Clarify before Plan; add a new flag only if concrete rollout evidence requires it.
 

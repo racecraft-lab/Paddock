@@ -186,7 +186,7 @@ const ALLOWED_PREFIXES = [
   'scripts/seed-e2e-spec-007.cjs',
   'scripts/e2e-docker.sh',
   'package.json',
-  '.github/workflows/mission-control-ui-e2e.yml',
+  '.github/workflows/paddock-ui-e2e.yml',
   '.github/workflows/visual-storybook.yml',
   // Spec workflow / docs prep files (no production code; FR-100 strict scope
   // intentionally targets `src/**` modules):

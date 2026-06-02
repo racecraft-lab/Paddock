@@ -573,7 +573,7 @@ function resolveDb(input: PublishArtifactInput): Database.Database {
 }
 
 function resolveDataDir(): string {
-  const env = process.env['MISSION_CONTROL_DATA_DIR']
+  const env = process.env['PADDOCK_DATA_DIR']
   if (typeof env === 'string' && env.length > 0) return env
   return join(cwd(), '.data')
 }

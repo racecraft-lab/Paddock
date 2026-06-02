@@ -8,8 +8,8 @@ describe('workflow contract exporter', () => {
   it('exports deterministic Markdown review output with stable hashes', () => {
     const db = makeWorkflowDb()
     importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
-    const first = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
-    const second = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
+    const first = exportWorkflowContractMarkdown(db, { family: 'paddock', workspaceId: 1 })
+    const second = exportWorkflowContractMarkdown(db, { family: 'paddock', workspaceId: 1 })
     expect(first.markdown).toBe(second.markdown)
     expect(first.markdown).toContain('workflow-contract-hash-v1:sha256:')
     expect(first.markdown).toContain('Paddock Intake')
@@ -21,7 +21,7 @@ describe('workflow contract exporter', () => {
       templates: [{ ...makeContract().templates[0]!, task_prompt: 'Use token sk-test-secret-value and password hunter2.' }],
     })
     importWorkflowContract(db, contract, { mode: 'apply', sourcePath: 'contract.yaml' })
-    const exportResult = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
+    const exportResult = exportWorkflowContractMarkdown(db, { family: 'paddock', workspaceId: 1 })
     expect(exportResult.markdown).not.toContain('sk-test-secret-value')
     expect(exportResult.markdown).not.toContain('hunter2')
   })
@@ -43,7 +43,7 @@ describe('workflow contract exporter', () => {
       }],
     })
     importWorkflowContract(db, contract, { mode: 'apply', sourcePath: 'contract.yaml' })
-    const exportResult = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
+    const exportResult = exportWorkflowContractMarkdown(db, { family: 'paddock', workspaceId: 1 })
     expect(exportResult.contract.templates[0]?.capabilities).toEqual(['code-edit', 'test-run'])
     expect(exportResult.contract.templates[0]?.governance).toEqual({ budget_policy: 'advisory' })
     expect(exportResult.contract_hash).toBe(computeContractHash(contract))
@@ -53,7 +53,7 @@ describe('workflow contract exporter', () => {
     const db = makeWorkflowDb()
     db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('manual', 'Manual Template', 'manual prompt', 'sonnet', 'system')
     importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
-    const exportResult = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
+    const exportResult = exportWorkflowContractMarkdown(db, { family: 'paddock', workspaceId: 1 })
     expect(exportResult.contract.templates.map(template => template.slug)).not.toContain('manual')
     expect(exportResult.markdown).not.toContain('Manual Template')
   })
@@ -63,7 +63,7 @@ describe('workflow contract exporter', () => {
     db.prepare('INSERT INTO workflow_templates (workspace_id, slug, name, task_prompt, model, created_by) VALUES (1, ?, ?, ?, ?, ?)').run('old-contract', 'Old Contract', 'old prompt', 'sonnet', 'workflow-contract')
     importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
 
-    const exportResult = exportWorkflowContractMarkdown(db, { family: 'mission-control', workspaceId: 1 })
+    const exportResult = exportWorkflowContractMarkdown(db, { family: 'paddock', workspaceId: 1 })
 
     expect(exportResult.contract.templates.map(template => template.slug)).toEqual(['intake'])
     expect(exportResult.markdown).not.toContain('Old Contract')
@@ -73,9 +73,9 @@ describe('workflow contract exporter', () => {
     const db = makeWorkflowDb()
     importWorkflowContract(db, makeContract(), { mode: 'apply', sourcePath: 'contract.yaml' })
     const exportResult = exportWorkflowContractMarkdown(db, {
-      family: 'mission-control',
+      family: 'paddock',
       workspaceId: 1,
-      exportPath: 'docs/ai/workflows/mission-control/exports/workflow-contract.md',
+      exportPath: 'docs/ai/workflows/paddock/exports/workflow-contract.md',
     })
 
     expect(db.prepare(`
@@ -86,7 +86,7 @@ describe('workflow contract exporter', () => {
       mode: 'export',
       status: 'success',
       mutation_status: 'not_mutated',
-      export_path: 'docs/ai/workflows/mission-control/exports/workflow-contract.md',
+      export_path: 'docs/ai/workflows/paddock/exports/workflow-contract.md',
       contract_hash: exportResult.contract_hash,
     })
   })

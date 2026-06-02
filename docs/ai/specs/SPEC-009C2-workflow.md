@@ -180,7 +180,7 @@ Prerequisite discovery on 2026-05-15:
   `specs/005-ready-for-owner`, `specs/007-disposition-artifacts`,
   `specs/008-resource-governance`,
   `specs/009a-workflow-contract-roundtrip`,
-  `specs/009b-mission-control-seed`, and
+  `specs/009b-paddock-seed`, and
   `specs/009c1-pilot-issue-ingest`.
 - Cleanup mode: provenance-only startup sweep. No spec folders were deleted or
   moved because this run did not complete a fresh archive operation for those
@@ -234,12 +234,12 @@ workflow diagnostics UI changes, run the focused Playwright target or
 | Dependencies | SPEC-009C1 |
 | Enables | SPEC-009C3 |
 | Priority | P0 |
-| Feature flag scope | `PILOT_MISSION_CONTROL_E2E` plus existing task-chain, disposition, artifact, and area-label flags where required |
+| Feature flag scope | `PILOT_PADDOCK_E2E` plus existing task-chain, disposition, artifact, and area-label flags where required |
 | Source PRD | `docs/rc-factory-v1-prd.md` |
 | Source Roadmap | `docs/ai/rc-factory-technical-roadmap.md` |
 | Design Concept | `docs/ai/specs/SPEC-009C2-design-concept.md` |
 | Runtime projection | Existing workflow-template task chain, task output validation, disposition logging, artifact store, and GitHub-linked pilot task identity |
-| Existing surfaces | `docs/ai/workflows/mission-control/workflow-contract.yaml`, `src/lib/task-dispatch.ts`, `src/lib/task-artifacts.ts`, `src/lib/task-create.ts`, `src/lib/pilot-issue-eligibility.ts`, `docs/qa/pilot-smoke-checklist.md` |
+| Existing surfaces | `docs/ai/workflows/paddock/workflow-contract.yaml`, `src/lib/task-dispatch.ts`, `src/lib/task-artifacts.ts`, `src/lib/task-create.ts`, `src/lib/pilot-issue-eligibility.ts`, `docs/qa/pilot-smoke-checklist.md` |
 | Strict Scope | Issue Triage schema/routing correction, actionable remediation-planning successor, disposition/artifact evidence, negative clean exits, and fresh synthetic UAT cleanup |
 
 ### Scope Summary
@@ -261,7 +261,7 @@ or SDD handoff, but it must not start that lane in this spec.
   `NEEDS_HUMAN`, `NEEDS_SPECIALIST`, and `NEEDS_SPEC`.
 - [x] The repo-owned Paddock workflow contract imports/exports with
   stable hashes and routes `ACTIONABLE_REMEDIATION` to
-  `mission-control_remediation_plan`.
+  `paddock_remediation_plan`.
 - [x] `ACTIONABLE_REMEDIATION` creates exactly one remediation-planning
   successor through `advanceTaskChain` or the existing task-chain helper path.
 - [x] Duplicate execution or rerun does not create a second remediation
@@ -306,7 +306,7 @@ Goals:
   from duplicate, obsolete, invalid, needs-human, needs-specialist, and
   `NEEDS_SPEC` outcomes.
 - Correct the repo-owned Paddock workflow contract so
-  `ACTIONABLE_REMEDIATION` routes to `mission-control_remediation_plan`.
+  `ACTIONABLE_REMEDIATION` routes to `paddock_remediation_plan`.
 - Reuse existing task-chain validation and successor creation; do not create a
   bespoke pilot handoff path.
 - Persist disposition, artifact, and activity evidence for actionable and
@@ -378,12 +378,12 @@ Focus on SPEC-009C2 disposition taxonomy:
 $speckit-clarify
 
 Focus on workflow-contract routing:
-- The exact `docs/ai/workflows/mission-control/workflow-contract.yaml` changes
+- The exact `docs/ai/workflows/paddock/workflow-contract.yaml` changes
   needed for Issue Triage output schema and routing rules.
 - How import/apply/export parity and prompt/schema/routing hashes prove the
   repo-owned contract remains canonical.
 - How to route `ACTIONABLE_REMEDIATION` to
-  `mission-control_remediation_plan` through the existing task-chain helper.
+  `paddock_remediation_plan` through the existing task-chain helper.
 ```
 
 #### Session 3: Evidence and No-Side-Effect Proof
@@ -432,7 +432,7 @@ Focus on roadmap alignment:
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
 | 1 | Disposition taxonomy | 1 | Uppercase pilot taxonomy accepted; SPEC-007 lowercase dispositions remain compatible for non-pilot templates |
-| 2 | Workflow contract and routing | 1 | Only `ACTIONABLE_REMEDIATION` routes to `mission-control_remediation_plan`; no static fallback for negatives |
+| 2 | Workflow contract and routing | 1 | Only `ACTIONABLE_REMEDIATION` routes to `paddock_remediation_plan`; no static fallback for negatives |
 | 3 | Evidence and no-side-effect proof | 1 | Evidence anchors to the triage task; activity checks must include `entity_type='task'` |
 | 4 | Live UAT and cleanup | 1 | Fresh SPEC-009C2 synthetic issue title pattern and cleanup expectations recorded |
 | 5 | Future production routing boundary | 1 | SPEC-009F and SPEC-013A1 remain future owners; C2 only records evidence |
@@ -461,7 +461,7 @@ $speckit-plan
 - Package manager: pnpm
 
 ## Existing Surfaces To Reuse
-- `docs/ai/workflows/mission-control/workflow-contract.yaml` for repo-owned
+- `docs/ai/workflows/paddock/workflow-contract.yaml` for repo-owned
   workflow-template prompt, schema, and routing contract.
 - `src/lib/workflow-contracts/*` and workflow-contract operator scripts for
   import/apply/export parity and hash evidence.
@@ -673,7 +673,7 @@ Focus on:
 3. Taxonomy consistency: triage enum casing/mapping must be explicit and must
    not conflict with existing SPEC-007 disposition logging behavior.
 4. Successor correctness: only `ACTIONABLE_REMEDIATION` may create
-   `mission-control_remediation_plan`, and it must do so through the existing
+   `paddock_remediation_plan`, and it must do so through the existing
    task-chain helper.
 5. Evidence correctness: actionable and negative outcomes must have durable
    disposition/artifact/activity evidence, with no false positives from
@@ -780,7 +780,7 @@ Implementation guardrails:
 ## Project Structure Reference
 
 ```text
-docs/ai/workflows/mission-control/workflow-contract.yaml   Repo-owned Paddock workflow contract
+docs/ai/workflows/paddock/workflow-contract.yaml   Repo-owned Paddock workflow contract
 src/lib/workflow-contracts/                                Contract import/apply/export and hash parity surfaces
 src/lib/task-dispatch.ts                                   Existing task-chain output validation, routing, successor creation, disposition insert
 src/lib/task-artifacts.ts                                  Existing task artifact publish/read/admin behavior

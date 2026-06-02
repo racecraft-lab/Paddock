@@ -39,6 +39,7 @@ const runtimeRoot = path.join(repoRoot, '.tmp', 'e2e-openclaw', mode)
 const dataDir = path.join(runtimeRoot, 'data')
 const openCodeDir = path.join(runtimeRoot, '.local', 'share', 'opencode')
 const openCodeDbPath = path.join(openCodeDir, 'opencode-e2e.db')
+const claudeProjectsDir = path.join(runtimeRoot, '.claude', 'projects')
 const mockBinDir = path.join(repoRoot, 'scripts', 'e2e-openclaw', 'bin')
 const skillsRoot = path.join(runtimeRoot, 'skills')
 
@@ -107,6 +108,7 @@ fs.rmSync(runtimeRoot, { recursive: true, force: true })
 fs.mkdirSync(runtimeRoot, { recursive: true })
 fs.mkdirSync(dataDir, { recursive: true })
 fs.mkdirSync(openCodeDir, { recursive: true })
+fs.mkdirSync(claudeProjectsDir, { recursive: true })
 fs.cpSync(fixtureSource, runtimeRoot, { recursive: true })
 
 const openCodeDb = new Database(openCodeDbPath)
@@ -214,10 +216,10 @@ const baseEnv = {
   AUTH_PASS: process.env.AUTH_PASS || 'admin',
   HOSTNAME: '127.0.0.1',
   PORT: '3005',
-  MISSION_CONTROL_TEST_MODE: process.env.MISSION_CONTROL_TEST_MODE || '1',
+  PADDOCK_TEST_MODE: process.env.PADDOCK_TEST_MODE || '1',
   MC_DISABLE_RATE_LIMIT: '1',
-  MISSION_CONTROL_DATA_DIR: dataDir,
-  MISSION_CONTROL_DB_PATH: path.join(dataDir, 'mission-control.db'),
+  PADDOCK_DATA_DIR: dataDir,
+  PADDOCK_DB_PATH: path.join(dataDir, 'paddock.db'),
   HOME: runtimeRoot,
   OPENCODE_DB_PATH: openCodeDbPath,
   OPENCLAW_STATE_DIR: runtimeRoot,

@@ -80,7 +80,7 @@ function createTaskDb(): Database.Database {
   `)
   db.prepare(`
     INSERT INTO projects (id, workspace_id, ticket_prefix, ticket_counter, github_repo, github_sync_enabled)
-    VALUES (10, 1, 'OPS', 4, 'racecraft/mission-control', 1)
+    VALUES (10, 1, 'OPS', 4, 'racecraft-lab/Paddock', 1)
   `).run()
   db.prepare('INSERT INTO users (username, display_name, workspace_id) VALUES (?, ?, ?)').run('operator', 'Operator', 1)
   db.prepare('INSERT INTO agents (name, role, config, workspace_id) VALUES (?, ?, ?, ?)').run('builder', 'coder', '{}', 1)
@@ -149,7 +149,7 @@ describe('createTask api source profile', () => {
       project_id: 10,
       workspace_id: 1,
       tags: ['task-pipeline'],
-      metadata: { implementation_repo: 'racecraft/mission-control' },
+      metadata: { implementation_repo: 'racecraft-lab/Paddock' },
     } as any)
 
     expect(result).toMatchObject({
@@ -166,7 +166,7 @@ describe('createTask api source profile', () => {
       project_ticket_no: 5,
       ticket_ref: 'OPS-005',
       tags: ['task-pipeline'],
-      metadata: { implementation_repo: 'racecraft/mission-control' },
+      metadata: { implementation_repo: 'racecraft-lab/Paddock' },
     })
     expect(result.raw).toBeUndefined()
 

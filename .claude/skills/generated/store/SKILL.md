@@ -1,6 +1,6 @@
 ---
 name: store
-description: "Skill for the Store area of mission-control. 29 symbols across 4 files."
+description: "Skill for the Store area of paddock. 29 symbols across 4 files."
 ---
 
 # Store

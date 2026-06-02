@@ -9,8 +9,8 @@ import {
   loginAsE2EAdmin,
 } from '../helpers'
 
-const E2E_DB_PATH = process.env.MISSION_CONTROL_DB_PATH ||
-  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const E2E_DB_PATH = process.env.PADDOCK_DB_PATH ||
+  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 const EVIDENCE_OUTPUT_DIR = path.join(process.cwd(), 'test-results', 'spec-009e-task-evidence')
 const SPEC_009E_MARKER = 'seeded by SPEC-009E task evidence e2e'
 const EVIDENCE_TITLES = {
@@ -173,7 +173,7 @@ function seedEvidenceRows(tasks: Record<keyof typeof EVIDENCE_TITLES, CreatedTas
 
     insertedActivityIds.push(Number(db.prepare(`
       INSERT INTO activities (type, entity_type, entity_id, actor, description, data, workspace_id, created_at)
-      VALUES ('task_ready_for_owner', 'task', ?, 'mission-control', 'Ready for owner after retained pilot smoke', ?, ?, ?)
+      VALUES ('task_ready_for_owner', 'task', ?, 'paddock', 'Ready for owner after retained pilot smoke', ?, ?, ?)
     `).run(tasks.eligible.id, JSON.stringify({ smoke_checklist: true, github_pr_number: 51 }), eligibleWorkspace, FIXTURE_NOW + 20).lastInsertRowid))
 
     if (tableExists(db, 'quality_reviews')) {

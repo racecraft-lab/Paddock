@@ -10,7 +10,7 @@ This guide walks operators through:
 ## Prerequisites
 
 - Paddock >= the SPEC-008 merge SHA.
-- `governance.json` present at `<MISSION_CONTROL_DATA_DIR>/governance.json`.
+- `governance.json` present at `<PADDOCK_DATA_DIR>/governance.json`.
   The default is auto-seeded from
   `src/lib/observability/governance.json.template`.
 - Migrations M65a..m + M66 complete (run `pnpm migrate` if unsure).

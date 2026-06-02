@@ -20,7 +20,7 @@ stop_reason: "natural"
 
 ## Goals
 
-- Make the SPEC-013C retry, release, and cancel API usable from the existing Mission Control task detail experience.
+- Make the SPEC-013C retry, release, and cancel API usable from the existing Paddock task detail experience.
 - Let operators discover claimed-stage state, available actions, unavailable reasons, backoff, last operator action, sanitized errors, and linked audit/debug evidence without terminal archaeology.
 - Use `GET /api/tasks/[id]/claim-reconciliation` and its `claim_control` field as the source of truth for UI eligibility and expected-state predicates.
 - Submit `POST /api/tasks/[id]/claim-control` mutations from accessible, confirmed, task-detail controls without recomputing scheduler or claim state in the client.

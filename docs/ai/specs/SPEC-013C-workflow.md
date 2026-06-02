@@ -720,9 +720,9 @@ Post-merge UAT:
 
 - PR #63 merged to `main` as `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89` on 2026-05-30T01:33:03Z.
 - HAL target deployment was promoted to `c01d9e44ec826d94fa5916284c51453e5ec339ee` on May 29, 2026 CDT after SPEC-014A also merged.
-- Deployment verification passed: `pnpm install --frozen-lockfile` was a lockfile no-op, `pnpm build` passed under Next.js 16.2.6, `mission-control.service` restarted and logged database migrations applied, `/login` returned HTTP `200`, and `openclaw-gateway.service` remained active.
+- Deployment verification passed: `pnpm install --frozen-lockfile` was a lockfile no-op, `pnpm build` passed under Next.js 16.2.6, `paddock.service` restarted and logged database migrations applied, `/login` returned HTTP `200`, and `openclaw-gateway.service` remained active.
 - Post-merge UAT replay `spec013c-014a-uat-1780110032087` passed for active release, cancel, retry, failed retry, backoff block, backoff override, idempotency replay, idempotency body mismatch, stale state, unauthenticated and viewer rejection, feature-flag-off rejection, read-model before/after evidence, and M79/M80 migration markers.
-- Cleanup verification passed: row counts returned to baseline, marker residue was `0` for workspaces/projects/tasks/users/sessions/claim-control/lifecycle tables/activities, no `spec013c-014a-uat-*` workspace rows remained, and no `/tmp/spec013c-014a-uat-*-mission-control.db.bak` files remained.
+- Cleanup verification passed: row counts returned to baseline, marker residue was `0` for workspaces/projects/tasks/users/sessions/claim-control/lifecycle tables/activities, no `spec013c-014a-uat-*` workspace rows remained, and no `/tmp/spec013c-014a-uat-*-paddock.db.bak` files remained.
 - UAT report: `specs/013c-retry-debug-surfaces/uat-report.md`.
 
 ### Post-Implementation Gate Evidence

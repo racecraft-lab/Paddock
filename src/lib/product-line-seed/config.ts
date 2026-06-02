@@ -172,8 +172,8 @@ function validateWorkflowContractDeclaration(
   errors: ProductLineSeedValidationError[],
 ): void {
   if (!isRecord(value)) return
-  if (value['family'] !== 'mission-control') {
-    errors.push(error('UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', '$.workflow_contract.family', 'SPEC-010A supports only the mission-control workflow contract family.'))
+  if (value['family'] !== 'paddock') {
+    errors.push(error('UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', '$.workflow_contract.family', 'SPEC-010A supports only the paddock workflow contract family.'))
     return
   }
   if (typeof value['path'] !== 'string') return
@@ -192,8 +192,8 @@ function validateWorkflowContractDeclaration(
     errors.push(error(code, '$.workflow_contract.path', message))
     return
   }
-  if (contract.family !== 'mission-control') {
-    errors.push(error('UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', '$.workflow_contract.family', 'Workflow contract file family must be mission-control.'))
+  if (contract.family !== 'paddock') {
+    errors.push(error('UNSUPPORTED_WORKFLOW_CONTRACT_FAMILY', '$.workflow_contract.family', 'Workflow contract file family must be paddock.'))
   }
   if (!Array.isArray(contract.templates)) {
     errors.push(error('WORKFLOW_CONTRACT_PARSE_FAILED', '$.workflow_contract.path', 'Workflow contract templates must be an array.'))

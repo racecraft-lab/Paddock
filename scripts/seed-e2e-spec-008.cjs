@@ -3,7 +3,7 @@
  * SPEC-008 — host-side e2e seeder.
  *
  * Mirrors `scripts/seed-e2e-spec-007.cjs`: opens the Docker-mounted
- * SQLite database (path supplied via `MISSION_CONTROL_DB_PATH`) and
+ * SQLite database (path supplied via `PADDOCK_DB_PATH`) and
  * provisions a baseline `spec-008-fixture` workspace + agents +
  * default WIP / budget / blackout / override policy rows + sample
  * dispositions/artifacts/dispatch+decision rows so the SPEC-008
@@ -19,9 +19,9 @@
 
 const Database = require('better-sqlite3')
 
-const dbPath = process.env.MISSION_CONTROL_DB_PATH
+const dbPath = process.env.PADDOCK_DB_PATH
 if (!dbPath) {
-  console.error('MISSION_CONTROL_DB_PATH is required')
+  console.error('PADDOCK_DB_PATH is required')
   process.exit(1)
 }
 

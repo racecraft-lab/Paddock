@@ -1,8 +1,8 @@
 import path from 'node:path'
 import Database from 'better-sqlite3'
 
-const E2E_DB_PATH = process.env['MISSION_CONTROL_DB_PATH'] ??
-  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'mission-control.db')
+const E2E_DB_PATH = process.env['PADDOCK_DB_PATH'] ??
+  path.join(process.cwd(), '.tmp', 'e2e-openclaw', 'local', 'data', 'paddock.db')
 
 export interface GitHubSyncLifecycleE2EState {
   workspaceId?: number

@@ -7,7 +7,7 @@
  *   1) Caller submits the new YAML body.
  *   2) Snapshot the existing config to `<DATA_DIR>/otelcol/config.yaml.<ts>.bak`.
  *   3) Atomic write to `<DATA_DIR>/otelcol/config.yaml` (write-to-temp + rename).
- *   4) Trigger `systemctl --user restart otelcol-mission-control` (override-able).
+ *   4) Trigger `systemctl --user restart otelcol-paddock` (override-able).
  *   5) Append a `governance_health_events` row recording the action.
  *
  * The restart command is replaced with a no-op in the test harness via
@@ -37,10 +37,10 @@ export const COMPONENT_TAG = 'collector_config';
 /** Restart hook signature. Tests pass a stub. */
 export type RestartHook = () => Promise<{ ok: boolean; detail?: string }>;
 
-/** Resolve `<DATA_DIR>` from `MISSION_CONTROL_DATA_DIR` env, falling back to `.data/`. */
+/** Resolve `<DATA_DIR>` from `PADDOCK_DATA_DIR` env, falling back to `.data/`. */
 export function resolveDataDir(envOverride?: string  ): string {
   if (envOverride !== undefined && envOverride !== '') return envOverride;
-  const env = process.env['MISSION_CONTROL_DATA_DIR'];
+  const env = process.env['PADDOCK_DATA_DIR'];
   if (typeof env === 'string' && env !== '') return env;
   return '.data';
 }
@@ -54,7 +54,7 @@ export function resolveConfigPath(opts: { dataDir?: string } = {}): string {
 /** Default restart hook — invokes systemctl. */
 async function defaultRestartHook(): Promise<{ ok: boolean; detail?: string }> {
   return new Promise((resolve) => {
-    const child = spawn('systemctl', ['--user', 'restart', 'otelcol-mission-control'], {
+    const child = spawn('systemctl', ['--user', 'restart', 'otelcol-paddock'], {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     let stderr = '';

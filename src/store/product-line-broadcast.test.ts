@@ -77,8 +77,8 @@ async function loadStore() {
   installLocalStorage()
   MockBroadcastChannel.instances = []
   installBroadcastChannel(MockBroadcastChannel)
-  const { useMissionControl } = await import('@/store')
-  useMissionControl.setState({
+  const { usePaddock } = await import('@/store')
+  usePaddock.setState({
     currentUser,
     workspaces: [],
     workspaceListStatus: 'idle',
@@ -96,8 +96,8 @@ async function loadStore() {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   })))
-  await useMissionControl.getState().fetchWorkspaces()
-  return useMissionControl
+  await usePaddock.getState().fetchWorkspaces()
+  return usePaddock
 }
 
 describe('Product Line scope BroadcastChannel sync', () => {
@@ -110,11 +110,11 @@ describe('Product Line scope BroadcastChannel sync', () => {
   })
 
   it('publishes scope changes and accepts newer same-tenant updates from another tab', async () => {
-    const useMissionControl = await loadStore()
+    const usePaddock = await loadStore()
     const channel = MockBroadcastChannel.instances[0]
     expect(channel?.name).toBe('mc:active-workspace')
 
-    useMissionControl.getState().setActiveProductLine(productLine, {
+    usePaddock.getState().setActiveProductLine(productLine, {
       source: 'user',
       version: 10,
     })
@@ -138,7 +138,7 @@ describe('Product Line scope BroadcastChannel sync', () => {
       },
     } as MessageEvent<ProductLineScopeMessage>)
 
-    expect(useMissionControl.getState().activeProductLineScope).toMatchObject({
+    expect(usePaddock.getState().activeProductLineScope).toMatchObject({
       kind: 'facility',
       tenantId: 7,
       version: 11,
@@ -146,9 +146,9 @@ describe('Product Line scope BroadcastChannel sync', () => {
   })
 
   it('rejects stale, wrong-tenant, and wrong-user broadcast updates', async () => {
-    const useMissionControl = await loadStore()
+    const usePaddock = await loadStore()
     const channel = MockBroadcastChannel.instances[0]
-    useMissionControl.getState().setActiveProductLine(productLine, {
+    usePaddock.getState().setActiveProductLine(productLine, {
       source: 'user',
       version: 20,
       broadcast: false,
@@ -168,7 +168,7 @@ describe('Product Line scope BroadcastChannel sync', () => {
       } as MessageEvent<ProductLineScopeMessage>)
     }
 
-    expect(useMissionControl.getState().activeProductLineScope).toMatchObject({
+    expect(usePaddock.getState().activeProductLineScope).toMatchObject({
       kind: 'productLine',
       productLineId: 42,
       version: 20,
@@ -184,8 +184,8 @@ describe('Product Line scope BroadcastChannel sync', () => {
       }
     })
 
-    const { useMissionControl } = await import('@/store')
-    useMissionControl.setState({
+    const { usePaddock } = await import('@/store')
+    usePaddock.setState({
       currentUser,
       workspaces: [],
       workspaceListStatus: 'idle',
@@ -204,9 +204,9 @@ describe('Product Line scope BroadcastChannel sync', () => {
       headers: { 'Content-Type': 'application/json' },
     })))
 
-    await expect(useMissionControl.getState().fetchWorkspaces()).resolves.toBeUndefined()
-    expect(() => useMissionControl.getState().setActiveProductLine(productLine, { source: 'user' })).not.toThrow()
-    expect(useMissionControl.getState().activeProductLineScope).toMatchObject({
+    await expect(usePaddock.getState().fetchWorkspaces()).resolves.toBeUndefined()
+    expect(() => usePaddock.getState().setActiveProductLine(productLine, { source: 'user' })).not.toThrow()
+    expect(usePaddock.getState().activeProductLineScope).toMatchObject({
       kind: 'productLine',
       productLineId: 42,
     })

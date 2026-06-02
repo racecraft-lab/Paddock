@@ -15,8 +15,8 @@
 #   - state='install_succeeded'  with metric_json={version, verification, sha256}
 #   - state='install_failed'     with metric_json={detail}
 #
-# DB path is resolved from `MISSION_CONTROL_DATA_DIR/mission-control.db`
-# (default `.data/mission-control.db`).
+# DB path is resolved from `PADDOCK_DATA_DIR/paddock.db`
+# (default `.data/paddock.db`).
 #
 # This is a deploy-host script. Not test-runnable in CI. Run on a real
 # host with internet access to the upstream OTel collector release page.
@@ -31,8 +31,8 @@ OTELCOL_BIN_DIR="${HOME}/.local/bin"
 OTELCOL_BIN_PATH="${OTELCOL_BIN_DIR}/otelcol-contrib"
 RELEASE_BASE="https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/v${OTELCOL_VERSION}"
 
-DATA_DIR="${MISSION_CONTROL_DATA_DIR:-.data}"
-DB_PATH="${DATA_DIR}/mission-control.db"
+DATA_DIR="${PADDOCK_DATA_DIR:-.data}"
+DB_PATH="${DATA_DIR}/paddock.db"
 
 UNAME_S="$(uname -s | tr '[:upper:]' '[:lower:]')"
 UNAME_M="$(uname -m)"

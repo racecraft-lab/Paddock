@@ -12,7 +12,7 @@ function resolveMetadataBase(): URL {
     process.env.NEXT_PUBLIC_APP_URL,
     process.env.MC_PUBLIC_BASE_URL,
     process.env.APP_URL,
-    process.env.MISSION_CONTROL_PUBLIC_URL,
+    process.env.PADDOCK_PUBLIC_URL,
   ]
     .map((value) => String(value || '').trim())
     .filter(Boolean)

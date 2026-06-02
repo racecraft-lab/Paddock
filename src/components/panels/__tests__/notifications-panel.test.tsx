@@ -15,7 +15,7 @@ vi.mock('next-intl', () => ({
 }))
 
 vi.mock('@/store', () => ({
-  useMissionControl: () => ({ activeProductLineScope: null }),
+  usePaddock: () => ({ activeProductLineScope: null }),
 }))
 
 vi.mock('@/lib/use-smart-poll', () => ({

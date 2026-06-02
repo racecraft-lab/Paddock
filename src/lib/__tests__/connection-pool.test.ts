@@ -40,12 +40,12 @@ let tempDir: string;
  * Each test gets a fresh temp directory and a fresh module import. The
  * connection-pool module is stateful (singleton connections), so we
  * reset state via `closeAllConnections()` and the env-var resolution
- * happens at import time so we set MISSION_CONTROL_DB_PATH before import.
+ * happens at import time so we set PADDOCK_DB_PATH before import.
  */
 beforeEach(() => {
   tempDir = mkdtempSync(join(tmpdir(), 'spec-008-connpool-'));
-  process.env.MISSION_CONTROL_DATA_DIR = tempDir;
-  process.env.MISSION_CONTROL_DB_PATH = join(tempDir, 'mission-control.db');
+  process.env.PADDOCK_DATA_DIR = tempDir;
+  process.env.PADDOCK_DB_PATH = join(tempDir, 'paddock.db');
 });
 
 afterEach(async () => {
@@ -55,8 +55,8 @@ afterEach(async () => {
   } catch {
     // ignore — module may not have loaded
   }
-  delete process.env.MISSION_CONTROL_DATA_DIR;
-  delete process.env.MISSION_CONTROL_DB_PATH;
+  delete process.env.PADDOCK_DATA_DIR;
+  delete process.env.PADDOCK_DB_PATH;
   rmSync(tempDir, { recursive: true, force: true });
 });
 

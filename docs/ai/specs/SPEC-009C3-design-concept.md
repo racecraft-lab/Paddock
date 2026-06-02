@@ -21,7 +21,7 @@ stop_reason: "natural"
 ## Goals
 
 - Execute the Paddock Issue Remediation chain from remediation planning through dev implementation, review, Aegis approval, and the `ready_for_owner` gate.
-- Keep the PR-producing `mission-control_dev_implementation` task as the linked PR owner and final `ready_for_owner` task for SPEC-009C4 reconciliation.
+- Keep the PR-producing `paddock_dev_implementation` task as the linked PR owner and final `ready_for_owner` task for SPEC-009C4 reconciliation.
 - Prove review and Aegis gates are meaningful: `fix` and `rejected` outcomes must loop or block before owner/Aegis readiness, not silently advance.
 - Preserve existing workflow slugs for seeded-contract compatibility while fixing labels, prompts, or copy only where nomenclature misleads stage ownership.
 - Persist stage-scoped plan, dev verification, review verdict, and Aegis approval artifacts tied to both the PR-producing dev task and the root GitHub issue.
@@ -58,11 +58,11 @@ stop_reason: "natural"
 
 **Branch:** PR and status ownership
 
-**Recommended answer:** The `mission-control_dev_implementation` task owns the linked PR and is moved to `ready_for_owner` after review/Aegis approval.
+**Recommended answer:** The `paddock_dev_implementation` task owns the linked PR and is moved to `ready_for_owner` after review/Aegis approval.
 > It is the PR-producing stage in the existing workflow contract, so owner merge evidence has a concrete PR task to reconcile in SPEC-009C4.
 
 **Alternatives offered:**
-- The `mission-control_owner_review` task becomes `ready_for_owner`: matches the stage name, but is not currently the PR-producing implementation task.
+- The `paddock_owner_review` task becomes `ready_for_owner`: matches the stage name, but is not currently the PR-producing implementation task.
 - The root GitHub issue task becomes `ready_for_owner`: operator-friendly at the top level, but blurs tracker truth and stage ownership.
 
 **User's answer:** Option A, with the caveat that nomenclature should be fixed up if current wording misleads ownership, without forcing unnecessary renames.
@@ -107,7 +107,7 @@ stop_reason: "natural"
 > This matches current code and keeps runner/claim authority deferred.
 
 **Alternatives offered:**
-- Treat the `mission-control_aegis` workflow successor output as the sole proof: cleaner workflow-chain abstraction, but may not exercise the existing `quality_reviews` gate that moves PR-producing work to `ready_for_owner`.
+- Treat the `paddock_aegis` workflow successor output as the sole proof: cleaner workflow-chain abstraction, but may not exercise the existing `quality_reviews` gate that moves PR-producing work to `ready_for_owner`.
 - Add a pilot-only Aegis evidence artifact: more explicit for review packets, but risks duplicating `quality_reviews` and artifact evidence prematurely.
 
 **User's answer:** Option A, and make sure future roadmap specs cover remaining governance work.

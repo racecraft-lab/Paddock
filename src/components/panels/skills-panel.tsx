@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslations } from 'next-intl'
-import { useMissionControl } from '@/store'
+import { usePaddock } from '@/store'
 import { Button } from '@/components/ui/button'
 
 interface SkillSummary {
@@ -70,7 +70,7 @@ function getSourceLabel(source: string): string {
 
 export function SkillsPanel() {
   const t = useTranslations('skills')
-  const { dashboardMode, skillsList, skillGroups, skillsTotal, setSkillsData } = useMissionControl()
+  const { dashboardMode, skillsList, skillGroups, skillsTotal, setSkillsData } = usePaddock()
   const [loading, setLoading] = useState(skillsList === null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
