@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 
+const fs = require('node:fs')
 const path = require('node:path')
 const { createHash, randomBytes } = require('node:crypto')
 
-const DB_PATH = process.env.PADDOCK_DB_PATH || '/home/fredrick-gabelmann/paddock-data/paddock.db'
-const APP_ROOT = process.env.PADDOCK_APP_ROOT || '/home/fredrick-gabelmann/paddock'
+const APP_ROOT = resolveAppRoot()
+const DB_PATH = resolveDbPath()
 const BASE_URL = process.env.PADDOCK_BASE_URL || 'http://127.0.0.1:3000'
-const Database = require(path.join(APP_ROOT, 'node_modules/better-sqlite3'))
+const Database = loadDatabase(APP_ROOT)
 const STAGE_KEY = 'assigned_dispatch'
-const RUN_ID = process.env.SPEC_013D_UAT_RUN_ID || new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14)
+const RUN_ID = resolveRunId()
 const MARKER = `SPEC-013D-HAL-UAT-${RUN_ID}`
 const NOW = Math.floor(Date.now() / 1000)
 const NOW_ISO = new Date().toISOString()
@@ -24,6 +25,59 @@ const scenarios = [
 
 function log(event, fields = {}) {
   console.log(JSON.stringify({ event, ...fields }))
+}
+
+function trimEnv(name) {
+  const value = process.env[name]
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : null
+}
+
+function resolveAppRoot() {
+  return path.resolve(trimEnv('PADDOCK_APP_ROOT') || process.cwd())
+}
+
+function resolveDbPath() {
+  const explicitDbPath = trimEnv('PADDOCK_DB_PATH')
+  const dataDir = trimEnv('PADDOCK_DATA_DIR')
+  const dbPath = explicitDbPath
+    ? path.resolve(explicitDbPath)
+    : dataDir
+      ? path.resolve(dataDir, 'paddock.db')
+      : null
+  if (!dbPath) {
+    throw new Error('PADDOCK_DB_PATH or PADDOCK_DATA_DIR is required for SPEC-013D HAL target UAT')
+  }
+  if (!fs.existsSync(dbPath)) {
+    throw new Error(`Paddock database not found at ${dbPath}`)
+  }
+  return dbPath
+}
+
+function loadDatabase(appRoot) {
+  const modulePath = path.join(appRoot, 'node_modules/better-sqlite3')
+  try {
+    return require(modulePath)
+  } catch (error) {
+    throw new Error(`Unable to load better-sqlite3 from ${modulePath}; run from the Paddock repo root or set PADDOCK_APP_ROOT. ${error.message}`)
+  }
+}
+
+function generatedRunId() {
+  const timestamp = new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 17)
+  return `${timestamp}-${randomBytes(3).toString('hex')}`
+}
+
+function resolveRunId() {
+  const rawRunId = trimEnv('SPEC_013D_UAT_RUN_ID') || generatedRunId()
+  const runId = rawRunId
+    .replace(/[^A-Za-z0-9_-]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 64)
+  if (!runId) {
+    throw new Error('SPEC_013D_UAT_RUN_ID must contain at least one alphanumeric, underscore, or hyphen character')
+  }
+  return runId
 }
 
 function tableExists(db, tableName) {
