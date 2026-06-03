@@ -21,6 +21,8 @@ interface BreakerStateRow {
   manually_reset_at: string | null;
 }
 
+const RUNBOOK_BASE_URL = 'https://github.com/racecraft-lab/Paddock/blob/main/docs/runbook';
+
 function jsonError(status: number, code: string, detail: string): NextResponse {
   return NextResponse.json({ code, detail }, { status });
 }
@@ -47,7 +49,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         title: 'Evaluator',
         severity: breaker?.state === 'open' ? 'red' : breaker?.state === 'half_open' ? 'amber' : 'green',
         summary: breaker?.state ?? 'closed',
-        runbook_link: '/docs/runbook/breaker-stuck-open.md',
+        runbook_link: `${RUNBOOK_BASE_URL}/breaker-stuck-open.md`,
       },
       {
         title: 'Reconciler',
@@ -63,9 +65,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({
       cards,
       runbook_links: [
-        { id: 'breaker', href: '/docs/runbook/breaker-stuck-open.md' },
-        { id: 'counter', href: '/docs/runbook/counter-drift.md' },
-        { id: 'collector', href: '/docs/runbook/collector-outage.md' },
+        { id: 'breaker', href: `${RUNBOOK_BASE_URL}/breaker-stuck-open.md` },
+        { id: 'counter', href: `${RUNBOOK_BASE_URL}/counter-drift.md` },
+        { id: 'collector', href: `${RUNBOOK_BASE_URL}/collector-outage.md` },
       ],
       recovery_affordances: [
         { id: 'breaker_reset', label: 'Reset breaker', endpoint: '/api/governance/breaker/reset' },

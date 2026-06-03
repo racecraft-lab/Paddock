@@ -17,7 +17,7 @@ export const Default: Story = {
       <>
         <SystemHealthCard title="Evaluator" severity="green" metric="120 ms p95" summary="Within budget" />
         <SystemHealthCard title="Reconciler" severity="amber" metric="lag 4m" summary="Catching up" />
-        <SystemHealthCard title="Breaker" severity="red" metric="open" summary="2 incidents in last hour" runbookHref="/docs/runbook/breaker-stuck-open.md" />
+        <SystemHealthCard title="Breaker" severity="red" metric="open" summary="2 incidents in last hour" runbookHref="https://github.com/racecraft-lab/Paddock/blob/main/docs/runbook/breaker-stuck-open.md" />
       </>
     ),
   },

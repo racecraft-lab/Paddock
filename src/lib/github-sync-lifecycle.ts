@@ -14,6 +14,7 @@ import {
 } from './github-sync-lifecycle-types'
 import type Database from 'better-sqlite3'
 
+const RUNBOOK_BASE_URL = 'https://github.com/racecraft-lab/Paddock/blob/main/docs/runbook'
 
 interface ControlRow {
   workspace_id: number
@@ -758,7 +759,7 @@ function placeholderHealth(now: number): LifecycleHealthSummary {
     source_updated_at: toIso(now) ?? new Date(0).toISOString(),
     state_drivers: [],
     manual_fallback_available: true,
-    runbook_links: [{ id: 'github_sync_lifecycle', href: '/docs/runbook/migration-rollback.md' }],
+    runbook_links: [{ id: 'github_sync_lifecycle', href: `${RUNBOOK_BASE_URL}/migration-rollback.md` }],
     recovery_affordances: [
       { id: 'manual_sync', endpoint: '/api/github/sync' },
       { id: 'reset_backoff', endpoint: '/api/github/sync/control' },
