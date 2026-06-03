@@ -117,7 +117,7 @@ claude mcp add paddock -- node /path/to/Paddock/scripts/mc-mcp-server.cjs
 # Environment config:
 MC_URL=http://127.0.0.1:3000 MC_API_KEY=<key>
 ```
-35 tools: agents, tasks, sessions, memory, soul, comments, tokens, skills, cron, status.
+49 tools: agents, tasks, sessions, memory, soul, comments, tokens, skills, cron, status, runs, knowledge, and evals.
 See `docs/cli-agent-control.md` for full tool list.
 
 ### CLI
@@ -152,7 +152,7 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite via `better-sqlite3`. Single-process synchronous transactions through `db.transaction(() => { ... })()`. No new migrations -- relies on pre-existing M054, M057, M058. WAL mode preserves snapshot-isolated reads during the supersede transaction. (007-disposition-artifacts)
 - TypeScript 5.7 strict (existing `tsconfig.json`) + new entries in `tsconfig.spec-strict.json` for every SPEC-008-owned module (Constitution Convention J). (008-resource-governance)
 - SQLite via `better-sqlite3`, single-process, append-only ledger semantics; monthly partition tables; archive partitions written to `<PADDOCK_DATA_DIR>/archives/`. (008-resource-governance)
-- TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application + Next.js, React, Zustand, Tailwind CSS 3, `better-sqlite3`, existing direct `ajv@8.18.0`, exact direct `yaml@2.8.2` for SPEC-009A contract loading (009a-workflow-contract-roundtrip)
+- TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application + Next.js, React, Zustand, Tailwind CSS 3, `better-sqlite3`, existing direct `ajv@8.18.0`, exact direct `yaml@2.8.3` for SPEC-009A contract loading (009a-workflow-contract-roundtrip)
 - SQLite via `better-sqlite3`; existing `workflow_templates` runtime projection plus additive generic diagnostics tables in migration `071_workflow_contract_diagnostics` (009a-workflow-contract-roundtrip)
 - TypeScript 5.7 strict on Node >=22 with Next.js 16 App Router and React 19 + Existing Next.js/React/Zustand stack, `better-sqlite3`, SPEC-009A `src/lib/workflow-contracts/*`, existing feature-flag and governance modules; no new runtime dependency (009b-paddock-seed)
 - SQLite through `better-sqlite3`; existing `workspaces`, `projects`, `project_agent_assignments`, `tasks`, `workflow_templates`, `resource_policies`, `resource_policy_events`, and workflow-contract diagnostics tables (009b-paddock-seed)
@@ -172,7 +172,7 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - Checked-in JSON, JSON Schema, Markdown docs, and fixture files under `docs/ai/`, root `AGENTS.md`, `scripts/spec-012a/`, and `specs/012a-repo-knowledge-index/` (012a-repo-knowledge-index)
 - TypeScript 5.7 strict in a Next.js 16 App Router / React 19 application on Node >=22 + Existing Next.js, React, Zustand where already used, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright; no new runtime dependency (009f-production-triage-routing)
 - Existing SQLite tables through `better-sqlite3`: `tasks`, `workflow_templates`, `task_dispositions`, `task_artifacts`, `activities`, `projects`, `project_agent_assignments`, and `agents`; no migration (009f-production-triage-routing)
-- TypeScript 5.7 strict on Node.js >=22 in the existing Next.js 16 / React 19 repository baseline + Existing Next.js/React/Zustand stack, `better-sqlite3`, direct `yaml@2.8.2`, existing workflow-contract tooling, existing feature-flag registry; no new runtime dependency (010a-generic-product-line-seeder)
+- TypeScript 5.7 strict on Node.js >=22 in the existing Next.js 16 / React 19 repository baseline + Existing Next.js/React/Zustand stack, `better-sqlite3`, direct `yaml@2.8.3`, existing workflow-contract tooling, existing feature-flag registry; no new runtime dependency (010a-generic-product-line-seeder)
 - SQLite through `better-sqlite3`; existing `workspaces`, `projects`, `project_agent_assignments`, `workflow_templates`, `workflow_contract_*`, `resource_policies`, task/history/evidence/GitHub sync tables; no migration (010a-generic-product-line-seeder)
 - TypeScript 5.7 strict on Node >=22 in Next.js 16 App Router / React 19 + Existing Next.js, React, Zustand where current task detail patterns require it, `better-sqlite3`, Tailwind CSS 3, Vitest, Playwright; no new runtime dependency (013a-run-state-spine)
 - SQLite through `src/lib/migrations.ts`; additive migration `076_task_stage_attempts` plus manual rollback `docs/migrations/rollback-M76.sql` (013a-run-state-spine)

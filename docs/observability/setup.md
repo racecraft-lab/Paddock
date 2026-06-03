@@ -40,19 +40,23 @@ curl "$MC_URL/api/feature-flags?workspace_id=<id>" \
 
 The OTLP receiver lives at `POST /api/otlp/v1/{traces|metrics}`.
 
-Auth: bearer-token check against `agent_api_keys` rows scoped
-`role='collector'`. Body cap: 4 MiB per request.
+Auth: bearer-token/session check with at least operator role. Body caps:
+256 KiB compressed request body and 1 MiB decompressed payload.
 
 Test ingest with a curl POST:
 
 ```bash
 curl -X POST "$MC_URL/api/otlp/v1/metrics" \
-  -H "Authorization: Bearer $COLLECTOR_API_KEY" \
+  -H "Authorization: Bearer $ADMIN_API_KEY" \
   -H "Content-Type: application/x-protobuf" \
   --data-binary "@.data/test/sample-metric.bin"
 ```
 
-Expect `204 No Content` on success.
+Current decoder status: `@opentelemetry/otlp-transformer` is not installed,
+so authenticated protobuf requests return `503 decoder_unavailable` until the
+stub in `src/lib/observability/otlp-decoder.ts` is replaced. After the decoder
+lands, expect the receiver to return an OTLP partial-success JSON body with
+HTTP 200 on accepted payloads.
 
 The receiver implementation lives in
 `src/lib/observability/otlp-receiver.ts`, with route handlers under

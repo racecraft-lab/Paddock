@@ -50,8 +50,8 @@ red after activation.
 
 **Symptom**: Receiver returns 413.
 
-**Cause**: Body > 4 MiB. Configure the collector's batch size via
-`otelcol-contrib` config:
+**Cause**: Compressed body > 256 KiB or decompressed body > 1 MiB. Configure
+the collector's batch size via `otelcol-contrib` config:
 
 ```yaml
 exporters:
