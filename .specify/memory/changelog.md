@@ -519,6 +519,110 @@ git show a3a79250bc0fa8ac79d36a787f8119d1add62678:specs/013a-run-state-spine/tas
 
 ---
 
+<!-- Archive extension manual execution metadata -->
+<!-- archiveMode: merged-spec batch | dryRun: false | applyCleanupRequested: false | safeToApplyCleanup: false -->
+<!-- Branch: detached origin/main at cb2be467673317376c8a0db2a8b0509023760b997 | Run: 2026-06-02 | archiveExtension: 1.1.0 -->
+<!-- Prerequisite result: .specify/scripts/bash/check-prerequisites.sh --json --paths-only rejected the detached HEAD as not a feature branch. Cleanup was not requested and source folders were retained for a reviewed safe-base cleanup run. -->
+
+## SPEC-013A1: GitHub Sync Automation and Poller Lifecycle
+
+- **Feature**: RC Factory Phase 11A1 - GitHub sync automation, lifecycle visibility, and poller controls
+- **Branch**: `013a1-github-sync-automation`
+- **Spec Path**: `specs/013a1-github-sync-automation/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/60
+- **Merge Commit**: `41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca`
+- **Follow-up PR**: https://github.com/racecraft-lab/Paddock/pull/61 (`5c15f02f368a2f8db01adf64936c96f3c3173873`)
+- **Tree Reference**: `git show 41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca:specs/013a1-github-sync-automation/spec.md`
+- **CI URL**: N/A (workflow records quality/visual gates and local verification)
+- **Argos URL**: N/A (visual approval gates passed through the PR workflow)
+- **Task Completion**: 72/72
+- **Summary**: Added automatic GitHub sync polling lifecycle records, status visibility, disable behavior, manual sync fallback, duplicate-ingestion safety, and operator-confirmed post-merge HITL UAT on 2026-05-27. The scope remains GitHub sync automation only; claim authority, retry/debug API, sandbox lifecycle, harness adapters, and auto-merge behavior stay deferred.
+
+**Recovery Commands**:
+```text
+git show 41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca:specs/013a1-github-sync-automation/spec.md
+git show 41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca:specs/013a1-github-sync-automation/plan.md
+git show 41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca:specs/013a1-github-sync-automation/tasks.md
+git show 41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca:specs/013a1-github-sync-automation/retrospective.md
+git show 41e9df68afb7bbb2b536dd5e9a4ed04f7ead47ca:specs/013a1-github-sync-automation/verify-tasks-report.md
+```
+
+---
+
+## SPEC-013B: Claim and Reconciliation Authority
+
+- **Feature**: RC Factory Phase 11B - claim ownership, launch reconciliation, duplicate prevention, and terminal release
+- **Branch**: `013b-claim-reconciliation`
+- **Spec Path**: `specs/013b-claim-reconciliation/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/62
+- **Merge Commit**: `5e61d0ffc02f9345b265cd5420660d02bf693016`
+- **Tree Reference**: `git show 5e61d0ffc02f9345b265cd5420660d02bf693016:specs/013b-claim-reconciliation/spec.md`
+- **CI URL**: N/A (workflow records local, CI, and HAL target UAT evidence)
+- **Argos URL**: N/A
+- **Task Completion**: 57/57
+- **Summary**: Added the claim/reconciliation authority tables, launch claim path, duplicate prevention, terminal release, governance blocking, negative-intake exclusion, read-model visibility, and HAL target UAT replay `spec013b-hal-uat-2026-05-27T23-05-31-000Z` with zero disposable-row residue. Retry/debug controls and task-detail operator UX remained deferred to SPEC-013C and SPEC-013D.
+
+**Recovery Commands**:
+```text
+git show 5e61d0ffc02f9345b265cd5420660d02bf693016:specs/013b-claim-reconciliation/spec.md
+git show 5e61d0ffc02f9345b265cd5420660d02bf693016:specs/013b-claim-reconciliation/plan.md
+git show 5e61d0ffc02f9345b265cd5420660d02bf693016:specs/013b-claim-reconciliation/tasks.md
+git show 5e61d0ffc02f9345b265cd5420660d02bf693016:specs/013b-claim-reconciliation/uat-report.md
+git show 5e61d0ffc02f9345b265cd5420660d02bf693016:specs/013b-claim-reconciliation/retrospective.md
+git show 5e61d0ffc02f9345b265cd5420660d02bf693016:specs/013b-claim-reconciliation/verify-tasks-report.md
+```
+
+---
+
+## SPEC-013C: Retry and Debug Control API
+
+- **Feature**: RC Factory Phase 11C - retry, release, cancel, stale-state, idempotency, and sanitized debug API controls
+- **Branch**: `013c-retry-debug-surfaces`
+- **Spec Path**: `specs/013c-retry-debug-surfaces/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/63
+- **Merge Commit**: `42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89`
+- **Tree Reference**: `git show 42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89:specs/013c-retry-debug-surfaces/spec.md`
+- **CI URL**: N/A (workflow records local verification and combined HAL target UAT with SPEC-014A)
+- **Argos URL**: N/A
+- **Task Completion**: 75/75
+- **Summary**: Added authenticated claim-control API actions for release, cancel, retry, backoff/idempotency/stale/auth/flag-off handling, and sanitized read/debug output. Combined HAL target UAT with SPEC-014A used deployment commit `c01d9e44ec826d94fa5916284c51453e5ec339ee`, replay `spec013c-014a-uat-1780110032087`, and zero disposable-row residue.
+
+**Recovery Commands**:
+```text
+git show 42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89:specs/013c-retry-debug-surfaces/spec.md
+git show 42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89:specs/013c-retry-debug-surfaces/plan.md
+git show 42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89:specs/013c-retry-debug-surfaces/tasks.md
+git show 42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89:specs/013c-retry-debug-surfaces/uat-report.md
+git show 42ff5ab7ba7c35c9e7b80fbe652feb1dfedffb89:specs/013c-retry-debug-surfaces/retrospective.md
+```
+
+---
+
+## SPEC-014A: Sandbox Ownership and Lifecycle Contract
+
+- **Feature**: RC Factory Phase 12A - sandbox ownership vocabulary, lifecycle records, and read-only contract surfaces
+- **Branch**: `014a-sandbox-lifecycle-contract`
+- **Spec Path**: `specs/014a-sandbox-lifecycle-contract/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/64
+- **Merge Commit**: `c01d9e44ec826d94fa5916284c51453e5ec339ee`
+- **Tree Reference**: `git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-contract/spec.md`
+- **CI URL**: N/A (workflow records local verification and combined HAL target UAT with SPEC-013C)
+- **Argos URL**: N/A
+- **Task Completion**: 58/58
+- **Summary**: Added sandbox fake lifecycle owners `paddock`, `openclaw`, and `external_harness`, enabled/disabled read API evidence, deterministic lifecycle contract behavior, and combined HAL target UAT with SPEC-013C at deployment commit `c01d9e44ec826d94fa5916284c51453e5ec339ee`. SPEC-014A establishes lifecycle contract truth only; adapter manifest, fake registry, and real harness adapters remain SPEC-014B-D.
+
+**Recovery Commands**:
+```text
+git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-contract/spec.md
+git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-contract/plan.md
+git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-contract/tasks.md
+git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-contract/quickstart.md
+git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-contract/retrospective.md
+git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-contract/verify-tasks-report.md
+```
+
+---
+
 ## SPEC-013D: Claim-Control Operator UX
 
 - **Feature**: RC Factory Phase 11D — task-detail claim-control operator UX
