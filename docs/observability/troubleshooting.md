@@ -76,8 +76,8 @@ processors:
 
 **Drilldown**: the rebuilder is preparing a counter-rebuild job. Wait
 for the progress bar to advance through "post-rebuild verify" and ack
-the operator-confirmed dialog. See
-`docs/runbook/counter-drift.md`.
+the operator-confirmed dialog. Use
+`docs/runbook/counter-drift.md` for the rebuild recovery path.
 
 ## OpenClaw health card shows degraded
 

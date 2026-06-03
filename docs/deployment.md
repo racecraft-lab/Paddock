@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- **Node.js** >= 20 (LTS recommended)
+- **Node.js** >= 22 (LTS recommended; 24.x is also supported)
 - **pnpm** (installed via corepack: `corepack enable && corepack prepare pnpm@latest --activate`)
 
 ### Ubuntu / Debian
@@ -40,10 +40,10 @@ pnpm build
 pnpm start
 ```
 
-The `pnpm start` script binds to `0.0.0.0:3005`. Override with:
+The `pnpm start` script binds to `0.0.0.0:3000` by default. Override with:
 
 ```bash
-PORT=3000 pnpm start
+PORT=3005 pnpm start
 ```
 
 **Important:** The production build bundles platform-specific native binaries. You must run `pnpm install` and `pnpm build` on the same OS and architecture as the target server. A build created on macOS will not work on Linux.
@@ -144,7 +144,7 @@ See `.env.example` for the full list. Key variables:
 | `AUTH_PASS` | Yes | - | Admin password |
 | `AUTH_PASS_B64` | No | - | Base64-encoded admin password (overrides `AUTH_PASS` if set) |
 | `API_KEY` | Yes | - | API key for headless access |
-| `PORT` | No | `3005` (direct) / `3000` (Docker) | Server port |
+| `PORT` | No | `3000` | Server port |
 | `OPENCLAW_HOME` | No | - | Legacy: parent home directory containing `.openclaw/`. Use `OPENCLAW_STATE_DIR` instead (see note below) |
 | `OPENCLAW_STATE_DIR` | No | `~/.openclaw` | Exact path to the OpenClaw state directory. Preferred over `OPENCLAW_HOME` — avoids double-nesting when the path already ends in `.openclaw` |
 | `PADDOCK_DATA_DIR` | No | `.data/` | Directory for all Paddock data files (DB, tokens, etc.). Use an absolute path with the standalone server to survive rebuilds. |
@@ -164,7 +164,7 @@ See `.env.example` for the full list. Key variables:
 > PADDOCK_DATA_DIR=/absolute/path/to/.data
 > ```
 > Using an absolute path for `PADDOCK_DATA_DIR` ensures your
-> database and data survive `npm run build` / standalone server rebuilds.
+> database and data survive `pnpm build` / standalone server rebuilds.
 
 ## Kubernetes Sidecar Deployment
 

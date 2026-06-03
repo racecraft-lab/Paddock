@@ -189,7 +189,8 @@ Here's the complete pattern your agent should follow:
                v                          │
 ┌─────────────────────────────────┐       │
 │  5. Heartbeat + repeat          │───────┘
-│     POST /api/agents/{id}/hb    │
+│     POST /api/agents/{id}/      │
+│       heartbeat                 │
 └─────────────────────────────────┘
 ```
 

@@ -157,7 +157,7 @@ For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 | [Security hardening](docs/SECURITY-HARDENING.md) | Docker hardening, CSP, and network isolation. |
 | [Feature flags](docs/feature-flags-runbook.md) | Flag behavior, env overrides, activation preflights, and matrix-test conventions. |
 | [Resource governance](docs/orchestration.md#spec-008-resource-governance-integration) | Dispatcher admission, governance APIs/UI, and recovery runbook references. |
-| [OpenAPI](openapi.json) | REST API contract. Scalar UI is available at `/docs` when running; JSON is served from `/api/docs`. |
+| [OpenAPI](openapi.json) | REST API contract. Scalar UI is available at `/docs` when running; raw JSON is served from `/api/docs`. |
 
 ## Architecture
 
