@@ -1,19 +1,19 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014B-workflow.md",
-  "updated_at": "2026-06-03T18:05:47Z",
+  "updated_at": "2026-06-03T21:03:09Z",
   "spec_id": "SPEC-014B",
   "branch": "014b-adapter-manifest-fakes",
   "confidence_gate_mode": "advisory",
   "project_commands": {
-    "BUILD": "pnpm build",
+    "BUILD": "pnpm exec next build --webpack",
     "TYPECHECK": "pnpm typecheck",
     "LINT": "pnpm lint",
     "LINT_FIX": "N/A",
     "UNIT_TEST": "pnpm test",
-    "INTEGRATION_TEST": "pnpm test:e2e",
+    "INTEGRATION_TEST": "pnpm exec playwright test tests/e2e/agents-runtime-inventory.spec.ts --project=chromium",
     "SINGLE_FILE_TEST": "pnpm test",
-    "SINGLE_FILE_INTEGRATION": "N/A",
-    "FULL_VERIFY": "pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e"
+    "SINGLE_FILE_INTEGRATION": "tests/e2e/agents-runtime-inventory.spec.ts",
+    "FULL_VERIFY": "pnpm typecheck && pnpm lint && pnpm test && pnpm exec next build --webpack"
   },
   "preset_conventions": {
     "has_presets": true,
@@ -39,9 +39,15 @@
     "speckit_cli": "specify 0.8.16",
     "package_manager": "pnpm",
     "required_agents_installed": true,
-    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt (agents will use built-in fallbacks)"
+    "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt (agents will use built-in fallbacks)",
+    "plugin_cache": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.1"
   },
-  "active_step": "Phase 7: Implement - Setup and Foundation (T001-T013)",
+  "gate_results": {
+    "G6": {"pass": true, "reason": "0 CRITICAL/HIGH findings"},
+    "G6.5": {"pass": true, "mode": "advisory", "composite": 0.94, "threshold": 0.9},
+    "G7": {"pass": true, "reason": "All 82 tasks complete", "total": 82, "done": 82}
+  },
+  "active_step": "Post: PR Body Generation",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -69,25 +75,25 @@
     {"step": "Phase 6: Analyze", "status": "completed"},
     {"step": "Phase 6: Analyze - Consensus", "status": "completed"},
     {"step": "Phase 6.5: Confidence Gate", "status": "completed", "mode": "advisory", "composite": 0.94, "threshold": 0.9},
-    {"step": "Phase 7: Implement - Setup and Foundation (T001-T013)", "status": "in_progress"},
-    {"step": "Phase 7: Implement - US1 Manifest Contract (T014-T024)", "status": "pending"},
-    {"step": "Phase 7: Implement - US2 Runtime Inventory API (T025-T038)", "status": "pending"},
-    {"step": "Phase 7: Implement - US3 Fail-Closed Behavior (T039-T048)", "status": "pending"},
-    {"step": "Phase 7: Implement - US4 Agents Evidence Surface (T049-T059)", "status": "pending"},
-    {"step": "Phase 7: Implement - US5 Boundary Preservation (T060-T067)", "status": "pending"},
-    {"step": "Phase 7: Implement - Polish and Verification (T068-T082)", "status": "pending"},
-    {"step": "Post: Doctor Extension Check", "status": "pending"},
-    {"step": "Post: Verify Implementation", "status": "pending"},
-    {"step": "Post: Verify Tasks Phantom Check", "status": "pending"},
-    {"step": "Post: Code Review", "status": "pending"},
-    {"step": "Post: Integration Suite", "status": "pending"},
-    {"step": "Post: Cleanup", "status": "pending"},
-    {"step": "Post: Reviewability Diff Gate", "status": "pending"},
-    {"step": "Post: Self-Review", "status": "pending"},
-    {"step": "Post: UAT Runbook Generation", "status": "pending"},
-    {"step": "Post: PR Body Generation", "status": "pending"},
+    {"step": "Phase 7: Implement - Setup and Foundation (T001-T013)", "status": "completed"},
+    {"step": "Phase 7: Implement - US1 Manifest Contract (T014-T024)", "status": "completed"},
+    {"step": "Phase 7: Implement - US2 Runtime Inventory API (T025-T038)", "status": "completed"},
+    {"step": "Phase 7: Implement - US3 Fail-Closed Behavior (T039-T048)", "status": "completed"},
+    {"step": "Phase 7: Implement - US4 Agents Evidence Surface (T049-T059)", "status": "completed"},
+    {"step": "Phase 7: Implement - US5 Boundary Preservation (T060-T067)", "status": "completed"},
+    {"step": "Phase 7: Implement - Polish and Verification (T068-T082)", "status": "completed"},
+    {"step": "Post: Doctor Extension Check", "status": "completed"},
+    {"step": "Post: Verify Implementation", "status": "completed"},
+    {"step": "Post: Verify Tasks Phantom Check", "status": "completed"},
+    {"step": "Post: Code Review", "status": "completed"},
+    {"step": "Post: Integration Suite", "status": "completed"},
+    {"step": "Post: Cleanup", "status": "completed"},
+    {"step": "Post: Reviewability Diff Gate", "status": "completed"},
+    {"step": "Post: Self-Review", "status": "completed"},
+    {"step": "Post: UAT Runbook Generation", "status": "completed"},
+    {"step": "Post: PR Body Generation", "status": "in_progress"},
     {"step": "Post: PR Creation", "status": "pending"},
     {"step": "Post: Review Remediation", "status": "pending"},
-    {"step": "Post: Retrospective", "status": "pending"}
+    {"step": "Post: Retrospective", "status": "completed"}
   ]
 }

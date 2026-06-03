@@ -22,7 +22,7 @@ if ! git rev-parse --verify --quiet "${BASE_BRANCH}" >/dev/null; then
   fi
 fi
 
-allowed_new_modules='^(src/app/api/github/sync/control/route\.ts|src/lib/github-sync-lifecycle-api\.ts|src/lib/github-sync-lifecycle-types\.ts|src/lib/github-sync-lifecycle\.ts|src/app/api/tasks/\[id\]/claim-reconciliation/route\.ts|src/lib/task-claim-reconciliation\.ts)$'
+allowed_new_modules='^(src/app/api/github/sync/control/route\.ts|src/lib/github-sync-lifecycle-api\.ts|src/lib/github-sync-lifecycle-types\.ts|src/lib/github-sync-lifecycle\.ts|src/app/api/tasks/\[id\]/claim-reconciliation/route\.ts|src/lib/task-claim-reconciliation\.ts|src/app/api/agents/runtime-inventory/route\.ts|src/components/agents/RuntimeInventoryEvidence\.tsx|src/lib/harness-adapters/(types|evidence|fixtures|validation|runtime-inventory)\.ts)$'
 
 added_files=$(git diff "${BASE_BRANCH}"...HEAD --name-only --diff-filter=A \
   | grep -E '^src/.*\.(ts|tsx)$' \

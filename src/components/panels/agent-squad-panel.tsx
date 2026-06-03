@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
+import { RuntimeInventoryEvidence } from '@/components/agents/RuntimeInventoryEvidence'
 import { createClientLogger } from '@/lib/client-logger'
+import type { RuntimeInventoryEnvelope } from '@/lib/harness-adapters/types'
 import { usePaddock } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
 
@@ -54,6 +56,9 @@ export function AgentSquadPanel() {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [autoRefresh, setAutoRefresh] = useState(true)
+  const [runtimeInventory, setRuntimeInventory] = useState<RuntimeInventoryEnvelope | null>(null)
+  const [runtimeInventoryLoading, setRuntimeInventoryLoading] = useState(true)
+  const [runtimeInventoryError, setRuntimeInventoryError] = useState<string | null>(null)
 
   // Fetch agents
   const fetchAgents = useCallback(async () => {
@@ -73,18 +78,39 @@ export function AgentSquadPanel() {
     }
   }, [activeProductLineScope, agents.length, t])
 
+  const fetchRuntimeInventory = useCallback(async () => {
+    try {
+      setRuntimeInventoryError(null)
+      setRuntimeInventoryLoading(true)
+
+      const response = await fetch(appendScopeToPath('/api/agents/runtime-inventory', activeProductLineScope))
+      if (!response.ok) throw new Error('Failed to fetch runtime inventory')
+
+      const data = await response.json() as RuntimeInventoryEnvelope
+      setRuntimeInventory(data)
+    } catch (err) {
+      setRuntimeInventoryError(err instanceof Error ? err.message : 'Failed to fetch runtime inventory')
+    } finally {
+      setRuntimeInventoryLoading(false)
+    }
+  }, [activeProductLineScope])
+
   // Initial load
   useEffect(() => {
     fetchAgents()
-  }, [fetchAgents])
+    fetchRuntimeInventory()
+  }, [fetchAgents, fetchRuntimeInventory])
 
   // Auto-refresh
   useEffect(() => {
     if (!autoRefresh) return
 
-    const interval = setInterval(fetchAgents, 10000) // Every 10 seconds
+    const interval = setInterval(() => {
+      fetchAgents()
+      fetchRuntimeInventory()
+    }, 10000) // Every 10 seconds
     return () => clearInterval(interval)
-  }, [autoRefresh, fetchAgents])
+  }, [autoRefresh, fetchAgents, fetchRuntimeInventory])
 
   // Update agent status
   const updateAgentStatus = async (agentName: string, status: Agent['status'], activity?: string) => {
@@ -322,6 +348,9 @@ export function AgentSquadPanel() {
           onClose={() => setSelectedAgent(null)}
           onUpdate={fetchAgents}
           onStatusUpdate={updateAgentStatus}
+          runtimeInventory={runtimeInventory}
+          runtimeInventoryLoading={runtimeInventoryLoading}
+          runtimeInventoryError={runtimeInventoryError}
         />
       )}
 
@@ -341,12 +370,18 @@ function AgentDetailModal({
   agent,
   onClose,
   onUpdate,
-  onStatusUpdate
+  onStatusUpdate,
+  runtimeInventory,
+  runtimeInventoryLoading,
+  runtimeInventoryError,
 }: {
   agent: Agent
   onClose: () => void
   onUpdate: () => void
   onStatusUpdate: (name: string, status: Agent['status'], activity?: string) => Promise<void>
+  runtimeInventory: RuntimeInventoryEnvelope | null
+  runtimeInventoryLoading: boolean
+  runtimeInventoryError: string | null
 }) {
   const t = useTranslations('agentSquad')
   const { activeProductLineScope } = usePaddock()
@@ -408,6 +443,14 @@ function AgentDetailModal({
                 </Button>
               ))}
             </div>
+          </div>
+
+          <div className="mb-6">
+            <RuntimeInventoryEvidence
+              inventory={runtimeInventory}
+              loading={runtimeInventoryLoading}
+              error={runtimeInventoryError}
+            />
           </div>
 
           {/* Agent Details */}

@@ -2,26 +2,54 @@
 
 ## Setup
 
+Use the repo runtime from `.nvmrc` before installing or testing. On this
+worktree, Homebrew `node` resolved to Node 26, which fails native
+`better-sqlite3@12.6.2` compilation. Verified runtime:
+
+```bash
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node -v
+```
+
 1. Install dependencies if needed:
 
    ```bash
-   pnpm install
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm install --frozen-lockfile
    ```
 
 2. Run the focused verification loop while implementing:
 
    ```bash
-   pnpm typecheck
-   pnpm lint
-   pnpm test
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec vitest run \
+     src/lib/harness-adapters/__tests__/validation.test.ts \
+     src/lib/harness-adapters/__tests__/runtime-inventory.test.ts \
+     src/app/api/agents/runtime-inventory/route.test.ts \
+     src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx \
+     src/components/panels/__tests__/agent-runtime-inventory.test.tsx
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-014b/check-harness-adapter-scope.mjs --self-test
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-014b/check-harness-adapter-scope.mjs
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm check:strict-scope
    ```
 
 3. Run the final build and browser proof before UAT closeout:
 
    ```bash
-   pnpm build
-   pnpm test:e2e
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test
+   PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec next build --webpack
    ```
+
+Playwright full-app automation requires authenticated disposable workspace
+fixtures. `tests/e2e/agents-runtime-inventory.spec.ts` is therefore a skipped
+UAT scaffold until those fixtures exist; use the Agents UI UAT section below
+for manual browser evidence.
+
+Default `pnpm build` starts the Next 16 Turbopack build. In this linked
+worktree, `node_modules` is a symlink to `../../node_modules`, and Turbopack
+fails before compilation with `Symlink [project]/node_modules is invalid, it
+points out of the filesystem root`. The verified app build for this worktree is
+`pnpm exec next build --webpack`; it compiles the app and includes
+`/api/agents/runtime-inventory` in the route manifest.
 
 ## Flag-Off Verification
 
@@ -223,12 +251,12 @@
 Run the SPEC-014B guard script and full local checks:
 
 ```bash
-node scripts/spec-014b/check-harness-adapter-scope.mjs
-pnpm typecheck
-pnpm lint
-pnpm test
-pnpm build
-pnpm test:e2e
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-014b/check-harness-adapter-scope.mjs --self-test
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH node scripts/spec-014b/check-harness-adapter-scope.mjs
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test
+PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec next build --webpack
 ```
 
 The guard must prove SPEC-014B introduces no real Codex, Claude, OpenClaw, Hermes, OpenCode, gateway, external process, scheduler dispatch, migration, claim-control mutation, retry semantic change, lifecycle-control mutation, successor selection, governance mutation, GitHub mutation, or auto-merge path.

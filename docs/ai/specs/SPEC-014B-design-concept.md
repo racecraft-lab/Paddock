@@ -208,4 +208,4 @@ The SPEC-014B gap is not "Paddock has no harness support." The gap is that launc
 
 ## Recommended Next Step
 
-Run `$speckit-autopilot` with `docs/ai/specs/SPEC-014B-workflow.md` from branch `014b-adapter-manifest-fakes`. The workflow must use SpecKit Pro 2.6.1 from `racecraft-lab/racecraft-plugins-public` and must not run with a stale 2.5.0 cache.
+Run `$speckit-autopilot` with `docs/ai/specs/SPEC-014B-workflow.md` from branch `014b-adapter-manifest-fakes`. The workflow must use SpecKit Pro 2.6.1 from `racecraft-lab/racecraft-plugins-public` and must not run with a stale prior cache.
