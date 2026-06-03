@@ -275,6 +275,7 @@ Focus on SPEC-014B manifest vocabulary:
 | Clarify Session 3 | Q2 capability support declarations | 1 | `[security, spec]` | Accepted required closed support objects for every capability/declaration; missing fields are `manifest_invalid`, unsupported support is explicit | codebase-analyst, spec-context-analyst, domain-researcher |
 | Clarify Session 3 | Q3 policy and provider/account constraints | 1 | `[security, spec]` | Accepted synthetic-only provider/account constraints plus explicit approval, timeout, and user-input policy declarations | codebase-analyst, spec-context-analyst, domain-researcher |
 | Clarify Session 3 | Q5 manifest validation payload | 1 | `[security, codebase, domain]` | Accepted bounded `harness_manifest_validation.v1` issue-list payload with capped diagnostics and no raw values, schema excerpts, prompts, tokens, credentials, host paths, or provider/tool payloads | codebase-analyst, spec-context-analyst, domain-researcher |
+| Checklist api-contracts | Gap 2 unauthenticated and read-only viewer route access | 1 | `[security]` | Accepted viewer-or-higher read baseline, `401` before inventory derivation, bounded `403` for unauthorized resource filters without existence leakage, and no partial entries on request failures | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ---
 
@@ -360,12 +361,18 @@ Checklist focus:
 
 | Domain | Status | Gaps | Notes |
 |--------|--------|------|-------|
-| api-contracts | Pending | Pending | |
-| ux | Pending | Pending | |
-| security | Pending | Pending | |
-| data-integrity | Pending | Pending | |
-| error-handling | Pending | Pending | |
-| state-management | Pending | Pending | |
+| api-contracts | Complete | 4 found, 4 remediated | Added explicit `/api/agents` compatibility, auth/scope behavior, assignment-role filter source, and closed requested-capability vocabulary; consensus accepted security-sensitive auth handling |
+| ux | Complete | 4 found, 4 remediated | Added existing-surface placement, visible text labels, loading/error/empty/flag-off state requirements, responsive layout, keyboard/screen-reader constraints, and bounded UI UAT proof |
+| security | Complete | 1 found, 1 remediated | Added plain-text-only evidence/diagnostic handling, secret-shaped value rejection before exposure, and no raw HTML/Markdown rendering requirement |
+| data-integrity | Complete | 4 found, 4 remediated | Added fake-registry identity invariants, deterministic ordering, unique entry ids, summary-count consistency, request-local derivation, and stale/cross-scope evidence restrictions |
+| error-handling | Complete | 3 found, 3 remediated | Added request-level error precedence, distinction between entry-level blocked outcomes and request errors, and bounded `500 runtime_inventory_unavailable` behavior |
+| state-management | Complete | 3 found, 3 remediated | Added SPEC-014A lifecycle status eligibility mapping, client-side eligibility inference prohibition, and stale eligible refresh behavior |
+
+### Checklist Gate Results
+
+| Gate | Status | Evidence |
+|------|--------|----------|
+| G4 | Passed | 2.6.1 `validate-gate.sh G4 specs/014b-adapter-manifest-fakes` returned `pass=true`, `reason=0 [Gap] markers` |
 
 ---
 

@@ -20,13 +20,13 @@ These sources inform only the SPEC-014B contract vocabulary and safety posture: 
 
 ### Runtime Inventory API Scope
 
-`GET /api/agents/runtime-inventory` is the only v1 runtime-inventory route and returns `runtime_inventory.v1`. `/api/agents` remains response-compatible and does not embed runtime inventory by default.
+`GET /api/agents/runtime-inventory` is the only v1 runtime-inventory route and returns `runtime_inventory.v1`. `/api/agents` remains response-compatible and does not embed runtime inventory by default; adding the dedicated route must not change `/api/agents` response shape, pagination, filtering, authorization, task-stat enrichment, or hidden-agent behavior.
 
-The route follows the existing workspace scope contract: Product Line requests use `workspace_id=<id>`, Facility requests use `workspace_scope=facility`, sending both scope forms returns `400`, and unauthorized scope returns `403`. Every user-supplied resource filter must be authorized against the caller-visible workspace, task, or project scope before it can influence inventory output.
+The route follows the existing read-route authorization and workspace scope contracts: unauthenticated requests return `401`, authenticated `viewer`, `operator`, and `admin` callers may read authorized inventory, Product Line requests use `workspace_id=<id>`, Facility requests use `workspace_scope=facility`, sending both scope forms returns `400`, and unauthorized scope returns `403`. Every user-supplied resource filter must be authorized against the caller-visible workspace, task, or project scope before it can influence inventory output.
 
-Allowed query filters are `task_id`, `project_id`, `role`, `requested_capability`, `state`, and `manifest_id`. Filter values are strict allowlists or known identifiers; unknown capability, state, or manifest values fail closed with bounded validation evidence.
+Allowed query filters are `task_id`, `project_id`, `role`, `requested_capability`, `state`, and `manifest_id`. Filter values are strict allowlists or known identifiers; unknown role, capability, state, or manifest values fail closed with bounded validation evidence. The `role` filter is an exact project-agent assignment role identifier from caller-visible `project_agent_assignments.role` evidence for the authorized project/workspace, not a human user role and not the legacy `/api/agents` `agents.role` filter. The closed v1 `requested_capability` values are `launch`, `resume`, `stop`, `transcript_read`, `event_read`, `token_runtime_accounting`, `artifact_publication`, `sandbox_posture`, `mcp_exposure`, `tool_exposure`, `skills`, `plugins`, `memory`, `provider_account_constraints`, `approval_policy`, `timeout_policy`, and `user_input_policy`.
 
-Request-level scope and filter validation happens before runtime inventory entries are derived. Mixed scope parameters return `400`, unauthorized workspace, task, or project filters return `403`, and syntactically valid but unsupported or unknown filter values return `422` with bounded validation metadata. These request-level failures do not return partial `entries`.
+Request-level scope and filter validation happens before runtime inventory entries are derived. Mixed scope parameters return `400`, unauthorized workspace, task, or project filters return `403`, and syntactically valid but unsupported or unknown filter values return `422` with bounded validation metadata. `403` responses must not reveal whether identifiers exist outside caller-visible scope, and request-level failures do not return partial `entries`.
 
 The route may list `visible`, `unassigned`, `assigned`, and `blocked` inventory without `task_id`. A full `eligible` evaluation requires `task_id` because eligibility depends on tracker-linked task eligibility and SPEC-014A sandbox lifecycle evidence. Without `task_id`, the response must not claim an adapter is eligible for work.
 
@@ -51,6 +51,8 @@ All evaluated gate, policy, capability, and validation failures in SPEC-014B are
 `SanitizedFakeEvidence` is a closed `sanitized_fake_evidence.v1` discriminated union with these allowed kinds: `synthetic_summary`, `counter`, `event_ref`, `lifecycle_ref`, `manifest_ref`, `capability_resolution_ref`, and `fake_artifact_descriptor`.
 
 Evidence objects carry only fields defined for their kind. Unknown kinds, unknown properties, unsafe field names, over-limit strings or arrays, raw transcript-like text, provider payloads, host paths, prompt bodies, token payloads, authentication material, secret-like values, raw external event payloads, raw tool or MCP payloads, unsafe URIs, and artifact content are rejected before API, UI, log, test, fixture, review-packet, or artifact exposure.
+
+Every text-bearing manifest, evidence, validation, diagnostic, and UI label field is treated as plain text only. SPEC-014B must not render fake evidence or diagnostics as raw HTML or Markdown, and secret-shaped text must be rejected before API, UI, log, fixture, test, review-packet, or artifact exposure using the existing repository secret-safety boundary or a stricter closed validator.
 
 Unsafe evidence does not get redacted-and-continued in SPEC-014B. The capability or inventory evaluation fails closed with `sanitized_evidence_rejected`, returns only bounded field-path, evidence-kind, and reason metadata, and never marks the adapter eligible, selects a fallback adapter, switches harnesses, or mutates task, claim, lifecycle, governance, GitHub, scheduler, tracker, successor, or auto-merge state.
 
@@ -110,6 +112,42 @@ Manifest validation failures return only bounded structured metadata using `harn
 `issues` and `diagnostics` are capped, deterministic, and safe to expose in API responses, UI, tests, fixtures, logs, review packets, and artifacts. `field_path`, `code`, `reason_code`, `evidence_kind`, and `rejected_property` are metadata only; `rejected_property` may name an unknown or rejected property but must not echo its value. Arbitrary map keys in field paths are redacted unless they pass a strict identifier allowlist. If caps are exceeded, the response sets `diagnostics.truncated=true` and preserves total `issue_count`.
 
 The payload must not include raw manifest values, schema excerpts, validator exception text, stack traces, transcript text, provider payloads, host paths, prompt bodies, model outputs, token payloads, API keys, session ids, connection strings, authentication material, secret-like values, raw tool or MCP payloads, raw external event payloads, or artifact content. A malformed manifest maps to entry-level `state: "blocked"` with `reason_codes: ["manifest_invalid"]` when entries are otherwise authorized.
+
+### Agents Surface UX Contract
+
+Runtime inventory evidence belongs in the existing Agents surface card/detail patterns. SPEC-014B must not create a separate operator destination, replace the current agent status model, or add launch, assignment, retry, release, cancel, debug, lifecycle, scheduler, GitHub, governance, successor-selection, or auto-merge controls.
+
+Every rendered runtime inventory state must include a visible text label from the closed state vocabulary, not only color or icon treatment. Selected manifest, eligibility reason codes, lifecycle references, sanitized fake evidence, feature-flag state, generated timestamp, and truncated diagnostics must be labeled with bounded text that is safe for UI, screenshot evidence, and screen-reader exposure.
+
+The Agents surface must define deterministic display behavior for runtime inventory loading, background refresh, no entries, feature-flag-off inventory, unauthorized or invalid request errors, unsupported capability, blocked entries, stale lifecycle references, and truncated diagnostics. UI error and empty states must not echo raw unauthorized ids, provider payloads, host paths, prompt bodies, tokens, secrets, raw transcripts, raw tool or MCP payloads, or unsafe evidence content.
+
+The runtime inventory evidence area must remain readable at mobile and desktop widths by stacking compact summary rows on narrow screens and using the established card/detail layout on wider screens. Long manifest ids, reason codes, lifecycle refs, and evidence descriptors must wrap or truncate without overlapping adjacent controls or hiding the read-only boundary. Keyboard focus order, semantic section labels, and screen-reader names must distinguish existing agent controls from SPEC-014B read-only evidence.
+
+### Data Integrity Invariants
+
+The fake registry contains exactly the two v1 manifest ids `paddock_owned_sandbox_fake` and `external_harness_fake`. Registry validation fails closed before eligibility if either required manifest is missing, if any manifest id is duplicated, or if the registry contains an unknown v1 manifest id. Registry output and runtime inventory entries are ordered deterministically by manifest id unless a caller-supplied allowlisted filter narrows the set.
+
+Runtime inventory is derived from a single request-local read of manifests plus caller-visible workspace, project, assignment, task, governance, feature-flag, and SPEC-014A lifecycle evidence. The derived response is not stored in SQLite, localStorage, durable artifacts, scheduler state, task artifacts, task attempts, claims, lifecycle rows, governance rows, GitHub rows, tracker truth, successor state, or auto-merge state.
+
+Every runtime inventory entry id is unique within a response. `summary.total` equals `entries.length`, each per-state summary count equals the number of entries with that state, and all summary counts are derived from entries after authorization and filter validation. A response uses one `generated_at` timestamp and one feature-flag resolution for the evaluated scope.
+
+An entry cannot be `eligible` when task, project, assignment, governance, lifecycle, or feature-flag evidence is absent, unauthorized, cross-workspace, stale, malformed, or evaluated from a different scope than the response scope. Such cases produce `blocked`, `assigned`, `unassigned`, or `visible` according to the closed state precedence.
+
+### Error Handling Contract
+
+Runtime inventory request-level errors are selected before entries are derived. Error precedence is deterministic: unauthenticated `401`, mixed scope `400`, unauthorized workspace/project/task/scope `403`, malformed or unsupported query/filter `422`, then bounded unexpected server failure `500`. Request-level errors return `runtime_inventory_error.v1`, no partial `entries`, and no raw user-supplied values beyond safe field names or closed codes.
+
+Feature-flag-off, manifest invalid, unsupported capability, unsupported approval or user input, expired timeout, governance denied, task ineligible, sandbox lifecycle missing, adapter unassigned, and sanitized evidence rejected outcomes are entry-level runtime inventory failures for otherwise authorized evaluations. They return `200 runtime_inventory.v1` with `state: "blocked"` or the appropriate non-eligible state, deterministic reason codes, and bounded evidence rather than request-level errors.
+
+Unexpected internal failures return `500 runtime_inventory_error.v1` with a closed `runtime_inventory_unavailable` error code, no stack trace, no SQL text, no raw manifest or evidence value, no host path, no provider payload, no token, no secret-like value, and no partial `entries`.
+
+### State Management Invariants
+
+Runtime inventory state is a derived read model, not a lifecycle owner, claim owner, scheduler state, or dispatch state. The closed state precedence remains: `blocked` for failed evaluated gates, `eligible` only when every gate passes with task context, `assigned` for explicit assignment with incomplete context and no failed evaluated gate, `unassigned` for visible unassigned manifests, and `visible` for baseline discovery.
+
+SPEC-014A lifecycle evidence can support eligibility only when it is same-workspace, same-task, same-stage, caller-visible, owner-compatible with the selected manifest, and in one of the nonterminal supporting statuses `created`, `prepared`, or `running`. Lifecycle evidence with `terminal`, `cleanup_pending`, `cleaned_up`, `rolled_back`, or `cleanup_failed` status is inspectable read-only evidence but cannot satisfy the eligibility lifecycle gate; it yields `sandbox_lifecycle_missing` or another bounded blocked reason rather than `eligible`.
+
+The Agents UI must not infer or store runtime inventory state independently of the latest authorized `runtime_inventory.v1` response. Background refresh may replace displayed evidence, but it must not promote `visible`, `unassigned`, `assigned`, or `blocked` entries to `eligible` client-side and must not preserve stale eligible labels after a newer response removes the required gates.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -174,6 +212,7 @@ As an operator, I need the existing Agents experience to show runtime inventory 
 1. **Given** runtime inventory entries exist, **When** an operator opens the Agents surface, **Then** state badges, selected manifest names, eligibility reasons, lifecycle references, and sanitized fake evidence are visible in the established Agents page or detail patterns.
 2. **Given** a fake entry is blocked, **When** the operator inspects the entry, **Then** all failed gates are shown as bounded reasons without raw transcript, provider payload, host path, prompt body, token payload, or secret-like data.
 3. **Given** SPEC-014B UI is complete, **When** the operator searches for new launch, assignment, retry, cancel, release, lifecycle, scheduler, or auto-merge controls, **Then** none are available through this feature.
+4. **Given** runtime inventory is loading, empty, disabled by feature flag, unauthorized, invalid, stale, or truncated, **When** the operator opens or refreshes the Agents surface, **Then** the state is labeled with bounded text and does not expose unsafe or unauthorized payload details.
 
 ---
 
@@ -209,9 +248,13 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - Existing OpenClaw gateway, session scanner, runtime detection, agent sync, or AgentRun inputs are absent, malformed, or stale.
 - Runtime inventory is requested by a user without workspace access or by a read-only user.
 - Runtime inventory is requested with both `workspace_id` and `workspace_scope=facility`, an unauthorized `workspace_id`, an unknown state filter, or an unknown requested capability.
+- Runtime inventory is requested with multiple invalid top-level inputs, such as unauthenticated plus mixed scope, mixed scope plus invalid filters, or unauthorized scope plus malformed filters.
+- Runtime inventory derivation encounters an unexpected internal failure after authorization.
 - Runtime inventory is requested without `task_id`; the response may show visible, unassigned, assigned, or blocked inventory, but it cannot claim any adapter is eligible for work.
 - Multiple evaluated gates fail for one entry; the response returns every failed reason code in deterministic precedence order.
 - Browser UI is loaded while inventory entries change between visible, assigned, eligible, and blocked states.
+- SPEC-014A lifecycle evidence is terminal, cleanup pending, cleaned up, rolled back, cleanup failed, owner-incompatible, task-mismatched, stage-mismatched, or absent.
+- Duplicate fake manifest ids, missing required fake manifests, unknown v1 manifest ids, mismatched summary counts, duplicate runtime inventory entry ids, or cross-scope evidence appear during registry or inventory derivation.
 
 ## Requirements *(mandatory)*
 
@@ -244,10 +287,10 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - **FR-025**: System MUST include governance allow evidence as a required eligibility gate without mutating governance policy.
 - **FR-026**: System MUST include tracker-linked task eligibility as a required eligibility gate and MUST NOT treat local-only tasks as eligible runner work.
 - **FR-027**: System MUST include SPEC-014A sandbox lifecycle evidence as a required eligibility gate.
-- **FR-028**: System MUST expose `GET /api/agents/runtime-inventory` as the sole v1 runtime inventory API and MUST support only allowlisted query filters: `task_id`, `project_id`, `role`, `requested_capability`, `state`, and `manifest_id`.
+- **FR-028**: System MUST expose `GET /api/agents/runtime-inventory` as the sole v1 runtime inventory API and MUST support only allowlisted query filters: `task_id`, `project_id`, `role`, `requested_capability`, `state`, and `manifest_id`; `role` MUST match caller-visible `project_agent_assignments.role` evidence, and `requested_capability` MUST match the closed v1 manifest capability/declaration key vocabulary.
 - **FR-029**: System MUST return a `runtime_inventory.v1` response envelope with `schema_version`, `generated_at`, `scope`, `feature_flag`, `entries`, `summary`, and `diagnostics`; each entry MUST include `id`, `state`, `selected_manifest`, `assignment`, `capability_resolution`, `eligibility_gates`, `sandbox_lifecycle_refs`, `sanitized_fake_evidence`, and `reason_codes`.
 - **FR-030**: System MUST keep the runtime inventory API read-only and MUST NOT perform launch, assignment, lifecycle, claim, retry, scheduler, GitHub, governance, tracker-truth, successor, or auto-merge mutations.
-- **FR-031**: System MUST enforce authenticated workspace, project, and task visibility for runtime inventory reads and MUST reject mixed or unauthorized scope query inputs before applying inventory filters.
+- **FR-031**: System MUST enforce authenticated `viewer`-or-higher workspace, project, and task visibility for runtime inventory reads, MUST return `401` for unauthenticated reads, and MUST reject mixed or unauthorized scope query inputs before applying inventory filters.
 - **FR-032**: System MUST update API index and OpenAPI documentation for the runtime inventory route.
 - **FR-033**: System MUST include tests or guardrails proving API index and OpenAPI parity for the runtime inventory route.
 - **FR-034**: System MUST add read-only runtime inventory integration to the existing Agents surface.
@@ -273,6 +316,19 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - **FR-054**: System MUST preserve SPEC-013C retry/debug semantics and SPEC-013D task-detail operator controls without introducing new retry, release, cancel, or debug behavior.
 - **FR-055**: System MUST preserve SPEC-014A sandbox lifecycle ownership by referencing lifecycle evidence read-only and MUST NOT add lifecycle mutation controls.
 - **FR-056**: Manual UAT MUST verify the feature-flag-off state, fake manifest validation, all runtime inventory states, read-only Agents surface evidence, unsupported capability failure, unsupported or expired policy failure, sanitized evidence boundaries, and absence of real harness side effects.
+- **FR-057**: The Agents surface MUST represent runtime inventory loading, refresh, no-entry, feature-flag-off, unauthorized, invalid-filter, unsupported-capability, blocked, stale-lifecycle, and truncated-diagnostics states with bounded read-only UI text.
+- **FR-058**: Runtime inventory UI labels MUST expose the closed state and reason-code text directly and MUST NOT rely on color, icon, or position alone to communicate state.
+- **FR-059**: Runtime inventory UI MUST preserve readable layout, focus order, and screen-reader names across mobile and desktop widths without overlapping existing Agents controls or hiding the read-only boundary.
+- **FR-060**: Text-bearing manifest, evidence, validation, diagnostic, API, UI, log, fixture, test, review-packet, and artifact fields MUST be treated as plain text, MUST reject secret-shaped values before exposure, and MUST NOT be rendered as raw HTML or Markdown.
+- **FR-061**: Fake registry validation MUST fail closed when a required v1 fake manifest is missing, when any v1 manifest id is duplicated, or when an unknown v1 manifest id appears.
+- **FR-062**: Runtime inventory responses MUST use unique entry ids and summary counts that exactly match the post-authorization, post-filter `entries` collection.
+- **FR-063**: Runtime inventory derivation MUST use a request-local consistent read of authorized evidence and MUST NOT mark an adapter `eligible` from absent, stale, malformed, unauthorized, cross-workspace, or cross-scope evidence.
+- **FR-064**: Runtime inventory request-level errors MUST follow deterministic precedence: `401` authentication, `400` mixed scope, `403` unauthorized scope/resource, `422` malformed or unsupported query/filter, then bounded `500` unexpected server failure.
+- **FR-065**: Feature-flag-off, manifest invalid, unsupported capability or policy, timeout, governance, task, lifecycle, assignment, and sanitized-evidence failures MUST remain entry-level inventory outcomes for otherwise authorized evaluations rather than top-level request errors.
+- **FR-066**: Unexpected runtime inventory server failures MUST return bounded `runtime_inventory_error.v1` metadata without partial entries, stack traces, SQL text, raw values, host paths, provider payloads, tokens, or secret-like values.
+- **FR-067**: Runtime inventory state MUST remain a derived read model and MUST NOT become lifecycle authority, claim authority, scheduler state, dispatch state, or client-side inferred eligibility.
+- **FR-068**: SPEC-014A lifecycle evidence MUST satisfy the eligibility lifecycle gate only when it is same-workspace, same-task, same-stage, caller-visible, owner-compatible, and in `created`, `prepared`, or `running` status.
+- **FR-069**: Terminal, cleanup-pending, cleaned-up, rolled-back, cleanup-failed, owner-incompatible, task-mismatched, stage-mismatched, unauthorized, or absent lifecycle evidence MUST NOT produce `eligible`.
 
 ### Spec Evidence And Archive Policy
 
@@ -310,9 +366,13 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - **SC-007**: 100% of runtime inventory API responses use `runtime_inventory.v1`, enforce read-only access, and omit raw transcript, provider payload, host path, prompt body, token payload, auth material, secret-like values, and raw tool/MCP payloads.
 - **SC-008**: The existing Agents surface browser journey covers visible, unassigned, assigned, eligible, blocked, feature-flag-off, and unsupported-capability states with reviewable screenshot or visual-review evidence.
 - **SC-009**: Operators can identify a runtime entry's state, selected manifest, failed gate, and lifecycle reference from the Agents surface in under 30 seconds without terminal access.
-- **SC-010**: API index and OpenAPI parity checks cover the runtime inventory route before implementation is considered complete.
+- **SC-010**: API index and OpenAPI parity checks cover the runtime inventory route, closed query filter vocabularies, documented error responses, and `/api/agents` compatibility before implementation is considered complete.
 - **SC-011**: Static scope guards or focused tests prove no real Codex, Claude, OpenClaw, Hermes, OpenCode, gateway, external process, scheduler dispatch, migration, claim-control mutation, retry semantic change, lifecycle control, successor selection, governance mutation, GitHub mutation, or auto-merge behavior is added.
 - **SC-012**: Manual UAT on a disposable workspace leaves zero fake runtime inventory, lifecycle, assignment, task, artifact, or activity residue beyond expected sanitized evidence records.
+- **SC-013**: Agents surface UAT covers mobile and desktop responsive states, keyboard focus traversal, visible text labels for all runtime states, and bounded loading/error/empty/flag-off UI states without unsafe payload exposure.
+- **SC-014**: Registry and runtime-inventory tests prove duplicate manifests, missing manifests, unknown manifest ids, duplicate entry ids, mismatched summaries, stale lifecycle evidence, and cross-scope task/project/assignment evidence cannot produce eligible inventory.
+- **SC-015**: Error-handling tests prove request-level precedence for `401`, `400`, `403`, `422`, and bounded `500`, while entry-level fail-closed outcomes still return runtime inventory evidence with no unsafe payload exposure.
+- **SC-016**: State-management tests prove visibility, assignment, lifecycle status, feature-flag changes, and UI refreshes cannot promote an adapter to `eligible` unless the latest authorized response contains all required same-scope gates.
 
 ## Assumptions
 

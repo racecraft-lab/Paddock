@@ -6,7 +6,20 @@
 
 This is the only v1 runtime-inventory route. It returns `runtime_inventory.v1` and is read-only.
 
+## Compatibility With `/api/agents`
+
+`GET /api/agents/runtime-inventory` is additive and does not change `GET /api/agents`.
+
+`GET /api/agents` keeps its existing response shape, pagination, filtering, authorization, task-stat enrichment, and hidden-agent behavior. Runtime inventory is not embedded in `/api/agents` by default, and callers must opt into runtime inventory by using the dedicated route.
+
 ## Authorization And Scope
+
+The route requires the existing read-route authorization baseline:
+
+- Unauthenticated requests return `401`
+- Bearer-authenticated request paths include the existing bearer challenge metadata on `401` responses when the repository auth helper applies it
+- Authenticated `viewer`, `operator`, and `admin` callers may read authorized runtime inventory
+- User role does not grant access to unauthorized workspace, project, task, assignment, manifest, or evidence rows
 
 The route follows the existing workspace scope contract:
 
@@ -17,6 +30,8 @@ The route follows the existing workspace scope contract:
 
 Every user-supplied resource filter is authorized against caller-visible workspace, task, or project scope before it influences inventory output.
 
+Unauthorized workspace, project, and task filters return a bounded `403` before inventory derivation. The response must not reveal whether the supplied identifier exists outside the caller-visible scope and must not include partial `entries`.
+
 ## Query Parameters
 
 Allowed filters:
@@ -25,8 +40,8 @@ Allowed filters:
 - `workspace_scope`: currently only `facility`
 - `task_id`: required for any `eligible` evaluation
 - `project_id`: authorized project filter
-- `role`: allowed project-agent role filter
-- `requested_capability`: closed manifest capability key
+- `role`: exact project-agent assignment role identifier from caller-visible `project_agent_assignments.role` evidence for the authorized project/workspace; this is not the human user role enum and not the legacy `/api/agents` `agents.role` filter. The value must match `^[a-z][a-z0-9_-]{0,63}$`; syntactically valid but unknown roles return `422`.
+- `requested_capability`: closed manifest capability/declaration key. Allowed values: `launch`, `resume`, `stop`, `transcript_read`, `event_read`, `token_runtime_accounting`, `artifact_publication`, `sandbox_posture`, `mcp_exposure`, `tool_exposure`, `skills`, `plugins`, `memory`, `provider_account_constraints`, `approval_policy`, `timeout_policy`, `user_input_policy`.
 - `state`: one of `visible`, `unassigned`, `assigned`, `eligible`, `blocked`
 - `manifest_id`: one of `paddock_owned_sandbox_fake`, `external_harness_fake`
 
@@ -102,7 +117,33 @@ Status: `200`
 }
 ```
 
+Summary counts are derived from the returned `entries` collection after authorization and filter validation. `summary.total` must equal `entries.length`, and each state count must match the number of entries with that state.
+
 ## Error Responses
+
+Error precedence:
+
+1. Unauthenticated request: `401`
+2. Mixed scope parameters: `400`
+3. Unauthorized workspace, project, task, or scope: `403`
+4. Malformed, unknown, or unsupported query/filter input: `422`
+5. Unexpected runtime-inventory failure: `500`
+
+All request-level errors return `runtime_inventory_error.v1`, no partial `entries`, and no raw user-supplied values beyond safe field names or closed codes.
+
+Unauthenticated request:
+
+Status: `401`
+
+Bearer-authenticated request paths also include the repository's standard bearer challenge header when applicable.
+
+```json
+{
+  "schema_version": "runtime_inventory_error.v1",
+  "error": "authentication_required",
+  "message": "Authentication required."
+}
+```
 
 Mixed scope:
 
@@ -122,6 +163,8 @@ Status: `400`
 Unauthorized scope:
 
 Status: `403`
+
+This response is the same for unknown-outside-scope and known-but-unauthorized workspace, project, and task identifiers.
 
 ```json
 {
@@ -150,6 +193,18 @@ Status: `422`
 }
 ```
 
+Unexpected runtime-inventory failure:
+
+Status: `500`
+
+```json
+{
+  "schema_version": "runtime_inventory_error.v1",
+  "error": "runtime_inventory_unavailable",
+  "message": "Runtime inventory is unavailable."
+}
+```
+
 Top-level request failures do not return partial `entries`.
 
 ## Read-Only Guarantees
@@ -160,11 +215,14 @@ The route must not:
 - Mutate sandbox lifecycle, claims, retry state, task terminal state, task attempts, task artifacts, governance policy, GitHub state, tracker truth, scheduler state, successor selection, or auto-merge state
 - Call real Codex, Claude, OpenClaw, Hermes, OpenCode, provider APIs, OpenClaw gateway RPCs, external harness processes, schedulers, or shell commands
 - Expose raw transcripts, provider payloads, host paths, prompt bodies, token payloads, authentication material, secret-like values, raw external event payloads, raw tool/MCP payloads, unsafe URIs, or artifact content
+- Emit text-bearing manifest, evidence, validation, or diagnostic fields that would require raw HTML or Markdown interpretation to be understood safely
 
 ## State Rules
 
 - Without `task_id`, entries may be `visible`, `unassigned`, `assigned`, or `blocked`, but never `eligible`.
 - `eligible` requires a caller-visible `task_id` and passing feature flag, assignment, selected capability, policy, governance, tracker-linked task eligibility, SPEC-014A lifecycle evidence, authorization, and evidence safety gates.
+- Absent, stale, malformed, unauthorized, cross-workspace, or cross-scope evidence cannot produce `eligible`.
+- SPEC-014A lifecycle evidence can satisfy the lifecycle gate only when it is same-workspace, same-task, same-stage, caller-visible, owner-compatible, and in `created`, `prepared`, or `running` status.
 - Any failed evaluated gate returns `blocked` with every failed reason code in deterministic precedence order.
 - Manifest validation failures use bounded `harness_manifest_validation.v1` metadata only.
 - Unsafe fake evidence is omitted from `sanitized_fake_evidence` and represented only by bounded rejection metadata plus `sanitized_evidence_rejected`.

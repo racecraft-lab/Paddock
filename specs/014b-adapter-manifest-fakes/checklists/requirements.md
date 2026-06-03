@@ -33,4 +33,4 @@
 
 - Validation completed on 2026-06-03.
 - The explicit `GET /api/agents/runtime-inventory` route and `runtime_inventory.v1` envelope are retained as a user-specified product contract for the read-only runtime inventory surface, not as an implementation prescription beyond the required public integration.
-- No [NEEDS CLARIFICATION], [Gap], or [CRITICAL] markers were found.
+- No unresolved clarification, gap, or critical markers were found.

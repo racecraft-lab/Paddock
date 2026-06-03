@@ -23,6 +23,49 @@ SPEC-014B introduces a stricter, synthetic-only harness adapter contract layer b
 **Reviewability Budget**: Primary surface: harness/adapter contract. Secondary surfaces: thin read-only API projection and read-only Agents evidence. Projected reviewable LOC: 650-780; production files: 7; total files: 15-18; budget result: WARN because projected LOC exceeds 400 and production file count may exceed 6, but not blocked because the plan stays under 800 LOC, 8 production files, 25 total files, and one primary surface. Split boundary: if implementation exceeds any hard cap, adds a second primary surface, or requires behavior beyond read-only evidence, split the Agents UI enrichment into a follow-up `014b-ui-runtime-inventory` slice and keep SPEC-014B to typed manifests, validators, read model, and API contract. Real harness execution, lifecycle controls, scheduler integration, provider/account binding, and durable inventory persistence are explicitly deferred to later specs.
 **Strict Scope**: Add these new spec-owned TS/TSX files to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `src/lib/harness-adapters/types.ts`, `src/lib/harness-adapters/fixtures.ts`, `src/lib/harness-adapters/evidence.ts`, `src/lib/harness-adapters/validation.ts`, `src/lib/harness-adapters/runtime-inventory.ts`, `src/app/api/agents/runtime-inventory/route.ts`, `src/components/agents/RuntimeInventoryEvidence.tsx`, `src/lib/harness-adapters/__tests__/validation.test.ts`, `src/lib/harness-adapters/__tests__/runtime-inventory.test.ts`, `src/app/api/agents/runtime-inventory/route.test.ts`, and `tests/e2e/agents-runtime-inventory.spec.ts`. New JS guard files enter ESLint scope: `scripts/spec-014b/check-harness-adapter-scope.mjs`.
 
+## API Contract Source-Of-Truth Decisions
+
+- Runtime inventory schema version is fixed at `runtime_inventory.v1` for SPEC-014B.
+- The runtime inventory route follows the existing read-route authorization baseline: unauthenticated requests return `401`, and authenticated `viewer`, `operator`, or `admin` callers may read only caller-visible workspace, project, and task inventory.
+- Product Line and Facility scoping use the existing workspace scope helper semantics: Product Line requests send `workspace_id=<id>`, Facility requests send `workspace_scope=facility`, mixed scope returns `400`, and unauthorized workspace, project, or task filters return `403` before inventory derivation.
+- The `role` filter is sourced from caller-visible project-agent assignment evidence, specifically `project_agent_assignments.role` joined through authorized project/workspace scope and aligned with `workflow_templates.agent_role` where task context is evaluated. It is not the human user role enum and not the legacy `/api/agents` `agents.role` filter.
+- The `requested_capability` filter is sourced from the closed v1 manifest capability/declaration key vocabulary recorded in `data-model.md` and `contracts/runtime-inventory-api.md`.
+- `/api/agents/runtime-inventory` is additive. Verification must prove `GET /api/agents` retains its existing response shape, pagination, filtering, authorization, task-stat enrichment, and hidden-agent behavior unless the caller explicitly uses the dedicated runtime-inventory route.
+
+## Agents Surface UX Decisions
+
+- Runtime inventory evidence is rendered inside the existing Agents card/detail patterns and does not create a new destination or replace current agent status controls.
+- Runtime inventory state, reason codes, selected manifest, lifecycle references, sanitized evidence, feature-flag state, generated timestamp, and truncated diagnostics are visible text labels, not color-only indicators.
+- The UI must cover loading, background refresh, no entries, feature-flag-off, unauthorized, invalid-filter, unsupported capability, blocked, stale lifecycle, and truncated diagnostics states with bounded read-only copy.
+- Mobile layouts stack runtime inventory evidence under the existing agent identity/status summary; desktop layouts may use compact summary/detail rows. Long ids and reason codes wrap or truncate without overlapping existing controls.
+- Keyboard focus order and screen-reader names must separate existing agent mutation controls from SPEC-014B read-only evidence.
+
+## Security Source-Of-Truth Decisions
+
+- Manifest, evidence, validation, diagnostic, API, UI, log, fixture, test, review-packet, and artifact text is plain text only; SPEC-014B does not render runtime inventory evidence as raw HTML or Markdown.
+- Secret-shaped values in any text-bearing manifest, evidence, validation, diagnostic, UI, log, fixture, test, review-packet, or artifact field are rejected before exposure through the existing repository secret-safety boundary or a stricter closed validator.
+- Sanitization failures remain fail-closed runtime inventory evidence with bounded field-path, evidence-kind, and reason metadata only; no redaction-and-continue path, fallback adapter, or mutation side effect is allowed.
+
+## Data Integrity Source-Of-Truth Decisions
+
+- The fake registry validates exactly the two v1 fake manifest ids and fails closed on missing, duplicate, or unknown manifest ids.
+- Runtime inventory derivation is request-local and read-only. It does not persist derived inventory in SQLite, localStorage, artifacts, scheduler state, attempts, claims, lifecycle rows, governance rows, GitHub rows, tracker truth, successor state, or auto-merge state.
+- Entry ids are unique, ordering is deterministic, and summary counts are computed from the returned post-authorization, post-filter entries.
+- `eligible` requires same-scope, caller-visible, fresh-enough task, project, assignment, governance, feature-flag, and lifecycle evidence. Absent, stale, malformed, unauthorized, cross-workspace, or cross-scope evidence cannot produce `eligible`.
+
+## Error Handling Source-Of-Truth Decisions
+
+- Request-level error precedence is fixed as `401`, `400`, `403`, `422`, then bounded `500`, and route tests must cover mixed invalid-input cases.
+- Request-level failures use `runtime_inventory_error.v1` and never include partial `entries`, raw input values, stack traces, SQL text, host paths, provider payloads, tokens, or secret-like values.
+- Entry-level fail-closed adapter outcomes stay in `runtime_inventory.v1` for otherwise authorized evaluations and do not become top-level request errors.
+
+## State Management Source-Of-Truth Decisions
+
+- Runtime inventory state is derived read state only and never becomes lifecycle authority, active-claim authority, scheduler state, dispatch state, or client-side inferred eligibility.
+- The lifecycle eligibility gate accepts SPEC-014A evidence only when it is same-workspace, same-task, same-stage, caller-visible, owner-compatible, and in `created`, `prepared`, or `running` status.
+- Terminal, cleanup-pending, cleaned-up, rolled-back, cleanup-failed, owner-incompatible, task-mismatched, stage-mismatched, unauthorized, or absent lifecycle evidence is inspectable but cannot produce `eligible`.
+- The Agents UI displays the latest authorized `runtime_inventory.v1` response and must not promote or retain stale eligible state client-side.
+
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*

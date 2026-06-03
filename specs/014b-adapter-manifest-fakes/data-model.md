@@ -47,6 +47,8 @@ Checked-in registry containing exactly two required v1 fake manifests:
 Registry rules:
 
 - Registry remains behind `FEATURE_AGENT_RUNNER_SANDBOXES`.
+- Registry validation rejects missing required v1 fake manifests, duplicate manifest ids, and unknown v1 manifest ids.
+- Registry order is deterministic by manifest id before filters are applied.
 - Every manifest is validated before it can be eligible.
 - Invalid manifests may appear only as blocked inventory evidence when the caller is otherwise authorized.
 - Registry load must not start a process, call a provider, call a gateway, read host paths, or mutate state.
@@ -63,6 +65,26 @@ Closed support object used for every required capability and declaration:
 Missing keys, booleans, null support, unknown properties, unsupported states, unbounded strings, unsupported evidence kinds, or missing unsupported reason codes make the manifest invalid.
 
 Required capability/declaration groups cover launch, resume, stop, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, MCP exposure, tool exposure, skills, plugins, memory, provider/account constraints, approval policy, timeout policy, and user-input policy.
+
+Canonical v1 capability/declaration keys used by manifests, capability-resolution packets, and the `requested_capability` query filter are:
+
+- `launch`
+- `resume`
+- `stop`
+- `transcript_read`
+- `event_read`
+- `token_runtime_accounting`
+- `artifact_publication`
+- `sandbox_posture`
+- `mcp_exposure`
+- `tool_exposure`
+- `skills`
+- `plugins`
+- `memory`
+- `provider_account_constraints`
+- `approval_policy`
+- `timeout_policy`
+- `user_input_policy`
 
 ## RuntimePolicyDeclaration
 
@@ -89,6 +111,8 @@ Allowed discriminated union kinds:
 - `fake_artifact_descriptor`: artifact descriptor with label, MIME/type metadata, byte count, digest/reference, and no artifact content
 
 Unknown kinds, unknown properties, over-limit strings/arrays, raw transcript-like text, provider payloads, host paths, prompt bodies, token payloads, auth material, secret-like values, raw external event payloads, raw tool/MCP payloads, unsafe URIs, and artifact content are rejected with `sanitized_evidence_rejected`.
+
+Text-bearing evidence and diagnostics are plain text only. They must not be interpreted as raw HTML or Markdown and must pass the existing repository secret-safety boundary, or a stricter closed validator, before they appear in API, UI, log, fixture, test, review-packet, or artifact outputs.
 
 ## HarnessManifestValidation
 
@@ -156,6 +180,14 @@ State precedence:
 4. `unassigned` means visible but not explicitly assigned for the evaluated scope.
 5. `visible` is only the discoverable baseline and never means permission to work.
 
+Integrity rules:
+
+- Entry ids are unique within one response.
+- Entry order is deterministic by manifest id and derived entry id after filters.
+- Eligible entries cannot use absent, stale, malformed, unauthorized, cross-workspace, or cross-scope task, project, assignment, governance, feature-flag, or lifecycle evidence.
+- SPEC-014A lifecycle evidence satisfies the lifecycle gate only when it is same-workspace, same-task, same-stage, caller-visible, owner-compatible, and in `created`, `prepared`, or `running` status.
+- Terminal, cleanup-pending, cleaned-up, rolled-back, cleanup-failed, owner-incompatible, task-mismatched, stage-mismatched, unauthorized, or absent lifecycle evidence cannot produce `eligible`.
+
 ## RuntimeInventoryEnvelope
 
 Route response schema version: `runtime_inventory.v1`.
@@ -169,5 +201,7 @@ Top-level fields:
 - `entries`
 - `summary`
 - `diagnostics`
+
+`summary.total` equals `entries.length`, and per-state summary counts equal the number of entries in each state after authorization and filter validation. The envelope uses one `generated_at` timestamp and one feature-flag resolution for the evaluated scope.
 
 Top-level request validation errors return no partial `entries`.

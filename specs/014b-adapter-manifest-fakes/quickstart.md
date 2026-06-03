@@ -48,6 +48,7 @@
    - `external_harness_fake`
 
 3. Confirm malformed fixtures fail with `harness_manifest_validation.v1` field-level metadata and no raw values.
+4. Confirm duplicate manifest ids, missing required fake manifests, and unknown v1 manifest ids fail closed before eligibility.
 
 ## Runtime Inventory Verification
 
@@ -74,6 +75,94 @@
    - `blocked`
 
 4. Verify `eligible` appears only when `task_id` is present and every gate passes.
+5. Verify entry ids are unique, response order is deterministic, `summary.total` equals `entries.length`, and every per-state summary count matches the returned entries.
+6. Verify stale lifecycle evidence, cross-workspace task/project/assignment evidence, malformed governance evidence, or unauthorized scope evidence cannot produce `eligible`.
+7. Verify SPEC-014A lifecycle evidence supports eligibility only for same-workspace, same-task, same-stage, caller-visible, owner-compatible `created`, `prepared`, or `running` statuses; terminal, cleanup-pending, cleaned-up, rolled-back, cleanup-failed, owner-mismatched, task-mismatched, stage-mismatched, unauthorized, and absent lifecycle evidence must not produce `eligible`.
+
+## Runtime Inventory API Contract Verification
+
+1. Verify unauthenticated access fails before inventory derivation:
+
+   ```bash
+   curl -i "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1"
+   ```
+
+   Expected: `401` with `runtime_inventory_error.v1`, the repository's standard bearer challenge when the bearer-auth path applies, and no `entries`.
+
+2. Verify a read-only authenticated caller can read authorized inventory:
+
+   ```bash
+   curl -sS -H "Authorization: Bearer <viewer-or-higher-token>" \
+     "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1"
+   ```
+
+   Expected: `200`, `schema_version: "runtime_inventory.v1"`, and only caller-visible entries.
+
+3. Verify `role` uses project-agent assignment role evidence:
+
+   ```bash
+   curl -sS -H "Authorization: Bearer <token>" \
+     "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1&project_id=<project_id>&role=<project_agent_assignments.role>"
+   ```
+
+   Expected: returned entries are limited to the exact caller-visible assignment role.
+
+4. Verify unauthorized workspace, project, and task filters fail before inventory derivation:
+
+   ```bash
+   curl -i -H "Authorization: Bearer <token>" \
+     "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=<unauthorized-workspace-id>&project_id=<unauthorized-project-id>&task_id=<unauthorized-task-id>"
+   ```
+
+   Expected: `403`, `runtime_inventory_error.v1`, bounded `authorization_denied` metadata, no indication of whether the supplied ids exist outside caller-visible scope, and no `entries`.
+
+5. Verify an unknown but syntactically valid assignment role fails closed:
+
+   ```bash
+   curl -i -H "Authorization: Bearer <token>" \
+     "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1&role=missing-runtime-role"
+   ```
+
+   Expected: `422`, `runtime_inventory_error.v1`, bounded `invalid_filter` metadata, and no `entries`.
+
+6. Verify every `requested_capability` example uses the closed v1 vocabulary:
+
+   ```bash
+   curl -sS -H "Authorization: Bearer <token>" \
+     "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1&task_id=<task_id>&requested_capability=artifact_publication"
+   ```
+
+   Expected: `200`, and each evaluated entry reports capability-resolution evidence for `artifact_publication`.
+
+7. Verify an unknown capability fails closed:
+
+   ```bash
+   curl -i -H "Authorization: Bearer <token>" \
+     "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1&requested_capability=real_provider_launch"
+   ```
+
+   Expected: `422`, `runtime_inventory_error.v1`, `reason_code: "capability_unsupported"`, and no `entries`.
+
+8. Verify `/api/agents` compatibility:
+
+   ```bash
+   curl -sS -H "Authorization: Bearer <token>" "http://127.0.0.1:3000/api/agents?workspace_id=1"
+   curl -sS -H "Authorization: Bearer <token>" "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1"
+   ```
+
+   Expected: `/api/agents` retains its existing agent-list response shape and does not embed runtime inventory by default; `/api/agents/runtime-inventory` returns `runtime_inventory.v1`.
+
+9. Verify request-level error precedence:
+
+   ```bash
+   curl -i "http://127.0.0.1:3000/api/agents/runtime-inventory?workspace_id=1&workspace_scope=facility&requested_capability=unknown"
+   ```
+
+   Expected: unauthenticated `401` takes precedence. With authentication added, mixed scope returns `400` before the unknown capability can return `422`; unauthorized scope returns `403` before malformed or unknown filters. No request-level error includes partial `entries`.
+
+10. Verify unexpected runtime inventory failures are bounded through a controlled test double:
+
+   Expected: `500`, `runtime_inventory_error.v1`, `error: "runtime_inventory_unavailable"`, no stack trace, SQL text, raw manifest value, host path, provider payload, token, secret-like value, or `entries`.
 
 ## Unsupported Capability And Policy Verification
 
@@ -104,6 +193,7 @@
 2. Confirm accepted evidence appears in API and Agents UI.
 3. Provide unsafe evidence containing raw transcript-like text, provider payload, host path, prompt body, token payload, auth material, secret-like value, raw external event payload, raw tool/MCP payload, unsafe URI, or artifact content.
 4. Verify the entry is `blocked` with `sanitized_evidence_rejected`, the unsafe object is omitted, and only bounded field-path/evidence-kind/reason metadata appears.
+5. Verify text-bearing evidence and diagnostics are plain text only, reject secret-shaped values before exposure, and are not rendered as raw HTML or Markdown in API, UI, logs, tests, review packets, or artifacts.
 
 ## Agents UI UAT
 
@@ -119,9 +209,14 @@
    - Blocked
    - Unsupported capability
    - Sanitized evidence rejection
+   - Loading, empty, invalid-filter, unauthorized, stale-lifecycle, and truncated-diagnostics states
+   - Mobile and desktop responsive layouts
 
 4. Verify the UI shows state badges, selected manifest, eligibility reasons, lifecycle references, and sanitized fake evidence.
-5. Verify no launch, assignment, retry, release, cancel, debug, lifecycle-control, scheduler, GitHub, governance, successor-selection, or auto-merge controls are rendered.
+5. Verify every runtime inventory state and reason uses visible text labels, not color or icons alone.
+6. Verify keyboard focus traversal and screen-reader labels distinguish existing Agents controls from SPEC-014B read-only evidence.
+7. Verify background refresh does not promote entries to `eligible` client-side and removes stale eligible labels when the latest authorized `runtime_inventory.v1` response lacks required gates.
+8. Verify no launch, assignment, retry, release, cancel, debug, lifecycle-control, scheduler, GitHub, governance, successor-selection, or auto-merge controls are rendered.
 
 ## Static Scope Guards
 
