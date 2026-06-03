@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "26856040516",
+      "runAttempt": "1",
+      "runKey": "26856040516-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26856040516",
+      "reportKey": "7ae69c3d8087b936f65764f93ead673f8e205652",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/playwright/7ae69c3d8087b936f65764f93ead673f8e205652/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/playwright/latest/?v=26856040516-attempt-1",
+      "headSha": "7ae69c3d8087b936f65764f93ead673f8e205652",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Paddock UI E2E",
+      "workflowFile": "paddock-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/docs-hygiene-2026-06-02",
+        "headSha": "643f3d61ac0da4404bfabd30a226b6666c85cae7",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/72/",
+        "mergeCommitSha": "",
+        "number": "72",
+        "title": "docs: fix stale operator documentation references",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/72"
+      },
+      "createdAt": "2026-06-03T00:30:07.366Z"
+    },
+    {
       "surface": "storybook",
       "runId": "26856040505",
       "runAttempt": "1",
@@ -1227,5 +1254,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-03T00:25:13.646Z"
+  "updatedAt": "2026-06-03T00:30:07.366Z"
 }
