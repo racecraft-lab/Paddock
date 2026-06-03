@@ -145,7 +145,7 @@ Added `FEATURE_AREA_LABEL_ROUTING`-gated multi-department routing for shared Git
 
 <!-- MANUAL ADDITIONS START -->
 
-### SPEC-008 — Resource Governance + Observability (branch `008-resource-governance`, in progress)
+### SPEC-008 — Resource Governance + Observability (PR #26, merged 2026-05-04)
 Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator for dispatch admission, append-only ledger / dedupe / canonical telemetry pipeline, OTLP receiver, source-emission-capability registry, drift detector, persistent circuit breaker, reservation reaper, and the Cost Tracker Governance tab (Policies / Budgets / Windows / Overrides / Diagnostics / System Health subviews). `FEATURE_OPENCLAW_HEALTH_COSTS` adds the OpenClaw health adapter as a source. Migrations M65a..m + M66 are additive and rerun-safe; rollback files at `docs/migrations/rollback-M65{a..m}.sql` and `docs/migrations/rollback-M66.sql`. Strict-scope modules: every `src/lib/resource-*.ts`, `src/lib/observability/**/*.ts`, `src/lib/feature-flag-matrix.ts`, `src/types/{resource-*,observability,provider-account,governance-api}.ts`, `src/components/governance/**/*.{ts,tsx}`, `src/app/api/{governance,resource-*,otlp}/**/*.ts`. Constitution V matrix: 9 flags × 4 scenarios in `tests/integration/feature-flag-matrix.test.ts` + 9 e2e gating rows in `tests/e2e/feature-flag-matrix.e2e.ts`. axe-core baked into the SPEC-008 Playwright fixture via `tests/e2e/spec-008/governance-axe-shim.ts`; CI guards `scripts/spec-008/check-axe-coverage.mjs` + `scripts/spec-008/check-feature-flag-env-leak.mjs`. Visual baseline approval procedure documented at `docs/operator-guides/visual-baseline-approval.md`. Visual-flake quarantine pipeline at `docs/runbook/visual-flake-quarantine.md`. Resource governance evaluator gate sites and runbook references documented in `docs/orchestration.md`. Flag-OFF preserves cost-tracker byte-compat (FR-305 / FR-238).
 
 <!-- MANUAL ADDITIONS END -->
@@ -160,10 +160,13 @@ Added `FEATURE_RESOURCE_GOVERNANCE`-gated synchronous resource policy evaluator 
 ## GitNexus
 
 - User-level Codex and Claude MCP configs register GitNexus with an absolute user-local Node binary path; do not add project-local MCP, skill, or hook installs.
-- To create or refresh this repo index, run `gitnexus analyze --embeddings --skip-agents-md` from this repo root after the LM Studio embedding server is running.
+- Keep the repo-root `.envrc` tracked and committed. Keep `.envrc.local` ignored and untracked; it must exist locally in the main checkout before being copied into linked worktrees.
+- To create or refresh this repo index, run `direnv exec . gitnexus analyze --embeddings --skip-agents-md` from this repo root, outside the Codex sandbox, after the LM Studio embedding server is running.
+- In linked worktrees, copy the ignored root `.envrc.local` into the worktree, run `direnv allow`, and use `direnv exec .` for GitNexus commands. GitNexus embeddings depend on `.envrc.local` values such as `GITNEXUS_EMBEDDING_URL`, `GITNEXUS_EMBEDDING_MODEL`, `GITNEXUS_EMBEDDING_DIMS`, and HTTP batching/concurrency settings; running `gitnexus analyze` outside direnv can silently use the wrong embedding configuration.
 - GitNexus stores the generated local index under `.gitnexus/`, which is ignored.
 
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan
+shell commands, and other important information, read
+`specs/013d-claim-control-operator-ux/plan.md`.
 <!-- SPECKIT END -->

@@ -16,7 +16,7 @@ continue ingesting data (FR-146 / FR-147).
 
 The ordering and H2 slugs below match the basenames in
 `src/lib/observability/adapters/*.ts`. The CI guard
-`scripts/check-tos-doc.ts` (T123) fails if any adapter file is missing
+`scripts/check-tos-doc.mjs` (T123) fails if any adapter file is missing
 a corresponding H2 here (orphan detection).
 
 ## claude-code-otel
@@ -99,7 +99,7 @@ a corresponding H2 here (orphan detection).
   invocations. Do NOT redistribute observed events outside the
   operator org. The repository forbids dependence on
   `J-Bax/copilot-token-tracker` (CI guard at
-  `scripts/check-no-copilot-token-tracker-dep.ts`) — operators MUST
+  `scripts/check-no-copilot-token-tracker-dep.mjs`) — operators MUST
   use the official events.jsonl surface.
 - **Risk**: Medium. Events include repository paths and prompt
   context fragments; redaction of body is required before persistence.
