@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014B-workflow.md",
-  "updated_at": "2026-06-03T16:53:48Z",
+  "updated_at": "2026-06-03T17:07:10Z",
   "spec_id": "SPEC-014B",
   "branch": "014b-adapter-manifest-fakes",
   "confidence_gate_mode": "advisory",
@@ -41,7 +41,7 @@
     "required_agents_installed": true,
     "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt (agents will use built-in fallbacks)"
   },
-  "active_step": "Phase 3: Plan",
+  "active_step": "Phase 4: Checklist - api-contracts",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -52,8 +52,8 @@
     {"step": "Phase 2: Clarify - Reason Codes and Fail-Closed Semantics Consensus", "status": "completed"},
     {"step": "Phase 2: Clarify - Manifest and Policy Vocabulary", "status": "completed"},
     {"step": "Phase 2: Clarify - Manifest and Policy Vocabulary Consensus", "status": "completed"},
-    {"step": "Phase 3: Plan", "status": "in_progress"},
-    {"step": "Phase 4: Checklist - api-contracts", "status": "pending"},
+    {"step": "Phase 3: Plan", "status": "completed"},
+    {"step": "Phase 4: Checklist - api-contracts", "status": "in_progress"},
     {"step": "Phase 4: Checklist - api-contracts Consensus", "status": "pending"},
     {"step": "Phase 4: Checklist - ux", "status": "pending"},
     {"step": "Phase 4: Checklist - ux Consensus", "status": "pending"},

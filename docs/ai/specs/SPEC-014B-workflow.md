@@ -26,8 +26,8 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 | Archive Sweep | `$speckit-archive-run` | Complete | Dry-run completed in `014b-adapter-manifest-fakes`: five completed specs already archived, no new archive work, cleanup disabled |
 | Specify | `$speckit-specify` | Complete | Generated and clarified `specs/014b-adapter-manifest-fakes/spec.md` with 56 FRs, 5 stories, 15 acceptance scenarios, and no clarification markers |
 | Clarify | `$speckit-clarify` | In Progress | Resolving API path, reason-code enum, gate packet, and policy vocabulary details |
-| Plan | `$speckit-plan` | Pending | Generate architecture, data model/types, contracts, quickstart, and constitution gates |
-| Checklist | `$speckit-checklist` | Pending | Recommended domains: api-contracts, ux, security, data-integrity, error-handling, state-management |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, runtime inventory API contract, and quickstart with no migration or real harness execution |
+| Checklist | `$speckit-checklist` | In Progress | Running domains: api-contracts, ux, security, data-integrity, error-handling, state-management |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with reviewability budget |
 | Analyze | `$speckit-analyze` | Pending | Cross-check spec, plan, tasks, and design concept for drift |
 | Implement | `$speckit-implement` | Pending | Execute tasks only after gates pass; do not run real harnesses |
@@ -323,11 +323,11 @@ Plan outputs must include:
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context and execution flow |
-| `research.md` | Pending | Decision rationales |
-| `data-model.md` | Pending | Manifest, registry, inventory, evidence, and reason-code types |
-| `contracts/` | Pending | Runtime inventory API |
-| `quickstart.md` | Pending | Local and manual UAT flow |
+| `plan.md` | Complete | Technical context, constitution gates, scope, and reviewability WARN |
+| `research.md` | Complete | 9 decision rationales |
+| `data-model.md` | Complete | Manifest, registry, inventory, evidence, validation, and reason-code types |
+| `contracts/` | Complete | `runtime-inventory-api.md` |
+| `quickstart.md` | Complete | Local and manual UAT flow |
 
 ---
 
