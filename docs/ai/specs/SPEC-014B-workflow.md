@@ -25,11 +25,11 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 |-------|---------|--------|-------|
 | Archive Sweep | `$speckit-archive-run` | Complete | Dry-run completed in `014b-adapter-manifest-fakes`: five completed specs already archived, no new archive work, cleanup disabled |
 | Specify | `$speckit-specify` | Complete | Generated and clarified `specs/014b-adapter-manifest-fakes/spec.md` with 56 FRs, 5 stories, 15 acceptance scenarios, and no clarification markers |
-| Clarify | `$speckit-clarify` | In Progress | Resolving API path, reason-code enum, gate packet, and policy vocabulary details |
+| Clarify | `$speckit-clarify` | Complete | Resolved API path, reason-code enum, gate packet, policy vocabulary, and manifest validation details |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, runtime inventory API contract, and quickstart with no migration or real harness execution |
-| Checklist | `$speckit-checklist` | In Progress | Running domains: api-contracts, ux, security, data-integrity, error-handling, state-management |
-| Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with reviewability budget |
-| Analyze | `$speckit-analyze` | Pending | Cross-check spec, plan, tasks, and design concept for drift |
+| Checklist | `$speckit-checklist` | Complete | Completed domains: api-contracts, ux, security, data-integrity, error-handling, state-management |
+| Tasks | `$speckit-tasks` | Complete | Generated 82 dependency-ordered TDD tasks with reviewability budget |
+| Analyze | `$speckit-analyze` | Complete | Cross-checked spec, plan, tasks, workflow, and generated design artifacts; remediated workflow/status and verification-path drift |
 | Implement | `$speckit-implement` | Pending | Execute tasks only after gates pass; do not run real harnesses |
 
 **Status Legend:** Pending | In Progress | Complete | Blocked
@@ -116,7 +116,7 @@ Define the typed harness adapter manifest and registry for launch/resume/stop ca
 
 - Existing Agents surface owns runtime inventory visibility.
 - Fake manifests are checked-in typed fixtures with validation.
-- Fake adapter postures are `paddock` and `external_harness`.
+- Fake adapter postures are the Paddock-owned sandbox fake and external-harness fake, with final v1 manifest ids `paddock_owned_sandbox_fake` and `external_harness_fake`.
 - Eligibility requires all gates: feature flag, project-role assignment, adapter capability support, governance allow, tracker-linked task eligibility, and SPEC-014A sandbox lifecycle evidence.
 - Runtime inventory is derived, not persisted.
 - Unsupported capabilities fail closed with stable evidence; no stall, fallback, or silent adapter switch.
@@ -445,9 +445,19 @@ Flag any drift where generated artifacts:
 
 | Finding Level | Count | Notes |
 |---------------|-------|-------|
-| CRITICAL | Pending | |
-| WARNING | Pending | |
-| INFO | Pending | |
+| CRITICAL | 0 | No artifact asks SPEC-014B to persist runtime inventory, widen `src/lib/adapters`, add real harness execution, or add mutation controls. |
+| WARNING | 3 fixed | Remediated stale workflow phase statuses, stale Required Verification test paths, and plan reviewability/strict-scope undercount for the existing Agents panel integration test. |
+| INFO | 1 accepted | Reviewability remains WARN by design: one primary harness-adapter contract surface plus narrow read-only API/UI projections, with hard split rules preserved. |
+
+### Analyze Confidence
+
+📊 Confidence: 0.94
+
+- Task understanding: 0.96
+- Approach clarity: 0.93
+- Requirements alignment: 0.94
+- Risk assessment: 0.96
+- Completeness: 0.92
 
 ---
 
@@ -477,9 +487,10 @@ At minimum before reporting completion:
 ```text
 pnpm typecheck
 pnpm lint
-pnpm test -- src/lib/__tests__/harness-adapter-manifest.test.ts
-pnpm test -- src/lib/__tests__/harness-runtime-inventory.test.ts
-pnpm test -- src/app/api/agents/runtime-inventory/__tests__/route.test.ts
+pnpm test -- src/lib/harness-adapters/__tests__/validation.test.ts
+pnpm test -- src/lib/harness-adapters/__tests__/runtime-inventory.test.ts
+pnpm test -- src/app/api/agents/runtime-inventory/route.test.ts
+pnpm test -- src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx
 pnpm test -- src/components/panels/__tests__/agent-runtime-inventory.test.tsx
 pnpm test
 ```

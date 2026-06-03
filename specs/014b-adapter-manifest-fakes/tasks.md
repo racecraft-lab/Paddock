@@ -169,7 +169,7 @@
 - [ ] T060 [P] [US5] Add positive and negative static guard fixtures for forbidden imports/calls in `scripts/spec-014b/check-harness-adapter-scope.mjs`
 - [ ] T061 [P] [US5] Add guard assertions for no migration files, no `src/lib/adapters` widening, no gateway/process execution, no scheduler dispatch, no claim-control/retry/lifecycle-control mutation, no GitHub/governance/successor/auto-merge path in `scripts/spec-014b/check-harness-adapter-scope.mjs`
 - [ ] T062 [P] [US5] Add route side-effect regression tests for `/api/agents`, `/api/adapters`, task dispatch, claim reconciliation/control, and sandbox lifecycle compatibility in `src/app/api/agents/runtime-inventory/route.test.ts`
-- [ ] T063 [P] [US5] Add API index, OpenAPI, and repo knowledge index drift checks for the new route and guard script in `docs/ai/repo-knowledge-index.json`
+- [ ] T063 [P] [US5] Update `docs/ai/repo-knowledge-index.json` for the new route and guard script, and add API index/OpenAPI drift assertions in `src/app/api/agents/runtime-inventory/route.test.ts`
 
 ### Implementation for User Story 5
 

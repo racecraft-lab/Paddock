@@ -20,8 +20,8 @@ SPEC-014B introduces a stricter, synthetic-only harness adapter contract layer b
 **Performance Goals**: Runtime inventory derivation is bounded, deterministic, local-only, and performs no external calls, process launches, scheduler dispatch, or gateway RPC; operators can identify state, manifest, failed gate, and lifecycle reference from the Agents surface in under 30 seconds.
 **Constraints**: `FEATURE_AGENT_RUNNER_SANDBOXES` defaults OFF; v1 manifests are synthetic-only; unsupported capabilities/policies fail closed; unsafe evidence is rejected rather than redacted-and-continued; runtime inventory is read-only; no launch, assignment, retry, release, cancel, lifecycle, scheduler, GitHub, governance, tracker-truth, successor, or auto-merge mutation path is introduced.
 **Scale/Scope**: Exactly two required fake manifest postures, one runtime inventory API route, one read-only Agents surface integration, five runtime inventory states, twelve public reason codes, seven sanitized fake evidence kinds, and focused tests/guards for the SPEC-014B boundary.
-**Reviewability Budget**: Primary surface: harness/adapter contract. Secondary surfaces: thin read-only API projection and read-only Agents evidence. Projected reviewable LOC: 650-780; production files: 7; total files: 15-18; budget result: WARN because projected LOC exceeds 400 and production file count may exceed 6, but not blocked because the plan stays under 800 LOC, 8 production files, 25 total files, and one primary surface. Split boundary: if implementation exceeds any hard cap, adds a second primary surface, or requires behavior beyond read-only evidence, split the Agents UI enrichment into a follow-up `014b-ui-runtime-inventory` slice and keep SPEC-014B to typed manifests, validators, read model, and API contract. Real harness execution, lifecycle controls, scheduler integration, provider/account binding, and durable inventory persistence are explicitly deferred to later specs.
-**Strict Scope**: Add these new spec-owned TS/TSX files to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `src/lib/harness-adapters/types.ts`, `src/lib/harness-adapters/fixtures.ts`, `src/lib/harness-adapters/evidence.ts`, `src/lib/harness-adapters/validation.ts`, `src/lib/harness-adapters/runtime-inventory.ts`, `src/app/api/agents/runtime-inventory/route.ts`, `src/components/agents/RuntimeInventoryEvidence.tsx`, `src/lib/harness-adapters/__tests__/validation.test.ts`, `src/lib/harness-adapters/__tests__/runtime-inventory.test.ts`, `src/app/api/agents/runtime-inventory/route.test.ts`, and `tests/e2e/agents-runtime-inventory.spec.ts`. New JS guard files enter ESLint scope: `scripts/spec-014b/check-harness-adapter-scope.mjs`.
+**Reviewability Budget**: Primary surface: harness/adapter contract. Secondary surfaces: thin read-only API projection and read-only Agents evidence. Projected reviewable LOC: 650-780; production files: 8 including the existing Agents panel integration file; total files: 16-19; budget result: WARN because projected LOC exceeds 400 and production file count exceeds 6, but not blocked because the plan stays under 800 LOC, 8 production files, 25 total files, and one primary surface. Split boundary: if implementation exceeds any hard cap, adds a second primary surface, or requires behavior beyond read-only evidence, split the Agents UI enrichment into a follow-up `014b-ui-runtime-inventory` slice and keep SPEC-014B to typed manifests, validators, read model, and API contract. Real harness execution, lifecycle controls, scheduler integration, provider/account binding, and durable inventory persistence are explicitly deferred to later specs.
+**Strict Scope**: Add these new spec-owned TS/TSX files to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `src/lib/harness-adapters/types.ts`, `src/lib/harness-adapters/fixtures.ts`, `src/lib/harness-adapters/evidence.ts`, `src/lib/harness-adapters/validation.ts`, `src/lib/harness-adapters/runtime-inventory.ts`, `src/app/api/agents/runtime-inventory/route.ts`, `src/components/agents/RuntimeInventoryEvidence.tsx`, `src/lib/harness-adapters/__tests__/validation.test.ts`, `src/lib/harness-adapters/__tests__/runtime-inventory.test.ts`, `src/app/api/agents/runtime-inventory/route.test.ts`, `src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx`, `src/components/panels/__tests__/agent-runtime-inventory.test.tsx`, and `tests/e2e/agents-runtime-inventory.spec.ts`. Planned existing TSX integration touch: `src/components/panels/agent-squad-panel.tsx`. New JS guard files enter ESLint scope: `scripts/spec-014b/check-harness-adapter-scope.mjs`.
 
 ## API Contract Source-Of-Truth Decisions
 
@@ -114,8 +114,14 @@ src/
 │               ├── route.ts
 │               └── route.test.ts
 ├── components/
-│   └── agents/
-│       └── RuntimeInventoryEvidence.tsx
+│   ├── agents/
+│   │   ├── RuntimeInventoryEvidence.tsx
+│   │   └── __tests__/
+│   │       └── RuntimeInventoryEvidence.test.tsx
+│   └── panels/
+│       ├── agent-squad-panel.tsx
+│       └── __tests__/
+│           └── agent-runtime-inventory.test.tsx
 └── lib/
     └── harness-adapters/
         ├── types.ts
