@@ -2,6 +2,33 @@
   "version": 1,
   "reports": [
     {
+      "surface": "storybook",
+      "runId": "26856040505",
+      "runAttempt": "1",
+      "runKey": "26856040505-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26856040505",
+      "reportKey": "7ae69c3d8087b936f65764f93ead673f8e205652",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/storybook/7ae69c3d8087b936f65764f93ead673f8e205652/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/storybook/latest/?v=26856040505-attempt-1",
+      "headSha": "7ae69c3d8087b936f65764f93ead673f8e205652",
+      "headRef": "main",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "sourcePullRequest": {
+        "baseRef": "main",
+        "headRef": "codex/docs-hygiene-2026-06-02",
+        "headSha": "643f3d61ac0da4404bfabd30a226b6666c85cae7",
+        "indexHref": "https://racecraft-lab.github.io/Paddock/pr/72/",
+        "mergeCommitSha": "",
+        "number": "72",
+        "title": "docs: fix stale operator documentation references",
+        "url": "https://github.com/racecraft-lab/Paddock/pull/72"
+      },
+      "createdAt": "2026-06-03T00:25:13.646Z"
+    },
+    {
       "surface": "playwright",
       "runId": "26850353778",
       "runAttempt": "1",
@@ -1200,5 +1227,5 @@
       "createdAt": "2026-05-05T00:17:55.366Z"
     }
   ],
-  "updatedAt": "2026-06-02T22:02:42.406Z"
+  "updatedAt": "2026-06-03T00:25:13.646Z"
 }
