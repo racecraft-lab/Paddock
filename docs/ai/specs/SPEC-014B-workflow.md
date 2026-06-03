@@ -24,7 +24,7 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Archive Sweep | `$speckit-archive-run` | Complete | Dry-run completed in `014b-adapter-manifest-fakes`: five completed specs already archived, no new archive work, cleanup disabled |
-| Specify | `$speckit-specify` | Complete | Generated `specs/014b-adapter-manifest-fakes/spec.md` with 55 FRs, 5 stories, 15 acceptance scenarios, and no clarification markers |
+| Specify | `$speckit-specify` | Complete | Generated and clarified `specs/014b-adapter-manifest-fakes/spec.md` with 56 FRs, 5 stories, 15 acceptance scenarios, and no clarification markers |
 | Clarify | `$speckit-clarify` | In Progress | Resolving API path, reason-code enum, gate packet, and policy vocabulary details |
 | Plan | `$speckit-plan` | Pending | Generate architecture, data model/types, contracts, quickstart, and constitution gates |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: api-contracts, ux, security, data-integrity, error-handling, state-management |
@@ -204,7 +204,7 @@ Out of scope:
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | 55 |
+| Functional Requirements | 56 |
 | User Stories | 5 |
 | Acceptance Criteria | 15 acceptance scenarios |
 
@@ -259,9 +259,22 @@ Focus on SPEC-014B manifest vocabulary:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | API and runtime inventory contract | Pending | Pending |
-| 2 | Reason codes and fail-closed semantics | Pending | Pending |
-| 3 | Manifest and policy vocabulary | Pending | Pending |
+| 1 | API and runtime inventory contract | 5 | Dedicated `GET /api/agents/runtime-inventory` route, allowlisted filters, task-scoped eligibility, `runtime_inventory.v1` envelope fields, `/api/agents` compatibility, and closed sanitized evidence allowlist recorded in `spec.md` |
+| 2 | Reason codes and fail-closed semantics | 5 | Closed twelve-code enum, boundary mapping from internal terms, blocked-inventory-only fake failures, deterministic reason ordering, no fallback/silent switch, and `sanitized_evidence_rejected` surfacing recorded in `spec.md` |
+| 3 | Manifest and policy vocabulary | 5 | Closed `harness_adapter_manifest.v1` shape, uniform capability support objects, synthetic-only provider/account policy fields, fake fixture ids, and bounded `harness_manifest_validation.v1` payload recorded in `spec.md` |
+
+### Consensus Resolution Log
+
+| Phase | Item | Round | Routed Categories | Outcome | Analysts Used |
+|-------|------|-------|-------------------|---------|---------------|
+| Clarify Session 1 | Q1 runtime inventory route, scope, filters, and task-scoped eligibility | 1 | `[codebase, spec, security]` | Accepted dedicated read-only `GET /api/agents/runtime-inventory`; allowlisted filters; full `eligible` requires caller-visible `task_id`; `/api/agents` remains compatible | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 1 | Q5 sanitized fake evidence allowlist and rejection behavior | 1 | `[security]` | Accepted closed `sanitized_fake_evidence.v1` allowlist and fail-closed `sanitized_evidence_rejected` behavior with bounded reason metadata only | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 2 | Q1 closed reason-code enum | 1 | `[codebase, spec]` | Accepted the twelve-code SPEC-014B enum and boundary normalization of internal source terms into public adapter reason codes | codebase-analyst, spec-context-analyst |
+| Clarify Session 2 | Q5 `sanitized_evidence_rejected` surfacing | 1 | `[security]` | Accepted entry-level `state=blocked` plus bounded rejection metadata for authorized evaluations; request scope/filter errors remain top-level `400`/`403`/`422` before entries | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 | Q1 top-level manifest shape | 1 | `[security, codebase, spec]` | Accepted closed `harness_adapter_manifest.v1` grouped TypeScript fixture contract in the new harness-adapter layer, separate from `src/lib/adapters` | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 | Q2 capability support declarations | 1 | `[security, spec]` | Accepted required closed support objects for every capability/declaration; missing fields are `manifest_invalid`, unsupported support is explicit | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 | Q3 policy and provider/account constraints | 1 | `[security, spec]` | Accepted synthetic-only provider/account constraints plus explicit approval, timeout, and user-input policy declarations | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 | Q5 manifest validation payload | 1 | `[security, codebase, domain]` | Accepted bounded `harness_manifest_validation.v1` issue-list payload with capped diagnostics and no raw values, schema excerpts, prompts, tokens, credentials, host paths, or provider/tool payloads | codebase-analyst, spec-context-analyst, domain-researcher |
 
 ---
 

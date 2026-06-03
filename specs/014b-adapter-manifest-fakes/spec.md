@@ -16,6 +16,101 @@ The following current external sources were consulted on 2026-06-03:
 
 These sources inform only the SPEC-014B contract vocabulary and safety posture: explicit harness capabilities, isolated work contexts, repository-owned policy, observable attempts, fail-closed configuration, and operator-visible evidence. SPEC-014B does not import Symphony's implementation stack, Linear-only tracker assumptions, daemon scheduler, real agent client behavior, or auto-merge workflow.
 
+## Clarifications
+
+### Runtime Inventory API Scope
+
+`GET /api/agents/runtime-inventory` is the only v1 runtime-inventory route and returns `runtime_inventory.v1`. `/api/agents` remains response-compatible and does not embed runtime inventory by default.
+
+The route follows the existing workspace scope contract: Product Line requests use `workspace_id=<id>`, Facility requests use `workspace_scope=facility`, sending both scope forms returns `400`, and unauthorized scope returns `403`. Every user-supplied resource filter must be authorized against the caller-visible workspace, task, or project scope before it can influence inventory output.
+
+Allowed query filters are `task_id`, `project_id`, `role`, `requested_capability`, `state`, and `manifest_id`. Filter values are strict allowlists or known identifiers; unknown capability, state, or manifest values fail closed with bounded validation evidence.
+
+Request-level scope and filter validation happens before runtime inventory entries are derived. Mixed scope parameters return `400`, unauthorized workspace, task, or project filters return `403`, and syntactically valid but unsupported or unknown filter values return `422` with bounded validation metadata. These request-level failures do not return partial `entries`.
+
+The route may list `visible`, `unassigned`, `assigned`, and `blocked` inventory without `task_id`. A full `eligible` evaluation requires `task_id` because eligibility depends on tracker-linked task eligibility and SPEC-014A sandbox lifecycle evidence. Without `task_id`, the response must not claim an adapter is eligible for work.
+
+### Runtime Inventory Envelope
+
+The `runtime_inventory.v1` response envelope includes `schema_version`, `generated_at`, `scope`, `feature_flag`, `entries`, `summary`, and `diagnostics`. Each entry includes `id`, `state`, `selected_manifest`, `assignment`, `capability_resolution`, `eligibility_gates`, `sandbox_lifecycle_refs`, `sanitized_fake_evidence`, and `reason_codes`.
+
+State precedence is closed: any failed evaluated required gate or validation failure produces `blocked`; `eligible` requires all gates and a task context; `assigned` means explicit project-role assignment is present but the task/capability/lifecycle context is absent or not fully evaluated; `unassigned` means visible but not explicitly assigned; `visible` is only the discoverable baseline.
+
+### Fail-Closed Reason Codes
+
+SPEC-014B uses the closed `HarnessAdapterReasonCode` enum: `feature_disabled`, `manifest_invalid`, `adapter_unassigned`, `capability_unsupported`, `governance_denied`, `task_ineligible`, `sandbox_lifecycle_missing`, `approval_unsupported`, `user_input_unsupported`, `timeout_budget_expired`, `authorization_denied`, and `sanitized_evidence_rejected`.
+
+This enum is the public runtime-inventory, capability-resolution, UI, fixture, and review-packet vocabulary. Existing lower-level codebase terms are normalized at the harness-adapter boundary rather than exposed as pass-through public reason codes. Original internal terms may appear only as bounded sanitized diagnostic metadata such as `source_reason` or `source_decision`.
+
+When multiple evaluated gates fail for an entry, the entry returns every failed reason code in deterministic precedence order: feature flag, manifest validation, assignment, capability, policy, governance, task eligibility, sandbox lifecycle, authorization, evidence safety. Request-level scope, authorization, and filter validation errors are rejected before entries are derived.
+
+All evaluated gate, policy, capability, and validation failures in SPEC-014B are `blocked` runtime inventory plus capability-resolution evidence. SPEC-014B does not write failed task attempts, task artifacts, claims, lifecycle mutations, GitHub mutations, scheduler state, tracker truth, or successor-selection state for these fake-registry failures.
+
+### Sanitized Fake Evidence
+
+`SanitizedFakeEvidence` is a closed `sanitized_fake_evidence.v1` discriminated union with these allowed kinds: `synthetic_summary`, `counter`, `event_ref`, `lifecycle_ref`, `manifest_ref`, `capability_resolution_ref`, and `fake_artifact_descriptor`.
+
+Evidence objects carry only fields defined for their kind. Unknown kinds, unknown properties, unsafe field names, over-limit strings or arrays, raw transcript-like text, provider payloads, host paths, prompt bodies, token payloads, authentication material, secret-like values, raw external event payloads, raw tool or MCP payloads, unsafe URIs, and artifact content are rejected before API, UI, log, test, fixture, review-packet, or artifact exposure.
+
+Unsafe evidence does not get redacted-and-continued in SPEC-014B. The capability or inventory evaluation fails closed with `sanitized_evidence_rejected`, returns only bounded field-path, evidence-kind, and reason metadata, and never marks the adapter eligible, selects a fallback adapter, switches harnesses, or mutates task, claim, lifecycle, governance, GitHub, scheduler, tracker, successor, or auto-merge state.
+
+When unsafe fake evidence is detected during an otherwise authorized adapter/task evaluation, the route still returns `runtime_inventory.v1` for the evaluated visible entry. That entry has `state: "blocked"`, includes `sanitized_evidence_rejected` in `reason_codes`, omits the unsafe evidence object from `sanitized_fake_evidence`, and may expose only bounded rejection metadata: field path, evidence kind, and closed rejection reason. This is an entry-level evaluation failure, not a top-level request authorization or filter-validation error.
+
+### Harness Adapter Manifest Shape
+
+`HarnessAdapterManifest` is a closed `harness_adapter_manifest.v1` TypeScript fixture contract in the new harness-adapter layer, separate from `src/lib/adapters`. Every top-level field is required: `schema_version`, `manifest_id`, `display_name`, `sandbox`, `capabilities`, `exposure`, `provider_account_constraints`, `policies`, and `evidence_descriptors`.
+
+The manifest does not include top-level `metadata`, raw configuration, runtime inventory, assignment, eligibility gates, sandbox lifecycle rows, execution state, provider payloads, host paths, prompt bodies, credentials, transcripts, or catch-all extension fields. Unknown top-level or nested properties fail validation. Runtime inventory and eligibility fields belong to derived read models, not to the manifest.
+
+The two required v1 fake manifest identifiers are `paddock_owned_sandbox_fake` and `external_harness_fake`. Implementation may export constants named `PADDOCK_OWNED_SANDBOX_FAKE_MANIFEST` and `EXTERNAL_HARNESS_FAKE_MANIFEST`. Valid fake fixtures belong under the new harness-adapter boundary; invalid fixtures are test-only inputs.
+
+### Manifest Capability Support Shape
+
+Every required harness adapter capability or declaration is encoded as a closed support object, not as a boolean, nullable field, missing property, or inferred default. Required support-object fields are `state`, optional bounded `modes`, optional bounded `evidence_kinds`, and `unsupported_reason_code` when unsupported.
+
+`state` is exactly `supported` or `unsupported`. Every required capability/declaration key is present in the manifest. Missing keys, unknown support-object properties, unsupported `state` values, unbounded mode strings, unsupported evidence kinds, or missing `unsupported_reason_code` for an unsupported declaration make the manifest invalid with `manifest_invalid` field-level evidence. Paddock must not infer support from missing fields, mode names, evidence descriptors, adapter posture, or runtime visibility.
+
+This shape applies uniformly to launch, resume, stop, transcript read, event read, token/runtime accounting, artifact publication, sandbox posture, MCP exposure, tool exposure, skills, plugins, memory, provider/account constraints, approval policy, timeout policy, and user-input policy declarations. Capability/declaration gaps use `capability_unsupported` unless a policy declaration has a more specific reason code: `approval_unsupported`, `user_input_unsupported`, or `timeout_budget_expired`.
+
+### Manifest Policy And Provider/Account Constraints
+
+V1 fake manifests use synthetic-only provider/account constraints: `provider_kind: "synthetic"`, `account_binding: "none"`, and `credential_exposure: "forbidden"`.
+
+`approval_policy` declares supported modes and maps unsupported approval requirements to `approval_unsupported`. `timeout_policy` declares supported modes and maps unsupported, malformed, or expired timeout budgets to `timeout_budget_expired`. `user_input_policy` declares supported modes and maps unsupported user-input requirements to `user_input_unsupported`. Malformed policy declarations fail as `manifest_invalid`.
+
+V1 manifests must not expose real provider kinds, provider account ids, credential references, credential material, auth environment variables, prompt bodies, prompt templates containing bodies, provider payloads, raw external event payloads, raw tool or MCP payloads, token payloads, transcripts, or secret-like values. Real provider/account binding is deferred to later real-adapter specs and requires a new security review.
+
+### Manifest Validation Failure Payload
+
+Manifest validation failures return only bounded structured metadata using `harness_manifest_validation.v1`:
+
+```json
+{
+  "ok": false,
+  "error": "manifest_invalid",
+  "schema_version": "harness_manifest_validation.v1",
+  "issues": [
+    {
+      "field_path": "<manifest field path>",
+      "code": "<closed validation code>",
+      "reason_code": "manifest_invalid",
+      "evidence_kind": "<optional sanitized evidence kind>",
+      "rejected_property": "<optional property name only>"
+    }
+  ],
+  "diagnostics": {
+    "manifest_id": "<optional known manifest id>",
+    "manifest_sha256": "<optional canonical manifest digest>",
+    "issue_count": 0,
+    "truncated": false
+  }
+}
+```
+
+`issues` and `diagnostics` are capped, deterministic, and safe to expose in API responses, UI, tests, fixtures, logs, review packets, and artifacts. `field_path`, `code`, `reason_code`, `evidence_kind`, and `rejected_property` are metadata only; `rejected_property` may name an unknown or rejected property but must not echo its value. Arbitrary map keys in field paths are redacted unless they pass a strict identifier allowlist. If caps are exceeded, the response sets `diagnostics.truncated=true` and preserves total `issue_count`.
+
+The payload must not include raw manifest values, schema excerpts, validator exception text, stack traces, transcript text, provider payloads, host paths, prompt bodies, model outputs, token payloads, API keys, session ids, connection strings, authentication material, secret-like values, raw tool or MCP payloads, raw external event payloads, or artifact content. A malformed manifest maps to entry-level `state: "blocked"` with `reason_codes: ["manifest_invalid"]` when entries are otherwise authorized.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Review Declared Harness Capabilities (Priority: P1)
@@ -108,8 +203,14 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - Multiple fake manifests are visible and only one is explicitly selected for the evaluated task.
 - Approval, timeout, or user-input policy declarations are unsupported, expired, malformed, or incompatible with the selected adapter.
 - Fake evidence contains overlong summaries, raw transcript-like text, raw provider payloads, host paths, prompt bodies, token payloads, or secret-like values.
+- A manifest omits a required top-level group, required capability key, or unsupported capability reason code.
+- A manifest declares a real provider kind, account binding, credential exposure, prompt body, provider payload, or raw tool/MCP payload in v1.
+- Manifest validation finds more issues than the response cap; diagnostics are truncated without exposing raw values.
 - Existing OpenClaw gateway, session scanner, runtime detection, agent sync, or AgentRun inputs are absent, malformed, or stale.
 - Runtime inventory is requested by a user without workspace access or by a read-only user.
+- Runtime inventory is requested with both `workspace_id` and `workspace_scope=facility`, an unauthorized `workspace_id`, an unknown state filter, or an unknown requested capability.
+- Runtime inventory is requested without `task_id`; the response may show visible, unassigned, assigned, or blocked inventory, but it cannot claim any adapter is eligible for work.
+- Multiple evaluated gates fail for one entry; the response returns every failed reason code in deterministic precedence order.
 - Browser UI is loaded while inventory entries change between visible, assigned, eligible, and blocked states.
 
 ## Requirements *(mandatory)*
@@ -121,21 +222,21 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - **FR-003**: System MUST reuse existing framework-adapter, OpenClaw gateway, runtime/session observation, agent sync, local agent sync, and AgentRun surfaces as inputs or compatibility boundaries where relevant.
 - **FR-004**: System MUST NOT duplicate OpenClaw gateway behavior, framework-adapter behavior, session scanners, runtime detection, agent sync, local agent sync, or AgentRun storage.
 - **FR-005**: System MUST define checked-in typed fake manifest fixtures for the SPEC-014B fake registry.
-- **FR-006**: System MUST validate fake manifests before they can appear as eligible runtime inventory.
+- **FR-006**: System MUST validate fake manifests before they can appear as eligible runtime inventory and MUST return only bounded `harness_manifest_validation.v1` metadata for manifest failures.
 - **FR-007**: System MUST avoid SQLite persistence for adapter manifests and runtime inventory in SPEC-014B.
-- **FR-008**: System MUST include exactly two required fake adapter postures for v1: a Paddock-owned sandbox fake and an external-harness fake.
+- **FR-008**: System MUST include exactly two required fake adapter postures for v1: a Paddock-owned sandbox fake with manifest id `paddock_owned_sandbox_fake` and an external-harness fake with manifest id `external_harness_fake`.
 - **FR-009**: System MUST prove both fake adapter postures exercise the same harness adapter contract.
 - **FR-010**: System MUST keep all fake adapters behind `FEATURE_AGENT_RUNNER_SANDBOXES`, which defaults OFF.
 - **FR-011**: System MUST declare manifest capabilities for launch, resume, stop, transcript or event read, token/runtime accounting, artifact publication, sandbox posture, MCP exposure, tool exposure, skills, plugins, memory, provider/account constraints, approval policy, timeout policy, and user-input policy.
-- **FR-012**: System MUST represent unsupported capabilities explicitly rather than omitting or inferring support.
+- **FR-012**: System MUST represent unsupported capabilities explicitly through closed support objects rather than omitting fields, using booleans, or inferring support.
 - **FR-013**: System MUST produce a capability-resolution packet for an evaluated adapter and task context.
 - **FR-014**: System MUST include the selected manifest identifier, requested capability, supported capability result, policy result, eligibility gate results, stable reason codes, and sanitized evidence references in the capability-resolution packet.
 - **FR-015**: System MUST use a derived runtime inventory state model with the states `visible`, `unassigned`, `assigned`, `eligible`, and `blocked`.
 - **FR-016**: System MUST define `visible` as an adapter manifest that can be listed or observed but has not necessarily been assigned or authorized for work.
 - **FR-017**: System MUST define `unassigned` as a visible adapter that lacks explicit project-role assignment for the evaluated scope.
-- **FR-018**: System MUST define `assigned` as a visible adapter with explicit project-role assignment but without all eligibility gates satisfied.
-- **FR-019**: System MUST define `eligible` as an assigned adapter whose feature flag, project-role assignment, adapter capability support, governance allow decision, tracker-linked task eligibility, and SPEC-014A sandbox lifecycle evidence all pass.
-- **FR-020**: System MUST define `blocked` as a visible or assigned adapter with one or more failed eligibility gates or validation failures.
+- **FR-018**: System MUST define `assigned` as a visible adapter with explicit project-role assignment where no evaluated gate has failed, but required task, capability, policy, or lifecycle context is absent or not fully evaluated.
+- **FR-019**: System MUST define `eligible` as an assigned adapter whose feature flag, project-role assignment, adapter capability support, governance allow decision, tracker-linked task eligibility, and SPEC-014A sandbox lifecycle evidence all pass for a caller-visible `task_id`.
+- **FR-020**: System MUST define `blocked` as a visible or assigned adapter with one or more failed evaluated eligibility gates, policy checks, capability checks, authorization checks, or validation failures.
 - **FR-021**: System MUST require all eligibility gates to pass before runtime inventory can mark an adapter eligible.
 - **FR-022**: System MUST include `FEATURE_AGENT_RUNNER_SANDBOXES` as a required eligibility gate.
 - **FR-023**: System MUST include explicit project-role assignment as a required eligibility gate.
@@ -143,10 +244,10 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - **FR-025**: System MUST include governance allow evidence as a required eligibility gate without mutating governance policy.
 - **FR-026**: System MUST include tracker-linked task eligibility as a required eligibility gate and MUST NOT treat local-only tasks as eligible runner work.
 - **FR-027**: System MUST include SPEC-014A sandbox lifecycle evidence as a required eligibility gate.
-- **FR-028**: System MUST expose a dedicated read-only runtime inventory API at the default path `GET /api/agents/runtime-inventory`.
-- **FR-029**: System MUST return a `runtime_inventory.v1` response shape from the runtime inventory API.
+- **FR-028**: System MUST expose `GET /api/agents/runtime-inventory` as the sole v1 runtime inventory API and MUST support only allowlisted query filters: `task_id`, `project_id`, `role`, `requested_capability`, `state`, and `manifest_id`.
+- **FR-029**: System MUST return a `runtime_inventory.v1` response envelope with `schema_version`, `generated_at`, `scope`, `feature_flag`, `entries`, `summary`, and `diagnostics`; each entry MUST include `id`, `state`, `selected_manifest`, `assignment`, `capability_resolution`, `eligibility_gates`, `sandbox_lifecycle_refs`, `sanitized_fake_evidence`, and `reason_codes`.
 - **FR-030**: System MUST keep the runtime inventory API read-only and MUST NOT perform launch, assignment, lifecycle, claim, retry, scheduler, GitHub, governance, tracker-truth, successor, or auto-merge mutations.
-- **FR-031**: System MUST enforce authenticated workspace/task visibility for runtime inventory reads.
+- **FR-031**: System MUST enforce authenticated workspace, project, and task visibility for runtime inventory reads and MUST reject mixed or unauthorized scope query inputs before applying inventory filters.
 - **FR-032**: System MUST update API index and OpenAPI documentation for the runtime inventory route.
 - **FR-033**: System MUST include tests or guardrails proving API index and OpenAPI parity for the runtime inventory route.
 - **FR-034**: System MUST add read-only runtime inventory integration to the existing Agents surface.
@@ -156,21 +257,22 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - **FR-038**: System MUST fail closed when a selected adapter does not support a required approval policy.
 - **FR-039**: System MUST fail closed when a selected adapter does not support a required user-input policy.
 - **FR-040**: System MUST fail closed when a timeout policy is unsupported, malformed, or expired.
-- **FR-041**: Fail-closed outcomes MUST use stable reason-code evidence.
-- **FR-042**: Fail-closed outcomes MUST NOT stall indefinitely, select a fallback adapter, switch harnesses silently, mutate GitHub, mutate tracker truth, mutate task terminal state, or mutate successor selection.
-- **FR-043**: Stable reason codes MUST cover feature disabled, manifest invalid, adapter unassigned, capability unsupported, governance denied, task ineligible, sandbox lifecycle missing, approval unsupported, user input unsupported, timeout budget expired, authorization denied, and sanitized evidence rejected.
-- **FR-044**: Fake evidence MUST be bounded to synthetic summaries, counters, event references, lifecycle references, manifest references, capability-resolution references, and artifact descriptors.
-- **FR-045**: Fake evidence MUST NOT expose raw transcript, provider payload, host path, prompt body, token payload, authentication material, secret-like values, raw external event payloads, or raw tool/MCP payloads.
-- **FR-046**: System MUST sanitize and bound fake evidence before it appears in API responses, UI, tests, fixtures, logs, review packets, or artifacts.
-- **FR-047**: System MUST support manifest-declared artifact publication capability only through sanitized fake artifact descriptors in SPEC-014B.
-- **FR-048**: System MUST support manifest-declared token/runtime accounting capability only through synthetic counters in SPEC-014B.
-- **FR-049**: System MUST support manifest-declared transcript or event-read capability only through sanitized synthetic summaries and event references in SPEC-014B.
-- **FR-050**: System MUST NOT call real Codex, Claude, OpenClaw, Hermes, OpenCode, provider APIs, OpenClaw gateway RPCs, external harness processes, schedulers, or shell commands as part of fake adapter behavior.
-- **FR-051**: System MUST include static scope guards or tests proving no real harness execution, gateway call, external process launch, scheduler dispatch, migration, claim-control mutation, retry semantic change, lifecycle-control mutation, successor selection, governance mutation, GitHub mutation, or auto-merge behavior is added.
-- **FR-052**: System MUST preserve SPEC-013B claim/reconciliation authority and MUST NOT use adapter assignment, manifest visibility, runtime inventory, or sandbox lifecycle evidence as a claim lock.
-- **FR-053**: System MUST preserve SPEC-013C retry/debug semantics and SPEC-013D task-detail operator controls without introducing new retry, release, cancel, or debug behavior.
-- **FR-054**: System MUST preserve SPEC-014A sandbox lifecycle ownership by referencing lifecycle evidence read-only and MUST NOT add lifecycle mutation controls.
-- **FR-055**: Manual UAT MUST verify the feature-flag-off state, fake manifest validation, all runtime inventory states, read-only Agents surface evidence, unsupported capability failure, unsupported or expired policy failure, sanitized evidence boundaries, and absence of real harness side effects.
+- **FR-041**: V1 fake manifests MUST use `provider_kind: "synthetic"`, `account_binding: "none"`, and `credential_exposure: "forbidden"` for provider/account constraints.
+- **FR-042**: Fail-closed outcomes MUST use stable reason-code evidence and MUST return every evaluated entry-level failure in deterministic precedence order.
+- **FR-043**: Fail-closed outcomes MUST NOT stall indefinitely, select a fallback adapter, switch harnesses silently, mutate GitHub, mutate tracker truth, mutate task terminal state, write failed task attempts or artifacts, mutate claim state, mutate lifecycle state, mutate governance policy, mutate scheduler state, or mutate successor selection.
+- **FR-044**: Stable reason codes MUST cover `feature_disabled`, `manifest_invalid`, `adapter_unassigned`, `capability_unsupported`, `governance_denied`, `task_ineligible`, `sandbox_lifecycle_missing`, `approval_unsupported`, `user_input_unsupported`, `timeout_budget_expired`, `authorization_denied`, and `sanitized_evidence_rejected`.
+- **FR-045**: Fake evidence MUST be bounded to `sanitized_fake_evidence.v1` kinds: `synthetic_summary`, `counter`, `event_ref`, `lifecycle_ref`, `manifest_ref`, `capability_resolution_ref`, and `fake_artifact_descriptor`.
+- **FR-046**: Fake evidence MUST NOT expose raw transcript, provider payload, host path, prompt body, token payload, authentication material, secret-like values, raw external event payloads, or raw tool/MCP payloads.
+- **FR-047**: System MUST reject unsupported or unsafe fake evidence with `sanitized_evidence_rejected` before it appears in API responses, UI, tests, fixtures, logs, review packets, or artifacts; authorized entry-level rejection output MUST use `state: "blocked"` and include only bounded field-path, evidence-kind, and reason metadata.
+- **FR-048**: System MUST support manifest-declared artifact publication capability only through sanitized fake artifact descriptors in SPEC-014B.
+- **FR-049**: System MUST support manifest-declared token/runtime accounting capability only through synthetic counters in SPEC-014B.
+- **FR-050**: System MUST support manifest-declared transcript or event-read capability only through sanitized synthetic summaries and event references in SPEC-014B.
+- **FR-051**: System MUST NOT call real Codex, Claude, OpenClaw, Hermes, OpenCode, provider APIs, OpenClaw gateway RPCs, external harness processes, schedulers, or shell commands as part of fake adapter behavior.
+- **FR-052**: System MUST include static scope guards or tests proving no real harness execution, gateway call, external process launch, scheduler dispatch, migration, claim-control mutation, retry semantic change, lifecycle-control mutation, successor selection, governance mutation, GitHub mutation, or auto-merge behavior is added.
+- **FR-053**: System MUST preserve SPEC-013B claim/reconciliation authority and MUST NOT use adapter assignment, manifest visibility, runtime inventory, or sandbox lifecycle evidence as a claim lock.
+- **FR-054**: System MUST preserve SPEC-013C retry/debug semantics and SPEC-013D task-detail operator controls without introducing new retry, release, cancel, or debug behavior.
+- **FR-055**: System MUST preserve SPEC-014A sandbox lifecycle ownership by referencing lifecycle evidence read-only and MUST NOT add lifecycle mutation controls.
+- **FR-056**: Manual UAT MUST verify the feature-flag-off state, fake manifest validation, all runtime inventory states, read-only Agents surface evidence, unsupported capability failure, unsupported or expired policy failure, sanitized evidence boundaries, and absence of real harness side effects.
 
 ### Spec Evidence And Archive Policy
 
@@ -185,13 +287,15 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - **Harness Adapter Manifest**: Checked-in typed declaration of one harness adapter's identity, capabilities, sandbox posture, policies, provider/account constraints, and safe evidence posture.
 - **Fake Adapter Registry**: Feature-flagged registry of fake harness adapter manifests used to prove the contract without launching real harnesses.
 - **Fake Adapter Posture**: Declared execution ownership shape for a fake adapter, either Paddock-owned sandbox or external harness.
+- **Capability Support Object**: Closed manifest declaration with `state`, bounded `modes`, bounded `evidence_kinds`, and an `unsupported_reason_code` when support is unsupported.
+- **Manifest Validation Failure**: `harness_manifest_validation.v1` bounded issue-list payload that identifies invalid manifest fields without exposing raw values or unsafe payloads.
 - **Capability Resolution Packet**: Reviewable evaluation record for a selected manifest, requested capability, policy compatibility, eligibility gates, reason codes, and sanitized evidence references.
-- **Runtime Inventory Entry**: Derived read-model entry for one visible adapter or observed runtime, including state, assignment, selected manifest, eligibility reasons, and lifecycle references.
+- **Runtime Inventory Entry**: Derived read-model entry for one visible adapter or observed runtime, including id, state, selected manifest, assignment, capability resolution, eligibility gates, sandbox lifecycle references, sanitized fake evidence, and reason codes.
 - **Runtime Inventory State**: Closed state value: `visible`, `unassigned`, `assigned`, `eligible`, or `blocked`.
 - **Eligibility Gate**: Required condition that must pass before an adapter is eligible: feature flag, project-role assignment, capability support, governance allow, tracker-linked task eligibility, and sandbox lifecycle evidence.
 - **Runtime Policy Declaration**: Manifest-declared approval, timeout, and user-input support that determines whether a requested work posture can proceed.
 - **Sandbox Lifecycle Reference**: Read-only reference to SPEC-014A `sandbox_lifecycle.v1` evidence for the evaluated task, stage, owner, and sandbox posture.
-- **Sanitized Fake Evidence**: Bounded synthetic summaries, counters, event references, lifecycle references, and artifact descriptors that prove adapter behavior without exposing unsafe payloads.
+- **Sanitized Fake Evidence**: Closed `sanitized_fake_evidence.v1` evidence union containing only synthetic summaries, counters, event references, lifecycle references, manifest references, capability-resolution references, and fake artifact descriptors that prove adapter behavior without exposing unsafe payloads.
 
 ## Success Criteria *(mandatory)*
 
@@ -215,7 +319,10 @@ As a maintainer, I need SPEC-014B to reuse existing framework-adapter, session o
 - SPEC-014A is complete and provides read-only sandbox lifecycle evidence that SPEC-014B may reference without mutating lifecycle state.
 - SPEC-013B, SPEC-013C, and SPEC-013D authority remains unchanged; SPEC-014B only reads the evidence needed to explain eligibility.
 - Runtime inventory is a derived read model for this spec; durable manifest or inventory persistence is out of scope unless a later planning gate records a reviewed exception.
-- The default runtime inventory route is `GET /api/agents/runtime-inventory`, returning `runtime_inventory.v1`.
+- The default and only v1 runtime inventory route is `GET /api/agents/runtime-inventory`, returning `runtime_inventory.v1`; `/api/agents` remains response-compatible.
+- Full `eligible` runtime inventory evaluation requires a caller-visible `task_id`; without `task_id`, inventory can be visible, unassigned, assigned, or blocked, but not eligible.
+- SPEC-014B reason codes are public adapter-boundary codes; internal feature-flag, governance, lifecycle, claim, or validation terms are mapped into the closed enum and can appear only as sanitized source metadata.
+- SPEC-014B v1 manifests are synthetic-only fixtures; any real provider/account binding is deferred to later real-adapter specs.
 - Existing project-role assignment, governance, tracker-link, and task eligibility evidence can be read through existing Paddock surfaces or narrow read helpers during implementation planning.
 - The existing Agents surface is the only operator UI target for SPEC-014B runtime inventory.
 - Fake evidence is synthetic and bounded by design; it is sufficient to prove contracts but not intended to simulate provider-quality transcripts, real token accounting, real artifacts, or real tool execution.
