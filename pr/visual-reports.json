@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-03T00:18:59.679Z",
+  "updatedAt": "2026-06-03T21:21:32.613Z",
   "prs": [
+    {
+      "prNumber": "76",
+      "prTitle": "feat: add harness adapter runtime inventory",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/76",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/76/",
+      "headRef": "014b-adapter-manifest-fakes",
+      "baseRef": "main",
+      "updatedAt": "2026-06-03T21:21:32.613Z",
+      "latest": {
+        "playwright": {
+          "runId": "26913359344",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26913359344",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/76/playwright/latest/?v=26913359344-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/76/runs/26913359344-attempt-1/playwright/",
+          "updatedAt": "2026-06-03T21:21:32.613Z"
+        }
+      }
+    },
     {
       "prNumber": "72",
       "prTitle": "docs: fix stale operator documentation references",

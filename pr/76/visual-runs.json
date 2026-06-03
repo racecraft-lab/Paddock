@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "76",
+  "prTitle": "feat: add harness adapter runtime inventory",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/76",
+  "headRef": "014b-adapter-manifest-fakes",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "playwright",
+      "runId": "26913359344",
+      "runAttempt": "1",
+      "runKey": "26913359344-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26913359344",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/76/runs/26913359344-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/76/playwright/latest/?v=26913359344-attempt-1",
+      "headSha": "442504583afc6ae44db6ea3e23f4848e8295141f",
+      "headRef": "014b-adapter-manifest-fakes",
+      "baseRef": "main",
+      "workflowName": "Paddock UI E2E",
+      "workflowFile": "paddock-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-06-03T21:21:32.613Z"
+    }
+  ],
+  "updatedAt": "2026-06-03T21:21:32.613Z"
+}
