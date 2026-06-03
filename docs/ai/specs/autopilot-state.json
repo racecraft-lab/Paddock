@@ -1,7 +1,7 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-013D-workflow.md",
-  "updated_at": "2026-06-01T14:36:08Z",
-  "active_step": "UAT Pending",
+  "updated_at": "2026-06-03T01:08:15Z",
+  "active_step": "Complete",
   "current_spec_dir": "specs/013d-claim-control-operator-ux",
   "branch": "013d-claim-control-operator-ux",
   "plan": [
@@ -143,8 +143,8 @@
     "files_changed_by_sweep": []
   },
   "post_merge_closeout": {
-    "status": "archive_recorded_uat_pending",
-    "checked_at": "2026-06-01T14:36:08Z",
+    "status": "complete",
+    "checked_at": "2026-06-03T01:08:15Z",
     "pr_url": "https://github.com/racecraft-lab/Paddock/pull/65",
     "merged_at": "2026-06-01T14:27:30Z",
     "merge_sha": "50bf05e573f15b5aab5e53367444bef1d0b7baaf",
@@ -166,8 +166,44 @@
       "Post-merge hygiene branch codex/spec-013d-post-merge-hygiene is not the safe base branch main",
       ".specify/scripts/bash/check-prerequisites.sh --json --paths-only rejects non-feature post-merge branches"
     ],
-    "remaining_follow_up": [
-      "Deployed target UAT for SPEC-013D is not separately recorded"
-    ]
+    "target_uat": {
+      "status": "passed",
+      "checked_at": "2026-06-03T01:08:15Z",
+      "host": "HAL",
+      "service_url": "http://127.0.0.1:3000",
+      "live_commit": "3ed79e26a19e6d78033ca0e13fdab01bb8aca01a",
+      "marker": "SPEC-013D-HAL-UAT-20260603010815",
+      "scenarios": [
+        "retry_ready",
+        "released",
+        "cancelled",
+        "stale_state",
+        "retry_backoff_active",
+        "backoff_override_retry_ready",
+        "flag_off"
+      ],
+      "cleanup_counts_zero": [
+        "workspaces",
+        "user_sessions",
+        "users",
+        "agents",
+        "agent_api_keys",
+        "projects",
+        "tasks",
+        "task_stage_attempts",
+        "task_stage_attempt_events",
+        "task_stage_claims",
+        "task_claim_control_idempotency_keys",
+        "github_sync_lifecycle_controls",
+        "github_sync_lifecycle_runs",
+        "activities"
+      ],
+      "service_health": {
+        "paddock.service": "active",
+        "openclaw-gateway.service": "active"
+      },
+      "deployment_note": "HAL git fetch origin failed before UAT because github.com could not be resolved; live commit already contains PR #65, so no promotion was attempted."
+    },
+    "remaining_follow_up": []
   }
 }

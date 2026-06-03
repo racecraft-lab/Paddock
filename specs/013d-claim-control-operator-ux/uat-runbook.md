@@ -83,7 +83,7 @@ Run these from the repository root before walking the acceptance tests.
 
 Manual UAT was performed through the browser against a disposable local runtime at `http://127.0.0.1:3005` with SPEC-013D fixture tasks seeded by `scripts/seed-e2e-spec-013d.cjs`.
 
-Post-merge closeout was recorded on 2026-06-01 after PR #65 merged to `main` as `50bf05e573f15b5aab5e53367444bef1d0b7baaf`. This runbook records local manual browser UAT and PR visual/check evidence; deployed target UAT for SPEC-013D is not separately recorded here.
+Post-merge closeout was recorded on 2026-06-01 after PR #65 merged to `main` as `50bf05e573f15b5aab5e53367444bef1d0b7baaf`. HAL target UAT completed on 2026-06-02 CDT (`2026-06-03T01:08:15Z`) against the running Paddock service at `http://127.0.0.1:3000` on HAL live `main` commit `3ed79e26a19e6d78033ca0e13fdab01bb8aca01a`, which contains PR #65.
 
 - US1 state inspection: opened the active claim-control task and confirmed the Claim Control region showed `assigned_dispatch`, active-claim retry eligibility, no active backoff, and enabled `Retry stage`, `Release claim`, and `Cancel stage` actions.
 - US2 operator mutations: submitted `Retry stage`, `Release claim`, and `Cancel stage` through the confirmation UI. Receipts showed `Retry requested`, `Claim released`, and `Attempt cancelled`, with refreshed availability after each mutation.
@@ -92,6 +92,18 @@ Post-merge closeout was recorded on 2026-06-01 after PR #65 merged to `main` as 
 - Negative feature-flag path: disabled `FEATURE_TASK_CONTROL_PLANE` in the disposable workspace, opened the flag-off fixture, and confirmed retry/release/cancel were disabled with `feature_flag_off`; the flag was restored afterward.
 - Read-only access: temporarily set the disposable `testadmin` session user role to `viewer`, opened the viewer fixture, and confirmed `viewer read-only` authorization plus `insufficient_role` disabled reasons; the user role was restored to `admin`.
 - Redaction check: observed Claim Control regions did not expose `idempotency-key`, auth headers, bearer tokens, raw request bodies, or GitHub body content during the manual pass.
+
+## HAL Target UAT Evidence
+
+**Completed**: 2026-06-02 CDT (`2026-06-03T01:08:15Z`)
+
+Target UAT used `scripts/spec-013d/hal-target-uat.cjs` over SSH on HAL with disposable workspace marker `SPEC-013D-HAL-UAT-20260603010815`. The harness created a temporary product-line workspace, temporary operator user/session, six fixture tasks, stage attempts, claim rows, and GitHub sync lifecycle controls; exercised the running API routes; then removed all disposable rows.
+
+- Service health before/after: `paddock.service` active and `openclaw-gateway.service` active.
+- Deployment note: HAL was on `main` commit `3ed79e26a19e6d78033ca0e13fdab01bb8aca01a`; `git fetch origin` on HAL failed before UAT with `Could not resolve host: github.com`, so no promotion was attempted during this closeout.
+- Auth/scoping: temporary operator session accepted by the live service (`user_id=9`, `session_id=49`) and scoped to the disposable workspace.
+- Claim-control outcomes: retry returned `retry_ready`; release returned `released`; cancel returned `cancelled`; stale expected state returned HTTP 409 with `stale_state`; backoff first returned `retry_backoff_active`, then override returned `retry_ready` with `override_applied=true`; feature flag off returned HTTP 403 with `flag_off` and `can_mutate=false`.
+- Cleanup proof: remaining rows were zero across `workspaces`, `user_sessions`, `users`, `agents`, `agent_api_keys`, `projects`, `tasks`, `task_stage_attempts`, `task_stage_attempt_events`, `task_stage_claims`, `task_claim_control_idempotency_keys`, `github_sync_lifecycle_controls`, `github_sync_lifecycle_runs`, and `activities`.
 
 ## Self-Review Findings
 

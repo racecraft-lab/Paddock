@@ -630,7 +630,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 - Adds an existing-task-detail `Claim control` section, closed copy map, SPEC-013C route client integration, inline confirmations, bounded release/cancel/override reasons, same-submission idempotency retry after network failure, success/error receipts, refreshed evidence/stage-attempt/task-list state, and Storybook plus route-backed Playwright visual coverage.
 - Scope is UI/client-only over the existing SPEC-013C backend authority: no migration, backend retry/release/cancel semantics, scheduler launch, new dashboard, sandbox lifecycle, adapter registry, direct GitHub mutation, successor selection, whole-task terminal mutation, or harness execution.
-- Verification evidence includes focused ClaimControlSection Vitest coverage, `pnpm typecheck`, `pnpm lint`, `pnpm build`, full `pnpm test`, full `pnpm test:e2e`, local manual browser UAT, Docker-backed Playwright, Storybook visual states, visual-review approval evidence, cleanup proof, and retrospective evidence recorded in the SPEC-013D workflow and UAT runbook.
+- Verification evidence includes focused ClaimControlSection Vitest coverage, `pnpm typecheck`, `pnpm lint`, `pnpm build`, full `pnpm test`, full `pnpm test:e2e`, local manual browser UAT, Docker-backed Playwright, Storybook visual states, visual-review approval evidence, HAL target UAT, cleanup proof, and retrospective evidence recorded in the SPEC-013D workflow and UAT runbook.
 
 ---
 

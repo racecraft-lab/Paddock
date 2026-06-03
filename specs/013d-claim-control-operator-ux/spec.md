@@ -3,6 +3,7 @@
 **Feature Branch**: `013d-claim-control-operator-ux`  
 **Created**: 2026-05-30  
 **Status**: Completed
+**Post-merge target UAT**: HAL target UAT passed on 2026-06-02 CDT (`2026-06-03T01:08:15Z`) against live `main` commit `3ed79e26a19e6d78033ca0e13fdab01bb8aca01a` with zero disposable-row residue.
 **Input**: User description: "SPEC-013D makes the SPEC-013C retry, release, cancel, backoff, idempotency, and debug authority usable from the existing task detail experience without changing backend semantics."
 
 ## Clarifications
