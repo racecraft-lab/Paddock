@@ -406,10 +406,11 @@ Task requirements:
 
 | Metric | Value |
 |--------|-------|
-| Total Tasks | Pending |
-| Parallel Tasks | Pending |
-| Test Tasks | Pending |
-| Implementation Tasks | Pending |
+| Total Tasks | 82 |
+| Parallel Tasks | 31 |
+| Test/Verification Tasks | 47 |
+| Implementation/Setup/Docs Tasks | 35 |
+| G5 Gate | Passed: 2.6.1 `validate-gate.sh G5 specs/014b-adapter-manifest-fakes` returned `task_count=82` |
 
 ---
 

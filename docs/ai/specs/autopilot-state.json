@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014B-workflow.md",
-  "updated_at": "2026-06-03T17:46:16Z",
+  "updated_at": "2026-06-03T17:57:11Z",
   "spec_id": "SPEC-014B",
   "branch": "014b-adapter-manifest-fakes",
   "confidence_gate_mode": "advisory",
@@ -41,7 +41,7 @@
     "required_agents_installed": true,
     "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt (agents will use built-in fallbacks)"
   },
-  "active_step": "Phase 5: Tasks",
+  "active_step": "Phase 6: Analyze",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -65,8 +65,8 @@
     {"step": "Phase 4: Checklist - error-handling Consensus", "status": "completed"},
     {"step": "Phase 4: Checklist - state-management", "status": "completed"},
     {"step": "Phase 4: Checklist - state-management Consensus", "status": "completed"},
-    {"step": "Phase 5: Tasks", "status": "in_progress"},
-    {"step": "Phase 6: Analyze", "status": "pending"},
+    {"step": "Phase 5: Tasks", "status": "completed"},
+    {"step": "Phase 6: Analyze", "status": "in_progress"},
     {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
     {"step": "Phase 6.5: Confidence Gate", "status": "pending"},
     {"step": "Phase 7: Implement - Pending task decomposition", "status": "pending"},
