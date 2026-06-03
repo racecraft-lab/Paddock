@@ -401,9 +401,9 @@ Gate sites:
   Governance tab when the flag is ON; the tab is hidden in byte-compat
   mode when OFF (per FR-305).
 
-When the resource-governance flag is OFF, claim reconciliation skips the
-evaluator and preserves the legacy admission path byte-compat (FR-305 /
-FR-238).
+When the resource-governance flag is OFF, the evaluator returns
+`allow:feature_flag_off` without consulting policies, preserving the legacy
+admission path byte-compat (FR-305 / FR-238).
 
 For runbook references see:
 
