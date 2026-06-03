@@ -23,9 +23,9 @@ Re-read the Design Concept before each phase. It is the source of truth for scop
 
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
-| Archive Sweep | `$speckit-archive-run` | Pending | Dry-run first; do not apply active `specs/**` cleanup from this feature branch |
-| Specify | `$speckit-specify` | Pending | Generate `specs/014b-adapter-manifest-fakes/spec.md` with requirements checklist |
-| Clarify | `$speckit-clarify` | Pending | Resolve API path, reason-code enum, gate packet, and policy vocabulary details |
+| Archive Sweep | `$speckit-archive-run` | Complete | Dry-run completed in `014b-adapter-manifest-fakes`: five completed specs already archived, no new archive work, cleanup disabled |
+| Specify | `$speckit-specify` | Complete | Generated `specs/014b-adapter-manifest-fakes/spec.md` with 55 FRs, 5 stories, 15 acceptance scenarios, and no clarification markers |
+| Clarify | `$speckit-clarify` | In Progress | Resolving API path, reason-code enum, gate packet, and policy vocabulary details |
 | Plan | `$speckit-plan` | Pending | Generate architecture, data model/types, contracts, quickstart, and constitution gates |
 | Checklist | `$speckit-checklist` | Pending | Recommended domains: api-contracts, ux, security, data-integrity, error-handling, state-management |
 | Tasks | `$speckit-tasks` | Pending | Generate dependency-ordered TDD tasks with reviewability budget |
@@ -157,6 +157,8 @@ The implementation should formalize these scattered assumptions into a manifest-
 $speckit-specify
 
 Feature: SPEC-014B - Harness Adapter Manifest and Fake Registry
+GIT_BRANCH_NAME=014b-adapter-manifest-fakes
+SPECIFY_FEATURE_DIRECTORY=specs/014b-adapter-manifest-fakes
 
 Source artifacts:
 - docs/ai/rc-factory-technical-roadmap.md, SPEC-014B section
@@ -202,9 +204,9 @@ Out of scope:
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
+| Functional Requirements | 55 |
+| User Stories | 5 |
+| Acceptance Criteria | 15 acceptance scenarios |
 
 ### Files Generated
 
