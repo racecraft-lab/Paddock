@@ -7,6 +7,22 @@
   "baseRef": "main",
   "reports": [
     {
+      "surface": "playwright",
+      "runId": "26855640186",
+      "runAttempt": "1",
+      "runKey": "26855640186-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26855640186",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/72/runs/26855640186-attempt-1/playwright/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/72/playwright/latest/?v=26855640186-attempt-1",
+      "headSha": "643f3d61ac0da4404bfabd30a226b6666c85cae7",
+      "headRef": "codex/docs-hygiene-2026-06-02",
+      "baseRef": "main",
+      "workflowName": "Paddock UI E2E",
+      "workflowFile": "paddock-ui-e2e.yml",
+      "surfaceLabel": "Playwright UI E2E",
+      "createdAt": "2026-06-03T00:18:59.679Z"
+    },
+    {
       "surface": "storybook",
       "runId": "26855640130",
       "runAttempt": "1",
@@ -23,5 +39,5 @@
       "createdAt": "2026-06-03T00:14:39.737Z"
     }
   ],
-  "updatedAt": "2026-06-03T00:14:39.737Z"
+  "updatedAt": "2026-06-03T00:18:59.679Z"
 }
