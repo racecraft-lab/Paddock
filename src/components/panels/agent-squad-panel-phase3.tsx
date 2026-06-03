@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Loader } from '@/components/ui/loader'
+import { RuntimeInventoryEvidence } from '@/components/agents/RuntimeInventoryEvidence'
 import { useSmartPoll } from '@/lib/use-smart-poll'
 import { createClientLogger } from '@/lib/client-logger'
 import { AgentAvatar } from '@/components/ui/agent-avatar'
@@ -24,6 +25,7 @@ import {
 import { formatModelName, buildTaskStatParts } from '@/lib/agent-card-helpers'
 import { usePaddock, type Agent } from '@/store'
 import { appendScopeToPath } from '@/types/product-line'
+import type { RuntimeInventoryEnvelope } from '@/lib/harness-adapters/types'
 
 const log = createClientLogger('AgentSquadPhase3')
 
@@ -105,6 +107,9 @@ export function AgentSquadPanelPhase3() {
   const [syncing, setSyncing] = useState(false)
   const [syncToast, setSyncToast] = useState<string | null>(null)
   const [showHidden, setShowHidden] = useState(false)
+  const [runtimeInventory, setRuntimeInventory] = useState<RuntimeInventoryEnvelope | null>(null)
+  const [runtimeInventoryLoading, setRuntimeInventoryLoading] = useState(true)
+  const [runtimeInventoryError, setRuntimeInventoryError] = useState<string | null>(null)
   const workspaceScopeReady = workspaceListStatus === 'ready' &&
     (!workspaceSwitcherEnabled || activeProductLineScope !== null)
 
@@ -173,8 +178,41 @@ export function AgentSquadPanelPhase3() {
     }
   }, [activeProductLineScope, agents.length, setAgents, showHidden, workspaceScopeReady])
 
+  const fetchRuntimeInventory = useCallback(async () => {
+    if (!workspaceScopeReady) {
+      setRuntimeInventoryLoading(true)
+      return
+    }
+
+    try {
+      setRuntimeInventoryError(null)
+      setRuntimeInventoryLoading(true)
+
+      const response = await fetch(appendScopeToPath('/api/agents/runtime-inventory', activeProductLineScope))
+      if (response.status === 401) {
+        window.location.assign('/login?next=%2Fagents')
+        return
+      }
+      if (response.status === 403) {
+        throw new Error('Access denied')
+      }
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.error || 'Failed to fetch runtime inventory')
+      }
+
+      const data = await response.json() as RuntimeInventoryEnvelope
+      setRuntimeInventory(data)
+    } catch (err) {
+      setRuntimeInventoryError(err instanceof Error ? err.message : 'Failed to fetch runtime inventory')
+    } finally {
+      setRuntimeInventoryLoading(false)
+    }
+  }, [activeProductLineScope, workspaceScopeReady])
+
   // Smart polling with visibility pause
   useSmartPoll(fetchAgents, 30000, { enabled: autoRefresh && workspaceScopeReady, pauseWhenSseConnected: true })
+  useSmartPoll(fetchRuntimeInventory, 30000, { enabled: autoRefresh && workspaceScopeReady, pauseWhenSseConnected: true })
 
   // Update agent status
   const updateAgentStatus = async (agentId: number, agentName: string, status: Agent['status'], activity?: string) => {
@@ -238,6 +276,10 @@ export function AgentSquadPanelPhase3() {
     fetchAgents()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showHidden])
+
+  useEffect(() => {
+    fetchRuntimeInventory()
+  }, [fetchRuntimeInventory])
 
   const toggleAgentHidden = async (agentId: number, hide: boolean) => {
     try {
@@ -560,6 +602,9 @@ export function AgentSquadPanelPhase3() {
           onStatusUpdate={updateAgentStatus}
           onWakeAgent={wakeAgent}
           onDelete={deleteAgent}
+          runtimeInventory={runtimeInventory}
+          runtimeInventoryLoading={runtimeInventoryLoading}
+          runtimeInventoryError={runtimeInventoryError}
         />
       )}
 
@@ -593,7 +638,10 @@ function AgentDetailModalPhase3({
   onUpdate,
   onStatusUpdate,
   onWakeAgent,
-  onDelete
+  onDelete,
+  runtimeInventory,
+  runtimeInventoryLoading,
+  runtimeInventoryError,
 }: {
   agent: Agent
   onClose: () => void
@@ -601,6 +649,9 @@ function AgentDetailModalPhase3({
   onStatusUpdate: (agentId: number, name: string, status: Agent['status'], activity?: string) => Promise<void>
   onWakeAgent: (agentId: number, name: string) => Promise<void>
   onDelete: (agentId: number, removeWorkspace: boolean) => Promise<void>
+  runtimeInventory: RuntimeInventoryEnvelope | null
+  runtimeInventoryLoading: boolean
+  runtimeInventoryError: string | null
 }) {
   const [agentState, setAgentState] = useState<Agent & { config?: any; working_memory?: string }>(agent as Agent & { config?: any; working_memory?: string })
   const [activeTab, setActiveTab] = useState<'overview' | 'soul' | 'memory' | 'config' | 'tasks' | 'activity' | 'files' | 'tools' | 'channels' | 'cron' | 'models'>('overview')
@@ -981,21 +1032,30 @@ function AgentDetailModalPhase3({
         {/* Tab Content */}
         <div className="flex-1 overflow-y-auto">
           {activeTab === 'overview' && (
-            <OverviewTab
-              agent={agentState}
-              editing={editing}
-              formData={formData}
-              setFormData={setFormData}
-              onSave={handleSave}
-              saveBusy={saveBusy}
-              onStatusUpdate={onStatusUpdate}
-              onWakeAgent={onWakeAgent}
-              onEdit={() => setEditing(true)}
-              onCancel={() => setEditing(false)}
-              heartbeatData={heartbeatData}
-              loadingHeartbeat={loadingHeartbeat}
-              onPerformHeartbeat={performHeartbeat}
-            />
+            <>
+              <OverviewTab
+                agent={agentState}
+                editing={editing}
+                formData={formData}
+                setFormData={setFormData}
+                onSave={handleSave}
+                saveBusy={saveBusy}
+                onStatusUpdate={onStatusUpdate}
+                onWakeAgent={onWakeAgent}
+                onEdit={() => setEditing(true)}
+                onCancel={() => setEditing(false)}
+                heartbeatData={heartbeatData}
+                loadingHeartbeat={loadingHeartbeat}
+                onPerformHeartbeat={performHeartbeat}
+              />
+              <div className="px-5 pb-5">
+                <RuntimeInventoryEvidence
+                  inventory={runtimeInventory}
+                  loading={runtimeInventoryLoading}
+                  error={runtimeInventoryError}
+                />
+              </div>
+            </>
           )}
           
           {activeTab === 'soul' && (

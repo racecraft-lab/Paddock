@@ -28,27 +28,27 @@ Run these from the repository root before walking the acceptance tests.
 <a id="us-1"></a>
 ### User Story 1 - Review Declared Harness Capabilities (Priority: P1)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-2"></a>
 ### User Story 2 - Distinguish Visibility From Eligibility (Priority: P1)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-3"></a>
 ### User Story 3 - Fail Closed For Unsupported Capabilities And Policies (Priority: P1)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-4"></a>
 ### User Story 4 - Inspect Runtime Inventory In The Existing Agents Surface (Priority: P2)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 <a id="us-5"></a>
 ### User Story 5 - Preserve Existing Control-Plane Boundaries (Priority: P3)
 
-- [ ] Walk this story end to end and confirm the observable behavior the spec promises.
+- [x] Walk this story end to end and confirm the observable behavior the spec promises.
 
 
 
@@ -97,13 +97,61 @@ Run these from the repository root before walking the acceptance tests.
 - Requirements matched: 82 / 82 tasks complete and 69 / 69 FRs are covered by the implemented contract/API/UI/guard/test surfaces.
 - Follow-up: authenticated disposable workspace fixtures are still required before the skipped Playwright scaffold can become an active browser journey.
 
+## Manual UAT Results - 2026-06-03
+
+Manual UAT was performed against PR #76 on local branch `codex/pr-76-spec-014b-uat`, checked out from PR head `014b-adapter-manifest-fakes` at `06b8f143`.
+
+### Findings Corrected During UAT
+
+- `pnpm check:strict-scope` failed because the PR added `src/app/api/agents/runtime-inventory/route.test.ts` beside the route implementation, but the strict-scope allowlist only permitted `route.ts`. The allowlist now includes both files.
+- The active `/agents` route renders `AgentSquadPanelPhase3`, while the PR had wired runtime inventory evidence into the inactive `AgentSquadPanel`. The active Phase 3 panel now fetches `/api/agents/runtime-inventory` with product-line scope, polls it with the existing smart-poll pattern, and renders `RuntimeInventoryEvidence` in the agent overview modal. A static regression assertion now covers this active-panel wiring.
+
+### API Acceptance Evidence
+
+The runtime inventory API was exercised against a disposable SQLite data directory with a seeded workspace, project, agents, task, project assignment, and SPEC-014A lifecycle row.
+
+- Baseline scoped request returned `runtime_inventory.v1` with two entries: the external fake manifest as `unassigned` and the Paddock-owned fake manifest as `assigned`.
+- `state=assigned` returned the assigned Paddock-owned entry.
+- `task_id=100&project_id=10&role=builder&requested_capability=launch&manifest_id=paddock_owned_sandbox_fake` returned an eligible Paddock-owned entry with lifecycle evidence `7701:running`.
+- The external fake manifest with `requested_capability=launch` failed closed with deterministic reasons including `adapter_unassigned`, `capability_unsupported`, and `sandbox_lifecycle_missing`.
+- Invalid `requested_capability` and invalid `state` returned `422 runtime_inventory_error.v1`.
+- Mixed facility and workspace scope returned `400 runtime_inventory_error.v1`.
+- With `FEATURE_AGENT_RUNNER_SANDBOXES` disabled, the API returned `200 runtime_inventory.v1` and blocked entries with `feature_disabled` reasons.
+- `/api/agents?workspace_id=1` preserved its existing shape and did not include a `runtime_inventory` field.
+- Read-only derivation preserved seeded task, project assignment, and lifecycle row counts before and after the API matrix.
+
+### Browser Acceptance Evidence
+
+Manual browser UAT used a production build and a local authenticated session against the disposable data directory.
+
+- `/agents` loaded with workspace scope after workspace hydration.
+- The Paddock-owned fake agent detail modal displayed the runtime inventory evidence region.
+- The evidence region showed `Feature flag: enabled`, `Manifest: paddock_owned_sandbox_fake`, and runtime state text.
+- Desktop and mobile screenshots were reviewed locally; the evidence region was visible and did not overlap adjacent modal content.
+- The evidence region exposed no runtime-control buttons, preserving SPEC-014B's read-only contract.
+
+### Residual Notes
+
+- The pure `visible` state remains covered by the read-model and component tests. In the migrated DB-backed route, manifests with assignment tables present but no matching assignment are represented as `unassigned`.
+- Initial unscoped browser boot requests can return scope errors before workspace hydration. The scoped refresh path was verified after workspace hydration.
+- One unrelated CSP inline-script warning and one seeded-agent files request warning appeared during browser UAT; neither blocked the runtime inventory API or evidence UI assertions.
+
+### Verification Commands
+
+- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm check:strict-scope`
+- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec vitest run src/lib/harness-adapters/__tests__/validation.test.ts src/lib/harness-adapters/__tests__/runtime-inventory.test.ts src/app/api/agents/runtime-inventory/route.test.ts src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx src/components/panels/__tests__/agent-runtime-inventory.test.tsx src/components/panels/product-line-panels.test.ts`
+- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm typecheck`
+- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm lint`
+- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm exec next build --webpack`
+- `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm test`
+
 ## Sign-off
 
 Advisory only — these checkboxes block nothing.
 
-- [ ] Reviewer walked every Per-Story Acceptance Test above.
-- [ ] Reviewer confirmed the Negative-Path Tests behave as described.
-- [ ] Reviewer is satisfied the PR delivers the behavior the spec promised.
+- [x] Reviewer walked every Per-Story Acceptance Test above.
+- [x] Reviewer confirmed the Negative-Path Tests behave as described.
+- [x] Reviewer is satisfied the PR delivers the behavior the spec promised.
 
 ## Rollback
 
