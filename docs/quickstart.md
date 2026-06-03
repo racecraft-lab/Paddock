@@ -200,19 +200,19 @@ If you prefer the CLI over `curl`, the same flow works with `pnpm mc`:
 
 ```bash
 # List agents
-node scripts/mc-cli.cjs agents list --json
+pnpm mc agents list --json
 
 # Create an agent
-node scripts/mc-cli.cjs agents create --name scout --role researcher --json
+pnpm mc agents create --name scout --role researcher --json
 
 # Create a task
-node scripts/mc-cli.cjs tasks create --title "Research competitors" --body '{"assigned_to":"scout","priority":"medium"}' --json
+pnpm mc tasks create --title "Research competitors" --body '{"assigned_to":"scout","priority":"medium"}' --json
 
 # Poll the queue
-node scripts/mc-cli.cjs tasks queue --agent scout --json
+pnpm mc tasks queue --agent scout --json
 
 # Watch events in real time
-node scripts/mc-cli.cjs events watch --types task,agent
+pnpm mc events watch --types task,agent
 ```
 
 See [CLI Reference](cli-agent-control.md) for the full command list.

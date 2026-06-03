@@ -17,6 +17,11 @@ clean-worktree gate; active completed folders were removed from `specs/**`.
 Revision 2026-06-01: Archived SPEC-013D after PR #65 merged to `main`; memory,
 roadmap, workflow, and agent status were updated. Active source spec cleanup was
 not applied from the post-merge hygiene branch.
+Revision 2026-06-02: Archived active merged specs SPEC-013A1, SPEC-013B,
+SPEC-013C, and SPEC-014A from the current `origin/main` baseline. Cleanup was
+not applied because this checkout is detached at `origin/main` and no
+`--apply-cleanup` request was supplied; active source folders remain for a
+reviewed safe-base cleanup run.
 
 ---
 
@@ -89,9 +94,13 @@ docs/
 └── scripts/bash/                   # check-prerequisites.sh, validate-gate.sh, etc.
 
 specs/
-└── (empty after 2026-05-22 archive cleanup; next active spec setup recreates specs/<feature>)
+├── 013a1-github-sync-automation        # archived 2026-06-02; cleanup not applied
+├── 013b-claim-reconciliation           # archived 2026-06-02; cleanup not applied
+├── 013c-retry-debug-surfaces           # archived 2026-06-02; cleanup not applied
+├── 013d-claim-control-operator-ux      # archived 2026-06-01; cleanup not applied
+└── 014a-sandbox-lifecycle-contract     # archived 2026-06-02; cleanup not applied
 
-# Archived (cleanup applied):
+# Archived history:
 # - 001-foundation-migrations    (SPEC-001, archived 2026-04-28)
 # - 002-product-line-switcher    (SPEC-002, archived 2026-04-28)
 # - 002a-spec-archive-evidence   (SPEC-002A, archived 2026-04-28)
@@ -113,7 +122,11 @@ specs/
 # - 010a-generic-product-line-seeder       (SPEC-010A, PR #59, post-merge UAT — cleanup applied 2026-05-22)
 # - 012a-repo-knowledge-index              (SPEC-012A, PR #56, knowledge-index UAT — cleanup applied 2026-05-22)
 # - 013a-run-state-spine                   (SPEC-013A, PR #58, post-merge UAT — cleanup applied 2026-05-22)
+# - 013a1-github-sync-automation           (SPEC-013A1, PR #60/#61, archived 2026-06-02 — cleanup not applied)
+# - 013b-claim-reconciliation              (SPEC-013B, PR #62, archived 2026-06-02 — cleanup not applied)
+# - 013c-retry-debug-surfaces              (SPEC-013C, PR #63, archived 2026-06-02 — cleanup not applied)
 # - 013d-claim-control-operator-ux         (SPEC-013D, PR #65, archived 2026-06-01 — cleanup not applied from post-merge hygiene branch)
+# - 014a-sandbox-lifecycle-contract        (SPEC-014A, PR #64, archived 2026-06-02 — cleanup not applied)
 ```
 
 ---
@@ -577,6 +590,38 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 - Lifecycle is observed state only; archive is non-destructive (`status='archived'`, `archived_at`, lifecycle event), and `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy dispatch/runtime paths table-blind.
 - Post-merge UAT rebuilt standalone output, passed focused Vitest, scope guard, task-pipeline guardrails, Playwright browser journey, M76 marker/table/index/FK checks, and cleanup counts of zero attempts/events/fixture tasks.
 
+## SPEC-013A1 Plan Summary [Source: specs/013a1-github-sync-automation]
+
+**Branch**: `013a1-github-sync-automation` | **Merged**: 2026-05-23 | **PR**: #60 | **Follow-up**: #61
+
+- Adds GitHub sync automation lifecycle records, operator-visible status, poller enable/disable behavior, and manual sync fallback on top of the existing GitHub sync engine.
+- Keeps claim/reconciliation authority, retry/debug controls, sandbox lifecycle, harness adapters, and auto-merge behavior out of scope.
+- Post-merge HITL UAT was operator-confirmed complete on 2026-05-27, covering automatic polling enablement, lifecycle/status visibility, disable behavior, manual sync fallback, and duplicate-ingestion safety.
+
+## SPEC-013B Plan Summary [Source: specs/013b-claim-reconciliation]
+
+**Branch**: `013b-claim-reconciliation` | **Merged**: 2026-05-27 | **PR**: #62
+
+- Adds claim/reconciliation authority for task-stage launches, duplicate prevention, terminal release, governance blocking, negative-intake exclusion, and read-model visibility.
+- Reuses task-stage attempts and GitHub sync lifecycle helpers while deferring API retry controls, task-detail operator UX, sandbox lifecycle, and harness execution.
+- HAL target UAT promoted to `5e61d0ffc02f9345b265cd5420660d02bf693016`, replayed `spec013b-hal-uat-2026-05-27T23-05-31-000Z`, and left zero disposable-row residue.
+
+## SPEC-013C Plan Summary [Source: specs/013c-retry-debug-surfaces]
+
+**Branch**: `013c-retry-debug-surfaces` | **Merged**: 2026-05-30 | **PR**: #63
+
+- Adds authenticated retry, release, cancel, backoff, stale-state, idempotency, authorization, flag-off, and sanitized debug/read API behavior over the SPEC-013B claim authority.
+- Keeps UI controls, scheduler launch, sandbox adapter work, direct GitHub mutation, successor selection, and harness execution out of scope.
+- Combined HAL target UAT with SPEC-014A promoted to `c01d9e44ec826d94fa5916284c51453e5ec339ee`, replayed `spec013c-014a-uat-1780110032087`, and left zero disposable-row residue.
+
+## SPEC-014A Plan Summary [Source: specs/014a-sandbox-lifecycle-contract]
+
+**Branch**: `014a-sandbox-lifecycle-contract` | **Merged**: 2026-05-30 | **PR**: #64
+
+- Establishes sandbox lifecycle contract vocabulary, fake lifecycle owner states for `paddock`, `openclaw`, and `external_harness`, and read-only enabled/disabled API evidence.
+- Does not add adapter manifests, fake registry resolution, real harness adapters, scheduler launch, or claim/retry semantics.
+- Combined HAL target UAT with SPEC-013C verified sandbox fake lifecycle owners, enabled/disabled read API evidence, and cleanup at deployment commit `c01d9e44ec826d94fa5916284c51453e5ec339ee`.
+
 ---
 
 ## SPEC-013D Plan Summary [Source: specs/013d-claim-control-operator-ux]
@@ -591,7 +636,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 ## Configuration and Routing
 
-### Feature Flags (as of SPEC-013D)
+### Feature Flags (as of SPEC-014A)
 
 | Flag | Default | Resolution |
 |------|---------|------------|
@@ -602,7 +647,9 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `FEATURE_RESOURCE_GOVERNANCE` | OFF | `workspaces.feature_flags JSON` per workspace; env `0` forces OFF (SPEC-008) |
 | `FEATURE_OPENCLAW_HEALTH_COSTS` | OFF | Requires `FEATURE_RESOURCE_GOVERNANCE`; operator-specific optional, absent-safe (SPEC-008) |
 | `PILOT_PADDOCK_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
-| `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A-D run-state, GitHub sync automation, claim/reconciliation, retry/debug API, and task-detail operator UX surfaces; legacy runtime remains table-blind when OFF |
+| `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A-D run-state, claim/reconciliation, retry/debug API, and task-detail operator UX surfaces; legacy runtime remains table-blind when OFF |
+| `FEATURE_GITHUB_SYNC_AUTOMATION` | OFF | SPEC-013A1 GitHub sync lifecycle automation; manual sync fallback remains available when automation is off |
+| `FEATURE_AGENT_RUNNER_SANDBOXES` | OFF | SPEC-014A sandbox lifecycle contract/fake owners; real adapters and runtime inventory remain future SPEC-014B+ work |
 
 ### Verification Commands
 
@@ -670,6 +717,24 @@ From SPEC-013A:
 - `src/components/panels/task-stage-attempts-section.tsx`
 - `scripts/spec-013a/check-run-state-scope-guards.mjs`
 
+From SPEC-013A1:
+- `src/lib/github-sync-lifecycle.ts`
+- `src/lib/github-sync-lifecycle-types.ts`
+- `src/lib/github-sync-lifecycle-api.ts`
+- `src/app/api/github/sync/control/route.ts`
+- `src/components/panels/github-sync-panel.tsx`
+
+From SPEC-013B:
+- `src/lib/task-claim-reconciliation.ts`
+- `src/app/api/tasks/[id]/claim-reconciliation/route.ts`
+- `src/lib/task-dispatch.ts`
+
+From SPEC-013C:
+- `src/lib/task-claim-control-types.ts`
+- `src/lib/task-claim-control-idempotency.ts`
+- `src/lib/task-claim-control.ts`
+- `src/app/api/tasks/[id]/claim-control/route.ts`
+
 From SPEC-013D:
 - `src/components/panels/claim-control-section.tsx`
 - `src/components/panels/claim-control-copy.ts`
@@ -678,6 +743,11 @@ From SPEC-013D:
 - `src/components/panels/task-board-panel.tsx`
 - `tests/e2e/spec-013d-claim-control-operator-ux.spec.ts`
 - `scripts/seed-e2e-spec-013d.cjs`
+
+From SPEC-014A:
+- `src/lib/agent-sandbox-lifecycle.ts`
+- `src/app/api/tasks/[id]/sandbox-lifecycles/route.ts`
+- `docs/migrations/rollback-M80.sql`
 
 ---
 

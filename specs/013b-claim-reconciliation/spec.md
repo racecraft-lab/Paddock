@@ -2,7 +2,7 @@
 
 **Feature Branch**: `013b-claim-reconciliation`
 **Created**: 2026-05-27
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "Paddock needs claim and reconciliation authority that prevents duplicate scheduler dispatch for the same GitHub-linked task stage while preserving tracker truth, resource governance, SPEC-013A task-stage attempt evidence, and existing dispatch/successor-selection boundaries."
 
 ## Clarifications

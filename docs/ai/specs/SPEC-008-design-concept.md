@@ -25,7 +25,7 @@ Paddock's `resource_policies` and `resource_policy_events` tables landed empty i
 
 **OpenClaw is three distinct telemetry sources, not one:**
 
-- **A1 — Gateway-mediated OTel** (`docs/gateway/opentelemetry.md`). Real-time. Activates only when chats route through `openclaw-gateway`. Emits standard OTel GenAI semconv (`gen_ai.client.token.usage`, `gen_ai.client.operation.duration`) AND OpenClaw-prefixed (`openclaw.tokens`, `openclaw.cost.usd`, `openclaw.run.duration_ms`, `openclaw.context.tokens`, `openclaw.model_call.*`, `openclaw.queue.*`, `openclaw.session.*`) over OTLP/HTTP (protobuf, http/protobuf only — gRPC ignored).
+- **A1 — Gateway-mediated OTel** (OpenClaw gateway OTel surface). Real-time. Activates only when chats route through `openclaw-gateway`. Emits standard OTel GenAI semconv (`gen_ai.client.token.usage`, `gen_ai.client.operation.duration`) AND OpenClaw-prefixed (`openclaw.tokens`, `openclaw.cost.usd`, `openclaw.run.duration_ms`, `openclaw.context.tokens`, `openclaw.model_call.*`, `openclaw.queue.*`, `openclaw.session.*`) over OTLP/HTTP (protobuf, http/protobuf only — gRPC ignored).
 - **A2 — Transcript-replay** (`src/infra/session-cost-usage.ts`). Post-hoc parse of CLI rollout/transcript files. 30s cache, 256-entry bound, in-flight request coalescing.
 - **A3 — Provider-quota fetchers** (`src/infra/provider-usage.fetch.{claude,codex,gemini,minimax,zai}.ts`, `extensions/github-copilot/usage.ts`). Coarse `% remaining` windows from each provider's quota endpoint. **OpenClaw's Copilot adapter polls `https://api.github.com/copilot_internal/user` (undocumented `_internal` endpoint with VS-Code-spoofed headers — see Q19 below for why this is advisory-only).**
 
@@ -768,13 +768,13 @@ All files added to `tsconfig.spec-strict.json` and the ESLint strict config:
 - `src/lib/sessions.ts` — documentation update
 
 **New systemd unit on the operator node** (operator-managed, not in repo):
-- `~/.config/systemd/user/otelcol-contrib.service` — documented in `docs/observability/otel-collector-setup.md`
+- `~/.config/systemd/user/otelcol-contrib.service` — current shipped setup notes live in `docs/observability/setup.md`
 
 **Documentation deliverables:**
-- `docs/observability/{otel-collector-setup,claude-code-telemetry-setup,codex-cli-telemetry-setup,copilot-cli-telemetry-setup,ingestion-tier-reference,calibration-protocol,collector-failure-runbook}.md`
+- `docs/observability/setup.md`, `docs/observability/troubleshooting.md`, `docs/observability/provider-tos-considerations.md`, and the resource-governance runbooks under `docs/runbook/`
 - `docs/feature-flags-runbook.md` update
 - `docs/orchestration.md` cross-reference
-- `docs/migrations/rollback-M63.sql`, `rollback-M64.sql`, `rollback-M65.sql`
+- `docs/migrations/rollback-M65a.sql` through `docs/migrations/rollback-M65m.sql`, plus `docs/migrations/rollback-M66.sql`
 
 ## Q22 — Rollout Posture (phased; calibration before hard enforcement)
 
@@ -1848,7 +1848,7 @@ When Aegis emergency reserve consumed crosses 80% threshold ($4 of $5):
      [Force local-only mode] — Aegis falls back to LM Studio immediately
      [Pause Aegis] — Aegis dispatches block until manually resumed
      [Acknowledge — continue at risk] — alert silenced for 1h; system continues until 100%
-   Runbook: docs/runbook/aegis-soft-exhaustion.md
+   Runbook: docs/runbook/aegis-emergency-reserve-depletion.md
    ```
 
 2. **At 100% (hard exhaustion)**: Aegis automatically falls back to local-only mode (Q20 Mechanism 2). Notification "Aegis Emergency Reserve EXHAUSTED — local-only mode active" fires. THIS IS HARD enforcement at the soft layer — clearly labeled.
@@ -1910,7 +1910,7 @@ Self-hosted runner spec (operator-provisioned):
 - OS: Ubuntu 24.04
 - Tagged `mc-perf-runner` in repo workflow `runs-on`
 
-Documented in `docs/observability/perf-runner-setup.md` so any operator can stand one up. CI workflow file uses fallback: if `mc-perf-runner` unavailable, performance test is `skipped` and a warning posted to PR — does NOT block merge but flags a regression risk.
+Documented in the SPEC-008 verification evidence and benchmark tests so any operator can stand one up. CI workflow file uses fallback: if `mc-perf-runner` unavailable, performance test is `skipped` and a warning posted to PR — does NOT block merge but flags a regression risk.
 
 ### Q56 — Bulk policy promotion workflow (REVISED — round-4 oracle finding #10)
 
@@ -1956,7 +1956,7 @@ Migration runner:
 3. After M64m: run `PRAGMA foreign_key_check;` — if any violations, transaction aborts and migration fails.
 4. Each sub-migration logs to `migrations_log` table with state (`started`, `completed`, `failed`).
 
-**Rollback**: `docs/migrations/rollback-M64a.sql` ... `rollback-M64m.sql` each only DROP what their corresponding migration created.
+**Rollback**: shipped files use `docs/migrations/rollback-M65a.sql` ... `rollback-M65m.sql` for the resource-governance sub-migrations and each only drops what its corresponding migration created.
 
 ### Q58 — Stratified drift sampling + minimum cadence (REVISED — round-4 oracle finding #13)
 
@@ -2023,7 +2023,7 @@ gzip "$DEST"
 **Backup excludes**:
 - `paddock.db-wal` and `paddock.db-shm` — these are checkpointed into the main file by `.backup` command
 
-**Restore procedure** (`docs/runbook/disaster-recovery.md`):
+**Restore procedure** (inline operator backup/restore drill; no separate disaster-recovery runbook shipped):
 
 1. Stop `paddock.service` (`systemctl --user stop paddock.service`).
 2. Move existing `paddock.db` to `paddock.db.broken` (do not delete; for forensic if needed).
@@ -2055,16 +2055,16 @@ gzip "$DEST"
 
 | Failure mode | Runbook | Operator action checklist |
 |---|---|---|
-| Collector down | `docs/runbook/collector-failure.md` | Check journal logs; restart service; verify backfill protocol; check filestorage WAL not corrupted |
-| Breaker open | `docs/runbook/breaker-open.md` | Identify component; review last_error; investigate root cause; manual close via API; bug-file if recurring |
-| `schema_broken` | `docs/runbook/schema-broken.md` | Check Copilot version; review parser fixture; downgrade or update parser; manually configure quota until resolved |
-| `schema_malicious` | `docs/runbook/schema-malicious.md` | CRITICAL — review quarantined events; investigate source; rotate credentials if compromise suspected; do NOT re-enable until verified |
-| `drift_detected` | `docs/runbook/drift-detected.md` | Review drift magnitude; check recent backfill or migration; run manual rebuild if confirmed real drift |
-| `aegis_no_fallback` | `docs/runbook/aegis-no-fallback.md` | Install LM Studio OR increase emergency reserve OR use break-glass override |
-| `backfill_failed` | `docs/runbook/backfill-failed.md` | Review error in `telemetry_backfill_windows.last_error`; manual retry OR mark window failed and accept data loss |
-| `enforcement_disabled_pending_operator` | `docs/runbook/enforcement-disabled.md` | Review why source went stale; restore source or accept conservative cap mode |
+| Collector down | `docs/runbook/collector-outage.md` | Check journal logs; restart service; verify backfill protocol; check filestorage WAL not corrupted |
+| Breaker open | `docs/runbook/breaker-stuck-open.md` | Identify component; review last_error; investigate root cause; manual close via API; bug-file if recurring |
+| `schema_broken` | `docs/runbook/source-schema-break.md` | Check Copilot/source version; review parser fixture; downgrade or update parser; manually configure quota until resolved |
+| `schema_malicious` | `docs/runbook/ingest-schema-malicious.md` | CRITICAL — review quarantined events; investigate source; rotate credentials if compromise suspected; do NOT re-enable until verified |
+| `drift_detected` | `docs/runbook/counter-drift.md` | Review drift magnitude; check recent backfill or migration; run manual rebuild if confirmed real drift |
+| `aegis_no_fallback` | `docs/runbook/aegis-deferred-no-fallback.md` | Install LM Studio OR increase emergency reserve OR use break-glass override |
+| `backfill_failed` | `docs/runbook/backfill-window-failure.md` | Review error in `telemetry_backfill_windows.last_error`; manual retry OR mark window failed and accept data loss |
+| `enforcement_disabled_pending_operator` | `docs/runbook/collector-outage.md` | Review why source went stale; restore source or accept conservative cap mode |
 | `governance_counter_drift` | `docs/runbook/counter-drift.md` | See `drift_detected` |
-| `governance_replay_detected` | `docs/runbook/replay-detected.md` | Review replay payload; investigate source; rotate auth tokens if external |
+| `governance_replay_detected` | `docs/runbook/ingest-schema-malicious.md` | Review replay payload; investigate source; rotate auth tokens if external |
 
 Each runbook page includes:
 - Symptom (what UI/log shows)
@@ -2548,7 +2548,7 @@ When operator enables a surface marked default-disabled, UI shows: "Enabling thi
 
 **Decision:** **All external binaries pinned with version + checksum + signing key; license check in CI rejects AGPL/SSPL.**
 
-**`otelcol-contrib` pinning** (`docs/observability/otel-collector-setup.md` + `scripts/install-otelcol.sh`):
+**`otelcol-contrib` pinning** (`docs/observability/setup.md` + `scripts/install-otelcol.sh`):
 
 ```bash
 # Pinned values (operator-tunable but defaults are fixed per release):

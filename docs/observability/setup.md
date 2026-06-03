@@ -54,9 +54,10 @@ curl -X POST "$MC_URL/api/otlp/v1/metrics" \
 
 Expect `204 No Content` on success.
 
-For receiver implementation details, inspect
-`src/lib/observability/otlp-receiver.ts` and the route handlers under
-`src/app/api/otlp/v1/`.
+The receiver implementation lives in
+`src/lib/observability/otlp-receiver.ts`, with route handlers under
+`src/app/api/otlp/v1/` and decode/admission coverage in
+`tests/integration/governance-otlp-receiver*.test.ts`.
 
 ## Source adapter activation
 
@@ -76,8 +77,8 @@ a source:
 
 No per-CLI setup guides are currently checked in. Use this file, the adapter
 source under `src/lib/observability/adapters/`, and
-`docs/observability/provider-tos-considerations.md` until a future spec adds
-dedicated setup pages.
+`docs/observability/provider-tos-considerations.md` for adapter ToS and
+acknowledgement details until a future spec adds dedicated setup pages.
 
 ## Verify canonical events
 

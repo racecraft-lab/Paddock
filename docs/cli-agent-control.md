@@ -1,8 +1,11 @@
 # Paddock CLI for Agent-Complete Operations (v2)
 
-This repository includes a first-party CLI at:
+This repository includes a first-party CLI exposed through the package script:
 
-- scripts/mc-cli.cjs
+- `pnpm mc`
+
+The package script delegates to `scripts/mc-cli.cjs` for direct Node execution
+in unusual environments.
 
 Designed for autonomous/headless usage first:
 - API key auth support
@@ -23,9 +26,9 @@ Designed for autonomous/headless usage first:
 3) Run commands:
 
 ```bash
-node scripts/mc-cli.cjs agents list --json
-node scripts/mc-cli.cjs tasks queue --agent Aegis --max-capacity 2 --json
-node scripts/mc-cli.cjs sessions control --id <session-id> --action terminate
+pnpm mc agents list --json
+pnpm mc tasks queue --agent Aegis --max-capacity 2 --json
+pnpm mc sessions control --id <session-id> --action terminate
 ```
 
 ## Command groups
@@ -155,9 +158,8 @@ Baseline policy in this repo:
 - When you fix a mismatch, remove its line from ignore file in the same PR.
 - Goal is monotonic burn-down to an empty ignore file.
 
-## Next steps
+## Maintenance Notes
 
-- Promote script to package.json bin entry (`mc`).
-- Add retry/backoff for transient failures.
-- Add integration tests that run the CLI against a test server fixture.
-- Add richer pagination/filter flags for list commands.
+Keep this reference aligned with `scripts/mc-cli.cjs` and the `mc` package
+script. When a command group adds required flags or changes its JSON shape,
+update this page in the same change.

@@ -30,6 +30,7 @@ export const BackupStale: Story = {
     severity: 'amber',
     summary: 'Last backup 14 hours ago',
     backupVariant: 'backup-stale',
+    runbookHref: 'https://github.com/racecraft-lab/Paddock/blob/main/docs/runbook/retention-sweep-failure.md',
   },
 };
 export const BackupNoOffnodeWarning: Story = {
@@ -46,5 +47,6 @@ export const BackupFailed: Story = {
     severity: 'red',
     summary: 'Last backup attempt failed: pg_dump exit 1',
     backupVariant: 'backup-failed',
+    runbookHref: 'https://github.com/racecraft-lab/Paddock/blob/main/docs/runbook/retention-sweep-failure.md',
   },
 };

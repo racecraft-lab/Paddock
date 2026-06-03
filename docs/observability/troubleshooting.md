@@ -89,5 +89,6 @@ the operator-confirmed dialog. Use
 2. SSH to the operator node; verify `openclaw-gateway.service` is
    running (`systemctl --user status --no-pager openclaw-gateway.service`).
 3. Inspect the gateway log for OTel-export failures.
-4. For prolonged degradation, keep `FEATURE_OPENCLAW_HEALTH_COSTS` disabled
-   and use `docs/runbook/collector-outage.md` for collector-side recovery.
+4. For gateway deployment and connectivity recovery, see
+   `docs/deployment.md#docker-gateway-unreachable--websocket-not-connecting`
+   and the OpenClaw node notes in `AGENTS.md`.

@@ -19,6 +19,9 @@ Revision 2026-06-01: Archived SPEC-013D after PR #65 merged to `main`, preservin
 claim-control operator UX requirements and provenance. Source spec cleanup was
 not applied in this post-merge hygiene branch because the cleanup gate requires
 an explicit safe-base cleanup run.
+Revision 2026-06-02: Archived SPEC-013A1, SPEC-013B, SPEC-013C, and SPEC-014A
+from the current merged `origin/main` baseline. Cleanup was not applied because
+the checkout is detached and no `--apply-cleanup` request was supplied.
 
 ---
 
@@ -284,6 +287,50 @@ As an auditor, I can see archived attempts remain queryable and visibly distinct
 **US3 — Keep Runtime Ignorant When Flagged Off (P1)**
 As a maintainer, I can prove `FEATURE_TASK_CONTROL_PLANE=false` leaves legacy dispatch/runtime paths table-blind while debug inspection remains available.
 
+### SPEC-013A1: GitHub Sync Automation and Poller Lifecycle [Source: specs/013a1-github-sync-automation]
+
+**US1 — Run Automatic GitHub Issue Polling Safely (P1)**
+As an operator, I can enable default-off automatic GitHub issue polling for a scoped repo while preserving manual sync fallback and duplicate-ingestion safety.
+
+**US2 — Inspect Lifecycle Health and Backoff (P1)**
+As an operator, I can see lifecycle status, active run, last result, cursor, backoff, ownership, skipped diagnostics, and sanitized errors in the GitHub Sync surface.
+
+**US3 — Disable Automation Without Breaking Manual Sync (P2)**
+As an operator, I can disable future automatic ticks while any durable lease or in-flight state remains recoverable through stored lifecycle evidence.
+
+### SPEC-013B: Claim and Reconciliation Authority [Source: specs/013b-claim-reconciliation]
+
+**US1 — Prevent Duplicate Stage Launches (P1)**
+As an operator, I can rely on one active claim per task stage so concurrent scheduler ticks do not launch the same GitHub-linked work twice.
+
+**US2 — Reconcile Terminal and Governance Outcomes (P1)**
+As a reviewer, I can trace duplicate prevention, governance deferral, stale truth, terminal release, and boundary errors through structured claim evidence.
+
+**US3 — Inspect Claims Without Runner Semantics (P2)**
+As a viewer, I can inspect task-scoped claim/reconciliation state without adding retry UI, sandbox lifecycle, harness execution, or auto-merge behavior.
+
+### SPEC-013C: Retry and Debug Control API [Source: specs/013c-retry-debug-surfaces]
+
+**US1 — Mutate Eligible Claims Through a Bounded API (P1)**
+As an operator, I can release, cancel, or retry an eligible claimed stage through authenticated backend controls with compare-and-set protection.
+
+**US2 — Replay Idempotent Submissions Safely (P1)**
+As an operator, I can retry the same successful request key and receive the stored result without rerunning side effects.
+
+**US3 — Debug Claim-Control State Safely (P2)**
+As a maintainer, I can inspect sanitized read-model details and task-visible outcomes while raw payloads, secrets, and backend diagnostics stay out of user-facing evidence.
+
+### SPEC-014A: Sandbox Ownership and Lifecycle Contract [Source: specs/014a-sandbox-lifecycle-contract]
+
+**US1 — Persist Sandbox Lifecycle Evidence (P1)**
+As an operator, I can inspect deterministic sandbox lifecycle rows and events for already-claimed work before real harness adapters exist.
+
+**US2 — Prove Bounded Fake Owners (P1)**
+As a maintainer, I can exercise fake `paddock`, `openclaw`, and `external_harness` owners under bounded roots without launching real harness work.
+
+**US3 — Read Lifecycle State Without UI or Adapter Behavior (P2)**
+As a viewer, I can call the task-scoped read API and verify enabled and disabled lifecycle evidence without any UI, adapter manifest, real execution, or retry-control side effect.
+
 ### SPEC-013D: Claim-Control Operator UX [Source: specs/013d-claim-control-operator-ux]
 
 **US1 — Inspect Claim-Control State (P1)**
@@ -448,7 +495,11 @@ As a reviewer, I can trace route-backed screenshots, Storybook states, fixture c
 - **SPEC-010A FRs**: Define checked-in product-line YAML seed configs; provide generic `seed:product-line` preflight/apply/verify plus `seed:paddock` wrapper compatibility; validate flags, workflow contracts, governance rows, agents, and existing targets before writes; prove no-mutation failures and no Product Line B onboarding or runtime work.
 - **SPEC-012A FRs**: Maintain canonical `docs/ai/repo-knowledge-index.json` and schema; map root repo knowledge in `AGENTS.md`; add fixture-backed validation, fresh-agent smoke, package scripts, and guardrails; avoid runtime behavior, migrations, UI, scheduler/runner work, GitHub sync automation, sandbox lifecycle, adapters, generated `.gitnexus/`, broad docs rewrites, or nested AGENTS rollout.
 - **SPEC-013A FRs**: Add additive M76 task-stage attempt tables and rollback; expose typed helper/model behavior and read-only task-scoped API/UI inspection; represent lifecycle, projection drift, archive state, and optional run links; keep flag-off runtime paths table-blind and defer claim authority, scheduler launch, retry policy, GitHub reconciliation, sandbox lifecycle, adapters, and auto-merge.
+- **SPEC-013A1 FRs**: Add default-off `FEATURE_GITHUB_SYNC_AUTOMATION`, M77 lifecycle controls/runs, bounded scheduler-owned GitHub polling, overlap leases, success-only cursor advancement, manual sync fallback, scoped control API, lifecycle health/status UI, sanitized diagnostics, and owner-aware shared-repo selection; avoid claim authority, dispatch launch, remediation execution, sandbox lifecycle, harness adapters, auto-merge, and automatic triage.
+- **SPEC-013B FRs**: Add M78 task-stage claim authority, one active claim per `(workspace_id, task_id, stage_key)`, duplicate-prevention evidence, governance and stale-truth deferrals, terminal release reconciliation, read-only task claim API, and fail-closed boundary behavior; keep task-stage attempts passive and avoid runner, sandbox, retry UI, manual release UX, auto-merge, or successor selection.
+- **SPEC-013C FRs**: Add authenticated claim-control mutation API, M79 idempotency replay storage, release/cancel/retry/backoff/stale/auth/flag-off semantics, sanitized audit/read-model evidence, and same-key replay without rerunning side effects; avoid task-detail UI, dashboard, CLI/MCP actions, GitHub mutations, successor selection, sandbox lifecycle, adapter registry, or harness execution.
 - **SPEC-013D FRs**: Render the SPEC-013C `claim_control` read model in the existing task detail; use backend-provided `available_actions`, expected state, retry eligibility, backoff, last action, and sanitized errors as authoritative; submit retry/release/cancel through the existing SPEC-013C route with bounded reason/override fields and same-submission idempotency retry only after network failure; refresh claim, evidence, stage-attempt, and task-list state after bounded responses; expose accessible confirmations, disabled reasons, receipts, and visual states; never add migrations, backend semantics, scheduler launch, dashboard, sandbox lifecycle, adapter registry, direct GitHub mutation, successor selection, harness execution, raw idempotency keys, or raw diagnostics.
+- **SPEC-014A FRs**: Add M80 sandbox lifecycle/event persistence, deterministic sandbox keys, bounded path evidence, feature-flagged fake owner lifecycle transitions, read-only task-authorized `sandbox_lifecycle.v1` API, rollback SQL, and flag-off no-mutation behavior; avoid UI, real harness launch/resume/stop, adapter manifests, retry controls, tracker truth, successor selection, governance changes, token accounting, and auto-merge.
 
 ---
 
@@ -629,4 +680,8 @@ As a reviewer, I can trace route-backed screenshots, Storybook states, fixture c
 - SPEC-010A: Generic product-line seeder reproduces Paddock config from YAML, rejects unsafe configs without mutation, preserves existing history, and avoids Product Line B/runtime drift; 73/73 tasks completed.
 - SPEC-012A: Repo knowledge index/schema, root AGENTS map, fixtures, fresh-agent smoke, package scripts, and guardrails pass; 32/32 tasks completed.
 - SPEC-013A: Task-stage attempt persistence, read-only inspection, non-destructive archive semantics, rollback, flag-off table-blind guardrails, focused browser UAT, and cleanup evidence pass; 58/58 tasks completed.
+- SPEC-013A1: GitHub sync lifecycle automation, scoped controls, manual fallback, lifecycle health/status evidence, overlap protection, disable behavior, and duplicate-ingestion safety pass; 72/72 tasks completed.
+- SPEC-013B: Claim/reconciliation authority, duplicate launch prevention, terminal release, governance blocking, negative-intake exclusion, read-model visibility, HAL replay, and cleanup evidence pass; 57/57 tasks completed.
+- SPEC-013C: Claim-control API release/cancel/retry/backoff/idempotency/stale/auth/flag-off behavior, sanitized read-model evidence, combined HAL replay with SPEC-014A, and cleanup evidence pass; 75/75 tasks completed.
 - SPEC-013D: Existing task detail exposes authoritative claim-control state, disabled reasons, confirmations, retry/release/cancel submissions, bounded receipts, refresh behavior, read-only/flag-off protections, route-backed Playwright and Storybook visual evidence, cleanup proof, and archive provenance; 72/72 tasks completed and PR #65 merged.
+- SPEC-014A: Sandbox lifecycle contract persistence, fake owner lifecycle states, enabled/disabled read API evidence, combined HAL replay with SPEC-013C, and cleanup evidence pass; 58/58 tasks completed.

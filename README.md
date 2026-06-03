@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/brand/paddock-logo-liquid-glass.png" alt="Paddock logo" width="128" />
+
 # Paddock
 
 **Open-source AI software factory control plane.**
@@ -13,6 +15,8 @@ for autonomous software work.
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![Last commit](https://img.shields.io/github/last-commit/racecraft-lab/Paddock)](https://github.com/racecraft-lab/Paddock/commits/main)
 [![Open issues](https://img.shields.io/github/issues/racecraft-lab/Paddock)](https://github.com/racecraft-lab/Paddock/issues)
+
+<img src="docs/brand/paddock-hero-liquid-glass-v2.png" alt="Paddock AI software factory control plane" style="width: 100%; height: auto;" />
 
 </div>
 
@@ -151,7 +155,8 @@ For the full walkthrough, see [docs/quickstart.md](docs/quickstart.md).
 | [CLI integration](docs/cli-integration.md) | Connect Codex, Claude Code, or another CLI harness. |
 | [Deployment](docs/deployment.md) | Production deployment, reverse proxy, and VPS guidance. |
 | [Security hardening](docs/SECURITY-HARDENING.md) | Docker hardening, CSP, and network isolation. |
-| [Resource governance](docs/feature-flags-runbook.md) | WIP, budget, blackout/degraded windows, and matrix-test conventions. |
+| [Feature flags](docs/feature-flags-runbook.md) | Flag behavior, env overrides, activation preflights, and matrix-test conventions. |
+| [Resource governance](docs/orchestration.md#spec-008-resource-governance-integration) | Dispatcher admission, governance APIs/UI, and recovery runbook references. |
 | [OpenAPI](openapi.json) | REST API contract. Scalar UI is available at `/docs` when running; raw JSON is served from `/api/docs`. |
 
 ## Architecture

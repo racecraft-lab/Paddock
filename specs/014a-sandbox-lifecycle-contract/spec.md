@@ -2,7 +2,7 @@
 
 **Feature Branch**: `014a-sandbox-lifecycle-contract`  
 **Created**: 2026-05-28  
-**Status**: Draft  
+**Status**: Completed
 **Input**: User description: "Paddock has claim/reconciliation authority from SPEC-013B but needs an explicit sandbox ownership and lifecycle contract for execution contexts before any real harness adapter can launch work."
 
 ## External Source Context

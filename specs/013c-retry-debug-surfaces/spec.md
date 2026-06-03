@@ -2,7 +2,7 @@
 
 **Feature Branch**: `013c-retry-debug-surfaces`  
 **Created**: 2026-05-28  
-**Status**: Draft  
+**Status**: Completed
 **Input**: User description: "SPEC-013C adds authenticated API-only retry, release, cancel, backoff, audit, and debug authority on top of SPEC-013B claim/reconciliation state, while deferring operator UI controls to SPEC-013D."
 
 ## Clarifications
