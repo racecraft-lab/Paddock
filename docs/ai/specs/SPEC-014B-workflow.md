@@ -125,6 +125,17 @@ Define the typed harness adapter manifest and registry for launch/resume/stop ca
 - UI is read-only: badges, selected manifest, eligibility reasons, lifecycle references, and sanitized fake evidence.
 - Approval, timeout, and user-input policies are declared in manifests and fail closed when unsupported or expired.
 
+### Existing Harness Baseline
+
+SPEC-014B is not a greenfield harness-support spec. Reuse these current Paddock surfaces as baseline context during Specify, Clarify, and Plan:
+
+- `src/lib/adapters/adapter.ts`, `src/lib/adapters/index.ts`, and `src/app/api/adapters/route.ts` for the existing narrow framework-adapter contract.
+- `src/lib/task-dispatch.ts`, `src/lib/openclaw-gateway.ts`, and `src/lib/command.ts` for current OpenClaw gateway dispatch, targeted session dispatch, and direct Claude fallback boundaries.
+- `src/app/api/sessions/route.ts`, `src/lib/sessions.ts`, `src/lib/claude-sessions.ts`, `src/lib/codex-sessions.ts`, `src/lib/hermes-sessions.ts`, and `src/lib/opencode-sessions.ts` for current runtime/session observation.
+- `src/lib/agent-runtimes.ts`, `src/lib/agent-sync.ts`, `src/lib/local-agent-sync.ts`, and `src/lib/runs.ts` for runtime detection, OpenClaw/local agent inventory, and run/evidence storage.
+
+The implementation should formalize these scattered assumptions into a manifest-driven capability, eligibility, and read-only inventory contract. It should not duplicate these integrations or imply OpenClaw/framework/session support is absent.
+
 ### Success Criteria Summary
 
 - Two fake adapters exercise the same typed manifest contract.
@@ -154,14 +165,24 @@ Source artifacts:
 - specs/014a-sandbox-lifecycle-contract/spec.md
 - docs/ai/specs/SPEC-014A-design-concept.md
 - specs/013d-claim-control-operator-ux/spec.md
+- src/lib/adapters/adapter.ts
+- src/app/api/adapters/route.ts
+- src/lib/task-dispatch.ts
+- src/lib/openclaw-gateway.ts
+- src/app/api/sessions/route.ts
+- src/lib/agent-runtimes.ts
+- src/lib/agent-sync.ts
+- src/lib/local-agent-sync.ts
+- src/lib/runs.ts
 - current OpenAI Harness Engineering article
 - current OpenAI Symphony announcement and SPEC.md
 
 Problem statement:
-Paddock has sandbox lifecycle read evidence from SPEC-014A, claim/reconciliation authority from SPEC-013B, retry/debug authority from SPEC-013C, and task-detail operator controls from SPEC-013D. It still needs a typed harness adapter manifest and fake registry before any real harness adapter can launch or continue work. The fake registry must prove that runtime inventory is not Codex-specific, that visibility is not eligibility, and that unsupported capabilities fail closed instead of stalling or switching harnesses.
+Paddock already has harness-adjacent support through framework adapters, OpenClaw gateway dispatch, session scanners for OpenClaw/Claude/Codex/Hermes/OpenCode, runtime detection, OpenClaw/local agent sync, and an AgentRun spine. It also has sandbox lifecycle read evidence from SPEC-014A, claim/reconciliation authority from SPEC-013B, retry/debug authority from SPEC-013C, and task-detail operator controls from SPEC-013D. The remaining gap is a typed harness adapter manifest and fake registry that make launch, resume, stop, transcript, artifact, sandbox, tool/MCP, approval, timeout, user-input, token/runtime, and eligibility assumptions explicit before any new real harness adapter can launch or continue work. The fake registry must prove that runtime inventory is not Codex-specific, that visibility is not eligibility, and that unsupported capabilities fail closed instead of stalling or switching harnesses.
 
 Specify requirements for:
 - A new stricter harness adapter contract layer separate from the existing `src/lib/adapters` framework-adapter contract.
+- Reuse of existing framework-adapter, OpenClaw gateway, runtime/session observation, agent sync, and AgentRun surfaces as inputs or compatibility boundaries; do not duplicate them.
 - Checked-in typed fake manifest fixtures plus validation; do not require SQLite persistence for manifests or runtime inventory.
 - Two fake adapter postures: Paddock-owned sandbox and external-harness fake.
 - Manifest-declared capabilities for launch, resume, stop, transcript/event read, token/runtime accounting, artifact publication, sandbox posture, MCP exposure, skills, plugins, memory, provider/account constraints, approval policy, timeout policy, and user-input policy.

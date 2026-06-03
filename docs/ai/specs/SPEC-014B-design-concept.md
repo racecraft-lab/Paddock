@@ -20,7 +20,8 @@ stop_reason: "natural"
 
 ## Goals
 
-- Define a typed harness adapter manifest contract before any real Codex, Claude, OpenClaw, Hermes, OpenCode, or external harness execution lands.
+- Define a typed harness adapter manifest contract before any new real Codex, Claude, OpenClaw, Hermes, OpenCode, or external harness execution lands.
+- Formalize Paddock's existing harness-adjacent surfaces into one explicit capability and eligibility contract instead of adding generic harness support from scratch.
 - Prove the contract with two fake adapter postures: a Paddock-owned sandbox fake and an external-harness fake.
 - Add a fake registry, manifest validator, capability-resolution packet, policy model, sanitized evidence model, and derived runtime-inventory read model.
 - Show runtime inventory on the existing Agents surface using a read-only operator integration.
@@ -32,10 +33,22 @@ stop_reason: "natural"
 
 - No real harness launch, resume, stop, transcript fetch, token accounting call, MCP/tool/plugin invocation, or provider API call.
 - No widening of the existing `src/lib/adapters` framework-adapter route/contract; SPEC-014B creates the stricter harness adapter layer separately.
+- No duplicate OpenClaw gateway, framework-adapter, session scanner, runtime detection, agent sync, or AgentRun implementation.
 - No SQLite migration for adapter manifests or runtime inventory unless implementation proves an unavoidable persistence need during Plan and records a reviewability exception.
 - No launch, assignment, retry, release, cancel, lifecycle-control, GitHub mutation, scheduler dispatch, successor selection, governance-policy mutation, or auto-merge UI.
 - No raw transcript, provider payload, secret-like value, host path, prompt body, or unsafe external event payload in UI, fixtures, logs, review packets, or artifacts.
 - No automatic adapter fallback or silent switching when the selected adapter cannot satisfy a requirement.
+
+## Existing Harness Baseline
+
+Paddock already has several harness-adjacent surfaces that SPEC-014B must reuse as context rather than replace:
+
+- `src/lib/adapters` and `/api/adapters` expose a narrow framework-adapter contract for registration, heartbeat, task reports, assignments, and disconnects across OpenClaw, generic, CrewAI, LangGraph, AutoGen, and Claude SDK style integrations.
+- `src/lib/task-dispatch.ts`, `src/lib/openclaw-gateway.ts`, and `src/lib/command.ts` already contain OpenClaw gateway dispatch paths plus direct Claude fallback behavior in limited cases.
+- `src/app/api/sessions/route.ts`, `src/lib/sessions.ts`, and local session scanners already normalize OpenClaw gateway, Claude Code, Codex CLI, Hermes, and OpenCode observations into one session surface.
+- `src/lib/agent-runtimes.ts`, `src/lib/agent-sync.ts`, `src/lib/local-agent-sync.ts`, and `src/lib/runs.ts` already model runtime detection, OpenClaw/local agent inventory, and run/evidence storage.
+
+The SPEC-014B gap is not "Paddock has no harness support." The gap is that launch, resume, stop, transcript, artifact, sandbox, tool/MCP, approval, timeout, user-input, token/runtime, and eligibility assumptions are still implicit or scattered. SPEC-014B should make those assumptions explicit through typed fake manifests and a derived runtime-inventory read model before SPEC-014C/D add real adapter execution.
 
 ## Design Tree (Q&A log)
 
