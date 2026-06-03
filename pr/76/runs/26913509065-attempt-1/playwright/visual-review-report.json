@@ -3,7 +3,7 @@
   "version": 1,
   "repository": "racecraft-lab/Paddock",
   "reportMode": "pr",
-  "reportScope": "latest",
+  "reportScope": "run",
   "surface": "playwright",
   "surfaceLabel": "Playwright UI E2E",
   "workflowName": "Paddock UI E2E",
@@ -17,7 +17,7 @@
   "headRef": "014b-adapter-manifest-fakes",
   "baseRef": "main",
   "headSha": "06b8f143ac09e54d6d09efad8cc1a072e058bdd4",
-  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/76/playwright/latest/",
+  "reportHref": "https://racecraft-lab.github.io/Paddock/pr/76/runs/26913509065-attempt-1/playwright/",
   "latestHref": "https://racecraft-lab.github.io/Paddock/pr/76/playwright/latest/?v=26913509065-attempt-1",
   "createdAt": "2026-06-03T21:30:57.007Z",
   "itemCounts": {

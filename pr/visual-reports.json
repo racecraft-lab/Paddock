@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-03T21:21:32.613Z",
+  "updatedAt": "2026-06-03T21:30:57.007Z",
   "prs": [
     {
       "prNumber": "76",
@@ -9,14 +9,14 @@
       "indexHref": "https://racecraft-lab.github.io/Paddock/pr/76/",
       "headRef": "014b-adapter-manifest-fakes",
       "baseRef": "main",
-      "updatedAt": "2026-06-03T21:21:32.613Z",
+      "updatedAt": "2026-06-03T21:30:57.007Z",
       "latest": {
         "playwright": {
-          "runId": "26913359344",
-          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26913359344",
-          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/76/playwright/latest/?v=26913359344-attempt-1",
-          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/76/runs/26913359344-attempt-1/playwright/",
-          "updatedAt": "2026-06-03T21:21:32.613Z"
+          "runId": "26913509065",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26913509065",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/76/playwright/latest/?v=26913509065-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/76/runs/26913509065-attempt-1/playwright/",
+          "updatedAt": "2026-06-03T21:30:57.007Z"
         }
       }
     },
