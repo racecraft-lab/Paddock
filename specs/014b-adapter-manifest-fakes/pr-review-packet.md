@@ -74,6 +74,19 @@ Support artifacts:
 - Manual browser UAT remains runbook-driven until authenticated disposable workspace fixtures are available.
 - Whole-branch reviewability includes earlier SpecKit scaffold/design/checklist/task commits and exceeds the generic diff budget. This packet records the transition exception for the SPEC-014B harness-adapter contract slice; review the final implementation commit and this packet by the scope order above.
 
+## UAT Runbook
+
+Full runbook: `specs/014b-adapter-manifest-fakes/uat-runbook.md`
+
+Required manual paths:
+
+- Feature flag off shows disabled or blocked evidence without enabling dispatchability.
+- Both fake manifests are visible through the same contract.
+- Visible, unassigned, assigned, eligible, and blocked states are represented.
+- Unsupported capabilities and unsupported or expired policies fail closed with stable reason-code evidence.
+- Sanitized evidence rejection omits unsafe payloads and exposes only bounded metadata.
+- The existing Agents surface shows read-only evidence and no launch, assignment, retry, lifecycle, scheduler, GitHub, governance, successor, or auto-merge controls.
+
 ## Rollback
 
 No migration was added. Rollback is a normal git revert of the implementation commit(s).
