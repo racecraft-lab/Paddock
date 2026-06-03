@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "prNumber": "72",
+  "prTitle": "docs: fix stale operator documentation references",
+  "prUrl": "https://github.com/racecraft-lab/Paddock/pull/72",
+  "headRef": "codex/docs-hygiene-2026-06-02",
+  "baseRef": "main",
+  "reports": [
+    {
+      "surface": "storybook",
+      "runId": "26855640130",
+      "runAttempt": "1",
+      "runKey": "26855640130-attempt-1",
+      "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26855640130",
+      "reportHref": "https://racecraft-lab.github.io/Paddock/pr/72/runs/26855640130-attempt-1/storybook/",
+      "latestHref": "https://racecraft-lab.github.io/Paddock/pr/72/storybook/latest/?v=26855640130-attempt-1",
+      "headSha": "643f3d61ac0da4404bfabd30a226b6666c85cae7",
+      "headRef": "codex/docs-hygiene-2026-06-02",
+      "baseRef": "main",
+      "workflowName": "Visual Storybook Snapshots",
+      "workflowFile": "visual-storybook.yml",
+      "surfaceLabel": "Storybook Components",
+      "createdAt": "2026-06-03T00:14:39.737Z"
+    }
+  ],
+  "updatedAt": "2026-06-03T00:14:39.737Z"
+}

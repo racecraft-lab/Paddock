@@ -1,7 +1,25 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-02T21:52:09.785Z",
+  "updatedAt": "2026-06-03T00:14:39.737Z",
   "prs": [
+    {
+      "prNumber": "72",
+      "prTitle": "docs: fix stale operator documentation references",
+      "prUrl": "https://github.com/racecraft-lab/Paddock/pull/72",
+      "indexHref": "https://racecraft-lab.github.io/Paddock/pr/72/",
+      "headRef": "codex/docs-hygiene-2026-06-02",
+      "baseRef": "main",
+      "updatedAt": "2026-06-03T00:14:39.737Z",
+      "latest": {
+        "storybook": {
+          "runId": "26855640130",
+          "runUrl": "https://github.com/racecraft-lab/Paddock/actions/runs/26855640130",
+          "latestHref": "https://racecraft-lab.github.io/Paddock/pr/72/storybook/latest/?v=26855640130-attempt-1",
+          "reportHref": "https://racecraft-lab.github.io/Paddock/pr/72/runs/26855640130-attempt-1/storybook/",
+          "updatedAt": "2026-06-03T00:14:39.737Z"
+        }
+      }
+    },
     {
       "prNumber": "71",
       "prTitle": "docs: prune stale docs and repair runbook links",
