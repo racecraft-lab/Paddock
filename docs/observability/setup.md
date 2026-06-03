@@ -76,7 +76,7 @@ a source:
 | `cli_stdout_json` (Codex) | streams via the dispatcher's session writer |
 | `copilot.events_jsonl` | `events.jsonl` shipped under `~/.copilot/` |
 | `openclaw_gateway` | reads `~/.openclaw/health/` artifacts when `FEATURE_OPENCLAW_HEALTH_COSTS` is enabled |
-| `manual_post` | adapts the existing `POST /api/tokens` path into `raw_usage_events` provenance |
+| `manual_post` | adapter source exists for future/manual replay pipelines; the current `POST /api/tokens` route stores token records directly |
 | `provider_quota` | registered advisory source id; no operator-facing fetch route is checked in |
 
 No per-CLI setup guides are currently checked in. Use this file, the adapter

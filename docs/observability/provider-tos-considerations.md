@@ -159,8 +159,9 @@ a corresponding H2 here (orphan detection).
 
 ## manual-post
 
-- **Surface**: Operator-driven manual ingestion endpoint
-  (`POST /api/observability/manual`) for replaying captured events.
+- **Surface**: Operator-driven manual replay adapter source. No
+  `POST /api/observability/manual` route is currently checked in; the existing
+  `POST /api/tokens` route records manual token usage directly.
 - **Default state**: `allowed`.
 - **ToS notes**: This adapter only ingests payloads the operator
   affirmatively posts; no third-party ToS applies. The posted
