@@ -225,7 +225,7 @@ For agents built with Claude Code, the MCP server is the recommended integration
 claude mcp add paddock -- node /path/to/Paddock/scripts/mc-mcp-server.cjs
 ```
 
-Set `MC_URL` and `MC_API_KEY` in your environment. The MCP server exposes 35+ tools for agents, tasks, sessions, memory, and more. See [CLI Integration](cli-integration.md) for details.
+Set `MC_URL` and `MC_API_KEY` in your environment. The MCP server exposes 49 tools for agents, tasks, sessions, memory, runs, knowledge, evals, and more. See [CLI Integration](cli-integration.md) for details.
 
 ## What's Next?
 

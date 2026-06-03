@@ -32,7 +32,7 @@ The most dangerous gap: **`deferred_no_fallback` (Q20 Mechanism 2) has no runboo
 
 **Action items:**
 
-- Name a runbook `.md` for each of the seven failure modes (in `docs/observability/runbooks/`).
+- Name a runbook `.md` for each of the seven failure modes. Current equivalents are implemented under `docs/runbook/`.
 - Document the explicit re-enable path for `schema_broken` and `schema_malicious` (Q37 only describes the auto-disable side).
 - Add a concrete LM Studio preflight to the Aegis fallback runbooks. Aegis fallback depends on LM Studio being pre-installed.
 
@@ -210,7 +210,7 @@ The remaining gaps are operational, not architectural. I cannot be on call confi
 ## P0 Blockers (must address before `/speckit.specify`)
 
 1. **Backup, restore, and disaster recovery procedure (§4).** Currently absent. Add as `Q47 — Backup and DR`. Specify cadence, mechanism (`sqlite3 .backup`, NOT `cp`), restore procedure, post-restore counter-rebuild AC, and dedup behavior on collector replay. This is foundational; without it, the system cannot be operated for 12 months.
-2. **Per-failure-mode runbook deliverables (§1).** Seven `.md` files in `docs/observability/runbooks/` (one each: collector-down, breaker-open, schema-broken, schema-malicious, drift-detected, aegis-no-fallback, backfill-failed). Each must name the activity event, diagnostic command, recovery command, and verification step. The Strict Scope section currently names only `collector-failure-runbook.md`.
+2. **Per-failure-mode runbook deliverables (§1).** Runbook `.md` files under `docs/runbook/`; current equivalents include `collector-outage.md`, `breaker-stuck-open.md`, `copilot-schema-broken.md`, `source-schema-break.md`, `ingest-schema-malicious.md`, `counter-drift.md`, `aegis-deferred-no-fallback.md`, and `backfill-window-failure.md`. Each must name the activity event, diagnostic command, recovery command, and verification step. The Strict Scope section currently names only `collector-failure-runbook.md`.
 3. **Workspace-level "Governance Health" dashboard (§6).** Specify the single screen that surfaces all seven degraded states (telemetry per-source, backfill, breaker, Aegis, schema, drift, retention sweep status) with per-state recovery affordances. Today only per-task (Q44) exists.
 
 ## P1 Should-Fix (plan-phase resolvable)
