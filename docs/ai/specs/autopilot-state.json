@@ -1,8 +1,9 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014B-workflow.md",
-  "updated_at": "2026-06-03T21:03:09Z",
+  "updated_at": "2026-06-03T21:13:12Z",
   "spec_id": "SPEC-014B",
   "branch": "014b-adapter-manifest-fakes",
+  "pr_url": "https://github.com/racecraft-lab/Paddock/pull/76",
   "confidence_gate_mode": "advisory",
   "project_commands": {
     "BUILD": "pnpm exec next build --webpack",
@@ -47,7 +48,7 @@
     "G6.5": {"pass": true, "mode": "advisory", "composite": 0.94, "threshold": 0.9},
     "G7": {"pass": true, "reason": "All 82 tasks complete", "total": 82, "done": 82}
   },
-  "active_step": "Post: PR Body Generation",
+  "active_step": "All phases and post-implementation items complete",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -91,9 +92,9 @@
     {"step": "Post: Reviewability Diff Gate", "status": "completed"},
     {"step": "Post: Self-Review", "status": "completed"},
     {"step": "Post: UAT Runbook Generation", "status": "completed"},
-    {"step": "Post: PR Body Generation", "status": "in_progress"},
-    {"step": "Post: PR Creation", "status": "pending"},
-    {"step": "Post: Review Remediation", "status": "pending"},
+    {"step": "Post: PR Body Generation", "status": "completed"},
+    {"step": "Post: PR Creation", "status": "completed"},
+    {"step": "Post: Review Remediation", "status": "completed"},
     {"step": "Post: Retrospective", "status": "completed"}
   ]
 }

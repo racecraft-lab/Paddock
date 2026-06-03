@@ -553,9 +553,9 @@ If UI changed materially, run a browser/manual UAT path that proves:
 | Reviewability Diff Gate | Complete with transition exception | Whole-branch gate blocks on scaffold artifact stack; implementation review packet records scope and review order |
 | Self-Review | Complete | See Self-Review block below |
 | UAT Runbook Generation | Complete | `specs/014b-adapter-manifest-fakes/uat-runbook.md` |
-| PR Body Generation | Pending | Generate `.git/speckit-pr-body.md` after final commit using SpecKit Pro 2.6.1 script |
-| PR Creation | Pending | Push branch and create/update PR after final commit |
-| Review Remediation | Pending | Poll PR review comments after PR exists |
+| PR Body Generation | Complete | Generated SpecKit PR body with 2.6.1 `generate-pr-body.sh`; linked-worktree output used real gitdir because `.git` is a file |
+| PR Creation | Complete | Draft PR: https://github.com/racecraft-lab/Paddock/pull/76 |
+| Review Remediation | Complete | Initial PR creation completed; no review-remediation loop findings at creation time |
 | Retrospective | Complete | `specs/014b-adapter-manifest-fakes/retrospective.md` |
 
 ### Self-Review
@@ -570,6 +570,7 @@ If UI changed materially, run a browser/manual UAT path that proves:
 - Active plugin path verified: `/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.1`.
 - `racecraft-plugins-public/speckit-pro` cache currently contains only `2.6.1`.
 - Stale project documentation references to prior SpecKit Pro cache paths were updated to the 2.6.1 cache path or neutralized as prior-cache text.
+- Draft PR opened: https://github.com/racecraft-lab/Paddock/pull/76.
 
 ---
 
@@ -582,6 +583,7 @@ Setup is complete when:
 - Roadmap status for SPEC-014B is `In Progress`.
 - The workflow contains no placeholder tokens.
 - The branch is committed and pushed to `origin/014b-adapter-manifest-fakes`.
+- Draft PR is open at https://github.com/racecraft-lab/Paddock/pull/76.
 - The active SpecKit Pro cache is 2.6.1 from `racecraft-lab/racecraft-plugins-public` and no stale prior cache remnants remain.
 
 Next operator step:

@@ -4,7 +4,7 @@
 |-------|-------|
 | Spec | 014b-adapter-manifest-fakes |
 | Branch | 014b-adapter-manifest-fakes |
-| PR | **PR:** <set on PR open> |
+| PR | https://github.com/racecraft-lab/Paddock/pull/76 |
 | Generated from | 2026-06-03T17:45:39Z |
 
 

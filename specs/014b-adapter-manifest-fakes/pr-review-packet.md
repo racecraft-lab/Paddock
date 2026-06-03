@@ -2,6 +2,8 @@
 
 Generated: 2026-06-03T21:03:09Z
 
+PR: https://github.com/racecraft-lab/Paddock/pull/76
+
 <!-- speckit-pro-review-packet-source: specs/014b-adapter-manifest-fakes/pr-review-packet.md -->
 
 ## Summary
