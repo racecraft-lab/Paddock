@@ -24,7 +24,7 @@ SPEC-014B delivered the intended typed fake harness adapter contract, fake regis
 | Read-only API | Implemented | `GET /api/agents/runtime-inventory` with bounded success/error envelopes |
 | Agents evidence UI | Implemented | Existing Agents panel shows read-only inventory evidence without controls |
 | Boundary preservation | Implemented | Static guard, route tests, repo knowledge guardrails, no migration |
-| Manual UAT | Partial by design | UAT runbook and skipped Playwright scaffold exist; authenticated disposable fixtures remain future work |
+| Manual UAT | Complete | Local manual UAT and post-merge HAL target UAT passed; skipped Playwright scaffold remains a future automation upgrade |
 
 ## Minor Deviations
 

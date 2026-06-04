@@ -136,6 +136,36 @@ Manual browser UAT used a production build and a local authenticated session aga
 - Initial unscoped browser boot requests can return scope errors before workspace hydration. The scoped refresh path was verified after workspace hydration.
 - One unrelated CSP inline-script warning and one seeded-agent files request warning appeared during browser UAT; neither blocked the runtime inventory API or evidence UI assertions.
 
+## Post-Merge HAL Target UAT - 2026-06-04
+
+Target UAT was performed against HAL after PR #76 merged and the live Paddock `main` worktree was fast-forwarded to `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b`.
+
+### Deployment Evidence
+
+- `git fetch origin main` succeeded after clearing stale fetch processes, and `git merge --ff-only origin/main` promoted HAL from `3ed79e26a19e6d78033ca0e13fdab01bb8aca01a` to `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b`.
+- `pnpm install --frozen-lockfile` was a lockfile no-op with `better-sqlite3` postinstall ABI validation passing under the service Node runtime.
+- `pnpm build` passed on HAL with the route manifest including `/api/agents/runtime-inventory`.
+- `paddock.service` restarted successfully and logged database migrations applied; `/login` returned HTTP 200 and authenticated `/api/status` returned HTTP 200.
+- `openclaw-gateway.service` remained active throughout the deployment and UAT.
+
+### Runtime Inventory UAT Evidence
+
+The disposable UAT marker was `SPEC-014B-HAL-UAT-20260604194737`. The probe seeded one temporary workspace, project, assigned task, project-agent assignment, and SPEC-014A lifecycle row in `/home/fredrick-gabelmann/paddock-data/paddock.db`, then exercised the live HTTP API at `http://127.0.0.1:3000`.
+
+- Unauthenticated `GET /api/agents/runtime-inventory?workspace_id=<id>` returned HTTP 401.
+- Mixed `workspace_id` plus `workspace_scope=facility` returned HTTP 400 `runtime_inventory_error.v1`.
+- Authenticated scoped runtime inventory returned `runtime_inventory.v1` with two fake registry entries: `external_harness_fake` as `unassigned` and `paddock_owned_sandbox_fake` as `assigned`.
+- The Paddock-owned fake manifest with `project_id`, `task_id`, `role=builder`, `requested_capability=launch`, and `manifest_id=paddock_owned_sandbox_fake` returned one `eligible` entry with a `running` sandbox lifecycle reference.
+- The external fake manifest with the same task context returned one `blocked` entry with deterministic reasons `adapter_unassigned`, `capability_unsupported`, and `sandbox_lifecycle_missing`.
+- Unknown `requested_capability=raw_shell` returned HTTP 422 `runtime_inventory_error.v1` with `capability_unsupported`.
+- With `FEATURE_AGENT_RUNNER_SANDBOXES` disabled on the temporary workspace, both fake registry entries were blocked with `feature_disabled`.
+- `/api/agents?workspace_id=<id>` returned HTTP 200 and preserved the existing response shape without embedding `runtime_inventory.v1`.
+- Read-only runtime inventory derivation did not mutate seeded workspace, project, task, assignment, lifecycle, or lifecycle-event row counts.
+
+### Cleanup Evidence
+
+The UAT probe cleaned up all disposable rows. Remaining counts were zero for workspaces, projects, tasks, project-agent assignments, sandbox lifecycles, and sandbox lifecycle events matching `SPEC-014B-HAL-UAT-20260604194737`.
+
 ### Verification Commands
 
 - `PATH=/Users/fredrickgabelmann/.nvm/versions/node/v22.22.2/bin:$PATH pnpm check:strict-scope`

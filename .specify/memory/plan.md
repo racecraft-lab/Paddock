@@ -22,6 +22,9 @@ SPEC-013C, and SPEC-014A from the current `origin/main` baseline. Cleanup was
 not applied because this checkout is detached at `origin/main` and no
 `--apply-cleanup` request was supplied; active source folders remain for a
 reviewed safe-base cleanup run.
+Revision 2026-06-04: Recorded SPEC-014B PR #76 merge and HAL target UAT closeout
+evidence. Active source cleanup was not applied because this branch only closes
+status and roadmap ledgers.
 
 ---
 
@@ -748,6 +751,14 @@ From SPEC-014A:
 - `src/lib/agent-sandbox-lifecycle.ts`
 - `src/app/api/tasks/[id]/sandbox-lifecycles/route.ts`
 - `docs/migrations/rollback-M80.sql`
+
+From SPEC-014B:
+- `src/lib/harness-adapters/`
+- `src/app/api/agents/runtime-inventory/route.ts`
+- `src/components/agents/RuntimeInventoryEvidence.tsx`
+- `src/components/panels/agent-squad-panel-phase3.tsx`
+- `scripts/spec-014b/check-harness-adapter-scope.mjs`
+- `specs/014b-adapter-manifest-fakes/uat-runbook.md`
 
 ---
 

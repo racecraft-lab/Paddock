@@ -2,7 +2,7 @@
 
 **Feature Branch**: `014b-adapter-manifest-fakes`
 **Created**: 2026-06-03
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "Define the typed harness adapter manifest and fake registry for SPEC-014B before any real harness adapter can launch or continue work."
 
 ## External Source Context

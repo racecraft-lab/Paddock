@@ -554,9 +554,10 @@ If UI changed materially, run a browser/manual UAT path that proves:
 | Self-Review | Complete | See Self-Review block below |
 | UAT Runbook Generation | Complete | `specs/014b-adapter-manifest-fakes/uat-runbook.md` |
 | PR Body Generation | Complete | Generated SpecKit PR body with 2.6.1 `generate-pr-body.sh`; linked-worktree output used real gitdir because `.git` is a file |
-| PR Creation | Complete | Draft PR: https://github.com/racecraft-lab/Paddock/pull/76 |
+| PR Creation | Complete | PR #76 created, reviewed, and merged: https://github.com/racecraft-lab/Paddock/pull/76 |
 | Review Remediation | Complete | Initial PR creation completed; no review-remediation loop findings at creation time |
 | Retrospective | Complete | `specs/014b-adapter-manifest-fakes/retrospective.md` |
+| Post-Merge HAL Target UAT | Complete | PR #76 merged as `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b`; HAL deployment and UAT marker `SPEC-014B-HAL-UAT-20260604194737` passed with zero disposable-row residue |
 
 ### Self-Review
 
@@ -570,24 +571,38 @@ If UI changed materially, run a browser/manual UAT path that proves:
 - Active plugin path verified: `/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.1`.
 - `racecraft-plugins-public/speckit-pro` cache currently contains only `2.6.1`.
 - Stale project documentation references to prior SpecKit Pro cache paths were updated to the 2.6.1 cache path or neutralized as prior-cache text.
-- Draft PR opened: https://github.com/racecraft-lab/Paddock/pull/76.
+- PR #76 merged and closed out with HAL target UAT: https://github.com/racecraft-lab/Paddock/pull/76.
+
+### Post-Merge Target Deployment And UAT
+
+PR #76 merged to `main` as `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b`. HAL was fast-forwarded from `3ed79e26a19e6d78033ca0e13fdab01bb8aca01a` to that commit after clearing stale fetch processes.
+
+Target deployment and UAT evidence:
+
+- `pnpm install --frozen-lockfile` was a lockfile no-op and `better-sqlite3` postinstall ABI validation passed under the service Node runtime.
+- `pnpm build` passed on HAL and included `/api/agents/runtime-inventory` in the route manifest.
+- `paddock.service` restarted successfully, logged database migrations applied, and served `/login` with HTTP 200.
+- Authenticated `/api/status` returned HTTP 200 through the 1Password-resolved API key.
+- `openclaw-gateway.service` remained active throughout deployment and UAT.
+- UAT marker `SPEC-014B-HAL-UAT-20260604194737` exercised the live runtime inventory API at `http://127.0.0.1:3000` against `/home/fredrick-gabelmann/paddock-data/paddock.db`.
+- The target UAT covered unauthenticated 401, mixed-scope 400, assigned/unassigned fake registry states, eligible Paddock-owned fake lifecycle evidence, blocked external fake reasons, invalid-capability 422, feature-flag-off blocking, `/api/agents` response compatibility, read-only no-mutation counts, and zero disposable-row residue.
 
 ---
 
 ## Closeout
 
-Setup is complete when:
+Closeout is complete:
 
 - `docs/ai/specs/SPEC-014B-design-concept.md` exists.
 - `docs/ai/specs/SPEC-014B-workflow.md` exists.
-- Roadmap status for SPEC-014B is `In Progress`.
+- Roadmap status for SPEC-014B is `Complete`.
 - The workflow contains no placeholder tokens.
-- The branch is committed and pushed to `origin/014b-adapter-manifest-fakes`.
-- Draft PR is open at https://github.com/racecraft-lab/Paddock/pull/76.
+- The implementation branch was committed, pushed, reviewed, and merged through PR #76.
+- HAL target deployment and UAT passed at commit `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b`.
 - The active SpecKit Pro cache is 2.6.1 from `racecraft-lab/racecraft-plugins-public` and no stale prior cache remnants remain.
 
 Next operator step:
 
 ```text
-$speckit-autopilot docs/ai/specs/SPEC-014B-workflow.md
+$speckit-autopilot docs/ai/specs/SPEC-014C-workflow.md
 ```

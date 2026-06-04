@@ -22,6 +22,9 @@ an explicit safe-base cleanup run.
 Revision 2026-06-02: Archived SPEC-013A1, SPEC-013B, SPEC-013C, and SPEC-014A
 from the current merged `origin/main` baseline. Cleanup was not applied because
 the checkout is detached and no `--apply-cleanup` request was supplied.
+Revision 2026-06-04: Recorded SPEC-014B merge and HAL target UAT closeout after
+PR #76 merged to `main`. Cleanup was not applied because this was a status
+closeout branch, not an explicit safe-base archive cleanup run.
 
 ---
 
@@ -685,3 +688,4 @@ As a reviewer, I can trace route-backed screenshots, Storybook states, fixture c
 - SPEC-013C: Claim-control API release/cancel/retry/backoff/idempotency/stale/auth/flag-off behavior, sanitized read-model evidence, combined HAL replay with SPEC-014A, and cleanup evidence pass; 75/75 tasks completed.
 - SPEC-013D: Existing task detail exposes authoritative claim-control state, disabled reasons, confirmations, retry/release/cancel submissions, bounded receipts, refresh behavior, read-only/flag-off protections, route-backed Playwright and Storybook visual evidence, cleanup proof, archive provenance, and HAL target UAT evidence with zero disposable-row residue; 72/72 tasks completed and PR #65 merged.
 - SPEC-014A: Sandbox lifecycle contract persistence, fake owner lifecycle states, enabled/disabled read API evidence, combined HAL replay with SPEC-013C, and cleanup evidence pass; 58/58 tasks completed.
+- SPEC-014B: Typed harness adapter manifests, fake registry, capability-resolution packet, runtime-inventory read model/API, read-only Agents evidence surface, fail-closed unsupported capabilities, `/api/agents` compatibility, HAL target UAT marker `SPEC-014B-HAL-UAT-20260604194737`, and cleanup evidence pass; 82/82 tasks completed and PR #76 merged.

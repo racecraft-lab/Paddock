@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014B-workflow.md",
-  "updated_at": "2026-06-03T21:13:12Z",
+  "updated_at": "2026-06-04T19:49:08Z",
   "spec_id": "SPEC-014B",
   "branch": "014b-adapter-manifest-fakes",
   "pr_url": "https://github.com/racecraft-lab/Paddock/pull/76",
@@ -48,7 +48,17 @@
     "G6.5": {"pass": true, "mode": "advisory", "composite": 0.94, "threshold": 0.9},
     "G7": {"pass": true, "reason": "All 82 tasks complete", "total": 82, "done": 82}
   },
-  "active_step": "All phases and post-implementation items complete",
+  "closeout": {
+    "status": "complete",
+    "merged_pr": "https://github.com/racecraft-lab/Paddock/pull/76",
+    "merged_commit": "e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b",
+    "target_deployment": "HAL",
+    "target_uat_marker": "SPEC-014B-HAL-UAT-20260604194737",
+    "target_uat_completed_at": "2026-06-04T19:47:37Z",
+    "cleanup_zero": true,
+    "next_candidate": "SPEC-014C"
+  },
+  "active_step": "SPEC-014B closeout complete; SPEC-014C is the next runner-path setup candidate",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -95,6 +105,7 @@
     {"step": "Post: PR Body Generation", "status": "completed"},
     {"step": "Post: PR Creation", "status": "completed"},
     {"step": "Post: Review Remediation", "status": "completed"},
-    {"step": "Post: Retrospective", "status": "completed"}
+    {"step": "Post: Retrospective", "status": "completed"},
+    {"step": "Post: HAL Target Deployment and UAT", "status": "completed"}
   ]
 }
