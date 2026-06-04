@@ -55,11 +55,15 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
 1. From the executed script, extract the path to **tasks**.
-1. Get the Git remote by running:
+1. Get the Git remote list by running:
 
 ```bash
-git config --get remote.origin.url
+git remote -v
 ```
+
+Select a URL from the actual configured remotes. Prefer a GitHub `push` URL
+when one is available; otherwise use a GitHub `fetch` URL. Do not assume the
+remote is named `origin`.
 
 > [!CAUTION]
 > ONLY PROCEED TO NEXT STEPS IF THE REMOTE IS A GITHUB URL
