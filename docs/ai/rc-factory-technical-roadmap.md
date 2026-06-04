@@ -218,7 +218,7 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-013C | 11C | Retry/Backoff and Debug API Surfaces | retry-debug-surfaces | Complete | P1 | SPEC-013B | SPEC-013D | Phase 11C |
 | SPEC-013D | 11D | Claim-Control Operator UX | claim-control-operator-ux | Complete | P1 | SPEC-013C | SPEC-014C | Phase 11D |
 | SPEC-014A | 12A | Sandbox Ownership and Lifecycle Contract | sandbox-lifecycle-contract | Complete | P1 | SPEC-013B | SPEC-014B | Phase 12A |
-| SPEC-014B | 12B | Harness Adapter Manifest and Fake Registry | adapter-manifest-fakes | Pending | P1 | SPEC-014A | SPEC-014C, SPEC-014D | Phase 12B |
+| SPEC-014B | 12B | Harness Adapter Manifest and Fake Registry | adapter-manifest-fakes | In Progress | P1 | SPEC-014A | SPEC-014C, SPEC-014D | Phase 12B |
 | SPEC-014C | 12C | First Real Harness Adapter Pilot | first-real-harness-adapter | Pending | P1 | SPEC-013D, SPEC-014B | Later adapter specs | Phase 12C |
 | SPEC-014D | 12D | OpenClaw and External Harness Adapter | openclaw-external-adapter | Pending | P2 | SPEC-014B | Later adapter specs | Phase 12D |
 
@@ -764,7 +764,7 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-014B: Harness Adapter Manifest and Fake Registry
 
-- **Status:** Pending
+- **Status:** In Progress
 - **Priority:** P1
 - **Branch short name:** `adapter-manifest-fakes`
 - **Dependencies:** SPEC-014A

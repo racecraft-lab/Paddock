@@ -110,6 +110,16 @@
     "tests/e2e/spec-013d-claim-control-operator-ux.spec.ts",
     "src/lib/__tests__/agent-sandbox-lifecycle-fixtures.ts",
     "src/lib/__tests__/agent-sandbox-lifecycle.test.ts",
-    "src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts"
+    "src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts",
+    "src/lib/harness-adapters/types.ts",
+    "src/lib/harness-adapters/evidence.ts",
+    "src/lib/harness-adapters/fixtures.ts",
+    "src/lib/harness-adapters/validation.ts",
+    "src/lib/harness-adapters/runtime-inventory.ts",
+    "src/lib/harness-adapters/__tests__/validation.test.ts",
+    "src/lib/harness-adapters/__tests__/runtime-inventory.test.ts",
+    "src/components/agents/RuntimeInventoryEvidence.tsx",
+    "src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx",
+    "scripts/spec-014b/check-harness-adapter-scope.mjs"
   ]
 }
