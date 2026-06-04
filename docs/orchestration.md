@@ -2,6 +2,12 @@
 
 This guide covers the task orchestration patterns available in Paddock, from simple manual assignment to fully automated multi-agent workflows.
 
+Workspace scope for API examples depends on deployment mode. On legacy
+single-workspace installs, omit explicit workspace scope. On
+factory/multi-workspace deployments where `FEATURE_WORKSPACE_SWITCHER` is
+enabled, include `"workspace_id": <id>` in task create/update bodies and append
+`&workspace_id=<id>` to queue/read query strings.
+
 ## Task Lifecycle
 
 Every task in Paddock follows this status flow:
