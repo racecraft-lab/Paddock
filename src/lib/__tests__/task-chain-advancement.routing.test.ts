@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const openDbs: Database.Database[] = []
 
@@ -29,12 +29,17 @@ const TASK_ARTIFACTS_TABLE_SQL = `
   );
 `
 
+beforeEach(() => {
+  vi.resetModules()
+})
+
 afterEach(() => {
   while (openDbs.length > 0) openDbs.pop()?.close()
   vi.doUnmock('@/lib/db')
   vi.doUnmock('@/lib/event-bus')
   vi.doUnmock('@/lib/github-sync-engine')
   vi.doUnmock('@/lib/logger')
+  vi.doUnmock('@/lib/task-dispatch')
   vi.resetModules()
 })
 
@@ -189,6 +194,7 @@ function addParent(db: Database.Database, templateId: number, slug: string, reso
 }
 
 async function importDispatch(db: Database.Database) {
+  vi.resetModules()
   vi.doMock('@/lib/db', () => ({
     getDatabase: () => db,
     db_helpers: { logActivity: vi.fn() },
