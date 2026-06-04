@@ -755,7 +755,7 @@ From SPEC-014A:
 From SPEC-014B:
 - `src/lib/harness-adapters/`
 - `src/app/api/agents/runtime-inventory/route.ts`
-- `src/components/agents/runtime-inventory-evidence.tsx`
+- `src/components/agents/RuntimeInventoryEvidence.tsx`
 - `src/components/panels/agent-squad-panel-phase3.tsx`
 - `scripts/spec-014b/check-harness-adapter-scope.mjs`
 - `specs/014b-adapter-manifest-fakes/uat-runbook.md`
