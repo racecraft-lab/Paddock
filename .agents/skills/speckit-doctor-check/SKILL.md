@@ -22,10 +22,10 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-1. **Run diagnostic script**: Execute `.specify/scripts/bash/doctor.sh` from the project root and review the output.
+1. **Run diagnostic script**: Execute `.specify/extensions/doctor/scripts/bash/doctor.sh` from the project root and review the output.
 
 2. **Analyze results**: The script checks 6 areas:
-   - **Project structure** — `.specify/`, `specs/`, `.specify/scripts/`, `.specify/templates/`, `.specify/memory/`, `constitution.md`
+   - **Project structure** — `.specify/`, `specs/`, `.specify/scripts/`, `.specify/templates/`, `.specify/memory/`, `.specify/memory/constitution.md`
    - **AI agent configuration** — detects which agent folder is present, verifies commands exist
    - **Feature specifications** — lists features in `specs/`, checks for spec.md/plan.md/tasks.md
    - **Scripts health** — verifies all bash and PowerShell scripts are present and executable

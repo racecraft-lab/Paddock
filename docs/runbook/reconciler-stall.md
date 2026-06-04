@@ -27,8 +27,8 @@
 
 - Release the stale lease: `DELETE FROM reconciler_lease WHERE
   acquired_at < datetime('now','-15 minutes');`
-- Restart the reconciler worker: `systemctl --user restart
-  paddock` (or `pnpm mc workers restart reconciler`).
+- Restart the Paddock service: `systemctl --user restart
+  paddock.service`.
 
 ## 5. Recover
 

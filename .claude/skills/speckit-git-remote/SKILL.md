@@ -23,11 +23,15 @@ Detect the Git remote URL for integration with GitHub services (e.g., issue crea
 
 ## Execution
 
-Run the following command to get the remote URL:
+Run the following command to list configured remote URLs:
 
 ```bash
-git config --get remote.origin.url
+git remote -v
 ```
+
+Select a URL from the actual configured remotes. Prefer a GitHub `push` URL
+when one is available; otherwise use a GitHub `fetch` URL. Do not assume the
+remote is named `origin`.
 
 ## Output
 

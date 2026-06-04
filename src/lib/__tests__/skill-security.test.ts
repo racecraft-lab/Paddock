@@ -188,7 +188,7 @@ describe('checkSkillSecurity', () => {
   })
 
   it('does not flag single ../ as path traversal', () => {
-    const content = '# skill\n\nRefer to ../docs/readme.md for details.\n'
+    const content = '# skill\n\nRefer to ../guide.md for details.\n'
     const report = checkSkillSecurity(content)
     expect(report.issues.some(i => i.rule === 'path-traversal')).toBe(false)
   })

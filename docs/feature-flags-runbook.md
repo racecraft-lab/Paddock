@@ -29,7 +29,8 @@ admins in the UI.
   - `POST /api/feature-flags/{key}/preflight`
   - `PATCH /api/feature-flags/{key}`
 
-The current admin-managed flag is `FEATURE_WORKSPACE_SWITCHER`.
+The current admin-managed flags are `FEATURE_WORKSPACE_SWITCHER` and
+`FEATURE_GLOBAL_AEGIS`.
 
 ## `FEATURE_AREA_LABEL_ROUTING` Preflight Checklist
 

@@ -163,7 +163,9 @@ in_progress ──► review ──► Aegis reviews ──► APPROVED ──�
 
 1. Scheduler's `runAegisReviews` job picks up tasks in `review` status
 2. Builds a review prompt with the task description and agent's resolution
-3. Sends to the Aegis agent (configurable via `MC_COORDINATOR_AGENT`)
+3. Sends to the workspace's configured Aegis agent record, falling back to
+   direct Claude review only when the gateway is unavailable and an Anthropic
+   API key is configured
 4. Parses the verdict:
    - `VERDICT: APPROVED` → task moves to `done`
    - `VERDICT: REJECTED` → feedback is attached as a comment, task reverts to `assigned`
@@ -381,17 +383,19 @@ Events include: `task.created`, `task.updated`, `task.completed`, `agent.created
 
 ## SPEC-008 Resource Governance Integration
 
-When `FEATURE_RESOURCE_GOVERNANCE` is ON for a workspace, the dispatcher
-calls `resourcePolicyEvaluator(decisionInput)` (`src/lib/resource-evaluator.ts`)
-synchronously before assigning a task. The evaluator returns
-`{decision, reason}` where `decision ∈ {allow, defer, block, override_required}`
-and `reason` is a namespaced code from `src/types/resource-governance.ts`.
+When `FEATURE_RESOURCE_GOVERNANCE` is ON for a workspace, task-stage claim
+reconciliation calls `resourcePolicyEvaluator(decisionInput)`
+(`src/lib/resource-evaluator.ts`) before a dispatch claim is acquired. The
+evaluator returns `{decision, reasons, policy_ids, evaluated_at_ms}` where
+`decision` is `allow`, `defer`, or `block`, and `reasons` contains namespaced
+codes from `src/types/resource-governance.ts`.
 
 Gate sites:
 
-- **Scheduler / dispatcher** (`src/lib/dispatch.ts`): admits or defers
-  the task based on the evaluator decision; on `defer` the task
-  re-enters the queue with the matching backoff.
+- **Scheduler / dispatcher** (`src/lib/task-dispatch.ts` +
+  `src/lib/task-claim-reconciliation.ts`): claim reconciliation admits,
+  defers, or blocks the task based on the evaluator decision before the
+  dispatcher starts work.
 - **REST + SSE** (`src/app/api/governance/**`): operators inspect
   decisions, manage policies/budgets/windows/overrides, and resolve
   one-click recovery gestures.
@@ -399,10 +403,9 @@ Gate sites:
   Governance tab when the flag is ON; the tab is hidden in byte-compat
   mode when OFF (per FR-305).
 
-The resource governance evaluator is the only call between the
-dispatcher and admission. When the flag is OFF, the evaluator is
-short-circuited via `allow:feature_flag_off` (FR-008), preserving the
-legacy admission path byte-compat (FR-305 / FR-238).
+When the resource-governance flag is OFF, the evaluator returns
+`allow:feature_flag_off` without consulting policies, preserving the legacy
+admission path byte-compat (FR-305 / FR-238).
 
 For runbook references see:
 

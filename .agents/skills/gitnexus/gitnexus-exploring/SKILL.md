@@ -23,7 +23,7 @@ description: "Use when the user asks how code works, wants to understand archite
 5. READ gitnexus://repo/{name}/process/{name}      → Trace full execution flow
 ```
 
-> If step 2 says "Index is stale" → run `npx gitnexus analyze` in terminal.
+> If step 2 says "Index is stale" in this repo, run `direnv exec . gitnexus analyze --embeddings --skip-agents-md` from the repo root after the LM Studio embedding server is running.
 
 ## Checklist
 

@@ -353,7 +353,7 @@ const commands = {
       const sub = flags._sub;
       if (sub === 'get' || !sub) return { method: 'GET', route: `/api/agents/${id}/memory` };
       if (sub === 'set') {
-        const content = flags.content || flags.file
+        const content = flags.file
           ? fs.readFileSync(required(flags, 'file'), 'utf8')
           : required(flags, 'content');
         return {

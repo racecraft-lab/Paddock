@@ -22,7 +22,7 @@ description: "Use when the user wants to rename, extract, split, move, or restru
 4. Plan update order: interfaces → implementations → callers → tests
 ```
 
-> If "Index is stale" → run `npx gitnexus analyze` in terminal.
+> If "Index is stale" in this repo, run `direnv exec . gitnexus analyze --embeddings --skip-agents-md` from the repo root after the LM Studio embedding server is running.
 
 ## Checklists
 

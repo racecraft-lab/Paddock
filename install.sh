@@ -89,16 +89,16 @@ check_prerequisites() {
   if command_exists node; then
     local node_major
     node_major=$(node -v | sed 's/v//' | cut -d. -f1)
-    if [[ "$node_major" -ge 20 ]]; then
+    if [[ "$node_major" -ge 22 ]]; then
       has_node=true
       ok "Node.js $(node -v) available"
     else
-      warn "Node.js $(node -v) found but v20+ required"
+      warn "Node.js $(node -v) found but v22+ required"
     fi
   fi
 
   if ! $has_docker && ! $has_node; then
-    die "Either Docker or Node.js 20+ is required. Install one and retry."
+    die "Either Docker or Node.js 22+ is required. Install one and retry."
   fi
 
   # Auto-select deploy mode if not specified
@@ -117,7 +117,7 @@ check_prerequisites() {
     die "Docker deployment requested but Docker is not available"
   fi
   if [[ "$DEPLOY_MODE" == "local" ]] && ! $has_node; then
-    die "Local deployment requested but Node.js 20+ is not available"
+    die "Local deployment requested but Node.js 22+ is not available"
   fi
   if [[ "$DEPLOY_MODE" == "local" ]] && ! command_exists pnpm; then
     info "Installing pnpm via corepack..."

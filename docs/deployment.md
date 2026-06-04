@@ -30,7 +30,9 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:3000. Login with `AUTH_USER` / `AUTH_PASS` from your `.env.local`.
+Open http://localhost:3000/setup to create the first admin account. If you set
+`AUTH_USER` and `AUTH_PASS` or `AUTH_PASS_B64` in `.env.local`, Paddock seeds
+that admin on first run instead.
 
 ## Production (Direct)
 
@@ -140,10 +142,10 @@ See `.env.example` for the full list. Key variables:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `AUTH_USER` | Yes | `admin` | Admin username (seeded on first run) |
-| `AUTH_PASS` | Yes | - | Admin password |
+| `AUTH_USER` | No | `admin` | Admin username used only when seeding from env on first run |
+| `AUTH_PASS` | No | - | Admin password for env seeding; omit it to use `/setup` |
 | `AUTH_PASS_B64` | No | - | Base64-encoded admin password (overrides `AUTH_PASS` if set) |
-| `API_KEY` | Yes | - | API key for headless access |
+| `API_KEY` | No | auto-generated | API key for headless access; persisted to `.data/.auto-generated` when omitted |
 | `PORT` | No | `3000` | Server port |
 | `OPENCLAW_HOME` | No | - | Legacy: parent home directory containing `.openclaw/`. Use `OPENCLAW_STATE_DIR` instead (see note below) |
 | `OPENCLAW_STATE_DIR` | No | `~/.openclaw` | Exact path to the OpenClaw state directory. Preferred over `OPENCLAW_HOME` — avoids double-nesting when the path already ends in `.openclaw` |

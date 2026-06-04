@@ -5,17 +5,23 @@ description: "Use when the user needs to run GitNexus CLI commands like analyze/
 
 # GitNexus CLI Commands
 
-All commands work via `npx` — no global install required.
+In this repo, run GitNexus through `direnv exec . gitnexus ...` from the repo
+root. The checked-in AGENTS guidance depends on the repo-local `.envrc` plus
+ignored `.envrc.local` embedding settings; do not use `npx` here.
 
 ## Commands
 
 ### analyze — Build or refresh the index
 
 ```bash
-npx gitnexus analyze
+direnv exec . gitnexus analyze --embeddings --skip-agents-md
 ```
 
-Run from the project root. This parses all source files, builds the knowledge graph, writes it to `.gitnexus/`, and generates CLAUDE.md / AGENTS.md context files.
+Run from the project root after the LM Studio embedding server is running. In a
+linked worktree, copy the ignored root `.envrc.local` into the worktree and run
+`direnv allow` first. This parses source files, builds the knowledge graph,
+writes ignored output to `.gitnexus/`, and leaves the checked-in AGENTS map as
+the repository source of truth.
 
 | Flag           | Effect                                                           |
 | -------------- | ---------------------------------------------------------------- |
@@ -28,7 +34,7 @@ Run from the project root. This parses all source files, builds the knowledge gr
 ### status — Check index freshness
 
 ```bash
-npx gitnexus status
+direnv exec . gitnexus status
 ```
 
 Shows whether the current repo has a GitNexus index, when it was last updated, and symbol/relationship counts. Use this to check if re-indexing is needed.
@@ -36,7 +42,7 @@ Shows whether the current repo has a GitNexus index, when it was last updated, a
 ### clean — Delete the index
 
 ```bash
-npx gitnexus clean
+direnv exec . gitnexus clean
 ```
 
 Deletes the `.gitnexus/` directory and unregisters the repo from the global registry. Use before re-indexing if the index is corrupt or after removing GitNexus from a project.
@@ -49,7 +55,7 @@ Deletes the `.gitnexus/` directory and unregisters the repo from the global regi
 ### wiki — Generate documentation from the graph
 
 ```bash
-npx gitnexus wiki
+direnv exec . gitnexus wiki
 ```
 
 Generates repository documentation from the knowledge graph using an LLM. Requires an API key (saved to `~/.gitnexus/config.json` on first use).
@@ -66,7 +72,7 @@ Generates repository documentation from the knowledge graph using an LLM. Requir
 ### list — Show all indexed repos
 
 ```bash
-npx gitnexus list
+direnv exec . gitnexus list
 ```
 
 Lists all repositories registered in `~/.gitnexus/registry.json`. The MCP `list_repos` tool provides the same information.
