@@ -642,6 +642,171 @@
         }
       }
     },
+    "/api/agents/runtime-inventory": {
+      "get": {
+        "tags": [
+          "Agents"
+        ],
+        "summary": "Read harness adapter runtime inventory",
+        "description": "Read-only harness adapter manifest, assignment, capability, policy, sandbox lifecycle, and sanitized evidence inventory. This endpoint does not launch agents, assign agents, advance task stages, mutate lifecycle rows, or expose raw provider payloads.",
+        "operationId": "getAgentRuntimeInventory",
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "workspace_scope",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "facility"
+              ]
+            }
+          },
+          {
+            "name": "task_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "project_id",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "manifest_id",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "external_harness_fake",
+                "paddock_owned_sandbox_fake"
+              ]
+            }
+          },
+          {
+            "name": "requested_capability",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "launch",
+                "resume",
+                "stop",
+                "transcript_read",
+                "event_read",
+                "token_runtime_accounting",
+                "artifact_publication",
+                "sandbox_posture",
+                "mcp_exposure",
+                "tool_exposure",
+                "skills",
+                "plugins",
+                "memory",
+                "provider_account_constraints",
+                "approval_policy",
+                "timeout_policy",
+                "user_input_policy"
+              ]
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "visible",
+                "unassigned",
+                "assigned",
+                "eligible",
+                "blocked"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "runtime_inventory.v1 read-only inventory envelope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "schema_version",
+                    "generated_at",
+                    "scope",
+                    "feature_flag",
+                    "entries",
+                    "summary",
+                    "diagnostics"
+                  ],
+                  "properties": {
+                    "schema_version": {
+                      "type": "string",
+                      "const": "runtime_inventory.v1"
+                    },
+                    "generated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "scope": {
+                      "type": "object"
+                    },
+                    "feature_flag": {
+                      "type": "object"
+                    },
+                    "entries": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "summary": {
+                      "type": "object"
+                    },
+                    "diagnostics": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "description": "Invalid runtime inventory filter"
+          },
+          "500": {
+            "description": "Runtime inventory unavailable"
+          }
+        }
+      }
+    },
     "/api/agents/comms": {
       "get": {
         "tags": [

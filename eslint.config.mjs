@@ -132,6 +132,17 @@ const specStrictFiles = [
   'src/lib/__tests__/migrations-M80-agent-sandbox-lifecycles.test.ts',
   'src/lib/__tests__/agent-sandbox-lifecycle.test.ts',
   'src/lib/__tests__/agent-sandbox-lifecycle-route.test.ts',
+  // SPEC-014B harness adapter manifest fakes and runtime inventory.
+  'src/lib/harness-adapters/types.ts',
+  'src/lib/harness-adapters/evidence.ts',
+  'src/lib/harness-adapters/fixtures.ts',
+  'src/lib/harness-adapters/validation.ts',
+  'src/lib/harness-adapters/runtime-inventory.ts',
+  'src/lib/harness-adapters/__tests__/validation.test.ts',
+  'src/lib/harness-adapters/__tests__/runtime-inventory.test.ts',
+  'src/components/agents/RuntimeInventoryEvidence.tsx',
+  'src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx',
+  'scripts/spec-014b/check-harness-adapter-scope.mjs',
 ]
 
 const config = tseslint.config(

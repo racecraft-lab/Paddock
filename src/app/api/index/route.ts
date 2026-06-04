@@ -35,6 +35,7 @@ const endpoints: Endpoint[] = [
 
   // ── Agents ────────────────────────────────────────
   { path: '/api/agents', methods: ['GET', 'POST'], description: 'Agent CRUD — list, register', tag: 'Agents', auth: 'viewer/operator' },
+  { path: '/api/agents/runtime-inventory', methods: ['GET'], description: 'Read-only harness runtime inventory evidence', tag: 'Agents', auth: 'viewer' },
   { path: '/api/agents/:id', methods: ['GET', 'PATCH', 'DELETE'], description: 'Agent detail — read, update, delete', tag: 'Agents', auth: 'viewer/operator/admin' },
   { path: '/api/agents/:id/heartbeat', methods: ['POST'], description: 'Agent heartbeat ping', tag: 'Agents', auth: 'operator' },
   { path: '/api/agents/:id/wake', methods: ['POST'], description: 'Wake idle agent', tag: 'Agents', auth: 'operator' },

@@ -186,6 +186,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through existing `better-sqlite3` task, claim, stage-attempt, idempotency, activity, and feature-flag rows only; no migration or backend semantic change (013d-claim-control-operator-ux)
 - TypeScript 5.7 strict on Node >=22 in a Next.js 16 App Router / React 19 application + Existing Next.js/React stack, `better-sqlite3`, existing feature-flag helper, existing auth/workspace-scope helpers; no new runtime dependency (014a-sandbox-lifecycle-contract)
 - SQLite through `src/lib/migrations.ts`; additive M80 `080_agent_sandbox_lifecycles`; rollback SQL at `docs/migrations/rollback-M80.sql` (014a-sandbox-lifecycle-contract)
+- TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Tailwind CSS 3, Zustand only where existing Agents panel patterns require it, `better-sqlite3` through existing read helpers, Vitest, Playwright; no new runtime dependency planned (014b-adapter-manifest-fakes)
+- Checked-in typed fixture files plus derived runtime inventory; no SQLite manifest or inventory persistence and no migration. Existing SQLite state may be read through existing helpers for assignments, tasks, governance/capability decisions, and SPEC-014A lifecycle evidence. (014b-adapter-manifest-fakes)
 
 ## Recent Changes
 - SPEC-013D HAL target UAT closeout (2026-06-02 CDT): manual target UAT passed on HAL against running Paddock `main` commit `3ed79e26a19e6d78033ca0e13fdab01bb8aca01a` using marker `SPEC-013D-HAL-UAT-20260603010815`. Retry, release, cancel, stale expected-state, active backoff, backoff override, and feature-flag-off outcomes were verified through the live service; `paddock.service` and `openclaw-gateway.service` remained active; cleanup counts were zero across disposable workspace/user/session/project/task/attempt/claim/idempotency/lifecycle/activity rows. HAL could not fast-forward before UAT because `git fetch origin` failed to resolve `github.com`; no promotion was attempted.
@@ -210,5 +212,5 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/013d-claim-control-operator-ux/plan.md`.
+`specs/014b-adapter-manifest-fakes/plan.md`.
 <!-- SPECKIT END -->
