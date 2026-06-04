@@ -4,7 +4,7 @@ Family: paddock
 Workspace: 1
 Validation Status: latest successful canonical snapshot
 Template Count: 9
-Contract Hash: workflow-contract-hash-v1:sha256:4e485c97c7136a79619c362ba7de26cd9439ea49f60ea54a2f14414a7a287c92
+Contract Hash: workflow-contract-hash-v1:sha256:823aa2bbc62837a832a98ca7a8e0b0205cdb896e8f62ce6b08d62bc03d3d3c28
 
 ## Templates
 
@@ -49,11 +49,11 @@ Implement {{task.title}} in {{workspace.name}} using the approved remediation pl
 - Slug: `paddock_issue_triage`
 - Model: `sonnet`
 - Prompt Version: `v1`
-- Routing Rule Hash: `sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945`
-- Output Schema Hash: `sha256:294222ca5391f314a860fc0d0a9710f273c35660bcbce8ba077964c5254a346d`
+- Routing Rule Hash: `sha256:a8be1d72d89179269b017187ad040a7cada426d1196c3f2c0d251309c3afc6f5`
+- Output Schema Hash: `sha256:dff53bf32c0d62aff4937f4c53a458bb3bd6be18607125620cffc63763b649cb`
 
 ```text
-Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return one route: close, needs_spec, or remediation.
+Triage {{task.title}} for {{workspace.name}}. Preserve GitHub issue context from {{github.issue_number}} and return JSON with disposition and rationale. Use ACTIONABLE_REMEDIATION only when the issue is reproducible and has a bounded Paddock remediation path; otherwise use DUPLICATE, OBSOLETE, INVALID, NEEDS_HUMAN, NEEDS_SPECIALIST, or NEEDS_SPEC.
 ```
 
 ### Paddock Needs Spec Route

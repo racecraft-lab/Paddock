@@ -163,7 +163,9 @@ in_progress ──► review ──► Aegis reviews ──► APPROVED ──�
 
 1. Scheduler's `runAegisReviews` job picks up tasks in `review` status
 2. Builds a review prompt with the task description and agent's resolution
-3. Sends to the Aegis agent (configurable via `MC_COORDINATOR_AGENT`)
+3. Sends to the workspace's configured Aegis agent record, falling back to
+   direct Claude review only when the gateway is unavailable and an Anthropic
+   API key is configured
 4. Parses the verdict:
    - `VERDICT: APPROVED` → task moves to `done`
    - `VERDICT: REJECTED` → feedback is attached as a comment, task reverts to `assigned`

@@ -22,7 +22,7 @@
 
 ## 3. Diagnose
 
-1. Check `journalctl --user -u otelcol -n 200`.
+1. Check `journalctl --user -u otelcol-paddock -n 200`.
 2. Verify `/api/governance/system-health` for collector severity.
 3. Inspect `governance_health_events` table for the
    originating event payload.
@@ -31,7 +31,7 @@
 
 ## 4. Mitigate
 
-- Restart the collector: `systemctl --user restart otelcol`.
+- Restart the collector: `systemctl --user restart otelcol-paddock`.
 - If the unit will not start, fall back to the embedded receiver
   (`OTLP_USE_EMBEDDED_RECEIVER=1`) and reload Paddock.
 - Throttle dashboard polling to 30s during the outage.

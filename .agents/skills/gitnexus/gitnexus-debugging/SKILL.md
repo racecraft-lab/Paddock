@@ -22,7 +22,7 @@ description: "Use when the user is debugging a bug, tracing an error, or asking 
 4. gitnexus_cypher({query: "MATCH path..."})                 → Custom traces if needed
 ```
 
-> If "Index is stale" → run `npx gitnexus analyze` in terminal.
+> If "Index is stale" in this repo, run `direnv exec . gitnexus analyze --embeddings --skip-agents-md` from the repo root after the LM Studio embedding server is running.
 
 ## Checklist
 
