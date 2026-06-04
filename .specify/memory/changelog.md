@@ -623,6 +623,31 @@ git show c01d9e44ec826d94fa5916284c51453e5ec339ee:specs/014a-sandbox-lifecycle-c
 
 ---
 
+## SPEC-014B: Harness Adapter Manifest and Fake Registry
+
+- **Feature**: RC Factory Phase 12B - typed harness adapter manifest, fake registry, and runtime inventory
+- **Branch**: `014b-adapter-manifest-fakes`
+- **Spec Path**: `specs/014b-adapter-manifest-fakes/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/76
+- **Merge Commit**: `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b`
+- **Tree Reference**: `git show e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b:specs/014b-adapter-manifest-fakes/spec.md`
+- **CI URL**: N/A (workflow records local verification and HAL target UAT)
+- **Argos URL**: N/A
+- **Task Completion**: 82/82
+- **Summary**: Added closed harness adapter manifest types, fake registry fixtures for `paddock_owned_sandbox_fake` and `external_harness_fake`, capability-resolution packets, derived runtime inventory, read-only runtime inventory API, active Agents panel evidence, and static scope guards. HAL target UAT marker `SPEC-014B-HAL-UAT-20260604194737` at commit `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b` verified auth/scope errors, assigned/unassigned inventory, eligible Paddock-owned lifecycle evidence, blocked external fake reasons, invalid capability rejection, feature-flag-off blocking, `/api/agents` compatibility, no read-model mutation, and zero disposable-row residue.
+
+**Recovery Commands**:
+```text
+git show e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b:specs/014b-adapter-manifest-fakes/spec.md
+git show e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b:specs/014b-adapter-manifest-fakes/plan.md
+git show e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b:specs/014b-adapter-manifest-fakes/tasks.md
+git show e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b:specs/014b-adapter-manifest-fakes/quickstart.md
+git show e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b:specs/014b-adapter-manifest-fakes/uat-runbook.md
+git show e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b:specs/014b-adapter-manifest-fakes/retrospective.md
+```
+
+---
+
 ## SPEC-013D: Claim-Control Operator UX
 
 - **Feature**: RC Factory Phase 11D — task-detail claim-control operator UX
