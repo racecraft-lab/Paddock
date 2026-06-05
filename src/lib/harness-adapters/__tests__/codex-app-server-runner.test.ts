@@ -317,15 +317,16 @@ describe('SPEC-014C Codex app-server runner launch', () => {
     expect(launch.spawnCalls[0]?.options.cwd).toBe(lifecycleRoot);
     expect(threadStart.cwd).toBe(lifecycleRoot);
     expect(threadStart.runtimeWorkspaceRoots).toEqual([lifecycleRoot]);
-    expect(threadStart.sandboxPolicy.writableRoots).toEqual([lifecycleRoot]);
-    expect(threadStart.sandboxPolicy.readOnlyAccess.readableRoots).toEqual([
-      lifecycleRoot,
-    ]);
+    expect(threadStart.sandbox).toBe('workspace-write');
+    expect(threadStart.permissions).toBeNull();
     expect(turnStart.cwd).toBe(lifecycleRoot);
-    expect(turnStart.sandboxPolicy.writableRoots).toEqual([lifecycleRoot]);
-    expect(turnStart.sandboxPolicy.readOnlyAccess.readableRoots).toEqual([
-      lifecycleRoot,
-    ]);
+    expect(turnStart.sandboxPolicy).toMatchObject({
+      type: 'workspaceWrite',
+      writableRoots: [lifecycleRoot],
+      networkAccess: false,
+      excludeTmpdirEnvVar: false,
+      excludeSlashTmp: false,
+    });
 
     const launchEnvelope = JSON.stringify({
       spawn: launch.spawnCalls,

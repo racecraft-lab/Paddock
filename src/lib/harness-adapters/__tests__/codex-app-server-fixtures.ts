@@ -1,7 +1,7 @@
 export const CODEX_APP_SERVER_ADAPTER_ID = 'codex-app-server' as const
 export const CODEX_APP_SERVER_RUN_SCHEMA_VERSION = 'codex_app_server_run.v1' as const
 export const CODEX_APP_SERVER_MANIFEST_ID = 'codex-app-server' as const
-export const CODEX_APP_SERVER_MODEL = 'gpt-5.4' as const
+export const CODEX_APP_SERVER_MODEL = null
 export const CODEX_APP_SERVER_FIXED_NOW = '2026-06-05T12:00:00.000Z' as const
 export const CODEX_APP_SERVER_FIXED_COMPLETED_AT = '2026-06-05T12:01:15.000Z' as const
 export const CODEX_APP_SERVER_COMMAND = ['codex', 'app-server', 'proxy'] as const
@@ -233,12 +233,9 @@ export const buildCodexAppServerFixtureIds = (
 export interface CodexAppServerSandboxPolicy {
   readonly type: 'workspaceWrite'
   readonly writableRoots: readonly string[]
-  readonly readOnlyAccess: {
-    readonly type: 'restricted'
-    readonly includePlatformDefaults: true
-    readonly readableRoots: readonly string[]
-  }
   readonly networkAccess: false
+  readonly excludeTmpdirEnvVar: false
+  readonly excludeSlashTmp: false
 }
 
 export const buildCodexAppServerSandboxPolicy = (
@@ -246,12 +243,9 @@ export const buildCodexAppServerSandboxPolicy = (
 ): CodexAppServerSandboxPolicy => ({
   type: 'workspaceWrite',
   writableRoots: [lifecycleRoot],
-  readOnlyAccess: {
-    type: 'restricted',
-    includePlatformDefaults: true,
-    readableRoots: [lifecycleRoot],
-  },
   networkAccess: false,
+  excludeTmpdirEnvVar: false,
+  excludeSlashTmp: false,
 })
 
 export interface CodexAppServerInitializeParams {
@@ -262,6 +256,7 @@ export interface CodexAppServerInitializeParams {
   }
   readonly capabilities: {
     readonly experimentalApi: false
+    readonly requestAttestation: false
     readonly optOutNotificationMethods: readonly []
   }
 }
@@ -276,10 +271,10 @@ export interface CodexAppServerThreadStartParams {
   readonly model: typeof CODEX_APP_SERVER_MODEL
   readonly cwd: string
   readonly approvalPolicy: 'never'
-  readonly approvalsReviewer: 'paddock-deny-all'
-  readonly sandbox: 'workspaceWrite'
-  readonly sandboxPolicy: CodexAppServerSandboxPolicy
+  readonly approvalsReviewer: 'user'
+  readonly sandbox: 'workspace-write'
   readonly runtimeWorkspaceRoots: readonly string[]
+  readonly permissions: null
   readonly serviceName: 'paddock_spec_014c'
 }
 
@@ -297,6 +292,7 @@ export interface CodexAppServerThreadResult {
 export interface CodexAppServerTurnInputText {
   readonly type: 'text'
   readonly text: string
+  readonly text_elements: readonly []
 }
 
 export interface CodexAppServerTurnStartParams {
@@ -339,6 +335,7 @@ export const buildCodexAppServerInitializeRequest = (
     },
     capabilities: {
       experimentalApi: false,
+      requestAttestation: false,
       optOutNotificationMethods: [],
     },
   },
@@ -369,7 +366,6 @@ export const buildCodexAppServerThreadStartRequest = (
   overrides: Partial<CodexAppServerWireRequest<'thread/start', CodexAppServerThreadStartParams>> = {},
 ): CodexAppServerWireRequest<'thread/start', CodexAppServerThreadStartParams> => {
   const ids = CODEX_APP_SERVER_FIXTURE_IDS
-  const sandboxPolicy = buildCodexAppServerSandboxPolicy(ids.lifecycleRoot)
   return {
     method: 'thread/start',
     id: 1,
@@ -377,10 +373,10 @@ export const buildCodexAppServerThreadStartRequest = (
       model: CODEX_APP_SERVER_MODEL,
       cwd: ids.lifecycleRoot,
       approvalPolicy: 'never',
-      approvalsReviewer: 'paddock-deny-all',
-      sandbox: 'workspaceWrite',
-      sandboxPolicy,
+      approvalsReviewer: 'user',
+      sandbox: 'workspace-write',
       runtimeWorkspaceRoots: [ids.lifecycleRoot],
+      permissions: null,
       serviceName: 'paddock_spec_014c',
     },
     ...overrides,
@@ -437,6 +433,7 @@ export const buildCodexAppServerTurnStartRequest = (
             `Stage: ${ids.stageKey}`,
             'Return descriptor-only completion evidence. Do not retain raw transcript or tool payloads.',
           ].join('\n'),
+          text_elements: [],
         },
       ],
       cwd: ids.lifecycleRoot,

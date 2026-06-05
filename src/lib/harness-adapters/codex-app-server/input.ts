@@ -3,6 +3,7 @@ import { CODEX_APP_SERVER_ALLOWED_CAPABILITY_PACKET } from './manifest'
 export interface CodexAppServerTurnInputText {
   readonly type: 'text'
   readonly text: string
+  readonly text_elements: readonly []
 }
 
 export interface CodexAppServerTurnInputSource {
@@ -79,5 +80,5 @@ export function buildCodexAppServerTurnInput(
     'Handoff: launch_handoff_completed',
   ].join('\n\n')
 
-  return [{ type: 'text', text }]
+  return [{ type: 'text', text, text_elements: [] }]
 }

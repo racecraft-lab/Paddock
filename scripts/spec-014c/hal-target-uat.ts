@@ -234,7 +234,7 @@ function insertWorkflowTemplate(db: Database.Database, workspaceId: number, scen
     name: `${MARKER} ${scenario} implementation`,
     description: `${MARKER} disposable workflow template`,
     task_prompt: 'Run the SPEC-014C Codex app-server adapter with descriptor-only evidence.',
-    model: 'gpt-5.4',
+    model: 'gpt-5.5',
     agent_role: STAGE_KEY,
     created_by: MARKER,
     enabled: 1,

@@ -21,12 +21,9 @@ import {
 export interface CodexAppServerSandboxPolicy {
   readonly type: 'workspaceWrite'
   readonly writableRoots: readonly string[]
-  readonly readOnlyAccess: {
-    readonly type: 'restricted'
-    readonly includePlatformDefaults: true
-    readonly readableRoots: readonly string[]
-  }
   readonly networkAccess: false
+  readonly excludeTmpdirEnvVar: false
+  readonly excludeSlashTmp: false
 }
 
 export interface CodexAppServerLaunchInput extends CodexAppServerTurnInputSource {
@@ -68,13 +65,13 @@ export interface CodexAppServerProtocolStep {
 }
 
 export interface CodexAppServerThreadStartParams {
-  readonly model: 'gpt-5.4'
+  readonly model: null
   readonly cwd: string
   readonly approvalPolicy: 'never'
-  readonly approvalsReviewer: 'paddock-deny-all'
-  readonly sandbox: 'workspaceWrite'
-  readonly sandboxPolicy: CodexAppServerSandboxPolicy
+  readonly approvalsReviewer: 'user'
+  readonly sandbox: 'workspace-write'
   readonly runtimeWorkspaceRoots: readonly string[]
+  readonly permissions: null
   readonly serviceName: 'paddock_spec_014c'
 }
 
@@ -84,7 +81,7 @@ export interface CodexAppServerTurnStartParams {
   readonly cwd: string
   readonly approvalPolicy: 'never'
   readonly sandboxPolicy: CodexAppServerSandboxPolicy
-  readonly model: 'gpt-5.4'
+  readonly model: null
   readonly summary: 'concise'
 }
 
@@ -269,12 +266,9 @@ function buildSandboxPolicy(root: string): CodexAppServerSandboxPolicy {
   return {
     type: 'workspaceWrite',
     writableRoots: [root],
-    readOnlyAccess: {
-      type: 'restricted',
-      includePlatformDefaults: true,
-      readableRoots: [root],
-    },
     networkAccess: false,
+    excludeTmpdirEnvVar: false,
+    excludeSlashTmp: false,
   }
 }
 
@@ -290,6 +284,7 @@ function initializeRequest(): CodexAppServerWireMessage {
       },
       capabilities: {
         experimentalApi: false,
+        requestAttestation: false,
         optOutNotificationMethods: [],
       },
     },
@@ -779,7 +774,7 @@ async function exchangeLiveProtocol(
     cwd: input.lifecycleRoot,
     approvalPolicy: 'never',
     sandboxPolicy,
-    model: 'gpt-5.4',
+    model: null,
     summary: 'concise',
   }
   send('turn_start_request', {
@@ -834,7 +829,7 @@ function buildFallbackTurnStartParams(
     cwd: input.lifecycleRoot,
     approvalPolicy: 'never',
     sandboxPolicy,
-    model: 'gpt-5.4',
+    model: null,
     summary: 'concise',
   }
 }
@@ -870,13 +865,13 @@ export async function launchCodexAppServerAttempt(
 
     const sandboxPolicy = buildSandboxPolicy(input.lifecycleRoot)
     const threadStartParams: CodexAppServerThreadStartParams = {
-      model: 'gpt-5.4',
+      model: null,
       cwd: input.lifecycleRoot,
       approvalPolicy: 'never',
-      approvalsReviewer: 'paddock-deny-all',
-      sandbox: 'workspaceWrite',
-      sandboxPolicy,
+      approvalsReviewer: 'user',
+      sandbox: 'workspace-write',
       runtimeWorkspaceRoots: [input.lifecycleRoot],
+      permissions: null,
       serviceName: 'paddock_spec_014c',
     }
     const threadStartRequest: CodexAppServerWireMessage = {
@@ -899,7 +894,7 @@ export async function launchCodexAppServerAttempt(
       cwd: input.lifecycleRoot,
       approvalPolicy: 'never',
       sandboxPolicy,
-      model: 'gpt-5.4',
+      model: null,
       summary: 'concise',
     }
     const turnStartRequest: CodexAppServerWireMessage = {
