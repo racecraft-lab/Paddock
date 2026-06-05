@@ -20,6 +20,8 @@ Fields:
 - `agent_assignments.product_line_assignments[]`: logical agents that resolve to `plb-platform-*`
 - `feature_flags.enabled[]`: only flags needed for inspection/smoke and their existing prerequisites
 - `feature_flags.disabled_or_absent[]`: smoke, runner, sync, sandbox, control-plane, and Product Line A-only flags that must not be active
+- `feature_flags.smoke_owned[]`: for SPEC-010B, this is limited to `FEATURE_WORKSPACE_SWITCHER`, `FEATURE_GLOBAL_AEGIS`, `FEATURE_TASK_PIPELINES`, `FEATURE_TWO_STEP_TERMINAL`, `FEATURE_AREA_LABEL_ROUTING`, `FEATURE_DISPOSITION_LOGGING`, `FEATURE_TASK_ARTIFACTS`, `FEATURE_RESOURCE_GOVERNANCE`, `FEATURE_OPENCLAW_HEALTH_COSTS`, and `PILOT_PADDOCK_E2E`. These may be enabled only during the explicit smoke window and must be false or absent after seed/apply disabled state and after final disablement.
+- `feature_flags.paused_or_forbidden[]`: for SPEC-010B, this must include `FEATURE_GITHUB_SYNC_AUTOMATION`, `FEATURE_TASK_CONTROL_PLANE`, `FEATURE_AGENT_RUNNER_SANDBOXES`, and `PILOT_PRODUCT_LINE_A_E2E`. These must remain false or absent for Product Line B throughout seed, smoke, and disablement.
 - `safety_policy.blocked_side_effects[]`: includes GitHub mutation, dispatch, claim, runner, sandbox, harness adapter, auto-merge, and Product Line A takeover boundaries
 
 Validation rules:
@@ -42,11 +44,12 @@ Fields:
 - `workspace.feature_flags`: smoke-owned flags absent or false when disabled
 - `projects.github_sync_enabled`: `0` for all Product Line B projects
 - `projects.is_repo_sync_owner`: `0` for all Product Line B projects
+- `pause_evidence`: Product Line B evidence fields proving `sync_paused: true`, `dispatch_paused: true`, `claim_runner_sandbox_paused: true`, `github_sync_enabled_count: 0`, `repo_sync_owner_count: 0`, `eligible_smoke_item_count: 0` while disabled, and `eligible_smoke_item_count: 1` only during the explicit smoke window.
 
 State transitions:
 
 - `absent -> disabled_seeded`: `seed:product-line --mode apply`
-- `disabled_seeded -> smoke_enabled`: SPEC-010B smoke lifecycle enable action clears only Product Line B `disabled_at` and enables only smoke-required flags
+- `disabled_seeded -> smoke_enabled`: SPEC-010B smoke lifecycle enable action clears only Product Line B `disabled_at`, enables only `feature_flags.smoke_owned[]`, records a run-scoped `synthetic_issue_run_id`, and proves exactly one Product Line B synthetic issue is eligible while sync, dispatch, claim, runner, sandbox, and live GitHub mutation remain paused.
 - `smoke_enabled -> smoke_recorded`: synthetic issue evidence and pilot subset proof recorded
 - `smoke_recorded -> disabled_clean`: disable action restores non-null `disabled_at`, clears smoke-owned flags, and proves no eligible Product Line B smoke/sync/dispatch work remains
 
@@ -107,6 +110,7 @@ Fields:
 Validation rules:
 
 - Every phase has `status`, `observed_at`, and at least one evidence reference.
+- The enable phase must record `eligible_smoke_item_count: 1`, `sync_paused: true`, `dispatch_paused: true`, `claim_runner_sandbox_paused: true`, `live_github_required: false`, and the run-scoped synthetic issue identifier.
 - Product Line A before/after hashes must match except explicitly permitted read-only inspection evidence.
 - Product Line B final disablement must prove non-null `disabled_at`, no repo sync owner, no smoke-owned flags, no eligible smoke work, and zero unintended side effects.
 - Optional live GitHub evidence may be skipped with `mutation_status: not_mutated`.

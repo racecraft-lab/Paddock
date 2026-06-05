@@ -37,6 +37,15 @@ Verify disabled Product Line B:
 pnpm seed:product-line -- --config "$CONFIG" --db "$DB" --mode verify --json
 ```
 
+Record existing-target/idempotency evidence:
+
+```bash
+pnpm seed:product-line -- --config "$CONFIG" --db "$DB" --mode apply --json
+pnpm seed:product-line -- --config "$CONFIG" --db "$DB" --mode apply --allow-existing --json
+pnpm seed:product-line -- --config "$CONFIG" --db "$DB" --mode verify --json
+pnpm seed:product-line -- --config "$CONFIG" --db "$DB" --mode verify --json
+```
+
 Run the SPEC-010B smoke lifecycle after implementation:
 
 ```bash
@@ -52,6 +61,9 @@ Required local evidence:
 - Preflight before/after hash parity.
 - Apply leaves `product-line-b` disabled.
 - Verify passes against `product-line-b.yaml`.
+- Apply without existing-target allowance refuses an already valid target with `mutation_status: not_mutated` and `action_required: --allow-existing`.
+- Apply with existing-target allowance creates no duplicate config-owned rows and records stable before/after seed snapshot hashes when the target is already valid.
+- Repeated verify remains read-only with stable Product Line A and Product Line B scoped counts/hashes.
 - Exactly one synthetic issue-shaped smoke item.
 - Product Line A before/after scoped hashes match.
 - Product Line B final `disabled_at` is non-null.

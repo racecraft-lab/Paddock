@@ -455,9 +455,9 @@ Check no secret emission, no broad GitHub token use, no live GitHub write requir
 
 | Domain | Status | Findings | Notes |
 |--------|--------|----------|-------|
-| data-integrity | Pending | Pending | Pending |
-| state-management | Pending | Pending | Pending |
-| api-contracts | Pending | Pending | Pending |
+| data-integrity | Complete | 2 gaps remediated | Added explicit repeated apply/verify idempotency and existing-target outcome evidence across spec, plan, seed CLI contract, and quickstart |
+| state-management | Complete | 2 gaps remediated | Enumerated smoke-owned flag/pause proof and exactly-one synthetic smoke enablement evidence |
+| api-contracts | Complete | 4 API-domain gaps remediated; 2 security-routed concerns deferred to security checklist | Added seed status/code matrix, redacted error/residue shapes, scoped API/dashboard response paths, and invalid/unauthorized workspace evidence codes |
 | ux | Pending | Pending | Pending |
 | error-handling | Pending | Pending | Pending |
 | security | Pending | Pending | Pending |

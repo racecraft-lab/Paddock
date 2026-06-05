@@ -40,6 +40,23 @@ Required assertions:
 - Invalid or unauthorized workspace scope returns the existing typed error.
 - Product Line B does not become a repo sync owner.
 
+Required response paths:
+
+| Route | Required response paths for SPEC-010B evidence |
+|-------|-----------------------------------------------|
+| `/api/workspaces/:id` | `workspace.id`, `workspace.slug`, `workspace.name`, `workspace.tenant_id`, `workspace.feature_flags`, `workspace.disabled_at`, `workspace.agent_count` |
+| `/api/projects?workspace_id=<id>` | `projects[].id`, `projects[].workspace_id`, `projects[].slug`, `projects[].github_repo`, `projects[].github_sync_enabled`, `projects[].is_repo_sync_owner`, `projects[].assigned_agents[]` |
+| `/api/tasks?workspace_id=<id>` | `tasks[].id`, `tasks[].workspace_id`, `tasks[].project_id`, `tasks[].status`, `tasks[].assigned_to`, `tasks[].metadata.product_line_slug`, `tasks[].metadata.spec_010b_run_id`, `total`, `page`, `limit` |
+| `/api/agents?workspace_id=<id>` | `agents[].id`, `agents[].workspace_id`, `agents[].name`, `agents[].role`, `agents[].config`, `agents[].taskStats.total`, `agents[].taskStats.assigned`, `agents[].taskStats.in_progress`, `agents[].taskStats.done` |
+| `/api/github/sync?workspace_id=<id>` | `syncs[].project_id`, `syncs[].github_repo`, `syncs[].sync_count`, `github_sync_lifecycle.scopes[].workspace_id`, `github_sync_lifecycle.scopes[].github_repo`, `github_sync_lifecycle.scopes[].enabled`, `github_sync_lifecycle.flag.enabled` |
+| `/api/status?action=dashboard&workspace_id=<id>` | `db.tasks.total`, `db.tasks.byStatus`, `db.agents.total`, `db.agents.byStatus`, `db.activities.day`, `db.notifications.unread`, `db.pipelines.active`, `db.pipelines.recentDay` |
+
+Invalid scope evidence must record both the HTTP status and a stable SPEC-010B evidence code derived from the current route behavior:
+
+- `invalid_workspace_scope` with HTTP `400` for malformed `workspace_id`, duplicate scope parameters, unsupported `workspace_scope`, combined `workspace_id` plus `workspace_scope=facility`, missing explicit scope when required, or workspace scoping disabled.
+- `forbidden_workspace_scope` with HTTP `403` for a workspace outside the authenticated tenant.
+- `workspace_not_found_or_out_of_scope` with HTTP `404` only for `/api/workspaces/:id` when the path ID is outside the accepted scope after scope resolution succeeds.
+
 ## Dashboard Evidence
 
 Dashboard assertions are required only if dashboard behavior or tests change.

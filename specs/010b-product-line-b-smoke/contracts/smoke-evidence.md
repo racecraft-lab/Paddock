@@ -77,6 +77,8 @@ Each phase must include:
 - `evidence_refs[]`: command, SQL, API, or file evidence references
 - `notes`: short redaction-safe context
 
+The `enable` phase must also include `eligible_smoke_item_count: 1`, `sync_paused: true`, `dispatch_paused: true`, `claim_runner_sandbox_paused: true`, `live_github_required: false`, and the run-scoped synthetic issue identifier.
+
 ## Cleanup Counters
 
 Required cleanup proof:

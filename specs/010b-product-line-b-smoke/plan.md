@@ -114,11 +114,21 @@ tests/
 
 1. Add `docs/ai/product-lines/product-line-b.yaml` using `schema_version: product-line-seed-v1`, slug `product-line-b`, display `Product Line B`, agent prefix `plb-platform`, repo metadata `racecraft-lab/Paddock`, Paddock workflow-contract family/path/slugs, no repo sync owner, and smoke/runner/control-plane flags disabled or absent.
 2. Extend product-line seed validation only as needed to express `disabled_by_default: true` on Product Line B while keeping `paddock.yaml` valid.
-3. Extend seed apply/verify so a config with `disabled_by_default: true` writes and verifies non-null `workspaces.disabled_at`, without changing seed modes.
+3. Extend seed apply/verify so a config with `disabled_by_default: true` writes and verifies non-null `workspaces.disabled_at`, without changing seed modes. Preserve the SPEC-010A existing-target contract: repeated `apply` on an already valid Product Line B target uses the explicit existing-target allowance path, does not duplicate config-owned rows, and records stable before/after seed snapshot hashes; repeated `verify` remains read-only.
 4. Extend seed evidence snapshots to include `disabled_at` when the column exists, preserving older fixture compatibility.
 5. Add a SPEC-010B smoke script that enables Product Line B only for the smoke window, writes one local synthetic issue-shaped fixture/evidence record, verifies no live GitHub mutation is required, disables Product Line B, and emits cleanup/isolation proof.
 6. Use existing scoped read routes for evidence: `/api/workspaces/:id`, `/api/projects`, `/api/tasks`, `/api/agents`, `/api/github/sync`, and `/api/status?action=dashboard` with explicit Product Line A/B workspace scope.
 7. Record optional runtime-inventory evidence only if current read-only APIs already expose it. Do not edit `src/lib/harness-adapters/**`, `src/app/api/agents/runtime-inventory/**`, `src/lib/task-dispatch.ts`, `src/lib/task-dispatch-codex-app-server.ts`, `scripts/spec-014c/**`, or SPEC-014C artifacts.
+
+## State Management Contract
+
+Product Line B state is fail-closed and evidence-driven:
+
+- `product-line-b.yaml` is the source of truth for smoke-required `feature_flags.enabled[]` and disabled/pause `feature_flags.disabled_or_absent[]`; tasks must keep those arrays explicit and must not rely on implicit slug behavior or unchecked defaults.
+- Smoke enablement may clear only the Product Line B workspace `disabled_at` value and may enable only the reviewed smoke-required Product Line B workspace flags for the current `run_id`.
+- Smoke enablement must leave general sync and dispatch paused: all Product Line B projects keep `github_sync_enabled = 0` and `is_repo_sync_owner = 0`; `FEATURE_GITHUB_SYNC_AUTOMATION`, `FEATURE_TASK_CONTROL_PLANE`, and `FEATURE_AGENT_RUNNER_SANDBOXES` remain absent or false for Product Line B; no Product Line B task outside the run-id-bound synthetic smoke item may be in an assigned dispatch-eligible state.
+- The smoke evidence packet must include `state_management.enabled_for_smoke_flags[]`, `state_management.disabled_or_absent_flags[]`, `state_management.github_sync_enabled_project_count`, `state_management.repo_sync_owner_project_count`, `state_management.dispatch_eligible_task_count`, and `state_management.smoke_eligible_item_count`.
+- Final disablement must restore non-null Product Line B `disabled_at`, clear or explicitly set false every smoke-owned flag that was enabled for the run, and record zero for sync-owner, GitHub-sync-enabled, dispatch-eligible, and smoke-eligible Product Line B counts.
 
 ## Complexity Tracking
 
@@ -126,8 +136,9 @@ No Constitution violations require justification. The spec remains under the acc
 
 ## Verification Plan
 
-- RED/GREEN Vitest for Product Line B config validation, `disabled_by_default` apply/verify, no-mutation preflight, Product Line A snapshot parity, retained FocusEngine/OpenClaw inventory reporting, no repo sync owner, and no live GitHub mutation requirement.
+- RED/GREEN Vitest for Product Line B config validation, `disabled_by_default` apply/verify, repeated apply/verify idempotency on an already valid target, no-mutation preflight, Product Line A snapshot parity, retained FocusEngine/OpenClaw inventory reporting, no repo sync owner, and no live GitHub mutation requirement.
 - RED/GREEN Vitest for `spec-010b.synthetic_issue.v1` and `spec-010b.smoke_evidence.v1` validation, cleanup counters, redaction proof, and side-effect absence.
+- RED/GREEN Vitest for state-management evidence: reviewed smoke flag arrays are explicit, enablement is run-id-scoped to one synthetic smoke item, Product Line B sync/dispatch pause counts stay zero, and final disablement clears smoke-owned flags.
 - Focused CLI checks against a disposable DB:
   - `pnpm seed:product-line -- --config docs/ai/product-lines/product-line-b.yaml --db <db> --mode preflight --json`
   - `pnpm seed:product-line -- --config docs/ai/product-lines/product-line-b.yaml --db <db> --mode apply --json`
