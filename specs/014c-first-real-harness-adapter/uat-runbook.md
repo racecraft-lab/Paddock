@@ -4,7 +4,7 @@
 |-------|-------|
 | Spec | 014c-first-real-harness-adapter |
 | Branch | 014c-first-real-harness-adapter |
-| PR | **PR:** <set on PR open> |
+| PR | **PR:** [#79](https://github.com/racecraft-lab/Paddock/pull/79) |
 | Generated from | 2026-06-05T14:42:19Z |
 
 

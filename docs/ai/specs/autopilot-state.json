@@ -92,8 +92,8 @@
     {"step": "Post: Reviewability Diff Gate", "status": "pending"},
     {"step": "Post: Self-Review", "status": "completed", "note": "Recorded four-question self-review in workflow; FR-023/FR-024 target HAL UAT gap remains explicit"},
     {"step": "Post: UAT Runbook Generation", "status": "completed", "note": "Generated specs/014c-first-real-harness-adapter/uat-runbook.md with PROJECT_COMMANDS and self-review findings"},
-    {"step": "Post: PR Body Generation", "status": "pending"},
-    {"step": "Post: PR Creation", "status": "pending"},
+    {"step": "Post: PR Body Generation", "status": "completed", "note": "Generated linked-worktree-safe SpecKit PR body with review packet marker and UAT Runbook heading"},
+    {"step": "Post: PR Creation", "status": "completed", "note": "Created PR #79: https://github.com/racecraft-lab/Paddock/pull/79"},
     {"step": "Post: Review Remediation", "status": "pending"},
     {"step": "Post: Retrospective", "status": "pending"}
   ]

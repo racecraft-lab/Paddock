@@ -621,6 +621,8 @@ No split trigger has fired: the implementation remains one Codex app-server adap
 
 SPEC-014C is locally implemented and locally G7-green, but not complete. It is complete only after merge, target deployment promotion, flag-scoped HAL UAT with a real Codex app-server launch, zero-residue cleanup proof, and final roadmap/workflow evidence updates.
 
+PR #79 is open for review: https://github.com/racecraft-lab/Paddock/pull/79. The PR is ready for local/CI review, while T042-T045 remain the post-merge HAL target UAT completion gate.
+
 ## Self-Review
 
 1. **Tests executed?** Partial post-implementation coverage is complete for the local implementation path. On 2026-06-05T14:47:29Z after rebasing to `origin/main`, the focused SPEC-014C Vitest cluster passed 8 files / 89 tests, `node scripts/spec-014c/check-scope-guard.mjs` passed, `pnpm typecheck` passed, `pnpm lint` passed, and escalated `pnpm build` passed. `pnpm test:e2e` did not run because SPEC-014C changes no browser-visible surface; target HAL UAT remains blocked until merge/promotion.
