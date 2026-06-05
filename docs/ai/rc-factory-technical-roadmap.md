@@ -132,8 +132,10 @@ SPEC-013A-D and SPEC-014A-D must extend the existing Paddock control-plane seams
 | 11D | Claim-control operator UX | Yes | `FEATURE_TASK_CONTROL_PLANE` | Phase 12C |
 | 12A | Sandbox ownership + lifecycle contract | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | Phase 12B |
 | 12B | Harness adapter manifest + fake registry | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` | Phase 12C, Phase 12D |
-| 12C | First real harness adapter pilot | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | Later adapter specs |
+| 12C | First real harness adapter pilot | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | Phase 12D, Phase 12E, Phase 12F |
 | 12D | OpenClaw/external harness adapter | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + adapter manifest | Later adapter specs |
+| 12E | Harness run evidence retention + transcript policy | Yes | Future retention flag/scope to be defined in setup | Later evidence/debug specs |
+| 12F | Harness operator intervention UI | Yes | `FEATURE_AGENT_RUNNER_SANDBOXES` + `FEATURE_TASK_CONTROL_PLANE` | Later adapter specs |
 
 ## SpecKit-Pro Autopilot Usage
 
@@ -219,8 +221,11 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 | SPEC-013D | 11D | Claim-Control Operator UX | claim-control-operator-ux | Complete | P1 | SPEC-013C | SPEC-014C | Phase 11D |
 | SPEC-014A | 12A | Sandbox Ownership and Lifecycle Contract | sandbox-lifecycle-contract | Complete | P1 | SPEC-013B | SPEC-014B | Phase 12A |
 | SPEC-014B | 12B | Harness Adapter Manifest and Fake Registry | adapter-manifest-fakes | Complete | P1 | SPEC-014A | SPEC-014C, SPEC-014D | Phase 12B |
-| SPEC-014C | 12C | First Real Harness Adapter Pilot | first-real-harness-adapter | Pending | P1 | SPEC-013D, SPEC-014B | Later adapter specs | Phase 12C |
+| SPEC-014C | 12C | First Real Harness Adapter Pilot | first-real-harness-adapter | In Progress | P1 | SPEC-013D, SPEC-014B | SPEC-014D, SPEC-014E, SPEC-014F, SPEC-015A | Phase 12C |
 | SPEC-014D | 12D | OpenClaw and External Harness Adapter | openclaw-external-adapter | Pending | P2 | SPEC-014B | Later adapter specs | Phase 12D |
+| SPEC-014E | 12E | Harness Run Evidence Retention and Transcript Policy | harness-run-evidence-retention | Pending | P2 | SPEC-014C | Later evidence/debug specs | Phase 12E |
+| SPEC-014F | 12F | Harness Operator Intervention UI | harness-operator-intervention-ui | Pending | P2 | SPEC-013D, SPEC-014C | Later adapter specs | Phase 12F |
+| SPEC-015A | 13A | First-Class Workflow Orchestration Page | workflow-orchestration-page | Pending | P2 | SPEC-004, SPEC-009A, SPEC-014C | Later workflow UX and operator IA specs | Phase 13A |
 
 ### Pending Mini-Spec Parallelization Snapshot
 
@@ -228,12 +233,12 @@ These notes resolve known ambiguities so `/speckit-pro:setup` and `/speckit-pro:
 
 **Archive hygiene refresh (2026-06-02):** The archive extension record now includes SPEC-013A1, SPEC-013B, SPEC-013C, SPEC-014A, and SPEC-013D provenance and recovery commands in `.specify/memory/`. Active source folder cleanup remains intentionally unapplied because this checkout is detached at current `origin/main` and no explicit safe-base `--apply-cleanup` run was requested.
 
-- **Current active setup:** No SPEC-013C, SPEC-013D, SPEC-014A, or SPEC-014B implementation workflow remains active after PR #63/#65/#64/#76 merge and recorded post-implementation evidence. SPEC-014C is the next unblocked runner-path setup candidate for the first real harness adapter pilot; it must reuse SPEC-014B's fake manifest/runtime-inventory boundary and avoid duplicating SPEC-013B claim/reconciliation authority, SPEC-013C retry semantics, or SPEC-013D task-detail operator UX. SPEC-010B is also unblocked by SPEC-010A acceptance but still depends on Product Line B preflight cleanup. SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
+- **Current active setup:** No SPEC-013C, SPEC-013D, SPEC-014A, or SPEC-014B implementation workflow remains active after PR #63/#65/#64/#76 merge and recorded post-implementation evidence. SPEC-014C is active on branch `014c-first-real-harness-adapter`: Phase 7 and post-implementation closeout hygiene are complete for the Codex app-server adapter, live stdio transport, descriptor-only persistence, fail-closed runtime handling, static/runtime no-mutation guards, review packet, workflow, roadmap, autopilot status, verification/review/cleanup/retrospective reports, and HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` on branch target `43989ac856696abb2ea764fed409da268b87c9a8`. PR #79 remains open pending review/merge and normal post-merge promotion policy. SPEC-015A is a newly recorded pending IA/UI follow-up from SPEC-014C HAL browser UAT: workflow contracts/templates/pipelines need a first-class operator page instead of being stacked above Agent Squad on `/agents`. SPEC-010B is also unblocked by SPEC-010A acceptance but still depends on Product Line B preflight cleanup. SPEC-011 remains a parallel option when file ownership stays disjoint because it touches the optional security adapter.
 - **Self-hosting critical path:** SPEC-009A -> SPEC-009B -> SPEC-009C1 -> SPEC-009C2 -> SPEC-009C3 -> SPEC-009C4 -> SPEC-009D proves that Paddock can ingest a Paddock GitHub issue, route it through a dedicated Issue Triage workflow family, execute the first bounded Issue Remediation workflow family, record the `ready_for_owner` merge gate, and emit a reviewable lifecycle packet. SpecKit/SDD remains a separate destination for `NEEDS_SPEC` issues, not the default first pilot lane.
 - **Scale/doc parallel path:** SPEC-010A is complete after post-merge UAT; SPEC-010B can start now that SPEC-009C4 and SPEC-010A are complete, subject to Product Line B preflight cleanup; SPEC-012B waits for two-product-line reality from SPEC-010B.
 - **Evidence, routing, and automation follow-ons:** SPEC-009E turns the pilot evidence model into operator-visible read-only surfaces after SPEC-009D. SPEC-009F owns production routing/evidence for non-remediation triage outcomes after the pilot evidence surfaces exist. SPEC-013A1 explicitly owns GitHub sync automation and poller lifecycle before claim/reconciliation relies on automatic issue discovery.
 - **Control-plane path:** SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, and SPEC-013D are complete after their recorded merge and UAT evidence. SPEC-014A-D own execution inside already-claimed work. These completed specs do not launch harnesses.
-- **Runner path:** SPEC-014A and SPEC-014B are complete after post-merge HAL target UAT. SPEC-014C is the next runner-path setup candidate because it pilots the first real harness adapter on top of the manifest, fake registry, and runtime-inventory references. SPEC-014D may run in parallel only if it owns disjoint adapter modules, fixtures, and deployment docs.
+- **Runner path:** SPEC-014A and SPEC-014B are complete after post-merge HAL target UAT. SPEC-014C is the active first real harness adapter pilot on top of the manifest, fake registry, and runtime-inventory references; Phase 7 and post-implementation hygiene are GREEN, including official-doc-grounded direct `codex app-server --listen stdio://` transport, descriptor-only run/attempt/activity persistence, focused cluster 8 files / 89 tests, scope guard, typecheck, lint, build, verify/verify-tasks/review/cleanup/retrospective reports, HAL deployed-branch service evidence, one real Codex app-server launch, deterministic failure fixtures through shared code paths, workspace-scoped flags, and zero-residue cleanup proof. SPEC-014D may run in parallel only if it owns disjoint adapter modules, fixtures, and deployment docs. SPEC-014E owns richer harness transcript/event retention, replay/debug export, quarantine, and opt-in raw capture policy after SPEC-014C proves the first real adapter. SPEC-014F owns live harness operator intervention UI for user-input/tool-approval prompts; SPEC-014C must fail closed on those events until SPEC-014F is implemented. SPEC-015A owns the separate workflow/orchestration page split and must not change harness adapter semantics, claim control, successor selection, governance, or auto-merge behavior.
 
 ### Spec-by-Spec HITL UAT Matrix
 
@@ -273,6 +278,9 @@ This matrix is the second-pass review gate for every roadmap spec. Each row must
 | SPEC-014B | Harness adapters declare capabilities before execution | `FEATURE_AGENT_RUNNER_SANDBOXES` fake adapter registry | Run two fake adapters through the manifest, inspect visible/unassigned/assigned/eligible/blocked runtime-inventory states, and verify unsupported capabilities fail the attempt instead of stalling or switching harness |
 | SPEC-014C | One real harness adapter can execute an already-claimed stage | `FEATURE_AGENT_RUNNER_SANDBOXES` plus one real adapter manifest | Launch/continue one claimed stage, inspect artifacts/usage/failure summaries, and verify unsupported tool/user-input failure behavior |
 | SPEC-014D | OpenClaw/external harnesses use the same adapter contract | `FEATURE_AGENT_RUNNER_SANDBOXES` plus OpenClaw/external config | Verify missing OpenClaw/external config is absent-safe, then import/refresh OpenClaw runtime agents as unassigned inventory, assign one explicitly, and inspect lifecycle/failure evidence |
+| SPEC-014E | Harness transcript/event retention is explicit and opt-in | Future retention flag/scope to be defined in setup | Enable a disposable opt-in scope, capture redacted transcript/event evidence, quarantine unsafe payloads, export bounded debug/replay metadata, enforce retention, then disable and verify default sanitized-summary behavior |
+| SPEC-014F | Operators can answer or deny live harness intervention requests without terminal archaeology | `FEATURE_AGENT_RUNNER_SANDBOXES` plus `FEATURE_TASK_CONTROL_PLANE` task-detail/intervention scope | Trigger one user-input request and one tool/approval request from a real adapter, answer/deny/timeout through the operator UI, verify pause/resume/failure evidence, and confirm no auto-answer or unsafe prompt payload is persisted |
+| SPEC-015A | Workflow orchestration is a first-class operator surface, not hidden under Agent Squad | Existing workflow contract/template/pipeline surfaces; no new feature flag unless clarify discovers one | In HAL browser, verify `/agents` prioritizes Agent Squad, fleet status, direct agent actions, and runtime inventory while `/workflows` owns Workflow Contracts, Workflows/templates, and Pipelines; verify Product Line scoping, pipeline run/delete contracts, search/navigation labels, and no regression to `/api/workflows` |
 | V2-001 | Tenant-aware gateway resolution can support multi-facility deployments | Future v2 flag/scope; not in v1 spec index | In a future v2 target, prove two tenant/facility contexts resolve separate gateway settings without leaking or regressing single-tenant fallback |
 
 ## Feature Flag Resolution Policy
@@ -781,18 +789,19 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 
 ### SPEC-014C: First Real Harness Adapter Pilot
 
-- **Status:** Pending
+- **Status:** In Progress - closeout hygiene complete on PR branch; PR #79 review/merge pending
 - **Priority:** P1
 - **Branch short name:** `first-real-harness-adapter`
 - **Dependencies:** SPEC-013D, SPEC-014B
-- **Enables:** Later adapter specs
+- **Enables:** SPEC-014D, SPEC-014E, SPEC-014F, SPEC-015A, later adapter specs
 - **Scope source:** Phase 12C - First real harness adapter pilot
 - **Acceptance criteria source:** Phase 12C Acceptance Criteria
 - **Scope summary:** Implement one real harness adapter path behind the registry. Prefer Codex app-server if available because structured threads, tool/file requests, approvals, and usage events map cleanly to Paddock; otherwise choose the smallest locally provable adapter and document the limitation. HAL verification on 2026-05-07 found Codex CLI `0.124.0` installed with the `codex app-server` subcommand available, but not deployed as a Paddock service.
 - **Tool count / tool names:** N/A - not a tool-surface spec
 - **Strict Scope:** one adapter module, one smoke path, token/runtime summaries where available, artifact publication, redaction, and operator-visible run debug. No second real adapter, no OpenClaw-specific behavior unless this spec explicitly selects OpenClaw as the first real pilot.
-- **Autopilot notes:** The adapter executes already-claimed GitHub-linked work only. It does not choose successor templates, create local-only tasks, auto-merge, or bypass Aegis/owner gates. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; the selected real adapter must cite the live external context for launch/resume, workspace cwd, approval/sandbox policy, unsupported-capability behavior, and validation profile decisions.
+- **Autopilot notes:** The adapter executes already-claimed GitHub-linked work only. It does not choose successor templates, create local-only tasks, auto-merge, or bypass Aegis/owner gates. Before Specify or Plan, fetch the current OpenAI Harness Engineering article and Symphony announcement/SPEC; the selected real adapter must cite the live external context for launch/resume, workspace cwd, approval/sandbox policy, unsupported-capability behavior, and validation profile decisions. Rich transcript/event retention, replay/debug export, quarantine policy, and opt-in raw capture are deferred to SPEC-014E. Live operator user-input/tool-approval intervention UI is deferred to SPEC-014F; SPEC-014C fails closed on those events.
 - **Definition of done:** One real adapter can launch or continue a claimed stage, publish artifacts, record usage/failure summaries, and fail safely on unsupported tool/user-input events.
+- **Implementation evidence:** Phase 7 and post-implementation closeout hygiene are complete on branch `014c-first-real-harness-adapter`. Evidence includes the Codex app-server manifest/runtime-inventory registration, bounded turn input, no-shell lifecycle-root launch seam, official-doc-grounded direct `codex app-server --listen stdio://` JSONL transport, dispatch admission after claim/reconciliation/governance/lifecycle preflight, descriptor-only `codex_app_server_run.v1` evidence/activity/artifact descriptors, durable persistence through existing `runs`, task-stage attempt events, and activities, fail-closed protocol and unsupported-request mapping, timeout/binary/cleanup failure evidence, ownership re-proof and abandoned-by-claim-control handling, static/runtime no-mutation guards, and completed review/status ledgers. Focused verification has passed: US1 command 5 files / 30 tests, US2 command 4 files / 40 tests, combined US1-US3 command 8 files / 86 tests, supplemental live-transport cluster 8 files / 88 tests, persistence-focused dispatch suite 1 file / 21 tests, final focused cluster 8 files / 89 tests, scope guard self-test/current-diff, `direnv exec . pnpm typecheck`, `direnv exec . pnpm lint`, and `direnv exec . pnpm build`; closeout also records `verify-report.md`, `verify-tasks-report.md`, `review-report.md`, `cleanup-report.md`, `retrospective.md`, doctor, G7, reviewability, confidence advisory, and PR-check evidence. HAL branch target `43989ac856696abb2ea764fed409da268b87c9a8` passed build, service restart, `/login`, authenticated `/api/status`, one real Codex app-server stdio handshake/thread/turn launch, deterministic failure fixtures, workspace-scoped flag-off blocking, and zero marker-scoped DB/sandbox/artifact residue under UAT marker `SPEC-014C-HAL-UAT-20260605121830`.
 
 ### SPEC-014D: OpenClaw and External Harness Adapter
 
@@ -808,6 +817,51 @@ Phase deliverables that name a flag (e.g., `FEATURE_WORKSPACE_SWITCHER`, `FEATUR
 - **Strict Scope:** adapter module(s), absent-safe config checks, fake/OpenClaw gateway fixtures, external-handle lifecycle tests, runtime-inventory import/refresh labels, and deployment docs. No Paddock-owned sandbox changes unless required by the shared contract.
 - **Autopilot notes:** OpenClaw is the current application harness choice, not a product requirement. If OpenClaw is absent or disabled, Paddock must still support Paddock-owned or other external-harness paths through the same registry. Imported OpenClaw agents start as visible unassigned inventory; role/domain workspace files should stay generic, and product/task context belongs in Paddock assignment/run packets. Before Specify or Plan, fetch the current external context and document which Harness Engineering/Symphony contracts are implemented, adapted, or explicitly deferred.
 - **Definition of done:** `FEATURE_AGENT_RUNNER_SANDBOXES=false` or missing OpenClaw config leaves no OpenClaw path reachable; enabled adapter imports/refreshes OpenClaw runtime agents as non-dispatchable inventory until explicitly assigned and eligible, runs through the same manifest/lifecycle contract, and records failures without mutating GitHub or task terminal state outside reconciliation.
+
+### SPEC-014E: Harness Run Evidence Retention and Transcript Policy
+
+- **Status:** Pending
+- **Priority:** P2
+- **Branch short name:** `harness-run-evidence-retention`
+- **Dependencies:** SPEC-014C
+- **Enables:** Later evidence/debug specs
+- **Scope source:** Phase 12E - Harness run evidence retention and transcript policy
+- **Acceptance criteria source:** Phase 12E Acceptance Criteria
+- **Scope summary:** Define and implement the explicit retention policy for richer harness run evidence after the first real adapter works: transcript/event references, replay/debug export metadata, quarantine behavior, retention windows, storage health, and operator opt-in for raw capture. Default behavior remains SPEC-014C's sanitized summaries and artifact descriptors.
+- **Tool count / tool names:** N/A - not a tool-surface spec
+- **Strict Scope:** retention policy, redaction/quarantine rules, bounded export/read surfaces, storage/health evidence, tests, and docs. No new harness adapter, no launch/resume behavior, no live operator prompt UI, no tracker-truth mutation, no auto-merge, and no broad provider transcript scraping beyond explicit opt-in policy.
+- **Autopilot notes:** This spec is the home for raw or richer transcript/event capture deliberately excluded from SPEC-014C. Capture must be default-off, workspace/adapter/task scoped, operator-audited, bounded by retention, and safe under existing artifact redaction/quarantine behavior. It must not loosen SPEC-014C artifact publication safety.
+- **Definition of done:** Operators can enable a disposable opt-in scope, inspect retained redacted transcript/event evidence and replay/debug export metadata, see unsafe payloads quarantined without raw leakage, verify retention cleanup/storage health, then disable capture and confirm default sanitized-summary behavior.
+
+### SPEC-014F: Harness Operator Intervention UI
+
+- **Status:** Pending
+- **Priority:** P2
+- **Branch short name:** `harness-operator-intervention-ui`
+- **Dependencies:** SPEC-013D, SPEC-014C
+- **Enables:** Later adapter specs
+- **Scope source:** Phase 12F - Harness operator intervention UI
+- **Acceptance criteria source:** Phase 12F Acceptance Criteria
+- **Scope summary:** Add the operator-facing path for real harnesses that pause for user input, tool/file approval, or similar intervention. Operators should discover pending intervention from the existing task/detail evidence experience, answer or deny safely, see timeout behavior, and resume or fail the run with bounded audit evidence.
+- **Tool count / tool names:** N/A - not a tool-surface spec
+- **Strict Scope:** intervention read model/API, task-detail or existing approval-surface integration, answer/deny/timeout audit evidence, pause/resume state wiring, and focused tests. No new real adapter, no raw transcript retention policy, no auto-answer behavior, no successor selection, no GitHub terminal mutation, and no auto-merge.
+- **Autopilot notes:** SPEC-014C must fail closed on live user-input/tool-approval requests until this spec exists. Reuse SPEC-013D claim-control patterns for expected-state/idempotency and bounded operator receipts. Existing OpenClaw exec approvals are reference surface only; do not assume they cover provider-neutral harness intervention without an explicit adapter mapping.
+- **Definition of done:** A real adapter can pause for one user-input request and one approval request, the operator can answer/deny/let it timeout from the UI, the run resumes or fails with durable bounded evidence, and unsafe prompt/request payloads are not persisted or rendered.
+
+### SPEC-015A: First-Class Workflow Orchestration Page
+
+- **Status:** Pending
+- **Priority:** P2
+- **Branch short name:** `workflow-orchestration-page`
+- **Dependencies:** SPEC-004, SPEC-009A, SPEC-014C
+- **Enables:** Later workflow UX and operator IA specs
+- **Scope source:** Phase 13A - workflow orchestration information architecture
+- **Acceptance criteria source:** Phase 13A Acceptance Criteria
+- **Scope summary:** Split the current mixed `OrchestrationBar` experience into the right operator homes. Workflow Contracts, Workflows/template authoring, and Pipelines become a first-class Workflows/Orchestration page. Agent Squad remains focused on agent fleet state, direct agent actions, direct command/messaging affordances, and runtime inventory. The split should make HAL `/agents` read as "manage agents and runtimes" and the new workflow route read as "define, validate, and run orchestration policy."
+- **Tool count / tool names:** N/A - not a tool-surface spec
+- **Strict Scope:** panel/navigation/component split, sidebar/search labels, Product Line scope consistency for pipeline APIs, pipeline run/delete UI/API contract repair, focused component tests, and HAL browser UAT. No new workflow-template semantics, no new pipeline scheduler semantics, no harness adapter behavior, no claim-control changes, no task terminal mutation, no successor-selection changes, no governance changes, no auto-merge, and no raw transcript or retained evidence policy.
+- **Autopilot notes:** Do not move `OrchestrationBar` wholesale without classifying each tab. Keep Fleet and direct Command behavior near Agents/Agent Squad or Chat because they operate on concrete agents. Move Workflow Contracts, Workflows/templates, and Pipelines because they operate on orchestration policy and automation design. Prefer the existing catch-all panel router unless the spec explicitly chooses a new Next.js App Router page; if a new route segment is added, preserve current dashboard shell behavior and navigation state. Verify that pipeline UI calls use the same workspace-scope helper pattern as `/api/workflows`.
+- **Definition of done:** `/agents` no longer opens with workflow-contract/template/pipeline controls above Agent Squad; the new Workflows/Orchestration page owns Contracts, Workflows/templates, and Pipelines with clear labels, preserved CRUD/run behavior, Product Line scoping, pipeline delete/run compatibility, search/sidebar navigation, responsive layout, and HAL browser UAT evidence.
 
 ---
 
@@ -1391,6 +1445,14 @@ SPEC-011 can run any time after SPEC-008. It is deliberately outside the self-ho
 | SPEC-014B | Adapter manifest + fake registry | SPEC-014A | SPEC-013C | Run two fake adapters through the same manifest, inspect runtime-inventory state transitions, and confirm unsupported capabilities fail closed |
 | SPEC-014C | First real harness adapter pilot | SPEC-013D, SPEC-014B | SPEC-014D if adapter files are disjoint | Run one real adapter on an already-claimed GitHub-linked stage and inspect artifacts/usage/failure summaries |
 | SPEC-014D | OpenClaw/external harness adapter | SPEC-014B | SPEC-014C if adapter files are disjoint | Enable OpenClaw/external adapter on target deployment, verify absent-safe OFF path, import unassigned inventory, and prove explicit assignment before eligibility |
+| SPEC-014E | Harness run evidence retention + transcript policy | SPEC-014C | SPEC-014D if storage/policy files stay disjoint | Enable opt-in retained evidence, inspect redaction/quarantine/export/retention behavior, then verify default sanitized-summary behavior |
+| SPEC-014F | Harness operator intervention UI | SPEC-013D, SPEC-014C | SPEC-014D/014E if UI/API files stay disjoint | Trigger user-input and approval requests, answer/deny/timeout from the UI, and inspect pause/resume/failure evidence |
+
+### Lane G - Operator Information Architecture
+
+| Spec | Slice | Blocked By | Can Run With | Human Validation |
+|---|---|---|---|---|
+| SPEC-015A | First-class workflow orchestration page | SPEC-004, SPEC-009A, SPEC-014C | SPEC-014D/014E if UI/API files stay disjoint; avoid SPEC-014F unless intervention UI ownership is explicitly split | Verify `/agents` is agent/runtime focused and `/workflows` owns workflow contracts, templates, and pipelines with scoped CRUD/run behavior |
 
 ## Dependency Graph
 
@@ -1399,25 +1461,29 @@ Completed through SPEC-008
     ├─→ SPEC-009A ─→ SPEC-009B ─→ SPEC-009C1 ─→ SPEC-009C2 ─→ SPEC-009C3 ─→ SPEC-009C4 ─→ SPEC-009D
     │                    │                                                                       │              ├─→ SPEC-009E ─→ SPEC-009F
     │                    │                                                                       │              └─→ SPEC-013A ─→ SPEC-013A1 ─→ SPEC-013B ─→ SPEC-013C ─→ SPEC-013D
-    │                    │                                                                       │                                             └─→ SPEC-014A ─→ SPEC-014B ─┬─→ SPEC-014C
+    │                    │                                                                       │                                             └─→ SPEC-014A ─→ SPEC-014B ─┬─→ SPEC-014C ─┬─→ SPEC-014E
+    │                    │                                                                       │                                                                      │              ├─→ SPEC-014F
+    │                    │                                                                       │                                                                      │              └─→ SPEC-015A
     │                    │                                                                       │                                                                      └─→ SPEC-014D
     │                    └─→ SPEC-010A ──────────────────────────────────────────────────────────┴─→ SPEC-010B ─→ SPEC-012B
     ├─→ SPEC-011
     └─→ SPEC-012A ───────────────────────────────┘
 ```
 
-Phase 0 through Phase 8F, Phase 9A, Phase 10A, Phase 11A-11D, and Phase 12A-12B are complete and remain the substrate for all later work. SPEC-014C is the next runner-path setup candidate after SPEC-014B post-merge acceptance and must preserve SPEC-013D's operator UX boundary plus SPEC-014B's manifest/runtime-inventory boundary. SPEC-010B is also unblocked by SPEC-010A acceptance but still subject to Product Line B preflight cleanup. SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Paddock-specific path. SPEC-013A-D own run-state, GitHub sync automation, claim/reconciliation, retry API authority, and claim-control operator UX. SPEC-014A-D execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy.
+Phase 0 through Phase 8F, Phase 9A, Phase 10A, Phase 11A-11D, and Phase 12A-12B are complete and remain the substrate for all later work. SPEC-014C is active after SPEC-014B post-merge acceptance and must preserve SPEC-013D's operator UX boundary plus SPEC-014B's manifest/runtime-inventory boundary; Phase 7 and closeout hygiene are GREEN and HAL UAT passed on branch target `43989ac856696abb2ea764fed409da268b87c9a8`. SPEC-010B is also unblocked by SPEC-010A acceptance but still subject to Product Line B preflight cleanup. SPEC-011 remains available as a parallel start when file ownership stays disjoint. The SPEC-009C family is the first practical self-hosting gate, split into ingest, triage handoff, remediation-to-owner, and merge reconciliation so each PR is reviewable. SPEC-009D bridges pilot smoke to formal run-state by emitting the reviewable lifecycle packet. SPEC-009E turns pilot eligibility/evidence into operator-visible read-only surfaces. SPEC-009F owns production routing/evidence for non-remediation triage outcomes. SPEC-012A makes repo/process truth discoverable from checked-in docs. SPEC-010A extracts the reusable seeder from the Paddock-specific path. SPEC-013A-D own run-state, GitHub sync automation, claim/reconciliation, retry API authority, and claim-control operator UX. SPEC-014A-F execute already-claimed work and must not own tracker truth, successor selection, governance, or auto-merge policy. SPEC-015A owns the operator information architecture split between agent runtime management and workflow orchestration management.
 
-SPEC-013A1 implementation, PR #60, retrospective, and operator-confirmed post-merge UAT are complete on `main`. SPEC-013B implementation, PR #62, HAL deployment promotion, and post-merge HITL UAT are complete on `main`. SPEC-013C PR #63 and SPEC-014A PR #64 are merged, deployed to HAL, and closed out with target UAT evidence on `main`. SPEC-013D PR #65 is merged to `main` with local manual browser UAT, Docker-backed visual evidence, archive/status hygiene, and HAL target UAT recorded. SPEC-014B PR #76 is merged, deployed to HAL, and closed out with target UAT evidence on `main`; SPEC-014C is now unblocked for first real harness adapter work. SPEC-010B may also start after Product Line B preflight cleanup, while SPEC-012B continues to wait for SPEC-010B.
+SPEC-013A1 implementation, PR #60, retrospective, and operator-confirmed post-merge UAT are complete on `main`. SPEC-013B implementation, PR #62, HAL deployment promotion, and post-merge HITL UAT are complete on `main`. SPEC-013C PR #63 and SPEC-014A PR #64 are merged, deployed to HAL, and closed out with target UAT evidence on `main`. SPEC-013D PR #65 is merged to `main` with local manual browser UAT, Docker-backed visual evidence, archive/status hygiene, and HAL target UAT recorded. SPEC-014B PR #76 is merged, deployed to HAL, and closed out with target UAT evidence on `main`; SPEC-014C PR #79 is open with Phase 7, HAL branch UAT, and post-implementation closeout hygiene complete. SPEC-010B may also start after Product Line B preflight cleanup, while SPEC-012B continues to wait for SPEC-010B.
 
 Parallel agents may work simultaneously only when they own disjoint primary files and state:
 
 - SPEC-012A is complete and now feeds SPEC-012B and SPEC-013A as a checked-in repo knowledge substrate.
 - SPEC-010A is complete after PR #59 and 2026-05-22 post-merge UAT; SPEC-010B may start after Product Line B preflight cleanup; SPEC-011 may also start when file ownership stays disjoint.
 - SPEC-012B waits for SPEC-010B so harness-gardening rules encode real two-product-line behavior.
-- SPEC-009F, SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, SPEC-013D, SPEC-014A, and SPEC-014B are complete after their recorded merge and UAT/verification gates; SPEC-014C is now unblocked after SPEC-014B.
+- SPEC-009F, SPEC-013A, SPEC-013A1, SPEC-013B, SPEC-013C, SPEC-013D, SPEC-014A, and SPEC-014B are complete after their recorded merge and UAT/verification gates; SPEC-014C is active with Phase 7, HAL branch UAT, and post-implementation hygiene complete, and PR review/merge remains the completion gate.
 - SPEC-013B ran after SPEC-013A1 acceptance so automatic GitHub sync was explicit before claim/reconciliation relied on scheduler ticks.
 - SPEC-014C and SPEC-014D may run in parallel only after SPEC-014B and only if adapter modules, fixtures, and deployment docs are isolated.
+- SPEC-014E and SPEC-014F wait for SPEC-014C's first real adapter proof; they may run alongside SPEC-014D only when retention/intervention files stay disjoint from OpenClaw/external adapter files.
+- SPEC-015A waits for SPEC-014C closeout evidence because the HAL `/agents` observation came from first real adapter UAT; it may run alongside SPEC-014D or SPEC-014E if it stays limited to navigation, panel composition, pipeline scope/contract repair, and browser UAT, but should not run alongside SPEC-014F unless intervention UI ownership is explicitly split.
 
 ## Timeline (Small-Spec Estimate)
 
@@ -1446,8 +1512,11 @@ Parallel agents may work simultaneously only when they own disjoint primary file
 | SPEC-014B | 1.5-2 | Yes |
 | SPEC-014C | 2-3 | Yes for first real adapter |
 | SPEC-014D | 2-3 | Optional parallel after SPEC-014B |
+| SPEC-014E | 1.5-2.5 | Follow-on retention/debug policy after SPEC-014C |
+| SPEC-014F | 2-3 | Follow-on live intervention UI after SPEC-014C |
+| SPEC-015A | 1-1.5 | Follow-on operator IA/UI page split after SPEC-014C |
 
-First self-hosting proof is roughly 6-9 engineering days after SPEC-008 for one engineer: SPEC-009A through SPEC-009D. The fully observable control-plane path through the first real harness adapter is roughly 19-28.5 critical-path engineering days after adding SPEC-013D for operator claim-control UX, with SPEC-011, SPEC-010A/B, SPEC-012A/B, and SPEC-014D available as parallel work where file ownership is isolated.
+First self-hosting proof is roughly 6-9 engineering days after SPEC-008 for one engineer: SPEC-009A through SPEC-009D. The fully observable control-plane path through the first real harness adapter is roughly 19-28.5 critical-path engineering days after adding SPEC-013D for operator claim-control UX, with SPEC-011, SPEC-010A/B, SPEC-012A/B, and SPEC-014D available as parallel work where file ownership is isolated. Rich transcript retention and live operator intervention add follow-on effort in SPEC-014E and SPEC-014F after SPEC-014C proves the first real adapter. First-class workflow orchestration IA adds a small follow-on slice in SPEC-015A.
 
 ## V2 Readiness Backlog
 

@@ -69,6 +69,22 @@ const SPEC_008_EXPECTED_FAMILIES: string[] = [
   'src/app/api/otlp/v1/',
 ];
 
+const SPEC_014C_EXPECTED_ESLINT_FILES: string[] = [
+  'src/lib/harness-adapters/codex-app-server/manifest.ts',
+  'src/lib/harness-adapters/codex-app-server/input.ts',
+  'src/lib/harness-adapters/codex-app-server/protocol.ts',
+  'src/lib/harness-adapters/codex-app-server/evidence.ts',
+  'src/lib/harness-adapters/codex-app-server/runner.ts',
+  'src/lib/task-dispatch-codex-app-server.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-manifest.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-protocol.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-evidence.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-runner.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-artifact-safety.test.ts',
+  'src/lib/__tests__/task-dispatch-codex-app-server.test.ts',
+  'scripts/spec-014c/check-scope-guard.mjs',
+];
+
 /** Strip leading `./` if present and unify separators. */
 function normalizePath(p: string): string {
   return p.replace(/^\.\//, '').replace(/\\/g, '/');
@@ -79,6 +95,70 @@ function normalizePath(p: string): string {
  * structural matching against the const declaration (avoids loading the
  * runtime ESM config and pulling in `next`).
  */
+function findArrayEnd(src: string, openBracketIndex: number): number {
+  let depth = 0;
+  let quote: string | null = null;
+  let escaped = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  for (let i = openBracketIndex; i < src.length; i++) {
+    const char = src[i]!;
+    const next = src[i + 1] ?? '';
+
+    if (inLineComment) {
+      if (char === '\n') inLineComment = false;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (char === '*' && next === '/') {
+        inBlockComment = false;
+        i++;
+      }
+      continue;
+    }
+
+    if (quote !== null) {
+      if (escaped) {
+        escaped = false;
+        continue;
+      }
+      if (char === '\\') {
+        escaped = true;
+        continue;
+      }
+      if (char === quote) quote = null;
+      continue;
+    }
+
+    if (char === '/' && next === '/') {
+      inLineComment = true;
+      i++;
+      continue;
+    }
+    if (char === '/' && next === '*') {
+      inBlockComment = true;
+      i++;
+      continue;
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char;
+      continue;
+    }
+    if (char === '[') {
+      depth++;
+      continue;
+    }
+    if (char === ']') {
+      depth--;
+      if (depth === 0) return i;
+    }
+  }
+
+  return -1;
+}
+
 function extractEslintEntries(): string[] {
   const src = readFileSync(ESLINT_CONFIG_PATH, 'utf8');
   const startIdx = src.indexOf('const specStrictFiles = [');
@@ -88,7 +168,7 @@ function extractEslintEntries(): string[] {
     );
   }
   const sliceStart = src.indexOf('[', startIdx);
-  const sliceEnd = src.indexOf(']', sliceStart);
+  const sliceEnd = findArrayEnd(src, sliceStart);
   if (sliceStart === -1 || sliceEnd === -1) {
     throw new Error(
       'STRICT-SCOPE GUARD: could not parse specStrictFiles array boundaries',
@@ -353,4 +433,21 @@ describe('SPEC-008 strict-scope CI guard (T374, Constitution Convention J)', () 
       });
     }
   });
+});
+
+describe('SPEC-014C eslint strict lint coverage', () => {
+  const eslintEntries = extractEslintEntries();
+
+  for (const file of SPEC_014C_EXPECTED_ESLINT_FILES) {
+    it(`eslint.config.mjs MUST cover SPEC-014C planned file "${file}"`, () => {
+      const matched = eslintEntries.filter((entry) =>
+        entryMatchesFile(entry, file),
+      );
+      expect(
+        matched.length,
+        `SPEC-014C lint coverage drift: planned file "${file}" does not match ` +
+          'any entry in eslint.config.mjs specStrictFiles.',
+      ).toBeGreaterThan(0);
+    });
+  }
 });

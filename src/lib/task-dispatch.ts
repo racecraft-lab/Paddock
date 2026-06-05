@@ -15,6 +15,7 @@ import { validateTaskOutput } from './output-schema-validator'
 import { evaluateRoutingRules, type RoutingRuleInput } from './routing-rule-evaluator'
 import { publishArtifact, sanitizeDispositionFailurePayload } from './task-artifacts'
 import { routeTriageDisposition } from './triage-routing'
+import { tryDispatchCodexAppServerTask } from './task-dispatch-codex-app-server'
 import { evaluateSpec007AegisSignals } from './aegis-review'
 import { createHash } from 'crypto'
 
@@ -540,6 +541,8 @@ interface DispatchableTask {
   ticket_prefix: string | null
   project_ticket_no: number | null
   project_id: number | null
+  github_repo?: string | null
+  github_issue_number?: number | null
   workflow_template_id?: number | null
   workflow_template_slug?: string | null
   tags?: string[]
@@ -2451,6 +2454,26 @@ export async function dispatchAssignedTasks(): Promise<{ ok: boolean; message: s
         { agent: task.agent_name, priority: task.priority },
         task.workspace_id
       )
+
+      const codexAppServerDispatch = await tryDispatchCodexAppServerTask({
+        db,
+        task,
+        claimAdmission,
+        activeClaimId,
+        activeClaimStageKey,
+        claimRunId,
+        correlationId,
+        now,
+        releaseClaim: releaseClaimOrRecordBoundary,
+      })
+      if (codexAppServerDispatch.handled) {
+        if (!codexAppServerDispatch.success) {
+          throw new Error(codexAppServerDispatch.error)
+        }
+        results.push({ id: task.id, success: true })
+        logger.info({ taskId: task.id, agent: task.agent_name }, 'Task handed off to Codex app-server adapter')
+        continue
+      }
 
       // Check for previous Aegis rejection feedback
       const rejectionRow = db.prepare(`

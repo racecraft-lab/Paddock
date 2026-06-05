@@ -1,0 +1,437 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://paddock.local/contracts/codex_app_server_run.v1.schema.json",
+  "title": "Codex App-Server Run Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "blocked",
+              "failed",
+              "timeout",
+              "abandoned",
+              "cleanup_failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "reasonCode"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "launched",
+              "completed",
+              "failed",
+              "timeout",
+              "abandoned",
+              "cleanup_failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "attemptId",
+          "claimId",
+          "manifestId",
+          "lifecycleId"
+        ]
+      }
+    }
+  ],
+  "required": [
+    "schemaVersion",
+    "adapterId",
+    "runId",
+    "workspaceId",
+    "taskId",
+    "stageKey",
+    "status",
+    "outcome",
+    "phase",
+    "usage",
+    "safety",
+    "timestamps"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "codex_app_server_run.v1"
+    },
+    "adapterId": {
+      "const": "codex-app-server"
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "workspaceId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "stageKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "attemptId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "claimId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "claimRunId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "manifestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "lifecycleId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "status": {
+      "enum": [
+        "blocked",
+        "launched",
+        "completed",
+        "failed",
+        "timeout",
+        "abandoned",
+        "cleanup_failed"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "pending",
+        "success",
+        "failed",
+        "blocked",
+        "abandoned"
+      ]
+    },
+    "phase": {
+      "enum": [
+        "eligibility",
+        "lifecycle_prepare",
+        "spawn",
+        "initialize",
+        "thread_start",
+        "turn_start",
+        "running",
+        "terminal",
+        "artifact_safety",
+        "cleanup",
+        "subprocess_termination",
+        "lifecycle_cleanup"
+      ]
+    },
+    "reasonCode": {
+      "enum": [
+        "feature_disabled",
+        "adapter_unassigned",
+        "not_github_linked",
+        "manifest_invalid",
+        "manifest_mismatch",
+        "missing_claim",
+        "stale_claim",
+        "missing_attempt",
+        "governance_denied",
+        "capability_unsupported",
+        "sandbox_lifecycle_missing",
+        "sandbox_lifecycle_not_paddock_owned",
+        "sandbox_lifecycle_not_ready",
+        "workspace_mismatch",
+        "repository_mismatch",
+        "authorization_denied",
+        "user_input_unsupported",
+        "approval_unsupported",
+        "tool_file_unsupported",
+        "timeout_budget_expired",
+        "binary_unavailable",
+        "malformed_protocol",
+        "unsafe_evidence_rejected",
+        "abandoned_by_claim_control",
+        "cleanup_failed"
+      ]
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "threadId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "threadSessionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "turnIds": {
+          "type": "array",
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "notificationsSeen": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000
+          }
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "availability"
+      ],
+      "properties": {
+        "availability": {
+          "enum": [
+            "available",
+            "partial",
+            "unavailable"
+          ]
+        },
+        "inputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outputTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "totalTokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "source": {
+          "enum": [
+            "thread_token_usage_updated",
+            "final_turn",
+            "none"
+          ]
+        }
+      }
+    },
+    "artifactRefs": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifactId",
+          "artifactType",
+          "schemaVersion",
+          "mimeType",
+          "byteSize",
+          "sha256",
+          "redactionStatus",
+          "securityScanStatus",
+          "producedAt"
+        ],
+        "properties": {
+          "artifactId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "artifactType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "schemaVersion": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "mimeType": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "byteSize": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 262144
+          },
+          "itemCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1024
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "redactionStatus": {
+            "enum": [
+              "not_needed",
+              "redacted",
+              "rejected"
+            ]
+          },
+          "securityScanStatus": {
+            "enum": [
+              "passed",
+              "failed",
+              "not_available"
+            ]
+          },
+          "producedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "safeSummary": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "safeLabel": {
+            "type": "string",
+            "maxLength": 160
+          }
+        }
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "safeDiagnosticCategory": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "relatedIds": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "rejectedFieldPaths": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          }
+        },
+        "safeHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "safeSize": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 262144
+        },
+        "runErrorLabel": {
+          "type": "string",
+          "maxLength": 160
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rawTranscriptRetained",
+        "rawProtocolRetained",
+        "providerPayloadRetained",
+        "toolPayloadRetained",
+        "promptBodyRetained",
+        "hostPathRetained",
+        "secretRetained"
+      ],
+      "properties": {
+        "rawTranscriptRetained": {
+          "const": false
+        },
+        "rawProtocolRetained": {
+          "const": false
+        },
+        "providerPayloadRetained": {
+          "const": false
+        },
+        "toolPayloadRetained": {
+          "const": false
+        },
+        "promptBodyRetained": {
+          "const": false
+        },
+        "hostPathRetained": {
+          "const": false
+        },
+        "secretRetained": {
+          "const": false
+        },
+        "redactionApplied": {
+          "type": "boolean"
+        }
+      }
+    },
+    "timestamps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "startedAt"
+      ],
+      "properties": {
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import { resolveFlag } from '@/lib/feature-flags'
+import { CODEX_APP_SERVER_RUNTIME_REGISTRY } from './codex-app-server/manifest'
 import { sanitizeFakeEvidenceList } from './evidence'
 import { FAKE_HARNESS_ADAPTER_REGISTRY } from './fixtures'
 import {
@@ -90,6 +91,12 @@ export interface RuntimeInventoryDbInput {
   }
   readonly filters: RuntimeInventoryFilters
   readonly generatedAt?: string
+}
+
+function requiredManifestIdsFor(
+  manifests: readonly HarnessAdapterManifest[],
+): readonly HarnessAdapterManifestId[] {
+  return manifests.map((manifest) => manifest.manifest_id)
 }
 
 function reasonRank(reason: HarnessAdapterReasonCode): number {
@@ -388,7 +395,11 @@ function summarize(entries: readonly RuntimeInventoryEntry[]): RuntimeInventoryE
 
 export function buildRuntimeInventory(input: RuntimeInventoryBuildInput): RuntimeInventoryEnvelope {
   const generatedAt = input.generatedAt ?? new Date().toISOString()
-  const registryValidation = validateHarnessAdapterRegistry(input.manifests ?? FAKE_HARNESS_ADAPTER_REGISTRY)
+  const registryValidation = input.manifests === undefined
+    ? validateHarnessAdapterRegistry(FAKE_HARNESS_ADAPTER_REGISTRY)
+    : validateHarnessAdapterRegistry(input.manifests, {
+        requiredManifestIds: requiredManifestIdsFor(input.manifests),
+      })
   const manifests = sortedValidFakeRegistry(input.manifests ?? FAKE_HARNESS_ADAPTER_REGISTRY)
     .filter((manifest) => input.filters?.manifestId === undefined || manifest.manifest_id === input.filters.manifestId)
   const entries = manifests
@@ -411,6 +422,15 @@ export function buildRuntimeInventory(input: RuntimeInventoryBuildInput): Runtim
       warnings: registryValidation.ok ? [] : ['fake registry validation failed; invalid manifests are blocked'],
     },
   }
+}
+
+export function buildCodexAppServerRuntimeInventory(
+  input: Omit<RuntimeInventoryBuildInput, 'manifests'>,
+): RuntimeInventoryEnvelope {
+  return buildRuntimeInventory({
+    ...input,
+    manifests: CODEX_APP_SERVER_RUNTIME_REGISTRY,
+  })
 }
 
 function tableExists(db: Database.Database, table: string): boolean {

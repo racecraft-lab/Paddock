@@ -6,6 +6,7 @@ import {
 } from '../fixtures'
 import {
   HARNESS_ADAPTER_CAPABILITY_KEYS,
+  FAKE_HARNESS_ADAPTER_MANIFEST_IDS,
   HARNESS_ADAPTER_MANIFEST_IDS,
   HARNESS_ADAPTER_REASON_CODES,
   SANITIZED_FAKE_EVIDENCE_KINDS,
@@ -18,7 +19,12 @@ import {
 
 describe('SPEC-014B harness adapter manifest validation', () => {
   it('exports the closed public vocabularies for manifests, capabilities, reasons, and evidence', () => {
-    expect(HARNESS_ADAPTER_MANIFEST_IDS).toEqual(['external_harness_fake', 'paddock_owned_sandbox_fake'])
+    expect(HARNESS_ADAPTER_MANIFEST_IDS).toEqual([
+      'codex-app-server',
+      'external_harness_fake',
+      'paddock_owned_sandbox_fake',
+    ])
+    expect(FAKE_HARNESS_ADAPTER_MANIFEST_IDS).toEqual(['external_harness_fake', 'paddock_owned_sandbox_fake'])
     expect(HARNESS_ADAPTER_CAPABILITY_KEYS).toContain('launch')
     expect(HARNESS_ADAPTER_CAPABILITY_KEYS).toContain('timeout_policy')
     expect(HARNESS_ADAPTER_REASON_CODES).toEqual([

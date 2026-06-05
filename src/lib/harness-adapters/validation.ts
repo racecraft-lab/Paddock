@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { checkSafePlainText, isSanitizedFakeEvidenceKind } from './evidence'
 import { FAKE_HARNESS_ADAPTER_REGISTRY } from './fixtures'
 import {
+  FAKE_HARNESS_ADAPTER_MANIFEST_IDS,
   HARNESS_ADAPTER_CAPABILITY_KEYS,
   HARNESS_ADAPTER_MANIFEST_IDS,
   HARNESS_ADAPTER_MANIFEST_SCHEMA_VERSION,
@@ -49,6 +50,10 @@ export function manifestDigest(value: unknown): string {
 
 function manifestIdFrom(value: unknown): string | null {
   return isPlainObject(value) && typeof value['manifest_id'] === 'string' ? value['manifest_id'] : null
+}
+
+function isFakeManifestId(value: string | null): value is (typeof FAKE_HARNESS_ADAPTER_MANIFEST_IDS)[number] {
+  return typeof value === 'string' && (FAKE_HARNESS_ADAPTER_MANIFEST_IDS as readonly string[]).includes(value)
 }
 
 function addIssue(
@@ -237,11 +242,25 @@ export function validateHarnessAdapterManifest(raw: unknown): HarnessManifestVal
   }
 
   const providerAccountConstraints = raw['provider_account_constraints']
+  const manifestId = manifestIdFrom(raw)
   if (!isPlainObject(providerAccountConstraints)) {
     addIssue(issues, issue('provider_account_constraints', 'provider_constraints_not_object'))
   } else {
-    if (providerAccountConstraints['synthetic_only'] !== true) {
+    const syntheticOnly = providerAccountConstraints['synthetic_only']
+    if (typeof syntheticOnly !== 'boolean') {
+      addIssue(issues, issue('provider_account_constraints.synthetic_only', 'invalid_synthetic_only'))
+    } else if (isFakeManifestId(manifestId) && !syntheticOnly) {
       addIssue(issues, issue('provider_account_constraints.synthetic_only', 'not_synthetic_only'))
+    } else if (manifestId === 'codex-app-server' && syntheticOnly) {
+      addIssue(issues, issue('provider_account_constraints.synthetic_only', 'real_adapter_marked_synthetic'))
+    }
+    const accountBinding = providerAccountConstraints['account_binding']
+    if (
+      accountBinding !== 'none'
+      && accountBinding !== 'declared_external'
+      && accountBinding !== 'codex_app_server'
+    ) {
+      addIssue(issues, issue('provider_account_constraints.account_binding', 'invalid_account_binding'))
     }
     validateSupport(providerAccountConstraints['support'], 'provider_account_constraints.support', issues)
   }
@@ -278,10 +297,12 @@ export function validateHarnessAdapterManifest(raw: unknown): HarnessManifestVal
 
 export function validateHarnessAdapterRegistry(
   rawRegistry: readonly unknown[] = FAKE_HARNESS_ADAPTER_REGISTRY,
+  options: { readonly requiredManifestIds?: readonly HarnessAdapterManifestId[] } = {},
 ): HarnessManifestValidationResult {
   const issues: HarnessManifestValidationIssue[] = []
   const seen = new Set<string>()
   const manifestIds = rawRegistry.map(manifestIdFrom).filter((value): value is string => value !== null)
+  const requiredManifestIds = options.requiredManifestIds ?? FAKE_HARNESS_ADAPTER_MANIFEST_IDS
 
   for (const manifest of rawRegistry) {
     const validation = validateHarnessAdapterManifest(manifest)
@@ -295,7 +316,7 @@ export function validateHarnessAdapterRegistry(
     }
   }
 
-  for (const id of HARNESS_ADAPTER_MANIFEST_IDS) {
+  for (const id of requiredManifestIds) {
     if (!manifestIds.includes(id)) addIssue(issues, issue(`registry.${id}`, 'required_manifest_missing'))
   }
 
