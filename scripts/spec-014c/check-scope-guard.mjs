@@ -302,6 +302,7 @@ function isSpec014cOwnedTestPath(file) {
   return (
     file === 'src/lib/__tests__/task-dispatch-codex-app-server.test.ts'
     || file === 'tests/integration/strict-scope-guard.test.ts'
+    || /^tests\/integration\/spec-014c-[^/]+\.test\.ts$/.test(file)
     || file === 'src/types/import-meta-glob.d.ts'
     || /^src\/lib\/harness-adapters\/__tests__\/(?:codex-app-server|runtime-inventory|validation)/.test(file)
   )

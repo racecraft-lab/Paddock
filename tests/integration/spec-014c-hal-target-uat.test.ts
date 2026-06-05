@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { runSpec014cHalTargetUat } from './hal-target-uat'
+import { runSpec014cHalTargetUat } from '../../scripts/spec-014c/hal-target-uat.ts'
 
 describe('SPEC-014C HAL target UAT', () => {
   it('executes the deployed Codex app-server adapter UAT matrix', async () => {

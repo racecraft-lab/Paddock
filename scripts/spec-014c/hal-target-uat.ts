@@ -36,7 +36,6 @@ type JsonObject = Record<string, unknown>
 
 const APP_ROOT = resolve(trimEnv('PADDOCK_APP_ROOT') ?? process.cwd())
 const DATA_DIR = resolve(trimEnv('PADDOCK_DATA_DIR') ?? resolve(APP_ROOT, '.data'))
-const DB_PATH = resolveDbPath()
 const BASE_URL = trimEnv('PADDOCK_BASE_URL') ?? 'http://127.0.0.1:3000'
 const STAGE_KEY = 'implementation'
 const RUN_ID = resolveRunId()
@@ -762,14 +761,15 @@ function cleanupCounts(db: Database.Database, fixture: UatFixture | null): Recor
 }
 
 export async function runSpec014cHalTargetUat(): Promise<void> {
+  const dbPath = resolveDbPath()
   log('uat_start', {
     marker: MARKER,
     app_root: APP_ROOT,
-    db_path: DB_PATH,
+    db_path: dbPath,
     base_url: BASE_URL,
     sandbox_root_id: 'workspace_configured_sandboxes',
   })
-  const db = new Database(DB_PATH)
+  const db = new Database(dbPath)
   let fixture: UatFixture | null = null
   try {
     fixture = db.transaction(() => seedFixtures(db))()
@@ -812,7 +812,7 @@ export async function runSpec014cHalTargetUat(): Promise<void> {
 async function main(): Promise<void> {
   if (process.argv.includes('--help')) {
     console.log([
-      'Usage: pnpm exec vitest run scripts/spec-014c/hal-target-uat.test.ts',
+      'Usage: pnpm exec vitest run tests/integration/spec-014c-hal-target-uat.test.ts',
       '',
       'Environment:',
       '  PADDOCK_DB_PATH or PADDOCK_DATA_DIR points at the target Paddock database.',
