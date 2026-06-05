@@ -458,9 +458,15 @@ Check no secret emission, no broad GitHub token use, no live GitHub write requir
 | data-integrity | Complete | 2 gaps remediated | Added explicit repeated apply/verify idempotency and existing-target outcome evidence across spec, plan, seed CLI contract, and quickstart |
 | state-management | Complete | 2 gaps remediated | Enumerated smoke-owned flag/pause proof and exactly-one synthetic smoke enablement evidence |
 | api-contracts | Complete | 4 API-domain gaps remediated; 2 security-routed concerns deferred to security checklist | Added seed status/code matrix, redacted error/residue shapes, scoped API/dashboard response paths, and invalid/unauthorized workspace evidence codes |
-| ux | Pending | Pending | Pending |
-| error-handling | Pending | Pending | Pending |
-| security | Pending | Pending | Pending |
+| ux | Complete | 0 gaps | Dashboard/operator evidence is scoped to existing surfaces and no broad dashboard redesign is introduced |
+| error-handling | Complete | 0 gaps | Failure coverage is explicit for residue, invalid config, existing-target refusal, feature flag off, unauthorized API access, optional GitHub skips, and HAL Node ABI notes |
+| security | Complete | 0 gaps | Rechecked redaction/access-control concerns from API contracts; secret emission, GitHub token boundaries, runtime identity takeover, and SPEC-014C safety are covered |
+
+### Gate Result
+
+| Gate | Result | Evidence |
+|------|--------|----------|
+| G4 | Pass | All six focused checklist domains exist; `count-markers.sh all specs/010b-product-line-b-smoke` returned 0 gaps, 0 clarifications, 0 critical, and 0 high markers |
 
 ---
 
