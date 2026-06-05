@@ -44,7 +44,7 @@ The design concept is the setup-time source of truth:
 | Phase | Command | Status | Notes |
 |-------|---------|--------|-------|
 | Setup | `$speckit-scaffold-spec` | Complete | Branch, design concept, reviewability preset, workflow, and roadmap setup status created |
-| Specify | `$speckit-specify` | Pending | Generate `specs/010b-product-line-b-smoke/spec.md` from roadmap plus design concept |
+| Specify | `$speckit-specify` | Complete | Generated `specs/010b-product-line-b-smoke/spec.md` with 5 user stories, 15 FRs, 11 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
 | Clarify | `$speckit-clarify` | Pending | Resolve config, enablement, smoke evidence, API/dashboard, and parallel-safety details |
 | Plan | `$speckit-plan` | Pending | Produce architecture using SPEC-010A seeder and existing Paddock stack |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains listed below |
@@ -256,14 +256,21 @@ Fill in after running:
 
 | Metric | Value |
 |--------|-------|
-| Functional Requirements | Pending |
-| User Stories | Pending |
-| Acceptance Criteria | Pending |
-| Clarification markers | Pending |
+| Functional Requirements | 15 |
+| User Stories | 5 |
+| Acceptance Criteria | 11 acceptance scenarios; 7 measurable success criteria |
+| Clarification markers | 0 |
 
 ### Files Generated
 
-- [ ] `specs/010b-product-line-b-smoke/spec.md`
+- [x] `specs/010b-product-line-b-smoke/spec.md`
+- [x] `specs/010b-product-line-b-smoke/checklists/requirements.md`
+
+### Gate Result
+
+| Gate | Result | Evidence |
+|------|--------|----------|
+| G1 | Pass | `validate-gate.sh G1 specs/010b-product-line-b-smoke` returned `pass: true`; marker count is 0 |
 
 ---
 
