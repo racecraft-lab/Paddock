@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Eight focused domain checklists passed G4 with zero unresolved `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 49 TDD-first tasks; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Remediated two low artifact consistency issues; G6 passed with no unresolved CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | Complete for Phase 7 | T001-T049 are complete; HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` passed on branch target `43989ac856696abb2ea764fed409da268b87c9a8`; PR #79 remains open pending review/merge |
+| Implement | `$speckit-implement` | Complete through closeout hygiene | T001-T049 plus post-implementation verify, verify-tasks, review, cleanup, retrospective, G7, doctor, reviewability, local validation, and HAL UAT are complete; PR #79 remains open pending review/merge |
 
 ## Phase Gates
 
@@ -103,7 +103,7 @@ Use these sources only for launch/resume vocabulary, workspace cwd/sandbox postu
 | Name | First Real Harness Adapter Pilot |
 | Branch short name | `first-real-harness-adapter` |
 | Feature directory | `specs/014c-first-real-harness-adapter` |
-| Status | In Progress - Phase 7 complete on PR branch; PR #79 review/merge pending |
+| Status | In Progress - closeout hygiene complete on PR branch; PR #79 review/merge pending |
 | Priority | P1 |
 | Dependencies | SPEC-013D, SPEC-014B |
 | Enables | SPEC-014D, SPEC-014E, SPEC-014F, later adapter specs |
@@ -621,7 +621,30 @@ No split trigger has fired: the implementation remains one Codex app-server adap
 
 SPEC-014C Phase 7 is complete on the PR branch. The branch was deployed to HAL at commit `43989ac856696abb2ea764fed409da268b87c9a8`, built, restarted, and verified through flag-scoped HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` with a real Codex app-server launch and zero-residue cleanup proof.
 
-PR #79 is open for review: https://github.com/racecraft-lab/Paddock/pull/79. The remaining completion gate is normal PR review, merge, and post-merge promotion policy; no Phase 7 task remains open.
+PR #79 is open for review: https://github.com/racecraft-lab/Paddock/pull/79. The remaining completion gate is normal PR review, merge, and post-merge promotion policy; no Phase 7 or post-implementation hygiene task remains open.
+
+## Post-Implementation Hygiene
+
+Generated: 2026-06-05T18:39:37Z
+
+| Gate | Status | Evidence |
+|---|---|---|
+| Doctor extension check | Pass | `.specify/extensions/doctor/scripts/bash/doctor.sh` returned all checks passed |
+| Verify implementation | Pass | `specs/014c-first-real-harness-adapter/verify-report.md` records zero verification findings |
+| Verify tasks phantom check | Pass | `specs/014c-first-real-harness-adapter/verify-tasks-report.md` records 49 VERIFIED / 0 flagged items |
+| Code review | Pass | `specs/014c-first-real-harness-adapter/review-report.md` records no critical or important issues |
+| Cleanup | Pass | `specs/014c-first-real-harness-adapter/cleanup-report.md` records no remaining cleanup action for this PR branch |
+| Retrospective | Complete | `specs/014c-first-real-harness-adapter/retrospective.md` records 100% completion, 97% adherence, and no critical/significant findings |
+| Marker count | Pass | `count-markers.sh all specs/014c-first-real-harness-adapter` returned 0 gaps, clarifications, critical, high, medium, and low markers |
+| G7 | Pass | `validate-gate.sh G7 specs/014c-first-real-harness-adapter` returned all 49 tasks complete |
+| Reviewability diff gate | Pass with transition exception | `reviewability-gate.sh diff origin/main...HEAD` passed with the recorded broad-branch transition exception |
+| Confidence gate | Advisory soft skip | `confidence-gate.sh docs/ai/specs/SPEC-014C-workflow.md --threshold 0.90 --mode advisory` returned NO_DATA soft skip |
+| Scope guard | Pass | `node scripts/spec-014c/check-scope-guard.mjs` returned OK for 54 changed files and 12 scanned code/config files |
+| Focused SPEC-014C cluster | Pass | `direnv exec . pnpm test ...` returned 8 passed files / 89 passed tests |
+| Typecheck | Pass | `direnv exec . pnpm typecheck` completed with no diagnostics |
+| Lint | Pass | `direnv exec . pnpm lint` completed with no diagnostics |
+| Build | Pass | `direnv exec . pnpm build` completed successfully outside the sandbox after the sandboxed Turbopack process/port restriction |
+| PR checks | Pass | PR #79 checks at closeout start: CodeQL, quality-gate, and visual approval checks passed |
 
 ## Self-Review
 

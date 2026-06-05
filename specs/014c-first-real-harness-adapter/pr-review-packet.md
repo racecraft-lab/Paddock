@@ -280,3 +280,28 @@ Review check: any SPEC-014C implementation that needs operator prompts, approval
 - HAL UAT passed for marker `SPEC-014C-HAL-UAT-20260605121830` on branch target `43989ac856696abb2ea764fed409da268b87c9a8`.
 - T042-T045 are complete: deployed commit/service evidence, one real Codex app-server target launch, HAL failure matrix, workspace-scoped flag proof, and zero-residue cleanup proof are captured.
 - Local implementation, persistence, fail-closed fixtures, no-mutation guards, G7 validation, workflow status, roadmap status, autopilot status, and PR description are reconciled.
+
+## Post-Implementation Hygiene
+
+Generated: 2026-06-05T18:39:37Z
+
+| Gate | Result | Evidence |
+|---|---|---|
+| Verify implementation | PASS | `specs/014c-first-real-harness-adapter/verify-report.md` |
+| Verify tasks phantom check | PASS | `specs/014c-first-real-harness-adapter/verify-tasks-report.md` records 49 VERIFIED and no flagged items |
+| Code review | PASS | `specs/014c-first-real-harness-adapter/review-report.md` records no critical or important issues |
+| Cleanup | PASS | `specs/014c-first-real-harness-adapter/cleanup-report.md` records no remaining PR-branch cleanup action |
+| Retrospective | COMPLETE | `specs/014c-first-real-harness-adapter/retrospective.md` |
+| Marker count | PASS | `count-markers.sh all specs/014c-first-real-harness-adapter` returned 0 unresolved markers |
+| G7 | PASS | `validate-gate.sh G7 specs/014c-first-real-harness-adapter` returned all 49 tasks complete |
+| Doctor | PASS | `.specify/extensions/doctor/scripts/bash/doctor.sh` returned all checks passed |
+| Reviewability | PASS WITH EXCEPTION | `reviewability-gate.sh diff origin/main...HEAD` passed through the recorded transition exception |
+| Confidence | SOFT SKIP | Advisory NO_DATA because no synthesizer confidence emit exists in the workflow |
+| Scope guard | PASS | `node scripts/spec-014c/check-scope-guard.mjs` returned OK for 54 changed files and 12 code/config files |
+| Focused validation | PASS | `direnv exec . pnpm test ...` returned 8 files / 89 tests passed |
+| Typecheck | PASS | `direnv exec . pnpm typecheck` completed with no diagnostics |
+| Lint | PASS | `direnv exec . pnpm lint` completed with no diagnostics |
+| Build | PASS | `direnv exec . pnpm build` completed successfully outside the sandbox |
+| PR checks | PASS | PR #79 CodeQL, quality-gate, and visual approval checks passed at closeout start |
+
+Closeout note: plain shell `pnpm` currently selects Node 26 on this machine and is not the project runtime for this linked worktree. Closeout verification used the documented `direnv exec .` path, which selects Node 22.22.2 and matches the rebuilt `better-sqlite3` native addon.
