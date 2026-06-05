@@ -45,7 +45,7 @@ The design concept is the setup-time source of truth:
 |-------|---------|--------|-------|
 | Setup | `$speckit-scaffold-spec` | Complete | Branch, design concept, reviewability preset, workflow, and roadmap setup status created |
 | Specify | `$speckit-specify` | Complete | Generated `specs/010b-product-line-b-smoke/spec.md` with 5 user stories, 15 FRs, 11 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
-| Clarify | `$speckit-clarify` | Pending | Resolve config, enablement, smoke evidence, API/dashboard, and parallel-safety details |
+| Clarify | `$speckit-clarify` | Complete | Resolved config, lifecycle, synthetic smoke, evidence, API/dashboard isolation, runtime-inventory boundary, and SPEC-014C parallel-safety details; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Pending | Produce architecture using SPEC-010A seeder and existing Paddock stack |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains listed below |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict file ownership |
@@ -332,10 +332,27 @@ Expected outcomes:
 
 | Session | Focus Area | Questions | Key Outcomes |
 |---------|------------|-----------|--------------|
-| 1 | Config and lifecycle | Pending | Pending |
-| 2 | Synthetic smoke and evidence | Pending | Pending |
-| 3 | Isolation assertions | Pending | Pending |
-| 4 | Agent substrate and parallel safety | Pending | Pending |
+| 1 | Config and lifecycle | 5 | Accepted canonical `product-line-b.yaml`, no Product Line B repo sync owner, `workspaces.disabled_at` plus workspace flags for lifecycle, no new seed CLI modes, and clean disablement evidence checklist |
+| 2 | Synthetic smoke and evidence | 5 | Accepted `spec-010b.synthetic_issue.v1`, required pilot subset of candidate eligibility/root-task/auto-route-hold/side-effect absence, `spec-010b.smoke_evidence.v1`, cleanup proof retaining disabled seed state, and optional manual/redacted/issue-only HAL live GitHub evidence |
+| 3 | Isolation assertions | 5 | Accepted Product Line A-scoped hash surface, existing scoped API assertions, active-only normal switcher with temporary smoke-enabled dashboard checks, scoped dashboard metric assertions, and read-only facility/global agent visibility with explicit `plb-platform-*` Product Line B assignments |
+| 4 | Agent substrate and parallel safety | 5 | Accepted logical `plb-platform-*` agents separate from harness manifest IDs, target-config-aware retained inventory preflight, no required runtime-inventory `eligible` state without existing read-only proof, hard stop list for SPEC-014C-owned files, and PR/evidence parallel-safety section |
+
+### Consensus Resolution Log
+
+| Phase | Round | Item | Routed Categories | Outcome | Analysts Used |
+|-------|-------|------|-------------------|---------|---------------|
+| Clarify Session 1 | 1 | Q3 disabled-by-default/final-disabled representation | codebase, spec | Use existing `workspaces.disabled_at` plus workspace `feature_flags`; no new lifecycle table; disablement proof must also assert no active smoke/sync/dispatch eligibility | codebase-analyst, spec-context-analyst |
+| Clarify Session 1 | 1 | Q4 seed modes and enablement boundary | codebase, spec | Keep `seed:product-line` limited to `preflight`, `apply`, and `verify`; enable/disable remain smoke lifecycle actions with structured evidence | codebase-analyst, spec-context-analyst |
+| Clarify Session 2 | 1 | Q5 optional HAL live GitHub issue boundary | security | Optional manual HAL UAT only; explicit operator approval; existing live-mutation opt-in path; issue-only create/reuse; redacted metadata; missing credentials/permissions skip optional evidence without failing required synthetic smoke | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 | 1 | Q3 disabled Product Line B switcher visibility | codebase, spec | Keep normal dashboard switcher active-only; inspect disabled Product Line B through seed verify/API/SQL/evidence and temporary smoke-enabled dashboard scope; absence from normal switcher supports disablement but does not replace eligibility proof | codebase-analyst, spec-context-analyst |
+| Clarify Session 4 | 1 | Q1 logical Product Line B agents versus harness manifest IDs | codebase, spec | Seed `plb-platform-*` logical agents; treat `paddock_owned_sandbox_fake` and other harness manifest IDs only as selected-substrate/read-only runtime-inventory evidence, not Product Line B identity or ownership | codebase-analyst, spec-context-analyst |
+| Clarify Session 4 | 1 | Q3 runtime-inventory `eligible` state requirement | codebase, spec | Do not require runtime-inventory `eligible` for SPEC-010B closeout; collect runtime-inventory only as existing read-only support evidence and stop before adapter/runtime-inventory/SPEC-014C file ownership overlap | codebase-analyst, spec-context-analyst |
+
+### Gate Result
+
+| Gate | Result | Evidence |
+|------|--------|----------|
+| G2 | Pass | `validate-gate.sh G2 specs/010b-product-line-b-smoke` returned `pass: true`; marker count is 0 |
 
 ---
 
