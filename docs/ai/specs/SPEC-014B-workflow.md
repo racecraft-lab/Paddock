@@ -606,5 +606,5 @@ Next operator step:
 ```text
 $speckit-setup SPEC-014C
 
-# After reviewing the generated workflow, run autopilot on that generated file.
-```
+# After reviewing the generated workflow, run autopilot on it:
+$speckit-autopilot docs/ai/specs/SPEC-014C-workflow.md
