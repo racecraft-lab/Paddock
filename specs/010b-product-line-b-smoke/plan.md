@@ -21,7 +21,7 @@ The plan avoids migrations and new dependencies because `workspaces.disabled_at`
 **Constraints**: No required live GitHub write, no scheduler/claim/retry/runner/sandbox/adapter/auto-merge behavior, no SPEC-014C-owned file edits, Product Line B disabled before and after smoke, Product Line A hashes unchanged except explicitly read-only inspection evidence  
 **Scale/Scope**: One disabled Product Line B config, one synthetic issue-shaped smoke item, one retained evidence packet, Product Line A before/after isolation proof  
 **Reviewability Budget**: Primary surface seed/config; secondary surfaces docs/process and narrow smoke evidence; projected 450-700 reviewable LOC; 4-6 production files; 8-12 total files; within budget  
-**Strict Scope**: Add new TS/TSX implementation/test files to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `scripts/spec-010b/product-line-b-smoke.ts`, `src/lib/__tests__/product-line-b-seed.test.ts`, `src/lib/__tests__/product-line-b-smoke.test.ts`, and `tests/product-line-b-dashboard-scope.spec.ts` only if dashboard assertions change.
+**Strict Scope**: After a pre-edit ownership check proves the active SPEC-014C worktree is not currently changing the same shared config files, add new TS/TSX implementation/test files to `tsconfig.spec-strict.json` and `eslint.config.mjs`: `scripts/spec-010b/product-line-b-smoke.ts`, `src/lib/__tests__/product-line-b-seed.test.ts`, `src/lib/__tests__/product-line-b-smoke.test.ts`, and `tests/product-line-b-dashboard-scope.spec.ts` only if dashboard assertions change. If SPEC-014C has dirty or branch-diff changes to those shared files, stop and resolve file ownership before editing.
 
 ## Constitution Check
 
@@ -119,6 +119,7 @@ tests/
 5. Add a SPEC-010B smoke script that enables Product Line B only for the smoke window, writes one local synthetic issue-shaped fixture/evidence record, verifies no live GitHub mutation is required, disables Product Line B, and emits cleanup/isolation proof.
 6. Use existing scoped read routes for evidence: `/api/workspaces/:id`, `/api/projects`, `/api/tasks`, `/api/agents`, `/api/github/sync`, and `/api/status?action=dashboard` with explicit Product Line A/B workspace scope.
 7. Record optional runtime-inventory evidence only if current read-only APIs already expose it. Do not edit `src/lib/harness-adapters/**`, `src/app/api/agents/runtime-inventory/**`, `src/lib/task-dispatch.ts`, `src/lib/task-dispatch-codex-app-server.ts`, `scripts/spec-014c/**`, or SPEC-014C artifacts.
+8. Before editing shared coordination files (`tsconfig.spec-strict.json`, `eslint.config.mjs`, `docs/ai/rc-factory-technical-roadmap.md`, or `docs/ai/specs/autopilot-state.json`), compare active worktree dirty/diff paths and stop if SPEC-014C currently owns the same file.
 
 ## State Management Contract
 

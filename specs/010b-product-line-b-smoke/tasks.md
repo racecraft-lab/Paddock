@@ -17,6 +17,7 @@
 - Do not edit SPEC-014C artifacts.
 - Runtime-inventory `eligible` is optional read-only support evidence only and is not a closeout requirement.
 - Product Line B logical agents are `plb-platform-*`; harness manifest IDs are selected-substrate evidence only and are not Product Line B identity.
+- Before any SPEC-010B edit to shared coordination files that active SPEC-014C may also need (`tsconfig.spec-strict.json`, `eslint.config.mjs`, `docs/ai/rc-factory-technical-roadmap.md`, `docs/ai/specs/autopilot-state.json`), run a pre-edit ownership check with `git worktree list --porcelain` plus the active SPEC-014C dirty/diff file list. If SPEC-014C has changes to the same file, stop and resolve ownership before editing; do not merge, overwrite, or normalize SPEC-014C changes from this spec.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -45,8 +46,8 @@
 
 - [ ] T007 [P] Create reviewed disabled Product Line B seed config with slug `product-line-b`, display name `Product Line B`, agent prefix `plb-platform`, `racecraft-lab/Paddock` synthetic repo metadata, sync ownership disabled, smoke-owned flags explicit, and paused/forbidden flags explicit in `docs/ai/product-lines/product-line-b.yaml`
 - [ ] T008 [P] Create the local synthetic issue fixture with schema `spec-010b.synthetic_issue.v1`, run-scoped positive issue number, required pilot labels, Product Line B metadata, and no credential fields in `specs/010b-product-line-b-smoke/fixtures/synthetic-issue.json`
-- [ ] T009 [P] Add SPEC-010B TypeScript strict-scope coverage for the smoke script and tests in `tsconfig.spec-strict.json`
-- [ ] T010 [P] Add SPEC-010B lint coverage for the smoke script and tests in `eslint.config.mjs`
+- [ ] T009 [P] After the pre-edit SPEC-014C ownership check passes for `tsconfig.spec-strict.json`, add SPEC-010B TypeScript strict-scope coverage for the smoke script and tests in `tsconfig.spec-strict.json`
+- [ ] T010 [P] After the pre-edit SPEC-014C ownership check passes for `eslint.config.mjs`, add SPEC-010B lint coverage for the smoke script and tests in `eslint.config.mjs`
 - [ ] T011 Record the reviewability checkpoint, owned file list, and split-stop condition before implementation in `docs/ai/specs/SPEC-010B-workflow.md`
 - [ ] T012 Record the SPEC-014C hard stop list and runtime-inventory read-only/supporting boundary in `docs/ai/specs/SPEC-010B-workflow.md`
 - [ ] T013 Create a typed SPEC-010B smoke lifecycle script skeleton with `enable`, `synthetic-issue`, `disable`, and `cleanup-proof` phase arguments in `scripts/spec-010b/product-line-b-smoke.ts`
@@ -155,7 +156,7 @@
 - [ ] T042 Run disposable DB `seed:product-line` preflight, apply, verify, repeated apply refusal, `--allow-existing` apply, and repeated verify commands for `docs/ai/product-lines/product-line-b.yaml`; record no-mutation, idempotency, disabled state, and Product Line A hash evidence in `docs/ai/specs/SPEC-010B-workflow.md`
 - [ ] T043 Run disposable DB smoke lifecycle phases from `scripts/spec-010b/product-line-b-smoke.ts`, confirm Product Line B is enabled only during smoke and disabled afterward, and record cleanup counts in `docs/qa/pilot-smoke-checklist.md`
 - [ ] T044 Run `pnpm typecheck`, `pnpm lint`, and `pnpm build`, plus `pnpm test:e2e -- tests/product-line-b-dashboard-scope.spec.ts` only if dashboard behavior or Playwright assertions changed, and record results in `docs/ai/specs/SPEC-010B-workflow.md`
-- [ ] T045 Run the file-ownership guard for `src/lib/harness-adapters/**`, `src/app/api/agents/runtime-inventory/**`, `src/lib/task-dispatch.ts`, `src/lib/task-dispatch-codex-app-server.ts`, `scripts/spec-014c/**`, and SPEC-014C artifacts; record a clean result in `docs/ai/specs/SPEC-010B-workflow.md`
+- [ ] T045 Re-run the file-ownership guard for `src/lib/harness-adapters/**`, `src/app/api/agents/runtime-inventory/**`, `src/lib/task-dispatch.ts`, `src/lib/task-dispatch-codex-app-server.ts`, `scripts/spec-014c/**`, SPEC-014C artifacts, and shared coordination files touched by SPEC-010B; record the active SPEC-014C worktree/diff check and clean result in `docs/ai/specs/SPEC-010B-workflow.md`
 - [ ] T046 Run HAL UAT only after local verification and explicit approval, using `/usr/bin/node` service-compatible commands, then record `paddock.service`, `openclaw-gateway.service`, Product Line A isolation hashes, Product Line B final disabled state, optional live GitHub mutation status, and cleanup counts in `docs/qa/pilot-smoke-checklist.md`
 - [ ] T047 Prepare the PR review packet with what changed, why, non-goals, review order, scope budget, traceability, verification evidence, known gaps, rollback/flag notes, Product Line A isolation proof, Product Line B disablement proof, optional live GitHub boundary, and SPEC-014C files avoided in `docs/ai/specs/SPEC-010B-workflow.md`
 
@@ -183,7 +184,7 @@
 
 ### Parallel Opportunities
 
-- T007-T010 can run in parallel after RED tests because they touch distinct files.
+- T007-T010 can run in parallel after RED tests only after the pre-edit SPEC-014C ownership check passes for shared strict/lint files.
 - T014 and T015 can run in parallel during US1 because they touch distinct seed schema/type files.
 - T030-T032 can be developed in parallel with T024-T029 after the smoke script skeleton exists, but both groups must reconcile in `scripts/spec-010b/product-line-b-smoke.ts`.
 - Documentation tasks T037-T040 can run in parallel after the evidence fields are stable because they touch distinct docs/checklist files.
@@ -193,8 +194,8 @@
 ```bash
 Task: "Create Product Line B config in docs/ai/product-lines/product-line-b.yaml"
 Task: "Create synthetic issue fixture in specs/010b-product-line-b-smoke/fixtures/synthetic-issue.json"
-Task: "Add strict-scope coverage in tsconfig.spec-strict.json"
-Task: "Add lint coverage in eslint.config.mjs"
+Task: "After the SPEC-014C ownership check passes, add strict-scope coverage in tsconfig.spec-strict.json"
+Task: "After the SPEC-014C ownership check passes, add lint coverage in eslint.config.mjs"
 ```
 
 ## Implementation Strategy
@@ -234,6 +235,13 @@ Task: "Add lint coverage in eslint.config.mjs"
 - `docs/ai/specs/SPEC-010B-workflow.md`
 - `tsconfig.spec-strict.json`
 - `eslint.config.mjs`
+
+### Shared Coordination Files Requiring Pre-Edit Ownership Check
+
+- `tsconfig.spec-strict.json`
+- `eslint.config.mjs`
+- `docs/ai/rc-factory-technical-roadmap.md`
+- `docs/ai/specs/autopilot-state.json`
 
 ### Forbidden For SPEC-010B
 

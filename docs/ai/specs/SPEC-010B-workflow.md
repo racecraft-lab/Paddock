@@ -49,7 +49,7 @@ The design concept is the setup-time source of truth:
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contracts, quickstart, and Codex agent context; G3 ready |
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, api-contracts, ux, error-handling, and security domains; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated 47 TDD-first tasks with strict file ownership and SPEC-014C guardrails; G5 passed |
-| Analyze | `$speckit-analyze` | Pending | Verify artifacts do not drift from design concept or parallel-safety boundaries |
+| Analyze | `$speckit-analyze` | Complete | One HIGH shared-file ownership finding remediated; final marker count is 0 and G6 passes |
 | Implement | `$speckit-implement` | Pending | Execute tasks only after analysis gate passes |
 
 **Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
@@ -143,6 +143,8 @@ Avoid or stop before editing:
 - Runtime-inventory eligibility rules unless the change is a read-only Product Line B assignment assertion and does not affect SPEC-014C behavior
 
 If the active SPEC-014C branch touches a file SPEC-010B needs, stop and resolve file ownership before editing.
+
+Shared coordination files are not SPEC-014C artifacts, but they are active-worktree collision surfaces. Before SPEC-010B edits `tsconfig.spec-strict.json`, `eslint.config.mjs`, `docs/ai/rc-factory-technical-roadmap.md`, or `docs/ai/specs/autopilot-state.json`, compare `git worktree list --porcelain` with the active SPEC-014C dirty/diff file list. If SPEC-014C has changes to the same file, stop and resolve ownership first; SPEC-010B must not merge, overwrite, or normalize SPEC-014C changes.
 
 ---
 
@@ -488,6 +490,7 @@ Task generation requirements:
 - Start with RED tests for Product Line B config validation, no-mutation preflight, disabled lifecycle, synthetic smoke, and Product Line A isolation.
 - Keep task ownership narrow around product-line seed/config, evidence, smoke checklist, and any necessary API/dashboard read assertions.
 - Include explicit guardrail tasks proving no live GitHub write requirement, no FocusEngine takeover, and no SPEC-014C adapter file changes.
+- Include a pre-edit ownership guard before touching shared strict/lint or status-pointer files that may also be dirty in the active SPEC-014C worktree.
 - Include HAL/UAT quickstart tasks that use service-compatible Node and record cleanup counts.
 - Keep Product Line B enabled only inside the smoke path and disabled in final state.
 - Do not generate tasks for scheduler claim authority, retry UI, runner state, sandbox lifecycle, harness adapter implementation, or auto-merge.
@@ -557,10 +560,26 @@ Block implementation on CRITICAL/HIGH findings. Remediate MEDIUM findings before
 
 | Severity | Count | Status |
 |----------|-------|--------|
-| CRITICAL | Pending | Pending |
-| HIGH | Pending | Pending |
-| MEDIUM | Pending | Pending |
-| LOW | Pending | Pending |
+| CRITICAL | 0 | Pass |
+| HIGH | 0 | Pass after remediating shared-file ownership guard |
+| MEDIUM | 0 | Pass |
+| LOW | 0 | Pass |
+
+### Analyze Remediation Summary
+
+- Remediated one HIGH finding: SPEC-010B tasks planned early edits to `tsconfig.spec-strict.json` and `eslint.config.mjs` while active SPEC-014C had dirty changes to those same shared coordination files. The plan, tasks, and workflow now require a pre-edit ownership check for shared strict/lint and status-pointer files, and implementation must stop if active SPEC-014C owns the same file.
+
+### Gate Result
+
+| Gate | Result | Evidence |
+|------|--------|----------|
+| G6 | Pass | Final `count-markers.sh findings specs/010b-product-line-b-smoke` returned 0 CRITICAL, 0 HIGH, 0 MEDIUM, and 0 LOW markers after artifact remediation; artifacts agree with Design Concept Q1-Q5 and preserve the SPEC-014C overlap stop condition |
+
+### Confidence Gate Result
+
+| Mode | Result | Evidence |
+|------|--------|----------|
+| advisory | Soft skip | `confidence-gate.sh docs/ai/specs/SPEC-010B-workflow.md --mode advisory --threshold 0.90` found no confidence emit and returned `recommended_action: soft_skip`; implementation may proceed under advisory mode |
 
 ---
 
@@ -602,7 +621,7 @@ Minimum expected verification:
 ### Closeout Requirements
 
 - Update `docs/ai/specs/SPEC-010B-workflow.md` with final phase results and evidence.
-- Update `docs/ai/rc-factory-technical-roadmap.md` with implementation/UAT status.
+- Update `docs/ai/rc-factory-technical-roadmap.md` with implementation/UAT status only after the shared-file ownership check confirms SPEC-010B may edit it without colliding with active SPEC-014C changes.
 - Update `docs/qa/pilot-smoke-checklist.md` if the smoke checklist path changes.
-- Update `docs/ai/specs/autopilot-state.json` if autopilot owns the active-state pointer during implementation.
+- Update `docs/ai/specs/autopilot-state.json` only if autopilot owns the active-state pointer during implementation and the shared-file ownership check confirms SPEC-010B may edit it without colliding with active SPEC-014C changes.
 - Push the branch and prepare the PR with Product Line A isolation evidence, Product Line B disablement evidence, and parallel-safety notes for SPEC-014C.
