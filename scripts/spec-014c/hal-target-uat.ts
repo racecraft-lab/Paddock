@@ -328,6 +328,10 @@ function seedScenario(db: Database.Database, workspaceId: number, scenario: stri
     metadata: { marker: MARKER, scenario },
   })
   const claim = insertClaim(db, workspaceId, taskId, Number(attempt.id), scenario)
+  const lifecycleMetadata = {
+    reason_code: 'spec_014c_hal_uat',
+    detail: `${MARKER} ${scenario}`,
+  }
   const created = createSandboxLifecycle(db, {
     workspaceId,
     productLineSlug: `spec-014c-${RUN_ID}`,
@@ -339,7 +343,7 @@ function seedScenario(db: Database.Database, workspaceId: number, scenario: stri
     owner: 'paddock',
     sandboxRoot: UAT_SANDBOX_ROOT,
     now: NOW_ISO,
-    metadata: { marker: MARKER, scenario },
+    metadata: lifecycleMetadata,
   })
   assert(created.ok && created.lifecycle, 'sandbox lifecycle create failed', created)
   const root = resolveSandboxRoot({
@@ -349,7 +353,7 @@ function seedScenario(db: Database.Database, workspaceId: number, scenario: stri
   mkdirSync(root.absolutePath, { recursive: true })
   const prepared = prepareSandboxLifecycle(db, Number(created.lifecycle.id), {
     now: NOW_ISO,
-    metadata: { marker: MARKER, scenario },
+    metadata: lifecycleMetadata,
   })
   assert(prepared.ok && prepared.lifecycle, 'sandbox lifecycle prepare failed', prepared)
   return {
