@@ -1,9 +1,10 @@
 # Implementation Plan: [FEATURE]
 
 **Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
+
 **Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
 
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Note**: This template is filled in by the `/speckit-plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
 
 ## Summary
 
@@ -17,16 +18,23 @@
   the iteration process.
 -->
 
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
+**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]
+
+**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]
+
+**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
+
+**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]
+
 **Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
+
+**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]
+
+**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]
+
+**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]
+
 **Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
-**Strict Scope**: [List every new spec-owned TS/TSX file to add to `tsconfig.spec-strict.json` and `eslint.config.mjs`, or N/A for docs-only/migration-only/no-new-module specs]
 
 ## Constitution Check
 
@@ -34,47 +42,18 @@
 
 [Gates determined based on constitution file]
 
-For user-facing UI changes, the generated plan MUST also define:
-
-- Real Playwright e2e journeys against the running app; mocked `page.setContent()`
-  fixtures do not satisfy acceptance for new UI behavior.
-- Docker-backed execution using the existing repository Docker build and
-  deterministic seed data when Docker is available.
-- Screenshot artifacts for human-in-the-loop review covering important
-  before, during, after, and responsive states.
-- If Playwright or Storybook screenshots are uploaded to Argos, CI metadata
-  gates that verify Argos screenshot metadata includes test/story identity,
-  source location, and spec-scoped tags; non-visual e2e runs must not upload
-  empty Argos builds.
-- A defect-remediation gate: failing e2e output and screenshots are reviewed
-  before PR update, and known UI journey bugs are fixed before the PR is
-  opened, updated, or marked ready.
-
-For all specs that touch SpecKit artifacts, evidence retention, or UI evidence
-policy, the generated plan MUST also define:
-
-- Archive Sweep startup behavior before Phase 0, including previously merged
-  spec discovery and current-target exclusion.
-- The branch/worktree safety decision: apply cleanup only from a safe reviewed
-  context; otherwise dry-run or stop.
-- The provenance fields needed before cleanup: source paths, PR URL, merge
-  commit or tree reference, CI/Argos links when relevant, cleanup mode,
-  safe-to-apply state, and `git show` recovery commands.
-- The screenshot/evidence guard commands and whether committed generated
-  screenshots are absent or covered by a manifest-backed exception.
-
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
 specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+├── plan.md              # This file (/speckit-plan command output)
+├── research.md          # Phase 0 output (/speckit-plan command)
+├── data-model.md        # Phase 1 output (/speckit-plan command)
+├── quickstart.md        # Phase 1 output (/speckit-plan command)
+├── contracts/           # Phase 1 output (/speckit-plan command)
+└── tasks.md             # Phase 2 output (/speckit-tasks command - NOT created by /speckit-plan)
 ```
 
 ### Source Code (repository root)

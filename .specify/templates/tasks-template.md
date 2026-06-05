@@ -6,17 +6,10 @@ description: "Task list template for feature implementation"
 # Tasks: [FEATURE NAME]
 
 **Input**: Design documents from `/specs/[###-feature-name]/`
+
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: The examples below include test tasks. Tests are required when the
-feature specification or constitution requires them. User-facing UI changes
-MUST include real Playwright e2e journey tasks, Docker-backed seed-data
-execution when Docker is available, screenshot artifact capture, Argos
-metadata verification when Argos uploads are used, and an e2e/screenshot
-defect review before any PR update. Specs that touch SpecKit artifacts or
-evidence policy MUST include Archive Sweep startup/dry-run evidence,
-current-target exclusion, cleanup safety, recovery-command evidence, and
-screenshot/evidence guard tasks.
+**Tests**: The examples below include test tasks. Tests are OPTIONAL - only include them if explicitly requested in the feature specification.
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
@@ -33,21 +26,21 @@ screenshot/evidence guard tasks.
 - **Mobile**: `api/src/`, `ios/src/` or `android/src/`
 - Paths shown below assume single project - adjust based on plan.md structure
 
-<!-- 
+<!--
   ============================================================================
   IMPORTANT: The tasks below are SAMPLE TASKS for illustration purposes only.
-  
-  The /speckit.tasks command MUST replace these with actual tasks based on:
+
+  The /speckit-tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
   - Feature requirements from plan.md
   - Entities from data-model.md
   - Endpoints from contracts/
-  
+
   Tasks MUST be organized by user story so each story can be:
   - Implemented independently
   - Tested independently
   - Delivered as an MVP increment
-  
+
   DO NOT keep these sample tasks in the generated tasks.md file.
   ============================================================================
 -->
@@ -93,9 +86,6 @@ Examples of foundational tasks (adjust based on your project):
 
 - [ ] T010 [P] [US1] Contract test for [endpoint] in tests/contract/test_[name].py
 - [ ] T011 [P] [US1] Integration test for [user journey] in tests/integration/test_[name].py
-- [ ] T011A [P] [US1] Real Playwright UI journey with deterministic seed data in tests/e2e/[journey].spec.ts, attaching review screenshots for before/during/after states
-- [ ] T011B [US1] Docker-backed Playwright run using the repository Docker build and seeded data; review screenshots and remediate known UI journey defects before PR update
-- [ ] T011C [US1] Argos metadata gate for Playwright and/or Storybook visual uploads that verifies screenshot metadata includes test/story identity, source location, and spec-scoped tags
 
 ### Implementation for User Story 1
 
@@ -166,8 +156,6 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Performance optimization across all stories
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
-- [ ] TXXX Archive Sweep dry-run/apply safety evidence and recovery commands for previously merged specs, excluding the current target spec
-- [ ] TXXX Screenshot/evidence guard verification, including negative fixture or manifest-backed exception coverage when generated screenshots could be committed
 - [ ] TXXX Run quickstart.md validation
 
 ---

@@ -114,8 +114,19 @@ has_git() {
     git -C "$repo_root" rev-parse --is-inside-work-tree >/dev/null 2>&1
 }
 
+# Strip a single optional path segment (e.g. gitflow "feat/004-name" -> "004-name").
+# Only when the full name is exactly two slash-free segments; otherwise returns the raw name.
+spec_kit_effective_branch_name() {
+    local raw="$1"
+    if [[ "$raw" =~ ^([^/]+)/([^/]+)$ ]]; then
+        printf '%s\n' "${BASH_REMATCH[2]}"
+    else
+        printf '%s\n' "$raw"
+    fi
+}
+
 check_feature_branch() {
-    local branch="$1"
+    local raw="$1"
     local has_git_repo="$2"
 
     # For non-git repos, we can't enforce branch naming but still provide output
@@ -124,37 +135,90 @@ check_feature_branch() {
         return 0
     fi
 
-    # Accept sequential prefix (3+ digits, optionally followed by a spec slice
-    # suffix such as 009e) but exclude malformed timestamps
+    local branch
+    branch=$(spec_kit_effective_branch_name "$raw")
+
+    # Accept sequential prefix (3+ digits) but exclude malformed timestamps
     # Malformed: 7-or-8 digit date + 6-digit time with no trailing slug (e.g. "2026031-143022" or "20260319-143022")
     local is_sequential=false
-    if [[ "$branch" =~ ^[0-9]{3,}[a-z0-9]*- ]] && [[ ! "$branch" =~ ^[0-9]{7}-[0-9]{6}- ]] && [[ ! "$branch" =~ ^[0-9]{7,8}-[0-9]{6}$ ]]; then
+    if [[ "$branch" =~ ^[0-9]{3,}- ]] && [[ ! "$branch" =~ ^[0-9]{7}-[0-9]{6}- ]] && [[ ! "$branch" =~ ^[0-9]{7,8}-[0-9]{6}$ ]]; then
         is_sequential=true
     fi
     if [[ "$is_sequential" != "true" ]] && [[ ! "$branch" =~ ^[0-9]{8}-[0-9]{6}- ]]; then
-        echo "ERROR: Not on a feature branch. Current branch: $branch" >&2
-        echo "Feature branches should be named like: 001-feature-name, 009e-feature-name, 1234-feature-name, or 20260319-143022-feature-name" >&2
+        echo "ERROR: Not on a feature branch. Current branch: $raw" >&2
+        echo "Feature branches should be named like: 001-feature-name, 1234-feature-name, or 20260319-143022-feature-name" >&2
         return 1
     fi
 
     return 0
 }
 
-get_feature_dir() { echo "$1/specs/$2"; }
+# Safely read .specify/feature.json's "feature_directory" value.
+# Prints the raw value (possibly relative) to stdout, or empty string if the file
+# is missing, unparseable, or does not contain the key. Always returns 0 so callers
+# under `set -e` cannot be aborted by parser failure.
+# Parser order mirrors the historical get_feature_paths behavior: jq -> python3 -> grep/sed.
+read_feature_json_feature_directory() {
+    local repo_root="$1"
+    local fj="$repo_root/.specify/feature.json"
+    [[ -f "$fj" ]] || { printf '%s' ''; return 0; }
+
+    local _fd=''
+    if command -v jq >/dev/null 2>&1; then
+        if ! _fd=$(jq -r '.feature_directory // empty' "$fj" 2>/dev/null); then
+            _fd=''
+        fi
+    elif command -v python3 >/dev/null 2>&1; then
+        # Use Python so pretty-printed/multi-line JSON still parses correctly.
+        if ! _fd=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); v=d.get('feature_directory'); print(v if v else '')" "$fj" 2>/dev/null); then
+            _fd=''
+        fi
+    else
+        # Last-resort single-line grep/sed fallback. The `|| true` guards against
+        # grep returning 1 (no match) aborting under `set -e` / `pipefail`.
+        _fd=$( { grep -E '"feature_directory"[[:space:]]*:' "$fj" 2>/dev/null || true; } \
+            | head -n 1 \
+            | sed -E 's/^[^:]*:[[:space:]]*"([^"]*)".*$/\1/' )
+    fi
+
+    printf '%s' "$_fd"
+    return 0
+}
+
+# Returns 0 when .specify/feature.json lists feature_directory that exists as a directory
+# and matches the resolved active FEATURE_DIR (so /speckit-plan can skip git branch pattern checks).
+# Delegates parsing to read_feature_json_feature_directory, which is safe under `set -e`.
+feature_json_matches_feature_dir() {
+    local repo_root="$1"
+    local active_feature_dir="$2"
+
+    local _fd
+    _fd=$(read_feature_json_feature_directory "$repo_root")
+
+    [[ -n "$_fd" ]] || return 1
+    [[ "$_fd" != /* ]] && _fd="$repo_root/$_fd"
+    [[ -d "$_fd" ]] || return 1
+
+    local norm_json norm_active
+    norm_json="$(cd -- "$_fd" 2>/dev/null && pwd -P)" || return 1
+    norm_active="$(cd -- "$active_feature_dir" 2>/dev/null && pwd -P)" || return 1
+
+    [[ "$norm_json" == "$norm_active" ]]
+}
 
 # Find feature directory by numeric prefix instead of exact branch match
 # This allows multiple branches to work on the same spec (e.g., 004-fix-bug, 004-add-feature)
 find_feature_dir_by_prefix() {
     local repo_root="$1"
-    local branch_name="$2"
+    local branch_name
+    branch_name=$(spec_kit_effective_branch_name "$2")
     local specs_dir="$repo_root/specs"
 
-    # Extract prefix from branch (e.g., "004" from "004-whatever",
-    # "009e" from "009e-whatever", or "20260319-143022" from timestamp branches)
+    # Extract prefix from branch (e.g., "004" from "004-whatever" or "20260319-143022" from timestamp branches)
     local prefix=""
     if [[ "$branch_name" =~ ^([0-9]{8}-[0-9]{6})- ]]; then
         prefix="${BASH_REMATCH[1]}"
-    elif [[ "$branch_name" =~ ^([0-9]{3,}[a-z0-9]*)- ]]; then
+    elif [[ "$branch_name" =~ ^([0-9]{3,})- ]]; then
         prefix="${BASH_REMATCH[1]}"
     else
         # If branch doesn't have a recognized prefix, fall back to exact match
@@ -198,7 +262,7 @@ get_feature_paths() {
 
     # Resolve feature directory.  Priority:
     #   1. SPECIFY_FEATURE_DIRECTORY env var (explicit override)
-    #   2. .specify/feature.json "feature_directory" key (persisted by /speckit.specify)
+    #   2. .specify/feature.json "feature_directory" key (persisted by /speckit-specify)
     #   3. Branch-name-based prefix lookup (legacy fallback)
     local feature_dir
     if [[ -n "${SPECIFY_FEATURE_DIRECTORY:-}" ]]; then
@@ -206,16 +270,10 @@ get_feature_paths() {
         # Normalize relative paths to absolute under repo root
         [[ "$feature_dir" != /* ]] && feature_dir="$repo_root/$feature_dir"
     elif [[ -f "$repo_root/.specify/feature.json" ]]; then
+        # Shared, set -e-safe parser: jq -> python3 -> grep/sed. Returns empty on
+        # missing/unparseable/unset so we fall through to the branch-prefix lookup.
         local _fd
-        if command -v jq >/dev/null 2>&1; then
-            _fd=$(jq -r '.feature_directory // empty' "$repo_root/.specify/feature.json" 2>/dev/null)
-        elif command -v python3 >/dev/null 2>&1; then
-            # Fallback: use Python to parse JSON so pretty-printed/multi-line files work
-            _fd=$(python3 -c "import json,sys; d=json.load(open(sys.argv[1])); print(d.get('feature_directory',''))" "$repo_root/.specify/feature.json" 2>/dev/null)
-        else
-            # Last resort: single-line grep fallback (won't work on multi-line JSON)
-            _fd=$(grep -o '"feature_directory"[[:space:]]*:[[:space:]]*"[^"]*"' "$repo_root/.specify/feature.json" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/')
-        fi
+        _fd=$(read_feature_json_feature_directory "$repo_root")
         if [[ -n "$_fd" ]]; then
             feature_dir="$_fd"
             # Normalize relative paths to absolute under repo root
@@ -247,6 +305,83 @@ get_feature_paths() {
 # Check if jq is available for safe JSON construction
 has_jq() {
     command -v jq >/dev/null 2>&1
+}
+
+get_invoke_separator() {
+    local repo_root="${1:-$(get_repo_root)}"
+    if [[ "${_SPECIFY_INVOKE_SEPARATOR_CACHE_REPO_ROOT:-}" == "$repo_root" && -n "${_SPECIFY_INVOKE_SEPARATOR_CACHE_VALUE:-}" ]]; then
+        printf '%s\n' "$_SPECIFY_INVOKE_SEPARATOR_CACHE_VALUE"
+        return 0
+    fi
+
+    local integration_json="$repo_root/.specify/integration.json"
+    local separator="."
+    local parsed_with_jq=0
+
+    if [[ -f "$integration_json" ]]; then
+        if command -v jq >/dev/null 2>&1; then
+            local jq_separator
+            if jq_separator=$(jq -r '(.default_integration // .integration // "") as $k | if $k == "" then "." else (.integration_settings[$k].invoke_separator // ".") end' "$integration_json" 2>/dev/null); then
+                parsed_with_jq=1
+                case "$jq_separator" in
+                    "."|"-") separator="$jq_separator" ;;
+                esac
+            fi
+        fi
+
+        if [[ "$parsed_with_jq" -eq 0 ]] && command -v python3 >/dev/null 2>&1; then
+            if separator=$(python3 - "$integration_json" <<'PY' 2>/dev/null
+import json
+import sys
+
+try:
+    with open(sys.argv[1], encoding="utf-8") as fh:
+        state = json.load(fh)
+    key = state.get("default_integration") or state.get("integration") or ""
+    settings = state.get("integration_settings")
+    separator = "."
+    if isinstance(key, str) and isinstance(settings, dict):
+        entry = settings.get(key)
+        if isinstance(entry, dict) and entry.get("invoke_separator") in {".", "-"}:
+            separator = entry["invoke_separator"]
+    print(separator)
+except Exception:
+    print(".")
+PY
+); then
+                case "$separator" in
+                    "."|"-") ;;
+                    *) separator="." ;;
+                esac
+            else
+                separator="."
+            fi
+        fi
+    fi
+
+    _SPECIFY_INVOKE_SEPARATOR_CACHE_REPO_ROOT="$repo_root"
+    _SPECIFY_INVOKE_SEPARATOR_CACHE_VALUE="$separator"
+    printf '%s\n' "$separator"
+}
+
+format_speckit_command() {
+    local command_name="$1"
+    local repo_root="${2:-$(get_repo_root)}"
+    local separator
+    if [[ "${_SPECIFY_INVOKE_SEPARATOR_CACHE_REPO_ROOT:-}" == "$repo_root" && -n "${_SPECIFY_INVOKE_SEPARATOR_CACHE_VALUE:-}" ]]; then
+        separator="$_SPECIFY_INVOKE_SEPARATOR_CACHE_VALUE"
+    else
+        separator=$(get_invoke_separator "$repo_root")
+        _SPECIFY_INVOKE_SEPARATOR_CACHE_REPO_ROOT="$repo_root"
+        _SPECIFY_INVOKE_SEPARATOR_CACHE_VALUE="$separator"
+    fi
+
+    command_name="${command_name#/}"
+    command_name="${command_name#speckit.}"
+    command_name="${command_name#speckit-}"
+    command_name="${command_name//./$separator}"
+
+    printf '/speckit%s%s\n' "$separator" "$command_name"
 }
 
 # Escape a string for safe embedding in a JSON value (fallback when jq is unavailable).
@@ -309,8 +444,9 @@ try:
     with open(os.environ['SPECKIT_REGISTRY']) as f:
         data = json.load(f)
     presets = data.get('presets', {})
-    for pid, meta in sorted(presets.items(), key=lambda x: x[1].get('priority', 10)):
-        print(pid)
+    for pid, meta in sorted(presets.items(), key=lambda x: x[1].get('priority', 10) if isinstance(x[1], dict) else 10):
+        if isinstance(meta, dict) and meta.get('enabled', True) is not False:
+            print(pid)
 except Exception:
     sys.exit(1)
 " 2>/dev/null); then
@@ -360,4 +496,226 @@ except Exception:
     # Return 1 so callers can distinguish "not found" from "found".
     # Callers running under set -e should use: TEMPLATE=$(resolve_template ...) || true
     return 1
+}
+
+# Resolve a template name to composed content using composition strategies.
+# Reads strategy metadata from preset manifests and composes content
+# from multiple layers using prepend, append, or wrap strategies.
+#
+# Usage: CONTENT=$(resolve_template_content "template-name" "$REPO_ROOT")
+# Returns composed content string on stdout; exit code 1 if not found.
+resolve_template_content() {
+    local template_name="$1"
+    local repo_root="$2"
+    local base="$repo_root/.specify/templates"
+
+    # Collect all layers (highest priority first)
+    local -a layer_paths=()
+    local -a layer_strategies=()
+
+    # Priority 1: Project overrides (always "replace")
+    local override="$base/overrides/${template_name}.md"
+    if [ -f "$override" ]; then
+        layer_paths+=("$override")
+        layer_strategies+=("replace")
+    fi
+
+    # Priority 2: Installed presets (sorted by priority from .registry)
+    local presets_dir="$repo_root/.specify/presets"
+    if [ -d "$presets_dir" ]; then
+        local registry_file="$presets_dir/.registry"
+        local sorted_presets=""
+        if [ -f "$registry_file" ] && command -v python3 >/dev/null 2>&1; then
+            if sorted_presets=$(SPECKIT_REGISTRY="$registry_file" python3 -c "
+import json, sys, os
+try:
+    with open(os.environ['SPECKIT_REGISTRY']) as f:
+        data = json.load(f)
+    presets = data.get('presets', {})
+    for pid, meta in sorted(presets.items(), key=lambda x: x[1].get('priority', 10) if isinstance(x[1], dict) else 10):
+        if isinstance(meta, dict) and meta.get('enabled', True) is not False:
+            print(pid)
+except Exception:
+    sys.exit(1)
+" 2>/dev/null); then
+                if [ -n "$sorted_presets" ]; then
+                    local yaml_warned=false
+                    while IFS= read -r preset_id; do
+                        # Read strategy and file path from preset manifest
+                        local strategy="replace"
+                        local manifest_file=""
+                        local manifest="$presets_dir/$preset_id/preset.yml"
+                        if [ -f "$manifest" ] && command -v python3 >/dev/null 2>&1; then
+                            # Requires PyYAML; falls back to replace/convention if unavailable
+                            local result
+                            local py_stderr
+                            py_stderr=$(mktemp)
+                            result=$(SPECKIT_MANIFEST="$manifest" SPECKIT_TMPL="$template_name" python3 -c "
+import sys, os
+try:
+    import yaml
+except ImportError:
+    print('yaml_missing', file=sys.stderr)
+    print('replace\t')
+    sys.exit(0)
+try:
+    with open(os.environ['SPECKIT_MANIFEST']) as f:
+        data = yaml.safe_load(f)
+    for t in data.get('provides', {}).get('templates', []):
+        if t.get('name') == os.environ['SPECKIT_TMPL'] and t.get('type', 'template') == 'template':
+            print(t.get('strategy', 'replace') + '\t' + t.get('file', ''))
+            sys.exit(0)
+    print('replace\t')
+except Exception:
+    print('replace\t')
+" 2>"$py_stderr")
+                            local parse_status=$?
+                            if [ $parse_status -eq 0 ] && [ -n "$result" ]; then
+                                IFS=$'\t' read -r strategy manifest_file <<< "$result"
+                                strategy=$(printf '%s' "$strategy" | tr '[:upper:]' '[:lower:]')
+                            fi
+                            if [ "$yaml_warned" = false ] && grep -q 'yaml_missing' "$py_stderr" 2>/dev/null; then
+                                echo "Warning: PyYAML not available; composition strategies may be ignored" >&2
+                                yaml_warned=true
+                            fi
+                            rm -f "$py_stderr"
+                        fi
+                        # Try manifest file path first, then convention path
+                        local candidate=""
+                        if [ -n "$manifest_file" ]; then
+                            # Reject absolute paths and parent traversal
+                            case "$manifest_file" in
+                                /*|*../*|../*) manifest_file="" ;;
+                            esac
+                        fi
+                        if [ -n "$manifest_file" ]; then
+                            local mf="$presets_dir/$preset_id/$manifest_file"
+                            [ -f "$mf" ] && candidate="$mf"
+                        fi
+                        if [ -z "$candidate" ]; then
+                            local cf="$presets_dir/$preset_id/templates/${template_name}.md"
+                            [ -f "$cf" ] && candidate="$cf"
+                        fi
+                        if [ -n "$candidate" ]; then
+                            layer_paths+=("$candidate")
+                            layer_strategies+=("$strategy")
+                        fi
+                    done <<< "$sorted_presets"
+                fi
+            else
+                # python3 failed — fall back to unordered directory scan (replace only)
+                for preset in "$presets_dir"/*/; do
+                    [ -d "$preset" ] || continue
+                    local candidate="$preset/templates/${template_name}.md"
+                    if [ -f "$candidate" ]; then
+                        layer_paths+=("$candidate")
+                        layer_strategies+=("replace")
+                    fi
+                done
+            fi
+        else
+            # No python3 or registry — fall back to unordered directory scan (replace only)
+            for preset in "$presets_dir"/*/; do
+                [ -d "$preset" ] || continue
+                local candidate="$preset/templates/${template_name}.md"
+                if [ -f "$candidate" ]; then
+                    layer_paths+=("$candidate")
+                    layer_strategies+=("replace")
+                fi
+            done
+        fi
+    fi
+
+    # Priority 3: Extension-provided templates (always "replace")
+    local ext_dir="$repo_root/.specify/extensions"
+    if [ -d "$ext_dir" ]; then
+        for ext in "$ext_dir"/*/; do
+            [ -d "$ext" ] || continue
+            case "$(basename "$ext")" in .*) continue;; esac
+            local candidate="$ext/templates/${template_name}.md"
+            if [ -f "$candidate" ]; then
+                layer_paths+=("$candidate")
+                layer_strategies+=("replace")
+            fi
+        done
+    fi
+
+    # Priority 4: Core templates (always "replace")
+    local core="$base/${template_name}.md"
+    if [ -f "$core" ]; then
+        layer_paths+=("$core")
+        layer_strategies+=("replace")
+    fi
+
+    local count=${#layer_paths[@]}
+    [ "$count" -eq 0 ] && return 1
+
+    # Check if any layer uses a non-replace strategy
+    local has_composition=false
+    for s in "${layer_strategies[@]}"; do
+        [ "$s" != "replace" ] && has_composition=true && break
+    done
+
+    # If the top (highest-priority) layer is replace, it wins entirely —
+    # lower layers are irrelevant regardless of their strategies.
+    if [ "${layer_strategies[0]}" = "replace" ]; then
+        cat "${layer_paths[0]}"
+        return 0
+    fi
+
+    if [ "$has_composition" = false ]; then
+        cat "${layer_paths[0]}"
+        return 0
+    fi
+
+    # Find the effective base: scan from highest priority (index 0) downward
+    # to find the nearest replace layer. Only compose layers above that base.
+    local base_idx=-1
+    local i
+    for (( i=0; i<count; i++ )); do
+        if [ "${layer_strategies[$i]}" = "replace" ]; then
+            base_idx=$i
+            break
+        fi
+    done
+
+    if [ $base_idx -lt 0 ]; then
+        return 1  # no base layer found
+    fi
+
+    # Read the base content; compose layers above the base (higher priority)
+    local content
+    content=$(cat "${layer_paths[$base_idx]}"; printf x)
+    content="${content%x}"
+
+    for (( i=base_idx-1; i>=0; i-- )); do
+        local path="${layer_paths[$i]}"
+        local strat="${layer_strategies[$i]}"
+        local layer_content
+        # Preserve trailing newlines
+        layer_content=$(cat "$path"; printf x)
+        layer_content="${layer_content%x}"
+
+        case "$strat" in
+            replace) content="$layer_content" ;;
+            prepend) content="$(printf '%s\n\n%s' "$layer_content" "$content")" ;;
+            append)  content="$(printf '%s\n\n%s' "$content" "$layer_content")" ;;
+            wrap)
+                case "$layer_content" in
+                    *'{CORE_TEMPLATE}'*) ;;
+                    *) echo "Error: wrap strategy missing {CORE_TEMPLATE} placeholder" >&2; return 1 ;;
+                esac
+                while [[ "$layer_content" == *'{CORE_TEMPLATE}'* ]]; do
+                    local before="${layer_content%%\{CORE_TEMPLATE\}*}"
+                    local after="${layer_content#*\{CORE_TEMPLATE\}}"
+                    layer_content="${before}${content}${after}"
+                done
+                content="$layer_content"
+                ;;
+            *) echo "Error: unknown strategy '$strat'" >&2; return 1 ;;
+        esac
+    done
+
+    printf '%s' "$content"
+    return 0
 }
