@@ -1,0 +1,553 @@
+# SpecKit Workflow: SPEC-010B - Product Line B Onboarding Smoke
+
+**Template Version**: 1.0.0, populated for Paddock
+**Created**: 2026-06-05
+**Purpose**: Prepare and execute RC Factory Phase 9B by onboarding a disabled second product line, proving isolated seed/smoke behavior, and preserving Product Line A plus active SPEC-014C harness-adapter work.
+
+---
+
+## How to Use This Workflow
+
+Run from the dedicated worktree:
+
+```bash
+cd .worktrees/010b-product-line-b-smoke
+$speckit-autopilot docs/ai/specs/SPEC-010B-workflow.md
+```
+
+Codex skills use `$skill-name` invocation. Do not run slash-command variants in Codex.
+
+---
+
+## Design Concept
+
+This workflow was enriched from the Grill Me interview required by `$speckit-scaffold-spec`.
+
+```text
+docs/ai/specs/SPEC-010B-design-concept.md
+```
+
+The design concept is the setup-time source of truth:
+
+- Product Line B identity is generic: slug `product-line-b`, display name `Product Line B`, and agent prefix `plb-platform`.
+- Product Line B is disabled by default, enabled only for smoke, and disabled cleanly afterward.
+- The smoke target is `racecraft-lab/Paddock` using synthetic Product Line B issue metadata.
+- Required implementation evidence must not require a live GitHub write; live GitHub issue creation is optional HAL UAT evidence only.
+- Paddock-owned fake/harness agents are the default substrate for the smoke path.
+- Retained hidden/offline FocusEngine/OpenClaw identities are not Product Line B and must not be reused without explicit profile generalization and assignment.
+- Product Line A seed identity, GitHub sync ownership, tasks, and metrics remain unaffected.
+
+---
+
+## Workflow Overview
+
+| Phase | Command | Status | Notes |
+|-------|---------|--------|-------|
+| Setup | `$speckit-scaffold-spec` | Complete | Branch, design concept, reviewability preset, workflow, and roadmap setup status created |
+| Specify | `$speckit-specify` | Pending | Generate `specs/010b-product-line-b-smoke/spec.md` from roadmap plus design concept |
+| Clarify | `$speckit-clarify` | Pending | Resolve config, enablement, smoke evidence, API/dashboard, and parallel-safety details |
+| Plan | `$speckit-plan` | Pending | Produce architecture using SPEC-010A seeder and existing Paddock stack |
+| Checklist | `$speckit-checklist` | Pending | Run focused domains listed below |
+| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict file ownership |
+| Analyze | `$speckit-analyze` | Pending | Verify artifacts do not drift from design concept or parallel-safety boundaries |
+| Implement | `$speckit-implement` | Pending | Execute tasks only after analysis gate passes |
+
+**Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
+
+### Phase Gates
+
+| Gate | Checkpoint | Approval Criteria |
+|------|------------|-------------------|
+| G0 | After setup | Branch is `010b-product-line-b-smoke`; design concept and workflow exist; reviewability preset resolves; roadmap marks SPEC-010B `In Progress` on this branch only |
+| G1 | After Specify | Requirements cover Product Line B config, disabled/enabled/disabled lifecycle, synthetic smoke, isolation assertions, and no FocusEngine/OpenClaw reuse |
+| G2 | After Clarify | Config fields, smoke issue shape, evidence envelope, API/dashboard metrics, HAL UAT steps, and parallel SPEC-014C file boundaries are resolved |
+| G3 | After Plan | Architecture reuses SPEC-010A seed tooling and existing Paddock APIs/tests; migration, dependency, GitHub mutation, and adapter work are either absent or explicitly justified |
+| G4 | After Checklist | All `[Gap]` findings are remediated without widening into SPEC-014C, SPEC-014D, scheduler/claim/retry, or live GitHub mutation scope |
+| G5 | After Tasks | Tasks are dependency ordered, TDD-first, and separated from active SPEC-014C adapter files |
+| G6 | After Analyze | No CRITICAL/HIGH findings remain; artifacts agree with Design Concept Q1-Q5 and setup preflight evidence |
+| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, seed preflight/apply/verify proof, synthetic smoke proof, disablement proof, docs status, branch commit, and push are complete |
+
+---
+
+## Prerequisites
+
+### Constitution Validation
+
+| Principle | Requirement | Verification |
+|-----------|-------------|--------------|
+| I. Zero-Regression Contract | Product Line A behavior, existing Paddock seed behavior, GitHub sync ownership, and dashboard metrics must remain unchanged | Product Line A before/after SQL/API assertions and regression tests |
+| II. Install Compatibility Discipline | Keep deployment/runtime assumptions compatible with standalone Paddock and HAL service Node | `pnpm build`, service-compatible HAL command notes, and no new unmanaged runtime requirement |
+| III. OpenClaw Adapter Isolation | Retained OpenClaw/FocusEngine runtime identities stay unassigned unless explicitly generalized and assigned | Runtime-inventory/agent assignment tests and HAL preflight evidence |
+| IV. Test-First Development | RED tests define Product Line B config, disabled lifecycle, synthetic smoke, and isolation assertions before implementation | Focused Vitest/Playwright tests fail before code changes and pass after |
+| V. Feature-Flag Resolution Discipline | Feature flags are config-owned and validated through existing registry behavior; no ad hoc `process.env.FEATURE_*` checks | Unit tests and guardrail grep |
+| VI. Dependency Supply-Chain Hygiene | No new runtime dependency planned; reuse existing `yaml`, Next.js, React, Zustand, `better-sqlite3`, Vitest, and Playwright stack | `package.json`/lockfile diff review |
+| VII. Additive Migration Policy | Prefer no migration; if disabled product-line state needs schema support, justify an additive migration with rollback SQL | Plan constitution gate, migration diff review, rollback test if needed |
+| VIII. Successor Side-Effect Parity | Synthetic smoke must not create unintended successors, claims, runner launches, or auto-merge actions | Task/disposition/artifact assertions and scope guardrails |
+| X. Observability and Auditability | Seed, enable, smoke, disable, and cleanup produce structured evidence suitable for operator review | CLI/API JSON evidence and smoke checklist update |
+| XVI. Reviewability And Verification Debt Control | Keep implementation to seed/config plus smoke evidence; do not enter SPEC-014C adapter modules | Reviewability gate, tasks file ownership, and analyze scope guard |
+
+**Constitution Check:** Setup validated branch, package manager, reviewability preset, preflight evidence, and no-autopilot boundary. Re-check in Specify and Plan before implementation.
+
+### Setup Evidence
+
+- Spec ID: SPEC-010B
+- Branch: `010b-product-line-b-smoke`
+- Worktree: `.worktrees/010b-product-line-b-smoke`
+- Package manager: pnpm from `pnpm-lock.yaml`
+- SpecKit CLI: `/Users/fredrickgabelmann/.local/bin/specify`
+- Remote: `origin` (`https://github.com/racecraft-lab/Paddock.git`)
+- Current base: `origin/main` at `4d318b77` (`Fix docs hygiene setup guidance (#75)`)
+- Reviewability preset: `speckit-pro-reviewability`
+- Template resolution:
+  - `spec-template` resolves to `.specify/presets/speckit-pro-reviewability/templates/spec-template.md`
+  - `plan-template` resolves to `.specify/presets/speckit-pro-reviewability/templates/plan-template.md`
+  - `tasks-template` resolves to `.specify/presets/speckit-pro-reviewability/templates/tasks-template.md`
+
+### Reviewability Setup Gate
+
+The roadmap-wide setup gate passed under the transition exception. Downstream work must stay narrower than the roadmap-wide heuristic and must record the split decision in generated artifacts.
+
+```json
+{"mode":"setup","status":"exception","pass":true,"reviewable_loc":8,"production_files":25,"total_files":0,"primary_surface_count":7,"primary_surfaces":["API","UI","harness/adapter","or docs/process","scheduler/runtime","schema/migration","seed/config"],"thresholds":{"warn":{"reviewable_loc":400,"production_files":6,"total_files":15,"primary_surfaces":1},"block":{"reviewable_loc":800,"production_files":8,"total_files":25,"primary_surfaces":1}},"transition_exception":true,"warnings":["production files 25 exceeds warn threshold 6","primary surfaces 7 exceeds warn threshold 1"],"blockers":["production files 25 exceeds block threshold 8","more than one primary surface requires split or exception"]}
+```
+
+### HAL Preflight Evidence
+
+- HAL service worktree: `/home/fredrick-gabelmann/paddock`
+- HAL data directory: `/home/fredrick-gabelmann/paddock-data`
+- HAL database: `/home/fredrick-gabelmann/paddock-data/paddock.db`
+- Active services during inspection: `paddock.service`, `openclaw-gateway.service`
+- Preflight command used service-compatible `/usr/bin/node` v24.15.0 because interactive Node v26 can hit a `better-sqlite3` ABI mismatch.
+- Generic seed preflight returned `ok: true`, `mode: preflight`, `status: ready`, `mutation_status: not_mutated`, empty residue, and matching before/after snapshot hash.
+- Direct live DB inspection found Paddock repo/project/sync ownership only, with no FocusEngine project/task/sync/assignment residue.
+- Retained hidden/offline FocusEngine agent rows and OpenClaw config entries remain inventory, not Product Line B.
+
+### Parallel Safety With SPEC-014C
+
+SPEC-014C is active in another worktree/session. SPEC-010B may run in parallel only while it owns seed/config, product-line isolation, synthetic smoke, and read-only dashboard/API assertions.
+
+Allowed SPEC-010B surfaces:
+
+- `docs/ai/product-lines/product-line-b.yaml`
+- Existing product-line seed config validation and CLI tests around `seed:product-line`
+- Focused seed/smoke docs and checklist evidence
+- Per-workspace/product-line API or dashboard assertions needed to prove isolation
+- Test fixtures that create Product Line B synthetic issue metadata
+
+Avoid or stop before editing:
+
+- `src/lib/adapters/**`
+- Harness adapter manifest/fake/real adapter registries owned by SPEC-014B/SPEC-014C
+- Sandbox lifecycle owner implementations unless only read-only assertions are needed
+- OpenClaw deployment docs except for HAL UAT notes
+- Runtime-inventory eligibility rules unless the change is a read-only Product Line B assignment assertion and does not affect SPEC-014C behavior
+
+If the active SPEC-014C branch touches a file SPEC-010B needs, stop and resolve file ownership before editing.
+
+---
+
+## Specification Context
+
+### Basic Information
+
+| Field | Value |
+|-------|-------|
+| Spec ID | SPEC-010B |
+| Name | Product Line B Onboarding Smoke |
+| Branch | `010b-product-line-b-smoke` |
+| Dependencies | SPEC-009C4, SPEC-010A |
+| Enables | SPEC-012B |
+| Priority | P2 |
+| Scope source | Phase 9B - Product Line B onboarding smoke |
+| Acceptance criteria source | Phase 9B Acceptance Criteria |
+| Tool count / names | N/A - not a tool-surface spec |
+
+### Roadmap Scope
+
+Onboard Product Line B as the second product line, provision or register isolated agents through the configured harness substrate, configure its canonical repo, and run one live or synthetic issue through the already-proven pilot subset. Paddock Product Line A must remain unaffected.
+
+### Strict Scope
+
+Allowed:
+
+- Product Line B checked-in seed config and validation.
+- Disabled-by-default seed behavior and explicit enable/disable smoke lifecycle.
+- Synthetic issue metadata linked to `racecraft-lab/Paddock`.
+- Reuse of SPEC-010A generic product-line seeder and existing workflow-contract importer.
+- Paddock-owned fake/harness agents for the smoke path.
+- SQL/API/dashboard assertions proving Product Line A isolation and shared facility-agent reuse where applicable.
+- Smoke checklist path and HAL/operator evidence.
+- Target-config-aware preflight proof that reports residue but never deletes automatically.
+
+Forbidden:
+
+- Required live GitHub issue creation, comments, labels, closes, or other live GitHub writes during implementation.
+- FocusEngine as the Product Line B identity.
+- Reuse of retained OpenClaw/FocusEngine runtime agents without explicit profile generalization and Product Line B assignment.
+- New workflow language.
+- Scheduler dispatch authority, claim/reconciliation authority, retry semantics, runner state, sandbox lifecycle implementation, adapter manifest implementation, or auto-merge policy.
+- Product Line A seed mutation or takeover of existing Paddock GitHub sync ownership.
+- Leaving Product Line B enabled after smoke.
+
+### Success Criteria Summary
+
+- [ ] Product Line B has a reviewed checked-in config with slug `product-line-b`, display `Product Line B`, and agent prefix `plb-platform`.
+- [ ] Product Line B seed preflight is no-mutation and blocks conflicting target ownership with redacted evidence.
+- [ ] Product Line B apply creates or verifies only config-owned workspace/project/assignment/template/flag/governance rows.
+- [ ] Product Line B starts disabled by default and cannot dispatch/sync until explicitly enabled.
+- [ ] One synthetic issue-shaped smoke runs through the already-proven pilot subset without a required GitHub write.
+- [ ] Product Line B can be disabled cleanly after smoke and leaves no active sync/dispatch path.
+- [ ] SQL/API/dashboard checks prove Product Line A rows, metrics, GitHub sync ownership, and tasks are unaffected.
+- [ ] Retained FocusEngine/OpenClaw identities remain unassigned inventory unless explicitly generalized and assigned.
+- [ ] Smoke evidence records enablement, synthetic issue metadata, pilot subset outcome, disablement, and cleanup.
+- [ ] SPEC-012B can use the resulting two-product-line reality as its harness-gardening input.
+
+---
+
+## Phase 1: Specify
+
+**When to run:** Start of SPEC-010B. Focus on WHAT and WHY, not implementation details. Output: `specs/010b-product-line-b-smoke/spec.md`.
+
+### Specify Prompt
+
+```bash
+$speckit-specify
+
+## Feature: Product Line B Onboarding Smoke
+
+### Problem Statement
+Paddock has a proven Product Line A seed and a generic product-line seeder, but it has not yet proven that a second product line can be created, enabled, smoked, inspected, and disabled without affecting Product Line A or the active runner/harness-adapter work. SPEC-010B must create the smallest reviewable Product Line B path that proves two-product-line isolation and gives SPEC-012B real behavior to garden.
+
+### Users
+- Operator enabling and smoking Product Line B on HAL or a disposable target.
+- Maintainer reviewing the seed/config and isolation proof.
+- Future SPEC-012B implementer needing real two-product-line drift/cleanup behavior.
+- Active SPEC-014C implementer who needs SPEC-010B to avoid adapter file ownership.
+
+### User Stories
+- As an operator, I can preflight Product Line B and see a no-mutation proof before any write.
+- As an operator, I can seed Product Line B disabled by default and inspect its isolated workspace/project/agent assignment shape.
+- As an operator, I can explicitly enable Product Line B for one synthetic Paddock issue smoke and then disable it cleanly.
+- As a maintainer, I can prove Product Line A rows, metrics, tasks, and sync ownership were not changed by Product Line B.
+- As a future harness-gardening implementer, I can use Product Line B evidence as real two-product-line input without replaying setup assumptions.
+
+### Constraints
+- Use the Design Concept at `docs/ai/specs/SPEC-010B-design-concept.md`.
+- Product Line B identity is generic: `product-line-b`, display `Product Line B`, agent prefix `plb-platform`.
+- Use `racecraft-lab/Paddock` synthetic issue metadata; required implementation evidence must not depend on a live GitHub write.
+- Reuse SPEC-010A seed/config tooling wherever possible.
+- Product Line B is disabled by default, enabled only for smoke, and disabled after smoke.
+- Do not reuse FocusEngine/OpenClaw identities unless the spec explicitly generalizes and assigns them.
+- Do not implement harness adapters or conflict with active SPEC-014C files.
+- Manual "<1 operator-hour" timing is checklist-only and operator-recorded.
+
+### Out of Scope
+- FocusEngine as Product Line B.
+- Required live GitHub issue mutation.
+- New workflow language.
+- Scheduler/claim/retry/runner/sandbox/adapter/auto-merge behavior.
+- Product Line A seed mutation.
+- Broad dashboard redesign.
+```
+
+### Specify Results
+
+Fill in after running:
+
+| Metric | Value |
+|--------|-------|
+| Functional Requirements | Pending |
+| User Stories | Pending |
+| Acceptance Criteria | Pending |
+| Clarification markers | Pending |
+
+### Files Generated
+
+- [ ] `specs/010b-product-line-b-smoke/spec.md`
+
+---
+
+## Phase 2: Clarify
+
+**When to run:** After Specify if any behavior can be interpreted multiple ways. Maximum 5 targeted questions per session.
+
+### Clarify Sessions
+
+#### Session 1: Product-line config and lifecycle
+
+```bash
+$speckit-clarify Focus on Product Line B config fields, disabled-by-default state, explicit enablement, clean disablement, and how `seed:product-line` should represent those states without mutating Product Line A.
+```
+
+Expected outcomes:
+
+- Exact config path and fields for Product Line B.
+- Whether disabled state is config data, CLI mode data, feature flag data, workspace status data, or a combination.
+- No-mutation and existing-target behavior for preflight/apply/verify.
+
+#### Session 2: Synthetic smoke and evidence
+
+```bash
+$speckit-clarify Focus on the synthetic Paddock smoke issue shape, pilot subset path, evidence envelope, cleanup proof, and optional HAL live GitHub issue evidence boundary.
+```
+
+Expected outcomes:
+
+- Synthetic issue metadata schema and label/name convention.
+- Smoke success/failure states.
+- Required cleanup counters and evidence files.
+
+#### Session 3: Isolation assertions
+
+```bash
+$speckit-clarify Focus on SQL, API, and dashboard assertions proving Product Line A is unaffected and Product Line B is independently inspectable.
+```
+
+Expected outcomes:
+
+- Exact rows/counts/hashes to compare before and after.
+- API routes or dashboard components to verify.
+- Shared facility-agent reuse rules, if any.
+
+#### Session 4: Agent substrate and SPEC-014C parallel safety
+
+```bash
+$speckit-clarify Focus on Paddock-owned fake/harness agents, retained FocusEngine/OpenClaw inventory, and file ownership boundaries with active SPEC-014C adapter work.
+```
+
+Expected outcomes:
+
+- Minimal fake/harness agent set.
+- Explicit no-reuse rule for retained FocusEngine/OpenClaw identities.
+- Stop conditions for file overlap with SPEC-014C.
+
+### Clarify Results
+
+| Session | Focus Area | Questions | Key Outcomes |
+|---------|------------|-----------|--------------|
+| 1 | Config and lifecycle | Pending | Pending |
+| 2 | Synthetic smoke and evidence | Pending | Pending |
+| 3 | Isolation assertions | Pending | Pending |
+| 4 | Agent substrate and parallel safety | Pending | Pending |
+
+---
+
+## Phase 3: Plan
+
+**When to run:** After spec is finalized. Output: `specs/010b-product-line-b-smoke/plan.md`.
+
+### Plan Prompt
+
+```bash
+$speckit-plan
+
+## Tech Stack
+- Runtime: Node.js >=22; HAL service-compatible checks use `/usr/bin/node` v24.15.0.
+- Frontend/API: Next.js 16 App Router, React 19, TypeScript 5.7 strict.
+- State/UI: Zustand where existing panels need it, Tailwind CSS 3.
+- Database: SQLite through `better-sqlite3` and existing synchronous transaction helpers.
+- Seed/config: Existing SPEC-010A product-line seeder, YAML config under `docs/ai/product-lines/`, and existing workflow-contract importer.
+- Testing: Vitest, Playwright only if UI/dashboard assertions change, ESLint, `pnpm`.
+
+## Constraints
+- Reuse `seed:product-line` and existing product-line seed modules before adding new code.
+- Prefer no migration. If a disabled workspace/sync lifecycle field is missing, propose only an additive migration with rollback SQL and focused tests.
+- No new runtime dependency unless Plan proves existing YAML/TypeScript tooling cannot satisfy the requirement.
+- No required live GitHub write in implementation.
+- No scheduler dispatch authority, claim authority, retry semantics, runner state, sandbox lifecycle, adapter manifest, or auto-merge behavior.
+- Do not edit SPEC-014C-owned adapter files while that autopilot session is active.
+- Keep HAL preflight Node ABI caveat in the UAT quickstart.
+
+## Architecture Notes
+- Treat `docs/ai/specs/SPEC-010B-design-concept.md` as the setup decision source of truth.
+- Start from `docs/ai/product-lines/paddock.yaml` and SPEC-010A tests to design Product Line B config and validation.
+- Product Line B config must be operator-reviewable, disabled by default, and isolated by slug/prefix.
+- Smoke issue metadata should be synthetic but repo-shaped: owner `racecraft-lab`, repo `Paddock`, Product Line B marker/label, and no required outbound GitHub call.
+- Evidence should include preflight no-mutation, apply/verify, enable, smoke, disable, Product Line A before/after assertions, and cleanup proof.
+- Retained hidden/offline FocusEngine/OpenClaw identities remain unassigned inventory unless a future spec generalizes them.
+```
+
+### Plan Results
+
+| Artifact | Status | Notes |
+|----------|--------|-------|
+| `plan.md` | Pending | Technical context and execution flow |
+| `research.md` | Pending | Decision rationales if needed |
+| `data-model.md` | Pending | Config/evidence entities and types |
+| `contracts/` | Pending | API/CLI/evidence contracts if touched |
+| `quickstart.md` | Pending | Operator/HAL smoke instructions |
+
+---
+
+## Phase 4: Domain Checklists
+
+**When to run:** After Plan. Run focused checklists that validate spec and plan together.
+
+### Checklist Domain Suggestions
+
+```bash
+$speckit-checklist data-integrity
+```
+
+Check Product Line A isolation, Product Line B seed idempotency, no-mutation preflight, existing-target behavior, cleanup counters, and snapshot/hash evidence.
+
+```bash
+$speckit-checklist state-management
+```
+
+Check disabled-by-default lifecycle, explicit enable/disable, sync/dispatch pause semantics, and Product Line B visibility while inactive.
+
+```bash
+$speckit-checklist api-contracts
+```
+
+Check seed CLI JSON envelope, API/dashboard read models, error codes, and redacted conflict evidence.
+
+```bash
+$speckit-checklist ux
+```
+
+Check dashboard/operator evidence surfaces only if UI changes are planned; do not create a broad dashboard redesign.
+
+```bash
+$speckit-checklist error-handling
+```
+
+Check conflicting residue, invalid config, existing target refusal, feature flag off, unauthorized API access, and HAL service Node mismatch notes.
+
+```bash
+$speckit-checklist security
+```
+
+Check no secret emission, no broad GitHub token use, no live GitHub write requirement, and no unsafe runtime identity takeover.
+
+### Checklist Results
+
+| Domain | Status | Findings | Notes |
+|--------|--------|----------|-------|
+| data-integrity | Pending | Pending | Pending |
+| state-management | Pending | Pending | Pending |
+| api-contracts | Pending | Pending | Pending |
+| ux | Pending | Pending | Pending |
+| error-handling | Pending | Pending | Pending |
+| security | Pending | Pending | Pending |
+
+---
+
+## Phase 5: Tasks
+
+**When to run:** After Plan and Checklist gaps are resolved. Output: `specs/010b-product-line-b-smoke/tasks.md`.
+
+### Tasks Prompt
+
+```bash
+$speckit-tasks
+
+Generate dependency-ordered, TDD-first tasks for SPEC-010B using:
+- `specs/010b-product-line-b-smoke/spec.md`
+- `specs/010b-product-line-b-smoke/plan.md`
+- `docs/ai/specs/SPEC-010B-design-concept.md`
+
+Task generation requirements:
+- Start with RED tests for Product Line B config validation, no-mutation preflight, disabled lifecycle, synthetic smoke, and Product Line A isolation.
+- Keep task ownership narrow around product-line seed/config, evidence, smoke checklist, and any necessary API/dashboard read assertions.
+- Include explicit guardrail tasks proving no live GitHub write requirement, no FocusEngine takeover, and no SPEC-014C adapter file changes.
+- Include HAL/UAT quickstart tasks that use service-compatible Node and record cleanup counts.
+- Keep Product Line B enabled only inside the smoke path and disabled in final state.
+- Do not generate tasks for scheduler claim authority, retry UI, runner state, sandbox lifecycle, harness adapter implementation, or auto-merge.
+```
+
+### Task Coverage Expectations
+
+- Setup and fixtures.
+- Config validation and no-mutation preflight.
+- Apply/verify and disabled lifecycle.
+- Synthetic smoke path.
+- Isolation/API/dashboard assertions.
+- HAL/UAT checklist and docs.
+- Scope guardrails and final verification.
+
+---
+
+## Phase 6: Analyze
+
+**When to run:** After Tasks. Analyze consistency across spec, plan, tasks, and design concept before implementation.
+
+### Analyze Prompt
+
+```bash
+$speckit-analyze
+
+Analyze SPEC-010B across:
+- `docs/ai/specs/SPEC-010B-design-concept.md`
+- `docs/ai/specs/SPEC-010B-workflow.md`
+- `specs/010b-product-line-b-smoke/spec.md`
+- `specs/010b-product-line-b-smoke/plan.md`
+- `specs/010b-product-line-b-smoke/tasks.md`
+
+Focus findings on:
+- Drift from Design Concept Q1-Q5.
+- Any required live GitHub write.
+- Any accidental FocusEngine/OpenClaw identity reuse.
+- Any Product Line A mutation or missing isolation proof.
+- Any missing disabled-by-default or final-disable proof.
+- Any file ownership overlap with active SPEC-014C adapter work.
+- Any new workflow language, scheduler/claim/retry/runner/sandbox/adapter/auto-merge scope.
+- Missing HAL preflight/UAT evidence or cleanup proof.
+
+Block implementation on CRITICAL/HIGH findings. Remediate MEDIUM findings before starting implementation unless explicitly documented as deferred.
+```
+
+### Analyze Results
+
+| Severity | Count | Status |
+|----------|-------|--------|
+| CRITICAL | Pending | Pending |
+| HIGH | Pending | Pending |
+| MEDIUM | Pending | Pending |
+| LOW | Pending | Pending |
+
+---
+
+## Phase 7: Implement
+
+**When to run:** Only after Tasks and Analyze gates pass.
+
+### Implement Prompt
+
+```bash
+$speckit-implement
+
+Implement SPEC-010B from `specs/010b-product-line-b-smoke/tasks.md`.
+
+Execution rules:
+- Follow strict RED-GREEN-REFACTOR for each task group.
+- Preserve the Design Concept decisions in `docs/ai/specs/SPEC-010B-design-concept.md`.
+- Keep edits inside the SPEC-010B file ownership surfaces unless tasks explicitly prove another file is required.
+- Before editing any likely SPEC-014C-owned adapter or runtime-inventory file, stop and ask for file ownership resolution.
+- Do not require a live GitHub write for implementation verification.
+- Use `pnpm` commands only.
+- Run focused tests first, then broaden to typecheck, lint, build, and any required Playwright/API checks.
+- Record HAL/operator UAT evidence with service-compatible Node, Product Line A before/after proof, Product Line B disablement, and cleanup counts.
+```
+
+### Implementation Verification Targets
+
+Minimum expected verification:
+
+- Focused Vitest coverage for config validation, preflight no-mutation, apply/verify behavior, disabled lifecycle, and Product Line A isolation.
+- Focused API/component/Playwright coverage if dashboard or API assertions change.
+- `pnpm typecheck`
+- `pnpm lint`
+- `pnpm build` or the repository's current build command when Next.js requires the webpack variant.
+- `pnpm seed:product-line -- --config docs/ai/product-lines/product-line-b.yaml --mode preflight --json` against a disposable DB.
+- Apply/verify/smoke/disable evidence against a disposable DB before HAL.
+- HAL target UAT only after local verification and with explicit cleanup proof.
+
+### Closeout Requirements
+
+- Update `docs/ai/specs/SPEC-010B-workflow.md` with final phase results and evidence.
+- Update `docs/ai/rc-factory-technical-roadmap.md` with implementation/UAT status.
+- Update `docs/qa/pilot-smoke-checklist.md` if the smoke checklist path changes.
+- Update `docs/ai/specs/autopilot-state.json` if autopilot owns the active-state pointer during implementation.
+- Push the branch and prepare the PR with Product Line A isolation evidence, Product Line B disablement evidence, and parallel-safety notes for SPEC-014C.
