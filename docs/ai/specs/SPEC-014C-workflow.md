@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Eight focused domain checklists passed G4 with zero unresolved `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 49 TDD-first tasks; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Remediated two low artifact consistency issues; G6 passed with no unresolved CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | Complete through closeout hygiene | T001-T049 plus post-implementation verify, verify-tasks, review, cleanup, retrospective, G7, doctor, reviewability, local validation, and HAL UAT are complete; PR #79 remains open pending review/merge |
+| Implement | `$speckit-implement` | Complete | T001-T049 plus post-implementation verify, verify-tasks, review, cleanup, retrospective, G7, doctor, reviewability, local validation, HAL UAT, PR #79 merge, and archive/status closeout are complete |
 
 ## Phase Gates
 
@@ -47,7 +47,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | G4 | After Checklist | Every checklist has zero unresolved `[Gap]` items or records a split decision |
 | G5 | After Tasks | Tasks are dependency ordered, TDD-first, reviewable, and bounded to one adapter module plus the narrow dispatch/evidence seams |
 | G6 | After Analyze | No CRITICAL/HIGH findings remain; design concept, spec, plan, tasks, and roadmap follow-up boundaries agree |
-| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, local proof, HAL UAT runbook/report, roadmap/workflow status, and PR review packet are complete; if target UAT passes on a PR branch, final project completion remains open until review/merge policy completes |
+| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, local proof, HAL UAT runbook/report, roadmap/workflow status, and PR review packet are complete; target UAT passed on the PR branch and PR #79 review/merge policy is now complete |
 
 ## Prerequisites
 
@@ -103,7 +103,7 @@ Use these sources only for launch/resume vocabulary, workspace cwd/sandbox postu
 | Name | First Real Harness Adapter Pilot |
 | Branch short name | `first-real-harness-adapter` |
 | Feature directory | `specs/014c-first-real-harness-adapter` |
-| Status | In Progress - closeout hygiene complete on PR branch; PR #79 review/merge pending |
+| Status | Complete - PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9`; archive/status hygiene recorded |
 | Priority | P1 |
 | Dependencies | SPEC-013D, SPEC-014B |
 | Enables | SPEC-014D, SPEC-014E, SPEC-014F, SPEC-015A, later adapter specs |
@@ -622,9 +622,9 @@ No split trigger has fired: the implementation remains one Codex app-server adap
 
 ## Closeout Notes
 
-SPEC-014C Phase 7 is complete on the PR branch. The branch was deployed to HAL at commit `43989ac856696abb2ea764fed409da268b87c9a8`, built, restarted, and verified through flag-scoped HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` with a real Codex app-server launch and zero-residue cleanup proof.
+SPEC-014C Phase 7 is complete. The PR branch was deployed to HAL at commit `43989ac856696abb2ea764fed409da268b87c9a8`, built, restarted, and verified through flag-scoped HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` with a real Codex app-server launch and zero-residue cleanup proof.
 
-PR #79 is open for review: https://github.com/racecraft-lab/Paddock/pull/79. The remaining completion gate is normal PR review, merge, and post-merge promotion policy; no Phase 7 or post-implementation hygiene task remains open.
+PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9` on 2026-06-05T21:05:01Z. Post-merge archive/status hygiene records SPEC-014C as complete; no Phase 7, post-implementation hygiene, review/merge, or archive task remains open. Active source cleanup was not applied because no explicit `--apply-cleanup` request was supplied.
 
 ## Post-Implementation Hygiene
 
@@ -647,7 +647,19 @@ Generated: 2026-06-05T18:39:37Z
 | Typecheck | Pass | `direnv exec . pnpm typecheck` completed with no diagnostics |
 | Lint | Pass | `direnv exec . pnpm lint` completed with no diagnostics |
 | Build | Pass | `direnv exec . pnpm build` completed successfully outside the sandbox after the sandboxed Turbopack process/port restriction |
-| PR checks | Pass | PR #79 checks at closeout start: CodeQL, quality-gate, and visual approval checks passed |
+| PR checks | Pass | PR #79 CodeQL, quality-gate, and visual approval checks passed before merge |
+
+## Post-Merge Archive Status
+
+Generated: 2026-06-05T21:05:01Z merge evidence plus archive/status closeout branch `codex/spec-014c-archive`
+
+| Item | Status | Evidence |
+|---|---|---|
+| PR merged | Complete | PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9` |
+| Feature status | Complete | `specs/014c-first-real-harness-adapter/spec.md` marked Completed |
+| Archive memory | Complete | `.specify/memory/{spec,plan,changelog}.md` records SPEC-014C requirements, implementation summary, provenance, and recovery commands |
+| Agent knowledge | Complete | `AGENTS.md` records SPEC-014C merge and archive closeout |
+| Cleanup | Not applied | `--apply-cleanup` was not explicitly requested; source files remain in `specs/014c-first-real-harness-adapter/` with recovery commands recorded |
 
 ## Self-Review
 

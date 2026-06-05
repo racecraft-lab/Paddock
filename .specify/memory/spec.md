@@ -25,6 +25,9 @@ the checkout is detached and no `--apply-cleanup` request was supplied.
 Revision 2026-06-04: Recorded SPEC-014B merge and HAL target UAT closeout after
 PR #76 merged to `main`. Cleanup was not applied because this was a status
 closeout branch, not an explicit safe-base archive cleanup run.
+Revision 2026-06-05: Archived SPEC-014C after PR #79 merged to `main` as
+`0af176a5e5aebec11babed1ae034f18810b5f7e9`. Source cleanup was not applied
+because no `--apply-cleanup` request was supplied.
 
 ---
 
@@ -351,6 +354,20 @@ As a viewer or flag-off workspace user, I can inspect safe state without any ena
 **US5 — Preserve Visual And Cleanup Evidence (P2)**
 As a reviewer, I can trace route-backed screenshots, Storybook states, fixture cleanup proof, feature-flag restoration, and visual review provenance for the operator UX.
 
+### SPEC-014C: First Real Harness Adapter Pilot [Source: specs/014c-first-real-harness-adapter]
+
+**US1 — Admit And Launch A Claimed Stage (P1)**
+As an operator, I can run an already-claimed GitHub-linked assigned stage through runtime-inventory eligibility and launch the Codex app-server from a bounded Paddock-owned sandbox.
+
+**US2 — Inspect Safe Run Evidence (P2)**
+As a reviewer, I can inspect launched, failed, timed-out, and cleanup evidence without raw transcripts, prompts, provider payloads, tool payloads, or host paths.
+
+**US3 — Fail Closed On Unsupported Runtime Events (P3)**
+As a maintainer, I can prove user input, approvals, tool/file requests, unavailable binaries, malformed protocol events, timeouts, unsafe evidence, and stale ownership all fail closed with bounded reason codes.
+
+**US4 — Review A Bounded Adapter PR (P4)**
+As a reviewer, I can evaluate one real Codex app-server adapter while retention policy, live intervention, OpenClaw/external adapters, and workflow IA follow-ups stay deferred.
+
 ---
 
 ## Functional Requirements
@@ -503,6 +520,7 @@ As a reviewer, I can trace route-backed screenshots, Storybook states, fixture c
 - **SPEC-013C FRs**: Add authenticated claim-control mutation API, M79 idempotency replay storage, release/cancel/retry/backoff/stale/auth/flag-off semantics, sanitized audit/read-model evidence, and same-key replay without rerunning side effects; avoid task-detail UI, dashboard, CLI/MCP actions, GitHub mutations, successor selection, sandbox lifecycle, adapter registry, or harness execution.
 - **SPEC-013D FRs**: Render the SPEC-013C `claim_control` read model in the existing task detail; use backend-provided `available_actions`, expected state, retry eligibility, backoff, last action, and sanitized errors as authoritative; submit retry/release/cancel through the existing SPEC-013C route with bounded reason/override fields and same-submission idempotency retry only after network failure; refresh claim, evidence, stage-attempt, and task-list state after bounded responses; expose accessible confirmations, disabled reasons, receipts, and visual states; never add migrations, backend semantics, scheduler launch, dashboard, sandbox lifecycle, adapter registry, direct GitHub mutation, successor selection, harness execution, raw idempotency keys, or raw diagnostics.
 - **SPEC-014A FRs**: Add M80 sandbox lifecycle/event persistence, deterministic sandbox keys, bounded path evidence, feature-flagged fake owner lifecycle transitions, read-only task-authorized `sandbox_lifecycle.v1` API, rollback SQL, and flag-off no-mutation behavior; avoid UI, real harness launch/resume/stop, adapter manifests, retry controls, tracker truth, successor selection, governance changes, token accounting, and auto-merge.
+- **SPEC-014C FRs**: Provide exactly one Codex app-server real adapter manifest/path admitted only after claim, reconciliation, governance, lifecycle, assignment, capability, and runtime-inventory checks; launch through official stdio app-server protocol from a Paddock-owned sandbox; record descriptor-only run, attempt, lifecycle, activity, usage, failure, and artifact evidence; fail closed for unsupported input, approval, tool/file, capability, timeout, binary, malformed protocol, unsafe evidence, stale ownership, and cleanup failures; preserve task terminal, GitHub, successor, governance, retention, intervention, and workflow IA boundaries; require HAL real-launch UAT and zero marker residue.
 
 ---
 
@@ -607,6 +625,12 @@ As a reviewer, I can trace route-backed screenshots, Storybook states, fixture c
 | Operator Reason | Bounded release, cancel, or backoff-override explanation captured by UI validation before submission |
 | Idempotency Attempt | In-memory same-submission retry token reused only after network failure for the exact same task/action/stage/body and never rendered or persisted |
 | Outcome Receipt | Bounded task-detail status message summarizing the action, backend outcome, replay/conflict state, and linked audit/activity reference when present |
+| Codex App-Server Adapter Manifest | The admitted real harness definition for SPEC-014C, including launch support, timeout, sandbox posture, capabilities, usage/failure summaries, and non-interactive unsupported-event policy |
+| Runtime Inventory Eligibility Decision | The visible, unassigned, assigned, eligible, or blocked runtime-inventory outcome derived from adapter manifest, assignment, capability, task, governance, and lifecycle state |
+| Claimed Stage Attempt | The SPEC-013B/SPEC-013C-owned claimed task stage that can be handed to the adapter only while ownership remains current |
+| Adapter Run Evidence | Descriptor-only `codex_app_server_run.v1` metadata plus bounded lifecycle, attempt, activity, usage, failure, and artifact-reference summaries |
+| Safe Artifact Reference | Descriptor-only artifact metadata excluding storage URI, raw content, previews, original filenames, host paths, external URLs, transcripts, prompts, and provider/tool/MCP payloads |
+| HAL UAT Fixture | Disposable workspace, task, lifecycle, artifact, feature-flag, and marker-scoped evidence proving one real launch plus fail-closed fixtures and zero residue |
 
 ---
 
@@ -657,6 +681,11 @@ As a reviewer, I can trace route-backed screenshots, Storybook states, fixture c
 - SPEC-013D same-submission idempotency keys are cleared on any completed response, changed body, changed expected state, task change, close, cancel, or new operator decision, and raw keys are never stored, rendered, or written to evidence.
 - SPEC-013D stale/conflict, not-eligible, authorization, feature-flag-off, validation, replay, and network-failure states must be bounded user-facing receipts without raw request bodies or unsafe diagnostic payloads.
 - SPEC-013D flag-off and viewer/read-only paths may show safe state but must leave mutation controls disabled or absent.
+- SPEC-014C runner flag OFF blocks launch even when claim, assignment, capability, and lifecycle checks would otherwise pass.
+- SPEC-014C unavailable Codex binary, incompatible app-server version, malformed protocol, timeout, unsafe output, or cleanup failure records bounded failure evidence and fails closed.
+- SPEC-014C user-input, approval, tool, file, permission, MCP, or unsupported-capability requests fail closed without auto-answering or auto-approving.
+- SPEC-014C artifact and run evidence must reject raw transcripts, prompt bodies, provider/tool payloads, host paths, external URLs, and unsafe previews before durable retention.
+- SPEC-014C stale claim-control or ownership recovery wins over late adapter completion; the adapter must terminate or abandon mutation rather than override current ownership.
 
 ---
 
@@ -689,3 +718,4 @@ As a reviewer, I can trace route-backed screenshots, Storybook states, fixture c
 - SPEC-013D: Existing task detail exposes authoritative claim-control state, disabled reasons, confirmations, retry/release/cancel submissions, bounded receipts, refresh behavior, read-only/flag-off protections, route-backed Playwright and Storybook visual evidence, cleanup proof, archive provenance, and HAL target UAT evidence with zero disposable-row residue; 72/72 tasks completed and PR #65 merged.
 - SPEC-014A: Sandbox lifecycle contract persistence, fake owner lifecycle states, enabled/disabled read API evidence, combined HAL replay with SPEC-013C, and cleanup evidence pass; 58/58 tasks completed.
 - SPEC-014B: Typed harness adapter manifests, fake registry, capability-resolution packet, runtime-inventory read model/API, read-only Agents evidence surface, fail-closed unsupported capabilities, `/api/agents` compatibility, HAL target UAT marker `SPEC-014B-HAL-UAT-20260604194737`, and cleanup evidence pass; 82/82 tasks completed and PR #76 merged.
+- SPEC-014C: One real Codex app-server launch on HAL with descriptor-only evidence, deterministic failure fixture coverage, flag-off proof, no task terminal/GitHub/successor/governance mutation, zero marker residue, 49/49 tasks completed, and PR #79 merged.

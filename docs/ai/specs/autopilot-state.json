@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014C-workflow.md",
-  "updated_at": "2026-06-05T18:39:37Z",
+  "updated_at": "2026-06-05T21:05:01Z",
   "spec_id": "SPEC-014C",
   "branch": "014c-first-real-harness-adapter",
   "feature_dir": "specs/014c-first-real-harness-adapter",
@@ -29,7 +29,7 @@
     "mode": "sweep startup evidence",
     "safeToApplyCleanup": false,
     "status": "completed",
-    "reason": "archive extension installed; active branch is a feature worktree and cleanup is not safe from this branch"
+    "reason": "archive extension installed; post-merge archive/status run did not request --apply-cleanup; source folder retained with recovery commands"
   },
   "preflight": {
     "speckit_cli": "specify 0.8.16",
@@ -42,7 +42,7 @@
     "executor_model": "gpt-5.5",
     "executor_reasoning_effort": "xhigh"
   },
-  "active_step": "Post-implementation closeout hygiene complete; PR #79 review/merge pending",
+  "active_step": "Post-merge archive/status hygiene complete; PR #79 merged to main as 0af176a5e5aebec11babed1ae034f18810b5f7e9",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -93,7 +93,8 @@
     {"step": "Post: Self-Review", "status": "completed", "note": "Recorded four-question self-review in workflow after HAL UAT pass; FR-023/FR-024 target evidence is complete for the PR branch"},
     {"step": "Post: UAT Runbook Generation", "status": "completed", "note": "Updated specs/014c-first-real-harness-adapter/uat-runbook.md with HAL UAT pass evidence"},
     {"step": "Post: PR Body Generation", "status": "completed", "note": "Updated PR #79 body with official-doc-grounded stdio transport and HAL UAT pass evidence"},
-    {"step": "Post: PR Creation", "status": "completed", "note": "Created PR #79: https://github.com/racecraft-lab/Paddock/pull/79"},
+    {"step": "Post: PR Creation", "status": "completed", "note": "Created PR #79: https://github.com/racecraft-lab/Paddock/pull/79; PR merged to main as 0af176a5e5aebec11babed1ae034f18810b5f7e9"},
+    {"step": "Post: Merge And Archive Closeout", "status": "completed", "note": "PR #79 merged on 2026-06-05T21:05:01Z; .specify/memory, workflow, roadmap, AGENTS, UAT, and review-packet docs updated; source cleanup not applied because --apply-cleanup was not requested"},
     {"step": "Post: Review Remediation", "status": "completed", "note": "No actionable PR comments or inline review comments were present at closeout; Copilot reviewer entry was an unable-to-review error only"},
     {"step": "Post: Retrospective", "status": "completed", "note": "specs/014c-first-real-harness-adapter/retrospective.md records 100% completion, 97% adherence, 0 critical findings, and 0 significant findings"}
   ]
