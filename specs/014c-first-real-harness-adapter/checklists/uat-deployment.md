@@ -48,7 +48,7 @@
 
 ## Dependencies & Assumptions
 
-- [x] CHK026 Are deployment assumptions documented for HAL access, Paddock service status, optional gateway health, Codex app-server command availability, and the selected `codex app-server proxy` transport? [Dependency, AGENTS OpenClaw Node Deployment Notes; Plan Transport Command; Quickstart HAL UAT Shape]
+- [x] CHK026 Are deployment assumptions documented for HAL access, Paddock service status, optional gateway health, Codex app-server command availability, and the selected `codex app-server --listen stdio://` transport? [Dependency, AGENTS OpenClaw Node Deployment Notes; Plan Transport Command; Quickstart HAL UAT Shape]
 - [x] CHK027 Are dependencies on SPEC-013B/C/D claim authority, SPEC-014A sandbox lifecycle, SPEC-014B runtime inventory, and existing artifact safety surfaces documented as UAT prerequisites? [Dependency, Plan Summary; Plan G3 Gate Result; Spec Assumptions]
 - [x] CHK028 Are report dependencies documented for creating `uat-report.md` and `pr-review-packet.md` during implementation closeout without retaining raw live rows, raw protocol payloads, or sandbox contents? [Dependency, Spec Clarifications: UAT And Deployment; Quickstart HAL UAT Shape; Quickstart Review Packet Shape]
 - [x] CHK029 Are external-source assumptions bounded so OpenAI app-server protocol vocabulary informs launch evidence without importing Symphony scheduler, tracker, or auto-merge behavior? [Assumption, Spec External Context Applied; Plan Summary; Research Scope]

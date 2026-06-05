@@ -22,6 +22,7 @@ Expected planning evidence:
 
 - CLI version is locally available.
 - `app-server` exposes `daemon`, `proxy`, `generate-ts`, and `generate-json-schema`.
+- Direct `codex app-server --listen stdio://` returns the official initialize response during HAL UAT.
 - No `serve` command is assumed.
 - Generated protocol contains initialize, thread, turn, usage, item, request-approval, user-input, permission, and tool-call shapes.
 

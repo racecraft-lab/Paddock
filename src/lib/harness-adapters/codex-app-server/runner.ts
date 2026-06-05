@@ -98,7 +98,7 @@ export interface CodexAppServerLaunchResult {
   readonly cleanupEvidence?: CodexAppServerCleanupEvidence
 }
 
-const CODEX_APP_SERVER_COMMAND = ['codex', 'app-server', 'proxy'] as const
+const CODEX_APP_SERVER_COMMAND = ['codex', 'app-server', '--listen', 'stdio://'] as const
 const activeLaunches = new Set<string>()
 
 export type CodexAppServerSubprocessStatus =
@@ -283,9 +283,16 @@ function initializeRequest(): CodexAppServerWireMessage {
         version: '0.1.0',
       },
       capabilities: {
-        experimentalApi: false,
+        experimentalApi: true,
         requestAttestation: false,
-        optOutNotificationMethods: [],
+        optOutNotificationMethods: [
+          'command/exec/outputDelta',
+          'item/agentMessage/delta',
+          'item/plan/delta',
+          'item/fileChange/outputDelta',
+          'item/reasoning/summaryTextDelta',
+          'item/reasoning/textDelta',
+        ],
       },
     },
   }

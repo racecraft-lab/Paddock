@@ -12,7 +12,7 @@ Fields:
 
 - `adapterId`: stable id for Codex app-server.
 - `schemaVersion`: manifest schema version from SPEC-014B.
-- `command`: argv contract for `codex app-server proxy`.
+- `command`: argv contract for `codex app-server --listen stdio://`.
 - `supportsLaunch`: true.
 - `supportsContinuation`: true only for same live thread/current claim attempt.
 - `timeoutMs`: bounded manifest timeout.

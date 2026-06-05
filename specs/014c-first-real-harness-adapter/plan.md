@@ -22,7 +22,7 @@ External context refreshed by parent on 2026-06-05 and applied only for launch/r
 Local Codex protocol evidence supplied by the parent and verified during planning:
 
 - `codex --version` returned `codex-cli 0.133.0`.
-- `codex app-server --help` exposes `daemon`, `proxy`, `generate-ts`, and `generate-json-schema`; no `serve` command exists.
+- `codex app-server --help` exposes `daemon`, `proxy`, `generate-ts`, and `generate-json-schema`; no `serve` command exists. HAL target UAT later proved `proxy` hangs without a managed standalone daemon, while the documented direct stdio listener responds.
 - `codex app-server generate-ts --out /tmp/spec-014c-codex-app-server-schema/ts --experimental` succeeded.
 - `codex app-server daemon --help` and `codex app-server proxy --help` were checked during Plan.
 
@@ -34,7 +34,7 @@ Local Codex protocol evidence supplied by the parent and verified during plannin
 **Testing**: Vitest for adapter protocol, failure mapping, runtime-inventory eligibility, dispatch seam, lifecycle ordering, artifact safety, scope guard, and static no-mutation checks; Playwright only if an existing evidence UI is changed, which Plan does not require  
 **Target Platform**: Paddock server runtime on Node >=22, including HAL deployment for UAT  
 **Project Type**: Next.js web application with server-side runtime/adapter integration  
-**Performance Goals**: One admitted adapter attempt starts at most one `codex app-server proxy` transport subprocess; prompt and evidence envelopes are bounded; manifest timeout is enforced; usage extraction is O(event count) over the live protocol stream  
+**Performance Goals**: One admitted adapter attempt starts at most one `codex app-server --listen stdio://` transport subprocess; prompt and evidence envelopes are bounded; manifest timeout is enforced; usage extraction is O(event count) over the live protocol stream
 **Constraints**: No second adapter, no OpenClaw-specific behavior, no new launch route/button, no live intervention UI, no transcript-retention platform, no direct task terminal mutation, no direct GitHub mutation, no successor selection, no auto-merge, no raw transcript/protocol/provider/tool/prompt payload retention  
 **Scale/Scope**: One adapter manifest and one adapter implementation; 6 production modules planned, focused tests, generated plan artifacts, HAL UAT/report packet later in implementation  
 **Runtime Dependency Decision**: No new runtime dependency is required. JSON-RPC framing, subprocess control, timeout handling, hashing, and bounded schema checks can be implemented with Node built-ins and existing project helpers.  
@@ -57,7 +57,7 @@ Add Codex app-server under the stricter SPEC-014B harness-adapter layer, not the
 
 ### Transport Command
 
-Use `codex app-server proxy` as the per-attempt stdio transport subprocess. Local help shows `daemon` is for local daemon management and `proxy` proxies stdio bytes to the app-server control socket. SPEC-014C does not introduce a Paddock-managed durable daemon or service.
+Use `codex app-server --listen stdio://` as the per-attempt stdio transport subprocess. Official Codex app-server documentation defines stdio as newline-delimited JSON, and HAL target UAT proved the direct listener returns the official initialize response. SPEC-014C does not introduce a Paddock-managed durable daemon or service.
 
 The child process is spawned without a shell, with process `cwd` set to the prepared SPEC-014A lifecycle root. The adapter sends official app-server v2 JSON-RPC messages over stdio:
 
@@ -205,7 +205,7 @@ Research is recorded in `specs/014c-first-real-harness-adapter/research.md`.
 
 Resolved decisions:
 
-- Use `codex app-server proxy` as the per-attempt stdio transport subprocess.
+- Use `codex app-server --listen stdio://` as the per-attempt stdio transport subprocess.
 - Use official app-server v2 initialize/thread/turn/terminal protocol events from generated schema evidence.
 - Store descriptor-only `codex_app_server_run.v1` evidence through existing Paddock surfaces.
 - Use existing artifact publication and secret/redaction helpers; structurally unsafe output fails before redaction.

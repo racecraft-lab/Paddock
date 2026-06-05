@@ -61,7 +61,7 @@ Required launch inputs:
 Launch command:
 
 ```text
-codex app-server proxy
+codex app-server --listen stdio://
 ```
 
 Process rules:

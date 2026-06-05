@@ -4,7 +4,7 @@ export const CODEX_APP_SERVER_MANIFEST_ID = 'codex-app-server' as const
 export const CODEX_APP_SERVER_MODEL = null
 export const CODEX_APP_SERVER_FIXED_NOW = '2026-06-05T12:00:00.000Z' as const
 export const CODEX_APP_SERVER_FIXED_COMPLETED_AT = '2026-06-05T12:01:15.000Z' as const
-export const CODEX_APP_SERVER_COMMAND = ['codex', 'app-server', 'proxy'] as const
+export const CODEX_APP_SERVER_COMMAND = ['codex', 'app-server', '--listen', 'stdio://'] as const
 export const CODEX_APP_SERVER_SAFE_SHA256 =
   '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef' as const
 
@@ -255,9 +255,9 @@ export interface CodexAppServerInitializeParams {
     readonly version: '0.1.0'
   }
   readonly capabilities: {
-    readonly experimentalApi: false
+    readonly experimentalApi: true
     readonly requestAttestation: false
-    readonly optOutNotificationMethods: readonly []
+    readonly optOutNotificationMethods: readonly string[]
   }
 }
 
@@ -334,9 +334,16 @@ export const buildCodexAppServerInitializeRequest = (
       version: '0.1.0',
     },
     capabilities: {
-      experimentalApi: false,
+      experimentalApi: true,
       requestAttestation: false,
-      optOutNotificationMethods: [],
+      optOutNotificationMethods: [
+        'command/exec/outputDelta',
+        'item/agentMessage/delta',
+        'item/plan/delta',
+        'item/fileChange/outputDelta',
+        'item/reasoning/summaryTextDelta',
+        'item/reasoning/textDelta',
+      ],
     },
   },
   ...overrides,
@@ -431,7 +438,7 @@ export const buildCodexAppServerTurnStartRequest = (
             `Repository: ${ids.repository}`,
             `Issue: ${ids.githubIssueUrl}`,
             `Stage: ${ids.stageKey}`,
-            'Return descriptor-only completion evidence. Do not retain raw transcript or tool payloads.',
+            'Return descriptor-only completion evidence. Do not retain raw transcript or tool payloads. Do not call tools.',
           ].join('\n'),
           text_elements: [],
         },

@@ -88,7 +88,7 @@ describe('SPEC-014C Codex app-server manifest', () => {
     expect(manifestModule.CODEX_APP_SERVER_REAL_ADAPTER_REGISTRY).toHaveLength(1)
   })
 
-  it('declares launch and same-run continuation support for the app-server proxy command', () => {
+  it('declares launch and same-run continuation support for the app-server stdio command', () => {
     const manifestModule = loadManifestModule()
     const manifest = asRecord(manifestModule.CODEX_APP_SERVER_MANIFEST)
 

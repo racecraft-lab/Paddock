@@ -77,6 +77,8 @@ export function buildCodexAppServerTurnInput(
     `Manifest: ${sanitizeText(input.manifestId)}`,
     `Capabilities:\n${renderCapabilityPacket(input)}`,
     'Evidence mode: descriptor-only',
+    'Execution boundary: do not call tools, request approval, inspect files, modify state, or use external services.',
+    'Return a concise descriptor-only completion statement for this launch handoff.',
     'Handoff: launch_handoff_completed',
   ].join('\n\n')
 

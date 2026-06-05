@@ -16,18 +16,20 @@ External citations applied:
 
 ## Decision: Use Codex App-Server Proxy As The Per-Attempt Transport
 
-Use `codex app-server proxy` as the per-attempt stdio transport subprocess. Spawn without a shell and with process `cwd` set to the SPEC-014A lifecycle root. Send the official app-server v2 JSON-RPC protocol over stdio.
+Use `codex app-server --listen stdio://` as the per-attempt stdio transport subprocess. Spawn without a shell and with process `cwd` set to the SPEC-014A lifecycle root. Send the official app-server v2 JSON-RPC protocol over stdio.
 
 Rationale:
 
 - Parent evidence shows local `codex-cli 0.133.0` supports `daemon`, `proxy`, `generate-ts`, and `generate-json-schema`, with no `serve` command.
-- Planning checked `codex app-server daemon --help` and `codex app-server proxy --help`; `proxy` is the stdio transport to the app-server control socket.
-- A proxy subprocess gives Paddock one bounded process to supervise per admitted stage attempt while avoiding a Paddock-managed durable app-server service.
+- Official Codex app-server documentation defines `--listen stdio://` as a newline-delimited JSON transport.
+- HAL target UAT on Codex CLI 0.136.0 proved direct `codex app-server --listen stdio://` returns the official initialize response, while `codex app-server proxy` produced no response against a plain transient Unix-socket listener and managed remote-control start was blocked by the missing standalone Codex install.
+- A direct stdio subprocess gives Paddock one bounded process to supervise per admitted stage attempt while avoiding a Paddock-managed durable app-server service.
 
 Alternatives considered:
 
 - `codex app-server serve`: rejected because the local CLI has no `serve` command.
-- Managing `codex app-server daemon start` from dispatch: rejected for SPEC-014C because it widens operational ownership. HAL preflight may verify the daemon/proxy surface, but adapter code fails closed if proxy cannot connect.
+- `codex app-server proxy`: rejected for the HAL target path because it depends on the app-server control-socket/managed-daemon surface; HAL's plain transient Unix-socket listener did not return protocol responses through proxy.
+- Managing `codex app-server daemon start` or installing the managed standalone from dispatch: rejected for SPEC-014C because it widens operational ownership. HAL preflight may verify daemon/remote-control surfaces, but adapter code owns only its per-attempt stdio subprocess.
 - Shelling through a generic command string: rejected because subprocess launch should use argv without a shell.
 
 ## Decision: Use Official V2 Lifecycle Events As Authority

@@ -87,7 +87,7 @@ export const CODEX_APP_SERVER_MANIFEST = {
   adapterId: 'codex-app-server',
   manifestId: 'codex-app-server',
   evidenceSchemaVersion: 'codex_app_server_run.v1',
-  command: ['codex', 'app-server', 'proxy'],
+  command: ['codex', 'app-server', '--listen', 'stdio://'],
   launch: {
     supported: true,
     transport: 'stdio_json_rpc',

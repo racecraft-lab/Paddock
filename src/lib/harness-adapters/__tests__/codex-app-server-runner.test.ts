@@ -291,7 +291,7 @@ const buildLiveProtocolChild = (): {
 };
 
 describe('SPEC-014C Codex app-server runner launch', () => {
-  it('spawns exactly one codex app-server proxy subprocess without a shell from the lifecycle root', async () => {
+  it('spawns exactly one codex app-server stdio subprocess without a shell from the lifecycle root', async () => {
     const launch = await runAdmittedLaunch();
     if (launch === null) return;
     const spawnCall = launch.spawnCalls[0];
@@ -597,6 +597,7 @@ describe('SPEC-014C Codex app-server input minimization', () => {
     expect(renderedInput).toContain('approvalPolicy');
     expect(renderedInput).toContain('userInputPolicy');
     expect(renderedInput).toContain('descriptor-only');
+    expect(renderedInput).toContain('do not call tools');
     expect(renderedInput).toContain('launch_handoff_completed');
     expect(renderedInput).not.toContain(launchInput.lifecycleRoot);
   });
