@@ -18,7 +18,7 @@
 
 ## 3. Diagnose
 
-1. Compare `resource_counters` to the per-window sum from
+1. Compare `resource_budget_counters` to the per-window sum from
    `resource_budget_ledger` (the ledger is authoritative).
 2. Inspect `governance_audit_chain_break` events.
 3. Check the orphan-event sweep summary

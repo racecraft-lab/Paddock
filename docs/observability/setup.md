@@ -71,10 +71,10 @@ a source:
 
 | Source | Current repo evidence |
 | --- | --- |
-| `claude_code` (native OTel) | `CLAUDE_CODE_ENABLE_TELEMETRY=1 claude -p ...` |
-| `claude_code.transcript_replay` | enabled when `claude mcp serve` is the child process |
-| `cli_stdout_json` (Codex) | streams via the dispatcher's session writer |
-| `copilot.events_jsonl` | `events.jsonl` shipped under `~/.copilot/` |
+| `native_otel` (Claude Code native OTel) | `CLAUDE_CODE_ENABLE_TELEMETRY=1 claude -p ...` |
+| `claude_transcript` | enabled when `claude mcp serve` is the child process |
+| `codex_stdout` | streams via the dispatcher's session writer |
+| `copilot_events` | `events.jsonl` shipped under `~/.copilot/` |
 | `openclaw_gateway` | reads `~/.openclaw/health/` artifacts when `FEATURE_OPENCLAW_HEALTH_COSTS` is enabled |
 | `manual_post` | adapter source exists for future/manual replay pipelines; the current `POST /api/tokens` route stores token records directly |
 | `provider_quota` | registered advisory source id; no operator-facing fetch route is checked in |

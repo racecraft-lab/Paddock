@@ -49,7 +49,7 @@ SPEC-006 introduces workspace-scoped GitHub sync routing. Before enabling
    Expect `>= 1`.
 
 2. **Exactly one `is_repo_sync_owner=1` per `(workspace_id, github_repo)`
-   group.** Migration M62 elects an initial owner deterministically, but
+   group.** Migration M63 elects an initial owner deterministically, but
    projects added post-migration may not have ownership set. Run:
 
    ```sql
@@ -180,9 +180,7 @@ constitution's matrix-test convention.
 
 - **Scope**: workspace.
 - **Risk**: high. Affects the synchronous admission path.
-- **Dependencies (`enableRequires`)**: none at the registry level
-  (the policy evaluator depends on schema readiness, not on other
-  flags).
+- **Dependencies (`enableRequires`)**: `FEATURE_TASK_PIPELINES`.
 - **Activation**: workspace `feature_flags.FEATURE_RESOURCE_GOVERNANCE = true`.
 - **Env override**:
   - `FEATURE_RESOURCE_GOVERNANCE='0'` forces OFF (emergency rollback).
