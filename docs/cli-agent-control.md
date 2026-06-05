@@ -34,8 +34,8 @@ pnpm mc sessions control --id <session-id> --action terminate
 Workspace scope depends on deployment mode. Legacy single-workspace installs use
 the authenticated user's default workspace. Factory/multi-workspace deployments
 with `FEATURE_WORKSPACE_SWITCHER` enabled require explicit scope on scoped REST
-calls; use `pnpm mc raw --method ... --path '/api/...?...&workspace_id=1' --json`
-or include `"workspace_id": 1` in the raw body when a shorthand command does not
+calls; use `workspace_id=<id>` (Product Line) or `workspace_scope=facility`
+(Facility), but never both. Use `pnpm mc raw` when a shorthand command does not
 offer a workspace flag.
 
 ## Command groups
