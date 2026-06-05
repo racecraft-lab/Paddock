@@ -1,6 +1,6 @@
 # SPEC-014C PR Review Packet
 
-Status: T001-T049 are complete. HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` passed on branch target commit `43989ac856696abb2ea764fed409da268b87c9a8`, including one real Codex app-server stdio launch, deterministic failure fixtures, workspace-scoped flag checks, and zero marker-scoped residue. SPEC-014C remains PR-open until review, merge, and normal post-merge promotion policy complete.
+Status: T001-T049 are complete. HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` passed on branch target commit `43989ac856696abb2ea764fed409da268b87c9a8`, including one real Codex app-server stdio launch, deterministic failure fixtures, workspace-scoped flag checks, and zero marker-scoped residue. PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9` on 2026-06-05T21:05:01Z.
 
 ## Source Design Citation
 
@@ -237,7 +237,7 @@ Implementation notes: T038 completed the changed-path allowlist for SPEC-014C-ow
 | T047 lint | `direnv exec . pnpm lint` | Exit 0 | `eslint .` completed with no diagnostics |
 | T047 build | `direnv exec . pnpm build` outside the sandbox after sandboxed Turbopack hit a process/port restriction | Exit 0 | Next.js 16.2.6 production build compiled, ran TypeScript, generated 145 static pages, and finalized route output |
 | T048 artifact scan | `rg -n "NEEDS[[:space:]]+CLARIFICATION|\\bcritical\\b|raw transcript|raw protocol|provider payload|tool payload|prompt body|host path|storage URI|fake-only|TBD|Placeholder|placeholder|remaining placeholders|HAL UAT has not been run|Final PR description" ...` | Reviewed | Remaining hits are policy/non-goal language; stale blocked HAL UAT wording was removed from the closeout artifacts |
-| T049 reconciliation | Tasks, UAT report, workflow, roadmap, autopilot state, and review packet reconciled | Complete | T001-T049 are complete; SPEC-014C remains PR-open pending review, merge, and normal post-merge promotion policy |
+| T049 reconciliation | Tasks, UAT report, workflow, roadmap, autopilot state, and review packet reconciled | Complete | T001-T049 are complete; PR #79 merged and post-merge archive/status hygiene records SPEC-014C as complete |
 
 ## Traceability Matrix
 
@@ -286,6 +286,7 @@ Review check: any SPEC-014C implementation that attempts to move workflow naviga
 - HAL UAT passed for marker `SPEC-014C-HAL-UAT-20260605121830` on branch target `43989ac856696abb2ea764fed409da268b87c9a8`.
 - T042-T045 are complete: deployed commit/service evidence, one real Codex app-server target launch, HAL failure matrix, workspace-scoped flag proof, and zero-residue cleanup proof are captured.
 - Local implementation, persistence, fail-closed fixtures, no-mutation guards, G7 validation, workflow status, roadmap status, autopilot status, and PR description are reconciled.
+- PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9` on 2026-06-05T21:05:01Z.
 
 ## Post-Implementation Hygiene
 
@@ -308,6 +309,6 @@ Generated: 2026-06-05T18:39:37Z
 | Typecheck | PASS | `direnv exec . pnpm typecheck` completed with no diagnostics |
 | Lint | PASS | `direnv exec . pnpm lint` completed with no diagnostics |
 | Build | PASS | `direnv exec . pnpm build` completed successfully outside the sandbox |
-| PR checks | PASS | PR #79 CodeQL, quality-gate, and visual approval checks passed at closeout start |
+| PR checks | PASS | PR #79 CodeQL, quality-gate, and visual approval checks passed for commit `a6c646b46a3ae356945629bb02b5b62b8f6993af` before merge |
 
 Closeout note: plain shell `pnpm` currently selects Node 26 on this machine and is not the project runtime for this linked worktree. Closeout verification used the documented `direnv exec .` path, which selects Node 22.22.2 and matches the rebuilt `better-sqlite3` native addon.

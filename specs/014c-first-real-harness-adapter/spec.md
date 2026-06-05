@@ -2,7 +2,7 @@
 
 **Feature Branch**: `014c-first-real-harness-adapter`  
 **Created**: 2026-06-04  
-**Status**: Draft  
+**Status**: Completed
 **Input**: User description: "Implement the first real harness adapter path behind the SPEC-014B registry. The selected adapter is Codex app-server."
 
 ## User Scenarios & Testing *(mandatory)*

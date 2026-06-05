@@ -1,6 +1,6 @@
 # SPEC-014C Code Review Report
 
-Generated: 2026-06-05T18:39:37Z
+Generated: 2026-06-05T18:39:37Z; updated for PR #79 merge on 2026-06-05T21:05:01Z
 
 ## Scope
 
@@ -23,10 +23,10 @@ No critical or important issues were found.
 
 ## Residual Risks
 
-- PR #79 still needs human review before merge.
+- PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9`; no review/merge risk remains for SPEC-014C.
 - The full branch diff is intentionally broad because it includes generated SpecKit artifacts, checklists, tests, UAT reports, ledgers, and docs. The reviewability gate passes only because the transition exception is recorded; reviewers should use the review order in `pr-review-packet.md`.
 - Local commands must use `direnv exec .` in this linked worktree. Plain shell `pnpm` currently selects Node 26 and can break native SQLite tests.
 
 ## Recommendation
 
-Proceed to PR review. No source remediation is required before merge.
+Proceed with archive/status closeout. No source remediation is required.

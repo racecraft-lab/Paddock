@@ -25,6 +25,9 @@ reviewed safe-base cleanup run.
 Revision 2026-06-04: Recorded SPEC-014B PR #76 merge and HAL target UAT closeout
 evidence. Active source cleanup was not applied because this branch only closes
 status and roadmap ledgers.
+Revision 2026-06-05: Archived SPEC-014C after PR #79 merged to `main` as
+`0af176a5e5aebec11babed1ae034f18810b5f7e9`. Cleanup was not applied because
+this closeout did not include an explicit `--apply-cleanup` request.
 
 ---
 
@@ -101,7 +104,9 @@ specs/
 ├── 013b-claim-reconciliation           # archived 2026-06-02; cleanup not applied
 ├── 013c-retry-debug-surfaces           # archived 2026-06-02; cleanup not applied
 ├── 013d-claim-control-operator-ux      # archived 2026-06-01; cleanup not applied
-└── 014a-sandbox-lifecycle-contract     # archived 2026-06-02; cleanup not applied
+├── 014a-sandbox-lifecycle-contract     # archived 2026-06-02; cleanup not applied
+├── 014b-adapter-manifest-fakes         # archived 2026-06-04; cleanup not applied
+└── 014c-first-real-harness-adapter     # archived 2026-06-05; cleanup not applied
 
 # Archived history:
 # - 001-foundation-migrations    (SPEC-001, archived 2026-04-28)
@@ -130,6 +135,8 @@ specs/
 # - 013c-retry-debug-surfaces              (SPEC-013C, PR #63, archived 2026-06-02 — cleanup not applied)
 # - 013d-claim-control-operator-ux         (SPEC-013D, PR #65, archived 2026-06-01 — cleanup not applied from post-merge hygiene branch)
 # - 014a-sandbox-lifecycle-contract        (SPEC-014A, PR #64, archived 2026-06-02 — cleanup not applied)
+# - 014b-adapter-manifest-fakes            (SPEC-014B, PR #76, archived 2026-06-04 — cleanup not applied)
+# - 014c-first-real-harness-adapter        (SPEC-014C, PR #79, archived 2026-06-05 — cleanup not applied)
 ```
 
 ---
@@ -635,11 +642,21 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 - Scope is UI/client-only over the existing SPEC-013C backend authority: no migration, backend retry/release/cancel semantics, scheduler launch, new dashboard, sandbox lifecycle, adapter registry, direct GitHub mutation, successor selection, whole-task terminal mutation, or harness execution.
 - Verification evidence includes focused ClaimControlSection Vitest coverage, `pnpm typecheck`, `pnpm lint`, `pnpm build`, full `pnpm test`, full `pnpm test:e2e`, local manual browser UAT, Docker-backed Playwright, Storybook visual states, visual-review approval evidence, HAL target UAT, cleanup proof, and retrospective evidence recorded in the SPEC-013D workflow and UAT runbook.
 
+## SPEC-014C Plan Summary [Source: specs/014c-first-real-harness-adapter]
+
+**Branch**: `014c-first-real-harness-adapter` | **Merged**: 2026-06-05 | **PR**: #79
+
+- Adds one Codex app-server adapter under `src/lib/harness-adapters/codex-app-server/`, registered through the SPEC-014B runtime inventory.
+- Uses direct `codex app-server --listen stdio://` subprocess launch without a shell from the SPEC-014A Paddock-owned lifecycle root.
+- Adds bounded task-stage input assembly, initialize/thread/turn protocol handling, descriptor-only `codex_app_server_run.v1` evidence, safe artifact descriptors, usage/failure summaries, timeout/binary/malformed/unsafe/cleanup failure handling, ownership re-proof, and narrow `src/lib/task-dispatch-codex-app-server.ts` dispatch integration.
+- No migration, new dependency, UI route, OpenClaw behavior, transcript retention, live intervention, task terminal mutation, GitHub mutation, successor selection, governance mutation, or auto-merge behavior.
+- Verification covered focused cluster 8 files / 89 tests, scope guard, typecheck, lint, build, G7, doctor, reviewability exception, PR checks, and HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830`.
+
 ---
 
 ## Configuration and Routing
 
-### Feature Flags (as of SPEC-014A)
+### Feature Flags (as of SPEC-014C)
 
 | Flag | Default | Resolution |
 |------|---------|------------|
@@ -652,7 +669,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `PILOT_PADDOCK_E2E` | OFF | Canonical Product Line A pilot flag stored in workspace flags (SPEC-009B+) |
 | `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A-D run-state, claim/reconciliation, retry/debug API, and task-detail operator UX surfaces; legacy runtime remains table-blind when OFF |
 | `FEATURE_GITHUB_SYNC_AUTOMATION` | OFF | SPEC-013A1 GitHub sync lifecycle automation; manual sync fallback remains available when automation is off |
-| `FEATURE_AGENT_RUNNER_SANDBOXES` | OFF | SPEC-014A sandbox lifecycle contract/fake owners; real adapters and runtime inventory remain future SPEC-014B+ work |
+| `FEATURE_AGENT_RUNNER_SANDBOXES` | OFF | SPEC-014A sandbox lifecycle contract/fake owners plus SPEC-014B/C runtime inventory and first real adapter admission; workspace JSON enables scoped runner behavior |
 
 ### Verification Commands
 
@@ -760,6 +777,21 @@ From SPEC-014B:
 - `scripts/spec-014b/check-harness-adapter-scope.mjs`
 - `specs/014b-adapter-manifest-fakes/uat-runbook.md`
 
+From SPEC-014C:
+- `src/lib/harness-adapters/codex-app-server/manifest.ts`
+- `src/lib/harness-adapters/codex-app-server/input.ts`
+- `src/lib/harness-adapters/codex-app-server/protocol.ts`
+- `src/lib/harness-adapters/codex-app-server/evidence.ts`
+- `src/lib/harness-adapters/codex-app-server/runner.ts`
+- `src/lib/task-dispatch-codex-app-server.ts`
+- `src/lib/harness-adapters/__tests__/codex-app-server-manifest.test.ts`
+- `src/lib/harness-adapters/__tests__/codex-app-server-protocol.test.ts`
+- `src/lib/harness-adapters/__tests__/codex-app-server-runner.test.ts`
+- `src/lib/harness-adapters/__tests__/codex-app-server-evidence.test.ts`
+- `src/lib/harness-adapters/__tests__/codex-app-server-artifact-safety.test.ts`
+- `src/lib/__tests__/task-dispatch-codex-app-server.test.ts`
+- `scripts/spec-014c/check-scope-guard.mjs`
+
 ---
 
 ## Gotchas
@@ -794,4 +826,7 @@ From SPEC-014B:
 - **SPEC-013D authority boundary**: The task-detail UI consumes SPEC-013C `claim_control.available_actions[]` and expected state as authoritative. It must not recompute eligibility from task evidence, attempts, task status, or local role guesses.
 - **SPEC-013D idempotency lifecycle**: Same-submission idempotency retry is in-memory only after a network failure for the exact same task/action/stage/expected state/body. Clear it on response, body change, expected-state change, task change, close, cancel, or any new operator decision. Never render or persist raw keys.
 - **SPEC-013D Docker fixture path**: Docker-backed Playwright pre-seeds SPEC-013D fixture rows before container restart. Avoid live host-side SQLite writes while the production app serves a mounted database.
+- **SPEC-014C stdio transport choice**: The implemented adapter uses direct `codex app-server --listen stdio://` from a bounded Paddock lifecycle root. Managed remote/proxy launch remains out of scope because HAL did not have a separate managed app-server service to target.
+- **SPEC-014C Node runtime**: Local validation should use `direnv exec .` with Node 22.22.2. Plain shell Node 26 can break `better-sqlite3` native addon loading.
+- **SPEC-014C non-interactive boundary**: User input, approvals, tool/file requests, permission escalation, and unsupported capabilities fail closed until SPEC-014F owns live intervention UI.
 - **Archive extension on main**: `.specify/scripts/bash/check-prerequisites.sh --json --paths-only` still rejects `main` as not a feature branch even though archive cleanup policy can allow reviewed main cleanups. The 2026-05-22 archive run therefore followed the vendored command contract manually and did not apply cleanup.

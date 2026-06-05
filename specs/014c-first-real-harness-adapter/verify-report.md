@@ -1,6 +1,6 @@
 # SPEC-014C Verification Report
 
-Generated: 2026-06-05T18:39:37Z
+Generated: 2026-06-05T18:39:37Z; updated for PR #79 merge on 2026-06-05T21:05:01Z
 
 Scope: post-implementation verification of `spec.md`, `plan.md`, `tasks.md`, and `.specify/memory/constitution.md` for branch `014c-first-real-harness-adapter`.
 
@@ -12,7 +12,7 @@ No verification findings were found. SPEC-014C implements one Codex app-server h
 
 | ID | Category | Severity | Location(s) | Summary | Recommendation |
 |----|----------|----------|-------------|---------|----------------|
-| None | N/A | N/A | N/A | No CRITICAL, HIGH, MEDIUM, or LOW verification findings | Proceed with PR review/merge policy |
+| None | N/A | N/A | N/A | No CRITICAL, HIGH, MEDIUM, or LOW verification findings | Proceed with post-merge archive/status policy |
 
 ## Task Summary
 
@@ -54,7 +54,7 @@ No verification findings were found. SPEC-014C implements one Codex app-server h
 | `direnv exec . pnpm typecheck` | PASS | TypeScript completed with no diagnostics |
 | `direnv exec . pnpm lint` | PASS | ESLint completed with no diagnostics |
 | `direnv exec . pnpm build` | PASS | Production build passed outside sandbox |
-| `gh pr checks 79 --watch=false` | PASS | CodeQL, quality-gate, visual approval checks all passed at closeout start |
+| `gh pr checks 79 --watch=false` | PASS | CodeQL, quality-gate, and visual approval checks passed before PR #79 merged |
 
 ## Constitution Alignment
 
@@ -64,10 +64,10 @@ No constitution violations found. The implementation preserves the zero-regressi
 
 | Risk | Status | Handling |
 |------|--------|----------|
-| Human PR review still required | Open | PR #79 remains open with `reviewDecision=REVIEW_REQUIRED` |
+| Human PR review and merge | Closed | PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9` on 2026-06-05T21:05:01Z |
 | Broad branch diff exceeds generic reviewability budget | Accepted exception | Transition exception is recorded in workflow and review packet; scope guard and tests constrain the actual implementation surface |
 | Plain shell Node 26 can break local SQLite tests | Environment-only | Repo-linked worktree commands must use `direnv exec .`, which selects Node 22.22.2; `better-sqlite3` was rebuilt under that runtime |
 
 ## Next Actions
 
-Proceed with normal PR review, merge, and post-merge promotion policy. No SPEC-014C implementation remediation is required before review.
+Post-merge archive/status hygiene is required. No SPEC-014C implementation remediation is required.

@@ -9,7 +9,7 @@
 | HAL target commit | `43989ac856696abb2ea764fed409da268b87c9a8` on branch `014c-first-real-harness-adapter` |
 | Report captured at | `2026-06-05T17:21:41Z` |
 | Overall result | Passed |
-| Completion decision | SPEC-014C Phase 7 target UAT passed for the PR branch. T042-T045 are complete. Final project status remains PR-open until review, merge, and normal post-merge promotion policy complete. |
+| Completion decision | SPEC-014C Phase 7 target UAT passed for the PR branch. T042-T045 are complete. PR #79 merged to `main` as `0af176a5e5aebec11babed1ae034f18810b5f7e9` on 2026-06-05T21:05:01Z; post-merge archive/status hygiene records this report as accepted closeout evidence. |
 
 This report is descriptor-only. It records marker-scoped service, launch, failure-fixture, and cleanup evidence without raw app-server protocol payloads, transcripts, prompts, provider/tool/MCP payloads, secrets, sandbox contents, storage URIs, original filenames, or host paths.
 
