@@ -126,7 +126,7 @@ export MC_URL=http://localhost:3000
 export MC_API_KEY=your-api-key
 
 # Factory/multi-workspace deployments with FEATURE_WORKSPACE_SWITCHER enabled:
-# add workspace_id to POST bodies and queue/read query strings.
+# scope requests with either workspace_id=<product-line id> or workspace_scope=facility (not both).
 
 curl -X POST "$MC_URL/api/agents/register" \
   -H "Authorization: Bearer <MC_API_KEY>" \
