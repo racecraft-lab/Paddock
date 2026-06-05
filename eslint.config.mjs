@@ -143,6 +143,20 @@ const specStrictFiles = [
   'src/components/agents/RuntimeInventoryEvidence.tsx',
   'src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx',
   'scripts/spec-014b/check-harness-adapter-scope.mjs',
+  // SPEC-014C first real Codex app-server harness adapter.
+  'src/lib/harness-adapters/codex-app-server/manifest.ts',
+  'src/lib/harness-adapters/codex-app-server/input.ts',
+  'src/lib/harness-adapters/codex-app-server/protocol.ts',
+  'src/lib/harness-adapters/codex-app-server/evidence.ts',
+  'src/lib/harness-adapters/codex-app-server/runner.ts',
+  'src/lib/task-dispatch-codex-app-server.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-manifest.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-protocol.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-evidence.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-runner.test.ts',
+  'src/lib/harness-adapters/__tests__/codex-app-server-artifact-safety.test.ts',
+  'src/lib/__tests__/task-dispatch-codex-app-server.test.ts',
+  'scripts/spec-014c/check-scope-guard.mjs',
 ]
 
 const config = tseslint.config(

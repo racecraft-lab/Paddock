@@ -671,3 +671,38 @@ git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-opera
 git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/uat-runbook.md
 git show 50bf05e573f15b5aab5e53367444bef1d0b7baaf:specs/013d-claim-control-operator-ux/retrospective.md
 ```
+
+---
+
+## SPEC-014C: First Real Harness Adapter Pilot
+
+- **Feature**: RC Factory Phase 12C - first real Codex app-server harness adapter
+- **Branch**: `014c-first-real-harness-adapter`
+- **Spec Path**: `specs/014c-first-real-harness-adapter/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/79
+- **Merge Commit**: `0af176a5e5aebec11babed1ae034f18810b5f7e9`
+- **Feature Head**: `a6c646b46a3ae356945629bb02b5b62b8f6993af`
+- **Tree Reference**: `git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/spec.md`
+- **CI URL**: https://github.com/racecraft-lab/Paddock/actions/runs/27037461608/job/79804962897 (quality gate); CodeQL and visual approval checks passed before merge
+- **Argos URL**: N/A
+- **Metadata Gates**: HAL real-launch UAT=pass; quality-gate=pass; CodeQL=pass; visual approval=pass; verify=pass; verify-tasks=pass; review=pass; cleanup=pass; retrospective=pass
+- **Task Completion**: 49/49
+- **Summary**: Added the first real Codex app-server adapter, manifest/runtime-inventory registration, bounded task-stage input, no-shell stdio launch from a Paddock-owned sandbox, descriptor-only run evidence, safe artifact descriptors, failure/usage summaries, fail-closed unsupported runtime handling, timeout/binary/malformed/unsafe/cleanup failure handling, ownership re-proof, dispatch integration, static/runtime no-mutation guards, and HAL real-launch UAT marker `SPEC-014C-HAL-UAT-20260605121830`.
+- **Archive Note**: Source cleanup was not applied because no `--apply-cleanup` request was supplied. The checked-in `specs/014c-first-real-harness-adapter/` artifacts remain available until a reviewed safe-base cleanup run.
+
+**Recovery Commands**:
+```text
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/spec.md
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/plan.md
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/tasks.md
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/uat-report.md
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/uat-runbook.md
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/pr-review-packet.md
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/retrospective.md
+git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-adapter/verify-tasks-report.md
+```
+
+<!-- Archive extension manual execution metadata -->
+<!-- archiveMode: single-feature | dryRun: false | applyCleanupRequested: false | safeToApplyCleanup: false -->
+<!-- Branch: codex/spec-014c-archive at origin/main 0af176a5e5aebec11babed1ae034f18810b5f7e9 | Run: 2026-06-05 | archiveExtension: installed -->
+<!-- Prerequisite result: .specify/scripts/bash/check-prerequisites.sh --json --paths-only rejected the archive branch name as not a feature branch. Cleanup was not requested and source folders were retained with recovery commands. -->

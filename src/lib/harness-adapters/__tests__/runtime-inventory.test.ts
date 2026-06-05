@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { buildRuntimeInventory } from '@/lib/harness-adapters/runtime-inventory'
+import {
+  buildCodexAppServerRuntimeInventory,
+  buildRuntimeInventory,
+} from '@/lib/harness-adapters/runtime-inventory'
 
 const scope = {
   kind: 'productLine' as const,
@@ -151,6 +154,62 @@ describe('SPEC-014B runtime inventory read model', () => {
       rejection_metadata: {
         reason_code: 'sanitized_evidence_rejected',
       },
+    })
+  })
+
+  it('registers codex-app-server only through the explicit real-adapter inventory path', () => {
+    const defaultInventory = buildRuntimeInventory({
+      generatedAt,
+      scope,
+      featureFlagEnabled: true,
+    })
+    expect(defaultInventory.entries.map((entry) => entry.selected_manifest.manifest_id)).toEqual([
+      'external_harness_fake',
+      'paddock_owned_sandbox_fake',
+    ])
+
+    const codexInventory = buildCodexAppServerRuntimeInventory({
+      generatedAt,
+      scope,
+      featureFlagEnabled: true,
+      filters: {
+        projectId: 10,
+        taskId: 100,
+        role: 'implementation',
+        manifestId: 'codex-app-server',
+        requestedCapability: 'launch',
+      },
+      assignments: [{ project_id: 10, role: 'implementation', agent_name: 'codex-app-server' }],
+      task: { id: 100, workspace_id: 1, project_id: 10, status: 'assigned', stage_key: 'implementation' },
+      lifecycles: [{
+        id: 3,
+        workspace_id: 1,
+        task_id: 100,
+        stage_key: 'implementation',
+        owner: 'paddock',
+        status: 'prepared',
+        updated_at: generatedAt,
+      }],
+    })
+
+    expect(codexInventory.entries).toHaveLength(1)
+    expect(codexInventory.entries[0]).toMatchObject({
+      state: 'eligible',
+      selected_manifest: {
+        manifest_id: 'codex-app-server',
+        validation: { ok: true },
+      },
+      assignment: {
+        status: 'assigned',
+        role: 'implementation',
+        agent_name: 'codex-app-server',
+      },
+      capability_resolution: {
+        manifest_id: 'codex-app-server',
+        requested_capability: 'launch',
+        supported: true,
+      },
+      reason_codes: [],
     })
   })
 })

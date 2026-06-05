@@ -6,10 +6,16 @@ export const CAPABILITY_RESOLUTION_SCHEMA_VERSION = 'capability_resolution.v1'
 export const SANITIZED_FAKE_EVIDENCE_SCHEMA_VERSION = 'sanitized_fake_evidence.v1'
 
 export const HARNESS_ADAPTER_MANIFEST_IDS = [
+  'codex-app-server',
   'external_harness_fake',
   'paddock_owned_sandbox_fake',
 ] as const
 export type HarnessAdapterManifestId = (typeof HARNESS_ADAPTER_MANIFEST_IDS)[number]
+
+export const FAKE_HARNESS_ADAPTER_MANIFEST_IDS = [
+  'external_harness_fake',
+  'paddock_owned_sandbox_fake',
+] as const satisfies readonly HarnessAdapterManifestId[]
 
 export const HARNESS_ADAPTER_REASON_CODES = [
   'feature_disabled',
@@ -121,8 +127,8 @@ export interface HarnessAdapterManifest {
     readonly memory: CapabilitySupport
   }
   readonly provider_account_constraints: {
-    readonly synthetic_only: true
-    readonly account_binding: 'none' | 'declared_external'
+    readonly synthetic_only: boolean
+    readonly account_binding: 'none' | 'declared_external' | 'codex_app_server'
     readonly support: CapabilitySupport
   }
   readonly policies: {

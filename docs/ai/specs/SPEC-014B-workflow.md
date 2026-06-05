@@ -604,5 +604,8 @@ Closeout is complete:
 Next operator step:
 
 ```text
-$speckit-autopilot docs/ai/specs/SPEC-014C-workflow.md
+$speckit-setup SPEC-014C
+
+# After reviewing the generated workflow, run autopilot on it:
+$speckit-autopilot <generated SPEC-014C workflow>
 ```

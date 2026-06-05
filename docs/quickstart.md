@@ -23,6 +23,12 @@ export MC_URL=http://localhost:3000
 export MC_API_KEY=your-api-key
 ```
 
+Workspace scope depends on deployment mode. On legacy single-workspace installs,
+omit explicit workspace scope. On factory/multi-workspace deployments where
+`FEATURE_WORKSPACE_SWITCHER` is enabled, scope requests with either
+`workspace_id=<id>` (Product Line) or `workspace_scope=facility` (Facility), but
+never both.
+
 ## Step 2: Register an Agent
 
 Agents can self-register via the API. This is how autonomous agents announce themselves to Paddock:
@@ -32,6 +38,15 @@ curl -s -X POST "$MC_URL/api/agents/register" \
   -H "Authorization: Bearer $MC_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"name": "scout", "role": "researcher"}' | jq
+```
+
+For factory/multi-workspace mode, use:
+
+```bash
+curl -s -X POST "$MC_URL/api/agents/register" \
+  -H "Authorization: Bearer $MC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "scout", "role": "researcher", "workspace_id": 1}' | jq
 ```
 
 Expected response:
@@ -68,6 +83,8 @@ curl -s -X POST "$MC_URL/api/tasks" \
   }' | jq
 ```
 
+In factory/multi-workspace mode, add `"workspace_id": 1` to the request body.
+
 Expected response:
 
 ```json
@@ -92,6 +109,13 @@ This is how your agent picks up work. The queue endpoint atomically claims the h
 
 ```bash
 curl -s "$MC_URL/api/tasks/queue?agent=scout" \
+  -H "Authorization: Bearer $MC_API_KEY" | jq
+```
+
+In factory/multi-workspace mode, use:
+
+```bash
+curl -s "$MC_URL/api/tasks/queue?agent=scout&workspace_id=1" \
   -H "Authorization: Bearer $MC_API_KEY" | jq
 ```
 
@@ -134,6 +158,8 @@ curl -s -X PUT "$MC_URL/api/tasks/1" \
   }' | jq
 ```
 
+In factory/multi-workspace mode, add `"workspace_id": 1` to the update body.
+
 ## Step 6: Send a Heartbeat
 
 Heartbeats tell Paddock your agent is alive. Without them, agents are marked offline after 10 minutes:
@@ -145,14 +171,17 @@ curl -s -X POST "$MC_URL/api/agents/1/heartbeat" \
   -d '{}' | jq
 ```
 
+In factory/multi-workspace mode, send `{"workspace_id": 1}` as the body.
+
 Expected response:
 
 ```json
 {
-  "success": true,
-  "token_recorded": false,
-  "work_items": [],
-  "timestamp": 1711234700
+  "status": "HEARTBEAT_OK",
+  "agent": "scout",
+  "checked_at": 1711234700,
+  "message": "No work items found",
+  "token_recorded": false
 }
 ```
 
@@ -214,6 +243,11 @@ pnpm mc tasks queue --agent scout --json
 # Watch events in real time
 pnpm mc events watch --types task,agent
 ```
+
+The shorthand CLI commands use the default REST scope. If
+`FEATURE_WORKSPACE_SWITCHER` is enabled and a command needs explicit scope, use
+`pnpm mc raw --method ... --path '/api/...?...&workspace_id=1' --json` or include
+`"workspace_id": 1` in the raw request body.
 
 See [CLI Reference](cli-agent-control.md) for the full command list.
 

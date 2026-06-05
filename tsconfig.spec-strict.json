@@ -118,8 +118,23 @@
     "src/lib/harness-adapters/runtime-inventory.ts",
     "src/lib/harness-adapters/__tests__/validation.test.ts",
     "src/lib/harness-adapters/__tests__/runtime-inventory.test.ts",
+    "src/types/import-meta-glob.d.ts",
     "src/components/agents/RuntimeInventoryEvidence.tsx",
     "src/components/agents/__tests__/RuntimeInventoryEvidence.test.tsx",
-    "scripts/spec-014b/check-harness-adapter-scope.mjs"
+    "scripts/spec-014b/check-harness-adapter-scope.mjs",
+    "src/lib/harness-adapters/codex-app-server/manifest.ts",
+    "src/lib/harness-adapters/codex-app-server/input.ts",
+    "src/lib/harness-adapters/codex-app-server/protocol.ts",
+    "src/lib/harness-adapters/codex-app-server/evidence.ts",
+    "src/lib/harness-adapters/codex-app-server/runner.ts",
+    "src/lib/task-dispatch-codex-app-server.ts",
+    "src/lib/harness-adapters/__tests__/codex-app-server-fixtures.ts",
+    "src/lib/harness-adapters/__tests__/codex-app-server-manifest.test.ts",
+    "src/lib/harness-adapters/__tests__/codex-app-server-protocol.test.ts",
+    "src/lib/harness-adapters/__tests__/codex-app-server-evidence.test.ts",
+    "src/lib/harness-adapters/__tests__/codex-app-server-runner.test.ts",
+    "src/lib/harness-adapters/__tests__/codex-app-server-artifact-safety.test.ts",
+    "src/lib/__tests__/task-dispatch-codex-app-server.test.ts",
+    "scripts/spec-014c/check-scope-guard.mjs"
   ]
 }

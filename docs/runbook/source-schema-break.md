@@ -48,6 +48,6 @@ Per FR-090d1 — when Copilot emits a version we do not recognize:
 
 1. Capture the unknown version string from the quarantined payload.
 2. File an issue with the version + payload sample.
-3. If the version is forward-compatible, add it to the allowlist
-   in `src/lib/observability/copilot-version-allowlist.ts` (deferred
-   until SPEC-008 ingest module lands).
+3. If the version is forward-compatible, bump `LATEST_KNOWN_VERSION`
+   inside `src/lib/observability/adapters/copilot-schema-versioning.ts`.
+   Add a new `COPILOT_SCHEMAS` tier entry only when the payload shape changed.

@@ -50,7 +50,7 @@ The design concept is the setup-time source of truth:
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, api-contracts, ux, error-handling, and security domains; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated 47 TDD-first tasks with strict file ownership and SPEC-014C guardrails; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | One HIGH shared-file ownership finding remediated; final marker count is 0 and G6 passes |
-| Implement | `$speckit-implement` | Blocked | G6 passed, but pre-edit ownership check found active SPEC-014C dirty changes in required shared coordination files; wait for ownership resolution before full implementation |
+| Implement | `$speckit-implement` | Pending | G6 passed; latest `main` includes SPEC-014C closeout, clearing the prior shared-file blocker. Keep pre-edit ownership checks before touching shared coordination files |
 
 **Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
 
@@ -605,16 +605,16 @@ Execution rules:
 - Record HAL/operator UAT evidence with service-compatible Node, Product Line A before/after proof, Product Line B disablement, and cleanup counts.
 ```
 
-### Implementation Blocker
+### Implementation Ownership Note
 
-Full implementation is paused pending file-ownership resolution with active SPEC-014C. Read-only pre-edit check on 2026-06-05 found the active SPEC-014C worktree dirty in required SPEC-010B coordination files:
+Before merging latest `main`, a read-only pre-edit check on 2026-06-05 found active SPEC-014C worktree changes in required SPEC-010B coordination files:
 
 - `tsconfig.spec-strict.json`
 - `eslint.config.mjs`
 - `docs/ai/specs/autopilot-state.json`
 - `docs/ai/rc-factory-technical-roadmap.md`
 
-SPEC-010B must not edit those files, merge SPEC-014C changes, or normalize SPEC-014C diffs from this worktree. Resume implementation only after SPEC-014C releases those files, or after explicit ownership resolution says which spec may edit them.
+Latest `origin/main` now includes SPEC-014C closeout and those changes have been merged into this branch. SPEC-010B implementation may proceed, but must still run the pre-edit ownership check before touching shared coordination files and must stop if another active worktree owns the same path.
 
 ### Implementation Verification Targets
 

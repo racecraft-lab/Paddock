@@ -2,6 +2,12 @@
 
 This guide covers everything you need to configure agents in Paddock: registration methods, SOUL personalities, working files, configuration, and liveness monitoring.
 
+Workspace scope depends on deployment mode. On legacy single-workspace installs,
+omit explicit workspace scope. On factory/multi-workspace deployments where
+`FEATURE_WORKSPACE_SWITCHER` is enabled, include `"workspace_id": <id>` in agent
+registration, creation, sync, SOUL, memory, and heartbeat request bodies or use
+the equivalent query parameter for GET requests.
+
 ## Agent Registration
 
 There are three ways to register agents with Paddock.
