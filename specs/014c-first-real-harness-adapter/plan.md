@@ -39,7 +39,7 @@ Local Codex protocol evidence supplied by the parent and verified during plannin
 **Scale/Scope**: One adapter manifest and one adapter implementation; 6 production modules planned, focused tests, generated plan artifacts, HAL UAT/report packet later in implementation  
 **Runtime Dependency Decision**: No new runtime dependency is required. JSON-RPC framing, subprocess control, timeout handling, hashing, and bounded schema checks can be implemented with Node built-ins and existing project helpers.  
 **Schema Migration Decision**: No schema migration is required. Existing run, attempt, claim, sandbox lifecycle, activity, usage/failure, and artifact-reference surfaces can carry descriptor-only `codex_app_server_run.v1` metadata.  
-**Reviewability Budget**: Primary surface is `harness/adapter`; secondary surface is narrow dispatch/evidence integration. Planned production files: 6. Planned total files: 16-18 including tests, contracts, quickstart, UAT/report packet placeholders later. Projected production LOC is within the spec budget only if tasks keep the adapter and dispatch seam narrow.  
+**Reviewability Budget**: Primary surface is `harness/adapter`; secondary surface is narrow dispatch/evidence integration. Planned production files: 6. Planned total files: 16-18 including tests, contracts, quickstart, and UAT/report packet artifacts later. Projected production LOC is within the spec budget only if tasks keep the adapter and dispatch seam narrow.  
 **Strict Scope**: Add each new spec-owned TS/TSX module to `tsconfig.spec-strict.json` and `eslint.config.mjs`:
 
 - `src/lib/harness-adapters/codex-app-server/manifest.ts`
@@ -86,6 +86,16 @@ All evidence is descriptor-only `codex_app_server_run.v1` metadata through exist
 
 Structurally unsafe output is hard-rejected before redaction. Secret-shaped values may be redacted only inside an otherwise bounded safe summary, and the redacted derivative must still pass schema, length, non-empty, and artifact policy checks.
 
+Activity timeline evidence reuses the existing `activities` table. SPEC-014C
+activity payloads carry only bounded ids, enums, timestamps, phase/reason,
+status/outcome, safe diagnostic categories, counts, redaction flags,
+hashes/sizes, artifact ids, and safe labels or summaries that link the same run,
+attempt, claim, manifest, lifecycle, artifact, usage, and failure evidence. They
+must not introduce a new observability table or persist raw transcripts,
+protocol payloads, prompt bodies, provider/tool/MCP payloads, command/file
+details, raw reasoning, host paths, storage URIs, external URLs, original
+filenames, secrets, or matched secret substrings.
+
 ### Terminal Mapping
 
 | Adapter outcome | Run evidence | Attempt evidence | Claim release | Reason evidence |
@@ -100,7 +110,9 @@ Structurally unsafe output is hard-rejected before redaction. Secret-shaped valu
 | Capability outside manifest | `status=failed`, `outcome=failed` | `failed` | `dispatch_failed` | `capability_unsupported` |
 | Unsafe evidence | `status=failed`, `outcome=failed` | `failed` | `dispatch_failed` | `unsafe_evidence_rejected` |
 | Claim-control/stale recovery wins | bounded abandoned evidence only when safe | do not overwrite newer state | existing authority wins | `abandoned_by_claim_control` |
-| Cleanup failure after terminal write | terminal outcome preserved with cleanup evidence | terminal outcome preserved | terminal release preserved | `cleanup_failed` |
+| Cleanup or subprocess termination failure after terminal write | terminal outcome preserved with appended cleanup/termination evidence | terminal outcome preserved | terminal release preserved | `cleanup_failed` with `phase=subprocess_termination` or `phase=lifecycle_cleanup` |
+
+`cleanup_failed` evidence never replaces the original terminal failure reason, success outcome, or claim release. It is appended after terminal evidence to distinguish subprocess termination/cancellation failure from lifecycle filesystem cleanup failure.
 
 ### Scope Guard
 

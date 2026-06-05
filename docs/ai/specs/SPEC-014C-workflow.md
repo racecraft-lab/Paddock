@@ -31,10 +31,10 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Specify | `$speckit-specify` | Complete | Generated `specs/014c-first-real-harness-adapter/spec.md`; G1 passed with zero clarification markers |
 | Clarify | `$speckit-clarify` | Complete | Resolved protocol, evidence, claim/lifecycle, and HAL UAT/deployment details |
 | Plan | `$speckit-plan` | Complete | Generated implementation blueprint, research, data model, quickstart, and contracts |
-| Checklist | `$speckit-checklist` | In Progress | Run focused domain checklists |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first task list |
-| Analyze | `$speckit-analyze` | Pending | Cross-artifact drift check |
-| Implement | `$speckit-implement` | Pending | Execute tasks exactly |
+| Checklist | `$speckit-checklist` | Complete | Eight focused domain checklists passed G4 with zero unresolved `[Gap]` markers |
+| Tasks | `$speckit-tasks` | Complete | Generated 49 TDD-first tasks; G5 passed |
+| Analyze | `$speckit-analyze` | Complete | Remediated two low artifact consistency issues; G6 passed with no unresolved CRITICAL/HIGH findings |
+| Implement | `$speckit-implement` | In Progress | T001-T041 and T046-T049 local implementation/G7 evidence is GREEN; T042-T045 HAL UAT is blocked pending merged/promoted target deployment |
 
 ## Phase Gates
 
@@ -47,7 +47,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | G4 | After Checklist | Every checklist has zero unresolved `[Gap]` items or records a split decision |
 | G5 | After Tasks | Tasks are dependency ordered, TDD-first, reviewable, and bounded to one adapter module plus the narrow dispatch/evidence seams |
 | G6 | After Analyze | No CRITICAL/HIGH findings remain; design concept, spec, plan, tasks, and roadmap follow-up boundaries agree |
-| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, local proof, HAL UAT runbook/report, roadmap/workflow status, and PR review packet are complete |
+| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, local proof, HAL UAT runbook/report, roadmap/workflow status, and PR review packet are complete; if target UAT is blocked, the blocker is recorded and completion remains open |
 
 ## Prerequisites
 
@@ -103,7 +103,7 @@ Use these sources only for launch/resume vocabulary, workspace cwd/sandbox postu
 | Name | First Real Harness Adapter Pilot |
 | Branch short name | `first-real-harness-adapter` |
 | Feature directory | `specs/014c-first-real-harness-adapter` |
-| Status | Pending |
+| Status | In Progress - local implementation through T041 GREEN; HAL UAT pending |
 | Priority | P1 |
 | Dependencies | SPEC-013D, SPEC-014B |
 | Enables | SPEC-014D, SPEC-014E, SPEC-014F, later adapter specs |
@@ -409,6 +409,25 @@ Checklist focus:
 - Artifact safety: `publishArtifact`, redaction/quarantine, safe previews, sanitized descriptor-only behavior.
 - UAT/deployment: HAL real launch, flag scope, cleanup, zero residue, app-server unavailable blocks UAT.
 
+### Checklist Results
+
+| Domain | Status | Items | Gaps Before | Gaps After | Evidence |
+|---|---|---:|---:|---:|---|
+| api-contracts | Complete | 30 | 2 | 0 | `specs/014c-first-real-harness-adapter/checklists/api-contracts.md`; schema parses; added specific blocked-admission reason codes and conditional ownership-id requirements |
+| security | Complete | 26 | 0 | 0 | `specs/014c-first-real-harness-adapter/checklists/security.md`; no spec/plan/contract remediation required; `count-markers.sh all` and deterministic `rg` fallback report 0 gaps |
+| data-integrity | Complete | 24 | 0 | 0 | `specs/014c-first-real-harness-adapter/checklists/data-integrity.md`; no spec/plan/contract remediation required; `count-markers.sh all` and deterministic fallback report 0 gaps |
+| error-handling | Complete | 32 | 3 | 0 | `specs/014c-first-real-harness-adapter/checklists/error-handling.md`; clarified subprocess termination vs lifecycle cleanup phases, duplicate protocol handling, and approval-like MCP/permission failures |
+| observability | Complete | 32 | 2 | 0 | `specs/014c-first-real-harness-adapter/checklists/observability.md`; added bounded activity evidence requirements and `promptBodyRetained=false` schema safety proof |
+| scheduler-runtime | Complete | 24 | 0 | 0 | `specs/014c-first-real-harness-adapter/checklists/scheduler-runtime.md`; no spec/plan/contract remediation required; fallback marker checks report 0 gaps |
+| artifact-safety | Complete | 25 | 0 | 0 | `specs/014c-first-real-harness-adapter/checklists/artifact-safety.md`; no spec/plan/contract remediation required; deterministic fallback marker checks report 0 gaps |
+| uat-deployment | Complete | 30 | 0 | 0 | `specs/014c-first-real-harness-adapter/checklists/uat-deployment.md`; no spec/plan/contract remediation required; deterministic fallback marker checks report 0 gaps |
+
+G4 passed on 2026-06-05 with:
+
+```json
+{"gate":"G4","pass":true,"reason":"0 [Gap] markers","markers":0,"details":[]}
+```
+
 ## Phase 5: Tasks
 
 **When to run:** After checklists pass. Output: `specs/014c-first-real-harness-adapter/tasks.md`.
@@ -447,6 +466,15 @@ Task plan must include tests before implementation for:
 - Claim release/defer without task terminal/GitHub mutation.
 - Lifecycle cleanup and zero-residue UAT fixtures.
 
+### Tasks Results
+
+| Item | Status | Evidence |
+|---|---|---|
+| Task list | Complete | `specs/014c-first-real-harness-adapter/tasks.md` created with 49 tasks across 7 phases |
+| Task ordering | Complete | Setup -> Foundational -> US1 MVP -> US2/US3 failure and evidence breadth -> US4 review/UAT -> Polish |
+| G5 gate | Pass | `validate-gate.sh G5 specs/014c-first-real-harness-adapter` returned `{"gate":"G5","pass":true,"reason":"49 tasks found","markers":0,"task_count":49}` |
+| Scope boundary | Preserved | Tasks stay bounded to one Codex app-server adapter plus narrow dispatch/evidence integration and explicit no-goals |
+
 ## Phase 6: Analyze
 
 **When to run:** After Tasks and before Implement.
@@ -477,6 +505,31 @@ Flag drift where any artifact:
 ```
 
 G6 passes only when no CRITICAL/HIGH findings remain and all follow-up ownership for SPEC-014E/F is consistent.
+
+### Analyze Results
+
+| ID | Severity | Issue | Resolution |
+|----|----------|-------|------------|
+| A1 | Low | The eight completed domain checklists still rendered all CHK rows as unchecked even though the workflow recorded G4 completion with zero unresolved `[Gap]` markers. | Marked completed domain checklist rows checked in `specs/014c-first-real-harness-adapter/checklists/*.md`, aligning the artifacts with G4 status and prior SPEC-014B checklist convention. |
+| A2 | Low | Phase 7 polish text in `tasks.md` referred to preparing for G5 even though G5 had already passed after task generation. | Updated Phase 7 purpose and T049 to prepare/reconcile for G7 implementation closeout. |
+
+### Analyze Evidence
+
+- Pre-analysis marker count: `count-markers.sh findings specs/014c-first-real-harness-adapter` returned 0 total findings.
+- Post-remediation marker count: `count-markers.sh findings specs/014c-first-real-harness-adapter` returned 0 total findings.
+- Full marker count after remediation: `count-markers.sh all specs/014c-first-real-harness-adapter` returned 0 gaps, 0 clarifications, 0 critical, 0 high, 0 medium, and 0 low markers.
+- Prerequisite check passed: `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks`.
+- JSON validation passed for `contracts/codex_app_server_run.v1.schema.json` and `docs/ai/specs/autopilot-state.json`.
+- Current primary-source refresh confirms the app-server initialize/thread/turn flow and explicit user-input/approval request handling remain aligned with SPEC-014C's non-interactive fail-closed boundary.
+
+G6 is ready: no CRITICAL/HIGH findings remain, and design concept, workflow, roadmap, spec, plan, research, data model, contracts, checklists, and tasks agree on one Codex app-server adapter, narrow dispatch/evidence integration, HAL real-launch UAT, SPEC-014E retention ownership, and SPEC-014F intervention ownership.
+
+### Confidence Gate Results
+
+| Item | Status | Evidence |
+|---|---|---|
+| G6.5 confidence gate | Advisory soft-skip | `confidence-gate.sh docs/ai/specs/SPEC-014C-workflow.md --threshold 0.90 --mode advisory` returned `NO_DATA` because no synthesizer confidence emit was present |
+| Implementation decision | Proceed | Advisory mode treats missing confidence data as non-blocking and advances to Phase 7 |
 
 ## Phase 7: Implement
 
@@ -549,6 +602,21 @@ Create `specs/014c-first-real-harness-adapter/pr-review-packet.md` with:
 - Rollback/flag story.
 - Known gaps and follow-up specs.
 
+### Implement Progress
+
+| Area | Status | Evidence |
+|---|---|---|
+| Setup, fixtures, and static guard | Complete through T009 | Review packet scaffold, deterministic fixtures, scope guard self-test/current-diff GREEN |
+| US1 admission and launch | Complete through T019 plus supplemental live transport | Focused US1 command passed 5 files / 30 tests; supplemental live stdio runner test passed; focused cluster passed 8 files / 89 tests after persistence fix; typecheck/lint/scope guard passed |
+| US2 descriptor-only evidence and artifact safety | Complete through T026 plus persistence fix | Focused US2 command passed 4 files / 40 tests; dispatch persistence RED/GREEN passed 1 file / 21 tests; focused cluster passed 8 files / 89 tests; typecheck/lint/scope guard passed |
+| US3 fail-closed protocol, timeout, cleanup, and ownership | Complete through T035 | Combined US1-US3 command passed 8 files / 86 tests; supplemental focused cluster passed 8 files / 89 tests; typecheck/lint/scope guard passed |
+| US4 static/runtime no-mutation guard | Complete through T038 | T036/T037 RED captured; dispatch no-mutation/persistence test passed 1 file / 21 tests; scope guard self-test/current-diff passed; typecheck/lint/build passed |
+| PR packet, workflow, roadmap, autopilot status | Complete through T041 and reconciled at T049 | Packet traceability matrix, workflow, roadmap, autopilot status, and UAT blocker report updated with local GREEN evidence |
+| HAL target UAT | Blocked T042-T045 | `uat-report.md` records marker `SPEC-014C-HAL-UAT-BLOCKED-20260605144729`: no merged/promoted SPEC-014C target commit; HAL SSH, service inspection, and Codex app-server command preflight are now available |
+| Polish and G7 | Complete T046-T049, except target UAT remains open | Focused cluster passed 8 files / 89 tests; scope guard OK; `pnpm typecheck`, `pnpm lint`, and escalated `pnpm build` passed; artifact scan/reconciliation complete |
+
+No split trigger has fired: the implementation remains one Codex app-server adapter plus narrow dispatch/evidence/guard integration. SPEC-014E still owns richer transcript/event retention; SPEC-014F still owns live intervention UI.
+
 ## Closeout Notes
 
-SPEC-014C is not complete when the branch is merely implemented. It is complete only after merge, target deployment promotion, flag-scoped HAL UAT with a real Codex app-server launch, and roadmap/workflow evidence updates.
+SPEC-014C is locally implemented and locally G7-green, but not complete. It is complete only after merge, target deployment promotion, flag-scoped HAL UAT with a real Codex app-server launch, zero-residue cleanup proof, and final roadmap/workflow evidence updates.

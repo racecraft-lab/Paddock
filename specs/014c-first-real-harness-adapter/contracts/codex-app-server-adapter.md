@@ -71,6 +71,7 @@ Process rules:
 - Use stdio for JSON-RPC protocol transport.
 - Enforce manifest timeout.
 - Terminate or cancel the subprocess on timeout, unsupported request, malformed protocol, unsafe evidence, cancellation, or stale ownership.
+- If termination or cancellation fails after terminal classification, append bounded `cleanup_failed` evidence with `phase=subprocess_termination` and preserve the original run, attempt, claim, and reason evidence.
 
 ## Protocol Contract
 
@@ -112,15 +113,17 @@ Terminal authority:
 
 Unsupported server requests:
 
-- `item/tool/requestUserInput` and MCP elicitation map to `user_input_unsupported`.
-- `item/commandExecution/requestApproval`, legacy exec/apply-patch approvals, and permission approvals map to `approval_unsupported`.
+- `item/tool/requestUserInput` and non-approval MCP elicitation map to `user_input_unsupported`.
+- `item/commandExecution/requestApproval`, network approval contexts, experimental additional permission requests, legacy exec/apply-patch approvals, permission approvals, and approval-like MCP connector elicitations map to `approval_unsupported`.
 - `item/fileChange/requestApproval`, dynamic tool calls, MCP tool calls, and unsupported file/tool access map to `tool_file_unsupported` or `capability_unsupported`.
 
 Malformed protocol:
 
 - Invalid JSON-RPC/JSONL.
 - Response id mismatch.
+- Duplicate response for the same client request id.
 - Missing required thread/turn ids.
+- Duplicate required lifecycle events.
 - Duplicate terminal events.
 - Impossible lifecycle ordering.
 - Exit before valid handshake.
@@ -179,6 +182,27 @@ Forbidden output evidence:
 Structurally unsafe output fails with `unsafe_evidence_rejected`. Secret-shaped values inside otherwise bounded safe summaries may be redacted, then the derivative must be revalidated.
 
 ## Failure Reason Codes
+
+Blocked admission reason codes:
+
+- `feature_disabled`
+- `adapter_unassigned`
+- `not_github_linked`
+- `manifest_invalid`
+- `manifest_mismatch`
+- `missing_claim`
+- `stale_claim`
+- `missing_attempt`
+- `governance_denied`
+- `capability_unsupported`
+- `sandbox_lifecycle_missing`
+- `sandbox_lifecycle_not_paddock_owned`
+- `sandbox_lifecycle_not_ready`
+- `workspace_mismatch`
+- `repository_mismatch`
+- `authorization_denied`
+
+Adapter attempt failure reason codes:
 
 - `user_input_unsupported`
 - `approval_unsupported`

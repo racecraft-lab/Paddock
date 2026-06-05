@@ -48,13 +48,24 @@ Fields:
 - `governanceDecision`
 - `capabilityPacket`
 - `status`: `eligible` or `blocked`
-- `reasonCode`: bounded ineligible reason when blocked
+- `reasonCodes`: specific bounded admission reason codes when blocked, selected
+  from `feature_disabled`, `adapter_unassigned`, `not_github_linked`,
+  `manifest_invalid`, `manifest_mismatch`, `missing_claim`, `stale_claim`,
+  `missing_attempt`, `governance_denied`, `capability_unsupported`,
+  `sandbox_lifecycle_missing`, `sandbox_lifecycle_not_paddock_owned`,
+  `sandbox_lifecycle_not_ready`, `workspace_mismatch`, `repository_mismatch`,
+  and `authorization_denied`
 
 Validation rules:
 
 - Eligible only when task is GitHub-linked, assigned, governed as allowed, claimed, current, and matched to the Codex manifest.
 - `FEATURE_TASK_CONTROL_PLANE` and `FEATURE_AGENT_RUNNER_SANDBOXES` must be enabled through workspace-scoped JSON for HAL UAT.
 - Feature flag OFF, stale claim, unassigned stage, manifest mismatch, missing lifecycle, lifecycle not Paddock-owned, governance denial, or capability mismatch blocks launch.
+- Blocked-before-launch evidence may omit claim, claim-run, attempt, manifest,
+  or lifecycle ids when the blocked reason proves the id does not exist or is
+  not current. Launched, completed, failed, timed-out, abandoned, and
+  cleanup-failed adapter evidence requires the current ownership, manifest, and
+  lifecycle ids.
 
 ## Entity: Claimed Stage Attempt
 
@@ -150,7 +161,7 @@ turn/completed notification
 
 Validation rules:
 
-- Missing required thread/turn ids, response id mismatch, duplicate terminal events, invalid JSON-RPC/JSONL, or impossible ordering maps to `malformed_protocol`.
+- Missing required thread/turn ids, response id mismatch, duplicate response for the same client request id, duplicate required lifecycle events, duplicate terminal events, invalid JSON-RPC/JSONL, or impossible ordering maps to `malformed_protocol`.
 - `item/completed` agent messages are output evidence only.
 - Same-run continuation is allowed only while the same live process, thread, claim, and attempt remain current.
 
@@ -187,6 +198,55 @@ Validation rules:
 - No raw transcript, protocol payload, prompt body, provider payload, tool payload, command/file-change detail, raw reasoning, host path, storage URI, external URL, original filename, or secret is allowed.
 - Bounded safe summaries must pass length, non-empty, schema, redaction, and artifact policy checks.
 - Structurally unsafe output maps to `unsafe_evidence_rejected`.
+
+## Entity: Activity Entry
+
+Existing `activities` rows provide operator-visible timeline evidence for
+adapter admission, launch, terminal outcome, abandonment, and cleanup follow-up.
+
+Fields:
+
+- `activityId`
+- `activityType`: closed SPEC-014C activity kind for blocked admission, launch,
+  terminal success, terminal failure, timeout, abandoned ownership, unsafe
+  evidence, unavailable binary, malformed protocol, unsupported request, and
+  cleanup failure
+- `entityType`: `task`
+- `entityId`: task id
+- `workspaceId`
+- `runId`
+- `attemptId`
+- `claimId`
+- `claimRunId`
+- `manifestId`
+- `lifecycleId`
+- `artifactIds`
+- `phase`
+- `reasonCode`
+- `status`
+- `outcome`
+- `safeDiagnosticCategory`
+- `counts`
+- `safeHash`
+- `safeSize`
+- `safeSummary`
+- `createdAt`
+
+Validation rules:
+
+- Activity payloads must use the existing `activities` table and must not add a
+  new observability table.
+- Activity entries must link to the same current run, attempt, claim, manifest,
+  and lifecycle ids required by terminal adapter evidence. Blocked-before-launch
+  activity payloads may omit ids only when the blocked reason proves the id is
+  unavailable or unsafe to assert.
+- Activity summaries must be descriptor-only and must not contain raw
+  transcripts, protocol payloads, prompt bodies, provider payloads, tool/MCP
+  payloads, command/file-change details, raw reasoning, host paths, storage
+  URIs, external URLs, original filenames, secrets, or matched secret
+  substrings.
+- Activity payloads must stay bounded to ids, enums, timestamps, counts, safe
+  categories, redaction flags, hashes/sizes, and safe labels or summaries.
 
 ## Entity: Safe Artifact Reference
 
@@ -240,6 +300,9 @@ Validation rules:
 
 - Failure summaries must not contain raw protocol excerpts, provider/tool payloads, command details, file-change contents, secrets, or host paths.
 - Timeout uses run `status=timeout`, run `outcome=failed`, attempt `failed`, claim release `dispatch_failed`, and reason `timeout_budget_expired`.
+- Approval-like MCP connector elicitations, network approval contexts, experimental additional permission requests, and other permission escalation requests use `approval_unsupported`; non-approval MCP elicitation remains `user_input_unsupported`.
+- `cleanup_failed` distinguishes post-terminal subprocess termination/cancellation failure from lifecycle filesystem cleanup failure through `phase`: use `subprocess_termination` for process termination/cancel failures and `lifecycle_cleanup` for filesystem or lifecycle cleanup failures.
+- Subprocess termination/cancellation failure does not replace the original terminal run status, attempt status, claim release, or adapter failure reason; it appends bounded `cleanup_failed` diagnostics.
 
 ## Entity: HAL UAT Fixture
 

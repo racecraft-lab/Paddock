@@ -21,6 +21,31 @@ The dispatch seam may invoke the adapter only when all are true:
 
 If any condition fails, the seam records bounded blocked evidence and does not launch.
 
+Blocked admission evidence uses one or more specific reason codes rather than a
+generic ineligible label:
+
+- `feature_disabled`
+- `adapter_unassigned`
+- `not_github_linked`
+- `manifest_invalid`
+- `manifest_mismatch`
+- `missing_claim`
+- `stale_claim`
+- `missing_attempt`
+- `governance_denied`
+- `capability_unsupported`
+- `sandbox_lifecycle_missing`
+- `sandbox_lifecycle_not_paddock_owned`
+- `sandbox_lifecycle_not_ready`
+- `workspace_mismatch`
+- `repository_mismatch`
+- `authorization_denied`
+
+Blocked-before-launch evidence may omit claim, attempt, manifest, claim-run,
+or lifecycle ids when the failed admission check proves that the identifier is
+unavailable or unsafe to assert. Launched and terminal adapter evidence must
+include the current ownership, manifest, and lifecycle ids.
+
 ## Ownership Re-Proof Points
 
 The adapter must re-prove ownership:
@@ -73,6 +98,14 @@ cleanup_failed evidence appended
 lifecycle left inspectable
 ```
 
+Subprocess termination or cancellation failure after terminal classification:
+
+```text
+original terminal run/attempt/claim/reason evidence preserved
+cleanup_failed evidence appended with phase=subprocess_termination
+lifecycle remains inspectable for operator follow-up
+```
+
 ## No-Mutation Guard
 
 SPEC-014C adapter and dispatch integration files must not:
@@ -106,3 +139,15 @@ Operators must be able to distinguish:
 - Cleanup failed.
 
 Evidence is descriptor-only and uses existing run, attempt, lifecycle, activity, usage, failure, and artifact-reference surfaces.
+
+Activity evidence uses existing `activities` rows. Activity payloads must link
+the relevant run id, task-stage attempt id, claim id, claim-run id, manifest id,
+lifecycle id, artifact ids when present, phase, reason code, status, outcome,
+safe diagnostic category, counts, safe hash/size, and created timestamp. Blocked
+before launch activity payloads may omit unavailable ids only when the blocked
+reason proves the id is unavailable or unsafe to assert.
+
+Activity payloads must stay descriptor-only: no raw transcripts, protocol
+payloads, prompt bodies, provider/tool/MCP payloads, command/file-change
+details, raw reasoning, host paths, storage URIs, external URLs, original
+filenames, secrets, or matched secret substrings.

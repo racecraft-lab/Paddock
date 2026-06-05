@@ -4,6 +4,58 @@
   "title": "Codex App-Server Run Evidence",
   "type": "object",
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "blocked",
+              "failed",
+              "timeout",
+              "abandoned",
+              "cleanup_failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "reasonCode"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "launched",
+              "completed",
+              "failed",
+              "timeout",
+              "abandoned",
+              "cleanup_failed"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "attemptId",
+          "claimId",
+          "manifestId",
+          "lifecycleId"
+        ]
+      }
+    }
+  ],
   "required": [
     "schemaVersion",
     "adapterId",
@@ -11,10 +63,6 @@
     "workspaceId",
     "taskId",
     "stageKey",
-    "attemptId",
-    "claimId",
-    "manifestId",
-    "lifecycleId",
     "status",
     "outcome",
     "phase",
@@ -105,17 +153,32 @@
         "running",
         "terminal",
         "artifact_safety",
-        "cleanup"
+        "cleanup",
+        "subprocess_termination",
+        "lifecycle_cleanup"
       ]
     },
     "reasonCode": {
       "enum": [
-        "flag_off",
-        "ineligible",
+        "feature_disabled",
+        "adapter_unassigned",
+        "not_github_linked",
+        "manifest_invalid",
+        "manifest_mismatch",
+        "missing_claim",
+        "stale_claim",
+        "missing_attempt",
+        "governance_denied",
+        "capability_unsupported",
+        "sandbox_lifecycle_missing",
+        "sandbox_lifecycle_not_paddock_owned",
+        "sandbox_lifecycle_not_ready",
+        "workspace_mismatch",
+        "repository_mismatch",
+        "authorization_denied",
         "user_input_unsupported",
         "approval_unsupported",
         "tool_file_unsupported",
-        "capability_unsupported",
         "timeout_budget_expired",
         "binary_unavailable",
         "malformed_protocol",
@@ -322,6 +385,7 @@
         "rawProtocolRetained",
         "providerPayloadRetained",
         "toolPayloadRetained",
+        "promptBodyRetained",
         "hostPathRetained",
         "secretRetained"
       ],
@@ -336,6 +400,9 @@
           "const": false
         },
         "toolPayloadRetained": {
+          "const": false
+        },
+        "promptBodyRetained": {
           "const": false
         },
         "hostPathRetained": {
