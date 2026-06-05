@@ -46,7 +46,7 @@ The design concept is the setup-time source of truth:
 | Setup | `$speckit-scaffold-spec` | Complete | Branch, design concept, reviewability preset, workflow, and roadmap setup status created |
 | Specify | `$speckit-specify` | Complete | Generated `specs/010b-product-line-b-smoke/spec.md` with 5 user stories, 15 FRs, 11 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved config, lifecycle, synthetic smoke, evidence, API/dashboard isolation, runtime-inventory boundary, and SPEC-014C parallel-safety details; G2 passed with 0 markers |
-| Plan | `$speckit-plan` | Pending | Produce architecture using SPEC-010A seeder and existing Paddock stack |
+| Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contracts, quickstart, and Codex agent context; G3 ready |
 | Checklist | `$speckit-checklist` | Pending | Run focused domains listed below |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict file ownership |
 | Analyze | `$speckit-analyze` | Pending | Verify artifacts do not drift from design concept or parallel-safety boundaries |
@@ -395,11 +395,17 @@ $speckit-plan
 
 | Artifact | Status | Notes |
 |----------|--------|-------|
-| `plan.md` | Pending | Technical context and execution flow |
-| `research.md` | Pending | Decision rationales if needed |
-| `data-model.md` | Pending | Config/evidence entities and types |
-| `contracts/` | Pending | API/CLI/evidence contracts if touched |
-| `quickstart.md` | Pending | Operator/HAL smoke instructions |
+| `plan.md` | Complete | Reuses SPEC-010A seed tooling; no migration, new dependency, live GitHub write, or adapter work required |
+| `research.md` | Complete | Captures decisions for seeder reuse, existing `workspaces.disabled_at`, synthetic smoke, evidence packet, scoped reads, and SPEC-014C boundary |
+| `data-model.md` | Complete | Defines Product Line B config, lifecycle, synthetic issue, evidence packet, Product Line A baseline, and retained inventory report |
+| `contracts/` | Complete | Defines seed CLI, smoke evidence, and scoped SQL/API/dashboard evidence contracts |
+| `quickstart.md` | Complete | Covers disposable DB and HAL UAT flow, including `/usr/bin/node` v24.15.0 ABI caveat |
+
+### Gate Result
+
+| Gate | Result | Evidence |
+|------|--------|----------|
+| G3 | Ready | `plan.md` architecture reuses SPEC-010A seed tooling and existing scoped Paddock reads; migration, dependency, live GitHub mutation, and adapter work are absent or explicitly out of scope |
 
 ---
 

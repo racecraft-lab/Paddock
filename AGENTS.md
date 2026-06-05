@@ -188,6 +188,8 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 - SQLite through `src/lib/migrations.ts`; additive M80 `080_agent_sandbox_lifecycles`; rollback SQL at `docs/migrations/rollback-M80.sql` (014a-sandbox-lifecycle-contract)
 - TypeScript 5.7 strict on Node >=22 + Next.js 16 App Router, React 19, Tailwind CSS 3, Zustand only where existing Agents panel patterns require it, `better-sqlite3` through existing read helpers, Vitest, Playwright; no new runtime dependency planned (014b-adapter-manifest-fakes)
 - Checked-in typed fixture files plus derived runtime inventory; no SQLite manifest or inventory persistence and no migration. Existing SQLite state may be read through existing helpers for assignments, tasks, governance/capability decisions, and SPEC-014A lifecycle evidence. (014b-adapter-manifest-fakes)
+- TypeScript 5.7 strict on Node.js >=22; HAL service-compatible checks use `/usr/bin/node` v24.15.0 + Next.js 16 App Router, React 19, Zustand where existing panels need it, Tailwind CSS 3, `better-sqlite3`, existing direct `yaml`, existing workflow-contract and product-line seed modules (010b-product-line-b-smoke)
+- SQLite through `better-sqlite3`; no schema migration planned because `workspaces.disabled_at` exists in `src/lib/migrations.ts` M74 (010b-product-line-b-smoke)
 
 ## Recent Changes
 - SPEC-014B HAL target UAT closeout (2026-06-04 CDT): PR #76 merged to `main` as `e7921a6f0e1e0a2a8042e9366be6a17beeb1e58b`; HAL live Paddock fast-forwarded to that commit, `pnpm install --frozen-lockfile` and `pnpm build` passed, `paddock.service` restarted successfully, `/login` and authenticated `/api/status` returned HTTP 200, and `openclaw-gateway.service` remained active. Target UAT marker `SPEC-014B-HAL-UAT-20260604194737` verified runtime-inventory auth/scope errors, assigned/unassigned fake registry states, eligible Paddock-owned lifecycle evidence, blocked external fake reasons, invalid capability rejection, feature-flag-off blocking, `/api/agents` compatibility, no read-model mutation, and zero disposable-row residue. SPEC-014C is now the next unblocked runner-path setup candidate; SPEC-014D may only run in parallel if adapter files and deployment docs stay disjoint.
@@ -213,5 +215,5 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/014b-adapter-manifest-fakes/plan.md`.
+`specs/010b-product-line-b-smoke/plan.md`.
 <!-- SPECKIT END -->
