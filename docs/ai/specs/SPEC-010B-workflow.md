@@ -47,8 +47,8 @@ The design concept is the setup-time source of truth:
 | Specify | `$speckit-specify` | Complete | Generated `specs/010b-product-line-b-smoke/spec.md` with 5 user stories, 15 FRs, 11 acceptance scenarios, 7 success criteria, and 0 clarification markers; G1 passed |
 | Clarify | `$speckit-clarify` | Complete | Resolved config, lifecycle, synthetic smoke, evidence, API/dashboard isolation, runtime-inventory boundary, and SPEC-014C parallel-safety details; G2 passed with 0 markers |
 | Plan | `$speckit-plan` | Complete | Generated plan, research, data model, contracts, quickstart, and Codex agent context; G3 ready |
-| Checklist | `$speckit-checklist` | Pending | Run focused domains listed below |
-| Tasks | `$speckit-tasks` | Pending | Generate TDD-first tasks with strict file ownership |
+| Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, api-contracts, ux, error-handling, and security domains; G4 passed |
+| Tasks | `$speckit-tasks` | Complete | Generated 47 TDD-first tasks with strict file ownership and SPEC-014C guardrails; G5 passed |
 | Analyze | `$speckit-analyze` | Pending | Verify artifacts do not drift from design concept or parallel-safety boundaries |
 | Implement | `$speckit-implement` | Pending | Execute tasks only after analysis gate passes |
 
@@ -502,6 +502,25 @@ Task generation requirements:
 - Isolation/API/dashboard assertions.
 - HAL/UAT checklist and docs.
 - Scope guardrails and final verification.
+
+### Task Results
+
+| Metric | Value |
+|--------|-------|
+| Total tasks | 47 |
+| RED test tasks | 6 |
+| User story tasks | US1: 4; US2: 6; US3: 6; US4: 6; US5: 5 |
+| Setup/foundational/polish tasks | 20 |
+| Parallel groups | Foundational config/fixture/strict/lint tasks; US1 schema/type tasks; US3 smoke lifecycle and US4 scoped evidence after script skeleton; docs/checklist updates after evidence shape stabilizes |
+| Primary ownership | `docs/ai/product-lines/product-line-b.yaml`, `src/lib/product-line-seed/*`, `scripts/spec-010b/product-line-b-smoke.ts`, focused tests, SPEC-010B quickstart/workflow, and pilot smoke checklist |
+| Forbidden ownership | No tasks edit `src/lib/harness-adapters/**`, `src/app/api/agents/runtime-inventory/**`, `src/lib/task-dispatch.ts`, `src/lib/task-dispatch-codex-app-server.ts`, `scripts/spec-014c/**`, or SPEC-014C artifacts |
+| Markers | 0 `[NEEDS CLARIFICATION]`, 0 `[Gap]`, 0 `[CRITICAL]` in `tasks.md` |
+
+### Gate Result
+
+| Gate | Result | Evidence |
+|------|--------|----------|
+| G5 | Pass | `specs/010b-product-line-b-smoke/tasks.md` is dependency ordered, TDD-first, keeps Product Line B enabled only inside the smoke path, includes no-live-GitHub-write/no-FocusEngine-takeover/no-SPEC-014C-edit guardrails, and limits runtime-inventory to optional read-only support evidence |
 
 ---
 

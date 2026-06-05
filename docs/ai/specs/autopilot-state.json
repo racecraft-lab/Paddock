@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010B-workflow.md",
-  "updated_at": "2026-06-05T04:53:06Z",
+  "updated_at": "2026-06-05T05:01:01Z",
   "spec_id": "SPEC-010B",
   "branch": "010b-product-line-b-smoke",
   "confidence_gate_mode": "advisory",
@@ -55,7 +55,7 @@
       "Current target specs/010b-product-line-b-smoke is excluded from archive and cleanup"
     ]
   },
-  "active_step": "Phase 5: Tasks",
+  "active_step": "Phase 6: Analyze",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -81,8 +81,8 @@
     {"step": "Phase 4: Checklist - error-handling Consensus", "status": "completed"},
     {"step": "Phase 4: Checklist - security", "status": "completed"},
     {"step": "Phase 4: Checklist - security Consensus", "status": "completed"},
-    {"step": "Phase 5: Tasks", "status": "in_progress"},
-    {"step": "Phase 6: Analyze", "status": "pending"},
+    {"step": "Phase 5: Tasks", "status": "completed"},
+    {"step": "Phase 6: Analyze", "status": "in_progress"},
     {"step": "Phase 6: Analyze - Consensus", "status": "pending"},
     {"step": "Phase 6.5: Confidence Gate", "status": "pending"},
     {"step": "Phase 7: Implement - Pending task decomposition", "status": "pending"},
