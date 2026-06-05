@@ -1,6 +1,6 @@
 # SPEC-014C PR Review Packet
 
-Status: US1 RED/GREEN tasks T010-T019, US2 RED/GREEN tasks T020-T026, US3 RED/GREEN tasks T027-T035, US4 guard/status tasks T036-T041, and local polish tasks T046-T049 are complete. HAL UAT tasks T042-T045 are blocked by missing deployed SPEC-014C target commit; HAL SSH and Codex app-server command preflight are now available. SPEC-014C cannot be accepted until merge/promotion and target UAT pass.
+Status: T001-T049 are complete. HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` passed on branch target commit `43989ac856696abb2ea764fed409da268b87c9a8`, including one real Codex app-server stdio launch, deterministic failure fixtures, workspace-scoped flag checks, and zero marker-scoped residue. SPEC-014C remains PR-open until review, merge, and normal post-merge promotion policy complete.
 
 ## Source Design Citation
 
@@ -64,8 +64,8 @@ Scope guard: SPEC-014C must not add a second adapter, OpenClaw-specific behavior
 | T038 static guard implementation | T036 self-test failed until generic path allowlist, task-creation, Aegis/owner-gate, and behavior/content rules were completed | `direnv exec . node scripts/spec-014c/check-scope-guard.mjs --self-test` passed with 23 findings; current-diff scope guard passed with 51 changed files and 12 scanned code/config files | GREEN verified by T038 |
 | No forbidden mutations | T037 runtime tests failed until forbidden late mutations enumerated task terminal state, successor selection, task creation, direct GitHub mutation, outbound sync, auto-merge, Aegis/owner gate bypass, governance mutation, claim/attempt/lifecycle writes | `direnv exec . pnpm test src/lib/__tests__/task-dispatch-codex-app-server.test.ts` passed: 1 file, 20 tests. `pnpm typecheck` and `pnpm lint` also passed. | GREEN verified by T037 |
 | Dispatch evidence persistence | RED failed on missing `persistCodexAppServerDispatchEvidence` export | `direnv exec . pnpm test src/lib/__tests__/task-dispatch-codex-app-server.test.ts` passed: 1 file, 21 tests; focused cluster passed 8 files / 89 tests | GREEN verified before HAL UAT |
-| HAL real-launch UAT | Target requires merged/promoted commit plus authenticated HAL access | Blocked: no deployed SPEC-014C target commit; HAL SSH and Codex app-server command preflight are restored | Blocked in `uat-report.md` |
-| HAL cleanup and zero residue | Target requires marker-scoped fixture creation, cleanup, and residue checks | Blocked: no HAL fixture rows/files created; target residue check deferred until target deployment | Blocked in `uat-report.md` |
+| HAL real-launch UAT | Target requires authenticated HAL access, deployed PR branch target, and a real app-server launch | HAL branch target `43989ac856696abb2ea764fed409da268b87c9a8` passed marker `SPEC-014C-HAL-UAT-20260605121830`: service health, one real stdio handshake/thread/turn launch, and descriptor-only evidence captured | Passed in `uat-report.md` |
+| HAL cleanup and zero residue | Target requires marker-scoped fixture creation, cleanup, and residue checks | Marker-scoped disposable workspace/task/stage/claim/lifecycle/run/activity rows were cleaned; final DB, sandbox, and artifact residue counts are zero | Passed in `uat-report.md` |
 
 ## Scope Guard Evidence
 
@@ -236,21 +236,21 @@ Implementation notes: T038 completed the changed-path allowlist for SPEC-014C-ow
 | T047 typecheck | `direnv exec . pnpm typecheck` | Exit 0 | `tsc -b --pretty false` completed with no diagnostics |
 | T047 lint | `direnv exec . pnpm lint` | Exit 0 | `eslint .` completed with no diagnostics |
 | T047 build | `direnv exec . pnpm build` outside the sandbox after sandboxed Turbopack hit a process/port restriction | Exit 0 | Next.js 16.2.6 production build compiled, ran TypeScript, generated 145 static pages, and finalized route output |
-| T048 artifact scan | `rg -n "NEEDS[[:space:]]+CLARIFICATION|\\bcritical\\b|raw transcript|raw protocol|provider payload|tool payload|prompt body|host path|storage URI|fake-only|TBD|Placeholder|placeholder|remaining placeholders|HAL UAT has not been run|Final PR description" ...` | Reviewed | Remaining hits are policy/non-goal language or the intentional blocked HAL UAT status recorded in `uat-report.md`; stale placeholders were removed from this packet |
-| T049 reconciliation | Tasks, UAT report, workflow, roadmap, autopilot state, and review packet reconciled | Complete | T042-T045 remain open; T046-T049 are complete; SPEC-014C remains In Progress/blocked on merged target deployment and target UAT |
+| T048 artifact scan | `rg -n "NEEDS[[:space:]]+CLARIFICATION|\\bcritical\\b|raw transcript|raw protocol|provider payload|tool payload|prompt body|host path|storage URI|fake-only|TBD|Placeholder|placeholder|remaining placeholders|HAL UAT has not been run|Final PR description" ...` | Reviewed | Remaining hits are policy/non-goal language; stale blocked HAL UAT wording was removed from the closeout artifacts |
+| T049 reconciliation | Tasks, UAT report, workflow, roadmap, autopilot state, and review packet reconciled | Complete | T001-T049 are complete; SPEC-014C remains PR-open pending review, merge, and normal post-merge promotion policy |
 
 ## Traceability Matrix
 
 | Area | Changed files | RED/GREEN evidence | HAL/UAT status | Review notes |
 |---|---|---|---|---|
-| P1 admission and launch | `src/lib/harness-adapters/codex-app-server/manifest.ts`, `input.ts`, `runner.ts`; `src/lib/harness-adapters/runtime-inventory.ts`; `src/lib/task-dispatch-codex-app-server.ts`; `src/lib/task-dispatch.ts` | T010-T013 RED; T014-T019 GREEN; supplemental live stdio RED/GREEN | Blocked on merged HAL target deployment | One adapter only; launch after claim/reconciliation/governance/lifecycle eligibility; no shell; lifecycle-root cwd |
-| P2 descriptor-only run evidence | `src/lib/harness-adapters/codex-app-server/evidence.ts`, `runner.ts`, `src/lib/task-dispatch-codex-app-server.ts`; schema/contract artifacts | T020-T022 RED; T023-T026 GREEN; persistence RED/GREEN; focused cluster 8 files / 89 tests | Blocked on merged HAL target deployment | Existing `runs`, attempt events, and activities now persist descriptor-only evidence; no raw transcript/protocol/provider/tool/MCP/prompt/host-path retention |
-| P3 fail-closed runtime handling | `src/lib/harness-adapters/codex-app-server/protocol.ts`, `runner.ts`, `src/lib/task-dispatch-codex-app-server.ts` | T027-T030 RED; T031-T035 GREEN; focused cluster 8 files / 89 tests | Local fixture matrix GREEN; HAL fixture matrix blocked | Covers user input, approval, tool/file, capability, timeout, binary unavailable, malformed protocol, unsafe evidence, abandoned ownership, and cleanup failure |
-| P4 reviewability and no-mutation guard | `scripts/spec-014c/check-scope-guard.mjs`, dispatch tests, review/workflow/roadmap/uat artifacts | T036/T037 RED; T038 GREEN; typecheck/lint/build/scope GREEN | HAL status recorded as blocked | Static and runtime guards cover task terminal state, successor selection, task creation, direct GitHub mutation, outbound sync, auto-merge, Aegis/owner gate bypass, governance mutation, OpenClaw behavior, retention, and live intervention |
-| Rollback and flag story | Existing `FEATURE_AGENT_RUNNER_SANDBOXES` and `FEATURE_TASK_CONTROL_PLANE`; no migration; no new runtime dependency | Feature flag-off admission test and guard evidence GREEN | Workspace-scoped flag-off HAL verification blocked | Disable `FEATURE_AGENT_RUNNER_SANDBOXES` to block launch before adapter handoff; no rollback SQL needed |
+| P1 admission and launch | `src/lib/harness-adapters/codex-app-server/manifest.ts`, `input.ts`, `runner.ts`; `src/lib/harness-adapters/runtime-inventory.ts`; `src/lib/task-dispatch-codex-app-server.ts`; `src/lib/task-dispatch.ts` | T010-T013 RED; T014-T019 GREEN; supplemental live stdio RED/GREEN | HAL real-launch UAT passed | One adapter only; launch after claim/reconciliation/governance/lifecycle eligibility; no shell; lifecycle-root cwd |
+| P2 descriptor-only run evidence | `src/lib/harness-adapters/codex-app-server/evidence.ts`, `runner.ts`, `src/lib/task-dispatch-codex-app-server.ts`; schema/contract artifacts | T020-T022 RED; T023-T026 GREEN; persistence RED/GREEN; focused cluster 8 files / 89 tests | HAL descriptor evidence passed | Existing `runs`, attempt events, and activities now persist descriptor-only evidence; no raw transcript/protocol/provider/tool/MCP/prompt/host-path retention |
+| P3 fail-closed runtime handling | `src/lib/harness-adapters/codex-app-server/protocol.ts`, `runner.ts`, `src/lib/task-dispatch-codex-app-server.ts` | T027-T030 RED; T031-T035 GREEN; focused cluster 8 files / 89 tests | HAL fixture matrix passed | Covers user input, approval, tool/file, capability, timeout, binary unavailable, malformed protocol, unsafe evidence, abandoned ownership, and cleanup failure |
+| P4 reviewability and no-mutation guard | `scripts/spec-014c/check-scope-guard.mjs`, dispatch tests, review/workflow/roadmap/uat artifacts | T036/T037 RED; T038 GREEN; typecheck/lint/build/scope GREEN | HAL UAT report passed | Static and runtime guards cover task terminal state, successor selection, task creation, direct GitHub mutation, outbound sync, auto-merge, Aegis/owner gate bypass, governance mutation, OpenClaw behavior, retention, and live intervention |
+| Rollback and flag story | Existing `FEATURE_AGENT_RUNNER_SANDBOXES` and `FEATURE_TASK_CONTROL_PLANE`; no migration; no new runtime dependency | Feature flag-off admission test and guard evidence GREEN | Workspace-scoped flag-off HAL verification passed | Disable `FEATURE_AGENT_RUNNER_SANDBOXES` to block launch before adapter handoff; no rollback SQL needed |
 | Deferred ownership | Review packet, spec, plan, workflow, roadmap | Analyze and guard evidence GREEN | N/A | SPEC-014E owns richer transcript/event retention; SPEC-014F owns live intervention UI; SPEC-014D owns OpenClaw/external adapter |
-| HAL real launch | `specs/014c-first-real-harness-adapter/uat-report.md` | Local live stdio path GREEN; HAL SSH/Codex command preflight GREEN; target launch blocked | Blocked | Fake-only or version-only proof is insufficient; target requires merged/promoted deployment plus real launch |
-| Cleanup proof | `specs/014c-first-real-harness-adapter/uat-report.md` | Local cleanup failure classification GREEN; no HAL fixture created | Blocked | T045 must prove zero marker-scoped DB/sandbox/artifact residue after target fixture execution |
+| HAL real launch | `specs/014c-first-real-harness-adapter/uat-report.md` | Local live stdio path GREEN; HAL branch deploy/build/service preflight GREEN; real launch passed | Passed | Fake-only or version-only proof was rejected; report records one real stdio handshake/thread/turn launch |
+| Cleanup proof | `specs/014c-first-real-harness-adapter/uat-report.md` | Local cleanup failure classification GREEN; HAL marker cleanup passed | Passed | T045 proves zero marker-scoped DB, sandbox, and artifact residue after target fixture execution |
 
 ## Archive Sweep Evidence
 
@@ -274,9 +274,9 @@ SPEC-014F owns harness operator intervention UI. SPEC-014C must fail closed for 
 
 Review check: any SPEC-014C implementation that needs operator prompts, approval handling, pause/resume UI, answer capture, deny controls, or intervention evidence surfaces must stop and split to SPEC-014F.
 
-## Known Gaps Until Target UAT
+## Closeout Status
 
 - Archive sweep evidence is recorded, but no archive cleanup was applied from this feature branch.
-- HAL UAT is blocked because SPEC-014C is not merged/promoted to a target commit; HAL SSH and Codex app-server command preflight are restored.
-- T042-T045 remain open: deployed commit/service evidence, one real Codex app-server target launch, HAL failure matrix, workspace-scoped flag proof, and zero-residue cleanup proof are not captured.
-- Local implementation, persistence, fail-closed fixtures, no-mutation guards, G7 validation, workflow status, roadmap status, and autopilot status are reconciled.
+- HAL UAT passed for marker `SPEC-014C-HAL-UAT-20260605121830` on branch target `43989ac856696abb2ea764fed409da268b87c9a8`.
+- T042-T045 are complete: deployed commit/service evidence, one real Codex app-server target launch, HAL failure matrix, workspace-scoped flag proof, and zero-residue cleanup proof are captured.
+- Local implementation, persistence, fail-closed fixtures, no-mutation guards, G7 validation, workflow status, roadmap status, autopilot status, and PR description are reconciled.

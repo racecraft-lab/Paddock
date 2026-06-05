@@ -13,15 +13,13 @@ Confirm Codex app-server surface:
 ```bash
 codex --version
 codex app-server --help
-codex app-server daemon --help
-codex app-server proxy --help
 codex app-server generate-ts --out /tmp/spec-014c-codex-app-server-schema/ts --experimental
 ```
 
 Expected planning evidence:
 
 - CLI version is locally available.
-- `app-server` exposes `daemon`, `proxy`, `generate-ts`, and `generate-json-schema`.
+- `app-server` exposes the documented direct `--listen stdio://` transport plus schema generation commands.
 - Direct `codex app-server --listen stdio://` returns the official initialize response during HAL UAT.
 - No `serve` command is assumed.
 - Generated protocol contains initialize, thread, turn, usage, item, request-approval, user-input, permission, and tool-call shapes.

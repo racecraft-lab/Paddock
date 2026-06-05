@@ -34,7 +34,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Checklist | `$speckit-checklist` | Complete | Eight focused domain checklists passed G4 with zero unresolved `[Gap]` markers |
 | Tasks | `$speckit-tasks` | Complete | Generated 49 TDD-first tasks; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | Remediated two low artifact consistency issues; G6 passed with no unresolved CRITICAL/HIGH findings |
-| Implement | `$speckit-implement` | In Progress | T001-T041 and T046-T049 local implementation/G7 evidence is GREEN; T042-T045 HAL UAT is blocked pending merged/promoted target deployment |
+| Implement | `$speckit-implement` | Complete for Phase 7 | T001-T049 are complete; HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` passed on branch target `43989ac856696abb2ea764fed409da268b87c9a8`; PR #79 remains open pending review/merge |
 
 ## Phase Gates
 
@@ -47,7 +47,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | G4 | After Checklist | Every checklist has zero unresolved `[Gap]` items or records a split decision |
 | G5 | After Tasks | Tasks are dependency ordered, TDD-first, reviewable, and bounded to one adapter module plus the narrow dispatch/evidence seams |
 | G6 | After Analyze | No CRITICAL/HIGH findings remain; design concept, spec, plan, tasks, and roadmap follow-up boundaries agree |
-| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, local proof, HAL UAT runbook/report, roadmap/workflow status, and PR review packet are complete; if target UAT is blocked, the blocker is recorded and completion remains open |
+| G7 | After Implement | Focused tests, typecheck/lint/build as scope requires, local proof, HAL UAT runbook/report, roadmap/workflow status, and PR review packet are complete; if target UAT passes on a PR branch, final project completion remains open until review/merge policy completes |
 
 ## Prerequisites
 
@@ -103,7 +103,7 @@ Use these sources only for launch/resume vocabulary, workspace cwd/sandbox postu
 | Name | First Real Harness Adapter Pilot |
 | Branch short name | `first-real-harness-adapter` |
 | Feature directory | `specs/014c-first-real-harness-adapter` |
-| Status | In Progress - local implementation through T041 GREEN; HAL UAT pending |
+| Status | In Progress - Phase 7 complete on PR branch; PR #79 review/merge pending |
 | Priority | P1 |
 | Dependencies | SPEC-013D, SPEC-014B |
 | Enables | SPEC-014D, SPEC-014E, SPEC-014F, later adapter specs |
@@ -611,21 +611,21 @@ Create `specs/014c-first-real-harness-adapter/pr-review-packet.md` with:
 | US2 descriptor-only evidence and artifact safety | Complete through T026 plus persistence fix | Focused US2 command passed 4 files / 40 tests; dispatch persistence RED/GREEN passed 1 file / 21 tests; focused cluster passed 8 files / 89 tests; typecheck/lint/scope guard passed |
 | US3 fail-closed protocol, timeout, cleanup, and ownership | Complete through T035 | Combined US1-US3 command passed 8 files / 86 tests; supplemental focused cluster passed 8 files / 89 tests; typecheck/lint/scope guard passed |
 | US4 static/runtime no-mutation guard | Complete through T038 | T036/T037 RED captured; dispatch no-mutation/persistence test passed 1 file / 21 tests; scope guard self-test/current-diff passed; typecheck/lint/build passed |
-| PR packet, workflow, roadmap, autopilot status | Complete through T041 and reconciled at T049 | Packet traceability matrix, workflow, roadmap, autopilot status, and UAT blocker report updated with local GREEN evidence |
-| HAL target UAT | Blocked T042-T045 | `uat-report.md` records marker `SPEC-014C-HAL-UAT-BLOCKED-20260605144729`: no merged/promoted SPEC-014C target commit; HAL SSH, service inspection, and Codex app-server command preflight are now available |
-| Polish and G7 | Complete T046-T049, except target UAT remains open | Focused cluster passed 8 files / 89 tests; scope guard OK; `pnpm typecheck`, `pnpm lint`, and escalated `pnpm build` passed; artifact scan/reconciliation complete |
+| PR packet, workflow, roadmap, autopilot status | Complete through T049 | Packet traceability matrix, workflow, roadmap, autopilot status, UAT report, and PR body updated with final HAL evidence |
+| HAL target UAT | Complete T042-T045 | `uat-report.md` records marker `SPEC-014C-HAL-UAT-20260605121830`: branch target `43989ac856696abb2ea764fed409da268b87c9a8`, service health, one real Codex app-server stdio launch, deterministic failure matrix, workspace-scoped flag proof, and zero marker residue passed |
+| Polish and G7 | Complete T046-T049 | Focused cluster passed 8 files / 89 tests; scope guard OK; `pnpm typecheck`, `pnpm lint`, and escalated `pnpm build` passed; artifact scan/reconciliation complete |
 
 No split trigger has fired: the implementation remains one Codex app-server adapter plus narrow dispatch/evidence/guard integration. SPEC-014E still owns richer transcript/event retention; SPEC-014F still owns live intervention UI.
 
 ## Closeout Notes
 
-SPEC-014C is locally implemented and locally G7-green, but not complete. It is complete only after merge, target deployment promotion, flag-scoped HAL UAT with a real Codex app-server launch, zero-residue cleanup proof, and final roadmap/workflow evidence updates.
+SPEC-014C Phase 7 is complete on the PR branch. The branch was deployed to HAL at commit `43989ac856696abb2ea764fed409da268b87c9a8`, built, restarted, and verified through flag-scoped HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830` with a real Codex app-server launch and zero-residue cleanup proof.
 
-PR #79 is open for review: https://github.com/racecraft-lab/Paddock/pull/79. The PR is ready for local/CI review, while T042-T045 remain the post-merge HAL target UAT completion gate.
+PR #79 is open for review: https://github.com/racecraft-lab/Paddock/pull/79. The remaining completion gate is normal PR review, merge, and post-merge promotion policy; no Phase 7 task remains open.
 
 ## Self-Review
 
-1. **Tests executed?** Partial post-implementation coverage is complete for the local implementation path. On 2026-06-05T14:47:29Z after rebasing to `origin/main`, the focused SPEC-014C Vitest cluster passed 8 files / 89 tests, `node scripts/spec-014c/check-scope-guard.mjs` passed, `pnpm typecheck` passed, `pnpm lint` passed, and escalated `pnpm build` passed. `pnpm test:e2e` did not run because SPEC-014C changes no browser-visible surface; target HAL UAT remains blocked until merge/promotion.
-2. **Edge cases?** Covered locally by focused tests: blocked admission and workspace/repository/manifest/governance cases in `src/lib/__tests__/task-dispatch-codex-app-server.test.ts:616`; timeout/binary/cleanup failures in `src/lib/harness-adapters/__tests__/codex-app-server-runner.test.ts:418`; unsupported user-input/approval/tool/capability and malformed protocol in `src/lib/harness-adapters/__tests__/codex-app-server-protocol.test.ts:320`; unsafe evidence rejection and allowed redaction in `src/lib/harness-adapters/__tests__/codex-app-server-artifact-safety.test.ts:321`; runtime-inventory feature/assignment states in `src/lib/harness-adapters/__tests__/runtime-inventory.test.ts:145`. `[edge-case-gap]` FR-023/FR-024 target evidence remains open for post-merge HAL UAT.
-3. **Requirements matched?** FR-001 through FR-022 and FR-025 trace to completed T001-T041 and T046-T049 plus commit `08ef087b` and passing local verification. FR-023 and FR-024 trace to T042-T045 and remain intentionally open until merged target deployment, one real HAL Codex app-server launch, deterministic HAL fixture matrix, and zero-residue cleanup proof.
-4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, or `tasks.md`. Explicit follow-up ownership is recorded instead: SPEC-014E owns richer transcript/event retention, SPEC-014F owns live intervention UI, and T042-T045 own target HAL UAT after merge/promotion.
+1. **Tests executed?** Local implementation coverage passed after rebasing and after official-doc-grounded stdio transport alignment: focused SPEC-014C cluster 8 files / 89 tests, `node scripts/spec-014c/check-scope-guard.mjs`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. HAL branch deployment at `43989ac856696abb2ea764fed409da268b87c9a8` also passed `pnpm build`, service restart, `/login`, authenticated `/api/status`, and marker-scoped UAT.
+2. **Edge cases?** Covered locally and on HAL: blocked admission and workspace/repository/manifest/governance cases; timeout/binary/cleanup failures; unsupported input/approval/tool/capability; malformed protocol; unsafe evidence rejection; allowed redaction; runtime-inventory states; workspace-scoped flag-off blocking; and zero-residue cleanup.
+3. **Requirements matched?** FR-001 through FR-025 trace to completed T001-T049 plus passing local verification and HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830`.
+4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, or `tasks.md`. Follow-up ownership remains explicit: SPEC-014D owns OpenClaw/external adapter work, SPEC-014E owns richer transcript/event retention, and SPEC-014F owns live intervention UI.

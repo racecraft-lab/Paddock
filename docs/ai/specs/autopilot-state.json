@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-014C-workflow.md",
-  "updated_at": "2026-06-05T14:47:29Z",
+  "updated_at": "2026-06-05T17:21:41Z",
   "spec_id": "SPEC-014C",
   "branch": "014c-first-real-harness-adapter",
   "feature_dir": "specs/014c-first-real-harness-adapter",
@@ -42,7 +42,7 @@
     "executor_model": "gpt-5.5",
     "executor_reasoning_effort": "xhigh"
   },
-  "active_step": "Phase 7: HAL target UAT blocked at T042-T045",
+  "active_step": "Phase 7: HAL target UAT complete; PR #79 review/merge pending",
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -81,7 +81,7 @@
     {"step": "Phase 7: Implement T010-T019 US1 admission and launch", "status": "completed"},
     {"step": "Phase 7: Implement T020-T026 US2 safe evidence", "status": "completed"},
     {"step": "Phase 7: Implement T027-T035 US3 fail-closed runtime", "status": "completed"},
-    {"step": "Phase 7: Implement T036-T045 US4 review and HAL UAT", "status": "in_progress", "note": "T036-T041 local guard/review/status evidence is GREEN; HAL SSH/service/Codex preflight is available; T042-T045 remain blocked by missing merged/promoted SPEC-014C target deployment"},
+    {"step": "Phase 7: Implement T036-T045 US4 review and HAL UAT", "status": "completed", "note": "T036-T041 local guard/review/status evidence is GREEN; T042-T045 HAL UAT passed on branch target 43989ac856696abb2ea764fed409da268b87c9a8 with marker SPEC-014C-HAL-UAT-20260605121830"},
     {"step": "Phase 7: Implement T046-T049 polish validation", "status": "completed", "note": "Focused cluster 8 files / 89 tests, scope guard, typecheck, lint, escalated build, artifact scan, and status reconciliation are GREEN"},
     {"step": "Post: Doctor Extension Check", "status": "pending"},
     {"step": "Post: Verify Implementation", "status": "pending"},
@@ -90,9 +90,9 @@
     {"step": "Post: Integration Suite", "status": "pending"},
     {"step": "Post: Cleanup", "status": "pending"},
     {"step": "Post: Reviewability Diff Gate", "status": "pending"},
-    {"step": "Post: Self-Review", "status": "completed", "note": "Recorded four-question self-review in workflow; FR-023/FR-024 target HAL UAT gap remains explicit"},
-    {"step": "Post: UAT Runbook Generation", "status": "completed", "note": "Generated specs/014c-first-real-harness-adapter/uat-runbook.md with PROJECT_COMMANDS and self-review findings"},
-    {"step": "Post: PR Body Generation", "status": "completed", "note": "Generated linked-worktree-safe SpecKit PR body with review packet marker and UAT Runbook heading"},
+    {"step": "Post: Self-Review", "status": "completed", "note": "Recorded four-question self-review in workflow after HAL UAT pass; FR-023/FR-024 target evidence is complete for the PR branch"},
+    {"step": "Post: UAT Runbook Generation", "status": "completed", "note": "Updated specs/014c-first-real-harness-adapter/uat-runbook.md with HAL UAT pass evidence"},
+    {"step": "Post: PR Body Generation", "status": "completed", "note": "Updated PR #79 body with official-doc-grounded stdio transport and HAL UAT pass evidence"},
     {"step": "Post: PR Creation", "status": "completed", "note": "Created PR #79: https://github.com/racecraft-lab/Paddock/pull/79"},
     {"step": "Post: Review Remediation", "status": "pending"},
     {"step": "Post: Retrospective", "status": "pending"}
