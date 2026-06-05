@@ -177,10 +177,11 @@ Expected response:
 
 ```json
 {
-  "success": true,
-  "token_recorded": false,
-  "work_items": [],
-  "timestamp": 1711234700
+  "status": "HEARTBEAT_OK",
+  "agent": "scout",
+  "checked_at": 1711234700,
+  "message": "No work items found",
+  "token_recorded": false
 }
 ```
 

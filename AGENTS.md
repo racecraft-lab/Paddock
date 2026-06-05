@@ -37,7 +37,7 @@ Visit `http://localhost:3000/setup` to create an admin account, or set `AUTH_USE
 ```bash
 pnpm dev              # development (localhost:3000)
 pnpm start            # production
-node .next/standalone/server.js   # standalone mode (after build)
+pnpm start:standalone # standalone mode (after build)
 ```
 
 ## Docker
@@ -132,7 +132,7 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 
 ## Common Pitfalls
 
-- **Standalone mode**: Use `node .next/standalone/server.js`, not `pnpm start` (which requires full `node_modules`)
+- **Standalone mode**: Use `pnpm start:standalone`, not `pnpm start` (which requires full `node_modules`)
 - **better-sqlite3**: Native addon -- needs rebuild when switching Node versions (`pnpm rebuild better-sqlite3`)
 - **AUTH_PASS with `#`**: Quote it (`AUTH_PASS="my#pass"`) or use `AUTH_PASS_B64` (base64-encoded)
 - **Gateway optional**: Set `NEXT_PUBLIC_GATEWAY_OPTIONAL=true` for standalone deployments without gateway connectivity

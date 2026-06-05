@@ -120,24 +120,18 @@ The scheduler automatically dispatches `assigned` tasks to agents through the Op
 2. The scheduler's `dispatchAssignedTasks` job runs periodically
 3. For each task, Paddock:
    - Marks it `in_progress`
-   - Classifies the task complexity to select a model
+   - Resolves the target gateway agent and optional dispatch-model override
    - Sends the task prompt to the agent via the gateway
    - Parses the response and stores the resolution
    - Moves the task to `review` status
 
 ### Model Routing
 
-Paddock automatically selects a model based on task content:
+By default, Paddock does not inject a model override into gateway dispatch.
+The OpenClaw agent uses its own configured default model. Paddock only sends a
+model field when the assigned agent config includes `dispatchModel`.
 
-| Tier | Model | Signals |
-|------|-------|---------|
-| **Complex** | Opus | debug, diagnose, architect, security audit, incident, refactor, migration |
-| **Routine** | Haiku | status check, format, rename, ping, summarize, translate, simple, minor |
-| **Default** | Agent's configured model | Everything else |
-
-Critical priority tasks always get Opus. Low priority with routine signals get Haiku.
-
-Override per-agent by setting `config.dispatchModel`:
+Set an override per agent with `config.dispatchModel`:
 
 ```bash
 curl -X PUT "$MC_URL/api/agents" \
