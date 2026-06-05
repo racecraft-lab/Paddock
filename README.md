@@ -125,6 +125,9 @@ Paddock can be driven from the web UI, REST API, CLI, or MCP server.
 export MC_URL=http://localhost:3000
 export MC_API_KEY=your-api-key
 
+# Factory/multi-workspace deployments with FEATURE_WORKSPACE_SWITCHER enabled:
+# scope requests with either workspace_id=<product-line id> or workspace_scope=facility (not both).
+
 curl -X POST "$MC_URL/api/agents/register" \
   -H "Authorization: Bearer <MC_API_KEY>" \
   -H "Content-Type: application/json" \

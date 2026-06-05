@@ -298,14 +298,15 @@ Create per-agent keys with limited scopes:
 # Create a scoped key for agent "Aegis" (via CLI)
 pnpm mc raw --method POST --path /api/agents/5/keys --body '{
   "name": "aegis-worker",
-  "scopes": ["viewer", "agent:self", "agent:diagnostics", "tasks:write"],
+  "scopes": ["viewer", "operator", "agent:self", "agent:diagnostics"],
   "expires_in_days": 30
 }' --json
 ```
 
 Scoped keys:
 - Can only act as the agent they belong to (no cross-agent access)
-- Have explicit scope lists (viewer, agent:self, tasks:write, etc.)
+- Have explicit scope lists (`viewer`, `operator`, `agent:self`, `agent:diagnostics`, etc.)
+- Need `operator` only for agent flows that poll or claim tasks through `/api/tasks/queue`
 - Auto-expire after a set period
 - Can be revoked without affecting other agents
 - Are logged separately in the audit trail
@@ -344,7 +345,8 @@ This prevents a runaway agent from consuming the entire rate limit budget.
 
 Current: in-memory `Map` per process (suitable for single-instance deployments).
 
-For multi-instance deployments, the rate limiter supports a pluggable backend via the `createRateLimiter` factory. Future options:
+The current rate limiter factory does not expose a pluggable store interface.
+Future multi-instance options would require a code change for shared state, such as:
 - **Redis**: shared state across instances (use Upstash or self-hosted)
 - **SQLite WAL**: leverage the existing DB for cross-process coordination
 - **Edge KV**: for edge-deployed instances
@@ -354,4 +356,6 @@ The current implementation includes:
 - Capacity-bounded maps (default 10K entries, LRU eviction)
 - Trusted proxy IP parsing (`MC_TRUSTED_PROXIES`)
 
-No action needed for single-instance deployments. For multi-instance, implement a custom `RateLimitStore` interface when scaling beyond 1 node.
+No action needed for single-instance deployments. For multi-instance, keep
+rate limiting at a shared reverse proxy or add a reviewed shared-store
+implementation before scaling beyond 1 node.

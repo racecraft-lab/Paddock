@@ -1,6 +1,20 @@
-# SPEC-001 / SPEC-004 / SPEC-006 / SPEC-008 Manual Rollback Procedure
+# Paddock Manual Migration Rollback Procedure
 
 SPEC-001 adds forward-only migrations M53 through M61; SPEC-004 adds M62 (`idx_tasks_one_successor_per_parent`); SPEC-006 adds M63 (area-label routing schema); SPEC-008 adds M65a..m + M66 (resource governance schema, see SPEC-008 row below). The live migration runner has no `down()` hook, so rollback is an operator-initiated manual SQL procedure.
+
+## M81 (Paddock Rename) Rollback
+
+M81 `081_paddock_hard_rename` rewrites persisted Mission Control identifiers
+to Paddock identifiers and rebuilds the sandbox owner constraint. To reverse
+only the rename migration after stopping Paddock writers and backing up the
+database, run:
+
+1. `docs/migrations/rollback-M81.sql`
+2. `PRAGMA foreign_key_check;`
+3. Verify `schema_migrations` no longer contains `081_paddock_hard_rename`.
+
+This rollback restores pre-M81 persisted identifiers and leaves unrelated task,
+attempt, claim, activity, workflow, and governance data intact.
 
 ## SPEC-014A (Sandbox Lifecycle) Rollback
 
