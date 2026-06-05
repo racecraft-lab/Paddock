@@ -40,7 +40,7 @@ Re-read the design concept before each phase. If a generated artifact contradict
 
 | Gate | Checkpoint | Approval Criteria |
 |---|---|---|
-| G0 | After scaffold | Branch is `014c-first-real-harness-adapter`; design concept and workflow are committed; reviewability preset resolves; roadmap names SPEC-014E and SPEC-014F follow-ups |
+| G0 | After scaffold | Branch is `014c-first-real-harness-adapter`; design concept and workflow are committed; reviewability preset resolves; roadmap names SPEC-014E and SPEC-014F follow-ups; closeout now also records SPEC-015A IA follow-up |
 | G1 | After Specify | Requirements cover one real Codex app-server adapter, existing dispatch trigger, sandbox lifecycle, run/attempt/claim evidence, artifact safety, unsupported capability behavior, and HAL UAT |
 | G2 | After Clarify | Protocol event names, same-run continuation stance, reason-code mapping, sanitized artifact shape, and HAL fixture shape are closed |
 | G3 | After Plan | Architecture reuses SPEC-014A/B and SPEC-013B/C/D seams; no second adapter, no new live intervention UI, no transcript-retention policy, no auto-merge, and no task terminal mutation |
@@ -106,7 +106,7 @@ Use these sources only for launch/resume vocabulary, workspace cwd/sandbox postu
 | Status | In Progress - closeout hygiene complete on PR branch; PR #79 review/merge pending |
 | Priority | P1 |
 | Dependencies | SPEC-013D, SPEC-014B |
-| Enables | SPEC-014D, SPEC-014E, SPEC-014F, later adapter specs |
+| Enables | SPEC-014D, SPEC-014E, SPEC-014F, SPEC-015A, later adapter specs |
 | Tool count / tool names | N/A - not a tool-surface spec |
 
 Roadmap scope:
@@ -128,6 +128,7 @@ Human-reviewed setup decisions:
 - User-input, tool/file approval, unsupported capability, timeout, and unsafe evidence cases fail closed.
 - SPEC-014E owns richer transcript/event retention and raw-capture policy.
 - SPEC-014F owns live operator intervention UI.
+- SPEC-015A owns first-class workflow/orchestration information architecture discovered during HAL `/agents` review.
 - Paddock-owned SPEC-014A sandbox lifecycle root is the only cwd boundary.
 - HAL UAT requires one real Codex app-server launch or blocks completion.
 
@@ -167,7 +168,7 @@ User stories:
 1. As Paddock, I can admit only an already-claimed GitHub-linked assigned stage through runtime-inventory eligibility and launch Codex app-server in a bounded sandbox.
 2. As an operator, I can inspect run, attempt, lifecycle, artifact, usage, and failure summaries without raw transcripts or unsafe payloads.
 3. As Paddock, I can fail closed on unsupported user-input, tool/file approval, timeout, unavailable binary, malformed protocol event, and unsafe evidence cases without mutating task terminal state or GitHub.
-4. As a reviewer, I can see that richer transcript retention belongs to SPEC-014E and live intervention UI belongs to SPEC-014F, not this PR.
+4. As a reviewer, I can see that richer transcript retention belongs to SPEC-014E, live intervention UI belongs to SPEC-014F, and first-class workflow/orchestration IA belongs to SPEC-015A, not this PR.
 
 Functional requirements must cover:
 - One Codex app-server adapter manifest and adapter module.
@@ -192,6 +193,7 @@ Out of scope:
 - OpenClaw-specific behavior.
 - Rich transcript/event retention, replay/debug export, quarantine policy, or opt-in raw capture beyond existing artifact safety: SPEC-014E.
 - Live user-input/tool-approval UI, operator answer capture, pause/resume intervention state, or stop button: SPEC-014F.
+- First-class workflow/orchestration page split, workflow navigation move, pipeline scope/delete contract repair, or Agent Squad layout split: SPEC-015A.
 - Successor selection, local-only task creation, direct GitHub mutation, task terminal mutation, auto-merge, Aegis/owner gate bypass, or governance mutation.
 ```
 
@@ -209,7 +211,7 @@ Out of scope:
 | G1 gate | Pass | `validate-gate.sh G1 specs/014c-first-real-harness-adapter` returned pass with 0 markers |
 | Clarification markers | Clear | No unresolved `[NEEDS CLARIFICATION]` markers in `spec.md` |
 | External context | Recorded | Spec cites OpenAI Harness Engineering, Symphony announcement, Symphony SPEC, and Codex App Server docs retrieved 2026-06-04 |
-| Scope boundary | Recorded | One Codex app-server adapter; SPEC-014E owns retention and SPEC-014F owns intervention UI |
+| Scope boundary | Recorded | One Codex app-server adapter; SPEC-014E owns retention, SPEC-014F owns intervention UI, and SPEC-015A owns first-class workflow/orchestration IA |
 
 ## Phase 2: Clarify
 
@@ -349,7 +351,7 @@ $speckit-plan
 - Record `AgentRun`, task-stage attempt events, sandbox lifecycle events, activities, usage/failure summaries, and safe artifact references.
 - Publish artifacts only through `publishArtifact` and existing secret/redaction behavior.
 - Failure paths release/defer claims through existing reconciliation. Adapter code does not mark tasks done or failed and does not mutate GitHub.
-- SPEC-014E and SPEC-014F are roadmap follow-ups only. Do not implement their retention or live-intervention UI behavior.
+- SPEC-014E, SPEC-014F, and SPEC-015A are roadmap follow-ups only. Do not implement their retention, live-intervention UI, or first-class workflow/orchestration page behavior.
 
 ## Planning Questions To Resolve
 - Is a new adapter result type needed, or can the existing `RuntimeInventoryEntry`, `AgentRun`, attempt, lifecycle, and artifact types carry all bounded evidence?
@@ -497,6 +499,7 @@ Flag drift where any artifact:
 - Implements a second real adapter or OpenClaw-specific behavior.
 - Adds launch/stop/operator prompt UI, live answer capture, or approval UI in SPEC-014C instead of SPEC-014F.
 - Adds raw transcript/event retention, replay/debug export, or raw-capture policy in SPEC-014C instead of SPEC-014E.
+- Moves workflow navigation, splits Agent Squad layout, repairs pipeline scope/delete contracts, or adds a first-class workflow/orchestration page in SPEC-014C instead of SPEC-015A.
 - Lets the adapter mutate task terminal state, GitHub state, successor selection, governance policy, Aegis/owner gates, or auto-merge.
 - Runs outside the SPEC-014A Paddock-owned sandbox lifecycle root.
 - Persists raw transcripts, provider payloads, tool payloads, prompt bodies, host paths, secrets, or unsafe evidence.
@@ -504,7 +507,7 @@ Flag drift where any artifact:
 - Omits tests for unsupported user-input/tool/approval, timeout, unavailable binary, malformed protocol, artifact safety, feature flag OFF, and no terminal/GitHub mutation.
 ```
 
-G6 passes only when no CRITICAL/HIGH findings remain and all follow-up ownership for SPEC-014E/F is consistent.
+G6 passes only when no CRITICAL/HIGH findings remain and all follow-up ownership for SPEC-014E/F and SPEC-015A is consistent.
 
 ### Analyze Results
 
@@ -522,7 +525,7 @@ G6 passes only when no CRITICAL/HIGH findings remain and all follow-up ownership
 - JSON validation passed for `contracts/codex_app_server_run.v1.schema.json` and `docs/ai/specs/autopilot-state.json`.
 - Current primary-source refresh confirms the app-server initialize/thread/turn flow and explicit user-input/approval request handling remain aligned with SPEC-014C's non-interactive fail-closed boundary.
 
-G6 is ready: no CRITICAL/HIGH findings remain, and design concept, workflow, roadmap, spec, plan, research, data model, contracts, checklists, and tasks agree on one Codex app-server adapter, narrow dispatch/evidence integration, HAL real-launch UAT, SPEC-014E retention ownership, and SPEC-014F intervention ownership.
+G6 is ready: no CRITICAL/HIGH findings remain, and design concept, workflow, roadmap, spec, plan, research, data model, contracts, checklists, and tasks agree on one Codex app-server adapter, narrow dispatch/evidence integration, HAL real-launch UAT, SPEC-014E retention ownership, SPEC-014F intervention ownership, and SPEC-015A workflow/orchestration IA ownership.
 
 ### Confidence Gate Results
 
@@ -593,7 +596,7 @@ Create `specs/014c-first-real-harness-adapter/uat-report.md` with:
 Create `specs/014c-first-real-harness-adapter/pr-review-packet.md` with:
 
 - What changed and why.
-- Non-goals, especially SPEC-014E and SPEC-014F boundaries.
+- Non-goals, especially SPEC-014E, SPEC-014F, and SPEC-015A boundaries.
 - Review order.
 - Reviewability budget and any split exception.
 - Traceability to requirements and tasks.
@@ -615,7 +618,7 @@ Create `specs/014c-first-real-harness-adapter/pr-review-packet.md` with:
 | HAL target UAT | Complete T042-T045 | `uat-report.md` records marker `SPEC-014C-HAL-UAT-20260605121830`: branch target `43989ac856696abb2ea764fed409da268b87c9a8`, service health, one real Codex app-server stdio launch, deterministic failure matrix, workspace-scoped flag proof, and zero marker residue passed |
 | Polish and G7 | Complete T046-T049 | Focused cluster passed 8 files / 89 tests; scope guard OK; `pnpm typecheck`, `pnpm lint`, and escalated `pnpm build` passed; artifact scan/reconciliation complete |
 
-No split trigger has fired: the implementation remains one Codex app-server adapter plus narrow dispatch/evidence/guard integration. SPEC-014E still owns richer transcript/event retention; SPEC-014F still owns live intervention UI.
+No split trigger has fired: the implementation remains one Codex app-server adapter plus narrow dispatch/evidence/guard integration. SPEC-014E still owns richer transcript/event retention; SPEC-014F still owns live intervention UI; SPEC-015A owns first-class workflow/orchestration IA.
 
 ## Closeout Notes
 
@@ -651,4 +654,4 @@ Generated: 2026-06-05T18:39:37Z
 1. **Tests executed?** Local implementation coverage passed after rebasing and after official-doc-grounded stdio transport alignment: focused SPEC-014C cluster 8 files / 89 tests, `node scripts/spec-014c/check-scope-guard.mjs`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. HAL branch deployment at `43989ac856696abb2ea764fed409da268b87c9a8` also passed `pnpm build`, service restart, `/login`, authenticated `/api/status`, and marker-scoped UAT.
 2. **Edge cases?** Covered locally and on HAL: blocked admission and workspace/repository/manifest/governance cases; timeout/binary/cleanup failures; unsupported input/approval/tool/capability; malformed protocol; unsafe evidence rejection; allowed redaction; runtime-inventory states; workspace-scoped flag-off blocking; and zero-residue cleanup.
 3. **Requirements matched?** FR-001 through FR-025 trace to completed T001-T049 plus passing local verification and HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830`.
-4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, or `tasks.md`. Follow-up ownership remains explicit: SPEC-014D owns OpenClaw/external adapter work, SPEC-014E owns richer transcript/event retention, and SPEC-014F owns live intervention UI.
+4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, or `tasks.md`. Follow-up ownership remains explicit: SPEC-014D owns OpenClaw/external adapter work, SPEC-014E owns richer transcript/event retention, SPEC-014F owns live intervention UI, and SPEC-015A owns the first-class Workflow Orchestration page split discovered during HAL `/agents` review.

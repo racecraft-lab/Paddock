@@ -8,7 +8,7 @@ Status: T001-T049 are complete. HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830
 - Feature spec: `specs/014c-first-real-harness-adapter/spec.md`
 - Implementation plan: `specs/014c-first-real-harness-adapter/plan.md`
 
-Design basis: SPEC-014C proves one Codex app-server harness adapter on top of SPEC-014A sandbox lifecycles, SPEC-014B runtime inventory, and SPEC-013B through SPEC-013D claim control. Rich transcript/event retention is deferred to SPEC-014E. Live operator intervention is deferred to SPEC-014F.
+Design basis: SPEC-014C proves one Codex app-server harness adapter on top of SPEC-014A sandbox lifecycles, SPEC-014B runtime inventory, and SPEC-013B through SPEC-013D claim control. Rich transcript/event retention is deferred to SPEC-014E. Live operator intervention is deferred to SPEC-014F. First-class workflow/orchestration information architecture is deferred to SPEC-015A.
 
 ## Scope Budget
 
@@ -19,13 +19,13 @@ Design basis: SPEC-014C proves one Codex app-server harness adapter on top of SP
 | Planned production files | 6-8 | Actual scoped code/config scan covers 12 files; added files stay inside the one-adapter plus narrow dispatch/evidence surface |
 | Planned total files | 12-18 including tests, spec artifacts, UAT report, and this packet | Current diff has 51 changed files including generated SpecKit checklists, tests, contracts, docs, and status ledgers |
 | Projected reviewable LOC | 700-1,100 before tests and generated evidence | Exceeded by test/process artifacts; production behavior remains bounded by scope guard and focused tests |
-| Split trigger | Second primary surface, second real adapter, schema-heavy retention, live intervention UI, broad scheduler rewrite | No split trigger fired; SPEC-014D/E/F ownership remains deferred |
+| Split trigger | Second primary surface, second real adapter, schema-heavy retention, live intervention UI, broad scheduler rewrite, workflow/orchestration IA split | No implementation split trigger fired inside SPEC-014C; SPEC-014D/E/F and SPEC-015A ownership remains deferred |
 
-Scope guard: SPEC-014C must not add a second adapter, OpenClaw-specific behavior, transcript-retention platform, live intervention UI, direct GitHub mutation, task terminal mutation, successor selection, auto-merge, or governance mutation.
+Scope guard: SPEC-014C must not add a second adapter, OpenClaw-specific behavior, transcript-retention platform, live intervention UI, first-class workflow/orchestration page split, direct GitHub mutation, task terminal mutation, successor selection, auto-merge, or governance mutation.
 
 ## Review Order
 
-1. Review scope guard and deferred SPEC-014E/SPEC-014F boundaries.
+1. Review scope guard and deferred SPEC-014E/SPEC-014F/SPEC-015A boundaries.
 2. Review Codex app-server manifest and SPEC-014B runtime-inventory eligibility.
 3. Review dispatch entry point after claim/reconciliation, governance, assignment, and lifecycle preflight.
 4. Review adapter protocol handling for handshake, thread start, turn start, terminal status, timeout, and subprocess cleanup.
@@ -248,7 +248,7 @@ Implementation notes: T038 completed the changed-path allowlist for SPEC-014C-ow
 | P3 fail-closed runtime handling | `src/lib/harness-adapters/codex-app-server/protocol.ts`, `runner.ts`, `src/lib/task-dispatch-codex-app-server.ts` | T027-T030 RED; T031-T035 GREEN; focused cluster 8 files / 89 tests | HAL fixture matrix passed | Covers user input, approval, tool/file, capability, timeout, binary unavailable, malformed protocol, unsafe evidence, abandoned ownership, and cleanup failure |
 | P4 reviewability and no-mutation guard | `scripts/spec-014c/check-scope-guard.mjs`, dispatch tests, review/workflow/roadmap/uat artifacts | T036/T037 RED; T038 GREEN; typecheck/lint/build/scope GREEN | HAL UAT report passed | Static and runtime guards cover task terminal state, successor selection, task creation, direct GitHub mutation, outbound sync, auto-merge, Aegis/owner gate bypass, governance mutation, OpenClaw behavior, retention, and live intervention |
 | Rollback and flag story | Existing `FEATURE_AGENT_RUNNER_SANDBOXES` and `FEATURE_TASK_CONTROL_PLANE`; no migration; no new runtime dependency | Feature flag-off admission test and guard evidence GREEN | Workspace-scoped flag-off HAL verification passed | Disable `FEATURE_AGENT_RUNNER_SANDBOXES` to block launch before adapter handoff; no rollback SQL needed |
-| Deferred ownership | Review packet, spec, plan, workflow, roadmap | Analyze and guard evidence GREEN | N/A | SPEC-014E owns richer transcript/event retention; SPEC-014F owns live intervention UI; SPEC-014D owns OpenClaw/external adapter |
+| Deferred ownership | Review packet, spec, plan, workflow, roadmap | Analyze and guard evidence GREEN | N/A | SPEC-014E owns richer transcript/event retention; SPEC-014F owns live intervention UI; SPEC-014D owns OpenClaw/external adapter; SPEC-015A owns first-class workflow/orchestration IA |
 | HAL real launch | `specs/014c-first-real-harness-adapter/uat-report.md` | Local live stdio path GREEN; HAL branch deploy/build/service preflight GREEN; real launch passed | Passed | Fake-only or version-only proof was rejected; report records one real stdio handshake/thread/turn launch |
 | Cleanup proof | `specs/014c-first-real-harness-adapter/uat-report.md` | Local cleanup failure classification GREEN; HAL marker cleanup passed | Passed | T045 proves zero marker-scoped DB, sandbox, and artifact residue after target fixture execution |
 
@@ -273,6 +273,12 @@ Review check: any SPEC-014C implementation that needs schema-heavy retention or 
 SPEC-014F owns harness operator intervention UI. SPEC-014C must fail closed for live user input, command approval, file approval, tool requests, MCP elicitation, permission escalation, and operator stop/answer flows instead of adding a live intervention UI.
 
 Review check: any SPEC-014C implementation that needs operator prompts, approval handling, pause/resume UI, answer capture, deny controls, or intervention evidence surfaces must stop and split to SPEC-014F.
+
+## Deferred: SPEC-015A
+
+SPEC-015A owns the first-class workflow/orchestration page split discovered during HAL browser UAT. SPEC-014C leaves existing `/agents` composition unchanged: `OrchestrationBar` still mixes Workflow Contracts, Workflows/templates, Pipelines, Command, and Fleet above Agent Squad.
+
+Review check: any SPEC-014C implementation that attempts to move workflow navigation, split Agent Squad layout, repair pipeline scope/delete contracts, or introduce a new Workflows page must stop and split to SPEC-015A.
 
 ## Closeout Status
 

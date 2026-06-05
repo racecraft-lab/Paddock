@@ -49,3 +49,4 @@ No constitution violations found. SPEC-014C preserved install compatibility, fea
 - SPEC-014D owns OpenClaw/external adapter work.
 - SPEC-014E owns richer transcript/event retention, replay/debug export, quarantine policy, retention windows, and any opt-in raw capture policy.
 - SPEC-014F owns live operator intervention UI, user input, approval handling, answer capture, pause/resume, and stop controls.
+- SPEC-015A owns the first-class Workflow Orchestration page split: move Workflow Contracts, Workflows/templates, and Pipelines out of the current `/agents` `OrchestrationBar`, keep Fleet/direct Command behavior with Agent Squad or Chat, normalize pipeline Product Line scoping and delete/run contracts, and prove the revised IA through HAL browser UAT.

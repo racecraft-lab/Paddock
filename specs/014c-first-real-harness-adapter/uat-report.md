@@ -95,6 +95,12 @@ Cleanup deleted marker-scoped launch evidence rows after report capture, includi
 
 The final accepted HAL report includes one real Codex app-server handshake/thread/turn launch from a Paddock-owned sandbox plus deterministic failure fixtures through shared code paths. Fake-only or command-version-only evidence was not accepted as completion proof.
 
+## Post-UAT UI/IA Follow-Up
+
+HAL browser review of `/agents` after UAT confirmed that Workflow Contracts, Workflows/templates, Pipelines, Command, Fleet, and Agent Squad are currently stacked in the same page. Follow-up database checks found no SPEC-014C marker residue in HAL; the visible workflow rows are normal `workflow-contract` seed rows, not UAT cruft.
+
+The UI/IA issue is tracked as pending SPEC-015A. SPEC-015A should move Workflow Contracts, Workflows/templates, and Pipelines to a first-class Workflows/Orchestration page; keep Fleet and direct Command behavior close to Agent Squad or Chat; normalize pipeline Product Line scoping and delete/run contracts; and verify the split through HAL browser UAT.
+
 ## Evidence Capture Log
 
 | Timestamp | Actor | Action | Result | Descriptor-only reference |

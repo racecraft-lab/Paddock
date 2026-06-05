@@ -84,7 +84,7 @@ Run these from the repository root before walking the acceptance tests.
 1. **Tests executed?** Local implementation coverage passed after rebasing and after official-doc-grounded stdio transport alignment: focused SPEC-014C cluster 8 files / 89 tests, `node scripts/spec-014c/check-scope-guard.mjs`, `pnpm typecheck`, `pnpm lint`, and `pnpm build`. HAL branch deployment at `43989ac856696abb2ea764fed409da268b87c9a8` also passed `pnpm build`, service restart, `/login`, authenticated `/api/status`, and marker-scoped UAT.
 2. **Edge cases?** Covered locally and on HAL: blocked admission and workspace/repository/manifest/governance cases; timeout/binary/cleanup failures; unsupported input/approval/tool/capability; malformed protocol; unsafe evidence rejection; allowed redaction; runtime-inventory states; workspace-scoped flag-off blocking; and zero-residue cleanup.
 3. **Requirements matched?** FR-001 through FR-025 trace to completed T001-T049 plus passing local verification and HAL UAT marker `SPEC-014C-HAL-UAT-20260605121830`.
-4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, or `tasks.md`. Follow-up ownership remains explicit: SPEC-014D owns OpenClaw/external adapter work, SPEC-014E owns richer transcript/event retention, and SPEC-014F owns live intervention UI.
+4. **Follow-up?** No `[TODO]`, `[DEFERRED]`, or `[OUT-OF-SCOPE]` markers were found in `spec.md`, `plan.md`, or `tasks.md`. Follow-up ownership remains explicit: SPEC-014D owns OpenClaw/external adapter work, SPEC-014E owns richer transcript/event retention, SPEC-014F owns live intervention UI, and SPEC-015A owns the first-class Workflow Orchestration page split discovered during HAL `/agents` review.
 
 ## Sign-off
 
