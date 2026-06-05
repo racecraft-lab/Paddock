@@ -139,7 +139,7 @@ sqlite3 .data/paddock.db <<'SQL'
 INSERT OR REPLACE INTO aegis_emergency_reserves
   (workspace_id, usd_remaining, tokens_remaining, usd_seed, tokens_seed,
    last_replenished_at, depleted_at)
-VALUES (42, 5.00, 1000000, 5.00, 1000000, CURRENT_TIMESTAMP, NULL);
+VALUES (42, 5.00, 100000, 5.00, 100000, CURRENT_TIMESTAMP, NULL);
 SQL
 ```
 
@@ -224,7 +224,7 @@ pnpm mc status --json | jq '.metrics."mc.governance.aegis_review_pipeline_starva
   `mc.governance.aegis_review_pipeline_starvation_count > 50` for any
   workspace (FR-161).
 - **Configure adequate reserve seeds**: per FR-152 the defaults are
-  `aegis.emergency_reserve_usd=5.00` and `aegis.emergency_reserve_tokens=1_000_000`.
+  `aegis.emergency_reserve_usd=5.00` and `aegis.emergency_reserve_tokens=100_000`.
   Adjust per-workspace via M68's seed columns when normal Aegis review
   cadence exceeds these defaults.
 - **Health-check LM Studio in deployment automation**: the heartbeat

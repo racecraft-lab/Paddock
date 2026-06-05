@@ -48,7 +48,7 @@
   in the past 24h.
 - **Reserve seed too low**: the M68 default
   (`aegis.emergency_reserve_usd=5.00`,
-  `aegis.emergency_reserve_tokens=1_000_000`) is undersized for the
+  `aegis.emergency_reserve_tokens=100_000`) is undersized for the
   workspace's normal cadence. Consider raising the seeds per FR-159.
 - **Replenishment job not running**: the policy window roll job that
   calls `replenishReserve(workspace_id, db)` (FR-157) has stopped or

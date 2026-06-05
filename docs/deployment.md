@@ -80,7 +80,7 @@ What `deploy:standalone` does:
 
 ```bash
 docker compose up          # with gateway connectivity
-docker compose --profile standalone up   # without gateway (standalone mode)
+docker compose --profile standalone up paddock-standalone   # without gateway (standalone mode)
 ```
 
 Or build and run manually:
