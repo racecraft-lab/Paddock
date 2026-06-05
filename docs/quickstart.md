@@ -25,9 +25,9 @@ export MC_API_KEY=your-api-key
 
 Workspace scope depends on deployment mode. On legacy single-workspace installs,
 omit explicit workspace scope. On factory/multi-workspace deployments where
-`FEATURE_WORKSPACE_SWITCHER` is enabled, include `"workspace_id": 1` in POST/PUT
-bodies and append `&workspace_id=1` to queue/read query strings, replacing `1`
-with the target Product Line workspace id.
+`FEATURE_WORKSPACE_SWITCHER` is enabled, scope requests with either
+`workspace_id=<id>` (Product Line) or `workspace_scope=facility` (Facility), but
+never both.
 
 ## Step 2: Register an Agent
 
