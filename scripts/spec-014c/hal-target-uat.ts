@@ -206,7 +206,9 @@ function insertTemporaryOperatorSession(db: Database.Database, workspaceId: numb
 
 function insertProject(db: Database.Database, workspaceId: number, scenario: string): { id: number; repo: string } {
   const slug = `spec-014c-hal-${RUN_ID.toLowerCase()}-${scenario}`
-  const repo = 'racecraft-lab/Paddock'
+  const repo = scenario === 'real-launch'
+    ? 'racecraft-lab/Paddock'
+    : `racecraft-lab/Paddock-${RUN_ID.toLowerCase()}-${scenario}`
   const id = insertRow(db, 'projects', {
     workspace_id: workspaceId,
     name: `${MARKER} ${scenario}`,
