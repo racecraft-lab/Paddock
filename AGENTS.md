@@ -213,5 +213,5 @@ OpenAPI spec: `openapi.json`. Interactive docs at `/docs` when running.
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read
-`specs/014b-adapter-manifest-fakes/plan.md`.
+`specs/014c-first-real-harness-adapter/plan.md`.
 <!-- SPECKIT END -->

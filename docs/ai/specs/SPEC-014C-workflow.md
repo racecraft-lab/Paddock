@@ -28,10 +28,10 @@ Re-read the design concept before each phase. If a generated artifact contradict
 | Phase | Command | Status | Notes |
 |---|---|---|---|
 | Scaffold | `$speckit-scaffold-spec SPEC-014C` | Complete | Worktree, branch, design concept, roadmap follow-ups, and workflow created |
-| Specify | `$speckit-specify` | Pending | Generate `specs/014c-first-real-harness-adapter/spec.md` |
-| Clarify | `$speckit-clarify` | Pending | Resolve protocol, failure, artifact, and UAT details |
-| Plan | `$speckit-plan` | Pending | Generate implementation blueprint and contracts |
-| Checklist | `$speckit-checklist` | Pending | Run focused domain checklists |
+| Specify | `$speckit-specify` | Complete | Generated `specs/014c-first-real-harness-adapter/spec.md`; G1 passed with zero clarification markers |
+| Clarify | `$speckit-clarify` | Complete | Resolved protocol, evidence, claim/lifecycle, and HAL UAT/deployment details |
+| Plan | `$speckit-plan` | Complete | Generated implementation blueprint, research, data model, quickstart, and contracts |
+| Checklist | `$speckit-checklist` | In Progress | Run focused domain checklists |
 | Tasks | `$speckit-tasks` | Pending | Generate TDD-first task list |
 | Analyze | `$speckit-analyze` | Pending | Cross-artifact drift check |
 | Implement | `$speckit-implement` | Pending | Execute tasks exactly |
@@ -200,6 +200,17 @@ Out of scope:
 - `specs/014c-first-real-harness-adapter/spec.md`
 - Requirements and stories should explicitly cite `docs/ai/specs/SPEC-014C-design-concept.md`.
 
+### Specify Results
+
+| Item | Status | Evidence |
+|---|---|---|
+| Feature spec | Complete | `specs/014c-first-real-harness-adapter/spec.md` created |
+| Requirements checklist | Complete | `specs/014c-first-real-harness-adapter/checklists/requirements.md` created with all items checked |
+| G1 gate | Pass | `validate-gate.sh G1 specs/014c-first-real-harness-adapter` returned pass with 0 markers |
+| Clarification markers | Clear | No unresolved `[NEEDS CLARIFICATION]` markers in `spec.md` |
+| External context | Recorded | Spec cites OpenAI Harness Engineering, Symphony announcement, Symphony SPEC, and Codex App Server docs retrieved 2026-06-04 |
+| Scope boundary | Recorded | One Codex app-server adapter; SPEC-014E owns retention and SPEC-014F owns intervention UI |
+
 ## Phase 2: Clarify
 
 **When to run:** After Specify. Maximum five questions per session.
@@ -216,6 +227,31 @@ Expected closures:
 - Whether same-run continuation has a stable session/thread id and remains in scope.
 - How unavailable binary and malformed protocol errors are detected.
 
+#### Clarify Session 1 Results
+
+| Question | Resolution | Artifact Update |
+|---|---|---|
+| App-server lifecycle | Use official app-server v2 protocol. Handshake is `initialize` response plus client `initialized`; launch evidence is `thread/start`, `turn/start`, and `turn/started`; terminal authority is `turn/completed.turn.status`; `item/completed` agent message is output evidence only; timeout is synthetic `timeout_budget_expired`. | Added `spec.md` Clarifications session and tightened FR-008, FR-012, FR-019 |
+| Same-run continuation | Same live Codex thread only, within the current claimed stage attempt. Store opaque `thread.id`, `thread.sessionId`, and `turn.id`; do not own cross-tick `thread/resume`; reassert cwd/workspace/sandbox/approval posture on continuation turns. | Added `spec.md` Clarifications and assumptions |
+| Usage signal | Prefer `thread/tokenUsage/updated`; use final-turn usage only when reliable totals are available; record partial/unavailable usage instead of inferring. | Tightened FR-013 |
+| Unsupported requests | Fail closed on user input, MCP elicitation, command/file/permission approval, dynamic tool, MCP tool, and unsafe tool/file access. | Tightened FR-016 and FR-017 |
+| Binary/protocol failures | `binary_unavailable` covers lookup/spawn failure or exit before valid handshake. `malformed_protocol` covers invalid JSON-RPC/JSONL, id mismatch, missing thread/turn fields, duplicate terminal events, or impossible ordering. | Tightened FR-019 |
+
+#### Consensus Resolution Log
+
+| Phase | Item | Round | Routed Categories | Outcome | Analysts Used |
+|---|---|---:|---|---|---|
+| Clarify Session 1 | Codex app-server lifecycle authority | 1 | `[domain]` | Use official app-server v2 protocol; `turn/completed` is terminal authority; no Round 2 needed | domain-researcher |
+| Clarify Session 1 | Same-run continuation boundary | 1 | `[security]` | Same live thread only within current claim/attempt; no cross-tick `thread/resume`; no Round 2 needed | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 2 | Safe artifact reference fields | 1 | `[security]` | Descriptor-only artifact references for SPEC-014C run evidence; no storage URI, content, previews, filenames, paths, provider/tool payloads, transcripts, or prompt bodies; no Round 2 needed | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 2 | Structural unsafe final output | 1 | `[security]` | Structurally unsafe output is hard-rejected before redaction; secret-shaped values inside otherwise bounded safe summaries may be redacted and revalidated; no Round 2 needed | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 2 | Unsafe output run outcome | 1 | `[security]` | Secret-only safe-summary redaction may publish a redacted derivative with completed/partial adapter evidence; structural unsafe content or rejected/empty derivative fails with `unsafe_evidence_rejected`; no Round 2 needed | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 3 | Successful adapter terminal state | 1 | `[codebase]`, `[spec-context]` | Run `completed`/`success`, final attempt `succeeded`, and claim release `launch_handoff_completed`; implementation must preserve `succeeded` as final attempt evidence and not leave a retry-eligible `released` event as final state; no Round 2 needed | codebase-analyst, spec-context-analyst |
+| Clarify Session 3 | Timeout status mapping | 1 | `[codebase]`, `[spec-context]` | Run `timeout`/`failed`, attempt `failed`, claim release `dispatch_failed`, and failure reason `timeout_budget_expired`; `timeout_budget_expired` is not a claim release reason; no Round 2 needed | codebase-analyst, spec-context-analyst |
+| Clarify Session 3 | Claim-control and stale recovery authority | 1 | `[codebase]`, `[spec-context]` | Existing claim-control/stale recovery wins; adapter must re-prove active ownership before continuation or terminal writes and abort without late mutation if ownership changed; no Round 2 needed | codebase-analyst, spec-context-analyst |
+| Clarify Session 4 | Failure-mode UAT fixture validity | 1 | `[security]`, `[domain]`, `[codebase]` | One real HAL app-server launch is mandatory; negative modes may use deterministic fixtures only if they exercise the same target parser, failure mapper, timeout, lifecycle, and artifact/redaction paths; no Round 2 needed | codebase-analyst, spec-context-analyst, domain-researcher |
+| Clarify Session 4 | Completion evidence and residue policy | 1 | `[security]`, `[spec-context]`, `[codebase]` | Completion requires redacted `uat-report.md`, `pr-review-packet.md`, roadmap/workflow/autopilot closeout, traceability, and zero disposable DB/sandbox/artifact residue after report capture; live temporary rows are cleaned, not preserved; no Round 2 needed | codebase-analyst, spec-context-analyst, domain-researcher |
+
 ### Clarify Session 2: Evidence, Artifacts, And Redaction
 
 ```bash
@@ -228,6 +264,16 @@ Expected closures:
 - Safe artifact descriptor shape.
 - Rejection behavior for raw transcript/provider/tool payloads, host paths, prompt body leakage, and secret-shaped values.
 - Whether rejected final output fails the run or publishes a redacted derivative through existing artifact policy.
+
+#### Clarify Session 2 Results
+
+| Question | Resolution | Artifact Update |
+|---|---|---|
+| Minimal evidence envelope | Use descriptor-only `codex_app_server_run.v1` metadata carried by existing run, attempt, lifecycle, activity, usage, failure, and artifact-reference surfaces. Do not add a new persistence table or retain raw protocol payloads/transcripts. | Added `spec.md` Clarifications session and tightened FR-012 |
+| Safe artifact descriptors | SPEC-014C safe artifact references expose only descriptor fields such as id/ref, type/kind, schema version, MIME/media type, size/count, digest, redaction/security status, timestamp, and optional bounded safe summary/digest/sanitized label. They exclude storage URI, content, previews, original filenames, paths, URLs, provider/tool/MCP payloads, transcripts, and prompt bodies. | Tightened FR-014 and Safe Artifact Reference entity |
+| Unsafe final-output classes | Raw transcripts, provider/tool/MCP payloads, prompt bodies, host paths, unsafe URIs, command/file-change details, raw reasoning, and raw protocol payloads are structurally unsafe and are rejected before redaction. Secret-shaped values may be redacted only inside otherwise bounded safe summaries. | Tightened FR-015 |
+| Unsafe output outcome | Secret-only redaction from a bounded safe summary may publish a redacted derivative and record completed/partial adapter evidence. Structural unsafe content, artifact policy rejection, or empty redacted derivative fails the run and attempt with `unsafe_evidence_rejected`. | Tightened FR-019 |
+| Failure evidence | Failure summaries include reason code, phase, diagnostic category, counts, related ids, rejected field paths, safe hash/size where available, and a short safe `run.error` label. No raw protocol excerpts or payload contents are operator-visible. | Tightened Failure Summary entity |
 
 ### Clarify Session 3: Claim, Timeout, And Lifecycle Semantics
 
@@ -242,6 +288,17 @@ Expected closures:
 - Cleanup ordering and evidence when subprocess termination fails.
 - Static scope guard expectations for no task terminal mutation and no GitHub mutation.
 
+#### Clarify Session 3 Results
+
+| Question | Resolution | Artifact Update |
+|---|---|---|
+| Successful adapter terminal state | A successful Codex app-server attempt records `run.status=completed`, `run.outcome=success`, final task-stage attempt `succeeded`, and claim release `launch_handoff_completed`. Implementation must not use the current generic launch-handoff release behavior unchanged if it leaves `released` as the final retry-eligible attempt evidence. | Added `spec.md` Clarifications session and tightened FR-012, FR-021, FR-022 |
+| Adapter failure release reason | Adapter failures use existing claim release reason `dispatch_failed`; precise SPEC-014C reason codes such as `binary_unavailable`, `malformed_protocol`, `approval_unsupported`, or `unsafe_evidence_rejected` live in bounded run/attempt/lifecycle/activity/failure evidence. | Tightened FR-019 and FR-021 |
+| Timeout status mapping | Timeout records `run.status=timeout`, `run.outcome=failed`, task-stage attempt `failed`, claim release `dispatch_failed`, and reason `timeout_budget_expired`. Timeout is operator-distinguishable but remains retry-eligible through failed attempt evidence. | Tightened FR-009, FR-019, FR-022, SC-006 |
+| Claim-control and stale recovery races | Existing claim-control release/cancel/retry and stale recovery win. The adapter must re-prove active claim id, claim run id, linked attempt id, nonterminal/current attempt, task/workspace/stage, Paddock-owned lifecycle, and current eligibility before continuation or terminal writes; otherwise it terminates and records only bounded abandoned evidence without late mutation. | Tightened FR-021, edge cases, and assumptions |
+| Cleanup ordering and failures | Terminal evidence is recorded while ownership is current, then subprocess termination/cancel, lifecycle terminal marking, and lifecycle cleanup run. Termination or filesystem cleanup failure records bounded evidence or `cleanup_failed` and leaves the lifecycle inspectable. | Tightened FR-009, FR-022, SC-006 |
+| Static scope guard | Use diff/path-scoped static guard plus runtime tests around SPEC-014C adapter/dispatch files for no direct task terminal mutation, GitHub mutation, successor selection, task creation, auto-merge, governance mutation, second adapter, OpenClaw-specific behavior, live intervention UI, or transcript retention platform. | Tightened FR-020, FR-025, SC-004 |
+
 ### Clarify Session 4: UAT And Deployment
 
 ```bash
@@ -254,6 +311,16 @@ Expected closures:
 - Codex app-server availability preflight.
 - What blocks UAT if app-server is unavailable.
 - Required PR review packet and roadmap/workflow evidence.
+
+#### Clarify Session 4 Results
+
+| Question | Resolution | Artifact Update |
+|---|---|---|
+| HAL fixture shape | Use a marker-scoped disposable product-line workspace with temporary operator user/session, project, workflow template/stage, project-agent assignment to the Codex app-server manifest, assigned GitHub-linked task, healthy GitHub sync lifecycle evidence, current attempt, active claim, Paddock-owned sandbox lifecycle, run/artifact/activity evidence, and cleanup for every marker-scoped DB row plus sandbox/artifact file. | Added `spec.md` Clarifications session, tightened FR-023/FR-024, HAL UAT Fixture, and SC-007 |
+| Feature-flag scope | Enable `FEATURE_TASK_CONTROL_PLANE` and `FEATURE_AGENT_RUNNER_SANDBOXES` only through the disposable workspace feature-flag JSON. Verify the same fixture blocks when the runner flag is false; no global/env force-on and no SPEC-014C-only flag. | Tightened FR-005 and FR-023 |
+| App-server availability preflight | HAL UAT counts only if `codex` resolves and a real `codex app-server` subprocess completes official handshake plus one live thread/turn launch from the Paddock-owned sandbox. `codex --version` alone and fake app-server evidence are insufficient. | Tightened FR-008, FR-023, FR-024, SC-001, and SC-007 |
+| Failure-mode UAT | One real HAL Codex app-server happy-path launch is mandatory. Unsupported user-input/tool/approval, timeout, malformed protocol/output, unsafe evidence rejection, and allowed redaction may use deterministic protocol/adapter fixtures on HAL only when they exercise the same adapter parser, failure mapper, claim/lifecycle handling, timeout path, and artifact/redaction path as live protocol events. | Tightened FR-016 through FR-019, SC-003, SC-005, SC-006, and SC-007 |
+| Completion evidence | Completion requires `uat-report.md`, `pr-review-packet.md`, roadmap/workflow/autopilot status, traceability from real launch plus every failure fixture, service/deployed-commit/flag-scope evidence, and zero marker residue across disposable DB rows, sandbox paths, and artifact paths. Live HAL rows/artifacts are cleaned; checked-in evidence is descriptor-level and redacted. | Tightened evidence policy, SC-007, SC-008, and closeout expectations |
 
 ## Phase 3: Plan
 
@@ -303,6 +370,18 @@ $speckit-plan
 - `specs/014c-first-real-harness-adapter/data-model.md`
 - `specs/014c-first-real-harness-adapter/contracts/` for adapter protocol/evidence contracts if needed
 - `specs/014c-first-real-harness-adapter/quickstart.md`
+
+### Plan Results
+
+| Item | Status | Evidence |
+|---|---|---|
+| Implementation plan | Complete | `specs/014c-first-real-harness-adapter/plan.md` created |
+| Research | Complete | `specs/014c-first-real-harness-adapter/research.md` created with no new runtime dependency and no schema migration decision |
+| Data model | Complete | `specs/014c-first-real-harness-adapter/data-model.md` created; corrected to use actual SPEC-014A lifecycle statuses |
+| Contracts | Complete | `contracts/codex-app-server-adapter.md`, `contracts/codex-app-server-dispatch-evidence.md`, and `contracts/codex_app_server_run.v1.schema.json` created |
+| Quickstart | Complete | `specs/014c-first-real-harness-adapter/quickstart.md` created |
+| G3 gate | Pass | `validate-gate.sh G3 specs/014c-first-real-harness-adapter` returned pass with 0 unresolved markers using the current 2.6.1 cache script after the requested 2.6.2 cache path disappeared |
+| Scope boundary | Pass | Plan keeps one Codex app-server adapter, no migration, no new runtime dependency, no UI, no retention platform, no OpenClaw behavior, no direct task terminal/GitHub/successor/governance mutation |
 
 ## Phase 4: Domain Checklists
 
