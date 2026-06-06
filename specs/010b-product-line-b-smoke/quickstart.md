@@ -116,8 +116,13 @@ Assert:
 Use the HAL service-compatible Node path:
 
 ```bash
-/usr/bin/node --experimental-strip-types scripts/seed-product-line.ts --config docs/ai/product-lines/product-line-b.yaml --db /home/fredrick-gabelmann/paddock-data/paddock.db --mode preflight --json
+/home/linuxbrew/.linuxbrew/opt/node@22/bin/node --experimental-strip-types scripts/seed-product-line.ts --config docs/ai/product-lines/product-line-b.yaml --db /home/fredrick-gabelmann/paddock-data/paddock.db --mode preflight --json
 ```
+
+On the 2026-06-06 HAL UAT run, `/usr/bin/node` was v24.15.0 and failed
+against the active `better-sqlite3` native module. The running
+`paddock.service` uses the `node@22` path above through
+`10-node22-path.conf`.
 
 HAL evidence should be saved under an operator-owned path such as:
 

@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010B-workflow.md",
-  "updated_at": "2026-06-06T00:17:42Z",
+  "updated_at": "2026-06-06T04:12:00Z",
   "spec_id": "SPEC-010B",
   "branch": "010b-product-line-b-smoke",
   "feature_dir": "specs/010b-product-line-b-smoke",
@@ -56,8 +56,8 @@
       "Current target specs/010b-product-line-b-smoke is excluded from archive and cleanup"
     ]
   },
-  "active_step": "Phase 7: Implement - HAL UAT approval gate",
-  "current_blocker": "T046 HAL UAT requires explicit approval after local verification. Local disposable DB verification, focused tests, typecheck, lint, build, and ownership guard are complete.",
+  "active_step": "Phase 7: Implement - HAL UAT complete",
+  "current_blocker": null,
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},
@@ -94,7 +94,7 @@
     {"step": "Phase 7: US3 enable, smoke, and disable (T024-T029)", "status": "completed"},
     {"step": "Phase 7: US4 prove Product Line A isolation (T030-T035)", "status": "completed"},
     {"step": "Phase 7: US5 preserve evidence (T036-T040)", "status": "completed"},
-    {"step": "Phase 7: Polish and verification (T041-T047)", "status": "in_progress"},
+    {"step": "Phase 7: Polish and verification (T041-T047)", "status": "completed"},
     {"step": "Post: Doctor Extension Check", "status": "pending"},
     {"step": "Post: Verify Implementation", "status": "pending"},
     {"step": "Post: Verify Tasks Phantom Check", "status": "pending"},

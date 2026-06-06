@@ -667,8 +667,8 @@ alone.
 
 ## SPEC-010B Product Line B Onboarding Smoke
 
-Status: local verification passed on 2026-06-06T00:17:42Z. HAL UAT remains
-pending explicit operator approval after local verification.
+Status: local verification passed on 2026-06-06T00:17:42Z. HAL UAT passed
+with run id `SPEC-010B-HAL-20260606040404`.
 
 Record for each run:
 
@@ -761,3 +761,41 @@ Local result:
 - Local typecheck, lint, and production build passed. The first sandboxed build
   failed only on Turbopack local port binding; the same build passed outside the
   sandbox.
+
+HAL result:
+
+- Source: isolated UAT directory
+  `/home/fredrick-gabelmann/paddock-uat/spec-010b-20260606040404`; active
+  service worktree `/home/fredrick-gabelmann/paddock` remained on
+  `014c-first-real-harness-adapter`.
+- Backup:
+  `/home/fredrick-gabelmann/paddock-evidence/spec-010b/paddock-before-SPEC-010B-HAL-20260606040404.db`.
+- Node: `/home/linuxbrew/.linuxbrew/opt/node@22/bin/node` (`v22.22.3`, ABI
+  127). `/usr/bin/node` (`v24.15.0`, ABI 137) was not compatible with the
+  active `better-sqlite3` native module.
+- Preflight returned `READY`, `mutation_status: not_mutated`, and equal
+  before/after hash
+  `ee37dae9251315c4ecbd5a552dc7309b3e784953d345c0c8d475ac7d74de3ae4`.
+- Apply returned `SEEDED` and created Product Line B workspace `31`; verify
+  returned `VERIFIED`, `disabled_by_default: true`, and no drift.
+- Repeated apply without `--allow-existing` returned
+  `EXISTING_TARGET_REQUIRES_ALLOW_EXISTING`; allowed repeated apply returned
+  `already_valid`.
+- Smoke `enable` cleared Product Line B `disabled_at`, enabled 10 smoke-owned
+  flags, and left sync/dispatch/runner-sandbox paused.
+- Smoke `synthetic-issue` returned `spec-010b.synthetic_issue.v1` evidence for
+  run id `SPEC-010B-HAL-20260606040404`, `racecraft-lab/Paddock`, labels
+  `pd:inbox`, `priority:medium`, and `area:dev`, with
+  `live_github_required: false` and no credential fields.
+- Smoke `disable` restored non-null `disabled_at`.
+- Cleanup proof returned zero for `github_sync_enabled_projects`,
+  `repo_sync_owner_projects`, `assigned_dispatch_eligible_tasks`,
+  `remaining_eligible_smoke_work`, and `unintended_side_effect_rows`, with
+  `product_line_a_snapshot_parity: passed`.
+- Final DB check: `product-line-b` workspace `31` disabled, 6 Product Line B
+  projects, 0 GitHub-sync-enabled projects, and 0 repo-sync-owner projects.
+- Services remained active: `paddock.service` and `openclaw-gateway.service`.
+- Browser loaded `https://hal.boreal-fir.ts.net:3000/` and showed the Paddock
+  dashboard shell (`v2.0.1`). Unauthenticated direct `/api/status` returned
+  `401 Unauthorized`, so API dashboard evidence was limited to service-side DB
+  and status checks rather than an authenticated browser/API session.

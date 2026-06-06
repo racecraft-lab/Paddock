@@ -518,7 +518,7 @@ function runSpec010bSmokePhaseWithDatabase(
 ): Spec010bSmokePhaseResult {
   switch (phase) {
     case 'synthetic-issue': {
-      const fixture = readSyntheticIssueFixture(options.fixturePath)
+      const fixture = syntheticIssueWithRunId(readSyntheticIssueFixture(options.fixturePath), options.runId)
       const validation = validateSyntheticSmokeIssueSync(fixture)
       return {
         ok: validation['ok'] === true,
@@ -735,6 +735,19 @@ function columnExists(db: Database.Database, table: string, column: string): boo
 function readSyntheticIssueFixture(fixturePath?: string): unknown {
   const resolved = resolve(fixturePath ?? DEFAULT_SYNTHETIC_ISSUE_FIXTURE)
   return JSON.parse(readFileSync(resolved, 'utf8')) as unknown
+}
+
+function syntheticIssueWithRunId(input: unknown, runId?: string): unknown {
+  if (!runId || !isRecord(input)) return input
+  const issue = recordAt(input, 'issue')
+  return {
+    ...input,
+    run_id: runId,
+    issue: {
+      ...issue,
+      title: stringAt(issue, 'title').replace(/SPEC-010B-[A-Z0-9-]+/g, runId),
+    },
+  }
 }
 
 function writeEvidenceFile(path: string, result: Spec010bSmokePhaseResult): void {

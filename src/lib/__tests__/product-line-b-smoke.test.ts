@@ -436,6 +436,24 @@ describe('SPEC-010B Product Line B smoke RED contract', () => {
     }
   })
 
+  it('projects the requested run id into synthetic issue CLI evidence', async () => {
+    const smokeModule = await loadSmokeModule()
+    const runSpec010bSmokePhase = expectSmokeFunction(smokeModule, 'runSpec010bSmokePhase')
+    const halRunId = 'SPEC-010B-HAL-20260606040404'
+
+    expect(runSpec010bSmokePhase('synthetic-issue', { runId: halRunId })).toMatchObject({
+      ok: true,
+      phase: 'synthetic-issue',
+      mutation_status: 'not_mutated',
+      run_id: halRunId,
+      synthetic_issue: {
+        ok: true,
+        run_id: halRunId,
+        product_line_slug: PRODUCT_LINE_B_SLUG,
+      },
+    })
+  })
+
   it('skips optional live GitHub evidence without making a network call', async () => {
     const smokeModule = await loadSmokeModule()
     const resolveOptionalLiveGitHubEvidence = expectSmokeFunction(smokeModule, 'resolveOptionalLiveGitHubEvidence')
