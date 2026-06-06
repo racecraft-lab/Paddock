@@ -27,9 +27,9 @@
 
 ## 4. Mitigate
 
-- Pause hard enforcement
-  (`POST /api/governance/system-health/recovery` with action
-  `recovery_pause`).
+- Stop the upstream writer or service path that is continuing to append
+  suspect rows. The System Health recovery endpoint does not provide a
+  generic pause action.
 - Notify legal + admin chain.
 
 ## 5. Recover
@@ -38,6 +38,10 @@
   `ACCEPT AUDIT CHAIN BREAK` typed gesture to re-enable
   enforcement (FR-219q). The action is logged in
   `recovery_action`.
+- Record the audit verification recovery gesture with
+  `POST /api/governance/system-health/recovery`, action
+  `audit_chain_verify`, and typed phrase
+  `CONFIRM VERIFY AUDIT CHAIN`.
 
 ## 6. Validate
 

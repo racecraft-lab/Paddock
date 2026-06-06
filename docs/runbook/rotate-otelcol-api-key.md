@@ -31,7 +31,9 @@
 
 ## 6. Validate
 
-- `governance_health_event{kind:'otelcol_key_rotated'}` emits.
+- The `POST /api/agent-api-keys/{id}/rotate` path records
+  `governance_health_events.detail='api_key_rotated'` with
+  `component='collector'`.
 - No `auth_failure` quarantines for 1 hour.
 
 ## 7. Postmortem

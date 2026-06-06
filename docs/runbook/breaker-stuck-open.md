@@ -13,7 +13,8 @@
 ## 2. Impact
 
 - Resource admission is halted in the affected scope.
-- New decisions are deferred; tasks queue up in `pending_review`.
+- New decisions are deferred; affected tasks remain in their current
+  review or dispatch status until the breaker recovers.
 
 ## 3. Diagnose
 
@@ -25,8 +26,9 @@
 
 ## 4. Mitigate
 
-- If upstream is unhealthy, pause governance writers
-  (`recovery_pause`).
+- If upstream is unhealthy, stop the upstream producer or scheduler path
+  that is causing repeated evaluator failures. The System Health
+  recovery endpoint does not provide a generic pause action.
 - If upstream is healthy, prepare a manual reset.
 
 ## 5. Recover

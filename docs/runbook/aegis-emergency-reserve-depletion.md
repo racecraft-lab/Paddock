@@ -20,7 +20,7 @@
   step (`allow:aegis_local_mode` if LM Studio is reachable, otherwise
   `defer:deferred_no_fallback` per FR-363 — see the companion
   runbook).
-- `dispatch_decision_log` rows show the chain advanced past step 2
+- `resource_decision_audit` rows show the chain advanced past step 2
   (emergency reserve) to step 3 (local mode) or step 4 (terminal).
 
 ---
@@ -44,7 +44,7 @@
 
 - **Sustained Aegis review burst**: a workflow generated more Aegis
   reviews in the budget window than the seeded reserve could absorb.
-  Check `dispatch_decision_log` count of `allow:aegis_emergency_reserve`
+  Check `resource_decision_audit` count of `allow:aegis_emergency_reserve`
   in the past 24h.
 - **Reserve seed too low**: the M68 default
   (`aegis.emergency_reserve_usd=5.00`,
@@ -79,12 +79,12 @@ SQL
 # 4.2 — Inspect recent reserve allocations to confirm they actually
 #       fired (not a phantom alert).
 sqlite3 .data/paddock.db <<'SQL'
-SELECT decision_id, reasons_json, created_at
-  FROM dispatch_decision_log
+SELECT decision_id, reason, captured_at
+  FROM resource_decision_audit
  WHERE workspace_id = 42
-   AND reasons_json LIKE '%allow:aegis_emergency_reserve%'
-   AND created_at > datetime('now', '-24 hours')
- ORDER BY created_at DESC
+   AND reason = 'allow:aegis_emergency_reserve'
+   AND captured_at > datetime('now', '-24 hours')
+ ORDER BY captured_at DESC
  LIMIT 50;
 SQL
 
@@ -116,18 +116,6 @@ SQL
 ### A. Replenish the reserve immediately
 
 ```bash
-node -e "
-  const Database = require('better-sqlite3');
-  const db = new Database('.data/paddock.db');
-  const { replenishReserve, getEmergencyReserve } = require('./dist/lib/resource-aegis-reserve');
-  replenishReserve(42, db);
-  console.log(JSON.stringify(getEmergencyReserve(42, db), null, 2));
-"
-```
-
-Or via raw SQL (preserves audit because the helper is idempotent):
-
-```bash
 sqlite3 .data/paddock.db <<'SQL'
 UPDATE aegis_emergency_reserves
    SET usd_remaining = usd_seed,
@@ -135,6 +123,11 @@ UPDATE aegis_emergency_reserves
        depleted_at = NULL,
        last_replenished_at = CURRENT_TIMESTAMP,
        updated_at = CURRENT_TIMESTAMP
+ WHERE workspace_id = 42;
+
+SELECT workspace_id, usd_remaining, tokens_remaining,
+       last_replenished_at, depleted_at
+  FROM aegis_emergency_reserves
  WHERE workspace_id = 42;
 SQL
 ```
@@ -195,8 +188,8 @@ SQL
 
 # 6.2 — Trigger one synthetic Aegis dispatch and confirm step 2 grants.
 pnpm mc tasks queue --agent Aegis --max-capacity 1 --json
-# Inspect dispatch_decision_log for the new decision; reasons_json
-# should contain `allow:aegis_emergency_reserve` (or
+# Inspect resource_decision_audit for the new decision; reason
+# should equal `allow:aegis_emergency_reserve` (or
 # `allow:clear` if the primary path is not currently throttled).
 
 # 6.3 — Confirm depletion alert no longer fires within the next hour

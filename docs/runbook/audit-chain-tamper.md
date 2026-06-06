@@ -22,8 +22,9 @@
 
 ## 4. Mitigate
 
-- Pause hard enforcement.
-- Block writes via the recovery_pause action.
+- Stop the upstream writer or service path that is continuing to append
+  suspect rows. The System Health recovery endpoint does not provide a
+  generic pause action.
 
 ## 5. Recover
 

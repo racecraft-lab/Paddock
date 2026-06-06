@@ -3,7 +3,7 @@
 > Status: SPEC-008 T135 (FR-394, FR-090l, FR-363)
 >
 > Page on: high-priority alert. Aegis review tasks remain stuck in
-> `pending_review` because the FR-361 fallback chain has been exhausted.
+> `quality_review` because the FR-361 fallback chain has been exhausted.
 
 ---
 
@@ -14,9 +14,9 @@ Operators see one or more of:
 - Activity feed shows repeated `governance_aegis_fallback_deferred_no_fallback`
   events on a workspace.
 - System Health pill reads **"Aegis: deferred (no fallback)"**.
-- `dispatch_decision_log.reason='defer:deferred_no_fallback'` rows
-  accumulate for `decision_class='aegis_review'` requests.
-- Task queue shows tasks stuck in `quality_review` / `pending_review`
+- `resource_decision_audit.reason='defer:deferred_no_fallback'` rows
+  accumulate for Aegis review requests.
+- Task queue shows tasks stuck in `quality_review`
   status with no progression for >5 minutes (FR-161 starvation gauge
   `mc.governance.aegis_review_pipeline_starvation_count` rising).
 
@@ -30,7 +30,7 @@ chain executed all four steps and could not satisfy the request:
 3. **Local mode** (FR-362) — LM Studio adapter is unreachable
    (`lm_studio_health.state='unhealthy'` or absent).
 4. **Terminal** (FR-363) — `defer:deferred_no_fallback` is emitted;
-   the task remains in `pending_review` and the scheduler retries
+   the task remains in `quality_review` and the scheduler retries
    on the next tick (60s) with capped backoff to 600s.
 
 ---
@@ -41,7 +41,7 @@ chain executed all four steps and could not satisfy the request:
   affected workspace stall until at least one fallback path becomes
   available. Other workspaces are unaffected.
 - **Severity**: degrades the Aegis quality gate for that workspace.
-  Tasks are not lost — they remain in `pending_review` and the
+  Tasks are not lost — they remain in `quality_review` and the
   scheduler resumes dispatching once a fallback recovers (reserve
   replenishes on policy window roll, LM Studio comes back online,
   or the primary budget window rolls over).
@@ -83,12 +83,12 @@ pnpm mc events watch --types governance --since "10m" \
 # 4.2 — Inspect recent decisions for the workspace (replace 42 with the
 #       actual workspace id).
 sqlite3 .data/paddock.db <<'SQL'
-SELECT decision_id, decision, reasons_json, created_at
-  FROM dispatch_decision_log
+SELECT decision_id, decision, reason, captured_at
+  FROM resource_decision_audit
  WHERE workspace_id = 42
-   AND decision_class = 'aegis_review'
-   AND created_at > datetime('now', '-1 hour')
- ORDER BY created_at DESC
+   AND reason = 'defer:deferred_no_fallback'
+   AND captured_at > datetime('now', '-1 hour')
+ ORDER BY captured_at DESC
  LIMIT 20;
 SQL
 
@@ -146,14 +146,17 @@ SQL
 ### B. Reserve depleted; replenish ahead of normal window roll
 
 ```bash
-# Use the SPEC-008 replenishment helper (programmatic; preserves audit).
-node -e "
-  const Database = require('better-sqlite3');
-  const db = new Database('.data/paddock.db');
-  const { replenishReserve } = require('./dist/lib/resource-aegis-reserve');
-  replenishReserve(42, db);
-  console.log('reserve replenished for workspace 42');
-"
+# Use the raw SQL fallback when the Next.js runtime helper is not
+# available from an operator shell.
+sqlite3 .data/paddock.db <<'SQL'
+UPDATE aegis_emergency_reserves
+   SET usd_remaining = usd_seed,
+       tokens_remaining = tokens_seed,
+       depleted_at = NULL,
+       last_replenished_at = CURRENT_TIMESTAMP,
+       updated_at = CURRENT_TIMESTAMP
+ WHERE workspace_id = 42;
+SQL
 ```
 
 ### C. LM Studio unreachable
@@ -205,10 +208,10 @@ pnpm mc tasks queue --agent Aegis --max-capacity 1 --json
 # 6.2 — Confirm the terminal reason is no longer being emitted.
 sqlite3 .data/paddock.db <<'SQL'
 SELECT COUNT(*) AS terminal_count
-  FROM dispatch_decision_log
+  FROM resource_decision_audit
  WHERE workspace_id = 42
-   AND reasons_json LIKE '%defer:deferred_no_fallback%'
-   AND created_at > datetime('now', '-5 minutes');
+   AND reason = 'defer:deferred_no_fallback'
+   AND captured_at > datetime('now', '-5 minutes');
 SQL
 # Expected: 0 (or sharply lower than before remediation).
 

@@ -29,9 +29,10 @@
 - Trigger a counter rebuild:
   `POST /api/governance/system-health/rebuild` with reason
   `counter-drift-recovery`.
-- Pause hard enforcement until the rebuild completes
-  (`POST /api/governance/system-health/recovery` with action
-  `recovery_pause`).
+- If the rebuild stalls, record the typed recovery gesture with
+  `POST /api/governance/system-health/recovery`, action
+  `counter_rebuild_restart`, and typed phrase
+  `CONFIRM RESTART REBUILD`.
 
 ## 5. Recover
 

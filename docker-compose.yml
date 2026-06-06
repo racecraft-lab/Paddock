@@ -60,7 +60,7 @@ services:
     restart: unless-stopped
 
   # Standalone mode — no gateway required. Start with:
-  #   docker compose --profile standalone up
+  #   docker compose --profile standalone up paddock-standalone
   paddock-standalone:
     extends:
       service: paddock

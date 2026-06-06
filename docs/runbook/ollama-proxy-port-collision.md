@@ -1,4 +1,4 @@
-# Runbook: Ollama Proxy Port Collision
+# Runbook: Ollama Host Port Collision
 
 > Status: SPEC-008 T218 (FR-260b, FR-090l)
 
@@ -6,32 +6,36 @@
 
 ## 1. Symptom
 
-- The Ollama proxy fails to bind because another process holds the
-  configured port.
-- Aegis local-mode fallback (FR-362) returns `lm_studio_unhealthy`.
+- Ollama fails to bind because another process holds the configured
+  host/port.
+- Ollama log ingest reports the configured host while no Ollama daemon
+  is listening there.
 
 ## 2. Impact
 
-- Aegis fallback chain falls through to `defer:deferred_no_fallback`.
+- Ollama-derived usage reconciliation is stale until the daemon is
+  reachable and writing logs again.
 
 ## 3. Diagnose
 
 1. `lsof -nP -iTCP:<port> -sTCP:LISTEN` to find the holder.
-2. Check the proxy systemd unit logs.
+2. Check the Ollama daemon logs.
 
 ## 4. Mitigate
 
-- Stop the conflicting service or move the proxy to a free port via
-  `OLLAMA_PROXY_PORT`.
+- Stop the conflicting service or move Ollama to a free host/port via
+  `OLLAMA_HOST`.
 
 ## 5. Recover
 
-- Restart the proxy: `systemctl --user restart ollama-proxy`.
+- Restart the Ollama daemon, then restart Paddock if `OLLAMA_HOST`
+  changed in the service environment.
 
 ## 6. Validate
 
-- `lm_studio_health.state='healthy'`.
-- Aegis local-mode fallback succeeds on the next review tick.
+- `lsof -nP -iTCP:<port> -sTCP:LISTEN` shows the Ollama daemon on the
+  expected port.
+- The `ollama_log` source resumes processing `~/.ollama/logs/server.log`.
 
 ## 7. Postmortem
 
