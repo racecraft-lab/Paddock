@@ -56,12 +56,12 @@
 
 ## Decision: Runtime Inventory Is Supporting Evidence Only
 
-**Rationale**: SPEC-014C is active and owns adapter/runtime-inventory behavior. SPEC-010B only needs logical `plb-platform-*` Product Line B assignments; harness manifest IDs are selected-substrate/read-only support evidence if existing APIs expose them.
+**Rationale**: SPEC-014C is complete and owns the first real adapter behavior. SPEC-010B only needs logical `plb-platform-*` Product Line B assignments; harness manifest IDs remain selected-substrate/read-only support evidence if existing APIs expose them.
 
 **Alternatives considered**:
 
 - Require runtime-inventory `eligible`. Rejected by Clarify.
-- Edit adapter or runtime-inventory eligibility files. Rejected because that overlaps SPEC-014C and is out of scope.
+- Edit adapter or runtime-inventory eligibility files. Rejected because that remains outside SPEC-010B scope.
 
 ## Decision: No New Runtime Dependency
 
