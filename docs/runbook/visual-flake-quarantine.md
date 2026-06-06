@@ -1,4 +1,4 @@
-# Visual flake triage
+# Visual flake quarantine triage
 
 ## Detection
 
