@@ -107,7 +107,7 @@ of `area_slug` (US1-AC2).
 
 ### Election
 
-Migration M62 elects an initial owner deterministically: `MIN(projects.id)`
+Migration M63 elects an initial owner deterministically: `MIN(projects.id)`
 per `(workspace_id, github_repo)` group with at least one
 `github_sync_enabled=1` project (FR-005). Disabled-only groups elect zero
 owners.
@@ -148,9 +148,10 @@ triage project is designated (FR-040b).
 `projects.area_slug` is a workspace-scoped slug matching the
 RFC 1123 / Kubernetes DNS label regex
 `^[a-z0-9]([a-z0-9-]{0,30}[a-z0-9])?$` (FR-034, max 32 chars). Uniqueness
-is enforced per workspace by partial unique index
-`idx_projects_workspace_area_slug` (FR-035). 409 `area_slug_conflict` on
-collision.
+is enforced by `PUT /api/projects/[id]` route validation (FR-035). The
+`idx_projects_workspace_area_slug` index is a non-unique lookup index for
+routing/cache queries, not the collision authority. Collisions return
+409 `area_slug_conflict`.
 
 Setting/clearing `area_slug` (or toggling `is_triage_project`) post-PUT
 fires `initializeLabels` once per owner-held repo in the workspace with
@@ -198,7 +199,7 @@ or set to `0`:
 - Inbound issues land in the project that owns the repo (legacy)
 - `area_slug`, `is_triage_project`, `is_repo_sync_owner` columns remain
   populated but are IGNORED by all sync code paths
-- Migration M62 columns / indexes are retained — `docs/migrations/rollback-M62.sql`
+- Migration M63 columns / indexes are retained — `docs/migrations/rollback-M63.sql`
   is provided for the (rare) full rollback case
 
 ## Operator Preflight Checklist
@@ -208,7 +209,7 @@ Before enabling `FEATURE_AREA_LABEL_ROUTING` for a workspace, confirm:
 - At least one project has `area_slug` set (otherwise no inbound routing
   can resolve `single_match`)
 - Exactly one `is_repo_sync_owner=1` per `(workspace_id, github_repo)`
-  group (M62 election handles this, but verify if projects were added
+  group (M63 election handles this, but verify if projects were added
   post-migration)
 - A triage project is designated if ambiguous-issue routing is expected
   (otherwise `no_triage` fallback routes to the sync owner)
