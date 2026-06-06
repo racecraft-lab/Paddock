@@ -148,6 +148,28 @@ export const PADDOCK_DISABLED_OR_ABSENT_FLAGS = [
   'FEATURE_AGENT_RUNNER_SANDBOXES',
 ] as const
 
+export const PRODUCT_LINE_B_SMOKE_OWNED_FLAGS = [
+  'FEATURE_WORKSPACE_SWITCHER',
+  'FEATURE_GLOBAL_AEGIS',
+  'FEATURE_TASK_PIPELINES',
+  'FEATURE_TWO_STEP_TERMINAL',
+  'FEATURE_AREA_LABEL_ROUTING',
+  'FEATURE_DISPOSITION_LOGGING',
+  'FEATURE_TASK_ARTIFACTS',
+  'FEATURE_RESOURCE_GOVERNANCE',
+  'FEATURE_OPENCLAW_HEALTH_COSTS',
+  'PILOT_PADDOCK_E2E',
+] as const
+
+export const PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS = [
+  'FEATURE_GITHUB_SYNC_AUTOMATION',
+  'FEATURE_TASK_CONTROL_PLANE',
+  'FEATURE_AGENT_RUNNER_SANDBOXES',
+  'PILOT_PRODUCT_LINE_A_E2E',
+  'FEATURE_PRODUCT_LINE_B_DISPATCH',
+  'PILOT_PRODUCT_LINE_B_SMOKE',
+] as const
+
 export const PADDOCK_DEPARTMENTS = [
   { slug: 'qa', name: 'QA', ticket_prefix: 'QA', area_slug: 'qa', github_repo: 'racecraft-lab/Paddock', github_sync_enabled: true, is_triage_project: true, is_repo_sync_owner: true },
   { slug: 'development', name: 'Development', ticket_prefix: 'DEV', area_slug: 'dev', github_repo: null, github_sync_enabled: false, is_triage_project: false, is_repo_sync_owner: false },

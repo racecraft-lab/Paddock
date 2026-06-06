@@ -668,6 +668,7 @@ Local implementation evidence recorded on 2026-06-06T00:17:42Z from branch
 | PR creation | Complete | `git push`; `gh pr create --base main --head 010b-product-line-b-smoke ...` | Branch pushed to `origin/010b-product-line-b-smoke`; PR opened at https://github.com/racecraft-lab/Paddock/pull/83. |
 | Review remediation | Complete | `gh pr view 83 --json ...`; `gh pr checks 83`; heartbeat `spec-010b-pr-83-review-monitor` | No PR reviews or comments existed at initial poll. Visual approval checks passed; CodeQL and quality-gate were pending when the review monitor was scheduled to continue polling every 5 minutes. |
 | Retrospective | Complete | Manual retrospective after `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` rejected `010b-product-line-b-smoke` | Retrospective saved to `specs/010b-product-line-b-smoke/retrospective.md`: completion 100%, spec adherence 100%, critical findings 0, significant process findings 2. No `spec.md` changes proposed. |
+| CI quality-gate remediation | Complete | `gh run view 27054496728 --log-failed`; `direnv exec . pnpm guardrails`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit`; focused Product Line B test set | GitHub `quality-gate` failed because `schema.ts` duplicated the SPEC-006 `FEATURE_AREA_LABEL_ROUTING` marker outside the guardrail allowlist. Constants now live in `types.ts`, the allowed declarative defaults file, with schema/config importing them. Local guardrails, strict TypeScript, and 86 focused tests passed. |
 
 ### Self-Review
 

@@ -6,16 +6,14 @@ import {
   isFeatureFlagKey,
 } from '../feature-flags.ts'
 import { loadWorkflowContractFromFile } from '../workflow-contracts/yaml-loader.ts'
-import {
-  PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS,
-  PRODUCT_LINE_B_SMOKE_OWNED_FLAGS,
-  validateProductLineSeedTopLevelShape,
-} from './schema.ts'
+import { validateProductLineSeedTopLevelShape } from './schema.ts'
 import {
   BLOCKED_SIDE_EFFECTS,
   CONFIG_OWNED_SURFACES,
   FR020_PRESERVED_SURFACES,
   PRODUCT_LINE_B_BLOCKED_SIDE_EFFECTS,
+  PRODUCT_LINE_B_PAUSED_OR_FORBIDDEN_FLAGS,
+  PRODUCT_LINE_B_SMOKE_OWNED_FLAGS,
   type ProductLineSeedConfig,
   type ProductLineSeedErrorCode,
   type ProductLineSeedValidationError,
