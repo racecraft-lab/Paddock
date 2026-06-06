@@ -50,7 +50,7 @@ The design concept is the setup-time source of truth:
 | Checklist | `$speckit-checklist` | Complete | Completed data-integrity, state-management, api-contracts, ux, error-handling, and security domains; G4 passed |
 | Tasks | `$speckit-tasks` | Complete | Generated 47 TDD-first tasks with strict file ownership and SPEC-014C guardrails; G5 passed |
 | Analyze | `$speckit-analyze` | Complete | One HIGH shared-file ownership finding remediated; final marker count is 0 and G6 passes |
-| Implement | `$speckit-implement` | Pending | G6 passed; latest `main` includes SPEC-014C closeout, clearing the prior shared-file blocker. Keep pre-edit ownership checks before touching shared coordination files |
+| Implement | `$speckit-implement` | Complete | Implementation, local verification, HAL UAT, PR remediation, retrospective, and PR #83 merge are complete; merged to `main` as `d5308aa0723c48b670e88c6814b4e4a90892d74f` |
 
 **Status Legend:** Pending | In Progress | UAT Pending | Complete | Blocked
 
@@ -58,7 +58,7 @@ The design concept is the setup-time source of truth:
 
 | Gate | Checkpoint | Approval Criteria |
 |------|------------|-------------------|
-| G0 | After setup | Branch is `010b-product-line-b-smoke`; design concept and workflow exist; reviewability preset resolves; roadmap marks SPEC-010B `In Progress` on this branch only |
+| G0 | After setup | Branch is `010b-product-line-b-smoke`; design concept and workflow exist; reviewability preset resolves; roadmap marked SPEC-010B `In Progress` during setup on this branch only |
 | G1 | After Specify | Requirements cover Product Line B config, disabled/enabled/disabled lifecycle, synthetic smoke, isolation assertions, and no FocusEngine/OpenClaw reuse |
 | G2 | After Clarify | Config fields, smoke issue shape, evidence envelope, API/dashboard metrics, HAL UAT steps, and parallel SPEC-014C file boundaries are resolved |
 | G3 | After Plan | Architecture reuses SPEC-010A seed tooling and existing Paddock APIs/tests; migration, dependency, GitHub mutation, and adapter work are either absent or explicitly justified |
@@ -193,16 +193,16 @@ Forbidden:
 
 ### Success Criteria Summary
 
-- [ ] Product Line B has a reviewed checked-in config with slug `product-line-b`, display `Product Line B`, and agent prefix `plb-platform`.
-- [ ] Product Line B seed preflight is no-mutation and blocks conflicting target ownership with redacted evidence.
-- [ ] Product Line B apply creates or verifies only config-owned workspace/project/assignment/template/flag/governance rows.
-- [ ] Product Line B starts disabled by default and cannot dispatch/sync until explicitly enabled.
-- [ ] One synthetic issue-shaped smoke runs through the already-proven pilot subset without a required GitHub write.
-- [ ] Product Line B can be disabled cleanly after smoke and leaves no active sync/dispatch path.
-- [ ] SQL/API/dashboard checks prove Product Line A rows, metrics, GitHub sync ownership, and tasks are unaffected.
-- [ ] Retained FocusEngine/OpenClaw identities remain unassigned inventory unless explicitly generalized and assigned.
-- [ ] Smoke evidence records enablement, synthetic issue metadata, pilot subset outcome, disablement, and cleanup.
-- [ ] SPEC-012B can use the resulting two-product-line reality as its harness-gardening input.
+- [x] Product Line B has a reviewed checked-in config with slug `product-line-b`, display `Product Line B`, and agent prefix `plb-platform`.
+- [x] Product Line B seed preflight is no-mutation and blocks conflicting target ownership with redacted evidence.
+- [x] Product Line B apply creates or verifies only config-owned workspace/project/assignment/template/flag/governance rows.
+- [x] Product Line B starts disabled by default and cannot dispatch/sync until explicitly enabled.
+- [x] One synthetic issue-shaped smoke runs through the already-proven pilot subset without a required GitHub write.
+- [x] Product Line B can be disabled cleanly after smoke and leaves no active sync/dispatch path.
+- [x] SQL/API/dashboard checks prove Product Line A rows, metrics, GitHub sync ownership, and tasks are unaffected.
+- [x] Retained FocusEngine/OpenClaw identities remain unassigned inventory unless explicitly generalized and assigned.
+- [x] Smoke evidence records enablement, synthetic issue metadata, pilot subset outcome, disablement, and cleanup.
+- [x] SPEC-012B can use the resulting two-product-line reality as its harness-gardening input.
 
 ---
 
@@ -666,10 +666,11 @@ Local implementation evidence recorded on 2026-06-06T00:17:42Z from branch
 | Post-gate recovery | Complete | `direnv exec . pnpm build`; `direnv exec . pnpm typecheck`; `direnv exec . pnpm lint`; `direnv exec . pnpm test`; `direnv exec . pnpm test:e2e`; code review subagent; `git diff --check` | Autopilot resumed after HAL UAT because post gates were pending with no blocker recorded. Code review findings were remediated: no-mutation proof now fails closed, malformed seed/smoke `feature_flags` fail closed, repo sync-owner drift fails closed, scoped API/dashboard/final-disablement evidence derives `ok`, evidence-write failure preserves mutation status, and cleanup proof fails on missing schema proof surfaces. Final verification passed: build, typecheck, lint, unit tests (361 files, 3,391 tests), and Playwright E2E (653 passed, 1 skipped). Cleanup extension hit a branch-format false positive on `010b-product-line-b-smoke`, so cleanup was completed manually with scoped diff and whitespace checks. |
 | PR review packet | Complete | `generate-pr-body.sh ... /tmp/spec-010b-pr-body.md origin/main...HEAD` | Generated PR body includes concrete What/Why/Traceability/Verification sections, `## UAT Runbook`, and the `speckit-pro-review-packet-source` marker. Reviewability gate remains `status: exception` under the recorded transition exception. |
 | PR creation | Complete | `git push`; `gh pr create --base main --head 010b-product-line-b-smoke ...` | Branch pushed to `origin/010b-product-line-b-smoke`; PR opened at https://github.com/racecraft-lab/Paddock/pull/83. |
-| Review remediation | Complete | `gh pr view 83 --json ...`; `gh pr checks 83`; heartbeat `spec-010b-pr-83-review-monitor` | No PR reviews or comments existed at initial poll. Visual approval checks passed; CodeQL and quality-gate were pending when the review monitor was scheduled to continue polling every 5 minutes. |
+| Review remediation | Complete | `gh pr view 83 --json state,mergedAt,mergeCommit,statusCheckRollup`; `gh pr checks 83`; heartbeat `spec-010b-pr-83-review-monitor` | No blocking review comments remained. Quality Gate, CodeQL, Playwright visual approval, and Storybook visual approval checks all passed before merge. |
 | Retrospective | Complete | Manual retrospective after `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` rejected `010b-product-line-b-smoke` | Retrospective saved to `specs/010b-product-line-b-smoke/retrospective.md`: completion 100%, spec adherence 100%, critical findings 0, significant process findings 2. No `spec.md` changes proposed. |
 | CI quality-gate remediation | Complete | `gh run view 27054496728 --log-failed`; `direnv exec . pnpm guardrails`; `direnv exec . pnpm exec tsc -p tsconfig.spec-strict.json --pretty false --noEmit`; focused Product Line B test set | GitHub `quality-gate` failed because `schema.ts` duplicated the SPEC-006 `FEATURE_AREA_LABEL_ROUTING` marker outside the guardrail allowlist. Constants now live in `types.ts`, the allowed declarative defaults file, with schema/config importing them. Local guardrails, strict TypeScript, and 86 focused tests passed. |
 | Copilot review remediation | Complete | Review comment https://github.com/racecraft-lab/Paddock/pull/83#discussion_r3366792567; `direnv exec . pnpm guardrails`; `git diff --check` | Updated `.specify/templates/tasks-template.md` so production code changes require RED-first tests under the Paddock Constitution, while docs-only/process-only work may record a test-not-applicable rationale. Guardrails and whitespace checks passed. |
+| PR merge closeout | Complete | `gh pr view 83 --json state,mergedAt,mergeCommit,statusCheckRollup`; `gh pr checks 83` | PR #83 merged to `main` on 2026-06-06T11:13:31Z as `d5308aa0723c48b670e88c6814b4e4a90892d74f`. Quality Gate, CodeQL, Playwright visual approval, and Storybook visual approval checks all passed. Source cleanup was not applied because no explicit `--apply-cleanup` request was supplied. |
 
 ### Self-Review
 

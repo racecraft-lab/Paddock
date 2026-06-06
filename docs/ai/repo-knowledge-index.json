@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "last_verified": "2026-06-03",
+  "last_verified": "2026-06-06",
   "entries": [
     {
       "path": "AGENTS.md",
@@ -11,8 +11,8 @@
         "cadence": "per PR touching repo instructions or GitNexus guidance",
         "trigger": "when setup, verification, or local index-refresh instructions change"
       },
-      "last_verified": "2026-05-27",
-      "related_specs": ["SPEC-012A"],
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-012A", "SPEC-010B"],
       "verification_commands": ["pnpm knowledge:index:smoke"],
       "required": true,
       "repo_owned": true,
@@ -109,8 +109,8 @@
         "cadence": "after each spec setup, merge, UAT, or hygiene pass",
         "trigger": "when a spec status, dependency, merge SHA, or verification result changes"
       },
-      "last_verified": "2026-05-27",
-      "related_specs": ["SPEC-009F", "SPEC-012B", "SPEC-013A", "SPEC-013A1", "SPEC-013B", "SPEC-013C", "SPEC-014A", "SPEC-014B", "SPEC-014C", "SPEC-014D", "SPEC-015A"],
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-009F", "SPEC-010B", "SPEC-012B", "SPEC-013A", "SPEC-013A1", "SPEC-013B", "SPEC-013C", "SPEC-014A", "SPEC-014B", "SPEC-014C", "SPEC-014D", "SPEC-015A"],
       "verification_commands": ["pnpm knowledge:index:check", "Manual roadmap status review"],
       "required": true,
       "repo_owned": true
@@ -124,8 +124,8 @@
         "cadence": "per SpecKit phase transition",
         "trigger": "when setup, autopilot, implementation, or closeout changes workflow artifacts"
       },
-      "last_verified": "2026-06-03",
-      "related_specs": ["SPEC-012A", "SPEC-009F", "SPEC-013A1", "SPEC-013B", "SPEC-014B"],
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-012A", "SPEC-009F", "SPEC-010B", "SPEC-013A1", "SPEC-013B", "SPEC-014B", "SPEC-014C"],
       "verification_commands": ["Manual check: no unresolved clarification, checklist gap, CRITICAL, or HIGH markers in active spec artifacts"],
       "required": true,
       "repo_owned": true
@@ -154,9 +154,39 @@
         "cadence": "per autopilot phase transition",
         "trigger": "when active workflow, active step, or phase plan state changes"
       },
-      "last_verified": "2026-05-23",
-      "related_specs": ["SPEC-012A", "SPEC-009F", "SPEC-013A1"],
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-012A", "SPEC-009F", "SPEC-010B", "SPEC-013A1"],
       "verification_commands": ["node -e \"JSON.parse(require('node:fs').readFileSync('docs/ai/specs/autopilot-state.json','utf8'))\""],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/specs/SPEC-010B-workflow.md",
+      "kind": "execution-ledger",
+      "purpose": "Completed SPEC-010B workflow ledger for Product Line B onboarding smoke, phase gates, implementation evidence, HAL UAT, PR status, and archive closeout.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per SPEC-010B phase transition or closeout evidence change",
+        "trigger": "when Product Line B workflow evidence, PR status, UAT state, or archive status changes"
+      },
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-010B"],
+      "verification_commands": ["Manual check: workflow implementation evidence, HAL UAT, PR #83 merge, and closeout rows remain populated"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "specs/010b-product-line-b-smoke/",
+      "kind": "execution-ledger",
+      "purpose": "Generated SPEC-010B spec, plan, tasks, contracts, checklists, quickstart, verification report, UAT runbook, and retrospective for Product Line B smoke work.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per SPEC-010B artifact or archive cleanup change",
+        "trigger": "when generated requirements, plan, tasks, verification notes, UAT evidence, or cleanup status changes"
+      },
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-010B"],
+      "verification_commands": ["Manual check: tasks.md completion plus verify-tasks-report.md, retrospective.md, and .process/uat-runbook.md evidence for SPEC-010B"],
       "required": true,
       "repo_owned": true
     },
@@ -169,9 +199,39 @@
         "cadence": "after every pilot UAT or post-merge smoke",
         "trigger": "when a pilot issue, PR, deployment SHA, or cleanup result changes"
       },
-      "last_verified": "2026-05-27",
-      "related_specs": ["SPEC-009C1", "SPEC-009C2", "SPEC-009C3", "SPEC-009C4", "SPEC-009D", "SPEC-009E", "SPEC-009F"],
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-009C1", "SPEC-009C2", "SPEC-009C3", "SPEC-009C4", "SPEC-009D", "SPEC-009E", "SPEC-009F", "SPEC-010B"],
       "verification_commands": ["Manual UAT evidence review"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "docs/ai/product-lines/product-line-b.yaml",
+      "kind": "contract",
+      "purpose": "Reviewed disabled-by-default Product Line B seed config used by SPEC-010B preflight, apply, verify, smoke enablement, disablement, and cleanup evidence.",
+      "owner": "Product-line seed maintainers",
+      "freshness": {
+        "cadence": "per Product Line B seed config change",
+        "trigger": "when Product Line B identity, departments, assignments, workflow family, feature flags, governance defaults, or safety policy changes"
+      },
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-010B"],
+      "verification_commands": ["pnpm test src/lib/__tests__/product-line-b-seed.test.ts src/lib/__tests__/product-line-b-smoke.test.ts"],
+      "required": true,
+      "repo_owned": true
+    },
+    {
+      "path": "scripts/spec-010b/product-line-b-smoke.ts",
+      "kind": "operator-tooling",
+      "purpose": "SPEC-010B Product Line B smoke lifecycle script for explicit enablement, synthetic issue evidence, disablement, cleanup proof, and Product Line A isolation checks.",
+      "owner": "SpecKit operators",
+      "freshness": {
+        "cadence": "per Product Line B smoke lifecycle behavior change",
+        "trigger": "when enable, synthetic issue, disable, cleanup proof, evidence schema, or isolation behavior changes"
+      },
+      "last_verified": "2026-06-06",
+      "related_specs": ["SPEC-010B"],
+      "verification_commands": ["pnpm test src/lib/__tests__/product-line-b-smoke.test.ts"],
       "required": true,
       "repo_owned": true
     },

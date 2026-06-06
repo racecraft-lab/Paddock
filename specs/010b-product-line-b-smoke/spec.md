@@ -2,7 +2,7 @@
 
 **Feature Branch**: `010b-product-line-b-smoke`
 **Created**: 2026-06-05
-**Status**: Draft
+**Status**: Completed
 **Input**: User description: "Create the smallest reviewable Product Line B onboarding smoke that proves disabled-by-default seeding, explicit enablement, one synthetic Paddock issue smoke, clean disablement, and Product Line A isolation without touching active harness-adapter work."
 
 ## User Scenarios & Testing *(mandatory)*

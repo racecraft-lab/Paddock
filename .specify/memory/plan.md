@@ -28,6 +28,9 @@ status and roadmap ledgers.
 Revision 2026-06-05: Archived SPEC-014C after PR #79 merged to `main` as
 `0af176a5e5aebec11babed1ae034f18810b5f7e9`. Cleanup was not applied because
 this closeout did not include an explicit `--apply-cleanup` request.
+Revision 2026-06-06: Archived SPEC-010B after PR #83 merged to `main` as
+`d5308aa0723c48b670e88c6814b4e4a90892d74f`. Cleanup was not applied because
+this closeout did not include an explicit `--apply-cleanup` request.
 
 ---
 
@@ -128,6 +131,7 @@ specs/
 # - 009e-pilot-evidence-surfaces           (SPEC-009E, PR #55, evidence-surface UAT — cleanup applied 2026-05-22)
 # - 009f-production-triage-routing         (SPEC-009F, PR #57, HITL closeout — cleanup applied 2026-05-22)
 # - 010a-generic-product-line-seeder       (SPEC-010A, PR #59, post-merge UAT — cleanup applied 2026-05-22)
+# - 010b-product-line-b-smoke              (SPEC-010B, PR #83, archived 2026-06-06 — cleanup not applied)
 # - 012a-repo-knowledge-index              (SPEC-012A, PR #56, knowledge-index UAT — cleanup applied 2026-05-22)
 # - 013a-run-state-spine                   (SPEC-013A, PR #58, post-merge UAT — cleanup applied 2026-05-22)
 # - 013a1-github-sync-automation           (SPEC-013A1, PR #60/#61, archived 2026-06-02 — cleanup not applied)
@@ -584,6 +588,14 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 - Keeps `seed:paddock` as compatibility wrapper; reuses existing `yaml@2.8.2`, workflow-contract import/apply tooling, feature-flag registry validation, resource policy rows, and existing seed tables with no migration.
 - Post-merge UAT ran against a disposable copied DB and proved preflight/apply/verify/wrapper parity, existing-target refusal and reviewed re-apply, invalid reserved-flag no-mutation, redaction, Paddock seed shape, zero Product Line B workspaces, zero tasks/runs, and no Product Line B/runtime/GitHub/SpecKit drift.
 
+## SPEC-010B Plan Summary [Source: specs/010b-product-line-b-smoke]
+
+**Branch**: `010b-product-line-b-smoke` | **Merged**: 2026-06-06 | **PR**: #83
+
+- Adds reviewed Product Line B config at `docs/ai/product-lines/product-line-b.yaml`, focused Product Line B preflight/apply/verify behavior, no-mutation proof, disabled-by-default lifecycle, and one smoke script at `scripts/spec-010b/product-line-b-smoke.ts`.
+- Keeps scope to seed/config, typed smoke evidence, Product Line A isolation, and optional live GitHub evidence. It adds no migration, new runtime dependency, scheduler/claim/retry authority, runner state, sandbox lifecycle, harness adapter behavior, auto-merge, broad dashboard redesign, or required live GitHub write.
+- Verification passed build, typecheck, lint, unit tests (361 files / 3,391 tests), Playwright E2E (653 passed / 1 skipped), guardrails, strict TypeScript, focused Product Line B tests, quality-gate, CodeQL, and visual approval. HAL UAT run `SPEC-010B-HAL-20260606040404` left Product Line B disabled with 6 projects, 0 sync-enabled projects, 0 repo-sync-owner projects, 0 dispatch-eligible tasks, zero smoke residue, and Product Line A snapshot parity.
+
 ## SPEC-012A Plan Summary [Source: specs/012a-repo-knowledge-index]
 
 **Branch**: `012a-repo-knowledge-index` | **Merged**: 2026-05-21 | **PR**: #56
@@ -656,7 +668,7 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 
 ## Configuration and Routing
 
-### Feature Flags (as of SPEC-014C)
+### Feature Flags (as of SPEC-010B)
 
 | Flag | Default | Resolution |
 |------|---------|------------|
@@ -670,6 +682,8 @@ All four SPEC-006 failure surfaces (`label_provisioning_failed`, `backfill_task_
 | `FEATURE_TASK_CONTROL_PLANE` | OFF | SPEC-013A-D run-state, claim/reconciliation, retry/debug API, and task-detail operator UX surfaces; legacy runtime remains table-blind when OFF |
 | `FEATURE_GITHUB_SYNC_AUTOMATION` | OFF | SPEC-013A1 GitHub sync lifecycle automation; manual sync fallback remains available when automation is off |
 | `FEATURE_AGENT_RUNNER_SANDBOXES` | OFF | SPEC-014A sandbox lifecycle contract/fake owners plus SPEC-014B/C runtime inventory and first real adapter admission; workspace JSON enables scoped runner behavior |
+| `FEATURE_PRODUCT_LINE_B_DISPATCH` | OFF | Reserved Product Line B dispatch guard; SPEC-010B keeps it absent/false before, during, and after smoke |
+| `PILOT_PRODUCT_LINE_B_SMOKE` | OFF | Reserved Product Line B pilot smoke flag; SPEC-010B keeps required smoke evidence synthetic and disabled after closeout |
 
 ### Verification Commands
 
@@ -725,6 +739,12 @@ From SPEC-010A:
 - `src/lib/product-line-seed/`
 - `scripts/seed-product-line.ts`
 - `scripts/seed-paddock-product-line.ts`
+
+From SPEC-010B:
+- `docs/ai/product-lines/product-line-b.yaml`
+- `scripts/spec-010b/product-line-b-smoke.ts`
+- `src/lib/__tests__/product-line-b-seed.test.ts`
+- `src/lib/__tests__/product-line-b-smoke.test.ts`
 
 From SPEC-012A:
 - `docs/ai/repo-knowledge-index.json`
@@ -821,6 +841,7 @@ From SPEC-014C:
 - **SPEC-009E cleaned proof**: Retained issue #50 / PR #51 plus packet/source-map and smoke checklist references are durable proof after disposable UI carrier rows are cleaned. Do not present cleaned rows as current active Paddock state.
 - **SPEC-009F clean exits**: `NEEDS_SPEC`, needs-human, needs-specialist, duplicate, obsolete, and invalid outcomes are terminal recommendation/evidence lanes in v1; they must not create Issue Remediation successors or mutate GitHub automatically.
 - **SPEC-010A existing targets**: Generic apply to an existing target requires explicit `--allow-existing`; unsafe configs must reject before writes and report stable no-mutation evidence.
+- **SPEC-010B final state**: Product Line B must end disabled with `github_sync_enabled=0`, `is_repo_sync_owner=0`, no assigned dispatch-eligible tasks, no remaining smoke-eligible work, and Product Line A scoped hash parity. Live GitHub issue creation is optional UAT evidence only.
 - **SPEC-012A pnpm separator**: `pnpm knowledge:index:check -- --fixture ... --json` passes the literal separator through; the guard parser accepts it intentionally.
 - **SPEC-013A runtime boundary**: `FEATURE_TASK_CONTROL_PLANE=false` keeps scheduler/dispatch/task-pipeline runtime table-blind. The task-stage attempt route/UI remains read-only debug inspection and exposes no claim/retry/release/cancel/launch controls.
 - **SPEC-013D authority boundary**: The task-detail UI consumes SPEC-013C `claim_control.available_actions[]` and expected state as authoritative. It must not recompute eligibility from task evidence, attempts, task status, or local role guesses.

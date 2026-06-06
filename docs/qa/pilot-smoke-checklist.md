@@ -668,7 +668,9 @@ alone.
 ## SPEC-010B Product Line B Onboarding Smoke
 
 Status: local verification passed on 2026-06-06T00:17:42Z. HAL UAT passed
-with run id `SPEC-010B-HAL-20260606040404`.
+with run id `SPEC-010B-HAL-20260606040404`. PR #83 merged to `main` on
+2026-06-06T11:13:31Z as `d5308aa0723c48b670e88c6814b4e4a90892d74f`; Quality
+Gate, CodeQL, and visual approval checks passed before merge.
 
 Record for each run:
 

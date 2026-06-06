@@ -28,6 +28,9 @@ closeout branch, not an explicit safe-base archive cleanup run.
 Revision 2026-06-05: Archived SPEC-014C after PR #79 merged to `main` as
 `0af176a5e5aebec11babed1ae034f18810b5f7e9`. Source cleanup was not applied
 because no `--apply-cleanup` request was supplied.
+Revision 2026-06-06: Archived SPEC-010B after PR #83 merged to `main` as
+`d5308aa0723c48b670e88c6814b4e4a90892d74f`. Source cleanup was not applied
+because no `--apply-cleanup` request was supplied.
 
 ---
 
@@ -274,6 +277,23 @@ As an operator, I can run generic seed preflight/apply/verify modes and reproduc
 **US3 — Fail Closed Without Mutation (P1)**
 As a maintainer, I can prove incomplete, unsafe, or conflicting config rejects before writes with redacted structured evidence.
 
+### SPEC-010B: Product Line B Onboarding Smoke [Source: specs/010b-product-line-b-smoke]
+
+**US1 — Preflight Without Mutation (P1)**
+As an operator, I can preflight Product Line B before any write and receive a no-mutation proof that Product Line A will not be disturbed.
+
+**US2 — Seed Disabled Product Line B (P1)**
+As an operator, I can seed Product Line B disabled by default and inspect its isolated workspace, project, and `plb-platform-*` assignment shape before any smoke is enabled.
+
+**US3 — Enable, Smoke, And Disable Product Line B (P1)**
+As an operator, I can explicitly enable Product Line B for one synthetic Paddock issue smoke, record scoped evidence, and disable Product Line B cleanly afterward.
+
+**US4 — Prove Product Line A Isolation (P2)**
+As a maintainer, I can review evidence proving Product Line A records, metrics, tasks, and sync ownership were not changed by Product Line B onboarding or smoke activity.
+
+**US5 — Preserve Evidence For Future Gardening (P3)**
+As a future harness-gardening implementer, I can reuse the Product Line B evidence packet, cleanup proof, and recovery commands as two-product-line reality without rerunning hidden setup.
+
 ### SPEC-012A: Repo Knowledge Index and AGENTS Map [Source: specs/012a-repo-knowledge-index]
 
 **US1 — Discover Current Repo Truth from Checked-In Docs (P1)**
@@ -513,6 +533,7 @@ As a reviewer, I can evaluate one real Codex app-server adapter while retention 
 - **SPEC-009E FRs**: Add read-only `task_evidence.v1` route/UI evidence for GitHub-linked and pilot-relevant tasks; represent local-only, partial, stale, missing, redacted, cleaned, and deferred evidence states; never mutate tasks, artifacts, activities, GitHub state, packets, dispatch, runner, claim, sandbox, adapter, or harness behavior.
 - **SPEC-009F FRs**: Route six non-remediation Issue Triage outcomes to typed recommendation/evidence lanes; keep them terminal without remediation successors; expose compact task Evidence `triageRouting`; preserve `ACTIONABLE_REMEDIATION` behavior and avoid live GitHub mutation, claim/runner/sandbox/adapter paths, successor templates, and auto-merge behavior.
 - **SPEC-010A FRs**: Define checked-in product-line YAML seed configs; provide generic `seed:product-line` preflight/apply/verify plus `seed:paddock` wrapper compatibility; validate flags, workflow contracts, governance rows, agents, and existing targets before writes; prove no-mutation failures and no Product Line B onboarding or runtime work.
+- **SPEC-010B FRs**: Seed Product Line B from reviewed config `docs/ai/product-lines/product-line-b.yaml`; keep it disabled by default; require no-mutation preflight and explicit `--allow-existing` for existing targets; enable only one run-id-bound synthetic smoke item; preserve `plb-platform-*` logical agent identity; keep live GitHub writes optional; disable cleanly with zero sync-owner, GitHub-sync, dispatch-eligible, smoke-eligible, and unintended-side-effect counts; prove Product Line A scoped hash parity and no SPEC-014C adapter/runtime-inventory ownership.
 - **SPEC-012A FRs**: Maintain canonical `docs/ai/repo-knowledge-index.json` and schema; map root repo knowledge in `AGENTS.md`; add fixture-backed validation, fresh-agent smoke, package scripts, and guardrails; avoid runtime behavior, migrations, UI, scheduler/runner work, GitHub sync automation, sandbox lifecycle, adapters, generated `.gitnexus/`, broad docs rewrites, or nested AGENTS rollout.
 - **SPEC-013A FRs**: Add additive M76 task-stage attempt tables and rollback; expose typed helper/model behavior and read-only task-scoped API/UI inspection; represent lifecycle, projection drift, archive state, and optional run links; keep flag-off runtime paths table-blind and defer claim authority, scheduler launch, retry policy, GitHub reconciliation, sandbox lifecycle, adapters, and auto-merge.
 - **SPEC-013A1 FRs**: Add default-off `FEATURE_GITHUB_SYNC_AUTOMATION`, M77 lifecycle controls/runs, bounded scheduler-owned GitHub polling, overlap leases, success-only cursor advancement, manual sync fallback, scoped control API, lifecycle health/status UI, sanitized diagnostics, and owner-aware shared-repo selection; avoid claim authority, dispatch launch, remediation execution, sandbox lifecycle, harness adapters, auto-merge, and automatic triage.
@@ -617,6 +638,8 @@ As a reviewer, I can evaluate one real Codex app-server adapter while retention 
 | Task Evidence Read Model | `task_evidence.v1` route/UI model showing eligibility, source-map references, evidence state, warnings, and future-state deferrals |
 | Production Triage Routing Evidence | Typed lane artifact/evidence for non-remediation Issue Triage outcomes without remediation successor creation |
 | Product-Line Seed Config | Checked-in YAML document defining workspace, departments, assignments, workflow family, feature flags, and governance defaults for generic seeding |
+| Product Line B Smoke Evidence | `spec-010b.smoke_evidence.v1` packet proving preflight, seed, verify, enablement, synthetic issue, disablement, cleanup, Product Line A isolation, optional live issue status, redaction, and scope boundaries |
+| Product Line B Synthetic Issue | `spec-010b.synthetic_issue.v1` local issue-shaped payload for `racecraft-lab/Paddock` with pilot labels and no credential fields |
 | Repo Knowledge Index | Checked-in JSON and schema linking durable repo knowledge, status pointers, runbooks, workflow contracts, and guard scripts |
 | Task Stage Attempt | Durable task-stage attempt row with lifecycle events, current projection, archive evidence, optional run link, and read-only operator inspection |
 | Claim Control State | Task-detail read model for a claimed stage, including authorization, available actions, retry eligibility, backoff, expected state, last operator action, and sanitized error context |
@@ -674,6 +697,7 @@ As a reviewer, I can evaluate one real Codex app-server adapter while retention 
 - SPEC-009D and SPEC-009E may represent cleaned UAT rows as archived proof only; they must not claim current active Paddock state from deleted disposable rows.
 - SPEC-009F clean-exit triage outcomes remain terminal recommendations; they must not launch remediation, mutate GitHub, claim work, or auto-close issues unless a future spec owns that side effect.
 - SPEC-010A existing-target apply requires explicit `--allow-existing`; unsafe configs and reserved flags reject before writes with stable no-mutation evidence.
+- SPEC-010B Product Line B identity is `product-line-b` plus `plb-platform-*` logical agents. Retained FocusEngine/OpenClaw rows are read-only inventory, harness manifest ids are substrate evidence only, runtime-inventory `eligible` is not a closeout requirement, and final disablement must leave sync-owner, GitHub-sync, dispatch-eligible, smoke-eligible, and unintended-side-effect counters at zero.
 - SPEC-012A docs/process guards must not depend on `.gitnexus/` generated output or broad generated docs rewrites.
 - SPEC-013A archived task-stage attempts remain in the database and queryable; archive means `status='archived'`, `archived_at`, and lifecycle evidence, not physical export/delete/move.
 - SPEC-013A read-only debug inspection remains available when `FEATURE_TASK_CONTROL_PLANE=false`, but runtime scheduler/dispatch paths must remain table-blind.
@@ -710,6 +734,7 @@ As a reviewer, I can evaluate one real Codex app-server adapter while retention 
 - SPEC-009E: Read-only task Evidence API/UI shows eligibility, stored proof, warnings, deferrals, and cleaned-row rationale; 59/59 tasks completed.
 - SPEC-009F: Six non-remediation triage outcomes route to production evidence lanes without remediation successors or live GitHub mutation; 55/55 tasks completed.
 - SPEC-010A: Generic product-line seeder reproduces Paddock config from YAML, rejects unsafe configs without mutation, preserves existing history, and avoids Product Line B/runtime drift; 73/73 tasks completed.
+- SPEC-010B: Product Line B seeds disabled by default, can be enabled for one synthetic `racecraft-lab/Paddock` issue smoke, disables cleanly with zero sync/dispatch/smoke residue, preserves Product Line A isolation, and keeps live GitHub writes optional; 47/47 tasks completed and PR #83 merged.
 - SPEC-012A: Repo knowledge index/schema, root AGENTS map, fixtures, fresh-agent smoke, package scripts, and guardrails pass; 32/32 tasks completed.
 - SPEC-013A: Task-stage attempt persistence, read-only inspection, non-destructive archive semantics, rollback, flag-off table-blind guardrails, focused browser UAT, and cleanup evidence pass; 58/58 tasks completed.
 - SPEC-013A1: GitHub sync lifecycle automation, scoped controls, manual fallback, lifecycle health/status evidence, overlap protection, disable behavior, and duplicate-ingestion safety pass; 72/72 tasks completed.

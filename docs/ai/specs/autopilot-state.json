@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010B-workflow.md",
-  "updated_at": "2026-06-06T06:21:00Z",
+  "updated_at": "2026-06-06T16:54:43Z",
   "spec_id": "SPEC-010B",
   "branch": "010b-product-line-b-smoke",
   "feature_dir": "specs/010b-product-line-b-smoke",
@@ -36,7 +36,7 @@
     "model": "gpt-5.5",
     "model_reasoning_effort": "xhigh",
     "mcp_servers": "Missing: tavily-mcp context7 RepoPrompt (agents will use built-in fallbacks)",
-    "plugin_cache": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.6.3",
+    "plugin_cache": "/Users/fredrickgabelmann/.codex/plugins/cache/racecraft-plugins-public/speckit-pro/2.7.0",
     "implementation_agent": "implement-executor"
   },
   "archive_sweep": {
@@ -52,12 +52,21 @@
     "cleanup_applied": 0,
     "blockers": [
       "No --apply-cleanup request",
-      "Current branch is feature branch 010b-product-line-b-smoke, not safe base main",
-      "Current target specs/010b-product-line-b-smoke is excluded from archive and cleanup"
+      "Current checkout is detached at origin/main, not an attached safe base branch for cleanup",
+      "Source cleanup intentionally retained specs/010b-product-line-b-smoke for explicit safe-base --apply-cleanup run"
     ]
   },
   "active_step": "Complete",
   "current_blocker": null,
+  "closeout": {
+    "status": "completed",
+    "pr": "https://github.com/racecraft-lab/Paddock/pull/83",
+    "merge_commit": "d5308aa0723c48b670e88c6814b4e4a90892d74f",
+    "merged_at": "2026-06-06T11:13:31Z",
+    "hal_uat_run_id": "SPEC-010B-HAL-20260606040404",
+    "source_cleanup": "not_applied_no_apply_cleanup_request",
+    "next_unblocked_spec": "SPEC-012B"
+  },
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
     {"step": "Phase 0: Prerequisites", "status": "completed"},

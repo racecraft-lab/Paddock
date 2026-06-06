@@ -706,3 +706,37 @@ git show 0af176a5e5aebec11babed1ae034f18810b5f7e9:specs/014c-first-real-harness-
 <!-- archiveMode: single-feature | dryRun: false | applyCleanupRequested: false | safeToApplyCleanup: false -->
 <!-- Branch: codex/spec-014c-archive at origin/main 0af176a5e5aebec11babed1ae034f18810b5f7e9 | Run: 2026-06-05 | archiveExtension: installed -->
 <!-- Prerequisite result: .specify/scripts/bash/check-prerequisites.sh --json --paths-only rejected the archive branch name as not a feature branch. Cleanup was not requested and source folders were retained with recovery commands. -->
+
+---
+
+## SPEC-010B: Product Line B Onboarding Smoke
+
+- **Feature**: RC Factory Phase 9B - Product Line B onboarding smoke
+- **Branch**: `010b-product-line-b-smoke`
+- **Spec Path**: `specs/010b-product-line-b-smoke/`
+- **PR URL**: https://github.com/racecraft-lab/Paddock/pull/83
+- **Merge Commit**: `d5308aa0723c48b670e88c6814b4e4a90892d74f`
+- **Tree Reference**: `git show d5308aa0723c48b670e88c6814b4e4a90892d74f:specs/010b-product-line-b-smoke/spec.md`
+- **CI URL**: https://github.com/racecraft-lab/Paddock/actions/runs/27054872282/job/79857240345 (quality gate); CodeQL and visual approval checks passed before merge
+- **Argos URL**: N/A
+- **Metadata Gates**: HAL Product Line B UAT=pass; quality-gate=pass; CodeQL=pass; visual approval=pass; verify-tasks=pass; retrospective=pass
+- **Task Completion**: 47/47
+- **Summary**: Added reviewed Product Line B config, focused no-mutation preflight/apply/verify behavior, disabled-by-default lifecycle proof, one synthetic `racecraft-lab/Paddock` issue-shaped smoke, `spec-010b.smoke_evidence.v1` evidence, Product Line A scoped hash parity, and final cleanup proof with zero sync-owner, GitHub-sync, dispatch-eligible, smoke-eligible, and unintended-side-effect counters. HAL UAT marker `SPEC-010B-HAL-20260606040404` proved Product Line B ended disabled and Product Line A remained isolated. No migration, new runtime dependency, required live GitHub write, scheduler/claim/retry authority, runner state, sandbox lifecycle, harness adapter behavior, auto-merge, or broad dashboard redesign was added.
+- **Archive Note**: Source cleanup was not applied because no `--apply-cleanup` request was supplied. The checked-in `specs/010b-product-line-b-smoke/` artifacts remain available until a reviewed safe-base cleanup run.
+
+**Recovery Commands**:
+```text
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:specs/010b-product-line-b-smoke/spec.md
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:specs/010b-product-line-b-smoke/plan.md
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:specs/010b-product-line-b-smoke/tasks.md
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:specs/010b-product-line-b-smoke/verify-tasks-report.md
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:specs/010b-product-line-b-smoke/.process/uat-runbook.md
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:specs/010b-product-line-b-smoke/retrospective.md
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:docs/qa/pilot-smoke-checklist.md
+git show d5308aa0723c48b670e88c6814b4e4a90892d74f:docs/ai/specs/SPEC-010B-workflow.md
+```
+
+<!-- Archive extension manual execution metadata -->
+<!-- archiveMode: single-feature | dryRun: false | applyCleanupRequested: false | safeToApplyCleanup: false -->
+<!-- Branch: detached origin/main d5308aa0723c48b670e88c6814b4e4a90892d74f | Run: 2026-06-06 | archiveExtension: installed -->
+<!-- Prerequisite result: .specify/scripts/bash/check-prerequisites.sh --json --paths-only returned FEATURE_DIR specs/010b-product-line-b-smoke from detached HEAD. Cleanup was not requested and source folders were retained with recovery commands. -->
