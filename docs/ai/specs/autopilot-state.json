@@ -1,6 +1,6 @@
 {
   "workflow_file": "docs/ai/specs/SPEC-010B-workflow.md",
-  "updated_at": "2026-06-06T06:05:00Z",
+  "updated_at": "2026-06-06T06:06:00Z",
   "spec_id": "SPEC-010B",
   "branch": "010b-product-line-b-smoke",
   "feature_dir": "specs/010b-product-line-b-smoke",
@@ -56,7 +56,7 @@
       "Current target specs/010b-product-line-b-smoke is excluded from archive and cleanup"
     ]
   },
-  "active_step": "Post: PR Creation",
+  "active_step": "Post: Review Remediation",
   "current_blocker": null,
   "plan": [
     {"step": "Archive Sweep: previously merged specs dry-run/apply eligibility", "status": "completed"},
@@ -105,8 +105,8 @@
     {"step": "Post: Self-Review", "status": "completed"},
     {"step": "Post: UAT Runbook Generation", "status": "completed"},
     {"step": "Post: PR Body Generation", "status": "completed"},
-    {"step": "Post: PR Creation", "status": "in_progress"},
-    {"step": "Post: Review Remediation", "status": "pending"},
+    {"step": "Post: PR Creation", "status": "completed"},
+    {"step": "Post: Review Remediation", "status": "in_progress"},
     {"step": "Post: Retrospective", "status": "pending"}
   ]
 }

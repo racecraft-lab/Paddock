@@ -4,7 +4,7 @@
 |-------|-------|
 | Spec | 010b-product-line-b-smoke |
 | Branch | 010b-product-line-b-smoke |
-| PR | **PR:** <set on PR open> |
+| PR | https://github.com/racecraft-lab/Paddock/pull/83 |
 | Generated from | 2026-06-05T04:39:14Z |
 
 
